@@ -251,7 +251,18 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
       (is (search "DEEPSEEK_API_KEY" source))
       (is (search "Deterministic stages" source))
       (is (search "Live stages" source))
-      (is (not (search ".github/workflows" source))))))
+      (is (not (search ".github/workflows" source)))
+      ;; CI-1f: isolated tar has no .git; render-diff capture then
+      ;; dies "fatal: not a git repository" in ~1s. Same cwd as the
+      ;; render-diff gate (PROJECT_DIRECTORY).
+      (let* ((start (search "run_statistical_liveness()" source))
+             (end (and start (search "run_goal11_gate()" source
+                                     :start2 start)))
+             (body (and start end (subseq source start end))))
+        (is (not (null body)))
+        (when body
+          (is (search "cd \"$PROJECT_DIRECTORY\"" body))
+          (is (not (search "cd \"$ISOLATED_PROJECT\"" body))))))))
 
 (test goal15-part-d-render-diff-gate-covers-the-real-complete-manifest
   (let* ((root (asdf:system-source-directory "cadr-cli"))

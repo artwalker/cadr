@@ -24,6 +24,12 @@ stage) runs the silence-injection scenario
 `liveness-ttt-agent-turn` / wide / cadr, n=3. That is the P0-4 lock.
 `--all` walks the full booked table (cadr side).
 
+`verify.sh` runs this stage from `PROJECT_DIRECTORY`, not the
+isolated tar copy. Capture calls `git -C <repo>` to verify the
+baseline cache; the isolated tree has no `.git` (CI-1f:
+`fatal: not a git repository` in ~1s). Same cwd as the render-diff
+gate. Thresholds are unchanged.
+
 ## N_i table
 
 | scenario | dim | baseline worst ms | N_i ms |

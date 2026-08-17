@@ -23,6 +23,9 @@ import sys
 import tempfile
 from pathlib import Path
 
+# Must be a git checkout. render-diff capture verifies the baseline
+# cache with git -C <ROOT>; a tar copy without .git dies immediately
+# (CI-1f: "fatal: not a git repository").
 ROOT = Path(__file__).resolve().parent.parent
 RENDER_DIFF = ROOT / "scripts/render-diff.py"
 THRESHOLDS = ROOT / "docs/benchmarks/goal20-liveness-thresholds.json"

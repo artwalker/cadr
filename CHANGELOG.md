@@ -93,6 +93,11 @@ tag/Release step.
 
 ### Fixed
 
+- Statistical liveness runs from the git checkout, not the isolated
+  tar copy. render-diff capture needs `git -C <repo>`; the isolated
+  tree has no `.git` and CI died in 1s with "fatal: not a git
+  repository". Thresholds unchanged. FiveAM 18665 → 18668.
+
 - Completions streams read the first nonempty of
   `reasoning_content`, `reasoning`, and `reasoning_text`
   (baseline openai-completions.ts:489-509). Dual emit does not

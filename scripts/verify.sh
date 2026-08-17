@@ -192,8 +192,14 @@ run_isolated_script() {
 }
 
 run_statistical_liveness() {
+  # Must run from PROJECT_DIRECTORY, not the isolated copy.
+  # render-diff capture uses git -C <repo> to verify the baseline
+  # cache; the isolated tar has no .git, so capture dies in ~1s
+  # with "fatal: not a git repository". Same cwd as
+  # run_render_diff_gate. Isolated cadr is only the "build
+  # succeeded" gate below.
   (
-    cd "$ISOLATED_PROJECT"
+    cd "$PROJECT_DIRECTORY"
     python3 test/goal20-liveness-check-test.py
     python3 scripts/goal20-liveness-check.py --captures 3
   )
