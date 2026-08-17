@@ -165,17 +165,18 @@
 
 (defun upsert-instance
     (directory instance)
+  ;; Identity replace is a list walk. nth/setf restated the
+  ;; match as a second owner of the same cell.
   (let* ((instances
            (load-instances directory))
-         (existing
-           (position
-            (instance-record-id instance)
-            instances
+         (id (instance-record-id instance))
+         (cell
+           (member
+            id instances
             :key #'instance-record-id
             :test #'string=)))
-    (if existing
-        (setf (nth existing instances)
-              instance)
+    (if cell
+        (setf (car cell) instance)
         (setf instances
               (append instances
                       (list instance))))

@@ -589,3 +589,57 @@
           (cadr-server:stop-ipc-server
            server)))
       (is (not (probe-file socket-path))))))
+
+(test handle-instance-request-owns-unknown-instance
+  ;; Red on the old four-copy extract+if+unknown arms.
+  (is (fboundp 'cadr-server::handle-instance-request))
+  (is (search
+       "Unknown instance: missing"
+       (cadr-ai::json-get
+        (cadr-server::unknown-instance-response
+         "missing")
+        "error"))))
+
+(test client-ipc-request-owns-print-server-response
+  (is (fboundp 'cadr-server::run-ipc-command))
+  (is (fboundp 'cadr-server::client-ipc-request))
+  (let ((list
+          (cadr-server::client-ipc-request
+           "list" '("list"))))
+    (is (string=
+         "list"
+         (cadr-ai::json-get list "type")))))
+
+(test upsert-instance-replaces-matching-id-without-nth
+  (with-server-directory (directory)
+    (let* ((first
+             (cadr-server::make-instance-record
+              :id "a" :status :online :cwd "/tmp/a"
+              :label "one"))
+           (second
+             (cadr-server::make-instance-record
+              :id "b" :status :online :cwd "/tmp/b"
+              :label "two"))
+           (updated
+             (cadr-server::make-instance-record
+              :id "a" :status :online :cwd "/tmp/a"
+              :label "replaced")))
+      (cadr-server::upsert-instance directory first)
+      (cadr-server::upsert-instance directory second)
+      (cadr-server::upsert-instance directory updated)
+      (let ((ids
+              (mapcar
+               #'cadr-server::instance-record-id
+               (cadr-server::load-instances
+                directory)))
+            (labels
+              (mapcar
+               #'cadr-server::instance-record-label
+               (cadr-server::load-instances
+                directory))))
+        (is (equal '("a" "b") ids))
+        (is (equal '("replaced" "two") labels))))))
+
+(test heartbeat-retry-or-reregister-owns-backoff
+  (is (fboundp
+       'cadr-server::heartbeat-retry-or-reregister)))

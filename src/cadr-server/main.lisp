@@ -47,6 +47,42 @@
   (finish-output *standard-output*)
   nil)
 
+(defun run-ipc-command (socket-path request)
+  ;; One print-server-response. A new client verb is a request
+  ;; builder, not a fifth copy of the ipc-request wrap.
+  (print-server-response
+   (ipc-request socket-path request)))
+
+(defun client-ipc-request (command arguments)
+  (cond
+    ((string= command "list")
+     (cadr-ai::json-object "type" "list"))
+    ((string= command "spawn")
+     (spawn-request-from-arguments arguments))
+    ((string= command "status")
+     (cadr-ai::json-object
+      "type" "status"
+      "instanceId"
+      (command-argument
+       arguments 1 "instance id")))
+    ((string= command "stop")
+     (cadr-ai::json-object
+      "type" "stop"
+      "instanceId"
+      (command-argument
+       arguments 1 "instance id")))
+    ((string= command "rpc")
+     (cadr-ai::json-object
+      "type" "rpc"
+      "instanceId"
+      (command-argument
+       arguments 1 "instance id")
+      "command"
+      (parse-server-line
+       (command-argument
+        arguments 2 "RPC JSON"))))
+    (t nil)))
+
 (defun run-server ()
   (let* ((supervisor
            (make-server-supervisor))
@@ -137,53 +173,14 @@
                    (server-version-line)))
           ((string= command "serve")
            (run-server))
-          ((string= command "list")
-           (print-server-response
-            (ipc-request
-             socket-path
-             (cadr-ai::json-object
-              "type" "list"))))
-          ((string= command "spawn")
-           (print-server-response
-            (ipc-request
-             socket-path
-             (spawn-request-from-arguments
-              arguments))))
-          ((string= command "status")
-           (print-server-response
-            (ipc-request
-             socket-path
-             (cadr-ai::json-object
-              "type" "status"
-              "instanceId"
-              (command-argument
-               arguments 1
-               "instance id")))))
-          ((string= command "stop")
-           (print-server-response
-            (ipc-request
-             socket-path
-             (cadr-ai::json-object
-              "type" "stop"
-              "instanceId"
-              (command-argument
-               arguments 1
-               "instance id")))))
-          ((string= command "rpc")
-           (print-server-response
-            (ipc-request
-             socket-path
-             (cadr-ai::json-object
-              "type" "rpc"
-              "instanceId"
-              (command-argument
-               arguments 1
-               "instance id")
-              "command"
-              (parse-server-line
-               (command-argument
-                arguments 2
-                "RPC JSON"))))))
+          ((member command
+                   '("list" "spawn" "status"
+                     "stop" "rpc")
+                   :test #'string=)
+           (run-ipc-command
+            socket-path
+            (client-ipc-request
+             command arguments)))
           ((string= command "rpc-stream")
            (run-rpc-stream-client
             socket-path

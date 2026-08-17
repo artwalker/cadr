@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122617 assets=5 unevaluated=0 needs-rewrite=144 no-rewrite=147 in-progress=0 done=4 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122608 assets=5 unevaluated=0 needs-rewrite=140 no-rewrite=147 in-progress=0 done=8 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -314,16 +314,20 @@ Report: `docs/acceptance/goal-v20-part-k2.md` is K2;
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-server/config.lisp` | 45 | 6 | Resolve server state, auth, instance, and socket paths. | pass | no-rewrite | Four path accessors (:19-45) each add only a contract filename over the single directory-resolution decision at :9-17. | 20 |
-| `src/cadr-server/handler.lisp` | 101 | 1 | Dispatch one local server request to supervisor operations. | pass | needs-rewrite | The extract-instanceId/unknown-instance block is hand-copied 4x (:36-96); one dispatch table owns the policy. | 20 |
+| `src/cadr-server/handler.lisp` | 100 | 2 | Dispatch one local server request to supervisor operations. | pass | done | handle-instance-request owns extract+unknown. I0: one miss policy. | 20 |
 | `src/cadr-server/ipc.lisp` | 317 | 14 | Serve and call the framed Unix-socket server transport. | pass · large | no-rewrite | Stringly-typed upgrade sniff at :154-168 is the wire contract; stream lifecycle, per-message handler-case, and mutex writes are native. | 20 |
-| `src/cadr-server/main.lisp` | 211 | 10 | Parse server CLI operations and run server or stream-client entry points. | pass | needs-rewrite | Five branches hand-copy (print-server-response (ipc-request ...)) at :140-186; a command->request-constructor table. | 20 |
+| `src/cadr-server/main.lisp` | 208 | 12 | Parse server CLI operations and run server or stream-client entry points. | pass | done | run-ipc-command + client-ipc-request. I0: a new verb is a builder, not a fifth wrap. | 20 |
 | `src/cadr-server/package.lisp` | 59 | 1 | Declare the public `cadr-server` package surface. | pass | no-rewrite | Pure defpackage manifest; canonical idiom, nothing TS-shaped. | 20 |
 | `src/cadr-server/protocol.lisp` | 49 | 5 | Encode/decode the server control-plane JSON messages. | pass | no-rewrite | String keys are the byte-level client contract; optional-field emission is already data-driven (:36-48). | 20 |
-| `src/cadr-server/radius.lisp` | 737 | 43 | Manage opt-in Radius registration, heartbeat, recovery, and redacted token use. | pass · large | needs-rewrite | heartbeat-radius-machine and heartbeat-radius-pi (:467-577) hand-copy one retry-or-reregister skeleton; a shared HOF owns it. | 20 |
+| `src/cadr-server/radius.lisp` | 731 | 44 | Manage opt-in Radius registration, heartbeat, recovery, and redacted token use. | pass · large | done | heartbeat-retry-or-reregister owns backoff. I0: machine/pi only own POST and reregister. | 20 |
 | `src/cadr-server/rpc-process.lisp` | 417 | 26 | Own one child `cadr --mode rpc` process, pending calls, event/UI callbacks, and teardown. | pass · large | no-rewrite | Interface-style setter generics are the mock seam; condition-variable rendezvous and pending-map rollback are Lisp-native. | 20 |
-| `src/cadr-server/storage.lisp` | 195 | 15 | Persist server machine and instance records. | pass | needs-rewrite | upsert-instance does position-then-setf-nth array mutation on a list (:171-181); member+setf-car or mapcar rebuild is single-pass. | 20 |
+| `src/cadr-server/storage.lisp` | 196 | 15 | Persist server machine and instance records. | pass | done | upsert-instance uses member+setf-car. I0: one match owner. | 20 |
 | `src/cadr-server/supervisor.lisp` | 638 | 27 | Supervise live RPC child instances, streams, persistence, and recovery. | pass · large | no-rewrite | Defensive clone-instance-record snapshots are the machine-enforced invariant against cross-thread mutation of persisted records. | 20 |
 | `src/cadr-server/types.lisp` | 24 | 4 | Define machine/instance record values and timestamps. | pass | no-rewrite | Two defstructs plus a named copy alias naming the snapshot discipline; minimal and native. | 20 |
+
+Part K4 (2026-08-18): four needs-rewrite rows done. Seven
+no-rewrite rows kept (I wc/duty undrifted). Report:
+`docs/acceptance/goal-v20-part-k4.md`.
 
 ### 2.7 `cadr-storage`
 

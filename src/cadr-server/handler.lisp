@@ -1,5 +1,18 @@
 (in-package #:cadr-server)
 
+(defun handle-instance-request
+    (supervisor request fetch succeed)
+  ;; Missing-instance is one policy. Four arms copied
+  ;; extract+if+unknown so a new instance-id verb was a
+  ;; fourth owner of that miss.
+  (let* ((id
+           (cadr-ai::json-get
+            request "instanceId"))
+         (found (funcall fetch supervisor id)))
+    (if found
+        (funcall succeed id found)
+        (unknown-instance-response id))))
+
 (defun handle-server-request
     (supervisor request)
   (let ((type
@@ -33,67 +46,53 @@
           (supervisor-list-instances
            supervisor)))))
       ((string= type "status")
-       (let* ((id
-                (cadr-ai::json-get
-                 request "instanceId"))
-              (instance
-                (supervisor-get-instance
-                 supervisor id)))
-         (if instance
-             (cadr-ai::json-object
-              "type" "status_result"
-              "ok" t
-              "instance"
-              (instance-summary-json
-               instance))
-             (unknown-instance-response
-              id))))
+       (handle-instance-request
+        supervisor request
+        #'supervisor-get-instance
+        (lambda (id instance)
+          (declare (ignore id))
+          (cadr-ai::json-object
+           "type" "status_result"
+           "ok" t
+           "instance"
+           (instance-summary-json
+            instance)))))
       ((string= type "stop")
-       (let* ((id
-                (cadr-ai::json-get
-                 request "instanceId"))
-              (instance
-                (supervisor-stop-instance
-                 supervisor id)))
-         (if instance
-             (cadr-ai::json-object
-              "type" "stop_result"
-              "ok" t
-              "instanceId" id)
-             (unknown-instance-response
-              id))))
+       (handle-instance-request
+        supervisor request
+        #'supervisor-stop-instance
+        (lambda (id instance)
+          (declare (ignore instance))
+          (cadr-ai::json-object
+           "type" "stop_result"
+           "ok" t
+           "instanceId" id))))
       ((string= type "rpc")
-       (let* ((id
-                (cadr-ai::json-get
-                 request "instanceId"))
-              (response
-                (supervisor-handle-rpc
-                 supervisor id
-                 (cadr-ai::json-get
-                  request "command"))))
-         (if response
-             (cadr-ai::json-object
-              "type" "rpc_result"
-              "ok" t
-              "response" response)
-             (unknown-instance-response
-              id))))
+       (handle-instance-request
+        supervisor request
+        (lambda (supervisor id)
+          (supervisor-handle-rpc
+           supervisor id
+           (cadr-ai::json-get
+            request "command")))
+        (lambda (id response)
+          (declare (ignore id))
+          (cadr-ai::json-object
+           "type" "rpc_result"
+           "ok" t
+           "response" response))))
       ((string= type "rpc_stream")
-       (let* ((id
-                (cadr-ai::json-get
-                 request "instanceId"))
-              (instance
-                (supervisor-get-instance
-                 supervisor id)))
-         (if instance
-             (cadr-ai::json-object
-              "type" "rpc_ready"
-              "ok" t
-              "instance"
-              (instance-summary-json
-               instance))
-             (unknown-instance-response
-              id))))
+       (handle-instance-request
+        supervisor request
+        #'supervisor-get-instance
+        (lambda (id instance)
+          (declare (ignore id))
+          (cadr-ai::json-object
+           "type" "rpc_ready"
+           "ok" t
+           "instance"
+           (instance-summary-json
+            instance)))))
       (t
        (error-response
         (format nil

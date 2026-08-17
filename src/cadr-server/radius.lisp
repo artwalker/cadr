@@ -464,6 +464,41 @@
         (finish-output *error-output*))))
   t)
 
+(defun heartbeat-retry-or-reregister
+    (state cause
+     &key retry-subject reregister-fn skip-fn)
+  ;; One retry-or-reregister skeleton. machine/pi differ in
+  ;; POST and reregister; they must not each own backoff.
+  (multiple-value-bind
+        (action delay)
+      (record-radius-heartbeat-error
+       state cause)
+    (if (eq action :retry)
+        (progn
+          (unless
+              (radius-not-found-error-p
+               cause)
+            (log-radius-retry
+             retry-subject
+             "heartbeat"
+             state delay cause))
+          delay)
+        (handler-case
+            (if (funcall reregister-fn)
+                (record-radius-heartbeat-success
+                 state)
+                (funcall skip-fn))
+          (error (recovery-cause)
+            (let ((recovery-delay
+                    (record-radius-recovery-error
+                     state)))
+              (log-radius-retry
+               retry-subject
+               "re-registration"
+               state recovery-delay
+               recovery-cause)
+              recovery-delay))))))
+
 (defun heartbeat-radius-machine
     (presence state)
   (handler-case
@@ -487,36 +522,17 @@
         (record-radius-heartbeat-success
          state))
     (error (cause)
-      (multiple-value-bind
-            (action delay)
-          (record-radius-heartbeat-error
-           state cause)
-        (if (eq action :retry)
-            (progn
-              (unless
-                  (radius-not-found-error-p
-                   cause)
-                (log-radius-retry
-                 "Radius machine"
-                 "heartbeat"
-                 state delay cause))
-              delay)
-            (handler-case
-                (progn
-                  (radius-reregister-machine-and-pis
-                   presence)
-                  (record-radius-heartbeat-success
-                   state))
-              (error (recovery-cause)
-                (let ((recovery-delay
-                        (record-radius-recovery-error
-                         state)))
-                  (log-radius-retry
-                   "Radius machine"
-                   "re-registration"
-                   state recovery-delay
-                   recovery-cause)
-                  recovery-delay))))))))
+      (heartbeat-retry-or-reregister
+       state cause
+       :retry-subject "Radius machine"
+       :reregister-fn
+       (lambda ()
+         (radius-reregister-machine-and-pis
+          presence)
+         t)
+       :skip-fn
+       (lambda ()
+         (radius-backoff-delay 1))))))
 
 (defun heartbeat-radius-pi
     (presence instance-id state)
@@ -532,49 +548,27 @@
         (record-radius-heartbeat-success
          state))
     (error (cause)
-      (multiple-value-bind
-            (action delay)
-          (record-radius-heartbeat-error
-           state cause)
-        (if (eq action :retry)
-            (progn
-              (unless
-                  (radius-not-found-error-p
-                   cause)
-                (log-radius-retry
-                 (format nil
-                         "Radius instance ~A"
-                         instance-id)
-                 "heartbeat"
-                 state delay cause))
-              delay)
-            (handler-case
-                (if
-                    (radius-reregister-pi
-                     presence instance-id)
-                    (record-radius-heartbeat-success
-                     state)
-                    (let ((retry-delay
-                            (radius-backoff-delay 1)))
-                      (format
-                       *error-output*
-                       "cadr-server: Radius instance ~A re-registration skipped; retrying in ~Ams~%"
-                       instance-id retry-delay)
-                      (finish-output
-                       *error-output*)
-                      retry-delay))
-              (error (recovery-cause)
-                (let ((recovery-delay
-                        (record-radius-recovery-error
-                         state)))
-                  (log-radius-retry
-                   (format nil
-                           "Radius instance ~A"
-                           instance-id)
-                   "re-registration"
-                   state recovery-delay
-                   recovery-cause)
-                  recovery-delay))))))))
+      (heartbeat-retry-or-reregister
+       state cause
+       :retry-subject
+       (format nil
+               "Radius instance ~A"
+               instance-id)
+       :reregister-fn
+       (lambda ()
+         (radius-reregister-pi
+          presence instance-id))
+       :skip-fn
+       (lambda ()
+         (let ((retry-delay
+                 (radius-backoff-delay 1)))
+           (format
+            *error-output*
+            "cadr-server: Radius instance ~A re-registration skipped; retrying in ~Ams~%"
+            instance-id retry-delay)
+           (finish-output
+            *error-output*)
+           retry-delay))))))
 
 (defmethod radius-start
     ((presence http-radius-presence)

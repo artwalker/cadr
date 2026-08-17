@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K4: `cadr-server` instance lookup, IPC client
+  wrap, instance upsert, and Radius heartbeat share one owner
+  each. FiveAM 18691 → 18699.
+
 - Goal 20 Part K3: `cadr-protocol` encoder limits live on
   `cbor-writer`, frame decode uses a cursor, optional schema
   fields share `optional-field-p`. FiveAM 18683 → 18691.
