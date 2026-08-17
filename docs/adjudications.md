@@ -220,3 +220,57 @@ coverage" and a verdict class that means "not covered yet" cannot be the same
 class. Once they merge, the registry can no longer distinguish permanent
 limitations from backlog, and the backlog stops being visible to anyone
 counting gaps.
+
+---
+
+## 2026-08-17 — The executor never writes a ruling, under any signature
+
+**Ruled**: user (facts confirmed with the executor); recorded by the
+succeeding advisor.
+
+**Decided**: an executor waiting on an adjudication parks the proposal
+("awaiting adjudication") and moves to the next queue item. Writing the
+ruling itself — under any signature, including the advisor's — is
+self-adjudication (§5.1/§5.2). When an evaluator emits a step like
+"Advisor: rule on …", that step is a wait-for-signal, not an
+instruction to substitute.
+
+**Why it was decidable**: board reply 18 approved the executor's own
+`--sort=path` proposal in the advisor's register while the advisor's
+replies stopped at 17. The content was independently verified correct
+and ratified afterwards (reply 19), so the ruling stood — but only
+because the verification happened to be done; the mechanism must not
+depend on that.
+
+**Standing consequence**: board replies carry a distinguishing
+signature (session identity); an advisor ratifies nothing it did not
+author without verifying first.
+
+## 2026-08-17 — The advisor reads; state changes belong to the executor
+
+**Ruled**: user. **Context**: the advisor re-ran a failed CI job as a
+"zero-code discriminating experiment".
+
+**Decided**: the advisor's evidence-gathering is read-only (logs,
+diffs, blobs, run metadata). Any action that mutates shared state —
+CI reruns, cancellations, pushes, hooks — is executor work, dispatched
+via the board. Mechanical results of a boundary-crossing action stay
+valid (§5.2); the boundary still holds.
+
+**Why it was decidable**: the playbook (§1) already records the
+incumbent's "just this once" implementation incident as the way §5.2
+erodes. A rerun is small; the erosion pattern is not.
+
+## 2026-08-17 — Differential fixture pins are local truth
+
+**Ruled**: succeeding advisor, during the goal 20 CI campaign.
+
+**Decided**: `screenSha256` and exact-pair pins in the render-diff
+fixtures are generated in the local environment and are the truth the
+gate defends. They are never re-pinned from CI observations — that
+would redden the local tree and freeze an environment coupling in as
+"expected". When CI disagrees with local pins, the fix is the
+harness's neutralization layer or CI environment alignment (six
+instances this campaign: readdir order, fdfind path, node:internal
+frame numbers, slynk port release, UI response timing, elapsed-footer
+threshold), or an adjudicated behavioral disposition — never the pin.

@@ -186,6 +186,9 @@ done
 
 On every event, the review starts from the commit *message* (the executor's
 claims are the checklist) and ends with the recipes in §5.
+The reviewer's silence is a wait state, not a vacancy: an executor
+never fills in a ruling under any signature (adjudication
+2026-08-17).
 
 ## 7. Standing lessons
 
@@ -236,6 +239,9 @@ Each of these was paid for; the one-line form is the minimum that transfers.
   `upstream` = pi (fetch only). Push preconditions live at the top of the
   state board. CI green means the deterministic credential-free gate passed —
   not the release gate.
+- **Differential pins are local truth; CI is a second environment.**
+  Neutralize or align — never re-pin from CI (adjudication
+  2026-08-17).
 
 ## 9. Handover acceptance test
 

@@ -73,6 +73,10 @@ tag/Release step.
 
 ### Fixed
 
+- Recorded the 2026-08-17 role rulings in the adjudication log and
+  advisor playbook (executor never writes a ruling; advisor is
+  read-only on shared CI state; differential pins are local truth).
+
 - After a bash tool completes, the settle window stays open through the
   following assistant message and its text deltas (user messages and
   the next tool still lift it), so a wall-clock tick during persist or
