@@ -81,6 +81,11 @@ tag/Release step.
 
 ### Fixed
 
+- Wire `oauth-selector-handle-raw-input` into the overlay
+  raw-input dispatch, matching the other selectors. Paste and
+  custom keybindings now reach the OAuth selector. FiveAM
+  18636 → 18640.
+
 - Re-pin `example-commands/narrow/commands-path` cadr
   `screenSha256` after wrapped `<CADR_ROOT>` path join. Baseline-side
   and wide SHAs unchanged. Local official core gate EXIT:0
@@ -95,6 +100,9 @@ tag/Release step.
   matching a new prompt. A second hook invocation can no longer
   block confirm/editor answers. Unconditional `rpc-ui-diag`
   prints removed from the RPC UI product path.
+
+- Booked the unpaired-path denominator at 122638 after wiring
+  OAuth selector raw-input.
 
 - Booked the unpaired-path denominator at 122632 after moving
   RPC steer/follow-up input hooks off the JSONL reader.

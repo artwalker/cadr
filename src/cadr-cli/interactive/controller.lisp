@@ -2810,6 +2810,12 @@ interactive-mode.ts:5956-5960).")
                               overlay input))
                             ((and
                               (plusp (length input))
+                              (oauth-selector-state-p
+                               overlay))
+                             (oauth-selector-handle-raw-input
+                              overlay input))
+                            ((and
+                              (plusp (length input))
                               (framed-select-state-p overlay))
                              (framed-select-state-handle-raw-input
                               overlay input))

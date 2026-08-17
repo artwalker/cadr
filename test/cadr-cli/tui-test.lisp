@@ -2704,6 +2704,41 @@
              faux)))
       (cadr-tui:reset-current-theme))))
 
+(test oauth-selector-raw-input-reaches-the-handler
+  ;; sb-cover A-class: oauth-selector-handle-raw-input had no call
+  ;; site. Siblings dispatch from the overlay raw-input cond.
+  (let* ((controller
+           (uiop:read-file-string
+            (merge-pathnames
+             "src/cadr-cli/interactive/controller.lisp"
+             (asdf:system-source-directory "cadr-cli"))))
+         (state
+           (cadr-cli::make-oauth-selector-state
+            :mode :login
+            :options
+            (list
+             (cadr-cli::make-oauth-selector-option
+              :id :anthropic :name "Anthropic"
+              :auth-type :oauth)
+             (cadr-cli::make-oauth-selector-option
+              :id :faux :name "faux" :auth-type :oauth)))))
+    (is
+     (search
+      "(oauth-selector-handle-raw-input"
+      controller)
+     "OAuth selector raw-input is not wired")
+    (multiple-value-bind (action value handled-p)
+        (cadr-cli::oauth-selector-handle-raw-input
+         state "f")
+      (declare (ignore value))
+      (is (eq :changed action))
+      (is (eq t handled-p))
+      (is
+       (string=
+        "f"
+        (cadr-cli::oauth-selector-state-query
+         state))))))
+
 (test goal17-fork-help-wrap-keeps-text-padding-inside-muted-span
   ;; Fixed pi@914cf1472 user-message-selector.ts:123-130 renders the help as
   ;; Text(theme.fg("muted", ...), 1, 0).  The ANSI-aware wrapper therefore
