@@ -71,6 +71,14 @@ tag/Release step.
   override is set.  All path decisions now derive from a single owner in
   `cadr-core`, enforced by the code-organization gate.
 
+### Added
+
+- Statistical liveness stage (goal 20 12E-1): booked per-scenario
+  `N_i` from the 2026-08-15 measurement, `verify.sh` checks the
+  silence-injection scenario n=3, and a failure prints the full
+  gap list. Outside `render-diff.py gate --tier core`.
+  FiveAM anchor 18633 → 18636.
+
 ### Fixed
 
 - Render-diff `<CADR_ROOT>` paths absorb a hard wrap and the

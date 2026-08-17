@@ -1,0 +1,411 @@
+{
+ "schemaVersion": 1,
+ "rule": "max(10 * baseline_worst_ms, 500)",
+ "adjudicated": "2026-08-16",
+ "sourceMeasurement": "docs/benchmarks/goal20-liveness-measurement-2026-08-15.json",
+ "capturesPerCheck": 3,
+ "thresholds": [
+  {
+   "scenario": "conversation-content",
+   "dimension": "wide",
+   "baselineWorstMs": 102.1,
+   "thresholdMs": 1021
+  },
+  {
+   "scenario": "conversation-content",
+   "dimension": "narrow",
+   "baselineWorstMs": 102.7,
+   "thresholdMs": 1027
+  },
+  {
+   "scenario": "conversation-mermaid",
+   "dimension": "wide",
+   "baselineWorstMs": 50.4,
+   "thresholdMs": 504
+  },
+  {
+   "scenario": "conversation-mermaid",
+   "dimension": "narrow",
+   "baselineWorstMs": 50.2,
+   "thresholdMs": 502
+  },
+  {
+   "scenario": "tools-success",
+   "dimension": "wide",
+   "baselineWorstMs": 70.1,
+   "thresholdMs": 701
+  },
+  {
+   "scenario": "tools-success",
+   "dimension": "narrow",
+   "baselineWorstMs": 69.7,
+   "thresholdMs": 697
+  },
+  {
+   "scenario": "tools-failure",
+   "dimension": "wide",
+   "baselineWorstMs": 81.1,
+   "thresholdMs": 811
+  },
+  {
+   "scenario": "tools-failure",
+   "dimension": "narrow",
+   "baselineWorstMs": 81.2,
+   "thresholdMs": 812
+  },
+  {
+   "scenario": "tools-significant-states",
+   "dimension": "wide",
+   "baselineWorstMs": 92.5,
+   "thresholdMs": 925
+  },
+  {
+   "scenario": "tools-significant-states",
+   "dimension": "narrow",
+   "baselineWorstMs": 96.9,
+   "thresholdMs": 969
+  },
+  {
+   "scenario": "tools-render-branch-sweep",
+   "dimension": "wide",
+   "baselineWorstMs": 311.2,
+   "thresholdMs": 3112
+  },
+  {
+   "scenario": "tools-render-branch-sweep",
+   "dimension": "narrow",
+   "baselineWorstMs": 250.6,
+   "thresholdMs": 2506
+  },
+  {
+   "scenario": "tool-bash-abort",
+   "dimension": "wide",
+   "baselineWorstMs": 56.7,
+   "thresholdMs": 567
+  },
+  {
+   "scenario": "tool-bash-abort",
+   "dimension": "narrow",
+   "baselineWorstMs": 57.8,
+   "thresholdMs": 578
+  },
+  {
+   "scenario": "tree-entry-state-sweep",
+   "dimension": "wide",
+   "baselineWorstMs": 524.0,
+   "thresholdMs": 5240
+  },
+  {
+   "scenario": "tree-entry-state-sweep",
+   "dimension": "narrow",
+   "baselineWorstMs": 525.1,
+   "thresholdMs": 5251
+  },
+  {
+   "scenario": "selector-state-sweep",
+   "dimension": "wide",
+   "baselineWorstMs": 132.5,
+   "thresholdMs": 1325
+  },
+  {
+   "scenario": "selector-state-sweep",
+   "dimension": "narrow",
+   "baselineWorstMs": 133.7,
+   "thresholdMs": 1337
+  },
+  {
+   "scenario": "selector-scoped-state-sweep",
+   "dimension": "wide",
+   "baselineWorstMs": 134.3,
+   "thresholdMs": 1343
+  },
+  {
+   "scenario": "selector-scoped-state-sweep",
+   "dimension": "narrow",
+   "baselineWorstMs": 133.6,
+   "thresholdMs": 1336
+  },
+  {
+   "scenario": "selector-trust-inherited",
+   "dimension": "wide",
+   "baselineWorstMs": 112.3,
+   "thresholdMs": 1123
+  },
+  {
+   "scenario": "selector-trust-inherited",
+   "dimension": "narrow",
+   "baselineWorstMs": 112.1,
+   "thresholdMs": 1121
+  },
+  {
+   "scenario": "overlays-core",
+   "dimension": "wide",
+   "baselineWorstMs": 281.9,
+   "thresholdMs": 2819
+  },
+  {
+   "scenario": "overlays-core",
+   "dimension": "narrow",
+   "baselineWorstMs": 283.1,
+   "thresholdMs": 2831
+  },
+  {
+   "scenario": "overlays-auth",
+   "dimension": "wide",
+   "baselineWorstMs": 111.1,
+   "thresholdMs": 1111
+  },
+  {
+   "scenario": "overlays-auth",
+   "dimension": "narrow",
+   "baselineWorstMs": 112.4,
+   "thresholdMs": 1124
+  },
+  {
+   "scenario": "overlays-auth-oauth",
+   "dimension": "wide",
+   "baselineWorstMs": 300.7,
+   "thresholdMs": 3007
+  },
+  {
+   "scenario": "overlays-auth-oauth",
+   "dimension": "narrow",
+   "baselineWorstMs": 301.8,
+   "thresholdMs": 3018
+  },
+  {
+   "scenario": "overlays-auth-device-code",
+   "dimension": "wide",
+   "baselineWorstMs": 301.9,
+   "thresholdMs": 3019
+  },
+  {
+   "scenario": "overlays-auth-device-code",
+   "dimension": "narrow",
+   "baselineWorstMs": 302.1,
+   "thresholdMs": 3021
+  },
+  {
+   "scenario": "overlays-auth-api-key",
+   "dimension": "wide",
+   "baselineWorstMs": 301.0,
+   "thresholdMs": 3010
+  },
+  {
+   "scenario": "overlays-auth-api-key",
+   "dimension": "narrow",
+   "baselineWorstMs": 303.1,
+   "thresholdMs": 3031
+  },
+  {
+   "scenario": "overlays-auth-browser-callback",
+   "dimension": "wide",
+   "baselineWorstMs": 301.8,
+   "thresholdMs": 3018
+  },
+  {
+   "scenario": "overlays-auth-browser-callback",
+   "dimension": "narrow",
+   "baselineWorstMs": 304.2,
+   "thresholdMs": 3042
+  },
+  {
+   "scenario": "overlays-auth-manual-code-complete",
+   "dimension": "wide",
+   "baselineWorstMs": 301.8,
+   "thresholdMs": 3018
+  },
+  {
+   "scenario": "overlays-auth-manual-code-complete",
+   "dimension": "narrow",
+   "baselineWorstMs": 302.6,
+   "thresholdMs": 3026
+  },
+  {
+   "scenario": "overlays-auth-browser-callback-complete",
+   "dimension": "wide",
+   "baselineWorstMs": 302.3,
+   "thresholdMs": 3023
+  },
+  {
+   "scenario": "overlays-auth-browser-callback-complete",
+   "dimension": "narrow",
+   "baselineWorstMs": 302.5,
+   "thresholdMs": 3025
+  },
+  {
+   "scenario": "overlays-logout",
+   "dimension": "wide",
+   "baselineWorstMs": 89.3,
+   "thresholdMs": 893
+  },
+  {
+   "scenario": "overlays-logout",
+   "dimension": "narrow",
+   "baselineWorstMs": 89.4,
+   "thresholdMs": 894
+  },
+  {
+   "scenario": "overlays-secondary",
+   "dimension": "wide",
+   "baselineWorstMs": 101.6,
+   "thresholdMs": 1016
+  },
+  {
+   "scenario": "overlays-secondary",
+   "dimension": "narrow",
+   "baselineWorstMs": 100.5,
+   "thresholdMs": 1005
+  },
+  {
+   "scenario": "stream-interrupt-queue",
+   "dimension": "wide",
+   "baselineWorstMs": 82.1,
+   "thresholdMs": 821
+  },
+  {
+   "scenario": "stream-interrupt-queue",
+   "dimension": "narrow",
+   "baselineWorstMs": 100.9,
+   "thresholdMs": 1009
+  },
+  {
+   "scenario": "extension-surfaces",
+   "dimension": "wide",
+   "baselineWorstMs": 70.7,
+   "thresholdMs": 707
+  },
+  {
+   "scenario": "extension-surfaces",
+   "dimension": "narrow",
+   "baselineWorstMs": 71.3,
+   "thresholdMs": 713
+  },
+  {
+   "scenario": "autocomplete-surfaces",
+   "dimension": "wide",
+   "baselineWorstMs": 101.1,
+   "thresholdMs": 1011
+  },
+  {
+   "scenario": "autocomplete-surfaces",
+   "dimension": "narrow",
+   "baselineWorstMs": 100.2,
+   "thresholdMs": 1002
+  },
+  {
+   "scenario": "provider-error",
+   "dimension": "wide",
+   "baselineWorstMs": 50.4,
+   "thresholdMs": 504
+  },
+  {
+   "scenario": "provider-error",
+   "dimension": "narrow",
+   "baselineWorstMs": 50.4,
+   "thresholdMs": 504
+  },
+  {
+   "scenario": "user-bash-state-sweep",
+   "dimension": "wide",
+   "baselineWorstMs": 189.1,
+   "thresholdMs": 1891
+  },
+  {
+   "scenario": "user-bash-state-sweep",
+   "dimension": "narrow",
+   "baselineWorstMs": 193.0,
+   "thresholdMs": 1930
+  },
+  {
+   "scenario": "settings-state-sweep",
+   "dimension": "wide",
+   "baselineWorstMs": 69.9,
+   "thresholdMs": 699
+  },
+  {
+   "scenario": "settings-state-sweep",
+   "dimension": "narrow",
+   "baselineWorstMs": 71.0,
+   "thresholdMs": 710
+  },
+  {
+   "scenario": "example-hello",
+   "dimension": "wide",
+   "baselineWorstMs": 204.1,
+   "thresholdMs": 2041
+  },
+  {
+   "scenario": "example-hello",
+   "dimension": "narrow",
+   "baselineWorstMs": 203.5,
+   "thresholdMs": 2035
+  },
+  {
+   "scenario": "example-notify",
+   "dimension": "wide",
+   "baselineWorstMs": 203.8,
+   "thresholdMs": 2038
+  },
+  {
+   "scenario": "example-notify",
+   "dimension": "narrow",
+   "baselineWorstMs": 203.7,
+   "thresholdMs": 2037
+  },
+  {
+   "scenario": "example-bookmark",
+   "dimension": "wide",
+   "baselineWorstMs": 203.5,
+   "thresholdMs": 2035
+  },
+  {
+   "scenario": "example-bookmark",
+   "dimension": "narrow",
+   "baselineWorstMs": 204.8,
+   "thresholdMs": 2048
+  },
+  {
+   "scenario": "example-send-user-message",
+   "dimension": "wide",
+   "baselineWorstMs": 204.0,
+   "thresholdMs": 2040
+  },
+  {
+   "scenario": "example-send-user-message",
+   "dimension": "narrow",
+   "baselineWorstMs": 204.1,
+   "thresholdMs": 2041
+  },
+  {
+   "scenario": "example-reload-runtime",
+   "dimension": "wide",
+   "baselineWorstMs": 203.6,
+   "thresholdMs": 2036
+  },
+  {
+   "scenario": "example-reload-runtime",
+   "dimension": "narrow",
+   "baselineWorstMs": 203.1,
+   "thresholdMs": 2031
+  },
+  {
+   "scenario": "example-todo",
+   "dimension": "wide",
+   "baselineWorstMs": 203.9,
+   "thresholdMs": 2039
+  },
+  {
+   "scenario": "example-todo",
+   "dimension": "narrow",
+   "baselineWorstMs": 203.3,
+   "thresholdMs": 2033
+  },
+  {
+   "scenario": "liveness-ttt-agent-turn",
+   "dimension": "wide",
+   "baselineWorstMs": 203.7,
+   "thresholdMs": 2037
+  }
+ ]
+}

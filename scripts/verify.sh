@@ -191,6 +191,14 @@ run_isolated_script() {
   )
 }
 
+run_statistical_liveness() {
+  (
+    cd "$ISOLATED_PROJECT"
+    python3 test/goal20-liveness-check-test.py
+    python3 scripts/goal20-liveness-check.py --captures 3
+  )
+}
+
 run_goal11_gate() {
   (
     cd "$ISOLATED_PROJECT"
@@ -519,6 +527,14 @@ else
   skip_deterministic "isolated cadr build" "deterministic prerequisite failed"
   skip_deterministic "isolated cadr-server build" "deterministic prerequisite failed"
   DETERMINISTIC_READY=0
+fi
+
+if [ -x "$ISOLATED_PROJECT/cadr" ]; then
+  # Own stage: must not sit inside gate --tier core, and a red here
+  # must not skip render / tool-result / event.
+  run_deterministic "statistical liveness" run_statistical_liveness
+else
+  skip_deterministic "statistical liveness" "isolated build unavailable"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
