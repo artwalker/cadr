@@ -75,29 +75,15 @@
       ((string= type "prompt")
        (rpc-start-prompt state object))
       ((string= type "steer")
-       (multiple-value-bind
-             (message handled-p)
-           (cadr-agent::apply-agent-input-hooks
-            agent
-            (rpc-prompt-message object)
-            :rpc
-            :streaming-behavior :steer)
-         (unless handled-p
-           (cadr-agent:agent-steer
-            agent message)))
-       (rpc-success id type))
+       (rpc-apply-input-hooks-off-reader
+        state agent id type
+        (rpc-prompt-message object)
+        :steer))
       ((string= type "follow_up")
-       (multiple-value-bind
-             (message handled-p)
-           (cadr-agent::apply-agent-input-hooks
-            agent
-            (rpc-prompt-message object)
-            :rpc
-            :streaming-behavior :follow-up)
-         (unless handled-p
-           (cadr-agent:agent-follow-up
-            agent message)))
-       (rpc-success id type))
+       (rpc-apply-input-hooks-off-reader
+        state agent id type
+        (rpc-prompt-message object)
+        :follow-up))
       ((string= type "abort")
        (cadr-agent:agent-abort agent)
        (cadr-agent:agent-wait-for-idle agent)

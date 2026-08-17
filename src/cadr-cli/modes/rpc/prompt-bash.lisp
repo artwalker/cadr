@@ -31,6 +31,36 @@
           images))
         (cadr-ai:make-user-message :content text))))
 
+(defun rpc-apply-input-hooks-off-reader
+    (state agent id type message behavior)
+  ;; Prompt already runs :input hooks on cadr-rpc-prompt. Steer and
+  ;; follow_up used to run the same blocking hooks on the JSONL
+  ;; reader, so a second hook invocation could wait for confirm
+  ;; while the reader could not accept the answer.
+  (sb-thread:make-thread
+   (lambda ()
+     (handler-case
+         (multiple-value-bind
+               (processed handled-p)
+             (cadr-agent::apply-agent-input-hooks
+              agent message :rpc
+              :streaming-behavior behavior)
+           (unless handled-p
+             (if (eq behavior :steer)
+                 (cadr-agent:agent-steer
+                  agent processed)
+                 (cadr-agent:agent-follow-up
+                  agent processed))))
+       (error (condition)
+         (rpc-write-object
+          state
+          (rpc-failure id type condition)))))
+   :name
+   (if (eq behavior :steer)
+       "cadr-rpc-steer"
+       "cadr-rpc-follow-up"))
+  (rpc-success id type))
+
 (defun rpc-start-prompt (state object)
   (let* ((agent (rpc-state-agent state))
          (id (rpc-command-id object))
@@ -49,28 +79,18 @@
              (rpc-state-prompt-thread state))))
         (cond
           ((string= behavior "steer")
-           (multiple-value-bind
-                 (processed handled-p)
-               (cadr-agent::apply-agent-input-hooks
-                agent message :rpc
-                :streaming-behavior :steer)
-             (unless handled-p
-               (cadr-agent:agent-steer
-                agent processed))))
+           (return-from rpc-start-prompt
+             (rpc-apply-input-hooks-off-reader
+              state agent id "prompt" message
+              :steer)))
           ((string= behavior "followUp")
-           (multiple-value-bind
-                 (processed handled-p)
-               (cadr-agent::apply-agent-input-hooks
-                agent message :rpc
-                :streaming-behavior :follow-up)
-             (unless handled-p
-               (cadr-agent:agent-follow-up
-                agent processed))))
+           (return-from rpc-start-prompt
+             (rpc-apply-input-hooks-off-reader
+              state agent id "prompt" message
+              :follow-up)))
           (t
            (error
-            "Agent is already processing a prompt; streamingBehavior is required")))
-        (return-from rpc-start-prompt
-          (rpc-success id "prompt")))
+            "Agent is already processing a prompt; streamingBehavior is required"))))
       (let ((acknowledged-p nil))
         (setf
          (rpc-state-prompt-thread state)

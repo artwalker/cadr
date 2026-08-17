@@ -414,7 +414,10 @@
     ;; (bootstrap/settings.lisp, shared by the raw and SDK managers).
     ;; +1 goal 20 v0.84.2 baseline upgrade:
     ;; settings-fullscreen-exit-output (bootstrap/settings.lisp).
-    (is (= 123 definition-count)
+    ;; +1 goal 20 CI-1d: rpc-apply-input-hooks-off-reader
+    ;; (modes/rpc/prompt-bash.lisp). Steer/follow_up must not run
+    ;; blocking :input hooks on the JSONL reader.
+    (is (= 124 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

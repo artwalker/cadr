@@ -73,8 +73,14 @@ tag/Release step.
 
 ### Fixed
 
-- Booked the unpaired-path denominator at 122644 after the
-  process-modes UI diagnostics added 18 lines to RPC UI.
+- RPC `steer` / `follow_up` and busy `prompt` +
+  `streamingBehavior` run `:input` hooks off the JSONL reader,
+  matching a new prompt. A second hook invocation can no longer
+  block confirm/editor answers. Unconditional `rpc-ui-diag`
+  prints removed from the RPC UI product path.
+
+- Booked the unpaired-path denominator at 122632 after moving
+  RPC steer/follow-up input hooks off the JSONL reader.
 
 - RPC process-modes UI path prints hook/dispatch/client
   diagnostics for confirm and editor so a missing pair can be
