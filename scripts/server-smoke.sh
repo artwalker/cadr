@@ -46,8 +46,17 @@ SPAWN="$(
     "$CADR_SERVER" spawn \
     --cwd "$TEST_ROOT/project" \
     --label worker
-)"
-INSTANCE_ID="$(printf '%s' "$SPAWN" | jq -er '.instance.id')"
+)" || {
+  echo "server smoke: spawn command failed" >&2
+  cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+  exit 1
+}
+if ! INSTANCE_ID="$(printf '%s' "$SPAWN" | jq -er '.instance.id')"; then
+  echo "server smoke: spawn did not return instance.id" >&2
+  printf 'spawn stdout: %s\n' "$SPAWN" >&2
+  cat "$TEST_ROOT/server.out" "$TEST_ROOT/server.err" >&2 || true
+  exit 1
+fi
 
 CADR_SERVER_DIR="$TEST_ROOT/server" \
   "$CADR_SERVER" list |
