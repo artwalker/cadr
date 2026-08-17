@@ -919,7 +919,9 @@
     ;; +1 goal 18 Part L: *tool-result-image-normalize-function*
     ;; (loop/tool-execution.lisp, the image normalization seam used by
     ;; the tool-result rendering path).
-    (is (= 254 definition-count)
+    ;; +3 Goal 20 K6: agent-message-to-llm, usage-cost-amount,
+    ;; put-session-details-and-usage / queue accessors / tail slot.
+    (is (= 257 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1074,7 +1076,9 @@
           (dolist (marker (rest owner))
             (is (search marker source)
                 "~A does not own ~A" (first owner) marker)))))
-    (is (= 239 definition-count)
+    ;; +14 Goal 20 K6: extension-definition-bundle methods,
+    ;; assert-extension-deliver-as, render-extension-named.
+    (is (= 253 definition-count)
         "B9 moved a different top-level definition set: ~D" definition-count)
     (is (not (probe-file (merge-pathnames
                           "src/cadr-agent/extensions.lisp" root)))

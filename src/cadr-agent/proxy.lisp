@@ -102,7 +102,8 @@
            (unless (typep block 'cadr-ai:text-content)
              (error "Received text_delta for non-text content"))
            (setf (cadr-ai:text-content-text block)
-                 (concatenate 'string (cadr-ai:text-content-text block) delta))
+                 (cadr-ai::nappend-string
+                  (cadr-ai:text-content-text block) delta))
            (emit-event :delta delta)))
         (:text-end
          (let ((block (nth index (cadr-ai:assistant-message-content message))))
@@ -121,8 +122,9 @@
            (unless (typep block 'cadr-ai:thinking-content)
              (error "Received thinking_delta for non-thinking content"))
            (setf (cadr-ai:thinking-content-thinking block)
-                 (concatenate 'string
-                              (cadr-ai:thinking-content-thinking block) delta))
+                 (cadr-ai::nappend-string
+                  (cadr-ai:thinking-content-thinking block)
+                  delta))
            (emit-event :delta delta)))
         (:thinking-end
          (let ((block (nth index (cadr-ai:assistant-message-content message))))
@@ -143,7 +145,8 @@
         (:tool-call-delta
          (let* ((block (nth index (cadr-ai:assistant-message-content message)))
                 (delta (cadr-ai::json-get object "delta"))
-                (partial (concatenate 'string (gethash index partial-json "") delta)))
+                (partial (cadr-ai::nappend-string
+                          (gethash index partial-json "") delta)))
            (unless (typep block 'cadr-ai:tool-call)
              (error "Received toolcall_delta for non-toolCall content"))
            (setf (gethash index partial-json) partial

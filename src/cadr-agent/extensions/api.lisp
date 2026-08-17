@@ -39,13 +39,10 @@
 
 (defun extension-api-send-message
     (api message &key (trigger-turn-p nil) deliver-as)
-  (unless
-      (member deliver-as
-              '(nil :steer :follow-up :next-turn))
-    (error
-     'extension-execution-error
-     :message
-     "send-message deliver-as must be :STEER, :FOLLOW-UP, :NEXT-TURN, or NIL"))
+  (assert-extension-deliver-as
+   deliver-as
+   '(nil :steer :follow-up :next-turn)
+   "send-message deliver-as must be :STEER, :FOLLOW-UP, :NEXT-TURN, or NIL")
   (call-extension-api-action
    api #'extension-host-send-message-function
    "send-message" message
@@ -54,11 +51,10 @@
 
 (defun extension-api-send-user-message
     (api content &key deliver-as)
-  (unless (member deliver-as '(nil :steer :follow-up))
-    (error
-     'extension-execution-error
-     :message
-     "send-user-message deliver-as must be :STEER, :FOLLOW-UP, or NIL"))
+  (assert-extension-deliver-as
+   deliver-as
+   '(nil :steer :follow-up)
+   "send-user-message deliver-as must be :STEER, :FOLLOW-UP, or NIL")
   (call-extension-api-action
    api #'extension-host-send-user-message-function
    "send-user-message" content

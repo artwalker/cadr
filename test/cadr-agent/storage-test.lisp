@@ -409,3 +409,7 @@
             :key #'cadr-agent:session-entry-type))))
         (cadr-agent:harness-session-cleanup
          reopened)))))
+
+(test model-plist-from-entry-owns-current-model
+  (is (fboundp 'cadr-agent::model-plist-from-entry))
+  (is (fboundp 'cadr-agent::call-with-file-mutation-queue)))

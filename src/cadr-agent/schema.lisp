@@ -16,6 +16,14 @@
                      (native-schema-error-json-pointer condition)))
                (if (zerop (length pointer)) "/" pointer))))))
 
+(defmacro when-present ((value object key) &body body)
+  ;; TS !== undefined. One owner of the present-p guard; errors stay
+  ;; at the call site so the pointer/reason text does not drift.
+  `(multiple-value-bind (,value present-p)
+       (gethash ,key ,object)
+     (when present-p
+       ,@body)))
+
 (defun schema-fail (pointer format-control &rest arguments)
   (error
    'native-schema-error
@@ -833,8 +841,7 @@
   ;; coerce-json-schema-instance.
   (cond
     ((vectorp value)
-     (multiple-value-bind (items present-p) (gethash "items" schema)
-       (when present-p
+     (when-present (items schema "items")
          (cond
            ((vectorp items)
             (loop for index below (min (length value) (length items))
@@ -842,18 +849,14 @@
                       (aref value index) (aref items index))))
            ((hash-table-p items)
             (loop for item across value
-                  do (normalize-optional-nulls item items)))))))
+                  do (normalize-optional-nulls item items))))))
     ((hash-table-p value)
-     (multiple-value-bind (properties present-p)
-         (gethash "properties" schema)
-       (when present-p
+     (when-present (properties schema "properties")
          (let ((required
                  (coerce (or (gethash "required" schema) #()) 'list)))
            (loop for key being the hash-keys of properties
                  using (hash-value property-schema)
-                 do (multiple-value-bind (property-value present-p)
-                        (gethash key value)
-                      (when present-p
+                 do (when-present (property-value value key)
                         (if (and (eq property-value 'null)
                                  (not (member key required
                                               :test #'string=))
@@ -865,7 +868,7 @@
                                  (schema-rejects-null-p property-schema))
                             (remhash key value)
                             (normalize-optional-nulls
-                             property-value property-schema)))))))))
+                             property-value property-schema)))))))
     (t nil)))
 
 (defun validate-tool-arguments (tool arguments)

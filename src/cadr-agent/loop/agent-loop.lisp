@@ -64,38 +64,36 @@
              agent :turn-end
              :message message
              :tool-results results)
-            (cond
-              (terminal-p
-               (emit-agent-end agent)
-               (return-from run-agent-loop message))
-              (t
-               (let ((steering
-                       (drain-agent-queue
-                        agent :steering)))
-                 (cond
-                   ((or calls steering)
-                    (begin-agent-turn
-                     agent (1+ turn) steering))
-                   (t
-                    (let ((follow-up
-                            (drain-agent-queue
-                             agent :follow-up)))
-                      (if follow-up
-                          (begin-agent-turn
-                           agent (1+ turn) follow-up)
-                          (progn
-                            (emit-agent-end agent)
-                            (let ((late-follow-up
-                                    (drain-agent-queue
-                                     agent :follow-up)))
-                              (if late-follow-up
-                                  (begin-agent-turn
-                                   agent
-                                   (1+ turn)
-                                   late-follow-up)
-                                  (return-from
-                                      run-agent-loop
-                                    message)))))))))))))))
+            ;; Early terminal exit. LOOP's RETURN would leave the
+            ;; whole loop; fall through to the next turn instead.
+            (if terminal-p
+                (progn
+                  (emit-agent-end agent)
+                  (return-from run-agent-loop message))
+                (let ((steering
+                        (drain-agent-queue
+                         agent :steering)))
+                  (if (or calls steering)
+                      (begin-agent-turn
+                       agent (1+ turn) steering)
+                      (let ((follow-up
+                              (drain-agent-queue
+                               agent :follow-up)))
+                        (if follow-up
+                            (begin-agent-turn
+                             agent (1+ turn) follow-up)
+                            (progn
+                              (emit-agent-end agent)
+                              (let ((late-follow-up
+                                      (drain-agent-queue
+                                       agent :follow-up)))
+                                (if late-follow-up
+                                    (begin-agent-turn
+                                     agent (1+ turn)
+                                     late-follow-up)
+                                    (return-from
+                                        run-agent-loop
+                                      message)))))))))))))
 
 (defun call-with-agent-run (agent function)
     (sb-thread:with-mutex

@@ -9,7 +9,7 @@
       (search "/.cadr/auth.json" path :from-end t)))
 
 (defun example-log-read-access (path allowed-p)
-  (cadr-agent:with-file-mutation-queue
+  (cadr-agent:call-with-file-mutation-queue
    *read-access-log*
    (lambda ()
      (with-open-file (output *read-access-log*

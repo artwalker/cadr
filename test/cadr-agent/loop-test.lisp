@@ -258,3 +258,9 @@
       (is (= 3
              (cadr-ai:usage-output
               (cadr-ai:assistant-message-usage committed)))))))
+
+(test agent-message-to-llm-owns-type-dispatch
+  (is (fboundp 'cadr-agent::agent-message-to-llm))
+  (let ((user (cadr-ai:make-user-message :content "hi")))
+    (is (eq user (cadr-agent::agent-message-to-llm user)))
+    (is (cadr-agent::llm-passthrough-message-p user))))

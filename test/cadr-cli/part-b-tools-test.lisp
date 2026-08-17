@@ -92,25 +92,21 @@
       (let ((first
               (sb-thread:make-thread
                (lambda ()
-                 (cadr-cli::with-file-mutation-queue
-                  file
-                  (lambda ()
+                 (cadr-cli::with-file-mutation-queue (file)
                     (sb-thread:with-mutex (guard)
                       (push :first-start order))
                     (sb-thread:signal-semaphore first-entered)
                     (sb-thread:wait-on-semaphore release-first)
                     (sb-thread:with-mutex (guard)
-                      (push :first-end order))))))))
+                      (push :first-end order)))))))
         (sb-thread:wait-on-semaphore first-entered)
         (let ((second
                 (sb-thread:make-thread
                  (lambda ()
                    (sb-thread:signal-semaphore second-started)
-                   (cadr-cli::with-file-mutation-queue
-                    alias
-                    (lambda ()
+                   (cadr-cli::with-file-mutation-queue (alias)
                       (sb-thread:with-mutex (guard)
-                        (push :second order))))))))
+                        (push :second order)))))))
           (sb-thread:wait-on-semaphore second-started)
           (sb-thread:signal-semaphore release-first)
           (sb-thread:join-thread first)

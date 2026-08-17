@@ -70,6 +70,7 @@
    #:truncate-tail
    #:truncate-line
    #:with-file-mutation-queue
+   #:call-with-file-mutation-queue
    #:custom-agent-message
    #:make-custom-agent-message
    #:branch-summary-message

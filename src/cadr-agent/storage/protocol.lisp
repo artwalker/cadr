@@ -52,6 +52,26 @@
     :parent-session-id parent-session-id
     :data data)))
 
+(defun model-plist-from-entry (entry)
+  ;; One owner of the current-model decision. harness.lisp and
+  ;; sqlite-storage.lisp both walked :model-change / assistant
+  ;; messages independently.
+  (case (session-entry-type entry)
+    (:model-change
+     (list
+      :provider (session-entry-provider entry)
+      :model-id (session-entry-model-id entry)))
+    (:message
+     (let ((message (session-entry-message entry)))
+       (when (typep message 'cadr-ai:assistant-message)
+         (list
+          :provider
+          (string-downcase
+           (symbol-name
+            (cadr-ai:assistant-message-provider message)))
+          :model-id
+          (cadr-ai:assistant-message-model message)))))))
+
 (defun storage-failure
     (storage format-control &rest arguments)
   (apply

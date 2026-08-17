@@ -1483,3 +1483,13 @@
     (is (null
          (cadr-agent::compaction-cut-point
           (list (message-entry 4) (other-entry 4)) 1000)))))
+
+(test compaction-field-owns-extension-vs-generated
+  (is (string=
+       "from-ext"
+       (cadr-agent::compaction-field
+        t '(:summary "from-ext") :summary "generated")))
+  (is (string=
+       "generated"
+       (cadr-agent::compaction-field
+        nil '(:summary "from-ext") :summary "generated"))))

@@ -218,3 +218,7 @@
               when (typep message 'cadr-ai:user-message)
                 collect (user-text message))))
       (is (null *responses*)))))
+
+(test agent-queue-messages-owns-three-ecases
+  (is (fboundp 'cadr-agent::agent-queue-messages))
+  (is (fboundp 'cadr-agent::set-agent-queue-messages)))

@@ -55,14 +55,14 @@ reentrant into the flush keep their order."
             (lambda (event)
               (if listener
                   (funcall listener event)
-                  (setf buffered (append buffered (list event)))))))
+                  (push event buffered)))))
       (push receive (harness-event-bus-watch-listeners bus))
       (let ((snapshot (funcall capture-snapshot)))
         (values
          snapshot
          (lambda (next-listener)
            (loop while buffered
-                 do (let ((pending buffered))
+                 do (let ((pending (nreverse buffered)))
                       (setf buffered nil)
                       (dolist (event pending)
                         (funcall next-listener event))))

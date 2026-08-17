@@ -76,25 +76,35 @@
                 +compaction-summary-suffix+)
    :timestamp (compaction-summary-agent-message-timestamp message)))
 
+(defgeneric agent-message-to-llm (message)
+  (:documentation
+   "Project one agent-side message to an LLM-facing message, or NIL to drop it.")
+  (:method ((message bash-execution-message))
+    (unless (bash-execution-message-exclude-from-context-p message)
+      (cadr-ai:make-user-message
+       :content (bash-execution-to-text message)
+       :timestamp (bash-execution-message-timestamp message))))
+  (:method ((message custom-agent-message))
+    (custom-agent-message-to-llm message))
+  (:method ((message branch-summary-message))
+    (branch-summary-message-to-llm message))
+  (:method ((message compaction-summary-agent-message))
+    (compaction-summary-agent-message-to-llm message))
+  (:method ((message cadr-ai:user-message)) message)
+  (:method ((message cadr-ai:assistant-message)) message)
+  (:method ((message cadr-ai:tool-result-message)) message)
+  (:method ((message t))
+    nil))
+
+(defun llm-passthrough-message-p (message)
+  (typep message
+         '(or cadr-ai:user-message
+           cadr-ai:assistant-message
+           cadr-ai:tool-result-message)))
+
 (defun convert-agent-messages-to-llm (messages)
   (loop for message in messages
-        for converted =
-          (cond
-            ((typep message 'bash-execution-message)
-             (unless (bash-execution-message-exclude-from-context-p message)
-               (cadr-ai:make-user-message
-                :content (bash-execution-to-text message)
-                :timestamp (bash-execution-message-timestamp message))))
-            ((typep message 'custom-agent-message)
-             (custom-agent-message-to-llm message))
-            ((typep message 'branch-summary-message)
-             (branch-summary-message-to-llm message))
-            ((typep message 'compaction-summary-agent-message)
-             (compaction-summary-agent-message-to-llm message))
-            ((or (typep message 'cadr-ai:user-message)
-                 (typep message 'cadr-ai:assistant-message)
-                 (typep message 'cadr-ai:tool-result-message))
-             message))
+        for converted = (agent-message-to-llm message)
         when converted collect converted))
 
 (defstruct (file-operations (:constructor %make-file-operations))

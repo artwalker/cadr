@@ -283,16 +283,17 @@
       (cadr-agent::call-with-extension-registration
        bundle-one
        (lambda ()
-         (cadr-agent::register-extension-shortcut "ctrl+x" "one" (lambda ()))
          (cadr-agent::register-extension-shortcut
-          "ctrl+shift+d" "two" (lambda ()))
+          "ctrl+x" :description "one" :handler (lambda ()))
          (cadr-agent::register-extension-shortcut
-          "ctrl+shift+z" "three" (lambda ()))))
+          "ctrl+shift+d" :description "two" :handler (lambda ()))
+         (cadr-agent::register-extension-shortcut
+          "ctrl+shift+z" :description "three" :handler (lambda ()))))
       (cadr-agent::call-with-extension-registration
        bundle-two
        (lambda ()
          (cadr-agent::register-extension-shortcut
-          "ctrl+shift+z" "four" (lambda ()))))
+          "ctrl+shift+z" :description "four" :handler (lambda ()))))
       (cadr-agent::replace-extension-bundles
        host (list bundle-one bundle-two))
       (let ((keybindings

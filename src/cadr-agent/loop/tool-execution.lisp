@@ -432,19 +432,19 @@ pipeline lives.")
              thread
              :reason
              "collect every parallel tool result before committing the turn")))
-        (loop for entry in prepared
-              for state in states
-              for index from 0
-              for outcome =
-                (complete-tool-outcome
-                 agent
-                 (if (typep entry 'tool-outcome)
-                     (finish-tool-restart-outcome
-                      state entry)
-                     (execute-tool-restart-state
-                      state entry turn-index))
-                 turn-index)
-              do (setf (aref outcomes index) outcome)))
+        (map-into
+         outcomes
+         (lambda (entry state)
+           (complete-tool-outcome
+            agent
+            (if (typep entry 'tool-outcome)
+                (finish-tool-restart-outcome
+                 state entry)
+                (execute-tool-restart-state
+                 state entry turn-index))
+            turn-index))
+         prepared
+         states))
     (multiple-value-bind (results appended)
         (tool-outcomes-values agent outcomes)
       (values
@@ -458,24 +458,23 @@ pipeline lives.")
   (let ((outcomes
           (make-array (length calls)
                       :initial-element nil)))
-    (loop for call in calls
-          for index from 0
-          do
-          (run-agent-lifecycle
-           agent :tool-execution-start
-           (list
-            :tool-call-id (cadr-ai:tool-call-id call)
-            :tool-name (cadr-ai:tool-call-name call)
-            :arguments
-            (cadr-ai:tool-call-arguments call)))
-          (emit-agent-event
-           agent :tool-execution-start
-           :tool-call call)
-          (setf
-           (aref outcomes index)
-           (complete-tool-outcome
-            agent
-            (make-truncated-tool-result call)
-            turn-index)))
+    (map-into
+     outcomes
+     (lambda (call)
+       (run-agent-lifecycle
+        agent :tool-execution-start
+        (list
+         :tool-call-id (cadr-ai:tool-call-id call)
+         :tool-name (cadr-ai:tool-call-name call)
+         :arguments
+         (cadr-ai:tool-call-arguments call)))
+       (emit-agent-event
+        agent :tool-execution-start
+        :tool-call call)
+       (complete-tool-outcome
+        agent
+        (make-truncated-tool-result call)
+        turn-index))
+     calls)
     (tool-outcomes-values agent outcomes)))
 

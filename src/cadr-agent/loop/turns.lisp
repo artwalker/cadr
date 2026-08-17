@@ -79,11 +79,9 @@
                    agent
                    (cadr-ai:stream-event-message event)
                    event)))))
-           (options
-             (list
-              :abort-p
-              (lambda ()
-                (agent-aborted-p agent))))
+           (abort-p
+             (lambda ()
+               (agent-aborted-p agent)))
            (message
              (if (agent-aborted-p agent)
                  ;; pi@914cf1472 — an abort already pending when the
@@ -106,6 +104,9 @@
                           :tools
                           (registry-tools
                            (agent-tool-registry agent)))))
+                   ;; abort-p is a keyword on the stream call, not a
+                   ;; one-field plist built to be read back (TS
+                   ;; object-literal leftover).
                    (if
                        (eq :off
                            (agent-thinking-level agent))
@@ -114,7 +115,7 @@
                         (agent-provider agent)
                         (agent-model agent)
                         context callback
-                        :abort-p (getf options :abort-p))
+                        :abort-p abort-p)
                        (funcall
                         (agent-stream-function agent)
                         (agent-provider agent)
@@ -122,7 +123,7 @@
                         context callback
                         :reasoning
                         (agent-thinking-level agent)
-                        :abort-p (getf options :abort-p)))))))
+                        :abort-p abort-p))))))
       (let ((final
               (merge-terminal-assistant-partial
                message last-partial)))

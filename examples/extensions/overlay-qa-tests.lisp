@@ -57,7 +57,10 @@
 (defun overlay-qa-register-command
     (name description title lines options &key animation-p handler)
   (cadr-agent::register-extension-command
-   name description nil
+   name
+   :description description
+   :argument-hint nil
+   :handler
    (or handler
        (lambda (arguments context)
          (declare (ignore arguments))

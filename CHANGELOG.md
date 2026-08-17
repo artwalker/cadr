@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K6: `cadr-agent` 23 rewrite files share one
+  owner each (queue slots, when-present, authoring macros,
+  message generic, tail pointer). FiveAM 18725 → 18738.
+
 - CI runs only on `workflow_dispatch`. Push and pull-request
   triggers are gone. Daily path is local `test-cl.sh` / `verify.sh`.
   FiveAM 18722 → 18725.

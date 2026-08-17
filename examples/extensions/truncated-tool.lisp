@@ -70,15 +70,13 @@
                (full-output-path nil))
           (when (cadr-agent:truncation-result-truncated-p truncation)
             (setf full-output-path (truncated-rg-temp-file))
-            (cadr-agent:with-file-mutation-queue
-             full-output-path
-             (lambda ()
+            (cadr-agent:with-file-mutation-queue (full-output-path)
                (with-open-file
                    (stream full-output-path :direction :output
                                             :if-exists :supersede
                                             :if-does-not-exist :create
                                             :external-format :utf-8)
-                 (write-string output stream))))
+                 (write-string output stream)))
             (setf
              text
              (format nil

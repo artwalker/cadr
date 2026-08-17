@@ -358,33 +358,9 @@
     (dolist
         (entry
          (session-storage-entries storage))
-      (case (session-entry-type entry)
-        (:model-change
-         (setf
-          model
-          (list
-           :provider
-           (session-entry-provider entry)
-           :model-id
-           (session-entry-model-id entry))))
-        (:message
-         (let ((message
-                 (session-entry-message entry)))
-           (when
-               (typep
-                message
-                'cadr-ai:assistant-message)
-             (setf
-              model
-              (list
-               :provider
-               (string-downcase
-                (symbol-name
-                 (cadr-ai:assistant-message-provider
-                  message)))
-               :model-id
-               (cadr-ai:assistant-message-model
-                message))))))))
+      (let ((next (model-plist-from-entry entry)))
+        (when next
+          (setf model next))))
     model))
 
 (defun storage-current-thinking-level
@@ -421,18 +397,16 @@
       (cadr-ai::json-put
        object "name"
        (session-storage-name storage)))
-    (when (storage-current-model storage)
-      (cadr-ai::json-put
-       object "currentModel"
-       (json-safe-value
-        (storage-current-model storage))))
-    (when
-        (storage-current-thinking-level
-         storage)
-      (cadr-ai::json-put
-       object "currentThinkingLevel"
-       (storage-current-thinking-level
-        storage)))
+    (let ((model (storage-current-model storage))
+          (level (storage-current-thinking-level storage)))
+      (when model
+        (cadr-ai::json-put
+         object "currentModel"
+         (json-safe-value model)))
+      (when level
+        (cadr-ai::json-put
+         object "currentThinkingLevel"
+         level)))
     (cadr-ai::stringify-json object)))
 
 (defun sqlite-next-entry-sequence (storage)

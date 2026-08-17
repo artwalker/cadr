@@ -325,5 +325,5 @@
 (defun file-mutation-lock (path)
   (cadr-agent::file-mutation-queue-lock path))
 
-(defun with-file-mutation-queue (path function)
-  (cadr-agent::with-file-mutation-queue path function))
+(defmacro with-file-mutation-queue ((path) &body body)
+  `(cadr-agent:with-file-mutation-queue (,path) ,@body))

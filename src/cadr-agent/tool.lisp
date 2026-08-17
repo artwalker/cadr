@@ -277,7 +277,8 @@
                  (funcall
                   on-update
                   (make-tool-execution-result
-                   :content (or content nil)
+                   ;; (or content nil) is the TS ?? identity.
+                   :content content
                    :details details
                    :terminate-p (eq terminate-p t))))))))
     (unwind-protect
@@ -310,7 +311,7 @@
                  (cadr-ai:tool-call-id call)
                  :tool-name
                  (cadr-ai:tool-call-name call)
-                 :content (or content nil)
+                 :content content
                  :details details
                  :is-error nil)))))
       (sb-thread:with-recursive-lock

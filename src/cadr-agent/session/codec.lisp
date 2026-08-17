@@ -367,14 +367,10 @@
      (let ((result nil))
        (maphash
         (lambda (key item)
-          (setf result
-                (append
-                 result
-                 (list
-                  (diagnostic-detail-keyword key)
-                  (diagnostic-json-value-to-lisp item)))))
+          (push (diagnostic-detail-keyword key) result)
+          (push (diagnostic-json-value-to-lisp item) result))
         value)
-       result))
+       (nreverse result)))
     ((vectorp value)
      (map 'list #'diagnostic-json-value-to-lisp value))
     (t value)))
@@ -434,6 +430,14 @@
     (t
      (error "Session content must be an array"))))
 
+(defun usage-cost-amount (object key &optional legacy)
+  (coerce
+   (or (if legacy
+           (json-get-either object key legacy)
+           (cadr-ai::json-get object key))
+       0)
+   'double-float))
+
 (defun usage-from-json (object)
   (let ((cost (cadr-ai::json-get object "cost")))
     (cadr-ai:make-usage
@@ -448,32 +452,13 @@
      :cost
      (if (hash-table-p cost)
          (cadr-ai:make-cost
-          :input
-          (coerce
-           (or (cadr-ai::json-get cost "input") 0)
-           'double-float)
-          :output
-          (coerce
-           (or (cadr-ai::json-get cost "output") 0)
-           'double-float)
+          :input (usage-cost-amount cost "input")
+          :output (usage-cost-amount cost "output")
           :cache-read
-          (coerce
-           (or
-            (json-get-either
-             cost "cacheRead" "cache_read")
-            0)
-           'double-float)
+          (usage-cost-amount cost "cacheRead" "cache_read")
           :cache-write
-          (coerce
-           (or
-            (json-get-either
-             cost "cacheWrite" "cache_write")
-            0)
-           'double-float)
-          :total
-          (coerce
-           (or (cadr-ai::json-get cost "total") 0)
-           'double-float))
+          (usage-cost-amount cost "cacheWrite" "cache_write")
+          :total (usage-cost-amount cost "total"))
          (cadr-ai:make-cost)))))
 
 (defun message-from-json (object)

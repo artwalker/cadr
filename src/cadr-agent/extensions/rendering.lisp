@@ -136,35 +136,34 @@
       (release-acquired-extension-snapshot
        host snapshot))))
 
+(defun render-extension-named
+    (host definition phase payload options theme)
+  (if definition
+      (call-extension-renderer
+       host definition phase
+       (extension-renderer-definition-renderer
+        definition)
+       (if (extension-renderer-definition-component-p
+            definition)
+           (list payload options theme)
+           (list payload options)))
+      (values nil nil)))
+
 (defun render-extension-message
     (host custom-type message options &optional theme)
-  (let ((definition
-          (find-extension-message-renderer
-           host custom-type)))
-    (if definition
-        (call-extension-renderer
-         host definition "Message renderer"
-         (extension-renderer-definition-renderer
-          definition)
-         (if (extension-renderer-definition-component-p definition)
-             (list message options theme)
-             (list message options)))
-        (values nil nil))))
+  (render-extension-named
+   host
+   (find-extension-message-renderer host custom-type)
+   "Message renderer"
+   message options theme))
 
 (defun render-extension-entry
     (host custom-type entry options &optional theme)
-  (let ((definition
-          (find-extension-entry-renderer
-           host custom-type)))
-    (if definition
-        (call-extension-renderer
-         host definition "Entry renderer"
-         (extension-renderer-definition-renderer
-          definition)
-         (if (extension-renderer-definition-component-p definition)
-             (list entry options theme)
-             (list entry options)))
-        (values nil nil))))
+  (render-extension-named
+   host
+   (find-extension-entry-renderer host custom-type)
+   "Entry renderer"
+   entry options theme))
 
 (defun render-extension-tool-call
     (host tool-name arguments context)

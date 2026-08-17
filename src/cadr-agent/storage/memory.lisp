@@ -18,6 +18,9 @@
    (leaf-id
     :initform nil
     :accessor memory-storage-leaf-id)
+   (entries-tail
+    :initform nil
+    :accessor memory-storage-entries-tail)
    (lock
     :initform
     (sb-thread:make-mutex
@@ -95,11 +98,14 @@
 
 (defun commit-memory-storage-entry
     (storage entry)
+  ;; Same tail-pointer as journal.lisp: O(1) append under the lock.
+  (let ((cell (list entry)))
+    (if (memory-storage-entries storage)
+        (setf (cdr (memory-storage-entries-tail storage)) cell
+              (memory-storage-entries-tail storage) cell)
+        (setf (memory-storage-entries storage) cell
+              (memory-storage-entries-tail storage) cell)))
   (setf
-   (memory-storage-entries storage)
-   (nconc
-    (memory-storage-entries storage)
-    (list entry))
    (gethash
     (session-entry-id entry)
     (memory-storage-by-id storage))

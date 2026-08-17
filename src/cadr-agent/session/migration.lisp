@@ -219,14 +219,14 @@
              (cadr-ai::json-get object "details"))
            (usage-object
              (cadr-ai::json-get object "usage")))
-      (cond
-        ((string= type "message")
+      (case (session-entry-type entry)
+        (:message
          (setf
           (session-entry-message entry)
           (message-from-json
            (require-json-field
             object "message" path line-number))))
-        ((string= type "thinking_level_change")
+        (:thinking-level-change
          (let ((value
                  (require-json-field
                   object "thinkingLevel"
@@ -239,7 +239,7 @@
            (setf
             (session-entry-thinking-level entry)
             value)))
-        ((string= type "model_change")
+        (:model-change
          (let ((provider
                  (require-json-field
                   object "provider" path line-number))
@@ -255,7 +255,7 @@
            (setf
             (session-entry-provider entry) provider
             (session-entry-model-id entry) model-id)))
-        ((string= type "active_tools_change")
+        (:active-tools-change
          (let ((names
                  (require-json-field
                   object "activeToolNames"
@@ -268,7 +268,7 @@
            (setf
             (session-entry-active-tool-names entry)
             (coerce names 'list))))
-        ((string= type "compaction")
+        (:compaction
          (let* ((summary
                   (require-json-field
                    object "summary" path line-number))
@@ -326,7 +326,7 @@
                      collect
                      (message-from-json
                       message)))))))
-        ((string= type "branch_summary")
+        (:branch-summary
          (let ((from-id
                  (require-json-field
                   object "fromId" path line-number))
@@ -355,7 +355,7 @@
             (eq t
                 (cadr-ai::json-get
                  object "fromHook")))))
-        ((string= type "custom")
+        (:custom
          (let ((custom-type
                  (require-json-field
                   object "customType" path line-number)))
@@ -369,7 +369,7 @@
             custom-type
             (session-entry-data entry)
             (cadr-ai::json-get object "data"))))
-        ((string= type "custom_message")
+        (:custom-message
          (let ((custom-type
                  (require-json-field
                   object "customType" path line-number))
@@ -402,7 +402,7 @@
             (eq t
                 (cadr-ai::json-get
                  object "display")))))
-        ((string= type "label")
+        (:label
          (let ((target-id
                  (require-json-field
                   object "targetId" path line-number))
@@ -422,7 +422,7 @@
            (setf
             (session-entry-target-id entry) target-id
             (session-entry-label entry) label)))
-        ((string= type "session_info")
+        (:session-info
          (let ((name
                  (json-null-to-nil
                   (cadr-ai::json-get object "name"))))
@@ -432,7 +432,7 @@
               "Invalid session info at line ~D"
               line-number))
            (setf (session-entry-name entry) name)))
-        ((string= type "leaf")
+        (:leaf
          (let ((target-id
                  (json-null-to-nil
                   (require-json-field

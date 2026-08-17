@@ -137,31 +137,11 @@
           (session-entry-thinking-level
            entry)))
         (:model-change
-         (setf
-          model
-          (list
-           :provider
-           (session-entry-provider entry)
-           :model-id
-           (session-entry-model-id entry))))
+         (setf model (model-plist-from-entry entry)))
         (:message
-         (let ((message
-                 (session-entry-message entry)))
-           (when
-               (typep
-                message
-                'cadr-ai:assistant-message)
-             (setf
-              model
-              (list
-               :provider
-               (string-downcase
-                (symbol-name
-                 (cadr-ai:assistant-message-provider
-                  message)))
-               :model-id
-               (cadr-ai:assistant-message-model
-                message))))))
+         (let ((next (model-plist-from-entry entry)))
+           (when next
+             (setf model next))))
         (:active-tools-change
          (setf
           active-tool-names

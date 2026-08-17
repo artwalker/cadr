@@ -115,15 +115,13 @@
     (unwind-protect
          (progn
            (when (plusp (length (example-trim prompt)))
-             (cadr-agent:with-file-mutation-queue
-              prompt-path
-              (lambda ()
+             (cadr-agent:with-file-mutation-queue (prompt-path)
                 (with-open-file
                     (stream prompt-path :direction :output
                                         :if-exists :supersede
                                         :if-does-not-exist :create
                                         :external-format :utf-8)
-                  (write-string prompt stream))))
+                  (write-string prompt stream)))
              (setf arguments
                    (append arguments
                            (list "--append-system-prompt"

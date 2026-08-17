@@ -94,13 +94,11 @@
         (when message
           (extract-file-operations-from-message message operations)
           (let ((tokens (message-estimated-tokens
-                         (if (or (typep message 'cadr-ai:user-message)
-                                 (typep message 'cadr-ai:assistant-message)
-                                 (typep message 'cadr-ai:tool-result-message))
+                         (if (llm-passthrough-message-p message)
                              message
-                             (first
-                              (convert-agent-messages-to-llm
-                               (list message)))))))
+                             (or
+                              (agent-message-to-llm message)
+                              message)))))
             (when (and (plusp token-budget)
                        (> (+ total tokens) token-budget))
               (when (and (member (session-entry-type entry)

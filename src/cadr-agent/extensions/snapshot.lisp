@@ -41,34 +41,49 @@
    :get-active-tools-function get-active-tools-function
    :set-active-tools-function set-active-tools-function))
 
+(defgeneric extension-definition-bundle (definition)
+  (:documentation
+   "Owning bundle of one extension definition. New definition
+types add a method here instead of a second etypecase."))
+
+(defmethod extension-definition-bundle
+    ((definition extension-tool-definition))
+  (extension-tool-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-command-definition))
+  (extension-command-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-hook-definition))
+  (extension-hook-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-template-definition))
+  (extension-template-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-provider-definition))
+  (extension-provider-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-native-provider-definition))
+  (extension-native-provider-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-shortcut-definition))
+  (extension-shortcut-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-flag-definition))
+  (extension-flag-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-renderer-definition))
+  (extension-renderer-definition-bundle definition))
+(defmethod extension-definition-bundle
+    ((definition extension-markdown-transformer-definition))
+  (extension-markdown-transformer-definition-bundle
+   definition))
+(defmethod extension-definition-bundle
+    ((definition extension-tool-renderer-definition))
+  (extension-tool-renderer-definition-bundle definition))
+
 (defun extension-definition-origin (definition)
   (extension-bundle-path
-   (etypecase definition
-     (extension-tool-definition
-      (extension-tool-definition-bundle definition))
-     (extension-command-definition
-      (extension-command-definition-bundle definition))
-     (extension-hook-definition
-      (extension-hook-definition-bundle definition))
-     (extension-template-definition
-      (extension-template-definition-bundle definition))
-     (extension-provider-definition
-      (extension-provider-definition-bundle definition))
-     (extension-native-provider-definition
-      (extension-native-provider-definition-bundle
-       definition))
-     (extension-shortcut-definition
-      (extension-shortcut-definition-bundle definition))
-     (extension-flag-definition
-      (extension-flag-definition-bundle definition))
-     (extension-renderer-definition
-      (extension-renderer-definition-bundle definition))
-     (extension-markdown-transformer-definition
-      (extension-markdown-transformer-definition-bundle
-       definition))
-     (extension-tool-renderer-definition
-      (extension-tool-renderer-definition-bundle
-       definition)))))
+   (extension-definition-bundle definition)))
 
 (defun extension-conflict
     (kind name winner loser)
@@ -363,30 +378,7 @@
             :source-path
             (extension-definition-origin definition)
             :bundle
-            (etypecase definition
-              (extension-tool-definition
-               (extension-tool-definition-bundle definition))
-              (extension-command-definition
-               (extension-command-definition-bundle definition))
-              (extension-hook-definition
-               (extension-hook-definition-bundle definition))
-              (extension-template-definition
-               (extension-template-definition-bundle definition))
-              (extension-provider-definition
-               (extension-provider-definition-bundle
-                definition))
-              (extension-shortcut-definition
-               (extension-shortcut-definition-bundle
-                definition))
-              (extension-flag-definition
-               (extension-flag-definition-bundle
-                definition))
-              (extension-renderer-definition
-               (extension-renderer-definition-bundle
-                definition))
-              (extension-tool-renderer-definition
-               (extension-tool-renderer-definition-bundle
-                definition)))
+            (extension-definition-bundle definition)
             :kind
             (etypecase definition
               (extension-tool-definition :tool)

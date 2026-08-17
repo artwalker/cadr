@@ -684,9 +684,7 @@
        (unless (or context (probe-file path))
          (error "Could not edit file: ~A. Error code: ENOENT."
                 display-path))
-       (with-file-mutation-queue
-        path
-        (lambda ()
+       (with-file-mutation-queue (path)
           (let* ((raw
                    (if context
                        (multiple-value-bind (value operation-error)
@@ -740,7 +738,7 @@
                        :edit display-path
                        (lambda ()
                          (atomic-write-utf8
-                          path final-content))))))))))
+                          path final-content)))))))))
             (values
              (list
               (cadr-ai:make-text-content

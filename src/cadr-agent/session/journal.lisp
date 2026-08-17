@@ -28,6 +28,21 @@
 (defun session-entries (session)
   (copy-list (session-%entries session)))
 
+(defun put-session-details-and-usage (base entry)
+  (when (session-entry-details entry)
+    (cadr-ai::json-put
+     base "details"
+     (json-safe-value
+      (session-entry-details entry))))
+  (when (session-entry-usage entry)
+    (cadr-ai::json-put
+     base "usage"
+     (usage-to-json
+      (session-entry-usage entry))))
+  (when (session-entry-from-hook-p entry)
+    (cadr-ai::json-put base "fromHook" t))
+  base)
+
 (defun session-entry-to-json (entry)
   (let ((base
           (cadr-ai::json-object
@@ -86,18 +101,7 @@
      (cadr-ai::json-put
       base "tokensBefore"
       (session-entry-tokens-before entry))
-     (when (session-entry-details entry)
-       (cadr-ai::json-put
-        base "details"
-        (json-safe-value
-         (session-entry-details entry))))
-     (when (session-entry-usage entry)
-       (cadr-ai::json-put
-        base "usage"
-        (usage-to-json
-         (session-entry-usage entry))))
-     (when (session-entry-from-hook-p entry)
-       (cadr-ai::json-put base "fromHook" t))
+     (put-session-details-and-usage base entry)
      (when (session-entry-retained-tail entry)
        (cadr-ai::json-put
         base "retainedTail"
@@ -110,18 +114,7 @@
       base "fromId" (session-entry-from-id entry))
      (cadr-ai::json-put
       base "summary" (session-entry-summary entry))
-     (when (session-entry-details entry)
-       (cadr-ai::json-put
-        base "details"
-        (json-safe-value
-         (session-entry-details entry))))
-     (when (session-entry-usage entry)
-       (cadr-ai::json-put
-        base "usage"
-        (usage-to-json
-         (session-entry-usage entry))))
-     (when (session-entry-from-hook-p entry)
-       (cadr-ai::json-put base "fromHook" t)))
+     (put-session-details-and-usage base entry))
     (:custom
      (cadr-ai::json-put
       base "customType"

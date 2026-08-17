@@ -384,27 +384,20 @@
 
 (defun execution-env-exists-p
     (environment path &key signal)
-  (let ((absolute
-          (execution-path environment path)))
-    (let ((error
-            (execution-aborted-error
-             signal absolute)))
-      (if error
-          (values nil error)
-          (handler-case
-              (progn
-                (sb-posix:lstat absolute)
-                (values t nil))
-            (error (cause)
-              (if
-                  (search
-                   "No such file"
-                   (princ-to-string cause))
-                  (values nil nil)
-                  (values
-                   nil
-                   (classify-file-error
-                    cause absolute)))))))))
+  ;; Not-found is success=false, not an error. Same abort/classify
+  ;; skeleton as call-file-operation; only the missing-file policy
+  ;; differs.
+  (multiple-value-bind (value error)
+      (call-file-operation
+       environment path signal
+       (lambda (absolute)
+         (sb-posix:lstat absolute)
+         t))
+    (if (and error
+             (eq :not-found
+                 (harness-operation-error-code error)))
+        (values nil nil)
+        (values value error))))
 
 (defun execution-env-create-directory
     (environment path

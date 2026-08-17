@@ -186,34 +186,28 @@
               (sb-thread:make-thread
                (lambda ()
                  (handler-case
-                     (cadr-agent::with-file-mutation-queue
-                      path
-                      (lambda ()
+                     (cadr-agent:with-file-mutation-queue (path)
                         (record :first-start)
                         (sb-thread:signal-semaphore first-entered)
                         (sb-thread:wait-on-semaphore release-first)
                         (record :first-error)
-                        (error "expected mutation failure")))
+                        (error "expected mutation failure"))
                    (error () nil))))))
         (sb-thread:wait-on-semaphore first-entered)
         (let ((second
                 (sb-thread:make-thread
                  (lambda ()
-                   (cadr-agent::with-file-mutation-queue
-                    path
-                    (lambda ()
+                   (cadr-agent:with-file-mutation-queue (path)
                       (record :second)
                       (sb-thread:signal-semaphore second-entered)
-                      (sb-thread:wait-on-semaphore release-second)))))))
+                      (sb-thread:wait-on-semaphore release-second))))))
           (wait-for-pending 2)
           (let ((third
                   (sb-thread:make-thread
                    (lambda ()
-                     (cadr-agent::with-file-mutation-queue
-                      path
-                      (lambda ()
+                     (cadr-agent:with-file-mutation-queue (path)
                         (record :third)
-                        (sb-thread:signal-semaphore third-entered)))))))
+                        (sb-thread:signal-semaphore third-entered))))))
             (wait-for-pending 3)
             (sb-thread:signal-semaphore release-first)
             (sb-thread:wait-on-semaphore second-entered)
@@ -254,26 +248,20 @@
              (let ((target-thread
                      (sb-thread:make-thread
                       (lambda ()
-                        (cadr-agent::with-file-mutation-queue
-                         target
-                         (lambda ()
+                        (cadr-agent:with-file-mutation-queue (target)
                            (sb-thread:signal-semaphore target-entered)
-                           (sb-thread:wait-on-semaphore release-target)))))))
+                           (sb-thread:wait-on-semaphore release-target))))))
                (sb-thread:wait-on-semaphore target-entered)
                (let ((alias-thread
                        (sb-thread:make-thread
                         (lambda ()
-                          (cadr-agent::with-file-mutation-queue
-                           alias
-                          (lambda ()
-                             (sb-thread:signal-semaphore alias-entered))))))
+                          (cadr-agent:with-file-mutation-queue (alias)
+                             (sb-thread:signal-semaphore alias-entered)))))
                      (other-thread
                        (sb-thread:make-thread
                         (lambda ()
-                          (cadr-agent::with-file-mutation-queue
-                           other
-                          (lambda ()
-                             (sb-thread:signal-semaphore other-entered)))))))
+                          (cadr-agent:with-file-mutation-queue (other)
+                             (sb-thread:signal-semaphore other-entered))))))
                  (sb-thread:with-mutex
                      (cadr-agent::*file-mutation-queues-guard*)
                    (loop while

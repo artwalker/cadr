@@ -77,23 +77,32 @@
          (cadr-ai:assistant-message-usage message)))))
 
 (defun context-estimated-tokens (messages)
-  (let ((last-usage-position
-          (position-if
-           #'valid-assistant-usage-p
-           messages
-           :from-end t)))
-    (if last-usage-position
-        (+ (cadr-ai:usage-total
-            (cadr-ai:assistant-message-usage
-             (nth last-usage-position messages)))
-           (reduce #'+
-                   (subseq messages
-                           (1+ last-usage-position))
+  ;; One reverse walk: last valid usage plus the tail after that
+  ;; cons. position-if/nth/subseq was three list walks.
+  (let ((tail messages)
+        (after-usage messages)
+        (usage nil))
+    (dolist (message messages)
+      (when (valid-assistant-usage-p message)
+        (setf usage (cadr-ai:assistant-message-usage message)
+              after-usage (cdr tail)))
+      (setf tail (cdr tail)))
+    (if usage
+        (+ (cadr-ai:usage-total usage)
+           (reduce #'+ after-usage
                    :key #'message-estimated-tokens
                    :initial-value 0))
         (reduce #'+ messages
                 :key #'message-estimated-tokens
                 :initial-value 0))))
+
+(defun compaction-field
+    (from-extension-p extension key fallback)
+  ;; One owner of the extension-vs-generated pick. Five copies
+  ;; of (if from-extension-p (getf ...) fallback) drifted independently.
+  (if from-extension-p
+      (getf extension key)
+      fallback))
 
 (defun compaction-entry-estimated-tokens (entry)
   (case (session-entry-type entry)
@@ -735,27 +744,27 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                              agent source-entries preparation reserve
                              custom-instructions reason))))
                        (summary
-                         (if from-extension-p
-                             (getf extension-compaction :summary)
-                             (first generated)))
+                         (compaction-field
+                          from-extension-p extension-compaction
+                          :summary (first generated)))
                        (first-kept-entry-id
-                         (if from-extension-p
-                             (getf extension-compaction
-                                   :first-kept-entry-id)
-                             (session-entry-id kept-entry)))
+                         (compaction-field
+                          from-extension-p extension-compaction
+                          :first-kept-entry-id
+                          (session-entry-id kept-entry)))
                        (effective-tokens-before
-                         (if from-extension-p
-                             (getf extension-compaction
-                                   :tokens-before)
-                             tokens-before))
+                         (compaction-field
+                          from-extension-p extension-compaction
+                          :tokens-before tokens-before))
                        (usage
-                         (if from-extension-p
-                             (getf extension-compaction :usage)
-                             (second generated)))
+                         (compaction-field
+                          from-extension-p extension-compaction
+                          :usage (second generated)))
                        (details
-                         (if from-extension-p
-                             (getf extension-compaction :details)
-                             (getf preparation :file-ops))))
+                         (compaction-field
+                          from-extension-p extension-compaction
+                          :details
+                          (getf preparation :file-ops))))
                 (when
                     (extension-cancellation-aborted-p signal)
                   (emit-agent-event

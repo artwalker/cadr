@@ -191,7 +191,8 @@
              kind name))))
 
 (defun register-extension-tool
-    (name description parameters execution-mode handler)
+    (name &key description parameters
+            (execution-mode :parallel) handler)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "tool" name)
     (unless (stringp description)
@@ -292,7 +293,7 @@
   name)
 
 (defun register-extension-command
-    (name description argument-hint handler)
+    (name &key description argument-hint handler)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "command" name)
     (unless (or (null description) (stringp description))
@@ -368,7 +369,7 @@
     :user-bash))
 
 (defun register-extension-hook
-    (event priority handler)
+    (event &key (priority 0) handler)
   (let ((bundle (require-extension-registration-bundle)))
     (unless (member event +extension-hook-events+)
       (error
@@ -398,7 +399,7 @@
   event)
 
 (defun register-extension-template
-    (name description argument-hint template)
+    (name &key description argument-hint template)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "prompt template" name)
     (unless (or (null description) (stringp description))
@@ -466,7 +467,7 @@
    (extension-provider-definition-definition entry)))
 
 (defun register-extension-provider
-    (definition models)
+    (definition &key models)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-provider definition models)
     (let ((existing
@@ -542,7 +543,7 @@
   custom-type)
 
 (defun register-extension-shortcut
-    (key description handler)
+    (key &key description handler)
   (let ((bundle (require-extension-registration-bundle)))
     (unless
         (and (stringp key)
@@ -587,7 +588,7 @@
      (or (null default) (stringp default)))))
 
 (defun register-extension-flag
-    (name description type default)
+    (name &key description type default)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name "flag" name)
     (unless (or (null description)
@@ -628,7 +629,7 @@
   name)
 
 (defun register-extension-renderer
-    (kind custom-type renderer &key component-p)
+    (kind custom-type &key renderer component-p)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-renderer-type kind custom-type)
     (unless (functionp renderer)
@@ -685,7 +686,7 @@
   transformer)
 
 (defun register-extension-tool-renderer
-    (tool-name call result)
+    (tool-name &key call result)
   (let ((bundle (require-extension-registration-bundle)))
     (validate-extension-resource-name
      "tool renderer" tool-name)
@@ -729,18 +730,21 @@
               :bundle bundle)))))))
   tool-name)
 
+;; Goal 12 froze these public lambda lists. register-* is the
+;; implementation owner (&key). Macros only spell the frozen surface
+;; and expand into that one function.
 (defmacro define-tool
     (name &key description parameters
-                 (execution-mode :parallel)
-                 handler)
+            (execution-mode :parallel) handler)
   `(register-extension-tool
-    ,name ,description ,parameters ,execution-mode ,handler))
+    ,name :description ,description :parameters ,parameters
+    :execution-mode ,execution-mode :handler ,handler))
 
 (defmacro define-rich-tool
     (name &key label description prompt-snippet prompt-guidelines
-               parameters constrained-sampling render-shell
-               prepare-arguments (execution-mode :parallel)
-               handler render-call render-result)
+            parameters constrained-sampling render-shell
+            prepare-arguments (execution-mode :parallel)
+            handler render-call render-result)
   `(register-rich-extension-tool
     ,name :label ,label :description ,description
     :prompt-snippet ,prompt-snippet
@@ -750,24 +754,28 @@
     :render-shell ,render-shell
     :prepare-arguments ,prepare-arguments
     :execution-mode ,execution-mode
-    :handler ,handler :render-call ,render-call :render-result ,render-result))
+    :handler ,handler :render-call ,render-call
+    :render-result ,render-result))
 
 (defmacro define-command
     (name &key description argument-hint handler)
   `(register-extension-command
-    ,name ,description ,argument-hint ,handler))
+    ,name :description ,description
+    :argument-hint ,argument-hint :handler ,handler))
 
 (defmacro define-event-hook
     (event &key (priority 0) handler)
-  `(register-extension-hook ,event ,priority ,handler))
+  `(register-extension-hook
+    ,event :priority ,priority :handler ,handler))
 
 (defmacro define-prompt-template
     (name &key description argument-hint template)
   `(register-extension-template
-    ,name ,description ,argument-hint ,template))
+    ,name :description ,description
+    :argument-hint ,argument-hint :template ,template))
 
 (defmacro define-provider (definition &key models)
-  `(register-extension-provider ,definition ,models))
+  `(register-extension-provider ,definition :models ,models))
 
 (defmacro define-native-provider (provider)
   `(register-extension-native-provider ,provider))
@@ -775,38 +783,37 @@
 (defmacro define-shortcut
     (key &key description handler)
   `(register-extension-shortcut
-    ,key ,description ,handler))
+    ,key :description ,description :handler ,handler))
 
 (defmacro define-flag
     (name &key description type default)
   `(register-extension-flag
-    ,name ,description ,type ,default))
+    ,name :description ,description :type ,type :default ,default))
 
 (defmacro define-message-renderer
     (custom-type &key renderer)
   `(register-extension-renderer
-    :message ,custom-type ,renderer))
+    :message ,custom-type :renderer ,renderer))
 
 (defmacro define-component-message-renderer
     (custom-type &key renderer)
   `(register-extension-renderer
-    :message ,custom-type ,renderer :component-p t))
+    :message ,custom-type :renderer ,renderer :component-p t))
 
 (defmacro define-markdown-transformer (transformer)
-  `(register-extension-markdown-transformer
-    ,transformer))
+  `(register-extension-markdown-transformer ,transformer))
 
 (defmacro define-entry-renderer
     (custom-type &key renderer)
   `(register-extension-renderer
-    :entry ,custom-type ,renderer))
+    :entry ,custom-type :renderer ,renderer))
 
 (defmacro define-component-entry-renderer
     (custom-type &key renderer)
   `(register-extension-renderer
-    :entry ,custom-type ,renderer :component-p t))
+    :entry ,custom-type :renderer ,renderer :component-p t))
 
 (defmacro define-tool-renderer
     (tool-name &key call result)
   `(register-extension-tool-renderer
-    ,tool-name ,call ,result))
+    ,tool-name :call ,call :result ,result))

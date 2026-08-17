@@ -6,7 +6,7 @@
 
 (defun file-trigger-consume ()
   (when (probe-file +file-trigger-path+)
-    (cadr-agent:with-file-mutation-queue
+    (cadr-agent:call-with-file-mutation-queue
      +file-trigger-path+
      (lambda ()
        (let ((content

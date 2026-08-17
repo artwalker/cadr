@@ -613,8 +613,7 @@
   (invoke-extension-ui context :theme nil))
 
 (defun extension-context-all-themes (context)
-  (or (invoke-extension-ui context :all-themes nil)
-      nil))
+  (invoke-extension-ui context :all-themes nil))
 
 (defun extension-context-get-theme (context name)
   (unless (stringp name)
@@ -652,6 +651,13 @@
    (list :expanded-p (not (null expanded-p))))
   nil)
 
+(defun assert-extension-deliver-as
+    (deliver-as allowed message)
+  (unless (member deliver-as allowed)
+    (error
+     'extension-execution-error
+     :message message)))
+
 (defun call-extension-host-action
     (context accessor name &rest arguments)
   (assert-active-extension-context context)
@@ -669,13 +675,10 @@
     (context message &key
                        (trigger-turn-p nil)
                        deliver-as)
-  (unless
-      (member deliver-as
-              '(nil :steer :follow-up :next-turn))
-    (error
-     'extension-execution-error
-     :message
-     "send-message deliver-as must be :STEER, :FOLLOW-UP, :NEXT-TURN, or NIL"))
+  (assert-extension-deliver-as
+   deliver-as
+   '(nil :steer :follow-up :next-turn)
+   "send-message deliver-as must be :STEER, :FOLLOW-UP, :NEXT-TURN, or NIL")
   (call-extension-host-action
    context #'extension-host-send-message-function
    "send-message"
@@ -685,11 +688,10 @@
 
 (defun extension-context-send-user-message
     (context content &key deliver-as)
-  (unless (member deliver-as '(nil :steer :follow-up))
-    (error
-     'extension-execution-error
-     :message
-     "send-user-message deliver-as must be :STEER, :FOLLOW-UP, or NIL"))
+  (assert-extension-deliver-as
+   deliver-as
+   '(nil :steer :follow-up)
+   "send-user-message deliver-as must be :STEER, :FOLLOW-UP, or NIL")
   (call-extension-host-action
    context #'extension-host-send-user-message-function
    "send-user-message"

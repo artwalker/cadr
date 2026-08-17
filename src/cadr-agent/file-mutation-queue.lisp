@@ -75,10 +75,18 @@
     (sb-thread:condition-broadcast
      (file-mutation-queue-state-waitqueue state))))
 
-(defun with-file-mutation-queue (path function)
+(defun call-with-file-mutation-queue (path function)
   (multiple-value-bind (key state ticket)
       (register-file-mutation path)
     (wait-for-file-mutation-turn state ticket)
     (unwind-protect
          (funcall function)
       (release-file-mutation-turn key state))))
+
+(defmacro with-file-mutation-queue ((path) &body body)
+  ;; Baseline file-mutation-queue.ts:1-61 is a callback. The
+  ;; ticket lock is the real owner; a with- macro is the Lisp
+  ;; spelling and drops the lambda at every write/edit site.
+  `(call-with-file-mutation-queue
+    ,path
+    (lambda () ,@body)))

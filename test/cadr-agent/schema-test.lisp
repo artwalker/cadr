@@ -155,3 +155,15 @@
       (is (null (gethash "enabled" validated)))
       (is (= 1.5d0 (aref (gethash "items" validated) 0)))
       (is (= 2 (aref (gethash "items" validated) 1))))))
+
+(test when-present-owns-gethash-present-p
+  (is (fboundp 'cadr-agent::when-present))
+  (let ((table (make-hash-table :test #'equal)))
+    (setf (gethash "a" table) 1)
+    (is (eql
+         1
+         (cadr-agent::when-present (value table "a")
+           value)))
+    (is (null
+         (cadr-agent::when-present (value table "missing")
+           value)))))

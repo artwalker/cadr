@@ -29,6 +29,21 @@
                      (reverse watched)))
           (funcall unsubscribe))))))
 
+(test harness-event-watch-buffers-newest-first-until-flush
+  ;; Red on the old append-at-end body.
+  (let ((bus (cadr-agent:make-harness-event-bus))
+        (flushed nil)
+        (first (cadr-agent:make-run-start-event "main" "a"))
+        (second (cadr-agent:make-run-start-event "main" "b")))
+    (multiple-value-bind (snapshot start unsubscribe)
+        (cadr-agent:harness-event-bus-watch bus (lambda () :snap))
+      (declare (ignore snapshot))
+      (cadr-agent:harness-event-bus-emit bus first)
+      (cadr-agent:harness-event-bus-emit bus second)
+      (funcall start (lambda (event) (push event flushed)))
+      (is (equal (list first second) (reverse flushed)))
+      (funcall unsubscribe))))
+
 (test harness-event-bus-watch-snapshot-flush-and-unsubscribe
   (let ((bus (cadr-agent:make-harness-event-bus))
         (received nil))

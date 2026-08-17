@@ -171,31 +171,30 @@
      :follow-up follow-up
      :next-turn next-turn)))
 
+(defun agent-queue-messages (agent queue)
+  (ecase queue
+    (:steering (agent-steering-queue agent))
+    (:follow-up (agent-follow-up-queue agent))
+    (:next-turn (agent-next-turn-queue agent))))
+
+(defun set-agent-queue-messages (agent queue messages)
+  (ecase queue
+    (:steering (setf (agent-steering-queue agent) messages))
+    (:follow-up (setf (agent-follow-up-queue agent) messages))
+    (:next-turn (setf (agent-next-turn-queue agent) messages)))
+  messages)
+
 (defun enqueue-agent-message (agent queue message)
   (assert-agent-not-shutdown agent)
   (let ((normalized
           (normalize-agent-queue-message message)))
     (sb-thread:with-mutex
         ((agent-queue-lock agent))
-      (ecase queue
-        (:steering
-         (setf
-          (agent-steering-queue agent)
-          (nconc
-           (agent-steering-queue agent)
-           (list normalized))))
-        (:follow-up
-         (setf
-          (agent-follow-up-queue agent)
-          (nconc
-           (agent-follow-up-queue agent)
-           (list normalized))))
-        (:next-turn
-         (setf
-          (agent-next-turn-queue agent)
-          (nconc
-           (agent-next-turn-queue agent)
-           (list normalized))))))
+      (set-agent-queue-messages
+       agent queue
+       (nconc
+        (agent-queue-messages agent queue)
+        (list normalized))))
     (emit-agent-queue-update agent)
     normalized))
 
@@ -213,14 +212,7 @@
         (changed-p nil))
     (sb-thread:with-mutex
         ((agent-queue-lock agent))
-      (let* ((messages
-               (ecase queue
-                 (:steering
-                  (agent-steering-queue agent))
-                 (:follow-up
-                  (agent-follow-up-queue agent))
-                 (:next-turn
-                  (agent-next-turn-queue agent))))
+      (let* ((messages (agent-queue-messages agent queue))
              (mode
                (ecase queue
                  (:steering
@@ -235,13 +227,7 @@
                     messages nil)
               (setf drained (list (first messages))
                     messages (rest messages)))
-          (ecase queue
-            (:steering
-             (setf (agent-steering-queue agent) messages))
-            (:follow-up
-             (setf (agent-follow-up-queue agent) messages))
-            (:next-turn
-             (setf (agent-next-turn-queue agent) messages))))))
+          (set-agent-queue-messages agent queue messages))))
     (when changed-p
       (emit-agent-queue-update agent))
     drained))

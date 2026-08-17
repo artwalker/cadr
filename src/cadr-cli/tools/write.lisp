@@ -53,15 +53,13 @@
                        (resolve-tool-path cwd display-path)))
                  (content
                    (required-string arguments "content")))
-            (with-file-mutation-queue
-             path
-             (lambda ()
+            (with-file-mutation-queue (path)
                (if context
                    (multiple-value-bind (value operation-error)
                        (cadr-agent:execution-tool-write
                         context path content)
                      (execution-context-value value operation-error))
-                   (write-utf8-file path content))))
+                   (write-utf8-file path content)))
             (values
              (list
               (cadr-ai:make-text-content
