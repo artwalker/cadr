@@ -77,6 +77,26 @@
          "{\"a\":\"x\\ny\",\"z\":1}"
          (cadr-ai::stringify-json object)))))
 
+(test parse-json-accepts-fill-pointer-and-displaced-source
+  (let* ((text "{\"k\":\"v\"}")
+         (buffer (make-array (length text)
+                             :element-type 'character
+                             :fill-pointer (length text)
+                             :adjustable t))
+         (padded (concatenate 'string "xx" text "yy"))
+         (window (make-array (length text)
+                             :element-type 'character
+                             :displaced-to padded
+                             :displaced-index-offset 2)))
+    (replace buffer text)
+    (is (not (simple-string-p buffer)))
+    (is (string=
+         "v"
+         (cadr-ai::json-get (cadr-ai::parse-json buffer) "k")))
+    (is (string=
+         "v"
+         (cadr-ai::json-get (cadr-ai::parse-json window) "k")))))
+
 (test native-json-removes-unpaired-surrogates
   (let* ((surrogate (code-char #xd83d))
          (emoji (code-char #x1f648))

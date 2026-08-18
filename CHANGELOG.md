@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.1: `parse-json-source` coerces to `simple-string`,
+  scans with `schar`/`fixnum`, and copies unescaped ASCII windows as
+  `simple-base-string`. Same-machine `session.jsonl` parse median
+  6489 ns → 5663 ns (300×515 lines; HEAD 6411/6489/6851 vs
+  5562/5663/6080). Not Friend-MachineD pairing. Probe 7b not repeated.
+
 - Goal 20 Part K9: `cadr-cli` 54 rewrite files share one
   owner each (flag table, hotkeys rows, OSC splice, gutter
   walk, `:component` input, llama `:manual`, installer

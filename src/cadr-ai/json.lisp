@@ -155,17 +155,49 @@
               (* signed-significand
                  (expt 10 decimal-shift)))))))
 
+(defun copy-unescaped-json-string (source start end base-p)
+  ;; Session JSONL keys are ASCII.  Copying those windows into a
+  ;; SIMPLE-BASE-STRING keeps hash/equal on 8-bit data; unicode values
+  ;; still SUBSEQ into a character string.  Either way the result does
+  ;; not share storage with SOURCE (goal20-json-unescaped-window-copies-source).
+  ;; Probe 7b (write-string of the unescaped span) lost to peek and is
+  ;; not repeated here.
+  (declare (type simple-string source)
+           (type fixnum start end))
+  (let ((count (- end start)))
+    (declare (type fixnum count))
+    (cond
+      ((zerop count) "")
+      (base-p
+       (let ((out (make-string count :element-type 'base-char)))
+         (replace out source :start2 start :end2 end)
+         out))
+      (t
+       (subseq source start end)))))
+
 (defun parse-json-source (source)
-  (let ((position 0)
-        (length (length source))
-        (string-buffer
-          (make-array 64
-                      :element-type 'character
-                      :adjustable t
-                      :fill-pointer 0)))
+  ;; Cost center for session_load / journal_read
+  ;; (docs/benchmarks/goal20-part-o-remaining-sprof.md).  CHAR on a
+  ;; general STRING and MEMBER whitespace checks show up as generic
+  ;; ops; one coerce to SIMPLE-STRING lets the scan use SCHAR and
+  ;; FIXNUM indexes without dropping SAFETY.  Unescaped ASCII strings
+  ;; go through COPY-UNESCAPED-JSON-STRING.
+  (let* ((source
+           (if (simple-string-p source)
+               source
+               (coerce source 'simple-string)))
+         (position 0)
+         (length (length source))
+         (string-buffer
+           (make-array 64
+                       :element-type 'character
+                       :adjustable t
+                       :fill-pointer 0)))
+    (declare (type simple-string source)
+             (type fixnum position length))
     (macrolet ((peek ()
                  `(and (< position length)
-                       (char source position)))
+                       (schar source position)))
                (take ()
                  `(prog1 (peek) (incf position))))
       (labels
@@ -174,12 +206,12 @@
                     :message message
                     :position position))
            (skip-space ()
-             (loop for character = (peek)
-                   while (and character
-                              (member
-                               character
-                               '(#\Space #\Tab
-                                 #\Return #\Newline)))
+             (loop while (< position length)
+                   for character = (schar source position)
+                   while (or (char= character #\Space)
+                             (char= character #\Tab)
+                             (char= character #\Return)
+                             (char= character #\Newline))
                    do (incf position)))
            (expect (character)
              (unless (and (peek)
@@ -262,26 +294,33 @@
            (parse-string ()
              (expect #\")
              (let ((start position)
-                   (escaped-p nil))
+                   (escaped-p nil)
+                   (base-p t))
+               (declare (type fixnum start))
                (loop
-                 (let ((character (peek)))
-                   (unless character
-                     (fail "Unterminated string"))
+                 (when (>= position length)
+                   (fail "Unterminated string"))
+                 (let* ((character (schar source position))
+                        (code (char-code character)))
                    (cond
-                     ((char= character #\")
+                     ((= code #x22)
                       (let ((end position))
-                        (take)
+                        (incf position)
                         (return
                           (if escaped-p
                               (decode-escaped-string start end)
-                              (subseq source start end)))))
-                     ((< (char-code character) #x20)
+                              (copy-unescaped-json-string
+                               source start end base-p)))))
+                     ((< code #x20)
                       (fail "Unescaped control character"))
-                     ((char= character #\\)
+                     ((= code #x5c)
                       (setf escaped-p t)
-                      (take)
+                      (incf position)
                       (skip-string-escape))
-                     (t (take)))))))
+                     (t
+                      (when (> code 127)
+                        (setf base-p nil))
+                      (incf position)))))))
          (number-character-p (character)
            (and character
                 (find character
