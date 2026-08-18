@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P0: tic-tac-toe overlay visual board writes
+  each row to a stream instead of repeated `concatenate`.
+  Same-machine 80× render 54,372 B → 47,819 B / frame;
+  0.150 ms (timer step). `sleep 0.3` kept. No spinner.
+  FiveAM 19025→19032. G.17 still `missing`.
+
 - Goal 20 P0: custom-message fallback does not dump
   `:content` when a message renderer is registered.
   Move banners start collapsed.

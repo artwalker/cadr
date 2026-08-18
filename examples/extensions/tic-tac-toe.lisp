@@ -307,66 +307,69 @@ exactly that duplication."
                    collect (tic-tac-toe-cell-at board win-cells row column))))
       (loop for grid-row from 0 to 3
             do
-            (let ((row ""))
-              (loop for grid-column from 0 to 3
-                    do
-                    (setf row
-                          (concatenate
-                           'string row
-                           (paint
-                            (tic-tac-toe-corner-char grid-row grid-column)
-                            (tic-tac-toe-cursor-corner-p
-                             show-cursor-p cursor-row cursor-column
-                             grid-row grid-column)
-                            (tic-tac-toe-border-fg
-                             (adjacent-cells
-                              (list (list (1- grid-row) (1- grid-column))
-                                    (list (1- grid-row) grid-column)
-                                    (list grid-row (1- grid-column))
-                                    (list grid-row grid-column)))))))
-                    (when (< grid-column 3)
-                      (setf row
-                            (concatenate
-                             'string row
-                             (paint
-                              (make-string +tic-tac-toe-cell-width+
-                                           :initial-element #\BOX_DRAWINGS_LIGHT_HORIZONTAL)
-                              (tic-tac-toe-cursor-h-p
-                               show-cursor-p cursor-row cursor-column
-                               grid-row grid-column)
-                              (tic-tac-toe-border-fg
-                               (adjacent-cells
-                                (list (list (1- grid-row) grid-column)
-                                      (list grid-row grid-column)))))))))
-              (push (tic-tac-toe-center-pad row width) lines))
+            (push
+             (tic-tac-toe-center-pad
+              (with-output-to-string (out)
+                (loop for grid-column from 0 to 3
+                      do
+                      (write-string
+                       (paint
+                        (tic-tac-toe-corner-char grid-row grid-column)
+                        (tic-tac-toe-cursor-corner-p
+                         show-cursor-p cursor-row cursor-column
+                         grid-row grid-column)
+                        (tic-tac-toe-border-fg
+                         (adjacent-cells
+                          (list (list (1- grid-row) (1- grid-column))
+                                (list (1- grid-row) grid-column)
+                                (list grid-row (1- grid-column))
+                                (list grid-row grid-column)))))
+                       out)
+                      (when (< grid-column 3)
+                        (write-string
+                         (paint
+                          (make-string +tic-tac-toe-cell-width+
+                                       :initial-element
+                                       #\BOX_DRAWINGS_LIGHT_HORIZONTAL)
+                          (tic-tac-toe-cursor-h-p
+                           show-cursor-p cursor-row cursor-column
+                           grid-row grid-column)
+                          (tic-tac-toe-border-fg
+                           (adjacent-cells
+                            (list (list (1- grid-row) grid-column)
+                                  (list grid-row grid-column)))))
+                         out))))
+              width)
+             lines)
             (when (< grid-row 3)
               (loop for line-index below +tic-tac-toe-cell-height+
                     do
-                    (let ((row ""))
-                      (loop for grid-column from 0 to 3
-                            do
-                            (setf row
-                                  (concatenate
-                                   'string row
-                                   (paint
-                                    (string #\BOX_DRAWINGS_LIGHT_VERTICAL)
-                                    (tic-tac-toe-cursor-v-p
-                                     show-cursor-p cursor-row cursor-column
-                                     grid-row grid-column)
-                                    (tic-tac-toe-border-fg
-                                     (adjacent-cells
-                                      (list (list grid-row (1- grid-column))
-                                            (list grid-row grid-column)))))))
-                            (when (< grid-column 3)
-                              (setf row
-                                    (concatenate
-                                     'string row
-                                     (tic-tac-toe-build-cell
-                                      (aref board grid-row grid-column)
-                                      line-index
-                                      (tic-tac-toe-win-p
-                                       win-cells grid-row grid-column))))))
-                      (push (tic-tac-toe-center-pad row width) lines))))))
+                    (push
+                     (tic-tac-toe-center-pad
+                      (with-output-to-string (out)
+                        (loop for grid-column from 0 to 3
+                              do
+                              (write-string
+                               (paint
+                                (string #\BOX_DRAWINGS_LIGHT_VERTICAL)
+                                (tic-tac-toe-cursor-v-p
+                                 show-cursor-p cursor-row cursor-column
+                                 grid-row grid-column)
+                                (tic-tac-toe-border-fg
+                                 (adjacent-cells
+                                  (list (list grid-row (1- grid-column))
+                                        (list grid-row grid-column)))))
+                               out)
+                              (when (< grid-column 3)
+                                (write-string
+                                 (tic-tac-toe-build-cell
+                                  (aref board grid-row grid-column)
+                                  line-index
+                                  (tic-tac-toe-win-p
+                                   win-cells grid-row grid-column))
+                                 out))))
+                      width)
+                     lines)))))
     (nreverse lines)))
 
 (defmethod cadr-tui:component-render

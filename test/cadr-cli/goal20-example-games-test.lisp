@@ -341,6 +341,51 @@
                              (search (string #\LARGE_CIRCLE) line))
                            lines)))))))))
 
+(test goal20-ttt-overlay-render-has-no-lying-spinner
+  ;; P0 item 3: overlay frame tax is the visual board, not a fake
+  ;; spinner. sleep 0.3 stays on move_* (baseline).
+  (let ((source (goal20-example-source "examples/extensions/tic-tac-toe.lisp")))
+    (is (search "(sleep 0.3)" source))
+    (is (search "with-output-to-string" source)))
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target
+               (merge-pathnames "examples/extensions/tic-tac-toe.lisp" root))
+             (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        (let* ((bundles
+                 (cadr-agent::extension-snapshot-bundles
+                  (cadr-agent::extension-host-current-snapshot
+                   (cadr-cli::cli-extension-manager-host manager))))
+               (bundle
+                 (find-if
+                  (lambda (candidate)
+                    (find "tic_tac_toe"
+                          (cadr-agent::extension-bundle-tools candidate)
+                          :key #'cadr-agent::extension-tool-definition-name
+                          :test #'string=))
+                  bundles))
+               (package (cadr-agent::extension-bundle-package bundle))
+               (state
+                 (funcall (find-symbol "MAKE-TIC-TAC-TOE-STATE" package)))
+               (component
+                 (make-instance
+                  (find-symbol "TIC-TAC-TOE-BOARD-COMPONENT" package)
+                  :state state))
+               (joined
+                 (format
+                  nil "~{~A~%~}"
+                  (cadr-tui:component-render component 80))))
+          (is (search "Tic-Tac-Toe" joined))
+          (is (search (string #\BOX_DRAWINGS_LIGHT_HORIZONTAL) joined))
+          (is (null (search "spinner" joined :test #'char-equal)))
+          (is (null (search "thinking" joined :test #'char-equal))))))))
+
 (test goal20-hello-matches-baseline-contract
   (let ((source (goal20-example-source "examples/extensions/hello.lisp")))
     (is (search "A simple greeting tool" source))
