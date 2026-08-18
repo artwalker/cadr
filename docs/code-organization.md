@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122384 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122416 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -152,7 +152,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/providers/runtime-projection.lisp` | 297 | 17 | Project provider declarations into session-local auth, OAuth, model, and dispatch callbacks. | pass | done | +api-key-auth-strategy-table+. I0: one strategy set. | 20 |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 601 | 34 | Implement the deterministic faux provider, queued responses, and transcript serializer. | pass | done | faux-stream-block. I0: one emit skeleton. | 20 |
 | `src/cadr-ai/runtime/models.lisp` | 809 | 51 | Own mutable provider/model/auth state, refresh, lookup, and request dispatch. | pass · large | done | call-with-models-runtime-error. I0: one wrap. | 20 |
-| `src/cadr-ai/sse.lisp` | 136 | 6 | Parse Server-Sent Events from text or binary streams. | pass | no-rewrite | Sentinel read loop at :113-133 transcribes the WHATWG line protocol; field dispatch has one owner and failures signal typed errors. File-stream binary bodies batch with specialized READ-SEQUENCE; sockets stay on READ-BYTE so incremental SSE can flush. | 20 |
+| `src/cadr-ai/sse.lisp` | 168 | 7 | Parse Server-Sent Events from text or binary streams. | pass | no-rewrite | Sentinel read loop at :145-165 transcribes the WHATWG line protocol; field dispatch has one owner and failures signal typed errors. File-stream binary bodies batch with specialized READ-SEQUENCE; sockets stay on READ-BYTE so incremental SSE can flush. Common data/event/id prefixes take one payload SUBSEQ. | 20 |
 | `src/cadr-ai/support/grammar-coercion.lisp` | 279 | 15 | Coerce and validate grammar-tool JSON values against schemas. | pass | no-rewrite | string= type dispatch at :57-66/:80-121 is external JSON Schema vocabulary the baseline compares verbatim. | 20 |
 | `src/cadr-ai/support/overflow.lisp` | 78 | 5 | Classify context-overflow errors from status and usage evidence. | pass | no-rewrite | String fragment tables at :3-27 are provider wire error messages; case-insensitive substring match is the baseline heuristic. | 20 |
 | `src/cadr-ai/support/release.lisp` | 104 | 19 | Read the single version source and format the aligned release identity. | pass | no-rewrite | Format-built copy at :75-96 is byte-locked to baseline auth-guidance.ts with citations; wrappers implement the single-owner identity. | 20 |

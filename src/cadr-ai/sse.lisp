@@ -23,16 +23,48 @@
              :message (format nil "Invalid UTF-8 in SSE stream: ~A" cause)
              :cause cause))))
 
+(defun sse-field-value (line start)
+  (let ((len (length line)))
+    (cond
+      ((>= start len) "")
+      ((char= #\Space (char line start))
+       (if (>= (1+ start) len)
+           ""
+           (subseq line (1+ start))))
+      (t (subseq line start)))))
+
 (defun split-sse-field (line)
-  (let ((colon (position #\: line)))
-    (if colon
-        (values (subseq line 0 colon)
-                (let ((value (subseq line (1+ colon))))
-                  (if (and (plusp (length value))
-                           (char= #\Space (char value 0)))
-                      (subseq value 1)
-                      value)))
-        (values line ""))))
+  ;; Common "data: …" / "event:" / "id:" paths keep the field name
+  ;; literal and take one payload SUBSEQ.  Unknown fields keep the
+  ;; WHATWG first-colon split.
+  (let ((len (length line)))
+    (cond
+      ((and (>= len 5)
+            (char= #\d (char line 0))
+            (char= #\a (char line 1))
+            (char= #\t (char line 2))
+            (char= #\a (char line 3))
+            (char= #\: (char line 4)))
+       (values "data" (sse-field-value line 5)))
+      ((and (>= len 6)
+            (char= #\e (char line 0))
+            (char= #\v (char line 1))
+            (char= #\e (char line 2))
+            (char= #\n (char line 3))
+            (char= #\t (char line 4))
+            (char= #\: (char line 5)))
+       (values "event" (sse-field-value line 6)))
+      ((and (>= len 3)
+            (char= #\i (char line 0))
+            (char= #\d (char line 1))
+            (char= #\: (char line 2)))
+       (values "id" (sse-field-value line 3)))
+      (t
+       (let ((colon (position #\: line)))
+         (if colon
+             (values (subseq line 0 colon)
+                     (sse-field-value line (1+ colon)))
+             (values line "")))))))
 
 (defun join-sse-data-lines (lines)
   ;; Fixture events are one data line (394/394).  FORMAT always copied

@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.4: `split-sse-field` keeps `data`/`event`/`id`
+  literals and takes one payload `subseq`. Same-machine
+  stream-chat 6.004 ms / 3,415,114 B → 5.397 ms / 3,108,022 B;
+  SSE-only 2.500 ms / 1,970,208 B → 2.199 ms / 1,659,406 B.
+  G.17 still `missing`.
+
 - Goal 20 Part P.4: `read-sse-stream` joins a single data line
   without `format`. File-stream binary bodies use specialized
   `read-sequence`; sockets stay on `read-byte` so incremental
