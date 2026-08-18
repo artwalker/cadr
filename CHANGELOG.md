@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part K9: `cadr-cli` 54 rewrite files share one
+  owner each (flag table, hotkeys rows, OSC splice, gutter
+  walk, `:component` input, llama `:manual`, installer
+  `GIT:` case, optional-integer JSON null). Selectors not
+  merged. FiveAM 18841 → 18880.
+
 - Goal 20 Part K8: `cadr-tui` 29 rewrite files share one
   owner each (char/string walks, rebuild key dispatch,
   layout vectors, compiled scanners). Generated
