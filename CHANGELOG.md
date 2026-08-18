@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `feb2d5450` (non-quick, samples=5, enforced).
+  journal_append 1.93×→1.11×. cadr append 3676 µs
+  → 2800 µs. load 1.03×→1.01×, read 1.04×→1.18×.
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: journal_append emits message
   entries from typed structs. No EQUAL hash then
   stringify. Key order stays string< so JSONL

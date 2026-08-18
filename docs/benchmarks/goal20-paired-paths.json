@@ -1728,6 +1728,78 @@
         "journal_body_bytes=pi54771/cadr56531 (+3.2%)",
         "journal_key_divergences=10"
       ]
+    },
+    {
+      "recordedAt": "2026-08-18T22:41:11Z",
+      "label": "paired-paths",
+      "gitHead": "feb2d545059dcc4a4bb5466e1daba0bb63385c51",
+      "machine": "Friend-MachineD",
+      "quick": false,
+      "sameMachine": true,
+      "ratioGate": "enforced",
+      "samples": 5,
+      "metrics": {
+        "cli_dispatch.argv_parse": {
+          "cadrMedianUs": 5.924681,
+          "baselineMedianUs": 4.107883,
+          "ratio": 1.4422711162903128,
+          "ceiling": 3.0
+        },
+        "cli_dispatch.help_render": {
+          "cadrMedianUs": 4.417038,
+          "baselineMedianUs": 0.7395839999999999,
+          "ratio": 5.972327686915889,
+          "ceiling": 6.0
+        },
+        "cli_dispatch.list_models_registry": {
+          "cadrMedianUs": 2199.8927,
+          "baselineMedianUs": 4299.3044500000005,
+          "ratio": 0.5116857216287625,
+          "ceiling": 1.5
+        },
+        "cli_dispatch.list_models_render": {
+          "cadrMedianUs": 2202.8491599999998,
+          "baselineMedianUs": 1549.19739,
+          "ratio": 1.421929299790519,
+          "ceiling": 4.0
+        },
+        "provider_stream.stream_roundtrip": {
+          "cadrMedianUs": 3385.5190000000002,
+          "baselineMedianUs": 5564.591,
+          "ratio": 0.6084039240260425,
+          "ceiling": 2.5
+        },
+        "session_pipeline.session_load": {
+          "cadrMedianUs": 1983.6903333333332,
+          "baselineMedianUs": 1971.4446666666665,
+          "ratio": 1.006211519335905,
+          "ceiling": 9.0
+        },
+        "session_pipeline.context_walk": {
+          "cadrMedianUs": 124.53214,
+          "baselineMedianUs": 111.80485999999999,
+          "ratio": 1.1138347653223661,
+          "ceiling": 2.0
+        },
+        "storage_journal.journal_read": {
+          "cadrMedianUs": 1947.7633999999998,
+          "baselineMedianUs": 1644.9986000000001,
+          "ratio": 1.184051706791726,
+          "ceiling": 8.0
+        },
+        "storage_journal.journal_append": {
+          "cadrMedianUs": 2799.7213333333334,
+          "baselineMedianUs": 2530.3963333333336,
+          "ratio": 1.1064358956152982,
+          "ceiling": 12.0
+        }
+      },
+      "notes": [
+        "known_divergence:event_kind:toolcall_delta=pi6/cadr5",
+        "help_characters=pi9864/cadr9882",
+        "journal_body_bytes=pi54771/cadr56531 (+3.2%)",
+        "journal_key_divergences=10"
+      ]
     }
   ]
 }
