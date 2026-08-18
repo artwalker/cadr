@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,349 lines**
+Denominator: **295 files / 122,384 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 20,843 | 17.0% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 20,878 | 17.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,031 | 76.9% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,031 | 76.8% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 17.0% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 23.1% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 76.9% of lines.
+- **Falsifiable vs baseline:** 17.1% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 23.2% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 76.8% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -344,7 +344,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-ai/json.lisp` | 638 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
-| `src/cadr-ai/sse.lisp` | 101 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/sse.lisp` | 136 | `provider_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 744 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 319 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.4: `read-sse-stream` joins a single data line
+  without `format`. File-stream binary bodies use specialized
+  `read-sequence`; sockets stay on `read-byte` so incremental
+  SSE can flush (NATIVE-HTTP). Same-machine stream-chat
+  6.398 ms / 3,750,979 B → 6.004 ms / 3,415,114 B; SSE-only
+  2.899 ms / 2,327,510 B → 2.500 ms / 1,970,208 B. G.17
+  still `missing`.
+
 - Goal 20 Part P draft: this-host stream 5.400 ms / 3.75 MB;
   key-to-overlay 0.100 ms; restart FiveAM 14/14. Advisor
   vetoed G.17 `met` (`c53e13c47`). G.17 is `missing`. P.4

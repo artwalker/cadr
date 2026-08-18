@@ -34,7 +34,28 @@
                       value)))
         (values line ""))))
 
+(defun join-sse-data-lines (lines)
+  ;; Fixture events are one data line (394/394).  FORMAT always copied
+  ;; that string; the single-line path returns it.  Multi-line stays
+  ;; newline-joined (WHATWG / sse-framing-handles-comments-crlf-*).
+  (cond
+    ((null lines) "")
+    ((null (rest lines)) (first lines))
+    (t
+     (with-output-to-string (out)
+       (loop for (line . more) on (nreverse lines)
+             do (write-string line out)
+                (when more (write-char #\Newline out)))))))
+
 (defun read-sse-stream (stream consumer)
+  ;; stream_roundtrip this host: 5.400 ms / 3.75 MB.  SSE-only is
+  ;; 2.33 MB of that.  FILE-STREAM binary bodies use READ-SEQUENCE
+  ;; into a specialized octet chunk (not a runtime-typed array —
+  ;; that draft was 15 ms).  Socket / gray bodies stay on
+  ;; READ-BYTE: SBCL READ-SEQUENCE waits for the whole chunk, which
+  ;; deadlocks incremental SSE (NATIVE-HTTP waits to emit event 2
+  ;; until event 1 is consumed).  Character streams keep the unit
+  ;; loop for FiveAM.
   (let* ((binary-p (binary-stream-p stream))
          (buffer (make-array 128
                              :element-type (if binary-p
@@ -53,8 +74,7 @@
                  (funcall consumer
                           (make-sse-event
                            :event event-name
-                           :data (format nil "~{~A~^~%~}"
-                                         (nreverse data-lines))
+                           :data (join-sse-data-lines data-lines)
                            :id event-id)))
                (setf event-name nil
                      data-lines nil
@@ -84,17 +104,32 @@
                         ((string= field "id")
                          (setf event-id value
                                saw-field-p t))))))))
-             (read-unit ()
-               (if binary-p
-                   (read-byte stream nil :eof)
-                   (read-char stream nil :eof))))
-      (loop for unit = (read-unit)
-            until (eq unit :eof)
-            do (if (if binary-p
-                       (= unit 10)
-                       (char= unit #\Newline))
+             (consume-binary-unit (unit)
+               (if (= unit 10)
                    (process-line)
-                   (vector-push-extend unit buffer)))
+                   (vector-push-extend unit buffer))))
+      (cond
+        ((and binary-p (typep stream 'file-stream))
+         (let ((chunk (make-array 8192 :element-type '(unsigned-byte 8))))
+           (declare (type (simple-array (unsigned-byte 8) (*)) chunk))
+           (loop
+             (let ((count (read-sequence chunk stream)))
+               (declare (type fixnum count))
+               (when (zerop count)
+                 (return))
+               (loop for index of-type fixnum from 0 below count
+                     do (consume-binary-unit
+                         (aref chunk index)))))))
+        (binary-p
+         (loop for unit = (read-byte stream nil :eof)
+               until (eq unit :eof)
+               do (consume-binary-unit unit)))
+        (t
+         (loop for unit = (read-char stream nil :eof)
+               until (eq unit :eof)
+               do (if (char= unit #\Newline)
+                      (process-line)
+                      (vector-push-extend unit buffer)))))
       (when (plusp (length buffer))
         (process-line))
       (flush-event)))
