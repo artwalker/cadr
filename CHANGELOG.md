@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `a7013eb1a` (non-quick, samples=5, enforced).
+  session_load 2.02×→1.74×, journal_read 1.46×→1.72×.
+  cadr load 3127 µs → 3037 µs, read 2589 µs → 2562 µs.
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: session ISO-8601 timestamps of the
   form `YYYY-MM-DDTHH:MM:SS.sssZ` parse digits in place.
   No SUBSEQ/CONCATENATE per entry. Pairing fixture
