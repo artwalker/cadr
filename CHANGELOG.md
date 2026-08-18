@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `eee817672` (non-quick, samples=5, enforced).
+  session_load 3.02×→2.37×, journal_read 2.07×→2.00×.
+  cadr load 4781 µs → 4356 µs. RATIO_CEILINGS unchanged.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: v3 nested `message` / `usage` /
   `cost` walk into `session-json-message` + typed
   usage/cost. No EQUAL hash for those envelopes.
