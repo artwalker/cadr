@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `882b49595` (non-quick, samples=5, enforced).
+  session_load 2.83×→2.96×, journal_read 2.24×→2.14×.
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: PARSE-STRING scan no longer tracks
   ASCII/unicode per character; `base-p` is decided only
   when COPY-UNESCAPED runs. Pairing fixture parse
