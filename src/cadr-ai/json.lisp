@@ -333,7 +333,8 @@
         (10 (when (val= "toolResult") "toolResult"))
         (18 (when (val= "openai-completions") "openai-completions"))))))
 
-(defun parse-json-source (source &optional object-visitor nest)
+(defun parse-json-source
+    (source &optional object-visitor nest (start 0) end)
   ;; Cost center for session_load / journal_read
   ;; (docs/benchmarks/goal20-part-o-remaining-sprof.md).  CHAR on a
   ;; general STRING and MEMBER whitespace checks show up as generic
@@ -344,14 +345,14 @@
   ;; and does not allocate that EQUAL hash.  NEST, when set, is
   ;; (KEY) → (VALUES visitor finish): a nested `{` is walked the
   ;; same way and FINISH produces the field value (session message /
-  ;; usage).  Other nested objects stay hash tables.  Not intern.
-  ;; Not 7b.
+  ;; usage).  Other nested objects stay hash tables.  START/END let
+  ;; session JSONL parse a reused line buffer.  Not intern.  Not 7b.
   (let* ((source
            (if (simple-string-p source)
                source
                (coerce source 'simple-string)))
-         (position 0)
-         (length (length source))
+         (position start)
+         (length (or end (length source)))
          (string-buffer nil))
     (declare (type simple-string source)
              (type fixnum position length))
@@ -771,15 +772,16 @@
                 (fail "Expected JSON object"))
             value))))))
 
-(defun parse-json-object-fields (source visitor &optional nest)
+(defun parse-json-object-fields
+    (source visitor &optional nest (start 0) end)
   ;; Top-level object only: each key/value is handed to VISITOR.
   ;; No EQUAL hash for that object.  NEST optionally walks named
   ;; nested objects the same way (session message / usage / cost).
   ;; Other nested values still parse as hash tables / vectors.
   ;; NEST may also return kind :array to walk a JSON array of
   ;; objects (session content blocks).  Public PARSE-JSON is
-  ;; unchanged.
-  (parse-json-source source visitor nest))
+  ;; unchanged.  START/END parse a reused line buffer.
+  (parse-json-source source visitor nest start end))
 
 (defun parse-json (source)
   (parse-json-source source))

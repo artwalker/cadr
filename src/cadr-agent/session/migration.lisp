@@ -91,7 +91,7 @@
        (when (string= key "retainedTail")
          (setf (session-entry-retained-tail entry) value))))))
 
-(defun parse-session-record (line)
+(defun parse-session-record (line &optional (start 0) end)
   (let ((entry (make-session-entry)))
     (labels
         ((usage-or-hash (value)
@@ -398,14 +398,17 @@
        line
        (lambda (key value)
          (session-record-put entry key value))
-       #'nest))
+       #'nest
+       start
+       end))
     entry))
 
-(defun parse-session-line (line path line-number &key raw-hash-p)
+(defun parse-session-line
+    (line path line-number &key raw-hash-p (start 0) end)
   (handler-case
       (if raw-hash-p
-          (cadr-ai::parse-json line)
-          (parse-session-record line))
+          (cadr-ai::parse-json-source line nil nil start end)
+          (parse-session-record line start end))
     (error (cause)
       (session-failure
        path line-number
@@ -431,53 +434,156 @@
   object)
 
 (defun read-session-objects (path)
+  ;; Pairing counterpart of Node 1MiB readSync: one octet
+  ;; READ-SEQUENCE per chunk, then split on LF.  Files that
+  ;; fit the cap are one exact-size read.  ASCII lines reuse
+  ;; one simple-base-string and parse a START/END window.
+  ;; JSONL newlines are UTF-8 boundaries.  Not intern.  Not 7b.
   (let ((objects nil)
         (line-number 0)
         (header nil)
-        (raw-hash-p t))
-    (handler-case
-        (with-open-file
-            (stream path
-                    :direction :input
-                    :external-format :utf-8)
-          (loop
-            (multiple-value-bind (line missing-newline-p)
-                (read-line stream nil :eof)
-              (declare (ignore missing-newline-p))
-              (when (eq line :eof)
-                (return))
-              (incf line-number)
-              (unless
-                  (zerop
-                   (length
-                    (string-trim
-                     '(#\Space #\Tab
-                       #\Newline #\Return)
-                     line)))
-                (let ((object
-                        (handler-case
-                            (parse-session-line
-                             line path line-number
-                             :raw-hash-p raw-hash-p)
-                          (session-error () nil))))
-                  (when object
-                    (unless header
-                      (setf header object)
-                      (setf raw-hash-p
-                            (let ((version
-                                    (cadr-ai::json-get
-                                     object "version" 1)))
-                              (or (not (integerp version))
-                                  (< version 3)))))
-                    (push object objects)))))))
-      (session-error (condition)
-        (error condition))
-      (error (cause)
-        (session-failure
-         path line-number "Cannot load session: ~A" cause)))
-    (unless objects
-      (session-failure path 1 "Session file has no header"))
-    (nreverse objects)))
+        (raw-hash-p t)
+        (ascii-cap 256)
+        (ascii-buf (make-string 256 :element-type 'base-char)))
+    (labels
+        ((blank-octets-p (octets start end)
+           (loop for index from start below end
+                 for unit = (aref octets index)
+                 always
+                 (or (= unit 32)
+                     (= unit 9)
+                     (= unit 13)
+                     (= unit 10))))
+         (ensure-ascii-buf (count)
+           (declare (type fixnum count))
+           (when (> count ascii-cap)
+             (setf ascii-cap (max count (* ascii-cap 2)))
+             (setf ascii-buf
+                   (make-string ascii-cap :element-type 'base-char)))
+           ascii-buf)
+         (consume-line (octets start end)
+           (incf line-number)
+           (unless (blank-octets-p octets start end)
+             (let ((count (- end start))
+                   (line nil)
+                   (line-end 0))
+               (declare (type fixnum count line-end))
+               (setf line (ensure-ascii-buf count)
+                     line-end count)
+               (loop for index of-type fixnum from start below end
+                     for offset of-type fixnum from 0
+                     for unit of-type (unsigned-byte 8)
+                       = (aref octets index)
+                     do
+                     (cond
+                       ((>= unit 128)
+                        (setf line
+                              (sb-ext:octets-to-string
+                               octets
+                               :external-format :utf-8
+                               :start start
+                               :end end))
+                        (setf line-end (length line))
+                        (return))
+                       (t
+                        (setf (schar line offset)
+                              (code-char unit)))))
+               (let ((object
+                       (handler-case
+                           (parse-session-line
+                            line path line-number
+                            :raw-hash-p raw-hash-p
+                            :start 0
+                            :end line-end)
+                         (session-error () nil))))
+                 (when object
+                   (unless header
+                     (setf header object)
+                     (setf raw-hash-p
+                           (let ((version
+                                   (cadr-ai::json-get
+                                    object "version" 1)))
+                             (or (not (integerp version))
+                                 (< version 3)))))
+                   (push object objects))))))
+         (scan-buffer (buffer count pending)
+           (let ((start 0))
+             (declare (type fixnum start count))
+             (loop for index of-type fixnum from 0 below count
+                   do
+                   (when (= (aref buffer index) 10)
+                     (cond
+                       ((or (null pending)
+                            (zerop (fill-pointer pending)))
+                        (consume-line buffer start index))
+                       (t
+                        (loop for copy of-type fixnum
+                              from start below index
+                              do (vector-push-extend
+                                  (aref buffer copy) pending))
+                        (consume-line
+                         pending 0 (fill-pointer pending))
+                        (setf (fill-pointer pending) 0)))
+                     (setf start (1+ index))))
+             (cond
+               ((null pending)
+                (when (< start count)
+                  (consume-line buffer start count)))
+               (t
+                (loop for copy of-type fixnum
+                      from start below count
+                      do (vector-push-extend
+                          (aref buffer copy) pending))))))
+         (read-all (stream)
+           (let* ((known (ignore-errors (file-length stream)))
+                  (cap +max-session-header-scan-bytes+))
+             (cond
+               ((and (integerp known) (<= known cap))
+                (let* ((size (max known 0))
+                       (chunk
+                         (make-array
+                          size
+                          :element-type '(unsigned-byte 8))))
+                  (when (plusp size)
+                    (scan-buffer
+                     chunk (read-sequence chunk stream) nil))))
+               (t
+                (let ((chunk
+                        (make-array
+                         cap
+                         :element-type '(unsigned-byte 8)))
+                      (pending
+                        (make-array
+                         256
+                         :element-type '(unsigned-byte 8)
+                         :adjustable t
+                         :fill-pointer 0)))
+                  (loop
+                    (let ((count (read-sequence chunk stream)))
+                      (declare (type fixnum count))
+                      (cond
+                        ((zerop count)
+                         (when (plusp (fill-pointer pending))
+                           (consume-line
+                            pending 0 (fill-pointer pending)))
+                         (return))
+                        (t
+                         (scan-buffer
+                          chunk count pending)))))))))))
+      (handler-case
+          (with-open-file
+              (stream path
+                      :direction :input
+                      :element-type '(unsigned-byte 8))
+            (read-all stream))
+        (session-error (condition)
+          (error condition))
+        (error (cause)
+          (session-failure
+           path line-number "Cannot load session: ~A" cause)))
+      (unless objects
+        (session-failure path 1 "Session file has no header"))
+      (nreverse objects))))
 
 (defun migrate-v1-session-objects (objects)
   (let ((by-id (make-hash-table :test #'equal))

@@ -505,3 +505,33 @@
              '("hi" "ok")
              (message-texts
               (cadr-agent:session-messages loaded))))))))
+
+(test session-v3-block-read-accepts-missing-final-newline
+  ;; read-session-objects splits 1MiB octet chunks on LF.  A last
+  ;; line without newline must still parse.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let ((path (merge-pathnames "no-nl.jsonl" sessions))
+          (canonical (cadr-agent::canonical-session-cwd cwd)))
+      (with-open-file
+          (stream path
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (format
+         stream
+         "{\"type\":\"session\",\"version\":3,\"id\":\"nolf\",\"timestamp\":1,\"cwd\":\"~A\"}~%"
+         canonical)
+        (write-string
+         "{\"type\":\"message\",\"id\":\"one\",\"parentId\":null,\"timestamp\":2,\"message\":{\"role\":\"user\",\"content\":\"tail\",\"timestamp\":2}}"
+         stream))
+      (let ((objects (cadr-agent::read-session-objects path))
+            (loaded (cadr-agent:load-session path)))
+        (is (= 2 (length objects)))
+        (is (hash-table-p (first objects)))
+        (is (cadr-agent::session-entry-p (second objects)))
+        (is (equal
+             '("tail")
+             (message-texts
+              (cadr-agent:session-messages loaded))))))))

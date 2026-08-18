@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: session JSONL is one exact-size octet
+  `READ-SEQUENCE` (1MiB cap) then LF split. ASCII lines
+  reuse a simple-base-string and parse a START/END window.
+  Session file bytes unchanged. Pairing fixture
+  journal_read 1,942,410 B → 1,571,942 B; load-session
+  2,182,371 B → 1,816,608 B. Wall unchanged. Not intern.
+  Not 7b. Identity 123579→123687. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `67cdb71fa` (non-quick, samples=5, enforced).
   session_load 2.48×→2.15×, journal_read 2.41×→2.22×.

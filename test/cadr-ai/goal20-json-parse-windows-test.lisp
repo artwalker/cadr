@@ -239,6 +239,13 @@
      (lambda (key value)
        (declare (ignore key value))))))
 
+(test goal20-json-source-window-ignores-trailing-bytes
+  ;; Reused session line buffers are longer than the line.
+  (let ((source "123TRAIL"))
+    (is (eql 123 (cadr-ai::parse-json-source source nil nil 0 3)))
+    (signals cadr-ai::json-parse-error
+      (cadr-ai::parse-json-source source nil nil 0 8))))
+
 (test goal20-json-object-pairs-round-trip
   ;; Session tool-call arguments: tagged pairs, not EQUAL hash.
   (let ((pairs (list* :json-object (list "path" "x" "offset" 1))))
