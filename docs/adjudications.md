@@ -341,3 +341,64 @@ require a new pairing harness or a per-file wall-clock pair.
 K reports that used FiveAM without naming the H class are incomplete
 on the mark, not incomplete on the rewrite. Part G's matrix records
 the mark; it does not re-bench 148 files.
+
+## 2026-08-18 — Part E: no batch 3; classify leftovers
+
+**Ruled**: advisor, after the user delegated the G.10 product call.
+User veto remains.
+
+**Decided**: do **not** open a Part E batch 3 of remaining PTY
+scenarios in Goal 20. The 23 already-captured surfaces (Part D games
+plus batches 1–2) stay. Every remaining `examples/extensions/` entry
+must leave the weasel word "later batches" and land in one of:
+
+- `pty` — already has a render-diff scenario id
+- `suite-lock` — observable surface is registration / load; evidence
+  is `goal12-ported-extension-registrations-cover-the-baseline-surface`
+  and `goal12-ported-extension-entrypoints-load-without-diagnostics`
+  (`source-parity.md` SP-F1 already published that 51 rows have no
+  per-row behavior gate)
+- `blocked` — cannot differential on this host. Accepted blocked set:
+  `rpc-demo` (RPC mode, not TUI), `doom-overlay` (needs a WAD fixture),
+  `ssh` (real network), `github-issue-autocomplete` (real network),
+  `mac-system-theme` (not this host's contract)
+
+Do not invent "intentional difference" for a newly found defect. Do
+not silently skip. User A/B on the captured set remains a Goal 20
+closeout gate, not this cell.
+
+**Why it was decidable**: draft §5 forbids shrinking by batching, but
+G.10's required artifact is a conclusion per entry, not a PTY for
+every entry. Batch 0 already named surfaces; D+20 already found the
+hello / event-bus / overlay / header / commands class of bugs. Forty
+more PTY scenarios is a new goal. SP-F1 already told the truth about
+suite-lock. Replacing "later batches" with `pty` / `suite-lock` /
+`blocked` is the closeout; another capture wave is not.
+
+## 2026-08-18 — Part O: blocked closeout; no 7f without a proposal
+
+**Ruled**: advisor, after the user delegated the G.16 product call.
+User veto remains.
+
+**Decided**: Goal 20 Part O closes as **blocked**, not as ratio ≤ 1.0.
+Do not run a fifth locked probe. Do not lower `RATIO_CEILINGS` in the
+same breath. Do not take a third-party JSON library, drop `safety`, or
+change the session file format without a written proposal and a later
+user/advisor pass.
+
+Booked same-machine non-quick ratios (`docs/performance.md`, git
+`400dbadf4`): append 2.21×, read 3.93×, load 4.28×,
+`list_models_render` 3.18×. Locked probes: 7a shipped (`6211fff2f`,
+append 8.45× → 2.15×); 7b abandoned (read 5.42× → 6.20×); 7c skipped
+(append 1.90× on `6211fff2f`, below the "> 2×" trigger); 7d abandoned
+(render 2.74× → 2.97×). Remaining heat after sprof (`5f7c96750`):
+`parse-json` PEEK/PARSE-STRING on read/load; per-sample mkdir +
+stringify on append; registry/FS on `list_models_render`, not table
+`format`. 12C-3 (`dacebac5e`) already spent the post-sprof JSON
+inline proposal.
+
+**Why it was decidable**: draft §10-annex item 7 is the exit — probes
+exhausted and still > 1.0 → blocked with what was tried. Item 3
+forbids the next real win (a JSON library or a format change) without
+a proposal. Re-running 7a–7d is theatre. A later goal may take the
+parser; this goal records the gap.
