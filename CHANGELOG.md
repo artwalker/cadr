@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.2: `terminating-rational-json-text` writes digits
+  once instead of a padded copy plus four concatenate/subseq results.
+  Same-machine median 210 ns → 170 ns / call. Own commit.
+
 - Goal 20 Part P.2: `write-json-string` emits unescaped spans with
   one `write-string` instead of per-character `write-char`. Same-machine
   session-object stringify median 6596 ns → 5636 ns (40×515;

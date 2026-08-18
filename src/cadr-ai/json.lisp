@@ -495,6 +495,10 @@
         finally (return (values count value))))
 
 (defun terminating-rational-json-text (value)
+  ;; Integers use PRINC.  This path is only non-integer rationals whose
+  ;; denominator is 2^a*5^b, so SCALE >= 1 and the integer part is at
+  ;; least "0".  Write the digits once instead of building a padded
+  ;; copy plus four SUBSEQ/CONCATENATE results.
   (let ((negative-p (minusp value))
         (numerator (abs (numerator value)))
         (denominator (denominator value)))
@@ -512,23 +516,31 @@
                     (expt 2 (- scale twos))
                     (expt 5 (- scale fives))))
                (digits (write-to-string scaled))
+               (digit-length (length digits))
                (padding
                  (max 0
                       (- (1+ scale)
-                         (length digits))))
-               (padded
-                 (concatenate
-                  'string
-                  (make-string padding
-                               :initial-element #\0)
-                  digits))
-               (split (- (length padded) scale)))
-          (concatenate
-           'string
-           (if negative-p "-" "")
-           (subseq padded 0 split)
-           "."
-           (subseq padded split)))))))
+                         digit-length)))
+               (split (- (+ padding digit-length) scale)))
+          (declare (type fixnum scale digit-length padding split))
+          (with-output-to-string (out)
+            (when negative-p
+              (write-char #\- out))
+            (cond
+              ((plusp split)
+               (if (zerop padding)
+                   (write-string digits out :end split)
+                   (write-char #\0 out)))
+              (t
+               (write-char #\0 out)))
+            (write-char #\. out)
+            (when (plusp padding)
+              (dotimes (index (1- padding))
+                (write-char #\0 out))
+              (write-string digits out))
+            (when (and (zerop padding)
+                       (< split digit-length))
+              (write-string digits out :start split))))))))
 
 (defun write-json-value (value stream)
   (cond

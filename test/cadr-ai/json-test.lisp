@@ -59,6 +59,12 @@
     (is (string=
          "0.0125"
          (cadr-ai::stringify-json fraction)))
+    (is (string=
+         "0.05"
+         (cadr-ai::stringify-json 1/20)))
+    (is (string=
+         "-1.25"
+         (cadr-ai::stringify-json -5/4)))
     (is (= large
            (cadr-ai::parse-json
             (cadr-ai::stringify-json large))))))
