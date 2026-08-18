@@ -291,16 +291,16 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 125,610 lines**
+Denominator: **295 files / 125,692 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 24,014 | 19.1% | `no worse than baseline` is falsifiable |
-| `unpairable` | 24 | 7,475 | 6.0% | single reference vs previous cadr |
+| `paired` | 35 | 24,096 | 19.2% | `no worse than baseline` is falsifiable |
+| `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `pairable-uncovered` | 236 | 94,121 | 74.9% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 19.1% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 19.2% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 25.1% of lines.
 - **K-blocked** until a new pair or a booked unpairable finding: 74.9% of lines.
 
@@ -346,7 +346,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 291 | `provider_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 744 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
-| `src/cadr-cli/bootstrap/main.lisp` | 327 | `cli_dispatch.list_models_render` |
+| `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/state.lisp` | 302 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `print-cli-models` writes token counts and
+  provider names from model slots. No per-model
+  `format-list-models-token-count` / `string-downcase` /
+  six-cell list. Table bytes stay the baseline. this-host
+  2178 µs / 1,717,788 B → 2197 µs / 1,691,678 B. Wall did
+  not move hundreds of µs; no Friend-MachineD remesure.
+  Not intern. Not FFI. Identity 125610→125692. FiveAM
+  19232→19240. G.17 still `missing`.
+
 - Goal 20 Part P: this-host `list_models_render` of
   `9065ffe30` (pairing fixture pattern `goal20`, broadcast
   sink) 2178 µs / 1,717,788 B. Pairing cadr last booked

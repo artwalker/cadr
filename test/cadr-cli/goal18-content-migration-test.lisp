@@ -184,6 +184,22 @@
                  cadr-cli::+extensions-doc-url+)
          (get-output-stream-string output)))))
 
+(test list-models-token-count-writer-matches-baseline-strings
+  ;; Shipped writer must keep formatTokenCount bytes without FORMAT.
+  (dolist (pair '((0 . "0")
+                  (1 . "1")
+                  (999 . "999")
+                  (1000 . "1K")
+                  (1500 . "1.5K")
+                  (384000 . "384K")
+                  (1000000 . "1M")
+                  (1500000 . "1.5M")))
+    (is (string=
+         (cdr pair)
+         (with-output-to-string (stream)
+           (cadr-cli::write-list-models-token-count
+            stream (car pair)))))))
+
 (test goal18-list-models-prints-the-baseline-table
   (with-test-directory (directory)
     (goal18-with-agent-dir

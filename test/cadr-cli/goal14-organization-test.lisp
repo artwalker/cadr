@@ -420,7 +420,11 @@
     ;; +4 goal 20 K9: +hotkeys-markdown-sections+ (sessions),
     ;; +settings-fallback-keys+ (settings), apply-input-or-queue
     ;; (prompt-bash), rpc-dialog-request-object (rpc/ui).
-    (is (= 128 definition-count)
+    ;; +6 Goal 20 list_models column slots: write-unsigned-decimal,
+    ;; unsigned-decimal-length, list-models-token-scale,
+    ;; write-list-models-token-count, list-models-token-count-length,
+    ;; write-ascii-downcase.
+    (is (= 134 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

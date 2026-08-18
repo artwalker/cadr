@@ -1,22 +1,68 @@
 (in-package #:cadr-cli)
 
+(defun write-unsigned-decimal (stream value)
+  (cond
+    ((< value 10)
+     (write-char (code-char (+ 48 value)) stream))
+    (t
+     (multiple-value-bind (quotient remainder)
+         (truncate value 10)
+       (write-unsigned-decimal stream quotient)
+       (write-char (code-char (+ 48 remainder)) stream)))))
+
+(defun unsigned-decimal-length (value)
+  (loop for n = value then (floor n 10)
+        for length from 1
+        until (< n 10)
+        finally (return length)))
+
+(defun list-models-token-scale (count)
+  (cond
+    ((>= count 1000000) (values 1000000 #\M))
+    ((>= count 1000) (values 1000 #\K))
+    (t (values 1 nil))))
+
+(defun write-list-models-token-count (stream count)
+  ;; Same bytes as format-list-models-token-count, no FORMAT.
+  (multiple-value-bind (scale suffix)
+      (list-models-token-scale count)
+    (cond
+      ((null suffix)
+       (write-unsigned-decimal stream count))
+      ((zerop (mod count scale))
+       (write-unsigned-decimal stream (truncate count scale))
+       (write-char suffix stream))
+      (t
+       (let ((tenths (round (* count 10) scale)))
+         (multiple-value-bind (whole frac)
+             (truncate tenths 10)
+           (write-unsigned-decimal stream whole)
+           (write-char #\. stream)
+           (write-char (code-char (+ 48 frac)) stream)
+           (write-char suffix stream)))))))
+
+(defun list-models-token-count-length (count)
+  (multiple-value-bind (scale suffix)
+      (list-models-token-scale count)
+    (cond
+      ((null suffix)
+       (unsigned-decimal-length count))
+      ((zerop (mod count scale))
+       (1+ (unsigned-decimal-length (truncate count scale))))
+      (t
+       (let ((tenths (round (* count 10) scale)))
+         (multiple-value-bind (whole)
+             (truncate tenths 10)
+           (+ 3 (unsigned-decimal-length whole))))))))
+
 (defun format-list-models-token-count (count)
   ;; Baseline cli/list-models.ts:9-22 formatTokenCount.
-  (cond
-    ((>= count 1000000)
-     (multiple-value-bind (millions remainder)
-         (floor count 1000000)
-       (if (zerop remainder)
-           (format nil "~DM" millions)
-           (format nil "~,1FM" (/ count 1000000d0)))))
-    ((>= count 1000)
-     (multiple-value-bind (thousands remainder)
-         (floor count 1000)
-       (if (zerop remainder)
-           (format nil "~DK" thousands)
-           (format nil "~,1FK" (/ count 1000d0)))))
-    (t
-     (format nil "~D" count))))
+  (with-output-to-string (stream)
+    (write-list-models-token-count stream count)))
+
+(defun write-ascii-downcase (stream string)
+  (loop for char across string
+        do (write-char (char-downcase char) stream)))
 
 (defun no-models-available-message ()
   ;; Baseline core/auth-guidance.ts formatNoModelsAvailableMessage.
@@ -74,68 +120,104 @@
              models
              (lambda (left right)
                (let ((left-provider
-                       (string-downcase
-                        (symbol-name
-                         (cadr-ai:model-provider left))))
+                       (symbol-name
+                        (cadr-ai:model-provider left)))
                      (right-provider
-                       (string-downcase
-                        (symbol-name
-                         (cadr-ai:model-provider right)))))
-                 (if (string= left-provider right-provider)
+                       (symbol-name
+                        (cadr-ai:model-provider right))))
+                 (if (string-equal left-provider right-provider)
                      (string<
                       (cadr-ai:model-id left)
                       (cadr-ai:model-id right))
-                     (string< left-provider right-provider))))))
-      (let* ((rows
-               (mapcar
-                (lambda (model)
-                  (list
-                   (string-downcase
-                    (symbol-name
-                     (cadr-ai:model-provider model)))
-                   (cadr-ai:model-id model)
-                   (format-list-models-token-count
-                    (cadr-ai:model-context-window model))
-                   (format-list-models-token-count
-                    (cadr-ai:model-max-tokens model))
-                   (if (cadr-ai:model-reasoning-p model)
-                       "yes"
-                       "no")
-                   (if (cadr-ai:model-supports-images-p model)
-                       "yes"
-                       "no")))
-                models))
-             (headers
-               (list "provider" "model" "context"
-                     "max-out" "thinking" "images"))
-             (widths
-               (loop for column from 0 below 6
-                     collect
-                     (reduce
-                      #'max
-                      (mapcar
-                       (lambda (row)
-                         (length (nth column row)))
-                       rows)
-                      :initial-value
-                      (length (nth column headers)))))
-             (table
-               (with-output-to-string (buffer)
-                 (flet ((emit-row (cells)
-                          (loop for cell in cells
-                                for width in widths
-                                for first-p = t then nil
-                                do
-                                (unless first-p
-                                  (write-string "  " buffer))
-                                (write-string cell buffer)
-                                (loop repeat
-                                      (- width (length cell))
-                                      do (write-char #\Space buffer)))
-                          (write-char #\Newline buffer)))
-                   (emit-row headers)
-                   (dolist (row rows)
-                     (emit-row row))))))
+                     (string-lessp left-provider right-provider))))))
+      (let* ((width-provider (length "provider"))
+             (width-model (length "model"))
+             (width-context (length "context"))
+             (width-max-out (length "max-out"))
+             (width-thinking (length "thinking"))
+             (width-images (length "images"))
+             (table nil))
+        (dolist (model models)
+          (setf width-provider
+                (max width-provider
+                     (length
+                      (symbol-name
+                       (cadr-ai:model-provider model))))
+                width-model
+                (max width-model
+                     (length (cadr-ai:model-id model)))
+                width-context
+                (max width-context
+                     (list-models-token-count-length
+                      (cadr-ai:model-context-window model)))
+                width-max-out
+                (max width-max-out
+                     (list-models-token-count-length
+                      (cadr-ai:model-max-tokens model)))))
+        (setf table
+              (with-output-to-string (buffer)
+                (flet ((pad (used width)
+                         (loop repeat (- width used)
+                               do (write-char #\Space buffer)))
+                       (gap ()
+                         (write-string "  " buffer)))
+                  (write-string "provider" buffer)
+                  (pad 8 width-provider)
+                  (gap)
+                  (write-string "model" buffer)
+                  (pad 5 width-model)
+                  (gap)
+                  (write-string "context" buffer)
+                  (pad 7 width-context)
+                  (gap)
+                  (write-string "max-out" buffer)
+                  (pad 7 width-max-out)
+                  (gap)
+                  (write-string "thinking" buffer)
+                  (pad 8 width-thinking)
+                  (gap)
+                  (write-string "images" buffer)
+                  (pad 6 width-images)
+                  (write-char #\Newline buffer)
+                  (dolist (model models)
+                    (let* ((provider
+                             (symbol-name
+                              (cadr-ai:model-provider model)))
+                           (id (cadr-ai:model-id model))
+                           (context
+                             (cadr-ai:model-context-window model))
+                           (max-out
+                             (cadr-ai:model-max-tokens model)))
+                      (write-ascii-downcase buffer provider)
+                      (pad (length provider) width-provider)
+                      (gap)
+                      (write-string id buffer)
+                      (pad (length id) width-model)
+                      (gap)
+                      (write-list-models-token-count buffer context)
+                      (pad
+                       (list-models-token-count-length context)
+                       width-context)
+                      (gap)
+                      (write-list-models-token-count buffer max-out)
+                      (pad
+                       (list-models-token-count-length max-out)
+                       width-max-out)
+                      (gap)
+                      (let ((thinking
+                              (if (cadr-ai:model-reasoning-p model)
+                                  "yes"
+                                  "no")))
+                        (write-string thinking buffer)
+                        (pad (length thinking) width-thinking))
+                      (gap)
+                      (let ((images
+                              (if (cadr-ai:model-supports-images-p model)
+                                  "yes"
+                                  "no")))
+                        (write-string images buffer)
+                        (pad (length images) width-images))
+                      (write-char #\Newline buffer))))))
         (write-string table output)))
    (finish-output output)))
 
