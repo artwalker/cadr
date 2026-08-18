@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `d89b76cc9` (non-quick, samples=5, enforced).
+  session_load 1.62×→1.85×, journal_read 1.62×→1.58×.
+  cadr load 3033 µs → 3026 µs. Ratio up is pi drift
+  (1870→1638 µs). RATIO_CEILINGS unchanged. No `src/`.
+  G.17 still `missing`.
+
 - Goal 20 Part P: load-session sizes the by-id EQUAL
   table to the record count so GROW-HASH-TABLE does
   not recopy on the pairing fixture. Session file
