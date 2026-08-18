@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure after
+  P.1–P.12/P0 (non-quick, samples=5, enforced).
+  stream_roundtrip 1.29×→0.67×, list_models_render
+  3.18×→1.70×, journal_read 3.93×→3.38×, session_load
+  4.28×→3.80×, journal_append 2.21×→1.95×. Truncate
+  still 13.86×/13.08×. RATIO_CEILINGS unchanged. No
+  `src/`. G.17 still `missing`.
+
 - Goal 20 P.8: user 2026-08-18 18:09 deferred
   three-game hand-play; leftover recorded as pass
   until a new defect is opened. Overlay SHAs
