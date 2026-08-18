@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.1: JSON integers parse from the source
+  window (no SUBSEQ token). Decimals and exponents stay on
+  the existing token path. Same-machine session.jsonl
+  8727 ns → 6794 ns / line; 1.83 MB → 1.58 MB / pass.
+  Stream-chat 2,432,214 B → 2,357,254 B. FiveAM
+  18987→18999. Identity 122584→122626. G.17 still
+  `missing`.
+
 - Goal 20 Part P.4: file-stream SSE scans newlines in the
   8192 `read-sequence` chunk and decodes complete lines
   from that simple array. Sockets stay on `read-byte`.

@@ -99,6 +99,45 @@
             nil)))
       (= index length))))
 
+(defun parse-json-simple-integer (source start end)
+  ;; Session JSONL and SSE chunks are almost all integers
+  ;; (created/index/tokens).  Scanning the window in place skips the
+  ;; SUBSEQ token plus the SUBSEQ digits inside PARSE-JSON-NUMBER-TOKEN.
+  ;; Decimals, exponents, and leading-zero rejects return NIL so the
+  ;; existing token path can fail or parse them.
+  (declare (type simple-string source)
+           (type fixnum start end))
+  (when (>= start end)
+    (return-from parse-json-simple-integer nil))
+  (let ((index start)
+        (negative-p nil))
+    (declare (type fixnum index))
+    (when (char= (schar source index) #\-)
+      (setf negative-p t)
+      (incf index)
+      (when (= index end)
+        (return-from parse-json-simple-integer nil)))
+    (let ((first (schar source index)))
+      (cond
+        ((char= first #\0)
+         (incf index)
+         (when (< index end)
+           (return-from parse-json-simple-integer nil))
+         0)
+        ((not (digit-char-p first))
+         nil)
+        (t
+         (let ((value 0))
+           (loop while (< index end)
+                 for code of-type fixnum = (char-code (schar source index))
+                 do (unless (<= 48 code 57)
+                      (return-from parse-json-simple-integer nil))
+                    (setf value (+ (* value 10) (- code 48)))
+                    (incf index))
+           (if negative-p
+               (- value)
+               value)))))))
+
 (defun parse-json-number-token (token)
   (let* ((negative-p
            (char= (char token 0) #\-))
@@ -370,22 +409,25 @@
                       "-+0123456789.eE")))
          (parse-number ()
            (let ((start position))
+             (declare (type fixnum start))
              (loop while
                    (number-character-p (peek))
                    do (incf position))
-             (let ((token
-                     (subseq source start position)))
-               (unless
-                   (and
-                    (plusp (length token))
-                    (valid-json-number-token-p
-                     token))
-                 (fail "Invalid number"))
-               (handler-case
-                   (parse-json-number-token token)
-                 (json-parse-error ()
-                   (fail
-                    "JSON number exponent is too large"))))))
+             (or
+              (parse-json-simple-integer source start position)
+              (let ((token
+                      (subseq source start position)))
+                (unless
+                    (and
+                     (plusp (length token))
+                     (valid-json-number-token-p
+                      token))
+                  (fail "Invalid number"))
+                (handler-case
+                    (parse-json-number-token token)
+                  (json-parse-error ()
+                    (fail
+                     "JSON number exponent is too large")))))))
          (parse-literal (literal value)
            (let ((end (+ position
                          (length literal))))

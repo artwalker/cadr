@@ -14,13 +14,13 @@ Not a Goal 20 pass.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | number | 6489 ns → 5663 ns median / parse | `7d5478818`. |
+| P.1 JSON read | number | session.jsonl 8727 ns → 6794 ns median / line; bytes/pass 1,825,012 → 1,579,294. Stream 2,432,214 B → 2,357,254 B | `7d5478818` then this knife (in-situ integer). |
 | P.2 JSON write | number | stringify 6596→5636 ns; rational 210→170 ns; create 0.40 ms vs 128 append 3.00 ms | `232761357` / `d4da3cb65` / `a3d57ce03`. |
 | P.3 list_models_render | number | 4.30 ms → 2.45 ms | `f898c9ab5`. |
 | P.4 help / argv / walk | number | booked help 4.3 µs, argv 6.5 µs, walk 110 µs | Floor. |
 | P.4 stream_roundtrip | number | this-host 6.398 ms / 3,750,979 B → 4.995 ms / 2,432,214 B; SSE-only 2.899 ms / 2,327,510 B → 1.698 ms / 1,229,201 B | `c183539e7`–this knife. File-stream newline scan. |
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
-| P.6 alloc | number | stream 2,432,299 B; snake overlay 39,963 B | This host. |
+| P.6 alloc | number | stream 2,357,254 B; snake overlay 39,963 B | This host after in-situ integer. |
 | P.7 H pairing | number | 0 new file-level pairs | |
 | P.8 three games | leftover | user has not played | Overlay code: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. FiveAM is not hand-play. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`: disk `/reload`; host rebuild. Rechecked this turn. |

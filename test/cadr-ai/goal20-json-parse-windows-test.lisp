@@ -31,6 +31,26 @@
               round-trip
               (format nil "k~D" index))))))))
 
+(test goal20-json-integers-parse-without-token-copy
+  ;; P.1: 0 / -0 / -12 / created-scale integers stay exact. Leading
+  ;; zeros and decimals still go through the token path.
+  (is (eql 0 (cadr-ai::parse-json "0")))
+  (is (eql 0 (cadr-ai::parse-json "-0")))
+  (is (eql -12 (cadr-ai::parse-json "-12")))
+  (is (eql 1786665600 (cadr-ai::parse-json "1786665600")))
+  (is (eql 1786665600000 (cadr-ai::parse-json "1786665600000")))
+  (signals cadr-ai::json-parse-error
+    (cadr-ai::parse-json "01"))
+  (signals cadr-ai::json-parse-error
+    (cadr-ai::parse-json "00"))
+  (signals cadr-ai::json-parse-error
+    (cadr-ai::parse-json "-01"))
+  (is (= 1/80 (cadr-ai::parse-json "1.25e-2")))
+  (is (= (* 123 (expt 10 65))
+         (cadr-ai::parse-json "123e65")))
+  (is (null (cadr-ai::parse-json-simple-integer "12.3" 0 4)))
+  (is (eql 12 (cadr-ai::parse-json-simple-integer "12" 0 2))))
+
 (test goal20-json-interns-streaming-object-keys
   (let ((first (cadr-ai::parse-json "{\"content\":\"a\"}"))
         (second (cadr-ai::parse-json "{\"content\":\"b\"}"))
