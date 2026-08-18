@@ -175,6 +175,42 @@
       (t
        (subseq source start end)))))
 
+(defun json-interned-ascii-key (source start end)
+  ;; OpenAI completions chunks reuse a closed key set.  Returning the
+  ;; literal skips COPY-UNESCAPED-JSON-STRING on every object key.
+  ;; Unknown keys still copy.  Values never come through here.
+  (declare (type simple-string source)
+           (type fixnum start end))
+  (let ((count (- end start)))
+    (declare (type fixnum count))
+    (flet ((key= (literal)
+             (and (= count (length literal))
+                  (string= literal source :start2 start :end2 end))))
+      (case count
+        (2 (when (key= "id") "id"))
+        (4 (cond
+             ((key= "role") "role")
+             ((key= "type") "type")
+             ((key= "name") "name")))
+        (5 (cond
+             ((key= "index") "index")
+             ((key= "model") "model")
+             ((key= "delta") "delta")
+             ((key= "usage") "usage")))
+        (6 (when (key= "object") "object"))
+        (7 (cond
+             ((key= "created") "created")
+             ((key= "choices") "choices")
+             ((key= "content") "content")))
+        (8 (when (key= "function") "function"))
+        (9 (when (key= "arguments") "arguments"))
+        (10 (when (key= "tool_calls") "tool_calls"))
+        (12 (when (key= "total_tokens") "total_tokens"))
+        (13 (cond
+              ((key= "finish_reason") "finish_reason")
+              ((key= "prompt_tokens") "prompt_tokens")))
+        (17 (when (key= "completion_tokens") "completion_tokens"))))))
+
 (defun parse-json-source (source)
   ;; Cost center for session_load / journal_read
   ;; (docs/benchmarks/goal20-part-o-remaining-sprof.md).  CHAR on a
@@ -293,7 +329,7 @@
                               (append-decoded-char character))))
                (setf position saved)
                (subseq string-buffer 0 (fill-pointer string-buffer))))
-           (parse-string ()
+           (parse-string (&optional intern-p)
              (expect #\")
              (let ((start position)
                    (escaped-p nil)
@@ -309,10 +345,15 @@
                       (let ((end position))
                         (incf position)
                         (return
-                          (if escaped-p
-                              (decode-escaped-string start end)
-                              (copy-unescaped-json-string
-                               source start end base-p)))))
+                          (cond
+                            (escaped-p
+                             (decode-escaped-string start end))
+                            ((and intern-p
+                                  (json-interned-ascii-key
+                                   source start end)))
+                            (t
+                             (copy-unescaped-json-string
+                              source start end base-p))))))
                      ((< code #x20)
                       (fail "Unescaped control character"))
                      ((= code #x5c)
@@ -391,7 +432,7 @@
                (unless (and (peek)
                             (char= (peek) #\"))
                  (fail "Object key must be a string"))
-               (let ((key (parse-string)))
+               (let ((key (parse-string t)))
                  (skip-space)
                  (expect #\:)
                  (skip-space)

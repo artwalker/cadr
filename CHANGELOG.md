@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.4: object keys on the OpenAI completions
+  chunk set reuse string literals instead of a fresh
+  SIMPLE-BASE-STRING each time. Same-machine stream-chat
+  4.797 ms / 2,545,901 B → 4.797 ms / 2,432,299 B. G.17
+  still `missing`.
+
 - Goal 20 Part P.4: `parse-json-source` allocates the escape
   scratch only when a string has escapes. Same-machine
   stream-chat 5.402 ms / 2,677,288 B → 4.797 ms / 2,545,901 B.

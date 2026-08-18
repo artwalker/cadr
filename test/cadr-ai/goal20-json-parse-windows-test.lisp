@@ -30,3 +30,21 @@
              (cadr-ai::json-get
               round-trip
               (format nil "k~D" index))))))))
+
+(test goal20-json-interns-streaming-object-keys
+  (let ((first (cadr-ai::parse-json "{\"content\":\"a\"}"))
+        (second (cadr-ai::parse-json "{\"content\":\"b\"}"))
+        (key-a nil)
+        (key-b nil))
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (when (string= key "content")
+                 (setf key-a key)))
+             first)
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (when (string= key "content")
+                 (setf key-b key)))
+             second)
+    (is (string= key-a "content"))
+    (is (eq key-a key-b))))
