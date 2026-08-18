@@ -77,6 +77,15 @@
          "{\"a\":\"x\\ny\",\"z\":1}"
          (cadr-ai::stringify-json object)))))
 
+(test stringify-json-writes-unescaped-spans-and-escapes
+  (is (string=
+       "\"abcdefghij\""
+       (cadr-ai::stringify-json "abcdefghij")))
+  (is (string=
+       "\"ab\\\"cd\\\\ef\\ngh\""
+       (cadr-ai::stringify-json
+        (format nil "ab\"cd\\ef~%gh")))))
+
 (test parse-json-accepts-fill-pointer-and-displaced-source
   (let* ((text "{\"k\":\"v\"}")
          (buffer (make-array (length text)

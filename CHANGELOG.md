@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.2: `write-json-string` emits unescaped spans with
+  one `write-string` instead of per-character `write-char`. Same-machine
+  session-object stringify median 6596 ns → 5636 ns (40×515;
+  HEAD 6209/6596/6791 vs 5625/5636/6012). Not Friend-MachineD pairing.
+
 - Goal 20 Part P.1: `parse-json-source` coerces to `simple-string`,
   scans with `schar`/`fixnum`, and copies unescaped ASCII windows as
   `simple-base-string`. Same-machine `session.jsonl` parse median

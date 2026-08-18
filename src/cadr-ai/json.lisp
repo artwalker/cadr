@@ -437,23 +437,47 @@
   (parse-json-source source))
 
 (defun write-json-string (value stream)
+  ;; journal_append Lisp time is stringify (WRITE-JSON-VALUE / this
+  ;; function).  Unescaped runs are one WRITE-STRING; escapes still emit
+  ;; a short literal.  Per-character WRITE-CHAR on ASCII keys was the
+  ;; previous path.  Surrogates are dropped, matching sanitize-surrogates
+  ;; (baseline packages/ai/src/utils/sanitize-unicode.ts).
   (write-char #\" stream)
-  (loop for character across value
-        for code = (char-code character)
-        unless (<= #xd800 code #xdfff)
+  (let ((length (length value))
+        (start 0))
+    (declare (type fixnum length start))
+    (loop for index from 0 below length
+          for character = (char value index)
+          for code = (char-code character)
           do
-          (case character
-            (#\" (write-string "\\\"" stream))
-            (#\\ (write-string "\\\\" stream))
-            (#\Backspace (write-string "\\b" stream))
-            (#\Page (write-string "\\f" stream))
-            (#\Newline (write-string "\\n" stream))
-            (#\Return (write-string "\\r" stream))
-            (#\Tab (write-string "\\t" stream))
-            (otherwise
-             (if (< code #x20)
-                 (format stream "\\u~4,'0X" code)
-                 (write-char character stream)))))
+          (cond
+            ((<= #xd800 code #xdfff)
+             (when (< start index)
+               (write-string value stream :start start :end index))
+             (setf start (1+ index)))
+            ((or (char= character #\")
+                 (char= character #\\)
+                 (char= character #\Backspace)
+                 (char= character #\Page)
+                 (char= character #\Newline)
+                 (char= character #\Return)
+                 (char= character #\Tab)
+                 (< code #x20))
+             (when (< start index)
+               (write-string value stream :start start :end index))
+             (case character
+               (#\" (write-string "\\\"" stream))
+               (#\\ (write-string "\\\\" stream))
+               (#\Backspace (write-string "\\b" stream))
+               (#\Page (write-string "\\f" stream))
+               (#\Newline (write-string "\\n" stream))
+               (#\Return (write-string "\\r" stream))
+               (#\Tab (write-string "\\t" stream))
+               (otherwise
+                (format stream "\\u~4,'0X" code)))
+             (setf start (1+ index)))))
+    (when (< start length)
+      (write-string value stream :start start :end length)))
   (write-char #\" stream))
 
 (defun sanitize-surrogates (text)
