@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `a882dfe96` (non-quick, samples=5, enforced).
+  session_load 2.91×→3.32×, journal_read 2.45×→2.23×,
+  journal_append 1.75×→1.38×. RATIO_CEILINGS unchanged.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: `copy-unescaped-json-string` is one
   typed window copy (`REPLACE` into a declared
   `SIMPLE-BASE-STRING`; same-type source uses `SUBSEQ`).
