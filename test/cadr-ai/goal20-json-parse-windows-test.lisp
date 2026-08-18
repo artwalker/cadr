@@ -128,3 +128,27 @@
            (parsed (cadr-ai::parse-json source)))
       (setf (char source 6) #\z)
       (is (string= "unique-value" (cadr-ai::json-get parsed "x"))))))
+
+(test goal20-json-copy-unescaped-is-one-window-copy
+  ;; Drives COPY-UNESCAPED-JSON-STRING itself: one window copy, no
+  ;; shared storage, ASCII result is a SIMPLE-BASE-STRING.
+  (let* ((source (coerce "{\"k\":\"ascii-id-01\"}" 'simple-string))
+         (copied
+           (cadr-ai::copy-unescaped-json-string source 6 17 t)))
+    (is (string= "ascii-id-01" copied))
+    (is (typep copied 'simple-base-string))
+    (setf (char source 6) #\z)
+    (is (string= "ascii-id-01" copied)))
+  (let* ((source (coerce "abcdefgh" 'simple-base-string))
+         (copied
+           (cadr-ai::copy-unescaped-json-string source 1 4 t)))
+    (is (string= "bcd" copied))
+    (is (typep copied 'simple-base-string))
+    (setf (schar source 1) #\z)
+    (is (string= "bcd" copied)))
+  (let* ((source (coerce "{\"k\":\"中文\"}" 'simple-string))
+         (copied
+           (cadr-ai::copy-unescaped-json-string source 6 8 nil)))
+    (is (string= "中文" copied))
+    (setf (char source 6) #\x)
+    (is (string= "中文" copied))))

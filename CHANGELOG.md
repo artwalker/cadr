@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `copy-unescaped-json-string` is one
+  typed window copy (`REPLACE` into a declared
+  `SIMPLE-BASE-STRING`; same-type source uses `SUBSEQ`).
+  Pairing fixture parse-json-lines 3200 µs → 2400 µs;
+  bytes unchanged (1,328,669). Not 7b. No intern-table
+  expand. Identity 122836→122842. FiveAM 19062→19070.
+  G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `64c367dfc` (non-quick, samples=5, enforced).
   session_load 3.27×→2.91×, journal_read 3.16×→2.45×,

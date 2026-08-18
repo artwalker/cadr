@@ -194,25 +194,31 @@
               (* signed-significand
                  (expt 10 decimal-shift)))))))
 
+(declaim (inline copy-unescaped-json-string))
 (defun copy-unescaped-json-string (source start end base-p)
-  ;; Session JSONL keys are ASCII.  Copying those windows into a
-  ;; SIMPLE-BASE-STRING keeps hash/equal on 8-bit data; unicode values
-  ;; still SUBSEQ into a character string.  Either way the result does
-  ;; not share storage with SOURCE (goal20-json-unescaped-window-copies-source).
-  ;; Probe 7b (write-string of the unescaped span) lost to peek and is
-  ;; not repeated here.
+  ;; One window copy of SOURCE[START,END).  A SIMPLE-BASE-STRING source
+  ;; is SUBSEQ (same element type).  Unicode windows stay a character
+  ;; SUBSEQ.  ASCII windows in a character string become one converting
+  ;; REPLACE into a fresh SIMPLE-BASE-STRING so hash/equal stay on
+  ;; 8-bit data.  The result does not share storage with SOURCE
+  ;; (goal20-json-unescaped-window-copies-source).  Probe 7b is the
+  ;; write path and is not repeated.
   (declare (type simple-string source)
            (type fixnum start end))
   (let ((count (- end start)))
     (declare (type fixnum count))
     (cond
       ((zerop count) "")
-      (base-p
-       (let ((out (make-string count :element-type 'base-char)))
-         (replace out source :start2 start :end2 end)
-         out))
+      ((typep source 'simple-base-string)
+       (subseq (the simple-base-string source) start end))
+      ((not base-p)
+       (subseq source start end))
       (t
-       (subseq source start end)))))
+       (let ((out (make-array count :element-type 'base-char)))
+         (declare (type simple-base-string out)
+                  (type (simple-array character (*)) source))
+         (replace out source :start2 start :end2 end)
+         out)))))
 
 (defun json-interned-ascii-key (source start end)
   ;; OpenAI completions chunks and session JSONL reuse a closed key

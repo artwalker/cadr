@@ -15,7 +15,7 @@ Not a Goal 20 pass.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | number | intern session JSONL *values* skip COPY-UNESCAPED. Pairing fixture parse 1,400,749 B → 1,328,669 B; journal_read 2,638,423 B → 2,559,514 B | this knife. Not 7b. Not more keys. |
+| P.1 JSON read | number | copy-unescaped-json-string is one typed window copy. Pairing fixture parse-json-lines 3200 µs → 2400 µs; bytes 1,328,669 unchanged | this knife. Not 7b. No intern expand. |
 | P.2 JSON write | number | stringify 6596→5636 ns; rational 210→170 ns; create 0.40 ms vs 128 append 3.00 ms | `232761357` / `d4da3cb65` / `a3d57ce03`. |
 | P.3 list_models_render | number | 4.30 ms → 2.45 ms | `f898c9ab5`. |
 | P.4 help / argv / walk | number | booked help 4.3 µs, argv 6.5 µs, walk 110 µs | Floor. |
