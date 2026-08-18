@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `print-cli-models` writes the six-column
+  table into one string buffer. No per-cell `format nil`
+  pad and no per-row `format ~{~A~^  ~}`. Table bytes
+  stay the baseline. Not intern. Not FFI. G.17 still
+  `missing`.
+
 - Goal 20 Part P: remaining session JSONL generic values
   fill scalars / `(:json-object . pairs)` / vectors in the
   octet walker. They no longer re-enter parse-json-octets

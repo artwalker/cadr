@@ -119,16 +119,24 @@
                        rows)
                       :initial-value
                       (length (nth column headers)))))
-             (print-row
-               (lambda (cells)
-                 (format output "~{~A~^  ~}~%"
-                         (loop for cell in cells
-                               for width in widths
-                               collect
-                               (format nil "~VA" width cell))))))
-        (funcall print-row headers)
-        (dolist (row rows)
-          (funcall print-row row))))
+             (table
+               (with-output-to-string (buffer)
+                 (flet ((emit-row (cells)
+                          (loop for cell in cells
+                                for width in widths
+                                for first-p = t then nil
+                                do
+                                (unless first-p
+                                  (write-string "  " buffer))
+                                (write-string cell buffer)
+                                (loop repeat
+                                      (- width (length cell))
+                                      do (write-char #\Space buffer)))
+                          (write-char #\Newline buffer)))
+                   (emit-row headers)
+                   (dolist (row rows)
+                     (emit-row row))))))
+        (write-string table output)))
    (finish-output output)))
 
 (defun main (&optional
