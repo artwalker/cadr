@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `c949668cd` (non-quick, samples=5, enforced).
+  session_load 3.80×→3.27×, journal_read 3.38×→3.16×,
+  journal_append 1.95×→1.76×, truncate_head 13.86×→3.77×,
+  truncate_tail 13.08×→3.00×. RATIO_CEILINGS unchanged.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: intern session JSONL object keys
   (`parentId`, `timestamp`, `message`, …) so they skip
   `COPY-UNESCAPED-JSON-STRING`. Same-machine pairing
