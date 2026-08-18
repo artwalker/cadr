@@ -274,3 +274,70 @@ harness's neutralization layer or CI environment alignment (six
 instances this campaign: readdir order, fdfind path, node:internal
 frame numbers, slynk port release, UI response timing, elapsed-footer
 threshold), or an adjudicated behavioral disposition — never the pin.
+
+## 2026-08-18 — Keep SBCL core compression (Part C)
+
+**Ruled**: advisor, after the user delegated the product call that
+`goal20-draft.md` §8 item 3 and §14.9 reserved for the user. User
+veto remains unconditional.
+
+**Decided**: keep `:compression t` in
+`cadr-cli:native-image-save-arguments` whenever `:sb-core-compression`
+is in `*features*`. Do not ship an uncompressed default image. Do not
+reopen the flag as a rewrite package. The uncompressed path remains
+the existing fallback when the feature is absent
+(`architecture.md`).
+
+**Why it was decidable**: `8587db53a` measured both variants with the
+production save arguments, dropping only `:sb-core-compression` on the
+control. Harness: real PTY, new process to first TUI frame, n=20,
+interleaved, isolated `/tmp`, not `--help`. Numbers in
+`docs/benchmarks/goal20-part-c-compression.json` (Friend-MachineD):
+
+| variant | bytes | median cold start | range |
+|---|---:|---:|---|
+| compressed | 20,884,056 | 284.338 ms | 258.077–313.390 ms |
+| uncompressed | 74,033,504 | 177.015 ms | 164.553–199.184 ms |
+
+The distributions do not overlap (compressed fastest > uncompressed
+slowest). Save 53.1 MB (3.54×); pay +107.3 ms (+61%). Both sit under
+the 750 ms ceiling (38% vs 24%). A 107 ms once-per-process cost is
+below a human-scale CLI wait; 50+ MB is paid on every download, CI
+artifact, and disk copy. The switch is one feature flag.
+
+**Rider retired, not passed**: the 2026-08-17 board flip
+("if Part H later pairs cold start and compressed is slower than pi
+while uncompressed is not, drop compression") cannot fire. Part H
+booked `native_image_cold_start` as unpairable: an SBCL image start
+versus a Node bundle start measures two runtimes, not cadr versus
+baseline code. Cold start keeps the absolute ceiling
+(`docs/acceptance/goal-v20-part-h.md` §6.1;
+`docs/benchmarks/goal20-unpaired-paths.json`). That is "inapplicable",
+not "pi pairing passed".
+
+**Flip conditions that remain**: compressed median cold start on the
+gate machine approaches or exceeds 750 ms; the platform lacks
+`:sb-core-compression` (already the uncompressed fallback); user veto.
+
+## 2026-08-18 — G.12 dual-reference is not 148 new wall-clock pairs
+
+**Ruled**: advisor, so Part G does not stall on a harness J §8 forbids.
+
+**Decided**: `goal20-draft.md` §14.12 "every `done` row has a
+performance dual-reference" is scored as follows. It does **not**
+require a new pairing harness or a per-file wall-clock pair.
+
+- H `paired` files: vs pi is the existing H cell; vs previous cadr is
+  the K batch FiveAM / render-diff. That is dual-reference.
+- H `unpairable` files: single-reference vs previous cadr, already
+  booked. Mark the H path. Do not invent a pi pair.
+- H `pairable-uncovered` `done` files: J revision 8 forbids inventing
+  a second pairing harness. FiveAM / render-diff is vs previous cadr
+  only. Do **not** claim "no worse than pi" for those files. Mark them
+  single-reference pending an H pair. That gap is G.12 / H unfinished
+  surface (76.9% of lines at the H booking), not a silent pass and
+  not a K10.
+
+K reports that used FiveAM without naming the H class are incomplete
+on the mark, not incomplete on the rewrite. Part G's matrix records
+the mark; it does not re-bench 148 files.
