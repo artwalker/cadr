@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.12: mermaid `gm-read-shape` writes the label
+  to a stream instead of per-char `concatenate`.
+  Same-machine 200× 800-char label 1,342,124 B → 24,717 B
+  / call; 0.340 ms → 0.040 ms. Identity 122678→122685.
+  G.17 still `missing`.
+
 - Goal 20 P.12: `editor-lines` is a simple-vector.
   Per-line lookup is `AREF`, not list `NTH`. Same-machine
   80× 200-line editor-lines+render 183,349 B → 177,188 B

@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122678 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122685 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -383,7 +383,7 @@ at :4. No rewrite invented. Report:
 | `src/cadr-tui/mermaid/labels.lisp` | 332 | 28 | Normalize Mermaid edge/node labels before measurement and drawing. | pass | done | char on string. I0: no nth char-list. | 20 |
 | `src/cadr-tui/mermaid/layout.lisp` | 1,090 | 36 | Implement the Sugiyama layered-graph layout used by flow diagrams. | pass · large | no-rewrite | gm-lex5< nth-walks 5-tuples in a sort comparator (:283-289) bounded by +gm-max-edges+; dominated by the canvas paint, fixture-locked. | 20 |
 | `src/cadr-tui/mermaid/layout-seq.lisp` | 254 | 9 | Implement the sequence-diagram layout and lane projection. | pass | no-rewrite | String kind dispatch at :61-195 is parse.lisp's item vocabulary; capped at 512 items, below the measurement floor. | 20 |
-| `src/cadr-tui/mermaid/parse.lisp` | 1,189 | 61 | Parse Mermaid source into the shared graph model for all diagram kinds. | pass · large | done | gm-char. I0: string index, no nth. | 20 |
+| `src/cadr-tui/mermaid/parse.lisp` | 1,197 | 61 | Parse Mermaid source into the shared graph model for all diagram kinds. | pass · large | done | gm-char. I0: string index, no nth. gm-read-shape writes the label to a stream. | 20 |
 | `src/cadr-tui/mermaid/source-box.lisp` | 93 | 3 | Fall back to rendering raw Mermaid source in a box when parsing fails. | pass | no-rewrite | Per-cluster concatenate at :39 is bounded by the column limit (cost O(text*limit), not quadratic); boxed bytes fixture-locked. | 20 |
 | `src/cadr-tui/mermaid/width-data.lisp` | 1,008 | 1 | Provide the generated code-point width table consumed by the width engine. | pass · large | no-rewrite | Nested vectors preserve the generated JS table; shape is owned by the generator script, reads are O(1) aref. | 20 |
 | `src/cadr-tui/mermaid/width.lisp` | 72 | 7 | Compute grapheme display width for Mermaid layout and truncation. | pass | no-rewrite | Hand-rolled binary search at :26-36 is the right form over the sorted generated table; CL stdlib has no custom-run bsearch. | 20 |

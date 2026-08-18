@@ -353,6 +353,9 @@
 ;;; character: inside a quoted label the closer is ignored until the quote
 ;;; closes.  An unquoted label ends at the first closer.
 (defun gm-read-shape (chars start closer shape)
+  ;; grok-mermaid parse.js reads the label as a growing JS string.
+  ;; Per-char CONCATENATE here is quadratic; write the span once.
+  ;; Same closer / quote contract as the JS walk.
   (let ((j start))
     (loop while (and (< j (length chars))
                      (or (char= (gm-char chars j) #\Space)
@@ -360,26 +363,30 @@
           do (incf j))
     (let ((quoted (and (< j (length chars)) (char= (gm-char chars j) #\")))
           (i start)
-          (text "")
-          (in-quotes nil))
-      (loop while (< i (length chars))
-            do (let ((c (gm-char chars i)))
-                 (cond ((and quoted (char= c #\"))
-                        (setf in-quotes (not in-quotes))
-                        (setf text (concatenate 'string text (string c)))
-                        (incf i))
-                       ((and (not in-quotes)
-                             (gm-char-seq-equal chars i closer))
-                        (return-from gm-read-shape
-                          (list shape (gm-clean-label text)
-                                (+ i (length closer)) nil)))
-                       (t
-                        (setf text (concatenate 'string text (string c)))
-                        (incf i)))))
-      ;; Ran off the end still looking for the closer: everything after the
-      ;; opening bracket became label text, so any link operator in it was
-      ;; swallowed.
-      (list shape (gm-clean-label text) (length chars) closer))))
+          (in-quotes nil)
+          (closed-p nil))
+      (let ((text
+              (with-output-to-string (out)
+                (loop while (< i (length chars))
+                      do (let ((c (gm-char chars i)))
+                           (cond ((and quoted (char= c #\"))
+                                  (setf in-quotes (not in-quotes))
+                                  (write-char c out)
+                                  (incf i))
+                                 ((and (not in-quotes)
+                                       (gm-char-seq-equal chars i closer))
+                                  (setf closed-p t)
+                                  (return))
+                                 (t
+                                  (write-char c out)
+                                  (incf i))))))))
+        (if closed-p
+            (list shape (gm-clean-label text)
+                  (+ i (length closer)) nil)
+            ;; Ran off the end still looking for the closer: everything after
+            ;; the opening bracket became label text, so any link operator in
+            ;; it was swallowed.
+            (list shape (gm-clean-label text) (length chars) closer))))))
 
 (defun gm-is-link-char (c)
   (or (char= c #\-) (char= c #\.) (char= c #\=)
