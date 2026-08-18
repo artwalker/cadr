@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD sprof of
+  session_load / journal_read after remesure. Heat is
+  PARSE-VALUE / COPY-UNESCAPED / hash / REPLACE (already
+  shipped JSON). Not a lever. Not 7b. G.17 still
+  `missing`.
+
 - Goal 20 Part P: `truncate-harness-head` / `truncate-harness-tail`
   scan the source string once instead of
   `uiop:split-string` + `format` join. Pairing fixture
