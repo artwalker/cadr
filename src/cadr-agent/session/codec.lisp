@@ -38,6 +38,12 @@
   usage
   extra)
 
+(defstruct session-json-block
+  type
+  primary
+  secondary
+  extra)
+
 (defstruct (session
             (:constructor %make-session))
   id
@@ -398,6 +404,8 @@
     (cadr-ai::json-get object "error"))))
 
 (defun content-block-from-json (object)
+  (unless (hash-table-p object)
+    (return-from content-block-from-json object))
   (let ((type (cadr-ai::json-get object "type")))
     (cond
       ((string= type "text")

@@ -937,7 +937,8 @@
     ;; +10 Goal 20 session-entry decode: seen bits, visitor put,
     ;; parse-session-record, finalize (drop require-json-field).
     ;; +1 Goal 20 nested message/usage: session-json-message.
-    (is (= 268 definition-count)
+    ;; +1 Goal 20 content blocks: session-json-block.
+    (is (= 269 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

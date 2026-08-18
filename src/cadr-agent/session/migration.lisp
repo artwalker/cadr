@@ -281,6 +281,97 @@
               (lambda (field value)
                 (put-message-field bag field value))
               (lambda () bag))))
+         (keep-block-extra (block key value)
+           (when value
+             (setf (session-json-block-extra block)
+                   (list* key value
+                          (session-json-block-extra block)))))
+         (put-block-field (block field value)
+           (when (plusp (length field))
+             (case (char field 0)
+               (#\t
+                (cond
+                  ((or (eq field "type") (string= field "type"))
+                   (setf (session-json-block-type block) value))
+                  ((or (eq field "text") (string= field "text"))
+                   (setf (session-json-block-primary block) value))
+                  ((or (eq field "thinking")
+                       (string= field "thinking"))
+                   (setf (session-json-block-primary block) value))
+                  ((or (eq field "thoughtSignature")
+                       (string= field "thoughtSignature")
+                       (string= field "thought_signature"))
+                   (keep-block-extra
+                    block :thought-signature value))))
+               (#\s
+                (when (or (eq field "signature")
+                          (string= field "signature"))
+                  (setf (session-json-block-secondary block)
+                        value)))
+               (#\r
+                (when (or (eq field "redacted")
+                          (string= field "redacted"))
+                  (keep-block-extra block :redacted value)))
+               (#\d
+                (when (or (eq field "data") (string= field "data"))
+                  (setf (session-json-block-primary block) value)))
+               (#\m
+                (when (or (eq field "mimeType")
+                          (string= field "mimeType")
+                          (string= field "mime_type"))
+                  (keep-block-extra block :mime-type value)))
+               (#\i
+                (when (or (eq field "id") (string= field "id"))
+                  (setf (session-json-block-primary block) value)))
+               (#\n
+                (when (or (eq field "name") (string= field "name"))
+                  (setf (session-json-block-secondary block)
+                        value)))
+               (#\a
+                (when (or (eq field "arguments")
+                          (string= field "arguments"))
+                  (keep-block-extra block :arguments value))))))
+         (finish-content-block (block)
+           (let ((type (session-json-block-type block))
+                 (primary (session-json-block-primary block))
+                 (secondary (session-json-block-secondary block))
+                 (extra (session-json-block-extra block)))
+             (cond
+               ((string= type "text")
+                (cadr-ai:make-text-content
+                 :text (or primary "")
+                 :signature secondary))
+               ((string= type "thinking")
+                (cadr-ai:make-thinking-content
+                 :thinking (or primary "")
+                 :signature secondary
+                 :redacted-p (eq t (getf extra :redacted))))
+               ((string= type "image")
+                (cadr-ai:make-image-content
+                 :mime-type
+                 (or (getf extra :mime-type) "image/png")
+                 :data (or primary "")))
+               ((member type '("toolCall" "tool_call")
+                        :test #'string=)
+                (cadr-ai:make-tool-call
+                 :id (or primary "")
+                 :name (or secondary "")
+                 :arguments
+                 (let ((arguments (getf extra :arguments)))
+                   (if (hash-table-p arguments)
+                       arguments
+                       (make-hash-table :test #'equal)))
+                 :thought-signature
+                 (getf extra :thought-signature)))
+               (t
+                (error "Unknown content block type: ~S" type)))))
+         (visit-content-block ()
+           (let ((block (make-session-json-block)))
+             (values
+              (lambda (field value)
+                (put-block-field block field value))
+              (lambda ()
+                (finish-content-block block)))))
          (nest (key)
            (cond
              ((or (eq key "message") (string= key "message"))
@@ -288,7 +379,9 @@
              ((or (eq key "usage") (string= key "usage"))
               (visit-usage))
              ((or (eq key "cost") (string= key "cost"))
-              (visit-cost)))))
+              (visit-cost))
+             ((or (eq key "content") (string= key "content"))
+              (values #'visit-content-block nil :array)))))
       (cadr-ai::parse-json-object-fields
        line
        (lambda (key value)

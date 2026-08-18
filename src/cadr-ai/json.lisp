@@ -552,6 +552,40 @@
                        (fail "Expected comma or ]"))))))
                (otherwise
                 (fail "Expected comma or ]")))))
+         (parse-typed-array (element)
+           ;; ELEMENT is called for each item.  Session content
+           ;; arrays use this to skip EQUAL hashes on blocks.
+           (expect #\[)
+           (skip-space)
+           (when (and (peek)
+                      (char= (peek) #\]))
+             (take)
+             (return-from parse-typed-array #()))
+           (let ((first (funcall element)))
+             (skip-space)
+             (case (peek)
+               (#\]
+                (take)
+                (vector first))
+               (#\,
+                (take)
+                (skip-space)
+                (let ((items (list first)))
+                  (loop
+                    (push (funcall element) items)
+                    (skip-space)
+                    (case (peek)
+                      (#\, (take) (skip-space))
+                      (#\]
+                       (take)
+                       (return
+                         (coerce
+                          (nreverse items)
+                          'vector)))
+                      (otherwise
+                       (fail "Expected comma or ]"))))))
+               (otherwise
+                (fail "Expected comma or ]")))))
          (parse-object (depth)
            ;; Session JSONL objects are almost all 2–8 keys.  A default
            ;; EQUAL table holds 7 pairs and then GROW-HASH-TABLE copies
@@ -636,18 +670,37 @@
                (funcall
                 visitor key
                 (block nested
-                  (when (and nest
-                             (peek)
-                             (char= (peek) #\{))
+                  (when (and nest (peek))
                     (multiple-value-bind
-                          (nested-visitor nested-finish)
+                          (nested-visitor nested-finish kind)
                         (funcall nest key)
-                      (when nested-visitor
-                        (parse-object-fields nested-visitor)
-                        (return-from nested
-                          (if nested-finish
-                              (funcall nested-finish)
-                              t)))))
+                      (cond
+                        ((and (eq kind :array)
+                              (char= (peek) #\[))
+                         (return-from nested
+                           (parse-typed-array
+                            (lambda ()
+                              (skip-space)
+                              (cond
+                                ((and (peek)
+                                      (char= (peek) #\{))
+                                 (multiple-value-bind
+                                       (item-visitor item-finish)
+                                     (funcall nested-visitor)
+                                   (parse-object-fields
+                                    item-visitor)
+                                   (if item-finish
+                                       (funcall item-finish)
+                                       t)))
+                                (t
+                                 (parse-value 1)))))))
+                        ((and nested-visitor
+                              (char= (peek) #\{))
+                         (parse-object-fields nested-visitor)
+                         (return-from nested
+                           (if nested-finish
+                               (funcall nested-finish)
+                               t))))))
                   (parse-value 1))))
              (skip-space)
              (case (peek)
@@ -703,7 +756,9 @@
   ;; No EQUAL hash for that object.  NEST optionally walks named
   ;; nested objects the same way (session message / usage / cost).
   ;; Other nested values still parse as hash tables / vectors.
-  ;; Public PARSE-JSON is unchanged.
+  ;; NEST may also return kind :array to walk a JSON array of
+  ;; objects (session content blocks).  Public PARSE-JSON is
+  ;; unchanged.
   (parse-json-source source visitor nest))
 
 (defun parse-json (source)

@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: v3 `content` array elements walk
+  into typed text/thinking/image/tool-call. No EQUAL
+  hash per block. `arguments` stay hashes. Session
+  file bytes unchanged. Pairing fixture journal_read
+  2,134,624 B → 1,975,830 B; load-session
+  2,399,405 B → 2,214,272 B / 4756 µs → 3943 µs.
+  Not intern. Not 7b. Identity 123365→123521. G.17
+  still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `eee817672` (non-quick, samples=5, enforced).
   session_load 3.02×→2.37×, journal_read 2.07×→2.00×.

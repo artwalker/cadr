@@ -474,6 +474,13 @@
               (cadr-agent::session-entry-message
                (third objects)))
              'cadr-ai:usage))
+        (is (typep
+             (aref
+              (cadr-agent::session-json-message-content
+               (cadr-agent::session-entry-message
+                (third objects)))
+              0)
+             'cadr-ai:text-content))
         (is (equal
              '("hi" "ok")
              (message-texts
