@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `bc5d70b08` (non-quick, samples=5, enforced).
+  session_load 2.15×→2.52×, journal_read 2.22×→2.17×.
+  cadr load 3807 µs → 3866 µs, read 3316 µs → 3357 µs.
+  Ratio up on load is pi drift (1773→1532 µs).
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: session JSONL is one exact-size octet
   `READ-SEQUENCE` (1MiB cap) then LF split. ASCII lines
   reuse a simple-base-string and parse a START/END window.
