@@ -667,6 +667,12 @@
 (defparameter *journal-write-index* 0)
 
 (defun append-journal-once (messages cwd)
+  ;; Each sample mkdirs a fresh journal directory.  That is harness tax,
+  ;; not the product open-append.  Same-machine split 2026-08-18 (128
+  ;; messages): create-session 0.40ms, 128 session-append-message 3.00ms,
+  ;; combined 4.00ms.  Create is ~10% of the combined sample here.
+  ;; Friend-MachineD sprof ~40% FS self includes product open/write.
+  ;; docs/benchmarks/goal20-part-p-append-tax.md
   (incf *journal-write-index*)
   (let* ((directory
            (merge-pathnames

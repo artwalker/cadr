@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.2: journal_append harness mkdir/create is reported
+  separately from product `session-append-message`
+  (`docs/benchmarks/goal20-part-p-append-tax.md`). Same-machine
+  create-session 0.40ms vs 128 appends 3.00ms. Paired metric unchanged.
+
 - Goal 20 Part P.2: `terminating-rational-json-text` writes digits
   once instead of a padded copy plus four concatenate/subseq results.
   Same-machine median 210 ns → 170 ns / call. Own commit.
