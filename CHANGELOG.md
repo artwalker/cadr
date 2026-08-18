@@ -9,10 +9,10 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20 Part P: this-host FiveAM overlay/busy/turn 34/34,
-  restart 14/14, key-to-overlay 0.100 ms (no spinner). Report
-  `docs/acceptance/goal-v20-part-p.md`. G.17 `met`. Not hand-play.
-  Not a Goal 20 pass.
+- Goal 20 Part P draft: this-host stream 5.400 ms / 3.75 MB;
+  key-to-overlay 0.100 ms; restart FiveAM 14/14. Advisor
+  vetoed G.17 `met` (`c53e13c47`). G.17 is `missing`. P.4
+  stream leftover until an `sse.lisp` lever. Not a Goal 20 pass.
 
 - Goal 20 Part P.3: `--list-models` reuses a refreshed registry while
   `models.json` / `auth.json` write-dates stay the same. Same-machine
