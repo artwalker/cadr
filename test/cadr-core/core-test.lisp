@@ -154,7 +154,17 @@
   (is (string=
        "2026-08-03T12:34:56.789Z"
        (cadr-core:milliseconds-to-utc-iso8601
-        1785760496789))))
+        1785760496789)))
+  (is (= 1785760496789
+         (cadr-core:iso8601-to-milliseconds
+          "2026-08-03T12:34:56.789Z")))
+  ;; Session JSONL form.  2-digit fraction still uses the
+  ;; general path and must stay equivalent after padding.
+  (is (= (cadr-core:iso8601-to-milliseconds
+          "2026-08-14T00:00:00.00Z")
+         (cadr-core:iso8601-to-milliseconds
+          "2026-08-14T00:00:00.000Z")))
+  (is (= 0 (cadr-core:iso8601-to-milliseconds 0))))
 
 (test unix-milliseconds-has-subsecond-resolution
   ;; Baseline Date.now() advances inside a second.  The old

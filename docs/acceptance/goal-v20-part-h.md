@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 124,174 lines**
+Denominator: **295 files / 124,236 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 35 | 22,640 | 18.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 6.0% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,059 | 75.7% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,121 | 75.8% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 18.2% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 24.3% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 75.7% of lines.
+- **K-advanceable** (paired ∪ unpairable): 24.2% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 75.8% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -453,6 +453,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-evals/artifacts.lisp` | 1 | 168 |
 | `src/cadr-evals/main.lisp` | 1 | 158 |
 | `src/cadr-tui/fuzzy.lisp` | 1 | 134 |
+| `src/cadr-core/time.lisp` | 1 | 133 |
 | `src/cadr-protocol/codec.lisp` | 1 | 121 |
 | `src/cadr-tui/word-navigation.lisp` | 1 | 118 |
 | `src/cadr-cli/repl.lisp` | 1 | 112 |
@@ -464,7 +465,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/truncation.lisp` | 1 | 79 |
 | `src/cadr-tui/native-modifiers.lisp` | 1 | 78 |
 | `src/cadr-agent/harness-events.lisp` | 1 | 75 |
-| `src/cadr-core/time.lisp` | 1 | 71 |
 | `src/cadr-core/cancellation.lisp` | 1 | 70 |
 | `src/cadr-cli/system-prompt.lisp` | 1 | 53 |
 | `src/cadr-core/threads.lisp` | 1 | 47 |

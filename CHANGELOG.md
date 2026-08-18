@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: session ISO-8601 timestamps of the
+  form `YYYY-MM-DDTHH:MM:SS.sssZ` parse digits in place.
+  No SUBSEQ/CONCATENATE per entry. Pairing fixture
+  load-session 3156 µs → 2383 µs / 1,385,181 B →
+  1,346,195 B. journal_read unchanged. Not intern.
+  Not 7b. Identity 124174→124236. G.17 still
+  `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `c78cef0a9` (non-quick, samples=5, enforced).
   session_load 2.52×→2.02×, journal_read 2.17×→1.46×.
