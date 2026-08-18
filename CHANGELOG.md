@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.4: file-stream SSE scans newlines in the
+  8192 `read-sequence` chunk and decodes complete lines
+  from that simple array. Sockets stay on `read-byte`.
+  Same-machine stream-chat 5.604 ms → 4.995 ms; SSE-only
+  2.199 ms → 1.698 ms. Bytes unchanged (2.43 MB /
+  1.23 MB). FiveAM 18977→18987. Identity 122563→122584.
+  G.17 still `missing`.
+
 - Goal 20 P0: tic-tac-toe `render-call` takes
   `(arguments theme context)` and paints tool-title + muted
   action. Expanded `render-result` is the banner. Tool

@@ -42,3 +42,46 @@
         (stream (flexi-streams:make-in-memory-input-stream source))
       (signals cadr-ai:sse-protocol-error
         (read-sse-stream stream (lambda (event) (declare (ignore event))))))))
+
+(test sse-file-stream-matches-character-stream
+  ;; File-stream READ-SEQUENCE scans newlines in the 8192 chunk.
+  ;; Character and in-memory binary paths must keep the same events.
+  (let* ((text
+           (concatenate
+            'string
+            "data: {\"n\":1}" (string #\Newline)
+            (string #\Newline)
+            "data: {\"n\":2}" (string #\Return) (string #\Newline)
+            (string #\Return) (string #\Newline)
+            ": comment" (string #\Newline)
+            "event: ping" (string #\Newline)
+            "data: tail" (string #\Newline)
+            (string #\Newline)))
+         (octets (babel:string-to-octets text :encoding :utf-8))
+         (from-chars nil)
+         (from-file nil))
+    (with-input-from-string (stream text)
+      (read-sse-stream
+       stream
+       (lambda (event) (push event from-chars))))
+    (uiop:with-temporary-file (:pathname path)
+      (with-open-file (out path
+                           :direction :output
+                           :if-exists :supersede
+                           :element-type '(unsigned-byte 8))
+        (write-sequence octets out))
+      (with-open-file (stream path
+                              :direction :input
+                              :element-type '(unsigned-byte 8))
+        (read-sse-stream
+         stream
+         (lambda (event) (push event from-file)))))
+    (setf from-chars (nreverse from-chars)
+          from-file (nreverse from-file))
+    (is (= (length from-chars) (length from-file)))
+    (mapc
+     (lambda (left right)
+       (is (equal (sse-event-event left) (sse-event-event right)))
+       (is (string= (sse-event-data left) (sse-event-data right)))
+       (is (equal (sse-event-id left) (sse-event-id right))))
+     from-chars from-file)))

@@ -113,19 +113,28 @@
                      data-lines nil
                      event-id nil
                      saw-field-p nil))
-             (utf8-payload (start end)
+             (utf8-payload (vector start end)
                (handler-case
                    (let ((count (- end start)))
-                     (declare (type fixnum start end count))
+                     (declare (type fixnum start end count)
+                              (type (array (unsigned-byte 8) (*))
+                                    vector))
                      (cond
                        ((zerop count) "")
+                       ((typep vector
+                               '(simple-array (unsigned-byte 8) (*)))
+                        (sb-ext:octets-to-string
+                         vector
+                         :external-format :utf-8
+                         :start start
+                         :end end))
                        (t
                         (when (> count (length decode-scratch))
                           (setf decode-scratch
                                 (make-array count
                                             :element-type
                                             '(unsigned-byte 8))))
-                        (replace decode-scratch buffer
+                        (replace decode-scratch vector
                                  :start2 start :end2 end)
                         (sb-ext:octets-to-string
                          decode-scratch
@@ -164,64 +173,60 @@
                         ((string= field "id")
                          (setf event-id value
                                saw-field-p t))))))))
-             (process-binary-line ()
-               (let ((end (fill-pointer buffer)))
-                 (declare (type fixnum end)
-                          (type (vector (unsigned-byte 8)) buffer))
-                 (when (and (plusp end)
-                            (= (aref buffer (1- end)) 13))
-                   (decf end))
+             (process-binary-octets (vector start end)
+               (declare (type (array (unsigned-byte 8) (*)) vector)
+                        (type fixnum start end))
+               (when (and (> end start)
+                          (= (aref vector (1- end)) 13))
+                 (decf end))
+               (let ((len (- end start)))
+                 (declare (type fixnum len))
                  (cond
-                   ((zerop end)
-                    (clear-buffer)
+                   ((zerop len)
                     (flush-event))
-                   ((= (aref buffer 0) 58)
-                    (clear-buffer))
-                   ((and (>= end 5)
-                         (= (aref buffer 0) 100)
-                         (= (aref buffer 1) 97)
-                         (= (aref buffer 2) 116)
-                         (= (aref buffer 3) 97)
-                         (= (aref buffer 4) 58))
-                    (let ((start 5))
-                      (declare (type fixnum start))
-                      (when (and (< start end)
-                                 (= (aref buffer start) 32))
-                        (incf start))
-                      (push (utf8-payload start end) data-lines)
-                      (setf saw-field-p t)
-                      (clear-buffer)))
-                   ((and (>= end 6)
-                         (= (aref buffer 0) 101)
-                         (= (aref buffer 1) 118)
-                         (= (aref buffer 2) 101)
-                         (= (aref buffer 3) 110)
-                         (= (aref buffer 4) 116)
-                         (= (aref buffer 5) 58))
-                    (let ((start 6))
-                      (declare (type fixnum start))
-                      (when (and (< start end)
-                                 (= (aref buffer start) 32))
-                        (incf start))
-                      (setf event-name (utf8-payload start end)
-                            saw-field-p t)
-                      (clear-buffer)))
-                   ((and (>= end 3)
-                         (= (aref buffer 0) 105)
-                         (= (aref buffer 1) 100)
-                         (= (aref buffer 2) 58))
-                    (let ((start 3))
-                      (declare (type fixnum start))
-                      (when (and (< start end)
-                                 (= (aref buffer start) 32))
-                        (incf start))
-                      (setf event-id (utf8-payload start end)
-                            saw-field-p t)
-                      (clear-buffer)))
+                   ((= (aref vector start) 58)
+                    nil)
+                   ((and (>= len 5)
+                         (= (aref vector start) 100)
+                         (= (aref vector (+ start 1)) 97)
+                         (= (aref vector (+ start 2)) 116)
+                         (= (aref vector (+ start 3)) 97)
+                         (= (aref vector (+ start 4)) 58))
+                    (let ((payload (+ start 5)))
+                      (declare (type fixnum payload))
+                      (when (and (< payload end)
+                                 (= (aref vector payload) 32))
+                        (incf payload))
+                      (push (utf8-payload vector payload end)
+                            data-lines)
+                      (setf saw-field-p t)))
+                   ((and (>= len 6)
+                         (= (aref vector start) 101)
+                         (= (aref vector (+ start 1)) 118)
+                         (= (aref vector (+ start 2)) 101)
+                         (= (aref vector (+ start 3)) 110)
+                         (= (aref vector (+ start 4)) 116)
+                         (= (aref vector (+ start 5)) 58))
+                    (let ((payload (+ start 6)))
+                      (declare (type fixnum payload))
+                      (when (and (< payload end)
+                                 (= (aref vector payload) 32))
+                        (incf payload))
+                      (setf event-name (utf8-payload vector payload end)
+                            saw-field-p t)))
+                   ((and (>= len 3)
+                         (= (aref vector start) 105)
+                         (= (aref vector (+ start 1)) 100)
+                         (= (aref vector (+ start 2)) 58))
+                    (let ((payload (+ start 3)))
+                      (declare (type fixnum payload))
+                      (when (and (< payload end)
+                                 (= (aref vector payload) 32))
+                        (incf payload))
+                      (setf event-id (utf8-payload vector payload end)
+                            saw-field-p t)))
                    (t
-                    (setf (fill-pointer buffer) end)
-                    (let ((line (decode-sse-line buffer t)))
-                      (clear-buffer)
+                    (let ((line (utf8-payload vector start end)))
                       (multiple-value-bind (field value)
                           (split-sse-field line)
                         (cond
@@ -234,6 +239,9 @@
                           ((string= field "id")
                            (setf event-id value
                                  saw-field-p t)))))))))
+             (process-binary-line ()
+               (process-binary-octets buffer 0 (fill-pointer buffer))
+               (clear-buffer))
              (process-line ()
                (if binary-p
                    (process-binary-line)
@@ -251,9 +259,22 @@
                (declare (type fixnum count))
                (when (zerop count)
                  (return))
-               (loop for index of-type fixnum from 0 below count
-                     do (consume-binary-unit
-                         (aref chunk index)))))))
+               (let ((start 0))
+                 (declare (type fixnum start))
+                 (loop for index of-type fixnum from 0 below count
+                       do (when (= (aref chunk index) 10)
+                            (if (zerop (fill-pointer buffer))
+                                (process-binary-octets chunk start index)
+                                (progn
+                                  (loop for copy of-type fixnum
+                                        from start below index
+                                        do (vector-push-extend
+                                            (aref chunk copy) buffer))
+                                  (process-binary-line)))
+                            (setf start (1+ index))))
+                 (loop for copy of-type fixnum from start below count
+                       do (vector-push-extend
+                           (aref chunk copy) buffer)))))))
         (binary-p
          (loop for unit = (read-byte stream nil :eof)
                until (eq unit :eof)
