@@ -27,6 +27,15 @@ Not a Goal 20 pass.
 | P.10 input-to-screen | number | key→overlay 0.050 ms, spinner=NIL, thinking=NIL | This host, 80× snake key+render after `f3ccf75f6`. |
 | P.11 tool restarts | number | 14/14 FiveAM, fail=0 | this turn: retry 7 + skip 3 + abort 4 (`tool-loop-test.lisp`). |
 
+## P.12
+
+| item | status | number or leftover | evidence |
+|---|---|---|---|
+| P.12.1 JSON window scan | | remaining `PEEK`/`TAKE` macros already index a `SIMPLE-STRING`; not this knife | |
+| P.12.2 editor-lines | number | 80× 200-line editor-lines+render 183,349 B → 177,188 B / call | this knife. Wall 0.300–0.399 ms (timer step). |
+| P.12.3 alt-screen nth | | not this knife | |
+| P.12.4 mermaid concatenate | | not this knife | |
+
 ## Not claimed
 
 - Goal 20 complete.

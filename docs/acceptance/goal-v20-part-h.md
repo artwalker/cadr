@@ -291,14 +291,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,644 lines**
+Denominator: **295 files / 122,678 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 21,131 | 17.2% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 21,151 | 17.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,038 | 76.7% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,052 | 76.7% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 17.2% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.3% of lines.
@@ -361,7 +361,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/text-box.lisp` | 280 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/editor.lisp` | 1,994 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/editor.lisp` | 2,014 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -416,7 +416,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/websocket.lisp` | 1 | 622 |
 | `src/cadr-protocol/schema.lisp` | 1 | 610 |
 | `src/cadr-agent/session` | 2 | 609 |
-| `src/cadr-tui/autocomplete.lisp` | 1 | 581 |
+| `src/cadr-tui/autocomplete.lisp` | 1 | 594 |
 | `src/cadr-tui/theme.lisp` | 1 | 562 |
 | `src/cadr-tui/components` | 2 | 558 |
 | `src/cadr-cli/migration.lisp` | 1 | 512 |
@@ -429,7 +429,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/input-component.lisp` | 1 | 408 |
 | `src/cadr-ai/model-data.lisp` | 1 | 407 |
 | `src/cadr-ai/crypto.lisp` | 1 | 367 |
-| `src/cadr-tui/package.lisp` | 1 | 354 |
+| `src/cadr-tui/package.lisp` | 1 | 355 |
 | `src/cadr-cli/resource-loader.lisp` | 1 | 353 |
 | `src/cadr-evals/harness-table.lisp` | 1 | 339 |
 | `src/cadr-agent/tool.lisp` | 1 | 319 |

@@ -1,7 +1,7 @@
 (load (merge-pathnames "support.lisp" *load-truename*))
 
 (defun github-issue-prefix (lines row column)
-  (let* ((line (or (nth row lines) ""))
+  (let* ((line (cadr-tui:editor-line-at lines row))
          (before (subseq line 0 (min column (length line))))
          (hash (position #\# before :from-end t)))
     (and hash
@@ -62,16 +62,17 @@
          (lambda (lines row column item prefix)
            (if (and prefix (plusp (length prefix))
                     (char= (char prefix 0) #\#))
-               (let* ((line (nth row lines))
+               (let* ((line (cadr-tui:editor-line-at lines row))
                       (start (- column (length prefix)))
                       (updated
                         (concatenate
                          'string (subseq line 0 start)
                          (cadr-tui:autocomplete-item-value item) " "
-                         (subseq line column))))
+                         (subseq line column)))
+                      (new-lines (copy-seq lines)))
+                 (setf (elt new-lines row) updated)
                  (values
-                  (loop for value in lines for index from 0
-                        collect (if (= index row) updated value))
+                  new-lines
                   row
                   (+ start
                      (length (cadr-tui:autocomplete-item-value item)) 1)))

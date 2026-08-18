@@ -38,9 +38,10 @@
     (is (string= (format nil "A~%B~%C    D")
                  (cadr-tui:editor-text editor)))
     (let ((lines (cadr-tui:editor-lines editor)))
-      (setf (first lines) "mutated")
+      (is (vectorp lines))
+      (setf (aref lines 0) "mutated")
       (is (string= "A"
-                   (first (cadr-tui:editor-lines editor)))))))
+                   (aref (cadr-tui:editor-lines editor) 0))))))
 
 (test editor-backslash-enter-and-programmatic-insert
   (let ((editor (cadr-tui:make-multiline-editor)))
@@ -303,7 +304,7 @@
                 'cadr-tui:autocomplete-get-suggestions)
                (lambda (actual-provider lines line column
                         &key force-p)
-                 (push (list (copy-list lines)
+                 (push (list (copy-seq lines)
                              line column force-p)
                        calls)
                  (funcall original actual-provider lines
@@ -386,7 +387,7 @@
                 'cadr-tui:autocomplete-get-suggestions)
                (lambda (actual-provider lines line column
                         &key force-p)
-                 (push (list (copy-list lines)
+                 (push (list (copy-seq lines)
                              line column force-p)
                        calls)
                  (funcall original actual-provider lines
@@ -512,7 +513,7 @@
                 'cadr-tui:autocomplete-get-suggestions)
                (lambda (actual-provider lines line column
                         &key force-p)
-                 (push (list (copy-list lines)
+                 (push (list (copy-seq lines)
                              line column force-p)
                        calls)
                  (funcall original actual-provider lines
@@ -545,7 +546,7 @@
               (incf now 1/1000)
               (is (cadr-tui:editor-poll-autocomplete editor))
               (is (= 1 (length calls)))
-              (is (equal '("@ab")
+              (is (equalp #("@ab")
                          (first (first calls))))
               (is (not
                    (cadr-tui:editor-poll-autocomplete editor)))
@@ -561,7 +562,7 @@
               (is (null calls))
               (editor-event editor :tab)
               (is (= 1 (length calls)))
-              (is (equal '("./")
+              (is (equalp #("./")
                          (first (first calls))))
               (is (fourth (first calls)))
               (is (not
@@ -594,7 +595,7 @@
             :suggestions-function
             (lambda (lines row column options)
               (declare (ignore row column))
-              (let ((text (first lines)))
+              (let ((text (cadr-tui:editor-line-at lines 0)))
                 (if (string= text "#a")
                     (progn
                       (setf first-signal (getf options :signal))

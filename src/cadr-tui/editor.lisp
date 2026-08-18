@@ -110,20 +110,31 @@
   (multiline-editor-text editor))
 
 (defun split-editor-lines (text)
-  (let ((lines nil)
-        (start 0))
-    (loop for newline = (position #\Newline text :start start)
-          do
-          (push (subseq text start newline) lines)
+  ;; pi@914cf1472 packages/tui/src/components/editor.ts:466 stores
+  ;; state.lines as an array. cadr keeps one string; this split is
+  ;; the per-keystroke cost. Count first so the result is a
+  ;; simple-vector: per-line AREF is O(1), and there is no
+  ;; adjustable-array or copy-list tax. A fresh split is the copy.
+  (let* ((length (length text))
+         (count 1))
+    (loop for index from 0 below length
+          when (char= (char text index) #\Newline)
+            do (incf count))
+    (let ((lines (make-array count))
+          (start 0)
+          (out 0))
+      (loop
+        (let ((newline (position #\Newline text :start start)))
+          (setf (aref lines out) (subseq text start newline))
+          (incf out)
           (if newline
               (setf start (1+ newline))
-              (return)))
-    (nreverse lines)))
+              (return))))
+      lines)))
 
 (defun editor-lines (editor)
-  (copy-list
-   (split-editor-lines
-    (multiline-editor-text editor))))
+  (split-editor-lines
+   (multiline-editor-text editor)))
 
 (defun line-start-at (text cursor)
   (let ((newline
@@ -546,7 +557,7 @@
           (multiline-editor-last-render-width editor))
         (absolute-start 0)
         (spans nil))
-    (dolist (line (split-editor-lines text))
+    (loop for line across (split-editor-lines text) do
       (dolist
           (chunk
            (editor-word-wrap-line-spans line width))
@@ -1112,7 +1123,7 @@
    (not force-p)
    (multiple-value-bind (line column)
        (editor-cursor editor)
-     (let ((text (or (nth line (editor-lines editor)) "")))
+     (let ((text (editor-line-at (editor-lines editor) line)))
        (editor-symbol-autocomplete-context-p
         editor
         (subseq text 0 (min column (length text))))))))
@@ -1290,7 +1301,7 @@
   (multiple-value-bind (line column)
       (editor-cursor editor)
     (let* ((current
-             (or (nth line (editor-lines editor)) ""))
+             (editor-line-at (editor-lines editor) line))
            (before
              (subseq current 0
                      (min column
@@ -1325,7 +1336,16 @@
              (editor-lines editor)
              line column item prefix)
           (let ((new-text
-                  (format nil "~{~A~^~%~}" new-lines)))
+                  ;; ~{ iterates a list (CLHS). editor-lines is a
+                  ;; vector after P.12.2, so write the join.
+                  (with-output-to-string (out)
+                    (loop for index from 0
+                          below (length new-lines)
+                          do
+                          (when (plusp index)
+                            (write-char #\Newline out))
+                          (write-string
+                           (elt new-lines index) out)))))
             (setf
              (multiline-editor-text editor) new-text
              (multiline-editor-cursor editor)
@@ -1827,7 +1847,7 @@
     (setf
      (multiline-editor-last-render-width editor)
      content-width)
-    (loop for logical-line in logical-lines
+    (loop for logical-line across logical-lines
           for logical-index from 0
           do
           (let ((chunks

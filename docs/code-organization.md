@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122644 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122678 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -356,7 +356,7 @@ at :4. No rewrite invented. Report:
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
-| `src/cadr-tui/autocomplete.lisp` | 581 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | pass · large | done | dead when gone. I0: no empty-when guard. | 20 |
+| `src/cadr-tui/autocomplete.lisp` | 594 | 37 | Parse completion context and provide cancellable command/file suggestions and application. | pass · large | done | dead when gone. I0: no empty-when guard. editor-line-at indexes vector or list. | 20 |
 | `src/cadr-tui/components/image.lisp` | 40 | 1 | Render image bytes or the baseline text fallback. | pass | done | fallback-lines flet. I0: one fallback owner. | 20 |
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | 45 | Render Markdown, ANSI tables, inline spans, and visually truncated text. | pass · large | done | table widths aref. I0: no nth on width lists. | 20 |
 | `src/cadr-tui/components/select-list.lisp` | 305 | 8 | Own filterable two-column selection state, navigation, and rendering. | pass | done | clamp-select-index; height default 5. I0: one clamp owner. | 20 |
@@ -368,7 +368,7 @@ at :4. No rewrite invented. Report:
 | `src/cadr-tui/composition/root.lisp` | 317 | 23 | Own the TUI root, focus routing, render scheduling, and overlay stack. | pass | no-rewrite | The 11-field keyword double-spelling (:106-149) is exported public API with external callers; compile-time keyword checking beats brevity. | 20 |
 | `src/cadr-tui/composition/settings-list.lisp` | 470 | 30 | Implement settings-list behavior and the shared editor-component adapters. | pass · large | done | nthcdr walk; Space already baseline. I0: no nth-per-row. | 20 |
 | `src/cadr-tui/composition/text-box.lisp` | 280 | 23 | Implement text, spacer, box, and truncated-text components. | pass | done | :blank cache + tab write-string. I0: blank hits the cache. | 20 |
-| `src/cadr-tui/editor.lisp` | 1,994 | 90 | Implement the grapheme-aware multiline editor, history, editing, autocomplete, wrapping, and rendering. | pass · large | done | editor-atomic-span. I0: paste spans have named slots. | 20 |
+| `src/cadr-tui/editor.lisp` | 2,014 | 90 | Implement the grapheme-aware multiline editor, history, editing, autocomplete, wrapping, and rendering. | pass · large | done | editor-atomic-span. I0: paste spans have named slots. editor-lines is a simple-vector. | 20 |
 | `src/cadr-tui/fuzzy.lisp` | 134 | 8 | Score and filter fuzzy text matches. | pass | no-rewrite | Mutation-heavy index loop at :18-51 is idiomatic over CL string-vectors; score constants are the observable ordering contract. | 20 |
 | `src/cadr-tui/input-component.lisp` | 408 | 20 | Implement the grapheme-aware single-line Input component and software cursor. | pass · large | done | single-line-input-clear-action. I0: one 3-form reset. | 20 |
 | `src/cadr-tui/input.lisp` | 333 | 16 | Incrementally decode terminal bytes, bracketed paste, and control sequences into input events. | pass · large | done | event-kinds table at rebuild. I0: parse-key once. | 20 |
@@ -389,7 +389,7 @@ at :4. No rewrite invented. Report:
 | `src/cadr-tui/mermaid/width.lisp` | 72 | 7 | Compute grapheme display width for Mermaid layout and truncation. | pass | no-rewrite | Hand-rolled binary search at :26-36 is the right form over the sorted generated table; CL stdlib has no custom-run bsearch. | 20 |
 | `src/cadr-tui/native-modifiers.lisp` | 78 | 11 | Query Apple Terminal modifier flags through CoreGraphics when supported. | pass | no-rewrite | named-p keyword-or-string acceptance (:9-13) is locked test behavior; reader conditionals and handler-case around the alien call are native. | 20 |
 | `src/cadr-tui/overlay.lisp` | 485 | 30 | Resolve overlay geometry, composite frames, and manage overlay focus/stack state. | pass · large | done | composite result vector. I0: aref, not setf-nth. | 20 |
-| `src/cadr-tui/package.lisp` | 352 | 1 | Declare the public `cadr-tui` package surface. | pass | no-rewrite | The flat export list is CL's canonical interface mechanism; zero executable code. | 20 |
+| `src/cadr-tui/package.lisp` | 355 | 1 | Declare the public `cadr-tui` package surface. | pass | no-rewrite | The flat export list is CL's canonical interface mechanism; zero executable code. | 20 |
 | `src/cadr-tui/renderer/alt-screen.lisp` | 610 | 14 | Prepare, crop, render, and restore alternate-screen documents. | pass | done | +synchronized-update-*. I0: one wire pair. | 20 |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | 9 | Match and present transcript search for the fullscreen viewport: whitespace-normalizing corpus, source mapping, and the search bar. | pass | done | +search-whitespace-characters+. I0: one alphabet. | 20 |
 | `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,337 | 46 | Own renderer state, lifecycle, viewport, selection, mouse, and input dispatch. | pass · large | done | coerce lines vector. I0: aref scroll scan. | 20 |

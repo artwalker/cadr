@@ -453,10 +453,23 @@
                (make-autocomplete-suggestions
                 :items items :prefix argument))))))
 
+(defun editor-line-at (lines index)
+  ;; editor-lines is a vector (P.12.2). Tests and extension
+  ;; callbacks still pass lists. NTH past the end is NIL; AREF is not.
+  (cond
+    ((or (not (integerp index)) (minusp index))
+     "")
+    ((vectorp lines)
+     (if (< index (length lines))
+         (aref lines index)
+         ""))
+    (t
+     (or (nth index lines) ""))))
+
 (defun autocomplete-get-suggestions
     (provider lines cursor-line cursor-column
      &key force-p)
-  (let* ((line (or (nth cursor-line lines) ""))
+  (let* ((line (editor-line-at lines cursor-line))
          (before
            (subseq line 0
                    (min cursor-column
@@ -489,7 +502,7 @@
 
 (defun autocomplete-apply
     (lines cursor-line cursor-column item prefix)
-  (let* ((line (or (nth cursor-line lines) ""))
+  (let* ((line (editor-line-at lines cursor-line))
          (prefix-start
            (max 0 (- cursor-column
                      (length prefix))))
@@ -534,8 +547,8 @@
                     (string-suffix-p "\"" replacement))
                (1- (length replacement))
                (length replacement)))
-         (new-lines (copy-list lines)))
-    (setf (nth cursor-line new-lines) new-line)
+         (new-lines (copy-seq lines)))
+    (setf (elt new-lines cursor-line) new-line)
     (values
      new-lines cursor-line
      (+ (length before) offset

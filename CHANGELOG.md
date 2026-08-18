@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.12: `editor-lines` is a simple-vector.
+  Per-line lookup is `AREF`, not list `NTH`. Same-machine
+  80× 200-line editor-lines+render 183,349 B → 177,188 B
+  / call. 0.300 ms (timer step). Identity 122644→122678.
+  FiveAM 19036→19037. G.17 still `missing`.
+
 - Goal 20 P0: FiveAM locks a registered move renderer
   that errors does not dump `Player X played at`.
 

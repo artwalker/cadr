@@ -168,6 +168,7 @@
    #:make-multiline-editor
    #:editor-text
    #:editor-lines
+   #:editor-line-at
    #:editor-cursor
    #:editor-set-text
    #:editor-add-history
