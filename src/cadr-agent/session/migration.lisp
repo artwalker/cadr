@@ -358,9 +358,12 @@
                  :name (or secondary "")
                  :arguments
                  (let ((arguments (getf extra :arguments)))
-                   (if (hash-table-p arguments)
-                       arguments
-                       (make-hash-table :test #'equal)))
+                   (cond
+                     ((cadr-ai::json-object-pairs-p arguments)
+                      arguments)
+                     ((hash-table-p arguments)
+                      arguments)
+                     (t '(:json-object))))
                  :thought-signature
                  (getf extra :thought-signature)))
                (t
@@ -372,6 +375,13 @@
                 (put-block-field block field value))
               (lambda ()
                 (finish-content-block block)))))
+         (visit-arguments ()
+           (let ((pairs nil))
+             (values
+              (lambda (field value)
+                (setf pairs (list* field value pairs)))
+              (lambda ()
+                (cons :json-object pairs)))))
          (nest (key)
            (cond
              ((or (eq key "message") (string= key "message"))
@@ -380,6 +390,8 @@
               (visit-usage))
              ((or (eq key "cost") (string= key "cost"))
               (visit-cost))
+             ((or (eq key "arguments") (string= key "arguments"))
+              (visit-arguments))
              ((or (eq key "content") (string= key "content"))
               (values #'visit-content-block nil :array)))))
       (cadr-ai::parse-json-object-fields

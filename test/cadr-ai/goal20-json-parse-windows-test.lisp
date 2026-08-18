@@ -238,3 +238,15 @@
      "[1]"
      (lambda (key value)
        (declare (ignore key value))))))
+
+(test goal20-json-object-pairs-round-trip
+  ;; Session tool-call arguments: tagged pairs, not EQUAL hash.
+  (let ((pairs (list* :json-object (list "path" "x" "offset" 1))))
+    (is (cadr-ai::json-object-pairs-p pairs))
+    (is (string= "x" (cadr-ai::json-get pairs "path")))
+    (is (eql 1 (cadr-ai::json-get pairs "offset")))
+    (is (eq t (cadr-ai::json-present-p pairs "path")))
+    (is (null (cadr-ai::json-present-p pairs "missing")))
+    (is (string=
+         "{\"offset\":1,\"path\":\"x\"}"
+         (cadr-ai::stringify-json pairs)))))

@@ -33,14 +33,34 @@
 (defun list-json-array (values)
   (coerce values 'vector))
 
+(defun json-object-pairs-p (value)
+  ;; Session tool-call arguments: even-length string-key pairs
+  ;; tagged so WRITE-JSON-VALUE emits an object, not an array,
+  ;; and empty arguments stay distinct from JSON false.
+  (and (consp value)
+       (eq (car value) :json-object)))
+
 (defun json-get (object key &optional default)
-  (if (hash-table-p object)
-      (gethash key object default)
-      default))
+  (cond
+    ((hash-table-p object)
+     (gethash key object default))
+    ((json-object-pairs-p object)
+     (loop for (pair-key pair-value) on (cdr object) by #'cddr
+           when (and (stringp pair-key)
+                     (string= pair-key key))
+             return pair-value
+           finally (return default)))
+    (t default)))
 
 (defun json-present-p (object key)
-  (and (hash-table-p object)
-       (nth-value 1 (gethash key object))))
+  (cond
+    ((hash-table-p object)
+     (nth-value 1 (gethash key object)))
+    ((json-object-pairs-p object)
+     (loop for (pair-key pair-value) on (cdr object) by #'cddr
+           thereis (and (stringp pair-key)
+                        (string= pair-key key))))
+    (t nil)))
 
 (defun json-null-p (value)
   (eq value 'null))
@@ -909,6 +929,22 @@
            (write-char #\: stream)
            (write-json-value
             (gethash key value)
+            stream))
+     (write-char #\} stream))
+    ((json-object-pairs-p value)
+     (write-char #\{ stream)
+     (loop for key in
+           (sort
+            (loop for (pair-key) on (cdr value) by #'cddr
+                  collect pair-key)
+            #'string<)
+           for first-p = t then nil
+           do
+           (unless first-p (write-char #\, stream))
+           (write-json-string key stream)
+           (write-char #\: stream)
+           (write-json-value
+            (json-get value key)
             stream))
      (write-char #\} stream))
     ((or (vectorp value) (listp value))

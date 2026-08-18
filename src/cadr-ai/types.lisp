@@ -64,7 +64,7 @@
 (defstruct tool-call
   (id "" :type string)
   (name "" :type string)
-  (arguments (make-hash-table :test #'equal) :type hash-table)
+  (arguments (make-hash-table :test #'equal))
   (thought-signature nil :type (or null string))
   ;; OpenAI Responses namespace for calls to dynamically loaded or
   ;; namespaced tools.  Wire-level only: like the baseline, the session

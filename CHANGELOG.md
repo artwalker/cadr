@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: tool-call `arguments` decode into
+  tagged string-key pairs, not an EQUAL hash.
+  `json-get` / stringify treat the tag as an object.
+  Session file bytes unchanged. Pairing fixture
+  journal_read 1,975,830 B → 1,942,410 B; load-session
+  2,214,272 B → 2,182,371 B. Wall unchanged. Not intern.
+  Not 7b. Identity 123521→123579. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `b655bbb11` (non-quick, samples=5, enforced).
   session_load 2.37×→2.48×, journal_read 2.00×→2.41×.

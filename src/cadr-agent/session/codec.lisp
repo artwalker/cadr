@@ -123,6 +123,16 @@
            (json-safe-value item)))
         value)
        copy))
+    ((cadr-ai::json-object-pairs-p value)
+     (let ((copy (cadr-ai::json-object)))
+       (loop for (key item) on (cdr value) by #'cddr
+             do (cadr-ai::json-put
+                 copy
+                 (if (stringp key)
+                     key
+                     (symbol-json-name key))
+                 (json-safe-value item)))
+       copy))
     ((vectorp value)
      (map 'vector #'json-safe-value value))
     ((plist-like-p value)

@@ -441,11 +441,17 @@
        session
        (cadr-ai:make-assistant-message
         :content
-        (list (cadr-ai:make-text-content :text "ok"))
+        (list
+         (cadr-ai:make-text-content :text "ok")
+         (cadr-ai:make-tool-call
+          :id "c1"
+          :name "read"
+          :arguments
+          (cadr-ai::json-object "path" "docs/a.md")))
         :api :openai-responses
         :provider :openai
         :model "mock"
-        :stop-reason :stop
+        :stop-reason :tool-use
         :timestamp 102))
       (let* ((before (uiop:read-file-string path))
              (objects (cadr-agent::read-session-objects path))
@@ -481,6 +487,20 @@
                 (third objects)))
               0)
              'cadr-ai:text-content))
+        (let ((call
+                (aref
+                 (cadr-agent::session-json-message-content
+                  (cadr-agent::session-entry-message
+                   (third objects)))
+                 1)))
+          (is (typep call 'cadr-ai:tool-call))
+          (is (cadr-ai::json-object-pairs-p
+               (cadr-ai:tool-call-arguments call)))
+          (is (string=
+               "docs/a.md"
+               (cadr-ai::json-get
+                (cadr-ai:tool-call-arguments call)
+                "path"))))
         (is (equal
              '("hi" "ok")
              (message-texts
