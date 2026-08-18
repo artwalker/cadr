@@ -601,6 +601,44 @@
     (is (eq block (first out)))
     (is (= 1 (length out)))))
 
+(test session-typed-jsonl-matches-hash-stringify
+  ;; One-pass emit must keep session file bytes identical to
+  ;; stringify of session-entry-to-json.
+  (let* ((user
+           (cadr-ai:make-user-message :content "hi" :timestamp 2))
+         (assistant
+           (cadr-ai:make-assistant-message
+            :content
+            (list
+             (cadr-ai:make-thinking-content :thinking "t")
+             (cadr-ai:make-text-content :text "ok")
+             (cadr-ai:make-tool-call
+              :id "c1"
+              :name "read"
+              :arguments (cadr-ai::json-object "path" "docs/a.md")))
+            :timestamp 3))
+         (tool
+           (cadr-ai:make-tool-result-message
+            :tool-call-id "c1"
+            :tool-name "read"
+            :content (list (cadr-ai:make-text-content :text "x"))
+            :is-error nil
+            :timestamp 4)))
+    (dolist (message (list user assistant tool))
+      (let ((entry
+              (cadr-agent::make-session-entry
+               :type :message
+               :id "e1"
+               :parent-id nil
+               :timestamp 3
+               :message message)))
+        (is (string=
+             (cadr-ai::stringify-json
+              (cadr-agent::session-entry-to-json entry))
+             (with-output-to-string (stream)
+               (cadr-agent::write-session-message-entry
+                entry stream))))))))
+
 (test keyword-from-json-closed-vocab-matches-intern
   (is (eq :stop (cadr-agent::keyword-from-json "stop")))
   (is (eq :tooluse (cadr-agent::keyword-from-json "toolUse")))

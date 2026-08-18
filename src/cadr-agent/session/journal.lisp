@@ -257,8 +257,7 @@
                        :if-exists :append
                        :if-does-not-exist :error
                        :external-format :utf-8)
-             (write-jsonl-object
-              stream (session-entry-to-json entry)))
+             (write-session-entry-jsonl stream entry))
          (error (cause)
            (session-failure
             (session-path session) nil
@@ -278,10 +277,8 @@
                   (append
                    (session-%entries session)
                    (list entry)))
-               (write-jsonl-object
-                stream
-                (session-entry-to-json
-                 buffered-entry))))
+               (write-session-entry-jsonl
+                stream buffered-entry)))
          (error (cause)
            (session-failure
             (session-path session) nil

@@ -940,7 +940,9 @@
     ;; +1 Goal 20 content blocks: session-json-block.
     ;; +1 Goal 20 load finalize: session-type-keyword.
     ;; +1 Goal 20 session octet FSM: parse-session-record-octets.
-    (is (= 271 definition-count)
+    ;; +7 Goal 20 journal_append typed emit: write-session-entry-jsonl
+    ;; and helpers.
+    (is (= 278 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

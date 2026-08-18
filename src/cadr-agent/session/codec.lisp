@@ -662,7 +662,259 @@
       (t
        (error "Unknown message type: ~S" type)))))
 
+(defun write-json-key (stream first-p key)
+  (unless first-p
+    (write-char #\, stream))
+  (cadr-ai::write-json-string key stream)
+  (write-char #\: stream)
+  nil)
+
+(defun write-session-content-block (block stream)
+  (write-char #\{ stream)
+  (cond
+    ((typep block 'cadr-ai:text-content)
+     (let ((signature (cadr-ai:text-content-signature block)))
+       (when signature
+         (write-json-key stream t "signature")
+         (cadr-ai::write-json-value signature stream))
+       (write-json-key stream (not signature) "text")
+       (cadr-ai::write-json-value
+        (cadr-ai:text-content-text block) stream)
+       (write-json-key stream nil "type")
+       (cadr-ai::write-json-value "text" stream)))
+    ((typep block 'cadr-ai:thinking-content)
+     (let ((signature (cadr-ai:thinking-content-signature block)))
+       (write-json-key stream t "redacted")
+       (cadr-ai::write-json-value
+        (cadr-ai:thinking-content-redacted-p block) stream)
+       (when signature
+         (write-json-key stream nil "signature")
+         (cadr-ai::write-json-value signature stream))
+       (write-json-key stream nil "thinking")
+       (cadr-ai::write-json-value
+        (cadr-ai:thinking-content-thinking block) stream)
+       (write-json-key stream nil "type")
+       (cadr-ai::write-json-value "thinking" stream)))
+    ((typep block 'cadr-ai:image-content)
+     (write-json-key stream t "data")
+     (cadr-ai::write-json-value
+      (cadr-ai:image-content-data block) stream)
+     (write-json-key stream nil "mimeType")
+     (cadr-ai::write-json-value
+      (cadr-ai:image-content-mime-type block) stream)
+     (write-json-key stream nil "type")
+     (cadr-ai::write-json-value "image" stream))
+    ((typep block 'cadr-ai:tool-call)
+     (let ((signature (cadr-ai:tool-call-thought-signature block)))
+       (write-json-key stream t "arguments")
+       (cadr-ai::write-json-value
+        (json-safe-value (cadr-ai:tool-call-arguments block))
+        stream)
+       (write-json-key stream nil "id")
+       (cadr-ai::write-json-value (cadr-ai:tool-call-id block) stream)
+       (write-json-key stream nil "name")
+       (cadr-ai::write-json-value
+        (cadr-ai:tool-call-name block) stream)
+       (when signature
+         (write-json-key stream nil "thoughtSignature")
+         (cadr-ai::write-json-value signature stream))
+       (write-json-key stream nil "type")
+       (cadr-ai::write-json-value "toolCall" stream)))
+    (t
+     (error "Unsupported session content block: ~S" block)))
+  (write-char #\} stream))
+
+(defun write-session-content (content stream)
+  (if (stringp content)
+      (cadr-ai::write-json-value content stream)
+      (let ((first-p t))
+        (write-char #\[ stream)
+        (map nil
+             (lambda (block)
+               (unless first-p
+                 (write-char #\, stream))
+               (setf first-p nil)
+               (write-session-content-block block stream))
+             content)
+        (write-char #\] stream))))
+
+(defun write-session-usage (usage stream)
+  (let ((cost (cadr-ai:usage-cost usage))
+        (reasoning (cadr-ai:usage-reasoning usage)))
+    (write-char #\{ stream)
+    (write-json-key stream t "cacheRead")
+    (cadr-ai::write-json-value (cadr-ai:usage-cache-read usage) stream)
+    (write-json-key stream nil "cacheWrite")
+    (cadr-ai::write-json-value (cadr-ai:usage-cache-write usage) stream)
+    (write-json-key stream nil "cost")
+    (write-char #\{ stream)
+    (write-json-key stream t "cacheRead")
+    (cadr-ai::write-json-value (cadr-ai:cost-cache-read cost) stream)
+    (write-json-key stream nil "cacheWrite")
+    (cadr-ai::write-json-value (cadr-ai:cost-cache-write cost) stream)
+    (write-json-key stream nil "input")
+    (cadr-ai::write-json-value (cadr-ai:cost-input cost) stream)
+    (write-json-key stream nil "output")
+    (cadr-ai::write-json-value (cadr-ai:cost-output cost) stream)
+    (write-json-key stream nil "total")
+    (cadr-ai::write-json-value (cadr-ai:cost-total cost) stream)
+    (write-char #\} stream)
+    (write-json-key stream nil "input")
+    (cadr-ai::write-json-value (cadr-ai:usage-input usage) stream)
+    (write-json-key stream nil "output")
+    (cadr-ai::write-json-value (cadr-ai:usage-output usage) stream)
+    (when reasoning
+      (write-json-key stream nil "reasoning")
+      (cadr-ai::write-json-value reasoning stream))
+    (write-json-key stream nil "total")
+    (cadr-ai::write-json-value (cadr-ai:usage-total usage) stream)
+    (write-char #\} stream)))
+
+(defun write-session-message (message stream)
+  (write-char #\{ stream)
+  (cond
+    ((typep message 'cadr-ai:user-message)
+     (write-json-key stream t "content")
+     (write-session-content
+      (cadr-ai:user-message-content message) stream)
+     (write-json-key stream nil "role")
+     (cadr-ai::write-json-value "user" stream)
+     (write-json-key stream nil "timestamp")
+     (cadr-ai::write-json-value
+      (cadr-ai:user-message-timestamp message) stream))
+    ((typep message 'cadr-ai:assistant-message)
+     (let ((diagnostics (cadr-ai:assistant-message-diagnostics message))
+           (error-message (cadr-ai:assistant-message-error-message message))
+           (raw-stop (cadr-ai:assistant-message-raw-stop-reason message))
+           (response-id (cadr-ai:assistant-message-response-id message)))
+       (write-json-key stream t "api")
+       (cadr-ai::write-json-value
+        (symbol-json-name (cadr-ai:assistant-message-api message))
+        stream)
+       (write-json-key stream nil "content")
+       (write-session-content
+        (cadr-ai:assistant-message-content message) stream)
+       (when diagnostics
+         (write-json-key stream nil "diagnostics")
+         (cadr-ai::write-json-value
+          (map 'vector #'assistant-diagnostic-to-json diagnostics)
+          stream))
+       (when error-message
+         (write-json-key stream nil "errorMessage")
+         (cadr-ai::write-json-value error-message stream))
+       (write-json-key stream nil "model")
+       (cadr-ai::write-json-value
+        (cadr-ai:assistant-message-model message) stream)
+       (write-json-key stream nil "provider")
+       (cadr-ai::write-json-value
+        (symbol-json-name (cadr-ai:assistant-message-provider message))
+        stream)
+       (when raw-stop
+         (write-json-key stream nil "rawStopReason")
+         (cadr-ai::write-json-value raw-stop stream))
+       (when response-id
+         (write-json-key stream nil "responseId")
+         (cadr-ai::write-json-value response-id stream))
+       (write-json-key stream nil "role")
+       (cadr-ai::write-json-value "assistant" stream)
+       (write-json-key stream nil "stopReason")
+       (cadr-ai::write-json-value
+        (symbol-json-name
+         (cadr-ai:assistant-message-stop-reason message))
+        stream)
+       (write-json-key stream nil "timestamp")
+       (cadr-ai::write-json-value
+        (cadr-ai:assistant-message-timestamp message) stream)
+       (write-json-key stream nil "usage")
+       (write-session-usage
+        (cadr-ai:assistant-message-usage message) stream)))
+    ((typep message 'bash-execution-message)
+     (let ((exit-code (bash-execution-message-exit-code message))
+           (full-path (bash-execution-message-full-output-path message)))
+       (write-json-key stream t "cancelled")
+       (cadr-ai::write-json-value
+        (bash-execution-message-cancelled-p message) stream)
+       (write-json-key stream nil "command")
+       (cadr-ai::write-json-value
+        (bash-execution-message-command message) stream)
+       (write-json-key stream nil "excludeFromContext")
+       (cadr-ai::write-json-value
+        (bash-execution-message-exclude-from-context-p message)
+        stream)
+       (when (integerp exit-code)
+         (write-json-key stream nil "exitCode")
+         (cadr-ai::write-json-value exit-code stream))
+       (when full-path
+         (write-json-key stream nil "fullOutputPath")
+         (cadr-ai::write-json-value full-path stream))
+       (write-json-key stream nil "output")
+       (cadr-ai::write-json-value
+        (bash-execution-message-output message) stream)
+       (write-json-key stream nil "role")
+       (cadr-ai::write-json-value "bashExecution" stream)
+       (write-json-key stream nil "timestamp")
+       (cadr-ai::write-json-value
+        (bash-execution-message-timestamp message) stream)
+       (write-json-key stream nil "truncated")
+       (cadr-ai::write-json-value
+        (bash-execution-message-truncated-p message) stream)))
+    ((typep message 'cadr-ai:tool-result-message)
+     (write-json-key stream t "content")
+     (write-session-content
+      (cadr-ai:tool-result-message-content message) stream)
+     (write-json-key stream nil "details")
+     (cadr-ai::write-json-value
+      (json-safe-value
+       (cadr-ai:tool-result-message-details message))
+      stream)
+     (write-json-key stream nil "isError")
+     (cadr-ai::write-json-value
+      (cadr-ai:tool-result-message-is-error message) stream)
+     (write-json-key stream nil "role")
+     (cadr-ai::write-json-value "toolResult" stream)
+     (write-json-key stream nil "timestamp")
+     (cadr-ai::write-json-value
+      (cadr-ai:tool-result-message-timestamp message) stream)
+     (write-json-key stream nil "toolCallId")
+     (cadr-ai::write-json-value
+      (cadr-ai:tool-result-message-tool-call-id message) stream)
+     (write-json-key stream nil "toolName")
+     (cadr-ai::write-json-value
+      (cadr-ai:tool-result-message-tool-name message) stream))
+    (t
+     (error "Unsupported session message: ~S" message)))
+  (write-char #\} stream))
+
+(defun write-session-message-entry (entry stream)
+  ;; One-pass typed emit.  Keys stay string< order so the
+  ;; JSONL bytes match stringify of session-entry-to-json.
+  (write-char #\{ stream)
+  (write-json-key stream t "id")
+  (cadr-ai::write-json-value (session-entry-id entry) stream)
+  (write-json-key stream nil "message")
+  (write-session-message (session-entry-message entry) stream)
+  (write-json-key stream nil "parentId")
+  (cadr-ai::write-json-value
+   (or (session-entry-parent-id entry) 'null) stream)
+  (write-json-key stream nil "timestamp")
+  (cadr-ai::write-json-value
+   (session-timestamp-json (session-entry-timestamp entry))
+   stream)
+  (write-json-key stream nil "type")
+  (cadr-ai::write-json-value "message" stream)
+  (write-char #\} stream))
+
 (defun write-jsonl-object (stream object)
   (write-string (cadr-ai::stringify-json object) stream)
   (terpri stream)
   (finish-output stream))
+
+(defun write-session-entry-jsonl (stream entry)
+  (if (or (eq (session-entry-type entry) :message)
+          (and (stringp (session-entry-type entry))
+               (string= (session-entry-type entry) "message")))
+      (progn
+        (write-session-message-entry entry stream)
+        (terpri stream)
+        (finish-output stream))
+      (write-jsonl-object stream (session-entry-to-json entry))))

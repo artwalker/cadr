@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 125,064 lines**
+Denominator: **295 files / 125,313 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 23,468 | 18.8% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 23,717 | 18.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 6.0% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,121 | 75.3% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,121 | 75.1% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 18.8% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 24.7% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 75.3% of lines.
+- **Falsifiable vs baseline:** 18.9% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 24.9% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 75.1% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -337,8 +337,8 @@ are not named stay `pairable-uncovered`.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/session/codec.lisp` | 668 | `storage_journal.journal_read`, `storage_journal.journal_append` |
-| `src/cadr-agent/session/journal.lisp` | 643 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/codec.lisp` | 920 | `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/journal.lisp` | 640 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 1,891 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/truncate.lisp` | 396 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/json.lisp` | 1,511 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |

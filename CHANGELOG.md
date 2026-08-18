@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: journal_append emits message
+  entries from typed structs. No EQUAL hash then
+  stringify. Key order stays string< so JSONL
+  bytes match the old path. this-host create+128
+  append 4069 µs / 1,273,115 B → 2627 µs /
+  338,139 B. Not intern. Not FFI. Identity
+  125064→125313. FiveAM 19214→19217. G.17 still
+  `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `2155a80e5` (non-quick, samples=5, enforced).
   session_load 1.85×→1.03×, journal_read 1.58×→1.04×.
