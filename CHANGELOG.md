@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `fef648a60` (non-quick, samples=5, enforced).
+  session_load 3.32×→2.66×, journal_read 2.23×→2.22×.
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: interned JSON object-key lookup
   dispatches on the first character (same closed set,
   no new keys). Pairing fixture journal_read 4634 µs →
