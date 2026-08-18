@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: session JSONL v3 records use a
+  schema-specific octet walker. Known keys fill
+  session-entry / message / usage / content slots;
+  unknown values are skipped; integers and
+  `YYYY-MM-DDTHH:MM:SS.sssZ` timestamps are read
+  in place. Public parse-json is unchanged.
+  Session file bytes unchanged. this-host
+  load-session 3243 µs / 1,215,670 B → 1584 µs /
+  991,987 B; journal_read 3243 µs / 1,138,106 B →
+  1584 µs / 928,557 B. Not intern. Not :size.
+  Not FFI. Identity 124280→125064.
+  FiveAM 19200→19214. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `d89b76cc9` (non-quick, samples=5, enforced).
   session_load 1.62×→1.85×, journal_read 1.62×→1.58×.

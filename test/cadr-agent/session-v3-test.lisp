@@ -481,18 +481,16 @@
                (third objects)))
              'cadr-ai:usage))
         (is (typep
-             (aref
+             (first
               (cadr-agent::session-json-message-content
                (cadr-agent::session-entry-message
-                (third objects)))
-              0)
+                (third objects))))
              'cadr-ai:text-content))
         (let ((call
-                (aref
+                (second
                  (cadr-agent::session-json-message-content
                   (cadr-agent::session-entry-message
-                   (third objects)))
-                 1)))
+                   (third objects))))))
           (is (typep call 'cadr-ai:tool-call))
           (is (cadr-ai::json-object-pairs-p
                (cadr-ai:tool-call-arguments call)))
@@ -547,6 +545,54 @@
   (is (eq :session-info
           (cadr-agent::session-type-keyword "session_info")))
   (is (eq :message (cadr-agent::session-type-keyword :message))))
+
+(test session-octet-fsm-fills-typed-entry
+  ;; Dedicated octet walker fills session-entry slots.  Content
+  ;; is a typed list.  ISO timestamps become integers in place.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "octfsm"
+              :timestamp 1))
+           (path (cadr-agent:session-path session)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list (cadr-ai:make-text-content :text "ok"))
+        :timestamp 2))
+      (cadr-agent::session-append-custom-message
+       session "notice"
+       (list (cadr-ai:make-text-content :text "hi")))
+      (let* ((before (uiop:read-file-string path))
+             (objects (cadr-agent::read-session-objects path))
+             (entry (second objects))
+             (bag (cadr-agent::session-entry-message entry))
+             (content (cadr-agent::session-json-message-content bag))
+             (custom (third objects))
+             (loaded (cadr-agent:load-session path))
+             (after (uiop:read-file-string path)))
+        (is (string= before after))
+        (is (cadr-agent::session-entry-p entry))
+        (is (not (hash-table-p entry)))
+        (is (cadr-agent::session-json-message-p bag))
+        (is (integerp (cadr-agent::session-entry-timestamp entry)))
+        (is (listp content))
+        (is (not (vectorp content)))
+        (is (typep (first content) 'cadr-ai:text-content))
+        (is (not (hash-table-p (first content))))
+        (is (string=
+             "custom_message"
+             (cadr-agent::session-entry-type custom)))
+        (is (listp (cadr-agent::session-entry-content custom)))
+        (is (typep
+             (first (cadr-agent::session-entry-content custom))
+             'cadr-ai:text-content))
+        (is (typep
+             (first (cadr-agent:session-messages loaded))
+             'cadr-ai:assistant-message))
+        (is (= 2 (length (cadr-agent:session-entries loaded))))))))
 
 (test session-typed-content-blocks-skip-hash-rewalk
   (let* ((block (cadr-ai:make-text-content :text "hi"))

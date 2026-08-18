@@ -939,7 +939,8 @@
     ;; +1 Goal 20 nested message/usage: session-json-message.
     ;; +1 Goal 20 content blocks: session-json-block.
     ;; +1 Goal 20 load finalize: session-type-keyword.
-    (is (= 270 definition-count)
+    ;; +1 Goal 20 session octet FSM: parse-session-record-octets.
+    (is (= 271 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

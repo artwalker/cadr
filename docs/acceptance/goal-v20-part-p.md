@@ -15,7 +15,7 @@ Not a Goal 20 pass.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | number | load-session by-id hash `:size` = record count. load-session 1,260,915 B → 1,215,670 B; wall unchanged | this knife. Not intern. Not 7b. |
+| P.1 JSON read | number | schema octet FSM fills session-entry. load-session 3243 µs / 1,215,670 B → 1584 µs / 991,987 B; read 3243 µs / 1,138,106 B → 1584 µs / 928,557 B | this knife. Not intern. Not :size. Not 7b. |
 | P.2 JSON write | number | stringify 6596→5636 ns; rational 210→170 ns; create 0.40 ms vs 128 append 3.00 ms | `232761357` / `d4da3cb65` / `a3d57ce03`. |
 | P.3 list_models_render | number | 4.30 ms → 2.45 ms | `f898c9ab5`. |
 | P.4 help / argv / walk | number | booked help 4.3 µs, argv 6.5 µs, walk 110 µs | Floor. |
