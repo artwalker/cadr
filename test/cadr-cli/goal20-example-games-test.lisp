@@ -342,11 +342,13 @@
                            lines)))))))))
 
 (test goal20-ttt-overlay-render-has-no-lying-spinner
-  ;; P0 item 3: overlay frame tax is the visual board, not a fake
-  ;; spinner. sleep 0.3 stays on move_* (baseline).
+  ;; P0 item 3 / 17:47: overlay has no fake spinner and no move_*
+  ;; sleep. Sequential execution stays.
   (let ((source (goal20-example-source "examples/extensions/tic-tac-toe.lisp")))
-    (is (search "(sleep 0.3)" source))
-    (is (search "with-output-to-string" source)))
+    (is (null (search "(sleep 0.3)" source)))
+    (is (null (search "(sleep " source)))
+    (is (search "with-output-to-string" source))
+    (is (search ":execution-mode :sequential" source)))
   (let ((root (asdf:system-source-directory "cadr-cli")))
     (with-test-directory (temporary)
       (let* ((output (make-string-output-stream))
@@ -562,6 +564,58 @@
                        '()))))
             (is (null (search "Player X played at" screen)))
             (is (null (search "played at (row=" screen)))))))))
+
+(test goal20-ttt-move-action-median-under-50ms
+  ;; P0 17:47: 20 move_* handler calls, median wall < 50ms, no sleep.
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target
+               (merge-pathnames "examples/extensions/tic-tac-toe.lisp" root))
+             (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        (setf (cadr-agent::extension-host-action-function
+               (cadr-cli::cli-extension-manager-host manager))
+              (lambda (action arguments)
+                (declare (ignore action arguments))
+                nil))
+        (let* ((bundles
+                 (cadr-agent::extension-snapshot-bundles
+                  (cadr-agent::extension-host-current-snapshot
+                   (cadr-cli::cli-extension-manager-host manager))))
+               (bundle
+                 (find-if
+                  (lambda (candidate)
+                    (find "tic_tac_toe"
+                          (cadr-agent::extension-bundle-tools candidate)
+                          :key #'cadr-agent::extension-tool-definition-name
+                          :test #'string=))
+                  bundles))
+               (tool
+                 (and bundle
+                      (find "tic_tac_toe"
+                            (cadr-agent::extension-bundle-tools bundle)
+                            :key #'cadr-agent::extension-tool-definition-name
+                            :test #'string=)))
+               (arguments (make-hash-table :test #'equal))
+               (samples nil))
+          (is (not (null tool)))
+          (setf (gethash "action" arguments) "move_right")
+          (dotimes (index 20)
+            (let ((start (get-internal-real-time)))
+              (funcall (cadr-agent::extension-tool-definition-handler tool)
+                       "goal20-p0-move" arguments nil nil nil)
+              (push (/ (float (- (get-internal-real-time) start) 1d0)
+                       internal-time-units-per-second)
+                    samples)))
+          (let* ((sorted (sort samples #'<))
+                 (median (nth (floor (length sorted) 2) sorted)))
+            (is (< median 0.05d0)
+                "move_* median ~,3F s is not < 50ms" median)))))))
 
 (test goal20-p0-4-trigger-turn-does-not-block-tui-input-thread
   ;; Gate-validity: without the wrap, a 0.3s send-message would hold the

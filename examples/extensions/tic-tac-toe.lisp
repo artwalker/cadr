@@ -797,9 +797,8 @@ exactly that duplication."
  (lambda (call-id arguments signal on-update context)
    (declare (ignore call-id signal on-update context))
    (let ((action (example-argument arguments "action" "")))
-     (when (member action '("move_up" "move_down" "move_left" "move_right")
-                   :test #'string=)
-       (sleep 0.3))
+     ;; User 2026-08-18 17:47: do not sleep 0.3 to mimic pi.
+     ;; Sequential execution already orders move_* + play.
     (let ((result (tic-tac-toe-action action)))
       (tic-tac-toe-save)
       ;; Baseline updateState fires after every agent action

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P0: tic-tac-toe `move_*` no longer `sleep`s
+  0.3s. `:execution-mode :sequential` kept. FiveAM locks
+  20-call median < 50ms and no `sleep` in source.
+  FiveAM 19037→19042. G.17 still `missing`.
+
 - Goal 20 P.12: alt-screen `last-document` is a
   simple-vector. Per-row selection uses `AREF`. Isolated
   400-row × 80 walk 0.100 ms (`NTH` list) → 0.000 ms
