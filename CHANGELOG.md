@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `b655bbb11` (non-quick, samples=5, enforced).
+  session_load 2.37×→2.48×, journal_read 2.00×→2.41×.
+  cadr load 4356 µs → 4128 µs, read 3616 µs → 3508 µs.
+  Ratio up is pi drift. RATIO_CEILINGS unchanged.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: v3 `content` array elements walk
   into typed text/thinking/image/tool-call. No EQUAL
   hash per block. `arguments` stay hashes. Session
