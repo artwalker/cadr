@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: interned JSON object-key lookup
+  dispatches on the first character (same closed set,
+  no new keys). Pairing fixture journal_read 4634 µs →
+  3096 µs; bytes unchanged (2,559,514). Not 7b. Identity
+  122842→122851. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `a882dfe96` (non-quick, samples=5, enforced).
   session_load 2.91×→3.32×, journal_read 2.45×→2.23×,

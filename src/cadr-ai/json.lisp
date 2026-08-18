@@ -229,49 +229,58 @@
            (type fixnum start end))
   (let ((count (- end start)))
     (declare (type fixnum count))
+    (when (plusp count)
+    (let ((first (schar source start)))
     (flet ((key= (literal)
-             (and (= count (length literal))
-                  (string= literal source :start2 start :end2 end))))
+             (string= literal source :start2 start :end2 end)))
       (case count
-        (2 (when (key= "id") "id"))
-        (4 (cond
-             ((key= "role") "role")
-             ((key= "type") "type")
-             ((key= "name") "name")
-             ((key= "text") "text")))
-        (5 (cond
-             ((key= "index") "index")
-             ((key= "model") "model")
-             ((key= "delta") "delta")
-             ((key= "usage") "usage")
-             ((key= "input") "input")
-             ((key= "total") "total")))
-        (6 (cond
-             ((key= "object") "object")
-             ((key= "output") "output")))
-        (7 (cond
-             ((key= "created") "created")
-             ((key= "choices") "choices")
-             ((key= "content") "content")
-             ((key= "message") "message")))
-        (8 (cond
-             ((key= "function") "function")
-             ((key= "parentId") "parentId")
-             ((key= "provider") "provider")))
-        (9 (cond
-             ((key= "arguments") "arguments")
-             ((key= "timestamp") "timestamp")
-             ((key= "cacheRead") "cacheRead")))
-        (10 (cond
-              ((key= "tool_calls") "tool_calls")
-              ((key= "cacheWrite") "cacheWrite")
-              ((key= "stopReason") "stopReason")))
-        (11 (when (key= "totalTokens") "totalTokens"))
-        (12 (when (key= "total_tokens") "total_tokens"))
-        (13 (cond
-              ((key= "finish_reason") "finish_reason")
-              ((key= "prompt_tokens") "prompt_tokens")))
-        (17 (when (key= "completion_tokens") "completion_tokens"))))))
+        (2 (when (and (char= first #\i) (key= "id")) "id"))
+        (4 (case first
+             (#\r (when (key= "role") "role"))
+             (#\t (cond
+                    ((key= "type") "type")
+                    ((key= "text") "text")))
+             (#\n (when (key= "name") "name"))))
+        (5 (case first
+             (#\i (cond
+                    ((key= "index") "index")
+                    ((key= "input") "input")))
+             (#\m (when (key= "model") "model"))
+             (#\d (when (key= "delta") "delta"))
+             (#\u (when (key= "usage") "usage"))
+             (#\t (when (key= "total") "total"))))
+        (6 (when (char= first #\o)
+             (cond
+               ((key= "object") "object")
+               ((key= "output") "output"))))
+        (7 (case first
+             (#\c (cond
+                    ((key= "created") "created")
+                    ((key= "choices") "choices")
+                    ((key= "content") "content")))
+             (#\m (when (key= "message") "message"))))
+        (8 (case first
+             (#\f (when (key= "function") "function"))
+             (#\p (cond
+                    ((key= "parentId") "parentId")
+                    ((key= "provider") "provider")))))
+        (9 (case first
+             (#\a (when (key= "arguments") "arguments"))
+             (#\t (when (key= "timestamp") "timestamp"))
+             (#\c (when (key= "cacheRead") "cacheRead"))))
+        (10 (case first
+              (#\t (when (key= "tool_calls") "tool_calls"))
+              (#\c (when (key= "cacheWrite") "cacheWrite"))
+              (#\s (when (key= "stopReason") "stopReason"))))
+        (11 (when (and (char= first #\t) (key= "totalTokens"))
+              "totalTokens"))
+        (12 (when (and (char= first #\t) (key= "total_tokens"))
+              "total_tokens"))
+        (13 (case first
+              (#\f (when (key= "finish_reason") "finish_reason"))
+              (#\p (when (key= "prompt_tokens") "prompt_tokens"))))
+        (17 (when (and (char= first #\c) (key= "completion_tokens"))
+              "completion_tokens"))))))))
 
 (defun json-interned-ascii-value (source start end)
   ;; session_load / journal_read: repeated short ASCII values
