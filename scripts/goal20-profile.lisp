@@ -112,10 +112,21 @@
                      (fixture-path "session.jsonl")))
       (when (zerop remaining)
         (return))
-      (when (string= "message" (cadr-ai::json-get object "type"))
-        (push (cadr-agent::message-from-json
-               (cadr-ai::json-get object "message"))
-              messages)
+      (when
+          (if (cadr-agent::session-entry-p object)
+              (let ((type
+                      (cadr-agent::session-entry-type object)))
+                (or (eq type :message)
+                    (string= type "message")))
+              (string=
+               "message"
+               (cadr-ai::json-get object "type")))
+        (push
+         (cadr-agent::message-from-json
+          (if (cadr-agent::session-entry-p object)
+              (cadr-agent::session-entry-message object)
+              (cadr-ai::json-get object "message")))
+         messages)
         (decf remaining)))
     (nreverse messages)))
 

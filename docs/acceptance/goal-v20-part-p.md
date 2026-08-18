@@ -15,7 +15,7 @@ Not a Goal 20 pass.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | number | PARSE-STRING defers base-p to the copy path. parse 2440 µs → 2376 µs; journal_read 4067 µs → 3961 µs; bytes unchanged | this knife. Not intern. Not 7b. |
+| P.1 JSON read | number | v3 JSONL body → `session-entry` (no top-level EQUAL hash). journal_read 2,463,475 B → 2,375,210 B; 3168 µs → 3176 µs. parse-json-lines bytes unchanged | this knife. Not intern. Not 7b. |
 | P.2 JSON write | number | stringify 6596→5636 ns; rational 210→170 ns; create 0.40 ms vs 128 append 3.00 ms | `232761357` / `d4da3cb65` / `a3d57ce03`. |
 | P.3 list_models_render | number | 4.30 ms → 2.45 ms | `f898c9ab5`. |
 | P.4 help / argv / walk | number | booked help 4.3 µs, argv 6.5 µs, walk 110 µs | Floor. |

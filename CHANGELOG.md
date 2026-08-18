@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: v3 session JSONL body lines decode
+  into `session-entry` (visitor, no top-level EQUAL
+  hash). Nested message/usage stay hashes. Header and
+  v1/v2 stay hashes for migrate. Session file bytes
+  unchanged. Pairing fixture journal_read
+  2,463,475 B → 2,375,210 B; wall 3168 µs → 3176 µs.
+  parse-json-lines bytes unchanged. Not intern. Not 7b.
+  Identity 122900→123071. FiveAM 19150→19164. G.17
+  still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `882b49595` (non-quick, samples=5, enforced).
   session_load 2.83×→2.96×, journal_read 2.24×→2.14×.

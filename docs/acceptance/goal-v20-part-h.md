@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,900 lines**
+Denominator: **295 files / 123,071 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 21,366 | 17.4% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 21,537 | 17.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 6.1% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,059 | 76.5% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,059 | 76.4% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 17.4% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 23.5% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 76.5% of lines.
+- **Falsifiable vs baseline:** 17.5% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 23.6% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 76.4% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -337,11 +337,11 @@ are not named stay `pairable-uncovered`.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/session/codec.lisp` | 556 | `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/codec.lisp` | 557 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 643 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
-| `src/cadr-agent/session/migration.lisp` | 563 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-agent/session/migration.lisp` | 690 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/truncate.lisp` | 396 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
-| `src/cadr-ai/json.lisp` | 849 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
+| `src/cadr-ai/json.lisp` | 892 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 291 | `provider_stream.stream_roundtrip` |

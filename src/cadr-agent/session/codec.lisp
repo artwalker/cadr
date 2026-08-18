@@ -10,9 +10,9 @@
   timestamp
   message
   summary
-  (source-ids nil :type list)
+  source-ids
   first-kept-id
-  (tokens-before 0 :type (integer 0 *))
+  (tokens-before 0)
   thinking-level
   provider
   model-id
@@ -28,7 +28,8 @@
   target-id
   label
   name
-  retained-tail)
+  retained-tail
+  (%seen 0 :type fixnum))
 
 (defstruct (session
             (:constructor %make-session))

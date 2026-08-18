@@ -934,7 +934,9 @@
     ;; the tool-result rendering path).
     ;; +3 Goal 20 K6: agent-message-to-llm, usage-cost-amount,
     ;; put-session-details-and-usage / queue accessors / tail slot.
-    (is (= 257 definition-count)
+    ;; +10 Goal 20 session-entry decode: seen bits, visitor put,
+    ;; parse-session-record, finalize (drop require-json-field).
+    (is (= 267 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

@@ -212,3 +212,29 @@
     (is (string= "中文" copied))
     (setf (char source 6) #\x)
     (is (string= "中文" copied))))
+
+(test goal20-json-object-fields-skip-top-level-hash
+  ;; Session JSONL top-level object: visit keys, no EQUAL hash.
+  ;; Nested objects still parse as hash tables.
+  (let ((keys nil)
+        (values nil))
+    (is (eq t
+            (cadr-ai::parse-json-object-fields
+             "{\"type\":\"message\",\"parentId\":null,\"message\":{\"role\":\"user\"}}"
+             (lambda (key value)
+               (push key keys)
+               (push value values)))))
+    (setf keys (nreverse keys)
+          values (nreverse values))
+    (is (equal '("type" "parentId" "message") keys))
+    (is (string= "message" (first values)))
+    (is (cadr-ai::json-null-p (second values)))
+    (is (hash-table-p (third values)))
+    (is (string=
+         "user"
+         (cadr-ai::json-get (third values) "role"))))
+  (signals cadr-ai::json-parse-error
+    (cadr-ai::parse-json-object-fields
+     "[1]"
+     (lambda (key value)
+       (declare (ignore key value))))))

@@ -423,3 +423,48 @@
               (cadr-agent:load-session
                (cadr-agent:session-path session))))
         (is (null (cadr-agent::session-name loaded)))))))
+
+(test session-v3-jsonl-decodes-into-session-entry
+  ;; journal_read / load-session: v3 body lines are session-entry,
+  ;; not EQUAL hashes.  Header stays a hash.  File bytes unchanged.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "decode"
+              :timestamp 100))
+           (path (cadr-agent:session-path session)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "hi" :timestamp 101))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list (cadr-ai:make-text-content :text "ok"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 102))
+      (let* ((before (uiop:read-file-string path))
+             (objects (cadr-agent::read-session-objects path))
+             (loaded (cadr-agent:load-session path))
+             (after (uiop:read-file-string path)))
+        (is (string= before after))
+        (is (hash-table-p (first objects)))
+        (is (string=
+             "session"
+             (cadr-ai::json-get (first objects) "type")))
+        (is (every #'cadr-agent::session-entry-p (rest objects)))
+        (is (string=
+             "message"
+             (cadr-agent::session-entry-type
+              (second objects))))
+        (is (hash-table-p
+             (cadr-agent::session-entry-message
+              (second objects))))
+        (is (equal
+             '("hi" "ok")
+             (message-texts
+              (cadr-agent:session-messages loaded))))))))

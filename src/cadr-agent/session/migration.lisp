@@ -1,8 +1,109 @@
 (in-package #:cadr-agent)
 
-(defun parse-session-line (line path line-number)
+(defconstant +session-seen-parent-id+ 1)
+(defconstant +session-seen-target-id+ 2)
+(defconstant +session-seen-tokens-before+ 4)
+(defconstant +session-seen-content+ 8)
+
+(defun mark-session-seen (entry bit)
+  (setf (session-entry-%seen entry)
+        (logior (session-entry-%seen entry) bit)))
+
+(defun session-seen-p (entry bit)
+  (logtest bit (session-entry-%seen entry)))
+
+(defun session-record-put (entry key value)
+  (when (plusp (length key))
+    (case (char key 0)
+      (#\t
+       (cond
+         ((or (eq key "type") (string= key "type"))
+          (setf (session-entry-type entry) value))
+         ((or (eq key "timestamp") (string= key "timestamp"))
+          (setf (session-entry-timestamp entry) value))
+         ((string= key "tokensBefore")
+          (mark-session-seen entry +session-seen-tokens-before+)
+          (setf (session-entry-tokens-before entry) value))
+         ((string= key "thinkingLevel")
+          (setf (session-entry-thinking-level entry) value))
+         ((string= key "targetId")
+          (mark-session-seen entry +session-seen-target-id+)
+          (setf (session-entry-target-id entry) value))))
+      (#\i
+       (when (or (eq key "id") (string= key "id"))
+         (setf (session-entry-id entry) value)))
+      (#\p
+       (cond
+         ((or (eq key "parentId") (string= key "parentId"))
+          (mark-session-seen entry +session-seen-parent-id+)
+          (setf (session-entry-parent-id entry) value))
+         ((or (eq key "provider") (string= key "provider"))
+          (setf (session-entry-provider entry) value))))
+      (#\m
+       (cond
+         ((or (eq key "message") (string= key "message"))
+          (setf (session-entry-message entry) value))
+         ((string= key "modelId")
+          (setf (session-entry-model-id entry) value))))
+      (#\s
+       (cond
+         ((or (eq key "summary") (string= key "summary"))
+          (setf (session-entry-summary entry) value))
+         ((string= key "sourceIds")
+          (setf (session-entry-source-ids entry) value))))
+      (#\f
+       (cond
+         ((string= key "firstKeptEntryId")
+          (setf (session-entry-first-kept-id entry) value))
+         ((string= key "fromId")
+          (setf (session-entry-from-id entry) value))
+         ((string= key "fromHook")
+          (setf (session-entry-from-hook-p entry)
+                (eq t value)))))
+      (#\a
+       (when (string= key "activeToolNames")
+         (setf (session-entry-active-tool-names entry) value)))
+      (#\d
+       (cond
+         ((or (eq key "details") (string= key "details"))
+          (setf (session-entry-details entry) value))
+         ((or (eq key "data") (string= key "data"))
+          (setf (session-entry-data entry) value))
+         ((or (eq key "display") (string= key "display"))
+          (setf (session-entry-display-p entry) (eq t value)))))
+      (#\u
+       (when (or (eq key "usage") (string= key "usage"))
+         (setf (session-entry-usage entry) value)))
+      (#\c
+       (cond
+         ((string= key "customType")
+          (setf (session-entry-custom-type entry) value))
+         ((or (eq key "content") (string= key "content"))
+          (mark-session-seen entry +session-seen-content+)
+          (setf (session-entry-content entry) value))))
+      (#\l
+       (when (or (eq key "label") (string= key "label"))
+         (setf (session-entry-label entry) value)))
+      (#\n
+       (when (or (eq key "name") (string= key "name"))
+         (setf (session-entry-name entry) value)))
+      (#\r
+       (when (string= key "retainedTail")
+         (setf (session-entry-retained-tail entry) value))))))
+
+(defun parse-session-record (line)
+  (let ((entry (make-session-entry)))
+    (cadr-ai::parse-json-object-fields
+     line
+     (lambda (key value)
+       (session-record-put entry key value)))
+    entry))
+
+(defun parse-session-line (line path line-number &key raw-hash-p)
   (handler-case
-      (cadr-ai::parse-json line)
+      (if raw-hash-p
+          (cadr-ai::parse-json line)
+          (parse-session-record line))
     (error (cause)
       (session-failure
        path line-number
@@ -29,7 +130,9 @@
 
 (defun read-session-objects (path)
   (let ((objects nil)
-        (line-number 0))
+        (line-number 0)
+        (header nil)
+        (raw-hash-p t))
     (handler-case
         (with-open-file
             (stream path
@@ -52,9 +155,18 @@
                 (let ((object
                         (handler-case
                             (parse-session-line
-                             line path line-number)
+                             line path line-number
+                             :raw-hash-p raw-hash-p)
                           (session-error () nil))))
                   (when object
+                    (unless header
+                      (setf header object)
+                      (setf raw-hash-p
+                            (let ((version
+                                    (cadr-ai::json-get
+                                     object "version" 1)))
+                              (or (not (integerp version))
+                                  (< version 3)))))
                     (push object objects)))))))
       (session-error (condition)
         (error condition))
@@ -131,15 +243,6 @@
        (write-jsonl-object stream object)))
    :durability :flush))
 
-(defun require-json-field (object name path line-number)
-  (multiple-value-bind (value present-p)
-      (gethash name object)
-    (unless present-p
-      (session-failure
-       path line-number
-       "Session record is missing ~A" name))
-    value))
-
 (defun vector-of-strings-p (value)
   (and (vectorp value)
        (every #'stringp value)))
@@ -149,24 +252,47 @@
       nil
       value))
 
-(defun record-to-session-entry
-    (object path line-number by-id)
-  (unless (hash-table-p object)
+(defun session-entry-from-hash (object)
+  (let ((entry (make-session-entry)))
+    (maphash
+     (lambda (key value)
+       (session-record-put entry key value))
+     object)
+    entry))
+
+(defun require-session-slot (value name path line-number)
+  (when (null value)
     (session-failure
-     path line-number "Session record must be an object"))
+     path line-number
+     "Session record is missing ~A" name))
+  value)
+
+(defun finalize-session-entry
+    (entry path line-number by-id)
   (let* ((type
-           (require-json-field
-            object "type" path line-number))
-         (id
-           (require-json-field
-            object "id" path line-number))
+           (let ((raw (session-entry-type entry)))
+             (cond
+               ((keywordp raw) raw)
+               ((stringp raw)
+                (intern
+                 (string-upcase
+                  (substitute #\- #\_ raw))
+                 "KEYWORD"))
+               (t raw))))
+         (id (session-entry-id entry))
          (parent-id
-           (json-null-to-nil
-            (require-json-field
-             object "parentId" path line-number)))
+           (progn
+             (unless (session-seen-p
+                      entry +session-seen-parent-id+)
+               (session-failure
+                path line-number
+                "Session record is missing parentId"))
+             (json-null-to-nil
+              (session-entry-parent-id entry))))
          (timestamp-value
-           (require-json-field
-            object "timestamp" path line-number))
+           (require-session-slot
+            (session-entry-timestamp entry)
+            "timestamp" path line-number))
          (timestamp
            (handler-case
                (iso8601-to-milliseconds timestamp-value)
@@ -179,18 +305,17 @@
         (and
          (member
           type
-          '("message"
-            "thinking_level_change"
-            "model_change"
-            "active_tools_change"
-            "compaction"
-            "branch_summary"
-            "custom"
-            "custom_message"
-            "label"
-            "session_info"
-            "leaf")
-          :test #'string=)
+          '(:message
+            :thinking-level-change
+            :model-change
+            :active-tools-change
+            :compaction
+            :branch-summary
+            :custom
+            :custom-message
+            :label
+            :session-info
+            :leaf))
          (stringp id)
          (or (null parent-id)
              (stringp parent-id)))
@@ -205,61 +330,48 @@
       (session-failure
        path line-number
        "Missing or forward session parent: ~A" parent-id))
-    (let* ((entry
-             (make-session-entry
-              :type
-              (intern
-               (string-upcase
-                (substitute #\- #\_ type))
-               "KEYWORD")
-              :id id
-              :parent-id parent-id
-              :timestamp timestamp))
-           (details
-             (cadr-ai::json-get object "details"))
-           (usage-object
-             (cadr-ai::json-get object "usage")))
-      (case (session-entry-type entry)
+    (setf (session-entry-type entry) type
+          (session-entry-parent-id entry) parent-id
+          (session-entry-timestamp entry) timestamp)
+    (let ((usage-object (session-entry-usage entry)))
+      (case type
         (:message
          (setf
           (session-entry-message entry)
           (message-from-json
-           (require-json-field
-            object "message" path line-number))))
+           (require-session-slot
+            (session-entry-message entry)
+            "message" path line-number))))
         (:thinking-level-change
          (let ((value
-                 (require-json-field
-                  object "thinkingLevel"
-                  path line-number)))
+                 (require-session-slot
+                  (session-entry-thinking-level entry)
+                  "thinkingLevel" path line-number)))
            (unless (stringp value)
              (session-failure
               path line-number
               "Invalid thinking level entry at line ~D"
-              line-number))
-           (setf
-            (session-entry-thinking-level entry)
-            value)))
+              line-number))))
         (:model-change
          (let ((provider
-                 (require-json-field
-                  object "provider" path line-number))
+                 (require-session-slot
+                  (session-entry-provider entry)
+                  "provider" path line-number))
                (model-id
-                 (require-json-field
-                  object "modelId" path line-number)))
+                 (require-session-slot
+                  (session-entry-model-id entry)
+                  "modelId" path line-number)))
            (unless (and (stringp provider)
                         (stringp model-id))
              (session-failure
               path line-number
               "Invalid model change entry at line ~D"
-              line-number))
-           (setf
-            (session-entry-provider entry) provider
-            (session-entry-model-id entry) model-id)))
+              line-number))))
         (:active-tools-change
          (let ((names
-                 (require-json-field
-                  object "activeToolNames"
-                  path line-number)))
+                 (require-session-slot
+                  (session-entry-active-tool-names entry)
+                  "activeToolNames" path line-number)))
            (unless (vector-of-strings-p names)
              (session-failure
               path line-number
@@ -270,20 +382,27 @@
             (coerce names 'list))))
         (:compaction
          (let* ((summary
-                  (require-json-field
-                   object "summary" path line-number))
+                  (require-session-slot
+                   (session-entry-summary entry)
+                   "summary" path line-number))
                 (source-ids
                   (or
-                   (cadr-ai::json-get object "sourceIds")
+                   (session-entry-source-ids entry)
                    #()))
                 (first-kept-id
-                  (require-json-field
-                   object "firstKeptEntryId"
-                   path line-number))
+                  (require-session-slot
+                   (session-entry-first-kept-id entry)
+                   "firstKeptEntryId" path line-number))
                 (tokens-before
-                  (require-json-field
-                   object "tokensBefore"
-                   path line-number)))
+                  (progn
+                    (unless
+                        (session-seen-p
+                         entry
+                         +session-seen-tokens-before+)
+                      (session-failure
+                       path line-number
+                       "Session record is missing tokensBefore"))
+                    (session-entry-tokens-before entry))))
            (unless
                (and
                 (stringp summary)
@@ -301,25 +420,16 @@
               "Invalid compaction record at line ~D"
               line-number))
            (setf
-            (session-entry-summary entry) summary
             (session-entry-source-ids entry)
             (coerce source-ids 'list)
-            (session-entry-first-kept-id entry)
-            first-kept-id
             (session-entry-tokens-before entry)
             tokens-before
-            (session-entry-details entry) details
             (session-entry-usage entry)
             (and usage-object
                  (usage-from-json usage-object))
-            (session-entry-from-hook-p entry)
-            (eq t
-                (cadr-ai::json-get
-                 object "fromHook"))
             (session-entry-retained-tail entry)
             (let ((tail
-                    (cadr-ai::json-get
-                     object "retainedTail")))
+                    (session-entry-retained-tail entry)))
               (and
                (vectorp tail)
                (loop for message across tail
@@ -328,11 +438,13 @@
                       message)))))))
         (:branch-summary
          (let ((from-id
-                 (require-json-field
-                  object "fromId" path line-number))
+                 (require-session-slot
+                  (session-entry-from-id entry)
+                  "fromId" path line-number))
                (summary
-                 (require-json-field
-                  object "summary" path line-number)))
+                 (require-session-slot
+                  (session-entry-summary entry)
+                  "summary" path line-number)))
            (unless
                (and
                 (stringp from-id)
@@ -345,37 +457,33 @@
               "Invalid branch summary at line ~D"
               line-number))
            (setf
-            (session-entry-from-id entry) from-id
-            (session-entry-summary entry) summary
-            (session-entry-details entry) details
             (session-entry-usage entry)
             (and usage-object
-                 (usage-from-json usage-object))
-            (session-entry-from-hook-p entry)
-            (eq t
-                (cadr-ai::json-get
-                 object "fromHook")))))
+                 (usage-from-json usage-object)))))
         (:custom
          (let ((custom-type
-                 (require-json-field
-                  object "customType" path line-number)))
+                 (require-session-slot
+                  (session-entry-custom-type entry)
+                  "customType" path line-number)))
            (unless (stringp custom-type)
              (session-failure
               path line-number
               "Invalid custom entry at line ~D"
-              line-number))
-           (setf
-            (session-entry-custom-type entry)
-            custom-type
-            (session-entry-data entry)
-            (cadr-ai::json-get object "data"))))
+              line-number))))
         (:custom-message
          (let ((custom-type
-                 (require-json-field
-                  object "customType" path line-number))
+                 (require-session-slot
+                  (session-entry-custom-type entry)
+                  "customType" path line-number))
                (content
-                 (require-json-field
-                  object "content" path line-number)))
+                 (progn
+                   (unless
+                       (session-seen-p
+                        entry +session-seen-content+)
+                     (session-failure
+                      path line-number
+                      "Session record is missing content"))
+                   (session-entry-content entry))))
            (unless
                (and
                 (stringp custom-type)
@@ -388,27 +496,26 @@
               "Invalid custom message at line ~D"
               line-number))
            (setf
-            (session-entry-custom-type entry)
-            custom-type
             (session-entry-content entry)
             (cond
               ((stringp content) content)
               ((null content) nil)
               (t
                (content-blocks-from-json
-                content)))
-            (session-entry-details entry) details
-            (session-entry-display-p entry)
-            (eq t
-                (cadr-ai::json-get
-                 object "display")))))
+                content))))))
         (:label
          (let ((target-id
-                 (require-json-field
-                  object "targetId" path line-number))
+                 (progn
+                   (unless
+                       (session-seen-p
+                        entry +session-seen-target-id+)
+                     (session-failure
+                      path line-number
+                      "Session record is missing targetId"))
+                   (session-entry-target-id entry)))
                (label
                  (json-null-to-nil
-                  (cadr-ai::json-get object "label"))))
+                  (session-entry-label entry))))
            (unless
                (and
                 (stringp target-id)
@@ -425,7 +532,7 @@
         (:session-info
          (let ((name
                  (json-null-to-nil
-                  (cadr-ai::json-get object "name"))))
+                  (session-entry-name entry))))
            (unless (or (null name) (stringp name))
              (session-failure
               path line-number
@@ -434,10 +541,15 @@
            (setf (session-entry-name entry) name)))
         (:leaf
          (let ((target-id
-                 (json-null-to-nil
-                  (require-json-field
-                   object "targetId"
-                   path line-number))))
+                 (progn
+                   (unless
+                       (session-seen-p
+                        entry +session-seen-target-id+)
+                     (session-failure
+                      path line-number
+                      "Session record is missing targetId"))
+                   (json-null-to-nil
+                    (session-entry-target-id entry)))))
            (unless
                (and
                 (or
@@ -455,6 +567,21 @@
             target-id))))
       (setf (gethash id by-id) entry)
       entry)))
+
+(defun record-to-session-entry
+    (object path line-number by-id)
+  (cond
+    ((session-entry-p object)
+     (finalize-session-entry
+      object path line-number by-id))
+    ((hash-table-p object)
+     (finalize-session-entry
+      (session-entry-from-hash object)
+      path line-number by-id))
+    (t
+     (session-failure
+      path line-number
+      "Session record must be an object"))))
 
 (defun load-session (path)
   (let* ((pathname (pathname path))

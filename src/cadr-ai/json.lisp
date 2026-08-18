@@ -313,13 +313,16 @@
         (10 (when (val= "toolResult") "toolResult"))
         (18 (when (val= "openai-completions") "openai-completions"))))))
 
-(defun parse-json-source (source)
+(defun parse-json-source (source &optional object-visitor)
   ;; Cost center for session_load / journal_read
   ;; (docs/benchmarks/goal20-part-o-remaining-sprof.md).  CHAR on a
   ;; general STRING and MEMBER whitespace checks show up as generic
   ;; ops; one coerce to SIMPLE-STRING lets the scan use SCHAR and
   ;; FIXNUM indexes without dropping SAFETY.  Unescaped ASCII strings
   ;; go through COPY-UNESCAPED-JSON-STRING.
+  ;; OBJECT-VISITOR, when set, walks the top-level object's fields
+  ;; and does not allocate that EQUAL hash.  Nested objects stay
+  ;; hash tables.  Not intern expand.  Not 7b.
   (let* ((source
            (if (simple-string-p source)
                source
@@ -612,16 +615,45 @@
                           object))))
                  (otherwise
                   (fail "Expected comma or }"))))))
+         (parse-object-fields (visitor)
+           (expect #\{)
+           (skip-space)
+           (when (and (peek)
+                      (char= (peek) #\}))
+             (take)
+             (return-from parse-object-fields nil))
+           (loop
+             (unless (and (peek)
+                          (char= (peek) #\"))
+               (fail "Object key must be a string"))
+             (let ((key (parse-string t)))
+               (skip-space)
+               (expect #\:)
+               (skip-space)
+               (funcall visitor key (parse-value 1)))
+             (skip-space)
+             (case (peek)
+               (#\, (take) (skip-space))
+               (#\}
+                (take)
+                (return))
+               (otherwise
+                (fail "Expected comma or }")))))
          (parse-value (depth)
            (skip-space)
            (case (peek)
              (#\" (parse-string))
              (#\{
-              (if (< depth
-                     +maximum-json-nesting-depth+)
-                  (parse-object (1+ depth))
-                  (fail
-                   "Maximum JSON nesting depth exceeded")))
+              (cond
+                ((and object-visitor (zerop depth))
+                 (parse-object-fields object-visitor)
+                 :visited-object)
+                ((< depth
+                    +maximum-json-nesting-depth+)
+                 (parse-object (1+ depth)))
+                (t
+                 (fail
+                  "Maximum JSON nesting depth exceeded"))))
              (#\[
               (if (< depth
                      +maximum-json-nesting-depth+)
@@ -642,7 +674,18 @@
         (skip-space)
         (unless (= position length)
           (fail "Trailing input"))
-        value)))))
+        (if object-visitor
+            (if (eq value :visited-object)
+                t
+                (fail "Expected JSON object"))
+            value))))))
+
+(defun parse-json-object-fields (source visitor)
+  ;; Top-level object only: each key/value is handed to VISITOR.
+  ;; No EQUAL hash for that object.  Nested values still parse as
+  ;; hash tables / vectors.  Session JSONL uses this for
+  ;; session-entry.  Public PARSE-JSON is unchanged.
+  (parse-json-source source visitor))
 
 (defun parse-json (source)
   (parse-json-source source))
