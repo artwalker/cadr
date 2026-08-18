@@ -23,12 +23,23 @@ def _point_at_n(metric: dict, n: int) -> dict:
     return {}
 
 
-def extract(bench: dict) -> dict:
+def native_image_bytes_from(value: object) -> int | None:
+    """Accept a real stat size only. Omit when absent. Never invent 20884056."""
+    if isinstance(value, bool) or not isinstance(value, int):
+        return None
+    if value < 0:
+        return None
+    return value
+
+
+def extract(bench: dict, native_image_bytes: int | None = None) -> dict:
     metrics = bench.get("metrics") or {}
     frame = _point_at_n(metrics.get("frame_render") or {}, 5000)
     cold = bench.get("cold_start") or {}
     provenance = bench.get("provenance") or {}
-    return {
+    if native_image_bytes is None:
+        native_image_bytes = native_image_bytes_from(bench.get("nativeImageBytes"))
+    row = {
         "recordedAt": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "label": bench.get("label") or provenance.get("label"),
         "gitHead": (
@@ -42,6 +53,9 @@ def extract(bench: dict) -> dict:
         "frame5000MedianUs": frame.get("median_us"),
         "frame5000MedianBytes": frame.get("median_bytes"),
     }
+    if native_image_bytes is not None:
+        row["nativeImageBytes"] = native_image_bytes
+    return row
 
 
 def main() -> int:
@@ -52,9 +66,21 @@ def main() -> int:
         type=Path,
         default=Path("docs/benchmarks/performance-history.json"),
     )
+    parser.add_argument(
+        "--native-image",
+        type=Path,
+        default=None,
+        help="cadr image used for this bench; size comes from stat, omitted if absent",
+    )
     args = parser.parse_args()
     bench = json.loads(args.bench.read_text(encoding="utf-8"))
-    row = extract(bench)
+    native_bytes = None
+    if args.native_image is not None:
+        try:
+            native_bytes = args.native_image.stat().st_size
+        except OSError:
+            native_bytes = None
+    row = extract(bench, native_image_bytes=native_bytes)
     if args.history.is_file():
         history = json.loads(args.history.read_text(encoding="utf-8"))
     else:
@@ -68,6 +94,7 @@ def main() -> int:
         "performance-history: "
         f"entries={len(history['entries'])} "
         f"cold={row.get('coldStartMedianUs')} "
+        f"nativeImageBytes={row.get('nativeImageBytes', '—')} "
         f"frame5000={row.get('frame5000MedianUs')} "
         f"output={args.history}"
     )

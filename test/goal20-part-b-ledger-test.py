@@ -22,6 +22,9 @@ def load_script(name: str, filename: str):
 ANCHOR = load_script("write_test_check_anchor", "write-test-check-anchor.py")
 RECORD = load_script("record_paired_paths", "record-paired-paths.py")
 LEDGER = load_script("write_performance_ledger", "write-performance-ledger.py")
+HISTORY = load_script(
+    "record_performance_history", "record-performance-history.py"
+)
 
 
 def run_main(module, argv: list[str]) -> int:
@@ -207,6 +210,110 @@ class TestPairedPathRecord(unittest.TestCase):
                 LEDGER.render_paired_section(history),
             )
             self.assertEqual(markdown.count("GOAL20_PAIRED_PATHS_START"), 1)
+
+
+class TestNativeImageHistory(unittest.TestCase):
+    def test_extract_omits_bytes_when_absent(self) -> None:
+        row = HISTORY.extract(
+            {
+                "cold_start": {"median_us": 100.0},
+                "metrics": {
+                    "frame_render": {
+                        "points": [{"n": 5000, "median_us": 1.0, "median_bytes": 2.0}]
+                    }
+                },
+            }
+        )
+        self.assertNotIn("nativeImageBytes", row)
+        self.assertNotEqual(row.get("nativeImageBytes"), 20_884_056)
+
+    def test_extract_copies_stat_size_only(self) -> None:
+        row = HISTORY.extract(
+            {
+                "cold_start": {"median_us": 100.0},
+                "metrics": {
+                    "frame_render": {
+                        "points": [{"n": 5000, "median_us": 1.0, "median_bytes": 2.0}]
+                    }
+                },
+            },
+            native_image_bytes=20457848,
+        )
+        self.assertEqual(row["nativeImageBytes"], 20457848)
+
+    def test_native_image_flag_stats_a_real_file(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            image = Path(temporary) / "cadr"
+            image.write_bytes(b"x" * 4096)
+            bench = Path(temporary) / "bench.json"
+            history = Path(temporary) / "history.json"
+            bench.write_text(
+                json.dumps(
+                    {
+                        "label": "probe",
+                        "cold_start": {"median_us": 100.0},
+                        "metrics": {
+                            "frame_render": {
+                                "points": [
+                                    {
+                                        "n": 5000,
+                                        "median_us": 1.0,
+                                        "median_bytes": 2.0,
+                                    }
+                                ]
+                            }
+                        },
+                    }
+                ),
+                encoding="utf-8",
+            )
+            self.assertEqual(
+                run_main(
+                    HISTORY,
+                    [
+                        "record-performance-history.py",
+                        "--bench",
+                        str(bench),
+                        "--history",
+                        str(history),
+                        "--native-image",
+                        str(image),
+                    ],
+                ),
+                0,
+            )
+            stored = json.loads(history.read_text(encoding="utf-8"))
+            self.assertEqual(stored["entries"][0]["nativeImageBytes"], 4096)
+
+    def test_ledger_prints_emdash_when_bytes_missing(self) -> None:
+        history = {
+            "entries": [
+                {
+                    "recordedAt": "2026-08-14T00:00:00Z",
+                    "label": "verify-isolated",
+                    "gitHead": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+                    "machine": "test-host",
+                    "coldStartMedianUs": 100.0,
+                    "frame5000MedianUs": 1.0,
+                    "frame5000MedianBytes": 2.0,
+                },
+                {
+                    "recordedAt": "2026-08-14T01:00:00Z",
+                    "label": "verify-isolated",
+                    "gitHead": "cccccccccccccccccccccccccccccccccccccccc",
+                    "machine": "test-host",
+                    "coldStartMedianUs": 110.0,
+                    "nativeImageBytes": 20457848,
+                    "frame5000MedianUs": 1.0,
+                    "frame5000MedianBytes": 2.0,
+                },
+            ]
+        }
+        section = LEDGER.render_section(history, None)
+        self.assertIn("native image B", section)
+        self.assertIn("| 100.0 | — | 1.0 |", section)
+        self.assertIn("| 110.0 | 20,457,848 | 1.0 |", section)
+        self.assertNotIn("20,884,056", section)
 
 
 class TestSelfHistoryStillRenders(unittest.TestCase):

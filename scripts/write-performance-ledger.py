@@ -107,17 +107,23 @@ def render_section(history: dict, bands: dict | None) -> str:
         "",
         *render_band_lines(bands),
         "",
-        "| recordedAt (UTC) | label | machine | git | cold start µs | N=5000 frame µs | N=5000 frame bytes |",
-        "|---|---|---|---|---:|---:|---:|",
+        "Native image bytes are recorded only when",
+        "`record-performance-history.py --native-image` stats the cadr used",
+        "for that bench. Older rows show —. The first cell appears on the",
+        "next isolated verify that records history; do not hand-fill.",
+        "",
+        "| recordedAt (UTC) | label | machine | git | cold start µs | native image B | N=5000 frame µs | N=5000 frame bytes |",
+        "|---|---|---|---|---:|---:|---:|---:|",
     ]
     for entry in entries:
         lines.append(
-            "| {at} | {label} | {machine} | `{git}` | {cold} | {frame} | {alloc} |".format(
+            "| {at} | {label} | {machine} | `{git}` | {cold} | {image} | {frame} | {alloc} |".format(
                 at=entry.get("recordedAt") or "—",
                 label=entry.get("label") or "—",
                 machine=entry.get("machine") or "—",
                 git=short_git(entry.get("gitHead")),
                 cold=format_us(entry.get("coldStartMedianUs")),
+                image=format_bytes(entry.get("nativeImageBytes")),
                 frame=format_us(entry.get("frame5000MedianUs")),
                 alloc=format_bytes(entry.get("frame5000MedianBytes")),
             )

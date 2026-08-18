@@ -221,9 +221,14 @@ run_goal11_gate() {
       --bench "$VERIFY_ROOT/goal11-performance.json" \
       --stability "$VERIFY_ROOT/goal11-stability.json"
     if [ "$RECORD_LEDGER" -eq 1 ]; then
+      native_image_args=()
+      if [ -x "$ISOLATED_PROJECT/cadr" ]; then
+        native_image_args=(--native-image "$ISOLATED_PROJECT/cadr")
+      fi
       python3 scripts/record-performance-history.py \
         --bench "$VERIFY_ROOT/goal11-performance.json" \
-        --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json"
+        --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json" \
+        "${native_image_args[@]}"
       python3 scripts/write-performance-ledger.py \
         --history "$PROJECT_DIRECTORY/docs/benchmarks/performance-history.json" \
         --paired "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json" \

@@ -562,42 +562,47 @@ written by `scripts/goal20-part-a-noise-bands.py` to
 - `frame_render.5000.median_bytes`: fail-closed, band 4,096B (n=5, MAD=0.0)
 - `frame_render.5000.median_us`: informational — reading is quantized at the 4000us timer step (observed sample set {0.0, 4000.0, 4001.0}); no band can be expressed until the measurement gains resolution
 
-| recordedAt (UTC) | label | machine | git | cold start µs | N=5000 frame µs | N=5000 frame bytes |
-|---|---|---|---|---:|---:|---:|
-| 2026-08-13T13:40:38Z | verify-isolated | Friend-MachineD | `isolated-copy` | 267,505.9 | 3,987.0 | 360,272 |
-| 2026-08-14T01:50:56Z | verify-isolated | Friend-MachineD | `isolated-copy` | 307,103.7 | 0.0 | 360,272 |
-| 2026-08-14T04:11:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 291,287.2 | 0.0 | 360,272 |
-| 2026-08-14T05:23:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 251,607.9 | 0.0 | 360,272 |
-| 2026-08-14T06:39:45Z | verify-isolated | Friend-MachineD | `isolated-copy` | 257,222.4 | 0.0 | 360,272 |
-| 2026-08-14T07:28:53Z | verify-isolated | Friend-MachineD | `isolated-copy` | 252,819.5 | 3,993.0 | 360,272 |
-| 2026-08-14T08:19:46Z | verify-isolated | Friend-MachineD | `isolated-copy` | 284,481.1 | 0.0 | 360,272 |
-| 2026-08-14T09:13:26Z | verify-isolated | Friend-MachineD | `isolated-copy` | 259,739.7 | 0.0 | 360,272 |
-| 2026-08-14T10:03:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 270,720.0 | 0.0 | 360,272 |
-| 2026-08-14T11:24:46Z | verify-isolated | Friend-MachineD | `isolated-copy` | 262,015.0 | 4,004.0 | 360,272 |
-| 2026-08-14T13:07:51Z | verify-isolated | Friend-MachineD | `isolated-copy` | 260,851.5 | 0.0 | 360,272 |
-| 2026-08-14T13:08:34Z | verify-isolated | Friend-MachineD | `isolated-copy` | 268,801.4 | 3,993.0 | 360,272 |
-| 2026-08-14T14:08:42Z | verify-isolated | Friend-MachineD | `isolated-copy` | 268,418.0 | 0.0 | 360,272 |
-| 2026-08-14T15:57:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 310,513.3 | 0.0 | 360,272 |
-| 2026-08-14T17:09:15Z | verify-isolated | Friend-MachineD | `isolated-copy` | 299,350.2 | 3,996.0 | 360,272 |
-| 2026-08-14T18:46:59Z | verify-isolated | Friend-MachineD | `isolated-copy` | 263,188.5 | 0.0 | 360,272 |
-| 2026-08-14T19:49:16Z | verify-isolated | Friend-MachineD | `isolated-copy` | 258,283.8 | 0.0 | 360,272 |
-| 2026-08-14T20:40:57Z | verify-isolated | Friend-MachineD | `isolated-copy` | 279,704.1 | 0.0 | 360,272 |
-| 2026-08-14T21:46:49Z | verify-isolated | Friend-MachineD | `isolated-copy` | 270,446.5 | 0.0 | 360,272 |
-| 2026-08-14T22:39:46Z | verify-isolated | Friend-MachineD | `isolated-copy` | 308,357.6 | 0.0 | 360,272 |
-| 2026-08-14T23:52:06Z | verify-isolated | Friend-MachineD | `isolated-copy` | 271,246.5 | 4,007.0 | 360,272 |
-| 2026-08-15T00:30:19Z | verify-isolated | Friend-MachineD | `isolated-copy` | 292,736.1 | 3,955.0 | 360,272 |
-| 2026-08-15T04:33:07Z | verify-isolated | Friend-MachineD | `isolated-copy` | 278,056.2 | 0.0 | 360,272 |
-| 2026-08-15T06:04:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 320,233.4 | 0.0 | 360,272 |
-| 2026-08-15T06:20:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 279,408.7 | 0.0 | 360,272 |
-| 2026-08-15T07:39:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 284,147.8 | 0.0 | 360,272 |
-| 2026-08-15T08:59:15Z | verify-isolated | Friend-MachineD | `isolated-copy` | 253,515.0 | 0.0 | 360,272 |
-| 2026-08-15T11:06:11Z | verify-isolated | Friend-MachineD | `isolated-copy` | 269,622.0 | 0.0 | 360,272 |
-| 2026-08-15T12:41:19Z | verify-isolated | Friend-MachineD | `isolated-copy` | 241,840.6 | 0.0 | 360,272 |
-| 2026-08-15T14:08:24Z | verify-isolated | Friend-MachineD | `isolated-copy` | 267,848.1 | 0.0 | 360,272 |
-| 2026-08-15T15:20:00Z | verify-isolated | Friend-MachineD | `isolated-copy` | 290,825.9 | 3,967.0 | 360,272 |
-| 2026-08-15T16:40:01Z | verify-isolated | Friend-MachineD | `isolated-copy` | 269,406.6 | 3,964.0 | 360,272 |
-| 2026-08-15T17:51:43Z | verify-isolated | Friend-MachineD | `isolated-copy` | 247,026.9 | 0.0 | 360,272 |
-| 2026-08-15T19:09:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 248,317.5 | 0.0 | 360,272 |
+Native image bytes are recorded only when
+`record-performance-history.py --native-image` stats the cadr used
+for that bench. Older rows show —. The first cell appears on the
+next isolated verify that records history; do not hand-fill.
+
+| recordedAt (UTC) | label | machine | git | cold start µs | native image B | N=5000 frame µs | N=5000 frame bytes |
+|---|---|---|---|---:|---:|---:|---:|
+| 2026-08-13T13:40:38Z | verify-isolated | Friend-MachineD | `isolated-copy` | 267,505.9 | — | 3,987.0 | 360,272 |
+| 2026-08-14T01:50:56Z | verify-isolated | Friend-MachineD | `isolated-copy` | 307,103.7 | — | 0.0 | 360,272 |
+| 2026-08-14T04:11:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 291,287.2 | — | 0.0 | 360,272 |
+| 2026-08-14T05:23:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 251,607.9 | — | 0.0 | 360,272 |
+| 2026-08-14T06:39:45Z | verify-isolated | Friend-MachineD | `isolated-copy` | 257,222.4 | — | 0.0 | 360,272 |
+| 2026-08-14T07:28:53Z | verify-isolated | Friend-MachineD | `isolated-copy` | 252,819.5 | — | 3,993.0 | 360,272 |
+| 2026-08-14T08:19:46Z | verify-isolated | Friend-MachineD | `isolated-copy` | 284,481.1 | — | 0.0 | 360,272 |
+| 2026-08-14T09:13:26Z | verify-isolated | Friend-MachineD | `isolated-copy` | 259,739.7 | — | 0.0 | 360,272 |
+| 2026-08-14T10:03:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 270,720.0 | — | 0.0 | 360,272 |
+| 2026-08-14T11:24:46Z | verify-isolated | Friend-MachineD | `isolated-copy` | 262,015.0 | — | 4,004.0 | 360,272 |
+| 2026-08-14T13:07:51Z | verify-isolated | Friend-MachineD | `isolated-copy` | 260,851.5 | — | 0.0 | 360,272 |
+| 2026-08-14T13:08:34Z | verify-isolated | Friend-MachineD | `isolated-copy` | 268,801.4 | — | 3,993.0 | 360,272 |
+| 2026-08-14T14:08:42Z | verify-isolated | Friend-MachineD | `isolated-copy` | 268,418.0 | — | 0.0 | 360,272 |
+| 2026-08-14T15:57:44Z | verify-isolated | Friend-MachineD | `isolated-copy` | 310,513.3 | — | 0.0 | 360,272 |
+| 2026-08-14T17:09:15Z | verify-isolated | Friend-MachineD | `isolated-copy` | 299,350.2 | — | 3,996.0 | 360,272 |
+| 2026-08-14T18:46:59Z | verify-isolated | Friend-MachineD | `isolated-copy` | 263,188.5 | — | 0.0 | 360,272 |
+| 2026-08-14T19:49:16Z | verify-isolated | Friend-MachineD | `isolated-copy` | 258,283.8 | — | 0.0 | 360,272 |
+| 2026-08-14T20:40:57Z | verify-isolated | Friend-MachineD | `isolated-copy` | 279,704.1 | — | 0.0 | 360,272 |
+| 2026-08-14T21:46:49Z | verify-isolated | Friend-MachineD | `isolated-copy` | 270,446.5 | — | 0.0 | 360,272 |
+| 2026-08-14T22:39:46Z | verify-isolated | Friend-MachineD | `isolated-copy` | 308,357.6 | — | 0.0 | 360,272 |
+| 2026-08-14T23:52:06Z | verify-isolated | Friend-MachineD | `isolated-copy` | 271,246.5 | — | 4,007.0 | 360,272 |
+| 2026-08-15T00:30:19Z | verify-isolated | Friend-MachineD | `isolated-copy` | 292,736.1 | — | 3,955.0 | 360,272 |
+| 2026-08-15T04:33:07Z | verify-isolated | Friend-MachineD | `isolated-copy` | 278,056.2 | — | 0.0 | 360,272 |
+| 2026-08-15T06:04:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 320,233.4 | — | 0.0 | 360,272 |
+| 2026-08-15T06:20:37Z | verify-isolated | Friend-MachineD | `isolated-copy` | 279,408.7 | — | 0.0 | 360,272 |
+| 2026-08-15T07:39:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 284,147.8 | — | 0.0 | 360,272 |
+| 2026-08-15T08:59:15Z | verify-isolated | Friend-MachineD | `isolated-copy` | 253,515.0 | — | 0.0 | 360,272 |
+| 2026-08-15T11:06:11Z | verify-isolated | Friend-MachineD | `isolated-copy` | 269,622.0 | — | 0.0 | 360,272 |
+| 2026-08-15T12:41:19Z | verify-isolated | Friend-MachineD | `isolated-copy` | 241,840.6 | — | 0.0 | 360,272 |
+| 2026-08-15T14:08:24Z | verify-isolated | Friend-MachineD | `isolated-copy` | 267,848.1 | — | 0.0 | 360,272 |
+| 2026-08-15T15:20:00Z | verify-isolated | Friend-MachineD | `isolated-copy` | 290,825.9 | — | 3,967.0 | 360,272 |
+| 2026-08-15T16:40:01Z | verify-isolated | Friend-MachineD | `isolated-copy` | 269,406.6 | — | 3,964.0 | 360,272 |
+| 2026-08-15T17:51:43Z | verify-isolated | Friend-MachineD | `isolated-copy` | 247,026.9 | — | 0.0 | 360,272 |
+| 2026-08-15T19:09:32Z | verify-isolated | Friend-MachineD | `isolated-copy` | 248,317.5 | — | 0.0 | 360,272 |
 
 Latest vs previous: `verify-isolated` (2026-08-15T19:09:32Z) versus `verify-isolated` (2026-08-15T17:51:43Z).
 
