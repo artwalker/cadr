@@ -175,6 +175,20 @@
     (is (eq key-a key-b))
     (is (string= key-a "thinking"))))
 
+(test goal20-json-parse-string-defers-base-p
+  ;; PARSE-STRING no longer tracks base-p per character.  The copy
+  ;; path still yields SIMPLE-BASE-STRING for ASCII and a character
+  ;; string for unicode.
+  (let ((ascii
+          (cadr-ai::json-get
+           (cadr-ai::parse-json "{\"k\":\"ascii-id-01\"}") "k"))
+        (uni
+          (cadr-ai::json-get
+           (cadr-ai::parse-json "{\"k\":\"中文\"}") "k")))
+    (is (string= ascii "ascii-id-01"))
+    (is (typep ascii 'simple-base-string))
+    (is (string= uni "中文"))))
+
 (test goal20-json-copy-unescaped-is-one-window-copy
   ;; Drives COPY-UNESCAPED-JSON-STRING itself: one window copy, no
   ;; shared storage, ASCII result is a SIMPLE-BASE-STRING.

@@ -432,16 +432,17 @@
                (setf position saved)
                (subseq string-buffer 0 (fill-pointer string-buffer))))
            (parse-string (&optional intern-p)
+             ;; The scan only looks for quote, backslash, and controls.
+             ;; base-p is decided on the copy path (intern hits never
+             ;; copy).  Not intern expand.  Not 7b.
              (expect #\")
              (let ((start position)
-                   (escaped-p nil)
-                   (base-p t))
+                   (escaped-p nil))
                (declare (type fixnum start))
                (loop
                  (when (>= position length)
                    (fail "Unterminated string"))
-                 (let* ((character (schar source position))
-                        (code (char-code character)))
+                 (let ((code (char-code (schar source position))))
                    (cond
                      ((= code #x22)
                       (let ((end position))
@@ -453,18 +454,21 @@
                             ((and intern-p
                                   (or (json-interned-ascii-key
                                        source start end)
-                                      ;; Keys that already live in the
-                                      ;; closed value set ("thinking")
-                                      ;; skip COPY-UNESCAPED.  Same
-                                      ;; tables.  Not an intern expand.
                                       (json-interned-ascii-value
                                        source start end))))
                             ((and (not intern-p)
                                   (json-interned-ascii-value
                                    source start end)))
                             (t
-                             (copy-unescaped-json-string
-                              source start end base-p))))))
+                             (let ((base-p t))
+                               (loop for index from start below end
+                                     when (> (char-code
+                                              (schar source index))
+                                             127)
+                                       do (setf base-p nil)
+                                          (return))
+                               (copy-unescaped-json-string
+                                source start end base-p)))))))
                      ((< code #x20)
                       (fail "Unescaped control character"))
                      ((= code #x5c)
@@ -472,8 +476,6 @@
                       (incf position)
                       (skip-string-escape))
                      (t
-                      (when (> code 127)
-                        (setf base-p nil))
                       (incf position)))))))
          (number-character-p (character)
            (and character
