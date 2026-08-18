@@ -129,6 +129,32 @@
       (setf (char source 6) #\z)
       (is (string= "unique-value" (cadr-ai::json-get parsed "x"))))))
 
+(test goal20-json-object-exact-size-round-trip
+  ;; parse-object stacks <=8 pairs then MAKE-HASH-TABLE :size COUNT.
+  ;; 8-key (no grow) and 64-key (spill) must both round-trip.
+  (let* ((eight
+           (cadr-ai::parse-json
+            "{\"api\":1,\"content\":2,\"model\":3,\"provider\":4,\"role\":5,\"stopReason\":6,\"timestamp\":7,\"usage\":8}"))
+         (keys '("api" "content" "model" "provider" "role"
+                 "stopReason" "timestamp" "usage")))
+    (is (hash-table-p eight))
+    (is (= 8 (hash-table-count eight)))
+    (dolist (key keys)
+      (is (cadr-ai::json-present-p eight key))))
+  (let ((object (cadr-ai::json-object)))
+    (dotimes (index 64)
+      (cadr-ai::json-put
+       object
+       (format nil "k~D" index)
+       index))
+    (let ((parsed (cadr-ai::parse-json (cadr-ai::stringify-json object))))
+      (is (= 64 (hash-table-count parsed)))
+      (dotimes (index 64)
+        (is (eql index
+                 (cadr-ai::json-get
+                  parsed
+                  (format nil "k~D" index))))))))
+
 (test goal20-json-copy-unescaped-is-one-window-copy
   ;; Drives COPY-UNESCAPED-JSON-STRING itself: one window copy, no
   ;; shared storage, ASCII result is a SIMPLE-BASE-STRING.

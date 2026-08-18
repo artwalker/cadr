@@ -539,14 +539,24 @@
                (otherwise
                 (fail "Expected comma or ]")))))
          (parse-object (depth)
+           ;; Session JSONL objects are almost all 2–8 keys.  A default
+           ;; EQUAL table holds 7 pairs and then GROW-HASH-TABLE copies
+           ;; the 8-key message objects; a fixed :size 8/16 over-allocates
+           ;; the 2-key majority.  Stack the first 8 pairs, then allocate
+           ;; :size COUNT (or spill past 8).  Not intern expand.  Not 7b.
            (expect #\{)
            (skip-space)
-           (let ((object
-                   (make-hash-table :test #'equal)))
-             (when (and (peek)
-                        (char= (peek) #\}))
-               (take)
-               (return-from parse-object object))
+           (when (and (peek)
+                      (char= (peek) #\}))
+             (take)
+             (return-from parse-object
+               (make-hash-table :test #'equal)))
+           (let ((pairs (make-array 16))
+                 (count 0)
+                 (spilled nil))
+             (declare (type (simple-vector 16) pairs)
+                      (type fixnum count)
+                      (dynamic-extent pairs))
              (loop
                (unless (and (peek)
                             (char= (peek) #\"))
@@ -555,12 +565,43 @@
                  (skip-space)
                  (expect #\:)
                  (skip-space)
-                 (setf (gethash key object)
-                       (parse-value depth)))
+                 (let ((value (parse-value depth)))
+                   (cond
+                     (spilled
+                      (setf (gethash key spilled) value))
+                     ((< count 8)
+                      (setf (svref pairs (* count 2)) key)
+                      (setf (svref pairs (1+ (* count 2))) value)
+                      (incf count))
+                     (t
+                      (let ((object
+                              (make-hash-table :test #'equal :size 16)))
+                        (loop for index from 0 below count
+                              do (setf
+                                  (gethash
+                                   (svref pairs (* index 2))
+                                   object)
+                                  (svref pairs (1+ (* index 2)))))
+                        (setf (gethash key object) value)
+                        (setf spilled object))))))
                (skip-space)
                (case (peek)
                  (#\, (take) (skip-space))
-                 (#\} (take) (return object))
+                 (#\}
+                  (take)
+                  (return
+                    (or spilled
+                        (let ((object
+                                (make-hash-table
+                                 :test #'equal
+                                 :size count)))
+                          (loop for index from 0 below count
+                                do (setf
+                                    (gethash
+                                     (svref pairs (* index 2))
+                                     object)
+                                    (svref pairs (1+ (* index 2)))))
+                          object))))
                  (otherwise
                   (fail "Expected comma or }"))))))
          (parse-value (depth)

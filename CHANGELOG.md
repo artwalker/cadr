@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `parse-object` stacks ≤8 pairs, then
+  `MAKE-HASH-TABLE :size` count (spill past 8). Pairing
+  fixture parse 1,328,669 B → 1,235,971 B; journal_read
+  2,559,514 B → 2,477,290 B. Wall unchanged. Not 7b. No
+  intern-table expand. Identity 122851→122892. FiveAM
+  19070→19145. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `fef648a60` (non-quick, samples=5, enforced).
   session_load 3.32×→2.66×, journal_read 2.23×→2.22×.
