@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `6cd292ab9` (non-quick, samples=5, enforced).
+  session_load 2.66×→2.89×, journal_read 2.22×→2.34×.
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: `parse-object` stacks ≤8 pairs, then
   `MAKE-HASH-TABLE :size` count (spill past 8). Pairing
   fixture parse 1,328,669 B → 1,235,971 B; journal_read
