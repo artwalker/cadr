@@ -1,11 +1,12 @@
-# Goal 20 Part P — CL ceiling (draft; G.17 not met)
+# Goal 20 Part P — CL ceiling (draft; G.17 blocked)
 
 Spec: `goal20-draft.md` 十B. Ruling: `docs/adjudications.md`
 2026-08-18 CL ceiling (`1a24eea1d`). Floor is still pi.
 
 Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`.
-`RATIO_CEILINGS` is unchanged. O 7a–7d were not re-run.
-Not a Goal 20 pass.
+G.17 is `blocked` (P.8 hand-play unavailable; advisor has not
+written G.17 may be `met`). `RATIO_CEILINGS` is unchanged.
+O 7a–7d were not re-run. Not a Goal 20 pass.
 
 ## P.1–P.11
 

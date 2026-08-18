@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part G.17 is `blocked`, not `met`: P.8 hand-play
+  is unavailable and the advisor has not written G.17 may
+  be `met`. Not a Goal 20 pass.
+
 - Goal 20 Part P draft: P.8 is `blocked` (user has not
   played; FiveAM is not hand-play). P.10 this-host
   key→overlay 0.050 ms, spinner=NIL. P.11 14/14. G.17

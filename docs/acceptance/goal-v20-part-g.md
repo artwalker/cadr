@@ -24,7 +24,7 @@ Status: `met` / `missing` / `blocked`.
 | 14 Part I ledger columns | met | `docs/acceptance/goal-v20-part-i.md`; `docs/code-organization.md` §2; batches `de4c60f95`–`fc0634c4c` | One table, closed states, every `src/**/*.lisp` row, dual file/line progress. I report's initial 293/121105 lock was refreshed on the current identity line. |
 | 15 Part J pilot retro | met | `docs/acceptance/goal-v20-part-j.md`; `8f691682b`; `src/cadr-core/time.lisp` | Report names three process defects (re-asking I, no H cell, ceremony red commit). Not "流程顺利". |
 | 16 Part O four paths ≤ 1.0 | blocked | `4cd3a510b`; `docs/acceptance/goal-v20-part-o.md`; `docs/performance.md` paired table (append 2.21×, read 3.93×, load 4.28×, list_models_render 3.18×) | O blocked is not a performance close. Next knife is Part P (SBCL/live-image ceiling; floor is pi). Beating pi is not a stop. `argv_parse` is out of scope. |
-| 17 Part P CL ceiling | missing | spec `goal20-draft.md` 十B; ruling `docs/adjudications.md` 2026-08-18 CL ceiling (`1a24eea1d`); draft `docs/acceptance/goal-v20-part-p.md` | Advisor vetoed `met` on `40db3f88a` and `c53e13c47`. P.4 stream leftover until an `sse.lisp` lever with after numbers. P.8 leftover (not hand-play). |
+| 17 Part P CL ceiling | blocked | spec `goal20-draft.md` 十B; ruling `docs/adjudications.md` 2026-08-18 CL ceiling (`1a24eea1d`); draft `docs/acceptance/goal-v20-part-p.md` (`604e214c9`); levers `c183539e7`–`f3ccf75f6` | Not `met`. Advisor vetoed `met` on `40db3f88a` and `c53e13c47`. P.8 hand-play is unavailable (FiveAM ≠ play). Advisor has not written G.17 may be `met`. |
 
 ## Not claimed
 
