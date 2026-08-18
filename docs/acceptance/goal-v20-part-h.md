@@ -291,12 +291,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,313 lines**
+Denominator: **295 files / 122,349 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 20,807 | 17.0% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 20,843 | 17.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 6.1% | single reference vs previous cadr |
 | `pairable-uncovered` | 236 | 94,031 | 76.9% | blocked by Part A hard condition 2 |
 
@@ -352,7 +352,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/state.lisp` | 302 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,007 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-cli/models/registry.lisp` | 783 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/models/registry.lisp` | 819 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

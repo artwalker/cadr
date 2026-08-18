@@ -30,7 +30,7 @@
   ;; models.json customs), fuzzy-filter on "provider id", and print the
   ;; padded six-column table.
   (let* ((registry
-           (make-model-registry
+           (cached-cli-model-registry
             :path (cadr-core:agent-models-path)
             ;; A models.json provider outside the built-in catalog is only
             ;; available when the registry can read auth.json, so the

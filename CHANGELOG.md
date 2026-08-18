@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.3: `--list-models` reuses a refreshed registry while
+  `models.json` / `auth.json` write-dates stay the same. Same-machine
+  `print-cli-models` median 4.30 ms → 2.45 ms (80 calls). Not
+  Friend-MachineD pairing. Probe 7d (table format) not repeated.
+
 - Goal 20 Part P.2: journal_append harness mkdir/create is reported
   separately from product `session-append-message`
   (`docs/benchmarks/goal20-part-p-append-tax.md`). Same-machine

@@ -186,6 +186,7 @@
                              (:file "part-b-utilities-test")
                              (:file "part-b-config-test")
                              (:file "part-b-models-test")
+                             (:file "model-registry-cache-test")
                              (:file "part-b-interactive-test")
                              (:file "part-b-sdk-test")
                              (:file "part-b-cli-test")

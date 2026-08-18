@@ -353,6 +353,42 @@
           registry)
     (refresh-model-registry registry)))
 
+(defvar *cached-cli-model-registry* nil)
+(defvar *cached-cli-model-registry-key* nil)
+
+(defun cli-model-registry-cache-key (path credentials)
+  (let ((auth-path
+          (and (typep credentials 'file-auth-storage)
+               (file-auth-storage-path credentials))))
+    (list path
+          (and path (probe-file path) (file-write-date path))
+          auth-path
+          (and auth-path (probe-file auth-path)
+               (file-write-date auth-path)))))
+
+(defun clear-cli-model-registry-cache ()
+  (setf *cached-cli-model-registry* nil
+        *cached-cli-model-registry-key* nil))
+
+(defun cached-cli-model-registry (&key path credentials)
+  ;; print-cli-models used to call make-model-registry on every
+  ;; --list-models, which re-reads models.json and rebuilds the catalog
+  ;; (probe 7d proved the table format is not the cost).  Reuse the last
+  ;; refresh while models.json and auth.json write-dates stay the same.
+  ;; Baseline cli/list-models.ts listModels still reads current files
+  ;; each invocation; this cache is the CL limit, invalidated by mtime.
+  (let ((key (cli-model-registry-cache-key path credentials)))
+    (if (and *cached-cli-model-registry*
+             (equal key *cached-cli-model-registry-key*))
+        *cached-cli-model-registry*
+        (let ((registry
+                (make-model-registry
+                 :path path
+                 :credentials credentials)))
+          (setf *cached-cli-model-registry* registry
+                *cached-cli-model-registry-key* key)
+          registry))))
+
 (defun model-registry-all (registry)
   (copy-list (model-registry-models registry)))
 
