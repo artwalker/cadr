@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `c78cef0a9` (non-quick, samples=5, enforced).
+  session_load 2.52×→2.02×, journal_read 2.17×→1.46×.
+  cadr load 3866 µs → 3127 µs, read 3357 µs → 2589 µs.
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: session JSONL parse walks the octet
   window. UTF-8 decode only unescaped string values
   with high bytes. Public parse-json unchanged.
