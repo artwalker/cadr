@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `857270409` (non-quick, samples=5, enforced).
+  session_load 1.74×→1.62×, journal_read 1.72×→1.62×.
+  cadr load 3037 µs → 3033 µs, read 2562 µs → 2647 µs.
+  Ratio drop is mostly pi drift. RATIO_CEILINGS
+  unchanged. No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: load-session maps closed record types
   and message vocab to keywords without SUBSTITUTE /
   STRING-UPCASE / INTERN. Already-typed content blocks
