@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: this-host `list_models_render` of
+  `9065ffe30` (pairing fixture pattern `goal20`, broadcast
+  sink) 2178 µs / 1,717,788 B. Pairing cadr last booked
+  2182 µs. Wall did not move hundreds of µs; no
+  Friend-MachineD remesure. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: `print-cli-models` writes the six-column
   table into one string buffer. No per-cell `format nil`
   pad and no per-row `format ~{~A~^  ~}`. Table bytes
