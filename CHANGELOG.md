@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: intern repeated ASCII JSON *values*
+  (`message`, `assistant`, `user`, `text`, …) so they
+  skip `COPY-UNESCAPED-JSON-STRING`. Keys unchanged.
+  Pairing fixture parse 1,400,749 B → 1,328,669 B;
+  journal_read 2,638,423 B → 2,559,514 B. Not 7b.
+  Identity 122802→122836. FiveAM 19057→19062.
+  G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `c949668cd` (non-quick, samples=5, enforced).
   session_load 3.80×→3.27×, journal_read 3.38×→3.16×,

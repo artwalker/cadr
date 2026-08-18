@@ -107,3 +107,24 @@
             (b (find name keys-b :test #'string=)))
         (is (string= a name))
         (is (eq a b))))))
+
+(test goal20-json-interns-session-jsonl-string-values
+  ;; Values, not keys.  "assistant" / "user" / "message" as field
+  ;; contents skip COPY-UNESCAPED.  Unique strings still copy.
+  (let ((first
+          (cadr-ai::parse-json
+           "{\"role\":\"assistant\",\"kind\":\"message\"}"))
+        (second
+          (cadr-ai::parse-json
+           "{\"role\":\"assistant\",\"kind\":\"user\"}")))
+    (is (eq (cadr-ai::json-get first "role")
+            (cadr-ai::json-get second "role")))
+    (is (string= (cadr-ai::json-get first "role") "assistant"))
+    (is (eq (cadr-ai::json-get first "kind")
+            (cadr-ai::json-get
+             (cadr-ai::parse-json "{\"x\":\"message\"}") "x")))
+    (is (string= (cadr-ai::json-get second "kind") "user"))
+    (let* ((source "{\"x\":\"unique-value\"}")
+           (parsed (cadr-ai::parse-json source)))
+      (setf (char source 6) #\z)
+      (is (string= "unique-value" (cadr-ai::json-get parsed "x"))))))

@@ -267,6 +267,37 @@
               ((key= "prompt_tokens") "prompt_tokens")))
         (17 (when (key= "completion_tokens") "completion_tokens"))))))
 
+(defun json-interned-ascii-value (source start end)
+  ;; session_load / journal_read: repeated short ASCII values
+  ;; ("message", "assistant", "user", …) skip COPY-UNESCAPED-JSON-STRING.
+  ;; Object keys stay on json-interned-ascii-key.  Not 7b.
+  (declare (type simple-string source)
+           (type fixnum start end))
+  (let ((count (- end start)))
+    (declare (type fixnum count))
+    (flet ((val= (literal)
+             (and (= count (length literal))
+                  (string= literal source :start2 start :end2 end))))
+      (case count
+        (4 (cond
+             ((val= "text") "text")
+             ((val= "user") "user")
+             ((val= "stop") "stop")
+             ((val= "read") "read")))
+        (6 (cond
+             ((val= "custom") "custom")
+             ((val= "medium") "medium")))
+        (7 (cond
+             ((val= "message") "message")
+             ((val= "session") "session")
+             ((val= "toolUse") "toolUse")))
+        (8 (cond
+             ((val= "thinking") "thinking")
+             ((val= "toolCall") "toolCall")))
+        (9 (when (val= "assistant") "assistant"))
+        (10 (when (val= "toolResult") "toolResult"))
+        (18 (when (val= "openai-completions") "openai-completions"))))))
+
 (defun parse-json-source (source)
   ;; Cost center for session_load / journal_read
   ;; (docs/benchmarks/goal20-part-o-remaining-sprof.md).  CHAR on a
@@ -406,6 +437,9 @@
                              (decode-escaped-string start end))
                             ((and intern-p
                                   (json-interned-ascii-key
+                                   source start end)))
+                            ((and (not intern-p)
+                                  (json-interned-ascii-value
                                    source start end)))
                             (t
                              (copy-unescaped-json-string
