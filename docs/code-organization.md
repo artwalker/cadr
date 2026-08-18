@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122685 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122701 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -392,7 +392,7 @@ at :4. No rewrite invented. Report:
 | `src/cadr-tui/package.lisp` | 355 | 1 | Declare the public `cadr-tui` package surface. | pass | no-rewrite | The flat export list is CL's canonical interface mechanism; zero executable code. | 20 |
 | `src/cadr-tui/renderer/alt-screen.lisp` | 610 | 14 | Prepare, crop, render, and restore alternate-screen documents. | pass | done | +synchronized-update-*. I0: one wire pair. | 20 |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | 9 | Match and present transcript search for the fullscreen viewport: whitespace-normalizing corpus, source mapping, and the search bar. | pass | done | +search-whitespace-characters+. I0: one alphabet. | 20 |
-| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,337 | 46 | Own renderer state, lifecycle, viewport, selection, mouse, and input dispatch. | pass · large | done | coerce lines vector. I0: aref scroll scan. | 20 |
+| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,353 | 46 | Own renderer state, lifecycle, viewport, selection, mouse, and input dispatch. | pass · large | done | coerce lines vector. I0: aref scroll scan. last-document is a vector. | 20 |
 | `src/cadr-tui/renderer/main-screen.lisp` | 595 | 15 | Render incremental main-screen frames and manage terminal images. | pass · large | done | +kitty-control-prefix+. I0: one Kitty marker. | 20 |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 73 | 23 | Define the terminal output, cursor, lifecycle, query, and capability protocol. | pass | no-rewrite | The nine default-method stubs (:28-73) are the native CLOS protocol idiom encoding the baseline optional-capability semantics. | 20 |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | 13 | Implement the deterministic in-memory terminal and screen snapshot. | pass | no-rewrite | The byte-stream state machine at :113-173 needs variable advance (CSI skips); it is the test double for the byte contract. | 20 |

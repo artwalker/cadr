@@ -409,7 +409,7 @@
       renderer)
      (length document)
      (terminal-renderer-last-document renderer)
-     document)
+     (coerce document 'simple-vector))
     (if
         (terminal-renderer-stick-to-bottom-p
          renderer)

@@ -33,8 +33,8 @@ Not a Goal 20 pass.
 |---|---|---|---|
 | P.12.1 JSON window scan | | remaining `PEEK`/`TAKE` macros already index a `SIMPLE-STRING`; not this knife | |
 | P.12.2 editor-lines | number | 80× 200-line editor-lines+render 183,349 B → 177,188 B / call | this knife. Wall 0.300–0.399 ms (timer step). |
-| P.12.3 alt-screen nth | | not this knife | |
-| P.12.4 mermaid concatenate | number | `gm-read-shape` 200× 800-char 1,342,124 B → 24,717 B; 0.340 ms → 0.040 ms | this knife (`parse.lisp`). `labels.lisp` wrap still leftover. |
+| P.12.3 alt-screen nth | number | last-document vector; 400-row × 80 `NTH` 0.100 ms → `AREF` 0.000 ms | this knife. prepared-document stays a list for car/cdr prefix reuse. |
+| P.12.4 mermaid concatenate | number | `gm-read-shape` 200× 800-char 1,342,124 B → 24,717 B; 0.340 ms → 0.040 ms. `gm-wrap-label` fill-pointer 88,758 B → 95,310 B (worse; concatenate kept) | parse `c95c24757`. wrap not a lever. |
 
 ## Not claimed
 

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.12: alt-screen `last-document` is a
+  simple-vector. Per-row selection uses `AREF`. Isolated
+  400-row × 80 walk 0.100 ms (`NTH` list) → 0.000 ms
+  (`AREF`). Identity 122685→122701. G.17 still `missing`.
+
 - Goal 20 P.12: mermaid `gm-read-shape` writes the label
   to a stream instead of per-char `concatenate`.
   Same-machine 200× 800-char label 1,342,124 B → 24,717 B

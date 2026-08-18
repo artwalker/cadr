@@ -776,7 +776,9 @@
     ;; duplicate Kitty helpers (-2).
     ;; clamp-select-index is offset by a dropped helper in the same
     ;; B7 owner set, so the top-level (def count stays 334.
-    (is (= 334 definition-count)
+    ;; +1 Goal 20 P.12.3: renderer-document-line (lifecycle-input.lisp)
+    ;; indexes last-document as a vector or list.
+    (is (= 335 definition-count)
         "B7 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-tui/components.lisp"

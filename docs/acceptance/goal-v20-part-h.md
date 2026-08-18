@@ -291,16 +291,16 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 122,685 lines**
+Denominator: **295 files / 122,701 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 21,151 | 17.2% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 21,167 | 17.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 6.1% | single reference vs previous cadr |
 | `pairable-uncovered` | 236 | 94,059 | 76.7% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 17.2% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 17.3% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 23.3% of lines.
 - **K-blocked** until a new pair or a booked unpairable finding: 76.7% of lines.
 
@@ -366,7 +366,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/alt-screen.lisp` | 610 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,337 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,353 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/main-screen.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 78 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

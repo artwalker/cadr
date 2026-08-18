@@ -19,7 +19,9 @@
   (exit-output-mode :transcript :type symbol)
   (scrollbar-activity-at nil :type (or null double-float))
   open-url-function
-  (last-document nil :type list)
+  ;; P.12.3: per-row selection/copy indexes this; a vector
+  ;; keeps AREF O(1). Tests may still SETF a list.
+  (last-document nil :type (or null vector list))
   (prepared-source-lines nil :type list)
   (prepared-document nil :type list)
   (prepared-width 0 :type (integer 0 *))
@@ -386,9 +388,12 @@ in-place repaint executes.  Production leaves this NIL; the harness
            (eq :resume-hint
                (terminal-renderer-exit-output-mode
                 renderer))
-         (loop for line in
-               (terminal-renderer-last-document
-                renderer)
+         (loop for line across
+               (coerce
+                (or (terminal-renderer-last-document
+                     renderer)
+                    #())
+                'vector)
                for row from 0
                do
                (when (plusp row)
@@ -880,11 +885,24 @@ model is the port's segmentation source)."
          (terminal-renderer-last-click-at renderer) nil))
     count))
 
+(defun renderer-document-line (document row)
+  ;; last-document is a vector after render-alt-frame. NTH past
+  ;; the end is NIL; AREF is not. Tests still SETF a list.
+  (cond
+    ((or (not (integerp row)) (minusp row))
+     "")
+    ((vectorp document)
+     (if (< row (length document))
+         (aref document row)
+         ""))
+    (t
+     (or (nth row document) ""))))
+
 (defun renderer-selection-source-line (renderer row)
   (strip-ansi
-   (or
-    (nth row (terminal-renderer-last-document renderer))
-    "")))
+   (renderer-document-line
+    (terminal-renderer-last-document renderer)
+    row)))
 
 (defun renderer-line-selection-range (renderer row)
   (cons (cons row 0)
@@ -909,12 +927,10 @@ model is the port's segmentation source)."
             (car (car bounds))
             to (car (cdr bounds))
             for line =
-            (or
-             (nth
-              row
-              (terminal-renderer-last-document
-               renderer))
-             "")
+            (renderer-document-line
+             (terminal-renderer-last-document
+              renderer)
+             row)
             for columns =
             (selection-columns
              line row bounds

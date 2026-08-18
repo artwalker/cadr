@@ -165,7 +165,7 @@
     (cadr-tui:renderer-start renderer)
     (alt-render renderer first-lines)
     (let ((first-document
-            (copy-list
+            (copy-seq
              (cadr-tui::terminal-renderer-last-document
               renderer))))
       (alt-render renderer second-lines)
@@ -178,20 +178,24 @@
         (is (every #'eq
                    (subseq first-document 0 3)
                    (subseq second-document 0 3)))
-        (is (not (eq (fourth first-document)
-                     (fourth second-document))))
-        (is (equal
-             (cadr-tui::prepare-alt-document
-              second-lines 12)
+        (is (not (eq (elt first-document 3)
+                     (elt second-document 3))))
+        (is (equalp
+             (coerce
+              (cadr-tui::prepare-alt-document
+               second-lines 12)
+              'vector)
              second-document)))
       (setf (cadr-tui:terminal-columns terminal) 10)
       (alt-render renderer second-lines)
       (is (= 0
              (cadr-tui::terminal-renderer-prepared-prefix-reused
               renderer)))
-      (is (equal
-           (cadr-tui::prepare-alt-document
-            second-lines 10)
+      (is (equalp
+           (coerce
+            (cadr-tui::prepare-alt-document
+             second-lines 10)
+            'vector)
            (cadr-tui::terminal-renderer-last-document
             renderer))))))
 
@@ -208,8 +212,8 @@
     (cadr-tui:terminal-start terminal)
     (alt-render renderer initial)
     (alt-render renderer updated)
-    (is (equal
-         updated
+    (is (equalp
+         (coerce updated 'vector)
          (cadr-tui::terminal-renderer-last-document
           renderer)))
     (cadr-tui:renderer-before-stop renderer)
