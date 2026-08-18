@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `64c367dfc` (non-quick, samples=5, enforced).
+  session_load 3.27×→2.91×, journal_read 3.16×→2.45×,
+  journal_append 1.76×→1.75×. RATIO_CEILINGS unchanged.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: intern repeated ASCII JSON *values*
   (`message`, `assistant`, `user`, `text`, …) so they
   skip `COPY-UNESCAPED-JSON-STRING`. Keys unchanged.
