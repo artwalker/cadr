@@ -535,3 +535,30 @@
              '("tail")
              (message-texts
               (cadr-agent:session-messages loaded))))))))
+
+(test session-type-keyword-maps-closed-record-types
+  (is (eq :message (cadr-agent::session-type-keyword "message")))
+  (is (eq :model-change
+          (cadr-agent::session-type-keyword "model_change")))
+  (is (eq :thinking-level-change
+          (cadr-agent::session-type-keyword "thinking_level_change")))
+  (is (eq :custom-message
+          (cadr-agent::session-type-keyword "custom_message")))
+  (is (eq :session-info
+          (cadr-agent::session-type-keyword "session_info")))
+  (is (eq :message (cadr-agent::session-type-keyword :message))))
+
+(test session-typed-content-blocks-skip-hash-rewalk
+  (let* ((block (cadr-ai:make-text-content :text "hi"))
+         (out
+           (cadr-agent::content-blocks-from-json (vector block))))
+    (is (eq block (first out)))
+    (is (= 1 (length out)))))
+
+(test keyword-from-json-closed-vocab-matches-intern
+  (is (eq :stop (cadr-agent::keyword-from-json "stop")))
+  (is (eq :tooluse (cadr-agent::keyword-from-json "toolUse")))
+  (is (eq :openai-completions
+          (cadr-agent::keyword-from-json "openai-completions")))
+  (is (eq (intern (string-upcase "novelToken") "KEYWORD")
+          (cadr-agent::keyword-from-json "novelToken"))))

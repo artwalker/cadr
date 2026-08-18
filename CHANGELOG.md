@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: load-session maps closed record types
+  and message vocab to keywords without SUBSTITUTE /
+  STRING-UPCASE / INTERN. Already-typed content blocks
+  skip the EQUAL-hash rewalk. Session file bytes
+  unchanged. Pairing fixture load-session 3173 µs →
+  2379 µs / 1,346,195 B → 1,260,915 B. journal_read
+  unchanged. Not intern expand. Not 7b. Identity
+  124236→124277. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `a7013eb1a` (non-quick, samples=5, enforced).
   session_load 2.02×→1.74×, journal_read 1.46×→1.72×.

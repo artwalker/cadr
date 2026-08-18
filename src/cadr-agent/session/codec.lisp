@@ -375,7 +375,22 @@
 (defun keyword-from-json (value)
   (unless (stringp value)
     (error "Expected a symbolic JSON string"))
-  (intern (string-upcase value) "KEYWORD"))
+  ;; Closed session/message vocab.  Same keyword as STRING-UPCASE
+  ;; intern.  Not JSON intern expand.
+  (or
+   (cond
+     ((or (eq value "stop") (string= value "stop")) :stop)
+     ((or (eq value "toolUse") (string= value "toolUse")) :tooluse)
+     ((or (eq value "openai-completions")
+          (string= value "openai-completions"))
+      :openai-completions)
+     ((or (eq value "goal20faux") (string= value "goal20faux"))
+      :goal20faux)
+     ((or (eq value "user") (string= value "user")) :user)
+     ((or (eq value "assistant") (string= value "assistant"))
+      :assistant)
+     ((or (eq value "error") (string= value "error")) :error))
+   (intern (string-upcase value) "KEYWORD")))
 
 (defun json-get-either (object primary legacy)
   (multiple-value-bind (value present-p)
@@ -449,10 +464,14 @@
 (defun content-blocks-from-json (value)
   (cond
     ((null value) nil)
+    ((listp value) value)
     ((vectorp value)
-     (loop for object across value
-           collect
-           (content-block-from-json object)))
+     (if (or (zerop (length value))
+             (not (hash-table-p (aref value 0))))
+         (coerce value 'list)
+         (loop for object across value
+               collect
+               (content-block-from-json object))))
     (t
      (error "Session content must be an array"))))
 

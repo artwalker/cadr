@@ -655,18 +655,40 @@
      "Session record is missing ~A" name))
   value)
 
+(defun session-type-keyword (raw)
+  ;; Closed session record types.  Avoids SUBSTITUTE + STRING-UPCASE
+  ;; + INTERN on every load-session line.  Not JSON intern expand.
+  (cond
+    ((keywordp raw) raw)
+    ((or (eq raw "message") (string= raw "message")) :message)
+    ((or (eq raw "model_change") (string= raw "model_change"))
+     :model-change)
+    ((or (eq raw "thinking_level_change")
+         (string= raw "thinking_level_change"))
+     :thinking-level-change)
+    ((or (eq raw "active_tools_change")
+         (string= raw "active_tools_change"))
+     :active-tools-change)
+    ((or (eq raw "compaction") (string= raw "compaction"))
+     :compaction)
+    ((or (eq raw "branch_summary") (string= raw "branch_summary"))
+     :branch-summary)
+    ((or (eq raw "custom") (string= raw "custom")) :custom)
+    ((or (eq raw "custom_message") (string= raw "custom_message"))
+     :custom-message)
+    ((or (eq raw "label") (string= raw "label")) :label)
+    ((or (eq raw "session_info") (string= raw "session_info"))
+     :session-info)
+    ((or (eq raw "leaf") (string= raw "leaf")) :leaf)
+    ((stringp raw)
+     (intern
+      (string-upcase (substitute #\- #\_ raw))
+      "KEYWORD"))
+    (t raw)))
+
 (defun finalize-session-entry
     (entry path line-number by-id)
-  (let* ((type
-           (let ((raw (session-entry-type entry)))
-             (cond
-               ((keywordp raw) raw)
-               ((stringp raw)
-                (intern
-                 (string-upcase
-                  (substitute #\- #\_ raw))
-                 "KEYWORD"))
-               (t raw))))
+  (let* ((type (session-type-keyword (session-entry-type entry)))
          (id (session-entry-id entry))
          (parent-id
            (progn

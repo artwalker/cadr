@@ -938,7 +938,8 @@
     ;; parse-session-record, finalize (drop require-json-field).
     ;; +1 Goal 20 nested message/usage: session-json-message.
     ;; +1 Goal 20 content blocks: session-json-block.
-    (is (= 269 definition-count)
+    ;; +1 Goal 20 load finalize: session-type-keyword.
+    (is (= 270 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
