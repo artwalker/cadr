@@ -592,7 +592,15 @@ injects the TUI render request when the component is shown."))
           (setf rendered
                 (case (tui-entry-type entry)
                   (:custom-message
-                   (or (getf (tui-entry-custom-payload entry) :content) ""))
+                   ;; A registered renderer that errors must not dump
+                   ;; the LLM content (P0 16:16: "Player X played at").
+                   ;; No renderer still falls back to :content.
+                   (if (cadr-agent::find-extension-message-renderer
+                        extension-host
+                        (tui-entry-custom-type entry))
+                       nil
+                       (or (getf (tui-entry-custom-payload entry) :content)
+                           "")))
                   ;; Baseline skips custom entries with no renderer
                   ;; (interactive-mode.ts:3432-3434). princ-to-string of
                   ;; NIL here printed a bare "NIL" after /snake Q.

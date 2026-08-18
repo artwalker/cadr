@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P0: custom-message fallback does not dump
+  `:content` when a message renderer is registered.
+  Move banners start collapsed.
+
 - Goal 20 P0: tic-tac-toe `board-ascii` matches baseline
   `boardToAscii` (`<>`, 9-wide cells). Expanded move banner
   paints the visual board snapshot, not the LLM ascii.

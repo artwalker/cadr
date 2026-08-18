@@ -1242,8 +1242,7 @@ interactive-mode.ts:5956-5960).")
                   :custom-type (getf arguments :custom-type)
                   :custom-payload (copy-tree arguments)
                   :custom-options
-                  (list :expanded-p
-                        (tui-state-tools-expanded-p state)
+                  (list :expanded-p nil
                         :output-pad 1))))
               (request-render)
               nil)
