@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P0: tic-tac-toe `board-ascii` matches baseline
+  `boardToAscii` (`<>`, 9-wide cells). Expanded move banner
+  paints the visual board snapshot, not the LLM ascii.
+  FiveAM 19008→19025. G.17 still `missing`.
+
 - Goal 20 Part P.1: one-element JSON arrays allocate
   `(vector first)` instead of list + `nreverse` +
   `coerce`. Stream-chat 2,357,254 B → 2,350,697 B.

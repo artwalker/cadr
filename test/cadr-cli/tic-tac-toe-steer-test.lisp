@@ -232,6 +232,30 @@
         (is (not (null banner-class)))
         (is (typep expanded banner-class))))))
 
+(test tic-tac-toe-board-ascii-matches-baseline-cells
+  (with-tic-tac-toe-extension (host package)
+    (or host t)
+    (let* ((make-state (find-symbol "MAKE-TIC-TAC-TOE-STATE" package))
+           (ascii (find-symbol "TIC-TAC-TOE-BOARD-ASCII" package))
+           (board-reader (find-symbol "TIC-TAC-TOE-STATE-BOARD" package))
+           (set-row
+             (fdefinition
+              (list 'setf (find-symbol "TIC-TAC-TOE-STATE-AGENT-ROW" package))))
+           (set-col
+             (fdefinition
+              (list 'setf (find-symbol "TIC-TAC-TOE-STATE-AGENT-COLUMN"
+                                       package))))
+           (state (funcall make-state)))
+      (setf (aref (funcall board-reader state) 1 1) #\X)
+      (funcall set-row 0 state)
+      (funcall set-col 0 state)
+      (let ((text (funcall ascii state)))
+        (is (search "<[0,0]>" text))
+        (is (search " [0,1] " text))
+        (is (search "    X    " text))
+        (is (search "---------+---------+---------" text))
+        (is (null (search "-----+-----+-----" text)))))))
+
 (test tic-tac-toe-tool-description-matches-baseline-contract
   (with-tic-tac-toe-extension (host package)
     (or package t)

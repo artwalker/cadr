@@ -40,7 +40,10 @@
     (is (search "(tic-tac-toe-reconstruct context)" source))
     (is (search "(arguments theme context)" source))
     (is (search "There is no batched form" source))
-    (is (search ":tool-title" source))))
+    (is (search ":tool-title" source))
+    (is (search "---------+---------+---------" source))
+    (is (search "<[~D,~D]>" source))
+    (is (null (search "-----+-----+-----" source)))))
 
 (test goal20-snake-behavior-render-reflects-state
   ;; Goal 20 P0-3 behavior tier: construct the component, advance the game
@@ -455,6 +458,20 @@
             (is (search "Player X played" screen))
             (is (search "next:" screen))
             (is (null (search "played at (row=" screen)))
+            (is (null (search "marked with" screen)))
+            (is (null (search "-----+-----" screen))))
+          (setf (cadr-cli::tui-entry-custom-options entry)
+                '(:expanded-p t :output-pad 1)
+                (cadr-cli::tui-entry-custom-component entry) nil)
+          (let ((screen
+                  (format
+                   nil "~{~A~^~%~}"
+                   (cadr-cli::render-tui-entry
+                    entry 80 :extension-host host))))
+            (is (search "Player X played" screen))
+            (is (search (string #\BOX_DRAWINGS_LIGHT_HORIZONTAL) screen))
+            (is (null (search "played at (row=" screen)))
+            (is (null (search "marked with" screen)))
             (is (null (search "-----+-----" screen)))))))))
 
 (test goal20-p0-4-trigger-turn-does-not-block-tui-input-thread

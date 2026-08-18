@@ -69,21 +69,34 @@
       state)))
 
 (defun tic-tac-toe-board-ascii (state)
-  (with-output-to-string (output)
-    (loop for row below 3
-          do
-          (loop for column below 3
-                for value = (aref (tic-tac-toe-state-board state) row column)
-                for cursor-p = (and (= row (tic-tac-toe-state-agent-row state))
-                                    (= column (tic-tac-toe-state-agent-column state)))
-                do (format output "~A~:[~A~;[~A]~]~A"
-                           (if (zerop column) "" "|")
-                           cursor-p
-                           (if (char= value #\Space)
-                               (format nil "~D,~D" row column)
-                               (string value))
-                           (if (= column 2) "" "")))
-          unless (= row 2) do (format output "~%-----+-----+-----~%"))))
+  ;; Baseline boardToAscii (tic-tac-toe.ts:161-176): 9-wide cells,
+  ;; agent cursor in <>, empty cells as [r,c], never the user cursor.
+  (let ((board (tic-tac-toe-state-board state))
+        (agent-row (tic-tac-toe-state-agent-row state))
+        (agent-column (tic-tac-toe-state-agent-column state)))
+    (with-output-to-string (output)
+      (loop for row below 3
+            do
+            (loop for column below 3
+                  for value = (aref board row column)
+                  for cursor-p = (and (= row agent-row)
+                                      (= column agent-column))
+                  do
+                  (unless (zerop column)
+                    (write-string "|" output))
+                  (write-string
+                   (cond
+                     ((and (char= value #\Space) cursor-p)
+                      (format nil "<[~D,~D]>" row column))
+                     ((char= value #\Space)
+                      (format nil " [~D,~D] " row column))
+                     (cursor-p
+                      (format nil "   <~A>   " value))
+                     (t
+                      (format nil "    ~A    " value)))
+                   output))
+            unless (= row 2)
+              do (format output "~%---------+---------+---------~%")))))
 
 (defun tic-tac-toe-save ()
   (cadr-agent:extension-api-append-entry
@@ -263,12 +276,13 @@ exactly that duplication."
   (and show-p (= row cursor-row)
        (or (= grid-column cursor-column) (= grid-column (1+ cursor-column)))))
 
-(defun tic-tac-toe-render-visual-board (state width &key agent-view-p)
+(defun tic-tac-toe-render-visual-board
+    (state width &key agent-view-p snapshot-p)
   (let* ((board (tic-tac-toe-state-board state))
          (win-cells (tic-tac-toe-win-cells board))
          (playing-p (eq (tic-tac-toe-state-status state) :playing))
          (user-turn-p (char= (tic-tac-toe-state-current-turn state) #\X))
-         (show-cursor-p playing-p)
+         (show-cursor-p (and playing-p (not snapshot-p)))
          (cursor-row (cond
                        ((not show-cursor-p) -1)
                        ((or agent-view-p (not user-turn-p))
@@ -508,14 +522,14 @@ exactly that duplication."
     (if (and (tic-tac-toe-banner-expanded-p component)
              (tic-tac-toe-banner-details component))
         (let ((state
-                (tic-tac-toe-state-from-data
-                 (tic-tac-toe-banner-details component))))
+                (or (tic-tac-toe-state-from-data
+                     (tic-tac-toe-banner-details component))
+                    *tic-tac-toe-state*)))
           (append
            lines
            (list "")
-           (uiop:split-string
-            (tic-tac-toe-board-ascii (or state *tic-tac-toe-state*))
-            :separator '(#\Newline))))
+           (tic-tac-toe-render-visual-board
+            state width :snapshot-p t)))
         lines)))
 
 (cadr-agent:define-component-message-renderer
