@@ -25,6 +25,11 @@ tag/Release step.
   stream blocks, runtime error wrap). Generated catalogs
   untouched. FiveAM 18748 → 18768.
 
+- Docs: live Slynk is first on a running cadr, not a last resort after
+  guessing (`development-policy` §6.1, `AGENTS.md`). Load-and-probe is
+  not a substitute. Do not add restarts on pairable user-visible paths
+  to look native.
+
 - Goal 20 Part K6 follow-up: `with-present` owns every schema
   present-p bind; `call-signaled-operation` owns abort/classify
   for remove and temps. FiveAM 18738 → 18748.

@@ -347,17 +347,61 @@ summaries were seen, not that no failure line was found.**
 
 **This section records practices, not any one goal's tasks.** goal 20 Part N is their first engineering application; **this section remains in force after Part N closes out.** Every item adds zero dependencies (`sb-introspect`, `sb-mop`, `trace`, `sb-cover`, and `sb-sprof` all ship with SBCL; slynk was approved by `OQ-G10-D2-SLYNK-REPL` on 2026-08-01 and ships with the image).
 
-### 1. Diagnosis: when static reading cannot yield the trigger, capture evidence instead of guessing
+### 1. Diagnosis: pick the instrument by where the state lives, not as a last resort after guessing
 
-**"Guessing the trigger" is not diagnosis.** Whenever the user or a gate finds a defect whose runtime trigger cannot be determined by reading the source, evidence must be captured on the spot by one of the following, and the key state recorded in the defect report:
+**Use Lisp's live image. Do not add Lisp machinery to look native.**
+User ruling 2026-08-18: fully use the advantage; do not stretch constructs
+for their own sake. "Could almost name it from source" is not a reason to
+skip Slynk on a running process.
 
 ```
-./cadr --slynk <port>       starts a loopback-only server; in the REPL (cadr-cli::active-agent)
+./cadr --slynk <port>       starts a loopback-only server; in the REPL (cadr-cli:active-agent)
                             returns the running agent object, and reproducing to the failure leaves that state live
 (trace some-function)       shows calls and returns without editing code, answering "which branch was taken"
 ```
 
-**Evidence capture must obey the credential discipline of section 3** — be especially careful when capturing on login and authentication paths: API keys and OAuth tokens must not be printed or written to disk.
+**Which tool:**
+
+- **`--slynk <port>` and SLY first** when the reproduction vehicle is a
+  running cadr process (interactive TUI, `--mode rpc`, or a live provider).
+  Inspect `(cadr-cli:active-agent)`, slots, queues, and the condition.
+  Redefine and continue; do not kill the process to "see if it happens
+  again". Source reading may suggest a hypothesis; the live image is the
+  diagnosis.
+- **`asdf:load-system` and call the function** (item 2) when the state is a
+  function of constructed inputs — no live session, no TUI reader thread,
+  no provider round-trip.
+- **`(trace …)`** when the question is which branch ran, and the inputs are
+  already known.
+- **Forbidden substitute:** writing "slynk is the same query as
+  load-and-probe" for a defect the user reproduced in a live process.
+  Load-and-probe may *lock* a reconstructed snapshot in FiveAM; it is not
+  the diagnosis of that live trigger. (Part L/N recorded this miss.)
+- **Forbidden cargo-cult:** extra `restart-case` / hooks on pairable
+  user-visible failure paths "to use Lisp"; spraying `fixnum`; treating
+  Slynk as a second test runner.
+
+**Restarts at a live tool failure** (Goal 10 D1; already in the image,
+default-off for interactive picking):
+
+- With Slynk attached, use `retry-tool-call` / `skip-tool-call` /
+  `abort-agent-run` at the condition site. That is the Lisp advantage:
+  the stack is still live.
+- Without a `:tool-call-error` hook, the default product path still emits
+  the error result (parity with pi). Do not add hooks or extra
+  `restart-case` on pairable wires "to use Lisp".
+- A test that claims restart behavior must invoke the restart, not only
+  assert `fboundp`.
+
+**After a Slynk session, the lock is FiveAM** (or the matching
+deterministic gate). A pasted REPL snapshot is evidence in the report, not
+the gate. Credential discipline of section 3 still applies — no API keys
+or OAuth tokens in the REPL, logs, or the report.
+
+**This item does not apply to every edit.** Pin/ledger commits and K
+rewrites whose before/after is already a red/green FiveAM on constructed
+inputs stay on item 2. Slynk is for live-process defects, not a second
+test runner.
 
 ### 2. Development loop: load and probe first, before rebuilding a whole image
 

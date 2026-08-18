@@ -194,6 +194,13 @@ never fills in a ruling under any signature (adjudication
 
 Each of these was paid for; the one-line form is the minimum that transfers.
 
+- **Slynk and load-and-probe are not interchangeable.** If the user
+  reproduced in a running cadr, attach `--slynk` **first**
+  (`(cadr-cli:active-agent)`, live tool restarts when the failure is a
+  tool condition). "Could almost name it from source" is not a skip.
+  A FiveAM reconstruction may lock the fix; it is not the diagnosis.
+  "slynk is the same query as load-and-probe" is a refuse. Do not add
+  pairable-path `restart-case` to look native. Part L/N recorded the miss.
 - **Evidence before assertion.** Run one command before stating a fact,
   especially when relaying someone else's conclusion. External reports (and
   helper-model answers) are leads, never verdicts.

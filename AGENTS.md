@@ -137,6 +137,37 @@ A dimension whose recorded `screenSha256` pair is identical and whose classes
 still include a non-I01 tag is already mechanically false — the record
 disproves itself.
 
+## Live Lisp diagnosis
+
+Slynk and tool restarts stay **off for users** (explicit `--slynk <port>`;
+no config/env back door). Use the live image; do not add Lisp machinery
+to look native. Standing text: `docs/development-policy.md` §6.1
+(user 2026-08-18: fully use the advantage, not Lisp-for-Lisp).
+
+**Attach Slynk first** when the reproduction is a running cadr (interactive
+TUI, `--mode rpc`, or a live provider). "Could almost name it from source"
+does not skip this.
+
+```sh
+./cadr --slynk 4005 --provider opencode-go --model mimo-v2.5
+# SLY: slime-connect 127.0.0.1 4005
+```
+
+```lisp
+(cadr-cli:active-agent)
+```
+
+Inspect slots, queues, and the live condition. Redefine and continue.
+On a tool failure, use `retry-tool-call` / `skip-tool-call` /
+`abort-agent-run` at the site — do not kill the agent to replay. Then lock
+the trigger with FiveAM. Do not print credentials.
+
+**Do not attach Slynk** for pin/ledger edits, or for a rewrite whose
+before/after is already a red/green FiveAM on constructed inputs. Do not
+write "slynk is the same query as load-and-probe" for a live-process
+defect. Do not add `restart-case` on pairable user-visible failure paths
+"to use Lisp".
+
 ## Inviolable rules
 
 Drawn from `docs/development-policy.md`. That file is the source; this is

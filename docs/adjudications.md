@@ -402,3 +402,31 @@ exhausted and still > 1.0 → blocked with what was tried. Item 3
 forbids the next real win (a JSON library or a format change) without
 a proposal. Re-running 7a–7d is theatre. A later goal may take the
 parser; this goal records the gap.
+
+## 2026-08-18 — Live Lisp first; not Lisp-for-Lisp; paper A/B does not close live example bugs
+
+**Ruled**: user (2026-08-18 11:25–11:27). Advisor recorded.
+
+**Decided**:
+
+1. Use Common Lisp's live image (Slynk, restarts, load-and-probe,
+   MOP/introspect, compiler warnings) where the state actually lives.
+   Do not add `restart-case`, hooks, or declarations on pairable
+   user-visible paths in order to look native.
+2. On a running cadr (TUI / rpc / live provider), attach `--slynk`
+   **first**. "Could almost name the trigger from source" is not a skip.
+   FiveAM locks the trigger afterwards. Slynk is not a second test
+   runner and is not load-and-probe.
+3. Paper A/B of captured example surfaces, and Part E classification
+   closeout, do **not** close defects the user still hits while
+   playing. Those stay in Goal 20 as fixes or `blocked`, diagnosed
+   with Slynk on the live process.
+
+**Why it was decidable**: the previous §6.1 wording ("attach Slynk when
+source-reading cannot name the trigger") produced screenshot-and-guess
+diagnosis. The same day the user still reproduced tic-tac-toe overlay
+desync and `send-message requires DELIVER-AS while the agent is running`
+after a paper A/B pass. Baseline `sendCustomMessage` steers when
+`isStreaming` (`packages/coding-agent/src/core/agent-session.ts:1452-1457`);
+cadr errors (`src/cadr-agent/extensions/providers.lisp:260-265`).
+
