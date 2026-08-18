@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.8: snake and invaders overlays read the
+  live global when bound (`*snake-state*`,
+  `*space-invaders-state*`), matching tic-tac-toe. User
+  hand-play still leftover. G.17 still `missing`.
+
 - Goal 20 Part P.4: object keys on the OpenAI completions
   chunk set reuse string literals instead of a fresh
   SIMPLE-BASE-STRING each time. Same-machine stream-chat

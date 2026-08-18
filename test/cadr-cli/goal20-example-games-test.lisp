@@ -146,6 +146,110 @@
           (is (plusp renders)
               "timer tick did not request a repaint"))))))
 
+(test goal20-snake-overlay-reads-live-global
+  ;; P.8: after reconstruct/restart the overlay must paint *snake-state*,
+  ;; not a slot captured when the component was built.
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target (merge-pathnames "examples/extensions/snake.lisp" root))
+             (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        (let* ((bundles
+                 (cadr-agent::extension-snapshot-bundles
+                  (cadr-agent::extension-host-current-snapshot
+                   (cadr-cli::cli-extension-manager-host manager))))
+               (bundle
+                 (find-if
+                  (lambda (candidate)
+                    (find "snake"
+                          (cadr-agent::extension-bundle-commands candidate)
+                          :key #'cadr-agent::extension-command-definition-name
+                          :test #'string=))
+                  bundles))
+               (package (cadr-agent::extension-bundle-package bundle))
+               (slot-state
+                 (funcall (find-symbol "MAKE-INITIAL-SNAKE-STATE" package)))
+               (live-state
+                 (funcall (find-symbol "MAKE-INITIAL-SNAKE-STATE" package)))
+               (tui (cadr-tui:make-tui-root
+                     :render-function (lambda (lines)
+                                        (declare (ignore lines)))))
+               (component
+                 (make-instance
+                  (find-symbol "SNAKE-COMPONENT" package)
+                  :state slot-state
+                  :tui tui
+                  :done (lambda (value) value)
+                  :save (lambda (value) value)
+                  :paused-p t)))
+          (funcall
+           (fdefinition
+            (list 'setf (find-symbol "SNAKE-STATE-SCORE" package)))
+           999 live-state)
+          (setf (symbol-value (find-symbol "*SNAKE-STATE*" package))
+                live-state)
+          (let ((lines (cadr-tui:component-render component 100)))
+            (is (find-if (lambda (line) (search "999" line)) lines)
+                "overlay did not read *snake-state*")))))))
+
+(test goal20-invaders-overlay-reads-live-global
+  (let ((root (asdf:system-source-directory "cadr-cli")))
+    (with-test-directory (temporary)
+      (let* ((output (make-string-output-stream))
+             (target
+               (merge-pathnames "examples/extensions/space-invaders.lisp" root))
+             (manager
+               (make-test-extension-manager
+                temporary (merge-pathnames "global/" temporary)
+                output (list target)))
+             (report (cadr-cli::reload-cli-extensions manager)))
+        (is (null (getf report :errors)))
+        (let* ((bundles
+                 (cadr-agent::extension-snapshot-bundles
+                  (cadr-agent::extension-host-current-snapshot
+                   (cadr-cli::cli-extension-manager-host manager))))
+               (bundle
+                 (find-if
+                  (lambda (candidate)
+                    (find "invaders"
+                          (cadr-agent::extension-bundle-commands candidate)
+                          :key #'cadr-agent::extension-command-definition-name
+                          :test #'string=))
+                  bundles))
+               (package (cadr-agent::extension-bundle-package bundle))
+               (slot-state
+                 (funcall
+                  (find-symbol "MAKE-INITIAL-INVADERS-STATE" package)))
+               (live-state
+                 (funcall
+                  (find-symbol "MAKE-INITIAL-INVADERS-STATE" package)))
+               (tui (cadr-tui:make-tui-root
+                     :render-function (lambda (lines)
+                                        (declare (ignore lines)))))
+               (component
+                 (make-instance
+                  (find-symbol "SPACE-INVADERS-COMPONENT" package)
+                  :state slot-state
+                  :tui tui
+                  :done (lambda (value) value)
+                  :save (lambda (value) value)
+                  :paused-p t)))
+          (funcall
+           (fdefinition
+            (list 'setf (find-symbol "INVADERS-STATE-SCORE" package)))
+           777 live-state)
+          (setf (symbol-value
+                 (find-symbol "*SPACE-INVADERS-STATE*" package))
+                live-state)
+          (let ((lines (cadr-tui:component-render component 100)))
+            (is (find-if (lambda (line) (search "777" line)) lines)
+                "overlay did not read *space-invaders-state*")))))))
+
 (test goal20-ttt-agent-action-repaints-the-live-overlay
   ;; Goal 20 P0-2 behavior lock (baseline updateState,
   ;; tic-tac-toe.ts:389-393): the overlay component must carry the tui

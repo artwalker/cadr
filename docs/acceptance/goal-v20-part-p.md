@@ -19,7 +19,7 @@ Not a Goal 20 pass.
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,432,299 B; snake overlay 39,963 B | This host after interned streaming keys. |
 | P.7 H pairing | number | 0 new file-level pairs | |
-| P.8 three games | leftover | user has not played | FiveAM exists; not hand-play. |
+| P.8 three games | leftover | user has not played | Overlay reads live global (ttt `edb9d6dca`; snake/invaders this knife). FiveAM ≠ hand-play. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`. |
 | P.10 input-to-screen | number | key→overlay 0.100 ms, spinner=NIL | This host. |
 | P.11 tool restarts | number | 14/14 FiveAM, fail=0 | retry 7 + skip 3 + abort 4. |

@@ -108,6 +108,9 @@
             (:left . :right) (:right . :left))
           :test #'equal))
 
+(defvar *snake-state* nil)
+(defvar *snake-component* nil)
+
 (defclass snake-component (cadr-tui:component)
   ((state :initarg :state :accessor snake-component-state)
    (tui :initarg :tui :reader snake-component-tui)
@@ -119,12 +122,25 @@
    (lock :initform (sb-thread:make-mutex :name "snake example state")
          :reader snake-component-lock)))
 
+(defun snake-live-state (component)
+  "Live overlay reads the global when bound. Reconstruct / restart
+replace that object; a slot captured at /snake would otherwise keep
+painting the pre-replace frame. Tests that only set the slot fall
+back to it."
+  (or *snake-state* (snake-component-state component)))
+
+(defun snake-bind-live-state (component state)
+  (setf *snake-component* component
+        *snake-state* state
+        (snake-component-state component) state)
+  state)
+
 (defun snake-component-advance (component)
   "Timer tick (baseline snake.ts:90-97): mutate then requestRender.
 User-input paths do not call this; tui-dispatch-event already
 request-renders after component-handle-event (root.lisp:207-208)."
   (sb-thread:with-mutex ((snake-component-lock component))
-    (snake-tick (snake-component-state component)))
+    (snake-tick (snake-live-state component)))
   (cadr-tui:tui-request-render (snake-component-tui component))
   component)
 
@@ -197,7 +213,7 @@ box width by visible length (snake.ts:229-233)."
     ((component snake-component) width &key focused-p)
   (declare (ignore focused-p))
   (sb-thread:with-mutex ((snake-component-lock component))
-    (let* ((state (snake-component-state component))
+    (let* ((state (snake-live-state component))
            (effective-width (max 1 (min +snake-width+ (floor (- width 4) 2))))
            (box-width (* 2 effective-width))
            ;; Footer copy and SGR composition follow snake.ts:238-241 and
@@ -263,23 +279,24 @@ box width by visible length (snake.ts:229-233)."
       ((member (cadr-tui:input-event-kind event)
                '(:escape :cancel :interrupt))
        (funcall (snake-component-save component)
-                (snake-state-to-data (snake-component-state component)))
+                (snake-state-to-data (snake-live-state component)))
        (snake-component-stop component)
        (funcall (snake-component-done component) nil))
       ((member text '("q" "Q") :test #'string=)
        (funcall (snake-component-save component) nil)
        (snake-component-stop component)
        (funcall (snake-component-done component) nil))
-      ((and (snake-state-game-over-p (snake-component-state component))
+      ((and (snake-state-game-over-p (snake-live-state component))
             (or (member text '("r" "R" " ") :test #'string=)
                 (eq (cadr-tui:input-event-kind event) :enter)))
        (let ((high-score
-               (snake-state-high-score (snake-component-state component))))
-         (setf (snake-component-state component)
-               (make-initial-snake-state :high-score high-score))
+               (snake-state-high-score (snake-live-state component))))
+         (snake-bind-live-state
+          component
+          (make-initial-snake-state :high-score high-score))
          (funcall (snake-component-save component) nil)))
       (t
-       (let* ((state (snake-component-state component))
+       (let* ((state (snake-live-state component))
               (direction (snake-event-direction event)))
          (when (and direction
                     (not (snake-direction-opposite-p
@@ -314,15 +331,17 @@ box width by visible length (snake.ts:229-233)."
           context
           (lambda (tui theme keybindings done)
             (declare (ignore theme keybindings))
-            (let ((component
-                    (make-instance
-                     'snake-component
-                     :state (or saved (make-initial-snake-state))
-                     :paused-p (and saved (not (snake-state-game-over-p saved)))
-                     :tui tui :done done
-                     :save (lambda (data)
-                             (cadr-agent:extension-api-append-entry
-                              *example-api* +snake-save-type+ data)))))
+            (let* ((state (or saved (make-initial-snake-state)))
+                   (component
+                     (make-instance
+                      'snake-component
+                      :state state
+                      :paused-p (and saved (not (snake-state-game-over-p saved)))
+                      :tui tui :done done
+                      :save (lambda (data)
+                              (cadr-agent:extension-api-append-entry
+                               *example-api* +snake-save-type+ data)))))
+              (snake-bind-live-state component state)
               (unless (snake-component-paused-p component)
                 (snake-component-start component))
               component)))))))

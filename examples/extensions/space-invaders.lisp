@@ -249,6 +249,9 @@
       (setf (invaders-state-victory-p state) t)))
   state)
 
+(defvar *space-invaders-state* nil)
+(defvar *space-invaders-component* nil)
+
 (defclass space-invaders-component (cadr-tui:component)
   ((state :initarg :state :accessor space-invaders-state)
    (keys :initform (list :left nil :right nil :fire nil)
@@ -262,6 +265,18 @@
    (lock :initform (sb-thread:make-mutex :name "invaders example state")
          :reader space-invaders-lock)))
 
+(defun space-invaders-live-state (component)
+  "Live overlay reads the global when bound. Restart replaces that
+object; a slot captured at /invaders would otherwise keep painting
+the previous level. Tests that only set the slot fall back to it."
+  (or *space-invaders-state* (space-invaders-state component)))
+
+(defun space-invaders-bind-live-state (component state)
+  (setf *space-invaders-component* component
+        *space-invaders-state* state
+        (space-invaders-state component) state)
+  state)
+
 (defmethod cadr-tui:component-wants-key-release-p
     ((component space-invaders-component))
   (declare (ignore component))
@@ -272,7 +287,7 @@
 requestRender. Restart and key paths go through handle-event;
 tui-dispatch-event request-renders those (root.lisp:207-208)."
   (sb-thread:with-mutex ((space-invaders-lock component))
-    (invaders-tick (space-invaders-state component)
+    (invaders-tick (space-invaders-live-state component)
                    (space-invaders-keys component)))
   (cadr-tui:tui-request-render (space-invaders-tui component))
   component)
@@ -332,7 +347,7 @@ tui-dispatch-event request-renders those (root.lisp:207-208)."
     ((component space-invaders-component) width &key focused-p)
   (declare (ignore width focused-p))
   (sb-thread:with-mutex ((space-invaders-lock component))
-    (let* ((state (space-invaders-state component))
+    (let* ((state (space-invaders-live-state component))
            (footer
              (cond
                ((space-invaders-paused-p component) "PAUSED · any key resumes · Q quits")
@@ -369,7 +384,7 @@ tui-dispatch-event request-renders those (root.lisp:207-208)."
     ((component space-invaders-component) event)
   (let* ((release-p (eq (cadr-tui:input-event-kind event) :key-release))
          (text (or (cadr-tui:input-event-text event) ""))
-         (state (space-invaders-state component)))
+         (state (space-invaders-live-state component)))
     (cond
       ((and (space-invaders-paused-p component) (not release-p)
             (not (member (cadr-tui:input-event-kind event)
@@ -392,10 +407,11 @@ tui-dispatch-event request-renders those (root.lisp:207-208)."
             (member text '("r" "R" " ") :test #'string=))
        (let ((next-level (if (invaders-state-victory-p state)
                              (1+ (invaders-state-level state)) 1)))
-         (setf (space-invaders-state component)
-               (make-initial-invaders-state
-                :high-score (invaders-state-high-score state)
-                :level next-level))
+         (space-invaders-bind-live-state
+          component
+          (make-initial-invaders-state
+           :high-score (invaders-state-high-score state)
+           :level next-level))
          (funcall (space-invaders-save component) nil)))
       (t
        (when (or (eq (cadr-tui:input-event-kind event) :left)
@@ -432,17 +448,19 @@ tui-dispatch-event request-renders those (root.lisp:207-208)."
           context
           (lambda (tui theme keybindings done)
             (declare (ignore theme keybindings))
-            (let ((component
-                    (make-instance
-                     'space-invaders-component
-                     :state (or saved (make-initial-invaders-state))
-                     :paused-p (and saved
-                                    (not (invaders-state-game-over-p saved))
-                                    (not (invaders-state-victory-p saved)))
-                     :tui tui :done done
-                     :save (lambda (data)
-                             (cadr-agent:extension-api-append-entry
-                              *example-api* +invaders-save-type+ data)))))
+            (let* ((state (or saved (make-initial-invaders-state)))
+                   (component
+                     (make-instance
+                      'space-invaders-component
+                      :state state
+                      :paused-p (and saved
+                                     (not (invaders-state-game-over-p saved))
+                                     (not (invaders-state-victory-p saved)))
+                      :tui tui :done done
+                      :save (lambda (data)
+                              (cadr-agent:extension-api-append-entry
+                               *example-api* +invaders-save-type+ data)))))
+              (space-invaders-bind-live-state component state)
               (unless (space-invaders-paused-p component)
                 (space-invaders-start component))
               component)))))))
