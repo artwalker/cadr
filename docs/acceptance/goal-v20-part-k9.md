@@ -106,3 +106,22 @@ No `fboundp`. No `read-file-string`+`search`.
 Blocked: 0. FiveAM 18841 → 18880. derive 680/680.
 Official render-diff `--tier core` EXIT:0 (captured=120/122).
 N_i untouched.
+
+## H class
+
+Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
+via `classify` (longest prefix). No new unpairable.
+
+54 `done` files:
+
+- `paired` (7): `arguments.lisp` (`argv_parse`, `help_render`);
+  `models/{registry,store}.lisp` (`list_models_registry`);
+  `interactive/{state,status,tool-rendering,entries}.lisp`
+  (Goal 11). Dual-ref: H/Goal 11 vs pi, FiveAM vs previous
+  cadr.
+- `unpairable` (0) among these `done` files (`remote-repl.lisp`
+  and `build-support.lisp` are booked unpairable but were
+  no-rewrite, not this rewrite set).
+- `pairable-uncovered` (47): the other `done` files. Single-ref
+  vs previous cadr (FiveAM / render-diff), pending H pair.
+  Not 「不劣于 pi」.

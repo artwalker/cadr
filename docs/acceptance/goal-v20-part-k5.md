@@ -29,3 +29,15 @@ newest-first observations before finish, `json-string`,
 one-arg `format-summary-signed`. FiveAM 18699 → 18722.
 `--all` is the same load-sensitive instrument as K2; N_i
 untouched. derive 680/680.
+
+## H class
+
+Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
+via `scripts/goal20-unpaired-paths.py` `classify` (longest
+prefix; unmatched defaults to `pairable-uncovered`). No new
+unpairable.
+
+All six `done` files (`main`, `harness-table`, `harness`,
+`reporter`, `suites`, `summary`) are `pairable-uncovered`.
+Single-ref vs previous cadr (FiveAM), pending H pair. Not
+「不劣于 pi」.

@@ -83,3 +83,22 @@ used. Existing agent FiveAM is the before/after.
 
 Blocked: 0. FiveAM 18725 → 18738 → 18748. derive 680/680.
 `--all` is the known load-sensitive instrument; N_i untouched.
+
+## H class
+
+Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
+via `classify` (longest prefix). No new unpairable.
+
+23 `done` files:
+
+- `paired` (3): `session/codec.lisp` (`journal_read`,
+  `journal_append`); `session/journal.lisp` (`context_walk`,
+  `journal_append`); `session/migration.lisp` (`session_load`,
+  `journal_read`). Dual-ref: H cell vs pi, FiveAM vs previous
+  cadr.
+- `unpairable` (4): `extensions/{context,registration,rendering,snapshot}.lisp`
+  — booked prefix `src/cadr-agent/extensions/`
+  (`lisp_extension_host`). Single-ref vs previous cadr; H
+  already marked the path.
+- `pairable-uncovered` (16): the other `done` files. Single-ref
+  vs previous cadr (FiveAM), pending H pair. Not 「不劣于 pi」.

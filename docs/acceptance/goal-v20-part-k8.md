@@ -67,3 +67,24 @@ Existing cadr-tui FiveAM is the before/after (3652 pass).
 Blocked: 0. FiveAM 18768 → 18841. derive 680/680.
 Official render-diff `--tier core` EXIT:0 (captured=120/122).
 N_i untouched.
+
+## H class
+
+Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
+via `classify` (longest prefix). No new unpairable.
+
+29 `done` files:
+
+- `paired` (14): `components/{image,markdown,tool-block}.lisp`;
+  `composition/{protocol,text-box}.lisp`; `editor.lisp`;
+  `input.lisp`; `keys.lisp`; `renderer/{alt-screen,
+  alt-screen-search,lifecycle-input,main-screen}.lisp`;
+  `terminal.lisp`; `unicode.lisp` (Goal 11 mouse/wheel/
+  continuous or `render_slicing`). Dual-ref: H/Goal 11 vs
+  pi, FiveAM vs previous cadr.
+- `unpairable` (0).
+- `pairable-uncovered` (15): autocomplete, loaders,
+  settings-list, select-list, mermaid/*, overlay,
+  stdin-buffer, terminal-image, theme, word-navigation,
+  latex, input-component. Single-ref vs previous cadr
+  (FiveAM / render-diff), pending H pair. Not 「不劣于 pi」.

@@ -68,3 +68,19 @@ Existing cadr-ai FiveAM is the before/after.
 
 Blocked: 0. FiveAM 18748 → 18768. derive 680/680 expected.
 N_i untouched.
+
+## H class
+
+Booked class from `docs/benchmarks/goal20-unpaired-paths.json`
+via `classify` (longest prefix). No new unpairable.
+
+28 `done` files:
+
+- `paired` (1): `providers/openai-completions.lisp`
+  (`provider_stream.stream_roundtrip`). Dual-ref: H cell vs
+  pi, FiveAM vs previous cadr.
+- `unpairable` (2): `oauth/page.lisp` (`oauth_success_page_mark`);
+  `crash.lisp` (`fatal_condition_summary`). Single-ref vs
+  previous cadr; H already marked the path.
+- `pairable-uncovered` (25): the other `done` files. Single-ref
+  vs previous cadr (FiveAM), pending H pair. Not 「不劣于 pi」.
