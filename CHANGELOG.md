@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P closeout: `docs/acceptance/goal-v20-part-p.md`
+  lists P.1–P.11 with a number or 非杠杆. Live-image runbook is
+  `docs/runbooks/live-image.md`. G.17 is `met`. Not a Goal 20 pass.
+
 - Goal 20 Part P.3: `--list-models` reuses a refreshed registry while
   `models.json` / `auth.json` write-dates stay the same. Same-machine
   `print-cli-models` median 4.30 ms → 2.45 ms (80 calls). Not
