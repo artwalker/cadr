@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: object keys that already live in the
+  closed JSON value intern set (`thinking`, …) skip
+  `COPY-UNESCAPED-JSON-STRING`. No new intern entries.
+  Pairing fixture parse 1,235,971 B → 1,229,597 B;
+  journal_read 2,477,290 B → 2,463,475 B. Not 7b.
+  Identity 122892→122898. FiveAM 19145→19147.
+  G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `6cd292ab9` (non-quick, samples=5, enforced).
   session_load 2.66×→2.89×, journal_read 2.22×→2.34×.

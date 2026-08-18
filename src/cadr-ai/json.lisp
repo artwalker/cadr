@@ -451,8 +451,14 @@
                             (escaped-p
                              (decode-escaped-string start end))
                             ((and intern-p
-                                  (json-interned-ascii-key
-                                   source start end)))
+                                  (or (json-interned-ascii-key
+                                       source start end)
+                                      ;; Keys that already live in the
+                                      ;; closed value set ("thinking")
+                                      ;; skip COPY-UNESCAPED.  Same
+                                      ;; tables.  Not an intern expand.
+                                      (json-interned-ascii-value
+                                       source start end))))
                             ((and (not intern-p)
                                   (json-interned-ascii-value
                                    source start end)))

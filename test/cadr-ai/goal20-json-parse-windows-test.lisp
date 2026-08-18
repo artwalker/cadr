@@ -155,6 +155,26 @@
                   parsed
                   (format nil "k~D" index))))))))
 
+(test goal20-json-interns-value-set-keys
+  ;; "thinking" is a closed value and also a session object key.
+  ;; Reuse the value table; do not grow either intern set.
+  (let ((first (cadr-ai::parse-json "{\"thinking\":\"x\"}"))
+        (second (cadr-ai::parse-json "{\"thinking\":\"y\"}"))
+        (key-a nil)
+        (key-b nil))
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (when (string= key "thinking")
+                 (setf key-a key)))
+             first)
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (when (string= key "thinking")
+                 (setf key-b key)))
+             second)
+    (is (eq key-a key-b))
+    (is (string= key-a "thinking"))))
+
 (test goal20-json-copy-unescaped-is-one-window-copy
   ;; Drives COPY-UNESCAPED-JSON-STRING itself: one window copy, no
   ;; shared storage, ASCII result is a SIMPLE-BASE-STRING.
