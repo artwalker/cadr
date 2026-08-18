@@ -291,12 +291,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 124,277 lines**
+Denominator: **295 files / 124,280 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 22,681 | 18.3% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 22,684 | 18.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 6.0% | single reference vs previous cadr |
 | `pairable-uncovered` | 236 | 94,121 | 75.7% | blocked by Part A hard condition 2 |
 
@@ -339,7 +339,7 @@ are not named stay `pairable-uncovered`.
 |---|---:|---|
 | `src/cadr-agent/session/codec.lisp` | 668 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 643 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
-| `src/cadr-agent/session/migration.lisp` | 1,104 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-agent/session/migration.lisp` | 1,107 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/truncate.lisp` | 396 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/json.lisp` | 1,511 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |

@@ -1017,8 +1017,11 @@
           (session-failure
            pathname nil
            "Cannot migrate session to v3: ~A" cause))))
-    (let ((by-id (make-hash-table :test #'equal))
-          (labels (make-hash-table :test #'equal))
+    (let ((by-id
+            (make-hash-table
+             :test #'equal
+             :size (max 8 (length (rest objects)))))
+          (labels (make-hash-table :test #'equal :size 8))
           (session-name nil)
           (entries nil)
           (line-number 1))

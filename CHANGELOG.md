@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: load-session sizes the by-id EQUAL
+  table to the record count so GROW-HASH-TABLE does
+  not recopy on the pairing fixture. Session file
+  bytes unchanged. load-session 1,260,915 B →
+  1,215,670 B. Wall unchanged. Not intern. Not 7b.
+  Identity 124277→124280. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `857270409` (non-quick, samples=5, enforced).
   session_load 1.74×→1.62×, journal_read 1.72×→1.62×.
