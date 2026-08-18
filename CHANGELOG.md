@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `67cdb71fa` (non-quick, samples=5, enforced).
+  session_load 2.48×→2.15×, journal_read 2.41×→2.22×.
+  cadr load 4128 µs → 3807 µs, read 3508 µs → 3316 µs.
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: tool-call `arguments` decode into
   tagged string-key pairs, not an EQUAL hash.
   `json-get` / stringify treat the tag as an object.
