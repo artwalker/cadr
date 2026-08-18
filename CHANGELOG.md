@@ -9,6 +9,17 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: journal_append fills a schema-specific
+  octet buffer. ASCII keys/numbers are written in place;
+  UTF-8 is only used on string payloads. Journal fd is
+  `(unsigned-byte 8)`. Session JSONL bytes match
+  stringify of session-entry-to-json. this-host
+  create+128 append 1314 µs / 163,621 B → 1311 µs /
+  185,013 B. Wall did not move hundreds of µs; no
+  Friend-MachineD remesure. Not intern. Not FFI.
+  Identity 125336→125554. FiveAM 19223→19226. G.17
+  still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `1f4322c51` (non-quick, samples=5, enforced).
   journal_append 1.11×→0.81×. cadr append 2800 µs

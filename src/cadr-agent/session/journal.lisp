@@ -261,9 +261,9 @@
    (open
     (session-path session)
     :direction :output
+    :element-type '(unsigned-byte 8)
     :if-exists (if create-p :error :append)
-    :if-does-not-exist (if create-p :create :error)
-    :external-format :utf-8)))
+    :if-does-not-exist (if create-p :create :error))))
 
 (defun session-journal-stream (session &key create-p)
   (let ((stream (session-%journal-stream session)))
@@ -276,12 +276,17 @@
 (defun append-session-entry (session entry)
   (sb-thread:with-mutex
       ((session-lock session))
+    (let ((buffer
+            (or (session-%journal-octets session)
+                (setf (session-%journal-octets session)
+                      (make-session-octet-buffer)))))
     (cond
       ((session-persisted-p session)
        (handler-case
            (write-session-entry-jsonl
             (session-journal-stream session)
-            entry)
+            entry
+            buffer)
          (error (cause)
            (close-session-journal-stream session)
            (session-failure
@@ -292,20 +297,20 @@
            (let ((stream
                    (session-journal-stream session :create-p t)))
              (write-jsonl-object
-              stream (session-header-to-json session))
+              stream (session-header-to-json session) buffer)
              (dolist
                  (buffered-entry
                   (append
                    (session-%entries session)
                    (list entry)))
                (write-session-entry-jsonl
-                stream buffered-entry)))
+                stream buffered-entry buffer)))
          (error (cause)
            (close-session-journal-stream session)
            (session-failure
             (session-path session) nil
             "Cannot create session: ~A" cause)))
-       (setf (session-persisted-p session) t)))
+       (setf (session-persisted-p session) t))))
     (let ((cell (list entry)))
       (if (session-%entries session)
           (setf

@@ -632,12 +632,20 @@
                :parent-id nil
                :timestamp 3
                :message message)))
-        (is (string=
-             (cadr-ai::stringify-json
-              (cadr-agent::session-entry-to-json entry))
-             (with-output-to-string (stream)
-               (cadr-agent::write-session-message-entry
-                entry stream))))))))
+        (let ((expected
+                (cadr-ai::stringify-json
+                 (cadr-agent::session-entry-to-json entry)))
+              (buffer (cadr-agent::make-session-octet-buffer)))
+          (cadr-agent::emit-session-message-entry entry buffer)
+          (is (string=
+               expected
+               (sb-ext:octets-to-string
+                buffer :external-format :utf-8)))
+          (is (string=
+               expected
+               (with-output-to-string (stream)
+                 (cadr-agent::write-session-message-entry
+                  entry stream)))))))))
 
 (test session-journal-reuses-open-stream
   ;; Product append keeps one journal fd after first persist.

@@ -62,7 +62,8 @@
   leaf-id
   (persisted-p nil :type boolean)
   (lock (sb-thread:make-mutex :name "cadr-session"))
-  %journal-stream)
+  %journal-stream
+  %journal-octets)
 
 (defun canonical-session-cwd (cwd)
   (namestring
@@ -663,259 +664,471 @@
       (t
        (error "Unknown message type: ~S" type)))))
 
-(defun write-json-key (stream first-p key)
-  (unless first-p
-    (write-char #\, stream))
-  (cadr-ai::write-json-string key stream)
-  (write-char #\: stream)
+(defun make-session-octet-buffer ()
+  (make-array 4096
+              :element-type '(unsigned-byte 8)
+              :fill-pointer 0
+              :adjustable t))
+
+(defun emit-session-ascii (buffer text)
+  (declare (type (vector (unsigned-byte 8)) buffer)
+           (type string text))
+  (loop for char across text
+        do (vector-push-extend (char-code char) buffer))
   nil)
 
-(defun write-session-content-block (block stream)
-  (write-char #\{ stream)
+(defun emit-json-string (buffer value)
+  ;; Dual of cadr-ai::write-json-string.  ASCII unescaped runs are
+  ;; copied as bytes; UTF-8 is only used on a payload window.
+  (declare (type (vector (unsigned-byte 8)) buffer)
+           (type string value))
+  (flet ((emit-unescaped (start end ascii-p)
+           (declare (type fixnum start end))
+           (if ascii-p
+               (loop for index from start below end
+                     do (vector-push-extend
+                         (char-code (char value index))
+                         buffer))
+               (let ((octets
+                       (sb-ext:string-to-octets
+                        value
+                        :external-format :utf-8
+                        :start start
+                        :end end)))
+                 (loop for byte across octets
+                       do (vector-push-extend byte buffer)))))
+         (emit-u-escape (code)
+           (vector-push-extend #x5c buffer)
+           (vector-push-extend #x75 buffer)
+           (loop for shift from 12 downto 0 by 4
+                 for nibble = (ldb (byte 4 shift) code)
+                 do (vector-push-extend
+                     (if (< nibble 10)
+                         (+ #x30 nibble)
+                         (+ #x37 nibble))
+                     buffer))))
+    (vector-push-extend #x22 buffer)
+    (let ((length (length value))
+          (start 0)
+          (ascii-p t))
+      (declare (type fixnum length start))
+      (loop for index from 0 below length
+            for character = (char value index)
+            for code = (char-code character)
+            do
+            (cond
+              ((<= #xd800 code #xdfff)
+               (when (< start index)
+                 (emit-unescaped start index ascii-p))
+               (setf start (1+ index)
+                     ascii-p t))
+              ((or (char= character #\")
+                   (char= character #\\)
+                   (char= character #\Backspace)
+                   (char= character #\Page)
+                   (char= character #\Newline)
+                   (char= character #\Return)
+                   (char= character #\Tab)
+                   (< code #x20))
+               (when (< start index)
+                 (emit-unescaped start index ascii-p))
+               (case character
+                 (#\"
+                  (vector-push-extend #x5c buffer)
+                  (vector-push-extend #x22 buffer))
+                 (#\\
+                  (vector-push-extend #x5c buffer)
+                  (vector-push-extend #x5c buffer))
+                 (#\Backspace
+                  (vector-push-extend #x5c buffer)
+                  (vector-push-extend #x62 buffer))
+                 (#\Page
+                  (vector-push-extend #x5c buffer)
+                  (vector-push-extend #x66 buffer))
+                 (#\Newline
+                  (vector-push-extend #x5c buffer)
+                  (vector-push-extend #x6e buffer))
+                 (#\Return
+                  (vector-push-extend #x5c buffer)
+                  (vector-push-extend #x72 buffer))
+                 (#\Tab
+                  (vector-push-extend #x5c buffer)
+                  (vector-push-extend #x74 buffer))
+                 (otherwise
+                  (emit-u-escape code)))
+               (setf start (1+ index)
+                     ascii-p t))
+              (t
+               (when (>= code 128)
+                 (setf ascii-p nil)))))
+      (when (< start length)
+        (emit-unescaped start length ascii-p)))
+    (vector-push-extend #x22 buffer)
+    nil))
+
+(defun emit-json-value (buffer value)
+  ;; Dual of cadr-ai::write-json-value.  Numbers stay ASCII digits.
+  (declare (type (vector (unsigned-byte 8)) buffer))
+  (labels ((emit-integer (number)
+             (cond
+               ((minusp number)
+                (vector-push-extend #x2d buffer)
+                (emit-integer (- number)))
+               ((< number 10)
+                (vector-push-extend (+ #x30 number) buffer))
+               (t
+                (multiple-value-bind (quotient remainder)
+                    (truncate number 10)
+                  (emit-integer quotient)
+                  (vector-push-extend (+ #x30 remainder) buffer))))))
+    (cond
+      ((eq value 'null) (emit-session-ascii buffer "null"))
+      ((eq value t) (emit-session-ascii buffer "true"))
+      ((null value) (emit-session-ascii buffer "false"))
+      ((stringp value) (emit-json-string buffer value))
+      ((integerp value) (emit-integer value))
+      ((rationalp value)
+       (emit-session-ascii
+        buffer
+        (cadr-ai::terminating-rational-json-text value)))
+      ((floatp value)
+       (when (or (sb-ext:float-infinity-p value)
+                 (sb-ext:float-nan-p value))
+         (error "Cannot encode non-finite float ~S as JSON"
+                value))
+       (emit-session-ascii
+        buffer
+        (substitute
+         #\e #\d
+         (substitute
+          #\e #\D
+          (write-to-string
+           (coerce value 'double-float)
+           :readably t)))))
+      ((hash-table-p value)
+       (vector-push-extend #x7b buffer)
+       (loop for key in
+             (sort
+              (loop for key being the hash-keys of value
+                    collect key)
+              #'string<)
+             for first-p = t then nil
+             do
+             (emit-json-key buffer first-p key)
+             (emit-json-value buffer (gethash key value)))
+       (vector-push-extend #x7d buffer))
+      ((cadr-ai::json-object-pairs-p value)
+       (vector-push-extend #x7b buffer)
+       (loop for key in
+             (sort
+              (loop for (pair-key) on (cdr value) by #'cddr
+                    collect pair-key)
+              #'string<)
+             for first-p = t then nil
+             do
+             (emit-json-key buffer first-p key)
+             (emit-json-value buffer (cadr-ai::json-get value key)))
+       (vector-push-extend #x7d buffer))
+      ((or (vectorp value) (listp value))
+       (vector-push-extend #x5b buffer)
+       (loop for item across (coerce value 'vector)
+             for first-p = t then nil
+             do
+             (unless first-p
+               (vector-push-extend #x2c buffer))
+             (emit-json-value buffer item))
+       (vector-push-extend #x5d buffer))
+      (t
+       (error "Cannot encode ~S as JSON" value))))
+  nil)
+
+(defun emit-json-key (buffer first-p key)
+  (unless first-p
+    (vector-push-extend #x2c buffer))
+  (emit-json-string buffer key)
+  (vector-push-extend #x3a buffer)
+  nil)
+
+(defun write-session-content-block (block buffer)
+  (vector-push-extend #x7b buffer)
   (cond
     ((typep block 'cadr-ai:text-content)
      (let ((signature (cadr-ai:text-content-signature block)))
        (when signature
-         (write-json-key stream t "signature")
-         (cadr-ai::write-json-value signature stream))
-       (write-json-key stream (not signature) "text")
-       (cadr-ai::write-json-value
-        (cadr-ai:text-content-text block) stream)
-       (write-json-key stream nil "type")
-       (cadr-ai::write-json-value "text" stream)))
+         (emit-json-key buffer t "signature")
+         (emit-json-value buffer signature))
+       (emit-json-key buffer (not signature) "text")
+       (emit-json-value buffer (cadr-ai:text-content-text block))
+       (emit-json-key buffer nil "type")
+       (emit-json-value buffer "text")))
     ((typep block 'cadr-ai:thinking-content)
      (let ((signature (cadr-ai:thinking-content-signature block)))
-       (write-json-key stream t "redacted")
-       (cadr-ai::write-json-value
-        (cadr-ai:thinking-content-redacted-p block) stream)
+       (emit-json-key buffer t "redacted")
+       (emit-json-value
+        buffer
+        (cadr-ai:thinking-content-redacted-p block))
        (when signature
-         (write-json-key stream nil "signature")
-         (cadr-ai::write-json-value signature stream))
-       (write-json-key stream nil "thinking")
-       (cadr-ai::write-json-value
-        (cadr-ai:thinking-content-thinking block) stream)
-       (write-json-key stream nil "type")
-       (cadr-ai::write-json-value "thinking" stream)))
+         (emit-json-key buffer nil "signature")
+         (emit-json-value buffer signature))
+       (emit-json-key buffer nil "thinking")
+       (emit-json-value
+        buffer
+        (cadr-ai:thinking-content-thinking block))
+       (emit-json-key buffer nil "type")
+       (emit-json-value buffer "thinking")))
     ((typep block 'cadr-ai:image-content)
-     (write-json-key stream t "data")
-     (cadr-ai::write-json-value
-      (cadr-ai:image-content-data block) stream)
-     (write-json-key stream nil "mimeType")
-     (cadr-ai::write-json-value
-      (cadr-ai:image-content-mime-type block) stream)
-     (write-json-key stream nil "type")
-     (cadr-ai::write-json-value "image" stream))
+     (emit-json-key buffer t "data")
+     (emit-json-value buffer (cadr-ai:image-content-data block))
+     (emit-json-key buffer nil "mimeType")
+     (emit-json-value buffer (cadr-ai:image-content-mime-type block))
+     (emit-json-key buffer nil "type")
+     (emit-json-value buffer "image"))
     ((typep block 'cadr-ai:tool-call)
      (let ((signature (cadr-ai:tool-call-thought-signature block)))
-       (write-json-key stream t "arguments")
-       (cadr-ai::write-json-value
-        (json-safe-value (cadr-ai:tool-call-arguments block))
-        stream)
-       (write-json-key stream nil "id")
-       (cadr-ai::write-json-value (cadr-ai:tool-call-id block) stream)
-       (write-json-key stream nil "name")
-       (cadr-ai::write-json-value
-        (cadr-ai:tool-call-name block) stream)
+       (emit-json-key buffer t "arguments")
+       (emit-json-value
+        buffer
+        (json-safe-value (cadr-ai:tool-call-arguments block)))
+       (emit-json-key buffer nil "id")
+       (emit-json-value buffer (cadr-ai:tool-call-id block))
+       (emit-json-key buffer nil "name")
+       (emit-json-value buffer (cadr-ai:tool-call-name block))
        (when signature
-         (write-json-key stream nil "thoughtSignature")
-         (cadr-ai::write-json-value signature stream))
-       (write-json-key stream nil "type")
-       (cadr-ai::write-json-value "toolCall" stream)))
+         (emit-json-key buffer nil "thoughtSignature")
+         (emit-json-value buffer signature))
+       (emit-json-key buffer nil "type")
+       (emit-json-value buffer "toolCall")))
     (t
      (error "Unsupported session content block: ~S" block)))
-  (write-char #\} stream))
+  (vector-push-extend #x7d buffer))
 
-(defun write-session-content (content stream)
+(defun write-session-content (content buffer)
   (if (stringp content)
-      (cadr-ai::write-json-value content stream)
+      (emit-json-value buffer content)
       (let ((first-p t))
-        (write-char #\[ stream)
+        (vector-push-extend #x5b buffer)
         (map nil
              (lambda (block)
                (unless first-p
-                 (write-char #\, stream))
+                 (vector-push-extend #x2c buffer))
                (setf first-p nil)
-               (write-session-content-block block stream))
+               (write-session-content-block block buffer))
              content)
-        (write-char #\] stream))))
+        (vector-push-extend #x5d buffer))))
 
-(defun write-session-usage (usage stream)
+(defun write-session-usage (usage buffer)
   (let ((cost (cadr-ai:usage-cost usage))
         (reasoning (cadr-ai:usage-reasoning usage)))
-    (write-char #\{ stream)
-    (write-json-key stream t "cacheRead")
-    (cadr-ai::write-json-value (cadr-ai:usage-cache-read usage) stream)
-    (write-json-key stream nil "cacheWrite")
-    (cadr-ai::write-json-value (cadr-ai:usage-cache-write usage) stream)
-    (write-json-key stream nil "cost")
-    (write-char #\{ stream)
-    (write-json-key stream t "cacheRead")
-    (cadr-ai::write-json-value (cadr-ai:cost-cache-read cost) stream)
-    (write-json-key stream nil "cacheWrite")
-    (cadr-ai::write-json-value (cadr-ai:cost-cache-write cost) stream)
-    (write-json-key stream nil "input")
-    (cadr-ai::write-json-value (cadr-ai:cost-input cost) stream)
-    (write-json-key stream nil "output")
-    (cadr-ai::write-json-value (cadr-ai:cost-output cost) stream)
-    (write-json-key stream nil "total")
-    (cadr-ai::write-json-value (cadr-ai:cost-total cost) stream)
-    (write-char #\} stream)
-    (write-json-key stream nil "input")
-    (cadr-ai::write-json-value (cadr-ai:usage-input usage) stream)
-    (write-json-key stream nil "output")
-    (cadr-ai::write-json-value (cadr-ai:usage-output usage) stream)
+    (vector-push-extend #x7b buffer)
+    (emit-json-key buffer t "cacheRead")
+    (emit-json-value buffer (cadr-ai:usage-cache-read usage))
+    (emit-json-key buffer nil "cacheWrite")
+    (emit-json-value buffer (cadr-ai:usage-cache-write usage))
+    (emit-json-key buffer nil "cost")
+    (vector-push-extend #x7b buffer)
+    (emit-json-key buffer t "cacheRead")
+    (emit-json-value buffer (cadr-ai:cost-cache-read cost))
+    (emit-json-key buffer nil "cacheWrite")
+    (emit-json-value buffer (cadr-ai:cost-cache-write cost))
+    (emit-json-key buffer nil "input")
+    (emit-json-value buffer (cadr-ai:cost-input cost))
+    (emit-json-key buffer nil "output")
+    (emit-json-value buffer (cadr-ai:cost-output cost))
+    (emit-json-key buffer nil "total")
+    (emit-json-value buffer (cadr-ai:cost-total cost))
+    (vector-push-extend #x7d buffer)
+    (emit-json-key buffer nil "input")
+    (emit-json-value buffer (cadr-ai:usage-input usage))
+    (emit-json-key buffer nil "output")
+    (emit-json-value buffer (cadr-ai:usage-output usage))
     (when reasoning
-      (write-json-key stream nil "reasoning")
-      (cadr-ai::write-json-value reasoning stream))
-    (write-json-key stream nil "total")
-    (cadr-ai::write-json-value (cadr-ai:usage-total usage) stream)
-    (write-char #\} stream)))
+      (emit-json-key buffer nil "reasoning")
+      (emit-json-value buffer reasoning))
+    (emit-json-key buffer nil "total")
+    (emit-json-value buffer (cadr-ai:usage-total usage))
+    (vector-push-extend #x7d buffer)))
 
-(defun write-session-message (message stream)
-  (write-char #\{ stream)
+(defun write-session-message (message buffer)
+  (vector-push-extend #x7b buffer)
   (cond
     ((typep message 'cadr-ai:user-message)
-     (write-json-key stream t "content")
+     (emit-json-key buffer t "content")
      (write-session-content
-      (cadr-ai:user-message-content message) stream)
-     (write-json-key stream nil "role")
-     (cadr-ai::write-json-value "user" stream)
-     (write-json-key stream nil "timestamp")
-     (cadr-ai::write-json-value
-      (cadr-ai:user-message-timestamp message) stream))
+      (cadr-ai:user-message-content message) buffer)
+     (emit-json-key buffer nil "role")
+     (emit-json-value buffer "user")
+     (emit-json-key buffer nil "timestamp")
+     (emit-json-value buffer (cadr-ai:user-message-timestamp message)))
     ((typep message 'cadr-ai:assistant-message)
      (let ((diagnostics (cadr-ai:assistant-message-diagnostics message))
            (error-message (cadr-ai:assistant-message-error-message message))
            (raw-stop (cadr-ai:assistant-message-raw-stop-reason message))
            (response-id (cadr-ai:assistant-message-response-id message)))
-       (write-json-key stream t "api")
-       (cadr-ai::write-json-value
-        (symbol-json-name (cadr-ai:assistant-message-api message))
-        stream)
-       (write-json-key stream nil "content")
+       (emit-json-key buffer t "api")
+       (emit-json-value
+        buffer
+        (symbol-json-name (cadr-ai:assistant-message-api message)))
+       (emit-json-key buffer nil "content")
        (write-session-content
-        (cadr-ai:assistant-message-content message) stream)
+        (cadr-ai:assistant-message-content message) buffer)
        (when diagnostics
-         (write-json-key stream nil "diagnostics")
-         (cadr-ai::write-json-value
-          (map 'vector #'assistant-diagnostic-to-json diagnostics)
-          stream))
+         (emit-json-key buffer nil "diagnostics")
+         (emit-json-value
+          buffer
+          (map 'vector #'assistant-diagnostic-to-json diagnostics)))
        (when error-message
-         (write-json-key stream nil "errorMessage")
-         (cadr-ai::write-json-value error-message stream))
-       (write-json-key stream nil "model")
-       (cadr-ai::write-json-value
-        (cadr-ai:assistant-message-model message) stream)
-       (write-json-key stream nil "provider")
-       (cadr-ai::write-json-value
-        (symbol-json-name (cadr-ai:assistant-message-provider message))
-        stream)
+         (emit-json-key buffer nil "errorMessage")
+         (emit-json-value buffer error-message))
+       (emit-json-key buffer nil "model")
+       (emit-json-value buffer (cadr-ai:assistant-message-model message))
+       (emit-json-key buffer nil "provider")
+       (emit-json-value
+        buffer
+        (symbol-json-name (cadr-ai:assistant-message-provider message)))
        (when raw-stop
-         (write-json-key stream nil "rawStopReason")
-         (cadr-ai::write-json-value raw-stop stream))
+         (emit-json-key buffer nil "rawStopReason")
+         (emit-json-value buffer raw-stop))
        (when response-id
-         (write-json-key stream nil "responseId")
-         (cadr-ai::write-json-value response-id stream))
-       (write-json-key stream nil "role")
-       (cadr-ai::write-json-value "assistant" stream)
-       (write-json-key stream nil "stopReason")
-       (cadr-ai::write-json-value
+         (emit-json-key buffer nil "responseId")
+         (emit-json-value buffer response-id))
+       (emit-json-key buffer nil "role")
+       (emit-json-value buffer "assistant")
+       (emit-json-key buffer nil "stopReason")
+       (emit-json-value
+        buffer
         (symbol-json-name
-         (cadr-ai:assistant-message-stop-reason message))
-        stream)
-       (write-json-key stream nil "timestamp")
-       (cadr-ai::write-json-value
-        (cadr-ai:assistant-message-timestamp message) stream)
-       (write-json-key stream nil "usage")
+         (cadr-ai:assistant-message-stop-reason message)))
+       (emit-json-key buffer nil "timestamp")
+       (emit-json-value
+        buffer
+        (cadr-ai:assistant-message-timestamp message))
+       (emit-json-key buffer nil "usage")
        (write-session-usage
-        (cadr-ai:assistant-message-usage message) stream)))
+        (cadr-ai:assistant-message-usage message) buffer)))
     ((typep message 'bash-execution-message)
      (let ((exit-code (bash-execution-message-exit-code message))
            (full-path (bash-execution-message-full-output-path message)))
-       (write-json-key stream t "cancelled")
-       (cadr-ai::write-json-value
-        (bash-execution-message-cancelled-p message) stream)
-       (write-json-key stream nil "command")
-       (cadr-ai::write-json-value
-        (bash-execution-message-command message) stream)
-       (write-json-key stream nil "excludeFromContext")
-       (cadr-ai::write-json-value
-        (bash-execution-message-exclude-from-context-p message)
-        stream)
+       (emit-json-key buffer t "cancelled")
+       (emit-json-value
+        buffer
+        (bash-execution-message-cancelled-p message))
+       (emit-json-key buffer nil "command")
+       (emit-json-value
+        buffer
+        (bash-execution-message-command message))
+       (emit-json-key buffer nil "excludeFromContext")
+       (emit-json-value
+        buffer
+        (bash-execution-message-exclude-from-context-p message))
        (when (integerp exit-code)
-         (write-json-key stream nil "exitCode")
-         (cadr-ai::write-json-value exit-code stream))
+         (emit-json-key buffer nil "exitCode")
+         (emit-json-value buffer exit-code))
        (when full-path
-         (write-json-key stream nil "fullOutputPath")
-         (cadr-ai::write-json-value full-path stream))
-       (write-json-key stream nil "output")
-       (cadr-ai::write-json-value
-        (bash-execution-message-output message) stream)
-       (write-json-key stream nil "role")
-       (cadr-ai::write-json-value "bashExecution" stream)
-       (write-json-key stream nil "timestamp")
-       (cadr-ai::write-json-value
-        (bash-execution-message-timestamp message) stream)
-       (write-json-key stream nil "truncated")
-       (cadr-ai::write-json-value
-        (bash-execution-message-truncated-p message) stream)))
+         (emit-json-key buffer nil "fullOutputPath")
+         (emit-json-value buffer full-path))
+       (emit-json-key buffer nil "output")
+       (emit-json-value
+        buffer
+        (bash-execution-message-output message))
+       (emit-json-key buffer nil "role")
+       (emit-json-value buffer "bashExecution")
+       (emit-json-key buffer nil "timestamp")
+       (emit-json-value
+        buffer
+        (bash-execution-message-timestamp message))
+       (emit-json-key buffer nil "truncated")
+       (emit-json-value
+        buffer
+        (bash-execution-message-truncated-p message))))
     ((typep message 'cadr-ai:tool-result-message)
-     (write-json-key stream t "content")
+     (emit-json-key buffer t "content")
      (write-session-content
-      (cadr-ai:tool-result-message-content message) stream)
-     (write-json-key stream nil "details")
-     (cadr-ai::write-json-value
+      (cadr-ai:tool-result-message-content message) buffer)
+     (emit-json-key buffer nil "details")
+     (emit-json-value
+      buffer
       (json-safe-value
-       (cadr-ai:tool-result-message-details message))
-      stream)
-     (write-json-key stream nil "isError")
-     (cadr-ai::write-json-value
-      (cadr-ai:tool-result-message-is-error message) stream)
-     (write-json-key stream nil "role")
-     (cadr-ai::write-json-value "toolResult" stream)
-     (write-json-key stream nil "timestamp")
-     (cadr-ai::write-json-value
-      (cadr-ai:tool-result-message-timestamp message) stream)
-     (write-json-key stream nil "toolCallId")
-     (cadr-ai::write-json-value
-      (cadr-ai:tool-result-message-tool-call-id message) stream)
-     (write-json-key stream nil "toolName")
-     (cadr-ai::write-json-value
-      (cadr-ai:tool-result-message-tool-name message) stream))
+       (cadr-ai:tool-result-message-details message)))
+     (emit-json-key buffer nil "isError")
+     (emit-json-value
+      buffer
+      (cadr-ai:tool-result-message-is-error message))
+     (emit-json-key buffer nil "role")
+     (emit-json-value buffer "toolResult")
+     (emit-json-key buffer nil "timestamp")
+     (emit-json-value
+      buffer
+      (cadr-ai:tool-result-message-timestamp message))
+     (emit-json-key buffer nil "toolCallId")
+     (emit-json-value
+      buffer
+      (cadr-ai:tool-result-message-tool-call-id message))
+     (emit-json-key buffer nil "toolName")
+     (emit-json-value
+      buffer
+      (cadr-ai:tool-result-message-tool-name message)))
     (t
      (error "Unsupported session message: ~S" message)))
-  (write-char #\} stream))
+  (vector-push-extend #x7d buffer))
+
+(defun emit-session-message-entry (entry buffer)
+  ;; Schema-specific octet emit.  Keys stay string< order so the
+  ;; JSONL bytes match stringify of session-entry-to-json.
+  (vector-push-extend #x7b buffer)
+  (emit-json-key buffer t "id")
+  (emit-json-value buffer (session-entry-id entry))
+  (emit-json-key buffer nil "message")
+  (write-session-message (session-entry-message entry) buffer)
+  (emit-json-key buffer nil "parentId")
+  (emit-json-value
+   buffer
+   (or (session-entry-parent-id entry) 'null))
+  (emit-json-key buffer nil "timestamp")
+  (emit-json-value
+   buffer
+   (session-timestamp-json (session-entry-timestamp entry)))
+  (emit-json-key buffer nil "type")
+  (emit-json-value buffer "message")
+  (vector-push-extend #x7d buffer)
+  buffer)
+
+(defun write-session-octets (stream buffer &key newline-p)
+  (let ((element-type (stream-element-type stream)))
+    (if (or (equal element-type '(unsigned-byte 8))
+            (and (not (subtypep element-type 'character))
+                 (subtypep element-type '(unsigned-byte 8))))
+        (progn
+          (write-sequence buffer stream)
+          (when newline-p
+            (write-byte 10 stream)))
+        (progn
+          (write-string
+           (sb-ext:octets-to-string
+            buffer :external-format :utf-8)
+           stream)
+          (when newline-p
+            (terpri stream)))))
+  nil)
 
 (defun write-session-message-entry (entry stream)
-  ;; One-pass typed emit.  Keys stay string< order so the
-  ;; JSONL bytes match stringify of session-entry-to-json.
-  (write-char #\{ stream)
-  (write-json-key stream t "id")
-  (cadr-ai::write-json-value (session-entry-id entry) stream)
-  (write-json-key stream nil "message")
-  (write-session-message (session-entry-message entry) stream)
-  (write-json-key stream nil "parentId")
-  (cadr-ai::write-json-value
-   (or (session-entry-parent-id entry) 'null) stream)
-  (write-json-key stream nil "timestamp")
-  (cadr-ai::write-json-value
-   (session-timestamp-json (session-entry-timestamp entry))
-   stream)
-  (write-json-key stream nil "type")
-  (cadr-ai::write-json-value "message" stream)
-  (write-char #\} stream))
+  (let ((buffer (make-session-octet-buffer)))
+    (emit-session-message-entry entry buffer)
+    (write-session-octets stream buffer)))
 
-(defun write-jsonl-object (stream object)
-  (write-string (cadr-ai::stringify-json object) stream)
-  (terpri stream)
-  (finish-output stream))
+(defun write-jsonl-object (stream object &optional buffer)
+  (let ((buffer (or buffer (make-session-octet-buffer))))
+    (setf (fill-pointer buffer) 0)
+    (emit-json-value buffer object)
+    (write-session-octets stream buffer :newline-p t)
+    (finish-output stream)))
 
-(defun write-session-entry-jsonl (stream entry)
+(defun write-session-entry-jsonl (stream entry &optional buffer)
   (if (or (eq (session-entry-type entry) :message)
           (and (stringp (session-entry-type entry))
                (string= (session-entry-type entry) "message")))
-      (progn
-        (write-session-message-entry entry stream)
-        (terpri stream)
+      (let ((buffer (or buffer (make-session-octet-buffer))))
+        (setf (fill-pointer buffer) 0)
+        (emit-session-message-entry entry buffer)
+        (write-session-octets stream buffer :newline-p t)
         (finish-output stream))
-      (write-jsonl-object stream (session-entry-to-json entry))))
+      (write-jsonl-object stream (session-entry-to-json entry) buffer)))
