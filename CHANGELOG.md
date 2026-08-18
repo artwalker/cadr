@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `truncate-harness-head` / `truncate-harness-tail`
+  scan the source string once instead of
+  `uiop:split-string` + `format` join. Pairing fixture
+  (4000 lines) same-machine 7.276 ms / 2,561,572 B →
+  2.319 ms / 197,488 B (head); 7.446 ms / 2,749,241 B →
+  1.679 ms / 197,568 B (tail). Observed pairing fields
+  unchanged. Identity 122701→122785. FiveAM
+  19042→19051. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure after
   P.1–P.12/P0 (non-quick, samples=5, enforced).
   stream_roundtrip 1.29×→0.67×, list_models_render

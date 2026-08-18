@@ -87,6 +87,48 @@
            result)))
         maximum)))))
 
+(test pairing-fixture-truncation-observed-stays-put
+  ;; scripts/goal20-paired-paths.lisp 4000-line fixture.  Lock the
+  ;; pairing-observed fields so a scan rewrite cannot drift bytes.
+  (let* ((content
+           (with-output-to-string (out)
+             (loop for i from 1 to 4000
+                   do (if (oddp i)
+                          (write-line
+                           (make-string 220 :initial-element #\x)
+                           out)
+                          (write-line
+                           "é🙂中文 mixed tail line"
+                           out)))))
+         (head (cadr-agent::truncate-harness-head content))
+         (tail (cadr-agent::truncate-harness-tail content)))
+    (is (= 500000
+           (cadr-agent::harness-utf8-length content)))
+    (is (= 50999
+           (cadr-agent::harness-truncation-result-output-bytes
+            head)))
+    (is (= 408
+           (cadr-agent::harness-truncation-result-output-lines
+            head)))
+    (is (eq :bytes
+            (cadr-agent::harness-truncation-result-truncated-by
+             head)))
+    (is (not
+         (cadr-agent::harness-truncation-result-first-line-exceeds-limit-p
+          head)))
+    (is (= 51028
+           (cadr-agent::harness-truncation-result-output-bytes
+            tail)))
+    (is (= 409
+           (cadr-agent::harness-truncation-result-output-lines
+            tail)))
+    (is (eq :bytes
+            (cadr-agent::harness-truncation-result-truncated-by
+             tail)))
+    (is (not
+         (cadr-agent::harness-truncation-result-last-line-partial-p
+          tail)))))
+
 (test harness-utf8-length-surrogate-input-signals
   ;; compaction.lisp:166-170 deliberately builds surrogate-bearing text
   ;; to mirror JavaScript UTF-16 slicing, so surrogate code points reach
