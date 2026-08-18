@@ -62,7 +62,13 @@ four alignment ledgers                                                     behav
 
 > **The point is to write Lisp programs that exploit Lisp's advantages, not to expediently write TypeScript in Lisp. This applies to new and old code alike.**
 >
-> **Performance has no ceiling and a floor at the baseline**: the Lisp implementation should ideally beat pi, and at worst match it.
+> **Performance has no ceiling and a floor at the baseline**: the Lisp
+> implementation must not be slower than pi on a paired path. Beating pi
+> is the floor being met, not a reason to stop. The target is the limit of
+> this SBCL image and live Lisp process without changing the product
+> contract — cost and interactivity both. User ruling 2026-08-18: that
+> whole programme stays inside the current goal; do not drip-feed knives
+> through the advisor.
 
 The two sentences together need spelling out: **"Lisp-native" is not a style preference; it is about actually obtaining what Lisp offers. A rewrite that obtains nothing is not Lisp-native, it is just a different spelling.**
 
@@ -133,7 +139,7 @@ The reason for this grading: holding point fixes to the at-scale threshold would
 
    **There is exactly one exception: no same-path implementation exists on the pi side** (a cadr-only capability, or no one-to-one counterpart after a structural divergence). In that case switch to the single reference "no worse than cadr before the change",
    **but the "no paired path" finding must first be established mechanically and booked; the changer may not declare it on the spot**
-   (for the establishing mechanism see goal 20 Part H). **Using the single reference without that finding counts as not having discharged the evidence burden.** (User adjudication, 2026-08-13: **the Lisp implementation's performance has no ceiling and a floor at the baseline** — ideally beating pi, at worst matching it.)
+   (for the establishing mechanism see goal 20 Part H). **Using the single reference without that finding counts as not having discharged the evidence burden.** (User adjudication, 2026-08-13, restated 2026-08-18: **performance has no ceiling and a floor at the baseline** — not slower than pi on a paired path; beating pi is not a stop; the target is this SBCL image's limit. Experience uses the same bar.)
 
    **The evidence burden lies with the changer, not with the gate.** The byte-level differential looks only at output, never at cost: a rewritten implementation that is ten times slower will still leave all 141 checkpoints green; the performance gate currently has only absolute ceilings as well (measured headroom: cold start 4.85×, frame allocation 23.3×), with regression checks listed under goal 20 Part A/B. **So until the gates are complete, a change must carry its own before/after measurement** — you may not be excused from the evidence burden on the grounds that "the gate does not cover it", nor may you defer the change on the grounds that "the gate is not built yet".
 
@@ -444,4 +450,56 @@ For change-one-thing-verify-one-thing work, **prefer `asdf:load-system` to load 
 | `save-lisp-and-die` to dump a failure image | Roughly 20 MB each; slynk live evidence capture covers the same need and is lighter |
 | `sb-ext:lock-package` to isolate extensions | See `OQ-G20-EXTENSION-ISOLATION` in `docs/open-questions.md`: **cadr's existing isolation is already stronger than pi's** (pi has no sandbox), so locking buys no security pi lacks |
 
----
+## 7. Concurrent agents (user 2026-08-18)
+
+**Throughput is allowed. Two writers on one tree is not.**
+This repository already forbids `git add -A` because several sessions
+may share a cwd. Multi-agent is the same constraint, scaled: extra
+agents help only when they do not create a second owner for one
+decision, one pin, or one file.
+
+### 1. What may run in parallel
+
+- **Read-only**: review a named SHA, sprof/cover in a throwaway
+  worktree, baseline lookup, draft a proposal. Same cwd is fine if
+  the agent does not write tracked files.
+- **Disjoint writers**, each in its **own git worktree** cut from the
+  same SHA, with an ownership table posted *before* spawn: paths it
+  may touch, paths it must not, commit-message prefix.
+- **Serial integrate**: one merge onto `cadr-migration` at a time,
+  `test-cl.sh` on that commit, then the next worktree rebases. Do not
+  merge four speedups and then measure.
+
+### 2. Single-writer mutex (never parallel)
+
+Pins, ledgers, and "one user-visible decision / one owner"
+(`docs/code-organization.md`) are the product. Concurrent edits here
+are how identity strings, FiveAM anchors, and `RATIO_CEILINGS` drift:
+
+- `CHANGELOG.md` Unreleased, `docs/performance.md` paired tables,
+  `docs/test-matrix.md` / FiveAM anchor, lispification identity,
+  unpaired-paths denominator, `RATIO_CEILINGS`, source-parity
+  mappings, `build-support.lisp`
+- Any file already dirty in another session's cwd
+- Two Lisp-native rewrites of the same module
+- Two JSON-parser probes, two overlay owners, two "add a helper in
+  `cadr-core`"
+
+The main executor is the only writer on mutex paths. A subagent that
+needs a CHANGELOG line returns the sentence; the executor types it.
+
+### 3. What is not "using agents well"
+
+- Spawning write-subagents into `/root/projects/cadr` (or any shared
+  checkout) while the executor or advisor is also editing
+- `git add -A`, stash, `reset --hard`, cleaning the other session's
+  files
+- Each agent inventing a parallel helper for the same job
+- One test run after a pile of merges (Part P needs one lever per
+  commit with numbers)
+- Calling "we used five agents" a quality signal
+
+**Why this is written down**: 2026-08-18 the advisor and the executor
+shared one worktree — docs hunks and tic-tac-toe Lisp dirty at once.
+That is the failure mode. Worktrees exist so gate evidence names a
+commit (§5.7); they also exist so two writers never share a desk.

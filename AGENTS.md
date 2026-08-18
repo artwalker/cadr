@@ -187,10 +187,13 @@ the working set.
 - If you cannot invent a Lisp-native design, **say so and escalate**. Silent
   TypeScript-shaped copy produces identical behavior, so every ledger and
   every byte-level differential will go green. No existing gate can see it.
-- Performance is uncapped above and must not fall below the baseline: beat
-  pi if you can, match it at worst. A rewrite slower than pi **or** slower
-  than pre-change cadr is unfinished (fix it or file `blocked`). Do not
-  keep a transcription "for performance" without numbers.
+- Performance is uncapped above and must not fall below the baseline.
+  Not slower than pi on a paired path; beating pi is not a stop. The
+  target is this SBCL image's limit (cost and interactivity). A rewrite
+  slower than pi **or** slower than pre-change cadr is unfinished (fix
+  it or file `blocked`). Do not keep a transcription "for performance"
+  without numbers. Do not spray `fixnum` / drop `safety` without a
+  measured before/after.
 - Point fixes (enumerable edits inside one module) can ship immediately
   with before/after measurements. Whole-module rewrites also need the
   performance regression gate and mechanical ledger remapping.
@@ -217,6 +220,11 @@ the working set.
 - Ask before removing behavior that looks intentional. Do not commit unless
   asked. Stage explicit paths only; this tree may have more than one agent
   in it.
+- Concurrent agents: read-only and disjoint-file worktrees only, with an
+  ownership table before spawn. Never two writers in one checkout. Pins,
+  CHANGELOG, ledgers, and `RATIO_CEILINGS` stay with the main executor.
+  Merge one worktree at a time and run `test-cl.sh` on that commit.
+  Full rule: `docs/development-policy.md` §7.
 
 ## Recounting scale figures
 

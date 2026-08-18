@@ -430,3 +430,67 @@ after a paper A/B pass. Baseline `sendCustomMessage` steers when
 `isStreaming` (`packages/coding-agent/src/core/agent-session.ts:1452-1457`);
 cadr errors (`src/cadr-agent/extensions/providers.lisp:260-265`).
 
+## 2026-08-18 — CL ceiling, not beat-pi-and-stop; experience on the same bar
+
+**Ruled**: user (2026-08-18 11:44). Advisor recorded.
+
+**Decided**:
+
+1. The standing sentence in `development-policy.md` §1.4 ("performance
+   has no ceiling and a floor at the baseline") is the product bar.
+   Goal 20 Part O's exit (four paired paths ≤ 1.0 or `blocked` after
+   probes 7a–7d, `4cd3a510b`) remains the record of *those* probes.
+   It is not permission to stop because cadr beat pi, and it is not
+   "performance is done".
+2. The target is the limit of this SBCL image and live Lisp process
+   without changing the product contract: specialised arrays,
+   declarations with numbers, a JSON parser that is not per-character
+   `PEEK` where a vector window would do, registry not re-stat'd on
+   every print, overlay/transcript/busy agreeing with the live objects.
+   Copying pi's TypeScript shape "because it is fast enough" is a
+   failure mode the policy already names.
+3. Experience uses the same bar. A live image that can be inspected and
+   continued, and a screen that does not lie, is the Lisp product; a
+   pixel-faithful slower clone of pi's TUI is not.
+4. The whole programme stays in Goal 20 as Part P (`goal20-draft.md`
+   十B). Do not drip-feed 7e/7f/7g through the advisor. One lever per
+   commit with numbers is measurement, not scope-slicing. Stop for
+   adjudication only on a new dependency, a `safety` drop, a session
+   format change, mmap, or SIMD that changes observable bytes.
+5. Do not re-run Part O probes 7a–7d. Do not lower `RATIO_CEILINGS` in
+   the same commit as a speedup. Do not announce Goal 20 complete
+   because O is `blocked`.
+
+**Why it was decidable**: booked Friend-MachineD ratios still show
+read 3.93× and load 4.28× on `parse-json` `PEEK`/`PARSE-STRING`;
+append 2.21×; `list_models_render` 3.18× on registry/FS, not `format`.
+H can falsify "no worse than pi" for 17.0% of lines. N2.8 found zero
+optimising type declarations. The user rejected both "one knife at a
+time from the advisor" and "beat pi, stop".
+
+## 2026-08-18 — Concurrent agents: throughput without a second owner
+
+**Ruled**: user (2026-08-18 11:52). Advisor recorded.
+
+**Decided**: grok may use parallel agents. Extra writers in one
+checkout are forbidden. Policy: `docs/development-policy.md` §7.
+
+1. Read-only agents (review a SHA, sprof in a throwaway worktree,
+   baseline lookup) may share a cwd if they do not write tracked
+   files.
+2. Write agents need a posted ownership table and each their own git
+   worktree from the same SHA. Merge onto `cadr-migration` one at a
+   time; `test-cl.sh` on that commit; then rebase the next.
+3. Pins, CHANGELOG, ledgers, `RATIO_CEILINGS`, and any already-dirty
+   file stay with the main executor. Two Lisp-native rewrites of one
+   module, two JSON probes, two overlay owners: refuse.
+4. "We used five agents" is not a quality signal. One lever per
+   commit still holds for Part P.
+
+**Why it was decidable**: the same morning the advisor's Part P docs
+and the executor's tic-tac-toe Lisp were dirty in one worktree.
+`git add -A` is already banned for that reason. Multi-agent without
+file ownership repeats it at larger scale. The organization ledger's
+question is "one user-visible decision, one owner"; parallel writers
+on one file are a second owner.
+

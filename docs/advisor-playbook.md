@@ -200,7 +200,16 @@ Each of these was paid for; the one-line form is the minimum that transfers.
   tool condition). "Could almost name it from source" is not a skip.
   A FiveAM reconstruction may lock the fix; it is not the diagnosis.
   "slynk is the same query as load-and-probe" is a refuse. Do not add
-  pairable-path `restart-case` to look native. Part L/N recorded the miss.
+  pairable-path `restart-case` to look native.   Part L/N recorded the miss.
+- **Beating pi is the floor, not the stop.** Standing policy §1.4 already
+  said performance has no ceiling. Part O `blocked` after 7a–7d records
+  those probes; it does not close performance. Goal 20 Part P is the
+  full cost+experience programme. Do not drip-feed knives. One lever
+  per commit with numbers. Do not re-run 7a–7d.
+- **Parallel agents need ownership, not a shared desk.** Read-only is
+  fine. Writers get a worktree and a file list posted first. Pins and
+  CHANGELOG stay with the integrator. Same-cwd write-subagents are how
+  the 2026-08-18 docs+Lisp collision happens. Policy §7.
 - **Evidence before assertion.** Run one command before stating a fact,
   especially when relaying someone else's conclusion. External reports (and
   helper-model answers) are leads, never verdicts.

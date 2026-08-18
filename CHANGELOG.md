@@ -28,7 +28,10 @@ tag/Release step.
 - Docs: live Slynk is first on a running cadr, not a last resort after
   guessing (`development-policy` §6.1, `AGENTS.md`). Load-and-probe is
   not a substitute. Do not add restarts on pairable user-visible paths
-  to look native.
+  to look native. Performance floor is pi; beating pi is not a stop —
+  the target is this SBCL image's limit for cost and interactivity
+  (Goal 20 Part P). Concurrent agents: disjoint worktrees and an
+  ownership table; never two writers in one checkout.
 
 - Goal 20 Part K6 follow-up: `with-present` owns every schema
   present-p bind; `call-signaled-operation` owns abort/classify
