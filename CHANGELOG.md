@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.8: user 2026-08-18 18:09 deferred
+  three-game hand-play; leftover recorded as pass
+  until a new defect is opened. Overlay SHAs
+  unchanged. G.17 still `missing`.
+
 - Goal 20 P0: tic-tac-toe `move_*` no longer `sleep`s
   0.3s. `:execution-mode :sequential` kept. FiveAM locks
   20-call median < 50ms and no `sleep` in source.

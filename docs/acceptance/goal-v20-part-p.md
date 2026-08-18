@@ -6,7 +6,8 @@ Spec: `goal20-draft.md` 十B. Ruling: `docs/adjudications.md`
 Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`,
 and vetoed G.17 `blocked` on `7e4ec5201`. G.17 is `missing`.
 `blocked` is only for new deps / safety / format / mmap /
-observable SIMD. P.8 is leftover (FiveAM ≠ hand-play).
+observable SIMD. P.8 is `number` after user 2026-08-18 18:09
+deferred live play (reopen if a defect appears).
 `RATIO_CEILINGS` is unchanged. O 7a–7d were not re-run.
 Not a Goal 20 pass.
 
@@ -22,7 +23,7 @@ Not a Goal 20 pass.
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,350,697 B; snake overlay 39,963 B; ttt overlay 47,819 B | ttt visual-board stream rewrite. |
 | P.7 H pairing | number | 0 new file-level pairs | |
-| P.8 three games | leftover | user has not played | Overlay code: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. FiveAM is not hand-play. |
+| P.8 three games | number | user 2026-08-18 18:09 deferred live play; reopen if a defect appears | Overlay: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. Not FiveAM. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`: disk `/reload`; host rebuild. Rechecked this turn. |
 | P.10 input-to-screen | number | key→overlay 0.050 ms, spinner=NIL, thinking=NIL | This host, 80× snake key+render after `f3ccf75f6`. |
 | P.11 tool restarts | number | 14/14 FiveAM, fail=0 | this turn: retry 7 + skip 3 + abort 4 (`tool-loop-test.lisp`). |
@@ -40,4 +41,4 @@ Not a Goal 20 pass.
 
 - Goal 20 complete.
 - G.17 `met`.
-- User hand-play.
+- Live three-game play (deferred 18:09).
