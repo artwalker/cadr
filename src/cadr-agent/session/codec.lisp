@@ -412,6 +412,13 @@
           (push (diagnostic-json-value-to-lisp item) result))
         value)
        (nreverse result)))
+    ((cadr-ai::json-object-pairs-p value)
+     (let ((result nil))
+       (loop for (key item) on (cdr value) by #'cddr
+             do
+             (push (diagnostic-detail-keyword key) result)
+             (push (diagnostic-json-value-to-lisp item) result))
+       (nreverse result)))
     ((vectorp value)
      (map 'list #'diagnostic-json-value-to-lisp value))
     (t value)))

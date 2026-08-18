@@ -498,11 +498,55 @@
                "docs/a.md"
                (cadr-ai::json-get
                 (cadr-ai:tool-call-arguments call)
-                "path"))))
+                "path")))
+          (is (not
+               (hash-table-p
+                (cadr-ai:tool-call-arguments call)))))
         (is (equal
              '("hi" "ok")
              (message-texts
               (cadr-agent:session-messages loaded))))))))
+
+(test session-argument-objects-are-pairs-not-hashes
+  ;; Remaining generic values must not re-enter parse-json-octets
+  ;; (EQUAL hash).  Nested argument objects stay tagged pairs.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "pairs"
+              :timestamp 100))
+           (path (cadr-agent:session-path session)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "q" :timestamp 101))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content
+        (list
+         (cadr-ai:make-tool-call
+          :id "c1"
+          :name "read"
+          :arguments
+          (cadr-ai::json-object
+           "path" "docs/a.md"
+           "meta" (cadr-ai::json-object "k" "v" "n" 1))))
+        :timestamp 102))
+      (let* ((loaded (cadr-agent:load-session path))
+             (call
+               (find-if
+                (lambda (block)
+                  (typep block 'cadr-ai:tool-call))
+                (cadr-ai:assistant-message-content
+                 (second (cadr-agent:session-messages loaded)))))
+             (arguments (cadr-ai:tool-call-arguments call))
+             (meta (cadr-ai::json-get arguments "meta")))
+        (is (cadr-ai::json-object-pairs-p arguments))
+        (is (cadr-ai::json-object-pairs-p meta))
+        (is (not (hash-table-p meta)))
+        (is (string= "v" (cadr-ai::json-get meta "k")))
+        (is (= 1 (cadr-ai::json-get meta "n")))))))
 
 (test session-v3-block-read-accepts-missing-final-newline
   ;; read-session-objects splits 1MiB octet chunks on LF.  A last

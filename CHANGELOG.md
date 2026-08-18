@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: remaining session JSONL generic values
+  fill scalars / `(:json-object . pairs)` / vectors in the
+  octet walker. They no longer re-enter parse-json-octets
+  (EQUAL hash). this-host load-session 2361 µs / 992,000 B
+  → 1579 µs / 993,056 B; journal_read 2361 µs / 928,557 B
+  → 1578 µs / 928,429 B. Wall is the 800 µs timer step;
+  no Friend-MachineD remesure. Not intern. Not FFI.
+  Identity 125554→125602. FiveAM 19226→19232. G.17 still
+  `missing`.
+
 - Goal 20 Part P: journal_append fills a schema-specific
   octet buffer. ASCII keys/numbers are written in place;
   UTF-8 is only used on string payloads. Journal fd is

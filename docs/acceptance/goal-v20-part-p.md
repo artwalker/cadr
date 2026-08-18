@@ -15,7 +15,7 @@ Not a Goal 20 pass.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | number | schema octet FSM fills session-entry. load-session 3243 µs / 1,215,670 B → 1584 µs / 991,987 B; read 3243 µs / 1,138,106 B → 1584 µs / 928,557 B | this knife. Not intern. Not :size. Not 7b. |
+| P.1 JSON read | number | schema octet FSM; leftover generic values fill pairs not EQUAL hash. this-host load 2361→1579 µs / 992,000→993,056 B | this knife. Not intern. Not FFI. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | 4.30 ms → 2.45 ms | `f898c9ab5`. |
 | P.4 help / argv / walk | number | booked help 4.3 µs, argv 6.5 µs, walk 110 µs | Floor. |

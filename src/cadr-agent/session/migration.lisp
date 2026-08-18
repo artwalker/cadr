@@ -217,10 +217,51 @@
                  (t
                   (fail "Expected JSON value")))))
            (parse-generic ()
-             (let ((value-start position))
-               (skip-value)
-               (cadr-ai::parse-json-octets
-                octets nil nil value-start position)))
+             ;; Fill the JSON value in place.  Objects stay
+             ;; (:json-object . pairs), not EQUAL hash tables.
+             (skip-space)
+             (let ((code (peek-code)))
+               (cond
+                 ((eql code 34) (parse-string-value))
+                 ((eql code 123) (parse-arguments-object))
+                 ((eql code 91)
+                  (expect-code 91)
+                  (skip-space)
+                  (when (eql (peek-code) 93)
+                    (take-code)
+                    (return-from parse-generic #()))
+                  (let ((items (list (parse-generic))))
+                    (loop
+                      (skip-space)
+                      (let ((next (peek-code)))
+                        (cond
+                          ((eql next 44)
+                           (take-code)
+                           (skip-space)
+                           (push (parse-generic) items))
+                          ((eql next 93)
+                           (take-code)
+                           (return
+                             (coerce (nreverse items) 'vector)))
+                          (t
+                           (fail "Expected comma or ]")))))))
+                 ((eql code 116)
+                  (unless (key= position (+ position 4) "true")
+                    (fail "Expected true"))
+                  (incf position 4)
+                  t)
+                 ((eql code 102)
+                  (unless (key= position (+ position 5) "false")
+                    (fail "Expected false"))
+                  (incf position 5)
+                  nil)
+                 ((eql code 110)
+                  (parse-literal-null))
+                 ((and code
+                       (or (<= 48 code 57) (= code 45)))
+                  (parse-number-value))
+                 (t
+                  (fail "Expected JSON value")))))
            (parse-string-value ()
              (expect-code 34)
              (let ((value-start position)
