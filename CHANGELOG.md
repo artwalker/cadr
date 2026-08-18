@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P0: tic-tac-toe `render-call` takes
+  `(arguments theme context)` and paints tool-title + muted
+  action. Expanded `render-result` is the banner. Tool
+  description matches the baseline no-batched-form contract.
+  Host passes `:theme` into rich tool renderers. FiveAM
+  18949→18977. Identity 122561→122563.
+
+- Goal 20 G.17 stays `missing` (advisor vetoed `blocked` on
+  `7e4ec5201`). P.8 leftover. Not a Goal 20 pass.
+
 - Goal 20 Part G.17 is `blocked`, not `met`: P.8 hand-play
   is unavailable and the advisor has not written G.17 may
   be `met`. Not a Goal 20 pass.

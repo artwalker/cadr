@@ -635,31 +635,71 @@ exactly that duplication."
         (tic-tac-toe-request-render)
         (error condition)))))
 
-(defun tic-tac-toe-render-call (arguments render-context theme)
-  ;; Baseline tic-tac-toe.ts:950-952 renderCall: name plus the action.
-  (declare (ignore render-context theme))
-  (format nil "tic_tac_toe ~A"
-          (or (example-argument arguments "action") "")))
+(defun tic-tac-toe-render-call (arguments theme context)
+  ;; Host rich path: (arguments theme context)
+  ;; (rendering.lisp:197). Baseline renderCall (tic-tac-toe.ts:950-952)
+  ;; is toolTitle+bold name and muted action.
+  (declare (ignore context))
+  (concatenate
+   'string
+   (tic-tac-toe-theme-fg
+    theme :tool-title
+    (tic-tac-toe-theme-bold theme "tic_tac_toe "))
+   (tic-tac-toe-theme-fg
+    theme :muted
+    (or (example-argument arguments "action") ""))))
 
-(defun tic-tac-toe-render-result (result options render-context theme)
-  ;; Baseline tic-tac-toe.ts:955-966: collapsed line is check + text.
-  (declare (ignore options render-context theme))
-  (format nil "✓ ~A" (example-tool-result-text result)))
+(defun tic-tac-toe-render-result (result options theme context)
+  ;; Host rich path: (result options theme context)
+  ;; (rendering.lisp:230). Baseline renderResult (tic-tac-toe.ts:955-966):
+  ;; check/cross + muted text; expanded + details → banner.
+  (let* ((text (example-tool-result-text result))
+         (error-p
+           (or (getf context :is-error-p)
+               (getf context :is-error)
+               (and (typep result 'cadr-ai:tool-result-message)
+                    (cadr-ai:tool-result-message-is-error result))))
+         (prefix
+           (tic-tac-toe-theme-fg
+            theme (if error-p :error :success)
+            (if error-p "✗ " "✓ ")))
+         (summary
+           (concatenate
+            'string prefix
+            (tic-tac-toe-theme-fg theme :muted text)))
+         (details
+           (and (typep result 'cadr-ai:tool-result-message)
+                (cadr-ai:tool-result-message-details result))))
+    (if (and (getf options :expanded-p) details)
+        (make-instance
+         'tic-tac-toe-banner-message
+         :title summary
+         :details details
+         :expanded-p t
+         :theme theme)
+        summary)))
 
-(defun tic-tac-toe-see-board-render-call (arguments render-context theme)
+(defun tic-tac-toe-see-board-render-call (arguments theme context)
   ;; Baseline tic-tac-toe.ts:993-995.
-  (declare (ignore arguments render-context theme))
-  "tic_tac_toe_see_board")
+  (declare (ignore arguments context))
+  (tic-tac-toe-theme-fg
+   theme :tool-title
+   (tic-tac-toe-theme-bold theme "tic_tac_toe_see_board")))
 
-(defun tic-tac-toe-see-board-render-result (result options render-context theme)
+(defun tic-tac-toe-see-board-render-result (result options theme context)
   ;; Baseline tic-tac-toe.ts:997-1006: fold to check + cursor.
-  (declare (ignore options render-context theme))
+  (declare (ignore options context))
   (let* ((details
            (and (typep result 'cadr-ai:tool-result-message)
                 (cadr-ai:tool-result-message-details result)))
          (row (or (and (listp details) (getf details :agent-row)) 0))
          (column (or (and (listp details) (getf details :agent-column)) 0)))
-    (format nil "✓ cursor (~A,~A)" row column)))
+    (concatenate
+     'string
+     (tic-tac-toe-theme-fg theme :success "✓ ")
+     (tic-tac-toe-theme-fg
+      theme :muted
+      (format nil "cursor (~A,~A)" row column)))))
 
 (defun tic-tac-toe-action (action)
   (let ((state *tic-tac-toe-state*))
@@ -725,12 +765,16 @@ exactly that duplication."
 (cadr-agent:define-rich-tool
  "tic_tac_toe"
  :label "Tic-Tac-Toe"
- :description "Execute one move_up, move_down, move_left, move_right, or play action as Player O"
- :prompt-snippet "Play one tic-tac-toe action as Player O"
+ :description
+ "Execute ONE tic-tac-toe action as Player O. `action` is exactly one of: move_up, move_down, move_left, move_right (move YOUR cursor one cell, clamped at edges), or play (place O under YOUR cursor; errors if the cell is not empty). There is no batched form. To play at (r, c) from your current cursor (r0, c0), emit the required move_down/move_up and move_right/move_left calls, then play, all as separate tool_use blocks in the SAME assistant response. Do not split the sequence across responses and do not wait for a result before emitting the next call. Your cursor position persists between turns and is reset to (0,0) only after a successful play."
+ :prompt-snippet "Play a tic-tac-toe action (move_up/down/left/right or play) as Player O"
  :prompt-guidelines
- '("Emit every cursor move and the final play in one assistant response as separate calls.")
+ '("When it is your tic-tac-toe turn, decide the target cell first, then emit every move_* plus the final play as separate tic_tac_toe tool calls in a SINGLE assistant response. Never split them across responses or wait for intermediate results."
+   "Never ask the user for the board. The board and your cursor position are included in the user's move message; use tic_tac_toe_see_board if you need them restated.")
  :parameters
- (example-object-schema "action" "string" "One atomic tic-tac-toe action")
+ (example-object-schema
+  "action" "string"
+  "The single action to perform this call. Emit multiple tic_tac_toe calls in one response to string actions together.")
  :execution-mode :sequential
  :handler
  (lambda (call-id arguments signal on-update context)
@@ -755,7 +799,8 @@ exactly that duplication."
 (cadr-agent:define-rich-tool
  "tic_tac_toe_see_board"
  :label "See Board"
- :description "Return the current board and Player O cursor"
+ :description
+ "Return the current tic-tac-toe board state and YOUR cursor position (Player O). Takes no arguments. Use this if you need the current state restated mid-turn (for example after a failed play). The user's cursor is never exposed."
  :prompt-snippet "Inspect the tic-tac-toe board and your cursor"
  :parameters (example-empty-schema)
  :handler

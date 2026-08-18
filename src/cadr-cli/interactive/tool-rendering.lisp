@@ -802,6 +802,7 @@
                       (cadr-ai:tool-call-arguments call)
                       (list
                        :state render-state
+                       :theme (tui-extension-theme-runtime)
                        :tool-call-id
                        (cadr-ai:tool-call-id call)
                        :cwd
@@ -879,6 +880,7 @@
                   (list
                    :state
                    (tui-entry-tool-render-state entry)
+                   :theme (tui-extension-theme-runtime)
                    :tool-call-id
                    (cadr-ai:tool-call-id call)
                    :cwd

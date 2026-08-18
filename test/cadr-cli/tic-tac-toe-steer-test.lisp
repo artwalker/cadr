@@ -177,6 +177,84 @@
         (is (null (search "{\"action\"" rendered)))
         (is (null (search ":play" rendered)))))))
 
+(test tic-tac-toe-render-call-uses-tool-title-and-muted
+  ;; P0 15:30: host passes (arguments theme context). The shipped
+  ;; signature was (arguments render-context theme) and ignored theme.
+  (with-tic-tac-toe-extension (host package)
+    (or package t)
+    (let ((theme
+            (list
+             :fg (lambda (token text)
+                   (format nil "[~A]~A" token text))
+             :bold (lambda (text)
+                     (format nil "*~A*" text)))))
+      (multiple-value-bind (rendered handled-p)
+          (cadr-agent::render-extension-tool-call
+           host "tic_tac_toe"
+           (tic-tac-toe-steer-arguments "move_down")
+           (list :theme theme))
+        (is (not (null handled-p)))
+        (is (stringp rendered))
+        (is (search "[TOOL-TITLE]" (string-upcase rendered)))
+        (is (search "[MUTED]" (string-upcase rendered)))
+        (is (search "move_down" rendered))
+        (is (search "tic_tac_toe" rendered))))))
+
+(test tic-tac-toe-render-result-expanded-is-banner
+  (with-tic-tac-toe-extension (host package)
+    (or package t)
+    (let* ((banner-class
+             (find-symbol "TIC-TAC-TOE-BANNER-MESSAGE" package))
+           (result
+             (cadr-ai:make-tool-result-message
+              :tool-call-id "play-1"
+              :tool-name "tic_tac_toe"
+              :content
+              (list
+               (cadr-ai:make-text-content
+                :text "Placed O at (0,0). Your turn, X!"))
+              :details (list :current-turn "X" :agent-row 0 :agent-column 0))))
+      (multiple-value-bind (collapsed handled-p)
+          (cadr-agent::render-extension-tool-result
+           host "tic_tac_toe" result
+           '(:expanded-p nil)
+           (list :state (make-hash-table)))
+        (is (not (null handled-p)))
+        (is (stringp collapsed))
+        (is (search "✓" collapsed))
+        (is (search "Placed O" collapsed)))
+      (multiple-value-bind (expanded handled-p)
+          (cadr-agent::render-extension-tool-result
+           host "tic_tac_toe" result
+           '(:expanded-p t)
+           (list :state (make-hash-table)))
+        (is (not (null handled-p)))
+        (is (not (null banner-class)))
+        (is (typep expanded banner-class))))))
+
+(test tic-tac-toe-tool-description-matches-baseline-contract
+  (with-tic-tac-toe-extension (host package)
+    (or package t)
+    (let* ((bundle
+             (find-if
+              (lambda (candidate)
+                (find "tic_tac_toe"
+                      (cadr-agent::extension-bundle-tools candidate)
+                      :key #'cadr-agent::extension-tool-definition-name
+                      :test #'string=))
+              (cadr-agent::extension-snapshot-bundles
+               (cadr-agent::extension-host-current-snapshot host))))
+           (tool
+             (find "tic_tac_toe"
+                   (cadr-agent::extension-bundle-tools bundle)
+                   :key #'cadr-agent::extension-tool-definition-name
+                   :test #'string=))
+           (description
+             (cadr-agent::extension-tool-definition-description tool)))
+      (is (search "There is no batched form" description))
+      (is (search "SAME assistant response" description))
+      (is (search "reset to (0,0) only after a successful play" description)))))
+
 (test tic-tac-toe-see-board-render-result-folds-cursor
   (with-tic-tac-toe-extension (host package)
     (or package t)

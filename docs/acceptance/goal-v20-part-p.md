@@ -1,12 +1,14 @@
-# Goal 20 Part P — CL ceiling (draft; G.17 blocked)
+# Goal 20 Part P — CL ceiling (draft; G.17 missing)
 
 Spec: `goal20-draft.md` 十B. Ruling: `docs/adjudications.md`
 2026-08-18 CL ceiling (`1a24eea1d`). Floor is still pi.
 
-Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`.
-G.17 is `blocked` (P.8 hand-play unavailable; advisor has not
-written G.17 may be `met`). `RATIO_CEILINGS` is unchanged.
-O 7a–7d were not re-run. Not a Goal 20 pass.
+Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`,
+and vetoed G.17 `blocked` on `7e4ec5201`. G.17 is `missing`.
+`blocked` is only for new deps / safety / format / mmap /
+observable SIMD. P.8 is leftover (FiveAM ≠ hand-play).
+`RATIO_CEILINGS` is unchanged. O 7a–7d were not re-run.
+Not a Goal 20 pass.
 
 ## P.1–P.11
 
@@ -20,7 +22,7 @@ O 7a–7d were not re-run. Not a Goal 20 pass.
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,432,299 B; snake overlay 39,963 B | This host. |
 | P.7 H pairing | number | 0 new file-level pairs | |
-| P.8 three games | blocked | user has not played | Overlay code: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. FiveAM 34/34 + 2 live-global checks is not hand-play. Hand-play is unavailable here. |
+| P.8 three games | leftover | user has not played | Overlay code: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. FiveAM is not hand-play. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`: disk `/reload`; host rebuild. Rechecked this turn. |
 | P.10 input-to-screen | number | key→overlay 0.050 ms, spinner=NIL, thinking=NIL | This host, 80× snake key+render after `f3ccf75f6`. |
 | P.11 tool restarts | number | 14/14 FiveAM, fail=0 | this turn: retry 7 + skip 3 + abort 4 (`tool-loop-test.lisp`). |

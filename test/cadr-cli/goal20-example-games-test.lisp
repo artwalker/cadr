@@ -37,7 +37,10 @@
   (let ((source (goal20-example-source "examples/extensions/tic-tac-toe.lisp")))
     (is (search "32;1m" source))
     (is (search "TIC-TAC-TOE-RENDER-VISUAL-BOARD" source :test #'char-equal))
-    (is (search "(tic-tac-toe-reconstruct context)" source))))
+    (is (search "(tic-tac-toe-reconstruct context)" source))
+    (is (search "(arguments theme context)" source))
+    (is (search "There is no batched form" source))
+    (is (search ":tool-title" source))))
 
 (test goal20-snake-behavior-render-reflects-state
   ;; Goal 20 P0-3 behavior tier: construct the component, advance the game
