@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `2155a80e5` (non-quick, samples=5, enforced).
+  session_load 1.85×→1.03×, journal_read 1.58×→1.04×.
+  cadr load 3026 µs → 2005 µs, read 2659 µs → 1745 µs.
+  RATIO_CEILINGS unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: session JSONL v3 records use a
   schema-specific octet walker. Known keys fill
   session-entry / message / usage / content slots;
