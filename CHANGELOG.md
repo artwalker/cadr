@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `5161d512f` (non-quick, samples=5, enforced).
+  session_load 2.96×→3.02×, journal_read 2.14×→2.07×.
+  cadr load 5196 µs → 4781 µs. RATIO_CEILINGS unchanged.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: v3 session JSONL body lines decode
   into `session-entry` (visitor, no top-level EQUAL
   hash). Nested message/usage stay hashes. Header and
