@@ -21,11 +21,11 @@ Not a Goal 20 pass.
 | P.2 JSON write | number | stringify 6596 ns → 5636 ns; terminating-rational 210 ns → 170 ns; create-session 0.40 ms vs 128 appends 3.00 ms | `232761357` / `d4da3cb65` / `a3d57ce03`. |
 | P.3 list_models_render | number | 4.30 ms → 2.45 ms median / `print-cli-models` (80 calls, this host) | `f898c9ab5`. 7d not repeated. |
 | P.4 help / argv / context_walk | number | µs floor (booked help 4.3 µs, argv 6.5 µs, walk 110 µs / 1.09×) | Judged floor, not a lever. |
-| P.4 stream_roundtrip | leftover | not measured this knife | Old 1.29× table is not a probe. Next: measure or honest `blocked`. |
+| P.4 stream_roundtrip | leftover | this host 5.400 ms / call, 3,753,622 bytes / call | Fixture SSE + `stream-chat` (`p4-stream-bench`). sprof top self is `READ-SSE-STREAM` (15 samples). parse/stringify already knifed in P.1/P.2. No >10% product lever without a new SSE path. Old 1.29× table is not this number. |
 | P.5 declarations | number | folded into P.1 / P.2 before/after | Only those two centers. `safety` unchanged. |
-| P.6 stream / TUI alloc | leftover | not profiled this knife | Booked cold-start 253–320 ms is not this cell. Need a stream + TUI alloc profile. Compression keep `46fabd9bb`. |
+| P.6 stream / TUI alloc | number | stream 3,753,622 bytes/call; snake overlay render 39,963 bytes/call (0.100 ms) | Same stream thunk as P.4. TUI: `component-render` on a live snake component, 80 repeats. Compression keep `46fabd9bb`. Booked cold-start is not this cell. |
 | P.7 H pairing | number | 0 new file-level pairs | 148-file benches forbidden. |
-| P.8 three games | leftover | user has not played | ttt SHAs `165edc9c2` + `edb9d6dca` stay. Slot-citation for snake/invaders is not P.8. |
+| P.8 three games | leftover | user has not played | ttt SHAs `165edc9c2` + `edb9d6dca` stay. FiveAM overlay tests exist; they are not hand-play. Slot-citation is not P.8. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`. |
 | P.10 input-to-screen | leftover | not timed this knife | Existing TUI pairs stay as Goal 11 gates, not this probe. |
 | P.11 tool restarts | number | 3 existing, 0 new on pairable failures | `retry-tool-call` / `skip-tool-call` / `abort-agent-run`. |
