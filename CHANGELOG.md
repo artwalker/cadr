@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: v3 nested `message` / `usage` /
+  `cost` walk into `session-json-message` + typed
+  usage/cost. No EQUAL hash for those envelopes.
+  Content blocks stay hashes until load. Session file
+  bytes unchanged. Pairing fixture journal_read
+  2,375,210 B → 2,134,624 B; wall unchanged.
+  load-session 2,694,035 B → 2,399,405 B. Not intern.
+  Not 7b. Identity 123071→123365. G.17 still
+  `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `5161d512f` (non-quick, samples=5, enforced).
   session_load 2.96×→3.02×, journal_read 2.14×→2.07×.

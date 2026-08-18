@@ -93,10 +93,207 @@
 
 (defun parse-session-record (line)
   (let ((entry (make-session-entry)))
-    (cadr-ai::parse-json-object-fields
-     line
-     (lambda (key value)
-       (session-record-put entry key value)))
+    (labels
+        ((usage-or-hash (value)
+           (cond
+             ((or (null value)
+                  (cadr-ai::json-null-p value))
+              nil)
+             ((typep value 'cadr-ai:usage) value)
+             ((hash-table-p value)
+              (usage-from-json value))
+             (t value)))
+         (put-cost-field (cost field value)
+           (let ((amount (coerce (or value 0) 'double-float)))
+             (cond
+               ((or (eq field "input") (string= field "input"))
+                (setf (cadr-ai:cost-input cost) amount))
+               ((or (eq field "output") (string= field "output"))
+                (setf (cadr-ai:cost-output cost) amount))
+               ((or (eq field "cacheRead")
+                    (string= field "cacheRead")
+                    (string= field "cache_read"))
+                (setf (cadr-ai:cost-cache-read cost) amount))
+               ((or (eq field "cacheWrite")
+                    (string= field "cacheWrite")
+                    (string= field "cache_write"))
+                (setf (cadr-ai:cost-cache-write cost) amount))
+               ((or (eq field "total") (string= field "total"))
+                (setf (cadr-ai:cost-total cost) amount)))))
+         (visit-cost ()
+           (let ((cost (cadr-ai:make-cost)))
+             (values
+              (lambda (field value)
+                (put-cost-field cost field value))
+              (lambda () cost))))
+         (put-usage-field (usage field value)
+           (cond
+             ((or (eq field "input") (string= field "input"))
+              (setf (cadr-ai:usage-input usage) (or value 0)))
+             ((or (eq field "output") (string= field "output"))
+              (setf (cadr-ai:usage-output usage) (or value 0)))
+             ((or (eq field "cacheRead")
+                  (string= field "cacheRead")
+                  (string= field "cache_read"))
+              (setf (cadr-ai:usage-cache-read usage) (or value 0)))
+             ((or (eq field "cacheWrite")
+                  (string= field "cacheWrite")
+                  (string= field "cache_write"))
+              (setf (cadr-ai:usage-cache-write usage)
+                    (or value 0)))
+             ((or (eq field "reasoning")
+                  (string= field "reasoning"))
+              (setf (cadr-ai:usage-reasoning usage) value))
+             ((or (eq field "total") (string= field "total"))
+              (setf (cadr-ai:usage-total usage) (or value 0)))
+             ((or (eq field "cost") (string= field "cost"))
+              (setf (cadr-ai:usage-cost usage)
+                    (cond
+                      ((typep value 'cadr-ai:cost) value)
+                      ((hash-table-p value)
+                       (cadr-ai:make-cost
+                        :input (usage-cost-amount value "input")
+                        :output (usage-cost-amount value "output")
+                        :cache-read
+                        (usage-cost-amount
+                         value "cacheRead" "cache_read")
+                        :cache-write
+                        (usage-cost-amount
+                         value "cacheWrite" "cache_write")
+                        :total
+                        (usage-cost-amount value "total")))
+                      (t (cadr-ai:make-cost)))))))
+         (visit-usage ()
+           (let ((usage (cadr-ai:make-usage)))
+             (values
+              (lambda (field value)
+                (put-usage-field usage field value))
+              (lambda () usage))))
+         (keep-extra (bag key value)
+           (when value
+             (setf (session-json-message-extra bag)
+                   (list* key value
+                          (session-json-message-extra bag)))))
+         (put-message-field (bag field value)
+           (when (plusp (length field))
+             (case (char field 0)
+               (#\r
+                (cond
+                  ((or (eq field "role") (string= field "role"))
+                   (setf (session-json-message-role bag) value))
+                  ((or (eq field "responseId")
+                       (string= field "responseId")
+                       (string= field "response_id"))
+                   (keep-extra bag :response-id value))
+                  ((or (eq field "rawStopReason")
+                       (string= field "rawStopReason")
+                       (string= field "raw_stop_reason"))
+                   (keep-extra bag :raw-stop-reason value))))
+               (#\t
+                (cond
+                  ((or (eq field "type") (string= field "type"))
+                   (unless (session-json-message-role bag)
+                     (setf (session-json-message-role bag) value)))
+                  ((or (eq field "timestamp")
+                       (string= field "timestamp"))
+                   (setf (session-json-message-timestamp bag)
+                         value))
+                  ((or (eq field "toolCallId")
+                       (string= field "toolCallId")
+                       (string= field "tool_call_id"))
+                   (keep-extra bag :tool-call-id value))
+                  ((or (eq field "toolName")
+                       (string= field "toolName")
+                       (string= field "tool_name"))
+                   (keep-extra bag :tool-name value))
+                  ((or (eq field "truncated")
+                       (string= field "truncated"))
+                   (keep-extra bag :truncated value))))
+               (#\c
+                (cond
+                  ((or (eq field "content")
+                       (string= field "content"))
+                   (setf (session-json-message-content bag) value))
+                  ((or (eq field "command")
+                       (string= field "command"))
+                   (keep-extra bag :command value))
+                  ((or (eq field "cancelled")
+                       (string= field "cancelled"))
+                   (keep-extra bag :cancelled value))))
+               (#\a
+                (when (or (eq field "api") (string= field "api"))
+                  (keep-extra bag :api value)))
+               (#\p
+                (when (or (eq field "provider")
+                          (string= field "provider"))
+                  (keep-extra bag :provider value)))
+               (#\m
+                (when (or (eq field "model") (string= field "model"))
+                  (keep-extra bag :model value)))
+               (#\u
+                (when (or (eq field "usage") (string= field "usage"))
+                  (setf (session-json-message-usage bag)
+                        (usage-or-hash value))))
+               (#\s
+                (when (or (eq field "stopReason")
+                          (string= field "stopReason")
+                          (string= field "stop_reason"))
+                  (keep-extra bag :stop-reason value)))
+               (#\e
+                (cond
+                  ((or (eq field "errorMessage")
+                       (string= field "errorMessage")
+                       (string= field "error_message"))
+                   (keep-extra bag :error-message value))
+                  ((or (eq field "exitCode")
+                       (string= field "exitCode")
+                       (string= field "exit_code"))
+                   (keep-extra bag :exit-code value))
+                  ((or (eq field "excludeFromContext")
+                       (string= field "excludeFromContext")
+                       (string= field "exclude_from_context"))
+                   (keep-extra bag :exclude-from-context value))))
+               (#\d
+                (cond
+                  ((or (eq field "diagnostics")
+                       (string= field "diagnostics"))
+                   (keep-extra bag :diagnostics value))
+                  ((or (eq field "details")
+                       (string= field "details"))
+                   (keep-extra bag :details value))))
+               (#\i
+                (when (or (eq field "isError")
+                          (string= field "isError")
+                          (string= field "is_error"))
+                  (keep-extra bag :is-error value)))
+               (#\o
+                (when (or (eq field "output")
+                          (string= field "output"))
+                  (keep-extra bag :output value)))
+               (#\f
+                (when (or (eq field "fullOutputPath")
+                          (string= field "fullOutputPath")
+                          (string= field "full_output_path"))
+                  (keep-extra bag :full-output-path value))))))
+         (visit-message ()
+           (let ((bag (make-session-json-message)))
+             (values
+              (lambda (field value)
+                (put-message-field bag field value))
+              (lambda () bag))))
+         (nest (key)
+           (cond
+             ((or (eq key "message") (string= key "message"))
+              (visit-message))
+             ((or (eq key "usage") (string= key "usage"))
+              (visit-usage))
+             ((or (eq key "cost") (string= key "cost"))
+              (visit-cost)))))
+      (cadr-ai::parse-json-object-fields
+       line
+       (lambda (key value)
+         (session-record-put entry key value))
+       #'nest))
     entry))
 
 (defun parse-session-line (line path line-number &key raw-hash-p)
@@ -426,7 +623,9 @@
             tokens-before
             (session-entry-usage entry)
             (and usage-object
-                 (usage-from-json usage-object))
+                 (if (hash-table-p usage-object)
+                     (usage-from-json usage-object)
+                     usage-object))
             (session-entry-retained-tail entry)
             (let ((tail
                     (session-entry-retained-tail entry)))
@@ -459,7 +658,9 @@
            (setf
             (session-entry-usage entry)
             (and usage-object
-                 (usage-from-json usage-object)))))
+                 (if (hash-table-p usage-object)
+                     (usage-from-json usage-object)
+                     usage-object)))))
         (:custom
          (let ((custom-type
                  (require-session-slot

@@ -313,7 +313,7 @@
         (10 (when (val= "toolResult") "toolResult"))
         (18 (when (val= "openai-completions") "openai-completions"))))))
 
-(defun parse-json-source (source &optional object-visitor)
+(defun parse-json-source (source &optional object-visitor nest)
   ;; Cost center for session_load / journal_read
   ;; (docs/benchmarks/goal20-part-o-remaining-sprof.md).  CHAR on a
   ;; general STRING and MEMBER whitespace checks show up as generic
@@ -321,8 +321,11 @@
   ;; FIXNUM indexes without dropping SAFETY.  Unescaped ASCII strings
   ;; go through COPY-UNESCAPED-JSON-STRING.
   ;; OBJECT-VISITOR, when set, walks the top-level object's fields
-  ;; and does not allocate that EQUAL hash.  Nested objects stay
-  ;; hash tables.  Not intern expand.  Not 7b.
+  ;; and does not allocate that EQUAL hash.  NEST, when set, is
+  ;; (KEY) → (VALUES visitor finish): a nested `{` is walked the
+  ;; same way and FINISH produces the field value (session message /
+  ;; usage).  Other nested objects stay hash tables.  Not intern.
+  ;; Not 7b.
   (let* ((source
            (if (simple-string-p source)
                source
@@ -630,7 +633,22 @@
                (skip-space)
                (expect #\:)
                (skip-space)
-               (funcall visitor key (parse-value 1)))
+               (funcall
+                visitor key
+                (block nested
+                  (when (and nest
+                             (peek)
+                             (char= (peek) #\{))
+                    (multiple-value-bind
+                          (nested-visitor nested-finish)
+                        (funcall nest key)
+                      (when nested-visitor
+                        (parse-object-fields nested-visitor)
+                        (return-from nested
+                          (if nested-finish
+                              (funcall nested-finish)
+                              t)))))
+                  (parse-value 1))))
              (skip-space)
              (case (peek)
                (#\, (take) (skip-space))
@@ -680,12 +698,13 @@
                 (fail "Expected JSON object"))
             value))))))
 
-(defun parse-json-object-fields (source visitor)
+(defun parse-json-object-fields (source visitor &optional nest)
   ;; Top-level object only: each key/value is handed to VISITOR.
-  ;; No EQUAL hash for that object.  Nested values still parse as
-  ;; hash tables / vectors.  Session JSONL uses this for
-  ;; session-entry.  Public PARSE-JSON is unchanged.
-  (parse-json-source source visitor))
+  ;; No EQUAL hash for that object.  NEST optionally walks named
+  ;; nested objects the same way (session message / usage / cost).
+  ;; Other nested values still parse as hash tables / vectors.
+  ;; Public PARSE-JSON is unchanged.
+  (parse-json-source source visitor nest))
 
 (defun parse-json (source)
   (parse-json-source source))

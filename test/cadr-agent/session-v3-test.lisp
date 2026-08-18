@@ -461,9 +461,19 @@
              "message"
              (cadr-agent::session-entry-type
               (second objects))))
-        (is (hash-table-p
+        (is (cadr-agent::session-json-message-p
              (cadr-agent::session-entry-message
               (second objects))))
+        (is (string=
+             "user"
+             (cadr-agent::session-json-message-role
+              (cadr-agent::session-entry-message
+               (second objects)))))
+        (is (typep
+             (cadr-agent::session-json-message-usage
+              (cadr-agent::session-entry-message
+               (third objects)))
+             'cadr-ai:usage))
         (is (equal
              '("hi" "ok")
              (message-texts
