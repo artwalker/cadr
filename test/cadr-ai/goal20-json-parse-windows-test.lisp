@@ -51,6 +51,20 @@
   (is (null (cadr-ai::parse-json-simple-integer "12.3" 0 4)))
   (is (eql 12 (cadr-ai::parse-json-simple-integer "12" 0 2))))
 
+(test goal20-json-single-element-array-is-a-vector
+  (let ((one (cadr-ai::parse-json "[1]"))
+        (two (cadr-ai::parse-json "[1,2]"))
+        (empty (cadr-ai::parse-json "[]")))
+    (is (vectorp one))
+    (is (= 1 (length one)))
+    (is (eql 1 (aref one 0)))
+    (is (vectorp two))
+    (is (= 2 (length two)))
+    (is (eql 1 (aref two 0)))
+    (is (eql 2 (aref two 1)))
+    (is (vectorp empty))
+    (is (zerop (length empty)))))
+
 (test goal20-json-interns-streaming-object-keys
   (let ((first (cadr-ai::parse-json "{\"content\":\"a\"}"))
         (second (cadr-ai::parse-json "{\"content\":\"b\"}"))

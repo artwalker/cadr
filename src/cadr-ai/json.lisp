@@ -443,24 +443,35 @@
          (parse-array (depth)
            (expect #\[)
            (skip-space)
-           (let ((items nil))
-             (when (and (peek)
-                        (char= (peek) #\]))
-               (take)
-               (return-from parse-array #()))
-             (loop
-               (push (parse-value depth) items)
-               (skip-space)
-               (case (peek)
-                 (#\, (take) (skip-space))
-                 (#\]
-                  (take)
-                  (return
-                    (coerce
-                     (nreverse items)
-                     'vector)))
-                 (otherwise
-                  (fail "Expected comma or ]"))))))
+           (when (and (peek)
+                      (char= (peek) #\]))
+             (take)
+             (return-from parse-array #()))
+           (let ((first (parse-value depth)))
+             (skip-space)
+             (case (peek)
+               (#\]
+                (take)
+                (vector first))
+               (#\,
+                (take)
+                (skip-space)
+                (let ((items (list first)))
+                  (loop
+                    (push (parse-value depth) items)
+                    (skip-space)
+                    (case (peek)
+                      (#\, (take) (skip-space))
+                      (#\]
+                       (take)
+                       (return
+                         (coerce
+                          (nreverse items)
+                          'vector)))
+                      (otherwise
+                       (fail "Expected comma or ]"))))))
+               (otherwise
+                (fail "Expected comma or ]")))))
          (parse-object (depth)
            (expect #\{)
            (skip-space)

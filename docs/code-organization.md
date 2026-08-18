@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122626 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122637 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -115,7 +115,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/crypto.lisp` | 367 | 14 | Implement SigV4 canonicalization/signing and service-account JWT signing. | pass · large | no-rewrite | Manual pad loop at :37-40 is RFC 2104 test-vector locked; the unwind-protect FFI ladder is canonical CFFI and openssl-check owns return-code checking. | 20 |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | 1 | Hold generated image-model catalog data. | pass · large | no-rewrite | Generated artifact pinned to the baseline catalog; the -1000000.0d0 price sentinels are data, not code shape. | 20 |
 | `src/cadr-ai/images.lisp` | 222 | 8 | Build OpenRouter image requests and normalize generated-image results. | pass | no-rewrite | Tail-append at :142-145/:156-160 preserves the baseline-mandated block order on a wire-bounded list; failure mapping uses the condition system. | 20 |
-| `src/cadr-ai/json.lisp` | 723 | 28 | Parse and serialize bounded JSON plus common content/data-URL helpers. | pass · large | no-rewrite | Index-walking number DFA transcribes RFC 8259; integers parse from the source window. Exact-rational round-trip is a genuine Lisp advantage TS doubles cannot express. Streaming object keys reuse literals; escape scratch is lazy. | 20 |
+| `src/cadr-ai/json.lisp` | 734 | 28 | Parse and serialize bounded JSON plus common content/data-URL helpers. | pass · large | no-rewrite | Index-walking number DFA transcribes RFC 8259; integers parse from the source window; one-element arrays skip the list+coerce path. Exact-rational round-trip is a genuine Lisp advantage TS doubles cannot express. Streaming object keys reuse literals; escape scratch is lazy. | 20 |
 | `src/cadr-ai/model-data.lisp` | 407 | 27 | Validate model-data artifacts/manifests and generate deterministic catalog fixtures. | pass · large | done | walk-model-data-groups. I0: one group walker. | 20 |
 | `src/cadr-ai/models.generated.lisp` | 8,711 | 1 | Hold the generated model metadata catalog; the generator is its owner. | pass · large | no-rewrite | Generated data artifact (1219 entries, one uniform schema); shape changes belong to the generator, not this file. | 20 |
 | `src/cadr-ai/models.lisp` | 288 | 22 | Define model metadata/catalog operations, thinking-level resolution, and cost calculation. | pass | no-rewrite | nth-on-list at :216-226 is over a fixed 7-element ordinal constant and directly expresses the baseline nearest-level search; rest is defstruct+registry+conditions. | 20 |

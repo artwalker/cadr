@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.1: one-element JSON arrays allocate
+  `(vector first)` instead of list + `nreverse` +
+  `coerce`. Stream-chat 2,357,254 B → 2,350,697 B.
+  FiveAM 18999→19008. Identity 122626→122637. G.17 still
+  `missing`.
+
 - Goal 20 Part P.1: JSON integers parse from the source
   window (no SUBSEQ token). Decimals and exponents stay on
   the existing token path. Same-machine session.jsonl
