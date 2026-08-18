@@ -114,11 +114,12 @@
               (tic-tac-toe-state-from-data
                (cadr-agent:session-entry-data entry))))
         (when restored (setf *tic-tac-toe-state* restored)))))
+  (tic-tac-toe-request-render)
   *tic-tac-toe-state*)
 
 (defclass tic-tac-toe-board-component
     (cadr-cli::render-aware-component cadr-tui:component)
-  ((state :initarg :state :reader tic-tac-toe-component-state)
+  ((state :initarg :state :accessor tic-tac-toe-component-state)
    ;; Baseline BoardOverlayComponent keeps the tui handle so agent-driven
    ;; state changes can repaint (tic-tac-toe.ts:389-393 updateState); the
    ;; user-input repaints are the framework's post-event render, matching
@@ -129,17 +130,23 @@
    (done :initarg :done :initform nil :reader tic-tac-toe-component-done)
    (on-play :initarg :on-play :initform nil :reader tic-tac-toe-component-on-play)))
 
-(defun tic-tac-toe-request-render ()
-  "Baseline updateState (tic-tac-toe.ts:389-393): repaint the live overlay
-after the agent's tool handler mutates the shared game state on another
-execution path - without this the screen freezes on the pre-move frame
-until an unrelated event happens to render (the goal 20 P0-2 defect).
+(defun tic-tac-toe-live-state (component)
+  "Live overlay reads the global. Agent-view transcript boards keep the
+snapshot they were built with. Reconstruct replaces the global, so a
+slot captured at /tic-tac-toe would otherwise keep painting the
+pre-O thinking frame."
+  (if (tic-tac-toe-component-agent-view-p component)
+      (tic-tac-toe-component-state component)
+      *tic-tac-toe-state*))
 
-The live TUI injects the frame channel through
-`render-aware-component`. The tui slot remains the FiveAM / isolated
-root path used when that channel is not wired."
+(defun tic-tac-toe-request-render ()
+  "Baseline updateState (tic-tac-toe.ts:389-393): point the overlay at
+the current global, then request a frame."
   (let ((component *tic-tac-toe-component*))
     (when component
+      (unless (tic-tac-toe-component-agent-view-p component)
+        (setf (tic-tac-toe-component-state component)
+              *tic-tac-toe-state*))
       (let ((request
               (cadr-cli::component-render-request-function
                component)))
@@ -357,7 +364,7 @@ exactly that duplication."
   ;; tic-tac-toe-sgr produces: dim rules around a bold blue title banner,
   ;; a center-padded status line, the board, a center-padded footer, and a
   ;; dim full-width separator.
-  (let* ((state (tic-tac-toe-component-state component))
+  (let* ((state (tic-tac-toe-live-state component))
          (status (tic-tac-toe-state-status state))
          (user-turn-p (char= (tic-tac-toe-state-current-turn state) #\X))
          (title-text " Tic-Tac-Toe ")
@@ -418,7 +425,7 @@ exactly that duplication."
 
 (defmethod cadr-tui:component-handle-event
     ((component tic-tac-toe-board-component) event)
-  (let ((state (tic-tac-toe-component-state component)))
+  (let ((state (tic-tac-toe-live-state component)))
     (case (cadr-tui:input-event-kind event)
       (:up (setf (tic-tac-toe-state-user-row state)
                  (max 0 (1- (tic-tac-toe-state-user-row state)))))

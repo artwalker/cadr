@@ -168,6 +168,11 @@ tag/Release step.
 
 ### Fixed
 
+- Tic-tac-toe overlay follows the live global after reconstruct
+  replaces the state object (baseline `updateState`). Thinking
+  footer only when it is O's turn.
+  FiveAM 18925 → 18932.
+
 - Busy `send-message` with `trigger-turn` steers the running agent
   (baseline `isStreaming` + `triggerTurn`). Tic-tac-toe no longer
   throws DELIVER-AS or leaves a half-played board; tool lines

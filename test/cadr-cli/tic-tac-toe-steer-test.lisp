@@ -198,3 +198,47 @@
         (is (stringp rendered))
         (is (search "cursor (2,1)" rendered))
         (is (null (search "-----+-----" rendered)))))))
+
+(test tic-tac-toe-overlay-follows-replaced-global-state
+  ;; Reconstruct / session-tree replaces *tic-tac-toe-state* with a new
+  ;; object. The overlay slot used to keep the old one, so after O's play
+  ;; the painted frame still said Turn O / Agent is thinking.
+  (with-tic-tac-toe-extension (host package)
+    (or host t)
+    (let* ((make-state
+             (find-symbol "MAKE-TIC-TAC-TOE-STATE" package))
+           (state-var (find-symbol "*TIC-TAC-TOE-STATE*" package))
+           (comp-var (find-symbol "*TIC-TAC-TOE-COMPONENT*" package))
+           (class (find-symbol "TIC-TAC-TOE-BOARD-COMPONENT" package))
+           (board-reader
+             (find-symbol "TIC-TAC-TOE-STATE-BOARD" package))
+           (set-turn
+             (fdefinition
+              (list 'setf
+                    (find-symbol "TIC-TAC-TOE-STATE-CURRENT-TURN"
+                                 package))))
+           (request
+             (find-symbol "TIC-TAC-TOE-REQUEST-RENDER" package))
+           (live
+             (find-symbol "TIC-TAC-TOE-LIVE-STATE" package))
+           (old (funcall make-state))
+           (new (funcall make-state)))
+      (setf (aref (funcall board-reader old) 1 1) #\X)
+      (funcall set-turn #\O old)
+      (setf (aref (funcall board-reader new) 1 1) #\X
+            (aref (funcall board-reader new) 2 2) #\O)
+      (funcall set-turn #\X new)
+      (setf (symbol-value state-var) old
+            (symbol-value comp-var)
+            (make-instance class :state old))
+      (setf (symbol-value state-var) new)
+      (funcall request)
+      (is (eq new (funcall live (symbol-value comp-var))))
+      (let ((screen
+              (format
+               nil "~{~A~^~%~}"
+               (cadr-tui:component-render
+                (symbol-value comp-var) 80))))
+        (is (search (string #\LARGE_CIRCLE) screen))
+        (is (search (string #\BOX_DRAWINGS_LIGHT_DIAGONAL_CROSS) screen))
+        (is (null (search "Agent is thinking" screen)))))))
