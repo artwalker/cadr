@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of
+  `1f4322c51` (non-quick, samples=5, enforced).
+  journal_append 1.11×→0.81×. cadr append 2800 µs
+  → 1698 µs. RATIO_CEILINGS unchanged. No `src/`.
+  G.17 still `missing`.
+
 - Goal 20 Part P: journal_append keeps the session
   file open after first persist. Same
   write-session-entry-jsonl bytes. this-host

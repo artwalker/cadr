@@ -22,7 +22,7 @@ Not a Goal 20 pass.
 | P.4 stream_roundtrip | number | this-host 6.398 ms / 3,750,979 B → 4.995 ms / 2,432,214 B; SSE-only 2.899 ms / 2,327,510 B → 1.698 ms / 1,229,201 B | `c183539e7`–this knife. File-stream newline scan. |
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,350,697 B; snake overlay 39,963 B; ttt overlay 47,819 B | ttt visual-board stream rewrite. |
-| P.7 H pairing | number | 0 new file-level pairs. Remesure `feb2d5450`: append 1.93×→1.11×, cadr 3676→2800 µs. load 1.01×, read 1.18× | typed emit `feb2d5450`. |
+| P.7 H pairing | number | 0 new file-level pairs. Remesure `1f4322c51`: append 1.11×→0.81×, cadr 2800→1698 µs | journal fd `1f4322c51`. |
 | P.8 three games | number | user 2026-08-18 18:09 deferred live play; reopen if a defect appears | Overlay: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. Not FiveAM. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`: disk `/reload`; host rebuild. Rechecked this turn. |
 | P.10 input-to-screen | number | key→overlay 0.050 ms, spinner=NIL, thinking=NIL | This host, 80× snake key+render after `f3ccf75f6`. |
