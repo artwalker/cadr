@@ -116,7 +116,8 @@
         (when restored (setf *tic-tac-toe-state* restored)))))
   *tic-tac-toe-state*)
 
-(defclass tic-tac-toe-board-component (cadr-tui:component)
+(defclass tic-tac-toe-board-component
+    (cadr-cli::render-aware-component cadr-tui:component)
   ((state :initarg :state :reader tic-tac-toe-component-state)
    ;; Baseline BoardOverlayComponent keeps the tui handle so agent-driven
    ;; state changes can repaint (tic-tac-toe.ts:389-393 updateState); the
@@ -132,11 +133,22 @@
   "Baseline updateState (tic-tac-toe.ts:389-393): repaint the live overlay
 after the agent's tool handler mutates the shared game state on another
 execution path - without this the screen freezes on the pre-move frame
-until an unrelated event happens to render (the goal 20 P0-2 defect)."
+until an unrelated event happens to render (the goal 20 P0-2 defect).
+
+The live TUI injects the frame channel through
+`render-aware-component`. The tui slot remains the FiveAM / isolated
+root path used when that channel is not wired."
   (let ((component *tic-tac-toe-component*))
-    (when (and component (tic-tac-toe-component-tui component))
-      (cadr-tui:tui-request-render
-       (tic-tac-toe-component-tui component)))))
+    (when component
+      (let ((request
+              (cadr-cli::component-render-request-function
+               component)))
+        (cond
+          ((functionp request)
+           (funcall request))
+          ((tic-tac-toe-component-tui component)
+           (cadr-tui:tui-request-render
+            (tic-tac-toe-component-tui component))))))))
 
 (defconstant +tic-tac-toe-cell-width+ 7)
 (defconstant +tic-tac-toe-cell-height+ 3)
@@ -568,32 +580,79 @@ exactly that duplication."
                    :state *tic-tac-toe-state* :tui tui :done done
                    :on-play
                    (lambda (row column)
-                     (setf (aref (tic-tac-toe-state-board *tic-tac-toe-state*)
-                                 row column) #\X
-                           (tic-tac-toe-state-status *tic-tac-toe-state*)
-                           (tic-tac-toe-status
-                            (tic-tac-toe-state-board *tic-tac-toe-state*)))
-                     ;; Baseline tic-tac-toe.ts:805-809 flips the turn (or
-                     ;; ends the game) before persisting the save entry, so
-                     ;; session reconstruction sees the post-move turn.
-                     (if (eq (tic-tac-toe-state-status *tic-tac-toe-state*) :playing)
-                         (setf (tic-tac-toe-state-current-turn *tic-tac-toe-state*) #\O)
-                         (setf *tic-tac-toe-active-p* nil))
-                     (tic-tac-toe-save)
-                     (if (eq (tic-tac-toe-state-status *tic-tac-toe-state*) :playing)
-                         (cadr-agent:extension-api-send-message
-                          *example-api*
-                          (list
-                           :custom-type +tic-tac-toe-move-type+
-                           :content
-                           (format nil
-                                   "Player X played at (row=~D, col=~D). It is now Player O's turn.~%~%Board (your cursor marked with <>):~%~A"
-                                   row column
-                                   (tic-tac-toe-board-ascii *tic-tac-toe-state*))
-                           :display-p t
-                           :details (tic-tac-toe-board-data *tic-tac-toe-state*))
-                          :trigger-turn-p t)
-                         (tic-tac-toe-send-game-over)))))))))))
+                     (tic-tac-toe-apply-user-play row column))))))))))
+
+(defun tic-tac-toe-user-play-content (row column)
+  "Baseline tic-tac-toe.ts:823-827: cursor plus THIS-response move_*+play."
+  (format
+   nil
+   "Player X played at (row=~D, col=~D). It is now Player O's turn.~%~%Board (your cursor marked with <>):~%~A~%~%Your cursor is at (row=~D, col=~D). Decide your target cell, then emit every move_* and the final play as separate tic_tac_toe tool calls in THIS response."
+   row column
+   (tic-tac-toe-board-ascii *tic-tac-toe-state*)
+   (tic-tac-toe-state-agent-row *tic-tac-toe-state*)
+   (tic-tac-toe-state-agent-column *tic-tac-toe-state*)))
+
+(defun tic-tac-toe-apply-user-play (row column)
+  "Place X, flip the turn, then trigger O. Restore the cell if send fails."
+  (let* ((state *tic-tac-toe-state*)
+         (board (tic-tac-toe-state-board state))
+         (previous-cell (aref board row column))
+         (previous-status (tic-tac-toe-state-status state))
+         (previous-turn (tic-tac-toe-state-current-turn state))
+         (previous-active *tic-tac-toe-active-p*))
+    (setf (aref board row column) #\X
+          (tic-tac-toe-state-status state) (tic-tac-toe-status board))
+    ;; Baseline tic-tac-toe.ts:805-809 flips the turn (or ends the
+    ;; game) before persisting the save entry.
+    (if (eq (tic-tac-toe-state-status state) :playing)
+        (setf (tic-tac-toe-state-current-turn state) #\O)
+        (setf *tic-tac-toe-active-p* nil))
+    (tic-tac-toe-save)
+    (handler-case
+        (if (eq (tic-tac-toe-state-status state) :playing)
+            (cadr-agent:extension-api-send-message
+             *example-api*
+             (list
+              :custom-type +tic-tac-toe-move-type+
+              :content (tic-tac-toe-user-play-content row column)
+              :display-p t
+              :details (tic-tac-toe-board-data state))
+             :trigger-turn-p t)
+            (tic-tac-toe-send-game-over))
+      (error (condition)
+        (setf (aref board row column) previous-cell
+              (tic-tac-toe-state-status state) previous-status
+              (tic-tac-toe-state-current-turn state) previous-turn
+              *tic-tac-toe-active-p* previous-active)
+        (tic-tac-toe-save)
+        (tic-tac-toe-request-render)
+        (error condition)))))
+
+(defun tic-tac-toe-render-call (arguments render-context theme)
+  ;; Baseline tic-tac-toe.ts:950-952 renderCall: name plus the action.
+  (declare (ignore render-context theme))
+  (format nil "tic_tac_toe ~A"
+          (or (example-argument arguments "action") "")))
+
+(defun tic-tac-toe-render-result (result options render-context theme)
+  ;; Baseline tic-tac-toe.ts:955-966: collapsed line is check + text.
+  (declare (ignore options render-context theme))
+  (format nil "✓ ~A" (example-tool-result-text result)))
+
+(defun tic-tac-toe-see-board-render-call (arguments render-context theme)
+  ;; Baseline tic-tac-toe.ts:993-995.
+  (declare (ignore arguments render-context theme))
+  "tic_tac_toe_see_board")
+
+(defun tic-tac-toe-see-board-render-result (result options render-context theme)
+  ;; Baseline tic-tac-toe.ts:997-1006: fold to check + cursor.
+  (declare (ignore options render-context theme))
+  (let* ((details
+           (and (typep result 'cadr-ai:tool-result-message)
+                (cadr-ai:tool-result-message-details result)))
+         (row (or (and (listp details) (getf details :agent-row)) 0))
+         (column (or (and (listp details) (getf details :agent-column)) 0)))
+    (format nil "✓ cursor (~A,~A)" row column)))
 
 (defun tic-tac-toe-action (action)
   (let ((state *tic-tac-toe-state*))
@@ -682,7 +741,9 @@ exactly that duplication."
       ;; Tool-result content must be a list of content blocks, not a raw
       ;; string (hello.lisp and todo.lisp use the same helper).
       (example-text-result
-       result (tic-tac-toe-board-data *tic-tac-toe-state*))))))
+       result (tic-tac-toe-board-data *tic-tac-toe-state*)))))
+ :render-call #'tic-tac-toe-render-call
+ :render-result #'tic-tac-toe-render-result)
 
 (cadr-agent:define-rich-tool
  "tic_tac_toe_see_board"
@@ -702,4 +763,6 @@ exactly that duplication."
             (tic-tac-toe-state-status *tic-tac-toe-state*)
             (if (char= (tic-tac-toe-state-current-turn *tic-tac-toe-state*) #\O)
                 "Player O (you)" "Player X"))
-    (tic-tac-toe-board-data *tic-tac-toe-state*))))
+    (tic-tac-toe-board-data *tic-tac-toe-state*)))
+ :render-call #'tic-tac-toe-see-board-render-call
+ :render-result #'tic-tac-toe-see-board-render-result)

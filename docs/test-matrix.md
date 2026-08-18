@@ -1,6 +1,6 @@
 # Gate denominators (Goal 20 Part M)
 
-<!-- GOAL20_TEST_CHECKS systems=9 checks=18880 pass=18880 skip=0 fail=0 -->
+<!-- GOAL20_TEST_CHECKS systems=9 checks=18925 pass=18925 skip=0 fail=0 -->
 
 Date: 2026-08-13. Recount: read this file against `scripts/verify.sh`.
 `scripts/test-cl.sh` rewrites the `GOAL20_TEST_CHECKS` comment after a green
@@ -60,7 +60,7 @@ interrupt a stream mid-flight.
 Maps every `test/**/*.lisp` and `test/**/*.py` file to a theme.
 Goal-numbered names stay as they are (they lock a goal acceptance
 baseline); the theme column is their subject. Existing sections
-above are unchanged. Recount: 198 files.
+above are unchanged. Recount: 199 files.
 
 ### cadr-core
 
@@ -208,6 +208,7 @@ above are unchanged. Recount: 198 files.
 | presentation numbers lock | `test/cadr-cli/goal18-presentation-numbers-test.lisp` |
 | startup resources lock | `test/cadr-cli/goal18-startup-resources-test.lisp` |
 | example games | `test/cadr-cli/goal20-example-games-test.lisp` |
+| tic-tac-toe steer | `test/cadr-cli/tic-tac-toe-steer-test.lisp` |
 | part B ledger | `test/cadr-cli/goal20-part-b-ledger-test.lisp` |
 | part I file verdicts | `test/cadr-cli/goal20-part-i-test.lisp` |
 | part L visible strings | `test/cadr-cli/goal20-part-l-test.lisp` |

@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122237 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=122238 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -67,7 +67,7 @@ files with unrelated facilities fail.
 | `src/cadr-agent/extensions/commands.lisp` | 296 | 11 | Invoke extension commands and expand registered prompt templates. | pass | no-rewrite | (nth (1- index) arguments) at :67 is the baseline $N positional contract over one command line; scanners are zero-copy and grammar-locked. | 20 |
 | `src/cadr-agent/extensions/context.lisp` | 707 | 77 | Define extension host/context state, cancellation, and all context/UI actions. | pass · large | done | assert-extension-deliver-as. I0: one deliver-as owner. | 20 |
 | `src/cadr-agent/extensions/lifecycle.lisp` | 779 | 18 | Validate, merge, and dispatch the complete frozen extension lifecycle. | pass · large | no-rewrite | Fresh-cons getf-sentinel idiom (7x) is the aliasing-safe way to preserve the baseline absent-vs-NIL key contract; one cond owns the per-event result contract. | 20 |
-| `src/cadr-agent/extensions/providers.lisp` | 523 | 21 | Project extension tools, messages, and session-local provider overlays into an agent. | pass | no-rewrite | Six default-install blocks at :143-178 differ in signature and target; a thunk table adds indirection without removing a decision. | 20 |
+| `src/cadr-agent/extensions/providers.lisp` | 524 | 21 | Project extension tools, messages, and session-local provider overlays into an agent. | pass | no-rewrite | Six default-install blocks at :143-178 differ in signature and target; a thunk table adds indirection without removing a decision. | 20 |
 | `src/cadr-agent/extensions/registration.lisp` | 819 | 53 | Define bundles, registries, frozen events, and extension authoring macros. | pass · large | done | register-* owns &key; define-* keeps Goal 12 frozen lists. I0: one implementation owner. | 20 |
 | `src/cadr-agent/extensions/rendering.lisp` | 256 | 18 | Own extension failure notices, Markdown/message/tool rendering, and shortcuts. | pass | done | render-extension-named. I0: one named-renderer apply. | 20 |
 | `src/cadr-agent/extensions/snapshot.lisp` | 397 | 24 | Build immutable extension snapshots and replace active bundles safely. | pass | done | extension-definition-bundle generic. I0: new type is a method. | 20 |

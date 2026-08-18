@@ -259,10 +259,11 @@
           agent queued-message deliver-as))
         ((and trigger-turn-p
               (agent-busy-p agent))
-         (error
-          'extension-execution-error
-          :message
-          "send-message requires DELIVER-AS while the agent is running"))
+         ;; Baseline agent-session.ts:1452-1457: isStreaming + triggerTurn
+         ;; without deliverAs followUp steers. cadr used to error with
+         ;; DELIVER-AS, which left a half-played tic-tac-toe board.
+         (deliver-extension-message
+          agent queued-message :steer))
         (trigger-turn-p
          (agent-prompt agent queued-message))
         (t message)))))

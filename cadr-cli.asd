@@ -207,6 +207,7 @@
                              (:file "goal12-sdk-test")
                              (:file "goal12-examples-test")
                              (:file "goal20-example-games-test")
+                             (:file "tic-tac-toe-steer-test")
                              (:file "goal20-part-l-test")
                              (:file "goal20-part-i-test")
                              (:file "goal20-part-b-ledger-test")

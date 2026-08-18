@@ -168,6 +168,12 @@ tag/Release step.
 
 ### Fixed
 
+- Busy `send-message` with `trigger-turn` steers the running agent
+  (baseline `isStreaming` + `triggerTurn`). Tic-tac-toe no longer
+  throws DELIVER-AS or leaves a half-played board; tool lines
+  render `move_down` / `play` instead of raw JSON.
+  FiveAM 18880 → 18925.
+
 - Statistical liveness runs from the git checkout, not the isolated
   tar copy. render-diff capture needs `git -C <repo>`; the isolated
   tree has no `.git` and CI died in 1s with "fatal: not a git
