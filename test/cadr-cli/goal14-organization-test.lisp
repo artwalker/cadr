@@ -942,7 +942,8 @@
     ;; +1 Goal 20 session octet FSM: parse-session-record-octets.
     ;; +7 Goal 20 journal_append typed emit: write-session-entry-jsonl
     ;; and helpers.
-    (is (= 278 definition-count)
+    ;; +3 Goal 20 journal fd reuse: close/open/session-journal-stream.
+    (is (= 281 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

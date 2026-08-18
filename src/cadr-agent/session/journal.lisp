@@ -245,31 +245,52 @@
         (session-%entries-tail-head session) entries))))
   (session-%entries-tail session))
 
+(defun close-session-journal-stream (session)
+  (let ((stream (session-%journal-stream session)))
+    (when (streamp stream)
+      (ignore-errors
+       (when (open-stream-p stream)
+         (finish-output stream)
+         (close stream))))
+    (setf (session-%journal-stream session) nil)))
+
+(defun open-session-journal-stream (session &key create-p)
+  (close-session-journal-stream session)
+  (setf
+   (session-%journal-stream session)
+   (open
+    (session-path session)
+    :direction :output
+    :if-exists (if create-p :error :append)
+    :if-does-not-exist (if create-p :create :error)
+    :external-format :utf-8)))
+
+(defun session-journal-stream (session &key create-p)
+  (let ((stream (session-%journal-stream session)))
+    (if (and (not create-p)
+             (streamp stream)
+             (open-stream-p stream))
+        stream
+        (open-session-journal-stream session :create-p create-p))))
+
 (defun append-session-entry (session entry)
   (sb-thread:with-mutex
       ((session-lock session))
     (cond
       ((session-persisted-p session)
        (handler-case
-           (with-open-file
-               (stream (session-path session)
-                       :direction :output
-                       :if-exists :append
-                       :if-does-not-exist :error
-                       :external-format :utf-8)
-             (write-session-entry-jsonl stream entry))
+           (write-session-entry-jsonl
+            (session-journal-stream session)
+            entry)
          (error (cause)
+           (close-session-journal-stream session)
            (session-failure
             (session-path session) nil
             "Cannot append session entry: ~A" cause))))
       ((assistant-session-entry-p entry)
        (handler-case
-           (with-open-file
-               (stream (session-path session)
-                       :direction :output
-                       :if-exists :error
-                       :if-does-not-exist :create
-                       :external-format :utf-8)
+           (let ((stream
+                   (session-journal-stream session :create-p t)))
              (write-jsonl-object
               stream (session-header-to-json session))
              (dolist
@@ -280,6 +301,7 @@
                (write-session-entry-jsonl
                 stream buffered-entry)))
          (error (cause)
+           (close-session-journal-stream session)
            (session-failure
             (session-path session) nil
             "Cannot create session: ~A" cause)))

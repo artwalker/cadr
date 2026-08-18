@@ -639,6 +639,39 @@
                (cadr-agent::write-session-message-entry
                 entry stream))))))))
 
+(test session-journal-reuses-open-stream
+  ;; Product append keeps one journal fd after first persist.
+  ;; Bytes still go through write-session-entry-jsonl.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "fdreuse"
+              :timestamp 1))
+           (path (cadr-agent:session-path session)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "one" :timestamp 2))
+      (is (null (cadr-agent::session-%journal-stream session)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "two"))
+        :timestamp 3))
+      (let ((stream (cadr-agent::session-%journal-stream session)))
+        (is (streamp stream))
+        (is (open-stream-p stream))
+        (cadr-agent:session-append-message
+         session
+         (cadr-ai:make-user-message :content "three" :timestamp 4))
+        (is (eq stream (cadr-agent::session-%journal-stream session)))
+        (is (open-stream-p stream)))
+      (let ((loaded (cadr-agent:load-session path)))
+        (is (equal
+             '("one" "two" "three")
+             (message-texts
+              (cadr-agent:session-messages loaded))))))))
+
 (test keyword-from-json-closed-vocab-matches-intern
   (is (eq :stop (cadr-agent::keyword-from-json "stop")))
   (is (eq :tooluse (cadr-agent::keyword-from-json "toolUse")))

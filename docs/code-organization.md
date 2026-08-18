@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=125313 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=125336 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -83,10 +83,10 @@ files with unrelated facilities fail.
 | `src/cadr-agent/resources.lisp` | 739 | 30 | Load, validate, substitute, and format prompts and skills as agent resources. | pass · large | no-rewrite | Post-12F-4 the frontmatter pop-iterates; the remaining hand index loop at :380-452 is the documented single-pass no-reexpansion contract over strings. | 20 |
 | `src/cadr-agent/runtime.lisp` | 421 | 30 | Own agent event emission, queued steering/follow-up input, mutation state, abort, and shutdown. | pass · large | done | agent-queue-messages / set-agent-queue-messages. I0: one queue slot owner. | 20 |
 | `src/cadr-agent/schema.lisp` | 850 | 22 | Validate JSON Schema definitions and tool arguments with local reference support. | pass · large | done | with-present. I0: one present-p guard. | 20 |
-| `src/cadr-agent/session/codec.lisp` | 808 | 38 | Encode, decode, validate, and identify session entries and metadata. | pass | done | typed JSONL emit. I0: one coerce owner. | 20 |
+| `src/cadr-agent/session/codec.lisp` | 809 | 38 | Encode, decode, validate, and identify session entries and metadata. | pass | done | typed JSONL emit. I0: one coerce owner. | 20 |
 | `src/cadr-agent/session/discovery.lisp` | 154 | 5 | Discover, list, continue, and resolve session files. | pass | no-rewrite | The octet loop at :41-77 implements the byte-counted 1MiB scan cap with mid-line cutoff and per-line :skip — inexpressible with read-line. | 20 |
 | `src/cadr-agent/session/export-html.lisp` | 455 | 24 | Embed assets and export a session as baseline-compatible offline HTML. | pass | no-rewrite | String-keyed color alists at :46-152 must stay string-keyed (camelCase CSS vars are the byte contract); hand-rolled base64 honors the no-new-deps policy. | 20 |
-| `src/cadr-agent/session/journal.lisp` | 640 | 30 | Create, append, branch, label, and inspect the live JSONL session journal. | pass | done | put-session-details-and-usage. I0: one details/usage emit. | 20 |
+| `src/cadr-agent/session/journal.lisp` | 662 | 33 | Create, append, branch, label, and inspect the live JSONL session journal. | pass | done | reuse journal fd after first persist. I0: one details/usage emit. | 20 |
 | `src/cadr-agent/session/migration.lisp` | 1347 | 12 | Validate and migrate v1/v2/v3 session logs with atomic replacement. | pass | done | schema octet FSM fills session-entry. I0: intern once. | 20 |
 | `src/cadr-agent/sqlite-storage.lisp` | 834 | 33 | Implement the SQLite session-storage and repository backend. | pass · large | done | one model/level bind; model-plist-from-entry. I0: one current-model owner. | 20 |
 | `src/cadr-agent/storage/harness.lisp` | 476 | 31 | Adapt session-storage backends to harness session lifecycle operations. | pass | done | model-plist-from-entry. I0: same current-model owner as sqlite. | 20 |

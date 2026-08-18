@@ -61,7 +61,8 @@
   (by-id (make-hash-table :test #'equal) :type hash-table)
   leaf-id
   (persisted-p nil :type boolean)
-  (lock (sb-thread:make-mutex :name "cadr-session")))
+  (lock (sb-thread:make-mutex :name "cadr-session"))
+  %journal-stream)
 
 (defun canonical-session-cwd (cwd)
   (namestring

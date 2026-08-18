@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: journal_append keeps the session
+  file open after first persist. Same
+  write-session-entry-jsonl bytes. this-host
+  create+128 append 2627 µs / 338,139 B → 1314 µs
+  / 163,621 B. Not intern. Not FFI. Identity
+  125313→125336. FiveAM 19217→19223. G.17 still
+  `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `feb2d5450` (non-quick, samples=5, enforced).
   journal_append 1.93×→1.11×. cadr append 3676 µs
