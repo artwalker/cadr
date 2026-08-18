@@ -24,7 +24,7 @@ Status: `met` / `missing` / `blocked`.
 | 14 Part I ledger columns | met | `docs/acceptance/goal-v20-part-i.md`; `docs/code-organization.md` §2; batches `de4c60f95`–`fc0634c4c` | One table, closed states, every `src/**/*.lisp` row, dual file/line progress. I report's initial 293/121105 lock was refreshed on the current identity line. |
 | 15 Part J pilot retro | met | `docs/acceptance/goal-v20-part-j.md`; `8f691682b`; `src/cadr-core/time.lisp` | Report names three process defects (re-asking I, no H cell, ceremony red commit). Not "流程顺利". |
 | 16 Part O four paths ≤ 1.0 | blocked | `4cd3a510b`; `docs/acceptance/goal-v20-part-o.md`; `docs/performance.md` paired table (append 2.21×, read 3.93×, load 4.28×, list_models_render 3.18×) | O blocked is not a performance close. Next knife is Part P (SBCL/live-image ceiling; floor is pi). Beating pi is not a stop. `argv_parse` is out of scope. |
-| 17 Part P CL ceiling | met | `docs/acceptance/goal-v20-part-p.md`; P.1 `7d5478818`; P.2 `232761357` / `d4da3cb65` / `a3d57ce03`; P.3 `f898c9ab5`; P.4–P.11 numbers or 非杠杆 in that report | Floor is still pi (booked table unchanged). Beating pi is not claimed. Friend-MachineD pairing was not available; vs-pre-cadr + same-machine numbers are the P levers. |
+| 17 Part P CL ceiling | missing | spec `goal20-draft.md` 十B; ruling `docs/adjudications.md` 2026-08-18 CL ceiling (`1a24eea1d`); draft `docs/acceptance/goal-v20-part-p.md` | Advisor 2026-08-18 13:50 vetoed `met` on `40db3f88a`. P.1–P.3 code stays. P.4 stream / P.6 alloc / P.8 games are leftover. Floor is pi; beating pi is not a stop. |
 
 ## Not claimed
 

@@ -9,9 +9,10 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20 Part P closeout: `docs/acceptance/goal-v20-part-p.md`
-  lists P.1–P.11 with a number or 非杠杆. Live-image runbook is
-  `docs/runbooks/live-image.md`. G.17 is `met`. Not a Goal 20 pass.
+- Goal 20 Part P report draft: `docs/acceptance/goal-v20-part-p.md`
+  and live-image runbook. Advisor vetoed G.17 `met` on `40db3f88a`
+  (copied Friend-MachineD table is not a P.4/P.6/P.8 probe). G.17
+  is `missing`. Not a Goal 20 pass.
 
 - Goal 20 Part P.3: `--list-models` reuses a refreshed registry while
   `models.json` / `auth.json` write-dates stay the same. Same-machine
