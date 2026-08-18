@@ -188,11 +188,7 @@
                (coerce source 'simple-string)))
          (position 0)
          (length (length source))
-         (string-buffer
-           (make-array 64
-                       :element-type 'character
-                       :adjustable t
-                       :fill-pointer 0)))
+         (string-buffer nil))
     (declare (type simple-string source)
              (type fixnum position length))
     (macrolet ((peek ()
@@ -241,6 +237,12 @@
                (otherwise
                 (fail "Unknown string escape"))))
            (decode-escaped-string (start end)
+             (unless string-buffer
+               (setf string-buffer
+                     (make-array 64
+                                 :element-type 'character
+                                 :adjustable t
+                                 :fill-pointer 0)))
              (setf (fill-pointer string-buffer) 0)
              (let ((saved position))
                (setf position start)

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.4: `parse-json-source` allocates the escape
+  scratch only when a string has escapes. Same-machine
+  stream-chat 5.402 ms / 2,677,288 B → 4.797 ms / 2,545,901 B.
+  G.17 still `missing`.
+
 - Goal 20 Part P.4: binary SSE `data`/`event`/`id` lines
   decode only the payload octets (specialized copy, not
   coerce of the adjustable line). Same-machine stream-chat
