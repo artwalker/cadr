@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P draft: P.8 is `blocked` (user has not
+  played; FiveAM is not hand-play). P.10 this-host
+  key→overlay 0.050 ms, spinner=NIL. P.11 14/14. G.17
+  still `missing`. Not a Goal 20 pass.
+
 - Goal 20 Part P.8: snake and invaders overlays read the
   live global when bound (`*snake-state*`,
   `*space-invaders-state*`), matching tic-tac-toe. User
