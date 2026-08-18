@@ -9,6 +9,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P0: FiveAM locks a registered move renderer
+  that errors does not dump `Player X played at`.
+
 - Goal 20 P0: tic-tac-toe overlay visual board writes
   each row to a stream instead of repeated `concatenate`.
   Same-machine 80× render 54,372 B → 47,819 B / frame;
