@@ -91,7 +91,7 @@
        (when (string= key "retainedTail")
          (setf (session-entry-retained-tail entry) value))))))
 
-(defun parse-session-record (line &optional (start 0) end)
+(defun parse-session-record (line &optional (start 0) end octet-p)
   (let ((entry (make-session-entry)))
     (labels
         ((usage-or-hash (value)
@@ -394,21 +394,33 @@
               (visit-arguments))
              ((or (eq key "content") (string= key "content"))
               (values #'visit-content-block nil :array)))))
-      (cadr-ai::parse-json-object-fields
-       line
-       (lambda (key value)
-         (session-record-put entry key value))
-       #'nest
-       start
-       end))
+      (if octet-p
+          (cadr-ai::parse-json-octets
+           line
+           (lambda (key value)
+             (session-record-put entry key value))
+           #'nest
+           start
+           end)
+          (cadr-ai::parse-json-object-fields
+           line
+           (lambda (key value)
+             (session-record-put entry key value))
+           #'nest
+           start
+           end)))
     entry))
 
 (defun parse-session-line
-    (line path line-number &key raw-hash-p (start 0) end)
+    (line path line-number &key raw-hash-p (start 0) end octet-p)
   (handler-case
-      (if raw-hash-p
-          (cadr-ai::parse-json-source line nil nil start end)
-          (parse-session-record line start end))
+      (cond
+        (raw-hash-p
+         (if octet-p
+             (cadr-ai::parse-json-octets line nil nil start end)
+             (cadr-ai::parse-json-source line nil nil start end)))
+        (t
+         (parse-session-record line start end octet-p)))
     (error (cause)
       (session-failure
        path line-number
@@ -442,9 +454,7 @@
   (let ((objects nil)
         (line-number 0)
         (header nil)
-        (raw-hash-p t)
-        (ascii-cap 256)
-        (ascii-buf (make-string 256 :element-type 'base-char)))
+        (raw-hash-p t))
     (labels
         ((blank-octets-p (octets start end)
            (loop for index from start below end
@@ -454,58 +464,28 @@
                      (= unit 9)
                      (= unit 13)
                      (= unit 10))))
-         (ensure-ascii-buf (count)
-           (declare (type fixnum count))
-           (when (> count ascii-cap)
-             (setf ascii-cap (max count (* ascii-cap 2)))
-             (setf ascii-buf
-                   (make-string ascii-cap :element-type 'base-char)))
-           ascii-buf)
          (consume-line (octets start end)
            (incf line-number)
            (unless (blank-octets-p octets start end)
-             (let ((count (- end start))
-                   (line nil)
-                   (line-end 0))
-               (declare (type fixnum count line-end))
-               (setf line (ensure-ascii-buf count)
-                     line-end count)
-               (loop for index of-type fixnum from start below end
-                     for offset of-type fixnum from 0
-                     for unit of-type (unsigned-byte 8)
-                       = (aref octets index)
-                     do
-                     (cond
-                       ((>= unit 128)
-                        (setf line
-                              (sb-ext:octets-to-string
-                               octets
-                               :external-format :utf-8
-                               :start start
-                               :end end))
-                        (setf line-end (length line))
-                        (return))
-                       (t
-                        (setf (schar line offset)
-                              (code-char unit)))))
-               (let ((object
-                       (handler-case
-                           (parse-session-line
-                            line path line-number
-                            :raw-hash-p raw-hash-p
-                            :start 0
-                            :end line-end)
-                         (session-error () nil))))
-                 (when object
-                   (unless header
-                     (setf header object)
-                     (setf raw-hash-p
-                           (let ((version
-                                   (cadr-ai::json-get
-                                    object "version" 1)))
-                             (or (not (integerp version))
-                                 (< version 3)))))
-                   (push object objects))))))
+             (let ((object
+                     (handler-case
+                         (parse-session-line
+                          octets path line-number
+                          :raw-hash-p raw-hash-p
+                          :start start
+                          :end end
+                          :octet-p t)
+                       (session-error () nil))))
+               (when object
+                 (unless header
+                   (setf header object)
+                   (setf raw-hash-p
+                         (let ((version
+                                 (cadr-ai::json-get
+                                  object "version" 1)))
+                           (or (not (integerp version))
+                               (< version 3)))))
+                 (push object objects)))))
          (scan-buffer (buffer count pending)
            (let ((start 0))
              (declare (type fixnum start count))

@@ -786,6 +786,513 @@
 (defun parse-json (source)
   (parse-json-source source))
 
+(defun octet-window-equals (octets start end literal)
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end)
+           (type simple-string literal))
+  (let ((count (- end start)))
+    (declare (type fixnum count))
+    (and (= count (length literal))
+         (loop for index from start below end
+               for offset from 0
+               always
+               (= (aref octets index)
+                  (char-code (schar literal offset)))))))
+
+(defun copy-unescaped-json-octets (octets start end)
+  ;; UTF-8 only on the value window, not the whole JSONL line.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end))
+  (let ((ascii-p t))
+    (loop for index from start below end
+          when (>= (aref octets index) 128)
+            do (setf ascii-p nil)
+               (return))
+    (if (not ascii-p)
+        (sb-ext:octets-to-string
+         octets
+         :external-format :utf-8
+         :start start
+         :end end)
+        (let* ((count (- end start))
+               (out (make-string count :element-type 'base-char)))
+          (declare (type fixnum count)
+                   (type simple-base-string out))
+          (loop for index of-type fixnum from start below end
+                for offset of-type fixnum from 0
+                do (setf (schar out offset)
+                         (code-char (aref octets index))))
+          out))))
+
+(defun json-interned-ascii-key-octets (octets start end)
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end))
+  (let ((count (- end start)))
+    (declare (type fixnum count))
+    (when (plusp count)
+      (let ((first (aref octets start)))
+        (flet ((key= (literal)
+                 (octet-window-equals octets start end literal)))
+          (case count
+            (2 (when (and (= first 105) (key= "id")) "id"))
+            (4 (case first
+                 (114 (when (key= "role") "role"))
+                 (116 (cond
+                        ((key= "type") "type")
+                        ((key= "text") "text")))
+                 (110 (when (key= "name") "name"))))
+            (5 (case first
+                 (105 (cond
+                        ((key= "index") "index")
+                        ((key= "input") "input")))
+                 (109 (when (key= "model") "model"))
+                 (100 (when (key= "delta") "delta"))
+                 (117 (when (key= "usage") "usage"))
+                 (116 (when (key= "total") "total"))))
+            (6 (when (= first 111)
+                 (cond
+                   ((key= "object") "object")
+                   ((key= "output") "output"))))
+            (7 (case first
+                 (99 (cond
+                       ((key= "created") "created")
+                       ((key= "choices") "choices")
+                       ((key= "content") "content")))
+                 (109 (when (key= "message") "message"))))
+            (8 (case first
+                 (102 (when (key= "function") "function"))
+                 (112 (cond
+                        ((key= "parentId") "parentId")
+                        ((key= "provider") "provider")))))
+            (9 (case first
+                 (97 (when (key= "arguments") "arguments"))
+                 (116 (when (key= "timestamp") "timestamp"))
+                 (99 (when (key= "cacheRead") "cacheRead"))))
+            (10 (case first
+                  (116 (when (key= "tool_calls") "tool_calls"))
+                  (99 (when (key= "cacheWrite") "cacheWrite"))
+                  (115 (when (key= "stopReason") "stopReason"))))
+            (11 (when (and (= first 116) (key= "totalTokens"))
+                  "totalTokens"))
+            (12 (when (and (= first 116) (key= "total_tokens"))
+                  "total_tokens"))
+            (13 (case first
+                  (102 (when (key= "finish_reason") "finish_reason"))
+                  (112 (when (key= "prompt_tokens") "prompt_tokens"))))
+            (17 (when (and (= first 99) (key= "completion_tokens"))
+                  "completion_tokens"))))))))
+
+(defun json-interned-ascii-value-octets (octets start end)
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end))
+  (let ((count (- end start)))
+    (declare (type fixnum count))
+    (flet ((val= (literal)
+             (octet-window-equals octets start end literal)))
+      (case count
+        (4 (cond
+             ((val= "text") "text")
+             ((val= "user") "user")
+             ((val= "stop") "stop")
+             ((val= "read") "read")))
+        (6 (cond
+             ((val= "custom") "custom")
+             ((val= "medium") "medium")))
+        (7 (cond
+             ((val= "message") "message")
+             ((val= "session") "session")
+             ((val= "toolUse") "toolUse")))
+        (8 (cond
+             ((val= "thinking") "thinking")
+             ((val= "toolCall") "toolCall")))
+        (9 (when (val= "assistant") "assistant"))
+        (10 (when (val= "toolResult") "toolResult"))
+        (18 (when (val= "openai-completions")
+              "openai-completions"))))))
+
+(defun parse-json-simple-integer-octets (octets start end)
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end))
+  (when (>= start end)
+    (return-from parse-json-simple-integer-octets nil))
+  (let ((index start)
+        (negative-p nil))
+    (declare (type fixnum index))
+    (when (= (aref octets index) 45)
+      (setf negative-p t)
+      (incf index)
+      (when (= index end)
+        (return-from parse-json-simple-integer-octets nil)))
+    (let ((first (aref octets index)))
+      (cond
+        ((= first 48)
+         (incf index)
+         (when (< index end)
+           (return-from parse-json-simple-integer-octets nil))
+         0)
+        ((not (<= 49 first 57))
+         nil)
+        (t
+         (let ((value 0))
+           (loop while (< index end)
+                 for code of-type fixnum = (aref octets index)
+                 do (unless (<= 48 code 57)
+                      (return-from parse-json-simple-integer-octets
+                        nil))
+                    (setf value (+ (* value 10) (- code 48)))
+                    (incf index))
+           (if negative-p
+               (- value)
+               value)))))))
+
+(defun parse-json-octets
+    (octets &optional object-visitor nest (start 0) end)
+  ;; Session JSONL: walk the octet window.  UTF-8 decode only
+  ;; unescaped string values that contain high bytes.  String
+  ;; PARSE-JSON-SOURCE is unchanged.  Not intern expand.  Not 7b.
+  (let* ((octets
+           (if (typep octets '(simple-array (unsigned-byte 8) (*)))
+               octets
+               (replace
+                (make-array
+                 (length octets)
+                 :element-type '(unsigned-byte 8))
+                octets)))
+         (position start)
+         (length (or end (length octets))))
+    (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+             (type fixnum position length))
+    (macrolet ((peek-code ()
+                 `(and (< position length)
+                       (aref octets position)))
+               (take-code ()
+                 `(prog1 (peek-code) (incf position))))
+      (labels
+          ((fail (message)
+             (error 'json-parse-error
+                    :message message
+                    :position position))
+           (skip-space ()
+             (loop while (< position length)
+                   for code = (aref octets position)
+                   while (or (= code 32)
+                             (= code 9)
+                             (= code 13)
+                             (= code 10))
+                   do (incf position)))
+           (expect-code (code)
+             (unless (eql (take-code) code)
+               (fail (format nil "Expected ~S" (code-char code)))))
+           (parse-string (&optional intern-p)
+             (expect-code 34)
+             (let ((start position)
+                   (escaped-p nil))
+               (declare (type fixnum start))
+               (loop
+                 (when (>= position length)
+                   (fail "Unterminated string"))
+                 (let ((code (aref octets position)))
+                   (cond
+                     ((= code 34)
+                      (let ((end position))
+                        (incf position)
+                        (return
+                          (cond
+                            (escaped-p
+                             (parse-json-source
+                              (sb-ext:octets-to-string
+                               octets
+                               :external-format :utf-8
+                               :start (1- start)
+                               :end (1+ end))))
+                            ((and intern-p
+                                  (or (json-interned-ascii-key-octets
+                                       octets start end)
+                                      (json-interned-ascii-value-octets
+                                       octets start end))))
+                            ((and (not intern-p)
+                                  (json-interned-ascii-value-octets
+                                   octets start end)))
+                            (t
+                             (copy-unescaped-json-octets
+                              octets start end))))))
+                     ((< code 32)
+                      (fail "Unescaped control character"))
+                     ((= code 92)
+                      (setf escaped-p t)
+                      (incf position)
+                      (unless (peek-code)
+                        (fail "Truncated escape"))
+                      (if (= (take-code) 117)
+                          (progn
+                            (when (> (+ position 4) length)
+                              (fail "Truncated Unicode escape"))
+                            (incf position 4))
+                          nil))
+                     (t
+                      (incf position)))))))
+           (parse-number ()
+             (let ((start position))
+               (declare (type fixnum start))
+               (loop for code = (peek-code)
+                     while
+                     (and code
+                          (or (<= 48 code 57)
+                              (= code 45)
+                              (= code 43)
+                              (= code 46)
+                              (= code 101)
+                              (= code 69)))
+                     do (incf position))
+               (or
+                (parse-json-simple-integer-octets
+                 octets start position)
+                (let ((token
+                        (copy-unescaped-json-octets
+                         octets start position)))
+                  (unless
+                      (and
+                       (plusp (length token))
+                       (valid-json-number-token-p token))
+                    (fail "Invalid number"))
+                  (handler-case
+                      (parse-json-number-token token)
+                    (json-parse-error ()
+                      (fail
+                       "JSON number exponent is too large")))))))
+           (parse-literal (literal value)
+             (let ((end (+ position (length literal))))
+               (unless
+                   (and (<= end length)
+                        (octet-window-equals
+                         octets position end literal))
+                 (fail (format nil "Expected ~A" literal)))
+               (setf position end)
+               value))
+           (parse-array (depth)
+             (expect-code 91)
+             (skip-space)
+             (when (eql (peek-code) 93)
+               (take-code)
+               (return-from parse-array #()))
+             (let ((first (parse-value depth)))
+               (skip-space)
+               (let ((code (peek-code)))
+                 (cond
+                   ((eql code 93)
+                    (take-code)
+                    (vector first))
+                   ((eql code 44)
+                    (take-code)
+                    (skip-space)
+                    (let ((items (list first)))
+                      (loop
+                        (push (parse-value depth) items)
+                        (skip-space)
+                        (let ((next (peek-code)))
+                          (cond
+                            ((eql next 44)
+                             (take-code)
+                             (skip-space))
+                            ((eql next 93)
+                             (take-code)
+                             (return
+                               (coerce (nreverse items) 'vector)))
+                            (t
+                             (fail "Expected comma or ]")))))))
+                   (t
+                    (fail "Expected comma or ]"))))))
+           (parse-typed-array (element)
+             (expect-code 91)
+             (skip-space)
+             (when (eql (peek-code) 93)
+               (take-code)
+               (return-from parse-typed-array #()))
+             (let ((first (funcall element)))
+               (skip-space)
+               (let ((code (peek-code)))
+                 (cond
+                   ((eql code 93)
+                    (take-code)
+                    (vector first))
+                   ((eql code 44)
+                    (take-code)
+                    (skip-space)
+                    (let ((items (list first)))
+                      (loop
+                        (push (funcall element) items)
+                        (skip-space)
+                        (let ((next (peek-code)))
+                          (cond
+                            ((eql next 44)
+                             (take-code)
+                             (skip-space))
+                            ((eql next 93)
+                             (take-code)
+                             (return
+                               (coerce (nreverse items) 'vector)))
+                            (t
+                             (fail "Expected comma or ]")))))))
+                   (t
+                    (fail "Expected comma or ]"))))))
+           (parse-object (depth)
+             (expect-code 123)
+             (skip-space)
+             (when (eql (peek-code) 125)
+               (take-code)
+               (return-from parse-object
+                 (make-hash-table :test #'equal)))
+             (let ((pairs (make-array 16))
+                   (count 0)
+                   (spilled nil))
+               (declare (type (simple-vector 16) pairs)
+                        (type fixnum count)
+                        (dynamic-extent pairs))
+               (loop
+                 (unless (eql (peek-code) 34)
+                   (fail "Object key must be a string"))
+                 (let ((key (parse-string t)))
+                   (skip-space)
+                   (expect-code 58)
+                   (skip-space)
+                   (let ((value (parse-value depth)))
+                     (cond
+                       (spilled
+                        (setf (gethash key spilled) value))
+                       ((< count 8)
+                        (setf (svref pairs (* count 2)) key)
+                        (setf (svref pairs (1+ (* count 2))) value)
+                        (incf count))
+                       (t
+                        (let ((object
+                                (make-hash-table :test #'equal :size 16)))
+                          (loop for index from 0 below count
+                                do (setf
+                                    (gethash
+                                     (svref pairs (* index 2))
+                                     object)
+                                    (svref pairs (1+ (* index 2)))))
+                          (setf (gethash key object) value)
+                          (setf spilled object))))))
+                 (skip-space)
+                 (let ((code (peek-code)))
+                   (cond
+                     ((eql code 44)
+                      (take-code)
+                      (skip-space))
+                     ((eql code 125)
+                      (take-code)
+                      (return
+                        (or spilled
+                            (let ((object
+                                    (make-hash-table
+                                     :test #'equal
+                                     :size count)))
+                              (loop for index from 0 below count
+                                    do (setf
+                                        (gethash
+                                         (svref pairs (* index 2))
+                                         object)
+                                        (svref pairs (1+ (* index 2)))))
+                              object))))
+                     (t
+                      (fail "Expected comma or }")))))))
+           (parse-object-fields (visitor)
+             (expect-code 123)
+             (skip-space)
+             (when (eql (peek-code) 125)
+               (take-code)
+               (return-from parse-object-fields nil))
+             (loop
+               (unless (eql (peek-code) 34)
+                 (fail "Object key must be a string"))
+               (let ((key (parse-string t)))
+                 (skip-space)
+                 (expect-code 58)
+                 (skip-space)
+                 (funcall
+                  visitor key
+                  (block nested
+                    (when (and nest (peek-code))
+                      (multiple-value-bind
+                            (nested-visitor nested-finish kind)
+                          (funcall nest key)
+                        (cond
+                          ((and (eq kind :array)
+                                (eql (peek-code) 91))
+                           (return-from nested
+                             (parse-typed-array
+                              (lambda ()
+                                (skip-space)
+                                (cond
+                                  ((eql (peek-code) 123)
+                                   (multiple-value-bind
+                                         (item-visitor item-finish)
+                                       (funcall nested-visitor)
+                                     (parse-object-fields
+                                      item-visitor)
+                                     (if item-finish
+                                         (funcall item-finish)
+                                         t)))
+                                  (t
+                                   (parse-value 1)))))))
+                          ((and nested-visitor
+                                (eql (peek-code) 123))
+                           (parse-object-fields nested-visitor)
+                           (return-from nested
+                             (if nested-finish
+                                 (funcall nested-finish)
+                                 t))))))
+                    (parse-value 1))))
+               (skip-space)
+               (let ((code (peek-code)))
+                 (cond
+                   ((eql code 44)
+                    (take-code)
+                    (skip-space))
+                   ((eql code 125)
+                    (take-code)
+                    (return))
+                   (t
+                    (fail "Expected comma or }"))))))
+           (parse-value (depth)
+             (skip-space)
+             (let ((code (peek-code)))
+               (cond
+                 ((eql code 34) (parse-string))
+                 ((eql code 123)
+                  (cond
+                    ((and object-visitor (zerop depth))
+                     (parse-object-fields object-visitor)
+                     :visited-object)
+                    ((< depth +maximum-json-nesting-depth+)
+                     (parse-object (1+ depth)))
+                    (t
+                     (fail
+                      "Maximum JSON nesting depth exceeded"))))
+                 ((eql code 91)
+                  (if (< depth +maximum-json-nesting-depth+)
+                      (parse-array (1+ depth))
+                      (fail
+                       "Maximum JSON nesting depth exceeded")))
+                 ((eql code 116) (parse-literal "true" t))
+                 ((eql code 102) (parse-literal "false" nil))
+                 ((eql code 110) (parse-literal "null" 'null))
+                 ((and code
+                       (or (<= 48 code 57) (= code 45)))
+                  (parse-number))
+                 (t
+                  (fail "Expected JSON value"))))))
+        (let ((value (parse-value 0)))
+          (skip-space)
+          (unless (= position length)
+            (fail "Trailing input"))
+          (if object-visitor
+              (if (eq value :visited-object)
+                  t
+                  (fail "Expected JSON object"))
+              value))))))
+
 (defun write-json-string (value stream)
   ;; journal_append Lisp time is stringify (WRITE-JSON-VALUE / this
   ;; function).  Unescaped runs are one WRITE-STRING; escapes still emit

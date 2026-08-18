@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: session JSONL parse walks the octet
+  window. UTF-8 decode only unescaped string values
+  with high bytes. Public parse-json unchanged.
+  Pairing fixture journal_read 1,571,942 B → 1,138,106 B
+  / 3136 µs → 2367 µs; load-session 1,816,608 B →
+  1,385,181 B / 3920 µs → 3156 µs. Not intern. Not 7b.
+  Identity 123687→124174. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of
   `bc5d70b08` (non-quick, samples=5, enforced).
   session_load 2.15×→2.52×, journal_read 2.22×→2.17×.

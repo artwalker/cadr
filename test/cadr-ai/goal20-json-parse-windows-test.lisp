@@ -246,6 +246,16 @@
     (signals cadr-ai::json-parse-error
       (cadr-ai::parse-json-source source nil nil 0 8))))
 
+(test goal20-json-octets-decode-only-value-windows
+  ;; Wide JSONL lines stay octets; only the CJK value is UTF-8 decoded.
+  (let* ((text "{\"type\":\"message\",\"text\":\"中文\"}")
+         (octets
+           (sb-ext:string-to-octets text :external-format :utf-8))
+         (object (cadr-ai::parse-json-octets octets)))
+    (is (hash-table-p object))
+    (is (string= "message" (cadr-ai::json-get object "type")))
+    (is (string= "中文" (cadr-ai::json-get object "text")))))
+
 (test goal20-json-object-pairs-round-trip
   ;; Session tool-call arguments: tagged pairs, not EQUAL hash.
   (let ((pairs (list* :json-object (list "path" "x" "offset" 1))))
