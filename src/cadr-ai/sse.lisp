@@ -80,14 +80,12 @@
                 (when more (write-char #\Newline out)))))))
 
 (defun read-sse-stream (stream consumer)
-  ;; stream_roundtrip this host: 5.400 ms / 3.75 MB.  SSE-only is
-  ;; 2.33 MB of that.  FILE-STREAM binary bodies use READ-SEQUENCE
-  ;; into a specialized octet chunk (not a runtime-typed array —
-  ;; that draft was 15 ms).  Socket / gray bodies stay on
-  ;; READ-BYTE: SBCL READ-SEQUENCE waits for the whole chunk, which
-  ;; deadlocks incremental SSE (NATIVE-HTTP waits to emit event 2
-  ;; until event 1 is consumed).  Character streams keep the unit
-  ;; loop for FiveAM.
+  ;; Binary data/event/id lines decode only the payload octets.
+  ;; Whole-line COERCE + UTF8 + SUBSEQ was the leftover after
+  ;; f7d1d3dc7 (1.66 MB SSE-only).  octets-to-string on the
+  ;; adjustable line buffer without a specialized copy was the
+  ;; slower 6.2–7.2 ms draft — not repeated.  File-stream
+  ;; READ-SEQUENCE and socket READ-BYTE stay as in c183539e7.
   (let* ((binary-p (binary-stream-p stream))
          (buffer (make-array 128
                              :element-type (if binary-p
@@ -95,6 +93,9 @@
                                                'character)
                              :adjustable t
                              :fill-pointer 0))
+         (decode-scratch
+           (and binary-p
+                (make-array 256 :element-type '(unsigned-byte 8))))
          (event-name nil)
          (data-lines nil)
          (event-id nil)
@@ -112,11 +113,38 @@
                      data-lines nil
                      event-id nil
                      saw-field-p nil))
-             (process-line ()
-               (let ((line (decode-sse-line buffer binary-p)))
+             (utf8-payload (start end)
+               (handler-case
+                   (let ((count (- end start)))
+                     (declare (type fixnum start end count))
+                     (cond
+                       ((zerop count) "")
+                       (t
+                        (when (> count (length decode-scratch))
+                          (setf decode-scratch
+                                (make-array count
+                                            :element-type
+                                            '(unsigned-byte 8))))
+                        (replace decode-scratch buffer
+                                 :start2 start :end2 end)
+                        (sb-ext:octets-to-string
+                         decode-scratch
+                         :external-format :utf-8
+                         :start 0
+                         :end count))))
+                 (error (cause)
+                   (error 'sse-protocol-error
+                          :message
+                          (format nil
+                                  "Invalid UTF-8 in SSE stream: ~A"
+                                  cause)
+                          :cause cause))))
+             (process-character-line ()
+               (let ((line (decode-sse-line buffer nil)))
                  (clear-buffer)
                  (when (and (plusp (length line))
-                            (char= #\Return (char line (1- (length line)))))
+                            (char= #\Return
+                                   (char line (1- (length line)))))
                    (setf line (subseq line 0 (1- (length line)))))
                  (cond
                    ((zerop (length line))
@@ -136,6 +164,80 @@
                         ((string= field "id")
                          (setf event-id value
                                saw-field-p t))))))))
+             (process-binary-line ()
+               (let ((end (fill-pointer buffer)))
+                 (declare (type fixnum end)
+                          (type (vector (unsigned-byte 8)) buffer))
+                 (when (and (plusp end)
+                            (= (aref buffer (1- end)) 13))
+                   (decf end))
+                 (cond
+                   ((zerop end)
+                    (clear-buffer)
+                    (flush-event))
+                   ((= (aref buffer 0) 58)
+                    (clear-buffer))
+                   ((and (>= end 5)
+                         (= (aref buffer 0) 100)
+                         (= (aref buffer 1) 97)
+                         (= (aref buffer 2) 116)
+                         (= (aref buffer 3) 97)
+                         (= (aref buffer 4) 58))
+                    (let ((start 5))
+                      (declare (type fixnum start))
+                      (when (and (< start end)
+                                 (= (aref buffer start) 32))
+                        (incf start))
+                      (push (utf8-payload start end) data-lines)
+                      (setf saw-field-p t)
+                      (clear-buffer)))
+                   ((and (>= end 6)
+                         (= (aref buffer 0) 101)
+                         (= (aref buffer 1) 118)
+                         (= (aref buffer 2) 101)
+                         (= (aref buffer 3) 110)
+                         (= (aref buffer 4) 116)
+                         (= (aref buffer 5) 58))
+                    (let ((start 6))
+                      (declare (type fixnum start))
+                      (when (and (< start end)
+                                 (= (aref buffer start) 32))
+                        (incf start))
+                      (setf event-name (utf8-payload start end)
+                            saw-field-p t)
+                      (clear-buffer)))
+                   ((and (>= end 3)
+                         (= (aref buffer 0) 105)
+                         (= (aref buffer 1) 100)
+                         (= (aref buffer 2) 58))
+                    (let ((start 3))
+                      (declare (type fixnum start))
+                      (when (and (< start end)
+                                 (= (aref buffer start) 32))
+                        (incf start))
+                      (setf event-id (utf8-payload start end)
+                            saw-field-p t)
+                      (clear-buffer)))
+                   (t
+                    (setf (fill-pointer buffer) end)
+                    (let ((line (decode-sse-line buffer t)))
+                      (clear-buffer)
+                      (multiple-value-bind (field value)
+                          (split-sse-field line)
+                        (cond
+                          ((string= field "event")
+                           (setf event-name value
+                                 saw-field-p t))
+                          ((string= field "data")
+                           (push value data-lines)
+                           (setf saw-field-p t))
+                          ((string= field "id")
+                           (setf event-id value
+                                 saw-field-p t)))))))))
+             (process-line ()
+               (if binary-p
+                   (process-binary-line)
+                   (process-character-line)))
              (consume-binary-unit (unit)
                (if (= unit 10)
                    (process-line)

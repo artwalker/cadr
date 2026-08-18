@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.4: binary SSE `data`/`event`/`id` lines
+  decode only the payload octets (specialized copy, not
+  coerce of the adjustable line). Same-machine stream-chat
+  5.397 ms / 3,108,022 B → 5.402 ms / 2,677,288 B; SSE-only
+  1,659,406 B → 1,229,201 B. G.17 still `missing`.
+
 - Goal 20 Part P.4: `split-sse-field` keeps `data`/`event`/`id`
   literals and takes one payload `subseq`. Same-machine
   stream-chat 6.004 ms / 3,415,114 B → 5.397 ms / 3,108,022 B;
