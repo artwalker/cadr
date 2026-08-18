@@ -215,9 +215,10 @@
        (subseq source start end)))))
 
 (defun json-interned-ascii-key (source start end)
-  ;; OpenAI completions chunks reuse a closed key set.  Returning the
-  ;; literal skips COPY-UNESCAPED-JSON-STRING on every object key.
-  ;; Unknown keys still copy.  Values never come through here.
+  ;; OpenAI completions chunks and session JSONL reuse a closed key
+  ;; set.  Returning the literal skips COPY-UNESCAPED-JSON-STRING on
+  ;; every object key.  Unknown keys still copy.  Values never come
+  ;; through here.
   (declare (type simple-string source)
            (type fixnum start end))
   (let ((count (- end start)))
@@ -230,20 +231,36 @@
         (4 (cond
              ((key= "role") "role")
              ((key= "type") "type")
-             ((key= "name") "name")))
+             ((key= "name") "name")
+             ((key= "text") "text")))
         (5 (cond
              ((key= "index") "index")
              ((key= "model") "model")
              ((key= "delta") "delta")
-             ((key= "usage") "usage")))
-        (6 (when (key= "object") "object"))
+             ((key= "usage") "usage")
+             ((key= "input") "input")
+             ((key= "total") "total")))
+        (6 (cond
+             ((key= "object") "object")
+             ((key= "output") "output")))
         (7 (cond
              ((key= "created") "created")
              ((key= "choices") "choices")
-             ((key= "content") "content")))
-        (8 (when (key= "function") "function"))
-        (9 (when (key= "arguments") "arguments"))
-        (10 (when (key= "tool_calls") "tool_calls"))
+             ((key= "content") "content")
+             ((key= "message") "message")))
+        (8 (cond
+             ((key= "function") "function")
+             ((key= "parentId") "parentId")
+             ((key= "provider") "provider")))
+        (9 (cond
+             ((key= "arguments") "arguments")
+             ((key= "timestamp") "timestamp")
+             ((key= "cacheRead") "cacheRead")))
+        (10 (cond
+              ((key= "tool_calls") "tool_calls")
+              ((key= "cacheWrite") "cacheWrite")
+              ((key= "stopReason") "stopReason")))
+        (11 (when (key= "totalTokens") "totalTokens"))
         (12 (when (key= "total_tokens") "total_tokens"))
         (13 (cond
               ((key= "finish_reason") "finish_reason")

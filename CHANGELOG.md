@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: intern session JSONL object keys
+  (`parentId`, `timestamp`, `message`, …) so they skip
+  `COPY-UNESCAPED-JSON-STRING`. Same-machine pairing
+  fixture: parse-json-lines 1,564,496 B → 1,400,749 B;
+  journal_read 2,805,066 B → 2,638,423 B / 5596 µs →
+  4803 µs. Identity 122785→122802. FiveAM
+  19051→19057. Not 7b. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD sprof of
   session_load / journal_read after remesure. Heat is
   PARSE-VALUE / COPY-UNESCAPED / hash / REPLACE (already

@@ -82,3 +82,28 @@
              second)
     (is (string= key-a "content"))
     (is (eq key-a key-b))))
+
+(test goal20-json-interns-session-jsonl-object-keys
+  ;; session_load / journal_read: pairing-fixture keys that used to
+  ;; go through COPY-UNESCAPED on every line.
+  (let ((first
+          (cadr-ai::parse-json
+           "{\"parentId\":null,\"timestamp\":\"t\",\"message\":{}}"))
+        (second
+          (cadr-ai::parse-json
+           "{\"parentId\":\"e0\",\"timestamp\":\"u\",\"message\":{}}"))
+        (keys-a nil)
+        (keys-b nil))
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (push key keys-a))
+             first)
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (push key keys-b))
+             second)
+    (dolist (name '("parentId" "timestamp" "message"))
+      (let ((a (find name keys-a :test #'string=))
+            (b (find name keys-b :test #'string=)))
+        (is (string= a name))
+        (is (eq a b))))))
