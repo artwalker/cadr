@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Policy item 6 + DS audit in. truncate line table first; CLI `utf8-length` / read+grep line lists next. load/read still ~2× (V8 parse, class C). | `docs/acceptance/goal-v20-ds-audit.md`. |
+| P.13 pairable coverage | leftover | Remesure `c074a85ec`: truncate_head 0.97×→1.17× (618→592 µs); truncate_tail 1.30×→1.47× (819→790 µs). Cadre abs improved; ratio up is pi. Ceiling unchanged. | remesure this booking. No `src/`. |

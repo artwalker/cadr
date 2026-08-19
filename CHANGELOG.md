@@ -92,6 +92,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of `c074a85ec`
+  (n=5, enforced). truncate_head 0.97×→1.17× (cadr
+  618→592 µs). truncate_tail 1.30×→1.47× (819→790 µs).
+  Absolute cadr improved; ratio up is pi faster. Ceiling
+  unchanged. No `src/`. G.17 still `missing`.
+
 - Goal 20: standing policy section 1 item 6 — speed
   design copies pi's algorithm and data structure, encoded
   in Lisp. Product alignment stays observable behavior.
