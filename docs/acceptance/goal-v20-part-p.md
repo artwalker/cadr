@@ -49,10 +49,12 @@ Not `parse-json-octets`. Not a G.17 close.
 - Goal 20 complete.
 - G.17 `met`.
 - Live three-game play (deferred 18:09).
-- P.13 complete (`pairable-uncovered` still 74.4% of lines).
+- P.13 complete (H JSON still three-class; inventory
+  `docs/acceptance/goal-v20-part-p13-inventory.md` has
+  `pairable-uncovered` 0% pending the schema knife).
 
 ## P.13 (user 2026-08-19 18:30)
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | `pairable-uncovered` 74.4% of lines (236 files). Inventory not written. No new pairs this knife. | spec P.13; ruling 2026-08-19 |
+| P.13 pairable coverage | leftover | Inventory: 35 paired / 24 unpairable / 17 covered-as-callee / 219 needs-pair / 0 pairable-uncovered (295 files / 126,497 lines). H JSON schema unchanged (next knife). Required holes: SQLite, tool loop, compact, remaining providers, settings/package/skill/prompt. No new pairs. No `src/`. | `docs/acceptance/goal-v20-part-p13-inventory.md` |

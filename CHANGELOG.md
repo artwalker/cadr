@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P.13 inventory: every `src/**/*.lisp` is
+  `paired`, `unpairable`, `covered-as-callee`, or
+  `needs-pair`. 219 files still need an H pair (SQLite,
+  tool loop, compact, remaining providers, settings /
+  package / skill / prompt, and the rest). H JSON schema
+  unchanged. No new pairs. No `src/`. G.17 still
+  `missing`.
 - Goal 20 Part P.13: every pairable path must be measured,
   then optimized. Path unit, not per-file benches.
   `pairable-uncovered` is not a terminal state. Ruling:

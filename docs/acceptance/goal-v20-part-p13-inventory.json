@@ -1,0 +1,3731 @@
+{
+ "schemaVersion": 1,
+ "headNote": "P.13 inventory. Does not change goal20-unpaired-paths.json schema.",
+ "denominator": {
+  "files": 295,
+  "lines": 126497
+ },
+ "totals": {
+  "needs-pair": {
+   "files": 219,
+   "lines": 81344
+  },
+  "unpairable": {
+   "files": 24,
+   "lines": 7475
+  },
+  "covered-as-callee": {
+   "files": 17,
+   "lines": 12777
+  },
+  "paired": {
+   "files": 35,
+   "lines": 24901
+  }
+ },
+ "files": [
+  {
+   "path": "src/cadr-agent/branch-summarization.lisp",
+   "lines": 185,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "session_compact",
+   "pi": "packages/coding-agent/src/core/compaction/compaction.ts (compact) and branch-summarization.ts",
+   "fixture": "Deterministic message list over the compact token budget (text + tool results). Time compact() to the compaction entry bytes. Loading an already-compacted session.jsonl is session_load, not this path.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/compaction.lisp",
+   "lines": 873,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "session_compact",
+   "pi": "packages/coding-agent/src/core/compaction/compaction.ts (compact) and branch-summarization.ts",
+   "fixture": "Deterministic message list over the compact token budget (text + tool results). Time compact() to the compaction entry bytes. Loading an already-compacted session.jsonl is session_load, not this path.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/conditions.lisp",
+   "lines": 43,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_conditions",
+   "pi": "packages/agent/src error types used by the tool-loop pair",
+   "fixture": "Parent = agent_tool_loop once that pair lands. Do not split a condition file into its own bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/execution-env.lisp",
+   "lines": 855,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/extensions/api.lisp",
+   "lines": 369,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "lisp_extension_host",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/extensions/commands.lisp",
+   "lines": 296,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "lisp_extension_host",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/extensions/context.lisp",
+   "lines": 707,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "lisp_extension_host",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/extensions/lifecycle.lisp",
+   "lines": 779,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "lisp_extension_host",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/extensions/providers.lisp",
+   "lines": 524,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "lisp_extension_host",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/extensions/registration.lisp",
+   "lines": 819,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "lisp_extension_host",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/extensions/rendering.lisp",
+   "lines": 256,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "lisp_extension_host",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/extensions/snapshot.lisp",
+   "lines": 397,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "lisp_extension_host",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/file-mutation-queue.lisp",
+   "lines": 92,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/harness-events.lisp",
+   "lines": 75,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/loop/agent-loop.lisp",
+   "lines": 442,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/loop/events.lisp",
+   "lines": 169,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/loop/tool-execution.lisp",
+   "lines": 480,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/loop/turns.lisp",
+   "lines": 393,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/messages.lisp",
+   "lines": 253,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "session_compact",
+   "pi": "packages/coding-agent/src/core/compaction/compaction.ts (compact) and branch-summarization.ts",
+   "fixture": "Deterministic message list over the compact token budget (text + tool results). Time compact() to the compaction entry bytes. Loading an already-compacted session.jsonl is session_load, not this path.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/package.lisp",
+   "lines": 456,
+   "class": "covered-as-callee",
+   "metrics": [
+    "session_pipeline.session_load",
+    "session_pipeline.context_walk",
+    "storage_journal.journal_read",
+    "storage_journal.journal_append"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "DEFPACKAGE for paired session/journal owners. No independent runtime path.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/proxy.lisp",
+   "lines": 251,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_proxy",
+   "pi": "packages/coding-agent/src/core/provider-composer.ts / radius.ts",
+   "fixture": "Fixture model list \u2192 proxy JSON. No live Radius socket.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/resources.lisp",
+   "lines": 739,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "skill_prompt_load",
+   "pi": "packages/coding-agent/src/core/resource-loader.ts, skills.ts, prompt-templates.ts, system-prompt.ts",
+   "fixture": "Agent dir with skills/*.md and prompts/*.md plus a cwd overlay. Time loadSkills + loadPromptTemplates + system-prompt assemble. Same bytes.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/runtime.lisp",
+   "lines": 421,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/schema.lisp",
+   "lines": 850,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_schema",
+   "pi": "packages/ai/src/utils/validation.ts",
+   "fixture": "JSON Schema fixtures already used by FiveAM. Time validate-ok + validate-fail.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/session/codec.lisp",
+   "lines": 1152,
+   "class": "paired",
+   "metrics": [
+    "storage_journal.journal_read",
+    "storage_journal.journal_append"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/session/discovery.lisp",
+   "lines": 154,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "session_discovery",
+   "pi": "packages/coding-agent/src/core/session-manager.ts session listing/header probe",
+   "fixture": "Directory of N session.jsonl files. Time discover + header parse.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/session/export-html.lisp",
+   "lines": 455,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "session_export_html",
+   "pi": "packages/coding-agent/src/core/export-html/index.ts",
+   "fixture": "session.jsonl \u2192 HTML bytes. Compare output bytes, time the transform.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/session/journal.lisp",
+   "lines": 679,
+   "class": "paired",
+   "metrics": [
+    "session_pipeline.context_walk",
+    "storage_journal.journal_append"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/session/migration.lisp",
+   "lines": 2173,
+   "class": "paired",
+   "metrics": [
+    "session_pipeline.session_load",
+    "storage_journal.journal_read"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/sqlite-storage.lisp",
+   "lines": 834,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "sqlite_session",
+   "pi": "packages/session-backends/sqlite-node/src/sqlite/index.ts (repo.ts, branch-entries.ts)",
+   "fixture": "Ingest the existing session.jsonl (209 KiB / 515 lines) into both SQLite backends; time open + read-all-entries + leaf walk. Same bytes, no network.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/storage/harness.lisp",
+   "lines": 476,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "harness_storage",
+   "pi": "packages/agent/src/harness session JSONL + memory repos (not coding-agent v3 journal.lisp, already paired)",
+   "fixture": "Same session.jsonl ingested through harness JSONL/memory storage. Time open + append + read. Distinct from storage_journal.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/storage/jsonl.lisp",
+   "lines": 536,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "harness_storage",
+   "pi": "packages/agent/src/harness session JSONL + memory repos (not coding-agent v3 journal.lisp, already paired)",
+   "fixture": "Same session.jsonl ingested through harness JSONL/memory storage. Time open + append + read. Distinct from storage_journal.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/storage/memory.lisp",
+   "lines": 378,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "harness_storage",
+   "pi": "packages/agent/src/harness session JSONL + memory repos (not coding-agent v3 journal.lisp, already paired)",
+   "fixture": "Same session.jsonl ingested through harness JSONL/memory storage. Time open + append + read. Distinct from storage_journal.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/storage/protocol.lisp",
+   "lines": 142,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "harness_storage",
+   "pi": "packages/agent/src/harness session JSONL + memory repos (not coding-agent v3 journal.lisp, already paired)",
+   "fixture": "Same session.jsonl ingested through harness JSONL/memory storage. Time open + append + read. Distinct from storage_journal.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-agent/summarization.lisp",
+   "lines": 86,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "session_compact",
+   "pi": "packages/coding-agent/src/core/compaction/compaction.ts (compact) and branch-summarization.ts",
+   "fixture": "Deterministic message list over the compact token budget (text + tool results). Time compact() to the compaction entry bytes. Loading an already-compacted session.jsonl is session_load, not this path.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/tool.lisp",
+   "lines": 319,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-agent/truncate.lisp",
+   "lines": 396,
+   "class": "paired",
+   "metrics": [
+    "text_truncation.truncate_head",
+    "text_truncation.truncate_tail"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/auth/bedrock.lisp",
+   "lines": 220,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_bedrock",
+   "pi": "packages/ai/src/api/bedrock-converse-stream.ts + packages/ai/src/providers/amazon-bedrock.ts",
+   "fixture": "Recorded Bedrock event-stream bytes + same messages. Auth is fixture credentials, not a live AWS call.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/auth/device-code.lisp",
+   "lines": 239,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/auth/github-copilot.lisp",
+   "lines": 53,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/auth/radius-cloudflare.lisp",
+   "lines": 118,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/auth/vertex.lisp",
+   "lines": 212,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_vertex",
+   "pi": "packages/ai/src/api/google-vertex.ts + packages/ai/src/providers/google-vertex.ts",
+   "fixture": "Recorded Vertex SSE + fixture ADC JSON. No live Google call.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/auth.lisp",
+   "lines": 207,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/capabilities/event-stream.lisp",
+   "lines": 69,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_capabilities",
+   "pi": "packages/ai/src/utils/event-stream.ts, deferred-tools, json-parse streaming, session-resources, node-http-proxy",
+   "fixture": "Parent of the first provider/tool pair that actually calls the helper. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/capabilities/grammar-tools.lisp",
+   "lines": 292,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_capabilities",
+   "pi": "packages/ai/src/utils/event-stream.ts, deferred-tools, json-parse streaming, session-resources, node-http-proxy",
+   "fixture": "Parent of the first provider/tool pair that actually calls the helper. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/capabilities/image-runtime.lisp",
+   "lines": 117,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "image_runtime",
+   "pi": "packages/ai/src/images.ts + packages/tui/src/terminal-image.ts + packages/ai/src/api/openrouter-images.ts",
+   "fixture": "Fixture PNG bytes + model catalog row. Time detect + render sequence. No live image API.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/capabilities/proxy-config.lisp",
+   "lines": 77,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_capabilities",
+   "pi": "packages/ai/src/utils/event-stream.ts, deferred-tools, json-parse streaming, session-resources, node-http-proxy",
+   "fixture": "Parent of the first provider/tool pair that actually calls the helper. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/capabilities/session-resources.lisp",
+   "lines": 34,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_capabilities",
+   "pi": "packages/ai/src/utils/event-stream.ts, deferred-tools, json-parse streaming, session-resources, node-http-proxy",
+   "fixture": "Parent of the first provider/tool pair that actually calls the helper. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/capabilities/streaming-json.lisp",
+   "lines": 162,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_capabilities",
+   "pi": "packages/ai/src/utils/event-stream.ts, deferred-tools, json-parse streaming, session-resources, node-http-proxy",
+   "fixture": "Parent of the first provider/tool pair that actually calls the helper. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/conditions.lisp",
+   "lines": 44,
+   "class": "covered-as-callee",
+   "metrics": [
+    "provider_stream.stream_roundtrip",
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "configuration-error / cadr-error signaled from catalog and provider assembly.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/crash.lisp",
+   "lines": 255,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "fatal_condition_summary",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/crypto.lisp",
+   "lines": 367,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_crypto_model_data",
+   "pi": "packages/ai/src/utils/hash.ts and packages/ai/src/model-catalog.ts persistence",
+   "fixture": "SHA-256 of fixture octets; model-data directory load. json.lisp pairing already uses sha256 for fixture digests outside the timed thunk \u2014 this pair is the production hash/catalog path.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/image-models.generated.lisp",
+   "lines": 185,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "image_runtime",
+   "pi": "packages/ai/src/images.ts + packages/tui/src/terminal-image.ts + packages/ai/src/api/openrouter-images.ts",
+   "fixture": "Fixture PNG bytes + model catalog row. Time detect + render sequence. No live image API.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/images.lisp",
+   "lines": 222,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "image_runtime",
+   "pi": "packages/ai/src/images.ts + packages/tui/src/terminal-image.ts + packages/ai/src/api/openrouter-images.ts",
+   "fixture": "Fixture PNG bytes + model catalog row. Time detect + render sequence. No live image API.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/json.lisp",
+   "lines": 1737,
+   "class": "paired",
+   "metrics": [
+    "provider_stream.stream_roundtrip",
+    "storage_journal.journal_read",
+    "storage_journal.journal_append",
+    "session_pipeline.session_load"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/model-data.lisp",
+   "lines": 407,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_crypto_model_data",
+   "pi": "packages/ai/src/utils/hash.ts and packages/ai/src/model-catalog.ts persistence",
+   "fixture": "SHA-256 of fixture octets; model-data directory load. json.lisp pairing already uses sha256 for fixture digests outside the timed thunk \u2014 this pair is the production hash/catalog path.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/models.generated.lisp",
+   "lines": 8711,
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "register-generated-models fills *model-catalog* that list-model-metadata walks.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/models.lisp",
+   "lines": 288,
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "make-model-registry \u2192 built-in-models \u2192 list-model-metadata / model-from-metadata.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/callback.lisp",
+   "lines": 324,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/openai-anthropic.lisp",
+   "lines": 304,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/page.lisp",
+   "lines": 149,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "oauth_success_page_mark",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/pkce.lisp",
+   "lines": 322,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/providers/anthropic.lisp",
+   "lines": 16,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/providers/github-copilot.lisp",
+   "lines": 174,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/providers/kimi.lisp",
+   "lines": 58,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "lines": 199,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "lines": 89,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/providers/radius.lisp",
+   "lines": 116,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/oauth/providers/xai.lisp",
+   "lines": 184,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/package.lisp",
+   "lines": 480,
+   "class": "covered-as-callee",
+   "metrics": [
+    "provider_stream.stream_roundtrip",
+    "session_pipeline.session_load",
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "DEFPACKAGE for the three paired cadr-ai owners. No independent runtime path.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/provider.lisp",
+   "lines": 799,
+   "class": "paired",
+   "metrics": [
+    "provider_stream.stream_roundtrip"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/providers/anthropic.lisp",
+   "lines": 644,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_anthropic",
+   "pi": "packages/ai/src/api/anthropic-messages.ts",
+   "fixture": "Same shape as openai-completions pair: provider-context.json + recorded Anthropic SSE fixture. Seam = *http-request-function* / ProviderRequestOptions.fetch. No live socket.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/azure-openai.lisp",
+   "lines": 223,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_azure",
+   "pi": "packages/ai/src/api/azure-openai-responses.ts",
+   "fixture": "Recorded Azure Responses SSE + same provider-context.json.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/bedrock.lisp",
+   "lines": 931,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_bedrock",
+   "pi": "packages/ai/src/api/bedrock-converse-stream.ts + packages/ai/src/providers/amazon-bedrock.ts",
+   "fixture": "Recorded Bedrock event-stream bytes + same messages. Auth is fixture credentials, not a live AWS call.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/codex.lisp",
+   "lines": 35,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_codex",
+   "pi": "packages/ai/src/api/openai-codex-responses.ts",
+   "fixture": "Recorded Codex Responses SSE + same provider-context.json.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/definitions.lisp",
+   "lines": 1040,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_registry_defs",
+   "pi": "packages/ai/src/providers/all.ts + packages/ai/src/models.ts provider projection",
+   "fixture": "Covered by each new provider pair (dispatch + definition lookup). Do not invent a file-level empty bench; the first additional provider pair is the parent metric.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/google.lisp",
+   "lines": 442,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_google",
+   "pi": "packages/ai/src/api/google-generative-ai.ts",
+   "fixture": "Recorded Gemini SSE/JSON chunks + same provider-context.json. No live socket.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/mistral.lisp",
+   "lines": 97,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_mistral",
+   "pi": "packages/ai/src/api/mistral-conversations.ts",
+   "fixture": "Recorded Mistral SSE + same provider-context.json.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/openai-completions.lisp",
+   "lines": 880,
+   "class": "paired",
+   "metrics": [
+    "provider_stream.stream_roundtrip"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/providers/openai.lisp",
+   "lines": 828,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_openai_responses",
+   "pi": "packages/ai/src/api/openai-responses.ts",
+   "fixture": "Recorded OpenAI Responses SSE + same provider-context.json. No live socket.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/pi-messages.lisp",
+   "lines": 255,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_pi_messages",
+   "pi": "packages/ai/src/api/pi-messages.ts",
+   "fixture": "Recorded pi-messages SSE + same provider-context.json.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/registry.lisp",
+   "lines": 157,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_registry_defs",
+   "pi": "packages/ai/src/providers/all.ts + packages/ai/src/models.ts provider projection",
+   "fixture": "Covered by each new provider pair (dispatch + definition lookup). Do not invent a file-level empty bench; the first additional provider pair is the parent metric.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/runtime-projection.lisp",
+   "lines": 297,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_registry_defs",
+   "pi": "packages/ai/src/providers/all.ts + packages/ai/src/models.ts provider projection",
+   "fixture": "Covered by each new provider pair (dispatch + definition lookup). Do not invent a file-level empty bench; the first additional provider pair is the parent metric.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/providers/vertex.lisp",
+   "lines": 134,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_vertex",
+   "pi": "packages/ai/src/api/google-vertex.ts + packages/ai/src/providers/google-vertex.ts",
+   "fixture": "Recorded Vertex SSE + fixture ADC JSON. No live Google call.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/runtime/faux-provider.lisp",
+   "lines": 601,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_runtime_faux",
+   "pi": "packages/ai/src/providers/faux.ts",
+   "fixture": "Faux event script (text + tool call). Parent of agent_tool_loop; do not split a second empty bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/runtime/models.lisp",
+   "lines": 809,
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "make-model-registry always constructs cadr-ai:make-models-runtime.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/sse.lisp",
+   "lines": 291,
+   "class": "paired",
+   "metrics": [
+    "provider_stream.stream_roundtrip"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/support/grammar-coercion.lisp",
+   "lines": 279,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_support",
+   "pi": "packages/ai/src/utils/{overflow,retry,estimate,uuid,hash}.ts",
+   "fixture": "Callee of an existing or new pair once that pair's sprof names it. retry.lisp is already covered-as-callee of stream_roundtrip.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/support/overflow.lisp",
+   "lines": 78,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_support",
+   "pi": "packages/ai/src/utils/{overflow,retry,estimate,uuid,hash}.ts",
+   "fixture": "Callee of an existing or new pair once that pair's sprof names it. retry.lisp is already covered-as-callee of stream_roundtrip.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/support/release.lisp",
+   "lines": 104,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_support",
+   "pi": "packages/ai/src/utils/{overflow,retry,estimate,uuid,hash}.ts",
+   "fixture": "Callee of an existing or new pair once that pair's sprof names it. retry.lisp is already covered-as-callee of stream_roundtrip.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/support/retry.lisp",
+   "lines": 169,
+   "class": "covered-as-callee",
+   "metrics": [
+    "provider_stream.stream_roundtrip"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "stream-chat calls call-with-provider-retries on the SSE roundtrip.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/support/threads.lisp",
+   "lines": 6,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_support",
+   "pi": "packages/ai/src/utils/{overflow,retry,estimate,uuid,hash}.ts",
+   "fixture": "Callee of an existing or new pair once that pair's sprof names it. retry.lisp is already covered-as-callee of stream_roundtrip.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/support/token-estimation.lisp",
+   "lines": 170,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_support",
+   "pi": "packages/ai/src/utils/{overflow,retry,estimate,uuid,hash}.ts",
+   "fixture": "Callee of an existing or new pair once that pair's sprof names it. retry.lisp is already covered-as-callee of stream_roundtrip.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/support/uuid.lisp",
+   "lines": 65,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "ai_support",
+   "pi": "packages/ai/src/utils/{overflow,retry,estimate,uuid,hash}.ts",
+   "fixture": "Callee of an existing or new pair once that pair's sprof names it. retry.lisp is already covered-as-callee of stream_roundtrip.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/transport/aws-event-stream.lisp",
+   "lines": 222,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "provider_bedrock",
+   "pi": "packages/ai/src/api/bedrock-converse-stream.ts + packages/ai/src/providers/amazon-bedrock.ts",
+   "fixture": "Recorded Bedrock event-stream bytes + same messages. Auth is fixture credentials, not a live AWS call.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-ai/transport/http.lisp",
+   "lines": 831,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "http_transport",
+   "pi": "Node fetch / undici path behind ProviderRequestOptions.fetch",
+   "fixture": "stream_roundtrip already replaces this seam. A dedicated pair is recorded HTTP request bytes in/out with the production client, not a second SSE parse. Do not empty-bench the file.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/types.lisp",
+   "lines": 207,
+   "class": "covered-as-callee",
+   "metrics": [
+    "provider_stream.stream_roundtrip",
+    "session_pipeline.session_load"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "stream-chat builds assistant-message structs; session records fill the same types.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-ai/websocket.lisp",
+   "lines": 622,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "websocket_stream",
+   "pi": "packages/ai websocket stream (provider websocket branch)",
+   "fixture": "Recorded websocket frames for a provider that uses them. No live socket.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/arguments.lisp",
+   "lines": 1032,
+   "class": "paired",
+   "metrics": [
+    "cli_dispatch.argv_parse",
+    "cli_dispatch.help_render"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/bootstrap/auth.lisp",
+   "lines": 172,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_bootstrap_sessions",
+   "pi": "packages/coding-agent/src/cli/* session/command/auth dispatch (not argv_parse / help_render / list_models_render, already paired)",
+   "fixture": "cli-argv.json extra keys for /resume /login /compact routed through command handlers with a staged agent dir. No process cold start.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/bootstrap/commands.lisp",
+   "lines": 2580,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_bootstrap_sessions",
+   "pi": "packages/coding-agent/src/cli/* session/command/auth dispatch (not argv_parse / help_render / list_models_render, already paired)",
+   "fixture": "cli-argv.json extra keys for /resume /login /compact routed through command handlers with a staged agent dir. No process cold start.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/bootstrap/main.lisp",
+   "lines": 409,
+   "class": "paired",
+   "metrics": [
+    "cli_dispatch.list_models_render"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/bootstrap/sessions.lisp",
+   "lines": 1963,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_bootstrap_sessions",
+   "pi": "packages/coding-agent/src/cli/* session/command/auth dispatch (not argv_parse / help_render / list_models_render, already paired)",
+   "fixture": "cli-argv.json extra keys for /resume /login /compact routed through command handlers with a staged agent dir. No process cold start.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/bootstrap/settings.lisp",
+   "lines": 828,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "settings_load",
+   "pi": "packages/coding-agent/src/core/settings-manager.ts",
+   "fixture": "Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/bootstrap/tools.lisp",
+   "lines": 89,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_bootstrap_sessions",
+   "pi": "packages/coding-agent/src/cli/* session/command/auth dispatch (not argv_parse / help_render / list_models_render, already paired)",
+   "fixture": "cli-argv.json extra keys for /resume /login /compact routed through command handlers with a staged agent dir. No process cold start.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/build-support.lisp",
+   "lines": 14,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "native_image_cold_start",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/config.lisp",
+   "lines": 284,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "settings_load",
+   "pi": "packages/coding-agent/src/core/settings-manager.ts",
+   "fixture": "Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/crash.lisp",
+   "lines": 59,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "fatal_condition_summary",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/commands.lisp",
+   "lines": 56,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/discovery.lisp",
+   "lines": 212,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/installer.lisp",
+   "lines": 209,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/llama/client.lisp",
+   "lines": 472,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/llama/extension.lisp",
+   "lines": 470,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/llama/huggingface.lisp",
+   "lines": 290,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/llama/provider.lisp",
+   "lines": 315,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/llama/ui.lisp",
+   "lines": 763,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/extensions/loader.lisp",
+   "lines": 702,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/autocomplete.lisp",
+   "lines": 331,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/clipboard.lisp",
+   "lines": 449,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/components/announcement.lisp",
+   "lines": 41,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/components/armin.lisp",
+   "lines": 282,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/components/countdown.lisp",
+   "lines": 90,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "lines": 185,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/components/loaders.lisp",
+   "lines": 155,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/controller.lisp",
+   "lines": 2909,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/entries.lisp",
+   "lines": 918,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/extension-ui.lisp",
+   "lines": 756,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/footer.lisp",
+   "lines": 536,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/frame.lisp",
+   "lines": 232,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/images.lisp",
+   "lines": 290,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "image_runtime",
+   "pi": "packages/ai/src/images.ts + packages/tui/src/terminal-image.ts + packages/ai/src/api/openrouter-images.ts",
+   "fixture": "Fixture PNG bytes + model catalog row. Time detect + render sequence. No live image API.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/pending-messages.lisp",
+   "lines": 63,
+   "class": "covered-as-callee",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "render-tui-state always calls render-tui-pending-message-lines.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/auth.lisp",
+   "lines": 624,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/common.lisp",
+   "lines": 394,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/fork.lisp",
+   "lines": 147,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "lines": 279,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/models.lisp",
+   "lines": 1310,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/sessions.lisp",
+   "lines": 1477,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/settings.lisp",
+   "lines": 893,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/tree.lisp",
+   "lines": 1812,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/selectors/trust.lisp",
+   "lines": 293,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/state.lisp",
+   "lines": 302,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/status.lisp",
+   "lines": 445,
+   "class": "paired",
+   "metrics": [
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/syntax.lisp",
+   "lines": 1089,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/theme.lisp",
+   "lines": 215,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/themes.lisp",
+   "lines": 415,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/tool-render-session.lisp",
+   "lines": 61,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/tool-rendering.lisp",
+   "lines": 1009,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/transcript.lisp",
+   "lines": 1070,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/interactive/user-bash.lisp",
+   "lines": 213,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/media.lisp",
+   "lines": 1277,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "image_runtime",
+   "pi": "packages/ai/src/images.ts + packages/tui/src/terminal-image.ts + packages/ai/src/api/openrouter-images.ts",
+   "fixture": "Fixture PNG bytes + model catalog row. Time detect + render sequence. No live image API.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/migration.lisp",
+   "lines": 512,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_bootstrap_sessions",
+   "pi": "packages/coding-agent/src/cli/* session/command/auth dispatch (not argv_parse / help_render / list_models_render, already paired)",
+   "fixture": "cli-argv.json extra keys for /resume /login /compact routed through command handlers with a staged agent dir. No process cold start.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/models/auth-storage.lisp",
+   "lines": 376,
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "pairing thunk passes make-file-auth-storage on the fixture auth.json.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/models/credential-print.lisp",
+   "lines": 623,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_models_rest",
+   "pi": "packages/coding-agent/src/core/model-registry.ts login/print + model-resolver.ts",
+   "fixture": "Fixture models.json + auth.json. Time credential-print and pattern match separately from list_models_render.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/models/login-selection.lisp",
+   "lines": 75,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_models_rest",
+   "pi": "packages/coding-agent/src/core/model-registry.ts login/print + model-resolver.ts",
+   "fixture": "Fixture models.json + auth.json. Time credential-print and pattern match separately from list_models_render.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/models/matching.lisp",
+   "lines": 398,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_models_rest",
+   "pi": "packages/coding-agent/src/core/model-registry.ts login/print + model-resolver.ts",
+   "fixture": "Fixture models.json + auth.json. Time credential-print and pattern match separately from list_models_render.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/models/registry.lisp",
+   "lines": 846,
+   "class": "paired",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/models/store.lisp",
+   "lines": 197,
+   "class": "paired",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/modes/print.lisp",
+   "lines": 578,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/modes/rpc/commands.lisp",
+   "lines": 460,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/modes/rpc/jsonl.lisp",
+   "lines": 123,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/modes/rpc/mode.lisp",
+   "lines": 96,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/modes/rpc/models.lisp",
+   "lines": 226,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
+   "lines": 248,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/modes/rpc/sessions.lisp",
+   "lines": 283,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/modes/rpc/ui.lisp",
+   "lines": 288,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/output-accumulator.lisp",
+   "lines": 199,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/package.lisp",
+   "lines": 289,
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.argv_parse",
+    "cli_dispatch.help_render",
+    "cli_dispatch.list_models_registry",
+    "cli_dispatch.list_models_render",
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "DEFPACKAGE for paired cadr-cli owners. No independent runtime path.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/packages/commands.lisp",
+   "lines": 764,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "package_manager",
+   "pi": "packages/coding-agent/src/core/package-manager.ts + pi-manifest.ts",
+   "fixture": "Fixture package source (npm/git/local) + manifest.json. Time parse + list + settings persist. Install/network stays off the timed thunk.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/packages/config-selector.lisp",
+   "lines": 1518,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "package_manager",
+   "pi": "packages/coding-agent/src/core/package-manager.ts + pi-manifest.ts",
+   "fixture": "Fixture package source (npm/git/local) + manifest.json. Time parse + list + settings persist. Install/network stays off the timed thunk.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/packages/manifest.lisp",
+   "lines": 142,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "package_manager",
+   "pi": "packages/coding-agent/src/core/package-manager.ts + pi-manifest.ts",
+   "fixture": "Fixture package source (npm/git/local) + manifest.json. Time parse + list + settings persist. Install/network stays off the timed thunk.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/packages/settings.lisp",
+   "lines": 214,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "package_manager",
+   "pi": "packages/coding-agent/src/core/package-manager.ts + pi-manifest.ts",
+   "fixture": "Fixture package source (npm/git/local) + manifest.json. Time parse + list + settings persist. Install/network stays off the timed thunk.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/packages/source.lisp",
+   "lines": 338,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "package_manager",
+   "pi": "packages/coding-agent/src/core/package-manager.ts + pi-manifest.ts",
+   "fixture": "Fixture package source (npm/git/local) + manifest.json. Time parse + list + settings persist. Install/network stays off the timed thunk.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/packages/update-checks.lisp",
+   "lines": 293,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "package_manager",
+   "pi": "packages/coding-agent/src/core/package-manager.ts + pi-manifest.ts",
+   "fixture": "Fixture package source (npm/git/local) + manifest.json. Time parse + list + settings persist. Install/network stays off the timed thunk.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/remote-repl.lisp",
+   "lines": 67,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "slynk_repl",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/repl.lisp",
+   "lines": 112,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_bootstrap_sessions",
+   "pi": "packages/coding-agent/src/cli/* session/command/auth dispatch (not argv_parse / help_render / list_models_render, already paired)",
+   "fixture": "cli-argv.json extra keys for /resume /login /compact routed through command handlers with a staged agent dir. No process cold start.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/resource-loader.lisp",
+   "lines": 353,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "skill_prompt_load",
+   "pi": "packages/coding-agent/src/core/resource-loader.ts, skills.ts, prompt-templates.ts, system-prompt.ts",
+   "fixture": "Agent dir with skills/*.md and prompts/*.md plus a cwd overlay. Time loadSkills + loadPromptTemplates + system-prompt assemble. Same bytes.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/sdk/agent-session.lisp",
+   "lines": 481,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_sdk",
+   "pi": "packages/coding-agent/src/core/sdk.ts + agent-session.ts + agent-session-runtime.ts",
+   "fixture": "SDK create-session + prompt + read with faux provider. Overlaps agent_tool_loop; first pair should own both rather than two empty benches.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/sdk/cache-version.lisp",
+   "lines": 498,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_sdk",
+   "pi": "packages/coding-agent/src/core/sdk.ts + agent-session.ts + agent-session-runtime.ts",
+   "fixture": "SDK create-session + prompt + read with faux provider. Overlaps agent_tool_loop; first pair should own both rather than two empty benches.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/sdk/model-service.lisp",
+   "lines": 349,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_sdk",
+   "pi": "packages/coding-agent/src/core/sdk.ts + agent-session.ts + agent-session-runtime.ts",
+   "fixture": "SDK create-session + prompt + read with faux provider. Overlaps agent_tool_loop; first pair should own both rather than two empty benches.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/sdk/resource-service.lisp",
+   "lines": 370,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "skill_prompt_load",
+   "pi": "packages/coding-agent/src/core/resource-loader.ts, skills.ts, prompt-templates.ts, system-prompt.ts",
+   "fixture": "Agent dir with skills/*.md and prompts/*.md plus a cwd overlay. Time loadSkills + loadPromptTemplates + system-prompt assemble. Same bytes.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/sdk/session-manager.lisp",
+   "lines": 107,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_sdk",
+   "pi": "packages/coding-agent/src/core/sdk.ts + agent-session.ts + agent-session-runtime.ts",
+   "fixture": "SDK create-session + prompt + read with faux provider. Overlaps agent_tool_loop; first pair should own both rather than two empty benches.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/sdk/session-runtime.lisp",
+   "lines": 277,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_sdk",
+   "pi": "packages/coding-agent/src/core/sdk.ts + agent-session.ts + agent-session-runtime.ts",
+   "fixture": "SDK create-session + prompt + read with faux provider. Overlaps agent_tool_loop; first pair should own both rather than two empty benches.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/sdk/settings-service.lisp",
+   "lines": 171,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "settings_load",
+   "pi": "packages/coding-agent/src/core/settings-manager.ts",
+   "fixture": "Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/sdk/system-prompt.lisp",
+   "lines": 218,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "skill_prompt_load",
+   "pi": "packages/coding-agent/src/core/resource-loader.ts, skills.ts, prompt-templates.ts, system-prompt.ts",
+   "fixture": "Agent dir with skills/*.md and prompts/*.md plus a cwd overlay. Time loadSkills + loadPromptTemplates + system-prompt assemble. Same bytes.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/settings/config-values.lisp",
+   "lines": 198,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "settings_load",
+   "pi": "packages/coding-agent/src/core/settings-manager.ts",
+   "fixture": "Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/settings/manager.lisp",
+   "lines": 512,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "settings_load",
+   "pi": "packages/coding-agent/src/core/settings-manager.ts",
+   "fixture": "Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/settings/trust.lisp",
+   "lines": 216,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "settings_load",
+   "pi": "packages/coding-agent/src/core/settings-manager.ts",
+   "fixture": "Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/support/atomic-write.lisp",
+   "lines": 7,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/changelog-share.lisp",
+   "lines": 342,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/event-bus.lisp",
+   "lines": 40,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/external-editor.lisp",
+   "lines": 20,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/file-watcher.lisp",
+   "lines": 69,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/headers.lisp",
+   "lines": 75,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/html.lisp",
+   "lines": 63,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/model-help.lisp",
+   "lines": 20,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/paths.lisp",
+   "lines": 119,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/resume-version-git.lisp",
+   "lines": 225,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/shell-process.lisp",
+   "lines": 132,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/threads.lisp",
+   "lines": 7,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/support/timings.lisp",
+   "lines": 45,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-cli/system-prompt.lisp",
+   "lines": 53,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "skill_prompt_load",
+   "pi": "packages/coding-agent/src/core/resource-loader.ts, skills.ts, prompt-templates.ts, system-prompt.ts",
+   "fixture": "Agent dir with skills/*.md and prompts/*.md plus a cwd overlay. Time loadSkills + loadPromptTemplates + system-prompt assemble. Same bytes.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tool-manager.lisp",
+   "lines": 286,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/bash.lisp",
+   "lines": 591,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/edit.lisp",
+   "lines": 753,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/find.lisp",
+   "lines": 101,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/glob.lisp",
+   "lines": 218,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/grep.lisp",
+   "lines": 320,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/ls.lisp",
+   "lines": 100,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/path.lisp",
+   "lines": 333,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/read.lisp",
+   "lines": 153,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/tools/write.lisp",
+   "lines": 70,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-cli/truncation.lisp",
+   "lines": 79,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-core/atomic-file.lisp",
+   "lines": 106,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "core_rest",
+   "pi": "shared Node helpers (fs atomic write, abort, threads, redacted print, cancellation)",
+   "fixture": "Callee of a parent pair (journal persist, settings write). No empty per-file bench. time.lisp and paths.lisp are already covered-as-callee.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-core/cancellation.lisp",
+   "lines": 70,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "core_rest",
+   "pi": "shared Node helpers (fs atomic write, abort, threads, redacted print, cancellation)",
+   "fixture": "Callee of a parent pair (journal persist, settings write). No empty per-file bench. time.lisp and paths.lisp are already covered-as-callee.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-core/package.lisp",
+   "lines": 43,
+   "class": "covered-as-callee",
+   "metrics": [
+    "session_pipeline.session_load",
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "DEFPACKAGE for time.lisp / paths.lisp. No independent runtime path.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-core/paths.lisp",
+   "lines": 95,
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "pairing thunk uses cadr-core:agent-models-path for the staged models.json.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-core/redacted-print.lisp",
+   "lines": 44,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "core_rest",
+   "pi": "shared Node helpers (fs atomic write, abort, threads, redacted print, cancellation)",
+   "fixture": "Callee of a parent pair (journal persist, settings write). No empty per-file bench. time.lisp and paths.lisp are already covered-as-callee.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-core/threads.lisp",
+   "lines": 47,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "core_rest",
+   "pi": "shared Node helpers (fs atomic write, abort, threads, redacted print, cancellation)",
+   "fixture": "Callee of a parent pair (journal persist, settings write). No empty per-file bench. time.lisp and paths.lisp are already covered-as-callee.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-core/time.lisp",
+   "lines": 133,
+   "class": "covered-as-callee",
+   "metrics": [
+    "session_pipeline.session_load",
+    "storage_journal.journal_read"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "migration.lisp and codec.lisp call iso8601-to-milliseconds on session timestamps.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-evals/artifacts.lisp",
+   "lines": 168,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-evals/harness-table.lisp",
+   "lines": 339,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-evals/harness.lisp",
+   "lines": 737,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-evals/main.lisp",
+   "lines": 158,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-evals/package.lisp",
+   "lines": 100,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-evals/reporter.lisp",
+   "lines": 314,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-evals/suites.lisp",
+   "lines": 468,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-evals/summary.lisp",
+   "lines": 732,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-protocol/cbor.lisp",
+   "lines": 492,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "protocol_cbor",
+   "pi": "packages/protocol/src/cbor/decoder.ts + framing + schema",
+   "fixture": "Recorded CBOR frames (already used by protocol tests). Time decode + encode roundtrip. Output bytes must match.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-protocol/codec.lisp",
+   "lines": 121,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "protocol_cbor",
+   "pi": "packages/protocol/src/cbor/decoder.ts + framing + schema",
+   "fixture": "Recorded CBOR frames (already used by protocol tests). Time decode + encode roundtrip. Output bytes must match.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-protocol/framing.lisp",
+   "lines": 170,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "protocol_cbor",
+   "pi": "packages/protocol/src/cbor/decoder.ts + framing + schema",
+   "fixture": "Recorded CBOR frames (already used by protocol tests). Time decode + encode roundtrip. Output bytes must match.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-protocol/package.lisp",
+   "lines": 33,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "protocol_cbor",
+   "pi": "packages/protocol/src/cbor/decoder.ts + framing + schema",
+   "fixture": "Recorded CBOR frames (already used by protocol tests). Time decode + encode roundtrip. Output bytes must match.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-protocol/schema.lisp",
+   "lines": 610,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "protocol_cbor",
+   "pi": "packages/protocol/src/cbor/decoder.ts + framing + schema",
+   "fixture": "Recorded CBOR frames (already used by protocol tests). Time decode + encode roundtrip. Output bytes must match.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/config.lisp",
+   "lines": 45,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/handler.lisp",
+   "lines": 100,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/ipc.lisp",
+   "lines": 317,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/main.lisp",
+   "lines": 208,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/package.lisp",
+   "lines": 59,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/protocol.lisp",
+   "lines": 49,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/radius.lisp",
+   "lines": 731,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/rpc-process.lisp",
+   "lines": 417,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/storage.lisp",
+   "lines": 196,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/supervisor.lisp",
+   "lines": 638,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-server/types.lisp",
+   "lines": 24,
+   "class": "unpairable",
+   "metrics": [],
+   "pathId": "cadr_server_v83_contract",
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-storage/package.lisp",
+   "lines": 19,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "sqlite_session",
+   "pi": "packages/session-backends/sqlite-node/src/sqlite/index.ts (repo.ts, branch-entries.ts)",
+   "fixture": "Ingest the existing session.jsonl (209 KiB / 515 lines) into both SQLite backends; time open + read-all-entries + leaf walk. Same bytes, no network.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-storage/sqlite.lisp",
+   "lines": 12,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "sqlite_session",
+   "pi": "packages/session-backends/sqlite-node/src/sqlite/index.ts (repo.ts, branch-entries.ts)",
+   "fixture": "Ingest the existing session.jsonl (209 KiB / 515 lines) into both SQLite backends; time open + read-all-entries + leaf walk. Same bytes, no network.",
+   "note": null,
+   "requiredHole": true
+  },
+  {
+   "path": "src/cadr-tui/autocomplete.lisp",
+   "lines": 594,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/components/image.lisp",
+   "lines": 40,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/components/markdown.lisp",
+   "lines": 1553,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/components/select-list.lisp",
+   "lines": 305,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_select_settings_loaders",
+   "pi": "packages/tui/src/components/{select-list,settings-list,loader}.ts",
+   "fixture": "Parent = cli_selectors / settings UI. Loader frames can ride goal11 only if the bench sets busy-p; it currently does not force this file.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/components/status.lisp",
+   "lines": 253,
+   "class": "covered-as-callee",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "render-tui-state always calls cadr-tui:render-footer when no custom footer is set. Goal 11 bench does not set one.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/components/tool-block.lisp",
+   "lines": 623,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/composition/loaders.lisp",
+   "lines": 235,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_select_settings_loaders",
+   "pi": "packages/tui/src/components/{select-list,settings-list,loader}.ts",
+   "fixture": "Parent = cli_selectors / settings UI. Loader frames can ride goal11 only if the bench sets busy-p; it currently does not force this file.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/composition/protocol.lisp",
+   "lines": 143,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/composition/rich-content.lisp",
+   "lines": 276,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/composition/root.lisp",
+   "lines": 317,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/composition/settings-list.lisp",
+   "lines": 470,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_select_settings_loaders",
+   "pi": "packages/tui/src/components/{select-list,settings-list,loader}.ts",
+   "fixture": "Parent = cli_selectors / settings UI. Loader frames can ride goal11 only if the bench sets busy-p; it currently does not force this file.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/composition/text-box.lisp",
+   "lines": 280,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/editor.lisp",
+   "lines": 2014,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/fuzzy.lisp",
+   "lines": 134,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/input-component.lisp",
+   "lines": 408,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/input.lisp",
+   "lines": 333,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/keybindings.lisp",
+   "lines": 268,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/keys.lisp",
+   "lines": 606,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/kill-ring.lisp",
+   "lines": 38,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/latex.lisp",
+   "lines": 1950,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_latex",
+   "pi": "packages/tui/src/latex.ts",
+   "fixture": "Checked-in LaTeX snippets \u2192 Unicode. markdown.lisp can call render-latex, but Goal 11 fixtures do not contain math; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/ansi.lisp",
+   "lines": 17,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/canvas.lisp",
+   "lines": 336,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/graph.lisp",
+   "lines": 106,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/index.lisp",
+   "lines": 109,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/labels.lisp",
+   "lines": 332,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/layout-seq.lisp",
+   "lines": 254,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/layout.lisp",
+   "lines": 1090,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/parse.lisp",
+   "lines": 1197,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/source-box.lisp",
+   "lines": 93,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/transform.lisp",
+   "lines": 428,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/width-data.lisp",
+   "lines": 1008,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/mermaid/width.lisp",
+   "lines": 72,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/native-modifiers.lisp",
+   "lines": 78,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/overlay.lisp",
+   "lines": 485,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_theme_overlay",
+   "pi": "packages/tui/src/tui.ts overlay compositing + theme/color helpers",
+   "fixture": "One overlay (game or selector) composited onto a Goal 11-sized frame; theme resolve for a color key. Do not re-time mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/package.lisp",
+   "lines": 355,
+   "class": "covered-as-callee",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input",
+    "render_slicing.slice_ansi_clip",
+    "render_slicing.slice_plain_clip"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "DEFPACKAGE for paired tui owners. No independent runtime path.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/renderer/alt-screen-search.lisp",
+   "lines": 181,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/renderer/alt-screen.lisp",
+   "lines": 610,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/renderer/lifecycle-input.lisp",
+   "lines": 1353,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/renderer/main-screen.lisp",
+   "lines": 595,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/renderer/terminal-protocol.lisp",
+   "lines": 78,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/renderer/virtual-terminal.lisp",
+   "lines": 184,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/stdin-buffer.lisp",
+   "lines": 232,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/terminal-colors.lisp",
+   "lines": 191,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_theme_overlay",
+   "pi": "packages/tui/src/tui.ts overlay compositing + theme/color helpers",
+   "fixture": "One overlay (game or selector) composited onto a Goal 11-sized frame; theme resolve for a color key. Do not re-time mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/terminal-image.lisp",
+   "lines": 686,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "image_runtime",
+   "pi": "packages/ai/src/images.ts + packages/tui/src/terminal-image.ts + packages/ai/src/api/openrouter-images.ts",
+   "fixture": "Fixture PNG bytes + model catalog row. Time detect + render sequence. No live image API.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/terminal.lisp",
+   "lines": 916,
+   "class": "paired",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/theme.lisp",
+   "lines": 562,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_theme_overlay",
+   "pi": "packages/tui/src/tui.ts overlay compositing + theme/color helpers",
+   "fixture": "One overlay (game or selector) composited onto a Goal 11-sized frame; theme resolve for a color key. Do not re-time mouse_drag.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/threads.lisp",
+   "lines": 6,
+   "class": "covered-as-callee",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": "One-function wrapper around cadr-core:stop-thread-for-cleanup used by renderer teardown.",
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/undo-stack.lisp",
+   "lines": 20,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/unicode.lisp",
+   "lines": 1302,
+   "class": "paired",
+   "metrics": [
+    "render_slicing.slice_ansi_clip",
+    "render_slicing.slice_plain_clip"
+   ],
+   "pathId": null,
+   "pi": null,
+   "fixture": null,
+   "note": null,
+   "requiredHole": false
+  },
+  {
+   "path": "src/cadr-tui/word-navigation.lisp",
+   "lines": 118,
+   "class": "needs-pair",
+   "metrics": [],
+   "pathId": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "note": null,
+   "requiredHole": false
+  }
+ ],
+ "needsPairPaths": [
+  {
+   "id": "sqlite_session",
+   "pi": "packages/session-backends/sqlite-node/src/sqlite/index.ts (repo.ts, branch-entries.ts)",
+   "fixture": "Ingest the existing session.jsonl (209 KiB / 515 lines) into both SQLite backends; time open + read-all-entries + leaf walk. Same bytes, no network.",
+   "required": true
+  },
+  {
+   "id": "agent_tool_loop",
+   "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
+   "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",
+   "required": true
+  },
+  {
+   "id": "session_compact",
+   "pi": "packages/coding-agent/src/core/compaction/compaction.ts (compact) and branch-summarization.ts",
+   "fixture": "Deterministic message list over the compact token budget (text + tool results). Time compact() to the compaction entry bytes. Loading an already-compacted session.jsonl is session_load, not this path.",
+   "required": true
+  },
+  {
+   "id": "provider_anthropic",
+   "pi": "packages/ai/src/api/anthropic-messages.ts",
+   "fixture": "Same shape as openai-completions pair: provider-context.json + recorded Anthropic SSE fixture. Seam = *http-request-function* / ProviderRequestOptions.fetch. No live socket.",
+   "required": true
+  },
+  {
+   "id": "provider_openai_responses",
+   "pi": "packages/ai/src/api/openai-responses.ts",
+   "fixture": "Recorded OpenAI Responses SSE + same provider-context.json. No live socket.",
+   "required": true
+  },
+  {
+   "id": "provider_google",
+   "pi": "packages/ai/src/api/google-generative-ai.ts",
+   "fixture": "Recorded Gemini SSE/JSON chunks + same provider-context.json. No live socket.",
+   "required": true
+  },
+  {
+   "id": "provider_bedrock",
+   "pi": "packages/ai/src/api/bedrock-converse-stream.ts + packages/ai/src/providers/amazon-bedrock.ts",
+   "fixture": "Recorded Bedrock event-stream bytes + same messages. Auth is fixture credentials, not a live AWS call.",
+   "required": true
+  },
+  {
+   "id": "provider_azure",
+   "pi": "packages/ai/src/api/azure-openai-responses.ts",
+   "fixture": "Recorded Azure Responses SSE + same provider-context.json.",
+   "required": true
+  },
+  {
+   "id": "provider_mistral",
+   "pi": "packages/ai/src/api/mistral-conversations.ts",
+   "fixture": "Recorded Mistral SSE + same provider-context.json.",
+   "required": true
+  },
+  {
+   "id": "provider_vertex",
+   "pi": "packages/ai/src/api/google-vertex.ts + packages/ai/src/providers/google-vertex.ts",
+   "fixture": "Recorded Vertex SSE + fixture ADC JSON. No live Google call.",
+   "required": true
+  },
+  {
+   "id": "provider_codex",
+   "pi": "packages/ai/src/api/openai-codex-responses.ts",
+   "fixture": "Recorded Codex Responses SSE + same provider-context.json.",
+   "required": true
+  },
+  {
+   "id": "provider_pi_messages",
+   "pi": "packages/ai/src/api/pi-messages.ts",
+   "fixture": "Recorded pi-messages SSE + same provider-context.json.",
+   "required": true
+  },
+  {
+   "id": "provider_registry_defs",
+   "pi": "packages/ai/src/providers/all.ts + packages/ai/src/models.ts provider projection",
+   "fixture": "Covered by each new provider pair (dispatch + definition lookup). Do not invent a file-level empty bench; the first additional provider pair is the parent metric.",
+   "required": true
+  },
+  {
+   "id": "settings_load",
+   "pi": "packages/coding-agent/src/core/settings-manager.ts",
+   "fixture": "Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides.",
+   "required": true
+  },
+  {
+   "id": "package_manager",
+   "pi": "packages/coding-agent/src/core/package-manager.ts + pi-manifest.ts",
+   "fixture": "Fixture package source (npm/git/local) + manifest.json. Time parse + list + settings persist. Install/network stays off the timed thunk.",
+   "required": true
+  },
+  {
+   "id": "skill_prompt_load",
+   "pi": "packages/coding-agent/src/core/resource-loader.ts, skills.ts, prompt-templates.ts, system-prompt.ts",
+   "fixture": "Agent dir with skills/*.md and prompts/*.md plus a cwd overlay. Time loadSkills + loadPromptTemplates + system-prompt assemble. Same bytes.",
+   "required": true
+  },
+  {
+   "id": "harness_storage",
+   "pi": "packages/agent/src/harness session JSONL + memory repos (not coding-agent v3 journal.lisp, already paired)",
+   "fixture": "Same session.jsonl ingested through harness JSONL/memory storage. Time open + append + read. Distinct from storage_journal.",
+   "required": false
+  },
+  {
+   "id": "session_discovery",
+   "pi": "packages/coding-agent/src/core/session-manager.ts session listing/header probe",
+   "fixture": "Directory of N session.jsonl files. Time discover + header parse.",
+   "required": false
+  },
+  {
+   "id": "session_export_html",
+   "pi": "packages/coding-agent/src/core/export-html/index.ts",
+   "fixture": "session.jsonl \u2192 HTML bytes. Compare output bytes, time the transform.",
+   "required": false
+  },
+  {
+   "id": "agent_schema",
+   "pi": "packages/ai/src/utils/validation.ts",
+   "fixture": "JSON Schema fixtures already used by FiveAM. Time validate-ok + validate-fail.",
+   "required": false
+  },
+  {
+   "id": "agent_proxy",
+   "pi": "packages/coding-agent/src/core/provider-composer.ts / radius.ts",
+   "fixture": "Fixture model list \u2192 proxy JSON. No live Radius socket.",
+   "required": false
+  },
+  {
+   "id": "agent_conditions",
+   "pi": "packages/agent/src error types used by the tool-loop pair",
+   "fixture": "Parent = agent_tool_loop once that pair lands. Do not split a condition file into its own bench.",
+   "required": false
+  },
+  {
+   "id": "oauth_pkce_device",
+   "pi": "packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts",
+   "fixture": "Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.",
+   "required": false
+  },
+  {
+   "id": "http_transport",
+   "pi": "Node fetch / undici path behind ProviderRequestOptions.fetch",
+   "fixture": "stream_roundtrip already replaces this seam. A dedicated pair is recorded HTTP request bytes in/out with the production client, not a second SSE parse. Do not empty-bench the file.",
+   "required": false
+  },
+  {
+   "id": "websocket_stream",
+   "pi": "packages/ai websocket stream (provider websocket branch)",
+   "fixture": "Recorded websocket frames for a provider that uses them. No live socket.",
+   "required": false
+  },
+  {
+   "id": "image_runtime",
+   "pi": "packages/ai/src/images.ts + packages/tui/src/terminal-image.ts + packages/ai/src/api/openrouter-images.ts",
+   "fixture": "Fixture PNG bytes + model catalog row. Time detect + render sequence. No live image API.",
+   "required": false
+  },
+  {
+   "id": "ai_capabilities",
+   "pi": "packages/ai/src/utils/event-stream.ts, deferred-tools, json-parse streaming, session-resources, node-http-proxy",
+   "fixture": "Parent of the first provider/tool pair that actually calls the helper. No empty per-file bench.",
+   "required": false
+  },
+  {
+   "id": "ai_support",
+   "pi": "packages/ai/src/utils/{overflow,retry,estimate,uuid,hash}.ts",
+   "fixture": "Callee of an existing or new pair once that pair's sprof names it. retry.lisp is already covered-as-callee of stream_roundtrip.",
+   "required": false
+  },
+  {
+   "id": "ai_crypto_model_data",
+   "pi": "packages/ai/src/utils/hash.ts and packages/ai/src/model-catalog.ts persistence",
+   "fixture": "SHA-256 of fixture octets; model-data directory load. json.lisp pairing already uses sha256 for fixture digests outside the timed thunk \u2014 this pair is the production hash/catalog path.",
+   "required": false
+  },
+  {
+   "id": "ai_runtime_faux",
+   "pi": "packages/ai/src/providers/faux.ts",
+   "fixture": "Faux event script (text + tool call). Parent of agent_tool_loop; do not split a second empty bench.",
+   "required": false
+  },
+  {
+   "id": "cli_bootstrap_sessions",
+   "pi": "packages/coding-agent/src/cli/* session/command/auth dispatch (not argv_parse / help_render / list_models_render, already paired)",
+   "fixture": "cli-argv.json extra keys for /resume /login /compact routed through command handlers with a staged agent dir. No process cold start.",
+   "required": false
+  },
+  {
+   "id": "cli_models_rest",
+   "pi": "packages/coding-agent/src/core/model-registry.ts login/print + model-resolver.ts",
+   "fixture": "Fixture models.json + auth.json. Time credential-print and pattern match separately from list_models_render.",
+   "required": false
+  },
+  {
+   "id": "cli_interactive_controller",
+   "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
+   "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",
+   "required": false
+  },
+  {
+   "id": "cli_selectors",
+   "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
+   "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",
+   "required": false
+  },
+  {
+   "id": "cli_extensions_install",
+   "pi": "packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.",
+   "fixture": "Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.",
+   "required": false
+  },
+  {
+   "id": "cli_sdk",
+   "pi": "packages/coding-agent/src/core/sdk.ts + agent-session.ts + agent-session-runtime.ts",
+   "fixture": "SDK create-session + prompt + read with faux provider. Overlaps agent_tool_loop; first pair should own both rather than two empty benches.",
+   "required": false
+  },
+  {
+   "id": "cli_print_rpc",
+   "pi": "packages/coding-agent print mode + RPC JSONL commands",
+   "fixture": "Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.",
+   "required": false
+  },
+  {
+   "id": "cli_support",
+   "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
+   "fixture": "Callee of a parent pair. No empty per-file bench.",
+   "required": false
+  },
+  {
+   "id": "tui_mermaid",
+   "pi": "grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts",
+   "fixture": "Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.",
+   "required": false
+  },
+  {
+   "id": "tui_latex",
+   "pi": "packages/tui/src/latex.ts",
+   "fixture": "Checked-in LaTeX snippets \u2192 Unicode. markdown.lisp can call render-latex, but Goal 11 fixtures do not contain math; K8 left it uncovered.",
+   "required": false
+  },
+  {
+   "id": "tui_editor_helpers",
+   "pi": "packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts",
+   "fixture": "Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.",
+   "required": false
+  },
+  {
+   "id": "tui_theme_overlay",
+   "pi": "packages/tui/src/tui.ts overlay compositing + theme/color helpers",
+   "fixture": "One overlay (game or selector) composited onto a Goal 11-sized frame; theme resolve for a color key. Do not re-time mouse_drag.",
+   "required": false
+  },
+  {
+   "id": "tui_select_settings_loaders",
+   "pi": "packages/tui/src/components/{select-list,settings-list,loader}.ts",
+   "fixture": "Parent = cli_selectors / settings UI. Loader frames can ride goal11 only if the bench sets busy-p; it currently does not force this file.",
+   "required": false
+  },
+  {
+   "id": "evals_harness",
+   "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
+   "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
+   "required": false
+  },
+  {
+   "id": "protocol_cbor",
+   "pi": "packages/protocol/src/cbor/decoder.ts + framing + schema",
+   "fixture": "Recorded CBOR frames (already used by protocol tests). Time decode + encode roundtrip. Output bytes must match.",
+   "required": false
+  },
+  {
+   "id": "core_rest",
+   "pi": "shared Node helpers (fs atomic write, abort, threads, redacted print, cancellation)",
+   "fixture": "Callee of a parent pair (journal persist, settings write). No empty per-file bench. time.lisp and paths.lisp are already covered-as-callee.",
+   "required": false
+  }
+ ]
+}
