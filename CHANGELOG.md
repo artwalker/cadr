@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `1aedb4e45`
+  `tool_grep.context_file` 1.38×→0.92× (23713→15243 µs).
+  `tool_read.text_file` 1.32×→1.35× (5460→5813 µs).
+  Ceilings 3.0 and 8.0 unchanged. No `src/`. G.17 still
+  `missing`.
 - Goal 20 Part P: grep ingest is octet `read-sequence` then
   `utf8-string`, then the existing line table. Not
   `uiop:read-file-string`. this-host ~21895→15487 µs.
