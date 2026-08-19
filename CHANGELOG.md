@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `bc3b2b755`
+  `tool_read.text_file` 0.41×→0.45× (1757→1634 µs; pi also
+  faster). Ceiling 8.0 unchanged. No `src/`. G.17 still
+  `missing`.
 - Goal 20 Part P: `split-octet-line-starts` fills in one pass
   (truncate hint 64..8192, grow by doubling, exact-size copy).
   Kills the second `0x0A` walk named by sprof at `ad1e91711`.
