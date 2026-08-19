@@ -97,6 +97,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: this-host sb-sprof of truncate line table
+  at `c074a85ec`. Tail leftover encoding is
+  `PREPARE-VECTOR-PUSH-EXTEND` 7.9% total. Capture:
+  `docs/benchmarks/goal20-part-p-truncate-sprof-c074a85ec.md`.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of `c074a85ec`
   (n=5, enforced). truncate_head 0.97×→1.17× (cadr
   618→592 µs). truncate_tail 1.30×→1.47× (819→790 µs).
