@@ -3546,6 +3546,96 @@
         "journal_body_bytes=pi54771/cadr56531 (+3.2%)",
         "journal_key_divergences=10"
       ]
+    },
+    {
+      "recordedAt": "2026-08-19T19:13:42Z",
+      "label": "paired-paths",
+      "gitHead": "9b70e7a090ed9c2f9620125cfbd7533475c7534e",
+      "machine": "Friend-MachineD",
+      "quick": false,
+      "sameMachine": true,
+      "ratioGate": "enforced",
+      "samples": 5,
+      "metrics": {
+        "cli_dispatch.argv_parse": {
+          "cadrMedianUs": 2.598792,
+          "baselineMedianUs": 1.7902194999999999,
+          "ratio": 1.451661095189724,
+          "ceiling": 3.0
+        },
+        "cli_dispatch.help_render": {
+          "cadrMedianUs": 0.047836,
+          "baselineMedianUs": 0.806384,
+          "ratio": 0.05932161352407785,
+          "ceiling": 6.0
+        },
+        "cli_dispatch.list_models_registry": {
+          "cadrMedianUs": 2047.07765,
+          "baselineMedianUs": 3714.07655,
+          "ratio": 0.5511673285247715,
+          "ceiling": 1.5
+        },
+        "cli_dispatch.list_models_render": {
+          "cadrMedianUs": 94.34,
+          "baselineMedianUs": 1211.89289,
+          "ratio": 0.07784516336258067,
+          "ceiling": 4.0
+        },
+        "provider_stream.stream_roundtrip": {
+          "cadrMedianUs": 3118.8059000000003,
+          "baselineMedianUs": 4579.594,
+          "ratio": 0.6810223570036995,
+          "ceiling": 2.5
+        },
+        "session_pipeline.session_load": {
+          "cadrMedianUs": 2826.8206666666665,
+          "baselineMedianUs": 1489.137,
+          "ratio": 1.8982945603169263,
+          "ceiling": 9.0
+        },
+        "session_pipeline.context_walk": {
+          "cadrMedianUs": 3.02656,
+          "baselineMedianUs": 114.16896000000001,
+          "ratio": 0.026509482086899974,
+          "ceiling": 2.0
+        },
+        "storage_journal.journal_read": {
+          "cadrMedianUs": 2615.9496,
+          "baselineMedianUs": 1549.683,
+          "ratio": 1.6880546537582202,
+          "ceiling": 8.0
+        },
+        "storage_journal.journal_append": {
+          "cadrMedianUs": 1543.74,
+          "baselineMedianUs": 1726.7133333333334,
+          "ratio": 0.8940337519835371,
+          "ceiling": 12.0
+        },
+        "sqlite_session.open_walk": {
+          "cadrMedianUs": 6392.627666666667,
+          "baselineMedianUs": 24641.222999999998,
+          "ratio": 0.2594281812500405,
+          "ceiling": 1.5
+        },
+        "tool_read.text_file": {
+          "cadrMedianUs": 1628.4058,
+          "baselineMedianUs": 3839.5566,
+          "ratio": 0.42411298221258154,
+          "ceiling": 8.0
+        },
+        "tool_grep.context_file": {
+          "cadrMedianUs": 14583.16,
+          "baselineMedianUs": 14594.478200000001,
+          "ratio": 0.999224487518848,
+          "ceiling": 3.0
+        }
+      },
+      "notes": [
+        "known_divergence:event_kind:toolcall_delta=pi6/cadr5",
+        "help_characters=pi9864/cadr9882",
+        "journal_body_bytes=pi54771/cadr56531 (+3.2%)",
+        "journal_key_divergences=10"
+      ]
     }
   ]
 }

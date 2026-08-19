@@ -9,6 +9,9 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `9b70e7a09`
+  `truncate_tail` 1.44×→0.85× (758→461 µs). Faster than pi.
+  Ceiling 18.0 unchanged. No `src/`. G.17 still `missing`.
 - Goal 20 Part P: `truncate-harness-tail` ASCII-run fill. ASCII
   runs add 1×run; newline still closes a line; non-ASCII still
   `utf8-char-length`. Same start/width table. this-host ~558→319 µs.

@@ -618,24 +618,24 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-19T18:55:53Z) on `Friend-MachineD`, git `07facd8fd679`, ratio_gate=`enforced`, quick=no, samples=5
+Current: `paired-paths` (2026-08-19T19:13:42Z) on `Friend-MachineD`, git `9b70e7a090ed`, ratio_gate=`enforced`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-19T18:48:46Z) on `Friend-MachineD`, git `c451b14e77e2`, ratio_gate=`enforced`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-19T18:55:53Z) on `Friend-MachineD`, git `07facd8fd679`, ratio_gate=`enforced`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
-| `cli_dispatch.argv_parse` | 2.6 | 2.3 | 1.14× | 1.09× | 3.00× |
-| `cli_dispatch.help_render` | 0.1 | 0.7 | 0.07× | 0.07× | 6.00× |
-| `cli_dispatch.list_models_registry` | 2,070.7 | 3,576.5 | 0.58× | 0.59× | 1.50× |
-| `cli_dispatch.list_models_render` | 92.4 | 1,276.3 | 0.07× | 0.08× | 4.00× |
-| `provider_stream.stream_roundtrip` | 3,125.7 | 4,909.2 | 0.64× | 0.73× | 2.50× |
-| `session_pipeline.session_load` | 2,801.9 | 1,435.5 | 1.95× | 1.57× | 9.00× |
-| `session_pipeline.context_walk` | 3.3 | 90.2 | 0.04× | 0.03× | 2.00× |
-| `storage_journal.journal_read` | 2,617.5 | 1,511.9 | 1.73× | 1.80× | 8.00× |
-| `storage_journal.journal_append` | 1,474.5 | 1,690.1 | 0.87× | 0.93× | 12.00× |
-| `sqlite_session.open_walk` | 6,164.8 | 24,639.3 | 0.25× | 0.25× | 1.50× |
-| `tool_read.text_file` | 1,462.2 | 4,040.1 | 0.36× | 0.43× | 8.00× |
-| `tool_grep.context_file` | 14,760.3 | 14,369.6 | 1.03× | 0.88× | 3.00× |
+| `cli_dispatch.argv_parse` | 2.6 | 1.8 | 1.45× | 1.14× | 3.00× |
+| `cli_dispatch.help_render` | 0.0 | 0.8 | 0.06× | 0.07× | 6.00× |
+| `cli_dispatch.list_models_registry` | 2,047.1 | 3,714.1 | 0.55× | 0.58× | 1.50× |
+| `cli_dispatch.list_models_render` | 94.3 | 1,211.9 | 0.08× | 0.07× | 4.00× |
+| `provider_stream.stream_roundtrip` | 3,118.8 | 4,579.6 | 0.68× | 0.64× | 2.50× |
+| `session_pipeline.session_load` | 2,826.8 | 1,489.1 | 1.90× | 1.95× | 9.00× |
+| `session_pipeline.context_walk` | 3.0 | 114.2 | 0.03× | 0.04× | 2.00× |
+| `storage_journal.journal_read` | 2,615.9 | 1,549.7 | 1.69× | 1.73× | 8.00× |
+| `storage_journal.journal_append` | 1,543.7 | 1,726.7 | 0.89× | 0.87× | 12.00× |
+| `sqlite_session.open_walk` | 6,392.6 | 24,641.2 | 0.26× | 0.25× | 1.50× |
+| `tool_read.text_file` | 1,628.4 | 3,839.6 | 0.42× | 0.36× | 8.00× |
+| `tool_grep.context_file` | 14,583.2 | 14,594.5 | 1.00× | 1.03× | 3.00× |
 
 | recordedAt (UTC) | label | git | quick | ratio_gate | append | read | load | list_models_render |
 |---|---|---|---|---|---:|---:|---:|---:|
@@ -685,6 +685,7 @@ Previous: `paired-paths` (2026-08-19T18:48:46Z) on `Friend-MachineD`, git `c451b
 | 2026-08-19T18:46:03Z | paired-paths | `7ab5d7d3ca5b` | no | enforced | 0.90× | 1.91× | 2.13× | 0.07× |
 | 2026-08-19T18:48:46Z | paired-paths | `c451b14e77e2` | no | enforced | 0.93× | 1.80× | 1.57× | 0.08× |
 | 2026-08-19T18:55:53Z | paired-paths | `07facd8fd679` | no | enforced | 0.87× | 1.73× | 1.95× | 0.07× |
+| 2026-08-19T19:13:42Z | paired-paths | `9b70e7a090ed` | no | enforced | 0.89× | 1.69× | 1.90× | 0.08× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles
