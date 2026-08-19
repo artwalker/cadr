@@ -116,6 +116,72 @@
                   source starts 1 (length starts))
                  (cadr-cli::join-lines (cdr parts))))))))))
 
+(test split-octet-line-starts-join-matches-character-split
+  ;; ub8 0x0A starts + utf8-string of the join window equals
+  ;; split-line-join of the fully decoded string. Drives the
+  ;; shipped read decoder, not a reimplementation.
+  (dolist (text (list
+                 ""
+                 "a"
+                 (format nil "a~%")
+                 (format nil "a~%b")
+                 (format nil "a~%b~%")
+                 (format nil "~%")
+                 (format nil "é🙂中文 mixed tail line~%x")
+                 (format nil "~%~%")
+                 (format nil "~A~%~A~%"
+                         (make-string 220 :initial-element #\x)
+                         "é🙂中文 mixed tail line")))
+    (let* ((octets (cadr-ai::utf8-octets text))
+           (simple
+             (if (typep octets '(simple-array (unsigned-byte 8) (*)))
+                 octets
+                 (let ((copy
+                         (make-array (length octets)
+                                     :element-type '(unsigned-byte 8))))
+                   (replace copy octets)
+                   copy)))
+           (o-starts (cadr-cli::split-octet-line-starts simple)))
+      (multiple-value-bind (c-starts source)
+          (cadr-cli::split-line-starts text)
+        (is (= (length o-starts) (length c-starts)))
+        (loop for from from 0 below (length c-starts)
+              do (loop for to from (1+ from) to (length c-starts)
+                       do (is (string=
+                               (cadr-cli::split-line-join
+                                source c-starts from to)
+                               (let* ((nbytes (length simple))
+                                      (b-from (aref o-starts from))
+                                      (b-to
+                                        (if (>= to (length o-starts))
+                                            nbytes
+                                            (1- (aref o-starts to)))))
+                                 (if (< b-from b-to)
+                                     (cadr-ai::utf8-string
+                                      simple b-from b-to)
+                                     ""))))))))))
+
+(test read-window-decode-matches-offset-limit-output
+  ;; Production read decodes only the offset/limit/truncation
+  ;; window. Observable text still matches the old whole-file
+  ;; decode + split + slice.
+  (with-test-directory (directory)
+    (let ((file (merge-pathnames "mix.txt" directory))
+          (body
+            (format nil "一~%é🙂中文 mixed tail line~%三~%四~%")))
+      (write-text file body)
+      (multiple-value-bind (content details)
+          (invoke-tool
+           (make-read-tool directory)
+           (args "path" "mix.txt"
+                 "offset" 2
+                 "limit" 2))
+        (declare (ignore details))
+        (is (string=
+             (format nil
+                     "é🙂中文 mixed tail line~%三~%~%[2 more lines in file. Use offset=4 to continue.]")
+             (result-text content)))))))
+
 (test text-lines-drops-trailing-empty-and-trims-cr
   ;; Grep/edit encoding of JS split after CR normalize, minus the
   ;; trailing empty part. Empty file → no lines.

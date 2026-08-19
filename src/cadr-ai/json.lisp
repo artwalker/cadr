@@ -16,23 +16,26 @@
   (sb-ext:string-to-octets
    text :external-format :utf-8))
 
-(defun utf8-string (octets)
+(defun utf8-string (octets &optional (start 0) end)
   ;; ASCII: pre-sized simple-base-string + ub32 schar
   ;; (copy-unescaped-json-octets). Mixed: same copy on ASCII
-  ;; runs; non-ASCII windows decode UTF-8. Not FFI. Not intern.
+  ;; runs; non-ASCII windows decode UTF-8. Optional START/END
+  ;; decode one slice without copying the rest. Not FFI. Not intern.
   ;; (goal 20 sprof UTF8->STRING-AREF 58.3% total at ab4a52ea4).
   (let ((n (length octets)))
-    (declare (type fixnum n))
-    (when (zerop n)
+    (declare (type fixnum n start)
+             (type (or null fixnum) end))
+    (unless end
+      (setf end n))
+    (when (or (zerop n) (>= start end))
       (return-from utf8-string ""))
-    (copy-utf8-octets
-     (if (typep octets '(simple-array (unsigned-byte 8) (*)))
-         octets
-         (let ((copy
-                 (make-array n :element-type '(unsigned-byte 8))))
-           (replace copy octets)
-           copy))
-     0 n)))
+    (if (typep octets '(simple-array (unsigned-byte 8) (*)))
+        (copy-utf8-octets octets start end)
+        (let* ((count (the fixnum (- end start)))
+               (copy
+                 (make-array count :element-type '(unsigned-byte 8))))
+          (replace copy octets :start2 start :end2 end)
+          (copy-utf8-octets copy 0 count)))))
 
 (defun json-object (&rest key-values)
   (assert (evenp (length key-values)))

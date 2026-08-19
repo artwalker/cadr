@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `read-tool-file` builds the line table on
+  ub8 `0x0A` and `utf8-string`s only the offset/limit window
+  plus one overflowing line for `truncate-head`. this-host
+  ~4695→800 µs. Identity 126866→126947. FiveAM 19464→19508.
+  sprof:
+  `docs/benchmarks/goal20-part-p-tool-read-sprof-utf8-window.md`.
+  Not FFI. Not intern. G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `1aedb4e45`
   `tool_grep.context_file` 1.38×→0.92× (23713→15243 µs).
   `tool_read.text_file` 1.32×→1.35× (5460→5813 µs).

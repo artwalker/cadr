@@ -335,18 +335,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 126,866 lines**
+Denominator: **295 files / 126,947 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 41 | 26,687 | 21.0% | `no worse than baseline` is falsifiable |
+| `paired` | 41 | 26,768 | 21.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 230 | 92,704 | 73.1% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 230 | 92,704 | 73.0% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 21.0% of lines (41 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 26.9% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 73.1% of lines.
+- **Falsifiable vs baseline:** 21.1% of lines (41 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 27.0% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 73.0% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -386,7 +386,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/session/migration.lisp` | 2,173 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
 | `src/cadr-agent/truncate.lisp` | 475 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
-| `src/cadr-ai/json.lisp` | 1,902 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
+| `src/cadr-ai/json.lisp` | 1,905 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 291 | `provider_stream.stream_roundtrip` |
@@ -400,8 +400,8 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
-| `src/cadr-cli/tools/read.lisp` | 172 | `tool_read.text_file` |
-| `src/cadr-cli/truncation.lisp` | 165 | `tool_read.text_file` |
+| `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
+| `src/cadr-cli/truncation.lisp` | 223 | `tool_read.text_file` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
 | `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

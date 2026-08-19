@@ -155,6 +155,21 @@
            (sb-ext:octets-to-string octets :external-format :utf-8)
            (cadr-ai::utf8-string octets))))))
 
+(test utf8-string-range-does-not-read-outside-window
+  (let* ((prefix (cadr-ai::utf8-octets "aaa"))
+         (mid (cadr-ai::utf8-octets "é🙂中文"))
+         (suffix (cadr-ai::utf8-octets "zzz"))
+         (octets
+           (concatenate '(simple-array (unsigned-byte 8) (*))
+                        prefix mid suffix))
+         (start (length prefix))
+         (end (+ start (length mid)))
+         (decoded (cadr-ai::utf8-string octets start end)))
+    (is (string= "é🙂中文" decoded))
+    (setf (aref octets 0) 90)
+    (setf (aref octets (1- (length octets))) 90)
+    (is (string= "é🙂中文" decoded))))
+
 (test utf8-string-invalid-matches-octets-to-string
   ;; Overlong / surrogate / out-of-range must take the same
   ;; octets-to-string fallback as the previous decoder.

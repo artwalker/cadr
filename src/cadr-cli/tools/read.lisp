@@ -41,102 +41,122 @@
                    :data
                    (encode-base64-bytes image-bytes))))
              nil)))))
-    (let* ((raw (if context
-                    (cadr-ai::utf8-string bytes)
-                    (call-with-normalized-file-operation
-                     :read display-path
-                     (lambda ()
-                       ;; pi readFile → Buffer → toString("utf-8").
-                       ;; One octet read + one decoder, not
-                       ;; uiop:read-file-string's per-char stream
-                       ;; (goal 20 sprof INPUT-CHAR/UTF-8/LF 47.3%).
-                       (with-open-file
-                           (stream path
-                                   :direction :input
-                                   :element-type
-                                   '(unsigned-byte 8))
-                         (let* ((nbytes
-                                  (or (file-length stream) 0))
-                                (octets
-                                  (make-array
-                                   nbytes
-                                   :element-type
-                                   '(unsigned-byte 8))))
-                           (read-sequence octets stream)
-                           (cadr-ai::utf8-string octets))))
-                     :resolved-path path))))
-      (multiple-value-bind (starts text)
-          (split-line-starts raw)
-        (let* ((line-count (length starts))
-               (start (if (zerop offset)
-                          0
-                          (max 0 (1- offset)))))
-          (when (and limit (< limit 1))
-            (error "limit must be at least 1"))
-          (when (>= start line-count)
-            (error "Offset ~D is beyond end of file (~D lines total)"
-                   offset line-count))
-          (let* ((end (if limit
-                          (min line-count (+ start limit))
-                          line-count))
-                 (selected-content
-                   (split-line-join text starts start end))
-                 (start-display (1+ start))
-                 (user-limited-lines
-                   (and limit (- end start))))
-            (multiple-value-bind (output details)
-                (truncate-head selected-content)
-              (cond
-                ((getf details :first-line-exceeds-limit)
-                 (setf
-                  output
-                  (format
-                   nil
-                   "[Line ~D is ~A, exceeds ~A limit. Use bash: sed -n '~Dp' ~A | head -c ~D]"
-                   start-display
-                   (format-byte-size
-                    (utf8-length
-                     (split-line-ref text starts start)))
-                   (format-byte-size +maximum-output-bytes+)
-                   start-display
-                   display-path
-                   +maximum-output-bytes+)))
-                ((getf details :truncated)
-                 (let* ((output-lines
-                          (getf details :output-lines))
-                        (end-display
-                          (+ start-display output-lines -1))
-                        (next-offset (1+ end-display)))
-                   (setf
-                    output
-                    (format
-                     nil
-                     "~A~%~%[Showing lines ~D-~D of ~D~A. Use offset=~D to continue.]"
-                     output start-display end-display
-                     line-count
-                     (if (eq (getf details :truncated-by) :bytes)
-                         (format nil " (~A limit)"
-                                 (format-byte-size
-                                  +maximum-output-bytes+))
-                         "")
-                     next-offset))))
-                ((and user-limited-lines
-                      (< (+ start user-limited-lines)
-                         line-count))
-                 (let ((remaining
-                         (- line-count
-                            (+ start user-limited-lines)))
-                       (next-offset
-                         (+ start user-limited-lines 1)))
-                   (setf
-                    output
-                    (format
-                     nil
-                     "~A~%~%[~D more lines in file. Use offset=~D to continue.]"
-                     output remaining next-offset)))))
-              (values
-               (list (cadr-ai:make-text-content :text output))
-               (and (getf details :truncated) details)))))))))
+    (let* ((octets
+             (if context
+                 (if (typep bytes '(simple-array (unsigned-byte 8) (*)))
+                     bytes
+                     (let ((copy
+                             (make-array
+                              (length bytes)
+                              :element-type '(unsigned-byte 8))))
+                       (replace copy bytes)
+                       copy))
+                 (call-with-normalized-file-operation
+                  :read display-path
+                  (lambda ()
+                    ;; Line table on ub8 0x0A, then utf8-string
+                    ;; only the offset/limit/truncation window.
+                    ;; Not whole-file COPY-UTF8-OCTETS.
+                    ;; Not mmap. Not intern. Not FFI.
+                    (with-open-file
+                        (stream path
+                                :direction :input
+                                :element-type
+                                '(unsigned-byte 8))
+                      (let* ((nbytes
+                               (or (file-length stream) 0))
+                             (buffer
+                               (make-array
+                                nbytes
+                                :element-type
+                                '(unsigned-byte 8))))
+                        (read-sequence buffer stream)
+                        buffer)))
+                  :resolved-path path)))
+           (starts (split-octet-line-starts octets))
+           (nbytes (length octets))
+           (line-count (length starts))
+           (start (if (zerop offset)
+                      0
+                      (max 0 (1- offset)))))
+      (when (and limit (< limit 1))
+        (error "limit must be at least 1"))
+      (when (>= start line-count)
+        (error "Offset ~D is beyond end of file (~D lines total)"
+               offset line-count))
+      (let* ((end (if limit
+                      (min line-count (+ start limit))
+                      line-count))
+             (decode-end
+               (octet-decode-line-end
+                starts nbytes start end
+                +maximum-output-lines+
+                +maximum-output-bytes+))
+             (from (aref starts start))
+             (to (if (>= decode-end line-count)
+                     nbytes
+                     (1- (aref starts decode-end))))
+             (selected-content
+               (if (< from to)
+                   (cadr-ai::utf8-string octets from to)
+                   ""))
+             (start-display (1+ start))
+             (user-limited-lines
+               (and limit (- end start))))
+        (multiple-value-bind (output details)
+            (truncate-head selected-content)
+          (cond
+            ((getf details :first-line-exceeds-limit)
+             (setf
+              output
+              (format
+               nil
+               "[Line ~D is ~A, exceeds ~A limit. Use bash: sed -n '~Dp' ~A | head -c ~D]"
+               start-display
+               (format-byte-size
+                (max 0
+                     (- (octet-line-byte-end starts nbytes start)
+                        (aref starts start))))
+               (format-byte-size +maximum-output-bytes+)
+               start-display
+               display-path
+               +maximum-output-bytes+)))
+            ((getf details :truncated)
+             (let* ((output-lines
+                      (getf details :output-lines))
+                    (end-display
+                      (+ start-display output-lines -1))
+                    (next-offset (1+ end-display)))
+               (setf
+                output
+                (format
+                 nil
+                 "~A~%~%[Showing lines ~D-~D of ~D~A. Use offset=~D to continue.]"
+                 output start-display end-display
+                 line-count
+                 (if (eq (getf details :truncated-by) :bytes)
+                     (format nil " (~A limit)"
+                             (format-byte-size
+                              +maximum-output-bytes+))
+                     "")
+                 next-offset))))
+            ((and user-limited-lines
+                  (< (+ start user-limited-lines)
+                     line-count))
+             (let ((remaining
+                     (- line-count
+                        (+ start user-limited-lines)))
+                   (next-offset
+                     (+ start user-limited-lines 1)))
+               (setf
+                output
+                (format
+                 nil
+                 "~A~%~%[~D more lines in file. Use offset=~D to continue.]"
+                 output remaining next-offset)))))
+          (values
+           (list (cadr-ai:make-text-content :text output))
+           (and (getf details :truncated) details)))))))
 
 (defun make-read-tool (cwd &key context)
   (cadr-ai:make-tool

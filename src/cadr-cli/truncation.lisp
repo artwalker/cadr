@@ -51,6 +51,64 @@
 (defun utf16-code-unit-length (text)
   (cadr-agent::utf16-code-unit-length text))
 
+(defun split-octet-line-starts (octets)
+  ;; JS split("\n") on UTF-8: 0x0A cannot appear inside a
+  ;; multi-byte scalar, so a ub8 scan matches a character scan.
+  ;; Empty → #(0). Trailing newline → extra start at length.
+  ;; Exact-size fixnum vector. Not intern. Not FFI.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (optimize (speed 3) (safety 1)))
+  (let ((length (length octets)))
+    (declare (type fixnum length))
+    (let ((nlines 1))
+      (declare (type fixnum nlines))
+      (loop for index of-type fixnum from 0 below length
+            when (= (aref octets index) 10)
+              do (incf nlines))
+      (let ((starts
+              (make-array nlines :element-type 'fixnum)))
+        (setf (aref starts 0) 0)
+        (let ((slot 1))
+          (declare (type fixnum slot))
+          (loop for index of-type fixnum from 0 below length
+                when (= (aref octets index) 10)
+                  do (setf (aref starts slot)
+                           (the fixnum (1+ index)))
+                     (incf slot)))
+        starts))))
+
+(defun octet-line-byte-end (starts nbytes index)
+  (let ((next (1+ index)))
+    (if (< next (length starts))
+        (1- (aref starts next))
+        nbytes)))
+
+(defun octet-decode-line-end
+    (starts nbytes sel-start sel-end max-lines max-bytes)
+  ;; Exclusive line index covering offset/limit plus one
+  ;; overflowing line so truncate-head still sees the limit.
+  (declare (type (simple-array fixnum (*)) starts)
+           (type fixnum nbytes sel-start sel-end max-lines max-bytes)
+           (optimize (speed 3) (safety 1)))
+  (let ((join-bytes 0)
+        (lines 0))
+    (declare (type fixnum join-bytes lines))
+    (loop for index of-type fixnum from sel-start below sel-end
+          for from of-type fixnum = (aref starts index)
+          for to of-type fixnum = (octet-line-byte-end
+                                   starts nbytes index)
+          for line-bytes of-type fixnum = (max 0 (- to from))
+          for with-nl of-type fixnum = (+ line-bytes
+                                          (if (plusp lines) 1 0))
+          do
+          (when (or (>= lines max-lines)
+                    (> (+ join-bytes with-nl) max-bytes))
+            (return-from octet-decode-line-end
+              (min sel-end (the fixnum (1+ index)))))
+          (incf join-bytes with-nl)
+          (incf lines))
+    sel-end))
+
 (defun split-line-starts (text)
   ;; pi String.prototype.split("\n"): one start index per part.
   ;; Empty → #(0). Trailing newline → extra start at length.
