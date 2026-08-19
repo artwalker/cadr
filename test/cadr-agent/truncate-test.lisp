@@ -135,12 +135,6 @@
     (is (not
          (cadr-agent::harness-truncation-result-first-line-exceeds-limit-p
           head)))
-    (is (= (cadr-agent::harness-line-count content)
-           (cadr-agent::harness-truncation-result-total-lines
-            tail)))
-    (is (= 500000
-           (cadr-agent::harness-truncation-result-total-bytes
-            tail)))
     (is (= 51028
            (cadr-agent::harness-truncation-result-output-bytes
             tail)))

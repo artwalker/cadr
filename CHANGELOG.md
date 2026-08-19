@@ -9,11 +9,6 @@ tag/Release step.
 
 ### Added
 
-- Goal 20 Part P: `truncate-harness-tail` fills totals and
-  the selected tail in one reverse walk. sprof named
-  forward `HARNESS-LINE-AND-UTF8-LENGTH` 67.5%. this-host
-  ~819→711 µs. Identity 126546→126566. FiveAM
-  19359→19361. Not intern. Not FFI. G.17 still `missing`.
 - Goal 20 Part P: `cli-token-tail=` compares with `schar`
   on `simple-string`. sprof named it 14.2% self on
   `argv_parse`. this-host 3.0→1.96 µs. Identity
@@ -91,6 +86,11 @@ tag/Release step.
   `src/`. G.17 still `missing`.
 
 ### Changed
+
+- Goal 20 Part P: revert one-reverse-walk `truncate-harness-tail`.
+  Friend-MachineD n=5: tail 1.30×→1.59× (cadr 819→870 µs).
+  Full reverse scan lost to forward totals plus short reverse
+  select. Identity back to 126546. G.17 still `missing`.
 
 - Goal 20 Part P: this-host sb-sprof of `truncate_tail` at
   `19ca40947`. Leftover is `HARNESS-LINE-AND-UTF8-LENGTH`
