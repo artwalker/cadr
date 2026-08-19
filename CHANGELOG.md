@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `sqlite-row-to-entry` decodes payload
+  TEXT with `parse-session-record-octets` instead of
+  `parse-json`. Identity 126497→126502. Not intern. Not
+  FFI. G.17 still `missing`.
 - Goal 20 Part P: this-host sb-sprof of
   `sqlite_session.open_walk` on `e3eb0d956`. Leftover is
   `PARSE-JSON-SOURCE` on SQLite payload TEXT (49.8% total)

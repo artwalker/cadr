@@ -257,16 +257,21 @@
       (id parent-id type timestamp payload)
       row
     (declare (ignore id parent-id type timestamp))
-    (let ((object
+    (let ((entry
             (handler-case
-                (cadr-ai::parse-json payload)
+                (let* ((octets
+                         (if (stringp payload)
+                             (cadr-ai::utf8-octets payload)
+                             payload)))
+                  (parse-session-record-octets
+                   octets 0 (length octets)))
               (error (cause)
                 (storage-failure
                  storage
                  "Invalid SQLite entry payload: ~A"
                  cause)))))
       (record-to-session-entry
-       object
+       entry
        (sqlite-storage-database-path
         storage)
        line-number
