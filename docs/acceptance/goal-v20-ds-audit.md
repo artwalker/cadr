@@ -31,8 +31,8 @@ where pi has `string[]`.
 
 | cadr | pi | What is wrong | Next knife |
 |---|---|---|---|
-| `src/cadr-cli/truncation.lisp` `text-lines` / `split-all-lines` | `split("\n")` → array | `uiop:split-string` + `butlast` / `mapcar` trim. | Shared fixnum line-start vector (or `simple-vector` of displaced lines). Not more cons strings. |
-| `src/cadr-cli/tools/read.lisp` | `packages/coding-agent/src/core/tools/read.ts`: `allLines = textContent.split("\n")`; `allLines.length`; `allLines[startLine]`; `slice` | `split-all-lines` then `length` / `nth` / list `subseq`. H pair `tool_read.text_file` frozen 5.32×. | Same line table as truncate. Convert `split-all-lines` after the pair commit. |
+| `src/cadr-cli/truncation.lisp` `text-lines` / `split-all-lines` | `split("\n")` → array | `split-all-lines` is now the line-start table. `text-lines` still `uiop:split-string` + `butlast` / `mapcar` trim. | Convert `text-lines` (grep/edit) to the same table. |
+| `src/cadr-cli/tools/read.lisp` | `packages/coding-agent/src/core/tools/read.ts`: `allLines = textContent.split("\n")`; `allLines.length`; `allLines[startLine]`; `slice` | Hot path is `split-line-starts` + `split-line-join` (one `subseq`). H pair `tool_read.text_file` frozen 5.32×. | Remesure the pair. Then grep `text-lines`. |
 | `src/cadr-cli/tools/grep.lisp` `ripgrep-file-lines` | `grep.ts` `content.split("\n")` | `text-lines` list; `length` + `subseq`. `needs-pair`. | Same table. Cache values must become vectors. |
 | `src/cadr-cli/tools/bash.lisp` `bash-truncation-notice` | `truncateTail` + `Buffer.byteLength` on the last line | `harness-text-lines` + `car`/`last` + CLI `utf8-length`. | Use the tail result's last line / harness count; no second full split. |
 | `src/cadr-agent/storage/jsonl.lisp` `open-jsonl-session-storage` | JSONL = split lines then `JSON.parse` each | Whole-file `uiop:split-string` then `parse-json` per line. Default paired `session_load` is the octet walker in `session/migration.lisp`, not this function. Still the same encoding if this backend is used. | After a pair exists: line offsets + octet FSM, not cons split + EQUAL JSON. |

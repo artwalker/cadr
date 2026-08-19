@@ -67,6 +67,41 @@
           (declare (ignore details))
           (is (string= "" (result-text content))))))))
 
+(test split-line-table-matches-js-split-join
+  ;; Production read indexes a fixnum start vector, then one subseq,
+  ;; matching JS split("\n") / slice / join("\n"). Empty and trailing
+  ;; newline keep the extra "" part.
+  (flet ((legacy (text)
+           (if (zerop (length text))
+               (list "")
+               (uiop:split-string text :separator '(#\Newline)))))
+    (dolist (text (list
+                   ""
+                   "a"
+                   (format nil "a~%")
+                   (format nil "a~%b")
+                   (format nil "a~%b~%")
+                   (format nil "~%")
+                   (format nil "é🙂中文 mixed tail line~%x")
+                   (format nil "~%~%")))
+      (multiple-value-bind (starts source)
+          (cadr-cli::split-line-starts text)
+        (let ((parts (legacy text)))
+          (is (= (length starts) (length parts)))
+          (loop for index from 0 below (length starts)
+                do (is (string=
+                        (cadr-cli::split-line-ref source starts index)
+                        (nth index parts))))
+          (is (string=
+               (cadr-cli::split-line-join
+                source starts 0 (length starts))
+               (cadr-cli::join-lines parts)))
+          (when (> (length starts) 1)
+            (is (string=
+                 (cadr-cli::split-line-join
+                  source starts 1 (length starts))
+                 (cadr-cli::join-lines (cdr parts))))))))))
+
 (test write-creates-parents-and-overwrites-utf8
   (with-test-directory (directory)
     (let ((tool (make-write-tool directory))

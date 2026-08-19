@@ -322,12 +322,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 126,591 lines**
+Denominator: **295 files / 126,643 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 40 | 26,092 | 20.6% | `no worse than baseline` is falsifiable |
+| `paired` | 40 | 26,144 | 20.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `pairable-uncovered` | 231 | 93,024 | 73.5% | blocked by Part A hard condition 2 |
 
@@ -386,8 +386,8 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,009 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
-| `src/cadr-cli/tools/read.lisp` | 153 | `tool_read.text_file` |
-| `src/cadr-cli/truncation.lisp` | 85 | `tool_read.text_file` |
+| `src/cadr-cli/tools/read.lisp` | 156 | `tool_read.text_file` |
+| `src/cadr-cli/truncation.lisp` | 134 | `tool_read.text_file` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
 | `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

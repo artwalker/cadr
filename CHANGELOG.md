@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `read-tool-file` fills a fixnum line-start
+  table then one `subseq` for the selected range. Matches JS
+  `split("\n")` / `slice` / `join`. Not `uiop:split-string`
+  on the hot path. this-host ~21747→9763 µs. Identity
+  126591→126643. Not intern. Not FFI. G.17 still `missing`.
 - Goal 20 Part H: `tool_read.text_file` pair. Same 4000-line
   fixture ingested as a text file; timed work is production
   `read-tool-file` vs pi `createReadToolDefinition.execute`.
