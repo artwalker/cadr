@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `read-tool-file` reads `(unsigned-byte 8)`
+  then `utf8-string` once, matching pi `readFile` +
+  `toString("utf-8")`. this-host ~9763→6505 µs. Identity
+  126643→126659. Not mmap. Not FFI. G.17 still `missing`.
 - Goal 20 Part H: `tool_grep.context_file` pair. Same 4000-line
   fixture; timed work is production `grep-lines` vs pi
   `createGrepToolDefinition.execute` with `context=2`. First

@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=126643 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=126659 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -277,7 +277,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/tools/grep.lisp` | 320 | 7 | Implement bounded regex/literal grep with context. | pass | done | ripgrep-file-lines cache + subseq. I0: no nth per match. | 20 |
 | `src/cadr-cli/tools/ls.lisp` | 100 | 3 | Implement the bounded directory-listing tool. | pass | no-rewrite | optional-integer now owns null→default; the or-wrapper is gone. Remaining file is sort-with-:key / truncate-head. | 20 |
 | `src/cadr-cli/tools/path.lisp` | 333 | 32 | Normalize tool paths/arguments/errors and serialize file mutations. | pass · large | done | optional-integer coerces JSON null. I0: callers drop or-wrappers. | 20 |
-| `src/cadr-cli/tools/read.lisp` | 156 | 2 | Implement the bounded line-oriented read tool. | pass | no-rewrite | Most TS-like: split-line-starts + one subseq join; JS split/slice/join without cons strings. first-line-exceeds still one subseq | 20 |
+| `src/cadr-cli/tools/read.lisp` | 172 | 2 | Implement the bounded line-oriented read tool. | pass | no-rewrite | Most TS-like: octet read-sequence + utf8-string then split-line-starts; pi Buffer.toString | 20 |
 | `src/cadr-cli/tools/write.lisp` | 70 | 3 | Implement the UTF-8 write tool and baseline result count. | pass | no-rewrite | Most TS-like: hand-formatted Node-style "EEXIST: file already exists, mkdir '...'" with manual slash trim (:8-12); required by the byte-exact Node error contract the baseline surfaces to the model | 20 |
 | `src/cadr-cli/truncation.lisp` | 134 | 12 | Adapt agent truncation results to the CLI tool-result detail contract. | pass | no-rewrite | Most TS-like: harness-truncation-details projects ten struct accessors into a plist by hand; split-line-starts is the JS split encoding (fixnum starts, not uiop:split-string) | 20 |
 | `src/cadr-cli/extensions/llama/ui.lisp` | 763 | 36 | Render the interactive llama.cpp manager surface: context labels, model descriptions, compact counts, the framed selector, live Hugging Face search, and cancellable progress. | pass · large | done | nthcdr walk; :searching status. I0: no string flag. | 20 |

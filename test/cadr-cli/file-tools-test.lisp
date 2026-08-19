@@ -67,6 +67,20 @@
           (declare (ignore details))
           (is (string= "" (result-text content))))))))
 
+(test read-octet-utf8-decode-preserves-emoji-and-cjk
+  ;; Production read is read-sequence of (unsigned-byte 8) then
+  ;; cadr-ai::utf8-string, matching pi Buffer.toString("utf-8").
+  (with-test-directory (directory)
+    (let ((file (merge-pathnames "mix.txt" directory))
+          (body (format nil "é🙂中文~%ascii")))
+      (write-text file body)
+      (multiple-value-bind (content details)
+          (invoke-tool
+           (make-read-tool directory)
+           (args "path" "mix.txt"))
+        (declare (ignore details))
+        (is (string= body (result-text content)))))))
+
 (test split-line-table-matches-js-split-join
   ;; Production read indexes a fixnum start vector, then one subseq,
   ;; matching JS split("\n") / slice / join("\n"). Empty and trailing

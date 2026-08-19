@@ -46,8 +46,24 @@
                     (call-with-normalized-file-operation
                      :read display-path
                      (lambda ()
-                       (uiop:read-file-string
-                        path :external-format :utf-8))
+                       ;; pi readFile → Buffer → toString("utf-8").
+                       ;; One octet read + one decoder, not
+                       ;; uiop:read-file-string's per-char stream
+                       ;; (goal 20 sprof INPUT-CHAR/UTF-8/LF 47.3%).
+                       (with-open-file
+                           (stream path
+                                   :direction :input
+                                   :element-type
+                                   '(unsigned-byte 8))
+                         (let* ((nbytes
+                                  (or (file-length stream) 0))
+                                (octets
+                                  (make-array
+                                   nbytes
+                                   :element-type
+                                   '(unsigned-byte 8))))
+                           (read-sequence octets stream)
+                           (cadr-ai::utf8-string octets))))
                      :resolved-path path))))
       (multiple-value-bind (starts text)
           (split-line-starts raw)
