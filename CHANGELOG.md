@@ -25,6 +25,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `print-cli-usage` writes literal blocks
+  with `write-string`. No per-line `format`. Help bytes
+  match the previous non-color output. Identity
+  126116→126223. FiveAM 19289→19291. Not intern. Not FFI.
+  G.17 still `missing`.
+
 - Goal 20 Part P: `parse-cli-arguments` looks up known CLI
   flags in a closed length/octet table. No per-flag
   `assoc` `string=`. Output/behavior aligned. Help

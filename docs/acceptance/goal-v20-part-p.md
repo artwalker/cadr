@@ -18,7 +18,7 @@ Not a Goal 20 pass.
 | P.1 JSON read | number | schema octet FSM; leftover generic values fill pairs not EQUAL hash; escaped strings decode from the octet window; header fills session-file-header. this-host load 2387→1586 µs / 920,544→920,512 B | this knife. Not intern. Not FFI. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
-| P.4 help / argv / walk | number | argv leftover was `assoc`/`string=`; now closed length/octet table. help leftover is `format` 96.5%. walk leftover is EQUAL hash behind the messages cache. booked help 4.3 µs, argv 6.5 µs, walk 110 µs | this knife for argv. No Friend-MachineD (5.8 µs). Help unchanged. |
+| P.4 help / argv / walk | number | argv closed table (`3738b80ea`). help leftover was `format` 96.5%; now `write-string` literals. walk leftover is EQUAL hash behind the messages cache. booked help 4.3 µs, argv 6.5 µs, walk 110 µs | this knife for help. No Friend-MachineD (4.7 µs). Argv unchanged. |
 | P.4 stream_roundtrip | number | this-host 6.398 ms / 3,750,979 B → 4.995 ms / 2,432,214 B; SSE-only 2.899 ms / 2,327,510 B → 1.698 ms / 1,229,201 B | `c183539e7`–this knife. File-stream newline scan. |
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,350,697 B; snake overlay 39,963 B; ttt overlay 47,819 B | ttt visual-board stream rewrite. |

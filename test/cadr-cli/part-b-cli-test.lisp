@@ -77,6 +77,18 @@
     (is (null
          (cadr-cli::cli-arguments-diagnostics arguments)))))
 
+(test print-cli-usage-plain-bytes-match-shipped-literal
+  (let ((stream (make-string-output-stream)))
+    (cadr-cli::print-cli-usage stream)
+    (let* ((got (get-output-stream-string stream))
+           (path
+             (merge-pathnames
+              "test/fixtures/cli-usage-plain.txt"
+              (asdf:system-source-directory "cadr-cli")))
+           (expected (uiop:read-file-string path)))
+      (is (= (length expected) (length got)))
+      (is (string= expected got)))))
+
 (test paired-path-parse-argv-fixture-drives-shipped-parser
   (let* ((path
            (merge-pathnames
