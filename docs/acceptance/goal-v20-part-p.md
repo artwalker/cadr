@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Remesure `c074a85ec`: truncate_head 0.97×→1.17× (618→592 µs); truncate_tail 1.30×→1.47× (819→790 µs). Cadre abs improved; ratio up is pi. Ceiling unchanged. | remesure this booking. No `src/`. |
+| P.13 pairable coverage | leftover | Remesure `208838a39`: truncate_head 1.17× (667 / 570 µs); truncate_tail 1.47× (856 / 581 µs). Same ratios as `c074a85ec`. Ceiling unchanged. | remesure this booking. No `src/`. |

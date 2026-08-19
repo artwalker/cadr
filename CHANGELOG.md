@@ -102,6 +102,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of `208838a39`
+  (n=5, enforced). truncate_head 1.17× (667 / 570 µs).
+  truncate_tail 1.47× (856 / 581 µs). Same ratios as
+  `c074a85ec`. Ceiling unchanged. No `src/`. G.17 still
+  `missing`.
+
 - Goal 20 Part P: this-host sb-sprof of truncate line table
   at `c074a85ec`. Tail leftover encoding is
   `PREPARE-VECTOR-PUSH-EXTEND` 7.9% total. Capture:
