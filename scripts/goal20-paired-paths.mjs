@@ -131,6 +131,7 @@ const REPETITIONS = {
 	"storage_journal.journal_append": 3,
 	"sqlite_session.open_walk": 3,
 	"tool_read.text_file": 5,
+	"tool_grep.context_file": 5,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
 	"render_slicing.slice_ansi_clip": 200,
@@ -271,6 +272,7 @@ const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nod
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
+const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 
 // Both sides render into a sink that only counts, so neither pays terminal
@@ -756,6 +758,38 @@ async function measureToolRead() {
 	};
 }
 
+async function measureToolGrep() {
+	const lines = [];
+	for (let i = 1; i <= 4000; i++) {
+		lines.push(i % 2 === 1 ? "x".repeat(220) : "é🙂中文 mixed tail line");
+	}
+	const content = `${lines.join("\n")}\n`;
+	const dir = path.join(scratch, "grep");
+	mkdirSync(dir, { recursive: true });
+	const filename = "grep-fixture.txt";
+	writeFileSync(path.join(dir, filename), content, "utf8");
+	const def = grepModule.createGrepToolDefinition(dir);
+	const args = {
+		pattern: "mixed tail",
+		path: filename,
+		literal: true,
+		context: 2,
+		limit: 100,
+	};
+	const once = await def.execute("", args);
+	const text = once.content[0].text;
+	return {
+		context_file: await collect("tool_grep.context_file", () => {
+			return () => def.execute("", args);
+		}),
+		observed: {
+			match_limit: once.details?.matchLimitReached ?? 0,
+			output_chars: text.length,
+			truncated: once.details?.truncation?.truncated ? 1 : 0,
+		},
+	};
+}
+
 async function measureRenderSlicing() {
 	const dense = Array.from(
 		{ length: 200 },
@@ -799,6 +833,8 @@ process.stderr.write("goal20 pi paired paths: text_truncation\n");
 const textTruncation = await measureTextTruncation();
 process.stderr.write("goal20 pi paired paths: tool_read\n");
 const toolRead = await measureToolRead();
+process.stderr.write("goal20 pi paired paths: tool_grep\n");
+const toolGrep = await measureToolGrep();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -830,6 +866,8 @@ const result = {
 				"packages/session-backends/sqlite-node SqliteSessionRepository.open + findEntries + findEntriesOnBranch",
 			"tool_read.text_file":
 				"packages/coding-agent/src/core/tools/read.ts createReadToolDefinition.execute",
+			"tool_grep.context_file":
+				"packages/coding-agent/src/core/tools/grep.ts createGrepToolDefinition.execute",
 			"text_truncation.truncate_head":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
@@ -860,6 +898,7 @@ const result = {
 		sqlite_session: sqliteSession,
 		text_truncation: textTruncation,
 		tool_read: toolRead,
+		tool_grep: toolGrep,
 		render_slicing: renderSlicing,
 	},
 };

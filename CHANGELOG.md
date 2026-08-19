@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: `tool_grep.context_file` pair. Same 4000-line
+  fixture; timed work is production `grep-lines` vs pi
+  `createGrepToolDefinition.execute` with `context=2`. First
+  Friend-MachineD freeze 1.77× (28357 / 16053 µs), ceiling
+  3.0. No product optimize. G.17 still `missing`.
 - Goal 20 Part P: this-host sb-sprof of `tool_read.text_file`
   on `c2828e831`. Leftover is SBCL `INPUT-CHAR/UTF-8/LF` on
   `read-file-string` (47.3% self), not the line table (2.0%).

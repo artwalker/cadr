@@ -122,6 +122,19 @@ exact. First Friend-MachineD freeze 5.32×, ceiling 8.0. Product
 `split-all-lines` / `text-lines` stay cons lists in the pair
 commit.
 
+### Pair 7 — `tool_grep`
+
+| metric | cadr | pi |
+|---|---|---|
+| `context_file` | `grep-lines` (`src/cadr-cli/tools/grep.lisp`) | `createGrepToolDefinition.execute` (`packages/coding-agent/src/core/tools/grep.ts`) |
+
+Both sides write the same 4000-line fixture and search it with
+literal `"mixed tail"`, `context=2`, `limit=100`. Timed work is
+production grep (`rg --json` + context via `text-lines` /
+`split("\n")`). No network. Observed `match_limit` /
+`output_chars` / `truncated` are exact. First Friend-MachineD freeze 1.77×, ceiling 3.0.
+Product `text-lines` stays a cons list in this commit.
+
 ## 2. How to run
 
 ```bash
@@ -327,13 +340,13 @@ Denominator: **295 files / 126,643 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 40 | 26,144 | 20.6% | `no worse than baseline` is falsifiable |
+| `paired` | 41 | 26,464 | 20.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 231 | 93,024 | 73.5% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 230 | 92,704 | 73.2% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 20.6% of lines (40 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 26.5% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 73.5% of lines.
+- **Falsifiable vs baseline:** 20.9% of lines (41 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 26.8% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 73.2% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -386,6 +399,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,009 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/tools/grep.lisp` | 320 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 156 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 134 | `tool_read.text_file` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
@@ -424,9 +438,9 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/mermaid` | 12 | 5,042 |
 | `src/cadr-cli/extensions` | 9 | 3,489 |
 | `src/cadr-cli/packages` | 6 | 3,269 |
-| `src/cadr-cli/tools` | 8 | 2,486 |
 | `src/cadr-cli/sdk` | 8 | 2,471 |
 | `src/cadr-cli/modes` | 8 | 2,302 |
+| `src/cadr-cli/tools` | 7 | 2,166 |
 | `src/cadr-tui/latex.lisp` | 1 | 1,950 |
 | `src/cadr-ai/oauth` | 10 | 1,786 |
 | `src/cadr-agent/storage` | 4 | 1,532 |

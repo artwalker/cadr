@@ -31,6 +31,7 @@ METRIC_KEYS = (
     "storage_journal.journal_append",
     "sqlite_session.open_walk",
     "tool_read.text_file",
+    "tool_grep.context_file",
 )
 
 

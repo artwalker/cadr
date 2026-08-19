@@ -68,6 +68,7 @@ METRICS = {
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
     "tool_read": ("text_file",),
+    "tool_grep": ("context_file",),
     "text_truncation": ("truncate_head", "truncate_tail"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
 }
@@ -108,6 +109,10 @@ RATIO_CEILINGS = {
     # (samples=5): observed 5.32x (21747 / 4087 µs). 8.0 follows the
     # journal_read headroom precedent. Ratchet down only.
     "tool_read.text_file": 8.0,
+    # Frozen from the first Friend-MachineD non-quick tool_grep pair
+    # (samples=5): observed 1.77x (28357 / 16053 µs). 3.0 follows the
+    # argv_parse headroom precedent. Ratchet down only.
+    "tool_grep.context_file": 3.0,
     # Initial values frozen from the first full measurement (2026-08-15,
     # Friend-MachineD, samples=5): head 16.71x, tail 15.27x.  These record
     # that cadr currently LOSES to pi on truncation (whole-content encode +
@@ -204,6 +209,11 @@ OBSERVED_EXACT = {
     ),
     "tool_read": (
         "line_count",
+        "output_chars",
+        "truncated",
+    ),
+    "tool_grep": (
+        "match_limit",
         "output_chars",
         "truncated",
     ),

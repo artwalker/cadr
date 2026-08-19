@@ -17,6 +17,7 @@
 ;;;;   4. storage_journal   journal read + journal append
 ;;;;   5. sqlite_session    SQLite open + read-all + leaf walk
 ;;;;   6. tool_read         production read-tool-file vs pi execute
+;;;;   7. tool_grep         production grep-lines vs pi execute (context=2)
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -76,6 +77,7 @@
     ("storage_journal.journal_append" . 3)
     ("sqlite_session.open_walk" . 3)
     ("tool_read.text_file" . 5)
+    ("tool_grep.context_file" . 5)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
     ("render_slicing.slice_ansi_clip" . 200)
@@ -901,6 +903,56 @@
                       (cadr-cli::read-tool-file
                        cwd arguments)))))))))
 
+(defun write-grep-fixture ()
+  (let ((path
+          (merge-pathnames
+           "grep/grep-fixture.txt" *scratch-directory*)))
+    (ensure-directories-exist path)
+    (with-open-file
+        (out path
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create
+             :external-format :utf-8)
+      (write-string (truncation-fixture-content) out))
+    path))
+
+(defun measure-tool-grep ()
+  ;; context=2 forces production ripgrep-file-lines / text-lines.
+  ;; context=0 would skip that list encoding.
+  (let* ((path (write-grep-fixture))
+         (cwd
+           (namestring
+            (uiop:pathname-directory-pathname path)))
+         (relative (file-namestring path))
+         (arguments
+           (cadr-ai::json-object
+            "pattern" "mixed tail"
+            "path" relative
+            "literal" t
+            "context" 2
+            "limit" 100)))
+    (multiple-value-bind (blocks details)
+        (cadr-cli::grep-lines cwd arguments)
+      (let ((text
+              (cadr-ai::text-content-text (first blocks)))
+            (truncation (getf details :truncation)))
+        (json-object
+         "observed"
+         (json-object
+          "match_limit"
+          (or (getf details :match-limit-reached) 0)
+          "output_chars"
+          (cadr-cli::utf16-code-unit-length text)
+          "truncated"
+          (if (and truncation (getf truncation :truncated)) 1 0))
+         "context_file"
+         (collect "tool_grep.context_file"
+                  (lambda ()
+                    (lambda ()
+                      (cadr-cli::grep-lines
+                       cwd arguments)))))))))
+
 ;;; ---------------------------------------------------------------------
 
 (defun slicing-fixtures ()
@@ -967,6 +1019,8 @@
       "src/cadr-agent/sqlite-storage.lisp session-repository-open + harness-session-entries + harness-session-branch"
       "tool_read.text_file"
       "src/cadr-cli/tools/read.lisp read-tool-file"
+      "tool_grep.context_file"
+      "src/cadr-cli/tools/grep.lisp grep-lines"
       "text_truncation.truncate_head"
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"
@@ -1006,6 +1060,8 @@
             (let ((truncation (measure-text-truncation)))
               (format *error-output* "goal20 cadr paired paths: tool_read~%")
               (let ((tool-read (measure-tool-read)))
+              (format *error-output* "goal20 cadr paired paths: tool_grep~%")
+              (let ((tool-grep (measure-tool-grep)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -1029,6 +1085,7 @@
               "sqlite_session" sqlite
               "text_truncation" truncation
               "tool_read" tool-read
+              "tool_grep" tool-grep
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -1045,7 +1102,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))
+             "schema_version" 1))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
