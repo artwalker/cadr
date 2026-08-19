@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `d939b3bd4`
+  `truncate_head` 1.33×→0.70× (708→377 µs). Faster than pi.
+  `truncate_tail` 0.85×→0.82× (held). Ceiling 20.0 / 18.0
+  unchanged. No `src/`. G.17 still `missing`.
 - Goal 20 Part P: `truncate-harness-head` ASCII-run fill (same
   encoding as tail: ASCII 1×run, newline closes, non-ASCII
   `utf8-char-length`). this-host ~240 µs. Identity 126997→127038.
