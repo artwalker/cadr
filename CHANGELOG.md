@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: this-host sb-sprof of
+  `sqlite_session.open_walk` on `e3eb0d956`. Leftover is
+  `PARSE-JSON-SOURCE` on SQLite payload TEXT (49.8% total)
+  plus CFFI/Babel string conversion. Capture:
+  `docs/benchmarks/goal20-part-p-sqlite-sprof.md`. G.17 still
+  `missing`.
 - Goal 20 Part H: `sqlite_session.open_walk` pair. Same
   `session.jsonl` ingested into cadr SQLite and pi
   `sqlite-node`; timed work is open + read-all + leaf walk.
