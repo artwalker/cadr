@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: this-host sb-sprof of `tool_read.text_file`
+  on `ab4a52ea4`. Leftover is `octets-to-string`
+  (`UTF8->STRING-AREF` 58.3% total). Line-table
+  `vector-push-extend` is gone. Capture:
+  `docs/benchmarks/goal20-part-p-tool-read-sprof-ab4a52ea4.md`.
+  G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `ab4a52ea4`
   `tool_read.text_file` 2.39×→2.42× (10299→11131 µs). Same
   ratio band; pi also slower. Ceiling 8.0 unchanged. No
