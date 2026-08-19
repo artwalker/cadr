@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-tail` fills totals and
+  the selected tail in one reverse walk. sprof named
+  forward `HARNESS-LINE-AND-UTF8-LENGTH` 67.5%. this-host
+  ~819→711 µs. Identity 126546→126566. FiveAM
+  19359→19361. Not intern. Not FFI. G.17 still `missing`.
 - Goal 20 Part P: `cli-token-tail=` compares with `schar`
   on `simple-string`. sprof named it 14.2% self on
   `argv_parse`. this-host 3.0→1.96 µs. Identity
