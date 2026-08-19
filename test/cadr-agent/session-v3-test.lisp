@@ -458,10 +458,11 @@
              (loaded (cadr-agent:load-session path))
              (after (uiop:read-file-string path)))
         (is (string= before after))
-        (is (hash-table-p (first objects)))
+        (is (cadr-agent::session-file-header-p (first objects)))
+        (is (not (hash-table-p (first objects))))
         (is (string=
              "session"
-             (cadr-ai::json-get (first objects) "type")))
+             (cadr-agent::session-header-ref (first objects) "type")))
         (is (every #'cadr-agent::session-entry-p (rest objects)))
         (is (string=
              "message"
@@ -504,6 +505,51 @@
                 (cadr-ai:tool-call-arguments call)))))
         (is (equal
              '("hi" "ok")
+             (message-texts
+              (cadr-agent:session-messages loaded))))))))
+
+(test session-header-fills-typed-struct-not-hash
+  ;; First JSONL line fills session-file-header.  Not EQUAL hash.
+  ;; File bytes stay stringify.  Not intern.  Not FFI.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((path (merge-pathnames "hdr.jsonl" sessions))
+           (canonical (cadr-agent::canonical-session-cwd cwd))
+           (header-line
+             (format
+              nil
+              "{\"type\":\"session\",\"version\":3,\"id\":\"hdr\",\"timestamp\":1,\"cwd\":\"~A\",\"parentSession\":null}"
+              canonical)))
+      (with-open-file
+          (stream path
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (write-string header-line stream)
+        (terpri stream)
+        (write-string
+         "{\"type\":\"message\",\"id\":\"one\",\"parentId\":null,\"timestamp\":2,\"message\":{\"role\":\"user\",\"content\":\"hi\",\"timestamp\":2}}"
+         stream)
+        (terpri stream))
+      (let* ((octets (cadr-ai::utf8-octets header-line))
+             (header
+               (cadr-agent::parse-session-header-octets
+                octets 0 (length octets)))
+             (objects (cadr-agent::read-session-objects path))
+             (before (uiop:read-file-string path))
+             (loaded (cadr-agent:load-session path))
+             (after (uiop:read-file-string path)))
+        (is (string= before after))
+        (is (cadr-agent::session-file-header-p header))
+        (is (not (hash-table-p header)))
+        (is (string= "session"
+                     (cadr-agent::session-file-header-type header)))
+        (is (= 3 (cadr-agent::session-file-header-version header)))
+        (is (string= "hdr" (cadr-agent::session-file-header-id header)))
+        (is (cadr-agent::session-file-header-p (first objects)))
+        (is (equal
+             '("hi")
              (message-texts
               (cadr-agent:session-messages loaded))))))))
 
@@ -612,7 +658,7 @@
       (let ((objects (cadr-agent::read-session-objects path))
             (loaded (cadr-agent:load-session path)))
         (is (= 2 (length objects)))
-        (is (hash-table-p (first objects)))
+        (is (cadr-agent::session-file-header-p (first objects)))
         (is (cadr-agent::session-entry-p (second objects)))
         (is (equal
              '("tail")

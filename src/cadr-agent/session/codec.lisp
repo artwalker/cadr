@@ -44,6 +44,15 @@
   secondary
   extra)
 
+(defstruct session-file-header
+  type
+  (version 1)
+  id
+  timestamp
+  cwd
+  parent-session
+  extra)
+
 (defstruct (session
             (:constructor %make-session))
   id

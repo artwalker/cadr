@@ -1255,21 +1255,87 @@
        "Invalid session JSON at line ~D: ~A"
        line-number cause))))
 
+(defun session-header-ref (object key &optional default)
+  (if (session-file-header-p object)
+      (cond
+        ((string= key "type")
+         (or (session-file-header-type object) default))
+        ((string= key "version")
+         (or (session-file-header-version object) default))
+        ((string= key "id")
+         (or (session-file-header-id object) default))
+        ((string= key "timestamp")
+         (or (session-file-header-timestamp object) default))
+        ((string= key "cwd")
+         (or (session-file-header-cwd object) default))
+        ((string= key "parentSession")
+         (let ((parent (session-file-header-parent-session object)))
+           (if (null parent)
+               default
+               parent)))
+        (t default))
+      (cadr-ai::json-get object key default)))
+
+(defun session-file-header-to-hash (header)
+  (let ((object
+          (cadr-ai::json-object
+           "type" (session-file-header-type header)
+           "version" (session-file-header-version header)
+           "id" (session-file-header-id header)
+           "timestamp" (session-file-header-timestamp header)
+           "cwd" (session-file-header-cwd header))))
+    (let ((parent (session-file-header-parent-session header)))
+      (when parent
+        (cadr-ai::json-put object "parentSession" parent)))
+    (loop for (key value) on (session-file-header-extra header) by #'cddr
+          do (cadr-ai::json-put object key value))
+    object))
+
+(defun parse-session-header-octets (octets start end)
+  ;; First JSONL line fills session-file-header.  Visitor walk,
+  ;; not EQUAL hash.  Not intern.  Not FFI.
+  (let ((header (make-session-file-header)))
+    (cadr-ai::parse-json-octets
+     octets
+     (lambda (key value)
+       (cond
+         ((string= key "type")
+          (setf (session-file-header-type header) value))
+         ((string= key "version")
+          (setf (session-file-header-version header) value))
+         ((string= key "id")
+          (setf (session-file-header-id header) value))
+         ((string= key "timestamp")
+          (setf (session-file-header-timestamp header) value))
+         ((string= key "cwd")
+          (setf (session-file-header-cwd header) value))
+         ((string= key "parentSession")
+          (setf (session-file-header-parent-session header) value))
+         (t
+          (setf (session-file-header-extra header)
+                (list* key value
+                       (session-file-header-extra header))))))
+     nil
+     start
+     end)
+    header))
+
 (defun validate-session-header (object path)
-  (unless (hash-table-p object)
+  (unless (or (session-file-header-p object)
+              (hash-table-p object))
     (session-failure path 1 "Invalid session header"))
-  (let ((version (cadr-ai::json-get object "version" 1)))
+  (let ((version (session-header-ref object "version" 1)))
     (unless
         (and (string= "session"
-                      (cadr-ai::json-get object "type"))
+                      (session-header-ref object "type"))
              (member version '(1 2 3))
-             (stringp (cadr-ai::json-get object "id"))
+             (stringp (session-header-ref object "id"))
              (or
               (integerp
-               (cadr-ai::json-get object "timestamp"))
+               (session-header-ref object "timestamp"))
               (stringp
-               (cadr-ai::json-get object "timestamp")))
-             (stringp (cadr-ai::json-get object "cwd")))
+               (session-header-ref object "timestamp")))
+             (stringp (session-header-ref object "cwd")))
       (session-failure path 1 "Invalid session header")))
   object)
 
@@ -1297,19 +1363,23 @@
            (unless (blank-octets-p octets start end)
              (let ((object
                      (handler-case
-                         (parse-session-line
-                          octets path line-number
-                          :raw-hash-p raw-hash-p
-                          :start start
-                          :end end
-                          :octet-p t)
-                       (session-error () nil))))
+                         (if (null header)
+                             (parse-session-header-octets
+                              octets start end)
+                             (parse-session-line
+                              octets path line-number
+                              :raw-hash-p raw-hash-p
+                              :start start
+                              :end end
+                              :octet-p t))
+                       (session-error () nil)
+                       (cadr-ai::json-parse-error () nil))))
                (when object
                  (unless header
                    (setf header object)
                    (setf raw-hash-p
                          (let ((version
-                                 (cadr-ai::json-get
+                                 (session-header-ref
                                   object "version" 1)))
                            (or (not (integerp version))
                                (< version 3)))))
@@ -1832,8 +1902,12 @@
          (header
            (validate-session-header
             (first objects) pathname))
-         (version (cadr-ai::json-get header "version" 1)))
+         (version (session-header-ref header "version" 1)))
     (when (< version 3)
+      (when (session-file-header-p (first objects))
+        (setf (car objects)
+              (session-file-header-to-hash (first objects)))
+        (setf header (first objects)))
       (handler-case
           (progn
             (when (= version 1)
@@ -1901,7 +1975,7 @@
       (setf entries (nreverse entries))
       (let* ((timestamp
                (iso8601-to-milliseconds
-                (cadr-ai::json-get
+                (session-header-ref
                  header "timestamp")))
              (modified-timestamp
                (reduce
@@ -1915,13 +1989,13 @@
                    timestamp))
                 :initial-value timestamp)))
         (%make-session
-       :id (cadr-ai::json-get header "id")
+       :id (session-header-ref header "id")
        :timestamp timestamp
-       :cwd (cadr-ai::json-get header "cwd")
+       :cwd (session-header-ref header "cwd")
        :path pathname
        :parent-session
        (json-null-to-nil
-        (cadr-ai::json-get header "parentSession"))
+        (session-header-ref header "parentSession"))
        :name session-name
        :labels labels
        :%entries entries

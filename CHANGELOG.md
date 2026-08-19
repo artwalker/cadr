@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: session JSONL first line fills
+  `session-file-header` from the octet window. Not EQUAL
+  hash. this-host load 2387 µs / 920,544 B → 1586 µs /
+  920,512 B; journal_read 1591 µs / 862,611 B → 1586 µs /
+  862,774 B. Wall is timer alias; no Friend-MachineD
+  remesure of this knife. Not intern. Not FFI. Identity
+  125811→125894. FiveAM 19250→19259. G.17 still
+  `missing`.
+
+- Goal 20 Part P: Friend-MachineD remesure of `98f27fdd8`
+  (n=5, enforced). load 1.19×→1.06× (cadr 2007→1905 µs),
+  read 1.09×→1.10× (cadr 1898→1627 µs), append 0.81×→0.89×
+  (cadr 1698→1624 µs). Ceiling unchanged. No `src/` in the
+  remesure booking.
+
 - Goal 20 Part P: session JSONL `PARSE-STRING-VALUE` decodes
   escaped strings from the octet window. It no longer
   `octets-to-string` the quoted span and re-enters
