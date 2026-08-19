@@ -20,7 +20,7 @@ Do not treat this file as G.17 `met` or Part P `[done]`.
 
 | cadr | pi | What is wrong | Next knife |
 |---|---|---|---|
-| `src/cadr-agent/truncate.lisp` `truncate-harness-tail` / `truncate-harness-head` | `packages/agent/src/harness/utils/truncate.ts` `truncateTail` / `truncateHead`: `Buffer.byteLength` + `split("\n")` + index | One walk fills totals + fixnum start/width table; ASCII runs add 1×run; index from the end; one `subseq`. Pairing tail **1.44×** before this knife. | Leftover is remaining mixed `utf8-char-length` / selection, not another array swap. Not FFI `Buffer`. Not another reverse scan. |
+| `src/cadr-agent/truncate.lisp` `truncate-harness-tail` / `truncate-harness-head` | `packages/agent/src/harness/utils/truncate.ts` `truncateTail` / `truncateHead`: `Buffer.byteLength` + `split("\n")` + index | One walk fills totals + fixnum start/width table; ASCII runs add 1×run; index from the end; one `subseq`. Pairing tail **0.85×**. | Leftover is remaining mixed `utf8-char-length` / selection, not another array swap. Not FFI `Buffer`. Not another reverse scan. |
 | `src/cadr-cli/truncation.lisp` `utf8-length` | Same files: `Buffer.byteLength` | Still `(length (cadr-ai::utf8-octets text))`. Agent already has `harness-utf8-length`. Callers: `output-accumulator`, `tools/read`, `tools/bash`. | Delegate to `harness-utf8-length`. Do not encode to count. |
 
 ## Class B — pi's structure kept, Lisp encoding is a list (mermaid `nth`)

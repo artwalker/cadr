@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-head` ASCII-run fill (same
+  encoding as tail: ASCII 1×run, newline closes, non-ASCII
+  `utf8-char-length`). this-host ~240 µs. Identity 126997→127038.
+  FiveAM 19540→19567. Not intern. Not FFI. Not empty SWAR.
+  G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `9b70e7a09`
   `truncate_tail` 1.44×→0.85× (758→461 µs). Faster than pi.
   Ceiling 18.0 unchanged. No `src/`. G.17 still `missing`.

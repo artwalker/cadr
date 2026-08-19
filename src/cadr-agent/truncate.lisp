@@ -210,31 +210,72 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
              (add-remainder (from)
                (declare (type fixnum from))
                (when (< from length)
-                 (let ((open-line from))
-                   (declare (type fixnum open-line))
-                   (loop for index of-type fixnum from from below length
-                         for character of-type character = (schar text index)
-                         do (incf total-bytes (utf8-char-length character))
-                            (when (char= character #\Newline)
+                 (let ((open-line from)
+                       (index from))
+                   (declare (type fixnum open-line index))
+                   (loop while (< index length)
+                         do
+                         (let ((code (char-code (schar text index))))
+                           (declare (type fixnum code))
+                           (cond
+                             ((= code 10)
+                              (incf total-bytes)
                               (incf total-lines)
-                              (setf open-line
-                                    (the fixnum (1+ index)))))
+                              (setf open-line (the fixnum (1+ index)))
+                              (incf index))
+                             ((< code #x80)
+                              (let ((run-start index))
+                                (declare (type fixnum run-start))
+                                (incf index)
+                                (loop while (< index length)
+                                      for next of-type fixnum
+                                        = (char-code (schar text index))
+                                      while (and (< next #x80) (/= next 10))
+                                      do (incf index))
+                                (incf total-bytes
+                                      (the fixnum (- index run-start)))))
+                             (t
+                              (incf total-bytes
+                                    (utf8-char-length (schar text index)))
+                              (incf index)))))
                    (when (< open-line length)
                      (incf total-lines))))))
-      (loop for index of-type fixnum from 0 below length
-            for character of-type character = (schar text index)
-            for nbytes of-type fixnum = (utf8-char-length character)
+      ;; ASCII runs add 1×run. Newline still closes a line.
+      ;; Non-ASCII still utf8-char-length. Same totals as the tail fill.
+      (loop with index of-type fixnum = 0
+            while (< index length)
             do
-        (incf total-bytes nbytes)
-        (if (char= character #\Newline)
-            (progn
-              (close-line index)
-              (setf line-start (the fixnum (1+ index))
-                    line-utf8 0)
-              (unless selecting
-                (add-remainder line-start)
-                (return)))
-            (incf line-utf8 nbytes)))
+            (let ((code (char-code (schar text index))))
+              (declare (type fixnum code))
+              (cond
+                ((= code 10)
+                 (incf total-bytes)
+                 (close-line index)
+                 (setf line-start (the fixnum (1+ index))
+                       line-utf8 0)
+                 (incf index)
+                 (unless selecting
+                   (add-remainder line-start)
+                   (return)))
+                ((< code #x80)
+                 (let ((run-start index))
+                   (declare (type fixnum run-start))
+                   (incf index)
+                   (loop while (< index length)
+                         for next of-type fixnum
+                           = (char-code (schar text index))
+                         while (and (< next #x80) (/= next 10))
+                         do (incf index))
+                   (let ((run (the fixnum (- index run-start))))
+                     (incf total-bytes run)
+                     (incf line-utf8 run))))
+                (t
+                 (let ((nbytes
+                         (utf8-char-length (schar text index))))
+                   (declare (type fixnum nbytes))
+                   (incf total-bytes nbytes)
+                   (incf line-utf8 nbytes)
+                   (incf index))))))
       (when (and selecting (< line-start length))
         (close-line length))
       (cond
