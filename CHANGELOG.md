@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: this-host sb-sprof of `session_load` and
+  `journal_read` on `2a3aa47ba`. Leftover is walker / SWAR
+  helpers / runtime / foreign `read`. `COPY-UNESCAPED`
+  3.1%→2.4% self. No unused legal named structure. Capture:
+  `docs/benchmarks/goal20-part-p-load-read-sprof-2a3aa47ba.md`.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: this-host sb-sprof of `context_walk`,
   `argv_parse`, and `help_render`. Walk leftover is EQUAL
   hash in `session-path-entries`. argv is `assoc`/`string=`.
