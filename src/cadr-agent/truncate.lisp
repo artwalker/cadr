@@ -120,17 +120,27 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
         finally (return total)))
 
 (defun harness-line-count (text)
+  (nth-value 0 (harness-line-and-utf8-length text)))
+
+(defun harness-line-and-utf8-length (text)
+  ;; One walk for both totals. truncate-harness-tail used to call
+  ;; harness-line-count then harness-utf8-length over the same 500k
+  ;; pairing fixture.
+  (declare (type simple-string text))
   (let ((length (length text)))
-    (cond
-      ((zerop length) 0)
-      (t
-       (let ((lines 1))
-         (loop for index from 0 below length
-               when (char= (char text index) #\Newline)
-               do (incf lines))
-         (when (char= (char text (1- length)) #\Newline)
-           (decf lines))
-         lines)))))
+    (if (zerop length)
+        (values 0 0)
+        (let ((lines 1)
+              (bytes 0))
+          (declare (type fixnum lines bytes))
+          (loop for index from 0 below length
+                for character of-type character = (char text index)
+                do (incf bytes (utf8-char-length character))
+                   (when (char= character #\Newline)
+                     (incf lines)))
+          (when (char= (char text (1- length)) #\Newline)
+            (decf lines))
+          (values lines bytes)))))
 
 (defun make-complete-harness-truncation
     (content total-lines total-bytes max-lines max-bytes)
@@ -268,9 +278,9 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
                  +harness-default-max-lines+)
                (max-bytes
                  +harness-default-max-bytes+))
-  (let* ((length (length content))
-         (total-lines (harness-line-count content))
-         (total-bytes (harness-utf8-length content)))
+  (let* ((length (length content)))
+    (multiple-value-bind (total-lines total-bytes)
+        (harness-line-and-utf8-length content)
     (when (and
            (<= total-lines max-lines)
            (<= total-bytes max-bytes))
@@ -340,7 +350,7 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
          :output-bytes selected-bytes
          :last-line-partial-p partial-p
          :max-lines max-lines
-         :max-bytes max-bytes)))))
+         :max-bytes max-bytes))))))
 
 (defun truncate-harness-line
     (line &optional (max-characters 500))

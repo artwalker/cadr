@@ -1,6 +1,19 @@
 (in-package #:cadr-agent/tests)
 (in-suite cadr-agent-suite)
 
+(test harness-line-and-utf8-length-matches-separate-scans
+  (dolist
+      (text
+       (list
+        ""
+        "abc"
+        (format nil "one~%two~%three~%")
+        (format nil "é🙂中文 mixed tail line~%")))
+    (multiple-value-bind (lines bytes)
+        (cadr-agent::harness-line-and-utf8-length text)
+      (is (= (cadr-agent::harness-line-count text) lines))
+      (is (= (cadr-agent::harness-utf8-length text) bytes)))))
+
 (test harness-truncation-matches-reference-line-and-utf8-boundaries
   (let ((full
           (cadr-agent::truncate-harness-head

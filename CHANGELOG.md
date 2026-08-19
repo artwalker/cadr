@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-tail` counts lines and
+  UTF-8 bytes in one walk. Friend-MachineD remesure still
+  4.57× / 3.09× (head/tail) before this knife. Not intern.
+  Not FFI. G.17 still `missing`.
 - Goal 20 Part P: `sqlite-row-to-entry` decodes payload
   TEXT with `parse-session-record-octets` instead of
   `parse-json`. Identity 126497→126502. Not intern. Not
