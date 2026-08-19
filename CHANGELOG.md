@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+### Added
+
+- Goal 20 Part P: this-host sb-sprof of `session_load` and
+  `journal_read` on `67a2d43fb`. Leftover is the session
+  JSONL octet walker / runtime / foreign `read`. No EQUAL
+  hash, no `parse-json-octets` re-entry. Capture:
+  `docs/benchmarks/goal20-part-p-load-read-sprof.md`. No
+  `src/`. G.17 still `missing`.
+
 ### Changed
 
 - Goal 20 Part P: Friend-MachineD remesure of `8d7917472`

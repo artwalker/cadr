@@ -37,6 +37,13 @@ Not a Goal 20 pass.
 | P.12.3 alt-screen nth | number | last-document vector; 400-row × 80 `NTH` 0.100 ms → `AREF` 0.000 ms | this knife. prepared-document stays a list for car/cdr prefix reuse. |
 | P.12.4 mermaid concatenate | number | `gm-read-shape` 200× 800-char 1,342,124 B → 24,717 B; 0.340 ms → 0.040 ms. `gm-wrap-label` fill-pointer 88,758 B → 95,310 B (worse; concatenate kept) | parse `c95c24757`. wrap not a lever. |
 
+## Load/read leftover (sprof `67a2d43fb`)
+
+`docs/benchmarks/goal20-part-p-load-read-sprof.md`. Contrast
+`docs/benchmarks/goal20-part-o-remaining-sprof.md`. Leftover is
+walker / `pthread_sigmask` / foreign `read`. Not EQUAL hash.
+Not `parse-json-octets`. Not a G.17 close.
+
 ## Not claimed
 
 - Goal 20 complete.

@@ -23,6 +23,9 @@ staging as `scripts/goal20-paired-paths.lisp`.
 Current Part O remaining-path capture:
 [`benchmarks/goal20-part-o-remaining-sprof.md`](benchmarks/goal20-part-o-remaining-sprof.md).
 
+Current Part P load/read capture (HEAD `67a2d43fb`):
+[`benchmarks/goal20-part-p-load-read-sprof.md`](benchmarks/goal20-part-p-load-read-sprof.md).
+
 ## What it samples
 
 The driver loops each thunk for `--seconds` (default 4) at a 1 ms
