@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-tail` ASCII-run fill. ASCII
+  runs add 1×run; newline still closes a line; non-ASCII still
+  `utf8-char-length`. Same start/width table. this-host ~558→319 µs.
+  Identity 126974→126997. FiveAM 19513→19540. sprof:
+  `docs/benchmarks/goal20-part-p-truncate-tail-sprof-ascii-run.md`.
+  Not intern. Not FFI. Not empty SWAR. G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `07facd8fd`
   `truncate_tail` 1.45×→1.44× (760→758 µs). Same band as
   the revert. Ceiling 18.0 unchanged. No `src/`. G.17 still

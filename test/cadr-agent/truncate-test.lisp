@@ -154,6 +154,39 @@
          (cadr-agent::harness-truncation-result-last-line-partial-p
           tail)))))
 
+(test truncate-tail-ascii-run-fill-matches-utf8-totals
+  ;; ASCII runs add 1×run without utf8-char-length. Newline still
+  ;; closes. Mixed scalars still use utf8-char-length. Drives the
+  ;; shipped fill, not a reimplementation of the byte counter.
+  (dolist
+      (text
+       (list
+        ""
+        "abc"
+        (format nil "one~%two~%three~%")
+        (make-string 220 :initial-element #\x)
+        (format nil "~A~%" (make-string 220 :initial-element #\x))
+        (format nil "é🙂中文 mixed tail line~%")
+        (format nil "~A~%~A~%"
+                (make-string 220 :initial-element #\x)
+                "é🙂中文 mixed tail line")
+        (format nil "a~%~%b")
+        "aé🙂b"))
+    (let ((tail
+            (cadr-agent::truncate-harness-tail
+             text :max-lines 10000 :max-bytes 10000000)))
+      (multiple-value-bind (lines bytes)
+          (cadr-agent::harness-line-and-utf8-length text)
+        (is (= lines
+               (cadr-agent::harness-truncation-result-total-lines
+                tail)))
+        (is (= bytes
+               (cadr-agent::harness-truncation-result-total-bytes
+                tail))))
+      (is (not
+           (cadr-agent::harness-truncation-result-truncated-p
+            tail))))))
+
 (test harness-utf8-length-surrogate-input-signals
   ;; compaction.lisp:166-170 deliberately builds surrogate-bearing text
   ;; to mirror JavaScript UTF-16 slicing, so surrogate code points reach
