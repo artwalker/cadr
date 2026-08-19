@@ -65,15 +65,19 @@
           (cli-arguments-model value)))
 
 (defun cli-token-tail= (name start expected)
-  (declare (type string name expected)
-           (type fixnum start))
+  ;; sprof names this 14.2% self on argv_parse. CHAR on STRING
+  ;; pays a bounds helper; simple-string + schar is the same
+  ;; compare without the generic vector dispatch.
+  (declare (type simple-string name expected)
+           (type fixnum start)
+           (optimize (speed 3) (safety 1)))
   (let ((need (length expected))
         (have (- (length name) start)))
     (declare (type fixnum need have))
     (when (= have need)
       (loop for index of-type fixnum from 0 below need
-            always (char= (char name (the fixnum (+ start index)))
-                          (char expected index))))))
+            always (char= (schar name (the fixnum (+ start index)))
+                          (schar expected index))))))
 
 (defun lookup-cli-option (name)
   ;; Closed table: length, then the first distinguishing octet.

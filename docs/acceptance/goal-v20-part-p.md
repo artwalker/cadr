@@ -18,7 +18,7 @@ Not a Goal 20 pass.
 | P.1 JSON read | leftover | schema octet FSM. sprof `19ca40947`: `OCTET-U32-LE` 11%; quote/LF/space SWAR; `SCAN-KEY`; pthread; foreign `read`. Repeating those is empty SWAR / intern / uncopyable `read`. Floor still 2.04×/1.80× (`17df52451`). | sprof this booking. No `src/`. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
-| P.4 help / argv / walk | number | remesure `e908ebad9`: help 5.59×→0.07× (4.7→0.0 µs); walk 1.05×→0.03× (113.3→3.2 µs); argv 1.69×→1.54× (5.8→3.0 µs) | remesure this knife. No `src/`. |
+| P.4 help / argv / walk | number | remesure `b7f1f7de0`: argv 0.98× (3.0 / 3.1 µs). `cli-token-tail=` now `schar`; this-host 3.0→1.96 µs | this knife for argv. Not intern. |
 | P.4 stream_roundtrip | number | this-host 6.398 ms / 3,750,979 B → 4.995 ms / 2,432,214 B; SSE-only 2.899 ms / 2,327,510 B → 1.698 ms / 1,229,201 B | `c183539e7`–this knife. File-stream newline scan. |
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,350,697 B; snake overlay 39,963 B; ttt overlay 47,819 B | ttt visual-board stream rewrite. |

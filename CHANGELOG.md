@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `cli-token-tail=` compares with `schar`
+  on `simple-string`. sprof named it 14.2% self on
+  `argv_parse`. this-host 3.0→1.96 µs. Identity
+  126542→126546. Not intern. Not FFI. G.17 still
+  `missing`.
 - Goal 20 Part P: `truncate-harness-head` counts remainder
   totals after the selected prefix. Friend-MachineD head
   was 4.27× (2277 µs). this-host 2040→549 µs. Identity

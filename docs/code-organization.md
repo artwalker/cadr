@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=126542 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=126546 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -169,7 +169,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 
 | Path | Lines | Definitions | One-sentence responsibility | Verdict | Lisp-ification status | evaluation verdict | handling goal |
 |---|---:|---:|---|---|---|---|---|
-| `src/cadr-cli/arguments.lisp` | 1032 | 27 | Parse, validate, resolve, and document the CLI argument contract. | pass · large | done | lookup-cli-option closed table; print-cli-usage write-string literals. I0: approve/no-approve stay special. | 20 |
+| `src/cadr-cli/arguments.lisp` | 1036 | 27 | Parse, validate, resolve, and document the CLI argument contract. | pass · large | done | lookup-cli-option closed table; print-cli-usage write-string literals. I0: approve/no-approve stay special. | 20 |
 | `src/cadr-cli/bootstrap/auth.lisp` | 172 | 2 | Project provider-owned authentication options into the native CLI login command. | pass | done | one metadata let. I0: :status stays on the option. | 20 |
 | `src/cadr-cli/bootstrap/commands.lisp` | 2,580 | 8 | Construct the agent controller and dispatch CLI modes and slash-command output through one frontend sink. | pass · large | done | spec-driven command records; one provider match. I0: no third loop. | 20 |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | 10 | Handle package/credential preflight, parse arguments, and enter the selected CLI path. | pass | no-rewrite | list_models writes token counts from slots; six-column table is still the baseline. | 20 |
