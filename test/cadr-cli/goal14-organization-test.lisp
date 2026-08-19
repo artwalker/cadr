@@ -952,7 +952,9 @@
     ;; +4 Goal 20 typed session header: session-file-header,
     ;; session-header-ref, session-file-header-to-hash,
     ;; parse-session-header-octets.
-    (is (= 291 definition-count)
+    ;; +10 Goal 20 walker SWAR: 6 splat constants + haszero +
+    ;; first-msb + octet-find-lf + octet-skip-json-space.
+    (is (= 301 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

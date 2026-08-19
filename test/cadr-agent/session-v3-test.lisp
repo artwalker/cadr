@@ -818,3 +818,49 @@
           (cadr-agent::keyword-from-json "openai-completions")))
   (is (eq (intern (string-upcase "novelToken") "KEYWORD")
           (cadr-agent::keyword-from-json "novelToken"))))
+
+(test octet-swar-finds-lf-and-skips-json-space
+  ;; Shipped SWAR helpers: LF at word edges, JSON whitespace prefix.
+  (let ((buf (make-array 24 :element-type '(unsigned-byte 8)
+                         :initial-element 65)))
+    (setf (aref buf 0) 10)
+    (is (= 0 (cadr-agent::octet-find-lf buf 0 24)))
+    (setf (aref buf 0) 65
+          (aref buf 7) 10)
+    (is (= 7 (cadr-agent::octet-find-lf buf 0 24)))
+    (setf (aref buf 7) 65
+          (aref buf 8) 10)
+    (is (= 8 (cadr-agent::octet-find-lf buf 0 24)))
+    (setf (aref buf 8) 65
+          (aref buf 15) 10)
+    (is (= 15 (cadr-agent::octet-find-lf buf 0 24)))
+    (is (null (cadr-agent::octet-find-lf buf 16 24))))
+  (let ((ws (make-array 16 :element-type '(unsigned-byte 8)
+                        :initial-contents
+                        '(32 9 13 10 32 32 32 32
+                          123 32 32 32 32 32 32 32))))
+    (is (= 8 (cadr-agent::octet-skip-json-space ws 0 16)))
+    (is (= 8 (cadr-agent::octet-skip-json-space ws 8 16)))))
+
+(test pairing-fixture-and-spaced-record-use-swar-walker
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (path
+           (merge-pathnames
+            "test/fixtures/goal20-paired-paths/session.jsonl"
+            root))
+         (objects (cadr-agent::read-session-objects path))
+         (spaced
+           (cadr-ai::utf8-octets
+            "{  \"type\" : \"message\" , \"id\" : \"swar\" , \"parentId\" : null , \"timestamp\" : 2 , \"message\" : { \"role\" : \"user\" , \"content\" : \"hi\" , \"timestamp\" : 2 } }"))
+         (entry
+           (cadr-agent::parse-session-record-octets
+            spaced 0 (length spaced))))
+    (is (cadr-agent::session-file-header-p (first objects)))
+    (is (>= (length objects) 2))
+    (is (cadr-agent::session-entry-p entry))
+    (is (string= "message" (cadr-agent::session-entry-type entry)))
+    (is (string= "swar" (cadr-agent::session-entry-id entry)))
+    (is (string=
+         "hi"
+         (cadr-agent::session-json-message-content
+          (cadr-agent::session-entry-message entry))))))

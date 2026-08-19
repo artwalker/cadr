@@ -15,7 +15,7 @@ Not a Goal 20 pass.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | number | schema octet FSM; leftover generic values fill pairs not EQUAL hash; escaped strings decode from the octet window; header fills session-file-header. this-host load 2387→1586 µs / 920,544→920,512 B | this knife. Not intern. Not FFI. |
+| P.1 JSON read | number | schema octet FSM; leftover generic values fill pairs not EQUAL hash; escaped strings decode from the octet window; header fills session-file-header; SCAN-BUFFER/SKIP-SPACE are 8-byte SWAR | this knife. Not intern. Not FFI. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
 | P.4 help / argv / walk | number | remesure `e908ebad9`: help 5.59×→0.07× (4.7→0.0 µs); walk 1.05×→0.03× (113.3→3.2 µs); argv 1.69×→1.54× (5.8→3.0 µs) | remesure this knife. No `src/`. |

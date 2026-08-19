@@ -25,6 +25,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `SCAN-BUFFER` / `SKIP-SPACE` scan 8
+  bytes at a time (SWAR haszero after splat). Not FFI.
+  Not `sb-simd`. Session JSONL bytes unchanged. Identity
+  126223→126304. FiveAM 19291→19304. Not intern. G.17
+  still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of `e908ebad9`
   (n=5, enforced). help_render 5.59×→0.07× (cadr 4.7→0.0 µs).
   context_walk 1.05×→0.03× (113.3→3.2 µs). argv 1.69×→1.54×.

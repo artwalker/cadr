@@ -91,6 +91,89 @@
        (when (string= key "retainedTail")
          (setf (session-entry-retained-tail entry) value))))))
 
+(defconstant +swar-lsb+ #x0101010101010101)
+(defconstant +swar-msb+ #x8080808080808080)
+(defconstant +swar-nl+ #x0A0A0A0A0A0A0A0A)
+(defconstant +swar-ht+ #x0909090909090909)
+(defconstant +swar-cr+ #x0D0D0D0D0D0D0D0D)
+(defconstant +swar-sp+ #x2020202020202020)
+
+(defun swar-eq-msb (word splat)
+  ;; V8/haszero after XOR splat: ((x-ones) & ~x & high).
+  ;; Words above most-positive-fixnum are bignums; do not
+  ;; unbox them with safety 0. Not FFI. Not sb-simd.
+  (declare (type (unsigned-byte 64) word splat)
+           (optimize (speed 3) (safety 1)))
+  (let ((x (logxor word splat)))
+    (logand (ldb (byte 64 0) (- x +swar-lsb+))
+            (logandc1 x +swar-msb+))))
+
+(defun swar-first-msb-index (mask)
+  (declare (type (unsigned-byte 64) mask)
+           (optimize (speed 3) (safety 1)))
+  (ash (1- (integer-length (logand mask (- mask)))) -3))
+
+(defun octet-find-lf (octets start end)
+  ;; First 0x0A in [start,end), or NIL. 8-byte SWAR when aligned.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end)
+           (optimize (speed 3) (safety 1)))
+  (let ((index start))
+    (declare (type fixnum index))
+    (loop while (< index end)
+          do
+          (cond
+            ((and (zerop (logand index 7))
+                  (<= (the fixnum (+ index 8)) end))
+             (let ((mask
+                     (swar-eq-msb
+                      (sb-kernel:%vector-raw-bits octets (ash index -3))
+                      +swar-nl+)))
+               (if (zerop mask)
+                   (incf index 8)
+                   (return (+ index (swar-first-msb-index mask))))))
+            ((= (aref octets index) 10)
+             (return index))
+            (t (incf index))))))
+
+(defun octet-skip-json-space (octets start end)
+  ;; Advance past JSON whitespace. 8-byte SWAR when aligned.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end)
+           (optimize (speed 3) (safety 1)))
+  (let ((index start))
+    (declare (type fixnum index))
+    (loop while (< index end)
+          do
+          (if (and (zerop (logand index 7))
+                   (<= (the fixnum (+ index 8)) end))
+              (let* ((word
+                       (sb-kernel:%vector-raw-bits
+                        octets (ash index -3)))
+                     (mask
+                       (logior (swar-eq-msb word +swar-sp+)
+                               (swar-eq-msb word +swar-ht+)
+                               (swar-eq-msb word +swar-cr+)
+                               (swar-eq-msb word +swar-nl+))))
+                (cond
+                  ((= mask +swar-msb+)
+                   (incf index 8))
+                  ((zerop mask)
+                   (return-from octet-skip-json-space index))
+                  (t
+                   (return-from octet-skip-json-space
+                     (+ index
+                        (swar-first-msb-index
+                         (logxor mask +swar-msb+)))))))
+              (let ((code (aref octets index)))
+                (if (or (= code 32)
+                        (= code 9)
+                        (= code 13)
+                        (= code 10))
+                    (incf index)
+                    (return-from octet-skip-json-space index)))))
+    index))
+
 (defun parse-session-record-octets (octets start end)
   ;; Schema-shaped session JSONL walker.  Known keys fill
   ;; session-entry / session-json-message / usage / content
@@ -123,13 +206,8 @@
                     :message message
                     :position position))
            (skip-space ()
-             (loop while (< position length)
-                   for code = (aref octets position)
-                   while (or (= code 32)
-                             (= code 9)
-                             (= code 13)
-                             (= code 10))
-                   do (incf position)))
+             (setf position
+                   (octet-skip-json-space octets position length)))
            (expect-code (code)
              (unless (eql (take-code) code)
                (fail "Unexpected byte")))
@@ -1386,32 +1464,35 @@
                  (push object objects)))))
          (scan-buffer (buffer count pending)
            (let ((start 0))
-             (declare (type fixnum start count))
-             (loop for index of-type fixnum from 0 below count
-                   do
-                   (when (= (aref buffer index) 10)
-                     (cond
-                       ((or (null pending)
-                            (zerop (fill-pointer pending)))
-                        (consume-line buffer start index))
-                       (t
-                        (loop for copy of-type fixnum
-                              from start below index
-                              do (vector-push-extend
-                                  (aref buffer copy) pending))
-                        (consume-line
-                         pending 0 (fill-pointer pending))
-                        (setf (fill-pointer pending) 0)))
-                     (setf start (1+ index))))
-             (cond
-               ((null pending)
-                (when (< start count)
-                  (consume-line buffer start count)))
-               (t
-                (loop for copy of-type fixnum
-                      from start below count
-                      do (vector-push-extend
-                          (aref buffer copy) pending))))))
+             (declare (type fixnum start count)
+                      (type (simple-array (unsigned-byte 8) (*))
+                            buffer))
+             (loop
+               (let ((lf (octet-find-lf buffer start count)))
+                 (unless lf
+                   (cond
+                     ((null pending)
+                      (when (< start count)
+                        (consume-line buffer start count)))
+                     ((< start count)
+                      (loop for copy of-type fixnum
+                            from start below count
+                            do (vector-push-extend
+                                (aref buffer copy) pending))))
+                   (return))
+                 (cond
+                   ((or (null pending)
+                        (zerop (fill-pointer pending)))
+                    (consume-line buffer start lf))
+                   (t
+                    (loop for copy of-type fixnum
+                          from start below lf
+                          do (vector-push-extend
+                              (aref buffer copy) pending))
+                    (consume-line
+                     pending 0 (fill-pointer pending))
+                    (setf (fill-pointer pending) 0)))
+                 (setf start (1+ lf))))))
          (read-all (stream)
            (let* ((known (ignore-errors (file-length stream)))
                   (cap +max-session-header-scan-bytes+))
