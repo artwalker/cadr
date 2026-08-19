@@ -55,27 +55,39 @@
   ;; JS split("\n") on UTF-8: 0x0A cannot appear inside a
   ;; multi-byte scalar, so a ub8 scan matches a character scan.
   ;; Empty → #(0). Trailing newline → extra start at length.
-  ;; Exact-size fixnum vector. Not intern. Not FFI.
+  ;; One pass, same hint as truncate-harness-tail (64..8192,
+  ;; 1+length/20). Pairing 4000 lines fits the cap. Grow by
+  ;; doubling; shrink to exact so LENGTH is the line count.
+  ;; Not a second 0x0A walk (sprof SPLIT-OCTET-LINE-STARTS
+  ;; 27.4% at ad1e91711). Not intern. Not FFI. Not empty SWAR.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (optimize (speed 3) (safety 1)))
-  (let ((length (length octets)))
-    (declare (type fixnum length))
-    (let ((nlines 1))
-      (declare (type fixnum nlines))
-      (loop for index of-type fixnum from 0 below length
-            when (= (aref octets index) 10)
-              do (incf nlines))
-      (let ((starts
-              (make-array nlines :element-type 'fixnum)))
-        (setf (aref starts 0) 0)
-        (let ((slot 1))
-          (declare (type fixnum slot))
-          (loop for index of-type fixnum from 0 below length
-                when (= (aref octets index) 10)
-                  do (setf (aref starts slot)
-                           (the fixnum (1+ index)))
-                     (incf slot)))
-        starts))))
+  (let* ((length (length octets))
+         (hint
+           (max 64 (min 8192 (1+ (truncate length 20)))))
+         (starts (make-array hint :element-type 'fixnum))
+         (cap hint)
+         (slot 1))
+    (declare (type fixnum length hint cap slot)
+             (type (simple-array fixnum (*)) starts))
+    (setf (aref starts 0) 0)
+    (loop for index of-type fixnum from 0 below length
+          when (= (aref octets index) 10)
+            do
+            (when (>= slot cap)
+              (setf cap (the fixnum (* cap 2)))
+              (let ((grown
+                      (make-array cap :element-type 'fixnum)))
+                (replace grown starts)
+                (setf starts grown)))
+            (setf (aref starts slot)
+                  (the fixnum (1+ index)))
+            (incf slot))
+    (if (= slot cap)
+        starts
+        (let ((exact (make-array slot :element-type 'fixnum)))
+          (replace exact starts)
+          exact))))
 
 (defun octet-line-byte-end (starts nbytes index)
   (let ((next (1+ index)))

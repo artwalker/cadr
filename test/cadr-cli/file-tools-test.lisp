@@ -161,6 +161,25 @@
                                       simple b-from b-to)
                                      ""))))))))))
 
+(test split-octet-line-starts-grows-past-hint
+  ;; 18000-byte "x\\n"×9000: hint is 1+length/20, then grow.
+  ;; Still one start per JS split part, including the trailing
+  ;; empty. Drives the shipped grow path, not a reimplementation.
+  (let* ((n 9000)
+         (octets
+           (make-array (* n 2)
+                       :element-type '(unsigned-byte 8)))
+         (starts nil))
+    (loop for index from 0 below n
+          do (setf (aref octets (* index 2)) 120)
+             (setf (aref octets (1+ (* index 2))) 10))
+    (setf starts (cadr-cli::split-octet-line-starts octets))
+    (is (= (1+ n) (length starts)))
+    (is (zerop (aref starts 0)))
+    (is (= 2 (aref starts 1)))
+    (is (= 100 (aref starts 50)))
+    (is (= (* n 2) (aref starts n)))))
+
 (test read-window-decode-matches-offset-limit-output
   ;; Production read decodes only the offset/limit/truncation
   ;; window. Observable text still matches the old whole-file

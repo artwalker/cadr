@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `split-octet-line-starts` fills in one pass
+  (truncate hint 64..8192, grow by doubling, exact-size copy).
+  Kills the second `0x0A` walk named by sprof at `ad1e91711`.
+  Identity 126947→126959. FiveAM 19508→19513. sprof:
+  `docs/benchmarks/goal20-part-p-tool-read-sprof-one-pass-octet-starts.md`.
+  Not intern. Not FFI. Not empty SWAR.
+  G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `ad1e91711`
   `tool_read.text_file` 1.35×→0.41× (5813→1757 µs).
   `tool_grep.context_file` 0.92×→0.98×. Ceiling 8.0
