@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: CLI `utf8-length` delegates to
+  `harness-utf8-length`. Does not encode the whole string
+  to count. this-host pairing fixture ~1111→477 µs.
+  Identity 126583→126589. Not intern. Not FFI. G.17 still
+  `missing`.
 - Goal 20 Part P: `truncate-harness-tail` builds a fixnum
   line-start/width table in one walk, then indexes from the
   end like pi `truncateTail`. Not `uiop:split-string`. Not

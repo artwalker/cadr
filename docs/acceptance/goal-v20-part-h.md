@@ -308,14 +308,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 126,583 lines**
+Denominator: **295 files / 126,589 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 38 | 25,852 | 20.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 233 | 93,256 | 73.7% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 233 | 93,262 | 73.7% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 20.4% of lines (38 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 26.3% of lines.
@@ -481,7 +481,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-core/paths.lisp` | 1 | 95 |
 | `src/cadr-agent/file-mutation-queue.lisp` | 1 | 92 |
 | `src/cadr-agent/summarization.lisp` | 1 | 86 |
-| `src/cadr-cli/truncation.lisp` | 1 | 79 |
+| `src/cadr-cli/truncation.lisp` | 1 | 85 |
 | `src/cadr-tui/native-modifiers.lisp` | 1 | 78 |
 | `src/cadr-agent/harness-events.lisp` | 1 | 75 |
 | `src/cadr-core/cancellation.lisp` | 1 | 70 |

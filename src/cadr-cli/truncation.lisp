@@ -16,7 +16,13 @@
   (format nil "~{~A~^~%~}" lines))
 
 (defun utf8-length (text)
-  (length (cadr-ai::utf8-octets text)))
+  ;; pi Buffer.byteLength. Count without allocating a full
+  ;; octet vector. cadr-agent::harness-utf8-length is the
+  ;; allocation-free walk (goal 20 DS audit class A).
+  (cadr-agent::harness-utf8-length
+   (if (simple-string-p text)
+       text
+       (coerce text 'simple-string))))
 
 (defun utf16-code-unit-length (text)
   (cadr-agent::utf16-code-unit-length text))

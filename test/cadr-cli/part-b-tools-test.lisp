@@ -156,6 +156,22 @@
     (is (string= "🙂🙂... [truncated]" text))
     (is (not (null truncated-p)))))
 
+(test cli-utf8-length-matches-encoder-without-full-reencode
+  (dolist
+      (text
+       (list
+        ""
+        "ascii"
+        (format nil "é🙂中文 mixed~%")
+        (make-string 220 :initial-element #\x)))
+    (is (= (length (cadr-ai::utf8-octets text))
+           (cadr-cli::utf8-length text)))
+    (is (= (cadr-agent::harness-utf8-length
+            (if (simple-string-p text)
+                text
+                (coerce text 'simple-string)))
+           (cadr-cli::utf8-length text)))))
+
 (test path-utilities-match-baseline-edge-cases
   (with-test-directory (directory)
     (let* ((home (namestring (user-homedir-pathname)))
