@@ -64,64 +64,236 @@
           (cli-arguments-provider value)
           (cli-arguments-model value)))
 
-(defparameter +cli-value-options+
-  '(("--provider" . :provider)
-    ("--model" . :model)
-    ("--api-key" . :api-key)
-    ("--base-url" . :base-url)
-    ("--system-prompt" . :system-prompt)
-    ("--append-system-prompt" . :append-system-prompt)
-    ("--thinking" . :thinking)
-    ("--mode" . :mode)
-    ("--name" . :name)
-    ("-n" . :name)
-    ("--slynk" . :slynk)
-    ("--session" . :session)
-    ("--session-id" . :session-id)
-    ("--fork" . :fork)
-    ("--session-dir" . :session-directory)
-    ("--models" . :models)
-    ("--tools" . :tools)
-    ("-t" . :tools)
-    ("--exclude-tools" . :exclude-tools)
-    ("-xt" . :exclude-tools)
-    ("--extension" . :extension)
-    ("-e" . :extension)
-    ("--export" . :export)
-    ("--skill" . :skill)
-    ("--prompt-template" . :prompt-template)
-    ("--theme" . :theme)))
+(defun cli-token-tail= (name start expected)
+  (declare (type string name expected)
+           (type fixnum start))
+  (let ((need (length expected))
+        (have (- (length name) start)))
+    (declare (type fixnum need have))
+    (when (= have need)
+      (loop for index of-type fixnum from 0 below need
+            always (char= (char name (the fixnum (+ start index)))
+                          (char expected index))))))
 
-(defparameter +cli-flag-options+
-  '(("--continue" . :continue)
-    ("-c" . :continue)
-    ("--no-session" . :no-session)
-    ("--no-tools" . :no-tools)
-    ("-nt" . :no-tools)
-    ("--no-builtin-tools" . :no-builtin-tools)
-    ("-nbt" . :no-builtin-tools)
-    ("--no-extensions" . :no-extensions)
-    ("-ne" . :no-extensions)
-    ("--print" . :print)
-    ("-p" . :print)
-    ("--no-skills" . :no-skills)
-    ("-ns" . :no-skills)
-    ("--no-prompt-templates" . :no-prompt-templates)
-    ("-np" . :no-prompt-templates)
-    ("--no-themes" . :no-themes)
-    ("--no-context-files" . :no-context-files)
-    ("-nc" . :no-context-files)
-    ("--offline" . :offline)
-    ("--verbose" . :verbose)
-    ("--approve" . :approve)
-    ("-a" . :approve)
-    ("--no-approve" . :no-approve)
-    ("-na" . :no-approve)
-    ("--no-tui" . :no-tui)
-    ("--help" . :help)
-    ("-h" . :help)
-    ("--version" . :version)
-    ("-v" . :version)))
+(defun lookup-cli-option (name)
+  ;; Closed table: length, then the first distinguishing octet.
+  ;; Returns (values kind key). kind is :value, :flag, or :special.
+  ;; No alist walk. No per-flag assoc string=.
+  (declare (type string name))
+  (let ((n (length name)))
+    (declare (type fixnum n))
+    (cond
+      ((< n 2)
+       (values nil nil))
+      ((and (= n 2)
+            (char= (char name 0) #\-)
+            (char/= (char name 1) #\-))
+       (case (char name 1)
+         (#\n (values :value :name))
+         (#\t (values :value :tools))
+         (#\e (values :value :extension))
+         (#\c (values :flag :continue))
+         (#\p (values :flag :print))
+         (#\a (values :flag :approve))
+         (#\h (values :flag :help))
+         (#\v (values :flag :version))
+         (#\r (values :special :resume))
+         (t (values nil nil))))
+      ((and (= n 3)
+            (char= (char name 0) #\-)
+            (char/= (char name 1) #\-))
+       (let ((a (char name 1))
+             (b (char name 2)))
+         (cond
+           ((and (char= a #\x) (char= b #\t))
+            (values :value :exclude-tools))
+           ((and (char= a #\n) (char= b #\t))
+            (values :flag :no-tools))
+           ((and (char= a #\n) (char= b #\e))
+            (values :flag :no-extensions))
+           ((and (char= a #\n) (char= b #\s))
+            (values :flag :no-skills))
+           ((and (char= a #\n) (char= b #\p))
+            (values :flag :no-prompt-templates))
+           ((and (char= a #\n) (char= b #\c))
+            (values :flag :no-context-files))
+           ((and (char= a #\n) (char= b #\a))
+            (values :flag :no-approve))
+           (t (values nil nil)))))
+      ((and (= n 4)
+            (char= (char name 0) #\-)
+            (cli-token-tail= name 1 "nbt"))
+       (values :flag :no-builtin-tools))
+      ((and (>= n 6)
+            (char= (char name 0) #\-)
+            (char= (char name 1) #\-))
+       (case n
+         (6
+          (case (char name 2)
+            (#\m (cond
+                   ((cli-token-tail= name 3 "ode")
+                    (values :value :mode))
+                   (t (values nil nil))))
+            (#\n (if (cli-token-tail= name 3 "ame")
+                     (values :value :name)
+                     (values nil nil)))
+            (#\f (if (cli-token-tail= name 3 "ork")
+                     (values :value :fork)
+                     (values nil nil)))
+            (#\h (if (cli-token-tail= name 3 "elp")
+                     (values :flag :help)
+                     (values nil nil)))
+            (#\y (if (cli-token-tail= name 3 "olo")
+                     (values :special :yolo)
+                     (values nil nil)))
+            (t (values nil nil))))
+         (7
+          (case (char name 2)
+            (#\m (if (cli-token-tail= name 3 "odel")
+                     (values :value :model)
+                     (values nil nil)))
+            (#\s (cond
+                   ((cli-token-tail= name 3 "lynk")
+                    (values :value :slynk))
+                   ((cli-token-tail= name 3 "kill")
+                    (values :value :skill))
+                   (t (values nil nil))))
+            (#\t (cond
+                   ((cli-token-tail= name 3 "ools")
+                    (values :value :tools))
+                   ((cli-token-tail= name 3 "heme")
+                    (values :value :theme))
+                   (t (values nil nil))))
+            (#\p (if (cli-token-tail= name 3 "rint")
+                     (values :flag :print)
+                     (values nil nil)))
+            (t (values nil nil))))
+         (8
+          (case (char name 2)
+            (#\m (if (cli-token-tail= name 3 "odels")
+                     (values :value :models)
+                     (values nil nil)))
+            (#\e (if (cli-token-tail= name 3 "xport")
+                     (values :value :export)
+                     (values nil nil)))
+            (#\r (if (cli-token-tail= name 3 "esume")
+                     (values :special :resume)
+                     (values nil nil)))
+            (#\n (if (cli-token-tail= name 3 "o-tui")
+                     (values :flag :no-tui)
+                     (values nil nil)))
+            (t (values nil nil))))
+         (9
+          (case (char name 2)
+            (#\a (cond
+                   ((cli-token-tail= name 3 "pi-key")
+                    (values :value :api-key))
+                   ((cli-token-tail= name 3 "pprove")
+                    (values :flag :approve))
+                   (t (values nil nil))))
+            (#\s (if (cli-token-tail= name 3 "ession")
+                     (values :value :session)
+                     (values nil nil)))
+            (#\o (if (cli-token-tail= name 3 "ffline")
+                     (values :flag :offline)
+                     (values nil nil)))
+            (#\v (cond
+                   ((cli-token-tail= name 3 "erbose")
+                    (values :flag :verbose))
+                   ((cli-token-tail= name 3 "ersion")
+                    (values :flag :version))
+                   (t (values nil nil))))
+            (t (values nil nil))))
+         (10
+          (case (char name 2)
+            (#\p (if (cli-token-tail= name 3 "rovider")
+                     (values :value :provider)
+                     (values nil nil)))
+            (#\b (if (cli-token-tail= name 3 "ase-url")
+                     (values :value :base-url)
+                     (values nil nil)))
+            (#\t (cond
+                   ((cli-token-tail= name 3 "hinking")
+                    (values :value :thinking))
+                   ((cli-token-tail= name 3 "ui-mode")
+                    (values :special :tui-mode))
+                   (t (values nil nil))))
+            (#\c (if (cli-token-tail= name 3 "ontinue")
+                     (values :flag :continue)
+                     (values nil nil)))
+            (#\n (if (cli-token-tail= name 3 "o-tools")
+                     (values :flag :no-tools)
+                     (values nil nil)))
+            (t (values nil nil))))
+         (11
+          (case (char name 2)
+            (#\e (if (cli-token-tail= name 3 "xtension")
+                     (values :value :extension)
+                     (values nil nil)))
+            (#\n (cond
+                   ((cli-token-tail= name 3 "o-skills")
+                    (values :flag :no-skills))
+                   ((cli-token-tail= name 3 "o-themes")
+                    (values :flag :no-themes))
+                   (t (values nil nil))))
+            (#\u (if (cli-token-tail= name 3 "se-theme")
+                     (values :special :use-theme)
+                     (values nil nil)))
+            (t (values nil nil))))
+         (12
+          (case (char name 2)
+            (#\s (if (cli-token-tail= name 3 "ession-id")
+                     (values :value :session-id)
+                     (values nil nil)))
+            (#\n (cond
+                   ((cli-token-tail= name 3 "o-session")
+                    (values :flag :no-session))
+                   ((cli-token-tail= name 3 "o-approve")
+                    (values :flag :no-approve))
+                   (t (values nil nil))))
+            (t (values nil nil))))
+         (13
+          (case (char name 2)
+            (#\s (if (cli-token-tail= name 3 "ession-dir")
+                     (values :value :session-directory)
+                     (values nil nil)))
+            (#\l (if (cli-token-tail= name 3 "ist-models")
+                     (values :special :list-models)
+                     (values nil nil)))
+            (t (values nil nil))))
+         (15
+          (case (char name 2)
+            (#\s (if (cli-token-tail= name 3 "ystem-prompt")
+                     (values :value :system-prompt)
+                     (values nil nil)))
+            (#\e (if (cli-token-tail= name 3 "xclude-tools")
+                     (values :value :exclude-tools)
+                     (values nil nil)))
+            (#\n (if (cli-token-tail= name 3 "o-extensions")
+                     (values :flag :no-extensions)
+                     (values nil nil)))
+            (t (values nil nil))))
+         (17
+          (if (cli-token-tail= name 2 "prompt-template")
+              (values :value :prompt-template)
+              (values nil nil)))
+         (18
+          (cond
+            ((cli-token-tail= name 2 "no-builtin-tools")
+             (values :flag :no-builtin-tools))
+            ((cli-token-tail= name 2 "no-context-files")
+             (values :flag :no-context-files))
+            (t (values nil nil))))
+         (21
+          (if (cli-token-tail= name 2 "no-prompt-templates")
+              (values :flag :no-prompt-templates)
+              (values nil nil)))
+         (22
+          (if (cli-token-tail= name 2 "append-system-prompt")
+              (values :value :append-system-prompt)
+              (values nil nil)))
+         (t (values nil nil))))
+      (t (values nil nil)))))
 
 (defun cli-string-prefix-p (prefix value)
   (and (<= (length prefix) (length value))
@@ -266,27 +438,9 @@
        (list value)))))
   arguments)
 
-(defparameter +cli-boolean-flag-slots+
-  '((:continue . cli-arguments-continue-p)
-    (:no-session . cli-arguments-no-session-p)
-    (:no-tools . cli-arguments-no-tools-p)
-    (:no-builtin-tools . cli-arguments-no-builtin-tools-p)
-    (:no-extensions . cli-arguments-no-extensions-p)
-    (:print . cli-arguments-print-p)
-    (:no-skills . cli-arguments-no-skills-p)
-    (:no-prompt-templates . cli-arguments-no-prompt-templates-p)
-    (:no-themes . cli-arguments-no-themes-p)
-    (:no-context-files . cli-arguments-no-context-files-p)
-    (:offline . cli-arguments-offline-p)
-    (:verbose . cli-arguments-verbose-p)
-    (:no-tui . cli-arguments-no-tui-p)
-    (:help . cli-arguments-help-p)
-    (:version . cli-arguments-version-p)))
-
 (defun set-cli-flag (arguments key)
-  ;; +cli-flag-options+ already names the flags. Boolean slots live
-  ;; here; :approve/:no-approve stay special because they write two
-  ;; fields (baseline --approve / --no-approve).
+  ;; Closed case. :approve/:no-approve stay special because they write
+  ;; two fields (baseline --approve / --no-approve).
   (case key
     (:approve
      (setf
@@ -298,12 +452,36 @@
       (cli-arguments-project-trust-override arguments) nil
       (cli-arguments-project-trust-override-supplied-p
        arguments) t))
-    (otherwise
-     (let ((accessor
-             (cdr (assoc key +cli-boolean-flag-slots+))))
-       (when accessor
-         (funcall (fdefinition `(setf ,accessor))
-                  t arguments)))))
+    (:continue
+     (setf (cli-arguments-continue-p arguments) t))
+    (:no-session
+     (setf (cli-arguments-no-session-p arguments) t))
+    (:no-tools
+     (setf (cli-arguments-no-tools-p arguments) t))
+    (:no-builtin-tools
+     (setf (cli-arguments-no-builtin-tools-p arguments) t))
+    (:no-extensions
+     (setf (cli-arguments-no-extensions-p arguments) t))
+    (:print
+     (setf (cli-arguments-print-p arguments) t))
+    (:no-skills
+     (setf (cli-arguments-no-skills-p arguments) t))
+    (:no-prompt-templates
+     (setf (cli-arguments-no-prompt-templates-p arguments) t))
+    (:no-themes
+     (setf (cli-arguments-no-themes-p arguments) t))
+    (:no-context-files
+     (setf (cli-arguments-no-context-files-p arguments) t))
+    (:offline
+     (setf (cli-arguments-offline-p arguments) t))
+    (:verbose
+     (setf (cli-arguments-verbose-p arguments) t))
+    (:no-tui
+     (setf (cli-arguments-no-tui-p arguments) t))
+    (:help
+     (setf (cli-arguments-help-p arguments) t))
+    (:version
+     (setf (cli-arguments-version-p arguments) t)))
   arguments)
 
 (defun cli-option-token-p (value)
@@ -336,80 +514,6 @@
           for argument = (pop argv)
           do
           (cond
-            ((or (string= argument "--resume")
-                 (string= argument "-r"))
-             ;; Baseline cli/args.ts:86-87 — a bare flag; a following
-             ;; token is a message, never a session id.
-             (setf
-              (cli-arguments-resume-p arguments)
-              t))
-            ((string= argument "--list-models")
-             (if (and argv
-                      (not (cli-option-token-p (first argv)))
-                      (not (cli-string-prefix-p "@" (first argv))))
-                 (setf
-                  (cli-arguments-list-models arguments)
-                  (pop argv))
-                 (setf
-                  (cli-arguments-list-models arguments)
-                  t)))
-            ((string= argument "--tui-mode")
-             ;; pi@914cf1472 cli/args.ts:180-191 — space form only;
-             ;; a missing or dash-prefixed value is not consumed.
-             (let ((mode (first argv)))
-               (cond
-                 ((member mode '("regular" "fullscreen")
-                          :test #'string=)
-                  (setf
-                   (cli-arguments-tui-mode arguments)
-                   (intern (string-upcase mode) :keyword))
-                  (pop argv))
-                 ((or (null mode)
-                      (cli-string-prefix-p "-" mode))
-                  (add-cli-diagnostic
-                   arguments :error
-                   "--tui-mode requires regular or fullscreen"))
-                 (t
-                  (pop argv)
-                  (add-cli-diagnostic
-                   arguments :error
-                   (format
-                    nil
-                    "Invalid TUI mode ~S. Valid values: regular, fullscreen"
-                    mode))))))
-            ((string= argument "--use-theme")
-             ;; Baseline v0.84.2 cli/args.ts: space form only; a missing
-             ;; or dash-prefixed value is not consumed.
-             (let ((theme-name (first argv)))
-               (if (or (null theme-name)
-                       (cli-string-prefix-p "-" theme-name))
-                   (add-cli-diagnostic
-                    arguments :error
-                    "--use-theme requires a theme name")
-                   (progn
-                     (setf
-                      (cli-arguments-use-theme arguments)
-                      theme-name)
-                     (pop argv)))))
-            ((or (string= argument "--print")
-                 (string= argument "-p"))
-             (set-cli-flag arguments :print)
-             (when
-                 (and argv
-                      (not
-                       (cli-string-prefix-p
-                        "@" (first argv)))
-                      (or
-                       (not
-                        (cli-option-token-p
-                         (first argv)))
-                       (cli-string-prefix-p
-                        "---" (first argv))))
-               (setf
-                (cli-arguments-messages arguments)
-                (append
-                 (cli-arguments-messages arguments)
-                 (list (pop argv))))))
             ((and (plusp (length argument))
                   (char= (char argument 0) #\@))
              (setf
@@ -421,90 +525,167 @@
              (multiple-value-bind
                    (equals-name equals-value)
                  (option-with-equals argument)
-               (let* ((name (or equals-name argument))
-                      (value-option
-                        (assoc name
-                               +cli-value-options+
-                               :test #'string=))
-                      (flag-option
-                        (assoc name
-                               +cli-flag-options+
-                               :test #'string=)))
-                 (cond
-                   (value-option
-                    (multiple-value-bind (value rest)
-                        (require-cli-value
-                         argv equals-name equals-value)
-                      (setf argv rest)
-                      (if value
-                          (set-cli-value
-                           arguments
-                           (cdr value-option)
-                           value)
-                          (error
-                           'cadr-ai:configuration-error
-                           :message
-                           (format nil "~A requires a value"
-                                   name)))))
-                   (flag-option
-                    (if equals-name
-                        (add-cli-diagnostic
-                         arguments :error
-                         (format nil
-                                 "Flag ~A takes no value"
-                                 name))
-                        (set-cli-flag
-                         arguments
-                         (cdr flag-option))))
-                   ((string= argument "--yolo")
-                    (error
-                     'cadr-ai:configuration-error
-                     :message "Unknown option: --yolo"))
-                   ((cli-string-prefix-p "--" argument)
-                    (let ((flag-name
-                            (subseq
-                             (or equals-name argument)
-                             2)))
-                      (cond
-                        (equals-name
-                         (setf
-                          (gethash
-                           flag-name
-                           (cli-arguments-unknown-flags
-                            arguments))
-                          equals-value))
-                        ((and argv
-                              (not
-                               (cli-option-token-p
-                                (first argv)))
-                              (not
-                               (cli-string-prefix-p
-                                "@" (first argv))))
-                         (setf
-                          (gethash
-                           flag-name
-                           (cli-arguments-unknown-flags
-                            arguments))
-                          (pop argv)))
-                        (t
-                         (setf
-                          (gethash
-                           flag-name
-                           (cli-arguments-unknown-flags
-                            arguments))
-                          t)))))
-                   ((cli-string-prefix-p "-" argument)
-                    (add-cli-diagnostic
-                     arguments :error
-                     (format nil
-                             "Unknown option: ~A"
-                             argument)))
-                   (t
-                    (setf
-                     (cli-arguments-messages arguments)
-                     (append
-                      (cli-arguments-messages arguments)
-                      (list argument))))))))))
+               (let ((name (or equals-name argument)))
+                 (multiple-value-bind (kind key)
+                     (lookup-cli-option name)
+                   (cond
+                     ((eq kind :value)
+                      (multiple-value-bind (value rest)
+                          (require-cli-value
+                           argv equals-name equals-value)
+                        (setf argv rest)
+                        (if value
+                            (set-cli-value arguments key value)
+                            (error
+                             'cadr-ai:configuration-error
+                             :message
+                             (format nil "~A requires a value"
+                                     name)))))
+                     ((eq kind :flag)
+                      (if equals-name
+                          (add-cli-diagnostic
+                           arguments :error
+                           (format nil
+                                   "Flag ~A takes no value"
+                                   name))
+                          (progn
+                            (set-cli-flag arguments key)
+                            (when
+                                (and (eq key :print)
+                                     argv
+                                     (not
+                                      (cli-string-prefix-p
+                                       "@" (first argv)))
+                                     (or
+                                      (not
+                                       (cli-option-token-p
+                                        (first argv)))
+                                      (cli-string-prefix-p
+                                       "---" (first argv))))
+                              (setf
+                               (cli-arguments-messages arguments)
+                               (append
+                                (cli-arguments-messages arguments)
+                                (list (pop argv))))))))
+                     ((and (null equals-name)
+                           (eq kind :special)
+                           (eq key :resume))
+                      ;; Baseline cli/args.ts:86-87 — a bare flag; a
+                      ;; following token is a message, never a session id.
+                      (setf
+                       (cli-arguments-resume-p arguments)
+                       t))
+                     ((and (null equals-name)
+                           (eq kind :special)
+                           (eq key :list-models))
+                      (if (and argv
+                               (not (cli-option-token-p (first argv)))
+                               (not (cli-string-prefix-p
+                                     "@" (first argv))))
+                          (setf
+                           (cli-arguments-list-models arguments)
+                           (pop argv))
+                          (setf
+                           (cli-arguments-list-models arguments)
+                           t)))
+                     ((and (null equals-name)
+                           (eq kind :special)
+                           (eq key :tui-mode))
+                      ;; pi@914cf1472 cli/args.ts:180-191 — space form
+                      ;; only; a missing or dash-prefixed value is not
+                      ;; consumed.
+                      (let ((mode (first argv)))
+                        (cond
+                          ((or (and (stringp mode)
+                                    (= (length mode) 7)
+                                    (cli-token-tail= mode 0 "regular"))
+                               (and (stringp mode)
+                                    (= (length mode) 10)
+                                    (cli-token-tail= mode 0 "fullscreen")))
+                           (setf
+                            (cli-arguments-tui-mode arguments)
+                            (intern (string-upcase mode) :keyword))
+                           (pop argv))
+                          ((or (null mode)
+                               (cli-string-prefix-p "-" mode))
+                           (add-cli-diagnostic
+                            arguments :error
+                            "--tui-mode requires regular or fullscreen"))
+                          (t
+                           (pop argv)
+                           (add-cli-diagnostic
+                            arguments :error
+                            (format
+                             nil
+                             "Invalid TUI mode ~S. Valid values: regular, fullscreen"
+                             mode))))))
+                     ((and (null equals-name)
+                           (eq kind :special)
+                           (eq key :use-theme))
+                      ;; Baseline v0.84.2 cli/args.ts: space form only;
+                      ;; a missing or dash-prefixed value is not consumed.
+                      (let ((theme-name (first argv)))
+                        (if (or (null theme-name)
+                                (cli-string-prefix-p "-" theme-name))
+                            (add-cli-diagnostic
+                             arguments :error
+                             "--use-theme requires a theme name")
+                            (progn
+                              (setf
+                               (cli-arguments-use-theme arguments)
+                               theme-name)
+                              (pop argv)))))
+                     ((and (null equals-name)
+                           (eq kind :special)
+                           (eq key :yolo))
+                      (error
+                       'cadr-ai:configuration-error
+                       :message "Unknown option: --yolo"))
+                     ((cli-string-prefix-p "--" argument)
+                      (let ((flag-name
+                              (subseq
+                               (or equals-name argument)
+                               2)))
+                        (cond
+                          (equals-name
+                           (setf
+                            (gethash
+                             flag-name
+                             (cli-arguments-unknown-flags
+                              arguments))
+                            equals-value))
+                          ((and argv
+                                (not
+                                 (cli-option-token-p
+                                  (first argv)))
+                                (not
+                                 (cli-string-prefix-p
+                                  "@" (first argv))))
+                           (setf
+                            (gethash
+                             flag-name
+                             (cli-arguments-unknown-flags
+                              arguments))
+                            (pop argv)))
+                          (t
+                           (setf
+                            (gethash
+                             flag-name
+                             (cli-arguments-unknown-flags
+                              arguments))
+                            t)))))
+                     ((cli-string-prefix-p "-" argument)
+                      (add-cli-diagnostic
+                       arguments :error
+                       (format nil
+                               "Unknown option: ~A"
+                               argument)))
+                     (t
+                      (setf
+                       (cli-arguments-messages arguments)
+                       (append
+                        (cli-arguments-messages arguments)
+                        (list argument)))))))))))
     arguments))
 
 (defun cli-stream-color-p (stream)

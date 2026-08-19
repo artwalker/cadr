@@ -77,6 +77,53 @@
     (is (null
          (cadr-cli::cli-arguments-diagnostics arguments)))))
 
+(test paired-path-parse-argv-fixture-drives-shipped-parser
+  (let* ((path
+           (merge-pathnames
+            "test/fixtures/goal20-paired-paths/cli-argv.json"
+            (asdf:system-source-directory "cadr-cli")))
+         (argv
+           (coerce
+            (cadr-ai::json-get
+             (cadr-ai::parse-json (uiop:read-file-string path))
+             "parse")
+            'list))
+         (arguments
+           (cadr-cli::parse-cli-arguments argv)))
+    (is (string=
+         "goal20faux"
+         (cadr-cli::cli-arguments-provider arguments)))
+    (is (string=
+         "goal20-paired-3"
+         (cadr-cli::cli-arguments-model arguments)))
+    (is (eq :medium
+            (cadr-cli::cli-arguments-thinking arguments)))
+    (is (equal
+         '("be terse" "cite files")
+         (cadr-cli::cli-arguments-append-system-prompts arguments)))
+    (is (equal
+         '("read" "bash" "edit")
+         (cadr-cli::cli-arguments-tools arguments)))
+    (is (equal
+         '("web_search" "fetch")
+         (cadr-cli::cli-arguments-exclude-tools arguments)))
+    (is (string=
+         "/goal20-paired-paths/sessions"
+         (cadr-cli::cli-arguments-session-directory arguments)))
+    (is (eq :json (cadr-cli::cli-arguments-mode arguments)))
+    (is (cadr-cli::cli-arguments-no-themes-p arguments))
+    (is (cadr-cli::cli-arguments-no-context-files-p arguments))
+    (is (cadr-cli::cli-arguments-verbose-p arguments))
+    (is (string=
+         "goal20"
+         (cadr-cli::cli-arguments-list-models arguments)))
+    (is (equal
+         '("explain the paired path benchmark")
+         (cadr-cli::cli-arguments-messages arguments)))
+    (is (equal
+         '("docs/performance.md")
+         (cadr-cli::cli-arguments-file-arguments arguments)))))
+
 (test reference-cli-shorthands-diagnostics-and-print-frontmatter
   (let ((arguments
           (cadr-cli::parse-cli-arguments

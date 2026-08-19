@@ -25,6 +25,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `parse-cli-arguments` looks up known CLI
+  flags in a closed length/octet table. No per-flag
+  `assoc` `string=`. Output/behavior aligned. Help
+  unchanged. Identity 125935→126116. FiveAM 19275→19289.
+  Not intern. Not FFI. G.17 still `missing`.
+
 - Goal 20 Part P: `session-messages` reuses the derived
   message list until append or branch. Pairing
   `context_walk` is that function. Not intern. Not FFI.
