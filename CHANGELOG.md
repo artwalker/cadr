@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-tail` fills starts/widths in
+  one pass (hint 64..8192, grow by doubling, exact-size copy).
+  Not a prior newline-count pass. this-host ~631 µs. Identity
+  126959→126974. Not intern. Not FFI. G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `c451b14e7`
   (revert of exact-size tail). `truncate_tail` 1.76×→1.45×
   (948→760 µs). Ceiling 18.0 unchanged. No `src/`. G.17

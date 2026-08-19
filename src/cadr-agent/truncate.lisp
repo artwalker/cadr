@@ -324,41 +324,56 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
       (return-from truncate-harness-tail
         (make-complete-harness-truncation
          content 0 0 max-lines max-bytes)))
-    (let* ((line-hint
+    (let* ((hint
              (max 64 (min 8192 (1+ (truncate length 20)))))
-           (starts
-             (make-array line-hint :element-type 'fixnum
-                         :adjustable t :fill-pointer 0))
-           (widths
-             (make-array line-hint :element-type 'fixnum
-                         :adjustable t :fill-pointer 0))
+           (starts (make-array hint :element-type 'fixnum))
+           (widths (make-array hint :element-type 'fixnum))
+           (cap hint)
+           (slot 0)
            (total-bytes 0)
            (line-start 0)
            (line-utf8 0)
            (trailing-bytes 0))
-      (declare (type fixnum total-bytes line-start line-utf8
-                     trailing-bytes))
-      (loop for index of-type fixnum from 0 below length
-            for character of-type character = (schar text index)
-            for nbytes of-type fixnum = (utf8-char-length character)
-            do (incf total-bytes nbytes)
-               (if (char= character #\Newline)
-                   (progn
-                     (vector-push-extend line-start starts)
-                     (vector-push-extend line-utf8 widths)
-                     (setf line-start (the fixnum (1+ index))
-                           line-utf8 0))
-                   (incf line-utf8 nbytes)))
-      (if (= line-start length)
-          (setf trailing-bytes
-                (if (and (plusp length)
-                         (char= (schar text (1- length)) #\Newline))
-                    1
-                    0))
-          (progn
-            (vector-push-extend line-start starts)
-            (vector-push-extend line-utf8 widths)))
-      (let ((total-lines (fill-pointer starts)))
+      (declare (type fixnum hint cap slot total-bytes line-start
+                     line-utf8 trailing-bytes)
+               (type (simple-array fixnum (*)) starts widths)
+               (optimize (speed 3) (safety 1)))
+      (flet ((push-line (start width)
+               (declare (type fixnum start width))
+               (when (>= slot cap)
+                 (setf cap (the fixnum (* cap 2)))
+                 (let ((next-starts
+                         (make-array cap :element-type 'fixnum))
+                       (next-widths
+                         (make-array cap :element-type 'fixnum)))
+                   (replace next-starts starts)
+                   (replace next-widths widths)
+                   (setf starts next-starts
+                         widths next-widths)))
+               (setf (aref starts slot) start
+                     (aref widths slot) width)
+               (incf slot)))
+        (loop for index of-type fixnum from 0 below length
+              for character of-type character = (schar text index)
+              for nbytes of-type fixnum = (utf8-char-length character)
+              do (incf total-bytes nbytes)
+                 (if (char= character #\Newline)
+                     (progn
+                       (push-line line-start line-utf8)
+                       (setf line-start (the fixnum (1+ index))
+                             line-utf8 0))
+                     (incf line-utf8 nbytes)))
+        (if (= line-start length)
+            (setf trailing-bytes 1)
+            (push-line line-start line-utf8)))
+      (when (< slot cap)
+        (let ((exact-starts (make-array slot :element-type 'fixnum))
+              (exact-widths (make-array slot :element-type 'fixnum)))
+          (replace exact-starts starts)
+          (replace exact-widths widths)
+          (setf starts exact-starts
+                widths exact-widths)))
+      (let ((total-lines slot))
         (declare (type fixnum total-lines))
         (when (and (<= total-lines max-lines)
                    (<= total-bytes max-bytes))
