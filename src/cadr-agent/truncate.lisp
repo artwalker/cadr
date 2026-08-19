@@ -159,19 +159,32 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
                  +harness-default-max-lines+)
                (max-bytes
                  +harness-default-max-bytes+))
-  (let ((length (length content))
-        (total-lines 0)
-        (total-bytes 0)
-        (line-start 0)
-        (line-utf8 0)
-        (selected-end 0)
-        (selected-lines 0)
-        (selected-bytes 0)
-        (reason :lines)
-        (selecting t)
-        (first-line t)
-        (first-line-exceeds nil))
+  ;; Selection stops at max-lines/max-bytes. The pairing fixture is
+  ;; 4000 lines / 50kB limit, so ~90% of the walk is totals after
+  ;; the prefix is chosen. sprof named this function 78.8% self plus
+  ;; GENERIC-+. Remainder is a typed byte+newline count, not close-line.
+  (let* ((text
+           (if (simple-string-p content)
+               content
+               (coerce content 'simple-string)))
+         (length (length text))
+         (total-lines 0)
+         (total-bytes 0)
+         (line-start 0)
+         (line-utf8 0)
+         (selected-end 0)
+         (selected-lines 0)
+         (selected-bytes 0)
+         (reason :lines)
+         (selecting t)
+         (first-line t)
+         (first-line-exceeds nil))
+    (declare (type simple-string text)
+             (type fixnum length total-lines total-bytes line-start
+                   line-utf8 selected-end selected-lines selected-bytes)
+             (optimize (speed 3) (safety 1)))
     (labels ((close-line (line-end)
+               (declare (type fixnum line-end))
                (incf total-lines)
                (when (and first-line
                           (> line-utf8 max-bytes))
@@ -193,19 +206,36 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
                           (+ line-utf8
                              (if (plusp selected-lines) 1 0)))
                     (incf selected-lines)
-                    (setf selected-end line-end))))))
-      (loop for index from 0 below length
-            for character = (char content index)
-            for nbytes = (utf8-char-length character)
+                    (setf selected-end line-end)))))
+             (add-remainder (from)
+               (declare (type fixnum from))
+               (when (< from length)
+                 (let ((open-line from))
+                   (declare (type fixnum open-line))
+                   (loop for index of-type fixnum from from below length
+                         for character of-type character = (schar text index)
+                         do (incf total-bytes (utf8-char-length character))
+                            (when (char= character #\Newline)
+                              (incf total-lines)
+                              (setf open-line
+                                    (the fixnum (1+ index)))))
+                   (when (< open-line length)
+                     (incf total-lines))))))
+      (loop for index of-type fixnum from 0 below length
+            for character of-type character = (schar text index)
+            for nbytes of-type fixnum = (utf8-char-length character)
             do
         (incf total-bytes nbytes)
         (if (char= character #\Newline)
             (progn
               (close-line index)
-              (setf line-start (1+ index)
-                    line-utf8 0))
+              (setf line-start (the fixnum (1+ index))
+                    line-utf8 0)
+              (unless selecting
+                (add-remainder line-start)
+                (return)))
             (incf line-utf8 nbytes)))
-      (when (< line-start length)
+      (when (and selecting (< line-start length))
         (close-line length))
       (cond
         ((and (<= total-lines max-lines)

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-head` counts remainder
+  totals after the selected prefix. Friend-MachineD head
+  was 4.27× (2277 µs). this-host 2040→549 µs. Identity
+  126512→126542. FiveAM 19357→19359. Not intern. Not FFI.
+  G.17 still `missing`.
 - Goal 20 Part P: `truncate-harness-tail` counts lines and
   UTF-8 bytes in one walk. Friend-MachineD remesure still
   4.57× / 3.09× (head/tail) before this knife. Not intern.

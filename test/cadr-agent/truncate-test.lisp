@@ -117,6 +117,12 @@
          (tail (cadr-agent::truncate-harness-tail content)))
     (is (= 500000
            (cadr-agent::harness-utf8-length content)))
+    (is (= (cadr-agent::harness-line-count content)
+           (cadr-agent::harness-truncation-result-total-lines
+            head)))
+    (is (= 500000
+           (cadr-agent::harness-truncation-result-total-bytes
+            head)))
     (is (= 50999
            (cadr-agent::harness-truncation-result-output-bytes
             head)))

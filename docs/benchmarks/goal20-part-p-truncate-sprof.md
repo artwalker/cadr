@@ -25,6 +25,21 @@ walk: `HARNESS-LINE-COUNT` 39.8% + `HARNESS-UTF8-LENGTH` 29.5%.
 Named lever: one pass for both totals. Not intern. Not FFI.
 Not empty SWAR.
 
+## After remainder-totals knife (this-host)
+
+this-host `truncate-harness-head` 2040→549 µs on the 4000-line
+pairing fixture. Observed 50999/408/500000/4000 unchanged.
+`GENERIC-+` left the ≥1% table. Leftover is still
+`TRUNCATE-HARNESS-HEAD` 92.9% self (remainder lives in the
+same function) plus `pthread_sigmask` 2.2%. Not intern.
+Not FFI. Not empty SWAR.
+
+```
+Number of samples: 997
+  1  926  92.9%  CADR-AGENT:TRUNCATE-HARNESS-HEAD
+  2   22   2.2%  foreign function pthread_sigmask
+```
+
 ## `text_truncation.truncate_head`
 
 ```

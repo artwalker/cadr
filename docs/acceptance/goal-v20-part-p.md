@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Inventory in. `sqlite_session.open_walk` remesure `17df52451` 0.25× (cadr 6096 µs). truncate_head 4.57×→4.27× (2566→2277 µs); truncate_tail 3.09×→1.38× (1783→763 µs). Still >1.0×. Ceiling unchanged. | remesure `17df52451`. No `src/`. |
+| P.13 pairable coverage | leftover | Inventory in. truncate_head remainder totals after prefix: this-host 2040→549 µs. Remesure `17df52451` still 4.27×/1.38× before this knife. Ceiling unchanged. | this knife. Not intern. Not FFI. |
