@@ -9,6 +9,9 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `c2828e831`
+  `tool_read.text_file` 5.32×→2.88× (21747→12786 µs).
+  Ceiling 8.0 unchanged. No `src/`. G.17 still `missing`.
 - Goal 20 Part P: `read-tool-file` fills a fixnum line-start
   table then one `subseq` for the selected range. Matches JS
   `split("\n")` / `slice` / `join`. Not `uiop:split-string`
