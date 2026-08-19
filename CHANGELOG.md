@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `ad1e91711`
+  `tool_read.text_file` 1.35×→0.41× (5813→1757 µs).
+  `tool_grep.context_file` 0.92×→0.98×. Ceiling 8.0
+  unchanged. No `src/`. G.17 still `missing`.
 - Goal 20 Part P: `read-tool-file` builds the line table on
   ub8 `0x0A` and `utf8-string`s only the offset/limit window
   plus one overflowing line for `truncate-head`. this-host
