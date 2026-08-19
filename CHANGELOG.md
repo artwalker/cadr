@@ -25,6 +25,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of `e908ebad9`
+  (n=5, enforced). help_render 5.59×→0.07× (cadr 4.7→0.0 µs).
+  context_walk 1.05×→0.03× (113.3→3.2 µs). argv 1.69×→1.54×.
+  Ceiling unchanged. No `src/` in the remesure booking.
+
 - Goal 20 Part P: `print-cli-usage` writes literal blocks
   with `write-string`. No per-line `format`. Help bytes
   match the previous non-color output. Identity

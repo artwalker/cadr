@@ -18,11 +18,11 @@ Not a Goal 20 pass.
 | P.1 JSON read | number | schema octet FSM; leftover generic values fill pairs not EQUAL hash; escaped strings decode from the octet window; header fills session-file-header. this-host load 2387→1586 µs / 920,544→920,512 B | this knife. Not intern. Not FFI. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
-| P.4 help / argv / walk | number | argv closed table (`3738b80ea`). help leftover was `format` 96.5%; now `write-string` literals. walk leftover is EQUAL hash behind the messages cache. booked help 4.3 µs, argv 6.5 µs, walk 110 µs | this knife for help. No Friend-MachineD (4.7 µs). Argv unchanged. |
+| P.4 help / argv / walk | number | remesure `e908ebad9`: help 5.59×→0.07× (4.7→0.0 µs); walk 1.05×→0.03× (113.3→3.2 µs); argv 1.69×→1.54× (5.8→3.0 µs) | remesure this knife. No `src/`. |
 | P.4 stream_roundtrip | number | this-host 6.398 ms / 3,750,979 B → 4.995 ms / 2,432,214 B; SSE-only 2.899 ms / 2,327,510 B → 1.698 ms / 1,229,201 B | `c183539e7`–this knife. File-stream newline scan. |
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,350,697 B; snake overlay 39,963 B; ttt overlay 47,819 B | ttt visual-board stream rewrite. |
-| P.7 H pairing | number | 0 new file-level pairs. Remesure `98f27fdd8`: load 1.19×→1.06×, cadr 2007→1905 µs. Walk leftover is EQUAL hash in `session-path-entries`; `session-messages` now caches until append/branch | unescape `98f27fdd8`; this knife. |
+| P.7 H pairing | number | 0 new file-level pairs. Remesure `e908ebad9`: load 1.12×→1.37× (cadr 1842→1983 µs); walk 1.05×→0.03×. Load leftover is the closed JSONL walker. | remesure this knife. |
 | P.8 three games | number | user 2026-08-18 18:09 deferred live play; reopen if a defect appears | Overlay: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. Not FiveAM. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`: disk `/reload`; host rebuild. Rechecked this turn. |
 | P.10 input-to-screen | number | key→overlay 0.050 ms, spinner=NIL, thinking=NIL | This host, 80× snake key+render after `f3ccf75f6`. |
