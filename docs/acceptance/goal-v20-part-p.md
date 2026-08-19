@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Inventory in. truncate_head remainder totals after prefix: this-host 2040→549 µs. Remesure `17df52451` still 4.27×/1.38× before this knife. Ceiling unchanged. | this knife. Not intern. Not FFI. |
+| P.13 pairable coverage | leftover | Inventory in. Remesure `19ca40947`: truncate_head 4.27×→0.97× (2277→618 µs); truncate_tail 1.38×→1.30×. load 1.93×, read 1.97×. Ceiling unchanged. | remesure this booking. No `src/`. |

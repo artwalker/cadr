@@ -82,6 +82,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of `19ca40947`
+  (n=5, enforced; booked at `c688da095`). truncate_head
+  4.27×→0.97× (cadr 2277→618 µs). truncate_tail
+  1.38×→1.30× (763→819 µs). Ceiling unchanged. No `src/`
+  in the remesure booking. G.17 still `missing`.
+
 - Goal 20 Part P: this-host sb-sprof of load/read at
   `19ca40947`. Leftover is the octet walker
   (`OCTET-U32-LE` 11%, quote/LF/space SWAR, `SCAN-KEY`)
