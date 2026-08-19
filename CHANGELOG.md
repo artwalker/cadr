@@ -82,6 +82,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: this-host sb-sprof of load/read at
+  `19ca40947`. Leftover is the octet walker
+  (`OCTET-U32-LE` 11%, quote/LF/space SWAR, `SCAN-KEY`)
+  plus pthread / foreign `read`. No unused legal named
+  structure. No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of `17df52451`
   (n=5, enforced). truncate_head 4.57×→4.27× (cadr
   2566→2277 µs). truncate_tail 3.09×→1.38× (1783→763 µs).
