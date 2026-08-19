@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `ab4a52ea4`
+  `tool_read.text_file` 2.39×→2.42× (10299→11131 µs). Same
+  ratio band; pi also slower. Ceiling 8.0 unchanged. No
+  `src/`. G.17 still `missing`.
 - Goal 20 Part P: `split-line-starts` exact-sizes the fixnum
   vector (count newlines, then fill). Kills
   `vector-push-extend` named by sprof at `39b3707bf`. Same
