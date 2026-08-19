@@ -15,6 +15,7 @@
 ;;;;   2. provider_stream   request assembly + SSE response parse
 ;;;;   3. session_pipeline  session load + context entry walk
 ;;;;   4. storage_journal   journal read + journal append
+;;;;   5. sqlite_session    SQLite open + read-all + leaf walk
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -72,6 +73,7 @@
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
     ("storage_journal.journal_append" . 3)
+    ("sqlite_session.open_walk" . 3)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
     ("render_slicing.slice_ansi_clip" . 200)
@@ -737,7 +739,69 @@
       "written_file_entry_count" (length written-objects)))))
 
 ;;; ---------------------------------------------------------------------
-;;; Pair 5: tool-output truncation (goal 20, 12F-1)
+;;; Pair 5: SQLite session open + read-all + leaf walk
+;;; ---------------------------------------------------------------------
+;;;
+;;; Ingest the shared session.jsonl into the production SQLite backend
+;;; once, outside the timed loop.  The timed thunk is repository open,
+;;; read every stored entry, and walk the leaf path.  No network.
+
+(defun sqlite-database-path ()
+  (merge-pathnames "sqlite/sessions.sqlite" *scratch-directory*))
+
+(defun ingest-sqlite-from-session-jsonl (database-path)
+  (let* ((source (cadr-agent:load-session (fixture-path "session.jsonl")))
+         (cwd (journal-cwd))
+         (repository
+           (cadr-agent:make-sqlite-session-repository
+            :database-path database-path))
+         (session
+           (cadr-agent:session-repository-create
+            repository
+            :id (cadr-agent:session-id source)
+            :cwd cwd)))
+    (dolist (entry (cadr-agent:session-entries source))
+      (cadr-agent:harness-session-append-entry session entry))
+    (let ((metadata (cadr-agent:harness-session-metadata session))
+          (entry-count (length (cadr-agent:session-entries source)))
+          (leaf-id (cadr-agent:session-leaf-id source))
+          (session-id (cadr-agent:session-id source)))
+      (cadr-agent:harness-session-cleanup session)
+      (values repository metadata entry-count leaf-id session-id))))
+
+(defun sqlite-open-read-walk (repository metadata)
+  (let ((session
+          (cadr-agent:session-repository-open repository metadata)))
+    (unwind-protect
+         (let ((entries (cadr-agent:harness-session-entries session))
+               (branch (cadr-agent:harness-session-branch session)))
+           (list (length entries)
+                 (cadr-agent:harness-session-leaf-id session)
+                 (length branch)))
+      (cadr-agent:harness-session-cleanup session))))
+
+(defun measure-sqlite-session ()
+  (multiple-value-bind
+        (repository metadata entry-count leaf-id session-id)
+      (ingest-sqlite-from-session-jsonl (sqlite-database-path))
+    (let ((observed (sqlite-open-read-walk repository metadata)))
+      (json-object
+       "observed"
+       (json-object
+        "entry_count" (first observed)
+        "leaf_id" (second observed)
+        "branch_entry_count" (third observed)
+        "ingested_entry_count" entry-count
+        "session_id" session-id
+        "source_leaf_id" leaf-id)
+       "open_walk"
+       (collect "sqlite_session.open_walk"
+                (lambda ()
+                  (lambda ()
+                    (sqlite-open-read-walk repository metadata))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Pair 6: tool-output truncation (goal 20, 12F-1)
 ;;; ---------------------------------------------------------------------
 
 (defun truncation-fixture-content ()
@@ -848,6 +912,8 @@
       "src/cadr-agent/session/migration.lisp read-session-objects"
       "storage_journal.journal_append"
       "src/cadr-agent/session/journal.lisp create-session + session-append-message"
+      "sqlite_session.open_walk"
+      "src/cadr-agent/sqlite-storage.lisp session-repository-open + harness-session-entries + harness-session-branch"
       "text_truncation.truncate_head"
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"
@@ -881,6 +947,8 @@
         (let ((session (measure-session-pipeline)))
           (format *error-output* "goal20 cadr paired paths: storage_journal~%")
           (let ((storage (measure-storage-journal)))
+            (format *error-output* "goal20 cadr paired paths: sqlite_session~%")
+            (let ((sqlite (measure-sqlite-session)))
             (format *error-output* "goal20 cadr paired paths: text_truncation~%")
             (let ((truncation (measure-text-truncation)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
@@ -903,6 +971,7 @@
               "provider_stream" provider
               "session_pipeline" session
               "storage_journal" storage
+              "sqlite_session" sqlite
               "text_truncation" truncation
               "render_slicing" slicing)
              "parameters"
@@ -920,7 +989,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))
+             "schema_version" 1))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

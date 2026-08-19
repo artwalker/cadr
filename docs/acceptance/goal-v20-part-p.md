@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Inventory in. Measure then **keep refining** (user 19:21): floor if behind pi; CL ceiling even if already ahead. Next pair: sqlite_session (measure commit), then sprof/levers. | inventory `c328b022b`; ruling 19:21 |
+| P.13 pairable coverage | leftover | Inventory in. `sqlite_session.open_walk` paired Friend-MachineD 0.15× (cadr 7365 µs / pi 49932 µs), ceiling 1.5. Measure then keep refining. | pairing this knife; ruling 19:21 |

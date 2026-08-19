@@ -282,3 +282,40 @@
             (sqlite:disconnect db))))
       (cadr-agent:harness-session-cleanup
        session))))
+
+(test sqlite-session-ingests-pairing-fixture-then-open-read-walk
+  ;; Production path used by scripts/goal20-paired-paths.lisp sqlite_session.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((root (asdf:system-source-directory "cadr-agent"))
+           (fixture
+             (merge-pathnames
+              "test/fixtures/goal20-paired-paths/session.jsonl"
+              root))
+           (database
+             (merge-pathnames "paired.sqlite" sessions))
+           (source (cadr-agent:load-session fixture))
+           (repository
+             (cadr-agent:make-sqlite-session-repository
+              :database-path database))
+           (written
+             (cadr-agent:session-repository-create
+              repository
+              :id (cadr-agent:session-id source)
+              :cwd cwd)))
+      (dolist (entry (cadr-agent:session-entries source))
+        (cadr-agent:harness-session-append-entry written entry))
+      (let ((metadata (cadr-agent:harness-session-metadata written))
+            (source-count (length (cadr-agent:session-entries source)))
+            (source-leaf (cadr-agent:session-leaf-id source)))
+        (cadr-agent:harness-session-cleanup written)
+        (let ((opened
+                (cadr-agent:session-repository-open
+                 repository metadata)))
+          (is (= source-count
+                 (length (cadr-agent:harness-session-entries opened))))
+          (is (string= source-leaf
+                       (cadr-agent:harness-session-leaf-id opened)))
+          (is (plusp
+               (length (cadr-agent:harness-session-branch opened))))
+          (cadr-agent:harness-session-cleanup opened))))))

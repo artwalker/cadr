@@ -14,6 +14,7 @@
   "session_pipeline.context_walk",
   "storage_journal.journal_read",
   "storage_journal.journal_append",
+  "sqlite_session.open_walk",
   "goal11.mouse_drag",
   "goal11.wheel",
   "goal11.continuous_alt_input",
@@ -203,6 +204,20 @@
    "metrics": [
     "storage_journal.journal_read",
     "storage_journal.journal_append"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/sqlite-storage.lisp",
+   "class": "paired",
+   "metrics": [
+    "sqlite_session.open_walk"
+   ]
+  },
+  {
+   "prefix": "src/cadr-storage/",
+   "class": "paired",
+   "metrics": [
+    "sqlite_session.open_walk"
    ]
   },
   {

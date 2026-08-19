@@ -16,6 +16,7 @@
 //   2. provider_stream   request assembly + SSE response parse
 //   3. session_pipeline  session load + context entry walk
 //   4. storage_journal   journal read + journal append
+//   5. sqlite_session    SQLite open + read-all + leaf walk
 //
 // usage:
 //   node scripts/goal20-paired-paths.mjs BASELINE_WORKTREE [options]
@@ -127,6 +128,7 @@ const REPETITIONS = {
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
 	"storage_journal.journal_append": 3,
+	"sqlite_session.open_walk": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
 	"render_slicing.slice_ansi_clip": 200,
@@ -262,6 +264,8 @@ const argsModule = await import(moduleUrl("packages/coding-agent/src/cli/args.ts
 const listModelsModule = await import(moduleUrl("packages/coding-agent/src/cli/list-models.ts"));
 const modelRuntimeModule = await import(moduleUrl("packages/coding-agent/src/core/model-runtime.ts"));
 const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/session-manager.ts"));
+const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
+const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
@@ -581,6 +585,120 @@ async function measureStorageJournal() {
 	};
 }
 
+function sqliteEnv(root) {
+	return new nodeEnvModule.NodeExecutionEnv({ cwd: root });
+}
+
+function provisionedFromV3(entry) {
+	const id = entry.id;
+	switch (entry.type) {
+		case "message":
+			return { type: "message", id, message: entry.message };
+		case "model_change":
+			return { type: "model_change", id, provider: entry.provider, modelId: entry.modelId };
+		case "thinking_level_change":
+			return { type: "thinking_level_change", id, thinkingLevel: entry.thinkingLevel };
+		case "compaction":
+			return {
+				type: "compaction",
+				id,
+				summary: entry.summary,
+				tokensBefore: entry.tokensBefore,
+				retainedTail: entry.retainedTail ?? [],
+				...(entry.details !== undefined ? { details: entry.details } : {}),
+				...(entry.usage !== undefined ? { usage: entry.usage } : {}),
+			};
+		case "branch_summary":
+			return {
+				type: "branch_summary",
+				id,
+				fromId: entry.fromId,
+				summary: entry.summary,
+				...(entry.details !== undefined ? { details: entry.details } : {}),
+				...(entry.usage !== undefined ? { usage: entry.usage } : {}),
+			};
+		case "custom":
+			return {
+				type: "custom",
+				id,
+				customType: entry.customType,
+				...(entry.data !== undefined ? { data: entry.data } : {}),
+			};
+		case "custom_message":
+			return {
+				type: "custom",
+				id,
+				customType: "custom_message",
+				data: { content: entry.content, display: entry.display, customType: entry.customType },
+			};
+		case "label":
+			return { type: "custom", id, customType: "label", data: { targetId: entry.targetId, label: entry.label } };
+		case "session_info":
+			return { type: "custom", id, customType: "session_info", data: { name: entry.name } };
+		default:
+			throw new Error(`unhandled session.jsonl entry type: ${entry.type}`);
+	}
+}
+
+async function ingestSqliteFromSessionJsonl(databasePath) {
+	const raw = sessionModule.loadEntriesFromFile(sessionFixturePath);
+	const header = raw[0];
+	if (!header || header.type !== "session") {
+		throw new Error("session.jsonl is missing a session header");
+	}
+	mkdirSync(path.dirname(databasePath), { recursive: true });
+	const repo = new sqliteModule.SqliteSessionRepository({
+		env: sqliteEnv(scratch),
+		sqlite: sqliteModule.createNodeSqliteFactory(),
+		databasePath,
+	});
+	const session = await repo.create({ cwd: resolvedJournalCwd, id: header.id });
+	for (const entry of raw.slice(1)) {
+		await session.appendEntry(provisionedFromV3(entry), "main");
+	}
+	const metadata = await session.getMetadata();
+	const ingested = raw.length - 1;
+	const sourceLeafId = raw[raw.length - 1].id;
+	await repo.close();
+	return { metadata, ingested, sourceLeafId, sessionId: header.id };
+}
+
+async function sqliteOpenReadWalk(databasePath, metadata) {
+	const repo = new sqliteModule.SqliteSessionRepository({
+		env: sqliteEnv(scratch),
+		sqlite: sqliteModule.createNodeSqliteFactory(),
+		databasePath,
+	});
+	try {
+		const session = await repo.open(metadata);
+		const entries = await session.findEntries({ order: "oldestFirst" });
+		const leafId = await session.getLeafId();
+		const branch = leafId === null ? [] : await session.findEntriesOnBranch({ start: leafId });
+		return { entryCount: entries.length, leafId, branchEntryCount: branch.length };
+	} finally {
+		await repo.close();
+	}
+}
+
+async function measureSqliteSession() {
+	const databasePath = path.join(scratch, "sqlite", "sessions.sqlite");
+	const ingested = await ingestSqliteFromSessionJsonl(databasePath);
+	const observed = await sqliteOpenReadWalk(databasePath, ingested.metadata);
+	return {
+		open_walk: await collect("sqlite_session.open_walk", () => {
+			return () => sqliteOpenReadWalk(databasePath, ingested.metadata);
+		}),
+		observed: {
+			entry_count: observed.entryCount,
+			leaf_id: observed.leafId,
+			branch_entry_count: observed.branchEntryCount,
+			ingested_entry_count: ingested.ingested,
+			session_id: ingested.sessionId,
+			source_leaf_id: ingested.sourceLeafId,
+		},
+	};
+}
+
 async function measureTextTruncation() {
 	const lines = [];
 	for (let i = 1; i <= 4000; i++) {
@@ -647,6 +765,8 @@ process.stderr.write("goal20 pi paired paths: session_pipeline\n");
 const sessionPipeline = await measureSessionPipeline();
 process.stderr.write("goal20 pi paired paths: storage_journal\n");
 const storageJournal = await measureStorageJournal();
+process.stderr.write("goal20 pi paired paths: sqlite_session\n");
+const sqliteSession = await measureSqliteSession();
 process.stderr.write("goal20 pi paired paths: text_truncation\n");
 const textTruncation = await measureTextTruncation();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
@@ -676,6 +796,8 @@ const result = {
 				"packages/coding-agent/src/core/session-manager.ts loadEntriesFromFile",
 			"storage_journal.journal_append":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.create + appendMessage",
+			"sqlite_session.open_walk":
+				"packages/session-backends/sqlite-node SqliteSessionRepository.open + findEntries + findEntriesOnBranch",
 			"text_truncation.truncate_head":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
@@ -703,6 +825,7 @@ const result = {
 		provider_stream: providerStream,
 		session_pipeline: sessionPipeline,
 		storage_journal: storageJournal,
+		sqlite_session: sqliteSession,
 		text_truncation: textTruncation,
 		render_slicing: renderSlicing,
 	},

@@ -66,6 +66,7 @@ METRICS = {
     "provider_stream": ("stream_roundtrip",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
+    "sqlite_session": ("open_walk",),
     "text_truncation": ("truncate_head", "truncate_tail"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
 }
@@ -97,6 +98,11 @@ RATIO_CEILINGS = {
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
     "storage_journal.journal_append": 12.0,
+    # Frozen from the first Friend-MachineD non-quick sqlite_session
+    # pair (samples=5): observed 0.15x. cadr leads. 1.5 follows the
+    # list_models_registry / render_slicing precedent (headroom above
+    # 1.0). Ratchet down only.
+    "sqlite_session.open_walk": 1.5,
     # Initial values frozen from the first full measurement (2026-08-15,
     # Friend-MachineD, samples=5): head 16.71x, tail 15.27x.  These record
     # that cadr currently LOSES to pi on truncation (whole-content encode +
@@ -183,6 +189,13 @@ OBSERVED_EXACT = {
         "read_file_entry_count",
         "append_entry_count",
         "written_file_entry_count",
+    ),
+    "sqlite_session": (
+        "entry_count",
+        "leaf_id",
+        "ingested_entry_count",
+        "session_id",
+        "source_leaf_id",
     ),
 }
 

@@ -28,6 +28,7 @@ METRIC_KEYS = (
     "session_pipeline.context_walk",
     "storage_journal.journal_read",
     "storage_journal.journal_append",
+    "sqlite_session.open_walk",
 )
 
 HISTORY_RATIO_KEYS = (

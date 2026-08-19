@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: `sqlite_session.open_walk` pair. Same
+  `session.jsonl` ingested into cadr SQLite and pi
+  `sqlite-node`; timed work is open + read-all + leaf walk.
+  First Friend-MachineD non-quick freeze. No product optimize
+  in this commit. G.17 still `missing`.
 - Goal 20 Part P.13: after a pair lands, keep refining.
   Beating pi is not a stop. Floor = not slower than pi;
   ceiling = CL leftover. Empty SWAR is not refining.

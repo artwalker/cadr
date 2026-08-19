@@ -91,6 +91,23 @@ from the fixture manifest (`/tmp/goal20-part-h-journal-cwd`) rather than a
 scratch path, because a per-run path length would change the header bytes each
 side writes.
 
+### Pair 5 — `sqlite_session`
+
+| metric | cadr | pi |
+|---|---|---|
+| `open_walk` | `session-repository-open` + `harness-session-entries` + `harness-session-branch` (`src/cadr-agent/sqlite-storage.lisp`) | `SqliteSessionRepository.open` + `findEntries` + `findEntriesOnBranch` (`packages/session-backends/sqlite-node`) |
+
+Both sides ingest the same `session.jsonl` (header skipped; 514 records)
+into a temp SQLite file **outside** the timed loop. The timed thunk is
+reopen + read every stored entry + walk the current leaf. No network.
+v4 sqlite-node has no first-class `custom_message` / `label` /
+`session_info` rows, so the pi half stores those three kinds as
+`custom` entries with `customType` set to the v3 type name. Observed
+`entry_count` / `leaf_id` / `session_id` stay comparable. Leaf-walk
+length is **not** an exact field: cadr preserves v3 parent links (322
+on the pairing fixture), pi's `appendEntry` parents along the main
+lane (514).
+
 ## 2. How to run
 
 ```bash
@@ -296,13 +313,13 @@ Denominator: **295 files / 126,497 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 24,901 | 19.7% | `no worse than baseline` is falsifiable |
+| `paired` | 38 | 25,766 | 20.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,121 | 74.4% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 233 | 93,256 | 73.7% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 19.7% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 25.6% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 74.4% of lines.
+- **Falsifiable vs baseline:** 20.4% of lines (38 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 26.3% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 73.7% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -340,6 +357,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,173 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-agent/sqlite-storage.lisp` | 834 | `sqlite_session.open_walk` |
 | `src/cadr-agent/truncate.lisp` | 396 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/json.lisp` | 1,737 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
@@ -354,6 +372,8 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,009 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
+| `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
+| `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/tool-block.lisp` | 623 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -406,7 +426,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-agent/execution-env.lisp` | 1 | 855 |
 | `src/cadr-agent/schema.lisp` | 1 | 850 |
 | `src/cadr-ai/auth` | 5 | 842 |
-| `src/cadr-agent/sqlite-storage.lisp` | 1 | 834 |
 | `src/cadr-ai/capabilities` | 6 | 751 |
 | `src/cadr-agent/resources.lisp` | 1 | 739 |
 | `src/cadr-evals/harness.lisp` | 1 | 737 |
@@ -475,8 +494,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/kill-ring.lisp` | 1 | 38 |
 | `src/cadr-protocol/package.lisp` | 1 | 33 |
 | `src/cadr-tui/undo-stack.lisp` | 1 | 20 |
-| `src/cadr-storage/package.lisp` | 1 | 19 |
-| `src/cadr-storage/sqlite.lisp` | 1 | 12 |
 | `src/cadr-tui/threads.lisp` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
