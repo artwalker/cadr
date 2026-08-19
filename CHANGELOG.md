@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `c451b14e7`
+  (revert of exact-size tail). `truncate_tail` 1.76×→1.45×
+  (948→760 µs). Ceiling 18.0 unchanged. No `src/`. G.17
+  still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `7ab5d7d3c`
   `text_truncation.truncate_tail` 1.42×→1.76× (cadr 948 µs /
   pi 540 µs). Extra newline count pass is slower on the
