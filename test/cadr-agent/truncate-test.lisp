@@ -100,6 +100,30 @@
            result)))
         maximum)))))
 
+(test truncate-harness-tail-exact-size-table-matches-fill-pointer-semantics
+  ;; Count newlines, then a fixnum starts/widths of that length.
+  ;; Trailing newline does not add an extra empty line. Drives
+  ;; the shipped tail table, not a reimplementation.
+  (dolist (text (list
+                 "a"
+                 (format nil "a~%")
+                 (format nil "a~%b")
+                 (format nil "a~%b~%")
+                 (format nil "é🙂中文 mixed tail line~%x")
+                 (format nil "~%~%")))
+    (let ((result
+            (cadr-agent::truncate-harness-tail
+             text
+             :max-lines 10000
+             :max-bytes 1000000)))
+      (is (not
+           (cadr-agent::harness-truncation-result-truncated-p
+            result)))
+      (is (=
+           (cadr-agent::harness-line-count text)
+           (cadr-agent::harness-truncation-result-total-lines
+            result))))))
+
 (test pairing-fixture-truncation-observed-stays-put
   ;; scripts/goal20-paired-paths.lisp 4000-line fixture.  Lock the
   ;; pairing-observed fields so a scan rewrite cannot drift bytes.

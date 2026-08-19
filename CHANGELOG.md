@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-tail` counts `#\Newline`
+  then exact-size start/width vectors. Same JS split encoding
+  as CLI `split-line-starts`. Not `vector-push-extend`.
+  this-host ~630→866 µs. Identity 126959→126962. FiveAM
+  19513→19525. Not intern.
+  Not FFI. G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `bc3b2b755`
   `tool_read.text_file` 0.41×→0.45× (1757→1634 µs; pi also
   faster). Ceiling 8.0 unchanged. No `src/`. G.17 still
