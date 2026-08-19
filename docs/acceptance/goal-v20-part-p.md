@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Inventory in. User 22:18: read pi first. truncate_tail leftover is missing line table (`split` + index from end), not another Lisp scan direction. load 1.93×, read 1.97×. | `docs/adjudications.md` 2026-08-19 read-pi-first. |
+| P.13 pairable coverage | leftover | Policy item 6 + DS audit in. truncate line table first; CLI `utf8-length` / read+grep line lists next. load/read still ~2× (V8 parse, class C). | `docs/acceptance/goal-v20-ds-audit.md`. |

@@ -673,14 +673,41 @@ forbid copying the algorithm as the **floor of the design**.
 | Lisp encoding? | fixnum vector / octet window / typed walk — not `uiop:split-string`, not FFI |
 | After DS matches, still slow? | sprof of *that* implementation |
 
-Do not promote this into `development-policy.md` until the
-user says so. Until then it binds Goal 20 leftover paths
-the same as the 22:18 ruling.
+Promoted the same day (user 22:32) into
+`docs/development-policy.md` section 1 item 6.
 
 **Why it was decidable**: the user asked why the correct
 algorithm was not chosen and only cleaned up later. The
 git history of `truncate.lisp` answers: it was chosen
 (`harness-text-lines`), then deleted as a perf win, then
 the board kept mining the replacement scan.
+
+## 2026-08-19 — Promote performance alignment into standing policy; audit the tree
+
+**Ruled**: user (2026-08-19 22:32). Advisor recorded.
+
+**Decided**: Change the standing development thought, then
+re-check cadr for the same defect (pi's data structure
+dropped or encoded as a cons list).
+
+Landed in `docs/development-policy.md` section 1 item 6,
+`docs/glossary.md` 「性能对齐」, and
+`docs/acceptance/goal-v20-ds-audit.md`.
+
+Class A (deleted structure): harness truncate scan;
+CLI `utf8-length` still encodes to count.
+
+Class B (list encoding of `string[]`): CLI `text-lines` /
+`split-all-lines`; `tools/read`, `tools/grep`, bash notice
+`harness-text-lines`; JSONL open still `split-string`
+(not the paired octet `session_load` path).
+
+Class C: load/read vs `JSON.parse` stays copy-V8-in-Lisp,
+not a scan-order knife. Markdown table split is not a
+floor campaign.
+
+**Why it was decidable**: the user asked to fix the guiding
+thought and to look for other instances, not only truncate.
+
 
 

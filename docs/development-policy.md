@@ -18,6 +18,8 @@ Earlier practice leaned toward transcription not because of the alignment **stan
 
 **The audit unit is observable behavior.** More "intentional difference" rows in `docs/source-parity.md` is the expected result, not a signal of drift.
 
+**Performance is a separate question.** Same output bytes with a worse algorithm is still aligned as a product and still **wrong as a speed design**. See 4.5.
+
 ### 2. The price of divergence: losing mechanical drift detection
 
 While structure corresponds, `scripts/check-source-parity-drift.sh` can **mechanically** list added, deleted, and renamed files after an upstream release and force a disposition out of each one — no understanding required, and nothing slips past.
@@ -91,13 +93,13 @@ REPL and incremental compilation      interactive development, redefinition in a
 
 **Exploring which Lisp constructs to use is the implementer's responsibility, not an option.** The hard conditions in this item constrain the **evidence burden**, not the **means**: which construct to use, and whether to invent an approach this table does not list, **is the implementer's judgement and needs no permission**. Finding an advantage this table does not list and using it **is meeting the bar, not overstepping it.**
 
-**Retreating conservatively to a literal translation is a failure mode, not the safe choice.** This item lists many hard conditions and many prohibitions — if that leads you to conclude "copying the baseline is least likely to be rejected", you have read the item backwards: **the cost of copying does not show up in the gates, it shows up in the product** (slower, harder to maintain, none of Lisp's benefits obtained), and **no gate can catch "this could have been better but was not".**
+**Retreating conservatively to a literal translation of TypeScript syntax is a failure mode, not the safe choice.** This item lists many hard conditions and many prohibitions — if that leads you to conclude "copying the baseline's classes and files is least likely to be rejected", you have read the item backwards: **the cost of copying syntax does not show up in the gates, it shows up in the product** (slower, harder to maintain, none of Lisp's benefits obtained), and **no gate can catch "this could have been better but was not".**
 
-Therefore: **when you cannot think of a Lisp-native implementation, you must say so honestly and escalate for adjudication; you must not quietly copy the baseline's shape and move on.** The former is information that can be acted on; the latter is silent outstanding debt.
+Therefore: **when you cannot think of a Lisp-native *encoding*, you must say so honestly and escalate for adjudication; you must not quietly transcribe TypeScript classes, `nth` on lists, or `uiop:split-string` and move on.** The former is information that can be acted on; the latter is silent outstanding debt.
 
-**Note that this class of debt is harder to find than the one in item 2.** Item 2 records "a corresponding implementation exists but the behavior differs" — the behavior differs, so a differential gate at least **has a chance** of catching it. Code produced by copying the baseline's shape **behaves identically**: all four ledgers will necessarily be green and the byte-level differential will necessarily pass, and **it is structurally impossible for any existing gate to find it.** The only routes to discovery are the implementer reporting it, or someone re-reading the code later. **That is precisely why this item makes "say honestly that you could not think of one" an obligation.**
+**Note that this class of debt is harder to find than the one in item 2.** Item 2 records "a corresponding implementation exists but the behavior differs" — the behavior differs, so a differential gate at least **has a chance** of catching it. Code produced by copying the baseline's *syntax* **behaves identically**: all four ledgers will necessarily be green and the byte-level differential will necessarily pass, and **it is structurally impossible for any existing gate to find it.** The only routes to discovery are the implementer reporting it, or someone re-reading the code later. **That is precisely why this item makes "say honestly that you could not think of one" an obligation.**
 
-Conversely, **performance must not become an excuse for keeping a transcribed form**: if a literal translation is faster somewhere than the Lisp-native implementation, that is an implementation problem and not a language problem, and it must be demonstrated by measurement rather than assumed; if you genuinely cannot produce a Lisp implementation that is faster or equal, **report blocked and escalate for adjudication; do not default to keeping the literal translation and record it as "a performance consideration".**
+Conversely, **performance must not become an excuse for keeping a transcribed *encoding*** (cons lists for JS arrays, encode-the-string to count UTF-8). If a literal translation of the *algorithm* is faster than a Lisp encoding that dropped the data structure, that is an implementation problem: **restore the algorithm, fix the encoding**. Do not delete the data structure to chase a local allocation win (`0afb9660c`), and do not record that as "Lisp-native". If you cannot produce a Lisp encoding that matches pi's complexity and is not slower, **report blocked and escalate; do not default to a different algorithm.**
 
 #### 4.1 New code: Lisp-native is an unconditional requirement
 
@@ -191,7 +193,19 @@ This revision **neither automatically overturns the old verdicts nor automatical
 
 **Not crossed**: `cadr-cli` (96 files / 0 macros) and `cadr-tui` (23 files / 0 macros). **But those zeros are not outstanding debt** — the C2 audit ruled `Keep` and the reasoning held: the TUI's use of CLOS is already the strongest in the tree; the CLI's selectors **look alike but have different contracts** (search, paging, and cancellation rules all differ), and merging them would couple unrelated observable contracts.
 
-**The test**: point at any piece of structure and ask "why is it written this way"; the answer must not contain "because that is how pi does it".
+**The test**: point at any piece of *product* structure (files, classes, control-flow spelling) and ask "why is it written this way"; the answer must not contain "because that is how pi does it". Point at a *computational* structure (random-access lines, `Buffer.byteLength`, `JSON.parse` passes) and the answer **must** be able to name the pi function it matches, or say why cadr's is strictly better *and show the number*.
+
+### 6. Performance work copies pi's algorithm (user 2026-08-19)
+
+**Product alignment** stays item 1: observable behavior, not source files.
+
+**Speed design** starts from the pi production function for that path: its passes and its data structure. Encode those in Lisp (`simple-vector` / fixnum index / octet window / typed walk). That encoding **is** Lisp-native. Deleting the data structure because the first encoding allocated **is not**.
+
+sprof is a diagnostic of an implementation that already has the right algorithm. A profile of a worse algorithm does not authorize a third scan. Open the pi source before the next lever.
+
+Confirmed instance: `truncateTail` is `byteLength` + `split("\n")` + index from the end. cadr had `uiop:split-string` (right algorithm, list encoding), then `0afb9660c` scanned instead. Output bytes still matched. Friend-MachineD tail still 1.30×. Audit: `docs/acceptance/goal-v20-ds-audit.md`.
+
+Forbidden as the next knife on a leftover path: FFI to `Buffer` / simdjson, intern-table growth, empty SWAR, `uiop:split-string` as a "copy" of JS `split`.
 
 ---
 
@@ -434,7 +448,7 @@ For change-one-thing-verify-one-thing work, **prefer `asdf:load-system` to load 
 
 - **Add type declarations only on hot paths**, and **every one must come with measured numbers from before and after.** **A declaration whose improvement you cannot state is not added** — declarations sprayed across the tree are noise, not quality.
 - **Lowering `safety` for speed requires a proposal and adjudication first**: that trades crash risk for performance, which changes the product's failure characteristics.
-- **An `sb-sprof` profile is a diagnostic tool, not a criterion.** The criteria remain the regression gate and the paired benchmarks; but **"X% slower" is not an actionable conclusion**, and a path that misses the bar must attach a profile showing where the bottleneck is.
+- **An `sb-sprof` profile is a diagnostic tool, not a criterion.** The criteria remain the regression gate and the paired benchmarks; **"X% slower" is not an actionable conclusion**. A path that misses the bar must attach a profile **of an implementation that already uses pi's algorithm** (section 1 item 6). A profile of a scan that replaced `split` / an array does not authorize another scan.
 
 ### 6. Capabilities examined and excluded (raising them again requires refuting the reason first)
 

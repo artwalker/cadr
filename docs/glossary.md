@@ -51,6 +51,7 @@ Terms are listed in the order a new reader meets them.
 |---|---|---|
 | 基线 | baseline | The pinned upstream commit. Never "the original". |
 | 对齐 | alignment | Observable-behavior equivalence with the baseline. |
+| 性能对齐 | performance alignment | Same algorithm and data structure as pi's production function, encoded in Lisp. Not "same files". |
 | 全量对齐、不做阉割 | full parity, no crippling | The project's founding constraint. Keep "crippling" — it is deliberate. |
 | 分岔 | divergence | Structural difference from the baseline. Not a defect by itself. |
 | 转写 | transcription | Rendering pi's structure in Lisp syntax. The thing this project rejects. |
