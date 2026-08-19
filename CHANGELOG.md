@@ -9,6 +9,9 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `39b3707bf`
+  `tool_read.text_file` 2.88×→2.39× (12786→10299 µs).
+  Ceiling 8.0 unchanged. No `src/`. G.17 still `missing`.
 - Goal 20 Part P: `read-tool-file` reads `(unsigned-byte 8)`
   then `utf8-string` once, matching pi `readFile` +
   `toString("utf-8")`. this-host ~9763→6505 µs. Identity
