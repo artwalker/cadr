@@ -87,6 +87,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: this-host sb-sprof of `truncate_tail` at
+  `19ca40947`. Leftover is `HARNESS-LINE-AND-UTF8-LENGTH`
+  67.5% then reverse `HARNESS-UTF8-LENGTH-RANGE` 13.2%.
+  Capture: `docs/benchmarks/goal20-part-p-truncate-tail-sprof-19ca40947.md`.
+  No `src/`. G.17 still `missing`.
+
 - Goal 20 Part P: Friend-MachineD remesure of `19ca40947`
   (n=5, enforced; booked at `c688da095`). truncate_head
   4.27×→0.97× (cadr 2277→618 µs). truncate_tail
