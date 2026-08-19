@@ -324,44 +324,41 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
       (return-from truncate-harness-tail
         (make-complete-harness-truncation
          content 0 0 max-lines max-bytes)))
-    (let ((nlines 0))
-      (declare (type fixnum nlines))
+    (let* ((line-hint
+             (max 64 (min 8192 (1+ (truncate length 20)))))
+           (starts
+             (make-array line-hint :element-type 'fixnum
+                         :adjustable t :fill-pointer 0))
+           (widths
+             (make-array line-hint :element-type 'fixnum
+                         :adjustable t :fill-pointer 0))
+           (total-bytes 0)
+           (line-start 0)
+           (line-utf8 0)
+           (trailing-bytes 0))
+      (declare (type fixnum total-bytes line-start line-utf8
+                     trailing-bytes))
       (loop for index of-type fixnum from 0 below length
-            when (char= (schar text index) #\Newline)
-              do (incf nlines))
-      (unless (char= (schar text (the fixnum (1- length))) #\Newline)
-        (incf nlines))
-      (let* ((starts
-               (make-array nlines :element-type 'fixnum))
-             (widths
-               (make-array nlines :element-type 'fixnum))
-             (total-bytes 0)
-             (line-start 0)
-             (line-utf8 0)
-             (trailing-bytes 0)
-             (slot 0))
-        (declare (type fixnum total-bytes line-start line-utf8
-                       trailing-bytes slot)
-                 (type (simple-array fixnum (*)) starts widths))
-        (loop for index of-type fixnum from 0 below length
-              for character of-type character = (schar text index)
-              for nbytes of-type fixnum = (utf8-char-length character)
-              do (incf total-bytes nbytes)
-                 (if (char= character #\Newline)
-                     (progn
-                       (setf (aref starts slot) line-start
-                             (aref widths slot) line-utf8)
-                       (incf slot)
-                       (setf line-start (the fixnum (1+ index))
-                             line-utf8 0))
-                     (incf line-utf8 nbytes)))
-        (if (= line-start length)
-            (setf trailing-bytes 1)
-            (progn
-              (setf (aref starts slot) line-start
-                    (aref widths slot) line-utf8)
-              (incf slot)))
-        (let ((total-lines slot))
+            for character of-type character = (schar text index)
+            for nbytes of-type fixnum = (utf8-char-length character)
+            do (incf total-bytes nbytes)
+               (if (char= character #\Newline)
+                   (progn
+                     (vector-push-extend line-start starts)
+                     (vector-push-extend line-utf8 widths)
+                     (setf line-start (the fixnum (1+ index))
+                           line-utf8 0))
+                   (incf line-utf8 nbytes)))
+      (if (= line-start length)
+          (setf trailing-bytes
+                (if (and (plusp length)
+                         (char= (schar text (1- length)) #\Newline))
+                    1
+                    0))
+          (progn
+            (vector-push-extend line-start starts)
+            (vector-push-extend line-utf8 widths)))
+      (let ((total-lines (fill-pointer starts)))
         (declare (type fixnum total-lines))
         (when (and (<= total-lines max-lines)
                    (<= total-bytes max-bytes))
@@ -422,7 +419,7 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
              :output-bytes selected-bytes
              :last-line-partial-p partial-p
              :max-lines max-lines
-             :max-bytes max-bytes))))))))
+             :max-bytes max-bytes)))))))
 
 (defun truncate-harness-line
     (line &optional (max-characters 500))
