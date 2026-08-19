@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: this-host sb-sprof of `tool_read.text_file`
+  on `c2828e831`. Leftover is SBCL `INPUT-CHAR/UTF-8/LF` on
+  `read-file-string` (47.3% self), not the line table (2.0%).
+  Capture: `docs/benchmarks/goal20-part-p-tool-read-sprof-c2828e831.md`.
+  G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `c2828e831`
   `tool_read.text_file` 5.32×→2.88× (21747→12786 µs).
   Ceiling 8.0 unchanged. No `src/`. G.17 still `missing`.
