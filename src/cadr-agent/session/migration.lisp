@@ -91,30 +91,40 @@
        (when (string= key "retainedTail")
          (setf (session-entry-retained-tail entry) value))))))
 
-(defconstant +swar-lsb+ #x0101010101010101)
-(defconstant +swar-msb+ #x8080808080808080)
-(defconstant +swar-nl+ #x0A0A0A0A0A0A0A0A)
-(defconstant +swar-ht+ #x0909090909090909)
-(defconstant +swar-cr+ #x0D0D0D0D0D0D0D0D)
-(defconstant +swar-sp+ #x2020202020202020)
+(defconstant +swar-lsb+ #x01010101)
+(defconstant +swar-msb+ #x80808080)
+(defconstant +swar-nl+ #x0A0A0A0A)
+(defconstant +swar-ht+ #x09090909)
+(defconstant +swar-cr+ #x0D0D0D0D)
+(defconstant +swar-sp+ #x20202020)
 
 (defun swar-eq-msb (word splat)
-  ;; V8/haszero after XOR splat: ((x-ones) & ~x & high).
-  ;; Words above most-positive-fixnum are bignums; do not
-  ;; unbox them with safety 0. Not FFI. Not sb-simd.
-  (declare (type (unsigned-byte 64) word splat)
+  ;; V8/haszero after XOR splat on one ub32. The mask is
+  ;; ≤ #x80808080, always a fixnum. A 64-bit
+  ;; %vector-raw-bits word boxed ALLOC-UNSIGNED-BIGNUM-IN-RDX
+  ;; when bit 62/63 was set. Not FFI. Not sb-simd.
+  (declare (type (unsigned-byte 32) word splat)
            (optimize (speed 3) (safety 1)))
   (let ((x (logxor word splat)))
-    (logand (ldb (byte 64 0) (- x +swar-lsb+))
+    (logand (ldb (byte 32 0) (- x +swar-lsb+))
             (logandc1 x +swar-msb+))))
 
 (defun swar-first-msb-index (mask)
-  (declare (type (unsigned-byte 64) mask)
+  (declare (type (unsigned-byte 32) mask)
            (optimize (speed 3) (safety 1)))
   (ash (1- (integer-length (logand mask (- mask)))) -3))
 
+(defun swar-ws-mask (word)
+  (declare (type (unsigned-byte 32) word)
+           (optimize (speed 3) (safety 1)))
+  (logior (swar-eq-msb word +swar-sp+)
+          (swar-eq-msb word +swar-ht+)
+          (swar-eq-msb word +swar-cr+)
+          (swar-eq-msb word +swar-nl+)))
+
 (defun octet-find-lf (octets start end)
-  ;; First 0x0A in [start,end), or NIL. 8-byte SWAR when aligned.
+  ;; First 0x0A in [start,end), or NIL. Two ub32 haszero when
+  ;; 8-aligned. No 64-bit word, no bignum.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (type fixnum start end)
            (optimize (speed 3) (safety 1)))
@@ -125,19 +135,28 @@
           (cond
             ((and (zerop (logand index 7))
                   (<= (the fixnum (+ index 8)) end))
-             (let ((mask
-                     (swar-eq-msb
-                      (sb-kernel:%vector-raw-bits octets (ash index -3))
-                      +swar-nl+)))
-               (if (zerop mask)
-                   (incf index 8)
-                   (return (+ index (swar-first-msb-index mask))))))
+             (let ((m0 (swar-eq-msb
+                        (cadr-ai::octet-u32-le octets index)
+                        +swar-nl+))
+                   (m1 (swar-eq-msb
+                        (cadr-ai::octet-u32-le
+                         octets (the fixnum (+ index 4)))
+                        +swar-nl+)))
+               (cond
+                 ((and (zerop m0) (zerop m1))
+                  (incf index 8))
+                 ((zerop m0)
+                  (return
+                    (+ index 4 (swar-first-msb-index m1))))
+                 (t
+                  (return
+                    (+ index (swar-first-msb-index m0)))))))
             ((= (aref octets index) 10)
              (return index))
             (t (incf index))))))
 
 (defun octet-skip-json-space (octets start end)
-  ;; Advance past JSON whitespace. 8-byte SWAR when aligned.
+  ;; Advance past JSON whitespace. Two ub32 haszero when aligned.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (type fixnum start end)
            (optimize (speed 3) (safety 1)))
@@ -147,24 +166,29 @@
           do
           (if (and (zerop (logand index 7))
                    (<= (the fixnum (+ index 8)) end))
-              (let* ((word
-                       (sb-kernel:%vector-raw-bits
-                        octets (ash index -3)))
-                     (mask
-                       (logior (swar-eq-msb word +swar-sp+)
-                               (swar-eq-msb word +swar-ht+)
-                               (swar-eq-msb word +swar-cr+)
-                               (swar-eq-msb word +swar-nl+))))
+              (let ((m0 (swar-ws-mask
+                         (cadr-ai::octet-u32-le octets index)))
+                    (m1 (swar-ws-mask
+                         (cadr-ai::octet-u32-le
+                          octets (the fixnum (+ index 4))))))
                 (cond
-                  ((= mask +swar-msb+)
+                  ((and (= m0 +swar-msb+) (= m1 +swar-msb+))
                    (incf index 8))
-                  ((zerop mask)
+                  ((zerop m0)
                    (return-from octet-skip-json-space index))
-                  (t
+                  ((/= m0 +swar-msb+)
                    (return-from octet-skip-json-space
                      (+ index
                         (swar-first-msb-index
-                         (logxor mask +swar-msb+)))))))
+                         (logxor m0 +swar-msb+)))))
+                  ((zerop m1)
+                   (return-from octet-skip-json-space
+                     (+ index 4)))
+                  (t
+                   (return-from octet-skip-json-space
+                     (+ index 4
+                        (swar-first-msb-index
+                         (logxor m1 +swar-msb+)))))))
               (let ((code (aref octets index)))
                 (if (or (= code 32)
                         (= code 9)

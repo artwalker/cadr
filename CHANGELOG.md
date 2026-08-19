@@ -32,6 +32,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `SWAR-EQ-MSB` is two ub32 haszero
+  operations. Result stays a fixnum. Not intern. Not FFI.
+  Session JSONL bytes unchanged. Identity 126415→126439.
+  FiveAM 19331→19338. G.17 still `missing`.
+
 - Goal 20 Part P: `copy-unescaped-json-octets` writes
   ASCII windows as ub32 `schar` stores. High bytes stay
   UTF-8. Not intern. Not FFI. Session JSONL bytes

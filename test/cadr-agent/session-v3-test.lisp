@@ -840,7 +840,25 @@
                         '(32 9 13 10 32 32 32 32
                           123 32 32 32 32 32 32 32))))
     (is (= 8 (cadr-agent::octet-skip-json-space ws 0 16)))
-    (is (= 8 (cadr-agent::octet-skip-json-space ws 8 16)))))
+    (is (= 8 (cadr-agent::octet-skip-json-space ws 8 16))))
+  ;; Two ub32: haszero stays a fixnum even when byte 7 is LF.
+  (let ((mask (cadr-agent::swar-eq-msb #x0A0A0A0A #x0A0A0A0A)))
+    (is (typep mask 'fixnum))
+    (is (= mask cadr-agent::+swar-msb+)))
+  (let ((buf (make-array 8 :element-type '(unsigned-byte 8)
+                         :initial-contents '(65 65 65 65 65 65 65 10))))
+    (is (= 7 (cadr-agent::octet-find-lf buf 0 8)))
+    (is (typep
+         (cadr-agent::swar-eq-msb
+          (cadr-ai::octet-u32-le buf 4)
+          cadr-agent::+swar-nl+)
+         'fixnum)))
+  ;; Byte 7 = #x7B would set bit 62 of a 64-bit raw word and box.
+  (let ((buf (make-array 8 :element-type '(unsigned-byte 8)
+                         :initial-element #x7B)))
+    (is (null (cadr-agent::octet-find-lf buf 0 8)))
+    (is (typep (cadr-ai::octet-u32-le buf 4) 'fixnum))
+    (is (= 0 (cadr-agent::octet-skip-json-space buf 0 8)))))
 
 (test session-content-uses-unescaped-octet-block-copy
   ;; PARSE-STRING-VALUE copies unescaped ASCII via shipped

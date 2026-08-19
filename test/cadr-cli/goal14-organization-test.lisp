@@ -954,7 +954,8 @@
     ;; parse-session-header-octets.
     ;; +10 Goal 20 walker SWAR: 6 splat constants + haszero +
     ;; first-msb + octet-find-lf + octet-skip-json-space.
-    (is (= 301 definition-count)
+    ;; +1 Goal 20 SWAR ub32: swar-ws-mask (no 64-bit bignum).
+    (is (= 302 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
