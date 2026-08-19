@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `7ab5d7d3c`
+  `text_truncation.truncate_tail` 1.42×→1.76× (cadr 948 µs /
+  pi 540 µs). Extra newline count pass is slower on the
+  pairing fixture. Ceiling 18.0 unchanged. No `src/`. G.17
+  still `missing`.
 - Goal 20 Part P: `truncate-harness-tail` counts `#\Newline`
   then exact-size start/width vectors. Same JS split encoding
   as CLI `split-line-starts`. Not `vector-push-extend`.
