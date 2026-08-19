@@ -10,6 +10,13 @@ tag/Release step.
 ### Added
 
 - Goal 20 Part P: this-host sb-sprof of `session_load` and
+  `journal_read` on `5cc895b84`. `ALLOC-UNSIGNED-BIGNUM`
+  gone. Leftover is walker / `OCTET-U32-LE` / runtime /
+  foreign `read`. No unused legal named structure. Capture:
+  `docs/benchmarks/goal20-part-p-load-read-sprof-5cc895b84.md`.
+  No `src/`. G.17 still `missing`.
+
+- Goal 20 Part P: this-host sb-sprof of `session_load` and
   `journal_read` on `2a3aa47ba`. Leftover is walker / SWAR
   helpers / runtime / foreign `read`. `COPY-UNESCAPED`
   3.1%→2.4% self. No unused legal named structure. Capture:
