@@ -17,8 +17,22 @@
    text :external-format :utf-8))
 
 (defun utf8-string (octets)
-  (sb-ext:octets-to-string
-   octets :external-format :utf-8))
+  ;; ASCII: pre-sized simple-base-string + ub32 schar
+  ;; (copy-unescaped-json-octets). Mixed: same copy on ASCII
+  ;; runs; non-ASCII windows decode UTF-8. Not FFI. Not intern.
+  ;; (goal 20 sprof UTF8->STRING-AREF 58.3% total at ab4a52ea4).
+  (let ((n (length octets)))
+    (declare (type fixnum n))
+    (when (zerop n)
+      (return-from utf8-string ""))
+    (copy-utf8-octets
+     (if (typep octets '(simple-array (unsigned-byte 8) (*)))
+         octets
+         (let ((copy
+                 (make-array n :element-type '(unsigned-byte 8))))
+           (replace copy octets)
+           copy))
+     0 n)))
 
 (defun json-object (&rest key-values)
   (assert (evenp (length key-values)))
@@ -934,6 +948,157 @@
                   (incf dst)
                   (decf left))
             out)))))
+
+(defun utf8-next-width (octets index end)
+  ;; Bytes of the next well-formed UTF-8 scalar, or NIL.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum index end)
+           (optimize (speed 3) (safety 1)))
+  (let ((left (the fixnum (- end index)))
+        (b0 (aref octets index)))
+    (declare (type fixnum left)
+             (type (unsigned-byte 8) b0))
+    (cond
+      ((< b0 #x80) 1)
+      ((< b0 #xc2) nil)
+      ((< b0 #xe0)
+       (when (and (>= left 2)
+                  (= (logand (aref octets (the fixnum (1+ index))) #xc0)
+                     #x80))
+         2))
+      ((< b0 #xf0)
+       (when (>= left 3)
+         (let ((b1 (aref octets (the fixnum (1+ index))))
+               (b2 (aref octets (the fixnum (+ index 2)))))
+           (declare (type (unsigned-byte 8) b1 b2))
+           (when (and (= (logand b1 #xc0) #x80)
+                      (= (logand b2 #xc0) #x80)
+                      (cond
+                        ((= b0 #xe0) (>= b1 #xa0))
+                        ((= b0 #xed) (< b1 #xa0))
+                        (t t)))
+             3))))
+      ((< b0 #xf5)
+       (when (>= left 4)
+         (let ((b1 (aref octets (the fixnum (1+ index))))
+               (b2 (aref octets (the fixnum (+ index 2))))
+               (b3 (aref octets (the fixnum (+ index 3)))))
+           (declare (type (unsigned-byte 8) b1 b2 b3))
+           (when (and (= (logand b1 #xc0) #x80)
+                      (= (logand b2 #xc0) #x80)
+                      (= (logand b3 #xc0) #x80)
+                      (cond
+                        ((= b0 #xf0) (>= b1 #x90))
+                        ((= b0 #xf4) (< b1 #x90))
+                        (t t)))
+             4)))))))
+
+(defun utf8-decode-char (octets index width)
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum index)
+           (type (integer 1 4) width)
+           (optimize (speed 3) (safety 1)))
+  (let ((b0 (aref octets index)))
+    (declare (type (unsigned-byte 8) b0))
+    (code-char
+     (ecase width
+       (1 b0)
+       (2
+        (logior
+         (ash (logand b0 #x1f) 6)
+         (logand (aref octets (the fixnum (1+ index))) #x3f)))
+       (3
+        (logior
+         (ash (logand b0 #x0f) 12)
+         (ash (logand (aref octets (the fixnum (1+ index))) #x3f) 6)
+         (logand (aref octets (the fixnum (+ index 2))) #x3f)))
+       (4
+        (logior
+         (ash (logand b0 #x07) 18)
+         (ash (logand (aref octets (the fixnum (1+ index))) #x3f) 12)
+         (ash (logand (aref octets (the fixnum (+ index 2))) #x3f) 6)
+         (logand (aref octets (the fixnum (+ index 3))) #x3f)))))))
+
+(defun copy-utf8-octets (octets start end)
+  ;; Whole-buffer / window decode. All-ASCII uses
+  ;; copy-unescaped-json-octets. Mixed: pre-size a character
+  ;; string, ub32-copy ASCII runs, decode non-ASCII scalars.
+  ;; Invalid UTF-8 falls back to octets-to-string.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end)
+           (optimize (speed 3) (safety 1)))
+  (let ((ascii-p t))
+    (loop for index from start below end
+          when (>= (aref octets index) 128)
+            do (setf ascii-p nil)
+               (return))
+    (when ascii-p
+      (return-from copy-utf8-octets
+        (copy-unescaped-json-octets octets start end)))
+    (let ((chars 0)
+          (index start)
+          (ok t))
+      (declare (type fixnum chars index))
+      (loop while (< index end)
+            do
+            (if (< (aref octets index) 128)
+                (progn
+                  (incf chars)
+                  (incf index))
+                (let ((width (utf8-next-width octets index end)))
+                  (cond
+                    ((null width)
+                     (setf ok nil)
+                     (return))
+                    (t
+                     (incf chars)
+                     (incf index width))))))
+      (unless ok
+        (return-from copy-utf8-octets
+          (sb-ext:octets-to-string
+           octets :external-format :utf-8 :start start :end end)))
+      (let ((out (make-array chars :element-type 'character))
+            (src start)
+            (dst 0))
+        (declare (type simple-string out)
+                 (type fixnum src dst))
+        (loop while (< src end)
+              do
+              (if (< (aref octets src) 128)
+                  (let ((run-end src)
+                        (left 0))
+                    (declare (type fixnum run-end left))
+                    (loop while (and (< run-end end)
+                                     (< (aref octets run-end) 128))
+                          do (incf run-end))
+                    (setf left (the fixnum (- run-end src)))
+                    (loop while (>= left 4)
+                          do
+                          (let ((word (octet-u32-le octets src)))
+                            (setf (schar out dst)
+                                  (code-char (ldb (byte 8 0) word)))
+                            (setf (schar out (the fixnum (+ dst 1)))
+                                  (code-char (ldb (byte 8 8) word)))
+                            (setf (schar out (the fixnum (+ dst 2)))
+                                  (code-char (ldb (byte 8 16) word)))
+                            (setf (schar out (the fixnum (+ dst 3)))
+                                  (code-char (ldb (byte 8 24) word))))
+                          (incf src 4)
+                          (incf dst 4)
+                          (decf left 4))
+                    (loop while (> left 0)
+                          do
+                          (setf (schar out dst)
+                                (code-char (aref octets src)))
+                          (incf src)
+                          (incf dst)
+                          (decf left)))
+                  (let ((width (utf8-next-width octets src end)))
+                    (setf (schar out dst)
+                          (utf8-decode-char octets src width))
+                    (incf src width)
+                    (incf dst))))
+        out))))
 
 (defun decode-escaped-json-octets (octets start end &optional buffer)
   ;; JSON string value window (between quotes).  Decode escapes

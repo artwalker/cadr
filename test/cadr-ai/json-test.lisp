@@ -125,3 +125,56 @@
     (is (string=
          (format nil "\"ab~C\"" emoji)
          (cadr-ai::stringify-json text)))))
+
+(test utf8-string-ascii-is-simple-base-string
+  ;; Shipped UTF8-STRING: all-ASCII is copy-unescaped-json-octets
+  ;; (pre-sized simple-base-string, ub32 schar). Not octets-to-string.
+  (dolist (text (list "ascii-id-01"
+                      "xyz"
+                      (make-string 220 :initial-element #\x)))
+    (let* ((octets (cadr-ai::utf8-octets text))
+           (decoded (cadr-ai::utf8-string octets)))
+      (is (string= text decoded))
+      (is (typep decoded 'simple-base-string))
+      (setf (aref octets 0) 122)
+      (is (string= text decoded)))))
+
+(test utf8-string-mixed-matches-octets-to-string
+  ;; Mixed ASCII runs + UTF-8 scalars, including the pairing
+  ;; fixture line. Drives the shipped decoder, not a reimplementation.
+  (dolist (text (list
+                 ""
+                 "é🙂中文 mixed tail line"
+                 (format nil "~A~%~A~%"
+                         (make-string 220 :initial-element #\x)
+                         "é🙂中文 mixed tail line")
+                 "一"
+                 (format nil "你好~%👩")))
+    (let ((octets (cadr-ai::utf8-octets text)))
+      (is (string=
+           (sb-ext:octets-to-string octets :external-format :utf-8)
+           (cadr-ai::utf8-string octets))))))
+
+(test utf8-string-invalid-matches-octets-to-string
+  ;; Overlong / surrogate / out-of-range must take the same
+  ;; octets-to-string fallback as the previous decoder.
+  (flet ((decode (octets)
+           (handler-case
+               (cons :ok
+                     (cadr-ai::utf8-string octets))
+             (error () '(:error))))
+         (sb-decode (octets)
+           (handler-case
+               (cons :ok
+                     (sb-ext:octets-to-string
+                      octets :external-format :utf-8))
+             (error () '(:error)))))
+    (dolist (bytes '((#xe0 #x80 #x80)
+                     (#xed #xa0 #x80)
+                     (#xf4 #x90 #x80 #x80)
+                     (#xf0 #x80 #x80 #x80)
+                     (#xc2)
+                     (#x80)))
+      (let ((octets
+              (coerce bytes '(simple-array (unsigned-byte 8) (*)))))
+        (is (equal (sb-decode octets) (decode octets)))))))

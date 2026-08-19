@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `utf8-string` copies ASCII runs into a
+  pre-sized `simple-base-string` via `copy-unescaped-json-octets`
+  (ub32 schar). Mixed buffers pre-size a character string and
+  decode only non-ASCII scalars. this-host ~5512→3103 µs.
+  Identity 126691→126856. Not FFI. Not intern. sprof:
+  `docs/benchmarks/goal20-part-p-tool-read-sprof-utf8-ascii-run.md`.
+  G.17 still `missing`.
 - Goal 20 Part P: grep `text-lines` / `ripgrep-file-lines`
   use the shared fixnum line-start table (drop trailing
   empty, trim CR). Not `uiop:split-string` on the hot path.
