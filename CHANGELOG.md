@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `07facd8fd`
+  `truncate_tail` 1.45×→1.44× (760→758 µs). Same band as
+  the revert. Ceiling 18.0 unchanged. No `src/`. G.17 still
+  `missing`.
 - Goal 20 Part P: `truncate-harness-tail` fills starts/widths in
   one pass (hint 64..8192, grow by doubling, exact-size copy).
   Not a prior newline-count pass. this-host ~631 µs. Identity
