@@ -494,3 +494,35 @@ file ownership repeats it at larger scale. The organization ledger's
 question is "one user-visible decision, one owner"; parallel writers
 on one file are a second owner.
 
+## 2026-08-19 — Pairable paths: measure then optimize (P.13)
+
+**Ruled**: user (2026-08-19 18:30). Advisor recorded.
+
+**Decided**: Goal 20 must measure every path that can be paired with
+pi, then optimize the ones that lose. This is Part P item **P.13**
+in `goal20-draft.md`. It is not a new goal.
+
+- The unit is a **path** (same fixture bytes, same machine, both
+  sides' production code). It is **not** one wall-clock per
+  `.lisp` file. The 2026-08-18 G.12 ruling ("not 148 file-level
+  pairs") still holds.
+- H `pairable-uncovered` is no longer an acceptable terminal
+  state. After P.13, `--check` on `goal20-unpaired-paths.py`
+  must not report that class. Every `src/**/*.lisp` is
+  `paired`, `covered-as-callee` of a named metric, `needs-pair`
+  (until the pair lands), or booked `unpairable`.
+- New `unpairable` rows need a proposal. "No fixture yet" is
+  not unpairable.
+- A new pair and an optimization of that pair are separate
+  commits. Do not optimize a path that has no pair.
+- Already-paired paths still above 1.0× (load, read, argv,
+  truncation) stay in scope; P.13 does not pause them.
+- Unpairable paths stay single-reference vs previous cadr
+  (cold start, live sockets, Lisp-only extension host, etc.).
+
+**Why it was decidable**: H reports 74.4% of lines as
+`pairable-uncovered`. That share was a measurement gap, not a
+physical limit. The user asked whether performance coverage was
+comprehensive; it was not. They then ordered the gap closed
+inside Goal 20.
+

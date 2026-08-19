@@ -22,7 +22,7 @@ Not a Goal 20 pass.
 | P.4 stream_roundtrip | number | this-host 6.398 ms / 3,750,979 B → 4.995 ms / 2,432,214 B; SSE-only 2.899 ms / 2,327,510 B → 1.698 ms / 1,229,201 B | `c183539e7`–this knife. File-stream newline scan. |
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,350,697 B; snake overlay 39,963 B; ttt overlay 47,819 B | ttt visual-board stream rewrite. |
-| P.7 H pairing | number | 0 new file-level pairs. Remesure `e908ebad9`: load 1.12×→1.37× (cadr 1842→1983 µs); walk 1.05×→0.03×. Load leftover is the closed JSONL walker. | remesure this knife. |
+| P.7 H pairing | leftover | P.13 reopens remaining `needs-pair`. Existing 16 named metrics stay. Not 148 file benches. | user 2026-08-19 18:30 |
 | P.8 three games | number | user 2026-08-18 18:09 deferred live play; reopen if a defect appears | Overlay: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. Not FiveAM. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`: disk `/reload`; host rebuild. Rechecked this turn. |
 | P.10 input-to-screen | number | key→overlay 0.050 ms, spinner=NIL, thinking=NIL | This host, 80× snake key+render after `f3ccf75f6`. |
@@ -49,3 +49,10 @@ Not `parse-json-octets`. Not a G.17 close.
 - Goal 20 complete.
 - G.17 `met`.
 - Live three-game play (deferred 18:09).
+- P.13 complete (`pairable-uncovered` still 74.4% of lines).
+
+## P.13 (user 2026-08-19 18:30)
+
+| item | status | number or leftover | evidence |
+|---|---|---|---|
+| P.13 pairable coverage | leftover | `pairable-uncovered` 74.4% of lines (236 files). Inventory not written. No new pairs this knife. | spec P.13; ruling 2026-08-19 |

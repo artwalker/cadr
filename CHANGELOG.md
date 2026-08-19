@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P.13: every pairable path must be measured,
+  then optimized. Path unit, not per-file benches.
+  `pairable-uncovered` is not a terminal state. Ruling:
+  `docs/adjudications.md` 2026-08-19 P.13. G.17 still
+  `missing`.
+
 - Goal 20 Part P: this-host sb-sprof of `session_load` and
   `journal_read` on `5cc895b84`. `ALLOC-UNSIGNED-BIGNUM`
   gone. Leftover is walker / `OCTET-U32-LE` / runtime /
