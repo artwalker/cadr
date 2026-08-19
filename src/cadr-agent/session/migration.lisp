@@ -199,7 +199,10 @@
                  `(and (< position length)
                        (aref octets position)))
                (take-code ()
-                 `(prog1 (peek-code) (incf position))))
+                 `(prog1 (peek-code) (incf position)))
+               (key= (key-start key-end literal)
+                 `(cadr-ai::octet-window-equals
+                   octets ,key-start ,key-end ,literal)))
       (labels
           ((fail (message)
              (error 'cadr-ai::json-parse-error
@@ -211,9 +214,6 @@
            (expect-code (code)
              (unless (eql (take-code) code)
                (fail "Unexpected byte")))
-           (key= (key-start key-end literal)
-             (cadr-ai::octet-window-equals
-              octets key-start key-end literal))
            (skip-string ()
              (expect-code 34)
              (loop

@@ -786,18 +786,105 @@
 (defun parse-json (source)
   (parse-json-source source))
 
+(defun octet-u32-le (octets index)
+  ;; Four ASCII bytes as a fixnum. Not FFI. Not sb-simd.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum index)
+           (optimize (speed 3) (safety 1)))
+  (logior (aref octets index)
+          (ash (aref octets (the fixnum (+ index 1))) 8)
+          (ash (aref octets (the fixnum (+ index 2))) 16)
+          (ash (aref octets (the fixnum (+ index 3))) 24)))
+
 (defun octet-window-equals (octets start end literal)
+  ;; Short ASCII windows compare as ub32 chunks, then a
+  ;; 1–3 byte tail. Constant literals fold via the
+  ;; compiler-macro (memcmp of the packed words). Not intern.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (type fixnum start end)
-           (type simple-string literal))
-  (let ((count (- end start)))
-    (declare (type fixnum count))
-    (and (= count (length literal))
-         (loop for index from start below end
-               for offset from 0
-               always
-               (= (aref octets index)
-                  (char-code (schar literal offset)))))))
+           (type simple-string literal)
+           (optimize (speed 3) (safety 1)))
+  (let ((count (- end start))
+        (lit-n (length literal)))
+    (declare (type fixnum count lit-n))
+    (when (= count lit-n)
+      (let ((offset 0))
+        (declare (type fixnum offset))
+        (loop while (>= (the fixnum (- count offset)) 4)
+              do
+              (let ((want
+                      (logior
+                       (char-code (schar literal offset))
+                       (ash (char-code
+                             (schar literal
+                                    (the fixnum (+ offset 1))))
+                            8)
+                       (ash (char-code
+                             (schar literal
+                                    (the fixnum (+ offset 2))))
+                            16)
+                       (ash (char-code
+                             (schar literal
+                                    (the fixnum (+ offset 3))))
+                            24))))
+                (unless (= (octet-u32-le
+                            octets (the fixnum (+ start offset)))
+                           want)
+                  (return-from octet-window-equals nil)))
+              (incf offset 4))
+        (loop while (< offset count)
+              do
+              (unless (= (aref octets (the fixnum (+ start offset)))
+                         (char-code (schar literal offset)))
+                (return-from octet-window-equals nil))
+              (incf offset))
+        t))))
+
+(eval-when (:compile-toplevel :load-toplevel :execute)
+  (defun ascii-literal-u32-le (literal index)
+    (declare (type simple-string literal)
+             (type fixnum index))
+    (logior (char-code (schar literal index))
+            (ash (char-code (schar literal (the fixnum (+ index 1)))) 8)
+            (ash (char-code (schar literal (the fixnum (+ index 2)))) 16)
+            (ash (char-code (schar literal (the fixnum (+ index 3)))) 24))))
+
+(define-compiler-macro octet-window-equals
+    (&whole form octets start end literal)
+  ;; Constant ASCII string → packed ub32 / tail bytes.
+  ;; Not intern. Not FFI.
+  (if (and (stringp literal)
+           (every (lambda (character)
+                    (< (char-code character) 128))
+                  literal))
+      (let* ((count (length literal))
+             (words
+               (loop for index from 0 to (- count 4) by 4
+                     collect (ascii-literal-u32-le literal index)))
+             (tail-start (* 4 (length words)))
+             (octets-g (gensym "OCTETS"))
+             (start-g (gensym "START"))
+             (end-g (gensym "END")))
+        `(let ((,octets-g ,octets)
+               (,start-g ,start)
+               (,end-g ,end))
+           (declare (type (simple-array (unsigned-byte 8) (*)) ,octets-g)
+                    (type fixnum ,start-g ,end-g))
+           (and (= (the fixnum (- ,end-g ,start-g)) ,count)
+                ,@(loop for word in words
+                        for chunk from 0
+                        collect
+                        `(= (octet-u32-le
+                             ,octets-g
+                             (the fixnum
+                                  (+ ,start-g ,(* chunk 4))))
+                            ,word))
+                ,@(loop for index from tail-start below count
+                        collect
+                        `(= (aref ,octets-g
+                                  (the fixnum (+ ,start-g ,index)))
+                            ,(char-code (schar literal index)))))))
+      form))
 
 (defun copy-unescaped-json-octets (octets start end)
   ;; UTF-8 only on the value window, not the whole JSONL line.
@@ -946,8 +1033,8 @@
     (declare (type fixnum count))
     (when (plusp count)
       (let ((first (aref octets start)))
-        (flet ((key= (literal)
-                 (octet-window-equals octets start end literal)))
+        (macrolet ((key= (literal)
+                     `(octet-window-equals octets start end ,literal)))
           (case count
             (2 (when (and (= first 105) (key= "id")) "id"))
             (4 (case first
@@ -1002,8 +1089,8 @@
            (type fixnum start end))
   (let ((count (- end start)))
     (declare (type fixnum count))
-    (flet ((val= (literal)
-             (octet-window-equals octets start end literal)))
+    (macrolet ((val= (literal)
+                 `(octet-window-equals octets start end ,literal)))
       (case count
         (4 (cond
              ((val= "text") "text")

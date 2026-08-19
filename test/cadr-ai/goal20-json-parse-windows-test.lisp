@@ -277,6 +277,42 @@
     (is (string= "message" (cadr-ai::json-get object "type")))
     (is (string= "中文" (cadr-ai::json-get object "text")))))
 
+(test goal20-octet-window-equals-compares-ub32-words
+  ;; Shipped OCTET-WINDOW-EQUALS: short ASCII keys as ub32 + tail.
+  ;; Unaligned start, pairing-session key lengths, mismatch.
+  (flet ((window (prefix text suffix)
+           (cadr-ai::utf8-octets
+            (concatenate 'string prefix text suffix))))
+    (let* ((type-buf (window "{" "type" "\":"))
+           (start 1)
+           (end 5))
+      (is (cadr-ai::octet-window-equals type-buf start end "type"))
+      (is (not (cadr-ai::octet-window-equals type-buf start end "text")))
+      (is (not (cadr-ai::octet-window-equals type-buf start end "ty")))
+      (is (= #x65707974 (cadr-ai::octet-u32-le type-buf start))))
+    (let* ((id-buf (window "\"" "id" "\""))
+           (start 1)
+           (end 3))
+      (is (cadr-ai::octet-window-equals id-buf start end "id"))
+      (is (not (cadr-ai::octet-window-equals id-buf start end "ix"))))
+    (let* ((ts-buf (window "xx" "timestamp" "\":"))
+           (start 2)
+           (end 11))
+      (is (cadr-ai::octet-window-equals ts-buf start end "timestamp"))
+      (is (not (cadr-ai::octet-window-equals
+                ts-buf start end "timestamX"))))
+    (let* ((sig-buf (window "" "thoughtSignature" ""))
+           (end (length sig-buf)))
+      (is (cadr-ai::octet-window-equals
+           sig-buf 0 end "thoughtSignature"))
+      (is (not (cadr-ai::octet-window-equals
+                sig-buf 0 end "thought_signature")))))
+  (let* ((source
+           "{\"type\":\"message\",\"id\":\"k\",\"timestamp\":1}")
+         (object (cadr-ai::parse-json source)))
+    (is (string= "message" (cadr-ai::json-get object "type")))
+    (is (string= "k" (cadr-ai::json-get object "id")))))
+
 (test goal20-json-object-pairs-round-trip
   ;; Session tool-call arguments: tagged pairs, not EQUAL hash.
   (let ((pairs (list* :json-object (list "path" "x" "offset" 1))))

@@ -25,6 +25,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `octet-window-equals` compares short
+  ASCII keys as ub32 chunks (constant literals fold).
+  Not intern. Not FFI. Session JSONL bytes unchanged.
+  Identity 126304→126391. FiveAM 19304→19320. Not
+  `sb-simd`. G.17 still `missing`.
+
 - Goal 20 Part P: `SCAN-BUFFER` / `SKIP-SPACE` scan 8
   bytes at a time (SWAR haszero after splat). Not FFI.
   Not `sb-simd`. Session JSONL bytes unchanged. Identity

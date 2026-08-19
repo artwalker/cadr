@@ -842,6 +842,26 @@
     (is (= 8 (cadr-agent::octet-skip-json-space ws 0 16)))
     (is (= 8 (cadr-agent::octet-skip-json-space ws 8 16)))))
 
+(test pairing-record-keys-use-word-window-equals
+  ;; Session walker key= goes through shipped octet-window-equals
+  ;; (ub32 chunks). Pairing fixture + a timestamp/id record.
+  (let* ((root (asdf:system-source-directory "cadr-agent"))
+         (path
+           (merge-pathnames
+            "test/fixtures/goal20-paired-paths/session.jsonl"
+            root))
+         (objects (cadr-agent::read-session-objects path))
+         (octets
+           (cadr-ai::utf8-octets
+            "{\"type\":\"message\",\"id\":\"weq\",\"parentId\":null,\"timestamp\":3,\"message\":{\"role\":\"user\",\"content\":\"hi\",\"timestamp\":3}}"))
+         (entry
+           (cadr-agent::parse-session-record-octets
+            octets 0 (length octets))))
+    (is (cadr-agent::session-file-header-p (first objects)))
+    (is (string= "message" (cadr-agent::session-entry-type entry)))
+    (is (string= "weq" (cadr-agent::session-entry-id entry)))
+    (is (eql 3 (cadr-agent::session-entry-timestamp entry)))))
+
 (test pairing-fixture-and-spaced-record-use-swar-walker
   (let* ((root (asdf:system-source-directory "cadr-agent"))
          (path
