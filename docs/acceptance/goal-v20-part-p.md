@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Inventory: 35 paired / 24 unpairable / 17 covered-as-callee / 219 needs-pair / 0 pairable-uncovered (295 files / 126,497 lines). H JSON schema unchanged (next knife). Required holes: SQLite, tool loop, compact, remaining providers, settings/package/skill/prompt. No new pairs. No `src/`. | `docs/acceptance/goal-v20-part-p13-inventory.md` |
+| P.13 pairable coverage | leftover | Inventory in. Measure then **keep refining** (user 19:21): floor if behind pi; CL ceiling even if already ahead. Next pair: sqlite_session (measure commit), then sprof/levers. | inventory `c328b022b`; ruling 19:21 |

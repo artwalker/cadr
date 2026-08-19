@@ -499,8 +499,9 @@ on one file are a second owner.
 **Ruled**: user (2026-08-19 18:30). Advisor recorded.
 
 **Decided**: Goal 20 must measure every path that can be paired with
-pi, then optimize the ones that lose. This is Part P item **P.13**
-in `goal20-draft.md`. It is not a new goal.
+pi, then refine it. Losing to pi is the floor, not the stop.
+This is Part P item **P.13** in `goal20-draft.md`. It is not a
+new goal.
 
 - The unit is a **path** (same fixture bytes, same machine, both
   sides' production code). It is **not** one wall-clock per
@@ -514,9 +515,14 @@ in `goal20-draft.md`. It is not a new goal.
 - New `unpairable` rows need a proposal. "No fixture yet" is
   not unpairable.
 - A new pair and an optimization of that pair are separate
-  commits. Do not optimize a path that has no pair.
-- Already-paired paths still above 1.0× (load, read, argv,
-  truncation) stay in scope; P.13 does not pause them.
+  commits. Do not optimize a path that has no pair. After the
+  pair exists, keep refining: floor first if behind pi, then
+  the CL ceiling even if already faster than pi. High
+  performance is not a defect and not a stop.
+- Already-paired paths stay in scope whether they lose or win
+  (load, read, argv, truncation still behind; help, walk,
+  append, list_models, stream already ahead — keep going while
+  sprof names a Lisp structure).
 - Unpairable paths stay single-reference vs previous cadr
   (cold start, live sockets, Lisp-only extension host, etc.).
 
@@ -525,4 +531,24 @@ in `goal20-draft.md`. It is not a new goal.
 physical limit. The user asked whether performance coverage was
 comprehensive; it was not. They then ordered the gap closed
 inside Goal 20.
+
+## 2026-08-19 — After a pair lands, keep refining (P.13)
+
+**Ruled**: user (2026-08-19 19:21). Advisor recorded.
+
+**Decided**: Measuring is not the end. Paths that can still be
+refined must be refined. Beating pi is not a reason to stop.
+The 18:30 P.13 sentence "optimize the ones that lose" is
+narrowed: losing to pi is the **floor** queue; the **ceiling**
+queue is every paired path whose sprof leftover is still Lisp
+structure, including paths already faster than pi.
+
+Split commits remain: fixture+pair first, then sprof+one lever.
+Empty micro-knives with no wall-clock movement are not
+"refining".
+
+**Why it was decidable**: the sqlite pair was queued as
+"measure only in that commit". The user stated that after
+measurement, further optimization is still required, and that
+high performance is not wrong.
 

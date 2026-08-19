@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P.13: after a pair lands, keep refining.
+  Beating pi is not a stop. Floor = not slower than pi;
+  ceiling = CL leftover. Empty SWAR is not refining.
+  Ruling: `docs/adjudications.md` 2026-08-19 19:21. G.17
+  still `missing`.
+
 - Goal 20 Part P.13 inventory: every `src/**/*.lisp` is
   `paired`, `unpairable`, `covered-as-callee`, or
   `needs-pair`. 219 files still need an H pair (SQLite,
