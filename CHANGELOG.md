@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-tail` pre-sizes the
+  fixnum line table (hint cap 8192) so 4000 lines do not
+  realloc from 64. Same algorithm. this-host ~749→635 µs.
+  Identity 126589→126591. Not intern. Not FFI. G.17 still
+  `missing`.
 - Goal 20 Part P: CLI `utf8-length` delegates to
   `harness-utf8-length`. Does not encode the whole string
   to count. this-host pairing fixture ~1111→477 µs.

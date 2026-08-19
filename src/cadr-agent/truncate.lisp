@@ -324,16 +324,18 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
       (return-from truncate-harness-tail
         (make-complete-harness-truncation
          content 0 0 max-lines max-bytes)))
-    (let ((starts
-            (make-array 64 :element-type 'fixnum
-                        :adjustable t :fill-pointer 0))
-          (widths
-            (make-array 64 :element-type 'fixnum
-                        :adjustable t :fill-pointer 0))
-          (total-bytes 0)
-          (line-start 0)
-          (line-utf8 0)
-          (trailing-bytes 0))
+    (let* ((line-hint
+             (max 64 (min 8192 (1+ (truncate length 20)))))
+           (starts
+             (make-array line-hint :element-type 'fixnum
+                         :adjustable t :fill-pointer 0))
+           (widths
+             (make-array line-hint :element-type 'fixnum
+                         :adjustable t :fill-pointer 0))
+           (total-bytes 0)
+           (line-start 0)
+           (line-utf8 0)
+           (trailing-bytes 0))
       (declare (type fixnum total-bytes line-start line-utf8
                      trailing-bytes))
       (loop for index of-type fixnum from 0 below length
