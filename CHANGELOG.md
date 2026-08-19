@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of `8d7917472`
+  (n=5, enforced). list_models_render 1.57×→0.06× (cadr
+  2088→97 µs). Ceiling unchanged. No `src/` in the remesure
+  booking.
+
 - Goal 20 Part P: `model-registry-available-models` caches
   the configured list on the registry. Invalidate with the
   same models.json / auth.json write-dates as the CLI
