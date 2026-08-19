@@ -77,6 +77,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of `17df52451`
+  (n=5, enforced). truncate_head 4.57×→4.27× (cadr
+  2566→2277 µs). truncate_tail 3.09×→1.38× (1783→763 µs).
+  Ceiling unchanged. No `src/` in the remesure booking.
+  G.17 still `missing`.
+
 - Goal 20 Part P: `SCAN-KEY` / `PARSE-STRING-VALUE` /
   `skip-string` find `"` and `\\` with two ub32 haszero.
   Backslash falls back to a byte walk of that escape.
