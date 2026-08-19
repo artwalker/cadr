@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `split-line-starts` exact-sizes the fixnum
+  vector (count newlines, then fill). Kills
+  `vector-push-extend` named by sprof at `39b3707bf`. Same
+  JS split encoding. this-host ~6505→5512 µs. Identity
+  126659→126666. Not intern. Not FFI. G.17 still
+  `missing`.
 - Goal 20 Part P: this-host sb-sprof of `tool_read.text_file`
   on `39b3707bf`. Leftover is `octets-to-string`
   (`UTF8->STRING-AREF` 17.3%) plus

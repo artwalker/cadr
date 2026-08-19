@@ -335,12 +335,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 126,659 lines**
+Denominator: **295 files / 126,666 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 41 | 26,480 | 20.9% | `no worse than baseline` is falsifiable |
+| `paired` | 41 | 26,487 | 20.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `pairable-uncovered` | 230 | 92,704 | 73.2% | blocked by Part A hard condition 2 |
 
@@ -401,7 +401,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/tools/grep.lisp` | 320 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 172 | `tool_read.text_file` |
-| `src/cadr-cli/truncation.lisp` | 134 | `tool_read.text_file` |
+| `src/cadr-cli/truncation.lisp` | 141 | `tool_read.text_file` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
 | `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

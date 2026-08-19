@@ -30,26 +30,33 @@
 (defun split-line-starts (text)
   ;; pi String.prototype.split("\n"): one start index per part.
   ;; Empty → #(0). Trailing newline → extra start at length.
-  ;; Fixnum vector, not uiop:split-string (goal 20 DS audit class B).
+  ;; Exact-size fixnum vector (count then fill). Not
+  ;; vector-push-extend (sprof PREPARE-VECTOR-PUSH-EXTEND
+  ;; 12.7% at 39b3707bf). Not uiop:split-string.
   (let* ((source
            (if (simple-string-p text)
                text
                (coerce text 'simple-string)))
-         (length (length source))
-         (hint
-           (max 64 (min 8192 (1+ (truncate (max 1 length) 20)))))
-         (starts
-           (make-array hint :element-type 'fixnum
-                       :adjustable t :fill-pointer 0)))
+         (length (length source)))
     (declare (type simple-string source)
              (type fixnum length)
              (optimize (speed 3) (safety 1)))
-    (vector-push-extend 0 starts)
-    (loop for index of-type fixnum from 0 below length
-          when (char= (schar source index) #\Newline)
-            do (vector-push-extend
-                (the fixnum (1+ index)) starts))
-    (values starts source)))
+    (let ((nlines 1))
+      (declare (type fixnum nlines))
+      (loop for index of-type fixnum from 0 below length
+            when (char= (schar source index) #\Newline)
+              do (incf nlines))
+      (let ((starts
+              (make-array nlines :element-type 'fixnum)))
+        (setf (aref starts 0) 0)
+        (let ((slot 1))
+          (declare (type fixnum slot))
+          (loop for index of-type fixnum from 0 below length
+                when (char= (schar source index) #\Newline)
+                  do (setf (aref starts slot)
+                           (the fixnum (1+ index)))
+                     (incf slot)))
+        (values starts source)))))
 
 (defun split-line-ref (text starts index)
   (let* ((from (aref starts index))
