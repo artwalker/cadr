@@ -3,14 +3,38 @@
 (defparameter +maximum-output-lines+ 2000)
 (defparameter +maximum-output-bytes+ (* 50 1024))
 
+(defun make-text-line-table (text)
+  ;; text-lines semantics: drop the trailing empty split part
+  ;; (file ending in newline) and trim CR. Empty → 0 lines.
+  ;; Keep the full starts vector so the last content line still
+  ;; sees its terminating newline as the next start.
+  (let ((source
+          (if (simple-string-p text)
+              text
+              (coerce text 'simple-string))))
+    (when (zerop (length source))
+      (return-from make-text-line-table
+        (list source (make-array 0 :element-type 'fixnum) 0)))
+    (multiple-value-bind (starts source)
+        (split-line-starts source)
+      (let ((n (length starts)))
+        (when (and (plusp n)
+                   (= (aref starts (1- n)) (length source)))
+          (decf n))
+        (list source starts n)))))
+
+(defun text-line-ref (source starts index)
+  (string-right-trim
+   '(#\Return)
+   (split-line-ref source starts index)))
+
 (defun text-lines (text)
-  (let ((lines (uiop:split-string text :separator '(#\Newline))))
-    (when (and lines
-               (string= "" (car (last lines))))
-      (setf lines (butlast lines)))
-    (mapcar (lambda (line)
-              (string-right-trim '(#\Return) line))
-            lines)))
+  (let* ((table (make-text-line-table text))
+         (source (first table))
+         (starts (second table))
+         (n (third table)))
+    (loop for index from 0 below n
+          collect (text-line-ref source starts index))))
 
 (defun join-lines (lines)
   (format nil "~{~A~^~%~}" lines))

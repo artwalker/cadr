@@ -116,6 +116,39 @@
                   source starts 1 (length starts))
                  (cadr-cli::join-lines (cdr parts))))))))))
 
+(test text-lines-drops-trailing-empty-and-trims-cr
+  ;; Grep/edit encoding of JS split after CR normalize, minus the
+  ;; trailing empty part. Empty file → no lines.
+  (flet ((legacy (text)
+           (let ((lines
+                   (uiop:split-string text :separator '(#\Newline))))
+             (when (and lines
+                        (string= "" (car (last lines))))
+               (setf lines (butlast lines)))
+             (mapcar (lambda (line)
+                       (string-right-trim '(#\Return) line))
+                     lines))))
+    (dolist (text (list
+                   ""
+                   "a"
+                   (format nil "a~%")
+                   (format nil "a~%b")
+                   (format nil "a~%b~%")
+                   (format nil "~%")
+                   (format nil "a~C~%" #\Return)
+                   (format nil "é🙂中文 mixed tail line~%x")))
+      (is (equal (cadr-cli::text-lines text) (legacy text)))
+      (let* ((table (cadr-cli::make-text-line-table text))
+             (source (first table))
+             (starts (second table))
+             (n (third table))
+             (parts (legacy text)))
+        (is (= n (length parts)))
+        (loop for index from 0 below n
+              do (is (string=
+                      (cadr-cli::text-line-ref source starts index)
+                      (nth index parts))))))))
+
 (test write-creates-parents-and-overwrites-utf8
   (with-test-directory (directory)
     (let ((tool (make-write-tool directory))

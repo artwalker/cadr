@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: grep `text-lines` / `ripgrep-file-lines`
+  use the shared fixnum line-start table (drop trailing
+  empty, trim CR). Not `uiop:split-string` on the hot path.
+  this-host pairing fixture ~20939 µs. Identity
+  126666→126691. Not intern. Not FFI. G.17 still
+  `missing`.
 - Goal 20 Part P: this-host sb-sprof of `tool_read.text_file`
   on `ab4a52ea4`. Leftover is `octets-to-string`
   (`UTF8->STRING-AREF` 58.3% total). Line-table

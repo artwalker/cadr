@@ -91,35 +91,36 @@
 (defun ripgrep-file-lines (file cache)
   (or (gethash file cache)
       (setf (gethash file cache)
-            (text-lines
+            (make-text-line-table
              (uiop:read-file-string
               file :external-format :utf-8)))))
 
 (defun ripgrep-context-block
     (file line-number context-count relative &optional cache)
   (handler-case
-      (let* ((lines
+      (let* ((table
                (if cache
                    (ripgrep-file-lines file cache)
-                   (text-lines
+                   (make-text-line-table
                     (uiop:read-file-string
                      file :external-format :utf-8))))
+             (source (first table))
+             (starts (second table))
+             (n (third table))
              (index (1- line-number))
              (start (max 0 (- index context-count)))
-             (end (min (length lines)
-                       (+ index context-count 1)))
+             (end (min n (+ index context-count 1)))
              (output nil)
-             (truncated-p nil)
-             (slice (and lines (subseq lines start end))))
-        (if (null lines)
+             (truncated-p nil))
+        (if (zerop n)
             (values
              (list
               (format nil "~A:~D: (unable to read file)"
                       relative line-number))
              nil)
             (progn
-              (loop for context-index from start
-                    for line in slice
+              (loop for context-index from start below end
+                    for line = (text-line-ref source starts context-index)
                     for marker = (if (= context-index index) #\: #\-)
                     do
                     (multiple-value-bind (display-line line-truncated-p)
