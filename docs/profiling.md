@@ -35,6 +35,9 @@ sample interval, after a warmup call and a full GC:
 - `session_pipeline.session_load`
 - `storage_journal.journal_read`
 - `storage_journal.journal_append`
+- `session_pipeline.context_walk`
+- `cli_dispatch.argv_parse`
+- `cli_dispatch.help_render`
 
 To profile a different named path, add a thunk next to those four in
 `run-profiles`. Do not start a second driver.

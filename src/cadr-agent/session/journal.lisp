@@ -325,7 +325,9 @@
               (session-by-id session))
      entry
      (session-leaf-id session)
-     (session-entry-id entry))
+     (session-entry-id entry)
+     (session-%messages-leaf session) nil
+     (session-%messages-cache session) nil)
     (let ((activity
             (session-entry-activity-timestamp
              entry)))
@@ -566,7 +568,9 @@
     (session-failure
      (session-path session) nil
      "Session entry not found: ~A" entry-id))
-  (setf (session-leaf-id session) entry-id)
+  (setf (session-leaf-id session) entry-id
+        (session-%messages-leaf session) nil
+        (session-%messages-cache session) nil)
   session)
 
 (defun session-path-entries (session &optional
@@ -640,28 +644,36 @@
 (defun session-messages (session &optional
                                    (leaf-id
                                      (session-leaf-id session)))
-  (loop for entry in
-          (session-context-entries session leaf-id)
-        append
-        (case (session-entry-type entry)
-          (:message
-           (list (session-entry-message entry)))
-          (:compaction
-           (list (compaction-summary-message entry)))
-          (:branch-summary
-           (list
-            (cadr-ai:make-user-message
-             :content
-             (format nil
-                     "The following is a summary of a branch that this conversation came back from:~%~%<summary>~%~A~%</summary>"
-                     (session-entry-summary entry))
-             :timestamp
-             (session-entry-timestamp entry))))
-          (:custom-message
-           (list
-            (cadr-ai:make-user-message
-             :content
-             (session-entry-content entry)
-             :timestamp
-             (session-entry-timestamp entry))))
-          (otherwise nil))))
+  (when (and (session-%messages-cache session)
+             (equal leaf-id (session-%messages-leaf session)))
+    (return-from session-messages
+      (copy-list (session-%messages-cache session))))
+  (let ((messages
+          (loop for entry in
+                  (session-context-entries session leaf-id)
+                append
+                (case (session-entry-type entry)
+                  (:message
+                   (list (session-entry-message entry)))
+                  (:compaction
+                   (list (compaction-summary-message entry)))
+                  (:branch-summary
+                   (list
+                    (cadr-ai:make-user-message
+                     :content
+                     (format nil
+                             "The following is a summary of a branch that this conversation came back from:~%~%<summary>~%~A~%</summary>"
+                             (session-entry-summary entry))
+                     :timestamp
+                     (session-entry-timestamp entry))))
+                  (:custom-message
+                   (list
+                    (cadr-ai:make-user-message
+                     :content
+                     (session-entry-content entry)
+                     :timestamp
+                     (session-entry-timestamp entry))))
+                  (otherwise nil)))))
+    (setf (session-%messages-leaf session) leaf-id
+          (session-%messages-cache session) messages)
+    (copy-list messages)))

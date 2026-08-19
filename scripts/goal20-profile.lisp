@@ -253,6 +253,30 @@
             (lambda ()
               (append-journal-once messages cwd))))
      sections)
+    (let ((session (cadr-agent:load-session session-path)))
+      (push
+       (list "session_pipeline.context_walk"
+             (profile-thunk
+              "context_walk"
+              (lambda ()
+                (cadr-agent:session-messages session))))
+       sections))
+    (let ((parse-argv (argv-fixture "parse")))
+      (push
+       (list "cli_dispatch.argv_parse"
+             (profile-thunk
+              "argv_parse"
+              (lambda ()
+                (cadr-cli::parse-cli-arguments parse-argv))))
+       sections))
+    (push
+     (list "cli_dispatch.help_render"
+           (profile-thunk
+            "help_render"
+            (let ((stream (make-broadcast-stream)))
+              (lambda ()
+                (cadr-cli::print-cli-usage stream)))))
+     sections)
     (write-markdown (nreverse sections))))
 
 (parse-options)

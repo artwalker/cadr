@@ -251,6 +251,45 @@
                (first
                  (cadr-agent::session-messages loaded))))))))))
 
+(test session-messages-reuses-until-append-or-branch
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent::create-session
+              :directory sessions
+              :cwd cwd
+              :id "cache-walk"))
+           (first
+             (cadr-ai:make-user-message
+              :content "one" :timestamp 1))
+           (second
+             (cadr-ai:make-user-message
+              :content "two" :timestamp 2)))
+      (cadr-agent::session-append-message session first)
+      (let* ((once (cadr-agent:session-messages session))
+             (twice (cadr-agent:session-messages session)))
+        (is (= 1 (length once)))
+        (is (equal once twice))
+        (is (eq (first once) (first twice)))
+        (is (not (eq once twice))))
+      (cadr-agent::session-append-message session second)
+      (let ((after-append (cadr-agent:session-messages session)))
+        (is (= 2 (length after-append)))
+        (is (string=
+             "two"
+             (cadr-ai:user-message-content
+              (second after-append))))
+        (cadr-agent:session-branch
+         session
+         (cadr-agent::session-entry-id
+          (first (cadr-agent::session-%entries session))))
+        (let ((after-branch (cadr-agent:session-messages session)))
+          (is (= 1 (length after-branch)))
+          (is (string=
+               "one"
+               (cadr-ai:user-message-content
+                (first after-branch)))))))))
+
 (test session-message-ingestion-normalizes-null-or-missing-content
   (let* ((usage
            (cadr-ai::json-object

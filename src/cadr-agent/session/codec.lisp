@@ -72,7 +72,9 @@
   (persisted-p nil :type boolean)
   (lock (sb-thread:make-mutex :name "cadr-session"))
   %journal-stream
-  %journal-octets)
+  %journal-octets
+  %messages-leaf
+  %messages-cache)
 
 (defun canonical-session-cwd (cwd)
   (namestring

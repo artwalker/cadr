@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: this-host sb-sprof of `context_walk`,
+  `argv_parse`, and `help_render`. Walk leftover is EQUAL
+  hash in `session-path-entries`. argv is `assoc`/`string=`.
+  help is `format` (not guessed). Capture:
+  `docs/benchmarks/goal20-part-p-walk-argv-help-sprof.md`.
+  G.17 still `missing`.
+
 - Goal 20 Part P: this-host sb-sprof of `session_load` and
   `journal_read` on `67a2d43fb`. Leftover is the session
   JSONL octet walker / runtime / foreign `read`. No EQUAL
@@ -17,6 +24,12 @@ tag/Release step.
   `src/`. G.17 still `missing`.
 
 ### Changed
+
+- Goal 20 Part P: `session-messages` reuses the derived
+  message list until append or branch. Pairing
+  `context_walk` is that function. Not intern. Not FFI.
+  Identity 125921→125935. FiveAM 19267→19275. G.17 still
+  `missing`.
 
 - Goal 20 Part P: Friend-MachineD remesure of `8d7917472`
   (n=5, enforced). list_models_render 1.57×→0.06× (cadr
