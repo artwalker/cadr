@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Inventory in. Remesure `19ca40947`: truncate_head 4.27×→0.97× (2277→618 µs); truncate_tail 1.38×→1.30×. load 1.93×, read 1.97×. Ceiling unchanged. | remesure this booking. No `src/`. |
+| P.13 pairable coverage | leftover | Inventory in. User 22:18: read pi first. truncate_tail leftover is missing line table (`split` + index from end), not another Lisp scan direction. load 1.93×, read 1.97×. | `docs/adjudications.md` 2026-08-19 read-pi-first. |

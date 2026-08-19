@@ -552,3 +552,135 @@ Empty micro-knives with no wall-clock movement are not
 measurement, further optimization is still required, and that
 high performance is not wrong.
 
+## 2026-08-19 — Read pi first; copy its structure, do not tinker (P.13)
+
+**Ruled**: user (2026-08-19 22:18). Advisor recorded after
+reading pi and cadr, not from sprof rank.
+
+**Decided**: A leftover path is refined by **searching how pi
+does the same work** (source, not a guess, not a trial
+permutation of the current Lisp scan). If the data structure
+or algorithm is wrong, replace it with the correct one. That
+is the qualitative jump. Micro-knives that only reorder the
+existing Lisp walk do not have speaking rights until that
+comparison exists.
+
+Standing method, every leftover paired path:
+
+1. Open the pi production function for that pair.
+2. Name its data structure and its passes.
+3. Name cadr's. If they differ, the next knife is the copy
+   (in Lisp, not FFI). If they already match, say so and
+   stop inventing scan-order variants.
+4. `uiop:split-string` / cons lists of new strings is **not**
+   a copy of a JS `string[]`. A fixnum line-start vector plus
+   one `subseq` of the original buffer is.
+
+**Evidence (truncate_tail, this ruling's example)**:
+
+pi `packages/agent/src/harness/utils/truncate.ts`
+`truncateTail`:
+
+- `utf8ByteLength(content)` → Node `Buffer.byteLength` when
+  present (native UTF-8 length of the whole string).
+- `splitLinesForCounting` → `content.split("\n")`, pop if
+  trailing newline → **random-access array of every line**.
+- Walk `lines.length - 1` down to 0 until `maxLines` /
+  `maxBytes`; `unshift`; `join("\n")`; byte-length the
+  output.
+
+cadr `src/cadr-agent/truncate.lisp`
+`truncate-harness-tail` after `13903e05c`:
+
+- Separate full-string `harness-line-and-utf8-length`.
+- Then `position #\Newline :from-end t` in a loop (no line
+  table).
+- `harness-text-lines` already exists and uses
+  `uiop:split-string` — that is the **wrong** copy of split
+  (new string conses, not an index vector).
+
+`34b76695f` one-reverse-walk of the whole string was a Lisp
+scan-order trial. Friend-MachineD tail 1.30×→1.59×. It was
+not pi's algorithm. Prefix-remainder-after-short-reverse is
+the same class of trial until the line table exists.
+
+**Not decided**: FFI to `Buffer`, mmap, intern tables, AVX /
+`sb-simd` as the next truncate knife. Copy the **shape**
+(one length pass + random-access lines + index from the end).
+Lisp may keep one walk that fills totals and the line-start
+vector together; that is still the pi shape, not a new
+invention.
+
+**Load / read leftover**: pi is `JSON.parse` (V8). The
+standing copy-V8-in-Lisp rule still applies. More empty
+SWAR on the existing walker is not this ruling.
+
+**Why it was decidable**: the user rejected "try a small
+change". The pi source for the live 1.30× path was unread
+before the reverse-walk knife. After reading it, the missing
+structure is the line table, not another character-loop
+direction.
+
+## 2026-08-19 — Performance work starts from pi's algorithm, not from sprof of a worse one
+
+**Ruled**: user (2026-08-19 22:27). Advisor agrees.
+Recorded as a diagnosis of *why* the line table was missing,
+not a new truncate knife.
+
+**Decided**: Yes, the guiding thought was wrong, in a
+specific way. Product alignment stays **observable
+behavior** (`development-policy.md` §1). **Speed work**
+starts from pi's algorithm and data structure, encoded in
+Lisp. sprof is for leftover *after* those match. It must
+not be used to invent a different algorithm.
+
+Three stacked rules produced the truncate mess:
+
+1. Goal 12 Lispified `truncateTail` as
+   `harness-text-lines` = `uiop:split-string` (same
+   algorithm, **wrong representation**: conses of new
+   strings).
+2. `400dbadf4` (zero-alloc UTF-8 count) and `0afb9660c`
+   ("scan without split-string") treated allocation as the
+   enemy. this-host head 7.276 ms / 2.56 MB → 2.319 ms /
+   197 kB. That number was real. They deleted the line
+   table with the conses, and never put back a fixnum index
+   vector. Output bytes still matched, so §1 called it
+   aligned.
+3. Part P then said: sprof → one lever; "copying pi's
+   TypeScript shape because it is fast enough" is a failure
+   (`docs/adjudications.md` 2026-08-18 CL ceiling). The
+   executor and the advisor both read that as "do not keep
+   pi's DS". Hottest frames (`HARNESS-LINE-AND-UTF8-LENGTH`,
+   reverse `position`) became the queue. `34b76695f` /
+   remainder proposals are that queue.
+
+**What was right in the old thought**: do not copy JS
+`string[]` allocations; do not stop because cadr beat pi;
+one lever per commit with numbers.
+
+**What was wrong**: using sprof of a scan to choose the
+next scan. Using §1 "not source structure" to drop the
+algorithm. Using "do not copy TS shape as the ceiling" to
+forbid copying the algorithm as the **floor of the design**.
+
+**Standing split**:
+
+| question | source of truth |
+|---|---|
+| Same product? | observable bytes / UX |
+| Same speed design? | pi's production function: passes and DS |
+| Lisp encoding? | fixnum vector / octet window / typed walk — not `uiop:split-string`, not FFI |
+| After DS matches, still slow? | sprof of *that* implementation |
+
+Do not promote this into `development-policy.md` until the
+user says so. Until then it binds Goal 20 leftover paths
+the same as the 22:18 ruling.
+
+**Why it was decidable**: the user asked why the correct
+algorithm was not chosen and only cleaned up later. The
+git history of `truncate.lisp` answers: it was chosen
+(`harness-text-lines`), then deleted as a perf win, then
+the board kept mining the replacement scan.
+
+

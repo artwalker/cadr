@@ -87,6 +87,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P.13: read pi first. Copy its passes and
+  data structure in Lisp; sprof of a worse scan is not the
+  design source. truncate_tail leftover is a line-start
+  vector, not another character-loop direction. Ruling:
+  `docs/adjudications.md` 2026-08-19 22:18 / 22:27. G.17
+  still `missing`.
+
 - Goal 20 Part P: revert one-reverse-walk `truncate-harness-tail`.
   Friend-MachineD n=5: tail 1.30×→1.59× (cadr 819→870 µs).
   Full reverse scan lost to forward totals plus short reverse
