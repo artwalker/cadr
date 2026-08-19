@@ -29,6 +29,7 @@ METRIC_KEYS = (
     "storage_journal.journal_read",
     "storage_journal.journal_append",
     "sqlite_session.open_walk",
+    "tool_read.text_file",
 )
 
 HISTORY_RATIO_KEYS = (

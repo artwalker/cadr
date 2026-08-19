@@ -15,6 +15,7 @@
   "storage_journal.journal_read",
   "storage_journal.journal_append",
   "sqlite_session.open_walk",
+  "tool_read.text_file",
   "goal11.mouse_drag",
   "goal11.wheel",
   "goal11.continuous_alt_input",
@@ -218,6 +219,20 @@
    "class": "paired",
    "metrics": [
     "sqlite_session.open_walk"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/tools/read.lisp",
+   "class": "paired",
+   "metrics": [
+    "tool_read.text_file"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/truncation.lisp",
+   "class": "paired",
+   "metrics": [
+    "tool_read.text_file"
    ]
   },
   {

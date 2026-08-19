@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: `tool_read.text_file` pair. Same 4000-line
+  fixture ingested as a text file; timed work is production
+  `read-tool-file` vs pi `createReadToolDefinition.execute`.
+  First Friend-MachineD freeze 5.32× (21747 / 4087 µs),
+  ceiling 8.0. No product optimize. G.17 still `missing`.
 - Goal 20 Part P: `truncate-harness-tail` pre-sizes the
   fixnum line table (hint cap 8192) so 4000 lines do not
   realloc from 64. Same algorithm. this-host ~749→635 µs.

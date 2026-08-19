@@ -167,6 +167,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("entry_count", paired.OBSERVED_EXACT["sqlite_session"])
         self.assertIn("leaf_id", paired.OBSERVED_EXACT["sqlite_session"])
 
+    def test_tool_read_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tool_read.text_file", RECORD.METRIC_KEYS)
+        self.assertIn("text_file", paired.METRICS["tool_read"])
+        self.assertIn("tool_read.text_file", paired.RATIO_CEILINGS)
+        self.assertIn("line_count", paired.OBSERVED_EXACT["tool_read"])
+        self.assertIn("output_chars", paired.OBSERVED_EXACT["tool_read"])
+        self.assertIn("truncated", paired.OBSERVED_EXACT["tool_read"])
+
     def test_build_entry_derives_baseline_from_ratio(self) -> None:
         cadr = fake_cadr()
         summary = fake_summary(cadr)
@@ -175,7 +184,7 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertEqual(entry["label"], "paired-paths-quick")
         self.assertTrue(entry["quick"])
-        self.assertEqual(len(entry["metrics"]), 10)
+        self.assertEqual(len(entry["metrics"]), 11)
         first = entry["metrics"][RECORD.METRIC_KEYS[0]]
         self.assertAlmostEqual(first["cadrMedianUs"], 1000.0)
         self.assertAlmostEqual(first["ratio"], 2.0)
@@ -202,6 +211,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("GOAL20_PAIRED_PATHS_START", section)
             self.assertIn("`storage_journal.journal_append`", section)
             self.assertIn("`sqlite_session.open_walk`", section)
+            self.assertIn("`tool_read.text_file`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

@@ -17,6 +17,7 @@
 //   3. session_pipeline  session load + context entry walk
 //   4. storage_journal   journal read + journal append
 //   5. sqlite_session    SQLite open + read-all + leaf walk
+//   6. tool_read         production read vs createReadToolDefinition.execute
 //
 // usage:
 //   node scripts/goal20-paired-paths.mjs BASELINE_WORKTREE [options]
@@ -129,6 +130,7 @@ const REPETITIONS = {
 	"storage_journal.journal_read": 5,
 	"storage_journal.journal_append": 3,
 	"sqlite_session.open_walk": 3,
+	"tool_read.text_file": 5,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
 	"render_slicing.slice_ansi_clip": 200,
@@ -268,6 +270,7 @@ const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-no
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
+const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 
 // Both sides render into a sink that only counts, so neither pays terminal
@@ -728,6 +731,31 @@ async function measureTextTruncation() {
 	};
 }
 
+async function measureToolRead() {
+	const lines = [];
+	for (let i = 1; i <= 4000; i++) {
+		lines.push(i % 2 === 1 ? "x".repeat(220) : "é🙂中文 mixed tail line");
+	}
+	const content = `${lines.join("\n")}\n`;
+	const dir = path.join(scratch, "read");
+	mkdirSync(dir, { recursive: true });
+	const filename = "read-fixture.txt";
+	writeFileSync(path.join(dir, filename), content, "utf8");
+	const def = readModule.createReadToolDefinition(dir);
+	const once = await def.execute("", { path: filename });
+	const text = once.content[0].text;
+	return {
+		text_file: await collect("tool_read.text_file", () => {
+			return () => def.execute("", { path: filename });
+		}),
+		observed: {
+			line_count: content.split("\n").length,
+			output_chars: text.length,
+			truncated: once.details?.truncation?.truncated ? 1 : 0,
+		},
+	};
+}
+
 async function measureRenderSlicing() {
 	const dense = Array.from(
 		{ length: 200 },
@@ -769,6 +797,8 @@ process.stderr.write("goal20 pi paired paths: sqlite_session\n");
 const sqliteSession = await measureSqliteSession();
 process.stderr.write("goal20 pi paired paths: text_truncation\n");
 const textTruncation = await measureTextTruncation();
+process.stderr.write("goal20 pi paired paths: tool_read\n");
+const toolRead = await measureToolRead();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -798,6 +828,8 @@ const result = {
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.create + appendMessage",
 			"sqlite_session.open_walk":
 				"packages/session-backends/sqlite-node SqliteSessionRepository.open + findEntries + findEntriesOnBranch",
+			"tool_read.text_file":
+				"packages/coding-agent/src/core/tools/read.ts createReadToolDefinition.execute",
 			"text_truncation.truncate_head":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
@@ -827,6 +859,7 @@ const result = {
 		storage_journal: storageJournal,
 		sqlite_session: sqliteSession,
 		text_truncation: textTruncation,
+		tool_read: toolRead,
 		render_slicing: renderSlicing,
 	},
 };
