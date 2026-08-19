@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `0e785406e`
+  `tool_read.text_file` 2.42×→1.32× (11131→5460 µs).
+  `tool_grep.context_file` 1.62×→1.38× (30986→23713 µs).
+  Ceilings 8.0 and 3.0 unchanged. No `src/`. G.17 still
+  `missing`.
 - Goal 20 Part P: `utf8-string` copies ASCII runs into a
   pre-sized `simple-base-string` via `copy-unescaped-json-octets`
   (ub32 schar). Mixed buffers pre-size a character string and
