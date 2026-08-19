@@ -88,12 +88,24 @@
         (cadr-core:stop-thread-for-cleanup
          stderr-reader :timeout 1.0d0)))))
 
+(defun read-utf8-file (file)
+  ;; Same ingest as read-tool-file: octet read-sequence then
+  ;; utf8-string (ASCII-run copy). Not uiop:read-file-string.
+  ;; Not mmap. Not intern. Not FFI.
+  (with-open-file (stream file
+                          :direction :input
+                          :element-type '(unsigned-byte 8))
+    (let* ((nbytes (or (file-length stream) 0))
+           (octets
+             (make-array nbytes
+                         :element-type '(unsigned-byte 8))))
+      (read-sequence octets stream)
+      (cadr-ai::utf8-string octets))))
+
 (defun ripgrep-file-lines (file cache)
   (or (gethash file cache)
       (setf (gethash file cache)
-            (make-text-line-table
-             (uiop:read-file-string
-              file :external-format :utf-8)))))
+            (make-text-line-table (read-utf8-file file)))))
 
 (defun ripgrep-context-block
     (file line-number context-count relative &optional cache)
@@ -101,9 +113,7 @@
       (let* ((table
                (if cache
                    (ripgrep-file-lines file cache)
-                   (make-text-line-table
-                    (uiop:read-file-string
-                     file :external-format :utf-8))))
+                   (make-text-line-table (read-utf8-file file))))
              (source (first table))
              (starts (second table))
              (n (third table))

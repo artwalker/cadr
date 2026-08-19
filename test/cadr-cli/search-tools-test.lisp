@@ -136,6 +136,51 @@
          (result-text content)
          :separator '(#\Newline)))))))
 
+(test grep-octet-utf8-decode-preserves-emoji-and-cjk
+  ;; Production ingest is octet read-sequence then utf8-string,
+  ;; then the line table. Not uiop:read-file-string.
+  (with-test-directory (directory)
+    (let* ((file (merge-pathnames "mix.txt" directory))
+           (body
+             (format nil "ascii~%é🙂中文 mixed tail line~%ascii~%")))
+      (write-text file body)
+      (let* ((cache (make-hash-table :test #'equal))
+             (table (cadr-cli::ripgrep-file-lines file cache))
+             (source (first table))
+             (starts (second table))
+             (n (third table))
+             (octets
+               (with-open-file (in file
+                                   :element-type '(unsigned-byte 8))
+                 (let ((buf
+                         (make-array (file-length in)
+                                     :element-type
+                                     '(unsigned-byte 8))))
+                   (read-sequence buf in)
+                   buf)))
+             (expected
+               (cadr-cli::make-text-line-table
+                (cadr-ai::utf8-string octets))))
+        (is (eq table (gethash file cache)))
+        (is (string= source (first expected)))
+        (is (= n (third expected)))
+        (loop for index from 0 below n
+              do (is (string=
+                      (cadr-cli::text-line-ref source starts index)
+                      (cadr-cli::text-line-ref
+                       (first expected) (second expected) index)))))
+      (multiple-value-bind (content details)
+          (invoke-tool
+           (make-grep-tool directory)
+           (args "pattern" "mixed tail"
+                 "literal" t
+                 "context" 1
+                 "limit" 10))
+        (declare (ignore details))
+        (is (search "é🙂中文 mixed tail line"
+                    (result-text content)))
+        (is (search "mix.txt:2:" (result-text content)))))))
+
 (test grep-output-is-bounded-by-utf8-bytes-even-with-context
   (with-test-directory (directory)
     (write-text

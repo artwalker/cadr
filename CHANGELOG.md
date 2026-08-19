@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: grep ingest is octet `read-sequence` then
+  `utf8-string`, then the existing line table. Not
+  `uiop:read-file-string`. this-host ~21895→15487 µs.
+  Identity 126856→126866. FiveAM 19456→19464. Not intern.
+  Not FFI. G.17 still
+  `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `0e785406e`
   `tool_read.text_file` 2.42×→1.32× (11131→5460 µs).
   `tool_grep.context_file` 1.62×→1.38× (30986→23713 µs).

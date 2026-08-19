@@ -33,7 +33,7 @@ where pi has `string[]`.
 |---|---|---|---|
 | `src/cadr-cli/truncation.lisp` `text-lines` / `split-all-lines` | `split("\n")` → array | Both use the fixnum start table. `text-lines` drops the trailing empty part and trims CR. | Edit still collects strings. |
 | `src/cadr-cli/tools/read.lisp` | `packages/coding-agent/src/core/tools/read.ts`: `allLines = textContent.split("\n")`; `allLines.length`; `allLines[startLine]`; `slice` | Hot path is `split-line-starts` + `split-line-join`. ASCII-run `utf8-string`. Remesure 1.32×. | Leftover `COPY-UTF8-OCTETS` / mixed scalars. Not FFI. |
-| `src/cadr-cli/tools/grep.lisp` `ripgrep-file-lines` | `grep.ts` `content.split("\n")` | Cache is the line-start table; context indexes with `text-line-ref`. Remesure 1.38×. Ingest still `uiop:read-file-string`. | Apply `utf8-string` to grep ingest. |
+| `src/cadr-cli/tools/grep.lisp` `ripgrep-file-lines` | `grep.ts` `content.split("\n")` | Cache is the line-start table; context indexes with `text-line-ref`. Octet `read-sequence` + `utf8-string`. Last remesure 1.38×. | Friend-MachineD remesure of grep octet ingest. |
 | `src/cadr-cli/tools/bash.lisp` `bash-truncation-notice` | `truncateTail` + `Buffer.byteLength` on the last line | `harness-text-lines` + `car`/`last` + CLI `utf8-length`. | Use the tail result's last line / harness count; no second full split. |
 | `src/cadr-agent/storage/jsonl.lisp` `open-jsonl-session-storage` | JSONL = split lines then `JSON.parse` each | Whole-file `uiop:split-string` then `parse-json` per line. Default paired `session_load` is the octet walker in `session/migration.lisp`, not this function. Still the same encoding if this backend is used. | After a pair exists: line offsets + octet FSM, not cons split + EQUAL JSON. |
 

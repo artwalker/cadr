@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=126856 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=126866 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -274,7 +274,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/tools/edit.lisp` | 753 | 32 | Match replacements and produce/apply exact edit diffs. | pass · large | done | edit-no-changes-error. I0: one no-change message. | 20 |
 | `src/cadr-cli/tools/find.lisp` | 101 | 3 | Implement the bounded find tool. | pass | no-rewrite | optional-integer now owns null→default; the or-wrapper is gone. Remaining file is sort/truncate over baseline-locked notice bytes. | 20 |
 | `src/cadr-cli/tools/glob.lisp` | 218 | 13 | Implement recursive globbing with parseable gitignore rules. | pass | no-rewrite | Most TS-like: manual cursor loop with lookahead incf in glob-regex-source (:9-34); correct because glob→regex needs variable-width consumption ("**/" = 3 chars), which `loop across` cannot express (12F-4 base==cwd reuse at :179-184 assessed as landed) | 20 |
-| `src/cadr-cli/tools/grep.lisp` | 321 | 7 | Implement bounded regex/literal grep with context. | pass | done | ripgrep-file-lines caches a fixnum line table. I0: no nth per match. | 20 |
+| `src/cadr-cli/tools/grep.lisp` | 331 | 7 | Implement bounded regex/literal grep with context. | pass | done | ripgrep-file-lines octet-reads then utf8-string into a fixnum line table. I0: no nth per match. | 20 |
 | `src/cadr-cli/tools/ls.lisp` | 100 | 3 | Implement the bounded directory-listing tool. | pass | no-rewrite | optional-integer now owns null→default; the or-wrapper is gone. Remaining file is sort-with-:key / truncate-head. | 20 |
 | `src/cadr-cli/tools/path.lisp` | 333 | 32 | Normalize tool paths/arguments/errors and serialize file mutations. | pass · large | done | optional-integer coerces JSON null. I0: callers drop or-wrappers. | 20 |
 | `src/cadr-cli/tools/read.lisp` | 172 | 2 | Implement the bounded line-oriented read tool. | pass | no-rewrite | Most TS-like: octet read-sequence + utf8-string then split-line-starts; pi Buffer.toString | 20 |
