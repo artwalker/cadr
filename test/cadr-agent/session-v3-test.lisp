@@ -507,6 +507,47 @@
              (message-texts
               (cadr-agent:session-messages loaded))))))))
 
+(test session-escaped-string-values-decode-on-octet-walker
+  ;; PARSE-STRING-VALUE decodes JSON escapes from the octet
+  ;; window.  Pairing fixture tool results use \n.  File bytes
+  ;; stay stringify.  Not intern.  Not FFI.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((path (merge-pathnames "esc.jsonl" sessions))
+           (canonical (cadr-agent::canonical-session-cwd cwd))
+           (text (format nil "alpha~%beta~%gamma~%delta"))
+           (record
+             "{\"type\":\"message\",\"id\":\"one\",\"parentId\":null,\"timestamp\":2,\"message\":{\"role\":\"user\",\"content\":\"alpha\\nbeta\\ngamma\\ndelta\",\"timestamp\":2}}"))
+      (with-open-file
+          (stream path
+                  :direction :output
+                  :if-exists :supersede
+                  :if-does-not-exist :create
+                  :external-format :utf-8)
+        (format
+         stream
+         "{\"type\":\"session\",\"version\":3,\"id\":\"esc\",\"timestamp\":1,\"cwd\":\"~A\"}~%"
+         canonical)
+        (write-string record stream)
+        (terpri stream))
+      (let* ((file (uiop:read-file-string path))
+             (octets (cadr-ai::utf8-octets record))
+             (entry
+               (cadr-agent::parse-session-record-octets
+                octets 0 (length octets)))
+             (loaded (cadr-agent:load-session path))
+             (after (uiop:read-file-string path)))
+        (is (string= file after))
+        (is (search "alpha\\nbeta\\ngamma\\ndelta" file))
+        (is (string=
+             text
+             (cadr-agent::session-json-message-content
+              (cadr-agent::session-entry-message entry))))
+        (is (equal
+             (list text)
+             (message-texts
+              (cadr-agent:session-messages loaded))))))))
+
 (test session-argument-objects-are-pairs-not-hashes
   ;; Remaining generic values must not re-enter parse-json-octets
   ;; (EQUAL hash).  Nested argument objects stay tagged pairs.

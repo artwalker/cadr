@@ -824,6 +824,121 @@
                          (code-char (aref octets index))))
           out))))
 
+(defun decode-escaped-json-octets (octets start end &optional buffer)
+  ;; JSON string value window (between quotes).  Decode escapes
+  ;; from octets.  Do not octets-to-string the quoted window and
+  ;; re-enter PARSE-JSON-SOURCE.  Not intern.  Not FFI.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end))
+  (unless buffer
+    (setf buffer
+          (make-array
+           (max 16 (- end start))
+           :element-type 'character
+           :adjustable t
+           :fill-pointer 0)))
+  (setf (fill-pointer buffer) 0)
+  (let ((index start))
+    (declare (type fixnum index))
+    (labels
+        ((fail (message)
+           (error 'json-parse-error
+                  :message message
+                  :position index))
+         (append-char (character)
+           (vector-push-extend character buffer))
+         (append-run (from to)
+           (declare (type fixnum from to))
+           (when (< from to)
+             (let ((ascii-p t))
+               (loop for scan of-type fixnum from from below to
+                     when (>= (aref octets scan) 128)
+                       do (setf ascii-p nil)
+                          (return))
+               (if ascii-p
+                   (loop for scan of-type fixnum from from below to
+                         do (append-char
+                             (code-char (aref octets scan))))
+                   (let ((piece
+                           (sb-ext:octets-to-string
+                            octets
+                            :external-format :utf-8
+                            :start from
+                            :end to)))
+                     (loop for offset from 0 below (length piece)
+                           do (append-char
+                               (char piece offset))))))))
+         (hex-value (code)
+           (cond
+             ((<= 48 code 57) (- code 48))
+             ((<= 65 code 70) (+ (- code 65) 10))
+             ((<= 97 code 102) (+ (- code 97) 10))
+             (t (fail "Invalid Unicode escape"))))
+         (unicode-unit ()
+           (when (> (+ index 4) end)
+             (fail "Truncated Unicode escape"))
+           (let ((value 0))
+             (dotimes (n 4)
+               (setf value
+                     (+ (* value 16)
+                        (hex-value (aref octets index))))
+               (incf index))
+             value)))
+      (loop while (< index end)
+            do (let ((code (aref octets index)))
+                 (cond
+                   ((= code 92)
+                    (incf index)
+                    (when (>= index end)
+                      (fail "Truncated escape"))
+                    (let ((escape (aref octets index)))
+                      (incf index)
+                      (case escape
+                        (34 (append-char #\"))
+                        (92 (append-char #\\))
+                        (47 (append-char #\/))
+                        (98 (append-char #\Backspace))
+                        (102 (append-char #\Page))
+                        (110 (append-char #\Newline))
+                        (114 (append-char #\Return))
+                        (116 (append-char #\Tab))
+                        (117
+                         (let ((unit (unicode-unit)))
+                           (cond
+                             ((<= #xd800 unit #xdbff)
+                              (unless
+                                  (and
+                                   (<= (+ index 2) end)
+                                   (= (aref octets index) 92)
+                                   (= (aref octets (1+ index)) 117))
+                                (fail "Missing low surrogate"))
+                              (incf index 2)
+                              (let ((low (unicode-unit)))
+                                (unless (<= #xdc00 low #xdfff)
+                                  (fail "Invalid low surrogate"))
+                                (append-char
+                                 (code-char
+                                  (+ #x10000
+                                     (ash (- unit #xd800) 10)
+                                     (- low #xdc00))))))
+                             ((<= #xdc00 unit #xdfff)
+                              (fail "Unexpected low surrogate"))
+                             (t
+                              (append-char
+                               (or (code-char unit)
+                                   (fail
+                                    "Invalid Unicode codepoint")))))))
+                        (t
+                         (fail "Unknown string escape")))))
+                   (t
+                    (let ((run-start index))
+                      (loop while
+                            (and (< index end)
+                                 (/= (aref octets index) 92))
+                            do (incf index))
+                      (append-run run-start index))))))
+      (subseq buffer 0 (fill-pointer buffer)))))
+
 (defun json-interned-ascii-key-octets (octets start end)
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (type fixnum start end))

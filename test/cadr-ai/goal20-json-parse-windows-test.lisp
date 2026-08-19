@@ -189,6 +189,27 @@
     (is (typep ascii 'simple-base-string))
     (is (string= uni "中文"))))
 
+(test goal20-json-decode-escaped-octets-matches-parse-json
+  ;; Escaped string windows decode from octets.  Does not
+  ;; re-enter PARSE-JSON-SOURCE.  Pairing fixture uses \n.
+  (flet ((decode (json-string)
+           (let* ((octets (cadr-ai::utf8-octets json-string))
+                  (start 1)
+                  (end (1- (length octets))))
+             (cadr-ai::decode-escaped-json-octets
+              octets start end))))
+    (is (string= (format nil "alpha~%beta~%gamma~%delta")
+                 (decode "\"alpha\\nbeta\\ngamma\\ndelta\"")))
+    (is (string= "a\"b"
+                 (decode "\"a\\\"b\"")))
+    (is (string= "/" (decode "\"\\/\"")))
+    (is (string= "A" (decode "\"\\u0041\"")))
+    (is (string= (format nil "hi~%中文")
+                 (decode "\"hi\\n中文\"")))
+    (is (string=
+         (cadr-ai::parse-json "\"alpha\\nbeta\"")
+         (decode "\"alpha\\nbeta\"")))))
+
 (test goal20-json-copy-unescaped-is-one-window-copy
   ;; Drives COPY-UNESCAPED-JSON-STRING itself: one window copy, no
   ;; shared storage, ASCII result is a SIMPLE-BASE-STRING.

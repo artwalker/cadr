@@ -108,7 +108,8 @@
                 octets)))
          (position start)
          (length (or end (length octets)))
-         (entry (make-session-entry)))
+         (entry (make-session-entry))
+         (string-buffer nil))
     (declare (type (simple-array (unsigned-byte 8) (*)) octets)
              (type fixnum position length))
     (macrolet ((peek-code ()
@@ -276,12 +277,15 @@
                         (incf position)
                         (return
                           (if escaped-p
-                              (cadr-ai::parse-json-source
-                               (sb-ext:octets-to-string
-                                octets
-                                :external-format :utf-8
-                                :start (1- value-start)
-                                :end (1+ value-end)))
+                              (cadr-ai::decode-escaped-json-octets
+                               octets value-start value-end
+                               (or string-buffer
+                                   (setf string-buffer
+                                         (make-array
+                                          64
+                                          :element-type 'character
+                                          :adjustable t
+                                          :fill-pointer 0))))
                               (or
                                (cadr-ai::json-interned-ascii-value-octets
                                 octets value-start value-end)

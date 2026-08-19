@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: session JSONL `PARSE-STRING-VALUE` decodes
+  escaped strings from the octet window. It no longer
+  `octets-to-string` the quoted span and re-enters
+  `parse-json-source`. this-host load-session 1593 µs /
+  993,056 B → 2387 µs / 920,544 B; journal_read 1593 µs /
+  928,429 B → 1591 µs / 862,611 B. Wall is the 800 µs timer
+  alias; bytes dropped. No Friend-MachineD remesure. Not
+  intern. Not FFI. Identity 125692→125811. FiveAM
+  19240→19250. G.17 still `missing`.
+
 - Goal 20 Part P: `print-cli-models` writes token counts and
   provider names from model slots. No per-model
   `format-list-models-token-count` / `string-downcase` /
