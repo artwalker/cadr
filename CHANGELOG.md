@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: this-host sb-sprof of `tool_read.text_file`
+  on `39b3707bf`. Leftover is `octets-to-string`
+  (`UTF8->STRING-AREF` 17.3%) plus
+  `PREPARE-VECTOR-PUSH-EXTEND` on `split-line-starts` (12.7%).
+  Capture: `docs/benchmarks/goal20-part-p-tool-read-sprof-39b3707bf.md`.
+  G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `39b3707bf`
   `tool_read.text_file` 2.88×→2.39× (12786→10299 µs).
   Ceiling 8.0 unchanged. No `src/`. G.17 still `missing`.
