@@ -9,7 +9,9 @@
   (provider-settings
     (make-hash-table :test #'eq)
     :type hash-table)
-  error)
+  error
+  %available-models
+  %available-models-key)
 
 (cadr-core:define-redacted-print-object (model-registry value stream)
   (format stream ":path ~A :credentials [REDACTED]"
@@ -780,6 +782,25 @@
      &key explicit-provider api-key
        (config-path (default-config-path))
        (auth-path (default-auth-path)))
+  ;; print-cli-models calls this on every listing.  Reuse the last
+  ;; configured-p walk while models.json / auth.json write-dates stay
+  ;; the same.  Callers may SORT / FILTER the returned list, so hits
+  ;; copy.  Not intern.  Not FFI.  Not table-layout.
+  (let ((cache-key
+          (and (null explicit-provider)
+               (null api-key)
+               (list
+                (cli-model-registry-cache-key
+                 (or (model-registry-path registry) config-path)
+                 (model-registry-credentials registry))
+                config-path
+                auth-path))))
+    (when (and cache-key
+               (equal cache-key
+                      (model-registry-%available-models-key registry)))
+      (return-from model-registry-available-models
+        (copy-list
+         (model-registry-%available-models registry))))
   (let ((availability
           (make-hash-table :test #'eq)))
     (labels
@@ -814,6 +835,12 @@
                                (provider-config-auth-source
                                 config))))
                       (condition () nil))))))))
-      (remove-if-not
-       #'configured-p
-       (model-registry-models registry)))))
+      (let ((models
+              (remove-if-not
+               #'configured-p
+               (model-registry-models registry))))
+        (when cache-key
+          (setf (model-registry-%available-models registry) models
+                (model-registry-%available-models-key registry)
+                cache-key))
+        (copy-list models))))))

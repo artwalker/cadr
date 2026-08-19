@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=125894 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=125921 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -237,7 +237,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/models/credential-print.lisp` | 623 | 19 | Parse and execute the one-shot credential-print command without exposing secrets. | pass | done | push/nreverse. I0: forwarded order unchanged. | 20 |
 | `src/cadr-cli/models/login-selection.lisp` | 75 | 4 | Classify post-login default-model selection into the baseline four branches. | pass | no-rewrite | Most TS-like: the truthiness guard chain (and (stringp id) (plusp (length id)) id) at 11-13; correct in Lisp because and-returns-last-value is the idiom for value-or-nil guards, and "no default model" is a normal outcome modeled as the :no-default-model keyword branch (23-24) rather than a condition — the file already speaks keywords, ecase (38), values (23-34), and docstrings (16, 61). | 20 |
 | `src/cadr-cli/models/matching.lisp` | 398 | 17 | Resolve exact, partial, scoped, and globbed model selections. | pass | done | push/nreverse scoped accumulators. I0: first scoped still wins. | 20 |
-| `src/cadr-cli/models/registry.lisp` | 819 | 38 | Build, refresh, authenticate, and project the cohesive runtime model registry. | pass · large | done | model-registry-sort-predicate. I0: one provider-then-id order. | 20 |
+| `src/cadr-cli/models/registry.lisp` | 846 | 38 | Build, refresh, authenticate, and project the cohesive runtime model registry. | pass · large | done | available-models cached on registry by models.json/auth.json mtime. I0: one provider-then-id order. | 20 |
 | `src/cadr-cli/models/store.lisp` | 197 | 12 | Read and mutate provider-scoped `models.json` entries. | pass | done | copy-model + three setfs. I0: no 13-slot restatement. | 20 |
 | `src/cadr-cli/modes/print.lisp` | 578 | 17 | Render agent events for print and JSON command-line modes. | pass | done | shared retry json-put. I0: two keys one block. | 20 |
 | `src/cadr-cli/modes/rpc/commands.lisp` | 460 | 4 | Validate and dispatch the closed RPC command set through the shared response sink. | pass | done | parse-queue-mode. I0: one all/one-at-a-time parse. | 20 |

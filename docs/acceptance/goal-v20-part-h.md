@@ -291,18 +291,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 125,894 lines**
+Denominator: **295 files / 125,921 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 35 | 24,298 | 19.3% | `no worse than baseline` is falsifiable |
+| `paired` | 35 | 24,325 | 19.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 236 | 94,121 | 74.8% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 236 | 94,121 | 74.7% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 19.3% of lines (35 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 25.2% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 74.8% of lines.
+- **K-advanceable** (paired ∪ unpairable): 25.3% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 74.7% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -352,7 +352,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/state.lisp` | 302 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,009 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-cli/models/registry.lisp` | 819 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

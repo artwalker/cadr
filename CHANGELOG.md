@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `model-registry-available-models` caches
+  the configured list on the registry. Invalidate with the
+  same models.json / auth.json write-dates as the CLI
+  registry cache. Callers get a copy so SORT/FILTER cannot
+  mutate the cache. this-host list_models_render 2189 µs /
+  1,691,418 B → 199 µs / 45,485 B. Table bytes stay the
+  baseline. Not intern. Not FFI. Not session. Identity
+  125894→125921. FiveAM 19259→19267. G.17 still
+  `missing`.
+
 - Goal 20 Part P: session JSONL first line fills
   `session-file-header` from the octet window. Not EQUAL
   hash. this-host load 2387 µs / 920,544 B → 1586 µs /
