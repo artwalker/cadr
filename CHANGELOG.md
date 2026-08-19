@@ -25,6 +25,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `copy-unescaped-json-octets` writes
+  ASCII windows as ub32 `schar` stores. High bytes stay
+  UTF-8. Not intern. Not FFI. Session JSONL bytes
+  unchanged. Identity 126391→126415. FiveAM
+  19320→19331. G.17 still `missing`.
+
 - Goal 20 Part P: `octet-window-equals` compares short
   ASCII keys as ub32 chunks (constant literals fold).
   Not intern. Not FFI. Session JSONL bytes unchanged.

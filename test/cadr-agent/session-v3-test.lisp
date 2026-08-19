@@ -842,6 +842,21 @@
     (is (= 8 (cadr-agent::octet-skip-json-space ws 0 16)))
     (is (= 8 (cadr-agent::octet-skip-json-space ws 8 16)))))
 
+(test session-content-uses-unescaped-octet-block-copy
+  ;; PARSE-STRING-VALUE copies unescaped ASCII via shipped
+  ;; copy-unescaped-json-octets (ub32 schar stores).
+  (let* ((octets
+           (cadr-ai::utf8-octets
+            "{\"type\":\"message\",\"id\":\"blk\",\"parentId\":null,\"timestamp\":4,\"message\":{\"role\":\"user\",\"content\":\"hello-block\",\"timestamp\":4}}"))
+         (entry
+           (cadr-agent::parse-session-record-octets
+            octets 0 (length octets)))
+         (content
+           (cadr-agent::session-json-message-content
+            (cadr-agent::session-entry-message entry))))
+    (is (string= "hello-block" content))
+    (is (typep content 'simple-base-string))))
+
 (test pairing-record-keys-use-word-window-equals
   ;; Session walker key= goes through shipped octet-window-equals
   ;; (ub32 chunks). Pairing fixture + a timestamp/id record.

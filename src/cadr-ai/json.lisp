@@ -888,8 +888,11 @@
 
 (defun copy-unescaped-json-octets (octets start end)
   ;; UTF-8 only on the value window, not the whole JSONL line.
+  ;; ASCII: ub32 chunks written as four schars (V8 memcpy of
+  ;; the Latin-1 window). Not FFI. Not intern.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
-           (type fixnum start end))
+           (type fixnum start end)
+           (optimize (speed 3) (safety 1)))
   (let ((ascii-p t))
     (loop for index from start below end
           when (>= (aref octets index) 128)
@@ -905,11 +908,32 @@
                (out (make-string count :element-type 'base-char)))
           (declare (type fixnum count)
                    (type simple-base-string out))
-          (loop for index of-type fixnum from start below end
-                for offset of-type fixnum from 0
-                do (setf (schar out offset)
-                         (code-char (aref octets index))))
-          out))))
+          (let ((src start)
+                (dst 0)
+                (left count))
+            (declare (type fixnum src dst left))
+            (loop while (>= left 4)
+                  do
+                  (let ((word (octet-u32-le octets src)))
+                    (setf (schar out dst)
+                          (code-char (ldb (byte 8 0) word)))
+                    (setf (schar out (the fixnum (+ dst 1)))
+                          (code-char (ldb (byte 8 8) word)))
+                    (setf (schar out (the fixnum (+ dst 2)))
+                          (code-char (ldb (byte 8 16) word)))
+                    (setf (schar out (the fixnum (+ dst 3)))
+                          (code-char (ldb (byte 8 24) word))))
+                  (incf src 4)
+                  (incf dst 4)
+                  (decf left 4))
+            (loop while (> left 0)
+                  do
+                  (setf (schar out dst)
+                        (code-char (aref octets src)))
+                  (incf src)
+                  (incf dst)
+                  (decf left))
+            out)))))
 
 (defun decode-escaped-json-octets (octets start end &optional buffer)
   ;; JSON string value window (between quotes).  Decode escapes

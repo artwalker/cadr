@@ -234,6 +234,36 @@
     (setf (char source 6) #\x)
     (is (string= "中文" copied))))
 
+(test goal20-copy-unescaped-octets-writes-ascii-in-ub32-chunks
+  ;; Shipped COPY-UNESCAPED-JSON-OCTETS: ASCII is a simple-base-string
+  ;; filled from ub32 chunks; high bytes stay UTF-8. Pairing-length
+  ;; windows and a session content string.
+  (let* ((ascii (cadr-ai::utf8-octets "ascii-id-01"))
+         (copied (cadr-ai::copy-unescaped-json-octets
+                  ascii 0 (length ascii))))
+    (is (string= "ascii-id-01" copied))
+    (is (typep copied 'simple-base-string))
+    (setf (aref ascii 0) 122)
+    (is (string= "ascii-id-01" copied)))
+  (let* ((tail (cadr-ai::utf8-octets "xyz"))
+         (copied (cadr-ai::copy-unescaped-json-octets
+                  tail 0 (length tail))))
+    (is (string= "xyz" copied))
+    (is (typep copied 'simple-base-string)))
+  (let* ((empty (cadr-ai::utf8-octets ""))
+         (copied (cadr-ai::copy-unescaped-json-octets
+                  empty 0 0)))
+    (is (string= "" copied)))
+  (let* ((uni (cadr-ai::utf8-octets "hi中文"))
+         (copied (cadr-ai::copy-unescaped-json-octets
+                  uni 0 (length uni))))
+    (is (string= "hi中文" copied)))
+  (let* ((octets
+           (cadr-ai::utf8-octets "{\"k\":\"hello-block\"}"))
+         (object (cadr-ai::parse-json-octets octets)))
+    (is (string= "hello-block" (cadr-ai::json-get object "k")))
+    (is (typep (cadr-ai::json-get object "k") 'simple-base-string))))
+
 (test goal20-json-object-fields-skip-top-level-hash
   ;; Session JSONL top-level object: visit keys, no EQUAL hash.
   ;; Nested objects still parse as hash tables.
