@@ -39,6 +39,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: `SCAN-KEY` / `PARSE-STRING-VALUE` /
+  `skip-string` find `"` and `\\` with two ub32 haszero.
+  Backslash falls back to a byte walk of that escape.
+  Not intern. Not FFI. Session JSONL bytes unchanged.
+  Identity 126439→126497. FiveAM 19338→19346. this-host
+  wall did not drop hundreds of µs. G.17 still `missing`.
+
 - Goal 20 Part P: `SWAR-EQ-MSB` is two ub32 haszero
   operations. Result stays a fixnum. Not intern. Not FFI.
   Session JSONL bytes unchanged. Identity 126415→126439.

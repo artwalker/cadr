@@ -819,6 +819,36 @@
   (is (eq (intern (string-upcase "novelToken") "KEYWORD")
           (cadr-agent::keyword-from-json "novelToken"))))
 
+(test octet-swar-finds-quote-or-backslash
+  ;; Shipped string-window SWAR: first " or \ or control.
+  (let ((mask (cadr-agent::swar-quote-or-bs-mask #x22222222)))
+    (is (typep mask 'fixnum))
+    (is (= mask cadr-agent::+swar-msb+)))
+  (let ((buf (make-array 12 :element-type '(unsigned-byte 8)
+                         :initial-element 65)))
+    (setf (aref buf 0) 34)
+    (is (= 0 (cadr-agent::octet-find-quote-or-backslash buf 0 12)))
+    (setf (aref buf 0) 65
+          (aref buf 3) 34)
+    (is (= 3 (cadr-agent::octet-find-quote-or-backslash buf 0 12)))
+    (setf (aref buf 3) 65
+          (aref buf 4) 34)
+    (is (= 4 (cadr-agent::octet-find-quote-or-backslash buf 0 12)))
+    (setf (aref buf 4) 65
+          (aref buf 7) 92)
+    (is (= 7 (cadr-agent::octet-find-quote-or-backslash buf 0 12)))
+    (is (null (cadr-agent::octet-find-quote-or-backslash buf 8 12))))
+  (let* ((octets
+           (cadr-ai::utf8-octets
+            "{\"type\":\"message\",\"id\":\"esc\",\"parentId\":null,\"timestamp\":5,\"message\":{\"role\":\"user\",\"content\":\"a\\\"b\",\"timestamp\":5}}"))
+         (entry
+           (cadr-agent::parse-session-record-octets
+            octets 0 (length octets))))
+    (is (string=
+         "a\"b"
+         (cadr-agent::session-json-message-content
+          (cadr-agent::session-entry-message entry))))))
+
 (test octet-swar-finds-lf-and-skips-json-space
   ;; Shipped SWAR helpers: LF at word edges, JSON whitespace prefix.
   (let ((buf (make-array 24 :element-type '(unsigned-byte 8)

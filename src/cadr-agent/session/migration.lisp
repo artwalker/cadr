@@ -97,6 +97,8 @@
 (defconstant +swar-ht+ #x09090909)
 (defconstant +swar-cr+ #x0D0D0D0D)
 (defconstant +swar-sp+ #x20202020)
+(defconstant +swar-quot+ #x22222222)
+(defconstant +swar-bs+ #x5C5C5C5C)
 
 (defun swar-eq-msb (word splat)
   ;; V8/haszero after XOR splat on one ub32. The mask is
@@ -121,6 +123,14 @@
           (swar-eq-msb word +swar-ht+)
           (swar-eq-msb word +swar-cr+)
           (swar-eq-msb word +swar-nl+)))
+
+(defun swar-quote-or-bs-mask (word)
+  ;; V8 JSON string scan: haszero('"') | haszero('\\') on
+  ;; one ub32. Mask ≤ #x80808080, always a fixnum. Not FFI.
+  (declare (type (unsigned-byte 32) word)
+           (optimize (speed 3) (safety 1)))
+  (logior (swar-eq-msb word +swar-quot+)
+          (swar-eq-msb word +swar-bs+)))
 
 (defun octet-find-lf (octets start end)
   ;; First 0x0A in [start,end), or NIL. Two ub32 haszero when
@@ -198,6 +208,42 @@
                     (return-from octet-skip-json-space index)))))
     index))
 
+(defun swar-ctrl-mask (word)
+  ;; Bytes < 0x20 (unescaped JSON controls). Fixnum mask.
+  (declare (type (unsigned-byte 32) word)
+           (optimize (speed 3) (safety 1)))
+  (logand (ldb (byte 32 0) (- word +swar-sp+))
+          (logandc1 word +swar-msb+)))
+
+(defun octet-find-quote-or-backslash (octets start end)
+  ;; First 0x22, 0x5C, or byte<32 in [start,end), or NIL.
+  ;; V8 string scan: two ub32 haszero (quote and backslash)
+  ;; plus hasless(0x20). Not LF/space SWAR. Not FFI.
+  ;; A backslash hit is consumed by a byte walk of that
+  ;; escape; the caller then resumes this scan.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end)
+           (optimize (speed 3) (safety 1)))
+  (let ((index start))
+    (declare (type fixnum index))
+    (loop while (<= (the fixnum (+ index 4)) end)
+          do
+          (let* ((word (cadr-ai::octet-u32-le octets index))
+                 (mask
+                   (logior (swar-quote-or-bs-mask word)
+                           (swar-ctrl-mask word))))
+            (if (zerop mask)
+                (incf index 4)
+                (return (+ index (swar-first-msb-index mask))))))
+    (loop while (< index end)
+          do
+          (let ((code (aref octets index)))
+            (when (or (= code 34)
+                      (= code 92)
+                      (< code 32))
+              (return index)))
+          (incf index))))
+
 (defun parse-session-record-octets (octets start end)
   ;; Schema-shaped session JSONL walker.  Known keys fill
   ;; session-entry / session-json-message / usage / content
@@ -241,19 +287,25 @@
            (skip-string ()
              (expect-code 34)
              (loop
-               (when (>= position length)
-                 (fail "Unterminated string"))
-               (let ((code (take-code)))
-                 (cond
-                   ((= code 34) (return))
-                   ((= code 92)
-                    (let ((escape (take-code)))
-                      (when (null escape)
-                        (fail "Truncated escape"))
-                      (when (= escape 117)
-                        (when (> (+ position 4) length)
-                          (fail "Truncated Unicode escape"))
-                        (incf position 4))))))))
+               (let ((hit
+                       (octet-find-quote-or-backslash
+                        octets position length)))
+                 (unless hit
+                   (fail "Unterminated string"))
+                 (setf position hit)
+                 (let ((code (take-code)))
+                   (cond
+                     ((= code 34) (return))
+                     ((= code 92)
+                      (let ((escape (take-code)))
+                        (when (null escape)
+                          (fail "Truncated escape"))
+                        (when (= escape 117)
+                          (when (> (+ position 4) length)
+                            (fail "Truncated Unicode escape"))
+                          (incf position 4))))
+                     (t
+                      (fail "Unescaped control character")))))))
            (skip-number ()
              (loop for code = (peek-code)
                    while
@@ -370,44 +422,46 @@
              (let ((value-start position)
                    (escaped-p nil))
                (loop
-                 (when (>= position length)
-                   (fail "Unterminated string"))
-                 (let ((code (aref octets position)))
-                   (cond
-                     ((= code 34)
-                      (let ((value-end position))
+                 (let ((hit
+                         (octet-find-quote-or-backslash
+                          octets position length)))
+                   (unless hit
+                     (fail "Unterminated string"))
+                   (setf position hit)
+                   (let ((code (aref octets position)))
+                     (cond
+                       ((= code 34)
+                        (let ((value-end position))
+                          (incf position)
+                          (return
+                            (if escaped-p
+                                (cadr-ai::decode-escaped-json-octets
+                                 octets value-start value-end
+                                 (or string-buffer
+                                     (setf string-buffer
+                                           (make-array
+                                            64
+                                            :element-type 'character
+                                            :adjustable t
+                                            :fill-pointer 0))))
+                                (or
+                                 (cadr-ai::json-interned-ascii-value-octets
+                                  octets value-start value-end)
+                                 (cadr-ai::copy-unescaped-json-octets
+                                  octets value-start value-end))))))
+                       ((= code 92)
+                        (setf escaped-p t)
                         (incf position)
-                        (return
-                          (if escaped-p
-                              (cadr-ai::decode-escaped-json-octets
-                               octets value-start value-end
-                               (or string-buffer
-                                   (setf string-buffer
-                                         (make-array
-                                          64
-                                          :element-type 'character
-                                          :adjustable t
-                                          :fill-pointer 0))))
-                              (or
-                               (cadr-ai::json-interned-ascii-value-octets
-                                octets value-start value-end)
-                               (cadr-ai::copy-unescaped-json-octets
-                                octets value-start value-end))))))
-                     ((< code 32)
-                      (fail "Unescaped control character"))
-                     ((= code 92)
-                      (setf escaped-p t)
-                      (incf position)
-                      (unless (peek-code)
-                        (fail "Truncated escape"))
-                      (if (= (take-code) 117)
-                          (progn
-                            (when (> (+ position 4) length)
-                              (fail "Truncated Unicode escape"))
-                            (incf position 4))
-                          nil))
-                     (t
-                      (incf position)))))))
+                        (unless (peek-code)
+                          (fail "Truncated escape"))
+                        (if (= (take-code) 117)
+                            (progn
+                              (when (> (+ position 4) length)
+                                (fail "Truncated Unicode escape"))
+                              (incf position 4))
+                            nil))
+                       (t
+                        (fail "Unescaped control character"))))))))
            (parse-number-value ()
              (let ((value-start position))
                (skip-number)
@@ -490,29 +544,33 @@
              (let ((key-start position)
                    (escaped-p nil))
                (loop
-                 (when (>= position length)
-                   (fail "Unterminated string"))
-                 (let ((code (aref octets position)))
-                   (cond
-                     ((= code 34)
-                      (let ((key-end position))
+                 (let ((hit
+                         (octet-find-quote-or-backslash
+                          octets position length)))
+                   (unless hit
+                     (fail "Unterminated string"))
+                   (setf position hit)
+                   (let ((code (aref octets position)))
+                     (cond
+                       ((= code 34)
+                        (let ((key-end position))
+                          (incf position)
+                          (return
+                            (if escaped-p
+                                (values nil nil)
+                                (values key-start key-end)))))
+                       ((= code 92)
+                        (setf escaped-p t)
                         (incf position)
-                        (return
-                          (if escaped-p
-                              (values nil nil)
-                              (values key-start key-end)))))
-                     ((= code 92)
-                      (setf escaped-p t)
-                      (incf position)
-                      (let ((escape (take-code)))
-                        (when (null escape)
-                          (fail "Truncated escape"))
-                        (when (= escape 117)
-                          (when (> (+ position 4) length)
-                            (fail "Truncated Unicode escape"))
-                          (incf position 4))))
-                     (t
-                      (incf position)))))))
+                        (let ((escape (take-code)))
+                          (when (null escape)
+                            (fail "Truncated escape"))
+                          (when (= escape 117)
+                            (when (> (+ position 4) length)
+                              (fail "Truncated Unicode escape"))
+                            (incf position 4))))
+                       (t
+                        (fail "Unescaped control character"))))))))
            (parse-arguments-object ()
              (expect-code 123)
              (skip-space)
