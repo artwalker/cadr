@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=126546 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=126583 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -94,7 +94,7 @@ files with unrelated facilities fail.
 | `src/cadr-agent/storage/memory.lisp` | 378 | 20 | Implement in-memory session storage and repository backends. | pass | done | tail pointer. I0: O(1) append like journal. | 20 |
 | `src/cadr-agent/storage/protocol.lisp` | 142 | 25 | Define storage/repository metadata, generic protocols, and shared errors. | pass | no-rewrite | ensure-session-metadata (:40-53) is the single owner of default construction; the file is otherwise the defgeneric protocol all backends specialize. | 20 |
 | `src/cadr-agent/tool.lisp` | 319 | 23 | Define tool registry, execution bindings, validation, and prepared outcomes. | pass · large | done | drop (or content nil). I0: TS ?? is identity. | 20 |
-| `src/cadr-agent/truncate.lisp` | 436 | 35 | Implement baseline-compatible bounded head/tail/line truncation and its result contract. | pass | no-rewrite | Post-12F-1 the core is zero-alloc; the 11 forwarders at :28-62 are the exported API surface over the single-owning struct; line semantics match split("\n"). Head/tail now scan indices instead of split-string. | 20 |
+| `src/cadr-agent/truncate.lisp` | 473 | 35 | Implement baseline-compatible bounded head/tail/line truncation and its result contract. | pass | no-rewrite | Post-12F-1 the core is zero-alloc; the 11 forwarders at :28-62 are the exported API surface over the single-owning struct; line semantics match split("\n"). Head/tail now scan indices instead of split-string. | 20 |
 
 Part K6 (2026-08-18): 23 needs-rewrite rows done. 14 no-rewrite
 kept. Report: `docs/acceptance/goal-v20-part-k6.md`.

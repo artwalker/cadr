@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `truncate-harness-tail` builds a fixnum
+  line-start/width table in one walk, then indexes from the
+  end like pi `truncateTail`. Not `uiop:split-string`. Not
+  FFI Buffer. this-host ~819→749 µs. Identity 126546→126583.
+  FiveAM 19359→19361. Not intern. G.17 still `missing`.
 - Goal 20 Part P: `cli-token-tail=` compares with `schar`
   on `simple-string`. sprof named it 14.2% self on
   `argv_parse`. this-host 3.0→1.96 µs. Identity
@@ -86,6 +91,13 @@ tag/Release step.
   `src/`. G.17 still `missing`.
 
 ### Changed
+
+- Goal 20: standing policy section 1 item 6 — speed
+  design copies pi's algorithm and data structure, encoded
+  in Lisp. Product alignment stays observable behavior.
+  sprof of a worse scan is not a design source. Audit:
+  `docs/acceptance/goal-v20-ds-audit.md`. G.17 still
+  `missing`.
 
 - Goal 20 Part P.13: read pi first. Copy its passes and
   data structure in Lisp; sprof of a worse scan is not the

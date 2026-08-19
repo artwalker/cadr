@@ -308,79 +308,116 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
                  +harness-default-max-lines+)
                (max-bytes
                  +harness-default-max-bytes+))
-  (let* ((length (length content)))
-    (multiple-value-bind (total-lines total-bytes)
-        (harness-line-and-utf8-length content)
-    (when (and
-           (<= total-lines max-lines)
-           (<= total-bytes max-bytes))
+  ;; pi truncateTail: one length + random-access lines + index
+  ;; from the end. Lisp encoding is a fixnum start/width table,
+  ;; not uiop:split-string and not a second full-string reverse
+  ;; scan (docs/adjudications.md 2026-08-19 22:18).
+  (let* ((text
+           (if (simple-string-p content)
+               content
+               (coerce content 'simple-string)))
+         (length (length text)))
+    (declare (type simple-string text)
+             (type fixnum length)
+             (optimize (speed 3) (safety 1)))
+    (when (zerop length)
       (return-from truncate-harness-tail
         (make-complete-harness-truncation
-         content total-lines total-bytes max-lines max-bytes)))
-    (let ((pos length)
-          (selected-start nil)
-          (last-line-end 0)
-          (selected-lines 0)
-          (selected-bytes 0)
-          (reason :lines)
-          (partial-p nil)
-          (partial-content nil))
-      (when (and (plusp length)
-                 (char= (char content (1- length)) #\Newline))
-        (decf pos))
-      (setf last-line-end pos)
-      (when (plusp length)
-      (loop
-        (let* ((line-end pos)
-               (newline
-                 (position #\Newline content
-                           :end line-end
-                           :from-end t))
-               (line-start (if newline (1+ newline) 0))
-               (line-utf8
-                 (harness-utf8-length-range
-                  content line-start line-end))
-               (needed
-                 (+ line-utf8
-                    (if (plusp selected-lines) 1 0))))
-          (cond
-            ((>= selected-lines max-lines)
-             (return))
-            ((> (+ selected-bytes needed) max-bytes)
-             (setf reason :bytes)
-             (when (zerop selected-lines)
-               (setf partial-content
-                     (utf8-tail-bytes-range
-                      content line-start line-end max-bytes)
-                     partial-p t
-                     selected-lines 1
-                     selected-bytes
-                     (harness-utf8-length partial-content)))
-             (return))
-            (t
-             (incf selected-lines)
-             (incf selected-bytes needed)
-             (setf selected-start line-start)))
-          (when (zerop line-start)
-            (return))
-          (setf pos (1- line-start)))))
-      (let ((output
-              (cond
-                (partial-content partial-content)
-                (selected-start
-                 (subseq content selected-start last-line-end))
-                (t ""))))
-        (make-harness-truncation-result
-         :content output
-         :truncated-p t
-         :truncated-by reason
-         :total-lines total-lines
-         :total-bytes total-bytes
-         :output-lines selected-lines
-         :output-bytes selected-bytes
-         :last-line-partial-p partial-p
-         :max-lines max-lines
-         :max-bytes max-bytes))))))
+         content 0 0 max-lines max-bytes)))
+    (let ((starts
+            (make-array 64 :element-type 'fixnum
+                        :adjustable t :fill-pointer 0))
+          (widths
+            (make-array 64 :element-type 'fixnum
+                        :adjustable t :fill-pointer 0))
+          (total-bytes 0)
+          (line-start 0)
+          (line-utf8 0)
+          (trailing-bytes 0))
+      (declare (type fixnum total-bytes line-start line-utf8
+                     trailing-bytes))
+      (loop for index of-type fixnum from 0 below length
+            for character of-type character = (schar text index)
+            for nbytes of-type fixnum = (utf8-char-length character)
+            do (incf total-bytes nbytes)
+               (if (char= character #\Newline)
+                   (progn
+                     (vector-push-extend line-start starts)
+                     (vector-push-extend line-utf8 widths)
+                     (setf line-start (the fixnum (1+ index))
+                           line-utf8 0))
+                   (incf line-utf8 nbytes)))
+      (if (= line-start length)
+          (setf trailing-bytes
+                (if (and (plusp length)
+                         (char= (schar text (1- length)) #\Newline))
+                    1
+                    0))
+          (progn
+            (vector-push-extend line-start starts)
+            (vector-push-extend line-utf8 widths)))
+      (let ((total-lines (fill-pointer starts)))
+        (declare (type fixnum total-lines))
+        (when (and (<= total-lines max-lines)
+                   (<= total-bytes max-bytes))
+          (return-from truncate-harness-tail
+            (make-complete-harness-truncation
+             content total-lines total-bytes max-lines max-bytes)))
+        (let ((last-line-end (- length trailing-bytes))
+              (selected-start nil)
+              (selected-lines 0)
+              (selected-bytes 0)
+              (reason :lines)
+              (partial-p nil)
+              (partial-content nil))
+          (declare (type fixnum last-line-end selected-lines
+                         selected-bytes))
+          (loop for i of-type fixnum from (1- total-lines) downto 0
+                for line-start of-type fixnum = (aref starts i)
+                for line-utf8 of-type fixnum = (aref widths i)
+                for needed of-type fixnum =
+                  (+ line-utf8
+                     (if (plusp selected-lines) 1 0))
+                do
+            (cond
+              ((>= selected-lines max-lines)
+               (return))
+              ((> (+ selected-bytes needed) max-bytes)
+               (setf reason :bytes)
+               (when (zerop selected-lines)
+                 (let ((line-end
+                         (if (= i (1- total-lines))
+                             last-line-end
+                             (the fixnum (1- (aref starts (1+ i)))))))
+                   (setf partial-content
+                         (utf8-tail-bytes-range
+                          text line-start line-end max-bytes)
+                         partial-p t
+                         selected-lines 1
+                         selected-bytes
+                         (harness-utf8-length partial-content))))
+               (return))
+              (t
+               (incf selected-lines)
+               (incf selected-bytes needed)
+               (setf selected-start line-start))))
+          (let ((output
+                  (cond
+                    (partial-content partial-content)
+                    (selected-start
+                     (subseq content selected-start last-line-end))
+                    (t ""))))
+            (make-harness-truncation-result
+             :content output
+             :truncated-p t
+             :truncated-by reason
+             :total-lines total-lines
+             :total-bytes total-bytes
+             :output-lines selected-lines
+             :output-bytes selected-bytes
+             :last-line-partial-p partial-p
+             :max-lines max-lines
+             :max-bytes max-bytes)))))))
 
 (defun truncate-harness-line
     (line &optional (max-characters 500))
