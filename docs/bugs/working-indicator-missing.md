@@ -1,6 +1,6 @@
 # Bug — agent is working but TUI sometimes omits "Working..."
 
-**Status**: open (user-reported 2026-08-21). Not G.17.
+**Status**: fixed. Not G.17.
 
 ## Symptom
 
@@ -30,6 +30,21 @@ Working indicator in general**, including non-429 cases.
   `settle-window-p`, `working-message`.
 - pi: `packages/coding-agent/src/modes/interactive/interactive-mode.ts`
   `defaultWorkingMessage = "Working..."`.
+
+## Cause and fix
+
+`settle-window-p` is the cadr stand-in for pi's unobservable
+`message_end`→`agent_end` persist gap. It was left set through the
+**next** assistant `message-start` and `:text-delta` after a completed
+tool so render-diff would not paint Took+loader. That hid `Working...`
+for the entire follow-up stream while `agent-working-p` stayed true.
+
+Fix: keep the persist-only hide (block-end, assistant `message-end`,
+tool-end with no running sibling). Lift on live work — user/assistant
+`message-start`, text/thinking/tool-call start+delta, tool start,
+retry, compaction. Tests:
+`goal18-message-end-render-suppression-covers-the-settle-window` and
+`working-indicator-paints-during-live-follow-up-and-thinking`.
 
 ## Required delivery
 

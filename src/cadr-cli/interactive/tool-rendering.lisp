@@ -605,7 +605,9 @@
         (copy-list
          (cadr-agent:agent-event-follow-up event))))
       (:message-start
-       (when (typep message 'cadr-ai:user-message) (setf (tui-state-settle-window-p state) nil))
+       (when (or (typep message 'cadr-ai:user-message)
+                 (typep message 'cadr-ai:assistant-message))
+         (setf (tui-state-settle-window-p state) nil))
        (typecase message
          (cadr-ai:user-message
           (append-tui-user-message
@@ -639,14 +641,17 @@
          (cadr-agent:compaction-summary-agent-message
           (seed-tui-message state message))))
       (:message-update
-       ;; Block-end opens the settle window like message-end.  A new
-       ;; tool-call block lifts it.  Text/thinking deltas do not: after
-       ;; a completed tool they would reopen the Took+loader gap.
+       ;; Block-end opens the persist settle window (pi never paints
+       ;; loader after the last delta of a finished block).  Any live
+       ;; stream start/delta lifts it so Working... shows during
+       ;; generation, including the assistant turn after a tool.
        (when stream-event
          (case (cadr-ai:stream-event-type stream-event)
            ((:text-end :thinking-end :tool-call-end)
             (setf (tui-state-settle-window-p state) t))
-           ((:tool-call-start :tool-call-delta)
+           ((:text-start :text-delta
+             :thinking-start :thinking-delta
+             :tool-call-start :tool-call-delta)
             (setf (tui-state-settle-window-p state) nil))))
        (when
            (and
@@ -713,8 +718,9 @@
          ;; thinking-end / tool-call-end, handled at :message-update)
          ;; and at message-end, and closes at agent-end /
          ;; agent-settled / auto-retry-start / tool-execution-start /
-         ;; message-start / compaction-start or any new block.  While
-         ;; the flag is set, frames omit the working indicator.
+         ;; user or assistant message-start / compaction-start or any
+         ;; live stream start/delta.  While the flag is set, frames
+         ;; omit the working indicator.
          (setf (tui-state-settle-window-p state) t)
          (let ((entry
                  (tui-state-current-assistant state)))

@@ -74,11 +74,12 @@
   footer-component
   (working-visible-p t :type boolean)
   (agent-working-p nil :type boolean)
-  ;; Set between an assistant message-end or a completed tool-end
-  ;; (no sibling still running) and the event that resolves the turn
-  ;; (agent-end, agent-settled, retry, next tool or user message).
-  ;; Assistant message-start does not lift it. While set, frames omit
-  ;; the loader; see tool-rendering.lisp :message-end / :tool-execution-end.
+  ;; Set after a completed assistant message-end or a completed
+  ;; tool-end (no sibling still running) so wall-clock frames omit
+  ;; the loader in the persist gap pi never paints (message_end →
+  ;; agent_end). Live work lifts it: assistant/user message-start,
+  ;; text/thinking/tool-call stream starts and deltas, tool start,
+  ;; retry, compaction. See tool-rendering.lisp.
   (settle-window-p nil :type boolean)
   working-message
   working-indicator-frames

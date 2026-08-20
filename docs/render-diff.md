@@ -218,9 +218,11 @@ again at `tool-execution-end` when no sibling tool is still running
 `src/cadr-cli/interactive/tool-rendering.lisp`) and omits the working indicator
 from frames rendered inside it, so a window render is row-identical to the
 settle frame. The tool-end opening covers the persist gap after a large
-bash result, and the following assistant `message-start` does not lift
-the window, so a tick during the short "observed" text cannot paint
-Took+loader and ratchet the previous Took off the top of the viewport.
+bash result. Live follow-up assistant `message-start` and
+text/thinking deltas lift the window so `Working...` paints during
+generation the way pi does (`agent_start` through `agent_end`).
+Block-end / message-end / tool-end still omit the loader so a
+wall-clock tick in that persist gap cannot paint Took+loader.
 `goal18-message-end-render-suppression-covers-the-settle-window`
 in `test/cadr-cli/tui-test.lisp` locks the flag transitions and the frame
 consequence.

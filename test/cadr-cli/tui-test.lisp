@@ -4929,9 +4929,9 @@
                  (cadr-ai:make-text-content :text "ok"))))
         (is (cadr-cli::tui-state-settle-window-p state))
         (is (null (search "Working..." (render-busy-frame))))
-        ;; The follow-up assistant message-start must not lift
-        ;; suppression: that gap is the remaining tall-frame window
-        ;; after tool-end (byte-limit persist then "observed" text).
+        ;; Persist gap after tool-end hides the loader. Live follow-up
+        ;; assistant work (message-start / text-delta) lifts it so
+        ;; Working... paints whenever pi would (agent_start→agent_end).
         (let ((follow
                 (cadr-ai:make-assistant-message
                  :api :faux :provider :faux :model "faux-1"
@@ -4941,11 +4941,17 @@
                    :text "byte limit observed."))
                  :stop-reason :stop)))
           (event :message-start :message follow)
-          (is (cadr-cli::tui-state-settle-window-p state))
+          (is (null (cadr-cli::tui-state-settle-window-p state)))
+          (is (search "Working..." (render-busy-frame)))
           (event :message-update :message follow
                  :stream-event
                  (cadr-ai:make-stream-event
                   :type :text-delta :delta "x"))
+          (is (null (cadr-cli::tui-state-settle-window-p state)))
+          (is (search "Working..." (render-busy-frame)))
+          (event :message-update :message follow
+                 :stream-event
+                 (cadr-ai:make-stream-event :type :text-end))
           (is (cadr-cli::tui-state-settle-window-p state))
           (is (null (search "Working..." (render-busy-frame))))))
       ;; A still-running sibling keeps the loader visible.
@@ -4995,6 +5001,75 @@
         (is (cadr-cli::tui-state-settle-window-p state))
         (event :agent-settled)
         (is (null (cadr-cli::tui-state-settle-window-p state)))))))
+
+(test working-indicator-paints-during-live-follow-up-and-thinking
+  ;; docs/bugs/working-indicator-missing.md: after a tool, cadr used to
+  ;; keep settle-window-p through the next assistant stream so the
+  ;; loader vanished while the agent was still busy. Drive the shipped
+  ;; event handler + render-tui-state with the same busy-p as render-now.
+  (let ((state (cadr-cli::make-tui-state)))
+    (flet ((event (type &key message tool-call tool-result stream-event)
+             (cadr-cli::tui-handle-agent-event
+              state
+              (cadr-agent::make-agent-event
+               :type type :message message :tool-call tool-call
+               :tool-result tool-result
+               :stream-event stream-event)))
+           (render-now-frame ()
+             (multiple-value-bind (lines row column)
+                 (cadr-cli::render-tui-state
+                  state (cadr-tui:make-multiline-editor) 80 12
+                  :busy-p
+                  (and
+                   (cadr-cli::tui-state-agent-working-p state)
+                   (not (cadr-cli::tui-state-settle-window-p state))))
+               (declare (ignore row column))
+               (format nil "~{~A~^~%~}" lines))))
+      (event :agent-start)
+      (event :tool-execution-start
+             :tool-call
+             (cadr-ai:make-tool-call
+              :id "call-1" :name "read"
+              :arguments (args "path" "x")))
+      (event :tool-execution-end
+             :tool-call
+             (cadr-ai:make-tool-call
+              :id "call-1" :name "read"
+              :arguments (args "path" "x"))
+             :tool-result
+             (cadr-ai:make-tool-result-message
+              :tool-call-id "call-1"
+              :tool-name "read"
+              :content
+              (list (cadr-ai:make-text-content :text "ok"))))
+      (is (cadr-cli::tui-state-settle-window-p state))
+      (is (null (search "Working..." (render-now-frame))))
+      (let ((follow
+              (cadr-ai:make-assistant-message
+               :api :faux :provider :faux :model "faux-1"
+               :content
+               (list (cadr-ai:make-thinking-content :thinking "plan"))
+               :stop-reason :stop)))
+        (event :message-start :message follow)
+        (is (search "Working..." (render-now-frame)))
+        (event :message-update :message follow
+               :stream-event
+               (cadr-ai:make-stream-event
+                :type :thinking-delta :delta "plan"))
+        (is (cadr-cli::tui-state-agent-working-p state))
+        (is (null (cadr-cli::tui-state-settle-window-p state)))
+        (is (search "Working..." (render-now-frame)))
+        (event :message-update :message follow
+               :stream-event
+               (cadr-ai:make-stream-event :type :thinking-end))
+        (is (cadr-cli::tui-state-settle-window-p state))
+        (is (null (search "Working..." (render-now-frame))))
+        (event :message-end :message follow)
+        (is (cadr-cli::tui-state-agent-working-p state))
+        (is (null (search "Working..." (render-now-frame))))
+        (event :agent-end)
+        (is (null (cadr-cli::tui-state-agent-working-p state)))
+        (is (null (search "Working..." (render-now-frame))))))))
 
 (test goal13-provider-specific-login-method-selector-uses-baseline-cardinality-and-labels
   (let* ((openrouter

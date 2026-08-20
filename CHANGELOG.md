@@ -7,6 +7,14 @@ tag/Release step.
 
 ## [Unreleased]
 
+### Fixed
+
+- Interactive TUI shows `Working...` during live follow-up streaming
+  after a tool (assistant `message-start` / text and thinking
+  deltas). Settle-window still hides the loader only in the persist
+  gap after a completed assistant turn or tool-end with no sibling
+  (`docs/bugs/working-indicator-missing.md`). Not G.17.
+
 ### Changed
 
 - Goal 20: book missing Working… indicator while agent busy
