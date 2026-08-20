@@ -11,8 +11,9 @@ tag/Release step.
 
 - Goal 20: Codex SSE prepare skips `stringify-json` when zstd is
   unbound (pi stringifies the request body once). Pairing leftover
-  sprof `WRITE-JSON-STRING` 21.8%. Ceiling 1.5 not lowered. Not
-  G.17. Part P still `[open]`.
+  sprof `WRITE-JSON-STRING` 21.8%. Friend-MachineD 1.26×→**1.08×**
+  (1327 / 1226 µs). Ceiling 1.5 not lowered. Not G.17. Part P still
+  `[open]`.
 
 ### Added
 

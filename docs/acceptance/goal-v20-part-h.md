@@ -305,6 +305,8 @@ Responses event shape as `openai-responses.sse`). Fixture OAuth JWT
 Observed `stop_reason` / `tool_call_count` / `usage_*` /
 `text_characters` / `payload_stream` / `payload_tool_count` are exact.
 First Friend-MachineD freeze 1.26× (1582 / 1258 µs), ceiling 1.5.
+After stringify-skip knife `4ac111707`: **1.08×** (1327 / 1226 µs).
+Ceiling 1.5 not lowered.
 
 ## 2. How to run
 
