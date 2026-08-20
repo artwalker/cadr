@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `e2a4dfad6`
+  `session_load` 2.09× (2957 / 1417 µs), `journal_read` 1.97×
+  (2718 / 1382 µs). Ceilings 9.0 / 8.0 unchanged. sprof leftover
+  is the octet walker (Class C). Product knife blocked. No `src/`.
+  G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `d939b3bd4`
   `truncate_head` 1.33×→0.70× (708→377 µs). Faster than pi.
   `truncate_tail` 0.85×→0.82× (held). Ceiling 20.0 / 18.0

@@ -41,7 +41,7 @@ where pi has `string[]`.
 
 | path | why it is a different question |
 |---|---|
-| `session_load` / `session_read` octet walker vs `JSON.parse` | Copying V8's parser in Lisp (already the standing rule). Empty SWAR / intern growth remain forbidden. Floor still ~2×. |
+| `session_load` / `session_read` octet walker vs `JSON.parse` | Copying V8's parser in Lisp (already the standing rule). Empty SWAR / intern growth remain forbidden. Friend-MachineD `e2a4dfad6` remesure: load **2.09×**, read **1.97×**. Product knife blocked. |
 | `argv_parse` `cli-token-tail=` schar | Same algorithm, cheaper encoding. Remesure after truncate. |
 | `3caf85074` alt-screen last-document vector, `fe1a4d944` editor-lines vector | Already the mermaid fix. `alt-screen.lisp` scrollbar still `(nth row lines)` on a list viewport — leftover encoding, not a new algorithm. |
 | Markdown table `split-string` + `nth` on cells | pi splits a short row. Not a pairing-floor path. Do not campaign-rewrite. |
