@@ -947,26 +947,6 @@
     (is (string= "hello-block" content))
     (is (typep content 'simple-base-string))))
 
-(test parse-content-block-scratch-does-not-alias-successive-blocks
-  ;; Lexer token reuse: one session-json-block per walker.
-  ;; finish-block copies; successive blocks must not share slots.
-  ;; Drives shipped parse-session-record-octets.
-  (let* ((octets
-           (cadr-ai::utf8-octets
-            "{\"type\":\"message\",\"id\":\"two\",\"parentId\":null,\"timestamp\":4,\"message\":{\"role\":\"assistant\",\"content\":[{\"type\":\"text\",\"text\":\"alpha\"},{\"type\":\"text\",\"text\":\"beta\"}],\"timestamp\":4}}"))
-         (entry
-           (cadr-agent::parse-session-record-octets
-            octets 0 (length octets)))
-         (content
-           (cadr-agent::session-json-message-content
-            (cadr-agent::session-entry-message entry))))
-    (is (listp content))
-    (is (= 2 (length content)))
-    (is (string= "alpha"
-                 (cadr-ai:text-content-text (first content))))
-    (is (string= "beta"
-                 (cadr-ai:text-content-text (second content))))))
-
 (test pairing-record-keys-use-word-window-equals
   ;; Session walker key= goes through shipped octet-window-equals
   ;; (ub32 chunks). Pairing fixture + a timestamp/id record.

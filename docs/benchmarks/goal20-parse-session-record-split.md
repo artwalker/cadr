@@ -28,10 +28,11 @@ on load/journal; `PARSE-STRING-VALUE` ~7–12% total; `COPY-UNESCAPED`
 intern grow, COPY-UNESCAPED rewrite, DIGITS, ISO quote walk, message
 bag reuse, stack-local typed message, delayed ParseString spans.
 
-## Next knife (not the 三连)
+## Knife (falsified) — lexer token reuse
 
-`parse-content-block` 199 µs: each `{type,text,...}` heap-allocates
-`session-json-block` then `finish-block` copies into typed
-`text-content` / `tool-call`. Lexer **token reuse** (one scratch
-record per walker). `finish-block` already copies; no aliasing.
-Not parse-message bag reuse.
+`parse-content-block` 199 µs: one `session-json-block` scratch per
+walker; `finish-block` copies to typed content. Friend-MachineD n=5
+@ `767b4c452`: load cadr **1879→2083 µs** (worse; samples 1916–2629).
+Withdrawn. Do not redo content-block bag reuse. Not intern. Not FFI.
+
+Honest split numbers above stay. Not G.17 `met`.

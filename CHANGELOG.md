@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw session-json-block scratch reuse
+  (`767b4c452`). Friend-MachineD n=5: load cadr **1879→2083 µs**
+  (worse). Product restored. Honest split note kept. Not intern.
+  Not FFI. Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: reuse one `session-json-block` scratch per walker
   (lexer token reuse). `finish-block` still copies to typed
   content. Split note recaptured with shipped-label timers
