@@ -1,0 +1,772 @@
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-0 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-1 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-2 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-3 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-4 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-5 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-6 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-7 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-8 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-9 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-10 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-11 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-12 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-13 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-14 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-15 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-16 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-17 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-18 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-19 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-20 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-21 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-22 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-23 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-24 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-25 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-26 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-27 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-28 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-29 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-30 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-31 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-32 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-33 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-34 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-35 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-36 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-37 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-38 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-39 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-40 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-41 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-42 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-43 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-44 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-45 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-46 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-47 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-48 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-49 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-50 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-51 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-52 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-53 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-54 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-55 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-56 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-57 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-58 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-59 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-60 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-61 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-62 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-63 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-64 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-65 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-66 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-67 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-68 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-69 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-70 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-71 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-72 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-73 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-74 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-75 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-76 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-77 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-78 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-79 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-80 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-81 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-82 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-83 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-84 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-85 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-86 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-87 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-88 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-89 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-90 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-91 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-92 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-93 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-94 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-95 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-96 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-97 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-98 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-99 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-100 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-101 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-102 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-103 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-104 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-105 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-106 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-107 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-108 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-109 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-110 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-111 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-112 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-113 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-114 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-115 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-116 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-117 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-118 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-119 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-120 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-121 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-122 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-123 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-124 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-125 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-126 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-127 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-128 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-129 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-130 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-131 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-132 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-133 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-134 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-135 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-136 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-137 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-138 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-139 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-140 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-141 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-142 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-143 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-144 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-145 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-146 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-147 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-148 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-149 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-150 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-151 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-152 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-153 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-154 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-155 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-156 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-157 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-158 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-159 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-160 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-161 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-162 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-163 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-164 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-165 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-166 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-167 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-168 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-169 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-170 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-171 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-172 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-173 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-174 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-175 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-176 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-177 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-178 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-179 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-180 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-181 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-182 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-183 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-184 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-185 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-186 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-187 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-188 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-189 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-190 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-191 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-192 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-193 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-194 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-195 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-196 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-197 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-198 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-199 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-200 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-201 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-202 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-203 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-204 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-205 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-206 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-207 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-208 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-209 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-210 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-211 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-212 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-213 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-214 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-215 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-216 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-217 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-218 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-219 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-220 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-221 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-222 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-223 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-224 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-225 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-226 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-227 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-228 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-229 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-230 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-231 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-232 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-233 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-234 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-235 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-236 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-237 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-238 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-239 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-240 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-241 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-242 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-243 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-244 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-245 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-246 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-247 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-248 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-249 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-250 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-251 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-252 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-253 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-254 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-255 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-256 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-257 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-258 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-259 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-260 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-261 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-262 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-263 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-264 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-265 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-266 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-267 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-268 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-269 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-270 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-271 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-272 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-273 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-274 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-275 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-276 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-277 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-278 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-279 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-280 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-281 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-282 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-283 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-284 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-285 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-286 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-287 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-288 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-289 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-290 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-291 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-292 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-293 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-294 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-295 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-296 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-297 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-298 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-299 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-300 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-301 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-302 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-303 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-304 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-305 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-306 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-307 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-308 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-309 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-310 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-311 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-312 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-313 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-314 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-315 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-316 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-317 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-318 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-319 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-320 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-321 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-322 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-323 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-324 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-325 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-326 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-327 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-328 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-329 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-330 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-331 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-332 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-333 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-334 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-335 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-336 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-337 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-338 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-339 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-340 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-341 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-342 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-343 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-344 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-345 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-346 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-347 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-348 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-349 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-350 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-351 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-352 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-353 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-354 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-355 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-356 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-357 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-358 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-359 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-360 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-361 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-362 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-363 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-364 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-365 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-366 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-367 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-368 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-369 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-370 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-371 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-372 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-373 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-374 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-375 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-376 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-377 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-378 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-379 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-380 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-381 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-382 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":"chunk-383 中文 🚀 "}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":1,"totalTokenCount":4097},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"functionCall":{"name":"read","args":{"path":"docs/example.md","offset":1,"limit":4},"id":"call_goal20_read"}}],"role":"model"},"index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":8,"totalTokenCount":4104},"responseId":"goal20-google"}
+
+data: {"candidates":[{"content":{"parts":[{"text":""}],"role":"model"},"finishReason":"STOP","index":0}],"usageMetadata":{"promptTokenCount":4096,"candidatesTokenCount":512,"totalTokenCount":4608},"responseId":"goal20-google"}
+

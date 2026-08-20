@@ -618,27 +618,28 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-20T04:12:32Z) on `Friend-MachineD`, git `3dbe024dbc32`, ratio_gate=`enforced`, quick=no, samples=5
+Current: `paired-paths` (2026-08-20T04:34:08Z) on `Friend-MachineD`, git `a21baf11c6cf`, ratio_gate=`enforced`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-20T04:10:56Z) on `Friend-MachineD`, git `3dbe024dbc32`, ratio_gate=`enforced`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-20T04:33:21Z) on `Friend-MachineD`, git `a21baf11c6cf`, ratio_gate=`enforced`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
-| `cli_dispatch.argv_parse` | 3.0 | 4.2 | 0.72× | 0.86× | 3.00× |
-| `cli_dispatch.help_render` | 0.1 | 0.7 | 0.08× | 0.05× | 6.00× |
-| `cli_dispatch.list_models_registry` | 2,254.3 | 4,600.4 | 0.49× | 0.49× | 1.50× |
-| `cli_dispatch.list_models_render` | 95.3 | 1,594.5 | 0.06× | 0.07× | 4.00× |
-| `provider_stream.stream_roundtrip` | 3,610.0 | 5,457.4 | 0.66× | 0.66× | 2.50× |
-| `provider_anthropic.stream_roundtrip` | 2,505.0 | 2,470.8 | 1.01× | 0.97× | 1.50× |
-| `session_pipeline.session_load` | 3,034.8 | 1,959.0 | 1.55× | 2.05× | 9.00× |
-| `session_pipeline.context_walk` | 3.4 | 111.4 | 0.03× | 0.03× | 2.00× |
-| `storage_journal.journal_read` | 2,773.5 | 1,769.0 | 1.57× | 2.17× | 8.00× |
-| `storage_journal.journal_append` | 1,719.2 | 1,851.0 | 0.93× | 0.53× | 12.00× |
-| `sqlite_session.open_walk` | 6,742.1 | 26,792.9 | 0.25× | 0.32× | 1.50× |
-| `tool_read.text_file` | 1,651.7 | 4,154.0 | 0.40× | 0.42× | 8.00× |
-| `tool_grep.context_file` | 15,663.0 | 19,075.3 | 0.82× | 0.88× | 3.00× |
-| `agent_tool_loop.roundtrip` | 310.6 | 267.6 | 1.16× | 2.00× | 1.50× |
-| `session_compact.compact` | 41.3 | 128.3 | 0.32× | 1.09× | 20.00× |
+| `cli_dispatch.argv_parse` | 2.8 | 3.6 | 0.78× | 0.78× | 3.00× |
+| `cli_dispatch.help_render` | 0.1 | 0.9 | 0.06× | 0.06× | 6.00× |
+| `cli_dispatch.list_models_registry` | 2,496.4 | 4,629.1 | 0.54× | 0.54× | 1.50× |
+| `cli_dispatch.list_models_render` | 98.5 | 1,613.5 | 0.06× | 0.06× | 4.00× |
+| `provider_stream.stream_roundtrip` | 3,672.1 | 5,781.0 | 0.64× | 0.64× | 2.50× |
+| `provider_anthropic.stream_roundtrip` | 2,619.0 | 2,621.2 | 1.00× | 1.00× | 1.50× |
+| `provider_google.stream_roundtrip` | 4,378.5 | 7,497.6 | 0.58× | 0.58× | 1.50× |
+| `session_pipeline.session_load` | 3,435.2 | 2,066.4 | 1.66× | 1.66× | 9.00× |
+| `session_pipeline.context_walk` | 3.8 | 134.9 | 0.03× | 0.03× | 2.00× |
+| `storage_journal.journal_read` | 3,040.3 | 1,844.1 | 1.65× | 1.65× | 8.00× |
+| `storage_journal.journal_append` | 1,843.2 | 2,053.8 | 0.90× | 0.90× | 12.00× |
+| `sqlite_session.open_walk` | 7,336.6 | 27,470.5 | 0.27× | 0.27× | 1.50× |
+| `tool_read.text_file` | 1,613.4 | 4,750.3 | 0.34× | 0.34× | 8.00× |
+| `tool_grep.context_file` | 15,721.7 | 19,808.9 | 0.79× | 0.79× | 3.00× |
+| `agent_tool_loop.roundtrip` | 336.2 | 186.6 | 1.80× | 1.80× | 1.50× |
+| `session_compact.compact` | 45.8 | 32.7 | 1.40× | 1.40× | 20.00× |
 
 | recordedAt (UTC) | label | git | quick | ratio_gate | append | read | load | list_models_render |
 |---|---|---|---|---|---:|---:|---:|---:|
@@ -701,6 +702,9 @@ Previous: `paired-paths` (2026-08-20T04:10:56Z) on `Friend-MachineD`, git `3dbe0
 | 2026-08-20T03:49:44Z | paired-paths | `66b7403b6db4` | no | enforced | 0.84× | 2.04× | 1.37× | 0.07× |
 | 2026-08-20T04:10:56Z | paired-paths | `3dbe024dbc32` | no | enforced | 0.53× | 2.17× | 2.05× | 0.07× |
 | 2026-08-20T04:12:32Z | paired-paths | `3dbe024dbc32` | no | enforced | 0.93× | 1.57× | 1.55× | 0.06× |
+| 2026-08-20T04:32:46Z | paired-paths-quick | `a21baf11c6cf` | yes | informational-quick-run | 0.92× | 2.42× | 1.07× | 0.05× |
+| 2026-08-20T04:33:21Z | paired-paths | `a21baf11c6cf` | no | enforced | 0.90× | 1.65× | 1.66× | 0.06× |
+| 2026-08-20T04:34:08Z | paired-paths | `a21baf11c6cf` | no | enforced | 0.90× | 1.65× | 1.66× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

@@ -298,6 +298,70 @@ function buildProviderContext() {
 	};
 }
 
+function buildGoogleSseFixture() {
+	const lines = [];
+	const push = (payload) => {
+		lines.push(`data: ${JSON.stringify(payload)}`, "");
+	};
+	const usage = (output) => ({
+		promptTokenCount: 4096,
+		candidatesTokenCount: output,
+		totalTokenCount: 4096 + output,
+	});
+	for (let index = 0; index < SSE_TEXT_DELTA_COUNT; index += 1) {
+		push({
+			candidates: [
+				{
+					content: {
+						parts: [
+							{
+								text: index % 8 === 7 ? `chunk-${index} 中文 🚀 ` : `chunk-${index} `,
+							},
+						],
+						role: "model",
+					},
+					index: 0,
+				},
+			],
+			usageMetadata: usage(1),
+			responseId: "goal20-google",
+		});
+	}
+	push({
+		candidates: [
+			{
+				content: {
+					parts: [
+						{
+							functionCall: {
+								name: "read",
+								args: { path: "docs/example.md", offset: 1, limit: 4 },
+								id: "call_goal20_read",
+							},
+						},
+					],
+					role: "model",
+				},
+				index: 0,
+			},
+		],
+		usageMetadata: usage(8),
+		responseId: "goal20-google",
+	});
+	push({
+		candidates: [
+			{
+				content: { parts: [{ text: "" }], role: "model" },
+				finishReason: "STOP",
+				index: 0,
+			},
+		],
+		usageMetadata: usage(512),
+		responseId: "goal20-google",
+	});
+	return `${lines.join("\n")}\n`;
+}
+
 function buildAnthropicSseFixture() {
 	const lines = [];
 	const event = (name, payload) => {
@@ -504,6 +568,7 @@ const artifacts = new Map([
 	["provider-context.json", `${JSON.stringify(buildProviderContext(), null, "\t")}\n`],
 	["openai-completions.sse", buildSseFixture()],
 	["anthropic-messages.sse", buildAnthropicSseFixture()],
+	["google-generative-ai.sse", buildGoogleSseFixture()],
 	["models.json", `${JSON.stringify(buildModelsJson(), null, "\t")}\n`],
 	["auth.json", `${JSON.stringify(buildAuthJson(), null, "\t")}\n`],
 	["cli-argv.json", `${JSON.stringify(buildCliArgv(), null, "\t")}\n`],

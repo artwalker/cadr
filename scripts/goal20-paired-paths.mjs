@@ -126,6 +126,7 @@ const REPETITIONS = {
 	"cli_dispatch.list_models_render": 100,
 	"provider_stream.stream_roundtrip": 10,
 	"provider_anthropic.stream_roundtrip": 10,
+	"provider_google.stream_roundtrip": 10,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -198,6 +199,7 @@ const fixtureNames = [
 	"manifest.json",
 	"models.json",
 	"anthropic-messages.sse",
+	"google-generative-ai.sse",
 	"openai-completions.sse",
 	"provider-context.json",
 	"session.jsonl",
@@ -212,6 +214,7 @@ for (const name of fixtureNames) {
 const sessionFixturePath = path.join(fixtureDirectory, "session.jsonl");
 const sseFixturePath = path.join(fixtureDirectory, "openai-completions.sse");
 const anthropicSsePath = path.join(fixtureDirectory, "anthropic-messages.sse");
+const googleSsePath = path.join(fixtureDirectory, "google-generative-ai.sse");
 const cliArgv = JSON.parse(readFileSync(path.join(fixtureDirectory, "cli-argv.json"), "utf8"));
 const providerContext = JSON.parse(
 	readFileSync(path.join(fixtureDirectory, "provider-context.json"), "utf8"),
@@ -276,6 +279,7 @@ const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-no
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
+const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
@@ -550,6 +554,74 @@ async function measureProviderAnthropic() {
 			usage_output: observed.message.usage.output,
 			payload_stream: observed.payload?.stream === true,
 			payload_tool_count: observed.payload?.tools?.length ?? 0,
+		},
+	};
+}
+
+const googleModel = {
+	id: "gemini-3.6-flash",
+	name: "Goal 20 Google",
+	api: "google-generative-ai",
+	provider: "google",
+	baseUrl: "https://generativelanguage.googleapis.com/v1beta",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 128000,
+	maxTokens: 16384,
+};
+
+async function runProviderGoogle(collectEvents) {
+	// google-generative-ai.ts throws if options.fetch !== globalThis.fetch.
+	// Stub the global so generateContentStream still hits recorded SSE
+	// (same alt=sse path as cadr) without a live socket.
+	const events = collectEvents ? [] : undefined;
+	let payload;
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = async () =>
+		new Response(readFileSync(googleSsePath), {
+			status: 200,
+			headers: { "content-type": "text/event-stream" },
+		});
+	try {
+		const stream = googleModule.stream(googleModel, providerContext, {
+			apiKey: "goal20-paired-paths-not-a-real-key",
+			maxRetries: 0,
+			onPayload: (value) => {
+				payload = value;
+				return undefined;
+			},
+		});
+		for await (const event of stream) events?.push(event.type);
+		const message = await stream.result();
+		return { events, message, payload };
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+}
+
+async function measureProviderGoogle() {
+	const observed = await runProviderGoogle(true);
+	if (observed.message.stopReason !== "toolUse") {
+		throw new Error(`google fixture stream produced stopReason ${observed.message.stopReason}`);
+	}
+	const text = observed.message.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("");
+	const tools = observed.payload?.config?.tools ?? observed.payload?.tools;
+	return {
+		stream_roundtrip: await collect("provider_google.stream_roundtrip", () => {
+			return () => runProviderGoogle(false);
+		}),
+		observed: {
+			content_block_types: observed.message.content.map((block) => block.type),
+			stop_reason: observed.message.stopReason,
+			text_characters: [...text].length,
+			tool_call_count: observed.message.content.filter((block) => block.type === "toolCall").length,
+			usage_input: observed.message.usage.input,
+			usage_output: observed.message.usage.output,
+			payload_tool_count: Array.isArray(tools) ? tools.length : 0,
 		},
 	};
 }
@@ -1142,6 +1214,8 @@ process.stderr.write("goal20 pi paired paths: session_compact\n");
 const sessionCompact = await measureSessionCompact();
 process.stderr.write("goal20 pi paired paths: provider_anthropic\n");
 const providerAnthropic = await measureProviderAnthropic();
+process.stderr.write("goal20 pi paired paths: provider_google\n");
+const providerGoogle = await measureProviderGoogle();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -1162,6 +1236,7 @@ const result = {
 			"cli_dispatch.list_models_render": "packages/coding-agent/src/cli/list-models.ts listModels",
 			"provider_stream.stream_roundtrip": "packages/ai/src/api/openai-completions.ts stream",
 			"provider_anthropic.stream_roundtrip": "packages/ai/src/api/anthropic-messages.ts stream",
+			"provider_google.stream_roundtrip": "packages/ai/src/api/google-generative-ai.ts stream",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -1214,6 +1289,7 @@ const result = {
 		agent_tool_loop: agentToolLoop,
 		session_compact: sessionCompact,
 		provider_anthropic: providerAnthropic,
+		provider_google: providerGoogle,
 		render_slicing: renderSlicing,
 	},
 };

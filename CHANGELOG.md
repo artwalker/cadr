@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `provider_google.stream_roundtrip`
+  (recorded Gemini SSE, no socket). Production `stream-chat` vs
+  `google-generative-ai.ts stream`. Same `provider-context.json`.
+  Seam is `*http-request-function*` / stubbed `globalThis.fetch`
+  (the adapter rejects `options.fetch`). First Friend-MachineD
+  freeze 0.58× (4378 / 7498 µs), ceiling 1.5. Not G.17. Part P
+  still `[open]`.
 - Goal 20 Part H: pair `provider_anthropic.stream_roundtrip`
   (recorded Anthropic SSE, no socket). Production `stream-chat` vs
   `anthropic-messages.ts stream`. Same `provider-context.json`.

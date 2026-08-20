@@ -195,6 +195,16 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("tool_call_count", paired.OBSERVED_EXACT["provider_anthropic"])
         self.assertIn("usage_input", paired.OBSERVED_EXACT["provider_anthropic"])
 
+    def test_provider_google_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("provider_google.stream_roundtrip", RECORD.METRIC_KEYS)
+        self.assertIn("stream_roundtrip", paired.METRICS["provider_google"])
+        self.assertIn("provider_google.stream_roundtrip", paired.RATIO_CEILINGS)
+        self.assertIn("stop_reason", paired.OBSERVED_EXACT["provider_google"])
+        self.assertIn("tool_call_count", paired.OBSERVED_EXACT["provider_google"])
+        self.assertIn("usage_input", paired.OBSERVED_EXACT["provider_google"])
+        self.assertIn("payload_tool_count", paired.OBSERVED_EXACT["provider_google"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -221,7 +231,7 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertEqual(entry["label"], "paired-paths-quick")
         self.assertTrue(entry["quick"])
-        self.assertEqual(len(entry["metrics"]), 15)
+        self.assertEqual(len(entry["metrics"]), 16)
         first = entry["metrics"][RECORD.METRIC_KEYS[0]]
         self.assertAlmostEqual(first["cadrMedianUs"], 1000.0)
         self.assertAlmostEqual(first["ratio"], 2.0)
@@ -253,6 +263,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`agent_tool_loop.roundtrip`", section)
             self.assertIn("`session_compact.compact`", section)
             self.assertIn("`provider_anthropic.stream_roundtrip`", section)
+            self.assertIn("`provider_google.stream_roundtrip`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)
