@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `provider_codex.stream_roundtrip`
+  (recorded Codex Responses SSE + fixture OAuth JWT, no socket).
+  Production `stream-chat` vs `openai-codex-responses.ts stream`.
+  Same `provider-context.json`. Seam is `*http-request-function*` /
+  `options.fetch`. `transport=sse`. First Friend-MachineD freeze
+  1.26× (1582 / 1258 µs), ceiling 1.5. Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `provider_vertex.stream_roundtrip`
   (recorded Vertex SSE + fixture ADC JSON, no socket). Production
   `stream-chat` vs `google-vertex.ts stream`. Same

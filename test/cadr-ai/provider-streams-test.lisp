@@ -142,6 +142,36 @@
              (lambda (block) (typep block 'cadr-ai:tool-call))
              (assistant-message-content message)))))))
 
+(test pairing-provider-codex-recorded-sse-stays-put
+  ;; scripts/goal20-paired-paths.lisp provider_codex.stream_roundtrip.
+  ;; Drives shipped stream-chat, not a reimplementation. No live socket.
+  ;; :transport :sse skips the Codex websocket probe.
+  (multiple-value-bind (provider model)
+      (provider-case :codex)
+    (let ((events nil)
+          (*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url arguments))
+              (values
+               (open
+                (fixture-path
+                 "test/fixtures/goal20-paired-paths/openai-codex-responses.sse")
+                :direction :input
+                :element-type '(unsigned-byte 8))
+               200
+               '(("content-type" . "text/event-stream"))))))
+      (let ((message
+              (stream-chat
+               provider model (sample-context)
+               (lambda (event) (push event events))
+               :transport :sse)))
+        (is (eq :tool-use (assistant-message-stop-reason message)))
+        (is (= 4096 (usage-input (assistant-message-usage message))))
+        (is (= 512 (usage-output (assistant-message-usage message))))
+        (is (find-if
+             (lambda (block) (typep block 'cadr-ai:tool-call))
+             (assistant-message-content message)))))))
+
 (test pairing-provider-vertex-recorded-sse-stays-put
   ;; scripts/goal20-paired-paths.lisp provider_vertex.stream_roundtrip.
   ;; Drives shipped stream-chat, not a reimplementation. No live socket.

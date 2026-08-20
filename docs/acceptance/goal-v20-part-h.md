@@ -291,6 +291,21 @@ Observed `stop_reason` / `tool_call_count` / `usage_*` /
 `text_characters` / `payload_tool_count` / `adc_type` are exact.
 First Friend-MachineD freeze 0.49× (2641 / 5443 µs), ceiling 1.5.
 
+### Pair 19 — `provider_codex`
+
+| metric | cadr | pi |
+|---|---|---|
+| `stream_roundtrip` | `stream-chat` + `codex.lisp` + Responses SSE | `stream` (`packages/ai/src/api/openai-codex-responses.ts`) |
+
+Same fixture bytes as the openai-completions pair's context, plus
+recorded Codex Responses SSE (`openai-codex-responses.sse`, same
+Responses event shape as `openai-responses.sse`). Fixture OAuth JWT
+(no live ChatGPT). Seam = `*http-request-function*` / `options.fetch`.
+`transport=sse` so the websocket probe stays off. No live socket.
+Observed `stop_reason` / `tool_call_count` / `usage_*` /
+`text_characters` / `payload_stream` / `payload_tool_count` are exact.
+First Friend-MachineD freeze 1.26× (1582 / 1258 µs), ceiling 1.5.
+
 ## 2. How to run
 
 ```bash
@@ -496,13 +511,13 @@ Denominator: **295 files / 127,076 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 63 | 35,639 | 28.0% | `no worse than baseline` is falsifiable |
+| `paired` | 64 | 35,674 | 28.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 208 | 83,962 | 66.1% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 207 | 83,927 | 66.0% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 28.0% of lines (63 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 33.9% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 66.1% of lines.
+- **Falsifiable vs baseline:** 28.1% of lines (64 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 34.0% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 66.0% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -558,6 +573,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
 | `src/cadr-ai/providers/bedrock.lisp` | 934 | `provider_bedrock.stream_roundtrip` |
+| `src/cadr-ai/providers/codex.lisp` | 35 | `provider_codex.stream_roundtrip` |
 | `src/cadr-ai/providers/google.lisp` | 442 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | `provider_mistral.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
@@ -620,7 +636,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/tools` | 7 | 2,166 |
 | `src/cadr-tui/latex.lisp` | 1 | 1,950 |
 | `src/cadr-ai/oauth` | 10 | 1,786 |
-| `src/cadr-ai/providers` | 5 | 1,784 |
+| `src/cadr-ai/providers` | 4 | 1,749 |
 | `src/cadr-agent/storage` | 4 | 1,532 |
 | `src/cadr-cli/models` | 4 | 1,472 |
 | `src/cadr-ai/runtime` | 2 | 1,410 |

@@ -19,6 +19,7 @@
                 #:make-openai-provider
                 #:make-azure-openai-provider
                 #:make-vertex-provider
+                #:make-openai-codex-provider
                 #:make-text-content
                 #:make-tool
                 #:make-user-message

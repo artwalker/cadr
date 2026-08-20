@@ -78,6 +78,7 @@
     ("provider_openai_responses.stream_roundtrip" . 10)
     ("provider_azure_openai.stream_roundtrip" . 10)
     ("provider_vertex.stream_roundtrip" . 10)
+    ("provider_codex.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
     ("resource_loader.reload" . 3)
     ("session_pipeline.session_load" . 3)
@@ -219,6 +220,7 @@
     "bedrock-converse-stream.bin" "mistral-conversations.sse"
     "openai-responses.sse" "azure-openai-responses.sse"
     "google-vertex.sse" "vertex-adc.json"
+    "openai-codex-responses.sse"
     "settings-global.json" "settings-project.json"
     "resource-skill-global.md" "resource-skill-project.md"
     "resource-prompt-global.md" "resource-prompt-project.md"
@@ -1210,6 +1212,99 @@
                       (run-provider-vertex
                        provider model context nil)))))))))
 
+(defparameter *codex-oauth-token*
+  "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiZ29hbDIwLWNvZGV4LWFjY291bnQifX0.sig")
+
+(defun openai-codex-model ()
+  (cadr-ai:make-model
+   :id "gpt-5.5"
+   :name "Goal 20 OpenAI Codex"
+   :api :openai-codex-responses
+   :provider :openai-codex
+   :base-url "https://chatgpt.com/backend-api"
+   :reasoning-p nil
+   :supports-images-p t
+   :context-window 128000
+   :max-tokens 16384))
+
+(defun openai-codex-http-request-function ()
+  (lambda (url &rest arguments)
+    (declare (ignore url arguments))
+    (values
+     (open (fixture-path "openai-codex-responses.sse")
+           :direction :input
+           :element-type '(unsigned-byte 8))
+     200
+     '(("content-type" . "text/event-stream")))))
+
+(defun run-provider-codex (provider model context collect-events-p)
+  (let ((events nil)
+        (payload nil))
+    (let ((cadr-ai:*http-request-function*
+            (openai-codex-http-request-function)))
+      (let ((message
+              (cadr-ai::stream-chat
+               provider model context
+               (if collect-events-p
+                   (lambda (event) (push event events))
+                   (lambda (event) (declare (ignore event)) nil))
+               :transport :sse
+               :on-payload
+               (lambda (value model)
+                 (declare (ignore model))
+                 (setf payload value)
+                 nil))))
+        (values message (nreverse events) payload)))))
+
+(defun measure-provider-codex ()
+  (let ((provider
+          (cadr-ai:make-openai-codex-provider
+           :oauth-access-token *codex-oauth-token*
+           :oauth-account-id "goal20-codex-account"
+           :provider-id :openai-codex))
+        (model (openai-codex-model))
+        (context (provider-context)))
+    (multiple-value-bind (message events payload)
+        (run-provider-codex provider model context t)
+      (declare (ignore events))
+      (unless (eq :tool-use (cadr-ai:assistant-message-stop-reason message))
+        (error "codex fixture stream produced stop reason ~S"
+               (cadr-ai:assistant-message-stop-reason message)))
+      (let* ((blocks (cadr-ai:assistant-message-content message))
+             (text
+               (apply #'concatenate 'string
+                      (mapcar #'cadr-ai:text-content-text
+                              (remove-if-not
+                               (lambda (block)
+                                 (typep block 'cadr-ai:text-content))
+                               blocks)))))
+        (json-object
+         "observed"
+         (json-object
+          "content_block_types"
+          (json-array (mapcar #'content-block-type-name blocks))
+          "stop_reason" "toolUse"
+          "text_characters" (length text)
+          "tool_call_count"
+          (count-if (lambda (block) (typep block 'cadr-ai:tool-call))
+                    blocks)
+          "usage_input"
+          (cadr-ai:usage-input
+           (cadr-ai:assistant-message-usage message))
+          "usage_output"
+          (cadr-ai:usage-output
+           (cadr-ai:assistant-message-usage message))
+          "payload_stream"
+          (eq t (cadr-ai::json-get payload "stream"))
+          "payload_tool_count"
+          (length (or (cadr-ai::json-get payload "tools") #())))
+         "stream_roundtrip"
+         (collect "provider_codex.stream_roundtrip"
+                  (lambda ()
+                    (lambda ()
+                      (run-provider-codex
+                       provider model context nil)))))))))
+
 ;;; ---------------------------------------------------------------------
 ;;; Pair 3: agent session load + event pipeline
 ;;; ---------------------------------------------------------------------
@@ -2085,6 +2180,8 @@
       "src/cadr-ai/providers/azure-openai.lisp stream-chat"
       "provider_vertex.stream_roundtrip"
       "src/cadr-ai/providers/vertex.lisp stream-chat"
+      "provider_codex.stream_roundtrip"
+      "src/cadr-ai/providers/codex.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
       "resource_loader.reload"
@@ -2166,6 +2263,8 @@
               (let ((azure-openai (measure-provider-azure-openai)))
               (format *error-output* "goal20 cadr paired paths: provider_vertex~%")
               (let ((vertex (measure-provider-vertex)))
+              (format *error-output* "goal20 cadr paired paths: provider_codex~%")
+              (let ((codex (measure-provider-codex)))
               (format *error-output* "goal20 cadr paired paths: cli_settings~%")
               (let ((settings (measure-cli-settings)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
@@ -2203,6 +2302,7 @@
               "provider_openai_responses" openai-responses
               "provider_azure_openai" azure-openai
               "provider_vertex" vertex
+              "provider_codex" codex
               "cli_settings" settings
               "resource_loader" resources
               "render_slicing" slicing)
@@ -2221,7 +2321,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

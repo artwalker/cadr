@@ -133,6 +133,7 @@ const REPETITIONS = {
 	"provider_openai_responses.stream_roundtrip": 10,
 	"provider_azure_openai.stream_roundtrip": 10,
 	"provider_vertex.stream_roundtrip": 10,
+	"provider_codex.stream_roundtrip": 10,
 	"cli_settings.create": 5,
 	"resource_loader.reload": 3,
 	"session_pipeline.session_load": 3,
@@ -214,6 +215,7 @@ const fixtureNames = [
 	"azure-openai-responses.sse",
 	"google-vertex.sse",
 	"vertex-adc.json",
+	"openai-codex-responses.sse",
 	"settings-global.json",
 	"settings-project.json",
 	"resource-skill-global.md",
@@ -245,6 +247,9 @@ const vertexSsePath = path.join(fixtureDirectory, "google-vertex.sse");
 const vertexAdc = JSON.parse(
 	readFileSync(path.join(fixtureDirectory, "vertex-adc.json"), "utf8"),
 );
+const openaiCodexSsePath = path.join(fixtureDirectory, "openai-codex-responses.sse");
+const openaiCodexOauthToken =
+	"eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiZ29hbDIwLWNvZGV4LWFjY291bnQifX0.sig";
 const cliArgv = JSON.parse(readFileSync(path.join(fixtureDirectory, "cli-argv.json"), "utf8"));
 const providerContext = JSON.parse(
 	readFileSync(path.join(fixtureDirectory, "provider-context.json"), "utf8"),
@@ -315,6 +320,7 @@ const mistralModule = await import(moduleUrl("packages/ai/src/api/mistral-conver
 const openaiResponsesModule = await import(moduleUrl("packages/ai/src/api/openai-responses.ts"));
 const azureOpenaiModule = await import(moduleUrl("packages/ai/src/api/azure-openai-responses.ts"));
 const vertexModule = await import(moduleUrl("packages/ai/src/api/google-vertex.ts"));
+const openaiCodexModule = await import(moduleUrl("packages/ai/src/api/openai-codex-responses.ts"));
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
@@ -1061,6 +1067,67 @@ async function measureProviderVertex() {
 	};
 }
 
+const openaiCodexModel = {
+	id: "gpt-5.5",
+	name: "Goal 20 OpenAI Codex",
+	api: "openai-codex-responses",
+	provider: "openai-codex",
+	baseUrl: "https://chatgpt.com/backend-api",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 128000,
+	maxTokens: 16384,
+};
+
+async function runProviderCodex(collectEvents) {
+	const events = collectEvents ? [] : undefined;
+	let payload;
+	const stream = openaiCodexModule.stream(openaiCodexModel, providerContext, {
+		apiKey: openaiCodexOauthToken,
+		maxRetries: 0,
+		transport: "sse",
+		fetch: async () =>
+			new Response(readFileSync(openaiCodexSsePath), {
+				status: 200,
+				headers: { "content-type": "text/event-stream" },
+			}),
+		onPayload: (value) => {
+			payload = value;
+			return undefined;
+		},
+	});
+	for await (const event of stream) events?.push(event.type);
+	const message = await stream.result();
+	return { events, message, payload };
+}
+
+async function measureProviderCodex() {
+	const observed = await runProviderCodex(true);
+	if (observed.message.stopReason !== "toolUse") {
+		throw new Error(`codex fixture stream produced stopReason ${observed.message.stopReason}`);
+	}
+	const text = observed.message.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("");
+	return {
+		stream_roundtrip: await collect("provider_codex.stream_roundtrip", () => {
+			return () => runProviderCodex(false);
+		}),
+		observed: {
+			content_block_types: observed.message.content.map((block) => block.type),
+			stop_reason: observed.message.stopReason,
+			text_characters: [...text].length,
+			tool_call_count: observed.message.content.filter((block) => block.type === "toolCall").length,
+			usage_input: observed.message.usage.input,
+			usage_output: observed.message.usage.output,
+			payload_stream: observed.payload?.stream === true,
+			payload_tool_count: observed.payload?.tools?.length ?? 0,
+		},
+	};
+}
+
 function runCliSettings() {
 	return settingsModule.SettingsManager.create(settingsCwdDirectory, settingsAgentDirectory, {
 		projectTrusted: true,
@@ -1724,6 +1791,8 @@ process.stderr.write("goal20 pi paired paths: provider_azure_openai\n");
 const providerAzureOpenai = await measureProviderAzureOpenai();
 process.stderr.write("goal20 pi paired paths: provider_vertex\n");
 const providerVertex = await measureProviderVertex();
+process.stderr.write("goal20 pi paired paths: provider_codex\n");
+const providerCodex = await measureProviderCodex();
 process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
@@ -1754,6 +1823,7 @@ const result = {
 			"provider_openai_responses.stream_roundtrip": "packages/ai/src/api/openai-responses.ts stream",
 			"provider_azure_openai.stream_roundtrip": "packages/ai/src/api/azure-openai-responses.ts stream",
 			"provider_vertex.stream_roundtrip": "packages/ai/src/api/google-vertex.ts stream",
+			"provider_codex.stream_roundtrip": "packages/ai/src/api/openai-codex-responses.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"session_pipeline.session_load":
@@ -1814,6 +1884,7 @@ const result = {
 		provider_openai_responses: providerOpenaiResponses,
 		provider_azure_openai: providerAzureOpenai,
 		provider_vertex: providerVertex,
+		provider_codex: providerCodex,
 		cli_settings: cliSettings,
 		resource_loader: resourceLoader,
 		render_slicing: renderSlicing,

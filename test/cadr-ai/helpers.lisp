@@ -90,6 +90,16 @@
                          :provider :google-vertex
                          :api :google-vertex
                          :base-url "https://aiplatform.googleapis.com/v1"
+                         :max-tokens 4096)))
+    (:codex
+     (values (make-openai-codex-provider
+              :oauth-access-token
+              "eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiZ29hbDIwLWNvZGV4LWFjY291bnQifX0.sig"
+              :oauth-account-id "goal20-codex-account")
+             (make-model :id "gpt-5.5"
+                         :provider :openai-codex
+                         :api :openai-codex-responses
+                         :base-url "https://chatgpt.com/backend-api"
                          :max-tokens 4096)))))
 
 (defun first-text (message)

@@ -31,6 +31,7 @@ METRIC_KEYS = (
     "provider_openai_responses.stream_roundtrip",
     "provider_azure_openai.stream_roundtrip",
     "provider_vertex.stream_roundtrip",
+    "provider_codex.stream_roundtrip",
     "cli_settings.create",
     "resource_loader.reload",
     "session_pipeline.session_load",

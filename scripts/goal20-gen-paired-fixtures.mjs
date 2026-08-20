@@ -864,6 +864,7 @@ const artifacts = new Map([
 	["azure-openai-responses.sse", buildOpenAIResponsesSseFixture()],
 	["google-generative-ai.sse", buildGoogleSseFixture()],
 	["google-vertex.sse", buildGoogleSseFixture()],
+	["openai-codex-responses.sse", buildOpenAIResponsesSseFixture()],
 	[
 		"vertex-adc.json",
 		`${JSON.stringify(
