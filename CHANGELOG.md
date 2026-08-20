@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: book user-facing bash tool failure
+  (`FORMAT: No more arguments` + bash `(` quoting on
+  `gethash equal 6-char`). Classify model misuse vs product
+  path (`docs/bugs/bash-format-shell-quoting.md`). Not G.17.
+  Part P still `[open]`.
 - Goal 20: value quote-scan accumulates high-byte-p; unescaped
   ASCII uses check-less `copy-unescaped-ascii-json-octets`
   (fill kernel unchanged). Keys still check-less quote scan.
