@@ -321,6 +321,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of `2f9036b4a`
+  (n=5, enforced). `agent_tool_loop.roundtrip`
+  1.75×→**0.16×** (45 / 278 µs). Ceiling 1.5 not raised.
+  No extra `src/`. G.17 still `missing`. Part P still `[open]`.
+
 - Goal 20 Part P: one parallel tool runs inline (no
   `pthread_create`). sprof leftover of `agent_tool_loop` was
   `pthread_sigmask` 53%. pi `executeToolCallsParallel` is
