@@ -16,10 +16,6 @@ tag/Release step.
   三连-shaped schema knives; lazy octet-span needs adjudication
   (`docs/adjudications.md`; `goal20-draft.md` 十B item 10).
   Not G.17. Part P still `[open]`.
-- Goal 20: put-entry-field dispatches on the key's first u32
-  (gperf unique prefix; not length-case). Not bag reuse.
-  Not intern. Not FFI. Ceiling not lowered. Not G.17.
-  Part P still `[open]`.
 - Goal 20: withdraw session-json-block scratch reuse
   (`767b4c452`). Friend-MachineD n=5: load cadr **1879→2083 µs**
   (worse). Product restored. Honest split note kept. Not intern.
