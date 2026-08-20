@@ -162,6 +162,10 @@ summarizer returns `"SUMMARY"`. Timed work is production
 `compacted` / `first_kept` / `summary_chars` are exact.
 `branch-summarization.lisp` is not on this thunk. First
 Friend-MachineD freeze 11.33× (965 / 85 µs), ceiling 20.0.
+Timed Lisp core is in-memory `compact-from-preparation` (pi
+`prepareCompaction` + `compact`); persist stays after the core.
+Friend-MachineD remesure after that encoding: 11.33×→4.54×
+(965→164 µs). Ceiling 20.0 unchanged.
 
 ## 2. How to run
 
@@ -363,12 +367,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 127,050 lines**
+Denominator: **295 files / 127,060 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 49 | 29,886 | 23.5% | `no worse than baseline` is falsifiable |
+| `paired` | 49 | 29,896 | 23.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `pairable-uncovered` | 222 | 89,689 | 70.6% | blocked by Part A hard condition 2 |
 
@@ -409,7 +413,7 @@ are not named stay `pairable-uncovered`.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/compaction.lisp` | 873 | `session_compact.compact` |
+| `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 480 | `agent_tool_loop.roundtrip` |

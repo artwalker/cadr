@@ -591,6 +591,15 @@ Be concise. Focus on what's needed to understand the kept suffix.")
          (run-extension-lifecycle-hooks
           host event :payload payload))))
 
+(defun compact-from-preparation
+    (agent preparation &key custom-instructions (reason :manual))
+  ;; Lisp encoding of compaction.ts compact(): in-memory summary from a
+  ;; CompactionPreparation. Persist is session-append-compaction after.
+  (generate-prepared-compaction-summary
+   agent nil preparation
+   (getf (getf preparation :settings) :reserve-tokens)
+   custom-instructions reason))
+
 (defun generate-prepared-compaction-summary
     (agent source-entries preparation reserve
      custom-instructions reason)
@@ -740,9 +749,10 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                        (generated
                          (unless from-extension-p
                            (multiple-value-list
-                            (generate-prepared-compaction-summary
-                             agent source-entries preparation reserve
-                             custom-instructions reason))))
+                            (compact-from-preparation
+                             agent preparation
+                             :custom-instructions custom-instructions
+                             :reason reason))))
                        (summary
                          (compaction-field
                           from-extension-p extension-compaction

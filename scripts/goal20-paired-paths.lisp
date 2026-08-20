@@ -684,7 +684,6 @@
     (nreverse messages)))
 
 (defparameter *journal-write-index* 0)
-(defparameter *compact-write-index* 0)
 
 (defun append-journal-once (messages cwd)
   ;; Each sample mkdirs a fresh journal directory.  That is harness tax,
@@ -1093,66 +1092,87 @@
    :usage (cadr-ai:make-usage :input 60 :output 20 :total 80)
    :stop-reason :stop))
 
+(defun paired-compact-entry (id parent-id message)
+  (cadr-agent::make-session-entry
+   :type :message
+   :id id
+   :parent-id parent-id
+   :timestamp 1786665600000
+   :message message))
+
+(defun paired-compact-entries ()
+  ;; Same five messages as scripts/goal20-paired-paths.mjs
+  ;; pairedCompactEntries. In-memory SessionEntry[], not JSONL.
+  (list
+   (paired-compact-entry
+    "e1" nil
+    (cadr-ai:make-user-message
+     :content
+     (concatenate
+      'string "discarded context "
+      (make-string 40 :initial-element #\d))))
+   (paired-compact-entry
+    "e2" "e1"
+    (paired-compact-response
+     (concatenate
+      'string "discarded answer "
+      (make-string 40 :initial-element #\e))))
+   (paired-compact-entry
+    "e3" "e2"
+    (cadr-ai:make-user-message
+     :content
+     (concatenate
+      'string "old context "
+      (make-string 120 :initial-element #\x))))
+   (paired-compact-entry
+    "e4" "e3"
+    (paired-compact-response
+     (concatenate
+      'string "old answer "
+      (make-string 120 :initial-element #\y))))
+   (paired-compact-entry
+    "e5" "e4"
+    (cadr-ai:make-user-message :content "current request"))))
+
 (defun run-paired-compact ()
-  ;; Inventory: time compact() to the compaction entry, not
-  ;; load-session of an already-compacted file. Faux summarizer,
-  ;; no socket. Same knobs as compaction-test.lisp.
-  (incf *compact-write-index*)
-  (let* ((directory
-           (ensure-directories-exist
-            (merge-pathnames
-             (format nil "compact/~D/" *compact-write-index*)
-             *scratch-directory*)))
-         (session
-           (cadr-agent:create-session
-            :directory directory
-            :cwd (namestring directory)
-            :id (format nil "019f0000-0001-7000-8000-~12,'0D"
-                        *compact-write-index*)
-            :timestamp 1786665600000))
-         (responses
-           (list (paired-compact-response "SUMMARY")))
-         (agent nil))
-    (cadr-agent:session-append-message
-     session
-     (cadr-ai:make-user-message
-      :content
-      (concatenate
-       'string "discarded context "
-       (make-string 40 :initial-element #\d))))
-    (cadr-agent:session-append-message
-     session
-     (paired-compact-response
-      (concatenate
-       'string "discarded answer "
-       (make-string 40 :initial-element #\e))))
-    (cadr-agent:session-append-message
-     session
-     (cadr-ai:make-user-message
-      :content
-      (concatenate
-       'string "old context "
-       (make-string 120 :initial-element #\x))))
-    (cadr-agent:session-append-message
-     session
-     (paired-compact-response
-      (concatenate
-       'string "old answer "
-       (make-string 120 :initial-element #\y))))
-    (cadr-agent:session-append-message
-     session
-     (cadr-ai:make-user-message :content "current request"))
-    (setf agent
-          (cadr-agent:make-agent
-           :provider :mock
-           :model (paired-compact-model)
-           :session session
-           :compaction-reserve-tokens 21
-           :compaction-keep-recent-tokens 40
-           :auto-compact-p nil
-           :stream-function
-           (paired-tool-loop-stream responses)))
-    (cadr-agent:compact-agent agent :force-p t)))
+  ;; Inventory: time compact() to the compaction result, not
+  ;; load-session of an already-compacted file and not journal I/O.
+  ;; Lisp encoding of prepareCompaction + compact (in-memory).
+  ;; compact-agent still persists after this core (FiveAM).
+  (let* ((entries (paired-compact-entries))
+         (keep 40)
+         (reserve 21)
+         (cut (cadr-agent::compaction-cut-point entries keep)))
+    (unless cut
+      (return-from run-paired-compact nil))
+    (let* ((source (subseq entries 0 cut))
+           (kept (nth cut entries))
+           (messages
+             (remove
+              nil
+              (mapcar #'cadr-agent:session-entry-message entries)))
+           (tokens
+             (cadr-agent::context-estimated-tokens messages))
+           (preparation
+             (cadr-agent::make-compaction-preparation
+              source kept tokens keep reserve))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (paired-compact-model)
+              :compaction-reserve-tokens reserve
+              :compaction-keep-recent-tokens keep
+              :auto-compact-p nil
+              :stream-function
+              (paired-tool-loop-stream
+               (list (paired-compact-response "SUMMARY"))))))
+      (multiple-value-bind (summary usage)
+          (cadr-agent::compact-from-preparation agent preparation)
+        (declare (ignore usage))
+        (list
+         :summary summary
+         :first-kept-entry-id
+         (getf preparation :first-kept-entry-id))))))
 
 (defun measure-session-compact ()
   (let ((result (run-paired-compact)))
@@ -1244,7 +1264,7 @@
       "agent_tool_loop.roundtrip"
       "src/cadr-agent/loop/agent-loop.lisp agent-prompt"
       "session_compact.compact"
-      "src/cadr-agent/compaction.lisp compact-agent"
+      "src/cadr-agent/compaction.lisp compact-from-preparation"
       "text_truncation.truncate_head"
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"

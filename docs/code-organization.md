@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127050 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127060 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -55,7 +55,7 @@ files with unrelated facilities fail.
 |---|---:|---:|---|---|---|---|---|
 | `src/cadr-agent/branch-summarization.lisp` | 185 | 11 | Prepare a session branch and ask the model for its branch summary. | pass | done | llm-passthrough-message-p / agent-message-to-llm. I0: one passthrough owner. | 20 |
 | `src/cadr-agent/summarization.lisp` | 86 | 4 | Own the shared conversation-summary prompt, request, and retry contract. | pass | no-rewrite | The or/progn nil-witness at :48-61 distinguishes nil-return from abort at an external boundary; retry/cache/routing already single-owned via closure injection. | 20 |
-| `src/cadr-agent/compaction.lisp` | 873 | 34 | Estimate context, choose a cut point, and execute the compaction lifecycle. | pass · large | done | one reverse walk; compaction-field. I0: one extension-vs-generated pick. | 20 |
+| `src/cadr-agent/compaction.lisp` | 883 | 35 | Estimate context, choose a cut point, and execute the compaction lifecycle. | pass · large | done | one reverse walk; compaction-field. I0: one extension-vs-generated pick. compact-from-preparation is in-memory compact(). | 20 |
 | `src/cadr-agent/conditions.lisp` | 43 | 9 | Define agent-layer condition types. | pass | no-rewrite | The condition hierarchy IS the Lisp mechanism; slotted conditions carry payload and messages live at signal sites, consumed via handler-case. | 20 |
 | `src/cadr-agent/execution-env.lisp` | 855 | 56 | Implement the replaceable filesystem/process execution environment used by tools and harnesses. | pass · large | done | call-signaled-operation. I0: abort/classify one owner. | 20 |
 | `src/cadr-agent/export-html/template.css` | 1,066 | 0 | Provide the exact vendored baseline stylesheet embedded in offline session exports. | pass · large | n/a | Static export asset, a byte-for-byte copy of the baseline, no Lisp source to evaluate | — |

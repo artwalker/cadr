@@ -618,26 +618,26 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-20T03:03:42Z) on `Friend-MachineD`, git `d764ffbceda6`, ratio_gate=`enforced`, quick=no, samples=5
+Current: `paired-paths` (2026-08-20T03:28:17Z) on `Friend-MachineD`, git `a7a31ae8c9f7`, ratio_gate=`enforced`, quick=no, samples=5
 
-Previous: `paired-paths-quick` (2026-08-20T03:02:27Z) on `Friend-MachineD`, git `d764ffbceda6`, ratio_gate=`informational-quick-run`, quick=yes, samples=1
+Previous: `paired-paths` (2026-08-20T03:03:42Z) on `Friend-MachineD`, git `d764ffbceda6`, ratio_gate=`enforced`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
-| `cli_dispatch.argv_parse` | 2.8 | 3.7 | 0.77× | 0.62× | 3.00× |
-| `cli_dispatch.help_render` | 0.0 | 0.9 | 0.05× | 0.24× | 6.00× |
-| `cli_dispatch.list_models_registry` | 2,238.1 | 4,263.2 | 0.52× | 0.32× | 1.50× |
-| `cli_dispatch.list_models_render` | 96.0 | 1,526.8 | 0.06× | 0.07× | 4.00× |
-| `provider_stream.stream_roundtrip` | 3,443.3 | 5,158.9 | 0.67× | 0.32× | 2.50× |
-| `session_pipeline.session_load` | 2,943.0 | 1,956.2 | 1.50× | 1.84× | 9.00× |
-| `session_pipeline.context_walk` | 3.3 | 129.1 | 0.03× | 0.04× | 2.00× |
-| `storage_journal.journal_read` | 2,769.7 | 1,556.8 | 1.78× | 1.85× | 8.00× |
-| `storage_journal.journal_append` | 1,738.1 | 2,067.7 | 0.84× | 1.01× | 12.00× |
-| `sqlite_session.open_walk` | 6,864.3 | 26,751.5 | 0.26× | 0.23× | 1.50× |
-| `tool_read.text_file` | 1,775.4 | 4,321.0 | 0.41× | 0.51× | 8.00× |
-| `tool_grep.context_file` | 14,236.9 | 17,195.3 | 0.83× | 0.79× | 3.00× |
-| `agent_tool_loop.roundtrip` | 290.3 | 363.5 | 0.80× | 0.65× | 1.50× |
-| `session_compact.compact` | 965.1 | 85.2 | 11.33× | 3.20× | 20.00× |
+| `cli_dispatch.argv_parse` | 2.7 | 4.4 | 0.60× | 0.77× | 3.00× |
+| `cli_dispatch.help_render` | 0.1 | 1.1 | 0.05× | 0.05× | 6.00× |
+| `cli_dispatch.list_models_registry` | 2,256.7 | 4,340.9 | 0.52× | 0.52× | 1.50× |
+| `cli_dispatch.list_models_render` | 93.3 | 1,451.1 | 0.06× | 0.06× | 4.00× |
+| `provider_stream.stream_roundtrip` | 3,415.1 | 5,705.1 | 0.60× | 0.67× | 2.50× |
+| `session_pipeline.session_load` | 3,121.3 | 1,961.4 | 1.59× | 1.50× | 9.00× |
+| `session_pipeline.context_walk` | 3.3 | 110.3 | 0.03× | 0.03× | 2.00× |
+| `storage_journal.journal_read` | 2,864.5 | 1,774.4 | 1.61× | 1.78× | 8.00× |
+| `storage_journal.journal_append` | 1,763.9 | 2,119.5 | 0.83× | 0.84× | 12.00× |
+| `sqlite_session.open_walk` | 7,110.9 | 27,757.8 | 0.26× | 0.26× | 1.50× |
+| `tool_read.text_file` | 1,644.1 | 5,101.3 | 0.32× | 0.41× | 8.00× |
+| `tool_grep.context_file` | 14,955.8 | 19,038.3 | 0.79× | 0.83× | 3.00× |
+| `agent_tool_loop.roundtrip` | 341.0 | 386.3 | 0.88× | 0.80× | 1.50× |
+| `session_compact.compact` | 163.5 | 36.0 | 4.54× | 11.33× | 20.00× |
 
 | recordedAt (UTC) | label | git | quick | ratio_gate | append | read | load | list_models_render |
 |---|---|---|---|---|---:|---:|---:|---:|
@@ -696,6 +696,7 @@ Previous: `paired-paths-quick` (2026-08-20T03:02:27Z) on `Friend-MachineD`, git 
 | 2026-08-20T02:35:14Z | paired-paths | `93f2dd72d14d` | no | enforced | 0.87× | 1.54× | 1.86× | 0.07× |
 | 2026-08-20T03:02:27Z | paired-paths-quick | `d764ffbceda6` | yes | informational-quick-run | 1.01× | 1.85× | 1.84× | 0.07× |
 | 2026-08-20T03:03:42Z | paired-paths | `d764ffbceda6` | no | enforced | 0.84× | 1.78× | 1.50× | 0.06× |
+| 2026-08-20T03:28:17Z | paired-paths | `a7a31ae8c9f7` | no | enforced | 0.83× | 1.61× | 1.59× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

@@ -1551,3 +1551,76 @@
         (is (= 7
                (cadr-agent::utf16-code-unit-length
                 (getf result :summary))))))))
+
+(test pairing-session-compact-in-memory-core-stays-put
+  ;; scripts/goal20-paired-paths.lisp session_compact.compact after
+  ;; copying pi prepareCompaction + compact. Drives shipped
+  ;; compact-from-preparation, not a reimplementation. No JSONL.
+  (let* ((entries
+           (list
+            (cadr-agent::make-session-entry
+             :type :message :id "e1" :parent-id nil
+             :timestamp 1786665600000
+             :message
+             (cadr-ai:make-user-message
+              :content
+              (concatenate 'string "discarded context "
+                           (make-string 40 :initial-element #\d))))
+            (cadr-agent::make-session-entry
+             :type :message :id "e2" :parent-id "e1"
+             :timestamp 1786665600000
+             :message
+             (compaction-test-response
+              (concatenate 'string "discarded answer "
+                           (make-string 40 :initial-element #\e))
+              :stop))
+            (cadr-agent::make-session-entry
+             :type :message :id "e3" :parent-id "e2"
+             :timestamp 1786665600000
+             :message
+             (cadr-ai:make-user-message
+              :content
+              (concatenate 'string "old context "
+                           (make-string 120 :initial-element #\x))))
+            (cadr-agent::make-session-entry
+             :type :message :id "e4" :parent-id "e3"
+             :timestamp 1786665600000
+             :message
+             (compaction-test-response
+              (concatenate 'string "old answer "
+                           (make-string 120 :initial-element #\y))
+              :stop))
+            (cadr-agent::make-session-entry
+             :type :message :id "e5" :parent-id "e4"
+             :timestamp 1786665600000
+             :message
+             (cadr-ai:make-user-message :content "current request"))))
+         (cut (cadr-agent::compaction-cut-point entries 40))
+         (*responses*
+           (list (compaction-test-response "SUMMARY" :stop)))
+         (*contexts* nil))
+    (declare (special *responses* *contexts*))
+    (is (integerp cut))
+    (let* ((source (subseq entries 0 cut))
+           (kept (nth cut entries))
+           (messages
+             (remove nil
+                     (mapcar #'cadr-agent:session-entry-message entries)))
+           (preparation
+             (cadr-agent::make-compaction-preparation
+              source kept
+              (cadr-agent::context-estimated-tokens messages)
+              40 21))
+           (agent
+             (cadr-agent:make-agent
+              :provider :mock
+              :model (compaction-test-model)
+              :auto-compact-p nil
+              :stream-function
+              (faux-stream '*responses* '*contexts*))))
+      (multiple-value-bind (summary usage)
+          (cadr-agent::compact-from-preparation agent preparation)
+        (declare (ignore usage))
+        (is (string= "SUMMARY" summary))
+        (is (string= "e3" (getf preparation :first-kept-entry-id)))
+        (is (= 7 (cadr-agent::utf16-code-unit-length summary)))))))

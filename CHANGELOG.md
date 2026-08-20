@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: copy pi in-memory `prepareCompaction` + `compact`
+  for `session_compact.compact`. Shipped `compact-from-preparation`;
+  persist stays `session-append-compaction` after the core. Timed
+  thunk no longer mkdir/JSONL. Friend-MachineD 11.33×→4.54×
+  (965→164 µs). Ceiling 20.0 unchanged. Identity 127050→127060.
+  Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `session_compact.compact` (faux summarizer,
   no socket). Production `compact-agent` vs `prepareCompaction` /
   `compact`. Deterministic five-message fixture over the compact

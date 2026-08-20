@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `session_compact.compact` first pair **11.33×** (965 / 85 µs), ceiling 20.0. Load/journal still ~1.8×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
+| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `session_compact.compact` **4.54×** (164 / 36 µs) after in-memory compact() encoding, ceiling 20.0. Load/journal still ~1.6×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
