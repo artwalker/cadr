@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: land callee / 屠龙 rulings in-repo —
+  `docs/adjudications.md` (beat pi; study callee; bucket-split;
+  empty ⚑ ≠ exhausted), Class C in
+  `docs/acceptance/goal-v20-ds-audit.md`, Part P pointers in
+  `docs/acceptance/goal-v20-part-p.md`. Local `goal20-draft.md`
+  十B「Callee / 屠龙」updated (gitignored `/goal*.md`). Not G.17.
+  Part P still `[open]`.
 - Goal 20: withdraw ISO DIGITS unroll (`ebbea846f`).
   Friend-MachineD n=5: load cadr **1857→1928 µs** (worse).
   Reverted `7a3f07520`. V8 ParseNumber vs DIGITS flet; unroll

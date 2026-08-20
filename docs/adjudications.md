@@ -709,5 +709,63 @@ floor campaign.
 **Why it was decidable**: the user asked to fix the guiding
 thought and to look for other instances, not only truncate.
 
+## 2026-08-20 — Same observable behavior; beat pi; study the callee's algorithm
 
+**Ruled**: user (2026-08-20 16:50). Advisor agrees.
 
+**Decided**:
+
+1. **Product**: same observable behavior as pi.
+2. **Speed**: cadr must be able to **beat** pi, not stop at
+   parity. High performance is the goal ("Lisp 屠龙刀").
+3. When pi's hot path is a **callee** (Node/`JSON.parse`→V8,
+   `Buffer`, zlib, …), do **not** treat "Class C / not our
+   source" as a stop. Open that software's algorithm and
+   data structure, learn whether it is better, then
+   **Lisp-encode** that essence (or a falsifiably better DS
+   that keeps behavior). Same rule as reading pi first
+   (§1 item 6): the design source is the real computational
+   structure, wherever it lives.
+4. Still forbidden without adjudication: **FFI into** that
+   callee (link V8/simdutf), mmap, intern-table growth,
+   empty SWAR, observable-byte SIMD. Studying V8 ≠ calling V8.
+
+**Supersedes in practice**: reading Class C rows in
+`goal-v20-ds-audit.md` as "product knife blocked / park
+forever". Class C only means "do not invent a third scan
+from sprof of a worse walker"; it does **not** mean "never
+touch JSON/load again".
+
+**Why it was decidable**: the user restated the goal after
+a provider-pairing conveyor and Class C leftover flags.
+The bottleneck is shared (`PARSE-JSON` / load). The work
+is to understand V8/`JSON.parse` (and peers) and encode
+the win in Lisp.
+
+## 2026-08-20 — Bucket-split leftover parents; empty ⚑ ≠ exhausted
+
+**Ruled**: user (2026-08-20 21:40–21:46). Advisor agrees.
+
+**Decided**:
+
+1. Call-boundary wins (inline quote-scan / skip-expect) are
+   real essence for that layer. Micro knives that only rename
+   V8 (`scan-key` macrolet, length-case key dispatch,
+   closed-set enum flyweights, DIGITS unroll) and lose on
+   **cadr µs** are circling phenomena — do not treat them as
+   "V8 essence found" or as "levers exhausted".
+2. When sprof names a **parent** with high total%
+   (e.g. `PARSE-SESSION-RECORD-OCTETS` ~70%+ total), the next
+   delivery is a **bucket split** (which child path costs
+   cadr µs) + V8 `Parse*` function names + one unfalsified
+   knife — not another <3% self polish and not an empty ⚑.
+3. A ⚑ is valid only with that note proving the remainder is
+   solely FFI-into-callee / mmap / intern-table growth /
+   empty SWAR / COPY-UNESCAPED (or other already-banned
+   classes). "Banned micro classes" alone is not exhaustion.
+4. Durable pointers: this file; `goal20-draft.md` 十B
+   「Callee / 屠龙」; `docs/acceptance/goal-v20-ds-audit.md`
+   Class C; `docs/acceptance/goal-v20-part-p.md`.
+
+**Why it was decidable**: user asked whether the board
+guidance was in the goal; agreed to land it in-repo.

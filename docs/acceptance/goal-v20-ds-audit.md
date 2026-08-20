@@ -37,14 +37,22 @@ where pi has `string[]`.
 | `src/cadr-cli/tools/bash.lisp` `bash-truncation-notice` | `truncateTail` + `Buffer.byteLength` on the last line | `harness-text-lines` + `car`/`last` + CLI `utf8-length`. | Use the tail result's last line / harness count; no second full split. |
 | `src/cadr-agent/storage/jsonl.lisp` `open-jsonl-session-storage` | JSONL = split lines then `JSON.parse` each | Whole-file `uiop:split-string` then `parse-json` per line. Default paired `session_load` is the octet walker in `session/migration.lisp`, not this function. Still the same encoding if this backend is used. | After a pair exists: line offsets + octet FSM, not cons split + EQUAL JSON. |
 
-## Class C — not this defect (do not open a scan-order knife)
+## Class C — not a *scan-order* defect (still study the callee)
 
-| path | why it is a different question |
-|---|---|
-| `session_load` / `session_read` octet walker vs `JSON.parse` | Passes already aligned (1MiB + LF + per-line object). Lisp encodings **tried and withdrawn**: `a78ee0171` public cons-plist (`journal_read` 1.62×→2.59×); `28e0eae06` session `simple-vector` (cadr `session_load` 2878→3110 µs). Empty SWAR / intern grow / FFI V8 still forbidden. **This drain: no remaining legal encoding lever.** Leftover is walker vs V8. Not G.17 `blocked`/`met`. HEAD remesure `da3d7322f` load **1.98×** (3105.9 / 1567.1 µs), journal **1.88×** (2716.4 / 1443.5 µs). |
-| `argv_parse` `cli-token-tail=` schar | Same algorithm, cheaper encoding. Remesure after truncate. |
-| `3caf85074` alt-screen last-document vector, `fe1a4d944` editor-lines vector | Already the mermaid fix. `alt-screen.lisp` scrollbar still `(nth row lines)` on a list viewport — leftover encoding, not a new algorithm. |
-| Markdown table `split-string` + `nth` on cells | pi splits a short row. Not a pairing-floor path. Do not campaign-rewrite. |
+Class C means: do **not** invent a third JSONL scan from sprof of a
+worse walker. It does **not** mean "park load/read forever" or
+"product knife blocked". When the hot cost is a callee
+(`JSON.parse` → V8, …), open that software's algorithm/DS and
+Lisp-encode the essence. See `docs/adjudications.md`
+2026-08-20 (beat pi; study the callee) and (bucket-split; empty
+⚑ ≠ exhausted).
+
+| path | why it is a different question | next |
+|---|---|---|
+| `session_load` / `session_read` octet walker vs `JSON.parse` | Passes already aligned (1MiB + LF + per-line object). Withdrawn encodings: public cons-plist (`a78ee0171`), session nested vector (`28e0eae06`), scan-key macrolet, length-case key dispatch, closed-set enum flyweights, DIGITS unroll. Call-boundary inlines (quote-scan / skip-expect) won on cadr µs. Empty SWAR / intern grow / FFI V8 still forbidden without adjudication. | **Bucket-split** `PARSE-SESSION-RECORD-OCTETS` (child µs + V8 `Parse*` names) then one unfalsified knife. Not G.17 `blocked`/`met`. |
+| `argv_parse` `cli-token-tail=` schar | Same algorithm, cheaper encoding. Remesure after truncate. | — |
+| `3caf85074` alt-screen last-document vector, `fe1a4d944` editor-lines vector | Already the mermaid fix. `alt-screen.lisp` scrollbar still `(nth row lines)` on a list viewport — leftover encoding, not a new algorithm. | — |
+| Markdown table `split-string` + `nth` on cells | pi splits a short row. Not a pairing-floor path. Do not campaign-rewrite. | — |
 
 ## Method for every later leftover
 
@@ -52,3 +60,7 @@ where pi has `string[]`.
 2. Name passes and data structure.
 3. Name cadr's. If they differ, the knife is the copy (Lisp encoding).
 4. If they match, sprof that implementation — not a third algorithm.
+5. If the hot cost is a **callee** (V8/`JSON.parse`, …), open that
+   callee's algorithm/DS (study ≠ FFI). If sprof names a high-total
+   **parent**, bucket-split children before polishing <3% self or
+   raising an empty ⚑.

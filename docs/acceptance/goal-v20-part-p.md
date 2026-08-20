@@ -1,21 +1,33 @@
 # Goal 20 Part P — CL ceiling (draft; G.17 missing)
 
-Spec: `goal20-draft.md` 十B. Ruling: `docs/adjudications.md`
-2026-08-18 CL ceiling (`1a24eea1d`). Floor is still pi.
+Spec: `goal20-draft.md` 十B (incl. 「Callee / 屠龙」).
+Rulings: `docs/adjudications.md` 2026-08-18 CL ceiling
+(`1a24eea1d`); 2026-08-20 beat-pi / study-callee; 2026-08-20
+bucket-split / empty ⚑ ≠ exhausted. Floor is still pi; beating
+pi is not a stop. DS audit Class C:
+`docs/acceptance/goal-v20-ds-audit.md`.
 
 Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`,
 and vetoed G.17 `blocked` on `7e4ec5201`. G.17 is `missing`.
 `blocked` is only for new deps / safety / format / mmap /
-observable SIMD. P.8 is `number` after user 2026-08-18 18:09
+observable SIMD (and FFI-into-callee / intern grow / empty SWAR
+without adjudication). P.8 is `number` after user 2026-08-18 18:09
 deferred live play (reopen if a defect appears).
 `RATIO_CEILINGS` is unchanged. O 7a–7d were not re-run.
 Not a Goal 20 pass.
+
+**Load leftover method (not G.17):** bucket-split
+`PARSE-SESSION-RECORD-OCTETS` (child cadr µs + V8 `Parse*`
+names) before <3% self polish or empty ⚑. Call-boundary inlines
+won; several V8-named micro knives withdrew on cadr µs — see
+`docs/benchmarks/goal20-session-load-sprof-d0c88ddd2.md` and
+compare archive.
 
 ## P.1–P.11
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | leftover | schema octet FSM. sprof `19ca40947`: `OCTET-U32-LE` 11%; quote/LF/space SWAR; `SCAN-KEY`; pthread; foreign `read`. Repeating those is empty SWAR / intern / uncopyable `read`. Floor still 2.04×/1.80× (`17df52451`). | sprof this booking. No `src/`. |
+| P.1 JSON read | leftover | Call-boundary inlines won; load still ~1.27× (cadr ~1857 µs @ `d0c88ddd2` ledger). Next = bucket-split descent (`PARSE-SESSION-RECORD-OCTETS`), not empty SWAR / intern grow / FFI / labels→macrolet redo / <3% ISO/DIGITS polish. | adjudications 2026-08-20; sprof `d0c88ddd2`. Not G.17. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
 | P.4 help / argv / walk | number | remesure `b7f1f7de0`: argv 0.98× (3.0 / 3.1 µs). `cli-token-tail=` now `schar`; this-host 3.0→1.96 µs | this knife for argv. Not intern. |
