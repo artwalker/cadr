@@ -335,11 +335,7 @@
              ((val= "text") "text")
              ((val= "user") "user")
              ((val= "stop") "stop")
-             ((val= "read") "read")
-             ((val= "leaf") "leaf")))
-        (5 (cond
-             ((val= "image") "image")
-             ((val= "label") "label")))
+             ((val= "read") "read")))
         (6 (cond
              ((val= "custom") "custom")
              ((val= "medium") "medium")))
@@ -351,19 +347,8 @@
              ((val= "thinking") "thinking")
              ((val= "toolCall") "toolCall")))
         (9 (when (val= "assistant") "assistant"))
-        (10 (cond
-              ((val= "toolResult") "toolResult")
-              ((val= "compaction") "compaction")))
-        (12 (cond
-              ((val= "session_info") "session_info")
-              ((val= "model_change") "model_change")))
-        (14 (cond
-              ((val= "branch_summary") "branch_summary")
-              ((val= "custom_message") "custom_message")))
-        (18 (when (val= "openai-completions") "openai-completions"))
-        (19 (when (val= "active_tools_change") "active_tools_change"))
-        (21 (when (val= "thinking_level_change")
-              "thinking_level_change"))))))
+        (10 (when (val= "toolResult") "toolResult"))
+        (18 (when (val= "openai-completions") "openai-completions"))))))
 
 (defun parse-json-source
     (source &optional object-visitor nest (start 0) end)
@@ -1313,18 +1298,12 @@
     (declare (type fixnum count))
     (macrolet ((val= (literal)
                  `(octet-window-equals octets start end ,literal)))
-      ;; Closed session/content/role enums. V8 InternalizeJsonString
-      ;; for short ASCII. Not a growing intern table. Not FFI.
       (case count
         (4 (cond
              ((val= "text") "text")
              ((val= "user") "user")
              ((val= "stop") "stop")
-             ((val= "read") "read")
-             ((val= "leaf") "leaf")))
-        (5 (cond
-             ((val= "image") "image")
-             ((val= "label") "label")))
+             ((val= "read") "read")))
         (6 (cond
              ((val= "custom") "custom")
              ((val= "medium") "medium")))
@@ -1336,20 +1315,9 @@
              ((val= "thinking") "thinking")
              ((val= "toolCall") "toolCall")))
         (9 (when (val= "assistant") "assistant"))
-        (10 (cond
-              ((val= "toolResult") "toolResult")
-              ((val= "compaction") "compaction")))
-        (12 (cond
-              ((val= "session_info") "session_info")
-              ((val= "model_change") "model_change")))
-        (14 (cond
-              ((val= "branch_summary") "branch_summary")
-              ((val= "custom_message") "custom_message")))
+        (10 (when (val= "toolResult") "toolResult"))
         (18 (when (val= "openai-completions")
-              "openai-completions"))
-        (19 (when (val= "active_tools_change") "active_tools_change"))
-        (21 (when (val= "thinking_level_change")
-              "thinking_level_change"))))))
+              "openai-completions"))))))
 
 (defun parse-json-simple-integer-octets (octets start end)
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)

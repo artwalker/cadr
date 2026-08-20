@@ -53,14 +53,3 @@ cadr sequential `key=` of every field in `put-entry-field` /
 one literal. Friend-MachineD n=5: cadr `session_load`
 **1958→1986 µs** (no win). Reverted `157300eae`. Not labels
 macrolet. Not intern. Not FFI.
-
-## Next win (closed-set intern)
-
-sprof load: `STRING=*` 3.2%, `JSON-INTERNED-ASCII-VALUE-OCTETS`
-3.2%, `COPY-UNESCAPED` 4.1%. V8
-`JsonParser::InternalizeJsonString` / internalized short
-ASCII. cadr already flies `text`/`message`/`toolCall`;
-closed session types (`leaf`/`label`/`image`/`compaction`/…)
-still copy then `STRING=*`. Not a growing intern table.
-Falsify by cadr `session_load` µs vs `3a23ae8b0` (1958 µs).
-Revert if worse.
