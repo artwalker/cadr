@@ -45,12 +45,13 @@ worse walker. It does **not** mean "park load/read forever" or
 (`JSON.parse` → V8, …), open that software's algorithm/DS and
 Lisp-encode the essence. See `docs/adjudications.md`
 2026-08-20 (beat pi; study the callee), (bucket-split; empty
-⚑ ≠ exhausted), (study shape, not port the V8 VM), and
-2026-08-21 (load knife priority after bag-reuse falsifications).
+⚑ ≠ exhausted), (study shape, not port the V8 VM),
+2026-08-21 (DeepSeek review), and 2026-08-21 (COPY-UNESCAPED
+ban scope; knives 1/2).
 
 | path | why it is a different question | next |
 |---|---|---|
-| `session_load` / `session_read` octet walker vs `JSON.parse` | Passes already aligned (1MiB + LF + per-line object). Withdrawn encodings: public cons-plist (`a78ee0171`), session nested vector (`28e0eae06`), scan-key macrolet, length-case key dispatch (`789bec858`), closed-set enum flyweights, DIGITS unroll, parse-message V8-shape 三连, content-block scratch reuse (`767b4c452`→`52d0986f8`, 1879→2083). Call-boundary inlines (quote-scan / skip-expect) + ISO timestamp won on cadr µs. Keys already octet windows; ASCII already `simple-base-string`. Empty SWAR / intern grow / FFI V8 / COPY-UNESCAPED micro-rewrite still forbidden without adjudication. | Prefer **string-arena/bump (A)** or **exact-length content arrays (D)** per 2026-08-21 adjudication. Default-reject key-tag `case` redo; lazy octet-span needs ruling. Not G.17 `blocked`/`met`. |
+| `session_load` / `session_read` octet walker vs `JSON.parse` | Passes already aligned (1MiB + LF + per-line object). Withdrawn encodings: public cons-plist (`a78ee0171`), session nested vector (`28e0eae06`), scan-key macrolet, length-case key dispatch (`789bec858`), closed-set enum flyweights, DIGITS unroll, parse-message V8-shape 三连, content-block scratch reuse (`767b4c452`→`52d0986f8`, 1879→2083). Call-boundary inlines (quote-scan / skip-expect) + ISO timestamp won on cadr µs. Keys already octet windows; ASCII already `simple-base-string`. Empty SWAR / intern grow / FFI V8 still forbidden without adjudication. COPY-UNESCAPED **fill-kernel** micro-rewrite banned; **eliding the ASCII pre-scan via quote-scan high-byte** is allowed (2026-08-21). | **Knife 1** then **knife 2** (adjudications 2026-08-21). Not G.17 `blocked`/`met`. |
 | `argv_parse` `cli-token-tail=` schar | Same algorithm, cheaper encoding. Remesure after truncate. | — |
 | `3caf85074` alt-screen last-document vector, `fe1a4d944` editor-lines vector | Already the mermaid fix. `alt-screen.lisp` scrollbar still `(nth row lines)` on a list viewport — leftover encoding, not a new algorithm. | — |
 | Markdown table `split-string` + `nth` on cells | pi splits a short row. Not a pairing-floor path. Do not campaign-rewrite. | — |

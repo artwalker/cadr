@@ -39,13 +39,20 @@ Withdrawn. Do not redo content-block bag reuse. Not intern. Not FFI.
 
 Honest split numbers above stay. Not G.17 `met`.
 
-## Next knife (adjudication 2026-08-21)
+## Next knife (adjudication 2026-08-21 item 11)
 
-Prefer **A** per-load string arena / bump (no COPY-UNESCAPED kernel
-rewrite; Friend-MachineD; &lt;~50 µs noise → revert) or **D** exact-length
-/`svref` content arrays (not bag reuse). Default-reject B key-tag
-`case`; reject C if it becomes 三连 #2; E `tagbody` last. Lazy
-octet-span needs a new ruling. See leftover md + `docs/adjudications.md`.
+**Knife 1 first (alone):** value quote-scan accumulates
+`high-byte-p`; unescaped ASCII → check-less copier (**fill
+loop unchanged**). Not a COPY-UNESCAPED fill-kernel rewrite.
+Do not slow key scans. Win: Friend-MachineD cadr **&lt; ~1879 µs**
++ EQUAL strings + green `test-cl`.
+
+**Knife 2 after knife 1 keeps:** content compact-prefix fast
+path + generic fallback (not bag reuse). See leftover md +
+`docs/adjudications.md`.
+
+DeepSeek A/D and gperf `put-entry` remesure are **not** merged
+with knife 1.
 
 ## Knife — gperf unique-prefix dispatch on `put-entry-field`
 

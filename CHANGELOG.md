@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: COPY-UNESCAPED ban = fill-kernel only; try knife 1
+  (quote-scan high-byte + check-less ASCII copier) then knife 2
+  (content shape fast-path). Proposals 3/4/5 not next without
+  residual / ruling (`docs/adjudications.md`; `goal20-draft.md`
+  十B item 11). Not G.17. Part P still `[open]`.
 - Goal 20: load knife priority after bag-reuse falsifications
   (DeepSeek review) — prefer string-arena (A) or exact content
   arrays (D); default-reject key-tag `case` redo of length-case

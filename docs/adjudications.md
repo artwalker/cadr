@@ -937,5 +937,65 @@ asked the advisor to land the review in goal/docs
 review of the DeepSeek proposals into the goal and durable
 docs after the content-block scratch falsification.
 
+## 2026-08-21 — COPY-UNESCAPED ban scope; try quote-scan high-byte + content shape fast-path
+
+**Ruled**: user asked whether an external plan's knives are
+worth trying and to land the worth-trying ones for the
+executor (2026-08-21). Advisor agrees **proposals 1 and 2**
+are worth trying; clarifies the COPY-UNESCAPED ban.
+
+**Decided**:
+
+1. **Ban scope — COPY-UNESCAPED micro-rewrite does NOT
+   include** removing the redundant ASCII classification
+   pass before the ub32→`schar` fill, when high-byte
+   presence is already known from the value quote-scan.
+   Banned remains: rewriting the fill/copy **kernel**
+   itself (instruction schedule / unroll polish of the
+   Latin-1 memcpy loop). Folding `(logand word #x80808080)`
+   into the already-paid `octet-find-quote-or-backslash`
+   (or a **value-only** variant) and calling a check-less
+   ASCII copier whose fill loop is byte-identical is a
+   **legal** knife. Do not slow key scans: prefer a value
+   scanner variant or optional high-byte accumulation only
+   on `parse-string-value`.
+2. **Try next (executor order — one knife at a time)**:
+   - **Knife 1 (main)**: quote-scan accumulates `high-byte-p`
+     across escape resumes (like `escaped-p`); unescaped
+     ASCII → check-less copier; high-byte unescaped →
+     `octets-to-string` UTF-8; escaped → existing decode.
+     Green `test-cl.sh`; strings EQUAL to current walker;
+     Friend-MachineD `session_load` cadr **&lt; ~1879 µs**
+     or revert. Do **not** merge with knife 2.
+   - **Knife 2 (after knife 1 keeps)**: content-block
+     compact-prefix fast path for pi's common emit shapes
+     (`"type":"text","text":"…"` / thinking / toolCall
+     prefixes via ub32 memcmp); miss → existing
+     `parse-content-block`. Not bag reuse (fast path never
+     builds `session-json-block`). Extra: mutated fixtures
+     (key order, spaces, escaped type, unknown type) must
+     EQUAL the generic path. Friend-MachineD further drop
+     or revert.
+3. **Not authorized as the next cold knives**:
+   - Proposal 3 (`put-message-field` first-byte dispatch):
+     only after 1+2 residual; adjacent to banned
+     length-case; do not merge with 1/2. Existing
+     `put-entry` u32/gperf WIP is separate — remesure alone;
+     do not merge with knife 1.
+   - Proposal 4 (per-load ephemeral EQ dedupe table):
+     **needs a new user ruling** before any code (near
+     intern-grow).
+   - Proposal 5 (whole-line base-string + displaced views):
+     research only; displaced ≠ `simple-string` breaks
+     downstream declares; chunk-buffer alias risk. Needs
+     output-contract ruling before product work.
+4. Speculative µs sums are not a schedule. Keep/revert on
+   Friend-MachineD cadr µs only.
+5. Pointers: this file; `goal20-draft.md` 十B item 11;
+   Part P; Class C; leftover; split note; board `[ready]`.
+
+**Why it was decidable**: user asked yes/no on ban scope
+and to put worth-trying knives in docs for grok.
+
 
 

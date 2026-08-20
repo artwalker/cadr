@@ -1,14 +1,14 @@
 # Goal 20 Part P — CL ceiling (draft; G.17 missing)
 
-Spec: `goal20-draft.md` 十B (incl. 「Callee / 屠龙」 item 10).
+Spec: `goal20-draft.md` 十B (incl. 「Callee / 屠龙」 items 10–11).
 Rulings: `docs/adjudications.md` 2026-08-18 CL ceiling
 (`1a24eea1d`); 2026-08-20 beat-pi / study-callee; 2026-08-20
 bucket-split / empty ⚑ ≠ exhausted; 2026-08-20 study shape,
 not port the V8 VM; 2026-08-20 Lisp 屠龙刀 invent-if-needed;
 2026-08-20 mature algorithms/DS as design sources — keep
-optimizing; **2026-08-21 load knife priority after bag-reuse
-falsifications (DeepSeek review)**. Floor is still pi; beating
-pi is not a stop. DS audit Class C:
+optimizing; 2026-08-21 DeepSeek review; **2026-08-21
+COPY-UNESCAPED ban scope + knives 1/2**. Floor is still pi;
+beating pi is not a stop. DS audit Class C:
 `docs/acceptance/goal-v20-ds-audit.md`.
 
 Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`,
@@ -29,11 +29,11 @@ Knife not landed without green `test-cl.sh` + Friend-MachineD
 cadr µs. Call-boundary inlines won; parse-message 三连 **and**
 content-block scratch reuse withdrew
 (`goal20-session-load-leftover.md`, `52d0986f8`).
-**Next knives (advisor 2026-08-21):** prefer string-arena /
-bump (A) or exact-length content arrays (D). Default-reject
-key-tag `case` redo of length-case (B); reject schema knives
-that become stack-locals→typed message (C / 三连 #2);
-`tagbody` merge last (E). Lazy octet-span needs adjudication.
+**Next (advisor 2026-08-21 item 11):** knife 1 alone —
+quote-scan `high-byte-p` + check-less ASCII copier (fill
+kernel untouched; ban does **not** cover eliding the ASCII
+pre-scan). Then knife 2 — content compact-prefix fast path
+with generic fallback. Not bag reuse. Not FFI.
 **User: keep inventing/encoding better Lisp DS; mature
 published structures are fair design sources; do not park on
 FFI.**
@@ -42,7 +42,7 @@ FFI.**
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | leftover | Load ~1.15× (cadr ~1879 µs @ `a698334d5`). Prefer A string-arena or D exact content arrays; do not redo bag-reuse / 三连 / length-case `789bec858`. Not FFI. | adjudications 2026-08-21 DeepSeek review; leftover + split notes. Not G.17. |
+| P.1 JSON read | leftover | Load ~1.15× (cadr ~1879 µs). **Next: knife 1** (high-byte on quote-scan + check-less ASCII copy); then knife 2 (content shape fast-path). Do not redo bag-reuse / 三连. Not FFI. | adjudications 2026-08-21 ban scope + knives 1/2. Not G.17. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
 | P.4 help / argv / walk | number | remesure `b7f1f7de0`: argv 0.98× (3.0 / 3.1 µs). `cli-token-tail=` now `schar`; this-host 3.0→1.96 µs | this knife for argv. Not intern. |

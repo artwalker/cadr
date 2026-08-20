@@ -66,10 +66,10 @@ content-block bag reuse (same family as message bag).
 - **`parse-string-value`.** Intern-or-`copy-unescaped` during
   scan. Delayed `MakeString` (三连 row 3) lost. ASCII already
   `simple-base-string` + ub32 `schar` copy. COPY-UNESCAPED
-  **kernel** micro-rewrite banned. Closed-set intern grow
-  withdrawn. Next legal try on this child: **per-load string
-  arena / bump** (adjudication 2026-08-21 A) — not a redo of
-  the copy loop body.
+  **fill-kernel** micro-rewrite banned. **Allowed:** elide the
+  ASCII pre-scan by accumulating high-byte on the value
+  quote-scan (knife 1, adjudication 2026-08-21). Closed-set
+  intern grow withdrawn.
 - **`put-entry-field`.** Keys are already octet windows +
   `octet-window-equals`. Timestamp ISO kept. length-case
   `put-*-field` withdrawn (`789bec858`). Default-reject key-tag
@@ -88,13 +88,33 @@ content-block bag reuse (same family as message bag).
   unroll withdrawn. ISO quote walk kept. `tagbody` merge is
   last-resort only.
 
-## Next knives (advisor 2026-08-21 — DeepSeek review)
+## Next knives (advisor 2026-08-21 — ban scope + knives 1/2)
 
-Prefer **A** (string arena / bump) or **D** (exact content
-arrays). See `docs/adjudications.md` 「Load knife priority after
-bag-reuse falsifications」and `goal20-draft.md` 十B item 10.
-Lazy octet-span needs a new ruling. Keep/revert on Friend-MachineD
-cadr µs vs ~1879; &lt;~50 µs treat as noise.
+**Supersedes** the DeepSeek A/D cold priority for the immediate
+queue. See `docs/adjudications.md` 「COPY-UNESCAPED ban scope;
+try quote-scan high-byte + content shape fast-path」and
+`goal20-draft.md` 十B item 11.
+
+1. **Knife 1 (do this first, alone):** fold ASCII/high-byte
+   detection into the value quote-scan (`high-byte-p` like
+   `escaped-p`); unescaped ASCII → check-less copier whose
+   **fill loop is unchanged**; do not slow key scans (value
+   scanner variant OK). Ban clarification: this is **not**
+   COPY-UNESCAPED fill-kernel micro-rewrite. Win: Friend-MachineD
+   cadr load **&lt; ~1879 µs** + `test-cl` green + strings EQUAL.
+2. **Knife 2 (only after knife 1 keeps):** content compact-prefix
+   fast path (text / thinking / toolCall shapes) with generic
+   `parse-content-block` fallback. Not bag reuse. Mutated
+   fixtures must EQUAL. Separate Friend-MachineD.
+3. **Not next:** proposal 3 (message first-byte) until 1+2
+   residual; proposal 4 (per-load EQ dedupe) needs user ruling;
+   proposal 5 (line displaced views) research only.
+4. `put-entry` u32/gperf WIP remesures alone — do not merge with
+   knife 1.
+
+Lazy octet-span / arena displaced views still need rulings where
+they change output contract. Keep/revert on Friend-MachineD cadr
+µs vs ~1879; speculative µs sums are not a schedule.
 
 ## Leftover class (bookkeeping — superseded as a stop)
 
@@ -119,7 +139,8 @@ Historical classes that stay forbidden without a new ruling:
 - mmap
 - generic intern-table growth
 - empty SWAR
-- COPY-UNESCAPED micro-rewrite
+- COPY-UNESCAPED **fill-kernel** micro-rewrite (ASCII pre-scan
+  elision via quote-scan high-byte is **allowed**)
 - bag / token reuse of message or content-block scratch
 - length-case / key-tag `case` redo without a distinct proof
 
