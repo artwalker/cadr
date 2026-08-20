@@ -1,6 +1,6 @@
 # Bug — OpenCode Go usage-limit 429: slow UI + different error text vs pi
 
-**Status**: open (user-reported 2026-08-21 screenshot). Not G.17.
+**Status**: fixed in `190bbed31` (user-reported 2026-08-21). Not G.17.
 
 > **EXECUTOR: do this first.** Board `[ready · P0 · 现在就做]`.
 > Fix `signal-api-error` terminal quota → no retry; align error text with pi.
