@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: book session_load leftover after parse-message 三连 —
+  `docs/benchmarks/goal20-session-load-leftover.md`. Friend-MachineD
+  n=5 ISO-kept load **1879 / 1634 µs (1.15×)**. Three V8-shape knives
+  withdrew (2015 / 1917 / 1974 µs). Not G.17. Part P still `[open]`.
 - Goal 20: withdraw ParseString delayed materialization
   (`3ad720098`). Friend-MachineD n=5: load cadr **1857→1974 µs**
   (worse). Product restored to ISO-kept walker. Shape note kept.
