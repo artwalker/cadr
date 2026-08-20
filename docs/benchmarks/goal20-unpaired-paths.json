@@ -18,6 +18,7 @@
   "tool_read.text_file",
   "tool_grep.context_file",
   "agent_tool_loop.roundtrip",
+  "session_compact.compact",
   "goal11.mouse_drag",
   "goal11.wheel",
   "goal11.continuous_alt_input",
@@ -270,6 +271,27 @@
    "class": "paired",
    "metrics": [
     "agent_tool_loop.roundtrip"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/compaction.lisp",
+   "class": "paired",
+   "metrics": [
+    "session_compact.compact"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/summarization.lisp",
+   "class": "paired",
+   "metrics": [
+    "session_compact.compact"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/messages.lisp",
+   "class": "paired",
+   "metrics": [
+    "session_compact.compact"
    ]
   },
   {

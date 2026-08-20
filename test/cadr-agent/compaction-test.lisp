@@ -1493,3 +1493,61 @@
        "generated"
        (cadr-agent::compaction-field
         nil '(:summary "from-ext") :summary "generated"))))
+
+(test pairing-session-compact-observed-stays-put
+  ;; scripts/goal20-paired-paths.lisp session_compact.compact.
+  ;; Drives shipped compact-agent, not a reimplementation.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "pairing-session-compact"))
+           (*responses*
+             (list (compaction-test-response "SUMMARY" :stop)))
+           (*contexts* nil))
+      (declare (special *responses* *contexts*))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content
+        (concatenate 'string "discarded context "
+                     (make-string 40 :initial-element #\d))))
+      (cadr-agent:session-append-message
+       session
+       (compaction-test-response
+        (concatenate 'string "discarded answer "
+                     (make-string 40 :initial-element #\e))
+        :stop))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content
+        (concatenate 'string "old context "
+                     (make-string 120 :initial-element #\x))))
+      (cadr-agent:session-append-message
+       session
+       (compaction-test-response
+        (concatenate 'string "old answer "
+                     (make-string 120 :initial-element #\y))
+        :stop))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "current request"))
+      (let* ((agent
+               (cadr-agent:make-agent
+                :provider :mock
+                :model (compaction-test-model)
+                :session session
+                :compaction-reserve-tokens 21
+                :compaction-keep-recent-tokens 40
+                :auto-compact-p nil
+                :stream-function
+                (faux-stream '*responses* '*contexts*)))
+             (result (cadr-agent:compact-agent agent :force-p t)))
+        (is (not (null result)))
+        (is (stringp (getf result :first-kept-entry-id)))
+        (is (string= "SUMMARY" (getf result :summary)))
+        (is (= 7
+               (cadr-agent::utf16-code-unit-length
+                (getf result :summary))))))))

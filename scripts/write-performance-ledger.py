@@ -32,6 +32,7 @@ METRIC_KEYS = (
     "tool_read.text_file",
     "tool_grep.context_file",
     "agent_tool_loop.roundtrip",
+    "session_compact.compact",
 )
 
 HISTORY_RATIO_KEYS = (

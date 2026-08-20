@@ -133,6 +133,7 @@ const REPETITIONS = {
 	"tool_read.text_file": 5,
 	"tool_grep.context_file": 5,
 	"agent_tool_loop.roundtrip": 3,
+	"session_compact.compact": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
 	"render_slicing.slice_ansi_clip": 200,
@@ -280,6 +281,9 @@ const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-st
 const { createRequire } = await import("node:module");
 const baselineRequire = createRequire(path.join(baselineDirectory, "package.json"));
 const { Type } = baselineRequire("typebox");
+const compactionModule = await import(
+	moduleUrl("packages/coding-agent/src/core/compaction/compaction.ts")
+);
 
 // Both sides render into a sink that only counts, so neither pays terminal
 // I/O and neither can win by writing less.
@@ -914,6 +918,115 @@ async function measureAgentToolLoop() {
 	};
 }
 
+function pairedCompactMessageEntry(id, parentId, message) {
+	return {
+		type: "message",
+		id,
+		parentId,
+		timestamp: "2026-08-20T00:00:00.000Z",
+		message,
+	};
+}
+
+function pairedCompactUser(text) {
+	return { role: "user", content: text, timestamp: 1 };
+}
+
+function pairedCompactAssistant(text) {
+	return {
+		role: "assistant",
+		content: [{ type: "text", text }],
+		api: "openai-responses",
+		provider: "openai",
+		model: "tiny",
+		usage: {
+			input: 60,
+			output: 20,
+			cacheRead: 0,
+			cacheWrite: 0,
+			totalTokens: 80,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		},
+		stopReason: "stop",
+		timestamp: 1,
+	};
+}
+
+function pairedCompactEntries() {
+	const discardedUser = `discarded context ${"d".repeat(40)}`;
+	const discardedAnswer = `discarded answer ${"e".repeat(40)}`;
+	const oldUser = `old context ${"x".repeat(120)}`;
+	const oldAnswer = `old answer ${"y".repeat(120)}`;
+	return [
+		pairedCompactMessageEntry("e1", null, pairedCompactUser(discardedUser)),
+		pairedCompactMessageEntry("e2", "e1", pairedCompactAssistant(discardedAnswer)),
+		pairedCompactMessageEntry("e3", "e2", pairedCompactUser(oldUser)),
+		pairedCompactMessageEntry("e4", "e3", pairedCompactAssistant(oldAnswer)),
+		pairedCompactMessageEntry("e5", "e4", pairedCompactUser("current request")),
+	];
+}
+
+function pairedCompactStream() {
+	return () => {
+		const stream = new eventStreamModule.AssistantMessageEventStream();
+		queueMicrotask(() => {
+			stream.push({
+				type: "done",
+				reason: "stop",
+				message: pairedAssistantMessage([{ type: "text", text: "SUMMARY" }], "stop"),
+			});
+		});
+		return stream;
+	};
+}
+
+async function runPairedCompact() {
+	const entries = pairedCompactEntries();
+	const preparation = compactionModule.prepareCompaction(entries, {
+		enabled: true,
+		reserveTokens: 21,
+		keepRecentTokens: 40,
+	});
+	if (!preparation) return null;
+	const model = {
+		id: "tiny",
+		name: "tiny",
+		api: "openai-responses",
+		provider: "openai",
+		baseUrl: "https://example.invalid",
+		reasoning: false,
+		input: ["text"],
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+		contextWindow: 100,
+		maxTokens: 32,
+	};
+	return compactionModule.compact(
+		preparation,
+		model,
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+		undefined,
+		pairedCompactStream(),
+	);
+}
+
+async function measureSessionCompact() {
+	const once = await runPairedCompact();
+	const summary = once?.summary ?? "";
+	return {
+		compact: await collect("session_compact.compact", () => {
+			return () => runPairedCompact();
+		}),
+		observed: {
+			compacted: once ? 1 : 0,
+			first_kept: once?.firstKeptEntryId ? 1 : 0,
+			summary_chars: summary.length,
+		},
+	};
+}
+
 async function measureRenderSlicing() {
 	const dense = Array.from(
 		{ length: 200 },
@@ -961,6 +1074,8 @@ process.stderr.write("goal20 pi paired paths: tool_grep\n");
 const toolGrep = await measureToolGrep();
 process.stderr.write("goal20 pi paired paths: agent_tool_loop\n");
 const agentToolLoop = await measureAgentToolLoop();
+process.stderr.write("goal20 pi paired paths: session_compact\n");
+const sessionCompact = await measureSessionCompact();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -996,6 +1111,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/grep.ts createGrepToolDefinition.execute",
 			"agent_tool_loop.roundtrip":
 				"packages/agent/src/agent.ts Agent.prompt + packages/agent/src/agent-loop.ts runAgentLoop",
+			"session_compact.compact":
+				"packages/coding-agent/src/core/compaction/compaction.ts prepareCompaction + compact",
 			"text_truncation.truncate_head":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
@@ -1028,6 +1145,7 @@ const result = {
 		tool_read: toolRead,
 		tool_grep: toolGrep,
 		agent_tool_loop: agentToolLoop,
+		session_compact: sessionCompact,
 		render_slicing: renderSlicing,
 	},
 };

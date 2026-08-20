@@ -148,6 +148,21 @@ assistant `"done"`. Lisp-only retry/skip/abort stays
 `tool_value` / `tool_error` / `final_text` are exact. First
 Friend-MachineD freeze 0.77× (329 / 428 µs), ceiling 1.5.
 
+### Pair 9 — `session_compact`
+
+| metric | cadr | pi |
+|---|---|---|
+| `compact` | `compact-agent` (`src/cadr-agent/compaction.lisp`) | `prepareCompaction` + `compact` (`packages/coding-agent/src/core/compaction/compaction.ts`) |
+
+Deterministic five-message list over the compact token budget
+(context-window 100, keep-recent 40, reserve 21). Faux
+summarizer returns `"SUMMARY"`. Timed work is production
+`compact-agent` / `compact()` to the compaction result, not
+`session_load` of an already-compacted JSONL. Observed
+`compacted` / `first_kept` / `summary_chars` are exact.
+`branch-summarization.lisp` is not on this thunk. First
+Friend-MachineD freeze 11.33× (965 / 85 µs), ceiling 20.0.
+
 ## 2. How to run
 
 ```bash
@@ -353,13 +368,13 @@ Denominator: **295 files / 127,050 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 46 | 28,674 | 22.6% | `no worse than baseline` is falsifiable |
+| `paired` | 49 | 29,886 | 23.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 225 | 90,901 | 71.5% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 222 | 89,689 | 70.6% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 22.6% of lines (46 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 28.5% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 71.5% of lines.
+- **Falsifiable vs baseline:** 23.5% of lines (49 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 29.4% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 70.6% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -394,14 +409,17 @@ are not named stay `pairable-uncovered`.
 
 | file | lines | metrics |
 |---|---:|---|
+| `src/cadr-agent/compaction.lisp` | 873 | `session_compact.compact` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 480 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 393 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,185 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
+| `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/json.lisp` | 1,905 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
@@ -468,7 +486,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/support` | 13 | 1,164 |
 | `src/cadr-ai/transport` | 2 | 1,053 |
 | `src/cadr-cli/settings` | 3 | 926 |
-| `src/cadr-agent/compaction.lisp` | 1 | 873 |
 | `src/cadr-ai/support` | 7 | 871 |
 | `src/cadr-agent/execution-env.lisp` | 1 | 855 |
 | `src/cadr-agent/schema.lisp` | 1 | 850 |
@@ -504,7 +521,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/tool-manager.lisp` | 1 | 286 |
 | `src/cadr-cli/config.lisp` | 1 | 284 |
 | `src/cadr-tui/keybindings.lisp` | 1 | 268 |
-| `src/cadr-agent/messages.lisp` | 1 | 253 |
 | `src/cadr-agent/proxy.lisp` | 1 | 251 |
 | `src/cadr-tui/stdin-buffer.lisp` | 1 | 232 |
 | `src/cadr-ai/images.lisp` | 1 | 222 |
@@ -526,7 +542,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-evals/package.lisp` | 1 | 100 |
 | `src/cadr-core/paths.lisp` | 1 | 95 |
 | `src/cadr-agent/file-mutation-queue.lisp` | 1 | 92 |
-| `src/cadr-agent/summarization.lisp` | 1 | 86 |
 | `src/cadr-tui/native-modifiers.lisp` | 1 | 78 |
 | `src/cadr-agent/harness-events.lisp` | 1 | 75 |
 | `src/cadr-core/cancellation.lisp` | 1 | 70 |

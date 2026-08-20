@@ -79,6 +79,7 @@
     ("tool_read.text_file" . 5)
     ("tool_grep.context_file" . 5)
     ("agent_tool_loop.roundtrip" . 3)
+    ("session_compact.compact" . 3)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
     ("render_slicing.slice_ansi_clip" . 200)
@@ -683,6 +684,7 @@
     (nreverse messages)))
 
 (defparameter *journal-write-index* 0)
+(defparameter *compact-write-index* 0)
 
 (defun append-journal-once (messages cwd)
   ;; Each sample mkdirs a fresh journal directory.  That is harness tax,
@@ -1073,6 +1075,104 @@
                   (lambda ()
                     (run-paired-tool-loop))))))))
 
+(defun paired-compact-model ()
+  (cadr-ai:make-model
+   :id "tiny"
+   :provider :openai
+   :api :openai-responses
+   :base-url "https://example.invalid"
+   :max-tokens 32
+   :context-window 100))
+
+(defun paired-compact-response (text)
+  (cadr-ai:make-assistant-message
+   :content (list (cadr-ai:make-text-content :text text))
+   :api :openai-responses
+   :provider :openai
+   :model "tiny"
+   :usage (cadr-ai:make-usage :input 60 :output 20 :total 80)
+   :stop-reason :stop))
+
+(defun run-paired-compact ()
+  ;; Inventory: time compact() to the compaction entry, not
+  ;; load-session of an already-compacted file. Faux summarizer,
+  ;; no socket. Same knobs as compaction-test.lisp.
+  (incf *compact-write-index*)
+  (let* ((directory
+           (ensure-directories-exist
+            (merge-pathnames
+             (format nil "compact/~D/" *compact-write-index*)
+             *scratch-directory*)))
+         (session
+           (cadr-agent:create-session
+            :directory directory
+            :cwd (namestring directory)
+            :id (format nil "019f0000-0001-7000-8000-~12,'0D"
+                        *compact-write-index*)
+            :timestamp 1786665600000))
+         (responses
+           (list (paired-compact-response "SUMMARY")))
+         (agent nil))
+    (cadr-agent:session-append-message
+     session
+     (cadr-ai:make-user-message
+      :content
+      (concatenate
+       'string "discarded context "
+       (make-string 40 :initial-element #\d))))
+    (cadr-agent:session-append-message
+     session
+     (paired-compact-response
+      (concatenate
+       'string "discarded answer "
+       (make-string 40 :initial-element #\e))))
+    (cadr-agent:session-append-message
+     session
+     (cadr-ai:make-user-message
+      :content
+      (concatenate
+       'string "old context "
+       (make-string 120 :initial-element #\x))))
+    (cadr-agent:session-append-message
+     session
+     (paired-compact-response
+      (concatenate
+       'string "old answer "
+       (make-string 120 :initial-element #\y))))
+    (cadr-agent:session-append-message
+     session
+     (cadr-ai:make-user-message :content "current request"))
+    (setf agent
+          (cadr-agent:make-agent
+           :provider :mock
+           :model (paired-compact-model)
+           :session session
+           :compaction-reserve-tokens 21
+           :compaction-keep-recent-tokens 40
+           :auto-compact-p nil
+           :stream-function
+           (paired-tool-loop-stream responses)))
+    (cadr-agent:compact-agent agent :force-p t)))
+
+(defun measure-session-compact ()
+  (let ((result (run-paired-compact)))
+    (json-object
+     "observed"
+     (json-object
+      "compacted" (if result 1 0)
+      "first_kept"
+      (if (and result (getf result :first-kept-entry-id)) 1 0)
+      "summary_chars"
+      (if result
+          (cadr-agent::utf16-code-unit-length
+           (or (getf result :summary) ""))
+          0))
+     "compact"
+     (collect "session_compact.compact"
+              (lambda ()
+                (lambda ()
+                  (run-paired-compact)))))))
+
 ;;; ---------------------------------------------------------------------
 
 (defun slicing-fixtures ()
@@ -1143,6 +1243,8 @@
       "src/cadr-cli/tools/grep.lisp grep-lines"
       "agent_tool_loop.roundtrip"
       "src/cadr-agent/loop/agent-loop.lisp agent-prompt"
+      "session_compact.compact"
+      "src/cadr-agent/compaction.lisp compact-agent"
       "text_truncation.truncate_head"
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"
@@ -1186,6 +1288,8 @@
               (let ((tool-grep (measure-tool-grep)))
               (format *error-output* "goal20 cadr paired paths: agent_tool_loop~%")
               (let ((tool-loop (measure-agent-tool-loop)))
+              (format *error-output* "goal20 cadr paired paths: session_compact~%")
+              (let ((compact (measure-session-compact)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -1211,6 +1315,7 @@
               "tool_read" tool-read
               "tool_grep" tool-grep
               "agent_tool_loop" tool-loop
+              "session_compact" compact
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -1227,7 +1332,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))
+             "schema_version" 1))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

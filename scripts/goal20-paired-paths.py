@@ -70,6 +70,7 @@ METRICS = {
     "tool_read": ("text_file",),
     "tool_grep": ("context_file",),
     "agent_tool_loop": ("roundtrip",),
+    "session_compact": ("compact",),
     "text_truncation": ("truncate_head", "truncate_tail"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
 }
@@ -119,6 +120,10 @@ RATIO_CEILINGS = {
     # follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "agent_tool_loop.roundtrip": 1.5,
+    # Frozen from the first Friend-MachineD non-quick session_compact
+    # pair (samples=5): observed 11.33x (965 / 85 µs). 20.0 follows
+    # the truncate_head headroom precedent. Ratchet down only.
+    "session_compact.compact": 20.0,
     # Initial values frozen from the first full measurement (2026-08-15,
     # Friend-MachineD, samples=5): head 16.71x, tail 15.27x.  These record
     # that cadr currently LOSES to pi on truncation (whole-content encode +
@@ -228,6 +233,11 @@ OBSERVED_EXACT = {
         "message_count",
         "tool_error",
         "tool_value",
+    ),
+    "session_compact": (
+        "compacted",
+        "first_kept",
+        "summary_chars",
     ),
 }
 

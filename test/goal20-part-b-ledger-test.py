@@ -186,6 +186,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("tool_error", paired.OBSERVED_EXACT["agent_tool_loop"])
         self.assertIn("tool_value", paired.OBSERVED_EXACT["agent_tool_loop"])
 
+    def test_session_compact_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
+        self.assertIn("compact", paired.METRICS["session_compact"])
+        self.assertIn("session_compact.compact", paired.RATIO_CEILINGS)
+        self.assertIn("compacted", paired.OBSERVED_EXACT["session_compact"])
+        self.assertIn("first_kept", paired.OBSERVED_EXACT["session_compact"])
+        self.assertIn("summary_chars", paired.OBSERVED_EXACT["session_compact"])
+
     def test_tool_grep_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("tool_grep.context_file", RECORD.METRIC_KEYS)
@@ -203,7 +212,7 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertEqual(entry["label"], "paired-paths-quick")
         self.assertTrue(entry["quick"])
-        self.assertEqual(len(entry["metrics"]), 13)
+        self.assertEqual(len(entry["metrics"]), 14)
         first = entry["metrics"][RECORD.METRIC_KEYS[0]]
         self.assertAlmostEqual(first["cadrMedianUs"], 1000.0)
         self.assertAlmostEqual(first["ratio"], 2.0)
@@ -233,6 +242,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tool_read.text_file`", section)
             self.assertIn("`tool_grep.context_file`", section)
             self.assertIn("`agent_tool_loop.roundtrip`", section)
+            self.assertIn("`session_compact.compact`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

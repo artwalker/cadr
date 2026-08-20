@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `session_compact.compact` (faux summarizer,
+  no socket). Production `compact-agent` vs `prepareCompaction` /
+  `compact`. Deterministic five-message fixture over the compact
+  token budget. First Friend-MachineD freeze 11.33× (965 / 85 µs),
+  ceiling 20.0. Loading an already-compacted session stays
+  `session_load`. Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `agent_tool_loop.roundtrip` (faux provider,
   no socket). Production `agent-prompt` vs `Agent.prompt` /
   `runAgentLoop`. Same FiveAM echo fixture. First Friend-MachineD
