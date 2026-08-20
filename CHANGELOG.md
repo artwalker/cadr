@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: book OpenCode Go usage-limit 429 parity —
+  cadr retries terminal GoUsageLimitError (slow Working…);
+  pi fails fast with `429: {…}`. Fix signal-api-error
+  (`docs/bugs/opencode-go-usage-limit-429-retry.md`). Not G.17.
+  Part P still `[open]`.
 - Goal 20: book user-facing bash tool failure
   (`FORMAT: No more arguments` + bash `(` quoting on
   `gethash equal 6-char`). Classify model misuse vs product
