@@ -27,6 +27,15 @@ load cadr **1857→1917 µs** (1.27×→1.13× is pi jitter; cadr µs worse).
 Withdrawn. Do not redo stack-local parse-time typed fill.
 Not intern. Not FFI. Ceiling not lowered. Not G.17.
 
-Remaining untried on this child: ParseString deferred materialization
-(`JsonString` start/length until `MakeString`). COPY-UNESCAPED rewrite
-is banned.
+## Knife — ParseString delayed materialization @ `1ec2dacf2`
+
+`scan-json-string` records `{start, length, escaped}` (packed fixnum,
+tag bit 45). No intern / COPY-UNESCAPED during the property walk.
+`make-json-string` (V8 `MakeString`) runs at object close:
+`parse-message` after `}`, `finish-block` for content blocks.
+Existing intern / `copy-unescaped-json-octets` / decode-escaped —
+not a COPY-UNESCAPED rewrite. Not bag reuse. Not stack-local typed
+fill. Not intern grow. Not FFI.
+
+Win: Friend-MachineD n=5 `session_load` cadr µs **< ~1857**. Revert
+if not.

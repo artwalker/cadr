@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: walker ParseString delayed materialization — scan
+  records start/length; intern / COPY-UNESCAPED at object close
+  (`MakeString`). Contrast
+  `docs/benchmarks/goal20-v8-parse-message-shape.md`. Not bag
+  reuse. Not stack-local typed fill. Not intern grow. Not FFI.
+  Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: withdraw parse-message stack locals (`8530c25a1`).
   Friend-MachineD n=5: load cadr **1857→1917 µs** (worse).
   Product restored to ISO-kept walker. Shape note kept.

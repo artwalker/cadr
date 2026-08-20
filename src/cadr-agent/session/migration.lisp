@@ -447,7 +447,9 @@
                   (parse-number-value))
                  (t
                   (fail "Expected JSON value")))))
-           (parse-string-value ()
+           (scan-json-string ()
+             ;; V8 ScanJsonString: start/length/has_escape only.
+             ;; No intern. No COPY-UNESCAPED. MakeString is later.
              (expect-code 34)
              (let ((value-start position)
                    (escaped-p nil))
@@ -464,21 +466,7 @@
                         (let ((value-end position))
                           (incf position)
                           (return
-                            (if escaped-p
-                                (cadr-ai::decode-escaped-json-octets
-                                 octets value-start value-end
-                                 (or string-buffer
-                                     (setf string-buffer
-                                           (make-array
-                                            64
-                                            :element-type 'character
-                                            :adjustable t
-                                            :fill-pointer 0))))
-                                (or
-                                 (cadr-ai::json-interned-ascii-value-octets
-                                  octets value-start value-end)
-                                 (cadr-ai::copy-unescaped-json-octets
-                                  octets value-start value-end))))))
+                            (values value-start value-end escaped-p))))
                        ((= code 92)
                         (setf escaped-p t)
                         (incf position)
@@ -492,6 +480,50 @@
                             nil))
                        (t
                         (fail "Unescaped control character"))))))))
+           (make-json-string (start end escaped-p)
+             ;; V8 MakeString. Existing intern / copy-unescaped /
+             ;; decode-escaped. Not a COPY-UNESCAPED rewrite.
+             (if escaped-p
+                 (cadr-ai::decode-escaped-json-octets
+                  octets start end
+                  (or string-buffer
+                      (setf string-buffer
+                            (make-array
+                             64
+                             :element-type 'character
+                             :adjustable t
+                             :fill-pointer 0))))
+                 (or
+                  (cadr-ai::json-interned-ascii-value-octets
+                   octets start end)
+                  (cadr-ai::copy-unescaped-json-octets
+                   octets start end))))
+           (pack-json-span (start end escaped-p)
+             (let ((len (- end start)))
+               (if (> len #xfffff)
+                   (make-json-string start end escaped-p)
+                   (logior start
+                           (ash len 24)
+                           (if escaped-p (ash 1 44) 0)
+                           (ash 1 45)))))
+           (json-span-p (value)
+             (and (typep value 'fixnum)
+                  (logbitp 45 value)))
+           (realize-json-span (value)
+             (if (json-span-p value)
+                 (let* ((start (ldb (byte 24 0) value))
+                        (len (ldb (byte 20 24) value))
+                        (escaped-p (logbitp 44 value)))
+                   (make-json-string start (+ start len) escaped-p))
+                 value))
+           (parse-string-value ()
+             (multiple-value-bind (start end escaped-p)
+                 (scan-json-string)
+               (make-json-string start end escaped-p)))
+           (parse-string-span ()
+             (multiple-value-bind (start end escaped-p)
+                 (scan-json-string)
+               (pack-json-span start end escaped-p)))
            (parse-number-value ()
              (let ((value-start position))
                (skip-number)
@@ -655,10 +687,21 @@
                      (t
                       (fail "Expected comma or }")))))))
            (finish-block (block)
-             (let ((type (session-json-block-type block))
-                   (primary (session-json-block-primary block))
-                   (secondary (session-json-block-secondary block))
-                   (extra (session-json-block-extra block)))
+             (let ((type
+                     (realize-json-span
+                      (session-json-block-type block)))
+                   (primary
+                     (realize-json-span
+                      (session-json-block-primary block)))
+                   (secondary
+                     (realize-json-span
+                      (session-json-block-secondary block)))
+                   (extra
+                     (loop for (key value) on
+                           (session-json-block-extra block)
+                           by #'cddr
+                           collect key
+                           collect (realize-json-span value))))
                (cond
                  ((or (eq type "text") (string= type "text"))
                   (cadr-ai:make-text-content
@@ -698,34 +741,34 @@
                (cond
                  ((and (= n 4) (= b0 116) (key= key-start key-end "type"))
                   (setf (session-json-block-type block)
-                        (parse-string-value)))
+                        (parse-string-span)))
                  ((and (= n 4) (= b0 116) (key= key-start key-end "text"))
                   (setf (session-json-block-primary block)
-                        (parse-string-value)))
+                        (parse-string-span)))
                  ((and (= n 8) (key= key-start key-end "thinking"))
                   (setf (session-json-block-primary block)
-                        (parse-string-value)))
+                        (parse-string-span)))
                  ((and (= n 9) (key= key-start key-end "signature"))
                   (setf (session-json-block-secondary block)
-                        (parse-string-value)))
+                        (parse-string-span)))
                  ((and (= n 8) (key= key-start key-end "redacted"))
                   (setf (session-json-block-extra block)
                         (list* :redacted (parse-generic)
                                (session-json-block-extra block))))
                  ((and (= n 4) (= b0 100) (key= key-start key-end "data"))
                   (setf (session-json-block-primary block)
-                        (parse-string-value)))
+                        (parse-string-span)))
                  ((or (and (= n 8) (key= key-start key-end "mimeType"))
                       (and (= n 9) (key= key-start key-end "mime_type")))
                   (setf (session-json-block-extra block)
-                        (list* :mime-type (parse-string-value)
+                        (list* :mime-type (parse-string-span)
                                (session-json-block-extra block))))
                  ((and (= n 2) (key= key-start key-end "id"))
                   (setf (session-json-block-primary block)
-                        (parse-string-value)))
+                        (parse-string-span)))
                  ((and (= n 4) (= b0 110) (key= key-start key-end "name"))
                   (setf (session-json-block-secondary block)
-                        (parse-string-value)))
+                        (parse-string-span)))
                  ((and (= n 9) (key= key-start key-end "arguments"))
                   (skip-space)
                   (setf (session-json-block-extra block)
@@ -739,7 +782,7 @@
                       (and (= n 17)
                            (key= key-start key-end "thought_signature")))
                   (setf (session-json-block-extra block)
-                        (list* :thought-signature (parse-string-value)
+                        (list* :thought-signature (parse-string-span)
                                (session-json-block-extra block))))
                  (t
                   (skip-value)))))
@@ -909,24 +952,27 @@
                (cond
                  ((and (= n 4) (key= key-start key-end "role"))
                   (setf (session-json-message-role bag)
-                        (parse-string-value)))
+                        (parse-string-span)))
                  ((and (= n 4) (= b0 116) (key= key-start key-end "type"))
                   (if (session-json-message-role bag)
                       (skip-value)
                       (setf (session-json-message-role bag)
-                            (parse-string-value))))
+                            (parse-string-span))))
                  ((and (= n 9) (key= key-start key-end "timestamp"))
                   (setf (session-json-message-timestamp bag)
                         (parse-timestamp-value)))
                  ((and (= n 7) (key= key-start key-end "content"))
+                  (skip-space)
                   (setf (session-json-message-content bag)
-                        (parse-content-value)))
+                        (if (eql (peek-code) 34)
+                            (parse-string-span)
+                            (parse-content-value))))
                  ((and (= n 3) (key= key-start key-end "api"))
-                  (keep-extra bag :api (parse-string-value)))
+                  (keep-extra bag :api (parse-string-span)))
                  ((and (= n 8) (key= key-start key-end "provider"))
-                  (keep-extra bag :provider (parse-string-value)))
+                  (keep-extra bag :provider (parse-string-span)))
                  ((and (= n 5) (= b0 109) (key= key-start key-end "model"))
-                  (keep-extra bag :model (parse-string-value)))
+                  (keep-extra bag :model (parse-string-span)))
                  ((and (= n 5) (= b0 117) (key= key-start key-end "usage"))
                   (skip-space)
                   (setf (session-json-message-usage bag)
@@ -935,37 +981,37 @@
                             (parse-generic))))
                  ((or (and (= n 10) (key= key-start key-end "stopReason"))
                       (and (= n 11) (key= key-start key-end "stop_reason")))
-                  (keep-extra bag :stop-reason (parse-string-value)))
+                  (keep-extra bag :stop-reason (parse-string-span)))
                  ((or (and (= n 10) (key= key-start key-end "responseId"))
                       (and (= n 11) (key= key-start key-end "response_id")))
-                  (keep-extra bag :response-id (parse-string-value)))
+                  (keep-extra bag :response-id (parse-string-span)))
                  ((or (and (= n 14)
                            (key= key-start key-end "rawStopReason"))
                       (and (= n 15)
                            (key= key-start key-end "raw_stop_reason")))
-                  (keep-extra bag :raw-stop-reason (parse-string-value)))
+                  (keep-extra bag :raw-stop-reason (parse-string-span)))
                  ((or (and (= n 12)
                            (key= key-start key-end "errorMessage"))
                       (and (= n 13)
                            (key= key-start key-end "error_message")))
-                  (keep-extra bag :error-message (parse-string-value)))
+                  (keep-extra bag :error-message (parse-string-span)))
                  ((and (= n 12) (key= key-start key-end "diagnostics"))
                   (keep-extra bag :diagnostics (parse-generic)))
                  ((or (and (= n 10) (key= key-start key-end "toolCallId"))
                       (and (= n 11) (key= key-start key-end "tool_call_id")))
-                  (keep-extra bag :tool-call-id (parse-string-value)))
+                  (keep-extra bag :tool-call-id (parse-string-span)))
                  ((or (and (= n 8) (key= key-start key-end "toolName"))
                       (and (= n 9) (key= key-start key-end "tool_name")))
-                  (keep-extra bag :tool-name (parse-string-value)))
+                  (keep-extra bag :tool-name (parse-string-span)))
                  ((or (and (= n 7) (key= key-start key-end "isError"))
                       (and (= n 8) (key= key-start key-end "is_error")))
                   (keep-extra bag :is-error (parse-generic)))
                  ((and (= n 7) (key= key-start key-end "details"))
                   (keep-extra bag :details (parse-generic)))
                  ((and (= n 7) (key= key-start key-end "command"))
-                  (keep-extra bag :command (parse-string-value)))
+                  (keep-extra bag :command (parse-string-span)))
                  ((and (= n 6) (key= key-start key-end "output"))
-                  (keep-extra bag :output (parse-string-value)))
+                  (keep-extra bag :output (parse-string-span)))
                  ((or (and (= n 8) (key= key-start key-end "exitCode"))
                       (and (= n 9) (key= key-start key-end "exit_code")))
                   (keep-extra bag :exit-code (parse-number-value)))
@@ -977,7 +1023,7 @@
                            (key= key-start key-end "fullOutputPath"))
                       (and (= n 16)
                            (key= key-start key-end "full_output_path")))
-                  (keep-extra bag :full-output-path (parse-string-value)))
+                  (keep-extra bag :full-output-path (parse-string-span)))
                  ((or (and (= n 18)
                            (key= key-start key-end "excludeFromContext"))
                       (and (= n 20)
@@ -1009,6 +1055,22 @@
                        ((eql code 125) (return))
                        (t (fail "Expected comma or }"))))))
                (expect-code 125)
+               ;; V8 BuildJsonObject MakeString: intern/copy after
+               ;; the property scan, not per field. Buffer is
+               ;; still this line's octets. Not bag reuse. Not
+               ;; stack-local typed fill.
+               (setf (session-json-message-role bag)
+                     (realize-json-span
+                      (session-json-message-role bag)))
+               (setf (session-json-message-content bag)
+                     (realize-json-span
+                      (session-json-message-content bag)))
+               (let ((extra (session-json-message-extra bag)))
+                 (when extra
+                   (setf (session-json-message-extra bag)
+                         (loop for (key value) on extra by #'cddr
+                               collect key
+                               collect (realize-json-span value)))))
                bag))
            (put-entry-field (key-start key-end)
              (let ((n (- key-end key-start))
