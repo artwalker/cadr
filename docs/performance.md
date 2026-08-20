@@ -618,37 +618,37 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-20T11:45:33Z) on `Friend-MachineD`, git `cda6c8f1ed93`, ratio_gate=`enforced`, quick=no, samples=5
+Current: `paired-paths` (2026-08-20T11:58:27Z) on `Friend-MachineD`, git `318822b1ccfb`, ratio_gate=`enforced`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-20T11:22:43Z) on `Friend-MachineD`, git `da3d7322ff33`, ratio_gate=`enforced`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-20T11:45:33Z) on `Friend-MachineD`, git `cda6c8f1ed93`, ratio_gate=`enforced`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
-| `cli_dispatch.argv_parse` | 2.9 | 2.9 | 1.00× | 0.86× | 3.00× |
-| `cli_dispatch.help_render` | 0.1 | 0.7 | 0.08× | 0.07× | 6.00× |
-| `cli_dispatch.list_models_registry` | 2,300.6 | 4,196.4 | 0.55× | 0.55× | 1.50× |
-| `cli_dispatch.list_models_render` | 104.6 | 1,350.9 | 0.08× | 0.07× | 4.00× |
-| `provider_stream.stream_roundtrip` | 2,110.1 | 5,477.0 | 0.39× | 0.42× | 2.50× |
-| `provider_anthropic.stream_roundtrip` | 1,439.6 | 2,161.6 | 0.67× | 0.75× | 1.50× |
-| `provider_google.stream_roundtrip` | 2,829.4 | 6,168.6 | 0.46× | 0.50× | 1.50× |
-| `provider_bedrock.stream_roundtrip` | 4,282.7 | 5,782.6 | 0.74× | 0.72× | 1.50× |
-| `provider_mistral.stream_roundtrip` | 2,052.5 | 1,928.5 | 1.06× | 1.27× | 3.00× |
-| `provider_openai_responses.stream_roundtrip` | 1,334.9 | 4,382.2 | 0.30× | 0.36× | 1.50× |
-| `provider_azure_openai.stream_roundtrip` | 1,348.7 | 4,064.5 | 0.33× | 0.35× | 1.50× |
-| `provider_vertex.stream_roundtrip` | 2,734.6 | 5,456.5 | 0.50× | 0.56× | 1.50× |
-| `provider_codex.stream_roundtrip` | 1,385.9 | 1,647.1 | 0.84× | 0.77× | 1.50× |
-| `cli_settings.create` | 116.3 | 876.6 | 0.13× | 0.12× | 1.50× |
-| `resource_loader.reload` | 593.6 | 1,525.7 | 0.39× | 0.19× | 1.50× |
-| `package_manager.resolve` | 219.9 | 521.3 | 0.42× | 0.24× | 1.50× |
-| `session_pipeline.session_load` | 2,677.7 | 1,464.6 | 1.83× | 1.98× | 9.00× |
-| `session_pipeline.context_walk` | 3.4 | 101.3 | 0.03× | 0.03× | 2.00× |
-| `storage_journal.journal_read` | 2,417.9 | 1,310.8 | 1.84× | 1.88× | 8.00× |
-| `storage_journal.journal_append` | 1,628.4 | 1,688.1 | 0.96× | 0.81× | 12.00× |
-| `sqlite_session.open_walk` | 6,376.3 | 26,668.4 | 0.24× | 0.24× | 1.50× |
-| `tool_read.text_file` | 1,443.9 | 4,288.3 | 0.34× | 0.42× | 8.00× |
-| `tool_grep.context_file` | 13,561.6 | 16,407.2 | 0.83× | 0.83× | 3.00× |
-| `agent_tool_loop.roundtrip` | 48.0 | 158.3 | 0.30× | 0.26× | 1.50× |
-| `session_compact.compact` | 35.7 | 39.9 | 0.89× | 0.93× | 20.00× |
+| `cli_dispatch.argv_parse` | 2.8 | 3.5 | 0.80× | 1.00× | 3.00× |
+| `cli_dispatch.help_render` | 0.1 | 0.9 | 0.06× | 0.08× | 6.00× |
+| `cli_dispatch.list_models_registry` | 2,276.4 | 4,187.7 | 0.54× | 0.55× | 1.50× |
+| `cli_dispatch.list_models_render` | 99.4 | 1,538.1 | 0.06× | 0.08× | 4.00× |
+| `provider_stream.stream_roundtrip` | 2,158.1 | 5,595.2 | 0.39× | 0.39× | 2.50× |
+| `provider_anthropic.stream_roundtrip` | 1,651.0 | 2,622.2 | 0.63× | 0.67× | 1.50× |
+| `provider_google.stream_roundtrip` | 2,706.1 | 7,063.7 | 0.38× | 0.46× | 1.50× |
+| `provider_bedrock.stream_roundtrip` | 4,418.7 | 6,694.7 | 0.66× | 0.74× | 1.50× |
+| `provider_mistral.stream_roundtrip` | 2,017.4 | 1,724.9 | 1.17× | 1.06× | 3.00× |
+| `provider_openai_responses.stream_roundtrip` | 1,390.8 | 4,593.1 | 0.30× | 0.30× | 1.50× |
+| `provider_azure_openai.stream_roundtrip` | 1,689.4 | 4,185.2 | 0.40× | 0.33× | 1.50× |
+| `provider_vertex.stream_roundtrip` | 3,370.7 | 5,946.7 | 0.57× | 0.50× | 1.50× |
+| `provider_codex.stream_roundtrip` | 1,392.7 | 1,364.4 | 1.02× | 0.84× | 1.50× |
+| `cli_settings.create` | 112.4 | 826.3 | 0.14× | 0.13× | 1.50× |
+| `resource_loader.reload` | 512.3 | 1,682.7 | 0.30× | 0.39× | 1.50× |
+| `package_manager.resolve` | 218.2 | 545.9 | 0.40× | 0.42× | 1.50× |
+| `session_pipeline.session_load` | 2,069.5 | 1,612.8 | 1.28× | 1.83× | 9.00× |
+| `session_pipeline.context_walk` | 3.1 | 106.7 | 0.03× | 0.03× | 2.00× |
+| `storage_journal.journal_read` | 1,638.1 | 1,559.1 | 1.05× | 1.84× | 8.00× |
+| `storage_journal.journal_append` | 1,822.4 | 2,303.3 | 0.79× | 0.96× | 12.00× |
+| `sqlite_session.open_walk` | 6,014.2 | 26,428.5 | 0.23× | 0.24× | 1.50× |
+| `tool_read.text_file` | 1,699.3 | 4,850.2 | 0.35× | 0.34× | 8.00× |
+| `tool_grep.context_file` | 16,309.3 | 18,297.2 | 0.89× | 0.83× | 3.00× |
+| `agent_tool_loop.roundtrip` | 51.4 | 237.0 | 0.22× | 0.30× | 1.50× |
+| `session_compact.compact` | 49.1 | 63.2 | 0.78× | 0.89× | 20.00× |
 
 | recordedAt (UTC) | label | git | quick | ratio_gate | append | read | load | list_models_render |
 |---|---|---|---|---|---:|---:|---:|---:|
@@ -734,6 +734,7 @@ Previous: `paired-paths` (2026-08-20T11:22:43Z) on `Friend-MachineD`, git `da3d7
 | 2026-08-20T08:19:08Z | paired-paths | `65623892aa30` | no | enforced | 0.88× | 1.62× | 1.83× | 0.07× |
 | 2026-08-20T11:22:43Z | paired-paths | `da3d7322ff33` | no | enforced | 0.81× | 1.88× | 1.98× | 0.07× |
 | 2026-08-20T11:45:33Z | paired-paths | `cda6c8f1ed93` | no | enforced | 0.96× | 1.84× | 1.83× | 0.08× |
+| 2026-08-20T11:58:27Z | paired-paths | `318822b1ccfb` | no | enforced | 0.79× | 1.05× | 1.28× | 0.06× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

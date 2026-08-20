@@ -11,9 +11,10 @@ tag/Release step.
 
 - Goal 20: inline walker string-scan helpers (`swar-eq-msb`,
   quote/backslash/ctrl masks, `octet-find-quote-or-backslash`)
-  into SCAN-KEY / PARSE-STRING-VALUE. sprof leftover after the
-  4-byte load: quote-scan 10.9% self. Not empty SWAR. Not intern.
-  Not FFI. Ceiling not lowered. Not G.17. Part P still `[open]`.
+  into SCAN-KEY / PARSE-STRING-VALUE. Friend-MachineD n=5: load
+  cadr **2678→2069 µs** (1.83×→**1.28×**), journal **2418→1638 µs**
+  (1.84×→**1.05×**). Not empty SWAR. Not intern. Not FFI. Ceiling
+  not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: inline 4-byte octet load (`octet-u32-le` compiler-macro
   + walker `%octet-u32-le`) on session JSONL SCAN-KEY / quote /
   LF / space. sprof `session_load` @ `335718c2e`: OCTET-U32-LE
