@@ -33,6 +33,7 @@ DIGITS unroll, ISO quote walk.
 `ParseJsonObject` + `BuildJsonObject` fills **one** JSObject from a
 scratch `SmallVector<JsonProperty,16>`. Lisp encoding: reuse one
 scratch bag per walker (SmallVector) and convert to the target
-message type at parse time (BuildJsonObject). `finalize-session-entry`
-still runs `message-from-json` on hash/EQUAL leftovers (v1 migrate,
-`open-jsonl-session-storage`). Not a second walk of walker output.
+message type at parse time (BuildJsonObject). `finalize-session-entry` and `journal_append` still call
+`message-from-json`; it is identity on cadr-ai messages and still
+converts hash/EQUAL leftovers (v1 migrate, `open-jsonl-session-storage`).
+Not a second walk of walker output.

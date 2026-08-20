@@ -527,6 +527,14 @@
          (cadr-ai:make-cost)))))
 
 (defun message-from-json (object)
+  ;; Walker parse-message and journal_append may already hold a
+  ;; cadr-ai message (V8 BuildJsonObject is idempotent). Hash
+  ;; leftovers and session-json-message bags still convert.
+  (when (or (typep object 'cadr-ai:user-message)
+            (typep object 'cadr-ai:assistant-message)
+            (typep object 'cadr-ai:tool-result-message)
+            (typep object 'bash-execution-message))
+    (return-from message-from-json object))
   (when (session-json-message-p object)
     (return-from message-from-json
       (let ((type (session-json-message-role object))

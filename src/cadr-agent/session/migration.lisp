@@ -1877,19 +1877,9 @@
                  (require-session-slot
                   (session-entry-message entry)
                   "message" path line-number)))
-           ;; Walker parse-message already BuildJsonObject'd
-           ;; to a cadr-ai message. Hash/EQUAL paths (v1
-           ;; migrate, jsonl-session-storage) still need
-           ;; message-from-json. Not "keep anything that
-           ;; is not a bag".
            (setf
             (session-entry-message entry)
-            (if (or (typep raw 'cadr-ai:user-message)
-                    (typep raw 'cadr-ai:assistant-message)
-                    (typep raw 'cadr-ai:tool-result-message)
-                    (typep raw 'bash-execution-message))
-                raw
-                (message-from-json raw)))))
+            (message-from-json raw))))
         (:thinking-level-change
          (let ((value
                  (require-session-slot
