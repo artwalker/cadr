@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: closed-set session/content/role ASCII intern
+  (`image`/`label`/`leaf`/`compaction`/session types). V8
+  InternalizeJsonString for short ASCII, not a growing intern
+  table. Not FFI. Not labels macrolet. Ceiling not lowered.
+  Not G.17. Part P still `[open]`.
 - Goal 20: withdraw closed-schema key dispatch (`789bec858`).
   Friend-MachineD n=5: load cadr **1958→1986 µs** (no win),
   journal **1563→1580 µs**. Reverted `157300eae`. Not labels
