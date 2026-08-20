@@ -447,12 +447,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 127,067 lines**
+Denominator: **295 files / 127,076 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 59 | 34,233 | 26.9% | `no worse than baseline` is falsifiable |
+| `paired` | 59 | 34,242 | 26.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `pairable-uncovered` | 212 | 85,359 | 67.2% | blocked by Part A hard condition 2 |
 
@@ -496,7 +496,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/loop/tool-execution.lisp` | 480 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 393 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |

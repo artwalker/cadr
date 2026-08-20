@@ -387,10 +387,19 @@ pipeline lives.")
                       (cadr-ai:tool-execution-mode
                        (prepared-tool-call-tool entry)))))
             prepared))
+         (runnable
+           (count-if
+            (lambda (entry)
+              (not (typep entry 'tool-outcome)))
+            prepared))
          (outcomes
            (make-array (length prepared)
                        :initial-element nil)))
-    (if parallel-p
+    ;; pi executeToolCallsParallel is Promise.all on the same
+    ;; event loop. One parallel tool still paid pthread_create
+    ;; (sprof pthread_sigmask 53% of agent_tool_loop). Spawn
+    ;; threads only when two or more calls actually run.
+    (if (and parallel-p (> runnable 1))
         (let ((threads nil))
           (loop for entry in prepared
                 for state in states

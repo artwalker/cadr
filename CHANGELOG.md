@@ -321,6 +321,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: one parallel tool runs inline (no
+  `pthread_create`). sprof leftover of `agent_tool_loop` was
+  `pthread_sigmask` 53%. pi `executeToolCallsParallel` is
+  `Promise.all` on the event loop. Identity 127067→127076.
+  Not intern. Not FFI. G.17 still `missing`. Part P still
+  `[open]`.
+
 - Goal 20 Part P: Friend-MachineD remesure of `a54c022f0`
   (n=5, enforced). `provider_mistral.stream_roundtrip`
   1.89×→**1.19×** (2149 / 1804 µs). Ceiling 3.0 not lowered.

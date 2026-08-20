@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127067 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127076 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -75,7 +75,7 @@ files with unrelated facilities fail.
 | `src/cadr-agent/harness-events.lisp` | 75 | 8 | Define the harness run lifecycle event bus: run-start/run-end events, typed subscriptions, and buffered watch. | pass | done | push / nreverse on watch flush. I0: record is O(1). | 20 |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | 8 | Own the public prompt/steer/follow-up entrypoints and outer agent lifecycle. | pass | done | early terminal exit. I0: no cond pyramid. | 20 |
 | `src/cadr-agent/loop/events.lisp` | 169 | 17 | Emit and normalize agent lifecycle, stream, queue, and tool events. | pass | no-rewrite | The tail-cons append cache at :131-164 is the parity-required O(1) queue idiom; vector-push-extend at :113 proves it was a deliberate interop choice. | 20 |
-| `src/cadr-agent/loop/tool-execution.lisp` | 480 | 19 | Execute tool batches with hooks, restarts, termination, updates, and abort state. | pass | done | map-into. I0: no index+aref fill. | 20 |
+| `src/cadr-agent/loop/tool-execution.lisp` | 489 | 19 | Execute tool batches with hooks, restarts, termination, updates, and abort state. | pass | done | map-into. I0: no index+aref fill. | 20 |
 | `src/cadr-agent/loop/turns.lisp` | 393 | 15 | Prepare, stream, retry, compact, and finalize one agent turn. | pass | done | abort-p keyword. I0: no one-field plist. | 20 |
 | `src/cadr-agent/messages.lisp` | 253 | 26 | Convert agent-specific message envelopes and file-operation summaries to model-facing messages. | pass | done | agent-message-to-llm generic. I0: unmatched types drop in one method. | 20 |
 | `src/cadr-agent/package.lisp` | 456 | 1 | Declare the public `cadr-agent` package surface. | pass | no-rewrite | The flat export list is CL's only wildcard-free contract form; zero logic to Lisp-ify. | 20 |
