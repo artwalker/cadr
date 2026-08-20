@@ -674,5 +674,7 @@ These must not be filed as callees.
 - No new H pair landed this knife.
 - `goal20-unpaired-paths.py` schema still three classes.
 - G.17 still `missing`. Part P still `[open]`.
-- Already-paired paths above 1.0× (load / read / argv / truncate)
+- Already-paired paths above 1.0× (load / journal_read / argv)
   stay in scope; this inventory does not pause them.
+  Truncate head/tail remesure `e2a4dfad6` is **0.70× / 0.82×** (<1).
+  Not P.13 complete. G.17 still `missing`. Part P still `[open]`.

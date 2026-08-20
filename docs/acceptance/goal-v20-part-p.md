@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Remesure `208838a39`: truncate_head 1.17× (667 / 570 µs); truncate_tail 1.47× (856 / 581 µs). Same ratios as `c074a85ec`. Ceiling unchanged. | remesure this booking. No `src/`. |
+| P.13 pairable coverage | leftover | Remesure `e2a4dfad6`: truncate_head **0.70×** (377 / 535 µs); truncate_tail **0.82×** (446 / 547 µs). Head/tail <1. Load **2.09×**, journal_read **1.97×** (`fc7819ad8`). Ceiling unchanged. Not P.13 complete. | booking only. G.17 still `missing`. Part P still `[open]`. |

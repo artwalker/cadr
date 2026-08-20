@@ -9,6 +9,9 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: P.13 inventory refresh. Truncate head/tail
+  `e2a4dfad6` **0.70× / 0.82×**. Load/journal still 2.09× / 1.97×.
+  Not P.13 complete. G.17 still `missing`. Part P still `[open]`.
 - Goal 20 Part H: Friend-MachineD remesure of `e2a4dfad6`
   `session_load` 2.09× (2957 / 1417 µs), `journal_read` 1.97×
   (2718 / 1382 µs). Ceilings 9.0 / 8.0 unchanged. sprof leftover
