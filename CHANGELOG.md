@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: Friend-MachineD n=5 remesure @ `ab251cd30` (no src).
+  Truncate head/tail **0.69× / 0.84×** (361.4 / 526.6 µs, 466.3 /
+  554.1 µs). load **1.17×** / journal **1.16×**. Ceiling not
+  lowered. Not G.17. Part P still `[open]`. Not P.13 complete.
 - Goal 20: withdraw closed-set session enum intern
   (`4de854bdd`). Friend-MachineD n=5: load cadr **1958→1976 µs**
   (no win), journal **1563→1668 µs**. Reverted `8018b6f53`.
