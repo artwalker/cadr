@@ -18,6 +18,12 @@ NIL means that the caller must send the original, uncompressed body."
 (defmethod prepare-provider-sse-request
     ((provider openai-codex-provider) request)
   (declare (ignore provider))
+  ;; Pi: one JSON.stringify, then zstdCompressSync only when Node zlib
+  ;; exposes it. stringify-json here is the compress input; without a
+  ;; compressor it is a second full payload walk — invoke-http-request
+  ;; already serializes :content. Skip that extra pass.
+  (unless *zstd-compress-function*
+    (return-from prepare-provider-sse-request request))
   (let ((compressed
           (compress-request-body-zstd
            (stringify-json (request-spec-payload request)))))

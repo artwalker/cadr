@@ -7,6 +7,13 @@ tag/Release step.
 
 ## [Unreleased]
 
+### Changed
+
+- Goal 20: Codex SSE prepare skips `stringify-json` when zstd is
+  unbound (pi stringifies the request body once). Pairing leftover
+  sprof `WRITE-JSON-STRING` 21.8%. Ceiling 1.5 not lowered. Not
+  G.17. Part P still `[open]`.
+
 ### Added
 
 - Goal 20 Part H: pair `provider_codex.stream_roundtrip`

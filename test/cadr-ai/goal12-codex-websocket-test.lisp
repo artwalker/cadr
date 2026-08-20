@@ -192,6 +192,28 @@
   (let ((cadr-ai::*zstd-compress-function* nil))
     (is (null (cadr-ai::compress-request-body-zstd "{\"ok\":true}")))))
 
+(test pairing-codex-sse-prepare-skips-stringify-without-zstd
+  ;; scripts/goal20-paired-paths.lisp provider_codex leftover:
+  ;; prepare-provider-sse-request used to stringify-json even when
+  ;; *zstd-compress-function* is nil. Pi JSON.stringify once.
+  (multiple-value-bind (provider model)
+      (goal12-codex-provider-and-model 1)
+    (let* ((cadr-ai::*zstd-compress-function* nil)
+           (request
+             (cadr-ai:build-request
+              provider model
+              (cadr-ai:make-context
+               :messages (list (cadr-ai:make-user-message :content "one")))
+              :stream-p t))
+           (prepared
+             (cadr-ai::prepare-provider-sse-request provider request)))
+      (is (eq request prepared))
+      (is (null (cadr-ai:request-spec-raw-body prepared)))
+      (is (null
+           (assoc "content-encoding"
+                  (cadr-ai:request-spec-headers prepared)
+                  :test #'string-equal))))))
+
 (test goal12-codex-debug-stats-reset-is-session-scoped-and-non-creating
   (cadr-ai:reset-openai-codex-websocket-debug-stats)
   (is (null

@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127076 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127082 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -163,7 +163,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | 10 | Decode AWS event-stream frames and issue Bedrock event requests. | pass | no-rewrite | Manual offset walking and CRC32 at :18-83 are a byte-fixed frame format; dep policy bars new libs, failures are signaled conditions. | 20 |
 | `src/cadr-ai/transport/http.lisp` | 831 | 42 | Implement abortable native HTTP/TLS transport, framing, and normalized errors. | pass · large | done | parsed-url-authority + signal-http-timeout. I0: one port, one timeout. | 20 |
 | `src/cadr-ai/types.lisp` | 207 | 21 | Define provider/model/message/content/tool/event value types and safe printers. | pass | done | defstruct constructor. I0: no 13-key wrapper. | 20 |
-| `src/cadr-ai/websocket.lisp` | 620 | 41 | Implement OpenAI Codex WebSocket framing, pooling, continuation, and provider dispatch. | pass · large | no-rewrite | json-value-equal-p at :403-404 matches the baseline's own JSON.stringify cache-admission comparison; hand-rolled SHA-1 justified by the dep policy. | 20 |
+| `src/cadr-ai/websocket.lisp` | 628 | 41 | Implement OpenAI Codex WebSocket framing, pooling, continuation, and provider dispatch. | pass · large | no-rewrite | json-value-equal-p at :403-404 matches the baseline's own JSON.stringify cache-admission comparison; hand-rolled SHA-1 justified by the dep policy. | 20 |
 
 ### 2.3 `cadr-cli`
 
