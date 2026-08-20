@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw ISO DIGITS unroll (`ebbea846f`).
+  Friend-MachineD n=5: load cadr **1857→1928 µs** (worse).
+  Reverted `7a3f07520`. V8 ParseNumber vs DIGITS flet; unroll
+  lost. Not SCAN-KEY macrolet. Not intern. Not FFI. Ceiling
+  not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: walker timestamp `ParseString` — fixed-width ISO
   then one quote (V8 sequential scan, not a per-byte walk).
   sprof load @ `7517049cb`: PARSE-TIMESTAMP-VALUE 3.3% self.
