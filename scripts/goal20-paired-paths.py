@@ -53,6 +53,7 @@ FIXTURE_NAMES = (
     "models.json",
     "anthropic-messages.sse",
     "google-generative-ai.sse",
+    "bedrock-converse-stream.bin",
     "openai-completions.sse",
     "provider-context.json",
     "session.jsonl",
@@ -68,6 +69,7 @@ METRICS = {
     "provider_stream": ("stream_roundtrip",),
     "provider_anthropic": ("stream_roundtrip",),
     "provider_google": ("stream_roundtrip",),
+    "provider_bedrock": ("stream_roundtrip",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -112,6 +114,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "provider_google.stream_roundtrip": 1.5,
+    # Frozen from the first Friend-MachineD non-quick provider_bedrock
+    # pair (samples=5): observed 0.67x (4316 / 6406 µs). cadr leads.
+    # 1.5 follows the list_models_registry / render_slicing precedent
+    # (headroom above 1.0). Ratchet down only.
+    "provider_bedrock.stream_roundtrip": 1.5,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -221,6 +228,15 @@ OBSERVED_EXACT = {
         "payload_tool_count",
     ),
     "provider_google": (
+        "content_block_types",
+        "stop_reason",
+        "text_characters",
+        "tool_call_count",
+        "usage_input",
+        "usage_output",
+        "payload_tool_count",
+    ),
+    "provider_bedrock": (
         "content_block_types",
         "stop_reason",
         "text_characters",

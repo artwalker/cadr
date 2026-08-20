@@ -16,6 +16,7 @@ import { createHash } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { crc32 } from "node:zlib";
 
 const projectDirectory = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const fixtureDirectory = path.join(projectDirectory, "test/fixtures/goal20-paired-paths");
@@ -362,6 +363,83 @@ function buildGoogleSseFixture() {
 	return `${lines.join("\n")}\n`;
 }
 
+function u32be(value) {
+	const buffer = Buffer.alloc(4);
+	buffer.writeUInt32BE(value >>> 0);
+	return buffer;
+}
+
+function awsEventStreamHeader(name, value) {
+	const nameBytes = Buffer.from(name, "utf8");
+	const valueBytes = Buffer.from(value, "utf8");
+	return Buffer.concat([
+		Buffer.from([nameBytes.length]),
+		nameBytes,
+		Buffer.from([7]),
+		Buffer.from([(valueBytes.length >> 8) & 0xff, valueBytes.length & 0xff]),
+		valueBytes,
+	]);
+}
+
+function awsEventStreamFrame(eventType, payload) {
+	const headers = Buffer.concat([
+		awsEventStreamHeader(":message-type", "event"),
+		awsEventStreamHeader(":event-type", eventType),
+		awsEventStreamHeader(":content-type", "application/json"),
+	]);
+	const payloadBytes = Buffer.from(JSON.stringify(payload), "utf8");
+	const totalLength = 16 + headers.length + payloadBytes.length;
+	const preludeBody = Buffer.concat([u32be(totalLength), u32be(headers.length)]);
+	const prelude = Buffer.concat([preludeBody, u32be(crc32(preludeBody))]);
+	const withoutMessageCrc = Buffer.concat([prelude, headers, payloadBytes]);
+	return Buffer.concat([withoutMessageCrc, u32be(crc32(withoutMessageCrc))]);
+}
+
+function buildBedrockEventStreamFixture() {
+	const frames = [];
+	frames.push(awsEventStreamFrame("messageStart", { role: "assistant" }));
+	for (let index = 0; index < SSE_TEXT_DELTA_COUNT; index += 1) {
+		const text = index % 8 === 7 ? `chunk-${index} 中文 🚀 ` : `chunk-${index} `;
+		frames.push(
+			awsEventStreamFrame("contentBlockDelta", {
+				contentBlockIndex: 0,
+				delta: { text },
+			}),
+		);
+	}
+	frames.push(awsEventStreamFrame("contentBlockStop", { contentBlockIndex: 0 }));
+	frames.push(
+		awsEventStreamFrame("contentBlockStart", {
+			contentBlockIndex: 1,
+			start: {
+				toolUse: { toolUseId: "call_goal20_read", name: "read" },
+			},
+		}),
+	);
+	frames.push(
+		awsEventStreamFrame("contentBlockDelta", {
+			contentBlockIndex: 1,
+			delta: {
+				toolUse: {
+					input: JSON.stringify({ path: "docs/example.md", offset: 1, limit: 4 }),
+				},
+			},
+		}),
+	);
+	frames.push(awsEventStreamFrame("contentBlockStop", { contentBlockIndex: 1 }));
+	frames.push(awsEventStreamFrame("messageStop", { stopReason: "tool_use" }));
+	frames.push(
+		awsEventStreamFrame("metadata", {
+			usage: {
+				inputTokens: 4096,
+				outputTokens: 512,
+				totalTokens: 4608,
+			},
+		}),
+	);
+	return Buffer.concat(frames);
+}
+
 function buildAnthropicSseFixture() {
 	const lines = [];
 	const event = (name, payload) => {
@@ -569,6 +647,7 @@ const artifacts = new Map([
 	["openai-completions.sse", buildSseFixture()],
 	["anthropic-messages.sse", buildAnthropicSseFixture()],
 	["google-generative-ai.sse", buildGoogleSseFixture()],
+	["bedrock-converse-stream.bin", buildBedrockEventStreamFixture()],
 	["models.json", `${JSON.stringify(buildModelsJson(), null, "\t")}\n`],
 	["auth.json", `${JSON.stringify(buildAuthJson(), null, "\t")}\n`],
 	["cli-argv.json", `${JSON.stringify(buildCliArgv(), null, "\t")}\n`],
@@ -580,7 +659,7 @@ const digests = {};
 const mismatches = [];
 for (const [name, text] of artifacts) {
 	const target = path.join(fixtureDirectory, name);
-	const bytes = Buffer.from(text, "utf8");
+	const bytes = Buffer.isBuffer(text) ? text : Buffer.from(text, "utf8");
 	digests[name] = createHash("sha256").update(bytes).digest("hex");
 	if (checkOnly) {
 		let current;

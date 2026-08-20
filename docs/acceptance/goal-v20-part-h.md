@@ -195,6 +195,20 @@ rejects `options.fetch`). No live socket. Observed `stop_reason` /
 `payload_tool_count` are exact. First Friend-MachineD freeze 0.58×
 (4378 / 7498 µs), ceiling 1.5.
 
+### Pair 12 — `provider_bedrock`
+
+| metric | cadr | pi |
+|---|---|---|
+| `stream_roundtrip` | `stream-chat` + `bedrock.lisp` + AWS event-stream | `stream` (`packages/ai/src/api/bedrock-converse-stream.ts`) |
+
+Same fixture bytes as the openai-completions pair's context, plus
+recorded Bedrock event-stream (`bedrock-converse-stream.bin`). Seam =
+`*http-request-function*` / stubbed Smithy `NodeHttpHandler` (SDK
+builds the client internally). Auth is a fixture bearer token. No live
+socket. Observed `stop_reason` / `tool_call_count` / `usage_*` /
+`text_characters` / `payload_tool_count` are exact. First
+Friend-MachineD freeze 0.67× (4316 / 6406 µs), ceiling 1.5.
+
 ## 2. How to run
 
 ```bash
@@ -395,18 +409,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 127,088 lines**
+Denominator: **295 files / 127,091 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 51 | 30,982 | 24.4% | `no worse than baseline` is falsifiable |
+| `paired` | 54 | 32,358 | 25.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 220 | 88,631 | 69.7% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 217 | 87,258 | 68.7% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 24.4% of lines (51 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 30.3% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 69.7% of lines.
+- **Falsifiable vs baseline:** 25.5% of lines (54 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 31.3% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 68.7% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -454,12 +468,15 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
+| `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/json.lisp` | 1,905 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
+| `src/cadr-ai/providers/bedrock.lisp` | 934 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/google.lisp` | 442 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 291 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -505,9 +522,9 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
 | `src/cadr-cli/bootstrap` | 5 | 5,632 |
 | `src/cadr-tui/mermaid` | 12 | 5,042 |
-| `src/cadr-ai/providers` | 10 | 3,997 |
 | `src/cadr-cli/extensions` | 9 | 3,489 |
 | `src/cadr-cli/packages` | 6 | 3,269 |
+| `src/cadr-ai/providers` | 9 | 3,066 |
 | `src/cadr-cli/sdk` | 8 | 2,471 |
 | `src/cadr-cli/modes` | 8 | 2,302 |
 | `src/cadr-cli/tools` | 7 | 2,166 |
@@ -518,18 +535,18 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/runtime` | 2 | 1,410 |
 | `src/cadr-cli/media.lisp` | 1 | 1,277 |
 | `src/cadr-cli/support` | 13 | 1,164 |
-| `src/cadr-ai/transport` | 2 | 1,053 |
 | `src/cadr-cli/settings` | 3 | 926 |
 | `src/cadr-ai/support` | 7 | 899 |
 | `src/cadr-agent/execution-env.lisp` | 1 | 855 |
 | `src/cadr-agent/schema.lisp` | 1 | 850 |
-| `src/cadr-ai/auth` | 5 | 842 |
+| `src/cadr-ai/transport` | 1 | 831 |
 | `src/cadr-ai/capabilities` | 6 | 751 |
 | `src/cadr-agent/resources.lisp` | 1 | 739 |
 | `src/cadr-evals/harness.lisp` | 1 | 737 |
 | `src/cadr-evals/summary.lisp` | 1 | 732 |
 | `src/cadr-tui/composition` | 2 | 705 |
 | `src/cadr-tui/terminal-image.lisp` | 1 | 686 |
+| `src/cadr-ai/auth` | 4 | 622 |
 | `src/cadr-ai/websocket.lisp` | 1 | 622 |
 | `src/cadr-protocol/schema.lisp` | 1 | 610 |
 | `src/cadr-agent/session` | 2 | 609 |

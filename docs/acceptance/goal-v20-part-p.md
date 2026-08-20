@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `provider_google.stream_roundtrip` first pair **0.58×** (4378 / 7498 µs), ceiling 1.5. `provider_anthropic.stream_roundtrip` **0.97×**. `session_compact.compact` **0.56×**. Load/journal still ~2×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
+| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `provider_bedrock.stream_roundtrip` first pair **0.67×** (4316 / 6406 µs), ceiling 1.5. `provider_google.stream_roundtrip` **0.58×**. `provider_anthropic.stream_roundtrip` **0.97×**. `session_compact.compact` **0.56×**. Load/journal still ~2×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |

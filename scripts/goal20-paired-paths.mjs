@@ -44,6 +44,7 @@ import {
 	writeFileSync,
 } from "node:fs";
 import { hostname, tmpdir } from "node:os";
+import { Readable } from "node:stream";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
@@ -127,6 +128,7 @@ const REPETITIONS = {
 	"provider_stream.stream_roundtrip": 10,
 	"provider_anthropic.stream_roundtrip": 10,
 	"provider_google.stream_roundtrip": 10,
+	"provider_bedrock.stream_roundtrip": 10,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -200,6 +202,7 @@ const fixtureNames = [
 	"models.json",
 	"anthropic-messages.sse",
 	"google-generative-ai.sse",
+	"bedrock-converse-stream.bin",
 	"openai-completions.sse",
 	"provider-context.json",
 	"session.jsonl",
@@ -215,6 +218,7 @@ const sessionFixturePath = path.join(fixtureDirectory, "session.jsonl");
 const sseFixturePath = path.join(fixtureDirectory, "openai-completions.sse");
 const anthropicSsePath = path.join(fixtureDirectory, "anthropic-messages.sse");
 const googleSsePath = path.join(fixtureDirectory, "google-generative-ai.sse");
+const bedrockEventStreamPath = path.join(fixtureDirectory, "bedrock-converse-stream.bin");
 const cliArgv = JSON.parse(readFileSync(path.join(fixtureDirectory, "cli-argv.json"), "utf8"));
 const providerContext = JSON.parse(
 	readFileSync(path.join(fixtureDirectory, "provider-context.json"), "utf8"),
@@ -280,6 +284,7 @@ const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nod
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
 const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
+const bedrockModule = await import(moduleUrl("packages/ai/src/api/bedrock-converse-stream.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
@@ -289,6 +294,7 @@ const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-st
 const { createRequire } = await import("node:module");
 const baselineRequire = createRequire(path.join(baselineDirectory, "package.json"));
 const { Type } = baselineRequire("typebox");
+const { NodeHttpHandler, NodeHttp2Handler } = baselineRequire("@smithy/node-http-handler");
 const compactionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/compaction/compaction.ts")
 );
@@ -613,6 +619,87 @@ async function measureProviderGoogle() {
 	return {
 		stream_roundtrip: await collect("provider_google.stream_roundtrip", () => {
 			return () => runProviderGoogle(false);
+		}),
+		observed: {
+			content_block_types: observed.message.content.map((block) => block.type),
+			stop_reason: observed.message.stopReason,
+			text_characters: [...text].length,
+			tool_call_count: observed.message.content.filter((block) => block.type === "toolCall").length,
+			usage_input: observed.message.usage.input,
+			usage_output: observed.message.usage.output,
+			payload_tool_count: Array.isArray(tools) ? tools.length : 0,
+		},
+	};
+}
+
+const bedrockModel = {
+	id: "us.anthropic.claude-sonnet-4-5",
+	name: "Goal 20 Bedrock",
+	api: "bedrock-converse-stream",
+	provider: "amazon-bedrock",
+	baseUrl: "https://bedrock-runtime.us-east-1.amazonaws.com",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 128000,
+	maxTokens: 16384,
+};
+
+function recordedBedrockHttpHandle() {
+	return {
+		response: {
+			statusCode: 200,
+			headers: {
+				"content-type": "application/vnd.amazon.eventstream",
+				"x-amzn-requestid": "goal20-bedrock",
+			},
+			body: Readable.from([readFileSync(bedrockEventStreamPath)]),
+		},
+	};
+}
+
+async function runProviderBedrock(collectEvents) {
+	// stream() builds BedrockRuntimeClient internally. Stub Smithy HTTP
+	// so ConverseStream still deserializes recorded event-stream bytes
+	// without a live AWS socket.
+	const events = collectEvents ? [] : undefined;
+	let payload;
+	const originalHttp1 = NodeHttpHandler.prototype.handle;
+	const originalHttp2 = NodeHttp2Handler.prototype.handle;
+	NodeHttpHandler.prototype.handle = recordedBedrockHttpHandle;
+	NodeHttp2Handler.prototype.handle = recordedBedrockHttpHandle;
+	try {
+		const stream = bedrockModule.stream(bedrockModel, providerContext, {
+			apiKey: "goal20-paired-paths-not-a-real-key",
+			maxRetries: 0,
+			env: { AWS_BEDROCK_FORCE_HTTP1: "1" },
+			onPayload: (value) => {
+				payload = value;
+				return undefined;
+			},
+		});
+		for await (const event of stream) events?.push(event.type);
+		const message = await stream.result();
+		return { events, message, payload };
+	} finally {
+		NodeHttpHandler.prototype.handle = originalHttp1;
+		NodeHttp2Handler.prototype.handle = originalHttp2;
+	}
+}
+
+async function measureProviderBedrock() {
+	const observed = await runProviderBedrock(true);
+	if (observed.message.stopReason !== "toolUse") {
+		throw new Error(`bedrock fixture stream produced stopReason ${observed.message.stopReason}`);
+	}
+	const text = observed.message.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("");
+	const tools = observed.payload?.toolConfig?.tools;
+	return {
+		stream_roundtrip: await collect("provider_bedrock.stream_roundtrip", () => {
+			return () => runProviderBedrock(false);
 		}),
 		observed: {
 			content_block_types: observed.message.content.map((block) => block.type),
@@ -1216,6 +1303,8 @@ process.stderr.write("goal20 pi paired paths: provider_anthropic\n");
 const providerAnthropic = await measureProviderAnthropic();
 process.stderr.write("goal20 pi paired paths: provider_google\n");
 const providerGoogle = await measureProviderGoogle();
+process.stderr.write("goal20 pi paired paths: provider_bedrock\n");
+const providerBedrock = await measureProviderBedrock();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -1237,6 +1326,7 @@ const result = {
 			"provider_stream.stream_roundtrip": "packages/ai/src/api/openai-completions.ts stream",
 			"provider_anthropic.stream_roundtrip": "packages/ai/src/api/anthropic-messages.ts stream",
 			"provider_google.stream_roundtrip": "packages/ai/src/api/google-generative-ai.ts stream",
+			"provider_bedrock.stream_roundtrip": "packages/ai/src/api/bedrock-converse-stream.ts stream",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -1290,6 +1380,7 @@ const result = {
 		session_compact: sessionCompact,
 		provider_anthropic: providerAnthropic,
 		provider_google: providerGoogle,
+		provider_bedrock: providerBedrock,
 		render_slicing: renderSlicing,
 	},
 };

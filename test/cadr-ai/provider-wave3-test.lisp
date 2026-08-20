@@ -322,6 +322,21 @@ region = eu-central-1")))
          (cadr-ai:request-spec-headers request)
          :test #'string-equal))))))
 
+(test bedrock-sanitize-keeps-string-document-members
+  (let ((sanitized
+          (cadr-ai::sanitize-bedrock-document
+           (cadr-ai::json-object
+            "path" "src/example.ts"
+            "" "drop-empty-key"
+            "nested"
+            (cadr-ai::json-array "keep")))))
+    (is (string= "src/example.ts"
+                 (cadr-ai::json-get sanitized "path")))
+    (is (not (cadr-ai::json-present-p sanitized "")))
+    (is (equalp
+         (cadr-ai::json-array "keep")
+         (cadr-ai::json-get sanitized "nested")))))
+
 (test bedrock-conversion-groups-results-and-gates-strict-tools
   (multiple-value-bind (provider model)
       (cadr-ai:instantiate-provider

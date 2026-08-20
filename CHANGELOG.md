@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `provider_bedrock.stream_roundtrip`
+  (recorded Bedrock event-stream, no socket). Production
+  `stream-chat` vs `bedrock-converse-stream.ts stream`. Same
+  `provider-context.json`. Seam is `*http-request-function*` /
+  stubbed Smithy `NodeHttpHandler`. Auth is a fixture bearer.
+  First Friend-MachineD freeze 0.67× (4316 / 6406 µs), ceiling
+  1.5. `sanitize-bedrock-document` keeps JSON strings atomic
+  (CL strings are character vectors). Identity 127088→127091.
+  Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `provider_google.stream_roundtrip`
   (recorded Gemini SSE, no socket). Production `stream-chat` vs
   `google-generative-ai.ts stream`. Same `provider-context.json`.

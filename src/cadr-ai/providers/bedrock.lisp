@@ -154,7 +154,10 @@
 (defun sanitize-bedrock-document (value)
   ;; Baseline bedrock-converse-stream.ts sanitizeBedrockDocument: Bedrock
   ;; documents reject empty member names; drop them recursively.
+  ;; Strings are vectors of characters in CL; keep them atomic.
   (cond
+    ((or (stringp value) (null value) (eq t value) (numberp value))
+     value)
     ((vectorp value)
      (map 'vector #'sanitize-bedrock-document value))
     ((hash-table-p value)

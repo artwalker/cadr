@@ -62,6 +62,13 @@
                          :provider :google
                          :api :google-generative-ai
                          :base-url "https://generativelanguage.googleapis.com/v1beta"
+                         :max-tokens 4096)))
+    (:bedrock
+     (values (make-bedrock-provider :api-key "bedrock-test")
+             (make-model :id "us.anthropic.claude-sonnet-4-5"
+                         :provider :amazon-bedrock
+                         :api :bedrock-converse-stream
+                         :base-url "https://bedrock-runtime.us-east-1.amazonaws.com"
                          :max-tokens 4096)))))
 
 (defun first-text (message)

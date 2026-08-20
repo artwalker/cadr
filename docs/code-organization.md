@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127088 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127091 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -140,7 +140,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | 16 | Implement Anthropic Messages request, response, cache, tool, and stream semantics. | pass · large | done | pop traversal. I0: no nth on prepared. | 20 |
 | `src/cadr-ai/providers/google.lisp` | 442 | 20 | Implement Google Generative AI request, thinking, response, and stream semantics. | pass · large | done | google-gemini-3-model-p. I0: one tool-id sniff. | 20 |
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | 12 | Adapt Azure, Copilot, and Cloudflare OpenAI-compatible endpoints and headers. | pass | done | &rest/apply build-request. I0: one keyword list. | 20 |
-| `src/cadr-ai/providers/bedrock.lisp` | 931 | 34 | Implement Bedrock Converse payloads, SigV4 request metadata, event reduction, and complete responses. | pass · large | done | bedrock-sigv4-headers. I0: one sigv4 bind. | 20 |
+| `src/cadr-ai/providers/bedrock.lisp` | 934 | 34 | Implement Bedrock Converse payloads, SigV4 request metadata, event reduction, and complete responses. | pass · large | done | bedrock-sigv4-headers. I0: one sigv4 bind. | 20 |
 | `src/cadr-ai/providers/codex.lisp` | 35 | 1 | Adapt the OpenAI Codex Responses request contract. | pass | no-rewrite | Post-build remhash at :28-33 reuses the OpenAI builder and applies a two-key delta — the correct reuse shape, not a copy. | 20 |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | 4 | Adapt Mistral Conversations reasoning and tool-call identifiers. | pass | done | affinity-p. I0: one session/cache decision. | 20 |
 | `src/cadr-ai/providers/pi-messages.lisp` | 255 | 6 | Implement pi Messages request rewriting and event/response reduction. | pass | done | block-indices stores the block. I0: no nth. | 20 |
