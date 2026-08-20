@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw content exact-length / `svref` fill
+  (item 10 D). Friend-MachineD n=5: load cadr **1763→1838 µs**
+  (worse). Product restored. Not bag reuse. Ceiling not
+  lowered. Not G.17.
 - Goal 20: put-message-field first-byte dispatch (proposal 3).
   Friend-MachineD n=5 load **1821→1763 µs**. Not length-case.
   Not bag reuse. Ceiling not lowered. Not G.17.

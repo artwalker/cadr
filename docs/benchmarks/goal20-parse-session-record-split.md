@@ -73,6 +73,13 @@ Proposal 3. `case` on the first key byte, then the small
 same-initial-letter set. Not length-case. Friend-MachineD
 n=5: load cadr **1821→1763 µs** (keep). Ceiling not lowered.
 
+## Knife (falsified) — content exact-length / svref
+
+Item 10 D: one-pass simple-vector `svref` fill then exact-length
+list (not `nreverse`, not bag reuse). Friend-MachineD n=5: load
+cadr **1763→1838 µs** (worse; samples 1793–2185). Withdrawn.
+Do not redo this fill. Not intern. Not FFI. Ceiling not lowered.
+
 ## Next knife (adjudication 2026-08-21 item 11)
 
 **Knife 1 remesured and withdrawn.** Knife 2 (content
