@@ -3,8 +3,9 @@
 Spec: `goal20-draft.md` 十B (incl. 「Callee / 屠龙」).
 Rulings: `docs/adjudications.md` 2026-08-18 CL ceiling
 (`1a24eea1d`); 2026-08-20 beat-pi / study-callee; 2026-08-20
-bucket-split / empty ⚑ ≠ exhausted. Floor is still pi; beating
-pi is not a stop. DS audit Class C:
+bucket-split / empty ⚑ ≠ exhausted; 2026-08-20 study shape,
+not port the V8 VM. Floor is still pi; beating pi is not a
+stop. DS audit Class C:
 `docs/acceptance/goal-v20-ds-audit.md`.
 
 Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`,
@@ -17,11 +18,14 @@ deferred live play (reopen if a defect appears).
 Not a Goal 20 pass.
 
 **Load leftover method (not G.17):** bucket-split
-`PARSE-SESSION-RECORD-OCTETS` (child cadr µs + V8 `Parse*`
-names) before <3% self polish or empty ⚑. Call-boundary inlines
-won; several V8-named micro knives withdrew on cadr µs — see
-`docs/benchmarks/goal20-session-load-sprof-d0c88ddd2.md` and
-compare archive.
+`PARSE-SESSION-RECORD-OCTETS` (child cadr µs) **and** open the
+matching V8 source step (what it does less of) before a knife.
+Name-only `Parse*` stickers are not essence. Do not require
+HiddenClass/Zone/HandleScope ports. Knife not landed without
+green `test-cl.sh` + Friend-MachineD cadr µs. Call-boundary
+inlines won; several V8-named micro knives withdrew — see
+`docs/benchmarks/goal20-session-load-sprof-d0c88ddd2.md`,
+`docs/benchmarks/goal20-parse-session-record-split.md`.
 
 ## P.1–P.11
 

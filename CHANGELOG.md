@@ -9,9 +9,17 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: adjudicate study-shape vs port-V8-VM —
+  `docs/adjudications.md`; tighten Part P / Class C Method
+  (name stickers ≠ essence; no required HiddenClass/Zone;
+  knife needs green tests + Friend-MachineD cadr µs). Local
+  `goal20-draft.md` 十B synced (gitignored). Not G.17.
+  Part P still `[open]`.
 - Goal 20: parse-message reuses one scratch
   `session-json-message` then `message-from-json` (V8
-  SmallVector then BuildJsonObject). Split-bucket note
+  SmallVector then BuildJsonObject). `message-from-json`
+  is identity on cadr-ai messages (journal_append /
+  finalize re-entry). Split-bucket note
   `docs/benchmarks/goal20-parse-session-record-split.md`.
   Not labels macrolet. Not intern. Not FFI. Ceiling not
   lowered. Not G.17. Part P still `[open]`.

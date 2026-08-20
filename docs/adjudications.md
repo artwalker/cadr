@@ -769,3 +769,36 @@ the win in Lisp.
 
 **Why it was decidable**: user asked whether the board
 guidance was in the goal; agreed to land it in-repo.
+
+## 2026-08-20 — Study algorithm shape, not port the V8 VM
+
+**Ruled**: user (2026-08-20 22:41–22:50). Advisor agrees.
+
+**Decided**:
+
+1. **Study** means open the callee hot path
+   (`json-parser.cc` / `.h`, or the named file for that
+   step) and write what it **does less of** (allocations,
+   key lookup, string copy, one-shot object build, …).
+   Mapping cadr symbols to `Parse*` / `BuildJsonObject`
+   names **without** that contrast is superficial and is
+   not "essence found".
+2. **Not required** (and not a stop if absent): porting
+   V8 tokenizer, `HandleScope`, HiddenClass/Map transitions,
+   Zone allocator, smi vs heap number, or linking
+   V8 / simdjson / yyjson. Those are VM/runtime machinery;
+   the goal is a Lisp encoding of the computational win
+   (or a falsifiably better DS) at same observable behavior.
+3. Bucket-split notes must pair **cadr child µs** with that
+   source-level contrast for the expensive child — not only
+   a V8 name column.
+4. A knife is **not landed** until `scripts/test-cl.sh` is
+   green and Friend-MachineD non-quick reports **cadr µs**
+   (keep if better or flat-for-noise; revert if worse).
+5. Pointers: this file; `goal20-draft.md` 十B; Class C /
+   Method in `goal-v20-ds-audit.md`; `goal-v20-part-p.md`.
+
+**Why it was decidable**: user asked whether shape-only
+study without dumping the V8 tree is mere skin; agreed to
+land the distinction in-repo.
+

@@ -44,8 +44,8 @@ worse walker. It does **not** mean "park load/read forever" or
 "product knife blocked". When the hot cost is a callee
 (`JSON.parse` → V8, …), open that software's algorithm/DS and
 Lisp-encode the essence. See `docs/adjudications.md`
-2026-08-20 (beat pi; study the callee) and (bucket-split; empty
-⚑ ≠ exhausted).
+2026-08-20 (beat pi; study the callee), (bucket-split; empty
+⚑ ≠ exhausted), and (study shape, not port the V8 VM).
 
 | path | why it is a different question | next |
 |---|---|---|
@@ -61,6 +61,10 @@ Lisp-encode the essence. See `docs/adjudications.md`
 3. Name cadr's. If they differ, the knife is the copy (Lisp encoding).
 4. If they match, sprof that implementation — not a third algorithm.
 5. If the hot cost is a **callee** (V8/`JSON.parse`, …), open that
-   callee's algorithm/DS (study ≠ FFI). If sprof names a high-total
-   **parent**, bucket-split children before polishing <3% self or
-   raising an empty ⚑.
+   callee's algorithm/DS (study ≠ FFI). Write what it does **less
+   of** at the expensive step — not only a `Parse*` name sticker.
+   Do not require porting HiddenClass / Zone / HandleScope /
+   tokenizer. If sprof names a high-total **parent**, bucket-split
+   children before polishing <3% self or raising an empty ⚑.
+   A knife is not landed without green tests + Friend-MachineD
+   cadr µs.
