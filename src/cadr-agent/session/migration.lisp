@@ -2083,27 +2083,35 @@
           (session-failure
            pathname nil
            "Cannot migrate session to v3: ~A" cause))))
-    (let ((by-id
-            (make-hash-table
-             :test #'equal
-             :size (max 8 (length (rest objects)))))
-          (labels (make-hash-table :test #'equal :size 8))
-          (session-name nil)
-          (entries nil)
-          (line-number 1))
-      (dolist (object (rest objects))
+    ;; pi _buildIndex: walk FileEntry[] in order, Map by id, last
+    ;; non-header is leaf. Lisp encoding is a simple-vector of the
+    ;; parsed records. Runtime %entries stays a cons list for O(1)
+    ;; append. Not a third JSON parser. Not :size. Not intern.
+    (let* ((records (coerce (rest objects) 'simple-vector))
+           (count (length records))
+           (by-id (make-hash-table :test #'equal))
+           (labels (make-hash-table :test #'equal))
+           (session-name nil)
+           (entries nil)
+           (entries-tail nil)
+           (line-number 1))
+      (declare (type simple-vector records)
+               (type fixnum count line-number))
+      (loop for index of-type fixnum from 0 below count
+            for object = (aref records index)
+            do
         (incf line-number)
         (let ((entry
                 (handler-case
                     (record-to-session-entry
                      object pathname line-number by-id)
-           (session-error (condition)
-             (error condition))
-           (error (cause)
-             (session-failure
-              pathname line-number
-              "Invalid session record at line ~D: ~A"
-              line-number cause)))))
+                  (session-error (condition)
+                    (error condition))
+                  (error (cause)
+                    (session-failure
+                     pathname line-number
+                     "Invalid session record at line ~D: ~A"
+                     line-number cause)))))
           (when (eq :label (session-entry-type entry))
             (if
                 (and
@@ -2134,8 +2142,12 @@
                    '(#\Space #\Tab)
                    name)))
                 name))))
-          (push entry entries)))
-      (setf entries (nreverse entries))
+          (let ((cell (list entry)))
+            (if entries-tail
+                (setf (cdr entries-tail) cell
+                      entries-tail cell)
+                (setf entries cell
+                      entries-tail cell)))))
       (let* ((timestamp
                (iso8601-to-milliseconds
                 (session-header-ref
@@ -2162,12 +2174,12 @@
        :name session-name
        :labels labels
        :%entries entries
-       :%entries-tail (last entries)
+       :%entries-tail entries-tail
        :%entries-tail-head entries
        :by-id by-id
        :persisted-p t
        :modified-timestamp modified-timestamp
        :leaf-id
-       (and entries
+       (and entries-tail
             (session-entry-id
-             (car (last entries)))))))))
+             (car entries-tail))))))))

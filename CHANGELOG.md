@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: `load-session` indexes a simple-vector of
+  parsed records (pi `FileEntry[]` + `_buildIndex`). Runtime
+  `%entries` stays a cons list. Not a third JSON parser. Not
+  intern. Not `:size`. Identity 127038→127050. FiveAM
+  19567→19571. G.17 still `missing`.
 - Goal 20 Part P: P.13 inventory refresh. Truncate head/tail
   `e2a4dfad6` **0.70× / 0.82×**. Load/journal still 2.09× / 1.97×.
   Not P.13 complete. G.17 still `missing`. Part P still `[open]`.

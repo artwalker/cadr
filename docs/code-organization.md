@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127038 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127050 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -87,7 +87,7 @@ files with unrelated facilities fail.
 | `src/cadr-agent/session/discovery.lisp` | 154 | 5 | Discover, list, continue, and resolve session files. | pass | no-rewrite | The octet loop at :41-77 implements the byte-counted 1MiB scan cap with mid-line cutoff and per-line :skip — inexpressible with read-line. | 20 |
 | `src/cadr-agent/session/export-html.lisp` | 455 | 24 | Embed assets and export a session as baseline-compatible offline HTML. | pass | no-rewrite | String-keyed color alists at :46-152 must stay string-keyed (camelCase CSS vars are the byte contract); hand-rolled base64 honors the no-new-deps policy. | 20 |
 | `src/cadr-agent/session/journal.lisp` | 679 | 33 | Create, append, branch, label, and inspect the live JSONL session journal. | pass | done | binary journal fd + reused octet buffer. I0: one details/usage emit. | 20 |
-| `src/cadr-agent/session/migration.lisp` | 2173 | 42 | Validate and migrate v1/v2/v3 session logs with atomic replacement. | pass | done | SCAN-KEY/PARSE-STRING skip quote via two ub32 haszero. I0: intern once. | 20 |
+| `src/cadr-agent/session/migration.lisp` | 2185 | 42 | Validate and migrate v1/v2/v3 session logs with atomic replacement. | pass | done | SCAN-KEY/PARSE-STRING skip quote via two ub32 haszero. Load indexes a simple-vector of parsed records. I0: intern once. | 20 |
 | `src/cadr-agent/sqlite-storage.lisp` | 834 | 33 | Implement the SQLite session-storage and repository backend. | pass · large | done | one model/level bind; model-plist-from-entry. I0: one current-model owner. | 20 |
 | `src/cadr-agent/storage/harness.lisp` | 476 | 31 | Adapt session-storage backends to harness session lifecycle operations. | pass | done | model-plist-from-entry. I0: same current-model owner as sqlite. | 20 |
 | `src/cadr-agent/storage/jsonl.lisp` | 536 | 21 | Implement JSONL session storage and repository backends. | pass | no-rewrite | Manual path joining at :315-352 is required — execution-env paths are opaque possibly-non-local strings and the filename encoding is the byte contract. | 20 |

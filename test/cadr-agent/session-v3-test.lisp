@@ -508,6 +508,48 @@
              (message-texts
               (cadr-agent:session-messages loaded))))))))
 
+(test load-session-index-follows-file-entry-order
+  ;; pi _buildIndex walks FileEntry[] in order. Lisp encoding is a
+  ;; simple-vector of parsed records. Drives shipped load-session,
+  ;; not a reimplementation. File bytes unchanged.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd :id "index"
+              :timestamp 100))
+           (path (cadr-agent:session-path session)))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "one" :timestamp 101))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-assistant-message
+        :content (list (cadr-ai:make-text-content :text "two"))
+        :api :openai-responses
+        :provider :openai
+        :model "mock"
+        :stop-reason :stop
+        :timestamp 102))
+      (let* ((before (uiop:read-file-string path))
+             (objects (cadr-agent::read-session-objects path))
+             (loaded (cadr-agent:load-session path))
+             (after (uiop:read-file-string path))
+             (file-ids
+               (mapcar #'cadr-agent::session-entry-id (rest objects)))
+             (loaded-ids
+               (mapcar #'cadr-agent::session-entry-id
+                       (cadr-agent:session-entries loaded))))
+        (is (string= before after))
+        (is (equal file-ids loaded-ids))
+        (is (string= (car (last file-ids))
+                     (cadr-agent:session-leaf-id loaded)))
+        (is (eq
+             (first (cadr-agent:session-entries loaded))
+             (gethash
+              (first file-ids)
+              (cadr-agent::session-by-id loaded))))))))
+
 (test session-header-fills-typed-struct-not-hash
   ;; First JSONL line fills session-file-header.  Not EQUAL hash.
   ;; File bytes stay stringify.  Not intern.  Not FFI.
