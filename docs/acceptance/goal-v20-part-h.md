@@ -535,12 +535,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 127,132 lines**
+Denominator: **295 files / 127,127 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 69 | 37,437 | 29.4% | `no worse than baseline` is falsifiable |
+| `paired` | 69 | 37,432 | 29.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `pairable-uncovered` | 202 | 82,220 | 64.7% | blocked by Part A hard condition 2 |
 
@@ -590,7 +590,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
-| `src/cadr-agent/session/migration.lisp` | 2,220 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-agent/session/migration.lisp` | 2,215 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
 | `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |

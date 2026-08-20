@@ -9,10 +9,6 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20: inline walker `scan-key` as macrolet (V8 object
-  descent property-name scan). sprof load @ `4f273aa9c`:
-  SCAN-KEY 8.7% self. Not empty SWAR. Not intern. Not FFI.
-  Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: inline walker `skip-space` / `expect-code` as
   macrolet (V8 SkipWhiteSpace / Expect in the descent). sprof
   load @ `9b1678b20`: SKIP-SPACE 8.2% self, EXPECT-CODE 3.5%.
