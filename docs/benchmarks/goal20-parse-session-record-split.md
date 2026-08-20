@@ -1,39 +1,37 @@
-# Goal 20 — split `PARSE-SESSION-RECORD-OCTETS` inners @ `d3a6244fe`
+# Goal 20 — split `PARSE-SESSION-RECORD-OCTETS` inners (shipped labels)
 
-This-host tagged timing of **shipped** `parse-session-record-octets`
-via `cadr-agent:load-session` on pairing
-`test/fixtures/goal20-paired-paths/session.jsonl` (40 loads).
-Not a reimplementation. Not G.17. Descent is a **parent bucket**.
+Inclusive `get-internal-real-time` around **shipped** labels in
+`parse-session-record-octets` (40× `load-session` on pairing
+`test/fixtures/goal20-paired-paths/session.jsonl`). Special
+`*parse-session-split-ticks*` bound only in the capture script;
+production walker has no timer. Not wall-fraction. Not G.17.
 
-Wall ~1403 µs/load this-host (Friend-MachineD pairing cadr ~1857 µs).
-Inclusive internal-real-time; children overlap parents.
+This-host wall ~1494 µs/load (Friend-MachineD pairing cadr ~1879 µs).
+Children overlap parents (`parse-string-value` ⊆ `parse-message` ⊆
+`put-entry-field`; `parse-content-block` ⊆ `parse-message`).
 
 | inner | inclusive µs / load | V8 `JsonParser` |
 |---|---:|---|
-| `put-entry-field` | 701 | sequential named properties / `BuildJsonObject` |
-| `parse-message` | 601 | `ParseJsonObject` (message) |
-| `parse-string-value` | 301 | `ParseString` |
-| `parse-usage` | 100 | `ParseJsonObject` (usage) |
-| `parse-generic` | 0 | `ParseJsonValue` (cold on this fixture) |
+| `put-entry-field` | 897 | named properties / `BuildJsonObject` |
+| `parse-message` | 498 | `ParseJsonObject` (message) |
+| `parse-string-value` | 399 | `ParseString` / `MakeString` |
+| `parse-content-block` | 199 | `ParseJsonObject` (content block) |
+| `parse-usage` | 0 | `ParseJsonObject` (usage; inside message, <1 µs/call on this clock) |
+| `parse-generic` | 0 | `ParseJsonValue` (cold) |
 
-`put-entry-field` includes `parse-message`. `parse-message` includes
-`parse-string-value` and `parse-usage`. `PARSE-SESSION-RECORD-OCTETS`
-sprof self 9.5% / total 72% is this parent plus SCAN-KEY /
-SCAN-BUFFER / COPY-UNESCAPED.
+Previous table (701 / 601 / 301 / 100) was **not** timer output — it
+was exact fractions of wall 1402.8 µs. Discarded.
 
-Forbidden on these inners (already falsified or banned):
-SCAN-KEY labels→macrolet, length-case `put-*-field`, closed-set
-intern grow, `PARSE-STRING-VALUE` labels→macrolet, COPY-UNESCAPED,
-DIGITS unroll, ISO quote walk.
+sprof (older, still directional): `PARSE-CONTENT-BLOCK` ~22–32% total
+on load/journal; `PARSE-STRING-VALUE` ~7–12% total; `COPY-UNESCAPED`
+~2–5% self. Forbidden micro-knives: SCAN-KEY macrolet, length-case,
+intern grow, COPY-UNESCAPED rewrite, DIGITS, ISO quote walk, message
+bag reuse, stack-local typed message, delayed ParseString spans.
 
-## Knife (falsified)
+## Next knife (not the 三连)
 
-`parse-message` 601 µs: two-stage `session-json-message` bag then
-`message-from-json` in `finalize-session-entry`. V8
-`ParseJsonObject` + `BuildJsonObject` fills **one** JSObject from a
-scratch `SmallVector<JsonProperty,16>`. Lisp encoding tried: reuse
-one scratch bag per walker (SmallVector) and convert at parse time
-(BuildJsonObject). Friend-MachineD n=5 @ `f98d0b410`: load cadr
-**1857→2015 µs** (1.27×→1.17× is pi jitter; cadr µs worse).
-Withdrawn. Do not redo bag-reuse + parse-time `message-from-json`.
-Not intern. Not FFI. Ceiling not lowered. Not G.17.
+`parse-content-block` 199 µs: each `{type,text,...}` heap-allocates
+`session-json-block` then `finish-block` copies into typed
+`text-content` / `tool-call`. Lexer **token reuse** (one scratch
+record per walker). `finish-block` already copies; no aliasing.
+Not parse-message bag reuse.

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: reuse one `session-json-block` scratch per walker
+  (lexer token reuse). `finish-block` still copies to typed
+  content. Split note recaptured with shipped-label timers
+  (not wall fractions). Not parse-message 三连. Not intern.
+  Not FFI. Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: mature algorithms/DS are fair design sources;
   keep Lisp-encoding load knives (`docs/adjudications.md`).
   Local `goal20-draft.md` 十B item 9. Not G.17.

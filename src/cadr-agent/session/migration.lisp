@@ -288,7 +288,8 @@
          (position start)
          (length (or end (length octets)))
          (entry (make-session-entry))
-         (string-buffer nil))
+         (string-buffer nil)
+         (block-bag (make-session-json-block)))
     (declare (type (simple-array (unsigned-byte 8) (*)) octets)
              (type fixnum position length))
     (macrolet ((peek-code ()
@@ -744,29 +745,36 @@
                  (t
                   (skip-value)))))
            (parse-content-block ()
-             (let ((block (make-session-json-block)))
-               (expect-code 123)
-               (skip-space)
-               (unless (eql (peek-code) 125)
-                 (loop
-                   (multiple-value-bind (key-start key-end)
-                       (scan-key)
-                     (skip-space)
-                     (expect-code 58)
-                     (skip-space)
-                     (if key-start
-                         (put-block-field block key-start key-end)
-                         (skip-value)))
+             ;; Lexer token reuse: one session-json-block scratch
+             ;; per walker. finish-block copies into typed content
+             ;; so the bag is not aliased. Not parse-message bag
+             ;; reuse. Not intern. Not FFI.
+             (setf (session-json-block-type block-bag) nil
+                   (session-json-block-primary block-bag) nil
+                   (session-json-block-secondary block-bag) nil
+                   (session-json-block-extra block-bag) nil)
+             (expect-code 123)
+             (skip-space)
+             (unless (eql (peek-code) 125)
+               (loop
+                 (multiple-value-bind (key-start key-end)
+                     (scan-key)
                    (skip-space)
-                   (let ((code (peek-code)))
-                     (cond
-                       ((eql code 44)
-                        (take-code)
-                        (skip-space))
-                       ((eql code 125) (return))
-                       (t (fail "Expected comma or }"))))))
-               (expect-code 125)
-               (finish-block block)))
+                   (expect-code 58)
+                   (skip-space)
+                   (if key-start
+                       (put-block-field block-bag key-start key-end)
+                       (skip-value)))
+                 (skip-space)
+                 (let ((code (peek-code)))
+                   (cond
+                     ((eql code 44)
+                      (take-code)
+                      (skip-space))
+                     ((eql code 125) (return))
+                     (t (fail "Expected comma or }"))))))
+             (expect-code 125)
+             (finish-block block-bag))
            (parse-content-value ()
              (skip-space)
              (let ((code (peek-code)))
