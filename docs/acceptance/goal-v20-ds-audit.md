@@ -41,7 +41,7 @@ where pi has `string[]`.
 
 | path | why it is a different question |
 |---|---|
-| `session_load` / `session_read` octet walker vs `JSON.parse` | Copying V8's parser in Lisp (already the standing rule). Empty SWAR / intern growth remain forbidden. Friend-MachineD `e2a4dfad6` remesure: load **2.09×**, read **1.97×**. Product knife blocked. |
+| `session_load` / `session_read` octet walker vs `JSON.parse` | Passes already aligned (1MiB + LF + per-line object). Lisp encodings **tried and withdrawn**: `a78ee0171` public cons-plist (`journal_read` 1.62×→2.59×); `28e0eae06` session `simple-vector` (cadr `session_load` 2878→3110 µs). Empty SWAR / intern grow / FFI V8 still forbidden. **This drain: no remaining legal encoding lever.** Leftover is walker vs V8. Not G.17 `blocked`/`met`. HEAD remesure `da3d7322f` load **1.98×** (3105.9 / 1567.1 µs), journal **1.88×** (2716.4 / 1443.5 µs). |
 | `argv_parse` `cli-token-tail=` schar | Same algorithm, cheaper encoding. Remesure after truncate. |
 | `3caf85074` alt-screen last-document vector, `fe1a4d944` editor-lines vector | Already the mermaid fix. `alt-screen.lisp` scrollbar still `(nth row lines)` on a list viewport — leftover encoding, not a new algorithm. |
 | Markdown table `split-string` + `nth` on cells | pi splits a short row. Not a pairing-floor path. Do not campaign-rewrite. |

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: Friend-MachineD n=5 remesure @ `da3d7322f` (no src).
+  Truncate head/tail **0.71× / 0.87×** (387.3 / 544.0 µs, 533.8 /
+  613.3 µs). load **1.98×** / journal **1.88×**. Load/journal Lisp
+  object encodings exhausted this drain (walker vs V8). Ceiling
+  not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: archive V8/`JSON.parse` compare plus Friend-MachineD
   n=5 withdrawals (`a78ee0171` public cons-plist parse-json:
   journal_read 1.62×→2.59×; `28e0eae06` session simple-vector:

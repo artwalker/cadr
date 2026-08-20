@@ -59,10 +59,23 @@ Reverted `51e6e0b8b`. Ratio 1.32× is pi variance (pi 1572→2357),
 not a cadr win. Absolute cadr µs rose. Vector slots did not beat
 the walker leftover.
 
-## Still legal / still leftover
+## This drain — leftover booked (not G.17)
 
-Walker `PARSE-SESSION-RECORD-OCTETS` vs V8. Empty SWAR / intern
-grow / FFI / mmap still forbidden. Next encoding must beat **cadr
-µs**, not a friendlier pi sample.
+HEAD remesure Friend-MachineD n=5 git `da3d7322f` (no src
+speedup on this SHA):
 
-Ceiling not lowered. G.17 still `missing`. Part P still `[open]`.
+| metric | cadr µs | pi µs | ratio |
+|---|---:|---:|---:|
+| `session_load` | 3105.9 | 1567.1 | 1.98× |
+| `journal_read` | 2716.4 | 1443.5 | 1.88× |
+| `truncate_head` | 387.3 | 544.0 | 0.71× |
+| `truncate_tail` | 533.8 | 613.3 | 0.87× |
+
+Legal Lisp encodings of V8 sequential properties were tried and
+made **cadr µs** worse. Remaining levers are empty SWAR, intern
+grow, FFI V8, mmap — all forbidden without adjudication.
+
+**This drain has no remaining legal encoding knife** on
+load/journal. Leftover is walker vs V8 `JSON.parse`. Not G.17
+`blocked` (that needs advisor). Not G.17 `met`. Not product-format
+blocked. Ceiling not lowered. Part P still `[open]`.
