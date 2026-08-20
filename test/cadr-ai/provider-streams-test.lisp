@@ -1,6 +1,34 @@
 (in-package #:cadr-ai/tests)
 (in-suite cadr-ai-suite)
 
+(test pairing-provider-anthropic-recorded-sse-stays-put
+  ;; scripts/goal20-paired-paths.lisp provider_anthropic.stream_roundtrip.
+  ;; Drives shipped stream-chat, not a reimplementation. No live socket.
+  (multiple-value-bind (provider model)
+      (provider-case :anthropic)
+    (let ((events nil)
+          (*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url arguments))
+              (values
+               (open
+                (fixture-path
+                 "test/fixtures/goal20-paired-paths/anthropic-messages.sse")
+                :direction :input
+                :element-type '(unsigned-byte 8))
+               200
+               '(("content-type" . "text/event-stream"))))))
+      (let ((message
+              (stream-chat
+               provider model (sample-context)
+               (lambda (event) (push event events)))))
+        (is (eq :tool-use (assistant-message-stop-reason message)))
+        (is (= 4096 (usage-input (assistant-message-usage message))))
+        (is (= 512 (usage-output (assistant-message-usage message))))
+        (is (find-if
+             (lambda (block) (typep block 'cadr-ai:tool-call))
+             (assistant-message-content message)))))))
+
 (test recorded-sse-fixtures-normalize-events-and-final-message
   (dolist (provider-name '(:anthropic :openai :google))
     (multiple-value-bind (provider model)

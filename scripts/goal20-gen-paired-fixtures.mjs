@@ -298,6 +298,67 @@ function buildProviderContext() {
 	};
 }
 
+function buildAnthropicSseFixture() {
+	const lines = [];
+	const event = (name, payload) => {
+		lines.push(`event: ${name}`, `data: ${JSON.stringify(payload)}`, "");
+	};
+	event("message_start", {
+		type: "message_start",
+		message: {
+			model: "goal20-paired-1",
+			id: "msg_goal20",
+			type: "message",
+			role: "assistant",
+			content: [],
+			stop_reason: null,
+			stop_sequence: null,
+			usage: { input_tokens: 4096, output_tokens: 1 },
+		},
+	});
+	event("content_block_start", {
+		type: "content_block_start",
+		index: 0,
+		content_block: { type: "text", text: "" },
+	});
+	for (let index = 0; index < SSE_TEXT_DELTA_COUNT; index += 1) {
+		event("content_block_delta", {
+			type: "content_block_delta",
+			index: 0,
+			delta: {
+				type: "text_delta",
+				text: index % 8 === 7 ? `chunk-${index} 中文 🚀 ` : `chunk-${index} `,
+			},
+		});
+	}
+	event("content_block_stop", { type: "content_block_stop", index: 0 });
+	event("content_block_start", {
+		type: "content_block_start",
+		index: 1,
+		content_block: {
+			type: "tool_use",
+			id: "toolu_goal20_read",
+			name: "read",
+			input: {},
+		},
+	});
+	for (const fragment of ['{"path":', '"docs/', 'example.md"', ',"offset":1', ',"limit":4}']) {
+		event("content_block_delta", {
+			type: "content_block_delta",
+			index: 1,
+			delta: { type: "input_json_delta", partial_json: fragment },
+		});
+	}
+	event("content_block_stop", { type: "content_block_stop", index: 1 });
+	event("message_delta", {
+		type: "message_delta",
+		delta: { stop_reason: "tool_use", stop_sequence: null },
+		usage: { output_tokens: 512 },
+	});
+	event("message_stop", { type: "message_stop" });
+	return `${lines.join("\n")}\n`;
+}
+
 function buildSseFixture() {
 	const lines = [];
 	const push = (payload) => {
@@ -442,6 +503,7 @@ const artifacts = new Map([
 	],
 	["provider-context.json", `${JSON.stringify(buildProviderContext(), null, "\t")}\n`],
 	["openai-completions.sse", buildSseFixture()],
+	["anthropic-messages.sse", buildAnthropicSseFixture()],
 	["models.json", `${JSON.stringify(buildModelsJson(), null, "\t")}\n`],
 	["auth.json", `${JSON.stringify(buildAuthJson(), null, "\t")}\n`],
 	["cli-argv.json", `${JSON.stringify(buildCliArgv(), null, "\t")}\n`],

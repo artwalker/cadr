@@ -125,6 +125,7 @@ const REPETITIONS = {
 	"cli_dispatch.list_models_registry": 20,
 	"cli_dispatch.list_models_render": 100,
 	"provider_stream.stream_roundtrip": 10,
+	"provider_anthropic.stream_roundtrip": 10,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -196,6 +197,7 @@ const fixtureNames = [
 	"cli-argv.json",
 	"manifest.json",
 	"models.json",
+	"anthropic-messages.sse",
 	"openai-completions.sse",
 	"provider-context.json",
 	"session.jsonl",
@@ -209,6 +211,7 @@ for (const name of fixtureNames) {
 
 const sessionFixturePath = path.join(fixtureDirectory, "session.jsonl");
 const sseFixturePath = path.join(fixtureDirectory, "openai-completions.sse");
+const anthropicSsePath = path.join(fixtureDirectory, "anthropic-messages.sse");
 const cliArgv = JSON.parse(readFileSync(path.join(fixtureDirectory, "cli-argv.json"), "utf8"));
 const providerContext = JSON.parse(
 	readFileSync(path.join(fixtureDirectory, "provider-context.json"), "utf8"),
@@ -272,6 +275,7 @@ const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/ses
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
+const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
@@ -486,6 +490,66 @@ async function measureProviderStream() {
 			stop_reason: observed.message.stopReason,
 			usage_input: observed.message.usage.input,
 			usage_output: observed.message.usage.output,
+		},
+	};
+}
+
+const anthropicModel = {
+	id: "goal20-paired-1",
+	name: "Goal 20 Paired 1",
+	api: "anthropic-messages",
+	provider: "anthropic",
+	baseUrl: "https://api.anthropic.com",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 128000,
+	maxTokens: 16384,
+};
+
+async function runProviderAnthropic(collectEvents) {
+	const events = collectEvents ? [] : undefined;
+	let payload;
+	const stream = anthropicModule.stream(anthropicModel, providerContext, {
+		apiKey: "goal20-paired-paths-not-a-real-key",
+		maxRetries: 0,
+		fetch: async () =>
+			new Response(readFileSync(anthropicSsePath), {
+				status: 200,
+				headers: { "content-type": "text/event-stream" },
+			}),
+		onPayload: (value) => {
+			payload = value;
+			return undefined;
+		},
+	});
+	for await (const event of stream) events?.push(event.type);
+	const message = await stream.result();
+	return { events, message, payload };
+}
+
+async function measureProviderAnthropic() {
+	const observed = await runProviderAnthropic(true);
+	if (observed.message.stopReason !== "toolUse") {
+		throw new Error(`anthropic fixture stream produced stopReason ${observed.message.stopReason}`);
+	}
+	const text = observed.message.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("");
+	return {
+		stream_roundtrip: await collect("provider_anthropic.stream_roundtrip", () => {
+			return () => runProviderAnthropic(false);
+		}),
+		observed: {
+			content_block_types: observed.message.content.map((block) => block.type),
+			stop_reason: observed.message.stopReason,
+			text_characters: [...text].length,
+			tool_call_count: observed.message.content.filter((block) => block.type === "toolCall").length,
+			usage_input: observed.message.usage.input,
+			usage_output: observed.message.usage.output,
+			payload_stream: observed.payload?.stream === true,
+			payload_tool_count: observed.payload?.tools?.length ?? 0,
 		},
 	};
 }
@@ -1076,6 +1140,8 @@ process.stderr.write("goal20 pi paired paths: agent_tool_loop\n");
 const agentToolLoop = await measureAgentToolLoop();
 process.stderr.write("goal20 pi paired paths: session_compact\n");
 const sessionCompact = await measureSessionCompact();
+process.stderr.write("goal20 pi paired paths: provider_anthropic\n");
+const providerAnthropic = await measureProviderAnthropic();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -1095,6 +1161,7 @@ const result = {
 				"packages/coding-agent/src/core/model-runtime.ts ModelRuntime.create",
 			"cli_dispatch.list_models_render": "packages/coding-agent/src/cli/list-models.ts listModels",
 			"provider_stream.stream_roundtrip": "packages/ai/src/api/openai-completions.ts stream",
+			"provider_anthropic.stream_roundtrip": "packages/ai/src/api/anthropic-messages.ts stream",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -1146,6 +1213,7 @@ const result = {
 		tool_grep: toolGrep,
 		agent_tool_loop: agentToolLoop,
 		session_compact: sessionCompact,
+		provider_anthropic: providerAnthropic,
 		render_slicing: renderSlicing,
 	},
 };

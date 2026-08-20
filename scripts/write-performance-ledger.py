@@ -24,6 +24,7 @@ METRIC_KEYS = (
     "cli_dispatch.list_models_registry",
     "cli_dispatch.list_models_render",
     "provider_stream.stream_roundtrip",
+    "provider_anthropic.stream_roundtrip",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `provider_anthropic.stream_roundtrip`
+  (recorded Anthropic SSE, no socket). Production `stream-chat` vs
+  `anthropic-messages.ts stream`. Same `provider-context.json`.
+  First Friend-MachineD freeze 0.97× (2508 / 2585 µs), ceiling 1.5.
+  Not G.17. Part P still `[open]`.
 - Goal 20 Part P: UUIDv7 entropy pool copies Node `getRandomValues`
   (keep `/dev/urandom` stream + 256-byte buffer). sprof of
   `session_compact` @ `66b7403b6` was `uuid-v7` open/read/close

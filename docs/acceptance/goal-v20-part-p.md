@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `session_compact.compact` **0.56×** (43 / 77 µs) after UUIDv7 entropy pool, ceiling 20.0. Load/journal still ~1.4–2.0×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
+| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `provider_anthropic.stream_roundtrip` first pair **0.97×** (2508 / 2585 µs), ceiling 1.5. `session_compact.compact` **0.56×**. Load/journal still ~2×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |

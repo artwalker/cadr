@@ -168,6 +168,19 @@ Friend-MachineD remesure after that encoding: 11.33×→4.54×
 (965→164 µs). UUIDv7 entropy pool then 4.54×→0.56× (164→43 µs).
 Ceiling 20.0 unchanged.
 
+### Pair 10 — `provider_anthropic`
+
+| metric | cadr | pi |
+|---|---|---|
+| `stream_roundtrip` | `stream-chat` + `anthropic.lisp` | `stream` (`packages/ai/src/api/anthropic-messages.ts`) |
+
+Same fixture bytes as the openai-completions pair's context, plus
+recorded Anthropic SSE (`anthropic-messages.sse`). Seam =
+`*http-request-function*` / `ProviderRequestOptions.fetch`. No live
+socket. Observed `stop_reason` / `tool_call_count` / `usage_*` /
+`text_characters` are exact. First Friend-MachineD freeze 0.97×
+(2508 / 2585 µs), ceiling 1.5.
+
 ## 2. How to run
 
 ```bash
@@ -373,13 +386,13 @@ Denominator: **295 files / 127,088 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 49 | 29,896 | 23.5% | `no worse than baseline` is falsifiable |
+| `paired` | 50 | 30,540 | 24.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 222 | 89,717 | 70.6% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 221 | 89,073 | 70.1% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 23.5% of lines (49 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 29.4% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 70.6% of lines.
+- **Falsifiable vs baseline:** 24.0% of lines (50 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 29.9% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 70.1% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -429,6 +442,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/json.lisp` | 1,905 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 291 | `provider_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
@@ -475,8 +489,8 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/interactive` | 27 | 16,379 |
 | `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
 | `src/cadr-cli/bootstrap` | 5 | 5,632 |
-| `src/cadr-ai/providers` | 12 | 5,083 |
 | `src/cadr-tui/mermaid` | 12 | 5,042 |
+| `src/cadr-ai/providers` | 11 | 4,439 |
 | `src/cadr-cli/extensions` | 9 | 3,489 |
 | `src/cadr-cli/packages` | 6 | 3,269 |
 | `src/cadr-cli/sdk` | 8 | 2,471 |

@@ -71,6 +71,7 @@
     ("cli_dispatch.list_models_registry" . 20)
     ("cli_dispatch.list_models_render" . 100)
     ("provider_stream.stream_roundtrip" . 10)
+    ("provider_anthropic.stream_roundtrip" . 10)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -206,7 +207,8 @@
 
 (defparameter *fixture-names*
   '("auth.json" "cli-argv.json" "manifest.json" "models.json"
-    "openai-completions.sse" "provider-context.json" "session.jsonl"))
+    "anthropic-messages.sse" "openai-completions.sse"
+    "provider-context.json" "session.jsonl"))
 
 (defun read-file-octets (path)
   (with-open-file (stream path
@@ -568,6 +570,93 @@
                   (lambda ()
                     (lambda ()
                       (run-provider-stream
+                       provider model context nil)))))))))
+
+(defun anthropic-model ()
+  (cadr-ai:make-model
+   :id "goal20-paired-1"
+   :name "Goal 20 Paired 1"
+   :api :anthropic-messages
+   :provider :anthropic
+   :base-url "https://api.anthropic.com"
+   :reasoning-p nil
+   :supports-images-p t
+   :context-window 128000
+   :max-tokens 16384))
+
+(defun anthropic-http-request-function ()
+  (lambda (url &rest arguments)
+    (declare (ignore url arguments))
+    (values
+     (open (fixture-path "anthropic-messages.sse")
+           :direction :input
+           :element-type '(unsigned-byte 8))
+     200
+     '(("content-type" . "text/event-stream")))))
+
+(defun run-provider-anthropic (provider model context collect-events-p)
+  (let ((events nil)
+        (payload nil))
+    (let ((cadr-ai:*http-request-function*
+            (anthropic-http-request-function)))
+      (let ((message
+              (cadr-ai::stream-chat
+               provider model context
+               (if collect-events-p
+                   (lambda (event) (push event events))
+                   (lambda (event) (declare (ignore event)) nil))
+               :on-payload
+               (lambda (value model)
+                 (declare (ignore model))
+                 (setf payload value)
+                 nil))))
+        (values message (nreverse events) payload)))))
+
+(defun measure-provider-anthropic ()
+  (let ((provider
+          (cadr-ai:make-anthropic-provider
+           :api-key *provider-api-key*
+           :provider-id :anthropic))
+        (model (anthropic-model))
+        (context (provider-context)))
+    (multiple-value-bind (message events payload)
+        (run-provider-anthropic provider model context t)
+      (unless (eq :tool-use (cadr-ai:assistant-message-stop-reason message))
+        (error "anthropic fixture stream produced stop reason ~S"
+               (cadr-ai:assistant-message-stop-reason message)))
+      (let* ((blocks (cadr-ai:assistant-message-content message))
+             (text
+               (apply #'concatenate 'string
+                      (mapcar #'cadr-ai:text-content-text
+                              (remove-if-not
+                               (lambda (block)
+                                 (typep block 'cadr-ai:text-content))
+                               blocks)))))
+        (json-object
+         "observed"
+         (json-object
+          "content_block_types"
+          (json-array (mapcar #'content-block-type-name blocks))
+          "stop_reason" "toolUse"
+          "text_characters" (length text)
+          "tool_call_count"
+          (count-if (lambda (block) (typep block 'cadr-ai:tool-call))
+                    blocks)
+          "usage_input"
+          (cadr-ai:usage-input
+           (cadr-ai:assistant-message-usage message))
+          "usage_output"
+          (cadr-ai:usage-output
+           (cadr-ai:assistant-message-usage message))
+          "payload_stream"
+          (eq t (cadr-ai::json-get payload "stream"))
+          "payload_tool_count"
+          (length (or (cadr-ai::json-get payload "tools") #())))
+         "stream_roundtrip"
+         (collect "provider_anthropic.stream_roundtrip"
+                  (lambda ()
+                    (lambda ()
+                      (run-provider-anthropic
                        provider model context nil)))))))))
 
 ;;; ---------------------------------------------------------------------
@@ -1247,6 +1336,8 @@
       "src/cadr-cli/bootstrap/main.lisp print-cli-models"
       "provider_stream.stream_roundtrip"
       "src/cadr-ai/provider.lisp stream-chat (openai-completions)"
+      "provider_anthropic.stream_roundtrip"
+      "src/cadr-ai/providers/anthropic.lisp stream-chat"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -1310,6 +1401,8 @@
               (let ((tool-loop (measure-agent-tool-loop)))
               (format *error-output* "goal20 cadr paired paths: session_compact~%")
               (let ((compact (measure-session-compact)))
+              (format *error-output* "goal20 cadr paired paths: provider_anthropic~%")
+              (let ((anthropic (measure-provider-anthropic)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -1336,6 +1429,7 @@
               "tool_grep" tool-grep
               "agent_tool_loop" tool-loop
               "session_compact" compact
+              "provider_anthropic" anthropic
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -1352,7 +1446,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))
+             "schema_version" 1)))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
