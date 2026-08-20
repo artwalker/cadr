@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: book missing Working… indicator while agent busy
+  (`docs/bugs/working-indicator-missing.md`). Not G.17.
+  Part P still `[open]`.
+- Goal 20: OpenCode Go / terminal quota HTTP 429 is not
+  retryable (`GoUsageLimitError` and the pi
+  `isTerminalRateLimitError` set). Display `429: <body>`.
+  Transient 429 still retries. Not G.17. Part P still `[open]`.
 - Goal 20: book OpenCode Go usage-limit 429 parity —
   cadr retries terminal GoUsageLimitError (slow Working…);
   pi fails fast with `429: {…}`. Fix signal-api-error
