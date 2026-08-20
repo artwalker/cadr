@@ -93,9 +93,6 @@
                                                'character)
                              :adjustable t
                              :fill-pointer 0))
-         (decode-scratch
-           (and binary-p
-                (make-array 256 :element-type '(unsigned-byte 8))))
          (event-name nil)
          (data-lines nil)
          (event-id nil)
@@ -114,33 +111,12 @@
                      event-id nil
                      saw-field-p nil))
              (utf8-payload (vector start end)
+               ;; ASCII-run utf8-string, same decoder as tool_read /
+               ;; session JSONL. Whole-line octets-to-string was
+               ;; UTF8->STRING-AREF 25.6% of mistral stream_roundtrip
+               ;; at 3374ac197. Not intern. Not FFI.
                (handler-case
-                   (let ((count (- end start)))
-                     (declare (type fixnum start end count)
-                              (type (array (unsigned-byte 8) (*))
-                                    vector))
-                     (cond
-                       ((zerop count) "")
-                       ((typep vector
-                               '(simple-array (unsigned-byte 8) (*)))
-                        (sb-ext:octets-to-string
-                         vector
-                         :external-format :utf-8
-                         :start start
-                         :end end))
-                       (t
-                        (when (> count (length decode-scratch))
-                          (setf decode-scratch
-                                (make-array count
-                                            :element-type
-                                            '(unsigned-byte 8))))
-                        (replace decode-scratch vector
-                                 :start2 start :end2 end)
-                        (sb-ext:octets-to-string
-                         decode-scratch
-                         :external-format :utf-8
-                         :start 0
-                         :end count))))
+                   (utf8-string vector start end)
                  (error (cause)
                    (error 'sse-protocol-error
                           :message

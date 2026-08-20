@@ -321,6 +321,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: SSE binary payload decode uses `utf8-string`
+  ASCII-run (same decoder as tool_read). sprof at `3374ac197`
+  named `UTF8->STRING-AREF` 25.6% of
+  `provider_mistral.stream_roundtrip`. Capture:
+  `docs/benchmarks/goal20-part-p-mistral-sprof-3374ac197.md`.
+  Identity 127091→127067. Not intern. Not FFI. G.17 still
+  `missing`. Part P still `[open]`.
+
 - Goal 20 Part P: Friend-MachineD remesure of `208838a39`
   (n=5, enforced). truncate_head 1.17× (667 / 570 µs).
   truncate_tail 1.47× (856 / 581 µs). Same ratios as

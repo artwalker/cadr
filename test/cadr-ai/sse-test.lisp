@@ -85,3 +85,26 @@
        (is (string= (sse-event-data left) (sse-event-data right)))
        (is (equal (sse-event-id left) (sse-event-id right))))
      from-chars from-file)))
+
+(test pairing-mistral-recorded-sse-utf8-payload-stays-put
+  ;; scripts/goal20-paired-paths.lisp provider_mistral.stream_roundtrip.
+  ;; Drives shipped read-sse-stream on the recorded fixture. Binary
+  ;; data lines go through utf8-string (ASCII run), not a
+  ;; reimplementation.
+  (let ((events nil))
+    (with-open-file
+        (stream
+         (fixture-path
+          "test/fixtures/goal20-paired-paths/mistral-conversations.sse")
+         :direction :input
+         :element-type '(unsigned-byte 8))
+      (read-sse-stream
+       stream
+       (lambda (event) (push event events))))
+    (setf events (nreverse events))
+    (is (> (length events) 10))
+    (is (string= "[DONE]" (sse-event-data (car (last events)))))
+    (let ((object (parse-json (sse-event-data (first events)))))
+      (is (string= "chatcmpl-mistral-goal20"
+                   (cadr-ai::json-get object "id")))
+      (is (vectorp (cadr-ai::json-get object "choices"))))))

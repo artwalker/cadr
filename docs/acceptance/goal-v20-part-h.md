@@ -447,16 +447,16 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 127,091 lines**
+Denominator: **295 files / 127,067 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 59 | 34,257 | 27.0% | `no worse than baseline` is falsifiable |
+| `paired` | 59 | 34,233 | 26.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `pairable-uncovered` | 212 | 85,359 | 67.2% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 27.0% of lines (59 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 26.9% of lines (59 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 32.8% of lines.
 - **K-blocked** until a new pair or a booked unpairable finding: 67.2% of lines.
 
@@ -515,7 +515,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-ai/providers/google.lisp` | 442 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | `provider_mistral.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
-| `src/cadr-ai/sse.lisp` | 291 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
