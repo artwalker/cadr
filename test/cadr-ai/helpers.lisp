@@ -100,6 +100,16 @@
                          :provider :openai-codex
                          :api :openai-codex-responses
                          :base-url "https://chatgpt.com/backend-api"
+                         :max-tokens 4096)))
+    (:pi-messages
+     (values (make-pi-messages-provider
+              :api-key "goal20-paired-paths-not-a-real-key"
+              :provider-id :pi)
+             (make-model :id "pi-goal20"
+                         :name "Goal 20 pi-messages"
+                         :provider :pi
+                         :api :pi-messages
+                         :base-url "https://goal20.pi.example/v1"
                          :max-tokens 4096)))))
 
 (defun first-text (message)

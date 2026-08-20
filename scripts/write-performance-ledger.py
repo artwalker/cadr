@@ -32,6 +32,7 @@ METRIC_KEYS = (
     "provider_azure_openai.stream_roundtrip",
     "provider_vertex.stream_roundtrip",
     "provider_codex.stream_roundtrip",
+    "provider_pi_messages.stream_roundtrip",
     "cli_settings.create",
     "resource_loader.reload",
     "package_manager.resolve",

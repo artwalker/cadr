@@ -60,6 +60,7 @@ FIXTURE_NAMES = (
     "google-vertex.sse",
     "vertex-adc.json",
     "openai-codex-responses.sse",
+    "pi-messages.sse",
     "settings-global.json",
     "settings-project.json",
     "resource-skill-global.md",
@@ -96,6 +97,7 @@ METRICS = {
     "provider_azure_openai": ("stream_roundtrip",),
     "provider_vertex": ("stream_roundtrip",),
     "provider_codex": ("stream_roundtrip",),
+    "provider_pi_messages": ("stream_roundtrip",),
     "cli_settings": ("create",),
     "resource_loader": ("reload",),
     "package_manager": ("resolve",),
@@ -174,6 +176,11 @@ RATIO_CEILINGS = {
     # the list_models_registry / render_slicing precedent. Ratchet
     # down only.
     "provider_codex.stream_roundtrip": 1.5,
+    # Frozen from the first Friend-MachineD non-quick provider_pi_messages
+    # pair (samples=5): observed 1.25x (1103 / 885 us). 1.5 follows
+    # the list_models_registry / render_slicing precedent. Ratchet
+    # down only.
+    "provider_pi_messages.stream_roundtrip": 1.5,
     # Frozen from the first Friend-MachineD non-quick cli_settings
     # pair (samples=5): observed 0.13x (105 / 813 µs). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent
@@ -363,6 +370,15 @@ OBSERVED_EXACT = {
         "usage_input",
         "usage_output",
         "payload_stream",
+        "payload_tool_count",
+    ),
+    "provider_pi_messages": (
+        "content_block_types",
+        "stop_reason",
+        "text_characters",
+        "tool_call_count",
+        "usage_input",
+        "usage_output",
         "payload_tool_count",
     ),
     "cli_settings": (

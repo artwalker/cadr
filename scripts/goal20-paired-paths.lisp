@@ -79,6 +79,7 @@
     ("provider_azure_openai.stream_roundtrip" . 10)
     ("provider_vertex.stream_roundtrip" . 10)
     ("provider_codex.stream_roundtrip" . 10)
+    ("provider_pi_messages.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
@@ -221,7 +222,7 @@
     "bedrock-converse-stream.bin" "mistral-conversations.sse"
     "openai-responses.sse" "azure-openai-responses.sse"
     "google-vertex.sse" "vertex-adc.json"
-    "openai-codex-responses.sse"
+    "openai-codex-responses.sse" "pi-messages.sse"
     "settings-global.json" "settings-project.json"
     "resource-skill-global.md" "resource-skill-project.md"
     "resource-prompt-global.md" "resource-prompt-project.md"
@@ -1309,6 +1310,96 @@
                       (run-provider-codex
                        provider model context nil)))))))))
 
+(defun pi-messages-model ()
+  (cadr-ai:make-model
+   :id "pi-goal20"
+   :name "Goal 20 pi-messages"
+   :api :pi-messages
+   :provider :pi
+   :base-url "https://goal20.pi.example/v1"
+   :reasoning-p nil
+   :supports-images-p t
+   :context-window 128000
+   :max-tokens 16384))
+
+(defun pi-messages-http-request-function ()
+  (lambda (url &rest arguments)
+    (declare (ignore url arguments))
+    (values
+     (open (fixture-path "pi-messages.sse")
+           :direction :input
+           :element-type '(unsigned-byte 8))
+     200
+     '(("content-type" . "text/event-stream")))))
+
+(defun run-provider-pi-messages (provider model context collect-events-p)
+  (let ((events nil)
+        (payload nil))
+    (let ((cadr-ai:*http-request-function*
+            (pi-messages-http-request-function)))
+      (let ((message
+              (cadr-ai::stream-chat
+               provider model context
+               (if collect-events-p
+                   (lambda (event) (push event events))
+                   (lambda (event) (declare (ignore event)) nil))
+               :on-payload
+               (lambda (value model)
+                 (declare (ignore model))
+                 (setf payload value)
+                 nil))))
+        (values message (nreverse events) payload)))))
+
+(defun measure-provider-pi-messages ()
+  (let ((provider
+          (cadr-ai:make-pi-messages-provider
+           :api-key *provider-api-key*
+           :provider-id :pi))
+        (model (pi-messages-model))
+        (context (provider-context)))
+    (multiple-value-bind (message events payload)
+        (run-provider-pi-messages provider model context t)
+      (declare (ignore events))
+      (unless (eq :tool-use (cadr-ai:assistant-message-stop-reason message))
+        (error "pi-messages fixture stream produced stop reason ~S"
+               (cadr-ai:assistant-message-stop-reason message)))
+      (let* ((blocks (cadr-ai:assistant-message-content message))
+             (text
+               (apply #'concatenate 'string
+                      (mapcar #'cadr-ai:text-content-text
+                              (remove-if-not
+                               (lambda (block)
+                                 (typep block 'cadr-ai:text-content))
+                               blocks))))
+             (tools
+               (cadr-ai::json-get
+                (cadr-ai::json-get payload "context")
+                "tools")))
+        (json-object
+         "observed"
+         (json-object
+          "content_block_types"
+          (json-array (mapcar #'content-block-type-name blocks))
+          "stop_reason" "toolUse"
+          "text_characters" (length text)
+          "tool_call_count"
+          (count-if (lambda (block) (typep block 'cadr-ai:tool-call))
+                    blocks)
+          "usage_input"
+          (cadr-ai:usage-input
+           (cadr-ai:assistant-message-usage message))
+          "usage_output"
+          (cadr-ai:usage-output
+           (cadr-ai:assistant-message-usage message))
+          "payload_tool_count"
+          (if tools (length tools) 0))
+         "stream_roundtrip"
+         (collect "provider_pi_messages.stream_roundtrip"
+                  (lambda ()
+                    (lambda ()
+                      (run-provider-pi-messages
+                       provider model context nil)))))))))
+
 ;;; ---------------------------------------------------------------------
 ;;; Pair 3: agent session load + event pipeline
 ;;; ---------------------------------------------------------------------
@@ -2277,6 +2368,8 @@
       "src/cadr-ai/providers/vertex.lisp stream-chat"
       "provider_codex.stream_roundtrip"
       "src/cadr-ai/providers/codex.lisp stream-chat"
+      "provider_pi_messages.stream_roundtrip"
+      "src/cadr-ai/providers/pi-messages.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
       "resource_loader.reload"
@@ -2362,6 +2455,8 @@
               (let ((vertex (measure-provider-vertex)))
               (format *error-output* "goal20 cadr paired paths: provider_codex~%")
               (let ((codex (measure-provider-codex)))
+              (format *error-output* "goal20 cadr paired paths: provider_pi_messages~%")
+              (let ((pi-messages (measure-provider-pi-messages)))
               (format *error-output* "goal20 cadr paired paths: cli_settings~%")
               (let ((settings (measure-cli-settings)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
@@ -2402,6 +2497,7 @@
               "provider_azure_openai" azure-openai
               "provider_vertex" vertex
               "provider_codex" codex
+              "provider_pi_messages" pi-messages
               "cli_settings" settings
               "resource_loader" resources
               "package_manager" packages
@@ -2421,7 +2517,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

@@ -134,6 +134,7 @@ const REPETITIONS = {
 	"provider_azure_openai.stream_roundtrip": 10,
 	"provider_vertex.stream_roundtrip": 10,
 	"provider_codex.stream_roundtrip": 10,
+	"provider_pi_messages.stream_roundtrip": 10,
 	"cli_settings.create": 5,
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
@@ -217,6 +218,7 @@ const fixtureNames = [
 	"google-vertex.sse",
 	"vertex-adc.json",
 	"openai-codex-responses.sse",
+	"pi-messages.sse",
 	"settings-global.json",
 	"settings-project.json",
 	"resource-skill-global.md",
@@ -256,6 +258,7 @@ const vertexAdc = JSON.parse(
 	readFileSync(path.join(fixtureDirectory, "vertex-adc.json"), "utf8"),
 );
 const openaiCodexSsePath = path.join(fixtureDirectory, "openai-codex-responses.sse");
+const piMessagesSsePath = path.join(fixtureDirectory, "pi-messages.sse");
 const openaiCodexOauthToken =
 	"eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiZ29hbDIwLWNvZGV4LWFjY291bnQifX0.sig";
 const cliArgv = JSON.parse(readFileSync(path.join(fixtureDirectory, "cli-argv.json"), "utf8"));
@@ -329,6 +332,7 @@ const openaiResponsesModule = await import(moduleUrl("packages/ai/src/api/openai
 const azureOpenaiModule = await import(moduleUrl("packages/ai/src/api/azure-openai-responses.ts"));
 const vertexModule = await import(moduleUrl("packages/ai/src/api/google-vertex.ts"));
 const openaiCodexModule = await import(moduleUrl("packages/ai/src/api/openai-codex-responses.ts"));
+const piMessagesModule = await import(moduleUrl("packages/ai/src/api/pi-messages.ts"));
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
 const packageManagerModule = await import(moduleUrl("packages/coding-agent/src/core/package-manager.ts"));
@@ -1166,6 +1170,65 @@ async function measureProviderCodex() {
 	};
 }
 
+const piMessagesModel = {
+	id: "pi-goal20",
+	name: "Goal 20 pi-messages",
+	api: "pi-messages",
+	provider: "pi",
+	baseUrl: "https://goal20.pi.example/v1",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 128000,
+	maxTokens: 16384,
+};
+
+async function runProviderPiMessages(collectEvents) {
+	const events = collectEvents ? [] : undefined;
+	let payload;
+	const stream = piMessagesModule.stream(piMessagesModel, providerContext, {
+		apiKey: "goal20-paired-paths-not-a-real-key",
+		fetch: async () =>
+			new Response(readFileSync(piMessagesSsePath), {
+				status: 200,
+				headers: { "content-type": "text/event-stream" },
+			}),
+		onPayload: (value) => {
+			payload = value;
+			return undefined;
+		},
+	});
+	for await (const event of stream) events?.push(event.type);
+	const message = await stream.result();
+	return { events, message, payload };
+}
+
+async function measureProviderPiMessages() {
+	const observed = await runProviderPiMessages(true);
+	if (observed.message.stopReason !== "toolUse") {
+		throw new Error(`pi-messages fixture stream produced stopReason ${observed.message.stopReason}`);
+	}
+	const text = observed.message.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("");
+	const tools = observed.payload?.context?.tools;
+	return {
+		stream_roundtrip: await collect("provider_pi_messages.stream_roundtrip", () => {
+			return () => runProviderPiMessages(false);
+		}),
+		observed: {
+			content_block_types: observed.message.content.map((block) => block.type),
+			stop_reason: observed.message.stopReason,
+			text_characters: [...text].length,
+			tool_call_count: observed.message.content.filter((block) => block.type === "toolCall").length,
+			usage_input: observed.message.usage.input,
+			usage_output: observed.message.usage.output,
+			payload_tool_count: Array.isArray(tools) ? tools.length : 0,
+		},
+	};
+}
+
 function runCliSettings() {
 	return settingsModule.SettingsManager.create(settingsCwdDirectory, settingsAgentDirectory, {
 		projectTrusted: true,
@@ -1862,6 +1925,8 @@ process.stderr.write("goal20 pi paired paths: provider_vertex\n");
 const providerVertex = await measureProviderVertex();
 process.stderr.write("goal20 pi paired paths: provider_codex\n");
 const providerCodex = await measureProviderCodex();
+process.stderr.write("goal20 pi paired paths: provider_pi_messages\n");
+const providerPiMessages = await measureProviderPiMessages();
 process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
@@ -1895,6 +1960,7 @@ const result = {
 			"provider_azure_openai.stream_roundtrip": "packages/ai/src/api/azure-openai-responses.ts stream",
 			"provider_vertex.stream_roundtrip": "packages/ai/src/api/google-vertex.ts stream",
 			"provider_codex.stream_roundtrip": "packages/ai/src/api/openai-codex-responses.ts stream",
+			"provider_pi_messages.stream_roundtrip": "packages/ai/src/api/pi-messages.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
@@ -1957,6 +2023,7 @@ const result = {
 		provider_azure_openai: providerAzureOpenai,
 		provider_vertex: providerVertex,
 		provider_codex: providerCodex,
+		provider_pi_messages: providerPiMessages,
 		cli_settings: cliSettings,
 		resource_loader: resourceLoader,
 		package_manager: packageManager,

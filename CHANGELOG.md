@@ -52,6 +52,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `provider_pi_messages.stream_roundtrip`
+  (recorded pi-messages SSE, no socket). Production `stream-chat`
+  vs `pi-messages.ts stream`. Same `provider-context.json`. Seam is
+  `*http-request-function*` / `options.fetch`. First Friend-MachineD
+  freeze 1.25× (1103 / 885 µs), ceiling 1.5. Not G.17. Part P still
+  `[open]`.
 - Goal 20 Part H: pair `package_manager.resolve` (fixture local
   package path, no npm/TUI/socket). Production
   `configured-package-records` + `package-resource-paths` vs

@@ -726,6 +726,55 @@ function buildOpenAIResponsesSseFixture() {
 	return `${lines.join("\n")}\n`;
 }
 
+function buildPiMessagesSseFixture() {
+	const lines = [];
+	const data = (payload) => {
+		lines.push(`data: ${JSON.stringify(payload)}`, "");
+	};
+	data({ type: "start" });
+	data({ type: "text_start", contentIndex: 0 });
+	let text = "";
+	for (let index = 0; index < SSE_TEXT_DELTA_COUNT; index += 1) {
+		const delta = index % 8 === 7 ? `chunk-${index} 中文 🚀 ` : `chunk-${index} `;
+		text += delta;
+		data({ type: "text_delta", contentIndex: 0, delta });
+	}
+	data({ type: "text_end", contentIndex: 0, content: text });
+	data({
+		type: "toolcall_start",
+		contentIndex: 1,
+		id: "call_goal20_read",
+		toolName: "read",
+	});
+	for (const fragment of ['{"path":', '"docs/', 'example.md"', ',"offset":1', ',"limit":4}']) {
+		data({ type: "toolcall_delta", contentIndex: 1, delta: fragment });
+	}
+	data({
+		type: "toolcall_end",
+		contentIndex: 1,
+		toolCall: {
+			type: "toolCall",
+			id: "call_goal20_read",
+			name: "read",
+			arguments: { path: "docs/example.md", offset: 1, limit: 4 },
+		},
+	});
+	data({
+		type: "done",
+		reason: "toolUse",
+		usage: {
+			input: 4096,
+			output: 512,
+			cacheRead: 0,
+			cacheWrite: 0,
+			totalTokens: 4608,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		},
+		responseId: "pi_goal20",
+	});
+	return `${lines.join("\n")}\n`;
+}
+
 // ---------------------------------------------------------------------------
 // CLI fixtures (pair 1)
 // ---------------------------------------------------------------------------
@@ -865,6 +914,7 @@ const artifacts = new Map([
 	["google-generative-ai.sse", buildGoogleSseFixture()],
 	["google-vertex.sse", buildGoogleSseFixture()],
 	["openai-codex-responses.sse", buildOpenAIResponsesSseFixture()],
+	["pi-messages.sse", buildPiMessagesSseFixture()],
 	[
 		"vertex-adc.json",
 		`${JSON.stringify(
