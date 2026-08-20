@@ -176,7 +176,7 @@
    text
    (let ((parsed
            (cadr-ai::parse-json text)))
-     (unless (cadr-ai::json-object-p parsed)
+     (unless (hash-table-p parsed)
        (session-failure
         nil nil
         "SQLite session metadata must be an object"))

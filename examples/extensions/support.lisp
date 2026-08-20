@@ -133,10 +133,9 @@
          (status (getf result :status)))
     (unless (<= 200 status 299)
       (error "Extension HTTP request returned status ~D" status))
-    (cadr-ai::json-as-hash-table
-     (cadr-ai::parse-json
-      (sb-ext:octets-to-string
-       (getf result :body) :external-format :utf-8)))))
+    (cadr-ai::parse-json
+     (sb-ext:octets-to-string
+      (getf result :body) :external-format :utf-8))))
 
 (defun example-query-value (url name)
   (let* ((query-start (position #\? url))

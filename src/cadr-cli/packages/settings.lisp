@@ -10,7 +10,7 @@
 (defun package-entry-source (entry)
   (cond
     ((stringp entry) entry)
-    ((cadr-ai::json-object-p entry)
+    ((hash-table-p entry)
      (cadr-ai::json-get entry "source"))
     (t nil)))
 
@@ -99,7 +99,7 @@
         (return-from
             persist-package-source nil))
       (let ((entry (nth existing entries)))
-        (if (cadr-ai::json-object-p entry)
+        (if (hash-table-p entry)
             (cadr-ai::json-put
              entry "source" stored)
             (setf (nth existing entries)

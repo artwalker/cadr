@@ -51,6 +51,9 @@
       ((listp type) (remove-if-not #'stringp type))
       (t nil))))
 
+(defun json-object-p (value)
+  (hash-table-p value))
+
 (defun json-type-p (value type)
   (cond
     ((string= type "number") (numberp value))
@@ -58,9 +61,7 @@
     ((string= type "boolean") (or (eq value t) (null value)))
     ((string= type "string") (stringp value))
     ((string= type "null") (json-null-p value))
-    ((string= type "array")
-     (and (or (vectorp value) (listp value))
-          (not (json-object-pairs-p value))))
+    ((string= type "array") (or (vectorp value) (listp value)))
     ((string= type "object") (json-object-p value))
     (t nil)))
 
@@ -135,8 +136,8 @@
           (lambda (name) (json-present-p value name))
           required)
          (or
-          (not (json-object-p properties))
-          (loop for key in (json-keys properties)
+          (not (hash-table-p properties))
+          (loop for key being the hash-keys of properties
                 always
                 (or
                  (not (json-present-p value key))
@@ -146,12 +147,10 @@
      (or
       (not
        (and (member "array" types :test #'string=)
-            (or (vectorp value)
-                (and (listp value)
-                     (not (json-object-pairs-p value))))))
+            (or (vectorp value) (listp value))))
       (let ((items (json-get schema "items")))
         (or
-         (not (json-object-p items))
+         (not (hash-table-p items))
          (every
           (lambda (item) (schema-valid-p item items))
           (coerce value 'list))))))))
@@ -169,28 +168,25 @@
             (setf next candidate)
             (return)))))
     (when
-        (and (json-object-p next)
+        (and (hash-table-p next)
              (member "object" types :test #'string=))
       (let ((properties (json-get schema "properties"))
             (additional (json-get schema "additionalProperties")))
-        (when (json-object-p properties)
-          (json-map-entries
-           next
-           (lambda (key val)
-             (let ((nested
-                     (if (json-present-p properties key)
-                         (json-get properties key)
-                         (and (json-object-p additional) additional))))
-               (when nested
-                 (json-put
-                  next key
-                  (coerce-schema-value val nested)))))))))
+        (when (hash-table-p properties)
+          (loop for key being the hash-keys of next
+                for nested =
+                (if (json-present-p properties key)
+                    (json-get properties key)
+                    (and (hash-table-p additional) additional))
+                when nested
+                  do
+                  (setf (gethash key next)
+                        (coerce-schema-value
+                         (gethash key next) nested))))))
     (when
-        (and (or (vectorp next)
-                 (and (listp next)
-                      (not (json-object-pairs-p next))))
+        (and (or (vectorp next) (listp next))
              (member "array" types :test #'string=)
-             (json-object-p (json-get schema "items")))
+             (hash-table-p (json-get schema "items")))
       (if (vectorp next)
           (loop for index below (length next)
                 do
@@ -216,7 +212,7 @@
   (cond
     ((eq schema t) nil)
     ((null schema) t)
-    ((not (json-object-p schema)) nil)
+    ((not (hash-table-p schema)) nil)
     (t (not (schema-valid-p 'null schema)))))
 
 (defun normalize-optional-nulls (value schema)
@@ -233,29 +229,30 @@
           (loop for index below (min (length value) (length items))
                 do (normalize-optional-nulls
                     (aref value index) (aref items index))))
-         ((json-object-p items)
+         ((hash-table-p items)
           (loop for item across value
                 do (normalize-optional-nulls item items))))))
-    ((json-object-p value)
+    ((hash-table-p value)
      (let ((properties (json-get schema "properties")))
-       (when (json-object-p properties)
+       (when (hash-table-p properties)
          (let ((required
                  (coerce (or (json-get schema "required") #()) 'list)))
-           (dolist (key (json-keys properties))
-             (let ((property-schema (json-get properties key)))
-               (when (json-present-p value key)
-                 (let ((property-value (json-get value key)))
-                   (if (and (eq property-value 'null)
-                            (not (member key required :test #'string=))
-                            (not
-                             (and (json-object-p property-schema)
-                                  (stringp
-                                   (json-get property-schema "$ref"))))
-                            (schema-rejects-null-p property-schema))
-                       (json-delete value key)
-                       (normalize-optional-nulls
-                        property-value property-schema))))))))))
-    (t nil)))
+           (loop for key being the hash-keys of properties
+                 using (hash-value property-schema)
+                 do (when (json-present-p value key)
+                      (let ((property-value (json-get value key)))
+                        (if (and (eq property-value 'null)
+                                 (not (member key required
+                                              :test #'string=))
+                                 (not
+                                  (and (hash-table-p property-schema)
+                                       (stringp
+                                        (json-get
+                                         property-schema "$ref"))))
+                                 (schema-rejects-null-p property-schema))
+                            (remhash key value)
+                            (normalize-optional-nulls
+                             property-value property-schema)))))))))))
 
 (defun validate-tool-arguments (tool call)
   (let* ((schema (tool-parameters tool))

@@ -24,7 +24,7 @@
 (defun metadata-json-data-p (value)
   (or
    (null value)
-   (cadr-ai::json-object-p value)
+   (hash-table-p value)
    (plist-like-p value)))
 
 (defun jsonl-header-object (metadata)
@@ -64,8 +64,7 @@
 
 (defun json-object-to-plist (object)
   (let ((result nil))
-    (cadr-ai::json-map-entries
-     object
+    (maphash
      (lambda (key value)
        (setf
         (getf result
@@ -73,18 +72,19 @@
                (string-upcase key)
                :keyword))
         (cond
-          ((cadr-ai::json-object-p value)
+          ((hash-table-p value)
            (json-object-to-plist value))
-          ((and (vectorp value) (not (stringp value)))
+          ((vectorp value)
            (map 'list
                 (lambda (item)
-                  (if (cadr-ai::json-object-p item)
+                  (if (hash-table-p item)
                       (json-object-to-plist item)
                       item))
                 value))
           ((cadr-ai::json-null-p value)
            nil)
-          (t value)))))
+          (t value))))
+     object)
     result))
 
 (defun parse-jsonl-header
@@ -111,7 +111,7 @@
           (and metadata
                (not
                 (cadr-ai::json-null-p metadata))
-               (not (cadr-ai::json-object-p metadata)))
+               (not (hash-table-p metadata)))
         (session-failure
          path 1
          "Session header metadata must be an object")))

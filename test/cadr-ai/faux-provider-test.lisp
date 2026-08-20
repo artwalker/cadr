@@ -173,19 +173,17 @@
                 (cadr-ai:assistant-message-content
                  (cadr-ai:stream-event-message tool-start)))))
         (is (= 2
-               (length
-                (cadr-ai::json-keys
-                 (cadr-ai:tool-call-arguments
-                  (third
-                   (cadr-ai:assistant-message-content
-                    (cadr-ai:stream-event-message tool-start))))))))
+               (hash-table-count
+                (cadr-ai:tool-call-arguments
+                 (third
+                  (cadr-ai:assistant-message-content
+                   (cadr-ai:stream-event-message tool-start)))))))
         (is (= 2
-               (length
-                (cadr-ai::json-keys
-                 (cadr-ai:tool-call-arguments
-                  (third
-                   (cadr-ai:assistant-message-content
-                    (cadr-ai:stream-event-message tool-end))))))))
+               (hash-table-count
+                (cadr-ai:tool-call-arguments
+                 (third
+                  (cadr-ai:assistant-message-content
+                   (cadr-ai:stream-event-message tool-end)))))))
         (is (not (eq (cadr-ai:stream-event-message start)
                      (cadr-ai:stream-event-message thinking-start))))
         (is (not (eq (cadr-ai:stream-event-message thinking-start)

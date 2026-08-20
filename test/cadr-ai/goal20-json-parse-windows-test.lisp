@@ -70,18 +70,16 @@
         (second (cadr-ai::parse-json "{\"content\":\"b\"}"))
         (key-a nil)
         (key-b nil))
-    (cadr-ai::json-map-entries
-     first
-     (lambda (key value)
-       (declare (ignore value))
-       (when (string= key "content")
-         (setf key-a key))))
-    (cadr-ai::json-map-entries
-     second
-     (lambda (key value)
-       (declare (ignore value))
-       (when (string= key "content")
-         (setf key-b key))))
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (when (string= key "content")
+                 (setf key-a key)))
+             first)
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (when (string= key "content")
+                 (setf key-b key)))
+             second)
     (is (string= key-a "content"))
     (is (eq key-a key-b))))
 
@@ -96,16 +94,14 @@
            "{\"parentId\":\"e0\",\"timestamp\":\"u\",\"message\":{}}"))
         (keys-a nil)
         (keys-b nil))
-    (cadr-ai::json-map-entries
-     first
-     (lambda (key value)
-       (declare (ignore value))
-       (push key keys-a)))
-    (cadr-ai::json-map-entries
-     second
-     (lambda (key value)
-       (declare (ignore value))
-       (push key keys-b)))
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (push key keys-a))
+             first)
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (push key keys-b))
+             second)
     (dolist (name '("parentId" "timestamp" "message"))
       (let ((a (find name keys-a :test #'string=))
             (b (find name keys-b :test #'string=)))
@@ -134,16 +130,15 @@
       (is (string= "unique-value" (cadr-ai::json-get parsed "x"))))))
 
 (test goal20-json-object-exact-size-round-trip
-  ;; V8 SmallVector 16: <=16 keys stay ordered pairs; 64 keys
-  ;; spill to EQUAL hash (dictionary).  Both round-trip.
+  ;; parse-object stacks <=8 pairs then MAKE-HASH-TABLE :size COUNT.
+  ;; 8-key (no grow) and 64-key (spill) must both round-trip.
   (let* ((eight
            (cadr-ai::parse-json
             "{\"api\":1,\"content\":2,\"model\":3,\"provider\":4,\"role\":5,\"stopReason\":6,\"timestamp\":7,\"usage\":8}"))
          (keys '("api" "content" "model" "provider" "role"
                  "stopReason" "timestamp" "usage")))
-    (is (cadr-ai::json-object-pairs-p eight))
-    (is (not (hash-table-p eight)))
-    (is (= 8 (length (cadr-ai::json-keys eight))))
+    (is (hash-table-p eight))
+    (is (= 8 (hash-table-count eight)))
     (dolist (key keys)
       (is (cadr-ai::json-present-p eight key))))
   (let ((object (cadr-ai::json-object)))
@@ -153,7 +148,6 @@
        (format nil "k~D" index)
        index))
     (let ((parsed (cadr-ai::parse-json (cadr-ai::stringify-json object))))
-      (is (hash-table-p parsed))
       (is (= 64 (hash-table-count parsed)))
       (dotimes (index 64)
         (is (eql index
@@ -168,18 +162,16 @@
         (second (cadr-ai::parse-json "{\"thinking\":\"y\"}"))
         (key-a nil)
         (key-b nil))
-    (cadr-ai::json-map-entries
-     first
-     (lambda (key value)
-       (declare (ignore value))
-       (when (string= key "thinking")
-         (setf key-a key))))
-    (cadr-ai::json-map-entries
-     second
-     (lambda (key value)
-       (declare (ignore value))
-       (when (string= key "thinking")
-         (setf key-b key))))
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (when (string= key "thinking")
+                 (setf key-a key)))
+             first)
+    (maphash (lambda (key value)
+               (declare (ignore value))
+               (when (string= key "thinking")
+                 (setf key-b key)))
+             second)
     (is (eq key-a key-b))
     (is (string= key-a "thinking"))))
 
@@ -288,7 +280,7 @@
     (is (equal '("type" "parentId" "message") keys))
     (is (string= "message" (first values)))
     (is (cadr-ai::json-null-p (second values)))
-    (is (cadr-ai::json-object-p (third values)))
+    (is (hash-table-p (third values)))
     (is (string=
          "user"
          (cadr-ai::json-get (third values) "role"))))
@@ -311,7 +303,7 @@
          (octets
            (sb-ext:string-to-octets text :external-format :utf-8))
          (object (cadr-ai::parse-json-octets octets)))
-    (is (cadr-ai::json-object-p object))
+    (is (hash-table-p object))
     (is (string= "message" (cadr-ai::json-get object "type")))
     (is (string= "中文" (cadr-ai::json-get object "text")))))
 
@@ -350,26 +342,6 @@
          (object (cadr-ai::parse-json source)))
     (is (string= "message" (cadr-ai::json-get object "type")))
     (is (string= "k" (cadr-ai::json-get object "id")))))
-
-(test goal20-json-parse-small-object-is-sequential-pairs
-  ;; V8 BuildJsonObject sequential properties.  SSE events are
-  ;; 2–8 keys; they must not EQUAL-hash then copy.
-  (let ((empty (cadr-ai::parse-json "{}"))
-        (three
-          (cadr-ai::parse-json
-           "{\"type\":\"text_delta\",\"delta\":\"x\",\"index\":1}"))
-        (octets
-          (cadr-ai::parse-json-octets
-           (cadr-ai::utf8-octets
-            "{\"type\":\"message\",\"role\":\"user\"}"))))
-    (is (cadr-ai::json-object-pairs-p empty))
-    (is (cadr-ai::json-object-pairs-p three))
-    (is (cadr-ai::json-object-pairs-p octets))
-    (is (string= "text_delta" (cadr-ai::json-get three "type")))
-    (is (eql 1 (cadr-ai::json-get three "index")))
-    (is (string=
-         "user"
-         (cadr-ai::json-get octets "role")))))
 
 (test goal20-json-object-pairs-round-trip
   ;; Session tool-call arguments: tagged pairs, not EQUAL hash.

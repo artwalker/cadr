@@ -86,7 +86,7 @@
   (or
    (ignore-errors
      (let ((object (parse-json payload)))
-       (and (json-object-p object)
+       (and (hash-table-p object)
             (or (json-get object "message")
                 (json-get object "Message")))))
    (and (non-empty-string-p payload) payload)

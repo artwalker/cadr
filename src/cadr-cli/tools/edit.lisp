@@ -44,11 +44,9 @@
       value))
 
 (defun prepare-edit-arguments (arguments)
-  (unless (cadr-ai::json-object-p arguments)
+  (unless (hash-table-p arguments)
     (return-from prepare-edit-arguments arguments))
-  (let* ((prepared
-           (cadr-ai::json-as-hash-table
-            (cadr-ai::copy-json-value arguments)))
+  (let* ((prepared (cadr-ai::copy-json-value arguments))
          (edits
            (normalize-edit-array
             (cadr-ai::json-get prepared "edits")))

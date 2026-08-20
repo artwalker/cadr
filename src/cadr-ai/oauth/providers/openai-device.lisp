@@ -4,8 +4,8 @@
   "Device flow timed out after one or more slow_down responses. This is often caused by clock drift in WSL or VM environments. Please sync or restart the VM clock and try again.")
 
 (defun oauth-response-json-copy (object)
-  (if (and (json-object-p object)
-           (json-keys object))
+  (if (and (hash-table-p object)
+           (plusp (hash-table-count object)))
       (stringify-json object)
       ""))
 
@@ -109,7 +109,7 @@
          (t
           (let* ((error-value (json-get response "error"))
                  (error-code
-                   (if (json-object-p error-value)
+                   (if (hash-table-p error-value)
                        (json-get error-value "code")
                        error-value)))
             (cond

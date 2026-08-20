@@ -8,9 +8,8 @@
    :description (format nil "Use ~A." name)
    :parameters
    (if grammar
-       (cadr-ai::json-as-hash-table
-        (parse-json
-         "{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"}},\"required\":[\"query\"]}"))
+       (parse-json
+        "{\"type\":\"object\",\"properties\":{\"query\":{\"type\":\"string\"}},\"required\":[\"query\"]}")
        (sample-schema))
    :constrained-sampling
    (and grammar

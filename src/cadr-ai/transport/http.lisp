@@ -696,7 +696,7 @@
                     (value
                       (or (json-get object "__type")
                           (json-get object "code")
-                          (and (json-object-p nested)
+                          (and (hash-table-p nested)
                                (or
                                 (json-get nested "code")
                                 (json-get nested "type"))))))
@@ -784,17 +784,16 @@
         (signal-api-error request text
                           status headers))
       (values
-       (json-as-hash-table
-        (handler-case
-            (parse-json text)
-          (json-parse-error (cause)
-            (error
-             'transport-error
-             :message
-             (format nil
-                     "Invalid JSON response: ~A"
-                     cause)
-             :cause cause))))
+       (handler-case
+           (parse-json text)
+         (json-parse-error (cause)
+           (error
+            'transport-error
+            :message
+            (format nil
+                    "Invalid JSON response: ~A"
+                    cause)
+            :cause cause)))
        status headers))))
 
 (defun request-sse

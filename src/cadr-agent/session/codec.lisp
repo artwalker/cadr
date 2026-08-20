@@ -210,8 +210,6 @@
           object "thoughtSignature"
           (cadr-ai:tool-call-thought-signature block)))
        object))
-    ((cadr-ai::json-object-p block)
-     (content-block-to-json (content-block-from-json block)))
     (t
      (error "Unsupported session content block: ~S" block))))
 
@@ -408,9 +406,11 @@
    (intern (string-upcase value) "KEYWORD")))
 
 (defun json-get-either (object primary legacy)
-  (if (cadr-ai::json-present-p object primary)
-      (cadr-ai::json-get object primary)
-      (cadr-ai::json-get object legacy)))
+  (multiple-value-bind (value present-p)
+      (gethash primary object)
+    (if present-p
+        value
+        (cadr-ai::json-get object legacy))))
 
 (defun diagnostic-json-value-to-lisp (value)
   (cond
@@ -449,7 +449,7 @@
     (cadr-ai::json-get object "error"))))
 
 (defun content-block-from-json (object)
-  (unless (cadr-ai::json-object-p object)
+  (unless (hash-table-p object)
     (return-from content-block-from-json object))
   (let ((type (cadr-ai::json-get object "type")))
     (cond
@@ -515,7 +515,7 @@
      :reasoning (cadr-ai::json-get object "reasoning")
      :total (cadr-ai::json-get object "total")
      :cost
-     (if (cadr-ai::json-object-p cost)
+     (if (hash-table-p cost)
          (cadr-ai:make-cost
           :input (usage-cost-amount cost "input")
           :output (usage-cost-amount cost "output")

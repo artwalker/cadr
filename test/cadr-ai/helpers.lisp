@@ -14,17 +14,13 @@
 
 (defun json-equal-p (left right)
   (cond
-    ((and (cadr-ai::json-object-p left)
-          (cadr-ai::json-object-p right))
-     (let ((left-keys (cadr-ai::json-keys left))
-           (right-keys (cadr-ai::json-keys right)))
-       (and (= (length left-keys) (length right-keys))
-            (loop for key in left-keys
-                  always
-                  (and (cadr-ai::json-present-p right key)
-                       (json-equal-p
-                        (cadr-ai::json-get left key)
-                        (cadr-ai::json-get right key)))))))
+    ((and (hash-table-p left) (hash-table-p right))
+     (and (= (hash-table-count left) (hash-table-count right))
+          (loop for key being the hash-keys of left
+                always (multiple-value-bind (value found-p)
+                           (gethash key right)
+                         (and found-p
+                              (json-equal-p (gethash key left) value))))))
     ((and (vectorp left) (vectorp right))
      (and (= (length left) (length right))
           (loop for index below (length left)
@@ -33,9 +29,8 @@
      (equalp left right))))
 
 (defun sample-schema ()
-  (cadr-ai::json-as-hash-table
-   (parse-json
-    "{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}")))
+  (parse-json
+   "{\"type\":\"object\",\"properties\":{\"path\":{\"type\":\"string\"}},\"required\":[\"path\"]}"))
 
 (defun sample-context ()
   (make-context

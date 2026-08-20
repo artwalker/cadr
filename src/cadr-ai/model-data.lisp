@@ -12,12 +12,14 @@
                      (file-namestring path)))))
 
 (defun model-data-sorted-keys (object)
-  (sort (copy-list (json-keys object)) #'string<))
+  (sort
+   (loop for key being the hash-keys of object collect key)
+   #'string<))
 
 (defun walk-model-data-groups (groups on-invalid-group on-model)
   (dolist (api (model-data-sorted-keys groups))
     (let ((group (json-get groups api)))
-      (if (not (json-object-p group))
+      (if (not (hash-table-p group))
           (funcall on-invalid-group api)
           (dolist (model-id (model-data-sorted-keys group))
             (funcall on-model api group model-id))))))
@@ -36,7 +38,7 @@
           (parse-json
            (uiop:read-file-string path :external-format :utf-8)))
         (models (make-hash-table :test #'equal)))
-    (unless (json-object-p groups)
+    (unless (hash-table-p groups)
       (error "~A.json must contain a JSON object" provider-id))
     (walk-model-data-groups
      groups
@@ -100,8 +102,8 @@
   (labels ((problem (format-control &rest arguments)
              (push (apply #'format nil format-control arguments) errors))
            (field (key)
-             (and (json-object-p value) (json-get value key))))
-    (unless (json-object-p value)
+             (and (hash-table-p value) (json-get value key))))
+    (unless (hash-table-p value)
       (problem "~A/~A must be an object" provider-id model-id)
       (return-from validate-model-data-value errors))
     (unless (equal model-id (field "id"))
@@ -132,7 +134,7 @@
     (unless (model-data-positive-number-p (field "maxTokens"))
       (problem "~A/~A has invalid maxTokens" provider-id model-id))
     (let ((cost (field "cost")))
-      (if (not (json-object-p cost))
+      (if (not (hash-table-p cost))
           (problem "~A/~A has invalid cost metadata" provider-id model-id)
           (dolist (cost-field '("input" "output" "cacheRead" "cacheWrite"))
             (unless (realp (json-get cost cost-field))
@@ -177,7 +179,7 @@
                      errors)
                nil)))
          (manifest-files
-           (and (json-object-p manifest) (json-get manifest "files"))))
+           (and (hash-table-p manifest) (json-get manifest "files"))))
     (unless (equal expected-files actual-files)
       (push
        (format nil
@@ -185,25 +187,25 @@
                (model-data-string-set-difference expected-files actual-files))
        errors))
     (unless (= +model-data-schema-version+
-               (if (json-object-p manifest)
+               (if (hash-table-p manifest)
                    (or (json-get manifest "schemaVersion") -1)
                    -1))
       (push
        (format nil "model data schema is ~S, expected ~D"
-               (and (json-object-p manifest)
+               (and (hash-table-p manifest)
                     (json-get manifest "schemaVersion"))
                +model-data-schema-version+)
        errors))
-    (unless (and (json-object-p manifest)
+    (unless (and (hash-table-p manifest)
                  (valid-model-data-timestamp-p
                   (json-get manifest "generatedAt")))
       (push "model data manifest has an invalid generation timestamp" errors))
-    (unless (and (json-object-p manifest)
+    (unless (and (hash-table-p manifest)
                  (string= (or (json-get manifest "structureHash") "")
                           (model-data-structure-hash structure)))
       (push "model data generation stamp does not match the generated catalog"
             errors))
-    (if (not (json-object-p manifest-files))
+    (if (not (hash-table-p manifest-files))
         (push "model data manifest has no file hashes" errors)
         (let ((manifest-file-names (model-data-sorted-keys manifest-files)))
           (unless (equal expected-files manifest-file-names)
@@ -218,7 +220,7 @@
        (let* ((filename (format nil "~A.json" provider-id))
               (path (merge-pathnames filename directory)))
          (when (probe-file path)
-           (when (and (json-object-p manifest-files)
+           (when (and (hash-table-p manifest-files)
                       (not
                        (string=
                         (or (json-get manifest-files filename) "")
@@ -234,7 +236,7 @@
                              errors)
                        nil)))
                  (actual-models (make-hash-table :test #'equal)))
-             (when (json-object-p groups)
+             (when (hash-table-p groups)
                (walk-model-data-groups
                 groups
                 (lambda (api)

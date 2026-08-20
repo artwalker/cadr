@@ -11,11 +11,6 @@
 
 (defconstant +maximum-json-nesting-depth+ 256)
 (defconstant +maximum-json-decimal-shift+ 100000)
-;; V8 JsonParser SmallVector<JsonProperty, 16> then one JSObject
-;; with sequential named properties.  cadr keeps ordered pairs
-;; up to this count; larger objects spill to EQUAL hash
-;; (dictionary mode).  Not intern expand.  Not FFI.
-(defconstant +json-fast-property-limit+ 16)
 
 (defun utf8-octets (text)
   (sb-ext:string-to-octets
@@ -62,31 +57,6 @@
   (and (consp value)
        (eq (car value) :json-object)))
 
-(defun json-object-p (value)
-  ;; Parsed JSON object: EQUAL hash (dictionary) or ordered
-  ;; pairs (V8 fast properties).  Builder JSON-OBJECT stays a
-  ;; hash table.
-  (or (hash-table-p value)
-      (json-object-pairs-p value)))
-
-(defun json-keys (object)
-  (cond
-    ((hash-table-p object)
-     (loop for key being the hash-keys of object collect key))
-    ((json-object-pairs-p object)
-     (loop for (pair-key) on (cdr object) by #'cddr
-           collect pair-key))
-    (t nil)))
-
-(defun json-map-entries (object function)
-  (cond
-    ((hash-table-p object)
-     (maphash function object))
-    ((json-object-pairs-p object)
-     (loop for (pair-key pair-value) on (cdr object) by #'cddr
-           do (funcall function pair-key pair-value))))
-  object)
-
 (defun json-get (object key &optional default)
   (cond
     ((hash-table-p object)
@@ -113,64 +83,8 @@
   (eq value 'null))
 
 (defun json-put (object key value)
-  (cond
-    ((hash-table-p object)
-     (setf (gethash key object) value)
-     object)
-    ((json-object-pairs-p object)
-     (loop for rest on (cdr object) by #'cddr
-           when (and (stringp (car rest))
-                     (string= (car rest) key))
-             do (setf (cadr rest) value)
-                (return-from json-put object))
-     (setf (cdr object) (list* key value (cdr object)))
-     object)
-    (t
-     (error "Cannot put ~S on ~S" key object))))
-
-(defun json-ensure-hash-table (value)
-  ;; Schema / settings mutation still uses GETHASH.  Convert ordered
-  ;; pairs once; leave an existing EQUAL hash in place.
-  (if (json-object-pairs-p value)
-      (json-as-hash-table value)
-      value))
-
-(defun json-as-hash-table (value)
-  ;; Cold persistence (settings / config): sequential pairs become
-  ;; an EQUAL hash.  SSE / parse-json keep pairs.  Recurses.
-  (cond
-    ((json-object-pairs-p value)
-     (let ((hash (make-hash-table :test #'equal)))
-       (loop for (pair-key pair-value) on (cdr value) by #'cddr
-             do (setf (gethash pair-key hash)
-                      (json-as-hash-table pair-value)))
-       hash))
-    ((hash-table-p value)
-     (let ((hash (make-hash-table :test #'equal)))
-       (maphash
-        (lambda (pair-key pair-value)
-          (setf (gethash pair-key hash)
-                (json-as-hash-table pair-value)))
-        value)
-       hash))
-    ((and (vectorp value) (not (stringp value)))
-     (map 'vector #'json-as-hash-table value))
-    (t value)))
-
-(defun json-delete (object key)
-  (cond
-    ((hash-table-p object)
-     (remhash key object)
-     object)
-    ((json-object-pairs-p object)
-     (setf (cdr object)
-           (loop for (pair-key pair-value) on (cdr object) by #'cddr
-                 unless (and (stringp pair-key)
-                             (string= pair-key key))
-                   collect pair-key
-                   and collect pair-value))
-     object)
-    (t object)))
+  (setf (gethash key object) value)
+  object)
 
 (defun valid-json-number-token-p (token)
   (let ((index 0)
@@ -711,22 +625,24 @@
                (otherwise
                 (fail "Expected comma or ]")))))
          (parse-object (depth)
-           ;; V8: property_stack_ then one JSObject with sequential
-           ;; named properties (SmallVector 16).  Lisp: ordered
-           ;; (:json-object . pairs) up to +json-fast-property-limit+;
-           ;; spill to EQUAL hash past that.  Do not EQUAL-hash then
-           ;; copy the 2–8 key SSE majority.  Not intern expand.
+           ;; Session JSONL objects are almost all 2–8 keys.  A default
+           ;; EQUAL table holds 7 pairs and then GROW-HASH-TABLE copies
+           ;; the 8-key message objects; a fixed :size 8/16 over-allocates
+           ;; the 2-key majority.  Stack the first 8 pairs, then allocate
+           ;; :size COUNT (or spill past 8).  Not intern expand.  Not 7b.
            (expect #\{)
            (skip-space)
            (when (and (peek)
                       (char= (peek) #\}))
              (take)
              (return-from parse-object
-               (list :json-object)))
-           (let ((pairs nil)
+               (make-hash-table :test #'equal)))
+           (let ((pairs (make-array 16))
                  (count 0)
                  (spilled nil))
-             (declare (type fixnum count))
+             (declare (type (simple-vector 16) pairs)
+                      (type fixnum count)
+                      (dynamic-extent pairs))
              (loop
                (unless (and (peek)
                             (char= (peek) #\"))
@@ -739,16 +655,19 @@
                    (cond
                      (spilled
                       (setf (gethash key spilled) value))
-                     ((< count +json-fast-property-limit+)
-                      (setf pairs (list* key value pairs))
+                     ((< count 8)
+                      (setf (svref pairs (* count 2)) key)
+                      (setf (svref pairs (1+ (* count 2))) value)
                       (incf count))
                      (t
                       (let ((object
-                              (make-hash-table :test #'equal :size 32)))
-                        (loop for (pair-key pair-value) on pairs
-                              by #'cddr
-                              do (setf (gethash pair-key object)
-                                       pair-value))
+                              (make-hash-table :test #'equal :size 16)))
+                        (loop for index from 0 below count
+                              do (setf
+                                  (gethash
+                                   (svref pairs (* index 2))
+                                   object)
+                                  (svref pairs (1+ (* index 2)))))
                         (setf (gethash key object) value)
                         (setf spilled object))))))
                (skip-space)
@@ -758,7 +677,17 @@
                   (take)
                   (return
                     (or spilled
-                        (cons :json-object pairs))))
+                        (let ((object
+                                (make-hash-table
+                                 :test #'equal
+                                 :size count)))
+                          (loop for index from 0 below count
+                                do (setf
+                                    (gethash
+                                     (svref pairs (* index 2))
+                                     object)
+                                    (svref pairs (1+ (* index 2)))))
+                          object))))
                  (otherwise
                   (fail "Expected comma or }"))))))
          (parse-object-fields (visitor)
@@ -1601,18 +1530,18 @@
                    (t
                     (fail "Expected comma or ]"))))))
            (parse-object (depth)
-             ;; Same sequential-property fill as PARSE-JSON-SOURCE.
-             ;; Not intern expand.  Not FFI.
              (expect-code 123)
              (skip-space)
              (when (eql (peek-code) 125)
                (take-code)
                (return-from parse-object
-                 (list :json-object)))
-             (let ((pairs nil)
+                 (make-hash-table :test #'equal)))
+             (let ((pairs (make-array 16))
                    (count 0)
                    (spilled nil))
-               (declare (type fixnum count))
+               (declare (type (simple-vector 16) pairs)
+                        (type fixnum count)
+                        (dynamic-extent pairs))
                (loop
                  (unless (eql (peek-code) 34)
                    (fail "Object key must be a string"))
@@ -1624,16 +1553,19 @@
                      (cond
                        (spilled
                         (setf (gethash key spilled) value))
-                       ((< count +json-fast-property-limit+)
-                        (setf pairs (list* key value pairs))
+                       ((< count 8)
+                        (setf (svref pairs (* count 2)) key)
+                        (setf (svref pairs (1+ (* count 2))) value)
                         (incf count))
                        (t
                         (let ((object
-                                (make-hash-table :test #'equal :size 32)))
-                          (loop for (pair-key pair-value) on pairs
-                                by #'cddr
-                                do (setf (gethash pair-key object)
-                                         pair-value))
+                                (make-hash-table :test #'equal :size 16)))
+                          (loop for index from 0 below count
+                                do (setf
+                                    (gethash
+                                     (svref pairs (* index 2))
+                                     object)
+                                    (svref pairs (1+ (* index 2)))))
                           (setf (gethash key object) value)
                           (setf spilled object))))))
                  (skip-space)
@@ -1646,7 +1578,17 @@
                       (take-code)
                       (return
                         (or spilled
-                            (cons :json-object pairs))))
+                            (let ((object
+                                    (make-hash-table
+                                     :test #'equal
+                                     :size count)))
+                              (loop for index from 0 below count
+                                    do (setf
+                                        (gethash
+                                         (svref pairs (* index 2))
+                                         object)
+                                        (svref pairs (1+ (* index 2)))))
+                              object))))
                      (t
                       (fail "Expected comma or }")))))))
            (parse-object-fields (visitor)
@@ -1954,7 +1896,7 @@
   (handler-case
       (let* ((parsed (if (stringp body) (parse-json body) body))
              (error-object (json-get parsed "error"))
-             (message (and (json-object-p error-object)
+             (message (and (hash-table-p error-object)
                            (json-get error-object "message"))))
         (if (non-empty-string-p message)
             message

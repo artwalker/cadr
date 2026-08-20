@@ -160,14 +160,13 @@
      value)
     ((vectorp value)
      (map 'vector #'sanitize-bedrock-document value))
-    ((json-object-p value)
+    ((hash-table-p value)
      (let ((result (make-hash-table :test #'equal)))
-       (json-map-entries
-        value
-        (lambda (key nested)
-          (when (plusp (length key))
-            (setf (gethash key result)
-                  (sanitize-bedrock-document nested)))))
+       (loop for key being the hash-keys of value
+             using (hash-value nested)
+             when (plusp (length key))
+               do (setf (gethash key result)
+                        (sanitize-bedrock-document nested)))
        result))
     (t value)))
 
@@ -647,13 +646,15 @@
   (let ((object (parse-json (sse-event-data event))))
     (values
      (or (sse-event-event event)
-         (and (json-object-p object)
-              (first (json-keys object))))
-     (if (and (json-object-p object)
+         (and (hash-table-p object)
+              (loop for key being the hash-keys of object
+                    return key)))
+     (if (and (hash-table-p object)
               (sse-event-event event))
          object
-         (and (json-object-p object)
-              (json-get object (first (json-keys object))))))))
+         (and (hash-table-p object)
+              (loop for value being the hash-values of object
+                    return value))))))
 
 (defun finish-current-block (state emit)
   (let* ((message (provider-stream-state-message state))

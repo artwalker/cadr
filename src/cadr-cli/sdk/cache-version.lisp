@@ -300,7 +300,7 @@
 (defun release-string-field (release key)
   (let ((value
           (and
-           (cadr-ai::json-object-p release)
+           (hash-table-p release)
            (cadr-ai::json-get release key))))
     (when (stringp value)
       (let ((trimmed
@@ -376,8 +376,7 @@
              (integerp status)
              (<= 200 status 299))
         (normalize-latest-cadr-release
-         (cadr-ai::json-as-hash-table
-          (cadr-ai::parse-json body)))))))
+         (cadr-ai::parse-json body))))))
 
 (defun get-latest-cadr-version
     (current-version
@@ -447,7 +446,7 @@
              (not
               (nonempty-environment-value-p
                skip-value)))
-         (cadr-ai::json-object-p release)
+         (hash-table-p release)
          (stringp
           (cadr-ai::json-get release "version"))
          (plusp

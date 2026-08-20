@@ -33,7 +33,7 @@
                :content content
                :connect-timeout 10
                :read-timeout 30)
-    (unless (json-object-p object)
+    (unless (hash-table-p object)
       (error 'authentication-error
              :message "OAuth endpoint returned invalid JSON"))
     (values object status response-headers)))
@@ -62,7 +62,7 @@
   (or (json-get object "error_description")
       (json-get object "message")
       (let ((error (json-get object "error")))
-        (if (json-object-p error)
+        (if (hash-table-p error)
             (json-get error "message")
             error))))
 

@@ -628,7 +628,7 @@
                      (cond
                        ((cadr-ai::json-object-pairs-p arguments)
                         arguments)
-                       ((cadr-ai::json-object-p arguments)
+                       ((hash-table-p arguments)
                         arguments)
                        (t '(:json-object))))
                    :thought-signature
@@ -1088,7 +1088,7 @@
                   (cadr-ai::json-null-p value))
               nil)
              ((typep value 'cadr-ai:usage) value)
-             ((cadr-ai::json-object-p value)
+             ((hash-table-p value)
               (usage-from-json value))
              (t value)))
          (put-cost-field (cost field value)
@@ -1138,7 +1138,7 @@
               (setf (cadr-ai:usage-cost usage)
                     (cond
                       ((typep value 'cadr-ai:cost) value)
-                      ((cadr-ai::json-object-p value)
+                      ((hash-table-p value)
                        (cadr-ai:make-cost
                         :input (usage-cost-amount value "input")
                         :output (usage-cost-amount value "output")
@@ -1349,7 +1349,7 @@
                    (cond
                      ((cadr-ai::json-object-pairs-p arguments)
                       arguments)
-                     ((cadr-ai::json-object-p arguments)
+                     ((hash-table-p arguments)
                       arguments)
                      (t '(:json-object))))
                  :thought-signature
@@ -1482,7 +1482,7 @@
 
 (defun validate-session-header (object path)
   (unless (or (session-file-header-p object)
-              (cadr-ai::json-object-p object))
+              (hash-table-p object))
     (session-failure path 1 "Invalid session header"))
   (let ((version (session-header-ref object "version" 1)))
     (unless
@@ -1660,7 +1660,7 @@
             (cadr-ai::json-put
              object "firstKeptEntryId"
              (cadr-ai::json-get target "id")))
-          (cadr-ai::json-delete object "firstKeptEntryIndex"))))
+          (remhash "firstKeptEntryIndex" object))))
   objects))
 
 (defun migrate-v2-session-objects (objects)
@@ -1674,7 +1674,7 @@
               (cadr-ai::json-get object "message")))
         (when
             (and
-             (cadr-ai::json-object-p message)
+             (hash-table-p message)
              (string=
               "hookMessage"
               (or
@@ -1703,10 +1703,10 @@
 
 (defun session-entry-from-hash (object)
   (let ((entry (make-session-entry)))
-    (cadr-ai::json-map-entries
-     object
+    (maphash
      (lambda (key value)
-       (session-record-put entry key value)))
+       (session-record-put entry key value))
+     object)
     entry))
 
 (defun require-session-slot (value name path line-number)
@@ -1897,7 +1897,7 @@
             tokens-before
             (session-entry-usage entry)
             (and usage-object
-                 (if (cadr-ai::json-object-p usage-object)
+                 (if (hash-table-p usage-object)
                      (usage-from-json usage-object)
                      usage-object))
             (session-entry-retained-tail entry)
@@ -1932,7 +1932,7 @@
            (setf
             (session-entry-usage entry)
             (and usage-object
-                 (if (cadr-ai::json-object-p usage-object)
+                 (if (hash-table-p usage-object)
                      (usage-from-json usage-object)
                      usage-object)))))
         (:custom
@@ -2050,7 +2050,7 @@
     ((session-entry-p object)
      (finalize-session-entry
       object path line-number by-id))
-    ((cadr-ai::json-object-p object)
+    ((hash-table-p object)
      (finalize-session-entry
       (session-entry-from-hash object)
       path line-number by-id))

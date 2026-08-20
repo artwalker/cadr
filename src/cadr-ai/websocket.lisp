@@ -425,8 +425,8 @@ NIL means that the caller must send the original, uncompressed body."
     (when (and previous-body previous-response previous-id
                (let ((left (copy-json-value previous-body))
                      (right (copy-json-value payload)))
-                 (json-delete left "input")
-                 (json-delete right "input")
+                 (remhash "input" left)
+                 (remhash "input" right)
                  (json-value-equal-p left right)))
       (let* ((old-input (json-get previous-body "input" #()))
              (expected (concatenate 'vector old-input previous-response))
@@ -486,7 +486,7 @@ NIL means that the caller must send the original, uncompressed body."
                   (type (json-get object "type")))
              (funcall on-first-event)
              (when (string= type "response.done")
-               (json-put object "type" "response.completed"))
+               (setf (gethash "type" object) "response.completed"))
              (reduce-provider-sse-event
               provider state
               (make-sse-event :data (stringify-json object)) emit)

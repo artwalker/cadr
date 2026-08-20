@@ -37,16 +37,16 @@
   (when (probe-file path)
     (handler-case
         (let ((secrets nil))
-          (json-map-entries
-           (read-auth-object path)
+          (maphash
            (lambda (provider object)
              (declare (ignore provider))
-             (when (json-object-p object)
+             (when (hash-table-p object)
                (dolist (field '("key" "access" "refresh" "token"
                                 "client_secret"))
                  (let ((value (json-get object field)))
                    (when (non-empty-string-p value)
-                     (push value secrets)))))))
+                     (push value secrets))))))
+           (read-auth-object path))
           secrets)
       (condition () nil))))
 

@@ -16,7 +16,7 @@
     (is (= 125d0 (aref array 4)))
     (is (string= (format nil "你好~%👩")
                  (aref array 5)))
-    (is (json-equal-p value round-trip))))
+    (is (equalp value round-trip))))
 
 (test native-json-rejects-invalid-or-trailing-input
   (dolist (source

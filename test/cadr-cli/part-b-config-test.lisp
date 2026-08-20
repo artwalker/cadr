@@ -525,8 +525,10 @@
       (let ((persisted
               (cadr-ai::parse-json
                (read-text path))))
-        (is (null
-             (cadr-ai::json-present-p persisted "enabledModels")))
+        (multiple-value-bind (value present-p)
+            (gethash "enabledModels" persisted)
+          (declare (ignore value))
+          (is (null present-p)))
         (is (string=
              "faux"
              (cadr-ai::json-get

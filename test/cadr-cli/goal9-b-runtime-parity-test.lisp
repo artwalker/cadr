@@ -60,17 +60,13 @@
 
 (defun goal9-json-deep-equal (left right)
   (cond
-    ((and (cadr-ai::json-object-p left)
-          (cadr-ai::json-object-p right))
-     (let ((left-keys (cadr-ai::json-keys left)))
-       (and (= (length left-keys)
-               (length (cadr-ai::json-keys right)))
-            (loop for key in left-keys
-                  always
-                  (and (cadr-ai::json-present-p right key)
-                       (goal9-json-deep-equal
-                        (cadr-ai::json-get left key)
-                        (cadr-ai::json-get right key)))))))
+    ((and (hash-table-p left) (hash-table-p right))
+     (and (= (hash-table-count left) (hash-table-count right))
+          (loop for key being the hash-keys of left
+                  using (hash-value value)
+                always (and (nth-value 1 (gethash key right))
+                            (goal9-json-deep-equal
+                             value (gethash key right))))))
     ((and (vectorp left) (vectorp right))
      (and (= (length left) (length right))
           (loop for index below (length left)
@@ -84,16 +80,16 @@ object schema and sorts keys; both are the established wire
 normalization shared by all seven tools.  Strip exactly that key —
 asserting it is false — so the remaining structure must equal the
 baseline byte content."
-  (if (cadr-ai::json-object-p node)
+  (if (hash-table-p node)
       (let ((result (cadr-ai::json-object)))
-        (cadr-ai::json-map-entries
-         node
+        (maphash
          (lambda (key value)
            (if (string= key "additionalProperties")
                (assert (member value '(nil :false)) (value)
                        "additionalProperties must be false, got ~S" value)
                (setf (gethash key result)
-                     (goal9-strip-cadr-schema-normalization value)))))
+                     (goal9-strip-cadr-schema-normalization value))))
+         node)
         result)
       (if (vectorp node)
           (map 'vector #'goal9-strip-cadr-schema-normalization node)

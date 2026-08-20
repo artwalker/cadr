@@ -23,10 +23,10 @@
                    :external-format :utf-8)))
                (manifest
                  (and
-                  (cadr-ai::json-object-p package)
+                  (hash-table-p package)
                   (cadr-ai::json-get
                    package "pi"))))
-          (if (cadr-ai::json-object-p manifest)
+          (if (hash-table-p manifest)
               (let ((result nil))
                 (dolist
                     (field

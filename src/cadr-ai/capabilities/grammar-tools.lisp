@@ -52,12 +52,6 @@
          (or (gethash (string-downcase (symbol-name key)) object)
              (gethash key object))
          (json-get object key)))
-    ((json-object-pairs-p object)
-     (json-get
-      object
-      (if (keywordp key)
-          (string-downcase (symbol-name key))
-          key)))
     ((listp object)
      (getf object
            (if (keywordp key)
@@ -174,10 +168,9 @@
 
 (defun structured-schema-p (schema)
   ;; Baseline isStructuredSchema.
-  (when (json-object-p schema)
+  (when (hash-table-p schema)
     (let ((types
-            (let ((present-p (json-present-p schema "type"))
-                  (type (json-get schema "type")))
+            (multiple-value-bind (type present-p) (gethash "type" schema)
               (cond
                 ((not present-p) nil)
                 ((stringp type) (list type))
@@ -185,42 +178,38 @@
                 (t nil)))))
       (or (member "object" types :test #'string=)
           (member "array" types :test #'string=)
-          (json-present-p schema "properties")
-          (json-present-p schema "items")))))
+          (nth-value 1 (gethash "properties" schema))
+          (nth-value 1 (gethash "items" schema))))))
 
 (defun schema-allows-null-p (schema)
   ;; Baseline schemaAllowsNull.
-  (when (json-object-p schema)
-    (let ((present-p (json-present-p schema "type"))
-          (type (json-get schema "type")))
+  (when (hash-table-p schema)
+    (multiple-value-bind (type present-p) (gethash "type" schema)
       (when (and present-p
                  (or (and (stringp type) (string= type "null"))
                      (and (vectorp type)
                           (find "null" type :test #'string=))))
         (return-from schema-allows-null-p t)))
-    (when (and (json-present-p schema "const")
-               (eq (json-get schema "const") 'null))
-      (return-from schema-allows-null-p t))
-    (let ((enum (json-get schema "enum")))
-      (when (and (json-present-p schema "enum")
-                 (vectorp enum)
-                 (find 'null enum))
+    (multiple-value-bind (const present-p) (gethash "const" schema)
+      (when (and present-p (eq const 'null))
         (return-from schema-allows-null-p t)))
-    (let ((any-of (json-get schema "anyOf")))
-      (and (json-present-p schema "anyOf")
+    (multiple-value-bind (enum present-p) (gethash "enum" schema)
+      (when (and present-p (vectorp enum) (find 'null enum))
+        (return-from schema-allows-null-p t)))
+    (multiple-value-bind (any-of present-p) (gethash "anyOf" schema)
+      (and present-p
            (vectorp any-of)
            (some #'schema-allows-null-p (coerce any-of 'list))))))
 
 (defun make-json-schema-node-strict (schema)
   ;; Baseline makeJsonSchemaNodeStrict; mutates SCHEMA in place.
-  (unless (json-object-p schema)
+  (unless (hash-table-p schema)
     (strict-schema-error "boolean schemas are unsupported"))
   (dolist (key +unsupported-strict-schema-keys+)
-    (when (json-present-p schema key)
+    (when (nth-value 1 (gethash key schema))
       (strict-schema-error "~A schemas are unsupported" key)))
-  (let ((any-of-present-p (json-present-p schema "anyOf"))
-        (any-of (json-get schema "anyOf")))
-    (when any-of-present-p
+  (multiple-value-bind (any-of present-p) (gethash "anyOf" schema)
+    (when present-p
       (unless (and (vectorp any-of) (plusp (length any-of)))
         (strict-schema-error "anyOf must contain at least one schema"))
       (loop for variant across any-of
@@ -228,33 +217,29 @@
                  (strict-schema-error
                   "object and array unions are unsupported"))
                (make-json-schema-node-strict variant))))
-  (let ((items-present-p (json-present-p schema "items"))
-        (items (json-get schema "items")))
-    (when items-present-p
+  (multiple-value-bind (items present-p) (gethash "items" schema)
+    (when present-p
       (when (vectorp items)
         (strict-schema-error "tuple schemas are unsupported"))
       (make-json-schema-node-strict items)))
   (let ((object-schema-p
-          (let ((present-p (json-present-p schema "type"))
-                (type (json-get schema "type")))
+          (multiple-value-bind (type present-p) (gethash "type" schema)
             (and present-p (stringp type) (string= type "object")))))
-    (let ((properties-p (json-present-p schema "properties"))
-          (properties (json-get schema "properties")))
+    (multiple-value-bind (properties properties-p)
+        (gethash "properties" schema)
       (when (and properties-p (not object-schema-p))
         (strict-schema-error "properties require type object"))
       (unless object-schema-p
         (return-from make-json-schema-node-strict nil))
-      (let ((additional-present-p
-              (json-present-p schema "additionalProperties"))
-            (additional (json-get schema "additionalProperties")))
+      (multiple-value-bind (additional present-p)
+          (gethash "additionalProperties" schema)
         ;; JSON false parses to nil: present and false is allowed.
-        (when (and additional-present-p (not (null additional)))
+        (when (and present-p (not (null additional)))
           (strict-schema-error
            "schema-valued or true additionalProperties is unsupported")))
-      (when (and properties-p (not (json-object-p properties)))
+      (when (and properties-p (not (hash-table-p properties)))
         (strict-schema-error "object properties must be a schema map"))
-      (let ((required-p (json-present-p schema "required"))
-            (required (json-get schema "required")))
+      (multiple-value-bind (required required-p) (gethash "required" schema)
         (when (and required-p
                    (not (and (vectorp required)
                              (loop for item across required
@@ -262,7 +247,9 @@
           (strict-schema-error "object required must be a string array"))
         (let* ((properties
                  (or properties (make-hash-table :test #'equal)))
-               (property-names (json-keys properties))
+               (property-names
+                 (loop for key being the hash-keys of properties
+                       collect key))
                (required-names
                  (if (and required-p (vectorp required))
                      (coerce required 'list)
@@ -271,29 +258,29 @@
                       thereis (not (member name property-names
                                            :test #'string=)))
             (strict-schema-error "required contains an unknown property"))
-          (dolist (key property-names)
-            (let ((property (json-get properties key)))
-              (make-json-schema-node-strict property)
-              (unless (or (member key required-names :test #'string=)
-                          (schema-allows-null-p property))
-                (let ((wrapper (make-hash-table :test #'equal))
-                      (null-schema (make-hash-table :test #'equal)))
-                  (setf (gethash "type" null-schema) "null")
-                  (setf (gethash "anyOf" wrapper)
-                        (vector property null-schema))
-                  (json-put properties key wrapper)))))
-          (json-put schema "required" (coerce property-names 'vector))
-          (json-put schema "additionalProperties" nil))))))
+          (loop for key being the hash-keys of properties
+                using (hash-value property)
+                do (make-json-schema-node-strict property)
+                   (unless (or (member key required-names :test #'string=)
+                               (schema-allows-null-p property))
+                     (let ((wrapper (make-hash-table :test #'equal))
+                           (null-schema (make-hash-table :test #'equal)))
+                       (setf (gethash "type" null-schema) "null")
+                       (setf (gethash "anyOf" wrapper)
+                             (vector property null-schema))
+                       (setf (gethash key properties) wrapper))))
+          (setf (gethash "required" schema)
+                (coerce property-names 'vector)
+                (gethash "additionalProperties" schema) nil))))))
 
 (defun make-strict-json-schema (parameters)
   ;; Baseline makeStrictJsonSchema: convert a tool schema to the strict
   ;; subset expected by provider constrained sampling.
   (let ((cloned (copy-json-value parameters)))
-    (unless (json-object-p cloned)
+    (unless (hash-table-p cloned)
       (strict-schema-error "root schema must have type object"))
     (make-json-schema-node-strict cloned)
-    (let ((present-p (json-present-p cloned "type"))
-          (type (json-get cloned "type")))
+    (multiple-value-bind (type present-p) (gethash "type" cloned)
       (unless (and present-p (stringp type) (string= type "object"))
         (strict-schema-error "root schema must have type object")))
     cloned))

@@ -220,15 +220,13 @@
                    (format nil "~A(~{~A~^, ~})"
                            (cadr-ai:tool-call-name block)
                            (cond
-                             ((cadr-ai::json-object-p arguments)
+                             ((hash-table-p arguments)
                               (sort
-                               (loop for key in
-                                     (cadr-ai::json-keys arguments)
+                               (loop for key being the hash-keys of arguments
                                      collect
                                      (format nil "~A=~A" key
                                              (safe-json-string
-                                              (cadr-ai::json-get
-                                               arguments key))))
+                                              (gethash key arguments))))
                                #'string<))
                              (t (list (safe-json-string arguments)))))
                    tool-calls)))))

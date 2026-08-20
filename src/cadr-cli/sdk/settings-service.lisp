@@ -41,7 +41,7 @@
 
 (defun sdk-settings-apply-overrides
     (manager overrides)
-  (unless (cadr-ai::json-object-p overrides)
+  (unless (hash-table-p overrides)
     (error
      'cadr-ai:configuration-error
      :message "SDK settings overrides must be a JSON object"))
@@ -107,7 +107,7 @@
 (defun sdk-settings-boolean
     (manager key default &optional nested-key)
   (let ((value (sdk-settings-value manager key :missing)))
-    (when (and nested-key (cadr-ai::json-object-p value))
+    (when (and nested-key (hash-table-p value))
       (setf value
             (cadr-ai::json-get
              value nested-key :missing)))
@@ -135,16 +135,16 @@
            (sdk-settings-value
             manager "retry" (empty-json-object)))
          (provider
-           (and (cadr-ai::json-object-p retry)
+           (and (hash-table-p retry)
                 (cadr-ai::json-get
                  retry "provider"
                  (empty-json-object))))
          (source
-           (if (cadr-ai::json-object-p provider)
+           (if (hash-table-p provider)
                (merge-json-objects retry provider)
                retry)))
     (flet ((field (key default)
-             (if (cadr-ai::json-object-p source)
+             (if (hash-table-p source)
                  (cadr-ai::json-get source key default)
                  default)))
       (list

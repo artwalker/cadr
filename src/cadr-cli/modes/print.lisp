@@ -94,17 +94,17 @@
 (defun wire-json-value (value)
   (cond
     ((null value) nil)
-    ((cadr-ai::json-object-p value)
+    ((hash-table-p value)
      (let ((object (cadr-ai::json-object)))
-       (cadr-ai::json-map-entries
-        value
+       (maphash
         (lambda (key nested)
           (cadr-ai::json-put
            object
            (if (symbolp key)
                (cadr-agent::symbol-json-name key)
                key)
-           (wire-json-value nested))))
+           (wire-json-value nested)))
+        value)
        object))
     ((and (listp value)
           (cadr-agent::strict-keyword-plist-p value))

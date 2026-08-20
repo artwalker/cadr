@@ -251,13 +251,13 @@
                    (format nil "Failed to parse models.json: ~A~%~%File: ~A"
                            cause (namestring path))
                    :cause cause)))))
-        (unless (cadr-ai::json-object-p root)
+        (unless (hash-table-p root)
           (error
            'cadr-ai:configuration-error
            :message
            (format nil "Invalid models.json schema:~%Expected a JSON object at the top level~%~%File: ~A"
                    (namestring path))))
-        (cadr-ai::json-as-hash-table root))))
+        root)))
 
 (defun refresh-model-registry (registry)
   (handler-case

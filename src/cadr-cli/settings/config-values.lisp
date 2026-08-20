@@ -152,30 +152,29 @@
       (resolve-config-template config environment)))
 
 (defun copy-json-object (object)
-  (cadr-ai::json-as-hash-table
-   (cadr-ai::copy-json-value object)))
+  (cadr-ai::copy-json-value object))
 
 (defun empty-json-object ()
   (cadr-ai::json-object))
 
 (defun merge-json-objects (base overrides)
   (let ((result
-          (if (cadr-ai::json-object-p base)
+          (if (hash-table-p base)
               (copy-json-object base)
               (empty-json-object))))
-    (when (cadr-ai::json-object-p overrides)
-      (cadr-ai::json-map-entries
-       overrides
+    (when (hash-table-p overrides)
+      (maphash
        (lambda (key value)
          (let ((current
                  (cadr-ai::json-get result key)))
            (cadr-ai::json-put
             result key
-            (if (and (cadr-ai::json-object-p current)
-                     (cadr-ai::json-object-p value))
+            (if (and (hash-table-p current)
+                     (hash-table-p value))
                 (merge-json-objects
                  current value)
-                (copy-json-object value)))))))
+                (copy-json-object value)))))
+       overrides))
     result))
 
 (defun read-settings-object (path)
@@ -186,9 +185,9 @@
                   (cadr-ai::parse-json
                    (uiop:read-file-string
                     path :external-format :utf-8))))
-            (unless (cadr-ai::json-object-p object)
+            (unless (hash-table-p object)
               (error "settings file must contain an object"))
-            (values (cadr-ai::json-as-hash-table object) nil))
+            (values object nil))
         (condition (condition)
           (values nil condition)))))
 

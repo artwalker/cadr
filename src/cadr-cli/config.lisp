@@ -30,11 +30,10 @@
       nil
       (handler-case
           (let ((secrets nil))
-            (cadr-ai::json-map-entries
-             (cadr-ai::read-auth-object path)
+            (maphash
              (lambda (provider object)
                (declare (ignore provider))
-               (when (cadr-ai::json-object-p object)
+               (when (hash-table-p object)
                  (dolist (field '("key" "access" "refresh"))
                    (let ((value
                            (cadr-ai::json-get object field)))
@@ -42,7 +41,8 @@
                          (and
                           (stringp value)
                           (plusp (length value)))
-                       (push value secrets)))))))
+                       (push value secrets))))))
+             (cadr-ai::read-auth-object path))
             secrets)
         (condition () nil))))
 
@@ -91,11 +91,11 @@
                   (cadr-ai::parse-json
                    (uiop:read-file-string
                     path :external-format :utf-8))))
-            (unless (cadr-ai::json-object-p object)
+            (unless (hash-table-p object)
               (error 'cadr-ai:configuration-error
                      :message
                      "config.json must contain a JSON object"))
-            (cadr-ai::json-as-hash-table object))
+            object)
         (cadr-ai:cadr-error (condition)
           (error condition))
         (error (cause)
