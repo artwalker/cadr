@@ -12,8 +12,10 @@ tag/Release step.
 - Goal 20: inline walker `skip-space` / `expect-code` as
   macrolet (V8 SkipWhiteSpace / Expect in the descent). sprof
   load @ `9b1678b20`: SKIP-SPACE 8.2% self, EXPECT-CODE 3.5%.
-  Not empty SWAR. Not intern. Not FFI. Ceiling not lowered.
-  Not G.17. Part P still `[open]`.
+  Friend-MachineD n=5: load cadr **2069→1958 µs** (1.28×→**1.16×**),
+  journal **1638→1563 µs** (1.05×→**1.04×**). Not empty SWAR. Not
+  intern. Not FFI. Ceiling not lowered. Not G.17. Part P still
+  `[open]`.
 - Goal 20: inline walker string-scan helpers (`swar-eq-msb`,
   quote/backslash/ctrl masks, `octet-find-quote-or-backslash`)
   into SCAN-KEY / PARSE-STRING-VALUE. Friend-MachineD n=5: load

@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Truncate head/tail **0.76× / 0.91×** (420.0 / 551.6 µs, 525.5 / 576.3 µs) Friend-MachineD n=5 `318822b1c`. load **1.28×** / journal **1.05×**. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
+| P.13 pairable coverage | leftover | Truncate head/tail **0.67× / 0.81×** (367.3 / 551.0 µs, 473.8 / 588.6 µs) Friend-MachineD n=5 `8ad4328fb`. load **1.16×** / journal **1.04×**. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
