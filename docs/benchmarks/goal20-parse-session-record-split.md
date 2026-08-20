@@ -39,13 +39,23 @@ Withdrawn. Do not redo content-block bag reuse. Not intern. Not FFI.
 
 Honest split numbers above stay. Not G.17 `met`.
 
+## Knife (falsified) — quote-scan high-byte + check-less ASCII copier
+
+`108d9184a`: value quote-scan accumulated `high-byte-p`;
+unescaped ASCII skipped the classify pass and used
+`copy-unescaped-ascii-json-octets` (fill loop byte-identical
+to the classified ASCII arm). Friend-MachineD n=5: load cadr
+**1879→2045 µs** (worse; samples 1978–2222). Withdrawn.
+Do not redo this scan+copier split. Fill kernel was never
+rewritten. Not intern. Not FFI.
+
 ## Next knife (adjudication 2026-08-21 item 11)
 
-**Knife 1 first (alone):** value quote-scan accumulates
-`high-byte-p`; unescaped ASCII → check-less copier (**fill
-loop unchanged**). Not a COPY-UNESCAPED fill-kernel rewrite.
-Do not slow key scans. Win: Friend-MachineD cadr **&lt; ~1879 µs**
-+ EQUAL strings + green `test-cl`.
+**Knife 1 remesured and withdrawn.** Next: knife 2 (content
+compact-prefix fast path + generic fallback, not bag reuse)
+alone. Win still Friend-MachineD cadr **&lt; ~1879 µs**
++ EQUAL + green `test-cl`. Do not merge with gperf
+`put-entry`.
 
 **Knife 2 after knife 1 keeps:** content compact-prefix fast
 path + generic fallback (not bag reuse). See leftover md +

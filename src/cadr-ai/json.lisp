@@ -918,50 +918,10 @@
                             ,(char-code (schar literal index)))))))
       form))
 
-(defun copy-unescaped-ascii-json-octets (octets start end)
-  ;; Check-less Latin-1 fill. Caller proved every byte in
-  ;; [start,end) is < 128 (value quote-scan high-byte-p).
-  ;; Fill loop is the ASCII arm of copy-unescaped-json-octets.
-  ;; Not a fill-kernel rewrite. Not intern. Not FFI.
-  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
-           (type fixnum start end)
-           (optimize (speed 3) (safety 1)))
-  (let* ((count (- end start))
-         (out (make-string count :element-type 'base-char)))
-    (declare (type fixnum count)
-             (type simple-base-string out))
-    (let ((src start)
-          (dst 0)
-          (left count))
-      (declare (type fixnum src dst left))
-      (loop while (>= left 4)
-            do
-            (let ((word (octet-u32-le octets src)))
-              (setf (schar out dst)
-                    (code-char (ldb (byte 8 0) word)))
-              (setf (schar out (the fixnum (+ dst 1)))
-                    (code-char (ldb (byte 8 8) word)))
-              (setf (schar out (the fixnum (+ dst 2)))
-                    (code-char (ldb (byte 8 16) word)))
-              (setf (schar out (the fixnum (+ dst 3)))
-                    (code-char (ldb (byte 8 24) word))))
-            (incf src 4)
-            (incf dst 4)
-            (decf left 4))
-      (loop while (> left 0)
-            do
-            (setf (schar out dst)
-                  (code-char (aref octets src)))
-            (incf src)
-            (incf dst)
-            (decf left))
-      out)))
-
 (defun copy-unescaped-json-octets (octets start end)
   ;; UTF-8 only on the value window, not the whole JSONL line.
-  ;; Unknown high-byte: classify then ASCII fill or UTF-8.
-  ;; Known-ASCII callers use copy-unescaped-ascii-json-octets.
-  ;; Not FFI. Not intern.
+  ;; ASCII: ub32 chunks written as four schars (V8 memcpy of
+  ;; the Latin-1 window). Not FFI. Not intern.
   (declare (type (simple-array (unsigned-byte 8) (*)) octets)
            (type fixnum start end)
            (optimize (speed 3) (safety 1)))
@@ -976,7 +936,36 @@
          :external-format :utf-8
          :start start
          :end end)
-        (copy-unescaped-ascii-json-octets octets start end))))
+        (let* ((count (- end start))
+               (out (make-string count :element-type 'base-char)))
+          (declare (type fixnum count)
+                   (type simple-base-string out))
+          (let ((src start)
+                (dst 0)
+                (left count))
+            (declare (type fixnum src dst left))
+            (loop while (>= left 4)
+                  do
+                  (let ((word (octet-u32-le octets src)))
+                    (setf (schar out dst)
+                          (code-char (ldb (byte 8 0) word)))
+                    (setf (schar out (the fixnum (+ dst 1)))
+                          (code-char (ldb (byte 8 8) word)))
+                    (setf (schar out (the fixnum (+ dst 2)))
+                          (code-char (ldb (byte 8 16) word)))
+                    (setf (schar out (the fixnum (+ dst 3)))
+                          (code-char (ldb (byte 8 24) word))))
+                  (incf src 4)
+                  (incf dst 4)
+                  (decf left 4))
+            (loop while (> left 0)
+                  do
+                  (setf (schar out dst)
+                        (code-char (aref octets src)))
+                  (incf src)
+                  (incf dst)
+                  (decf left))
+            out)))))
 
 (defun utf8-next-width (octets index end)
   ;; Bytes of the next well-formed UTF-8 scalar, or NIL.

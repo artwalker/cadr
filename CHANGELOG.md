@@ -19,11 +19,12 @@ tag/Release step.
   `gethash equal 6-char`). Classify model misuse vs product
   path (`docs/bugs/bash-format-shell-quoting.md`). Not G.17.
   Part P still `[open]`.
-- Goal 20: value quote-scan accumulates high-byte-p; unescaped
-  ASCII uses check-less `copy-unescaped-ascii-json-octets`
-  (fill kernel unchanged). Keys still check-less quote scan.
-  Not intern. Not FFI. Ceiling not lowered. Not G.17.
-  Part P still `[open]`.
+- Goal 20: withdraw quote-scan high-byte + check-less ASCII
+  copier (`108d9184a`). Friend-MachineD n=5: load cadr
+  **1879→2045 µs** (worse; samples 1978–2222). Product
+  restored to `aa2d4a89a` walker. Fill kernel was never
+  rewritten. Not intern. Not FFI. Ceiling not lowered.
+  Not G.17. Part P still `[open]`.
 - Goal 20: COPY-UNESCAPED ban = fill-kernel only; try knife 1
   (quote-scan high-byte + check-less ASCII copier) then knife 2
   (content shape fast-path). Proposals 3/4/5 not next without
