@@ -54,38 +54,60 @@ then one `BuildJsonObject` / `MakeString`. Source:
 Do not redo any of the three. Lisp encodings of that V8 shape made
 **cadr µs** worse.
 
-## Other split inners — why not a fourth legal knife here
+## Content-block scratch (Friend-MachineD n=5, cadr µs worse)
 
-- **`parse-string-value` 301 µs.** Intern-or-`copy-unescaped` during
-  scan. Delayed `MakeString` (row 3 above) lost. COPY-UNESCAPED
-  rewrite banned. Closed-set intern grow withdrawn (`4de854bdd` /
-  `8018b6f53`). Remaining copy is V8 `MakeString` work; cheaper
-  one-byte SeqString / internalization is VM, not a Lisp DS.
-- **`put-entry-field` minus `parse-message`.** Timestamp already
-  ISO in-place (`635ac76a1`, kept). `type` / `id` / `parentId` are
-  interned closed-set strings; intern grow banned. length-case
-  `put-*-field` withdrawn (`789bec858`).
-- **`parse-usage` 100 µs.** Small `ParseJsonObject`. length-case
-  already lost.
-- **`parse-generic` 0.** Cold on this fixture.
-- **SCAN-BUFFER.** Pairing file fits the 1MiB cap; pending is NIL.
-  Not the leftover on this pair.
-- **Content blocks.** `finish-block` already builds typed
-  `text-content` / `tool-call` at object close (`BuildJsonObject`).
-  Not an unparsed bag.
+Lexer token reuse: one `session-json-block` per walker;
+`finish-block` still copies. Friend-MachineD @ `767b4c452`:
+load cadr **1879→2083 µs**. Withdrawn `52d0986f8`. Do not redo
+content-block bag reuse (same family as message bag).
+
+## Other split inners — withdrawn or already encoded
+
+- **`parse-string-value`.** Intern-or-`copy-unescaped` during
+  scan. Delayed `MakeString` (三连 row 3) lost. ASCII already
+  `simple-base-string` + ub32 `schar` copy. COPY-UNESCAPED
+  **kernel** micro-rewrite banned. Closed-set intern grow
+  withdrawn. Next legal try on this child: **per-load string
+  arena / bump** (adjudication 2026-08-21 A) — not a redo of
+  the copy loop body.
+- **`put-entry-field`.** Keys are already octet windows +
+  `octet-window-equals`. Timestamp ISO kept. length-case
+  `put-*-field` withdrawn (`789bec858`). Default-reject key-tag
+  / length-case **redos**; a claim of distinct encoding (e.g.
+  gperf unique first-u32 prefix) is allowed only if Friend-MachineD
+  cadr µs wins — otherwise withdraw. Prefer A/D when choosing
+  the next knife cold.
+- **`parse-usage`.** Small object; length-case already lost.
+- **`parse-generic`.** Cold on this fixture.
+- **SCAN-BUFFER.** Pairing file fits the 1MiB cap; pending NIL.
+- **Content blocks / arrays.** Scratch bag reuse lost. List +
+  `nreverse` (or repeated extend) may still be a lever —
+  **exact-length / `svref`** (adjudication 2026-08-21 D), not
+  bag reuse.
 - **SCAN-KEY labels→macrolet.** Withdrawn (`f87bea405`). DIGITS
-  unroll withdrawn. ISO quote walk already kept.
+  unroll withdrawn. ISO quote walk kept. `tagbody` merge is
+  last-resort only.
+
+## Next knives (advisor 2026-08-21 — DeepSeek review)
+
+Prefer **A** (string arena / bump) or **D** (exact content
+arrays). See `docs/adjudications.md` 「Load knife priority after
+bag-reuse falsifications」and `goal20-draft.md` 十B item 10.
+Lazy octet-span needs a new ruling. Keep/revert on Friend-MachineD
+cadr µs vs ~1879; &lt;~50 µs treat as noise.
 
 ## Leftover class (bookkeeping — superseded as a stop)
 
 session_load leftover vs pi `JSON.parse` was booked after three
-falsified V8-shape knives on the `parse-message` child.
+falsified V8-shape knives on the `parse-message` child (and
+later content-block scratch).
 
 **User ruling 2026-08-20 23:43** (`docs/adjudications.md`
-「Lisp 屠龙刀: invent the DS if none is ready-made」)
-and **2026-08-20 23:48** (mature algorithms/DS as design
-sources; keep optimizing):
-Lisp is the sword. Three failed *surface encodings* ≠ park
+「Lisp 屠龙刀: invent the DS if none is ready-made」),
+**2026-08-20 23:48** (mature algorithms/DS as design
+sources; keep optimizing), and **2026-08-21** (DeepSeek review
+priority A/D over B/C/E):
+Lisp is the sword. Failed *surface encodings* ≠ park
 load ≠ G.17. Study mature published algorithms/structures
 and **Lisp-encode** them (study ≠ FFI). If no ready-made
 binary wins, invent the encoding. Empty ⚑ that only repeats
@@ -98,6 +120,8 @@ Historical classes that stay forbidden without a new ruling:
 - generic intern-table growth
 - empty SWAR
 - COPY-UNESCAPED micro-rewrite
+- bag / token reuse of message or content-block scratch
+- length-case / key-tag `case` redo without a distinct proof
 
 Not G.17 `met`. Floor still missed on load (~1.15–1.27×).
 Sidecar pairing leftovers do not replace inventing the next

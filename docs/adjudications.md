@@ -864,5 +864,78 @@ stop.
 Lisp, using the body of known algorithms/DS, after the
 leftover booking.
 
+## 2026-08-21 — Load knife priority after bag-reuse falsifications (DeepSeek review)
+
+**Ruled**: user forwarded an external (DeepSeek) load plan and
+asked the advisor to land the review in goal/docs
+(2026-08-21). Advisor **partially agrees**.
+
+**Decided**:
+
+1. **Diagnosis (agreed in direction)**: the remaining
+   `session_load` gap (~1.15×, cadr ~1879 µs vs pi ~1634) is
+   mostly allocation / constant factors, not "JSON syntax
+   scan is too slow". V8's edge on `MakeString` /
+   `BuildJsonObject` is cheap one-byte strings, bump-ish
+   young allocation, and schema slot writes — not a reason
+   to port HiddenClass / Zone / HandleScope.
+2. **Facts already true in product** (correct the plan's
+   premises before cutting):
+   - Keys are octet windows + `octet-window-equals` (ub32);
+     not per-key `make-string` / `string=`.
+   - Unescaped ASCII values already use
+     `simple-base-string` + ub32→`schar` copy in
+     `copy-unescaped-json-octets`; closed-set value intern
+     exists. Do not reinvent "first switch to base-string".
+   - `put-entry-field` / `put-message-field` already
+     length (+ optional first byte) + `key=` then a
+     specialized value parser.
+   - Closed-schema length-case dispatch (`789bec858`) was
+     withdrawn. SCAN-KEY labels→macrolet (`f87bea405`) was
+     withdrawn.
+   - Bag / token reuse family lost on cadr µs: parse-message
+     三连 (2015 / 1917 / 1974) **and** content-block scratch
+     reuse (`767b4c452` → withdraw `52d0986f8`, 1879→**2083**).
+     Do not redo.
+3. **Next-knife priority** (executor):
+   - **Try first**: (A) per-load string arena / bump into one
+     `simple-base-string`, return displaced (or equivalent)
+     views for unescaped ASCII — **without** micro-rewriting
+     the `COPY-UNESCAPED` kernel; short strings may lose on
+     displaced headers — Friend-MachineD only; treat
+     &lt;~50 µs as noise and revert. (D) content (or similar)
+     arrays: exact-length / `svref` fill instead of
+     list+`nreverse` / repeated extend — **not** bag reuse.
+   - **Default reject as next knife**: (B) integer key-tag
+     `case` / length-case redos of `789bec858` unless the
+     encoding is shown **distinct** (e.g. unique first-u32 /
+     gperf prefix with collision confirm) **and** Friend-MachineD
+     cadr µs beats ~1879 (else withdraw). (C)
+     "schema-specialized parsers" that become stack-locals
+     then assemble typed message (= 三连 #2). Weak if it
+     only restates existing `put-*-field` dispatch.
+   - **Last**: (E) `tagbody` merge of hot labels — after A/D;
+     SCAN-KEY macrolet already lost.
+   - **Needs new adjudication**: lazy `octet-span` (or
+     `(or string octet-span)`) materialization that changes
+     internal session representation. Not the default knife.
+4. Do **not** treat summed speculative µs from an external
+   plan as a schedule. Keep/revert only on Friend-MachineD
+   **cadr µs** vs ~1879 baseline; green `scripts/test-cl.sh`.
+5. Still forbidden without adjudication: FFI into
+   V8/simdjson/yyjson, mmap, intern grow, empty SWAR,
+   COPY-UNESCAPED micro-rewrite, empty banned-class ⚑,
+   G.17 `met` / product `blocked` for this leftover.
+6. Pointers: this file; `goal20-draft.md` 十B item 10;
+   `docs/acceptance/goal-v20-part-p.md`;
+   `docs/acceptance/goal-v20-ds-audit.md` Class C;
+   `docs/benchmarks/goal20-session-load-leftover.md`;
+   `docs/benchmarks/goal20-parse-session-record-split.md`;
+   board `[ready]`.
+
+**Why it was decidable**: user asked to record the advisor
+review of the DeepSeek proposals into the goal and durable
+docs after the content-block scratch falsification.
+
 
 
