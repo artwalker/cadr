@@ -961,7 +961,9 @@
     ;; +1 Goal 20 SWAR ub32: swar-ws-mask (no 64-bit bignum).
     ;; +5 Goal 20 string-window SWAR: quot/bs constants +
     ;; quote-or-bs-mask + ctrl-mask + find-quote-or-backslash.
-    (is (= 307 definition-count)
+    ;; +1 Goal 20 walker 4-byte load: %octet-u32-le (inline
+    ;; SeqOneByteString word; not empty SWAR).
+    (is (= 308 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

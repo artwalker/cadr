@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: inline 4-byte octet load (`octet-u32-le` compiler-macro
+  + walker `%octet-u32-le`) on session JSONL SCAN-KEY / quote /
+  LF / space. sprof `session_load` @ `335718c2e`: OCTET-U32-LE
+  12.2% self. Not empty SWAR. Not intern. Not FFI. Ceiling not
+  lowered. Not G.17. Part P still `[open]`.
 - Goal 20: Friend-MachineD n=5 remesure @ `da3d7322f` (no src).
   Truncate head/tail **0.71× / 0.87×** (387.3 / 544.0 µs, 533.8 /
   613.3 µs). load **1.98×** / journal **1.88×**. Load/journal Lisp

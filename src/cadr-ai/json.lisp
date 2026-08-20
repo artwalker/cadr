@@ -813,6 +813,21 @@
           (ash (aref octets (the fixnum (+ index 2))) 16)
           (ash (aref octets (the fixnum (+ index 3))) 24)))
 
+(define-compiler-macro octet-u32-le (octets index)
+  ;; V8 SeqOneByteString 4-byte load: inline aref+ash.
+  ;; sprof session_load @ 335718c2e: OCTET-U32-LE 12.2% self.
+  ;; Not empty SWAR. Not intern. Not FFI.
+  (let ((octets-g (gensym "OCTETS"))
+        (index-g (gensym "INDEX")))
+    `(let ((,octets-g ,octets)
+           (,index-g ,index))
+       (declare (type (simple-array (unsigned-byte 8) (*)) ,octets-g)
+                (type fixnum ,index-g))
+       (logior (aref ,octets-g ,index-g)
+               (ash (aref ,octets-g (the fixnum (+ ,index-g 1))) 8)
+               (ash (aref ,octets-g (the fixnum (+ ,index-g 2))) 16)
+               (ash (aref ,octets-g (the fixnum (+ ,index-g 3))) 24)))))
+
 (defun octet-window-equals (octets start end literal)
   ;; Short ASCII windows compare as ub32 chunks, then a
   ;; 1–3 byte tail. Constant literals fold via the

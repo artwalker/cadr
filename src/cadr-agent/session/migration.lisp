@@ -12,6 +12,22 @@
 (defun session-seen-p (entry bit)
   (logtest bit (session-entry-%seen entry)))
 
+(defmacro %octet-u32-le (octets index)
+  ;; V8 SeqOneByteString 4-byte load, inlined at the walker
+  ;; scanners. sprof session_load @ 335718c2e: OCTET-U32-LE
+  ;; 12.2% self (quote/LF/space). Not empty SWAR. Not intern.
+  ;; Not FFI. Same bits as cadr-ai:octet-u32-le.
+  (let ((octets-g (gensym "OCTETS"))
+        (index-g (gensym "INDEX")))
+    `(let ((,octets-g ,octets)
+           (,index-g ,index))
+       (declare (type (simple-array (unsigned-byte 8) (*)) ,octets-g)
+                (type fixnum ,index-g))
+       (logior (aref ,octets-g ,index-g)
+               (ash (aref ,octets-g (the fixnum (+ ,index-g 1))) 8)
+               (ash (aref ,octets-g (the fixnum (+ ,index-g 2))) 16)
+               (ash (aref ,octets-g (the fixnum (+ ,index-g 3))) 24)))))
+
 (defun session-record-put (entry key value)
   (when (plusp (length key))
     (case (char key 0)
@@ -146,10 +162,10 @@
             ((and (zerop (logand index 7))
                   (<= (the fixnum (+ index 8)) end))
              (let ((m0 (swar-eq-msb
-                        (cadr-ai::octet-u32-le octets index)
+                        (%octet-u32-le octets index)
                         +swar-nl+))
                    (m1 (swar-eq-msb
-                        (cadr-ai::octet-u32-le
+                        (%octet-u32-le
                          octets (the fixnum (+ index 4)))
                         +swar-nl+)))
                (cond
@@ -177,9 +193,9 @@
           (if (and (zerop (logand index 7))
                    (<= (the fixnum (+ index 8)) end))
               (let ((m0 (swar-ws-mask
-                         (cadr-ai::octet-u32-le octets index)))
+                         (%octet-u32-le octets index)))
                     (m1 (swar-ws-mask
-                         (cadr-ai::octet-u32-le
+                         (%octet-u32-le
                           octets (the fixnum (+ index 4))))))
                 (cond
                   ((and (= m0 +swar-msb+) (= m1 +swar-msb+))
@@ -228,7 +244,7 @@
     (declare (type fixnum index))
     (loop while (<= (the fixnum (+ index 4)) end)
           do
-          (let* ((word (cadr-ai::octet-u32-le octets index))
+          (let* ((word (%octet-u32-le octets index))
                  (mask
                    (logior (swar-quote-or-bs-mask word)
                            (swar-ctrl-mask word))))
