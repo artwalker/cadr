@@ -60,6 +60,13 @@ to the generic walker. Not bag reuse. Not knife 1.
 Friend-MachineD n=5: load cadr **1879→1829 µs** (keep).
 Samples 1731–1868. Not bag reuse. Not intern. Not FFI.
 
+## Knife — put-entry unique-prefix u32
+
+`put-entry-field` jumps on first 4 little-endian bytes; `fromId` /
+`fromHook` share `from`. Not length-case (`789bec858`).
+Friend-MachineD n=5: load cadr **1829→1821 µs** (keep).
+Not intern. Not FFI. Ceiling not lowered.
+
 ## Next knife (adjudication 2026-08-21 item 11)
 
 **Knife 1 remesured and withdrawn.** Knife 2 (content

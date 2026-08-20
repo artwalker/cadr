@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: put-entry-field unique 4-byte prefix dispatch
+  (gperf-style; fromId/fromHook share `from`). Friend-MachineD
+  n=5 load **1829→1821 µs**. Not length-case. Not knife 1.
+  Ceiling not lowered. Not G.17.
 - Goal 20: content compact-prefix fast path (type-first
   `text` / `thinking` / `toolCall`) fills typed content without
   `session-json-block`; miss rewinds to the generic walker.
