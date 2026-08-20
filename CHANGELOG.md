@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: mature algorithms/DS are fair design sources;
+  keep Lisp-encoding load knives (`docs/adjudications.md`).
+  Local `goal20-draft.md` 十B item 9. Not G.17.
+  Part P still `[open]`.
 - Goal 20: user rules Lisp 屠龙刀 after load leftover booking —
   invent Lisp DS/algorithms if surface V8-shape knives lost;
   leftover md is bookkeeping not a park; empty banned-class
