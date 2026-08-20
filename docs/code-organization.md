@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127060 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=914cf1472e715297caa30db4b9535d534a9eb718 files=295 lines=127088 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -159,7 +159,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-ai/support/retry.lisp` | 169 | 9 | Classify retryable assistant failures and execute the bounded retry policy. | pass | done | aborted-message. I0: one abort-during-wait. | 20 |
 | `src/cadr-ai/support/threads.lisp` | 6 | 1 | Delegate bounded thread cleanup to the B3 core policy owner. | pass | no-rewrite | A 3-line facade forwarder keeping cadr-core the owner; nothing TS-shaped exists to rewrite. | 20 |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | 14 | Estimate message, tool, image, and context token usage. | pass | no-rewrite | utf16-code-unit-length at :11-13 counts UTF-16 units because that is the JS-semantics baseline heuristic, not an index-loop habit. | 20 |
-| `src/cadr-ai/support/uuid.lisp` | 65 | 4 | Generate monotonic UUIDv7 identifiers from random octets. | pass | no-rewrite | Manual byte assembly at :38-58 is RFC 9564 UUIDv7 layout; ldb packing is the idiomatic CL encoding of a fixed wire format. | 20 |
+| `src/cadr-ai/support/uuid.lisp` | 93 | 4 | Generate monotonic UUIDv7 identifiers from random octets. | pass | no-rewrite | Manual byte assembly is RFC 9564 UUIDv7 layout; entropy pool copies getRandomValues (no /dev/urandom per id). | 20 |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | 10 | Decode AWS event-stream frames and issue Bedrock event requests. | pass | no-rewrite | Manual offset walking and CRC32 at :18-83 are a byte-fixed frame format; dep policy bars new libs, failures are signaled conditions. | 20 |
 | `src/cadr-ai/transport/http.lisp` | 831 | 42 | Implement abortable native HTTP/TLS transport, framing, and normalized errors. | pass · large | done | parsed-url-authority + signal-http-timeout. I0: one port, one timeout. | 20 |
 | `src/cadr-ai/types.lisp` | 207 | 21 | Define provider/model/message/content/tool/event value types and safe printers. | pass | done | defstruct constructor. I0: no 13-key wrapper. | 20 |

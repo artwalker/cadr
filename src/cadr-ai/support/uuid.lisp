@@ -3,14 +3,42 @@
 (defparameter *uuid-last-timestamp* -1)
 (defparameter *uuid-sequence* 0)
 
+;; Lisp encoding of packages/ai/src/utils/uuid.ts fillRandomBytes
+;; (crypto.getRandomValues on a 16-byte buffer). Opening /dev/urandom
+;; per uuid-v7 dominated session_compact (sprof read 79%). Keep one
+;; stream and a 256-byte pool.
+(defparameter *uuid-entropy-stream* nil)
+(defparameter *uuid-entropy-buffer*
+  (make-array 256 :element-type '(unsigned-byte 8)))
+(defparameter *uuid-entropy-fill* 0)
+(defparameter *uuid-entropy-index* 0)
+
+(defun uuid-entropy-stream ()
+  (let ((stream *uuid-entropy-stream*))
+    (if (and (streamp stream) (open-stream-p stream))
+        stream
+        (setf *uuid-entropy-stream*
+              (open #P"/dev/urandom"
+                    :direction :input
+                    :element-type '(unsigned-byte 8)
+                    :if-does-not-exist :error)))))
+
+(defun refill-uuid-entropy ()
+  (let ((n (read-sequence *uuid-entropy-buffer* (uuid-entropy-stream))))
+    (setf *uuid-entropy-fill* n
+          *uuid-entropy-index* 0)
+    (when (zerop n)
+      (error "uuid entropy: /dev/urandom returned 0 bytes"))))
+
 (defun default-random-octets (count)
   (let ((result
           (make-array count :element-type '(unsigned-byte 8))))
-    (with-open-file
-        (stream #P"/dev/urandom"
-                :direction :input
-                :element-type '(unsigned-byte 8))
-      (read-sequence result stream))
+    (dotimes (index count)
+      (when (>= *uuid-entropy-index* *uuid-entropy-fill*)
+        (refill-uuid-entropy))
+      (setf (aref result index)
+            (aref *uuid-entropy-buffer* *uuid-entropy-index*))
+      (incf *uuid-entropy-index*))
     result))
 
 (defun uuid-v7

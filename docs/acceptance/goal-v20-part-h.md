@@ -165,7 +165,8 @@ Friend-MachineD freeze 11.33× (965 / 85 µs), ceiling 20.0.
 Timed Lisp core is in-memory `compact-from-preparation` (pi
 `prepareCompaction` + `compact`); persist stays after the core.
 Friend-MachineD remesure after that encoding: 11.33×→4.54×
-(965→164 µs). Ceiling 20.0 unchanged.
+(965→164 µs). UUIDv7 entropy pool then 4.54×→0.56× (164→43 µs).
+Ceiling 20.0 unchanged.
 
 ## 2. How to run
 
@@ -367,14 +368,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 127,060 lines**
+Denominator: **295 files / 127,088 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 49 | 29,896 | 23.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 222 | 89,689 | 70.6% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 222 | 89,717 | 70.6% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 23.5% of lines (49 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 29.4% of lines.
@@ -490,7 +491,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/support` | 13 | 1,164 |
 | `src/cadr-ai/transport` | 2 | 1,053 |
 | `src/cadr-cli/settings` | 3 | 926 |
-| `src/cadr-ai/support` | 7 | 871 |
+| `src/cadr-ai/support` | 7 | 899 |
 | `src/cadr-agent/execution-env.lisp` | 1 | 855 |
 | `src/cadr-agent/schema.lisp` | 1 | 850 |
 | `src/cadr-ai/auth` | 5 | 842 |

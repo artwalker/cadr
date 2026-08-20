@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: UUIDv7 entropy pool copies Node `getRandomValues`
+  (keep `/dev/urandom` stream + 256-byte buffer). sprof of
+  `session_compact` @ `66b7403b6` was `uuid-v7` open/read/close
+  (`read` 79%). Friend-MachineD 4.54×→0.56× (164→43 µs). Ceiling
+  20.0 unchanged. Identity 127060→127088. Not G.17. Part P still
+  `[open]`.
 - Goal 20 Part P: copy pi in-memory `prepareCompaction` + `compact`
   for `session_compact.compact`. Shipped `compact-from-preparation`;
   persist stays `session-append-compaction` after the core. Timed

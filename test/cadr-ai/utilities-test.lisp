@@ -310,6 +310,20 @@ second" (cadr-ai:content-text content)))
         (is (string< first second))
         (is (string< second third))))))
 
+(test uuid-v7-default-entropy-is-v7-layout-and-not-constant
+  ;; scripts/goal20-paired-paths.lisp session_compact.compact:
+  ;; complete-summarization -> make-session-id -> uuid-v7.
+  ;; Drives shipped uuid-v7 / default-random-octets, not a reimplementation.
+  (let ((first (cadr-ai:uuid-v7))
+        (second (cadr-ai:uuid-v7))
+        (octets (cadr-ai::default-random-octets 16)))
+    (is (= 16 (length octets)))
+    (is (equal '(unsigned-byte 8) (array-element-type octets)))
+    (is (= 36 (length first)))
+    (is (char= #\7 (char first 14)))
+    (is (char= #\7 (char second 14)))
+    (is (not (string= first second)))))
+
 (test retry-abort-during-wait-uses-one-owner
   (let ((calls 0)
         (finished nil))

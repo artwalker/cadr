@@ -1291,7 +1291,9 @@
     ;; optional-null-normalization pair in support/grammar-coercion.lisp.
     ;; +4 Goal 20 K7: keyed-collection-value, signal-http-timeout,
     ;; call-with-models-runtime-error, faux-stream-block.
-    (is (= 268 definition-count)
+    ;; +6 Goal 20 session_compact: uuid entropy pool (two defun + four
+    ;; defparameter) copies Node getRandomValues; no /dev/urandom per id.
+    (is (= 274 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"
