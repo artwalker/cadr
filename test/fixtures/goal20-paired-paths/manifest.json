@@ -30,6 +30,13 @@
 		"resource-prompt-project.md": "1b01ffd483190ba3f0978941cbad420d0b3d70ba865a570c305d8a38a35e0da4",
 		"resource-agents.md": "402bef13495ab3acc40ccc53b3b379230131b7abe12624a0bec7aa947eee9114",
 		"resource-system.md": "cf9155c84ab0587770944b1b732b10b37e184cf6be7ab6374840be85356751c7",
+		"package-manifest.json": "1072e647560b8a7d13e24492d397d877c5562ab81e528d2a65b8ed4b3ea73b01",
+		"package-skill.md": "d3cd6380aca750d47c5afd30fb2528becfcaa21e6c0fa1f1d83df4a85d03e37d",
+		"package-prompt.md": "ac95d270e370cd1138c9aaa63859def911069148e87de7a4a1f1db6ffd134f23",
+		"package-theme.json": "ae2f9c1cf1176dfaf2d4b40912a8bcb222ea7bf853cae47fe80a461abca61c13",
+		"package-extension.js": "77f0267289bb78b142008b50c9e90a44640aa1a80a0fa6c510375b7784701c56",
+		"package-settings-global.json": "b80ad195bce31a385825559df4fe3df60acba8f11210cd145c6f6c6361c07dbb",
+		"package-settings-project.json": "ca3d163bab055381827226140568f3bef7eaac187cebd76878e0b63e9e442356",
 		"models.json": "1d52d96633b51f7bea0b21592f495bd2f4154115b9e219ec224996daf0906048",
 		"auth.json": "ddeb81361b0104333a06cbf1c34c431426e1f3abcd46959ff18f4d710e1eb9e9",
 		"cli-argv.json": "dddcd05e4a41038330dd314a6aae981cd066882a5a63d39a7b533f58e509a5bd"

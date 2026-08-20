@@ -889,6 +889,35 @@ const artifacts = new Map([
 	["resource-prompt-project.md", buildResourcePromptProject()],
 	["resource-agents.md", buildResourceAgents()],
 	["resource-system.md", buildResourceSystem()],
+	[
+		"package-manifest.json",
+		`${JSON.stringify(
+			{
+				name: "goal20-local-package",
+				version: "1.0.0",
+				pi: {
+					extensions: ["./extension.js"],
+					skills: ["./skills/goal20/SKILL.md"],
+					prompts: ["./prompts/goal20.md"],
+					themes: ["./themes/goal20.json"],
+				},
+			},
+			null,
+			"\t",
+		)}\n`,
+	],
+	[
+		"package-skill.md",
+		"---\nname: goal20-pkg-skill\ndescription: Goal 20 package skill\n---\npackage skill body\n",
+	],
+	["package-prompt.md", "goal20 package prompt\n"],
+	["package-theme.json", `${JSON.stringify({ name: "goal20-pkg-theme", colors: {} }, null, "\t")}\n`],
+	["package-extension.js", "export const goal20PackageExtension = true;\n"],
+	[
+		"package-settings-global.json",
+		`${JSON.stringify({ packages: ["./pkg"] }, null, "\t")}\n`,
+	],
+	["package-settings-project.json", `${JSON.stringify({}, null, "\t")}\n`],
 	["models.json", `${JSON.stringify(buildModelsJson(), null, "\t")}\n`],
 	["auth.json", `${JSON.stringify(buildAuthJson(), null, "\t")}\n`],
 	["cli-argv.json", `${JSON.stringify(buildCliArgv(), null, "\t")}\n`],

@@ -18,6 +18,7 @@
   "provider_azure_openai.stream_roundtrip",
   "provider_vertex.stream_roundtrip",
   "provider_codex.stream_roundtrip",
+  "package_manager.resolve",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -259,6 +260,34 @@
    "class": "paired",
    "metrics": [
     "resource_loader.reload"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/packages/manifest.lisp",
+   "class": "paired",
+   "metrics": [
+    "package_manager.resolve"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/packages/settings.lisp",
+   "class": "paired",
+   "metrics": [
+    "package_manager.resolve"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/packages/source.lisp",
+   "class": "paired",
+   "metrics": [
+    "package_manager.resolve"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/packages/commands.lisp",
+   "class": "paired",
+   "metrics": [
+    "package_manager.resolve"
    ]
   },
   {

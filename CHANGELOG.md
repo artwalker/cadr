@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `package_manager.resolve` (fixture local
+  package path, no npm/TUI/socket). Production
+  `configured-package-records` + `package-resource-paths` vs
+  `DefaultPackageManager.resolve`. First Friend-MachineD freeze
+  0.36× (200 / 551 µs), ceiling 1.5. Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `provider_codex.stream_roundtrip`
   (recorded Codex Responses SSE + fixture OAuth JWT, no socket).
   Production `stream-chat` vs `openai-codex-responses.ts stream`.

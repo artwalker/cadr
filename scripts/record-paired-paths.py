@@ -35,6 +35,7 @@ METRIC_KEYS = (
     "provider_codex.stream_roundtrip",
     "cli_settings.create",
     "resource_loader.reload",
+    "package_manager.resolve",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

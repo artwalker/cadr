@@ -308,6 +308,19 @@ First Friend-MachineD freeze 1.26× (1582 / 1258 µs), ceiling 1.5.
 After stringify-skip knife `4ac111707`: **1.08×** (1327 / 1226 µs).
 Ceiling 1.5 not lowered.
 
+### Pair 20 — `package_manager`
+
+| metric | cadr | pi |
+|---|---|---|
+| `resolve` | `configured-package-records` + `materialize-package-records` + `package-resource-paths` | `DefaultPackageManager.resolve` (`packages/coding-agent/src/core/package-manager.ts`) |
+
+Fixture local package path (`./pkg` in agent settings) + `package.json`
+`pi` manifest listing one skill, prompt, theme, and extension file.
+No npm, no TUI, no socket. `PI_OFFLINE=1` on the pi half.
+Observed `package_count` / `skill_count` / `prompt_count` /
+`theme_count` / `extension_count` are exact.
+First Friend-MachineD freeze 0.36× (200 / 551 µs), ceiling 1.5.
+
 ## 2. How to run
 
 ```bash
@@ -513,13 +526,13 @@ Denominator: **295 files / 127,082 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 64 | 35,674 | 28.1% | `no worse than baseline` is falsifiable |
+| `paired` | 68 | 37,132 | 29.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 207 | 83,933 | 66.0% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 203 | 82,475 | 64.9% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 28.1% of lines (64 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 34.0% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 66.0% of lines.
+- **Falsifiable vs baseline:** 29.2% of lines (68 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 35.1% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 64.9% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -592,6 +605,10 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,009 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
+| `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
+| `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
+| `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
@@ -632,11 +649,11 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/bootstrap` | 5 | 5,632 |
 | `src/cadr-tui/mermaid` | 12 | 5,042 |
 | `src/cadr-cli/extensions` | 9 | 3,489 |
-| `src/cadr-cli/packages` | 6 | 3,269 |
 | `src/cadr-cli/sdk` | 8 | 2,471 |
 | `src/cadr-cli/modes` | 8 | 2,302 |
 | `src/cadr-cli/tools` | 7 | 2,166 |
 | `src/cadr-tui/latex.lisp` | 1 | 1,950 |
+| `src/cadr-cli/packages` | 2 | 1,811 |
 | `src/cadr-ai/oauth` | 10 | 1,786 |
 | `src/cadr-ai/providers` | 4 | 1,749 |
 | `src/cadr-agent/storage` | 4 | 1,532 |

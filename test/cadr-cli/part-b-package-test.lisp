@@ -389,6 +389,59 @@
              (first (getf paths :prompts))
              package))))))
 
+(test pairing-package-manager-resolve-stays-put
+  ;; scripts/goal20-paired-paths.lisp package_manager.resolve.
+  ;; Drives shipped configured-package-records + materialize +
+  ;; package-resource-paths. Local fixture, no npm, no socket.
+  (with-test-directory (root)
+    (let* ((agent (merge-pathnames "package-agent/" root))
+           (cwd (merge-pathnames "package-cwd/" root))
+           (pkg (merge-pathnames "pkg/" agent))
+           (project-config (merge-pathnames ".cadr/" cwd)))
+      (write-text
+       (merge-pathnames "package.json" pkg)
+       "{\"name\":\"goal20-local-package\",\"version\":\"1.0.0\",\"pi\":{\"extensions\":[\"./extension.js\"],\"skills\":[\"./skills/goal20/SKILL.md\"],\"prompts\":[\"./prompts/goal20.md\"],\"themes\":[\"./themes/goal20.json\"]}}")
+      (write-text
+       (merge-pathnames "skills/goal20/SKILL.md" pkg)
+       "---\nname: goal20-pkg-skill\ndescription: Goal 20 package skill\n---\npackage skill body\n")
+      (write-text
+       (merge-pathnames "prompts/goal20.md" pkg)
+       "goal20 package prompt\n")
+      (write-text
+       (merge-pathnames "themes/goal20.json" pkg)
+       "{\"name\":\"goal20-pkg-theme\",\"colors\":{}}")
+      (write-text
+       (merge-pathnames "extension.js" pkg)
+       "export const goal20PackageExtension = true;\n")
+      (write-text
+       (merge-pathnames "settings.json" agent)
+       "{\"packages\":[\"./pkg\"]}")
+      (write-text
+       (merge-pathnames "settings.json" project-config)
+       "{}")
+      (let* ((manager
+               (cadr-cli::make-settings-manager
+                :global-path (merge-pathnames "settings.json" agent)
+                :project-path
+                (merge-pathnames "settings.json" project-config)
+                :project-trusted-p t))
+             (records
+               (cadr-cli::configured-package-records
+                manager
+                :global-base agent
+                :project-base project-config))
+             (paths
+               (cadr-cli::package-resource-paths
+                (cadr-cli::materialize-package-records
+                 records
+                 (merge-pathnames "packages/" agent)
+                 (merge-pathnames "packages/" project-config)))))
+        (is (= 1 (length records)))
+        (is (= 1 (length (getf paths :skills))))
+        (is (= 1 (length (getf paths :prompts))))
+        (is (= 1 (length (getf paths :themes))))
+        (is (= 1 (length (getf paths :extensions))))))))
+
 (test goal17-installed-git-package-update-check-matches-the-baseline-contract
   ;; pi@914cf1472 package-manager.ts:1159-1221 checks every unpinned,
   ;; materialized package and compares local HEAD with the remote upstream.

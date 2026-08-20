@@ -136,6 +136,7 @@ const REPETITIONS = {
 	"provider_codex.stream_roundtrip": 10,
 	"cli_settings.create": 5,
 	"resource_loader.reload": 3,
+	"package_manager.resolve": 5,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -223,6 +224,13 @@ const fixtureNames = [
 	"resource-prompt-global.md",
 	"resource-prompt-project.md",
 	"resource-agents.md",
+	"package-manifest.json",
+	"package-skill.md",
+	"package-prompt.md",
+	"package-theme.json",
+	"package-extension.js",
+	"package-settings-global.json",
+	"package-settings-project.json",
 	"resource-system.md",
 	"openai-completions.sse",
 	"provider-context.json",
@@ -323,6 +331,7 @@ const vertexModule = await import(moduleUrl("packages/ai/src/api/google-vertex.t
 const openaiCodexModule = await import(moduleUrl("packages/ai/src/api/openai-codex-responses.ts"));
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
+const packageManagerModule = await import(moduleUrl("packages/coding-agent/src/core/package-manager.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
@@ -348,6 +357,35 @@ copyFileSync(
 copyFileSync(
 	path.join(fixtureDirectory, "settings-project.json"),
 	path.join(settingsCwdDirectory, ".pi", "settings.json"),
+);
+
+const packageAgentDirectory = path.join(scratch, "package-agent");
+const packageCwdDirectory = path.join(scratch, "package-cwd");
+const packageRoot = path.join(packageAgentDirectory, "pkg");
+mkdirSync(path.join(packageRoot, "skills", "goal20"), { recursive: true });
+mkdirSync(path.join(packageRoot, "prompts"), { recursive: true });
+mkdirSync(path.join(packageRoot, "themes"), { recursive: true });
+mkdirSync(path.join(packageCwdDirectory, ".pi"), { recursive: true });
+mkdirSync(path.join(packageCwdDirectory, ".cadr"), { recursive: true });
+copyFileSync(path.join(fixtureDirectory, "package-manifest.json"), path.join(packageRoot, "package.json"));
+copyFileSync(
+	path.join(fixtureDirectory, "package-skill.md"),
+	path.join(packageRoot, "skills", "goal20", "SKILL.md"),
+);
+copyFileSync(path.join(fixtureDirectory, "package-prompt.md"), path.join(packageRoot, "prompts", "goal20.md"));
+copyFileSync(path.join(fixtureDirectory, "package-theme.json"), path.join(packageRoot, "themes", "goal20.json"));
+copyFileSync(path.join(fixtureDirectory, "package-extension.js"), path.join(packageRoot, "extension.js"));
+copyFileSync(
+	path.join(fixtureDirectory, "package-settings-global.json"),
+	path.join(packageAgentDirectory, "settings.json"),
+);
+copyFileSync(
+	path.join(fixtureDirectory, "package-settings-project.json"),
+	path.join(packageCwdDirectory, ".pi", "settings.json"),
+);
+copyFileSync(
+	path.join(fixtureDirectory, "package-settings-project.json"),
+	path.join(packageCwdDirectory, ".cadr", "settings.json"),
 );
 
 const resourceAgentDirectory = path.join(scratch, "resource-agent");
@@ -1191,6 +1229,37 @@ async function measureResourceLoader() {
 	};
 }
 
+function makePackageManager() {
+	process.env.PI_OFFLINE = "1";
+	const settings = settingsModule.SettingsManager.create(packageCwdDirectory, packageAgentDirectory, {
+		projectTrusted: true,
+	});
+	return new packageManagerModule.DefaultPackageManager({
+		cwd: packageCwdDirectory,
+		agentDir: packageAgentDirectory,
+		settingsManager: settings,
+	});
+}
+
+async function measurePackageManager() {
+	const manager = makePackageManager();
+	const resolved = await manager.resolve();
+	const fromPackage = (entries) =>
+		entries.filter((entry) => entry.enabled && entry.metadata?.origin === "package").length;
+	return {
+		resolve: await collect("package_manager.resolve", () => {
+			return () => manager.resolve();
+		}),
+		observed: {
+			package_count: manager.listConfiguredPackages().length,
+			skill_count: fromPackage(resolved.skills),
+			prompt_count: fromPackage(resolved.prompts),
+			theme_count: fromPackage(resolved.themes),
+			extension_count: fromPackage(resolved.extensions),
+		},
+	};
+}
+
 // ---------------------------------------------------------------------------
 // Pair 3: agent session load + event pipeline
 // ---------------------------------------------------------------------------
@@ -1797,6 +1866,8 @@ process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
 const resourceLoader = await measureResourceLoader();
+process.stderr.write("goal20 pi paired paths: package_manager\n");
+const packageManager = await measurePackageManager();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -1826,6 +1897,7 @@ const result = {
 			"provider_codex.stream_roundtrip": "packages/ai/src/api/openai-codex-responses.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
+			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -1887,6 +1959,7 @@ const result = {
 		provider_codex: providerCodex,
 		cli_settings: cliSettings,
 		resource_loader: resourceLoader,
+		package_manager: packageManager,
 		render_slicing: renderSlicing,
 	},
 };

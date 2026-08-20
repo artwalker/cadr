@@ -1,0 +1,18 @@
+{
+	"name": "goal20-local-package",
+	"version": "1.0.0",
+	"pi": {
+		"extensions": [
+			"./extension.js"
+		],
+		"skills": [
+			"./skills/goal20/SKILL.md"
+		],
+		"prompts": [
+			"./prompts/goal20.md"
+		],
+		"themes": [
+			"./themes/goal20.json"
+		]
+	}
+}

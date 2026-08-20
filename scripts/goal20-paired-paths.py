@@ -67,6 +67,13 @@ FIXTURE_NAMES = (
     "resource-prompt-global.md",
     "resource-prompt-project.md",
     "resource-agents.md",
+    "package-manifest.json",
+    "package-skill.md",
+    "package-prompt.md",
+    "package-theme.json",
+    "package-extension.js",
+    "package-settings-global.json",
+    "package-settings-project.json",
     "resource-system.md",
     "openai-completions.sse",
     "provider-context.json",
@@ -91,6 +98,7 @@ METRICS = {
     "provider_codex": ("stream_roundtrip",),
     "cli_settings": ("create",),
     "resource_loader": ("reload",),
+    "package_manager": ("resolve",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -176,6 +184,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "resource_loader.reload": 1.5,
+    # Frozen from the first Friend-MachineD non-quick package_manager
+    # pair (samples=5): observed 0.36x (200 / 551 us). cadr leads.
+    # 1.5 follows the list_models_registry / render_slicing precedent.
+    # Ratchet down only.
+    "package_manager.resolve": 1.5,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -360,6 +373,13 @@ OBSERVED_EXACT = {
         "default_project_trust",
         "http_idle_timeout_ms",
         "project_trusted",
+    ),
+    "package_manager": (
+        "package_count",
+        "skill_count",
+        "prompt_count",
+        "theme_count",
+        "extension_count",
     ),
     "resource_loader": (
         "skill_count",

@@ -81,6 +81,7 @@
     ("provider_codex.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
     ("resource_loader.reload" . 3)
+    ("package_manager.resolve" . 5)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -225,6 +226,9 @@
     "resource-skill-global.md" "resource-skill-project.md"
     "resource-prompt-global.md" "resource-prompt-project.md"
     "resource-agents.md" "resource-system.md"
+    "package-manifest.json" "package-skill.md" "package-prompt.md"
+    "package-theme.json" "package-extension.js"
+    "package-settings-global.json" "package-settings-project.json"
     "openai-completions.sse" "provider-context.json" "session.jsonl"))
 
 (defun read-file-octets (path)
@@ -2054,6 +2058,97 @@
                  (namestring agent-prompt)))))
     (cadr-cli::reload-resources loader)))
 
+(defun stage-package-layout ()
+  (let* ((agent
+           (merge-pathnames "package-agent/" *scratch-directory*))
+         (cwd
+           (merge-pathnames "package-cwd/" *scratch-directory*))
+         (pkg (merge-pathnames "pkg/" agent))
+         (project-cadr
+           (merge-pathnames ".cadr/" cwd))
+         (project-pi
+           (merge-pathnames ".pi/" cwd)))
+    (ensure-directories-exist
+     (merge-pathnames "skills/goal20/" pkg))
+    (ensure-directories-exist
+     (merge-pathnames "prompts/" pkg))
+    (ensure-directories-exist
+     (merge-pathnames "themes/" pkg))
+    (ensure-directories-exist
+     (merge-pathnames "settings.json" agent))
+    (ensure-directories-exist
+     (merge-pathnames "settings.json" project-cadr))
+    (ensure-directories-exist
+     (merge-pathnames "settings.json" project-pi))
+    (uiop:copy-file
+     (fixture-path "package-manifest.json")
+     (merge-pathnames "package.json" pkg))
+    (uiop:copy-file
+     (fixture-path "package-skill.md")
+     (merge-pathnames "skills/goal20/SKILL.md" pkg))
+    (uiop:copy-file
+     (fixture-path "package-prompt.md")
+     (merge-pathnames "prompts/goal20.md" pkg))
+    (uiop:copy-file
+     (fixture-path "package-theme.json")
+     (merge-pathnames "themes/goal20.json" pkg))
+    (uiop:copy-file
+     (fixture-path "package-extension.js")
+     (merge-pathnames "extension.js" pkg))
+    (uiop:copy-file
+     (fixture-path "package-settings-global.json")
+     (merge-pathnames "settings.json" agent))
+    (uiop:copy-file
+     (fixture-path "package-settings-project.json")
+     (merge-pathnames "settings.json" project-cadr))
+    (uiop:copy-file
+     (fixture-path "package-settings-project.json")
+     (merge-pathnames "settings.json" project-pi))
+    (values cwd agent project-cadr)))
+
+(defun run-package-manager (manager agent project-config)
+  (cadr-cli::package-resource-paths
+   (cadr-cli::materialize-package-records
+    (cadr-cli::configured-package-records
+     manager
+     :global-base agent
+     :project-base project-config)
+    (merge-pathnames "packages/" agent)
+    (merge-pathnames "packages/" project-config))))
+
+(defun measure-package-manager ()
+  (multiple-value-bind (cwd agent project-config)
+      (stage-package-layout)
+    (declare (ignore cwd))
+    (let* ((manager
+             (cadr-cli::make-settings-manager
+              :global-path
+              (merge-pathnames "settings.json" agent)
+              :project-path
+              (merge-pathnames "settings.json" project-config)
+              :project-trusted-p t))
+           (records
+             (cadr-cli::configured-package-records
+              manager
+              :global-base agent
+              :project-base project-config))
+           (paths
+             (run-package-manager manager agent project-config)))
+      (json-object
+       "observed"
+       (json-object
+        "package_count" (length records)
+        "skill_count" (length (getf paths :skills))
+        "prompt_count" (length (getf paths :prompts))
+        "theme_count" (length (getf paths :themes))
+        "extension_count" (length (getf paths :extensions)))
+       "resolve"
+       (collect "package_manager.resolve"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager
+                     manager agent project-config))))))))
+
 (defun measure-resource-loader ()
   (multiple-value-bind
         (cwd agent project-skill agent-skill project-prompt agent-prompt)
@@ -2186,6 +2281,8 @@
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
+      "package_manager.resolve"
+      "src/cadr-cli/packages/manifest.lisp package-resource-paths"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2269,6 +2366,8 @@
               (let ((settings (measure-cli-settings)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
               (let ((resources (measure-resource-loader)))
+              (format *error-output* "goal20 cadr paired paths: package_manager~%")
+              (let ((packages (measure-package-manager)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2305,6 +2404,7 @@
               "provider_codex" codex
               "cli_settings" settings
               "resource_loader" resources
+              "package_manager" packages
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2321,7 +2421,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

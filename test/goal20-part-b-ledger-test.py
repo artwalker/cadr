@@ -291,6 +291,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("prompt_count", paired.OBSERVED_EXACT["resource_loader"])
         self.assertIn("system_prompt", paired.OBSERVED_EXACT["resource_loader"])
 
+    def test_package_manager_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("package_manager.resolve", RECORD.METRIC_KEYS)
+        self.assertIn("resolve", paired.METRICS["package_manager"])
+        self.assertIn("package_manager.resolve", paired.RATIO_CEILINGS)
+        self.assertIn("package_count", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("skill_count", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("extension_count", paired.OBSERVED_EXACT["package_manager"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -317,7 +326,7 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertEqual(entry["label"], "paired-paths-quick")
         self.assertTrue(entry["quick"])
-        self.assertEqual(len(entry["metrics"]), 24)
+        self.assertEqual(len(entry["metrics"]), 25)
         first = entry["metrics"][RECORD.METRIC_KEYS[0]]
         self.assertAlmostEqual(first["cadrMedianUs"], 1000.0)
         self.assertAlmostEqual(first["ratio"], 2.0)
