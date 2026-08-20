@@ -65,6 +65,54 @@
         (is (typep (third (cadr-ai:context-messages second-context))
                    'tool-result-message))))))
 
+(test pairing-agent-tool-loop-observed-stays-put
+  ;; scripts/goal20-paired-paths.lisp agent_tool_loop.roundtrip.
+  ;; Drives shipped agent-prompt, not a reimplementation.
+  (let* ((executed nil)
+         (tool
+           (make-tool
+            :name "echo"
+            :description "Echo"
+            :parameters (object-schema "value")
+            :execution-mode :parallel
+            :executor
+            (lambda (call-id arguments)
+              (declare (ignore call-id))
+              (setf executed (cadr-ai::json-get arguments "value"))
+              (list (make-text-content :text "echoed")))))
+         (*responses*
+           (list
+            (assistant
+             (list
+              (make-tool-call
+               :id "call_1"
+               :name "echo"
+               :arguments (cadr-ai::json-object "value" "hello")))
+             :tool-use)
+            (assistant
+             (list (make-text-content :text "done")))))
+         (*contexts* nil))
+    (declare (special *responses* *contexts*))
+    (let ((agent
+            (make-agent
+             :provider :mock
+             :model (mock-model)
+             :tools (list tool)
+             :auto-compact-p nil
+             :stream-function
+             (faux-stream '*responses* '*contexts*))))
+      (agent-prompt agent "echo")
+      (let* ((messages (agent-messages agent))
+             (result (third messages))
+             (last (car (last messages))))
+        (is (string= "hello" executed))
+        (is (= 4 (length messages)))
+        (is (not (tool-result-message-is-error result)))
+        (is (string=
+             "done"
+             (text-content-text
+              (first (assistant-message-content last)))))))))
+
 (test unknown-invalid-and-length-truncated-tools-become-error-results
   (let ((executions 0))
     (dolist (case '(:unknown :invalid :length))

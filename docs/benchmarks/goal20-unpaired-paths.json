@@ -17,6 +17,7 @@
   "sqlite_session.open_walk",
   "tool_read.text_file",
   "tool_grep.context_file",
+  "agent_tool_loop.roundtrip",
   "goal11.mouse_drag",
   "goal11.wheel",
   "goal11.continuous_alt_input",
@@ -234,6 +235,41 @@
    "class": "paired",
    "metrics": [
     "tool_grep.context_file"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/loop/agent-loop.lisp",
+   "class": "paired",
+   "metrics": [
+    "agent_tool_loop.roundtrip"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/loop/events.lisp",
+   "class": "paired",
+   "metrics": [
+    "agent_tool_loop.roundtrip"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/loop/tool-execution.lisp",
+   "class": "paired",
+   "metrics": [
+    "agent_tool_loop.roundtrip"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/loop/turns.lisp",
+   "class": "paired",
+   "metrics": [
+    "agent_tool_loop.roundtrip"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/tool.lisp",
+   "class": "paired",
+   "metrics": [
+    "agent_tool_loop.roundtrip"
    ]
   },
   {

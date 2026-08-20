@@ -671,7 +671,7 @@ These must not be filed as callees.
 
 ## Not done
 
-- No new H pair landed this knife.
+- `agent_tool_loop` H pair is the next booked path; not P.13 complete.
 - `goal20-unpaired-paths.py` schema still three classes.
 - G.17 still `missing`. Part P still `[open]`.
 - Already-paired paths above 1.0× (load / journal_read / argv)

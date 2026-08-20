@@ -32,6 +32,7 @@ METRIC_KEYS = (
     "sqlite_session.open_walk",
     "tool_read.text_file",
     "tool_grep.context_file",
+    "agent_tool_loop.roundtrip",
 )
 
 

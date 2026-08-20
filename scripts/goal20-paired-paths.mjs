@@ -132,6 +132,7 @@ const REPETITIONS = {
 	"sqlite_session.open_walk": 3,
 	"tool_read.text_file": 5,
 	"tool_grep.context_file": 5,
+	"agent_tool_loop.roundtrip": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
 	"render_slicing.slice_ansi_clip": 200,
@@ -274,6 +275,11 @@ const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/to
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
+const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
+const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
+const { createRequire } = await import("node:module");
+const baselineRequire = createRequire(path.join(baselineDirectory, "package.json"));
+const { Type } = baselineRequire("typebox");
 
 // Both sides render into a sink that only counts, so neither pays terminal
 // I/O and neither can win by writing less.
@@ -790,6 +796,124 @@ async function measureToolGrep() {
 	};
 }
 
+function pairedMockModel() {
+	return {
+		id: "mock",
+		name: "mock",
+		api: "openai-responses",
+		provider: "openai",
+		baseUrl: "https://example.invalid",
+		reasoning: false,
+		input: ["text"],
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+		contextWindow: 8192,
+		maxTokens: 2048,
+	};
+}
+
+function pairedAssistantMessage(content, stopReason) {
+	return {
+		role: "assistant",
+		content,
+		api: "openai-responses",
+		provider: "openai",
+		model: "mock",
+		usage: {
+			input: 0,
+			output: 0,
+			cacheRead: 0,
+			cacheWrite: 0,
+			totalTokens: 0,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		},
+		stopReason,
+		timestamp: 1,
+	};
+}
+
+function pairedEchoTool(executed) {
+	const schema = Type.Object({ value: Type.String() });
+	return {
+		name: "echo",
+		label: "Echo",
+		description: "Echo",
+		parameters: schema,
+		executionMode: "parallel",
+		async execute(_id, params) {
+			executed.value = params.value;
+			return {
+				content: [{ type: "text", text: "echoed" }],
+				details: {},
+			};
+		},
+	};
+}
+
+function pairedToolLoopStream() {
+	let callIndex = 0;
+	return () => {
+		const stream = new eventStreamModule.AssistantMessageEventStream();
+		queueMicrotask(() => {
+			if (callIndex === 0) {
+				stream.push({
+					type: "done",
+					reason: "toolUse",
+					message: pairedAssistantMessage(
+						[{ type: "toolCall", id: "call_1", name: "echo", arguments: { value: "hello" } }],
+						"toolUse",
+					),
+				});
+			} else {
+				stream.push({
+					type: "done",
+					reason: "stop",
+					message: pairedAssistantMessage([{ type: "text", text: "done" }], "stop"),
+				});
+			}
+			callIndex += 1;
+		});
+		return stream;
+	};
+}
+
+async function runPairedToolLoop() {
+	const executed = { value: "" };
+	const agent = new agentModule.Agent({
+		streamFn: pairedToolLoopStream(),
+		convertToLlm: (messages) =>
+			messages.filter(
+				(message) =>
+					message.role === "user" || message.role === "assistant" || message.role === "toolResult",
+			),
+		initialState: {
+			model: pairedMockModel(),
+			tools: [pairedEchoTool(executed)],
+			thinkingLevel: "off",
+			systemPrompt: "",
+		},
+	});
+	await agent.prompt("echo");
+	return { agent, executed };
+}
+
+async function measureAgentToolLoop() {
+	const once = await runPairedToolLoop();
+	const messages = once.agent.state.messages;
+	const last = messages[messages.length - 1];
+	const result = messages[2];
+	return {
+		roundtrip: await collect("agent_tool_loop.roundtrip", () => {
+			return () => runPairedToolLoop();
+		}),
+		observed: {
+			final_text: last.content[0].text,
+			message_count: messages.length,
+			tool_error: result.isError ? 1 : 0,
+			tool_value: once.executed.value,
+		},
+	};
+}
+
 async function measureRenderSlicing() {
 	const dense = Array.from(
 		{ length: 200 },
@@ -835,6 +959,8 @@ process.stderr.write("goal20 pi paired paths: tool_read\n");
 const toolRead = await measureToolRead();
 process.stderr.write("goal20 pi paired paths: tool_grep\n");
 const toolGrep = await measureToolGrep();
+process.stderr.write("goal20 pi paired paths: agent_tool_loop\n");
+const agentToolLoop = await measureAgentToolLoop();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -868,6 +994,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/read.ts createReadToolDefinition.execute",
 			"tool_grep.context_file":
 				"packages/coding-agent/src/core/tools/grep.ts createGrepToolDefinition.execute",
+			"agent_tool_loop.roundtrip":
+				"packages/agent/src/agent.ts Agent.prompt + packages/agent/src/agent-loop.ts runAgentLoop",
 			"text_truncation.truncate_head":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
@@ -899,6 +1027,7 @@ const result = {
 		text_truncation: textTruncation,
 		tool_read: toolRead,
 		tool_grep: toolGrep,
+		agent_tool_loop: agentToolLoop,
 		render_slicing: renderSlicing,
 	},
 };

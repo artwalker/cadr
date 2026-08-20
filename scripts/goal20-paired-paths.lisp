@@ -78,6 +78,7 @@
     ("sqlite_session.open_walk" . 3)
     ("tool_read.text_file" . 5)
     ("tool_grep.context_file" . 5)
+    ("agent_tool_loop.roundtrip" . 3)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
     ("render_slicing.slice_ansi_clip" . 200)
@@ -953,6 +954,125 @@
                       (cadr-cli::grep-lines
                        cwd arguments)))))))))
 
+(defun paired-echo-tool (executed)
+  (cadr-ai:make-tool
+   :name "echo"
+   :description "Echo"
+   :parameters
+   (cadr-ai::json-object
+    "type" "object"
+    "properties"
+    (cadr-ai::json-object
+     "value" (cadr-ai::json-object "type" "string"))
+    "required" (vector "value")
+    "additionalProperties" nil)
+   :execution-mode :parallel
+   :executor
+   (lambda (call-id arguments)
+     (declare (ignore call-id))
+     (setf (car executed)
+           (cadr-ai::json-get arguments "value"))
+     (list (cadr-ai:make-text-content :text "echoed")))))
+
+(defun paired-tool-loop-stream (responses)
+  (let ((queue (copy-list responses)))
+    (lambda (provider model context on-event
+             &key max-tokens temperature abort-p
+               cache-retention session-id)
+      (declare (ignore provider model context max-tokens
+                       temperature abort-p cache-retention
+                       session-id))
+      (let ((message (pop queue)))
+        (unless message
+          (error "paired tool-loop stream exhausted"))
+        (funcall on-event
+                 (cadr-ai:make-stream-event
+                  :type :start :message message))
+        (dolist (block (cadr-ai:assistant-message-content message))
+          (when (typep block 'cadr-ai:text-content)
+            (funcall
+             on-event
+             (cadr-ai:make-stream-event
+              :type :text-delta
+              :delta (cadr-ai:text-content-text block)
+              :message message))))
+        (funcall
+         on-event
+         (cadr-ai:make-stream-event
+          :type :done
+          :message message
+          :reason (cadr-ai:assistant-message-stop-reason
+                   message)))
+        message))))
+
+(defun paired-tool-loop-responses ()
+  (list
+   (cadr-ai:make-assistant-message
+    :content
+    (list
+     (cadr-ai:make-tool-call
+      :id "call_1"
+      :name "echo"
+      :arguments (cadr-ai::json-object "value" "hello")))
+    :api :openai-responses
+    :provider :openai
+    :model "mock"
+    :stop-reason :tool-use)
+   (cadr-ai:make-assistant-message
+    :content
+    (list (cadr-ai:make-text-content :text "done"))
+    :api :openai-responses
+    :provider :openai
+    :model "mock"
+    :stop-reason :stop)))
+
+(defun run-paired-tool-loop ()
+  ;; FiveAM tool-call-result-and-next-model-turn-complete.
+  ;; Production agent-prompt + faux stream. No socket.
+  (let* ((executed (list nil))
+         (agent
+           (cadr-agent:make-agent
+            :provider :mock
+            :model
+            (cadr-ai:make-model
+             :id "mock"
+             :provider :openai
+             :api :openai-responses
+             :base-url "https://example.invalid"
+             :max-tokens 2048)
+            :tools (list (paired-echo-tool executed))
+            :stream-function
+            (paired-tool-loop-stream
+             (paired-tool-loop-responses))
+            :auto-compact-p nil)))
+    (cadr-agent:agent-prompt agent "echo")
+    (values agent (car executed))))
+
+(defun measure-agent-tool-loop ()
+  (multiple-value-bind (agent executed)
+      (run-paired-tool-loop)
+    (let* ((messages (cadr-agent:agent-messages agent))
+           (last (car (last messages)))
+           (result (third messages)))
+      (json-object
+       "observed"
+       (json-object
+        "final_text"
+        (cadr-ai:text-content-text
+         (first (cadr-ai:assistant-message-content last)))
+        "message_count" (length messages)
+        "tool_error"
+        (if (and (typep result 'cadr-ai:tool-result-message)
+                 (cadr-ai:tool-result-message-is-error result))
+            1
+            0)
+        "tool_value" (or executed ""))
+       "roundtrip"
+       (collect "agent_tool_loop.roundtrip"
+                (lambda ()
+                  (lambda ()
+                    (run-paired-tool-loop))))))))
+
 ;;; ---------------------------------------------------------------------
 
 (defun slicing-fixtures ()
@@ -1021,6 +1141,8 @@
       "src/cadr-cli/tools/read.lisp read-tool-file"
       "tool_grep.context_file"
       "src/cadr-cli/tools/grep.lisp grep-lines"
+      "agent_tool_loop.roundtrip"
+      "src/cadr-agent/loop/agent-loop.lisp agent-prompt"
       "text_truncation.truncate_head"
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"
@@ -1062,6 +1184,8 @@
               (let ((tool-read (measure-tool-read)))
               (format *error-output* "goal20 cadr paired paths: tool_grep~%")
               (let ((tool-grep (measure-tool-grep)))
+              (format *error-output* "goal20 cadr paired paths: agent_tool_loop~%")
+              (let ((tool-loop (measure-agent-tool-loop)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -1086,6 +1210,7 @@
               "text_truncation" truncation
               "tool_read" tool-read
               "tool_grep" tool-grep
+              "agent_tool_loop" tool-loop
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -1102,7 +1227,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))
+             "schema_version" 1)))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `agent_tool_loop.roundtrip` (faux provider,
+  no socket). Production `agent-prompt` vs `Agent.prompt` /
+  `runAgentLoop`. Same FiveAM echo fixture. First Friend-MachineD
+  freeze 0.77× (329 / 428 µs), ceiling 1.5. Not G.17. Part P
+  still `[open]`.
 - Goal 20 Part P: sprof of `session_load` / `journal_read` after
   `9a9a96d73`. Leftover is still the octet walker (`OCTET-U32-LE`
   11.3% / 12.9%; `PARSE-SESSION-RECORD-OCTETS` 73.9% / 80.2%

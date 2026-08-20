@@ -135,6 +135,19 @@ production grep (`rg --json` + context via `text-lines` /
 `output_chars` / `truncated` are exact. First Friend-MachineD freeze 1.77×, ceiling 3.0.
 Product `text-lines` stays a cons list in this commit.
 
+### Pair 8 — `agent_tool_loop`
+
+| metric | cadr | pi |
+|---|---|---|
+| `roundtrip` | `agent-prompt` (`src/cadr-agent/loop/agent-loop.lisp`) | `Agent.prompt` + `runAgentLoop` (`packages/agent/src/agent.ts`, `agent-loop.ts`) |
+
+Faux stream, no socket. Same FiveAM shape: one user prompt, one
+echo tool call (`value=hello`), one tool result, one final
+assistant `"done"`. Lisp-only retry/skip/abort stays
+`tool_failure_restarts` (unpairable). Observed `message_count` /
+`tool_value` / `tool_error` / `final_text` are exact. First
+Friend-MachineD freeze 0.77× (329 / 428 µs), ceiling 1.5.
+
 ## 2. How to run
 
 ```bash
@@ -340,13 +353,13 @@ Denominator: **295 files / 127,050 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 41 | 26,871 | 21.1% | `no worse than baseline` is falsifiable |
+| `paired` | 46 | 28,674 | 22.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 230 | 92,704 | 73.0% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 225 | 90,901 | 71.5% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 21.1% of lines (41 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 27.0% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 73.0% of lines.
+- **Falsifiable vs baseline:** 22.6% of lines (46 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 28.5% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 71.5% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -381,10 +394,15 @@ are not named stay `pairable-uncovered`.
 
 | file | lines | metrics |
 |---|---:|---|
+| `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/tool-execution.lisp` | 480 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/turns.lisp` | 393 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,185 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
+| `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/json.lisp` | 1,905 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
@@ -444,7 +462,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/latex.lisp` | 1 | 1,950 |
 | `src/cadr-ai/oauth` | 10 | 1,786 |
 | `src/cadr-agent/storage` | 4 | 1,532 |
-| `src/cadr-agent/loop` | 4 | 1,484 |
 | `src/cadr-cli/models` | 4 | 1,472 |
 | `src/cadr-ai/runtime` | 2 | 1,410 |
 | `src/cadr-cli/media.lisp` | 1 | 1,277 |
@@ -481,7 +498,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/package.lisp` | 1 | 355 |
 | `src/cadr-cli/resource-loader.lisp` | 1 | 353 |
 | `src/cadr-evals/harness-table.lisp` | 1 | 339 |
-| `src/cadr-agent/tool.lisp` | 1 | 319 |
 | `src/cadr-evals/reporter.lisp` | 1 | 314 |
 | `src/cadr-cli/package.lisp` | 1 | 289 |
 | `src/cadr-ai/models.lisp` | 1 | 288 |

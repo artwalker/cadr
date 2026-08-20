@@ -176,6 +176,16 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("output_chars", paired.OBSERVED_EXACT["tool_read"])
         self.assertIn("truncated", paired.OBSERVED_EXACT["tool_read"])
 
+    def test_agent_tool_loop_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("agent_tool_loop.roundtrip", RECORD.METRIC_KEYS)
+        self.assertIn("roundtrip", paired.METRICS["agent_tool_loop"])
+        self.assertIn("agent_tool_loop.roundtrip", paired.RATIO_CEILINGS)
+        self.assertIn("final_text", paired.OBSERVED_EXACT["agent_tool_loop"])
+        self.assertIn("message_count", paired.OBSERVED_EXACT["agent_tool_loop"])
+        self.assertIn("tool_error", paired.OBSERVED_EXACT["agent_tool_loop"])
+        self.assertIn("tool_value", paired.OBSERVED_EXACT["agent_tool_loop"])
+
     def test_tool_grep_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("tool_grep.context_file", RECORD.METRIC_KEYS)
@@ -193,7 +203,7 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertEqual(entry["label"], "paired-paths-quick")
         self.assertTrue(entry["quick"])
-        self.assertEqual(len(entry["metrics"]), 12)
+        self.assertEqual(len(entry["metrics"]), 13)
         first = entry["metrics"][RECORD.METRIC_KEYS[0]]
         self.assertAlmostEqual(first["cadrMedianUs"], 1000.0)
         self.assertAlmostEqual(first["ratio"], 2.0)
@@ -222,6 +232,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`sqlite_session.open_walk`", section)
             self.assertIn("`tool_read.text_file`", section)
             self.assertIn("`tool_grep.context_file`", section)
+            self.assertIn("`agent_tool_loop.roundtrip`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)
