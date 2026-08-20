@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: unroll ISO `DIGITS` to fixed-width `ParseNumber`
+  (`d2`/`d3`/`d4`). sprof load @ `d0c88ddd2`: DIGITS 1.8%
+  self. Not SCAN-KEY macrolet. Not empty SWAR. Not intern.
+  Not FFI. Ceiling not lowered. Not G.17. Part P still
+  `[open]`.
 - Goal 20: walker timestamp `ParseString` — fixed-width ISO
   then one quote (V8 sequential scan, not a per-byte walk).
   sprof load @ `7517049cb`: PARSE-TIMESTAMP-VALUE 3.3% self.
