@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Fixed
 
+- Bash FORMAT + `(` quoting report classified **not-product**: model
+  fed Lisp `(format t "gethash equal 6-char (hit): …")` to `bash -c`.
+  Wrapper still passes `command` as `bash -lc "$2"` argv
+  (`docs/bugs/bash-format-shell-quoting.md`). Not G.17.
 - Interactive TUI shows `Working...` during live follow-up streaming
   after a tool (assistant `message-start` / text and thinking
   deltas). Settle-window still hides the loader only in the persist

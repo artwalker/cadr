@@ -34,6 +34,29 @@
         (is (probe-file (getf details :full-output-path)))
         (delete-file (getf details :full-output-path))))))
 
+(test bash-wrapper-passes-paren-payload-as-argv-not-inner-minus-c
+  ;; docs/bugs/bash-format-shell-quoting.md class 1: the shipped
+  ;; wrapper puts the tool `command` in bash -lc "$2". Parens in that
+  ;; argv string must not become a cadr-constructed `bash -c` syntax
+  ;; error. The user FORMAT/(hit) failure was a model-written inner
+  ;; script, not this path.
+  (with-test-directory (directory)
+    (let ((tool (make-bash-tool directory)))
+      (multiple-value-bind (content details)
+          (invoke-tool
+           tool
+           (args
+            "command"
+            "printf '%s\\n' '(format t \"gethash equal 6-char (hit): ~,1F ns/call~%\")'"))
+        (is (eql 0 (getf details :exit-code)))
+        (is (search
+             "gethash equal 6-char (hit)"
+             (result-text content)))
+        (is (null
+             (search
+              "syntax error near unexpected token"
+              (result-text content))))))))
+
 (test goal9-b-bash-nonzero-exit-is-a-tool-error
   (with-test-directory (directory)
     (let* ((tool (make-bash-tool directory))

@@ -1,6 +1,6 @@
 # Bug — bash tool surfaces FORMAT + bash `(` syntax error
 
-**Status**: open (user-reported 2026-08-21). Not G.17. Not Part P load knife.
+**Status**: closed as **not-product** (class 1, 2026-08-21). Not G.17.
 
 ## Symptom (user-facing)
 
@@ -41,6 +41,31 @@ exit 2'd; the interesting part is **who constructed that command**.
 3. **Working-tree / agent harness leftover** from load knives (hash /
    gethash microbench) invoked by mistake. Then: remove or quarantine
    the harness; do not leave runnable broken scripts on PATH.
+
+## Classification
+
+**Class 1 — model-emitted bad bash.** Not a cadr core defect.
+
+Evidence:
+
+- `gethash equal 6-char (hit)` is absent from `src/` (rg 2026-08-21).
+- The only live hit is user paste in
+  `~/.cadr/agent/sessions/01a02029-42cf-7677-8079-249dd991d434.jsonl`
+  (the user asking "这个啥情况"); that JSONL has no matching tool
+  `command` field. Concurrent load-knife sessions were writing
+  gperf/`gethash` microbenches as **bash tool input**.
+- Shipped wrapper (`src/cadr-cli/tools/bash.lisp` `run-bash-command`)
+  is `setsid` → `/bin/bash -lc "$2"` with `command` as argv `$2`.
+  Inner `/bin/bash: -c: line 19` plus SBCL `error in FORMAT: No more
+  arguments` is the **model's** script: Lisp `(format t "… (hit): ~,1F")`
+  leaked into an unquoted `bash -c` body, so `(` is a shell token and
+  `~,1F` ran without its float.
+- Regression: `bash-wrapper-passes-paren-payload-as-argv-not-inner-minus-c`
+  drives `make-bash-tool` / `invoke-tool` with the same FORMAT payload
+  quoted as data; exit 0, no `unexpected token`.
+
+No cadr FORMAT rewrite. No extra quoting layer (that would change
+observable bash vs pi).
 
 ## Required delivery
 
