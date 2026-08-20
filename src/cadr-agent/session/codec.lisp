@@ -526,74 +526,79 @@
           :total (usage-cost-amount cost "total"))
          (cadr-ai:make-cost)))))
 
+(defun message-from-parts (type content timestamp usage extra)
+  ;; One typed message from already-scanned fields. V8
+  ;; BuildJsonObject after the property SmallVector. Not a
+  ;; session-json-message heap bag.
+  (cond
+    ((string= type "user")
+     (cadr-ai:make-user-message
+      :content
+      (if (stringp content)
+          content
+          (content-blocks-from-json content))
+      :timestamp timestamp))
+    ((string= type "assistant")
+     (cadr-ai:make-assistant-message
+      :content (content-blocks-from-json content)
+      :api (keyword-from-json (getf extra :api))
+      :provider (keyword-from-json (getf extra :provider))
+      :model (getf extra :model)
+      :response-id (getf extra :response-id)
+      :usage (or usage (cadr-ai:make-usage))
+      :stop-reason
+      (keyword-from-json (getf extra :stop-reason))
+      :error-message (getf extra :error-message)
+      :raw-stop-reason (getf extra :raw-stop-reason)
+      :diagnostics
+      (map
+       'list
+       #'assistant-diagnostic-from-json
+       (or (getf extra :diagnostics) #()))
+      :timestamp timestamp))
+    ((member type '("toolResult" "tool_result") :test #'string=)
+     (cadr-ai:make-tool-result-message
+      :tool-call-id (getf extra :tool-call-id)
+      :tool-name (getf extra :tool-name)
+      :content (content-blocks-from-json content)
+      :details (getf extra :details)
+      :is-error (eq t (getf extra :is-error))
+      :timestamp timestamp))
+    ((member type '("bashExecution" "bash_execution") :test #'string=)
+     (make-bash-execution-message
+      :command (or (getf extra :command) "")
+      :output (or (getf extra :output) "")
+      :exit-code (getf extra :exit-code)
+      :cancelled-p (not (null (getf extra :cancelled)))
+      :truncated-p (not (null (getf extra :truncated)))
+      :full-output-path (getf extra :full-output-path)
+      :timestamp timestamp
+      :exclude-from-context-p
+      (not (null (getf extra :exclude-from-context)))))
+    ((string= type "custom")
+     (cadr-ai:make-user-message
+      :content
+      (if (stringp content)
+          content
+          (content-blocks-from-json content))
+      :timestamp timestamp))
+    (t
+     (error "Unknown message type: ~S" type))))
+
 (defun message-from-json (object)
+  (when (or (typep object 'cadr-ai:user-message)
+            (typep object 'cadr-ai:assistant-message)
+            (typep object 'cadr-ai:tool-result-message)
+            (typep object 'bash-execution-message))
+    (return-from message-from-json object))
   (when (session-json-message-p object)
     (return-from message-from-json
-      (let ((type (session-json-message-role object))
-            (content (session-json-message-content object))
-            (extra (session-json-message-extra object)))
-        (cond
-          ((string= type "user")
-           (cadr-ai:make-user-message
-            :content
-            (if (stringp content)
-                content
-                (content-blocks-from-json content))
-            :timestamp (session-json-message-timestamp object)))
-          ((string= type "assistant")
-           (cadr-ai:make-assistant-message
-            :content (content-blocks-from-json content)
-            :api (keyword-from-json (getf extra :api))
-            :provider (keyword-from-json (getf extra :provider))
-            :model (getf extra :model)
-            :response-id (getf extra :response-id)
-            :usage
-            (or (session-json-message-usage object)
-                (cadr-ai:make-usage))
-            :stop-reason
-            (keyword-from-json (getf extra :stop-reason))
-            :error-message (getf extra :error-message)
-            :raw-stop-reason (getf extra :raw-stop-reason)
-            :diagnostics
-            (map
-             'list
-             #'assistant-diagnostic-from-json
-             (or (getf extra :diagnostics) #()))
-            :timestamp
-            (session-json-message-timestamp object)))
-          ((member type '("toolResult" "tool_result")
-                   :test #'string=)
-           (cadr-ai:make-tool-result-message
-            :tool-call-id (getf extra :tool-call-id)
-            :tool-name (getf extra :tool-name)
-            :content (content-blocks-from-json content)
-            :details (getf extra :details)
-            :is-error (eq t (getf extra :is-error))
-            :timestamp
-            (session-json-message-timestamp object)))
-          ((member type '("bashExecution" "bash_execution")
-                   :test #'string=)
-           (make-bash-execution-message
-            :command (or (getf extra :command) "")
-            :output (or (getf extra :output) "")
-            :exit-code (getf extra :exit-code)
-            :cancelled-p (not (null (getf extra :cancelled)))
-            :truncated-p (not (null (getf extra :truncated)))
-            :full-output-path (getf extra :full-output-path)
-            :timestamp
-            (session-json-message-timestamp object)
-            :exclude-from-context-p
-            (not (null (getf extra :exclude-from-context)))))
-          ((string= type "custom")
-           (cadr-ai:make-user-message
-            :content
-            (if (stringp content)
-                content
-                (content-blocks-from-json content))
-            :timestamp
-            (session-json-message-timestamp object)))
-          (t
-           (error "Unknown message type: ~S" type))))))
+      (message-from-parts
+       (session-json-message-role object)
+       (session-json-message-content object)
+       (session-json-message-timestamp object)
+       (session-json-message-usage object)
+       (session-json-message-extra object))))
   (let ((type
           (or
            (cadr-ai::json-get object "role")

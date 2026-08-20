@@ -343,6 +343,13 @@
              (cadr-ai:tool-result-message-content
               message)))))))))
 
+(test message-from-json-is-identity-on-cadr-ai-messages
+  ;; journal_append re-enters after walker BuildJsonObject.
+  (let ((user
+          (cadr-ai:make-user-message
+           :content "hi" :timestamp 1)))
+    (is (eq user (cadr-agent::message-from-json user)))))
+
 (test session-round-trips-assistant-diagnostics
   (let* ((diagnostic
            (cadr-ai:make-assistant-message-diagnostic

@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: parse-message fills typed messages from stack locals
+  (V8 SmallVector then BuildJsonObject; no heap
+  `session-json-message`). Contrast
+  `docs/benchmarks/goal20-v8-parse-message-shape.md`. Not bag
+  reuse. Not intern. Not FFI. Ceiling not lowered. Not G.17.
+  Part P still `[open]`.
 - Goal 20: withdraw parse-message scratch bag (`cc29bec17`,
   `f98d0b410`). Friend-MachineD n=5: load cadr **1857→2015 µs**
   (worse). Split-bucket note kept. Not intern. Not FFI.
