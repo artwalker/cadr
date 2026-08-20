@@ -4,8 +4,10 @@ Spec: `goal20-draft.md` 十B (incl. 「Callee / 屠龙」).
 Rulings: `docs/adjudications.md` 2026-08-18 CL ceiling
 (`1a24eea1d`); 2026-08-20 beat-pi / study-callee; 2026-08-20
 bucket-split / empty ⚑ ≠ exhausted; 2026-08-20 study shape,
-not port the V8 VM. Floor is still pi; beating pi is not a
-stop. DS audit Class C:
+not port the V8 VM; 2026-08-20 Lisp 屠龙刀 invent-if-needed;
+2026-08-20 mature algorithms/DS as design sources — keep
+optimizing. Floor is still pi; beating pi is not a stop.
+DS audit Class C:
 `docs/acceptance/goal-v20-ds-audit.md`.
 
 Advisor vetoed G.17 `met` on `40db3f88a` and `c53e13c47`,
@@ -18,21 +20,22 @@ deferred live play (reopen if a defect appears).
 Not a Goal 20 pass.
 
 **Load leftover method (not G.17):** bucket-split
-`PARSE-SESSION-RECORD-OCTETS` (child cadr µs) **and** open the
-matching V8 source step (what it does less of) before a knife.
-Name-only `Parse*` stickers are not essence. Do not require
-HiddenClass/Zone/HandleScope ports. Knife not landed without
-green `test-cl.sh` + Friend-MachineD cadr µs. Call-boundary
-inlines won; three V8-shape knives on `parse-message` withdrew
-(see `goal20-session-load-leftover.md`) — **user 2026-08-20:
-keep inventing better Lisp DS/algorithms; do not park on FFI.**
-Adjudications: study-shape; Lisp 屠龙刀 invent-if-needed.
+`PARSE-SESSION-RECORD-OCTETS` (child cadr µs) **and** a design
+source that names what is done less (V8 step **or** another
+mature algorithm/DS). Name-only `Parse*` stickers are not
+essence. Do not require HiddenClass/Zone/HandleScope ports.
+Knife not landed without green `test-cl.sh` + Friend-MachineD
+cadr µs. Call-boundary inlines won; three V8-shape knives on
+`parse-message` withdrew (`goal20-session-load-leftover.md`).
+**User: keep inventing/encoding better Lisp DS; mature
+published structures are fair design sources; do not park on
+FFI.**
 
 ## P.1–P.11
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | leftover | Call-boundary inlines won; load still ~1.27× (cadr ~1857 µs @ `d0c88ddd2` ledger). Next = bucket-split descent (`PARSE-SESSION-RECORD-OCTETS`), not empty SWAR / intern grow / FFI / labels→macrolet redo / <3% ISO/DIGITS polish. | adjudications 2026-08-20; sprof `d0c88ddd2`. Not G.17. |
+| P.1 JSON read | leftover | Load ~1.15× (cadr ~1879 µs @ `a698334d5`). Continue Lisp DS/algorithms (mature designs OK to study+encode). Do not redo 三连 V8-shape knives; do not park on FFI. | adjudications 屠龙刀 + mature DS; leftover md. Not G.17. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
 | P.4 help / argv / walk | number | remesure `b7f1f7de0`: argv 0.98× (3.0 / 3.1 µs). `cli-token-tail=` now `schar`; this-host 3.0→1.96 µs | this knife for argv. Not intern. |

@@ -835,4 +835,34 @@ land the distinction in-repo.
 proposal — keep building in Lisp, do not default to FFI or
 stop.
 
+## 2026-08-20 — Mature algorithms/DS as design sources; keep optimizing
+
+**Ruled**: user (2026-08-20 23:48). Advisor agrees.
+
+**Decided**:
+
+1. Design sources for the next load knives are **not limited
+   to V8 surface shapes**. Mature, published algorithms and
+   data structures (classic texts, well-known parsers,
+   rope/gap/buffer views, closed perfect hashing for tiny
+   key sets, arena/bump patterns expressible in Lisp, …)
+   may be studied and **Lisp-encoded**, same rule as studying
+   a callee: learn the computational structure, do not FFI
+   the foreign binary unless newly adjudicated.
+2. The executor continues optimizing `session_load` (and
+   other >1.0 floors) under Part P / 屠龙: propose DS + why
+   cheaper than the ISO-kept walker and the three withdrawn
+   knives; green `test-cl.sh`; Friend-MachineD **cadr µs**
+   wins or revert.
+3. Confidence that a Lisp solution exists does **not** relax
+   measurement: no G.17 `met`, no empty ⚑, no redoing
+   falsified encodings.
+4. Pointers: this file; `goal20-draft.md` 十B; Part P;
+   `goal20-session-load-leftover.md`; board `[ready]`.
+
+**Why it was decidable**: user affirmed keep going with
+Lisp, using the body of known algorithms/DS, after the
+leftover booking.
+
+
 

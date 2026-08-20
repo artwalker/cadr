@@ -82,13 +82,14 @@ session_load leftover vs pi `JSON.parse` was booked after three
 falsified V8-shape knives on the `parse-message` child.
 
 **User ruling 2026-08-20 23:43** (`docs/adjudications.md`
-「Lisp 屠龙刀: invent the DS if none is ready-made」):
+「Lisp 屠龙刀: invent the DS if none is ready-made」)
+and **2026-08-20 23:48** (mature algorithms/DS as design
+sources; keep optimizing):
 Lisp is the sword. Three failed *surface encodings* ≠ park
-load ≠ G.17. If no ready-made win exists, **invent a better
-Lisp algorithm/DS** (same observable behavior). Studying V8
-still informs; FFI / mmap / intern grow / empty SWAR still
-need a **new** adjudication — they are not the default next
-step. Empty ⚑ that only repeats banned classes is rejected.
+load ≠ G.17. Study mature published algorithms/structures
+and **Lisp-encode** them (study ≠ FFI). If no ready-made
+binary wins, invent the encoding. Empty ⚑ that only repeats
+banned classes is rejected.
 
 Historical classes that stay forbidden without a new ruling:
 
