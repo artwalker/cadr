@@ -88,6 +88,12 @@ content-block bag reuse (same family as message bag).
   unroll withdrawn. ISO quote walk kept. `tagbody` merge is
   last-resort only.
 
+## Knife 1 (falsified) — quote-scan high-byte @ `108d9184a`
+
+Friend-MachineD n=5: load cadr **1879→2045 µs**. Withdrawn
+`78f84679f` (restore `aa2d4a89a`). Do not redo. Fill kernel
+was never rewritten.
+
 ## Next knives (advisor 2026-08-21 — ban scope + knives 1/2)
 
 **Supersedes** the DeepSeek A/D cold priority for the immediate
