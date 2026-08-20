@@ -75,6 +75,7 @@
     ("provider_google.stream_roundtrip" . 10)
     ("provider_bedrock.stream_roundtrip" . 10)
     ("provider_mistral.stream_roundtrip" . 10)
+    ("provider_openai_responses.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
     ("resource_loader.reload" . 3)
     ("session_pipeline.session_load" . 3)
@@ -214,6 +215,7 @@
   '("auth.json" "cli-argv.json" "manifest.json" "models.json"
     "anthropic-messages.sse" "google-generative-ai.sse"
     "bedrock-converse-stream.bin" "mistral-conversations.sse"
+    "openai-responses.sse"
     "settings-global.json" "settings-project.json"
     "resource-skill-global.md" "resource-skill-project.md"
     "resource-prompt-global.md" "resource-prompt-project.md"
@@ -933,6 +935,95 @@
                   (lambda ()
                     (lambda ()
                       (run-provider-mistral
+                       provider model context nil)))))))))
+
+(defun openai-responses-model ()
+  (cadr-ai:make-model
+   :id "gpt-4.1"
+   :name "Goal 20 OpenAI Responses"
+   :api :openai-responses
+   :provider :openai
+   :base-url "https://api.openai.com"
+   :reasoning-p nil
+   :supports-images-p t
+   :context-window 128000
+   :max-tokens 16384))
+
+(defun openai-responses-http-request-function ()
+  (lambda (url &rest arguments)
+    (declare (ignore url arguments))
+    (values
+     (open (fixture-path "openai-responses.sse")
+           :direction :input
+           :element-type '(unsigned-byte 8))
+     200
+     '(("content-type" . "text/event-stream")))))
+
+(defun run-provider-openai-responses
+    (provider model context collect-events-p)
+  (let ((events nil)
+        (payload nil))
+    (let ((cadr-ai:*http-request-function*
+            (openai-responses-http-request-function)))
+      (let ((message
+              (cadr-ai::stream-chat
+               provider model context
+               (if collect-events-p
+                   (lambda (event) (push event events))
+                   (lambda (event) (declare (ignore event)) nil))
+               :on-payload
+               (lambda (value model)
+                 (declare (ignore model))
+                 (setf payload value)
+                 nil))))
+        (values message (nreverse events) payload)))))
+
+(defun measure-provider-openai-responses ()
+  (let ((provider
+          (cadr-ai:make-openai-provider
+           :api-key *provider-api-key*
+           :provider-id :openai))
+        (model (openai-responses-model))
+        (context (provider-context)))
+    (multiple-value-bind (message events payload)
+        (run-provider-openai-responses provider model context t)
+      (declare (ignore events))
+      (unless (eq :tool-use (cadr-ai:assistant-message-stop-reason message))
+        (error "openai-responses fixture stream produced stop reason ~S"
+               (cadr-ai:assistant-message-stop-reason message)))
+      (let* ((blocks (cadr-ai:assistant-message-content message))
+             (text
+               (apply #'concatenate 'string
+                      (mapcar #'cadr-ai:text-content-text
+                              (remove-if-not
+                               (lambda (block)
+                                 (typep block 'cadr-ai:text-content))
+                               blocks)))))
+        (json-object
+         "observed"
+         (json-object
+          "content_block_types"
+          (json-array (mapcar #'content-block-type-name blocks))
+          "stop_reason" "toolUse"
+          "text_characters" (length text)
+          "tool_call_count"
+          (count-if (lambda (block) (typep block 'cadr-ai:tool-call))
+                    blocks)
+          "usage_input"
+          (cadr-ai:usage-input
+           (cadr-ai:assistant-message-usage message))
+          "usage_output"
+          (cadr-ai:usage-output
+           (cadr-ai:assistant-message-usage message))
+          "payload_stream"
+          (eq t (cadr-ai::json-get payload "stream"))
+          "payload_tool_count"
+          (length (or (cadr-ai::json-get payload "tools") #())))
+         "stream_roundtrip"
+         (collect "provider_openai_responses.stream_roundtrip"
+                  (lambda ()
+                    (lambda ()
+                      (run-provider-openai-responses
                        provider model context nil)))))))))
 
 ;;; ---------------------------------------------------------------------
@@ -1804,6 +1895,8 @@
       "src/cadr-ai/providers/bedrock.lisp stream-chat"
       "provider_mistral.stream_roundtrip"
       "src/cadr-ai/providers/mistral.lisp stream-chat"
+      "provider_openai_responses.stream_roundtrip"
+      "src/cadr-ai/providers/openai.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
       "resource_loader.reload"
@@ -1879,6 +1972,8 @@
               (let ((bedrock (measure-provider-bedrock)))
               (format *error-output* "goal20 cadr paired paths: provider_mistral~%")
               (let ((mistral (measure-provider-mistral)))
+              (format *error-output* "goal20 cadr paired paths: provider_openai_responses~%")
+              (let ((openai-responses (measure-provider-openai-responses)))
               (format *error-output* "goal20 cadr paired paths: cli_settings~%")
               (let ((settings (measure-cli-settings)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
@@ -1913,6 +2008,7 @@
               "provider_google" google
               "provider_bedrock" bedrock
               "provider_mistral" mistral
+              "provider_openai_responses" openai-responses
               "cli_settings" settings
               "resource_loader" resources
               "render_slicing" slicing)
@@ -1931,7 +2027,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

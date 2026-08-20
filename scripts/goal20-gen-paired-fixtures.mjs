@@ -639,6 +639,93 @@ function buildMistralSseFixture() {
 	return `${lines.join("\n")}\n`;
 }
 
+function buildOpenAIResponsesSseFixture() {
+	const lines = [];
+	const event = (name, payload) => {
+		lines.push(`event: ${name}`, `data: ${JSON.stringify(payload)}`, "");
+	};
+	event("response.created", {
+		type: "response.created",
+		response: { id: "resp_goal20", object: "response", status: "in_progress" },
+	});
+	event("response.output_item.added", {
+		type: "response.output_item.added",
+		output_index: 0,
+		item: { id: "msg_goal20", type: "message", role: "assistant", content: [] },
+	});
+	let text = "";
+	for (let index = 0; index < SSE_TEXT_DELTA_COUNT; index += 1) {
+		const delta = index % 8 === 7 ? `chunk-${index} 中文 🚀 ` : `chunk-${index} `;
+		text += delta;
+		event("response.output_text.delta", {
+			type: "response.output_text.delta",
+			output_index: 0,
+			delta,
+		});
+	}
+	event("response.output_item.done", {
+		type: "response.output_item.done",
+		output_index: 0,
+		item: {
+			id: "msg_goal20",
+			type: "message",
+			role: "assistant",
+			content: [{ type: "output_text", text }],
+		},
+	});
+	event("response.output_item.added", {
+		type: "response.output_item.added",
+		output_index: 1,
+		item: {
+			id: "fc_goal20",
+			type: "function_call",
+			status: "in_progress",
+			call_id: "call_goal20_read",
+			name: "read",
+			arguments: "",
+		},
+	});
+	for (const fragment of ['{"path":', '"docs/', 'example.md"', ',"offset":1', ',"limit":4}']) {
+		event("response.function_call_arguments.delta", {
+			type: "response.function_call_arguments.delta",
+			output_index: 1,
+			delta: fragment,
+		});
+	}
+	event("response.function_call_arguments.done", {
+		type: "response.function_call_arguments.done",
+		output_index: 1,
+		arguments: '{"path":"docs/example.md","offset":1,"limit":4}',
+	});
+	event("response.output_item.done", {
+		type: "response.output_item.done",
+		output_index: 1,
+		item: {
+			id: "fc_goal20",
+			type: "function_call",
+			status: "completed",
+			call_id: "call_goal20_read",
+			name: "read",
+			arguments: '{"path":"docs/example.md","offset":1,"limit":4}',
+		},
+	});
+	event("response.completed", {
+		type: "response.completed",
+		response: {
+			id: "resp_goal20",
+			status: "completed",
+			usage: {
+				input_tokens: 4096,
+				output_tokens: 512,
+				total_tokens: 4608,
+				input_tokens_details: { cached_tokens: 0 },
+				output_tokens_details: { reasoning_tokens: 0 },
+			},
+		},
+	});
+	return `${lines.join("\n")}\n`;
+}
+
 // ---------------------------------------------------------------------------
 // CLI fixtures (pair 1)
 // ---------------------------------------------------------------------------
@@ -773,6 +860,7 @@ const artifacts = new Map([
 	["openai-completions.sse", buildSseFixture()],
 	["anthropic-messages.sse", buildAnthropicSseFixture()],
 	["mistral-conversations.sse", buildMistralSseFixture()],
+	["openai-responses.sse", buildOpenAIResponsesSseFixture()],
 	["google-generative-ai.sse", buildGoogleSseFixture()],
 	["bedrock-converse-stream.bin", buildBedrockEventStreamFixture()],
 	["settings-global.json", `${JSON.stringify(buildSettingsGlobal(), null, "\t")}\n`],

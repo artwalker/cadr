@@ -28,6 +28,7 @@ METRIC_KEYS = (
     "provider_google.stream_roundtrip",
     "provider_bedrock.stream_roundtrip",
     "provider_mistral.stream_roundtrip",
+    "provider_openai_responses.stream_roundtrip",
     "cli_settings.create",
     "resource_loader.reload",
     "session_pipeline.session_load",

@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `provider_openai_responses.stream_roundtrip`
+  (recorded OpenAI Responses SSE, no socket). Production
+  `stream-chat` vs `openai-responses.ts stream`. Same
+  `provider-context.json`. Seam is `*http-request-function*` /
+  `options.fetch`. First Friend-MachineD freeze 0.37×
+  (1460 / 3901 µs), ceiling 1.5. Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `provider_mistral.stream_roundtrip`
   (recorded Mistral Conversations SSE, no socket). Production
   `stream-chat` vs `mistral-conversations.ts stream`. Same
