@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: archive V8/`JSON.parse` compare plus Friend-MachineD
+  n=5 withdrawals (`a78ee0171` public cons-plist parse-json:
+  journal_read 1.62×→2.59×; `28e0eae06` session simple-vector:
+  cadr session_load 2878→3110 µs). Public parse-json stays hash.
+  `docs/benchmarks/goal20-v8-json-parse-compare.md`. No `src/`
+  speedup. Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: sprof `provider_codex` leftover after stringify skip is
   `PARSE-JSON-SOURCE` / `READ-SSE-STREAM` vs V8 `JSON.parse` (Class
   C). 1.08× leftover. Ceiling 1.5 not lowered. No `src/`. Not G.17.
