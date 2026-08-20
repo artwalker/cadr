@@ -26,14 +26,14 @@ SCAN-KEY labels→macrolet, length-case `put-*-field`, closed-set
 intern grow, `PARSE-STRING-VALUE` labels→macrolet, COPY-UNESCAPED,
 DIGITS unroll, ISO quote walk.
 
-## Knife
+## Knife (falsified)
 
 `parse-message` 601 µs: two-stage `session-json-message` bag then
 `message-from-json` in `finalize-session-entry`. V8
 `ParseJsonObject` + `BuildJsonObject` fills **one** JSObject from a
-scratch `SmallVector<JsonProperty,16>`. Lisp encoding: reuse one
-scratch bag per walker (SmallVector) and convert to the target
-message type at parse time (BuildJsonObject). `finalize-session-entry` and `journal_append` still call
-`message-from-json`; it is identity on cadr-ai messages and still
-converts hash/EQUAL leftovers (v1 migrate, `open-jsonl-session-storage`).
-Not a second walk of walker output.
+scratch `SmallVector<JsonProperty,16>`. Lisp encoding tried: reuse
+one scratch bag per walker (SmallVector) and convert at parse time
+(BuildJsonObject). Friend-MachineD n=5 @ `f98d0b410`: load cadr
+**1857→2015 µs** (1.27×→1.17× is pi jitter; cadr µs worse).
+Withdrawn. Do not redo bag-reuse + parse-time `message-from-json`.
+Not intern. Not FFI. Ceiling not lowered. Not G.17.

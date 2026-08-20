@@ -288,8 +288,7 @@
          (position start)
          (length (or end (length octets)))
          (entry (make-session-entry))
-         (string-buffer nil)
-         (message-bag (make-session-json-message)))
+         (string-buffer nil))
     (declare (type (simple-array (unsigned-byte 8) (*)) octets)
              (type fixnum position length))
     (macrolet ((peek-code ()
@@ -988,37 +987,29 @@
                  (t
                   (skip-value)))))
            (parse-message ()
-             ;; V8 ParseJsonObject: scratch SmallVector then one
-             ;; JSObject. Reuse one bag per walker; convert to the
-             ;; target message here (BuildJsonObject), not a second
-             ;; walk in finalize. Not labels macrolet. Not intern.
-             (setf (session-json-message-role message-bag) nil
-                   (session-json-message-content message-bag) nil
-                   (session-json-message-timestamp message-bag) nil
-                   (session-json-message-usage message-bag) nil
-                   (session-json-message-extra message-bag) nil)
-             (expect-code 123)
-             (skip-space)
-             (unless (eql (peek-code) 125)
-               (loop
-                 (multiple-value-bind (key-start key-end)
-                     (scan-key)
+             (let ((bag (make-session-json-message)))
+               (expect-code 123)
+               (skip-space)
+               (unless (eql (peek-code) 125)
+                 (loop
+                   (multiple-value-bind (key-start key-end)
+                       (scan-key)
+                     (skip-space)
+                     (expect-code 58)
+                     (skip-space)
+                     (if key-start
+                         (put-message-field bag key-start key-end)
+                         (skip-value)))
                    (skip-space)
-                   (expect-code 58)
-                   (skip-space)
-                   (if key-start
-                       (put-message-field message-bag key-start key-end)
-                       (skip-value)))
-                 (skip-space)
-                 (let ((code (peek-code)))
-                   (cond
-                     ((eql code 44)
-                      (take-code)
-                      (skip-space))
-                     ((eql code 125) (return))
-                     (t (fail "Expected comma or }"))))))
-             (expect-code 125)
-             (message-from-json message-bag))
+                   (let ((code (peek-code)))
+                     (cond
+                       ((eql code 44)
+                        (take-code)
+                        (skip-space))
+                       ((eql code 125) (return))
+                       (t (fail "Expected comma or }"))))))
+               (expect-code 125)
+               bag))
            (put-entry-field (key-start key-end)
              (let ((n (- key-end key-start))
                    (b0 (aref octets key-start)))
@@ -1873,13 +1864,12 @@
     (let ((usage-object (session-entry-usage entry)))
       (case type
         (:message
-         (let ((raw
-                 (require-session-slot
-                  (session-entry-message entry)
-                  "message" path line-number)))
-           (setf
+         (setf
+          (session-entry-message entry)
+          (message-from-json
+           (require-session-slot
             (session-entry-message entry)
-            (message-from-json raw))))
+            "message" path line-number))))
         (:thinking-level-change
          (let ((value
                  (require-session-slot

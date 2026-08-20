@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw parse-message scratch bag (`cc29bec17`,
+  `f98d0b410`). Friend-MachineD n=5: load cadr **1857→2015 µs**
+  (worse). Split-bucket note kept. Not intern. Not FFI.
+  Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: adjudicate study-shape vs port-V8-VM —
   `docs/adjudications.md`; tighten Part P / Class C Method
   (name stickers ≠ essence; no required HiddenClass/Zone;
