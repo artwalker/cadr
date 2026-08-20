@@ -21,6 +21,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: put-message-field first-byte dispatch (proposal 3).
+  Friend-MachineD n=5 load **1821→1763 µs**. Not length-case.
+  Not bag reuse. Ceiling not lowered. Not G.17.
 - Goal 20: put-entry-field unique 4-byte prefix dispatch
   (gperf-style; fromId/fromHook share `from`). Friend-MachineD
   n=5 load **1829→1821 µs**. Not length-case. Not knife 1.

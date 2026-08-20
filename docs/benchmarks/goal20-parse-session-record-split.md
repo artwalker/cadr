@@ -67,6 +67,12 @@ Samples 1731–1868. Not bag reuse. Not intern. Not FFI.
 Friend-MachineD n=5: load cadr **1829→1821 µs** (keep).
 Not intern. Not FFI. Ceiling not lowered.
 
+## Knife — put-message-field first-byte
+
+Proposal 3. `case` on the first key byte, then the small
+same-initial-letter set. Not length-case. Friend-MachineD
+n=5: load cadr **1821→1763 µs** (keep). Ceiling not lowered.
+
 ## Next knife (adjudication 2026-08-21 item 11)
 
 **Knife 1 remesured and withdrawn.** Knife 2 (content
