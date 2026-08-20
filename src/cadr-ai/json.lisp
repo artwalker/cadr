@@ -54,61 +54,19 @@
   ;; Session tool-call arguments: even-length string-key pairs
   ;; tagged so WRITE-JSON-VALUE emits an object, not an array,
   ;; and empty arguments stay distinct from JSON false.
-  ;; cdr is a cons plist or a simple-vector of k,v,k,v
-  ;; (V8 sequential named properties; not EQUAL hash).
   (and (consp value)
        (eq (car value) :json-object)))
-
-(defun json-map-entries (object function)
-  ;; Walk hash, pair list, or pair simple-vector.  Not intern expand.
-  (cond
-    ((hash-table-p object)
-     (maphash function object))
-    ((json-object-pairs-p object)
-     (let ((pairs (cdr object)))
-       (if (simple-vector-p pairs)
-           (let ((n (length pairs)))
-             (declare (type fixnum n)
-                      (type simple-vector pairs))
-             (loop for index of-type fixnum from 0 below n by 2
-                   do (funcall
-                       function
-                       (svref pairs index)
-                       (svref pairs (the fixnum (1+ index))))))
-           (loop for (pair-key pair-value) on pairs by #'cddr
-                 do (funcall function pair-key pair-value))))))
-  object)
-
-(defun json-keys (object)
-  (let ((keys nil))
-    (json-map-entries
-     object
-     (lambda (pair-key pair-value)
-       (declare (ignore pair-value))
-       (push pair-key keys)))
-    (nreverse keys)))
 
 (defun json-get (object key &optional default)
   (cond
     ((hash-table-p object)
      (gethash key object default))
     ((json-object-pairs-p object)
-     (let ((pairs (cdr object)))
-       (if (simple-vector-p pairs)
-           (let ((n (length pairs)))
-             (declare (type fixnum n)
-                      (type simple-vector pairs))
-             (loop for index of-type fixnum from 0 below n by 2
-                   for pair-key = (svref pairs index)
-                   when (and (stringp pair-key)
-                             (string= pair-key key))
-                     return (svref pairs (the fixnum (1+ index)))
-                   finally (return default)))
-           (loop for (pair-key pair-value) on pairs by #'cddr
-                 when (and (stringp pair-key)
-                           (string= pair-key key))
-                   return pair-value
-                 finally (return default)))))
+     (loop for (pair-key pair-value) on (cdr object) by #'cddr
+           when (and (stringp pair-key)
+                     (string= pair-key key))
+             return pair-value
+           finally (return default)))
     (t default)))
 
 (defun json-present-p (object key)
@@ -116,18 +74,9 @@
     ((hash-table-p object)
      (nth-value 1 (gethash key object)))
     ((json-object-pairs-p object)
-     (let ((pairs (cdr object)))
-       (if (simple-vector-p pairs)
-           (let ((n (length pairs)))
-             (declare (type fixnum n)
-                      (type simple-vector pairs))
-             (loop for index of-type fixnum from 0 below n by 2
-                   for pair-key = (svref pairs index)
-                   thereis (and (stringp pair-key)
-                                (string= pair-key key))))
-           (loop for (pair-key pair-value) on pairs by #'cddr
-                 thereis (and (stringp pair-key)
-                              (string= pair-key key))))))
+     (loop for (pair-key pair-value) on (cdr object) by #'cddr
+           thereis (and (stringp pair-key)
+                        (string= pair-key key))))
     (t nil)))
 
 (defun json-null-p (value)
@@ -1887,7 +1836,11 @@
      (write-char #\} stream))
     ((json-object-pairs-p value)
      (write-char #\{ stream)
-     (loop for key in (sort (json-keys value) #'string<)
+     (loop for key in
+           (sort
+            (loop for (pair-key) on (cdr value) by #'cddr
+                  collect pair-key)
+            #'string<)
            for first-p = t then nil
            do
            (unless first-p (write-char #\, stream))
