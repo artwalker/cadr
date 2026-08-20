@@ -863,6 +863,22 @@ const artifacts = new Map([
 	["openai-responses.sse", buildOpenAIResponsesSseFixture()],
 	["azure-openai-responses.sse", buildOpenAIResponsesSseFixture()],
 	["google-generative-ai.sse", buildGoogleSseFixture()],
+	["google-vertex.sse", buildGoogleSseFixture()],
+	[
+		"vertex-adc.json",
+		`${JSON.stringify(
+			{
+				type: "authorized_user",
+				client_id: "goal20-vertex.apps.googleusercontent.com",
+				client_secret: "goal20-not-a-real-secret",
+				refresh_token: "goal20-not-a-real-refresh",
+				token_uri: "https://oauth2.googleapis.com/token",
+				quota_project_id: "goal20-vertex-project",
+			},
+			null,
+			"\t",
+		)}\n`,
+	],
 	["bedrock-converse-stream.bin", buildBedrockEventStreamFixture()],
 	["settings-global.json", `${JSON.stringify(buildSettingsGlobal(), null, "\t")}\n`],
 	["settings-project.json", `${JSON.stringify(buildSettingsProject(), null, "\t")}\n`],

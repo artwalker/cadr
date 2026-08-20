@@ -132,6 +132,7 @@ const REPETITIONS = {
 	"provider_mistral.stream_roundtrip": 10,
 	"provider_openai_responses.stream_roundtrip": 10,
 	"provider_azure_openai.stream_roundtrip": 10,
+	"provider_vertex.stream_roundtrip": 10,
 	"cli_settings.create": 5,
 	"resource_loader.reload": 3,
 	"session_pipeline.session_load": 3,
@@ -211,6 +212,8 @@ const fixtureNames = [
 	"mistral-conversations.sse",
 	"openai-responses.sse",
 	"azure-openai-responses.sse",
+	"google-vertex.sse",
+	"vertex-adc.json",
 	"settings-global.json",
 	"settings-project.json",
 	"resource-skill-global.md",
@@ -238,6 +241,10 @@ const bedrockEventStreamPath = path.join(fixtureDirectory, "bedrock-converse-str
 const mistralSsePath = path.join(fixtureDirectory, "mistral-conversations.sse");
 const openaiResponsesSsePath = path.join(fixtureDirectory, "openai-responses.sse");
 const azureOpenaiSsePath = path.join(fixtureDirectory, "azure-openai-responses.sse");
+const vertexSsePath = path.join(fixtureDirectory, "google-vertex.sse");
+const vertexAdc = JSON.parse(
+	readFileSync(path.join(fixtureDirectory, "vertex-adc.json"), "utf8"),
+);
 const cliArgv = JSON.parse(readFileSync(path.join(fixtureDirectory, "cli-argv.json"), "utf8"));
 const providerContext = JSON.parse(
 	readFileSync(path.join(fixtureDirectory, "provider-context.json"), "utf8"),
@@ -307,6 +314,7 @@ const bedrockModule = await import(moduleUrl("packages/ai/src/api/bedrock-conver
 const mistralModule = await import(moduleUrl("packages/ai/src/api/mistral-conversations.ts"));
 const openaiResponsesModule = await import(moduleUrl("packages/ai/src/api/openai-responses.ts"));
 const azureOpenaiModule = await import(moduleUrl("packages/ai/src/api/azure-openai-responses.ts"));
+const vertexModule = await import(moduleUrl("packages/ai/src/api/google-vertex.ts"));
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
@@ -976,6 +984,83 @@ async function measureProviderAzureOpenai() {
 	};
 }
 
+const vertexModel = {
+	id: "gemini-3.6-flash",
+	name: "Goal 20 Vertex",
+	api: "google-vertex",
+	provider: "google-vertex",
+	baseUrl: "https://aiplatform.googleapis.com/v1",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 128000,
+	maxTokens: 16384,
+};
+
+async function runProviderVertex(collectEvents) {
+	// google-vertex.ts throws if options.fetch !== globalThis.fetch.
+	// Stub the global so generateContentStream still hits recorded SSE
+	// without a live socket. API key avoids google-auth-library ADC
+	// exchange (gaxios / node https, not fetch).
+	const events = collectEvents ? [] : undefined;
+	let payload;
+	const originalFetch = globalThis.fetch;
+	globalThis.fetch = async () =>
+		new Response(readFileSync(vertexSsePath), {
+			status: 200,
+			headers: { "content-type": "text/event-stream" },
+		});
+	try {
+		const stream = vertexModule.stream(vertexModel, providerContext, {
+			apiKey: "goal20-paired-paths-not-a-real-key",
+			maxRetries: 0,
+			project: "goal20-vertex-project",
+			location: "us-east1",
+			env: {
+				GOOGLE_CLOUD_PROJECT: "goal20-vertex-project",
+				GOOGLE_CLOUD_LOCATION: "us-east1",
+				GOOGLE_APPLICATION_CREDENTIALS: path.join(fixtureDirectory, "vertex-adc.json"),
+			},
+			onPayload: (value) => {
+				payload = value;
+				return undefined;
+			},
+		});
+		for await (const event of stream) events?.push(event.type);
+		const message = await stream.result();
+		return { events, message, payload };
+	} finally {
+		globalThis.fetch = originalFetch;
+	}
+}
+
+async function measureProviderVertex() {
+	const observed = await runProviderVertex(true);
+	if (observed.message.stopReason !== "toolUse") {
+		throw new Error(`vertex fixture stream produced stopReason ${observed.message.stopReason}`);
+	}
+	const text = observed.message.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("");
+	const tools = observed.payload?.config?.tools ?? observed.payload?.tools;
+	return {
+		stream_roundtrip: await collect("provider_vertex.stream_roundtrip", () => {
+			return () => runProviderVertex(false);
+		}),
+		observed: {
+			content_block_types: observed.message.content.map((block) => block.type),
+			stop_reason: observed.message.stopReason,
+			text_characters: [...text].length,
+			tool_call_count: observed.message.content.filter((block) => block.type === "toolCall").length,
+			usage_input: observed.message.usage.input,
+			usage_output: observed.message.usage.output,
+			payload_tool_count: Array.isArray(tools) ? tools.length : 0,
+			adc_type: vertexAdc.type,
+		},
+	};
+}
+
 function runCliSettings() {
 	return settingsModule.SettingsManager.create(settingsCwdDirectory, settingsAgentDirectory, {
 		projectTrusted: true,
@@ -1637,6 +1722,8 @@ process.stderr.write("goal20 pi paired paths: provider_openai_responses\n");
 const providerOpenaiResponses = await measureProviderOpenaiResponses();
 process.stderr.write("goal20 pi paired paths: provider_azure_openai\n");
 const providerAzureOpenai = await measureProviderAzureOpenai();
+process.stderr.write("goal20 pi paired paths: provider_vertex\n");
+const providerVertex = await measureProviderVertex();
 process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
@@ -1666,6 +1753,7 @@ const result = {
 			"provider_mistral.stream_roundtrip": "packages/ai/src/api/mistral-conversations.ts stream",
 			"provider_openai_responses.stream_roundtrip": "packages/ai/src/api/openai-responses.ts stream",
 			"provider_azure_openai.stream_roundtrip": "packages/ai/src/api/azure-openai-responses.ts stream",
+			"provider_vertex.stream_roundtrip": "packages/ai/src/api/google-vertex.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"session_pipeline.session_load":
@@ -1725,6 +1813,7 @@ const result = {
 		provider_mistral: providerMistral,
 		provider_openai_responses: providerOpenaiResponses,
 		provider_azure_openai: providerAzureOpenai,
+		provider_vertex: providerVertex,
 		cli_settings: cliSettings,
 		resource_loader: resourceLoader,
 		render_slicing: renderSlicing,

@@ -83,6 +83,13 @@
                          :provider :azure-openai-responses
                          :api :azure-openai-responses
                          :base-url "https://goal20.openai.azure.com/openai/v1"
+                         :max-tokens 4096)))
+    (:vertex
+     (values (make-vertex-provider :api-key "vertex-test")
+             (make-model :id "gemini-3.6-flash"
+                         :provider :google-vertex
+                         :api :google-vertex
+                         :base-url "https://aiplatform.googleapis.com/v1"
                          :max-tokens 4096)))))
 
 (defun first-text (message)

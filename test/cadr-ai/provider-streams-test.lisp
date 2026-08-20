@@ -142,6 +142,50 @@
              (lambda (block) (typep block 'cadr-ai:tool-call))
              (assistant-message-content message)))))))
 
+(test pairing-provider-vertex-recorded-sse-stays-put
+  ;; scripts/goal20-paired-paths.lisp provider_vertex.stream_roundtrip.
+  ;; Drives shipped stream-chat, not a reimplementation. No live socket.
+  ;; gemini-3.6-flash keeps tool-call ids (google-gemini-3-model-p).
+  (multiple-value-bind (provider model)
+      (provider-case :vertex)
+    (let ((events nil)
+          (*http-request-function*
+            (lambda (url &rest arguments)
+              (declare (ignore url arguments))
+              (values
+               (open
+                (fixture-path
+                 "test/fixtures/goal20-paired-paths/google-vertex.sse")
+                :direction :input
+                :element-type '(unsigned-byte 8))
+               200
+               '(("content-type" . "text/event-stream"))))))
+      (let ((message
+              (stream-chat
+               provider model (sample-context)
+               (lambda (event) (push event events)))))
+        (is (eq :tool-use (assistant-message-stop-reason message)))
+        (is (= 4096 (usage-input (assistant-message-usage message))))
+        (is (= 512 (usage-output (assistant-message-usage message))))
+        (is (find-if
+             (lambda (block) (typep block 'cadr-ai:tool-call))
+             (assistant-message-content message)))))))
+
+(test pairing-provider-vertex-adc-fixture-stays-put
+  ;; Inventory fixture for provider_vertex: ADC JSON is parsed by the
+  ;; shipped reader. Token exchange stays off the wire.
+  (let ((credential
+          (cadr-ai::read-google-application-credential
+           (fixture-path
+            "test/fixtures/goal20-paired-paths/vertex-adc.json"))))
+    (is (string= "authorized_user"
+                 (cadr-ai::json-get credential "type")))
+    (is (string= "goal20-vertex-project"
+                 (cadr-ai::json-get credential "quota_project_id")))
+    (let ((spec
+            (cadr-ai::make-vertex-token-request credential :issued-at 0)))
+      (is (search "oauth2.googleapis.com/token" (request-spec-url spec))))))
+
 (test pairing-provider-azure-openai-recorded-sse-stays-put
   ;; scripts/goal20-paired-paths.lisp provider_azure_openai.stream_roundtrip.
   ;; Drives shipped stream-chat, not a reimplementation. No live socket.

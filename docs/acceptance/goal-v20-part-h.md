@@ -274,6 +274,23 @@ Observed `stop_reason` / `tool_call_count` / `usage_*` /
 `text_characters` / `payload_stream` / `payload_tool_count` are exact.
 First Friend-MachineD freeze 0.33× (1369 / 4152 µs), ceiling 1.5.
 
+### Pair 18 — `provider_vertex`
+
+| metric | cadr | pi |
+|---|---|---|
+| `stream_roundtrip` | `stream-chat` + `vertex.lisp` + Vertex SSE | `stream` (`packages/ai/src/api/google-vertex.ts`) |
+
+Same fixture bytes as the google pair's context, plus recorded Vertex
+SSE (`google-vertex.sse`, same GenerateContent event shape as
+`google-generative-ai.sse`) and fixture ADC JSON (`vertex-adc.json`).
+Seam = `*http-request-function*` / `globalThis.fetch` (the adapter
+rejects `options.fetch`). API key on the timed thunk so
+google-auth-library does not open a socket; ADC bytes are hashed and
+parsed off the timed path. No live Google call.
+Observed `stop_reason` / `tool_call_count` / `usage_*` /
+`text_characters` / `payload_tool_count` / `adc_type` are exact.
+First Friend-MachineD freeze 0.49× (2641 / 5443 µs), ceiling 1.5.
+
 ## 2. How to run
 
 ```bash
@@ -479,13 +496,13 @@ Denominator: **295 files / 127,076 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 61 | 35,293 | 27.8% | `no worse than baseline` is falsifiable |
+| `paired` | 63 | 35,639 | 28.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 210 | 84,308 | 66.3% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 208 | 83,962 | 66.1% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 27.8% of lines (61 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 33.7% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 66.3% of lines.
+- **Falsifiable vs baseline:** 28.0% of lines (63 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 33.9% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 66.1% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -535,6 +552,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
+| `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/json.lisp` | 1,905 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
@@ -544,6 +562,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-ai/providers/mistral.lisp` | 97 | `provider_mistral.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai.lisp` | 828 | `provider_openai_responses.stream_roundtrip` |
+| `src/cadr-ai/providers/vertex.lisp` | 134 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
@@ -600,8 +619,8 @@ is added or the path is booked unpairable above.
 | `src/cadr-cli/modes` | 8 | 2,302 |
 | `src/cadr-cli/tools` | 7 | 2,166 |
 | `src/cadr-tui/latex.lisp` | 1 | 1,950 |
-| `src/cadr-ai/providers` | 6 | 1,918 |
 | `src/cadr-ai/oauth` | 10 | 1,786 |
+| `src/cadr-ai/providers` | 5 | 1,784 |
 | `src/cadr-agent/storage` | 4 | 1,532 |
 | `src/cadr-cli/models` | 4 | 1,472 |
 | `src/cadr-ai/runtime` | 2 | 1,410 |
@@ -616,7 +635,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-evals/summary.lisp` | 1 | 732 |
 | `src/cadr-tui/composition` | 2 | 705 |
 | `src/cadr-tui/terminal-image.lisp` | 1 | 686 |
-| `src/cadr-ai/auth` | 4 | 622 |
 | `src/cadr-ai/websocket.lisp` | 1 | 622 |
 | `src/cadr-protocol/schema.lisp` | 1 | 610 |
 | `src/cadr-agent/session` | 2 | 609 |
@@ -630,6 +648,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-evals/suites.lisp` | 1 | 468 |
 | `src/cadr-agent/package.lisp` | 1 | 456 |
 | `src/cadr-agent/runtime.lisp` | 1 | 421 |
+| `src/cadr-ai/auth` | 3 | 410 |
 | `src/cadr-tui/input-component.lisp` | 1 | 408 |
 | `src/cadr-ai/model-data.lisp` | 1 | 407 |
 | `src/cadr-ai/crypto.lisp` | 1 | 367 |

@@ -77,6 +77,7 @@
     ("provider_mistral.stream_roundtrip" . 10)
     ("provider_openai_responses.stream_roundtrip" . 10)
     ("provider_azure_openai.stream_roundtrip" . 10)
+    ("provider_vertex.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
     ("resource_loader.reload" . 3)
     ("session_pipeline.session_load" . 3)
@@ -217,6 +218,7 @@
     "anthropic-messages.sse" "google-generative-ai.sse"
     "bedrock-converse-stream.bin" "mistral-conversations.sse"
     "openai-responses.sse" "azure-openai-responses.sse"
+    "google-vertex.sse" "vertex-adc.json"
     "settings-global.json" "settings-project.json"
     "resource-skill-global.md" "resource-skill-project.md"
     "resource-prompt-global.md" "resource-prompt-project.md"
@@ -1116,6 +1118,98 @@
                       (run-provider-azure-openai
                        provider model context nil)))))))))
 
+(defun vertex-model ()
+  (cadr-ai:make-model
+   :id "gemini-3.6-flash"
+   :name "Goal 20 Vertex"
+   :api :google-vertex
+   :provider :google-vertex
+   :base-url "https://aiplatform.googleapis.com/v1"
+   :reasoning-p nil
+   :supports-images-p t
+   :context-window 128000
+   :max-tokens 16384))
+
+(defun vertex-http-request-function ()
+  (lambda (url &rest arguments)
+    (declare (ignore url arguments))
+    (values
+     (open (fixture-path "google-vertex.sse")
+           :direction :input
+           :element-type '(unsigned-byte 8))
+     200
+     '(("content-type" . "text/event-stream")))))
+
+(defun run-provider-vertex (provider model context collect-events-p)
+  (let ((events nil)
+        (payload nil))
+    (let ((cadr-ai:*http-request-function*
+            (vertex-http-request-function)))
+      (let ((message
+              (cadr-ai::stream-chat
+               provider model context
+               (if collect-events-p
+                   (lambda (event) (push event events))
+                   (lambda (event) (declare (ignore event)) nil))
+               :on-payload
+               (lambda (value model)
+                 (declare (ignore model))
+                 (setf payload value)
+                 nil))))
+        (values message (nreverse events) payload)))))
+
+(defun measure-provider-vertex ()
+  (let ((provider
+          (cadr-ai:make-vertex-provider
+           :api-key *provider-api-key*
+           :provider-id :google-vertex))
+        (model (vertex-model))
+        (context (provider-context)))
+    (multiple-value-bind (message events payload)
+        (run-provider-vertex provider model context t)
+      (declare (ignore events))
+      (unless (eq :tool-use (cadr-ai:assistant-message-stop-reason message))
+        (error "vertex fixture stream produced stop reason ~S"
+               (cadr-ai:assistant-message-stop-reason message)))
+      (let* ((blocks (cadr-ai:assistant-message-content message))
+             (text
+               (apply #'concatenate 'string
+                      (mapcar #'cadr-ai:text-content-text
+                              (remove-if-not
+                               (lambda (block)
+                                 (typep block 'cadr-ai:text-content))
+                               blocks))))
+             (tools (cadr-ai::json-get payload "tools")))
+        (json-object
+         "observed"
+         (json-object
+          "content_block_types"
+          (json-array (mapcar #'content-block-type-name blocks))
+          "stop_reason" "toolUse"
+          "text_characters" (length text)
+          "tool_call_count"
+          (count-if (lambda (block) (typep block 'cadr-ai:tool-call))
+                    blocks)
+          "usage_input"
+          (cadr-ai:usage-input
+           (cadr-ai:assistant-message-usage message))
+          "usage_output"
+          (cadr-ai:usage-output
+           (cadr-ai:assistant-message-usage message))
+          "payload_tool_count"
+          (if tools (length tools) 0)
+          "adc_type"
+          (cadr-ai::json-get
+           (cadr-ai::read-google-application-credential
+            (fixture-path "vertex-adc.json"))
+           "type"))
+         "stream_roundtrip"
+         (collect "provider_vertex.stream_roundtrip"
+                  (lambda ()
+                    (lambda ()
+                      (run-provider-vertex
+                       provider model context nil)))))))))
+
 ;;; ---------------------------------------------------------------------
 ;;; Pair 3: agent session load + event pipeline
 ;;; ---------------------------------------------------------------------
@@ -1989,6 +2083,8 @@
       "src/cadr-ai/providers/openai.lisp stream-chat"
       "provider_azure_openai.stream_roundtrip"
       "src/cadr-ai/providers/azure-openai.lisp stream-chat"
+      "provider_vertex.stream_roundtrip"
+      "src/cadr-ai/providers/vertex.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
       "resource_loader.reload"
@@ -2068,6 +2164,8 @@
               (let ((openai-responses (measure-provider-openai-responses)))
               (format *error-output* "goal20 cadr paired paths: provider_azure_openai~%")
               (let ((azure-openai (measure-provider-azure-openai)))
+              (format *error-output* "goal20 cadr paired paths: provider_vertex~%")
+              (let ((vertex (measure-provider-vertex)))
               (format *error-output* "goal20 cadr paired paths: cli_settings~%")
               (let ((settings (measure-cli-settings)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
@@ -2104,6 +2202,7 @@
               "provider_mistral" mistral
               "provider_openai_responses" openai-responses
               "provider_azure_openai" azure-openai
+              "provider_vertex" vertex
               "cli_settings" settings
               "resource_loader" resources
               "render_slicing" slicing)
@@ -2122,7 +2221,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

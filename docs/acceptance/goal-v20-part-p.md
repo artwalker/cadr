@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `provider_azure_openai.stream_roundtrip` first pair **0.33×** (1369 / 4152 µs), ceiling 1.5. `provider_openai_responses` **0.37×**. `provider_mistral` **1.19×** (Class C leftover). Load/journal still ~2×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
+| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `provider_vertex.stream_roundtrip` first pair **0.49×** (2641 / 5443 µs), ceiling 1.5. `provider_azure_openai` **0.33×**. `provider_openai_responses` **0.37×**. `provider_mistral` **1.19×** (Class C leftover). Load/journal still ~2×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
