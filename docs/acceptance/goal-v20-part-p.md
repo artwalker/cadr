@@ -23,9 +23,10 @@ matching V8 source step (what it does less of) before a knife.
 Name-only `Parse*` stickers are not essence. Do not require
 HiddenClass/Zone/HandleScope ports. Knife not landed without
 green `test-cl.sh` + Friend-MachineD cadr µs. Call-boundary
-inlines won; several V8-named micro knives withdrew — see
-`docs/benchmarks/goal20-session-load-sprof-d0c88ddd2.md`,
-`docs/benchmarks/goal20-parse-session-record-split.md`.
+inlines won; three V8-shape knives on `parse-message` withdrew
+(see `goal20-session-load-leftover.md`) — **user 2026-08-20:
+keep inventing better Lisp DS/algorithms; do not park on FFI.**
+Adjudications: study-shape; Lisp 屠龙刀 invent-if-needed.
 
 ## P.1–P.11
 

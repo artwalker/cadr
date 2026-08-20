@@ -76,14 +76,21 @@ Do not redo any of the three. Lisp encodings of that V8 shape made
 - **SCAN-KEY labels→macrolet.** Withdrawn (`f87bea405`). DIGITS
   unroll withdrawn. ISO quote walk already kept.
 
-## Leftover class (for adjudication)
+## Leftover class (bookkeeping — superseded as a stop)
 
-session_load leftover vs pi `JSON.parse` is the walker vs V8
-`JsonParser` runtime (one-byte strings, internalization, hidden-class
-`BuildJsonObject`), not an untried Lisp encoding of the measured
-inners.
+session_load leftover vs pi `JSON.parse` was booked after three
+falsified V8-shape knives on the `parse-message` child.
 
-Legal remaining classes, all already forbidden without a new ruling:
+**User ruling 2026-08-20 23:43** (`docs/adjudications.md`
+「Lisp 屠龙刀: invent the DS if none is ready-made」):
+Lisp is the sword. Three failed *surface encodings* ≠ park
+load ≠ G.17. If no ready-made win exists, **invent a better
+Lisp algorithm/DS** (same observable behavior). Studying V8
+still informs; FFI / mmap / intern grow / empty SWAR still
+need a **new** adjudication — they are not the default next
+step. Empty ⚑ that only repeats banned classes is rejected.
+
+Historical classes that stay forbidden without a new ruling:
 
 - FFI into V8 / simdjson / yyjson
 - mmap
@@ -91,6 +98,6 @@ Legal remaining classes, all already forbidden without a new ruling:
 - empty SWAR
 - COPY-UNESCAPED micro-rewrite
 
-Not G.17 `met`. Floor (not slower than pi) still missed on load
-(~1.15–1.27×). Sidecar pairing leftovers (`provider_pi_messages`,
-`journal_read`) do not replace this.
+Not G.17 `met`. Floor still missed on load (~1.15–1.27×).
+Sidecar pairing leftovers do not replace inventing the next
+Lisp knife.

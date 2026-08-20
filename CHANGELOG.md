@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: user rules Lisp 屠龙刀 after load leftover booking —
+  invent Lisp DS/algorithms if surface V8-shape knives lost;
+  leftover md is bookkeeping not a park; empty banned-class
+  ⚑ rejected (`docs/adjudications.md`). Not G.17.
+  Part P still `[open]`.
 - Goal 20: book session_load leftover after parse-message 三连 —
   `docs/benchmarks/goal20-session-load-leftover.md`. Friend-MachineD
   n=5 ISO-kept load **1879 / 1634 µs (1.15×)**. Three V8-shape knives

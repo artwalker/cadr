@@ -802,3 +802,37 @@ guidance was in the goal; agreed to land it in-repo.
 study without dumping the V8 tree is mere skin; agreed to
 land the distinction in-repo.
 
+## 2026-08-20 — Lisp 屠龙刀: invent the DS if none is ready-made
+
+**Ruled**: user (2026-08-20 23:43). Advisor agrees.
+
+**Decided**:
+
+1. **Lisp is the dragon-slaying sword.** Same observable
+   behavior as pi; performance must be able to **beat** pi.
+   If there is no ready-made library/encoding that wins,
+   **build the algorithm and data structure in Lisp** — do
+   not stop at "V8 is a VM so only FFI remains".
+2. The leftover note
+   `docs/benchmarks/goal20-session-load-leftover.md`
+   (`a698334d5`) is accepted as a **bookkeeping of three
+   falsified V8-shape knives**, not as product `blocked`,
+   not as G.17 `met`, and not as permission to park load.
+3. Falsifying a *copy of V8's surface shape* (bag,
+   stack-locals→typed, delayed span→MakeString) means those
+   **encodings** lost on cadr µs. It does **not** mean
+   "no legal Lisp lever". Next knives may be a **falsifiably
+   better Lisp DS/algorithm** (behavior unchanged), still
+   informed by studying callees, still without FFI/mmap/
+   intern grow/empty SWAR unless newly adjudicated.
+4. Empty ⚑ that only lists banned classes after surface
+   copies failed is **rejected**. A ⚑ needs a new concrete
+   Lisp proposal that failed, or an explicit ask to break a
+   ban.
+5. Pointers: this file; leftover md; Part P; board.
+
+**Why it was decidable**: user answered the leftover
+proposal — keep building in Lisp, do not default to FFI or
+stop.
+
+
