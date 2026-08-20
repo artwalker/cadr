@@ -354,3 +354,26 @@
     (is (string=
          "{\"offset\":1,\"path\":\"x\"}"
          (cadr-ai::stringify-json pairs)))))
+
+(test goal20-json-seq-vector-pairs-round-trip
+  ;; V8 sequential named properties as a simple-vector of k,v.
+  ;; Public parse-json stays EQUAL hash.  Session walker fills this.
+  (let ((pairs (cons :json-object (vector "path" "x" "offset" 1))))
+    (is (cadr-ai::json-object-pairs-p pairs))
+    (is (simple-vector-p (cdr pairs)))
+    (is (string= "x" (cadr-ai::json-get pairs "path")))
+    (is (eql 1 (cadr-ai::json-get pairs "offset")))
+    (is (eq t (cadr-ai::json-present-p pairs "path")))
+    (is (null (cadr-ai::json-present-p pairs "missing")))
+    (is (string=
+         "{\"offset\":1,\"path\":\"x\"}"
+         (cadr-ai::stringify-json pairs)))
+    (let ((keys nil)
+          (values nil))
+      (cadr-ai::json-map-entries
+       pairs
+       (lambda (key value)
+         (push key keys)
+         (push value values)))
+      (is (equal '("offset" "path") keys))
+      (is (equal '(1 "x") values)))))

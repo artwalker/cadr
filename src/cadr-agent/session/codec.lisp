@@ -138,13 +138,15 @@
        copy))
     ((cadr-ai::json-object-pairs-p value)
      (let ((copy (cadr-ai::json-object)))
-       (loop for (key item) on (cdr value) by #'cddr
-             do (cadr-ai::json-put
-                 copy
-                 (if (stringp key)
-                     key
-                     (symbol-json-name key))
-                 (json-safe-value item)))
+       (cadr-ai::json-map-entries
+        value
+        (lambda (key item)
+          (cadr-ai::json-put
+           copy
+           (if (stringp key)
+               key
+               (symbol-json-name key))
+           (json-safe-value item))))
        copy))
     ((vectorp value)
      (map 'vector #'json-safe-value value))
@@ -425,10 +427,11 @@
        (nreverse result)))
     ((cadr-ai::json-object-pairs-p value)
      (let ((result nil))
-       (loop for (key item) on (cdr value) by #'cddr
-             do
-             (push (diagnostic-detail-keyword key) result)
-             (push (diagnostic-json-value-to-lisp item) result))
+       (cadr-ai::json-map-entries
+        value
+        (lambda (key item)
+          (push (diagnostic-detail-keyword key) result)
+          (push (diagnostic-json-value-to-lisp item) result)))
        (nreverse result)))
     ((vectorp value)
      (map 'list #'diagnostic-json-value-to-lisp value))
@@ -838,10 +841,7 @@
       ((cadr-ai::json-object-pairs-p value)
        (vector-push-extend #x7b buffer)
        (loop for key in
-             (sort
-              (loop for (pair-key) on (cdr value) by #'cddr
-                    collect pair-key)
-              #'string<)
+             (sort (cadr-ai::json-keys value) #'string<)
              for first-p = t then nil
              do
              (emit-json-key buffer first-p key)

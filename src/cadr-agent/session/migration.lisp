@@ -572,12 +572,17 @@
                        (t
                         (fail "Unescaped control character"))))))))
            (parse-arguments-object ()
+             ;; V8 sequential named properties: one simple-vector
+             ;; of k,v,k,v — not a cons plist, not EQUAL hash.
+             ;; Public parse-json stays a hash.  Not intern expand.
              (expect-code 123)
              (skip-space)
              (when (eql (peek-code) 125)
                (take-code)
-               (return-from parse-arguments-object '(:json-object)))
-             (let ((pairs nil))
+               (return-from parse-arguments-object
+                 (cons :json-object (vector))))
+             (let ((acc
+                     (make-array 16 :adjustable t :fill-pointer 0)))
                (loop
                  (unless (eql (peek-code) 34)
                    (fail "Object key must be a string"))
@@ -585,7 +590,8 @@
                    (skip-space)
                    (expect-code 58)
                    (skip-space)
-                   (setf pairs (list* key (parse-generic) pairs)))
+                   (vector-push-extend key acc)
+                   (vector-push-extend (parse-generic) acc))
                  (skip-space)
                  (let ((code (peek-code)))
                    (cond
@@ -594,7 +600,12 @@
                       (skip-space))
                      ((eql code 125)
                       (take-code)
-                      (return (cons :json-object pairs)))
+                      (return
+                        (cons :json-object
+                              (let* ((n (length acc))
+                                     (flat (make-array n)))
+                                (replace flat acc)
+                                flat))))
                      (t
                       (fail "Expected comma or }")))))))
            (finish-block (block)

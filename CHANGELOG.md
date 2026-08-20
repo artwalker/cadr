@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: session/journal nested JSON objects fill a
+  `(:json-object . simple-vector)` of sequential k,v (V8 named
+  properties). Public `parse-json` stays EQUAL hash. Cons-plist
+  public parse (`a78ee0171`) withdrew: journal_read 1.62×→2.59×.
+  Compare `docs/benchmarks/goal20-v8-json-parse-compare.md`.
+  Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: sprof `provider_codex` leftover after stringify skip is
   `PARSE-JSON-SOURCE` / `READ-SSE-STREAM` vs V8 `JSON.parse` (Class
   C). 1.08× leftover. Ceiling 1.5 not lowered. No `src/`. Not G.17.
