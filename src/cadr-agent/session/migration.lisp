@@ -308,7 +308,44 @@
                         (octet-skip-json-space octets position length)))
                (expect-code (code)
                  `(unless (eql (take-code) ,code)
-                    (fail "Unexpected byte"))))
+                    (fail "Unexpected byte")))
+               ;; V8 object descent scans the property name in place
+               ;; (JsonString start/length on the Char* window), not a
+               ;; labels call per key. sprof load @ 4f273aa9c: SCAN-KEY
+               ;; 8.7% self. Not empty SWAR. Not intern. Not FFI.
+               (scan-key ()
+                 `(progn
+                    (expect-code 34)
+                    (let ((key-start position)
+                          (escaped-p nil))
+                      (loop
+                        (let ((hit
+                                (octet-find-quote-or-backslash
+                                 octets position length)))
+                          (unless hit
+                            (fail "Unterminated string"))
+                          (setf position hit)
+                          (let ((code (aref octets position)))
+                            (cond
+                              ((= code 34)
+                               (let ((key-end position))
+                                 (incf position)
+                                 (return
+                                   (if escaped-p
+                                       (values nil nil)
+                                       (values key-start key-end)))))
+                              ((= code 92)
+                               (setf escaped-p t)
+                               (incf position)
+                               (let ((escape (take-code)))
+                                 (when (null escape)
+                                   (fail "Truncated escape"))
+                                 (when (= escape 117)
+                                   (when (> (+ position 4) length)
+                                     (fail "Truncated Unicode escape"))
+                                   (incf position 4))))
+                              (t
+                               (fail "Unescaped control character"))))))))))
       (labels
           ((fail (message)
              (error 'cadr-ai::json-parse-error
@@ -569,38 +606,6 @@
                (fail "Expected null"))
              (incf position 4)
              'null)
-           (scan-key ()
-             (expect-code 34)
-             (let ((key-start position)
-                   (escaped-p nil))
-               (loop
-                 (let ((hit
-                         (octet-find-quote-or-backslash
-                          octets position length)))
-                   (unless hit
-                     (fail "Unterminated string"))
-                   (setf position hit)
-                   (let ((code (aref octets position)))
-                     (cond
-                       ((= code 34)
-                        (let ((key-end position))
-                          (incf position)
-                          (return
-                            (if escaped-p
-                                (values nil nil)
-                                (values key-start key-end)))))
-                       ((= code 92)
-                        (setf escaped-p t)
-                        (incf position)
-                        (let ((escape (take-code)))
-                          (when (null escape)
-                            (fail "Truncated escape"))
-                          (when (= escape 117)
-                            (when (> (+ position 4) length)
-                              (fail "Truncated Unicode escape"))
-                            (incf position 4))))
-                       (t
-                        (fail "Unescaped control character"))))))))
            (parse-arguments-object ()
              (expect-code 123)
              (skip-space)
