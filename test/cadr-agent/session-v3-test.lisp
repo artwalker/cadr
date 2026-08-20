@@ -468,29 +468,28 @@
              "message"
              (cadr-agent::session-entry-type
               (second objects))))
-        (is (typep
+        (is (cadr-agent::session-json-message-p
              (cadr-agent::session-entry-message
-              (second objects))
-             'cadr-ai:user-message))
+              (second objects))))
         (is (string=
-             "hi"
-             (cadr-ai:user-message-content
+             "user"
+             (cadr-agent::session-json-message-role
               (cadr-agent::session-entry-message
                (second objects)))))
         (is (typep
-             (cadr-ai:assistant-message-usage
+             (cadr-agent::session-json-message-usage
               (cadr-agent::session-entry-message
                (third objects)))
              'cadr-ai:usage))
         (is (typep
              (first
-              (cadr-ai:assistant-message-content
+              (cadr-agent::session-json-message-content
                (cadr-agent::session-entry-message
                 (third objects))))
              'cadr-ai:text-content))
         (let ((call
                 (second
-                 (cadr-ai:assistant-message-content
+                 (cadr-agent::session-json-message-content
                   (cadr-agent::session-entry-message
                    (third objects))))))
           (is (typep call 'cadr-ai:tool-call))
@@ -630,7 +629,7 @@
         (is (search "alpha\\nbeta\\ngamma\\ndelta" file))
         (is (string=
              text
-             (cadr-ai:user-message-content
+             (cadr-agent::session-json-message-content
               (cadr-agent::session-entry-message entry))))
         (is (equal
              (list text)
@@ -743,14 +742,14 @@
              (objects (cadr-agent::read-session-objects path))
              (entry (second objects))
              (bag (cadr-agent::session-entry-message entry))
-             (content (cadr-ai:assistant-message-content bag))
+             (content (cadr-agent::session-json-message-content bag))
              (custom (third objects))
              (loaded (cadr-agent:load-session path))
              (after (uiop:read-file-string path)))
         (is (string= before after))
         (is (cadr-agent::session-entry-p entry))
         (is (not (hash-table-p entry)))
-        (is (typep bag 'cadr-ai:assistant-message))
+        (is (cadr-agent::session-json-message-p bag))
         (is (integerp (cadr-agent::session-entry-timestamp entry)))
         (is (listp content))
         (is (not (vectorp content)))
@@ -889,7 +888,7 @@
             octets 0 (length octets))))
     (is (string=
          "a\"b"
-         (cadr-ai:user-message-content
+         (cadr-agent::session-json-message-content
           (cadr-agent::session-entry-message entry))))))
 
 (test octet-swar-finds-lf-and-skips-json-space
@@ -943,7 +942,7 @@
            (cadr-agent::parse-session-record-octets
             octets 0 (length octets)))
          (content
-           (cadr-ai:user-message-content
+           (cadr-agent::session-json-message-content
             (cadr-agent::session-entry-message entry))))
     (is (string= "hello-block" content))
     (is (typep content 'simple-base-string))))
@@ -988,5 +987,5 @@
     (is (string= "swar" (cadr-agent::session-entry-id entry)))
     (is (string=
          "hi"
-         (cadr-ai:user-message-content
+         (cadr-agent::session-json-message-content
           (cadr-agent::session-entry-message entry))))))

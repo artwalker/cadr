@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw parse-message stack locals (`8530c25a1`).
+  Friend-MachineD n=5: load cadr **1857→1917 µs** (worse).
+  Product restored to ISO-kept walker. Shape note kept.
+  Not intern. Not FFI. Ceiling not lowered. Not G.17.
+  Part P still `[open]`.
 - Goal 20: parse-message fills typed messages from stack locals
   (V8 SmallVector then BuildJsonObject; no heap
   `session-json-message`). Contrast

@@ -18,15 +18,15 @@ on every kept value during the scan. `parse-message` heap-allocates a
 typed cadr-ai message (`message-from-json`). Two heap objects per
 message; the bag is not the target type.
 
-## Knife
+## Knife (falsified)
 
-Zero bag: stack locals (role/content/timestamp/usage/extra) then one
-`message-from-parts` at `}` — Lisp encoding of SmallVector then
-BuildJsonObject. Not bag reuse (`cc29bec17` lost: 1857→2015 µs).
-Not intern grow. Not COPY-UNESCAPED rewrite. Not FFI.
+Zero bag: stack locals then one `message-from-parts` at `}` —
+Lisp encoding of SmallVector then BuildJsonObject. Not bag reuse
+(`cc29bec17` lost: 1857→2015 µs). Friend-MachineD n=5 @ `8530c25a1`:
+load cadr **1857→1917 µs** (1.27×→1.13× is pi jitter; cadr µs worse).
+Withdrawn. Do not redo stack-local parse-time typed fill.
+Not intern. Not FFI. Ceiling not lowered. Not G.17.
 
-`message-from-json` is identity on already-typed messages so
-`journal_append` (pairing) can re-enter.
-
-Win condition: Friend-MachineD n=5 `session_load` cadr µs **< ~1857**.
-Revert if not.
+Remaining untried on this child: ParseString deferred materialization
+(`JsonString` start/length until `MakeString`). COPY-UNESCAPED rewrite
+is banned.
