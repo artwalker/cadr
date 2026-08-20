@@ -298,18 +298,22 @@
                  `(prog1 (peek-code) (incf position)))
                (key= (key-start key-end literal)
                  `(cadr-ai::octet-window-equals
-                   octets ,key-start ,key-end ,literal)))
+                   octets ,key-start ,key-end ,literal))
+               ;; V8 SkipWhiteSpace / Expect is inlined in the
+               ;; parser, not a labels call per field. sprof load
+               ;; @ 9b1678b20: SKIP-SPACE 8.2% self, EXPECT-CODE
+               ;; 3.5%. Not empty SWAR. Not intern. Not FFI.
+               (skip-space ()
+                 `(setf position
+                        (octet-skip-json-space octets position length)))
+               (expect-code (code)
+                 `(unless (eql (take-code) ,code)
+                    (fail "Unexpected byte"))))
       (labels
           ((fail (message)
              (error 'cadr-ai::json-parse-error
                     :message message
                     :position position))
-           (skip-space ()
-             (setf position
-                   (octet-skip-json-space octets position length)))
-           (expect-code (code)
-             (unless (eql (take-code) code)
-               (fail "Unexpected byte")))
            (skip-string ()
              (expect-code 34)
              (loop
