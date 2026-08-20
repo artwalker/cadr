@@ -116,6 +116,16 @@
 (defconstant +swar-quot+ #x22222222)
 (defconstant +swar-bs+ #x5C5C5C5C)
 
+;; V8 inlines haszero into the string scan. sprof session_load
+;; @ 335718c2e after u32 inline: OCTET-FIND-QUOTE-OR-BACKSLASH
+;; 10.9% self / 27.1% total; SWAR-EQ-MSB 7.1%; quote-or-bs-mask
+;; 6.7%. Not empty SWAR (the masks already work). Not intern.
+;; Not FFI.
+(declaim (inline swar-eq-msb swar-first-msb-index swar-ws-mask
+                 swar-quote-or-bs-mask swar-ctrl-mask
+                 octet-find-lf octet-skip-json-space
+                 octet-find-quote-or-backslash))
+
 (defun swar-eq-msb (word splat)
   ;; V8/haszero after XOR splat on one ub32. The mask is
   ;; ≤ #x80808080, always a fixnum. A 64-bit
