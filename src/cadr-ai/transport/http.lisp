@@ -689,21 +689,46 @@
 
 (defun signal-api-error (request body status headers)
   (let* ((retry-after (header-value headers "retry-after"))
+         (body-text
+           (cond
+             ((stringp body) body)
+             ((typep body '(vector (unsigned-byte 8)))
+              (utf8-string body))
+             (t nil)))
          (error-code
            (ignore-errors
-             (let* ((object (parse-json body))
+             (let* ((object (parse-json (or body-text body)))
                     (nested (json-get object "error"))
                     (value
                       (or (json-get object "__type")
+                          (json-get object "type")
                           (json-get object "code")
                           (and (hash-table-p nested)
                                (or
                                 (json-get nested "code")
                                 (json-get nested "type"))))))
                (and (stringp value) value))))
-         (retryable-p (or (= status 429)
-                          (member status
-                                  '(500 502 503 504)))))
+         (extracted (response-error-message (or body-text body)))
+         (display-body
+           (or
+            (and (non-empty-string-p body-text)
+                 (if (> (length body-text) 4000)
+                     (format
+                      nil
+                      "~A... [truncated ~A chars]"
+                      (subseq body-text 0 4000)
+                      (- (length body-text) 4000))
+                     body-text))
+            extracted))
+         (terminal-p
+           (or (terminal-quota-error-text-p body-text)
+               (terminal-quota-error-text-p error-code)
+               (terminal-quota-error-text-p extracted)))
+         (retryable-p
+           (if (and (= status 429) terminal-p)
+               nil
+               (or (= status 429)
+                   (member status '(500 502 503 504))))))
     (error 'api-error
            :provider (request-spec-provider request)
            :status status
@@ -713,7 +738,9 @@
            :message
            (redact-request-text
             request
-            (response-error-message body)))))
+            (if (and (= status 429) terminal-p)
+                (format nil "~A: ~A" status display-body)
+                extracted)))))
 
 (defun signal-http-timeout (cause)
   (error

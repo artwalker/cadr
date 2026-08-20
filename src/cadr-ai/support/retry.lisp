@@ -35,6 +35,15 @@
      (search fragment text :test #'char-equal))
    fragments))
 
+(defun terminal-quota-error-text-p (text)
+  ;; Same set as +non-retryable-assistant-error-fragments+.
+  ;; HTTP 429 with this text is a subscription/quota wall, not a
+  ;; transient throttle (pi isTerminalRateLimitError).
+  (and (stringp text)
+       (plusp (length text))
+       (text-contains-any-p
+        text +non-retryable-assistant-error-fragments+)))
+
 (defun retry-pattern-matches-at-p
     (pattern text pattern-index text-index)
   (cond

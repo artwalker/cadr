@@ -1295,7 +1295,9 @@
     ;; call-with-models-runtime-error, faux-stream-block.
     ;; +6 Goal 20 session_compact: uuid entropy pool (two defun + four
     ;; defparameter) copies Node getRandomValues; no /dev/urandom per id.
-    (is (= 274 definition-count)
+    ;; +1 Goal 20 P0: terminal-quota-error-text-p (support/retry.lisp),
+    ;; HTTP 429 GoUsageLimit / pi isTerminalRateLimitError set.
+    (is (= 275 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

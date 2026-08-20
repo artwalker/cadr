@@ -535,14 +535,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 127,154 lines**
+Denominator: **295 files / 127,190 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
 | `paired` | 69 | 37,459 | 29.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 202 | 82,220 | 64.7% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 202 | 82,256 | 64.7% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 29.5% of lines (69 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 35.3% of lines.
@@ -676,10 +676,10 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/runtime` | 2 | 1,410 |
 | `src/cadr-cli/media.lisp` | 1 | 1,277 |
 | `src/cadr-cli/support` | 13 | 1,164 |
-| `src/cadr-ai/support` | 7 | 899 |
+| `src/cadr-ai/support` | 7 | 908 |
+| `src/cadr-ai/transport` | 1 | 858 |
 | `src/cadr-agent/execution-env.lisp` | 1 | 855 |
 | `src/cadr-agent/schema.lisp` | 1 | 850 |
-| `src/cadr-ai/transport` | 1 | 831 |
 | `src/cadr-ai/capabilities` | 6 | 751 |
 | `src/cadr-evals/harness.lisp` | 1 | 737 |
 | `src/cadr-evals/summary.lisp` | 1 | 732 |
