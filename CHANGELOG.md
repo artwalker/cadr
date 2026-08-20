@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw per-load string-arena / displaced ASCII
+  views (item 10 A). Friend-MachineD n=5: load cadr
+  **1763→3667 µs** (worse). Product restored. Fill kernel
+  untouched. Ceiling not lowered. Not G.17.
 - Goal 20: withdraw content exact-length / `svref` fill
   (item 10 D). Friend-MachineD n=5: load cadr **1763→1838 µs**
   (worse). Product restored. Not bag reuse. Ceiling not

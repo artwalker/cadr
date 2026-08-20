@@ -80,6 +80,14 @@ list (not `nreverse`, not bag reuse). Friend-MachineD n=5: load
 cadr **1763→1838 µs** (worse; samples 1793–2185). Withdrawn.
 Do not redo this fill. Not intern. Not FFI. Ceiling not lowered.
 
+## Knife (falsified) — string-arena / displaced ASCII
+
+Item 10 A: intern-miss unescaped ASCII bumped into one
+`simple-base-string`, displaced views. COPY-UNESCAPED kernel
+untouched. Friend-MachineD n=5: load cadr **1763→3667 µs**
+(worse; samples 3486–3888). Withdrawn. Do not redo displaced
+arena. Not intern. Not FFI. Ceiling not lowered.
+
 ## Next knife (adjudication 2026-08-21 item 11)
 
 **Knife 1 remesured and withdrawn.** Knife 2 (content
