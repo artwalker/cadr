@@ -321,6 +321,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: Friend-MachineD remesure of `a54c022f0`
+  (n=5, enforced). `provider_mistral.stream_roundtrip`
+  1.89×→**1.19×** (2149 / 1804 µs). Ceiling 3.0 not lowered.
+  No extra `src/`. G.17 still `missing`. Part P still `[open]`.
+
 - Goal 20 Part P: SSE binary payload decode uses `utf8-string`
   ASCII-run (same decoder as tool_read). sprof at `3374ac197`
   named `UTF8->STRING-AREF` 25.6% of
