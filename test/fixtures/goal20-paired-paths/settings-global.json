@@ -1,0 +1,16 @@
+{
+	"theme": "dark",
+	"defaultProvider": "anthropic",
+	"defaultModel": "claude-sonnet-4-5",
+	"defaultProjectTrust": "ask",
+	"compaction": {
+		"enabled": true,
+		"reserveTokens": 16384,
+		"keepRecentTokens": 20000
+	},
+	"retry": {
+		"enabled": true,
+		"maxRetries": 3,
+		"baseDelayMs": 2000
+	}
+}

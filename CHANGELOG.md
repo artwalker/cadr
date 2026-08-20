@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `cli_settings.create` (fixture settings JSON,
+  no TUI, no socket). Production `make-settings-manager` vs
+  `SettingsManager.create`. First Friend-MachineD freeze 0.13×
+  (105 / 813 µs), ceiling 1.5. Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `provider_bedrock.stream_roundtrip`
   (recorded Bedrock event-stream, no socket). Production
   `stream-chat` vs `bedrock-converse-stream.ts stream`. Same

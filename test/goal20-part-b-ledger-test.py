@@ -215,6 +215,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("usage_input", paired.OBSERVED_EXACT["provider_bedrock"])
         self.assertIn("payload_tool_count", paired.OBSERVED_EXACT["provider_bedrock"])
 
+    def test_cli_settings_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("cli_settings.create", RECORD.METRIC_KEYS)
+        self.assertIn("create", paired.METRICS["cli_settings"])
+        self.assertIn("cli_settings.create", paired.RATIO_CEILINGS)
+        self.assertIn("theme", paired.OBSERVED_EXACT["cli_settings"])
+        self.assertIn("compaction_reserve_tokens", paired.OBSERVED_EXACT["cli_settings"])
+        self.assertIn("project_trusted", paired.OBSERVED_EXACT["cli_settings"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -241,7 +250,7 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertEqual(entry["label"], "paired-paths-quick")
         self.assertTrue(entry["quick"])
-        self.assertEqual(len(entry["metrics"]), 17)
+        self.assertEqual(len(entry["metrics"]), 18)
         first = entry["metrics"][RECORD.METRIC_KEYS[0]]
         self.assertAlmostEqual(first["cadrMedianUs"], 1000.0)
         self.assertAlmostEqual(first["ratio"], 2.0)
@@ -275,6 +284,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`provider_anthropic.stream_roundtrip`", section)
             self.assertIn("`provider_google.stream_roundtrip`", section)
             self.assertIn("`provider_bedrock.stream_roundtrip`", section)
+            self.assertIn("`cli_settings.create`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

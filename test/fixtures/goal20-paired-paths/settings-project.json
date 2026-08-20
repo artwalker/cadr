@@ -1,0 +1,7 @@
+{
+	"theme": "light",
+	"compaction": {
+		"reserveTokens": 8192
+	},
+	"httpIdleTimeoutMs": 42
+}

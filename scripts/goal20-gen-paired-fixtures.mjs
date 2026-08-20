@@ -601,6 +601,35 @@ function buildAuthJson() {
 	};
 }
 
+function buildSettingsGlobal() {
+	return {
+		theme: "dark",
+		defaultProvider: "anthropic",
+		defaultModel: "claude-sonnet-4-5",
+		defaultProjectTrust: "ask",
+		compaction: {
+			enabled: true,
+			reserveTokens: 16384,
+			keepRecentTokens: 20000,
+		},
+		retry: {
+			enabled: true,
+			maxRetries: 3,
+			baseDelayMs: 2000,
+		},
+	};
+}
+
+function buildSettingsProject() {
+	return {
+		theme: "light",
+		compaction: {
+			reserveTokens: 8192,
+		},
+		httpIdleTimeoutMs: 42,
+	};
+}
+
 function buildCliArgv() {
 	return {
 		list_models: ["--list-models", "goal20"],
@@ -648,6 +677,8 @@ const artifacts = new Map([
 	["anthropic-messages.sse", buildAnthropicSseFixture()],
 	["google-generative-ai.sse", buildGoogleSseFixture()],
 	["bedrock-converse-stream.bin", buildBedrockEventStreamFixture()],
+	["settings-global.json", `${JSON.stringify(buildSettingsGlobal(), null, "\t")}\n`],
+	["settings-project.json", `${JSON.stringify(buildSettingsProject(), null, "\t")}\n`],
 	["models.json", `${JSON.stringify(buildModelsJson(), null, "\t")}\n`],
 	["auth.json", `${JSON.stringify(buildAuthJson(), null, "\t")}\n`],
 	["cli-argv.json", `${JSON.stringify(buildCliArgv(), null, "\t")}\n`],

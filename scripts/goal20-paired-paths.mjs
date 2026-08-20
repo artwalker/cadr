@@ -129,6 +129,7 @@ const REPETITIONS = {
 	"provider_anthropic.stream_roundtrip": 10,
 	"provider_google.stream_roundtrip": 10,
 	"provider_bedrock.stream_roundtrip": 10,
+	"cli_settings.create": 5,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -203,6 +204,8 @@ const fixtureNames = [
 	"anthropic-messages.sse",
 	"google-generative-ai.sse",
 	"bedrock-converse-stream.bin",
+	"settings-global.json",
+	"settings-project.json",
 	"openai-completions.sse",
 	"provider-context.json",
 	"session.jsonl",
@@ -285,6 +288,7 @@ const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-com
 const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
 const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
 const bedrockModule = await import(moduleUrl("packages/ai/src/api/bedrock-converse-stream.ts"));
+const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
@@ -297,6 +301,19 @@ const { Type } = baselineRequire("typebox");
 const { NodeHttpHandler, NodeHttp2Handler } = baselineRequire("@smithy/node-http-handler");
 const compactionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/compaction/compaction.ts")
+);
+
+const settingsAgentDirectory = path.join(scratch, "settings-agent");
+const settingsCwdDirectory = path.join(scratch, "settings-cwd");
+mkdirSync(settingsAgentDirectory, { recursive: true });
+mkdirSync(path.join(settingsCwdDirectory, ".pi"), { recursive: true });
+copyFileSync(
+	path.join(fixtureDirectory, "settings-global.json"),
+	path.join(settingsAgentDirectory, "settings.json"),
+);
+copyFileSync(
+	path.join(fixtureDirectory, "settings-project.json"),
+	path.join(settingsCwdDirectory, ".pi", "settings.json"),
 );
 
 // Both sides render into a sink that only counts, so neither pays terminal
@@ -709,6 +726,30 @@ async function measureProviderBedrock() {
 			usage_input: observed.message.usage.input,
 			usage_output: observed.message.usage.output,
 			payload_tool_count: Array.isArray(tools) ? tools.length : 0,
+		},
+	};
+}
+
+function runCliSettings() {
+	return settingsModule.SettingsManager.create(settingsCwdDirectory, settingsAgentDirectory, {
+		projectTrusted: true,
+	});
+}
+
+async function measureCliSettings() {
+	const manager = runCliSettings();
+	return {
+		create: await collect("cli_settings.create", () => {
+			return () => runCliSettings();
+		}),
+		observed: {
+			theme: manager.getThemeSetting() ?? "",
+			default_model: manager.getDefaultModel() ?? "",
+			default_provider: manager.getDefaultProvider() ?? "",
+			compaction_reserve_tokens: manager.getCompactionReserveTokens(),
+			default_project_trust: manager.getDefaultProjectTrust(),
+			http_idle_timeout_ms: manager.getHttpIdleTimeoutMs(),
+			project_trusted: manager.isProjectTrusted(),
 		},
 	};
 }
@@ -1305,6 +1346,8 @@ process.stderr.write("goal20 pi paired paths: provider_google\n");
 const providerGoogle = await measureProviderGoogle();
 process.stderr.write("goal20 pi paired paths: provider_bedrock\n");
 const providerBedrock = await measureProviderBedrock();
+process.stderr.write("goal20 pi paired paths: cli_settings\n");
+const cliSettings = await measureCliSettings();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -1327,6 +1370,7 @@ const result = {
 			"provider_anthropic.stream_roundtrip": "packages/ai/src/api/anthropic-messages.ts stream",
 			"provider_google.stream_roundtrip": "packages/ai/src/api/google-generative-ai.ts stream",
 			"provider_bedrock.stream_roundtrip": "packages/ai/src/api/bedrock-converse-stream.ts stream",
+			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -1381,6 +1425,7 @@ const result = {
 		provider_anthropic: providerAnthropic,
 		provider_google: providerGoogle,
 		provider_bedrock: providerBedrock,
+		cli_settings: cliSettings,
 		render_slicing: renderSlicing,
 	},
 };

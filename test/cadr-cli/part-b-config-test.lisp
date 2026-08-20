@@ -1,6 +1,33 @@
 (in-package #:cadr-cli/tests)
 (in-suite cadr-cli-suite)
 
+(test pairing-cli-settings-create-stays-put
+  ;; scripts/goal20-paired-paths.lisp cli_settings.create.
+  ;; Drives shipped make-settings-manager, not a reimplementation.
+  (let* ((root (asdf:system-source-directory "cadr-cli"))
+         (global
+           (merge-pathnames
+            "test/fixtures/goal20-paired-paths/settings-global.json"
+            root))
+         (project
+           (merge-pathnames
+            "test/fixtures/goal20-paired-paths/settings-project.json"
+            root))
+         (manager
+           (cadr-cli::make-settings-manager
+            :global-path global
+            :project-path project
+            :project-trusted-p t)))
+    (is (string= "light" (cadr-cli::settings-value manager "theme")))
+    (is (string=
+         "claude-sonnet-4-5"
+         (cadr-cli::settings-value manager "defaultModel")))
+    (is (= 8192
+           (cadr-cli::settings-nested-value
+            manager "compaction" "reserveTokens")))
+    (is (= 42 (cadr-cli::settings-http-idle-timeout-ms manager)))
+    (is (cadr-cli::settings-manager-project-trusted-p manager))))
+
 (defun write-json (path object)
   (write-text path
               (format nil "~A~%"

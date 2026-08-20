@@ -74,6 +74,7 @@
     ("provider_anthropic.stream_roundtrip" . 10)
     ("provider_google.stream_roundtrip" . 10)
     ("provider_bedrock.stream_roundtrip" . 10)
+    ("cli_settings.create" . 5)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -211,6 +212,7 @@
   '("auth.json" "cli-argv.json" "manifest.json" "models.json"
     "anthropic-messages.sse" "google-generative-ai.sse"
     "bedrock-converse-stream.bin"
+    "settings-global.json" "settings-project.json"
     "openai-completions.sse" "provider-context.json" "session.jsonl"))
 
 (defun read-file-octets (path)
@@ -1463,6 +1465,61 @@
                 (lambda ()
                   (run-paired-compact)))))))
 
+(defparameter *settings-agent-directory*
+  (merge-pathnames "settings-agent/" *scratch-directory*))
+
+(defparameter *settings-cwd-directory*
+  (merge-pathnames "settings-cwd/" *scratch-directory*))
+
+(defun stage-settings-layout ()
+  (let ((global
+          (merge-pathnames
+           "settings.json" *settings-agent-directory*))
+        (project
+          (merge-pathnames
+           ".pi/settings.json" *settings-cwd-directory*)))
+    (ensure-directories-exist global)
+    (ensure-directories-exist project)
+    (uiop:copy-file (fixture-path "settings-global.json") global)
+    (uiop:copy-file (fixture-path "settings-project.json") project)
+    (values global project)))
+
+(defun run-cli-settings (global project)
+  (cadr-cli::make-settings-manager
+   :global-path global
+   :project-path project
+   :project-trusted-p t))
+
+(defun measure-cli-settings ()
+  (multiple-value-bind (global project)
+      (stage-settings-layout)
+    (let ((manager (run-cli-settings global project)))
+      (json-object
+       "observed"
+       (json-object
+        "theme"
+        (or (cadr-cli::settings-value manager "theme") "")
+        "default_model"
+        (or (cadr-cli::settings-value manager "defaultModel") "")
+        "default_provider"
+        (or (cadr-cli::settings-value manager "defaultProvider") "")
+        "compaction_reserve_tokens"
+        (or (cadr-cli::settings-nested-value
+             manager "compaction" "reserveTokens")
+            0)
+        "default_project_trust"
+        (or (cadr-cli::settings-value manager "defaultProjectTrust")
+            "")
+        "http_idle_timeout_ms"
+        (cadr-cli::settings-http-idle-timeout-ms manager)
+        "project_trusted"
+        (and (cadr-cli::settings-manager-project-trusted-p manager) t))
+       "create"
+       (collect "cli_settings.create"
+                (lambda ()
+                  (lambda ()
+                    (run-cli-settings global project))))))))
+
 ;;; ---------------------------------------------------------------------
 
 (defun slicing-fixtures ()
@@ -1523,6 +1580,8 @@
       "src/cadr-ai/providers/google.lisp stream-chat"
       "provider_bedrock.stream_roundtrip"
       "src/cadr-ai/providers/bedrock.lisp stream-chat"
+      "cli_settings.create"
+      "src/cadr-cli/settings/manager.lisp make-settings-manager"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -1592,6 +1651,8 @@
               (let ((google (measure-provider-google)))
               (format *error-output* "goal20 cadr paired paths: provider_bedrock~%")
               (let ((bedrock (measure-provider-bedrock)))
+              (format *error-output* "goal20 cadr paired paths: cli_settings~%")
+              (let ((settings (measure-cli-settings)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -1621,6 +1682,7 @@
               "provider_anthropic" anthropic
               "provider_google" google
               "provider_bedrock" bedrock
+              "cli_settings" settings
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -1637,7 +1699,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))
+             "schema_version" 1))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

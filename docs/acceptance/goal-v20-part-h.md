@@ -209,6 +209,18 @@ socket. Observed `stop_reason` / `tool_call_count` / `usage_*` /
 `text_characters` / `payload_tool_count` are exact. First
 Friend-MachineD freeze 0.67× (4316 / 6406 µs), ceiling 1.5.
 
+### Pair 13 — `cli_settings`
+
+| metric | cadr | pi |
+|---|---|---|
+| `create` | `make-settings-manager` (`settings/manager.lisp`) | `SettingsManager.create` (`settings-manager.ts`) |
+
+Same fixture bytes: `settings-global.json` + `settings-project.json` staged as
+`agent/settings.json` and `cwd/.pi/settings.json`. No TUI, no socket.
+Observed `theme` / `default_model` / `compaction_reserve_tokens` /
+`http_idle_timeout_ms` / `project_trusted` are exact. First
+Friend-MachineD freeze 0.13× (105 / 813 µs), ceiling 1.5.
+
 ## 2. How to run
 
 ```bash
@@ -414,13 +426,13 @@ Denominator: **295 files / 127,091 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 54 | 32,358 | 25.5% | `no worse than baseline` is falsifiable |
+| `paired` | 56 | 33,068 | 26.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 217 | 87,258 | 68.7% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 215 | 86,548 | 68.1% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 25.5% of lines (54 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 31.3% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 68.7% of lines.
+- **Falsifiable vs baseline:** 26.0% of lines (56 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 31.9% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 68.1% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -486,6 +498,8 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,009 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
+| `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
@@ -535,7 +549,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/runtime` | 2 | 1,410 |
 | `src/cadr-cli/media.lisp` | 1 | 1,277 |
 | `src/cadr-cli/support` | 13 | 1,164 |
-| `src/cadr-cli/settings` | 3 | 926 |
 | `src/cadr-ai/support` | 7 | 899 |
 | `src/cadr-agent/execution-env.lisp` | 1 | 855 |
 | `src/cadr-agent/schema.lisp` | 1 | 850 |
@@ -575,6 +588,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-agent/proxy.lisp` | 1 | 251 |
 | `src/cadr-tui/stdin-buffer.lisp` | 1 | 232 |
 | `src/cadr-ai/images.lisp` | 1 | 222 |
+| `src/cadr-cli/settings` | 1 | 216 |
 | `src/cadr-ai/auth.lisp` | 1 | 207 |
 | `src/cadr-ai/types.lisp` | 1 | 207 |
 | `src/cadr-cli/output-accumulator.lisp` | 1 | 199 |

@@ -28,6 +28,7 @@ METRIC_KEYS = (
     "provider_anthropic.stream_roundtrip",
     "provider_google.stream_roundtrip",
     "provider_bedrock.stream_roundtrip",
+    "cli_settings.create",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

@@ -54,6 +54,8 @@ FIXTURE_NAMES = (
     "anthropic-messages.sse",
     "google-generative-ai.sse",
     "bedrock-converse-stream.bin",
+    "settings-global.json",
+    "settings-project.json",
     "openai-completions.sse",
     "provider-context.json",
     "session.jsonl",
@@ -70,6 +72,7 @@ METRICS = {
     "provider_anthropic": ("stream_roundtrip",),
     "provider_google": ("stream_roundtrip",),
     "provider_bedrock": ("stream_roundtrip",),
+    "cli_settings": ("create",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -119,6 +122,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "provider_bedrock.stream_roundtrip": 1.5,
+    # Frozen from the first Friend-MachineD non-quick cli_settings
+    # pair (samples=5): observed 0.13x (105 / 813 µs). cadr leads.
+    # 1.5 follows the list_models_registry / render_slicing precedent
+    # (headroom above 1.0). Ratchet down only.
+    "cli_settings.create": 1.5,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -244,6 +252,15 @@ OBSERVED_EXACT = {
         "usage_input",
         "usage_output",
         "payload_tool_count",
+    ),
+    "cli_settings": (
+        "theme",
+        "default_model",
+        "default_provider",
+        "compaction_reserve_tokens",
+        "default_project_trust",
+        "http_idle_timeout_ms",
+        "project_trusted",
     ),
     "session_pipeline": (
         "entry_count",
