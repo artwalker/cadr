@@ -321,6 +321,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 Part P: sprof `provider_mistral` @ `6b203dcdc`.
+  Leftover after SSE `utf8-string` is `PARSE-JSON-SOURCE`
+  56.5% vs V8 `JSON.parse` (Class C). Capture:
+  `docs/benchmarks/goal20-part-p-mistral-sprof-6b203dcdc.md`.
+  No `src/`. Not FFI. G.17 still `missing`. Part P still
+  `[open]`.
+
 - Goal 20 Part P: Friend-MachineD remesure of `2f9036b4a`
   (n=5, enforced). `agent_tool_loop.roundtrip`
   1.75×→**0.16×** (45 / 278 µs). Ceiling 1.5 not raised.

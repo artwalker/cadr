@@ -57,4 +57,4 @@ Not `parse-json-octets`. Not a G.17 close.
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `agent_tool_loop.roundtrip` **1.75×→0.16×** (45 / 278 µs) after inline single parallel tool, ceiling 1.5. `provider_mistral` **1.19×**. Load/journal still ~2×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
+| P.13 pairable coverage | leftover | Truncate head/tail **0.70× / 0.82×**. `provider_mistral.stream_roundtrip` **1.19×**; leftover `PARSE-JSON-SOURCE` vs V8 `JSON.parse` (Class C). `agent_tool_loop` **0.16×**. Load/journal still ~2×. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
