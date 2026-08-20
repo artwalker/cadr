@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: walker timestamp `ParseString` — fixed-width ISO
+  then one quote (V8 sequential scan, not a per-byte walk).
+  sprof load @ `7517049cb`: PARSE-TIMESTAMP-VALUE 3.3% self.
+  Not labels macrolet. Not empty SWAR. Not intern. Not FFI.
+  Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: Friend-MachineD n=5 remesure @ `ab251cd30` (no src).
   Truncate head/tail **0.69× / 0.84×** (361.4 / 526.6 µs, 466.3 /
   554.1 µs). load **1.17×** / journal **1.16×**. Ceiling not

@@ -541,24 +541,51 @@
                             cadr-core::+unix-universal-time-offset+))
                       millisecond)))))
            (parse-timestamp-value ()
+             ;; V8 ParseString: sequential scan to the closing
+             ;; quote, then intern/copy. Session timestamps are
+             ;; YYYY-MM-DDTHH:MM:SS.sssZ (24 ASCII). A per-byte
+             ;; quote walk is not that scan. Not labels macrolet.
+             ;; Not empty SWAR. Not intern. Not FFI.
              (skip-space)
              (let ((code (peek-code)))
                (cond
                  ((eql code 34)
                   (expect-code 34)
-                  (let ((value-start position))
-                    (loop
-                      (when (>= position length)
-                        (fail "Unterminated string"))
-                      (when (= (aref octets position) 34)
-                        (let ((value-end position)
-                              (fixed (iso-ms value-start position)))
-                          (incf position)
-                          (return
-                            (or fixed
-                                (cadr-ai::copy-unescaped-json-octets
-                                 octets value-start value-end)))))
-                      (incf position))))
+                  (let* ((value-start position)
+                         (iso-end (the fixnum (+ position 24)))
+                         (fixed
+                           (and (<= (the fixnum (1+ iso-end)) length)
+                                (= (aref octets iso-end) 34)
+                                (iso-ms value-start iso-end))))
+                    (if fixed
+                        (progn
+                          (setf position (the fixnum (1+ iso-end)))
+                          fixed)
+                        (loop
+                          (let ((hit
+                                  (octet-find-quote-or-backslash
+                                   octets position length)))
+                            (unless hit
+                              (fail "Unterminated string"))
+                            (setf position hit)
+                            (let ((b (aref octets position)))
+                              (cond
+                                ((= b 34)
+                                 (let ((value-end position)
+                                       (parsed
+                                         (iso-ms value-start position)))
+                                   (incf position)
+                                   (return
+                                     (or parsed
+                                         (cadr-ai::copy-unescaped-json-octets
+                                          octets value-start
+                                          value-end)))))
+                                ((= b 92)
+                                 (incf position)
+                                 (unless (take-code)
+                                   (fail "Truncated escape")))
+                                (t
+                                 (fail "Unescaped control character")))))))))
                  ((eql code 110)
                   (skip-value)
                   'null)
