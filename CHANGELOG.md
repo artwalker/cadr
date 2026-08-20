@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: sprof `provider_codex` leftover after stringify skip is
+  `PARSE-JSON-SOURCE` / `READ-SSE-STREAM` vs V8 `JSON.parse` (Class
+  C). 1.08× leftover. Ceiling 1.5 not lowered. No `src/`. Not G.17.
+  Part P still `[open]`.
 - Goal 20: Codex SSE prepare skips `stringify-json` when zstd is
   unbound (pi stringifies the request body once). Pairing leftover
   sprof `WRITE-JSON-STRING` 21.8%. Friend-MachineD 1.26×→**1.08×**
