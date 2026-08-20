@@ -2,6 +2,11 @@
 
 **Status**: open (user-reported 2026-08-21 screenshot). Not G.17.
 
+> **EXECUTOR: do this first.** Board `[ready · P0 · 现在就做]`.
+> Fix `signal-api-error` terminal quota → no retry; align error text with pi.
+> Do not start load knife 2 or bash-format until this is `[done]`.
+
+
 ## Symptom
 
 Same model `(opencode-go) mimo-v2.5`, weekly usage limit hit:
