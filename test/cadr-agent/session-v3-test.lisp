@@ -933,8 +933,8 @@
     (is (= 0 (cadr-agent::octet-skip-json-space buf 0 8)))))
 
 (test session-content-uses-unescaped-octet-block-copy
-  ;; MakeString (object close) copies unescaped ASCII via shipped
-  ;; copy-unescaped-json-octets. Scan records the window only.
+  ;; PARSE-STRING-VALUE copies unescaped ASCII via shipped
+  ;; copy-unescaped-json-octets (ub32 schar stores).
   (let* ((octets
            (cadr-ai::utf8-octets
             "{\"type\":\"message\",\"id\":\"blk\",\"parentId\":null,\"timestamp\":4,\"message\":{\"role\":\"user\",\"content\":\"hello-block\",\"timestamp\":4}}"))

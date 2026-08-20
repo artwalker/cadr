@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw ParseString delayed materialization
+  (`3ad720098`). Friend-MachineD n=5: load cadr **1857→1974 µs**
+  (worse). Product restored to ISO-kept walker. Shape note kept.
+  Not intern. Not FFI. Ceiling not lowered. Not G.17.
+  Part P still `[open]`.
 - Goal 20: walker ParseString delayed materialization — scan
   records start/length; intern / COPY-UNESCAPED at object close
   (`MakeString`). Contrast

@@ -27,15 +27,15 @@ load cadr **1857→1917 µs** (1.27×→1.13× is pi jitter; cadr µs worse).
 Withdrawn. Do not redo stack-local parse-time typed fill.
 Not intern. Not FFI. Ceiling not lowered. Not G.17.
 
-## Knife — ParseString delayed materialization @ `1ec2dacf2`
+## Knife (falsified) — ParseString delayed materialization
 
-`scan-json-string` records `{start, length, escaped}` (packed fixnum,
-tag bit 45). No intern / COPY-UNESCAPED during the property walk.
-`make-json-string` (V8 `MakeString`) runs at object close:
-`parse-message` after `}`, `finish-block` for content blocks.
-Existing intern / `copy-unescaped-json-octets` / decode-escaped —
-not a COPY-UNESCAPED rewrite. Not bag reuse. Not stack-local typed
-fill. Not intern grow. Not FFI.
+`scan-json-string` recorded `{start, length, escaped}` (packed
+fixnum). `make-json-string` at object close. Friend-MachineD n=5
+@ `3ad720098`: load cadr **1857→1974 µs** (worse; samples
+1889–2074). Withdrawn. Do not redo span-pack then MakeString at
+`parse-message` close. Not intern. Not FFI. Ceiling not lowered.
+Not G.17.
 
-Win: Friend-MachineD n=5 `session_load` cadr µs **< ~1857**. Revert
-if not.
+COPY-UNESCAPED rewrite remains banned. Remaining load leftover is
+walker vs V8 `JSON.parse` (intern/copy during scan, two heap
+objects per message). Not G.17 `met`.
