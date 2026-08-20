@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: Friend-MachineD remesure of `9a9a96d73`
+  `session_load` 2.09×→1.85× (3111 / 1686 µs). `journal_read`
+  1.97×→1.65× (unchanged product path; jitter). Ceilings 9.0 /
+  8.0 unchanged. No extra `src/`. G.17 still `missing`.
 - Goal 20 Part P: `load-session` indexes a simple-vector of
   parsed records (pi `FileEntry[]` + `_buildIndex`). Runtime
   `%entries` stays a cons list. Not a third JSON parser. Not
