@@ -75,7 +75,7 @@
           for input =
           (radius-required-field model "input" #'vectorp)
           for cost =
-          (radius-required-field model "cost" #'hash-table-p)
+          (radius-required-field model "cost" #'json-object-p)
           for context-window =
           (radius-required-field
            model "contextWindow"
@@ -101,13 +101,17 @@
            :reasoning-p reasoning
            :thinking-level-map
            (let ((map (json-get model "thinkingLevelMap")))
-             (when (hash-table-p map)
-               (loop for key being the hash-keys of map
-                       using (hash-value value)
-                     collect
+             (when (json-object-p map)
+               (let ((entries nil))
+                 (json-map-entries
+                  map
+                  (lambda (key value)
+                    (push
                      (cons
                       (intern (string-upcase key) :keyword)
-                      (if (json-null-p value) nil value)))))
+                      (if (json-null-p value) nil value))
+                     entries)))
+                 (nreverse entries))))
            :input-price
            (coerce (or (json-get cost "input") 0) 'double-float)
            :output-price

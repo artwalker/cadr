@@ -136,7 +136,7 @@ Returns the deduped list and a list of collision records
                          path
                          :external-format :utf-8))
                      (condition () nil))))
-             (when (hash-table-p object)
+             (when (cadr-ai::json-object-p object)
                (push
                 (list
                  :name
@@ -144,7 +144,7 @@ Returns the deduped list and a list of collision records
                   (cadr-ai::json-get object "name")
                   (pathname-name path))
                  :path (truename path)
-                 :object object)
+                 :object (cadr-ai::json-as-hash-table object))
                 items)))))))
     (sort items #'string<
           :key (lambda (entry)

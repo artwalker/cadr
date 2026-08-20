@@ -521,14 +521,14 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, or when a prefix
 matches nothing.
 
-Denominator: **295 files / 127,082 lines**
+Denominator: **295 files / 127,180 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 68 | 37,132 | 29.2% | `no worse than baseline` is falsifiable |
+| `paired` | 68 | 37,193 | 29.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 203 | 82,475 | 64.9% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 203 | 82,512 | 64.9% | blocked by Part A hard condition 2 |
 
 - **Falsifiable vs baseline:** 29.2% of lines (68 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 35.1% of lines.
@@ -572,7 +572,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 393 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
+| `src/cadr-agent/messages.lisp` | 255 | `session_compact.compact` |
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
@@ -583,11 +583,11 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
-| `src/cadr-ai/json.lisp` | 1,905 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
+| `src/cadr-ai/json.lisp` | 1,963 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
-| `src/cadr-ai/providers/bedrock.lisp` | 934 | `provider_bedrock.stream_roundtrip` |
+| `src/cadr-ai/providers/bedrock.lisp` | 933 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/codex.lisp` | 35 | `provider_codex.stream_roundtrip` |
 | `src/cadr-ai/providers/google.lisp` | 442 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | `provider_mistral.stream_roundtrip` |
@@ -610,8 +610,8 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
-| `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
-| `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
+| `src/cadr-cli/settings/config-values.lisp` | 199 | `cli_settings.create` |
+| `src/cadr-cli/settings/manager.lisp` | 513 | `cli_settings.create` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
@@ -644,14 +644,14 @@ is added or the path is booked unpairable above.
 
 | module | files | lines |
 |---|---:|---:|
-| `src/cadr-cli/interactive` | 27 | 16,379 |
+| `src/cadr-cli/interactive` | 27 | 16,380 |
 | `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
 | `src/cadr-cli/bootstrap` | 5 | 5,632 |
 | `src/cadr-tui/mermaid` | 12 | 5,042 |
-| `src/cadr-cli/extensions` | 9 | 3,489 |
-| `src/cadr-cli/sdk` | 8 | 2,471 |
+| `src/cadr-cli/extensions` | 9 | 3,490 |
+| `src/cadr-cli/sdk` | 8 | 2,472 |
 | `src/cadr-cli/modes` | 8 | 2,302 |
-| `src/cadr-cli/tools` | 7 | 2,166 |
+| `src/cadr-cli/tools` | 7 | 2,168 |
 | `src/cadr-tui/latex.lisp` | 1 | 1,950 |
 | `src/cadr-cli/packages` | 2 | 1,811 |
 | `src/cadr-ai/oauth` | 10 | 1,786 |
@@ -661,11 +661,11 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/runtime` | 2 | 1,410 |
 | `src/cadr-cli/media.lisp` | 1 | 1,277 |
 | `src/cadr-cli/support` | 13 | 1,164 |
-| `src/cadr-ai/support` | 7 | 899 |
+| `src/cadr-ai/support` | 7 | 902 |
+| `src/cadr-agent/schema.lisp` | 1 | 859 |
 | `src/cadr-agent/execution-env.lisp` | 1 | 855 |
-| `src/cadr-agent/schema.lisp` | 1 | 850 |
-| `src/cadr-ai/transport` | 1 | 831 |
-| `src/cadr-ai/capabilities` | 6 | 751 |
+| `src/cadr-ai/transport` | 1 | 832 |
+| `src/cadr-ai/capabilities` | 6 | 764 |
 | `src/cadr-evals/harness.lisp` | 1 | 737 |
 | `src/cadr-evals/summary.lisp` | 1 | 732 |
 | `src/cadr-tui/composition` | 2 | 705 |
@@ -676,16 +676,16 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/autocomplete.lisp` | 1 | 594 |
 | `src/cadr-tui/theme.lisp` | 1 | 562 |
 | `src/cadr-tui/components` | 2 | 558 |
-| `src/cadr-cli/migration.lisp` | 1 | 512 |
+| `src/cadr-cli/migration.lisp` | 1 | 513 |
 | `src/cadr-protocol/cbor.lisp` | 1 | 492 |
 | `src/cadr-tui/overlay.lisp` | 1 | 485 |
 | `src/cadr-ai/package.lisp` | 1 | 480 |
 | `src/cadr-evals/suites.lisp` | 1 | 468 |
 | `src/cadr-agent/package.lisp` | 1 | 456 |
 | `src/cadr-agent/runtime.lisp` | 1 | 421 |
-| `src/cadr-ai/auth` | 3 | 410 |
+| `src/cadr-ai/auth` | 3 | 414 |
 | `src/cadr-tui/input-component.lisp` | 1 | 408 |
-| `src/cadr-ai/model-data.lisp` | 1 | 407 |
+| `src/cadr-ai/model-data.lisp` | 1 | 405 |
 | `src/cadr-ai/crypto.lisp` | 1 | 367 |
 | `src/cadr-tui/package.lisp` | 1 | 355 |
 | `src/cadr-evals/harness-table.lisp` | 1 | 339 |
@@ -699,7 +699,7 @@ is added or the path is booked unpairable above.
 | `src/cadr-tui/stdin-buffer.lisp` | 1 | 232 |
 | `src/cadr-ai/images.lisp` | 1 | 222 |
 | `src/cadr-cli/settings` | 1 | 216 |
-| `src/cadr-ai/auth.lisp` | 1 | 207 |
+| `src/cadr-ai/auth.lisp` | 1 | 210 |
 | `src/cadr-ai/types.lisp` | 1 | 207 |
 | `src/cadr-cli/output-accumulator.lisp` | 1 | 199 |
 | `src/cadr-tui/terminal-colors.lisp` | 1 | 191 |

@@ -74,7 +74,7 @@
 
 (defun apply-proxy-usage (message object)
   (let ((usage (cadr-ai::json-get object "usage")))
-    (when (hash-table-p usage)
+    (when (cadr-ai::json-object-p usage)
       (let ((parsed (usage-from-json usage)))
         (when (cadr-ai::json-get usage "totalTokens")
           (setf (cadr-ai:usage-total parsed)
@@ -157,7 +157,7 @@
          (let ((block (nth index (cadr-ai:assistant-message-content message))))
            (when (typep block 'cadr-ai:tool-call)
              (let ((final (cadr-ai::json-get object "toolCall")))
-               (when (hash-table-p final)
+               (when (cadr-ai::json-object-p final)
                  ;; Baseline proxy.ts: Object.assign(content, toolCall) —
                  ;; only keys present on the wire replace the partial.
                  (when (cadr-ai::json-present-p final "id")

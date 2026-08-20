@@ -525,7 +525,7 @@
           (t nil))))
 
 (defun update-openai-usage (message usage)
-  (when (hash-table-p usage)
+  (when (json-object-p usage)
     (let* ((input-details (json-get usage "input_tokens_details"))
            (output-details (json-get usage "output_tokens_details"))
            (cached (or (json-get input-details "cached_tokens") 0))

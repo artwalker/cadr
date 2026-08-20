@@ -64,7 +64,7 @@
     (loop for value across payload
           for id =
           (and
-           (hash-table-p value)
+           (cadr-ai::json-object-p value)
            (cadr-ai::json-get value "id"))
           when (stringp id)
             collect
@@ -140,7 +140,7 @@ quantization splits at the first colon after the first slash."
            (format nil
                    "/api/models/~A?blobs=true"
                    (encode-hugging-face-id id)))))
-    (unless (hash-table-p payload)
+    (unless (cadr-ai::json-object-p payload)
       (error
        'cadr-ai:transport-error
        :message
@@ -152,7 +152,7 @@ quantization splits at the first colon after the first slash."
         (loop for value across siblings
               for filename =
               (and
-               (hash-table-p value)
+               (cadr-ai::json-object-p value)
                (cadr-ai::json-get
                 value "rfilename"))
               when

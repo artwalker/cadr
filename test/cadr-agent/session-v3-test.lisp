@@ -295,21 +295,22 @@
                    (length actual-entries)))
             (labels ((same-json-p (expected actual)
                        (cond
-                         ((and (hash-table-p expected)
-                               (hash-table-p actual))
-                          (and
-                           (= (hash-table-count expected)
-                              (hash-table-count actual))
-                           (loop for key being
-                                 the hash-keys of expected
-                                 always
-                                 (multiple-value-bind
-                                       (value present-p)
-                                     (gethash key actual)
-                                   (and present-p
+                         ((and (cadr-ai::json-object-p expected)
+                               (cadr-ai::json-object-p actual))
+                          (let ((expected-keys
+                                  (cadr-ai::json-keys expected)))
+                            (and
+                             (= (length expected-keys)
+                                (length (cadr-ai::json-keys actual)))
+                             (loop for key in expected-keys
+                                   always
+                                   (and (cadr-ai::json-present-p
+                                         actual key)
                                         (same-json-p
-                                         (gethash key expected)
-                                         value))))))
+                                         (cadr-ai::json-get
+                                          expected key)
+                                         (cadr-ai::json-get
+                                          actual key)))))))
                          ((and (vectorp expected)
                                (vectorp actual))
                           (and

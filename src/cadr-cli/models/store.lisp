@@ -15,9 +15,9 @@
                 (cadr-ai::parse-json
                  (uiop:read-file-string
                   path :external-format :utf-8))))
-          (unless (hash-table-p object)
+          (unless (cadr-ai::json-object-p object)
             (error "models store must contain an object"))
-          object)
+          (cadr-ai::json-as-hash-table object))
         (empty-json-object))))
 
 (defun models-store-read (store provider)
@@ -129,9 +129,9 @@
   ;; Baseline model-config.ts ProviderCompatSchema: the boolean and enum
   ;; compat keys from models.json.  The routing-object keys
   ;; (openRouterRouting, vercelGatewayRouting) are not parsed yet.
-  (when (hash-table-p object)
-    (loop for key being the hash-keys of object
-          using (hash-value value)
+  (when (cadr-ai::json-object-p object)
+    (loop for key in (cadr-ai::json-keys object)
+          for value = (cadr-ai::json-get object key)
           append
           (cond
             ((member key +model-compat-boolean-keys+ :test #'string=)

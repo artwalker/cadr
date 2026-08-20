@@ -182,7 +182,8 @@
         resolved variables (cons value seen))))))
 
 (defun theme-object-overrides (object)
-  (when (hash-table-p object)
+  (when (cadr-ai::json-object-p object)
+    (let ((object (cadr-ai::json-as-hash-table object)))
     (multiple-value-bind (raw-variables variables-present-p)
         (gethash "vars" object)
       (multiple-value-bind (export export-present-p)
@@ -263,7 +264,7 @@
         (collect-values
          export
          +tui-theme-json-export-map+))
-            (nreverse overrides))))))
+            (nreverse overrides)))))))
 
 (defun apply-tui-theme-summary
     (summary
@@ -327,14 +328,14 @@
               (cadr-ai::parse-json
                (uiop:read-file-string
                 path :external-format :utf-8))))
-        (when (hash-table-p object)
+        (when (cadr-ai::json-object-p object)
           (list
            :name
            (or
             (cadr-ai::json-get object "name")
             (pathname-name path))
            :path path
-           :object object)))
+           :object (cadr-ai::json-as-hash-table object))))
     (condition () nil)))
 
 (defun make-tui-theme-watcher

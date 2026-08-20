@@ -272,7 +272,7 @@
                 (make-text-content
                  :text (or (json-get part "text") "")
                  :signature (json-get part "thoughtSignature")))))
-          ((hash-table-p (json-get part "functionCall"))
+          ((json-object-p (json-get part "functionCall"))
            (let ((call (json-get part "functionCall")))
              (list
               (make-tool-call
@@ -286,7 +286,7 @@
           (t nil))))
 
 (defun update-google-usage (message usage)
-  (when (hash-table-p usage)
+  (when (json-object-p usage)
     (let ((cached (or (json-get usage "cachedContentTokenCount") 0))
           (thoughts (or (json-get usage "thoughtsTokenCount") 0)))
       (update-message-usage
@@ -401,7 +401,7 @@
               do (cond
                    ((json-present-p part "text")
                     (google-text-delta state part emit))
-                   ((hash-table-p (json-get part "functionCall"))
+                   ((json-object-p (json-get part "functionCall"))
                     (finish-google-current-block state emit)
                     (let* ((call (json-get part "functionCall"))
                            (tool-call

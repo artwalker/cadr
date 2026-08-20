@@ -583,7 +583,7 @@
     (nreverse content)))
 
 (defun update-openai-chat-usage (message raw)
-  (when (hash-table-p raw)
+  (when (json-object-p raw)
     (let* ((prompt-details
              (json-get raw "prompt_tokens_details"))
            (completion-details

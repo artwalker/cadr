@@ -1293,7 +1293,9 @@
     ;; call-with-models-runtime-error, faux-stream-block.
     ;; +6 Goal 20 session_compact: uuid entropy pool (two defun + four
     ;; defparameter) copies Node getRandomValues; no /dev/urandom per id.
-    (is (= 274 definition-count)
+    ;; -1 Goal 20 JSON sequential properties: grammar-coercion's local
+    ;; json-object-p moved to json.lisp (pairs + hash).
+    (is (= 273 definition-count)
         "B10 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-ai/capabilities.lisp"

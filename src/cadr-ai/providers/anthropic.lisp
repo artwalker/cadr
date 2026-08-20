@@ -450,7 +450,7 @@
                                   (json-object)))))
 
 (defun update-anthropic-usage (message usage)
-  (when (hash-table-p usage)
+  (when (json-object-p usage)
     (update-message-usage
      message
      (json-get usage "input_tokens")

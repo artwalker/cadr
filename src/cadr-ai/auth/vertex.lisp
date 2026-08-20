@@ -116,7 +116,7 @@
                    path)))
   (let ((credential
           (parse-json (uiop:read-file-string path))))
-    (unless (hash-table-p credential)
+    (unless (json-object-p credential)
       (error 'configuration-error
              :message
              "Google application credential must be a JSON object"))

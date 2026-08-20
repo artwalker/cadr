@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: `parse-json` / `parse-json-octets` fill objects as
+  ordered `(:json-object . pairs)` up to 16 keys (V8
+  `SmallVector<JsonProperty, 16>` then one JSObject with sequential
+  named properties). Larger objects still EQUAL-hash. Shared by
+  SSE mistral/codex `parse-json` and nested session JSON. Compare
+  `docs/benchmarks/goal20-v8-json-parse-compare.md`. Not FFI. Not
+  intern grow. Ceiling not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: sprof `provider_codex` leftover after stringify skip is
   `PARSE-JSON-SOURCE` / `READ-SSE-STREAM` vs V8 `JSON.parse` (Class
   C). 1.08× leftover. Ceiling 1.5 not lowered. No `src/`. Not G.17.

@@ -142,7 +142,7 @@
            collect entry)))
 
 (defun parse-llama-model-info (object)
-  (unless (hash-table-p object)
+  (unless (cadr-ai::json-object-p object)
     (error
      'cadr-ai:transport-error
      :message "llama.cpp returned an invalid model catalog"))
@@ -151,7 +151,7 @@
            (cadr-ai::json-get object "status"))
          (status
            (and
-            (hash-table-p status-object)
+            (cadr-ai::json-object-p status-object)
             (cadr-ai::json-get status-object "value")))
          (architecture
            (cadr-ai::json-get object "architecture"))
@@ -214,7 +214,7 @@
                 "/models")))
          (data
            (and
-            (hash-table-p payload)
+            (cadr-ai::json-object-p payload)
             (cadr-ai::json-get payload "data"))))
     (unless (vectorp data)
       (error
@@ -367,19 +367,20 @@
      (lambda (event)
        (handler-case
            (let* ((payload
-                    (cadr-ai::parse-json
-                     (cadr-ai:sse-event-data event)))
+                    (cadr-ai::json-as-hash-table
+                     (cadr-ai::parse-json
+                      (cadr-ai:sse-event-data event))))
                   (event-model
                     (and
-                     (hash-table-p payload)
+                     (cadr-ai::json-object-p payload)
                      (cadr-ai::json-get payload "model")))
                   (event-name
                     (and
-                     (hash-table-p payload)
+                     (cadr-ai::json-object-p payload)
                      (cadr-ai::json-get payload "event")))
                   (data
                     (and
-                     (hash-table-p payload)
+                     (cadr-ai::json-object-p payload)
                      (cadr-ai::json-get payload "data"))))
              (when (and (stringp event-model)
                         (string= event-model model)

@@ -115,6 +115,7 @@
   (vectorp value))
 
 (defun validate-json-schema-definition (schema)
+  (setf schema (cadr-ai::json-ensure-hash-table schema))
   (unless (hash-table-p schema)
     (schema-fail "" "A tool schema must be a JSON object"))
   (labels
@@ -331,6 +332,9 @@
 
 (defun validate-json-schema-instance
     (schema value &key (root schema))
+  (setf schema (cadr-ai::json-ensure-hash-table schema)
+        value (cadr-ai::json-ensure-hash-table value)
+        root (cadr-ai::json-ensure-hash-table root))
   (validate-json-schema-definition root)
   (labels
       ((matches-p (candidate-schema candidate active)
@@ -708,6 +712,9 @@
 
 (defun coerce-json-schema-instance (schema value &key (root schema))
   "Apply the baseline tool-argument primitive conversions in place."
+  (setf schema (cadr-ai::json-ensure-hash-table schema)
+        value (cadr-ai::json-ensure-hash-table value)
+        root (cadr-ai::json-ensure-hash-table root))
   (let ((failure (gensym "SCHEMA-COERCION-FAILURE")))
     (labels
         ((coerce-type (node candidate)
@@ -781,13 +788,15 @@
   (cond
     ((eq schema t) nil)
     ((null schema) t)
-    ((not (hash-table-p schema)) nil)
+    ((not (cadr-ai::json-object-p schema)) nil)
     (t (handler-case
            (progn (validate-json-schema-instance schema 'null) nil)
          (native-schema-error () t)
          (error () nil)))))
 
 (defun normalize-optional-nulls (value schema)
+  (setf value (cadr-ai::json-ensure-hash-table value)
+        schema (cadr-ai::json-ensure-hash-table schema))
   ;; Baseline utils/validation.ts normalizeOptionalNulls: delete object
   ;; properties whose value is null when the property is not required and
   ;; its schema rejects null, before coercion.  Runs before

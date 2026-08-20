@@ -200,7 +200,7 @@
           (uiop:read-file-string
            path :external-format :utf-8))
        (condition () nil))
-     when (hash-table-p object)
+     when (cadr-ai::json-object-p object)
        collect
        (list
         :name
@@ -208,7 +208,7 @@
          (cadr-ai::json-get object "name")
          (pathname-name path))
         :path path
-        :object object))
+        :object (cadr-ai::json-as-hash-table object)))
    #'string<
    :key (lambda (entry)
           (getf entry :name))))

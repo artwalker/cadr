@@ -113,9 +113,9 @@
 
 (defun credential-environment (object)
   (let ((environment
-          (and (hash-table-p object)
+          (and (cadr-ai::json-object-p object)
                (cadr-ai::json-get object "env"))))
-    (when (hash-table-p environment)
+    (when (cadr-ai::json-object-p environment)
       (cadr-ai::json-object-alist environment))))
 
 (defun resolved-json-credential (provider object)

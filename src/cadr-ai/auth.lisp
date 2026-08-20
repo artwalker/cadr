@@ -43,11 +43,14 @@
                 (cdr entry)))))
 
 (defun json-object-alist (object)
-  (when (hash-table-p object)
+  (when (json-object-p object)
     (sort
-     (loop for key being the hash-keys of object
-           using (hash-value value)
-           collect (cons key value))
+     (let ((entries nil))
+       (json-map-entries
+        object
+        (lambda (key value)
+          (push (cons key value) entries)))
+       entries)
      #'string<
      :key #'car)))
 
@@ -92,7 +95,7 @@
        object))))
 
 (defun json-credential (provider object)
-  (when (hash-table-p object)
+  (when (json-object-p object)
     (let ((type (json-get object "type")))
       (cond
         ((string= type "api_key")
@@ -124,10 +127,10 @@
                   (parse-json
                    (uiop:read-file-string path
                                           :external-format :utf-8))))
-            (unless (hash-table-p object)
+            (unless (json-object-p object)
               (error 'authentication-error
                      :message "auth.json must contain a JSON object"))
-            object)
+            (json-as-hash-table object))
         (cadr-error (condition)
           (error condition))
         (error (cause)

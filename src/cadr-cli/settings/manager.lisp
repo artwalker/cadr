@@ -165,7 +165,7 @@
   (let ((object
           (settings-value
            manager key (empty-json-object))))
-    (if (hash-table-p object)
+    (if (cadr-ai::json-object-p object)
         (cadr-ai::json-get
          object nested-key default)
         default)))
@@ -207,7 +207,7 @@
                (cadr-ai::json-get
                 next key (empty-json-object)))
              (next-nested
-               (if (hash-table-p old-nested)
+               (if (cadr-ai::json-object-p old-nested)
                    (copy-json-object old-nested)
                    (empty-json-object))))
         (cadr-ai::json-put
@@ -497,9 +497,10 @@ the file is absent, unreadable, malformed, or not a JSON object
                   (cadr-ai::parse-json
                    (uiop:read-file-string path))
                 (condition () nil))))
-        (and (hash-table-p parsed)
+        (and (cadr-ai::json-object-p parsed)
              (keybinding-object-to-bindings
-              (migrate-keybindings parsed)))))))
+              (migrate-keybindings
+               (cadr-ai::json-as-hash-table parsed))))))))
 
 (defun resolve-user-keybindings
     (manager agent-directory)

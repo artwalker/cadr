@@ -153,10 +153,8 @@
           (is (= 3 (cadr-ai::json-get (first records) "version")))
           (dolist (record (rest records))
             (is (stringp (cadr-ai::json-get record "id")))
-            (multiple-value-bind (value present-p)
-              (gethash "parentId" record)
-              (declare (ignore value))
-              (is (eq t present-p)))))))))
+            (is (eq t
+                    (cadr-ai::json-present-p record "parentId")))))))))
 
 (test session-v1-load-migrates-atomically-without-losing-envelope-fields
   (with-session-directories (sessions cwd other-cwd)

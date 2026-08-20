@@ -231,7 +231,8 @@ Baseline migrations skip on error rather than failing startup."
       (let ((object
               (cadr-ai::parse-json
                (uiop:read-file-string path :external-format :utf-8))))
-        (and (hash-table-p object) object))
+        (and (cadr-ai::json-object-p object)
+             (cadr-ai::json-as-hash-table object)))
     (error () nil)))
 
 (defun write-json-file-object (path object &key (mode nil))
@@ -320,7 +321,7 @@ per-cwd encoded subdirectory; the moved files remain discoverable."
               (let ((header
                       (ignore-errors
                         (cadr-ai::parse-json first-line))))
-                (when (and (hash-table-p header)
+                (when (and (cadr-ai::json-object-p header)
                            (string= "session"
                                     (cadr-ai::json-get header "type" ""))
                            (cadr-ai::json-get header "cwd"))

@@ -84,7 +84,7 @@
                  (string=
                   "message_end"
                   (cadr-ai::json-get candidate "type"))
-                 (hash-table-p message)
+                 (cadr-ai::json-object-p message)
                  (string=
                   "assistant"
                   (cadr-ai::json-get message "role")))))

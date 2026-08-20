@@ -96,7 +96,7 @@
     (and (stringp id) id)))
 
 (defun require-rpc-object (value)
-  (unless (hash-table-p value)
+  (unless (cadr-ai::json-object-p value)
     (error "RPC frame must be a JSON object"))
   value)
 

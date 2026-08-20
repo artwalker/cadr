@@ -106,5 +106,8 @@
          (bytes-large
            (goal20-bytes-consed
             (lambda () (goal20-anthropic-assemble-text large chunk)))))
-    (is (< bytes-large (* 3 bytes-small)))
+    ;; 3× was inside measurement noise after parse-json objects
+    ;; became sequential pairs (per-event cons, not text).  4× still
+    ;; rejects quadratic concatenate.
+    (is (< bytes-large (* 4 bytes-small)))
     (is (plusp bytes-small))))

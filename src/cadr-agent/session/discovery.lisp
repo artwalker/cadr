@@ -15,7 +15,7 @@
             (let ((object (cadr-ai::parse-json line)))
               (if
                   (and
-                   (hash-table-p object)
+                   (cadr-ai::json-object-p object)
                    (string=
                     "session"
                     (cadr-ai::json-get object "type" ""))
