@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw closed-schema key dispatch (`789bec858`).
+  Friend-MachineD n=5: load cadr **1958→1986 µs** (no win),
+  journal **1563→1580 µs**. Reverted `157300eae`. Not labels
+  macrolet. Not intern. Not FFI. Ceiling not lowered. Not
+  G.17. Part P still `[open]`.
 - Goal 20: withdraw walker `scan-key` macrolet (`f87bea405`).
   Friend-MachineD n=5: load cadr **1958→2260 µs**, journal
   **1563→1904 µs**. Reverted `64e564968`. sprof leftover

@@ -44,3 +44,12 @@ Not FFI. Ceiling not lowered. Not G.17.
 
 PARSE-STRING-VALUE is the same labels-to-macrolet class.
 Do not repeat it as a blind next-slot inline.
+
+## Next win tried (withdrawn)
+
+V8 named-property lookup after `JsonString` start/length.
+cadr sequential `key=` of every field in `put-entry-field` /
+`put-usage-field`. Knife `789bec858`: exclusive length then
+one literal. Friend-MachineD n=5: cadr `session_load`
+**1958→1986 µs** (no win). Reverted `157300eae`. Not labels
+macrolet. Not intern. Not FFI.
