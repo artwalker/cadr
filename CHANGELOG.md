@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part P: sprof of `session_load` / `journal_read` after
+  `9a9a96d73`. Leftover is still the octet walker (`OCTET-U32-LE`
+  11.3% / 12.9%; `PARSE-SESSION-RECORD-OCTETS` 73.9% / 80.2%
+  total). Index `coerce` is not in the samples. No `src/`.
+  G.17 still `missing`.
 - Goal 20 Part H: Friend-MachineD remesure of `9a9a96d73`
   `session_load` 2.09×→1.85× (3111 / 1686 µs). `journal_read`
   1.97×→1.65× (unchanged product path; jitter). Ceilings 9.0 /
