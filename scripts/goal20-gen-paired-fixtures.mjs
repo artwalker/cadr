@@ -630,6 +630,30 @@ function buildSettingsProject() {
 	};
 }
 
+function buildResourceSkillGlobal() {
+	return "---\nname: shared\ndescription: global overlay skill\n---\nglobal body\n";
+}
+
+function buildResourceSkillProject() {
+	return "---\nname: shared\ndescription: project overlay skill\n---\nproject body\n";
+}
+
+function buildResourcePromptGlobal() {
+	return "global review\n";
+}
+
+function buildResourcePromptProject() {
+	return "project review\n";
+}
+
+function buildResourceAgents() {
+	return "paired path context\n";
+}
+
+function buildResourceSystem() {
+	return "paired path system\n";
+}
+
 function buildCliArgv() {
 	return {
 		list_models: ["--list-models", "goal20"],
@@ -679,6 +703,12 @@ const artifacts = new Map([
 	["bedrock-converse-stream.bin", buildBedrockEventStreamFixture()],
 	["settings-global.json", `${JSON.stringify(buildSettingsGlobal(), null, "\t")}\n`],
 	["settings-project.json", `${JSON.stringify(buildSettingsProject(), null, "\t")}\n`],
+	["resource-skill-global.md", buildResourceSkillGlobal()],
+	["resource-skill-project.md", buildResourceSkillProject()],
+	["resource-prompt-global.md", buildResourcePromptGlobal()],
+	["resource-prompt-project.md", buildResourcePromptProject()],
+	["resource-agents.md", buildResourceAgents()],
+	["resource-system.md", buildResourceSystem()],
 	["models.json", `${JSON.stringify(buildModelsJson(), null, "\t")}\n`],
 	["auth.json", `${JSON.stringify(buildAuthJson(), null, "\t")}\n`],
 	["cli-argv.json", `${JSON.stringify(buildCliArgv(), null, "\t")}\n`],

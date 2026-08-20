@@ -221,6 +221,19 @@ Observed `theme` / `default_model` / `compaction_reserve_tokens` /
 `http_idle_timeout_ms` / `project_trusted` are exact. First
 Friend-MachineD freeze 0.13× (105 / 813 µs), ceiling 1.5.
 
+### Pair 14 — `resource_loader`
+
+| metric | cadr | pi |
+|---|---|---|
+| `reload` | `reload-resources` (`resource-loader.lisp`) | `DefaultResourceLoader.reload` |
+
+Fixture skills + prompt templates staged under an isolated agent dir
+and cwd overlay. Auto-discovery is off so host `~/.agents/skills`
+cannot leak; explicit paths are the production CLI extra-path
+argument to `reload`. No TUI, no socket. Observed skill/prompt
+counts and project-wins names are exact. First Friend-MachineD
+freeze 0.29× (568 / 1978 µs), ceiling 1.5.
+
 ## 2. How to run
 
 ```bash
@@ -426,13 +439,13 @@ Denominator: **295 files / 127,091 lines**
 
 | class | files | lines | share of lines | Part K |
 |---|---:|---:|---:|---|
-| `paired` | 56 | 33,068 | 26.0% | `no worse than baseline` is falsifiable |
+| `paired` | 58 | 34,160 | 26.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 215 | 86,548 | 68.1% | blocked by Part A hard condition 2 |
+| `pairable-uncovered` | 213 | 85,456 | 67.2% | blocked by Part A hard condition 2 |
 
-- **Falsifiable vs baseline:** 26.0% of lines (56 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 31.9% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 68.1% of lines.
+- **Falsifiable vs baseline:** 26.9% of lines (58 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 32.8% of lines.
+- **K-blocked** until a new pair or a booked unpairable finding: 67.2% of lines.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O.
 
@@ -473,6 +486,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-agent/loop/tool-execution.lisp` | 480 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 393 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
+| `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,185 | `session_pipeline.session_load`, `storage_journal.journal_read` |
@@ -498,6 +512,7 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,009 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
@@ -554,7 +569,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-agent/schema.lisp` | 1 | 850 |
 | `src/cadr-ai/transport` | 1 | 831 |
 | `src/cadr-ai/capabilities` | 6 | 751 |
-| `src/cadr-agent/resources.lisp` | 1 | 739 |
 | `src/cadr-evals/harness.lisp` | 1 | 737 |
 | `src/cadr-evals/summary.lisp` | 1 | 732 |
 | `src/cadr-tui/composition` | 2 | 705 |
@@ -577,7 +591,6 @@ is added or the path is booked unpairable above.
 | `src/cadr-ai/model-data.lisp` | 1 | 407 |
 | `src/cadr-ai/crypto.lisp` | 1 | 367 |
 | `src/cadr-tui/package.lisp` | 1 | 355 |
-| `src/cadr-cli/resource-loader.lisp` | 1 | 353 |
 | `src/cadr-evals/harness-table.lisp` | 1 | 339 |
 | `src/cadr-evals/reporter.lisp` | 1 | 314 |
 | `src/cadr-cli/package.lisp` | 1 | 289 |

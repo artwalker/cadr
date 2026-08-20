@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `resource_loader.reload` (fixture skills +
+  prompt templates, no TUI, no socket). Production
+  `reload-resources` vs `DefaultResourceLoader.reload`. First
+  Friend-MachineD freeze 0.29× (568 / 1978 µs), ceiling 1.5.
+  Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `cli_settings.create` (fixture settings JSON,
   no TUI, no socket). Production `make-settings-manager` vs
   `SettingsManager.create`. First Friend-MachineD freeze 0.13×

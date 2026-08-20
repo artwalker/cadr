@@ -28,6 +28,87 @@
     (is (= 42 (cadr-cli::settings-http-idle-timeout-ms manager)))
     (is (cadr-cli::settings-manager-project-trusted-p manager))))
 
+(test pairing-resource-loader-reload-stays-put
+  ;; scripts/goal20-paired-paths.lisp resource_loader.reload.
+  ;; Drives shipped reload-resources, not a reimplementation.
+  (with-test-directory (root)
+    (let* ((fixtures
+             (merge-pathnames
+              "test/fixtures/goal20-paired-paths/"
+              (asdf:system-source-directory "cadr-cli")))
+           (agent (merge-pathnames "agent/" root))
+           (cwd (merge-pathnames "project/" root)))
+      (flet ((fixture (name)
+               (uiop:read-file-string (merge-pathnames name fixtures))))
+        (write-text
+         (merge-pathnames "skills/shared/SKILL.md" agent)
+         (fixture "resource-skill-global.md"))
+        (write-text
+         (merge-pathnames ".cadr/skills/shared/SKILL.md" cwd)
+         (fixture "resource-skill-project.md"))
+        (write-text
+         (merge-pathnames "prompts/review.md" agent)
+         (fixture "resource-prompt-global.md"))
+        (write-text
+         (merge-pathnames ".cadr/prompts/review.md" cwd)
+         (fixture "resource-prompt-project.md"))
+        (write-text
+         (merge-pathnames "AGENTS.md" cwd)
+         (fixture "resource-agents.md"))
+        (write-text
+         (merge-pathnames ".cadr/SYSTEM.md" cwd)
+         (fixture "resource-system.md")))
+      (let* ((loader
+               (cadr-cli::make-default-resource-loader
+                :cwd cwd
+                :agent-directory agent
+                :project-trusted-p t
+                :no-skills-p t
+                :no-prompts-p t
+                :no-themes-p t
+                :explicit-skill-paths
+                (list
+                 (namestring
+                  (merge-pathnames ".cadr/skills/shared/" cwd))
+                 (namestring
+                  (merge-pathnames "skills/shared/" agent)))
+                :explicit-prompt-paths
+                (list
+                 (namestring
+                  (merge-pathnames ".cadr/prompts/" cwd))
+                 (namestring
+                  (merge-pathnames "prompts/" agent)))))
+             (snapshot (cadr-cli::reload-resources loader)))
+        (is (= 1
+               (length
+                (cadr-cli::resource-snapshot-skills snapshot))))
+        (is (string=
+             "shared"
+             (cadr-agent:skill-name
+              (first
+               (cadr-cli::resource-snapshot-skills snapshot)))))
+        (is (search
+             "project overlay"
+             (cadr-agent:skill-description
+              (first
+               (cadr-cli::resource-snapshot-skills snapshot)))))
+        (is (= 1
+               (length
+                (cadr-cli::resource-snapshot-prompts snapshot))))
+        (is (search
+             "project review"
+             (cadr-agent:prompt-template-content
+              (first
+               (cadr-cli::resource-snapshot-prompts snapshot)))))
+        (is (= 1
+               (length
+                (cadr-cli::resource-snapshot-context-files
+                 snapshot))))
+        (is (not
+             (null
+              (cadr-cli::resource-snapshot-system-prompt-path
+               snapshot))))))))
+
 (defun write-json (path object)
   (write-text path
               (format nil "~A~%"

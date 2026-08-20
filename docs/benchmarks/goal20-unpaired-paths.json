@@ -14,6 +14,7 @@
   "provider_google.stream_roundtrip",
   "provider_bedrock.stream_roundtrip",
   "cli_settings.create",
+  "resource_loader.reload",
   "session_pipeline.session_load",
   "session_pipeline.context_walk",
   "storage_journal.journal_read",
@@ -204,6 +205,20 @@
    "class": "paired",
    "metrics": [
     "cli_settings.create"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/resource-loader.lisp",
+   "class": "paired",
+   "metrics": [
+    "resource_loader.reload"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/resources.lisp",
+   "class": "paired",
+   "metrics": [
+    "resource_loader.reload"
    ]
   },
   {

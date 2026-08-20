@@ -130,6 +130,7 @@ const REPETITIONS = {
 	"provider_google.stream_roundtrip": 10,
 	"provider_bedrock.stream_roundtrip": 10,
 	"cli_settings.create": 5,
+	"resource_loader.reload": 3,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -206,6 +207,12 @@ const fixtureNames = [
 	"bedrock-converse-stream.bin",
 	"settings-global.json",
 	"settings-project.json",
+	"resource-skill-global.md",
+	"resource-skill-project.md",
+	"resource-prompt-global.md",
+	"resource-prompt-project.md",
+	"resource-agents.md",
+	"resource-system.md",
 	"openai-completions.sse",
 	"provider-context.json",
 	"session.jsonl",
@@ -289,6 +296,7 @@ const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-me
 const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
 const bedrockModule = await import(moduleUrl("packages/ai/src/api/bedrock-converse-stream.ts"));
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
+const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
@@ -315,6 +323,48 @@ copyFileSync(
 	path.join(fixtureDirectory, "settings-project.json"),
 	path.join(settingsCwdDirectory, ".pi", "settings.json"),
 );
+
+const resourceAgentDirectory = path.join(scratch, "resource-agent");
+const resourceCwdDirectory = path.join(scratch, "resource-cwd");
+const resourceAgentSkill = path.join(resourceAgentDirectory, "skills", "shared");
+const resourceProjectSkillPi = path.join(resourceCwdDirectory, ".pi", "skills", "shared");
+const resourceProjectSkillCadr = path.join(resourceCwdDirectory, ".cadr", "skills", "shared");
+const resourceAgentPrompt = path.join(resourceAgentDirectory, "prompts");
+const resourceProjectPromptPi = path.join(resourceCwdDirectory, ".pi", "prompts");
+const resourceProjectPromptCadr = path.join(resourceCwdDirectory, ".cadr", "prompts");
+for (const directory of [
+	resourceAgentSkill,
+	resourceProjectSkillPi,
+	resourceProjectSkillCadr,
+	resourceAgentPrompt,
+	resourceProjectPromptPi,
+	resourceProjectPromptCadr,
+	path.join(resourceCwdDirectory, ".pi"),
+	path.join(resourceCwdDirectory, ".cadr"),
+]) {
+	mkdirSync(directory, { recursive: true });
+}
+copyFileSync(path.join(fixtureDirectory, "resource-skill-global.md"), path.join(resourceAgentSkill, "SKILL.md"));
+copyFileSync(
+	path.join(fixtureDirectory, "resource-skill-project.md"),
+	path.join(resourceProjectSkillPi, "SKILL.md"),
+);
+copyFileSync(
+	path.join(fixtureDirectory, "resource-skill-project.md"),
+	path.join(resourceProjectSkillCadr, "SKILL.md"),
+);
+copyFileSync(path.join(fixtureDirectory, "resource-prompt-global.md"), path.join(resourceAgentPrompt, "review.md"));
+copyFileSync(
+	path.join(fixtureDirectory, "resource-prompt-project.md"),
+	path.join(resourceProjectPromptPi, "review.md"),
+);
+copyFileSync(
+	path.join(fixtureDirectory, "resource-prompt-project.md"),
+	path.join(resourceProjectPromptCadr, "review.md"),
+);
+copyFileSync(path.join(fixtureDirectory, "resource-agents.md"), path.join(resourceCwdDirectory, "AGENTS.md"));
+copyFileSync(path.join(fixtureDirectory, "resource-system.md"), path.join(resourceCwdDirectory, ".pi", "SYSTEM.md"));
+copyFileSync(path.join(fixtureDirectory, "resource-system.md"), path.join(resourceCwdDirectory, ".cadr", "SYSTEM.md"));
 
 // Both sides render into a sink that only counts, so neither pays terminal
 // I/O and neither can win by writing less.
@@ -750,6 +800,45 @@ async function measureCliSettings() {
 			default_project_trust: manager.getDefaultProjectTrust(),
 			http_idle_timeout_ms: manager.getHttpIdleTimeoutMs(),
 			project_trusted: manager.isProjectTrusted(),
+		},
+	};
+}
+
+async function runResourceLoader() {
+	const loader = new resourceLoaderModule.DefaultResourceLoader({
+		cwd: resourceCwdDirectory,
+		agentDir: resourceAgentDirectory,
+		noExtensions: true,
+		noSkills: true,
+		noPromptTemplates: true,
+		noThemes: true,
+		additionalSkillPaths: [resourceProjectSkillPi, resourceAgentSkill],
+		additionalPromptTemplatePaths: [resourceProjectPromptPi, resourceAgentPrompt],
+		settingsManager: settingsModule.SettingsManager.create(resourceCwdDirectory, resourceAgentDirectory, {
+			projectTrusted: true,
+		}),
+	});
+	await loader.reload();
+	return loader;
+}
+
+async function measureResourceLoader() {
+	const loader = await runResourceLoader();
+	const skills = loader.getSkills().skills;
+	const prompts = loader.getPrompts().prompts;
+	return {
+		reload: await collect("resource_loader.reload", () => {
+			return () => runResourceLoader();
+		}),
+		observed: {
+			skill_count: skills.length,
+			prompt_count: prompts.length,
+			skill_names: [...skills.map((skill) => skill.name)].sort(),
+			prompt_names: [...prompts.map((prompt) => prompt.name)].sort(),
+			skill_from_project: skills.some((skill) => skill.description.includes("project overlay")) ? 1 : 0,
+			prompt_from_project: prompts.some((prompt) => prompt.content.includes("project review")) ? 1 : 0,
+			context_file_count: loader.getAgentsFiles().agentsFiles.length,
+			system_prompt: loader.getSystemPrompt() ? 1 : 0,
 		},
 	};
 }
@@ -1348,6 +1437,8 @@ process.stderr.write("goal20 pi paired paths: provider_bedrock\n");
 const providerBedrock = await measureProviderBedrock();
 process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
+process.stderr.write("goal20 pi paired paths: resource_loader\n");
+const resourceLoader = await measureResourceLoader();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -1371,6 +1462,7 @@ const result = {
 			"provider_google.stream_roundtrip": "packages/ai/src/api/google-generative-ai.ts stream",
 			"provider_bedrock.stream_roundtrip": "packages/ai/src/api/bedrock-converse-stream.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
+			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -1426,6 +1518,7 @@ const result = {
 		provider_google: providerGoogle,
 		provider_bedrock: providerBedrock,
 		cli_settings: cliSettings,
+		resource_loader: resourceLoader,
 		render_slicing: renderSlicing,
 	},
 };

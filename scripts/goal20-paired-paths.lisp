@@ -75,6 +75,7 @@
     ("provider_google.stream_roundtrip" . 10)
     ("provider_bedrock.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
+    ("resource_loader.reload" . 3)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -213,6 +214,9 @@
     "anthropic-messages.sse" "google-generative-ai.sse"
     "bedrock-converse-stream.bin"
     "settings-global.json" "settings-project.json"
+    "resource-skill-global.md" "resource-skill-project.md"
+    "resource-prompt-global.md" "resource-prompt-project.md"
+    "resource-agents.md" "resource-system.md"
     "openai-completions.sse" "provider-context.json" "session.jsonl"))
 
 (defun read-file-octets (path)
@@ -1520,6 +1524,135 @@
                   (lambda ()
                     (run-cli-settings global project))))))))
 
+(defun copy-resource-fixture (name destination)
+  (ensure-directories-exist destination)
+  (uiop:copy-file (fixture-path name) destination)
+  destination)
+
+(defun stage-resource-layout ()
+  (let* ((agent
+           (merge-pathnames "resource-agent/" *scratch-directory*))
+         (cwd
+           (merge-pathnames "resource-cwd/" *scratch-directory*))
+         (agent-skill
+           (merge-pathnames "skills/shared/" agent))
+         (project-skill-cadr
+           (merge-pathnames ".cadr/skills/shared/" cwd))
+         (project-skill-pi
+           (merge-pathnames ".pi/skills/shared/" cwd))
+         (agent-prompt
+           (merge-pathnames "prompts/" agent))
+         (project-prompt-cadr
+           (merge-pathnames ".cadr/prompts/" cwd))
+         (project-prompt-pi
+           (merge-pathnames ".pi/prompts/" cwd)))
+    (copy-resource-fixture
+     "resource-skill-global.md"
+     (merge-pathnames "SKILL.md" agent-skill))
+    (copy-resource-fixture
+     "resource-skill-project.md"
+     (merge-pathnames "SKILL.md" project-skill-cadr))
+    (copy-resource-fixture
+     "resource-skill-project.md"
+     (merge-pathnames "SKILL.md" project-skill-pi))
+    (copy-resource-fixture
+     "resource-prompt-global.md"
+     (merge-pathnames "review.md" agent-prompt))
+    (copy-resource-fixture
+     "resource-prompt-project.md"
+     (merge-pathnames "review.md" project-prompt-cadr))
+    (copy-resource-fixture
+     "resource-prompt-project.md"
+     (merge-pathnames "review.md" project-prompt-pi))
+    (copy-resource-fixture
+     "resource-agents.md"
+     (merge-pathnames "AGENTS.md" cwd))
+    (copy-resource-fixture
+     "resource-system.md"
+     (merge-pathnames ".cadr/SYSTEM.md" cwd))
+    (copy-resource-fixture
+     "resource-system.md"
+     (merge-pathnames ".pi/SYSTEM.md" cwd))
+    (values cwd agent
+            project-skill-cadr agent-skill
+            project-prompt-cadr agent-prompt)))
+
+(defun run-resource-loader (cwd agent project-skill agent-skill
+                            project-prompt agent-prompt)
+  (let ((loader
+          (cadr-cli::make-default-resource-loader
+           :cwd cwd
+           :agent-directory agent
+           :project-trusted-p t
+           :no-skills-p t
+           :no-prompts-p t
+           :no-themes-p t
+           :explicit-skill-paths
+           (list (namestring project-skill)
+                 (namestring agent-skill))
+           :explicit-prompt-paths
+           (list (namestring project-prompt)
+                 (namestring agent-prompt)))))
+    (cadr-cli::reload-resources loader)))
+
+(defun measure-resource-loader ()
+  (multiple-value-bind
+        (cwd agent project-skill agent-skill project-prompt agent-prompt)
+      (stage-resource-layout)
+    (let* ((snapshot
+             (run-resource-loader
+              cwd agent project-skill agent-skill
+              project-prompt agent-prompt))
+           (skills
+             (cadr-cli::resource-snapshot-skills snapshot))
+           (prompts
+             (cadr-cli::resource-snapshot-prompts snapshot)))
+      (json-object
+       "observed"
+       (json-object
+        "skill_count" (length skills)
+        "prompt_count" (length prompts)
+        "skill_names"
+        (json-array
+         (sort (mapcar #'cadr-agent:skill-name skills) #'string<))
+        "prompt_names"
+        (json-array
+         (sort
+          (mapcar #'cadr-agent:prompt-template-name prompts)
+          #'string<))
+        "skill_from_project"
+        (if (some
+             (lambda (skill)
+               (search
+                "project overlay"
+                (cadr-agent:skill-description skill)))
+             skills)
+            1
+            0)
+        "prompt_from_project"
+        (if (some
+             (lambda (prompt)
+               (search
+                "project review"
+                (cadr-agent:prompt-template-content prompt)))
+             prompts)
+            1
+            0)
+        "context_file_count"
+        (length
+         (cadr-cli::resource-snapshot-context-files snapshot))
+        "system_prompt"
+        (if (cadr-cli::resource-snapshot-system-prompt-path snapshot)
+            1
+            0))
+       "reload"
+       (collect "resource_loader.reload"
+                (lambda ()
+                  (lambda ()
+                    (run-resource-loader
+                     cwd agent project-skill agent-skill
+                     project-prompt agent-prompt))))))))
+
 ;;; ---------------------------------------------------------------------
 
 (defun slicing-fixtures ()
@@ -1582,6 +1715,8 @@
       "src/cadr-ai/providers/bedrock.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
+      "resource_loader.reload"
+      "src/cadr-cli/resource-loader.lisp reload-resources"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -1653,6 +1788,8 @@
               (let ((bedrock (measure-provider-bedrock)))
               (format *error-output* "goal20 cadr paired paths: cli_settings~%")
               (let ((settings (measure-cli-settings)))
+              (format *error-output* "goal20 cadr paired paths: resource_loader~%")
+              (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -1683,6 +1820,7 @@
               "provider_google" google
               "provider_bedrock" bedrock
               "cli_settings" settings
+              "resource_loader" resources
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -1699,7 +1837,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

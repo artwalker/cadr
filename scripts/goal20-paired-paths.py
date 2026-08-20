@@ -56,6 +56,12 @@ FIXTURE_NAMES = (
     "bedrock-converse-stream.bin",
     "settings-global.json",
     "settings-project.json",
+    "resource-skill-global.md",
+    "resource-skill-project.md",
+    "resource-prompt-global.md",
+    "resource-prompt-project.md",
+    "resource-agents.md",
+    "resource-system.md",
     "openai-completions.sse",
     "provider-context.json",
     "session.jsonl",
@@ -73,6 +79,7 @@ METRICS = {
     "provider_google": ("stream_roundtrip",),
     "provider_bedrock": ("stream_roundtrip",),
     "cli_settings": ("create",),
+    "resource_loader": ("reload",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -127,6 +134,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "cli_settings.create": 1.5,
+    # Frozen from the first Friend-MachineD non-quick resource_loader
+    # pair (samples=5): observed 0.29x (568 / 1978 µs). cadr leads.
+    # 1.5 follows the list_models_registry / render_slicing precedent
+    # (headroom above 1.0). Ratchet down only.
+    "resource_loader.reload": 1.5,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -261,6 +273,16 @@ OBSERVED_EXACT = {
         "default_project_trust",
         "http_idle_timeout_ms",
         "project_trusted",
+    ),
+    "resource_loader": (
+        "skill_count",
+        "prompt_count",
+        "skill_names",
+        "prompt_names",
+        "skill_from_project",
+        "prompt_from_project",
+        "context_file_count",
+        "system_prompt",
     ),
     "session_pipeline": (
         "entry_count",

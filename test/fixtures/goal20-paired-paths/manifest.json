@@ -18,6 +18,12 @@
 		"bedrock-converse-stream.bin": "bf32c9e35f241c9194142113602c6bb0b831f336d3c87565d74de81215b5b49a",
 		"settings-global.json": "25e9103bd78204abdad2af40a404a0a407af96b8a3580e4a4c8307f13edd6e82",
 		"settings-project.json": "0e58f6005bdef70324e7e1f7cecf7ff038a856728dbc68a348682a53fa683402",
+		"resource-skill-global.md": "0b64fd91696125280f8bbfcb5bbea8630b46dc7dbd1428a4d9ecf8c9ac0f3475",
+		"resource-skill-project.md": "a36be2bff85f563622022af9996ce70327a42d7c155cc36773586b2544fb23c1",
+		"resource-prompt-global.md": "b47e8e1e02efb3eed30b9e8ec203681e9d371e46c483e17f2d443f654865d4e9",
+		"resource-prompt-project.md": "1b01ffd483190ba3f0978941cbad420d0b3d70ba865a570c305d8a38a35e0da4",
+		"resource-agents.md": "402bef13495ab3acc40ccc53b3b379230131b7abe12624a0bec7aa947eee9114",
+		"resource-system.md": "cf9155c84ab0587770944b1b732b10b37e184cf6be7ab6374840be85356751c7",
 		"models.json": "1d52d96633b51f7bea0b21592f495bd2f4154115b9e219ec224996daf0906048",
 		"auth.json": "ddeb81361b0104333a06cbf1c34c431426e1f3abcd46959ff18f4d710e1eb9e9",
 		"cli-argv.json": "dddcd05e4a41038330dd314a6aae981cd066882a5a63d39a7b533f58e509a5bd"
