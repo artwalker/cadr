@@ -14,6 +14,7 @@
 		"provider-context.json": "fbed2a2ebfb7dad864dd194569297460b69eb7670635608b26dcbab657f319d6",
 		"openai-completions.sse": "b27d0f15c650b2419e5d7b60f9019d83ee9f5bf7ec08c9e3dae1e2befd77b28e",
 		"anthropic-messages.sse": "d3c809633824821cb20f8b61e03682f6329d4d493de4ecea5b37478ae00ebe54",
+		"mistral-conversations.sse": "1b1c1d098d2adb260c703f40deb56e9aafa542e4f489f258b7f202ec40b920c3",
 		"google-generative-ai.sse": "bbd3290219324bf7373186ea252e95976dfcc48c555379696c5ec18b36eaaced",
 		"bedrock-converse-stream.bin": "bf32c9e35f241c9194142113602c6bb0b831f336d3c87565d74de81215b5b49a",
 		"settings-global.json": "25e9103bd78204abdad2af40a404a0a407af96b8a3580e4a4c8307f13edd6e82",

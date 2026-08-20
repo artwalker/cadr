@@ -566,6 +566,79 @@ function buildSseFixture() {
 	return `${lines.join("\n")}\n`;
 }
 
+function buildMistralSseFixture() {
+	const lines = [];
+	const push = (payload) => {
+		lines.push(`data: ${JSON.stringify(payload)}`, "");
+	};
+	const base = {
+		id: "chatcmpl-mistral-goal20",
+		object: "chat.completion.chunk",
+		created: 1786665600,
+		model: "mistral-small-latest",
+	};
+	push({ ...base, choices: [{ index: 0, delta: { role: "assistant", content: "" }, finish_reason: null }] });
+	for (let index = 0; index < SSE_TEXT_DELTA_COUNT; index += 1) {
+		push({
+			...base,
+			choices: [
+				{
+					index: 0,
+					delta: { content: index % 8 === 7 ? `chunk-${index} 中文 🚀 ` : `chunk-${index} ` },
+					finish_reason: null,
+				},
+			],
+		});
+	}
+	push({
+		...base,
+		choices: [
+			{
+				index: 0,
+				delta: {
+					tool_calls: [
+						{
+							index: 0,
+							id: "toolcall1",
+							type: "function",
+							function: { name: "read", arguments: "" },
+						},
+					],
+				},
+				finish_reason: null,
+			},
+		],
+	});
+	for (const fragment of ['{"path":', '"docs/', 'example.md"', ',"offset":1', ',"limit":4}']) {
+		push({
+			...base,
+			choices: [
+				{
+					index: 0,
+					delta: {
+						tool_calls: [
+							{
+								index: 0,
+								id: "toolcall1",
+								function: { arguments: fragment },
+							},
+						],
+					},
+					finish_reason: null,
+				},
+			],
+		});
+	}
+	push({ ...base, choices: [{ index: 0, delta: {}, finish_reason: "tool_calls" }] });
+	push({
+		...base,
+		choices: [],
+		usage: { prompt_tokens: 4096, completion_tokens: 512, total_tokens: 4608 },
+	});
+	lines.push("data: [DONE]", "");
+	return `${lines.join("\n")}\n`;
+}
+
 // ---------------------------------------------------------------------------
 // CLI fixtures (pair 1)
 // ---------------------------------------------------------------------------
@@ -699,6 +772,7 @@ const artifacts = new Map([
 	["provider-context.json", `${JSON.stringify(buildProviderContext(), null, "\t")}\n`],
 	["openai-completions.sse", buildSseFixture()],
 	["anthropic-messages.sse", buildAnthropicSseFixture()],
+	["mistral-conversations.sse", buildMistralSseFixture()],
 	["google-generative-ai.sse", buildGoogleSseFixture()],
 	["bedrock-converse-stream.bin", buildBedrockEventStreamFixture()],
 	["settings-global.json", `${JSON.stringify(buildSettingsGlobal(), null, "\t")}\n`],

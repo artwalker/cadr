@@ -14,6 +14,7 @@
                 #:make-context
                 #:make-google-provider
                 #:make-bedrock-provider
+                #:make-mistral-provider
                 #:make-model
                 #:make-openai-provider
                 #:make-text-content

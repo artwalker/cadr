@@ -69,6 +69,13 @@
                          :provider :amazon-bedrock
                          :api :bedrock-converse-stream
                          :base-url "https://bedrock-runtime.us-east-1.amazonaws.com"
+                         :max-tokens 4096)))
+    (:mistral
+     (values (make-mistral-provider :api-key "mistral-test")
+             (make-model :id "mistral-small-latest"
+                         :provider :mistral
+                         :api :mistral-conversations
+                         :base-url "https://api.mistral.ai"
                          :max-tokens 4096)))))
 
 (defun first-text (message)

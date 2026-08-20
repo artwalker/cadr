@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `provider_mistral.stream_roundtrip`
+  (recorded Mistral Conversations SSE, no socket). Production
+  `stream-chat` vs `mistral-conversations.ts stream`. Same
+  `provider-context.json`. Seam is `*http-request-function*` /
+  `options.fetch`. First Friend-MachineD freeze 1.89×
+  (3401 / 1801 µs), ceiling 3.0. Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `resource_loader.reload` (fixture skills +
   prompt templates, no TUI, no socket). Production
   `reload-resources` vs `DefaultResourceLoader.reload`. First

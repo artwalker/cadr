@@ -54,6 +54,7 @@ FIXTURE_NAMES = (
     "anthropic-messages.sse",
     "google-generative-ai.sse",
     "bedrock-converse-stream.bin",
+    "mistral-conversations.sse",
     "settings-global.json",
     "settings-project.json",
     "resource-skill-global.md",
@@ -78,6 +79,7 @@ METRICS = {
     "provider_anthropic": ("stream_roundtrip",),
     "provider_google": ("stream_roundtrip",),
     "provider_bedrock": ("stream_roundtrip",),
+    "provider_mistral": ("stream_roundtrip",),
     "cli_settings": ("create",),
     "resource_loader": ("reload",),
     "session_pipeline": ("session_load", "context_walk"),
@@ -129,6 +131,10 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "provider_bedrock.stream_roundtrip": 1.5,
+    # Frozen from the first Friend-MachineD non-quick provider_mistral
+    # pair (samples=5): observed 1.89x (3401 / 1801 µs). 3.0 follows
+    # the argv_parse / tool_grep headroom precedent. Ratchet down only.
+    "provider_mistral.stream_roundtrip": 3.0,
     # Frozen from the first Friend-MachineD non-quick cli_settings
     # pair (samples=5): observed 0.13x (105 / 813 µs). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent
@@ -263,6 +269,16 @@ OBSERVED_EXACT = {
         "tool_call_count",
         "usage_input",
         "usage_output",
+        "payload_tool_count",
+    ),
+    "provider_mistral": (
+        "content_block_types",
+        "stop_reason",
+        "text_characters",
+        "tool_call_count",
+        "usage_input",
+        "usage_output",
+        "payload_stream",
         "payload_tool_count",
     ),
     "cli_settings": (
