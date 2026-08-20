@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw closed-set session enum intern
+  (`4de854bdd`). Friend-MachineD n=5: load cadr **1958→1976 µs**
+  (no win), journal **1563→1668 µs**. Reverted `8018b6f53`.
+  Not a growing intern table. Not FFI. Ceiling not lowered.
+  Not G.17. Part P still `[open]`.
 - Goal 20: withdraw closed-schema key dispatch (`789bec858`).
   Friend-MachineD n=5: load cadr **1958→1986 µs** (no win),
   journal **1563→1580 µs**. Reverted `157300eae`. Not labels

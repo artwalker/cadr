@@ -53,3 +53,13 @@ cadr sequential `key=` of every field in `put-entry-field` /
 one literal. Friend-MachineD n=5: cadr `session_load`
 **1958→1986 µs** (no win). Reverted `157300eae`. Not labels
 macrolet. Not intern. Not FFI.
+
+## Closed-set intern tried (withdrawn)
+
+V8 `InternalizeJsonString` for short ASCII. cadr already
+flies `text`/`message`/`toolCall`. Added closed session
+types (`image`/`label`/`leaf`/`compaction`/…). Knife
+`4de854bdd`. Friend-MachineD n=5: cadr `session_load`
+**1958→1976 µs** (no win), journal **1563→1668 µs**.
+Reverted `8018b6f53`. Extra lookups on the hot path. Not a
+growing intern table. Not FFI.
