@@ -44,3 +44,14 @@ Not FFI. Ceiling not lowered. Not G.17.
 
 PARSE-STRING-VALUE is the same labels-to-macrolet class.
 Do not repeat it as a blind next-slot inline.
+
+## Next win (not labels→macrolet)
+
+V8 looks up the property in the object's map after one
+`JsonString` start/length. cadr `put-entry-field` /
+`put-usage-field` still **sequential `key=` of every known
+field**. That is key matching, not a helper-call tax.
+
+Knife: exclusive `case` on length (then first/second byte)
+then **one** literal. Falsify by cadr `session_load` µs vs
+`3a23ae8b0` (1958 µs). Revert if worse.
