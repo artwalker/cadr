@@ -288,7 +288,8 @@
          (position start)
          (length (or end (length octets)))
          (entry (make-session-entry))
-         (string-buffer nil))
+         (string-buffer nil)
+         (message-bag (make-session-json-message)))
     (declare (type (simple-array (unsigned-byte 8) (*)) octets)
              (type fixnum position length))
     (macrolet ((peek-code ()
@@ -987,29 +988,37 @@
                  (t
                   (skip-value)))))
            (parse-message ()
-             (let ((bag (make-session-json-message)))
-               (expect-code 123)
-               (skip-space)
-               (unless (eql (peek-code) 125)
-                 (loop
-                   (multiple-value-bind (key-start key-end)
-                       (scan-key)
-                     (skip-space)
-                     (expect-code 58)
-                     (skip-space)
-                     (if key-start
-                         (put-message-field bag key-start key-end)
-                         (skip-value)))
+             ;; V8 ParseJsonObject: scratch SmallVector then one
+             ;; JSObject. Reuse one bag per walker; convert to the
+             ;; target message here (BuildJsonObject), not a second
+             ;; walk in finalize. Not labels macrolet. Not intern.
+             (setf (session-json-message-role message-bag) nil
+                   (session-json-message-content message-bag) nil
+                   (session-json-message-timestamp message-bag) nil
+                   (session-json-message-usage message-bag) nil
+                   (session-json-message-extra message-bag) nil)
+             (expect-code 123)
+             (skip-space)
+             (unless (eql (peek-code) 125)
+               (loop
+                 (multiple-value-bind (key-start key-end)
+                     (scan-key)
                    (skip-space)
-                   (let ((code (peek-code)))
-                     (cond
-                       ((eql code 44)
-                        (take-code)
-                        (skip-space))
-                       ((eql code 125) (return))
-                       (t (fail "Expected comma or }"))))))
-               (expect-code 125)
-               bag))
+                   (expect-code 58)
+                   (skip-space)
+                   (if key-start
+                       (put-message-field message-bag key-start key-end)
+                       (skip-value)))
+                 (skip-space)
+                 (let ((code (peek-code)))
+                   (cond
+                     ((eql code 44)
+                      (take-code)
+                      (skip-space))
+                     ((eql code 125) (return))
+                     (t (fail "Expected comma or }"))))))
+             (expect-code 125)
+             (message-from-json message-bag))
            (put-entry-field (key-start key-end)
              (let ((n (- key-end key-start))
                    (b0 (aref octets key-start)))
@@ -1864,12 +1873,23 @@
     (let ((usage-object (session-entry-usage entry)))
       (case type
         (:message
-         (setf
-          (session-entry-message entry)
-          (message-from-json
-           (require-session-slot
+         (let ((raw
+                 (require-session-slot
+                  (session-entry-message entry)
+                  "message" path line-number)))
+           ;; Walker parse-message already BuildJsonObject'd
+           ;; to a cadr-ai message. Hash/EQUAL paths (v1
+           ;; migrate, jsonl-session-storage) still need
+           ;; message-from-json. Not "keep anything that
+           ;; is not a bag".
+           (setf
             (session-entry-message entry)
-            "message" path line-number))))
+            (if (or (typep raw 'cadr-ai:user-message)
+                    (typep raw 'cadr-ai:assistant-message)
+                    (typep raw 'cadr-ai:tool-result-message)
+                    (typep raw 'bash-execution-message))
+                raw
+                (message-from-json raw)))))
         (:thinking-level-change
          (let ((value
                  (require-session-slot

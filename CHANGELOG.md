@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: parse-message reuses one scratch
+  `session-json-message` then `message-from-json` (V8
+  SmallVector then BuildJsonObject). Split-bucket note
+  `docs/benchmarks/goal20-parse-session-record-split.md`.
+  Not labels macrolet. Not intern. Not FFI. Ceiling not
+  lowered. Not G.17. Part P still `[open]`.
 - Goal 20: land callee / 屠龙 rulings in-repo —
   `docs/adjudications.md` (beat pi; study callee; bucket-split;
   empty ⚑ ≠ exhausted), Class C in
