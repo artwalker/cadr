@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw walker `scan-key` macrolet (`f87bea405`).
+  Friend-MachineD n=5: load cadr **1958→2260 µs**, journal
+  **1563→1904 µs**. Reverted `64e564968`. sprof leftover
+  SCAN-KEY 8.7% self vs V8 in-place property-name scan; the
+  inline lost. Not empty SWAR. Not intern. Not FFI. Ceiling
+  not lowered. Not G.17. Part P still `[open]`.
 - Goal 20: inline walker `skip-space` / `expect-code` as
   macrolet (V8 SkipWhiteSpace / Expect in the descent). sprof
   load @ `9b1678b20`: SKIP-SPACE 8.2% self, EXPECT-CODE 3.5%.
