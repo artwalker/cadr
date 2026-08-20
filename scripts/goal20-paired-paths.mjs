@@ -131,6 +131,7 @@ const REPETITIONS = {
 	"provider_bedrock.stream_roundtrip": 10,
 	"provider_mistral.stream_roundtrip": 10,
 	"provider_openai_responses.stream_roundtrip": 10,
+	"provider_azure_openai.stream_roundtrip": 10,
 	"cli_settings.create": 5,
 	"resource_loader.reload": 3,
 	"session_pipeline.session_load": 3,
@@ -209,6 +210,7 @@ const fixtureNames = [
 	"bedrock-converse-stream.bin",
 	"mistral-conversations.sse",
 	"openai-responses.sse",
+	"azure-openai-responses.sse",
 	"settings-global.json",
 	"settings-project.json",
 	"resource-skill-global.md",
@@ -235,6 +237,7 @@ const googleSsePath = path.join(fixtureDirectory, "google-generative-ai.sse");
 const bedrockEventStreamPath = path.join(fixtureDirectory, "bedrock-converse-stream.bin");
 const mistralSsePath = path.join(fixtureDirectory, "mistral-conversations.sse");
 const openaiResponsesSsePath = path.join(fixtureDirectory, "openai-responses.sse");
+const azureOpenaiSsePath = path.join(fixtureDirectory, "azure-openai-responses.sse");
 const cliArgv = JSON.parse(readFileSync(path.join(fixtureDirectory, "cli-argv.json"), "utf8"));
 const providerContext = JSON.parse(
 	readFileSync(path.join(fixtureDirectory, "provider-context.json"), "utf8"),
@@ -303,6 +306,7 @@ const googleModule = await import(moduleUrl("packages/ai/src/api/google-generati
 const bedrockModule = await import(moduleUrl("packages/ai/src/api/bedrock-converse-stream.ts"));
 const mistralModule = await import(moduleUrl("packages/ai/src/api/mistral-conversations.ts"));
 const openaiResponsesModule = await import(moduleUrl("packages/ai/src/api/openai-responses.ts"));
+const azureOpenaiModule = await import(moduleUrl("packages/ai/src/api/azure-openai-responses.ts"));
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
@@ -896,6 +900,68 @@ async function measureProviderOpenaiResponses() {
 	return {
 		stream_roundtrip: await collect("provider_openai_responses.stream_roundtrip", () => {
 			return () => runProviderOpenaiResponses(false);
+		}),
+		observed: {
+			content_block_types: observed.message.content.map((block) => block.type),
+			stop_reason: observed.message.stopReason,
+			text_characters: [...text].length,
+			tool_call_count: observed.message.content.filter((block) => block.type === "toolCall").length,
+			usage_input: observed.message.usage.input,
+			usage_output: observed.message.usage.output,
+			payload_stream: observed.payload?.stream === true,
+			payload_tool_count: observed.payload?.tools?.length ?? 0,
+		},
+	};
+}
+
+const azureOpenaiModel = {
+	id: "gpt-4.1",
+	name: "Goal 20 Azure OpenAI",
+	api: "azure-openai-responses",
+	provider: "azure-openai-responses",
+	baseUrl: "https://goal20.openai.azure.com/openai/v1",
+	reasoning: false,
+	input: ["text", "image"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 128000,
+	maxTokens: 16384,
+};
+
+async function runProviderAzureOpenai(collectEvents) {
+	const events = collectEvents ? [] : undefined;
+	let payload;
+	const stream = azureOpenaiModule.stream(azureOpenaiModel, providerContext, {
+		apiKey: "goal20-paired-paths-not-a-real-key",
+		maxRetries: 0,
+		fetch: async () =>
+			new Response(readFileSync(azureOpenaiSsePath), {
+				status: 200,
+				headers: { "content-type": "text/event-stream" },
+			}),
+		onPayload: (value) => {
+			payload = value;
+			return undefined;
+		},
+	});
+	for await (const event of stream) events?.push(event.type);
+	const message = await stream.result();
+	return { events, message, payload };
+}
+
+async function measureProviderAzureOpenai() {
+	const observed = await runProviderAzureOpenai(true);
+	if (observed.message.stopReason !== "toolUse") {
+		throw new Error(
+			`azure-openai fixture stream produced stopReason ${observed.message.stopReason}`,
+		);
+	}
+	const text = observed.message.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("");
+	return {
+		stream_roundtrip: await collect("provider_azure_openai.stream_roundtrip", () => {
+			return () => runProviderAzureOpenai(false);
 		}),
 		observed: {
 			content_block_types: observed.message.content.map((block) => block.type),
@@ -1569,6 +1635,8 @@ process.stderr.write("goal20 pi paired paths: provider_mistral\n");
 const providerMistral = await measureProviderMistral();
 process.stderr.write("goal20 pi paired paths: provider_openai_responses\n");
 const providerOpenaiResponses = await measureProviderOpenaiResponses();
+process.stderr.write("goal20 pi paired paths: provider_azure_openai\n");
+const providerAzureOpenai = await measureProviderAzureOpenai();
 process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
@@ -1597,6 +1665,7 @@ const result = {
 			"provider_bedrock.stream_roundtrip": "packages/ai/src/api/bedrock-converse-stream.ts stream",
 			"provider_mistral.stream_roundtrip": "packages/ai/src/api/mistral-conversations.ts stream",
 			"provider_openai_responses.stream_roundtrip": "packages/ai/src/api/openai-responses.ts stream",
+			"provider_azure_openai.stream_roundtrip": "packages/ai/src/api/azure-openai-responses.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"session_pipeline.session_load":
@@ -1655,6 +1724,7 @@ const result = {
 		provider_bedrock: providerBedrock,
 		provider_mistral: providerMistral,
 		provider_openai_responses: providerOpenaiResponses,
+		provider_azure_openai: providerAzureOpenai,
 		cli_settings: cliSettings,
 		resource_loader: resourceLoader,
 		render_slicing: renderSlicing,

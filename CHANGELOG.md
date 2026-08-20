@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Added
 
+- Goal 20 Part H: pair `provider_azure_openai.stream_roundtrip`
+  (recorded Azure OpenAI Responses SSE, no socket). Production
+  `stream-chat` vs `azure-openai-responses.ts stream`. Same
+  `provider-context.json`. Seam is `*http-request-function*` /
+  `options.fetch`. First Friend-MachineD freeze 0.33×
+  (1369 / 4152 µs), ceiling 1.5. Not G.17. Part P still `[open]`.
 - Goal 20 Part H: pair `provider_openai_responses.stream_roundtrip`
   (recorded OpenAI Responses SSE, no socket). Production
   `stream-chat` vs `openai-responses.ts stream`. Same

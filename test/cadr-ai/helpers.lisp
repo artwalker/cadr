@@ -76,6 +76,13 @@
                          :provider :mistral
                          :api :mistral-conversations
                          :base-url "https://api.mistral.ai"
+                         :max-tokens 4096)))
+    (:azure
+     (values (make-azure-openai-provider :api-key "azure-test")
+             (make-model :id "gpt-4.1"
+                         :provider :azure-openai-responses
+                         :api :azure-openai-responses
+                         :base-url "https://goal20.openai.azure.com/openai/v1"
                          :max-tokens 4096)))))
 
 (defun first-text (message)

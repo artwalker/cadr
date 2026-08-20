@@ -246,6 +246,15 @@ class TestPairedPathRecord(unittest.TestCase):
             "payload_stream", paired.OBSERVED_EXACT["provider_openai_responses"]
         )
 
+    def test_provider_azure_openai_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("provider_azure_openai.stream_roundtrip", RECORD.METRIC_KEYS)
+        self.assertIn("stream_roundtrip", paired.METRICS["provider_azure_openai"])
+        self.assertIn("provider_azure_openai.stream_roundtrip", paired.RATIO_CEILINGS)
+        self.assertIn("stop_reason", paired.OBSERVED_EXACT["provider_azure_openai"])
+        self.assertIn("tool_call_count", paired.OBSERVED_EXACT["provider_azure_openai"])
+        self.assertIn("payload_stream", paired.OBSERVED_EXACT["provider_azure_openai"])
+
     def test_cli_settings_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("cli_settings.create", RECORD.METRIC_KEYS)
@@ -290,7 +299,7 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertEqual(entry["label"], "paired-paths-quick")
         self.assertTrue(entry["quick"])
-        self.assertEqual(len(entry["metrics"]), 21)
+        self.assertEqual(len(entry["metrics"]), 22)
         first = entry["metrics"][RECORD.METRIC_KEYS[0]]
         self.assertAlmostEqual(first["cadrMedianUs"], 1000.0)
         self.assertAlmostEqual(first["ratio"], 2.0)

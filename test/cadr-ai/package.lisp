@@ -17,6 +17,7 @@
                 #:make-mistral-provider
                 #:make-model
                 #:make-openai-provider
+                #:make-azure-openai-provider
                 #:make-text-content
                 #:make-tool
                 #:make-user-message

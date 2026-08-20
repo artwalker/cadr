@@ -861,6 +861,7 @@ const artifacts = new Map([
 	["anthropic-messages.sse", buildAnthropicSseFixture()],
 	["mistral-conversations.sse", buildMistralSseFixture()],
 	["openai-responses.sse", buildOpenAIResponsesSseFixture()],
+	["azure-openai-responses.sse", buildOpenAIResponsesSseFixture()],
 	["google-generative-ai.sse", buildGoogleSseFixture()],
 	["bedrock-converse-stream.bin", buildBedrockEventStreamFixture()],
 	["settings-global.json", `${JSON.stringify(buildSettingsGlobal(), null, "\t")}\n`],

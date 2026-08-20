@@ -56,6 +56,7 @@ FIXTURE_NAMES = (
     "bedrock-converse-stream.bin",
     "mistral-conversations.sse",
     "openai-responses.sse",
+    "azure-openai-responses.sse",
     "settings-global.json",
     "settings-project.json",
     "resource-skill-global.md",
@@ -82,6 +83,7 @@ METRICS = {
     "provider_bedrock": ("stream_roundtrip",),
     "provider_mistral": ("stream_roundtrip",),
     "provider_openai_responses": ("stream_roundtrip",),
+    "provider_azure_openai": ("stream_roundtrip",),
     "cli_settings": ("create",),
     "resource_loader": ("reload",),
     "session_pipeline": ("session_load", "context_walk"),
@@ -143,6 +145,12 @@ RATIO_CEILINGS = {
     # list_models_registry / render_slicing precedent (headroom
     # above 1.0). Ratchet down only.
     "provider_openai_responses.stream_roundtrip": 1.5,
+    # Frozen from the first Friend-MachineD non-quick
+    # provider_azure_openai pair (samples=5): observed 0.33x
+    # (1369 / 4152 µs). cadr leads. 1.5 follows the
+    # list_models_registry / render_slicing precedent. Ratchet
+    # down only.
+    "provider_azure_openai.stream_roundtrip": 1.5,
     # Frozen from the first Friend-MachineD non-quick cli_settings
     # pair (samples=5): observed 0.13x (105 / 813 µs). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent
@@ -290,6 +298,16 @@ OBSERVED_EXACT = {
         "payload_tool_count",
     ),
     "provider_openai_responses": (
+        "content_block_types",
+        "stop_reason",
+        "text_characters",
+        "tool_call_count",
+        "usage_input",
+        "usage_output",
+        "payload_stream",
+        "payload_tool_count",
+    ),
+    "provider_azure_openai": (
         "content_block_types",
         "stop_reason",
         "text_characters",
