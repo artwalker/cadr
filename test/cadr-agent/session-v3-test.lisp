@@ -947,6 +947,32 @@
     (is (string= "hello-block" content))
     (is (typep content 'simple-base-string))))
 
+(test parse-string-value-high-byte-equals-utf8-and-ascii-stays-base
+  ;; Knife 1: value quote-scan high-byte-p. Unescaped ASCII is
+  ;; simple-base-string; unescaped UTF-8 EQUAL utf8-string.
+  ;; Drives shipped parse-session-record-octets.
+  (let* ((ascii-octets
+           (cadr-ai::utf8-octets
+            "{\"type\":\"message\",\"id\":\"hb\",\"parentId\":null,\"timestamp\":4,\"message\":{\"role\":\"user\",\"content\":\"hello-block\",\"timestamp\":4}}"))
+         (uni-octets
+           (cadr-ai::utf8-octets
+            "{\"type\":\"message\",\"id\":\"hb2\",\"parentId\":null,\"timestamp\":4,\"message\":{\"role\":\"user\",\"content\":\"hi中文\",\"timestamp\":4}}"))
+         (ascii-entry
+           (cadr-agent::parse-session-record-octets
+            ascii-octets 0 (length ascii-octets)))
+         (uni-entry
+           (cadr-agent::parse-session-record-octets
+            uni-octets 0 (length uni-octets)))
+         (ascii-content
+           (cadr-agent::session-json-message-content
+            (cadr-agent::session-entry-message ascii-entry)))
+         (uni-content
+           (cadr-agent::session-json-message-content
+            (cadr-agent::session-entry-message uni-entry))))
+    (is (string= "hello-block" ascii-content))
+    (is (typep ascii-content 'simple-base-string))
+    (is (string= "hi中文" uni-content))))
+
 (test pairing-record-keys-use-word-window-equals
   ;; Session walker key= goes through shipped octet-window-equals
   ;; (ub32 chunks). Pairing fixture + a timestamp/id record.

@@ -264,6 +264,21 @@
     (is (string= "hello-block" (cadr-ai::json-get object "k")))
     (is (typep (cadr-ai::json-get object "k") 'simple-base-string))))
 
+(test goal20-copy-unescaped-ascii-matches-classified-ascii
+  ;; Check-less copier: EQUAL to copy-unescaped-json-octets on
+  ;; ASCII; fill kernel unchanged. High-byte still classified.
+  (let* ((ascii (cadr-ai::utf8-octets "ascii-id-01"))
+         (checked (cadr-ai::copy-unescaped-json-octets
+                   ascii 0 (length ascii)))
+         (fast (cadr-ai::copy-unescaped-ascii-json-octets
+                ascii 0 (length ascii))))
+    (is (string= checked fast))
+    (is (typep fast 'simple-base-string)))
+  (let* ((uni (cadr-ai::utf8-octets "hi中文"))
+         (checked (cadr-ai::copy-unescaped-json-octets
+                   uni 0 (length uni))))
+    (is (string= "hi中文" checked))))
+
 (test goal20-json-object-fields-skip-top-level-hash
   ;; Session JSONL top-level object: visit keys, no EQUAL hash.
   ;; Nested objects still parse as hash tables.

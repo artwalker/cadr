@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: value quote-scan accumulates high-byte-p; unescaped
+  ASCII uses check-less `copy-unescaped-ascii-json-octets`
+  (fill kernel unchanged). Keys still check-less quote scan.
+  Not intern. Not FFI. Ceiling not lowered. Not G.17.
+  Part P still `[open]`.
 - Goal 20: COPY-UNESCAPED ban = fill-kernel only; try knife 1
   (quote-scan high-byte + check-less ASCII copier) then knife 2
   (content shape fast-path). Proposals 3/4/5 not next without

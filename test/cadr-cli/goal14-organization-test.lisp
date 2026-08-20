@@ -963,7 +963,9 @@
     ;; quote-or-bs-mask + ctrl-mask + find-quote-or-backslash.
     ;; +1 Goal 20 walker 4-byte load: %octet-u32-le (inline
     ;; SeqOneByteString word; not empty SWAR).
-    (is (= 308 definition-count)
+    ;; +1 Goal 20 knife 1: octet-find-quote-or-backslash-high
+    ;; (value quote-scan high-byte-p; keys stay check-less).
+    (is (= 309 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"

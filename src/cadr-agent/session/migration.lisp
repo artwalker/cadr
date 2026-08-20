@@ -124,7 +124,8 @@
 (declaim (inline swar-eq-msb swar-first-msb-index swar-ws-mask
                  swar-quote-or-bs-mask swar-ctrl-mask
                  octet-find-lf octet-skip-json-space
-                 octet-find-quote-or-backslash))
+                 octet-find-quote-or-backslash
+                 octet-find-quote-or-backslash-high))
 
 (defun swar-eq-msb (word splat)
   ;; V8/haszero after XOR splat on one ub32. The mask is
@@ -269,6 +270,52 @@
                       (< code 32))
               (return index)))
           (incf index))))
+
+(defun octet-find-quote-or-backslash-high (octets start end)
+  ;; Value quote-scan: same quote/backslash/ctrl hit as
+  ;; octet-find-quote-or-backslash, plus whether any skipped
+  ;; byte has 0x80. Keys keep the check-less finder. Not
+  ;; empty SWAR. Not intern. Not FFI.
+  (declare (type (simple-array (unsigned-byte 8) (*)) octets)
+           (type fixnum start end)
+           (optimize (speed 3) (safety 1)))
+  (let ((index start)
+        (high-p nil))
+    (declare (type fixnum index))
+    (loop while (<= (the fixnum (+ index 4)) end)
+          do
+          (let* ((word (%octet-u32-le octets index))
+                 (mask
+                   (logior (swar-quote-or-bs-mask word)
+                           (swar-ctrl-mask word))))
+            (if (zerop mask)
+                (progn
+                  (when (logtest word +swar-msb+)
+                    (setf high-p t))
+                  (incf index 4))
+                (let ((off (swar-first-msb-index mask)))
+                  (unless high-p
+                    (loop for k from 0 below off
+                          when
+                          (logtest
+                           word
+                           (the (unsigned-byte 32)
+                             (ash #x80 (* 8 k))))
+                            do (setf high-p t)))
+                  (loop-finish)))))
+    (loop while (< index end)
+          do
+          (let ((code (aref octets index)))
+            (cond
+              ((or (= code 34)
+                   (= code 92)
+                   (< code 32))
+               (return-from octet-find-quote-or-backslash-high
+                 (values index high-p)))
+              ((>= code 128)
+               (setf high-p t))))
+          (incf index))
+    (values nil high-p)))
 
 (defun parse-session-record-octets (octets start end)
   ;; Schema-shaped session JSONL walker.  Known keys fill
@@ -448,15 +495,22 @@
                  (t
                   (fail "Expected JSON value")))))
            (parse-string-value ()
+             ;; Knife 1: value quote-scan accumulates high-byte-p.
+             ;; Unescaped ASCII → check-less copier. High-byte
+             ;; unescaped → UTF-8. Escaped → existing decode.
+             ;; Keys still use octet-find-quote-or-backslash.
              (expect-code 34)
              (let ((value-start position)
-                   (escaped-p nil))
+                   (escaped-p nil)
+                   (high-byte-p nil))
                (loop
-                 (let ((hit
-                         (octet-find-quote-or-backslash
-                          octets position length)))
+                 (multiple-value-bind (hit high)
+                     (octet-find-quote-or-backslash-high
+                      octets position length)
                    (unless hit
                      (fail "Unterminated string"))
+                   (when high
+                     (setf high-byte-p t))
                    (setf position hit)
                    (let ((code (aref octets position)))
                      (cond
@@ -475,10 +529,19 @@
                                             :adjustable t
                                             :fill-pointer 0))))
                                 (or
-                                 (cadr-ai::json-interned-ascii-value-octets
-                                  octets value-start value-end)
-                                 (cadr-ai::copy-unescaped-json-octets
-                                  octets value-start value-end))))))
+                                 (and
+                                  (not high-byte-p)
+                                  (cadr-ai::json-interned-ascii-value-octets
+                                   octets value-start value-end))
+                                 (if high-byte-p
+                                     (sb-ext:octets-to-string
+                                      octets
+                                      :external-format :utf-8
+                                      :start value-start
+                                      :end value-end)
+                                     (cadr-ai::copy-unescaped-ascii-json-octets
+                                      octets value-start
+                                      value-end)))))))
                        ((= code 92)
                         (setf escaped-p t)
                         (incf position)
