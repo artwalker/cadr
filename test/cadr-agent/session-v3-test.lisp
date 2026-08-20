@@ -989,3 +989,49 @@
          "hi"
          (cadr-agent::session-json-message-content
           (cadr-agent::session-entry-message entry))))))
+
+(test compact-content-prefix-equals-generic-mutants
+  ;; Knife 2: type-first compact prefixes fill typed content without
+  ;; session-json-block. Spaced / reordered / escaped-type records must
+  ;; EQUAL the generic path. Unknown type still errors.
+  (flet ((parse-content (content-json)
+           (let* ((octets
+                    (cadr-ai::utf8-octets
+                     (format
+                      nil
+                      "{\"type\":\"message\",\"id\":\"c\",\"parentId\":null,\"timestamp\":1,\"message\":{\"role\":\"assistant\",\"content\":~A,\"timestamp\":1}}"
+                      content-json)))
+                  (entry
+                    (cadr-agent::parse-session-record-octets
+                     octets 0 (length octets))))
+             (cadr-agent::session-json-message-content
+              (cadr-agent::session-entry-message entry)))))
+    (let ((compact (parse-content "[{\"type\":\"text\",\"text\":\"hello\"}]"))
+          (spaced
+            (parse-content
+             "[{ \"type\" : \"text\" , \"text\" : \"hello\" }]"))
+          (reordered
+            (parse-content "[{\"text\":\"hello\",\"type\":\"text\"}]"))
+          (escaped
+            (parse-content
+             "[{\"type\":\"te\\u0078t\",\"text\":\"hello\"}]")))
+      (is (typep (first compact) 'cadr-ai:text-content))
+      (is (string= "hello" (cadr-ai:text-content-text (first compact))))
+      (is (string= "hello" (cadr-ai:text-content-text (first spaced))))
+      (is (string= "hello" (cadr-ai:text-content-text (first reordered))))
+      (is (string= "hello" (cadr-ai:text-content-text (first escaped)))))
+    (let ((thinking
+            (parse-content
+             "[{\"type\":\"thinking\",\"thinking\":\"plan\"}]")))
+      (is (typep (first thinking) 'cadr-ai:thinking-content))
+      (is (string=
+           "plan"
+           (cadr-ai:thinking-content-thinking (first thinking)))))
+    (let ((tool
+            (parse-content
+             "[{\"type\":\"toolCall\",\"id\":\"call-1\",\"name\":\"read\",\"arguments\":{\"path\":\"x\"}}]")))
+      (is (typep (first tool) 'cadr-ai:tool-call))
+      (is (string= "call-1" (cadr-ai:tool-call-id (first tool))))
+      (is (string= "read" (cadr-ai:tool-call-name (first tool)))))
+    (signals error
+      (parse-content "[{\"type\":\"nope\"}]"))))

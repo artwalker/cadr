@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: content compact-prefix fast path (type-first
+  `text` / `thinking` / `toolCall`) fills typed content without
+  `session-json-block`; miss rewinds to the generic walker.
+  Friend-MachineD n=5 load cadr **1879→1829 µs**. Not bag
+  reuse. Not knife 1. Ceiling not lowered. Not G.17.
 - Goal 20: book missing Working… indicator while agent busy
   (`docs/bugs/working-indicator-missing.md`). Not G.17.
   Part P still `[open]`.

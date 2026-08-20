@@ -743,30 +743,95 @@
                                (session-json-block-extra block))))
                  (t
                   (skip-value)))))
+           (try-compact-content-block ()
+             ;; Type-first compact prefixes pi emits (pairing fixture).
+             ;; Miss (spaces, key order, extra fields, escaped type)
+             ;; rewinds; generic parse-content-block runs. Never
+             ;; session-json-block on the hit path.
+             (unless (eql (peek-code) 123)
+               (return-from try-compact-content-block nil))
+             (let ((saved position))
+               (flet ((rewind ()
+                        (setf position saved)
+                        nil)
+                      (take-prefix (literal)
+                        (let ((n (length literal)))
+                          (declare (type fixnum n))
+                          (when (and (<= (the fixnum (+ position n)) length)
+                                     (key= position
+                                           (the fixnum (+ position n))
+                                           literal))
+                            (incf position n)
+                            t))))
+                 (cond
+                   ((take-prefix "{\"type\":\"text\",\"text\":")
+                    (let ((text (parse-string-value)))
+                      (if (eql (peek-code) 125)
+                          (progn
+                            (take-code)
+                            (cadr-ai:make-text-content
+                             :text (or text "")))
+                          (rewind))))
+                   ((take-prefix "{\"type\":\"thinking\",\"thinking\":")
+                    (let ((thinking (parse-string-value)))
+                      (if (eql (peek-code) 125)
+                          (progn
+                            (take-code)
+                            (cadr-ai:make-thinking-content
+                             :thinking (or thinking "")))
+                          (rewind))))
+                   ((take-prefix "{\"type\":\"toolCall\",\"id\":")
+                    (let ((id (parse-string-value)))
+                      (if (not (take-prefix ",\"name\":"))
+                          (rewind)
+                          (let ((name (parse-string-value)))
+                            (if (not (take-prefix ",\"arguments\":"))
+                                (rewind)
+                                (if (not (eql (peek-code) 123))
+                                    (rewind)
+                                    (let ((arguments (parse-arguments-object)))
+                                      (if (eql (peek-code) 125)
+                                          (progn
+                                            (take-code)
+                                            (cadr-ai:make-tool-call
+                                             :id (or id "")
+                                             :name (or name "")
+                                             :arguments
+                                             (cond
+                                               ((cadr-ai::json-object-pairs-p
+                                                 arguments)
+                                                arguments)
+                                               ((hash-table-p arguments)
+                                                arguments)
+                                               (t '(:json-object)))))
+                                          (rewind)))))))))
+                   (t
+                    (rewind))))))
            (parse-content-block ()
-             (let ((block (make-session-json-block)))
-               (expect-code 123)
-               (skip-space)
-               (unless (eql (peek-code) 125)
-                 (loop
-                   (multiple-value-bind (key-start key-end)
-                       (scan-key)
-                     (skip-space)
-                     (expect-code 58)
-                     (skip-space)
-                     (if key-start
-                         (put-block-field block key-start key-end)
-                         (skip-value)))
+             (or (try-compact-content-block)
+                 (let ((block (make-session-json-block)))
+                   (expect-code 123)
                    (skip-space)
-                   (let ((code (peek-code)))
-                     (cond
-                       ((eql code 44)
-                        (take-code)
-                        (skip-space))
-                       ((eql code 125) (return))
-                       (t (fail "Expected comma or }"))))))
-               (expect-code 125)
-               (finish-block block)))
+                   (unless (eql (peek-code) 125)
+                     (loop
+                       (multiple-value-bind (key-start key-end)
+                           (scan-key)
+                         (skip-space)
+                         (expect-code 58)
+                         (skip-space)
+                         (if key-start
+                             (put-block-field block key-start key-end)
+                             (skip-value)))
+                       (skip-space)
+                       (let ((code (peek-code)))
+                         (cond
+                           ((eql code 44)
+                            (take-code)
+                            (skip-space))
+                           ((eql code 125) (return))
+                           (t (fail "Expected comma or }"))))))
+                   (expect-code 125)
+                   (finish-block block))))
            (parse-content-value ()
              (skip-space)
              (let ((code (peek-code)))

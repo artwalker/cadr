@@ -49,12 +49,21 @@ to the classified ASCII arm). Friend-MachineD n=5: load cadr
 Do not redo this scan+copier split. Fill kernel was never
 rewritten. Not intern. Not FFI.
 
+## Knife (in flight) — content compact-prefix
+
+Type-first compact prefixes (`{"type":"text","text":` /
+`{"type":"thinking","thinking":` /
+`{"type":"toolCall","id":`) fill typed content without
+`session-json-block`. Spaces / key order / escaped type rewind
+to the generic walker. Not bag reuse. Not knife 1.
+
+Friend-MachineD n=5: load cadr **1879→1829 µs** (keep).
+Samples 1731–1868. Not bag reuse. Not intern. Not FFI.
+
 ## Next knife (adjudication 2026-08-21 item 11)
 
-**Knife 1 remesured and withdrawn.** Next: knife 2 (content
-compact-prefix fast path + generic fallback, not bag reuse)
-alone. Win still Friend-MachineD cadr **&lt; ~1879 µs**
-+ EQUAL + green `test-cl`. Do not merge with gperf
+**Knife 1 remesured and withdrawn.** Knife 2 (content
+compact-prefix) is the next keep/revert. Do not merge with gperf
 `put-entry`.
 
 **Knife 2 after knife 1 keeps:** content compact-prefix fast
