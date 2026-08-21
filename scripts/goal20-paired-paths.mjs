@@ -176,6 +176,7 @@ const REPETITIONS = {
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"ai_runtime_faux.blocks": 50,
+	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -3128,6 +3129,30 @@ async function measureAiRuntimeFauxBlocks() {
 	};
 }
 
+function runHttpTransportParseUrl() {
+	const https = new URL("https://example.com/foo");
+	const http = new URL("http://localhost:8080/bar");
+	return {
+		https_scheme: https.protocol.replace(":", ""),
+		https_host: https.hostname,
+		https_path: https.pathname,
+		http_scheme: http.protocol.replace(":", ""),
+		http_host: http.hostname,
+		http_port: Number(http.port),
+		http_path: http.pathname,
+	};
+}
+
+async function measureHttpTransportParseUrl() {
+	const observed = runHttpTransportParseUrl();
+	return {
+		parse_url: await collect("http_transport.parse_url", () => {
+			return () => runHttpTransportParseUrl();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3388,6 +3413,8 @@ process.stderr.write("goal20 pi paired paths: cli_bootstrap_sessions\n");
 const cliBootstrap = await measureCliBootstrapCodingTools();
 process.stderr.write("goal20 pi paired paths: ai_runtime_faux\n");
 const aiRuntimeFaux = await measureAiRuntimeFauxBlocks();
+process.stderr.write("goal20 pi paired paths: http_transport\n");
+const httpTransport = await measureHttpTransportParseUrl();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3485,6 +3512,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
+			"http_transport.parse_url":
+				"WHATWG URL (https://example.com/foo + http://localhost:8080/bar)",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3584,6 +3613,7 @@ const result = {
 		skill_prompt_load: skillPromptLoad,
 		cli_bootstrap_sessions: cliBootstrap,
 		ai_runtime_faux: aiRuntimeFaux,
+		http_transport: httpTransport,
 		render_slicing: renderSlicing,
 	},
 };

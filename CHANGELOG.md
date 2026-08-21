@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `http_transport.parse_url`
+  (`https://example.com/foo` + `http://localhost:8080/bar`;
+  cadr `parse-http-url` vs WHATWG `URL`). Friend-MachineD
+  n=5 **0.99×** (1.16 / 1.17 µs), ceiling 8.0 (variance).
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `ai_runtime_faux.blocks`
   (`hello`/`hmm`; cadr `faux-text`+`faux-thinking` vs pi
   `fauxText`+`fauxThinking`). Friend-MachineD n=5

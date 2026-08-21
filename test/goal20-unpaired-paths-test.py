@@ -351,6 +351,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(faux), 1)
         self.assertEqual(faux[0]["class"], "paired")
         self.assertIn("ai_runtime_faux.blocks", faux[0]["metrics"])
+        http_transport = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/transport/http.lisp"
+        ]
+        self.assertEqual(len(http_transport), 1)
+        self.assertEqual(http_transport[0]["class"], "paired")
+        self.assertIn("http_transport.parse_url", http_transport[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

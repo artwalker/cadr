@@ -831,6 +831,23 @@ hmm). First Friend-MachineD freeze **1.76×** (0.27 /
 0.15 µs), ceiling 8.0 (variance; sub-10 µs floor). Same
 commit no optimize.
 
+### Pair 58 — `http_transport`
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_url` | `parse-http-url` | WHATWG `URL` |
+
+Fixtures `https://example.com/foo` and
+`http://localhost:8080/bar`. Time parse, no socket.
+Observed `https_scheme` / `https_host` / `https_path` /
+`http_scheme` / `http_host` / `http_port` / `http_path`
+are exact (https / example.com / /foo / http /
+localhost / 8080 / /bar). Do not exact default HTTPS
+port (cadr 443 vs empty `URL.port`) or query-in-path
+(cadr keeps `?` in path). First Friend-MachineD freeze
+**0.99×** (1.16 / 1.17 µs), ceiling 8.0 (variance). Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1036,14 +1053,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 110 | 54,916 | 43.1% | `no worse than baseline` is falsifiable |
+| `paired` | 111 | 55,774 | 43.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 142 | 52,079 | 40.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 141 | 51,221 | 40.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 43.1% of lines (110 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 49.0% of lines.
+- **Falsifiable vs baseline:** 43.8% of lines (111 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 49.7% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1121,6 +1138,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | `ai_support.estimate_text` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
+| `src/cadr-ai/transport/http.lisp` | 858 | `http_transport.parse_url` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 89 | `cli_bootstrap_sessions.coding_tools` |
@@ -1234,7 +1252,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_print_rpc` | 7 | 1,724 |
 | `settings_load` | 4 | 1,499 |
 | `cli_sdk` | 4 | 1,214 |
-| `http_transport` | 1 | 858 |
 | `cli_support` | 12 | 822 |
 | `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |

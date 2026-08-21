@@ -56,6 +56,7 @@
   "skill_prompt_load.build_prompt",
   "cli_bootstrap_sessions.coding_tools",
   "ai_runtime_faux.blocks",
+  "http_transport.parse_url",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -937,8 +938,8 @@
   },
   {
    "prefix": "src/cadr-ai/transport/http.lisp",
-   "class": "needs-pair",
-   "hole": "http_transport"
+   "class": "paired",
+   "metrics": ["http_transport.parse_url"]
   },
   {
    "prefix": "src/cadr-ai/types.lisp",

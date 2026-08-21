@@ -54,6 +54,7 @@
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
+;;;;  44. http_transport parse-http-url vs WHATWG URL
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -159,6 +160,7 @@
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("ai_runtime_faux.blocks" . 50)
+    ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3900,6 +3902,36 @@
                 (lambda ()
                   (run-ai-runtime-faux-blocks)))))))
 
+(defun run-http-transport-parse-url ()
+  (let ((https (cadr-ai::parse-http-url "https://example.com/foo"))
+        (http (cadr-ai::parse-http-url "http://localhost:8080/bar")))
+    (list
+     (cadr-ai::parsed-url-scheme https)
+     (cadr-ai::parsed-url-host https)
+     (cadr-ai::parsed-url-path https)
+     (cadr-ai::parsed-url-scheme http)
+     (cadr-ai::parsed-url-host http)
+     (cadr-ai::parsed-url-port http)
+     (cadr-ai::parsed-url-path http))))
+
+(defun measure-http-transport-parse-url ()
+  (let ((observed (run-http-transport-parse-url)))
+    (json-object
+     "observed"
+     (json-object
+      "https_scheme" (first observed)
+      "https_host" (second observed)
+      "https_path" (third observed)
+      "http_scheme" (fourth observed)
+      "http_host" (fifth observed)
+      "http_port" (sixth observed)
+      "http_path" (seventh observed))
+     "parse_url"
+     (collect "http_transport.parse_url"
+              (lambda ()
+                (lambda ()
+                  (run-http-transport-parse-url)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -4048,6 +4080,8 @@
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
+      "http_transport.parse_url"
+      "src/cadr-ai/transport/http.lisp parse-http-url"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -4207,6 +4241,8 @@
               (let ((bootstrap (measure-cli-bootstrap-coding-tools)))
               (format *error-output* "goal20 cadr paired paths: ai_runtime_faux~%")
               (let ((faux (measure-ai-runtime-faux-blocks)))
+              (format *error-output* "goal20 cadr paired paths: http_transport~%")
+              (let ((http-transport (measure-http-transport-parse-url)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -4281,6 +4317,7 @@
               "skill_prompt_load" skill-prompt
               "cli_bootstrap_sessions" bootstrap
               "ai_runtime_faux" faux
+              "http_transport" http-transport
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4297,7 +4334,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

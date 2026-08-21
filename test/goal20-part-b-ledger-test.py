@@ -633,6 +633,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("text", paired.OBSERVED_EXACT["ai_runtime_faux"])
         self.assertIn("think", paired.OBSERVED_EXACT["ai_runtime_faux"])
 
+    def test_http_transport_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("http_transport.parse_url", RECORD.METRIC_KEYS)
+        self.assertIn("parse_url", paired.METRICS["http_transport"])
+        self.assertIn("http_transport.parse_url", paired.RATIO_CEILINGS)
+        self.assertIn("https_host", paired.OBSERVED_EXACT["http_transport"])
+        self.assertIn("http_port", paired.OBSERVED_EXACT["http_transport"])
+        self.assertIn("http_path", paired.OBSERVED_EXACT["http_transport"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -722,6 +731,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`skill_prompt_load.build_prompt`", section)
             self.assertIn("`cli_bootstrap_sessions.coding_tools`", section)
             self.assertIn("`ai_runtime_faux.blocks`", section)
+            self.assertIn("`http_transport.parse_url`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

@@ -73,6 +73,7 @@ METRIC_KEYS = (
     "skill_prompt_load.build_prompt",
     "cli_bootstrap_sessions.coding_tools",
     "ai_runtime_faux.blocks",
+    "http_transport.parse_url",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

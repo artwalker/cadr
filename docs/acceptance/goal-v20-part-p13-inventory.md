@@ -382,10 +382,11 @@ These must not be filed as callees.
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 |
 | `src/cadr-ai/oauth/providers/xai.lisp` | 184 |
 
-### `http_transport` (additional)
+### `http_transport` (additional) — `http.lisp` paired `http_transport.parse_url`
 
-- pi: `Node fetch / undici path behind ProviderRequestOptions.fetch`
-- fixture: stream_roundtrip already replaces this seam. A dedicated pair is recorded HTTP request bytes in/out with the production client, not a second SSE parse. Do not empty-bench the file.
+- pi: WHATWG `URL` (`https://example.com/foo` + `http://localhost:8080/bar`)
+- fixture: Time `parse-http-url`, no socket. Do not exact default HTTPS port or query-in-path.
+- Friend-MachineD n=5: **0.99×** (1.16 / 1.17 µs), ceiling 8.0 (variance). No optimize in the booking commit.
 
 | file | lines |
 |---|---:|
