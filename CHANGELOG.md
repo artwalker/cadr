@@ -21,6 +21,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: required holes all have H metrics
+  (sqlite / tool_loop / compact / providers / settings /
+  package / skills). No new pair. No optimize. G.17 missing.
 - Goal 20 P.13: unpaired-paths schema books
   `covered-as-callee` and `needs-pair`. `--check`
   requires `pairable-uncovered` lines = 0 (295 files /

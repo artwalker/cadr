@@ -35,7 +35,32 @@ H JSON + `--check` now book `covered-as-callee` and
 `needs-pair`. `pairable-uncovered` line share is 0%.
 Not G.17 `met`.
 
-## Required needs-pair holes
+## Required holes vs H metrics (2026-08-21)
+
+All user-list lower-bound holes already have a named
+`goal20-paired-paths` metric. No new pair this session.
+No optimize. Not G.17 `met`.
+
+| hole | H metric |
+|---|---|
+| `sqlite_session` | `sqlite_session.open_walk` |
+| `agent_tool_loop` | `agent_tool_loop.roundtrip` |
+| `session_compact` | `session_compact.compact` |
+| `provider_anthropic` | `provider_anthropic.stream_roundtrip` |
+| `provider_openai_responses` | `provider_openai_responses.stream_roundtrip` |
+| `provider_google` | `provider_google.stream_roundtrip` |
+| `provider_bedrock` | `provider_bedrock.stream_roundtrip` |
+| `provider_azure` | `provider_azure_openai.stream_roundtrip` |
+| `provider_mistral` | `provider_mistral.stream_roundtrip` |
+| `provider_vertex` | `provider_vertex.stream_roundtrip` |
+| `provider_codex` | `provider_codex.stream_roundtrip` |
+| `provider_pi_messages` | `provider_pi_messages.stream_roundtrip` |
+| `provider_registry_defs` | parent of each provider pair; no own bench |
+| `settings_load` | `cli_settings.create` |
+| `package_manager` | `package_manager.resolve` |
+| `skill_prompt_load` | `resource_loader.reload` |
+
+## Required needs-pair holes (inventory; several now `paired`)
 
 These must not be filed as callees.
 
