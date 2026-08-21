@@ -1,25 +1,34 @@
 # Goal 20 — split `PARSE-SESSION-RECORD-OCTETS` inners (shipped labels)
 
-Inclusive `get-internal-real-time` around **shipped** labels in
+Inclusive timers around **shipped** labels in
 `parse-session-record-octets` (40× `load-session` on pairing
-`test/fixtures/goal20-paired-paths/session.jsonl`). Special
-`*parse-session-split-ticks*` bound only in the capture script;
-production walker has no timer. Not wall-fraction. Not G.17.
+`test/fixtures/goal20-paired-paths/session.jsonl`). Capture binds
+`*parse-session-split-ticks*` only in the scratch script and loads a
+scratch copy of the walker; production walker has no timer. Not
+wall-fraction. Not G.17.
 
-This-host wall ~1494 µs/load (Friend-MachineD pairing cadr ~1879 µs).
-Children overlap parents (`parse-string-value` ⊆ `parse-message` ⊆
-`put-entry-field`; `parse-content-block` ⊆ `parse-message`).
+Recapture on walker `0084f0703` (Friend-MachineD pairing cadr
+**~1763 µs**). This-host `get-internal-real-time` is 1 ms, so the
+capture uses `CLOCK_MONOTONIC` nanoseconds. This-host wall
+**1759 µs/load**. Children overlap parents
+(`parse-string-value` ⊆ `parse-message` ⊆ `put-entry-field`;
+`parse-content-block` ⊆ `parse-message`). Nested clock pairs inflate
+parents; treat as rank order, not exclusive cost.
 
 | inner | inclusive µs / load | V8 `JsonParser` |
 |---|---:|---|
-| `put-entry-field` | 897 | named properties / `BuildJsonObject` |
-| `parse-message` | 498 | `ParseJsonObject` (message) |
-| `parse-string-value` | 399 | `ParseString` / `MakeString` |
-| `parse-content-block` | 199 | `ParseJsonObject` (content block) |
-| `parse-usage` | 0 | `ParseJsonObject` (usage; inside message, <1 µs/call on this clock) |
-| `parse-generic` | 0 | `ParseJsonValue` (cold) |
+| `put-entry-field` | 1199 | named properties / `BuildJsonObject` |
+| `parse-message` | 881 | `ParseJsonObject` (message) |
+| `parse-string-value` | 439 | `ParseString` / `MakeString` |
+| `parse-content-block` | 394 | `ParseJsonObject` (content block) |
+| `parse-usage` | 143 | `ParseJsonObject` (usage) |
+| `parse-generic` | 36 | `ParseJsonValue` (cold) |
 
-Previous table (701 / 601 / 301 / 100) was **not** timer output — it
+Prior this-host table at the ~1879 walker (897 / 498 / 399 / 199 / 0
+/ 0) used `get-internal-real-time` and under-counted short calls on
+a 1 ms clock. Discarded for ranking the current walker.
+
+Older table (701 / 601 / 301 / 100) was **not** timer output — it
 was exact fractions of wall 1402.8 µs. Discarded.
 
 sprof (older, still directional): `PARSE-CONTENT-BLOCK` ~22–32% total

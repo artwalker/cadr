@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: recapture `PARSE-SESSION-RECORD-OCTETS` split on
+  walker `0084f0703` / Friend-MachineD **~1763 µs**. Inclusive
+  `CLOCK_MONOTONIC` ns around shipped labels (this-host
+  `get-internal-real-time` is 1 ms). Production walker has no
+  timer. Not G.17.
 - Goal 20: user YES on proposal 4 (per-load ephemeral EQ
   dedupe). No global or cross-load intern. E `tagbody`
   stays a separate knife. G.17 stays missing. Not G.17.
