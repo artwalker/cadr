@@ -82,6 +82,7 @@ METRIC_KEYS = (
     "cli_support.strip_ansi",
     "cli_support.normalize_path",
     "cli_support.timings",
+    "cli_support.event_bus",
     "cli_interactive_controller.decode_entity",
     "cli_sdk.version_newer",
     "provider_registry_defs.lookup",

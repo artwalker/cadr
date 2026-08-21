@@ -131,7 +131,7 @@ METRICS = {
     "tui_native_modifiers": ("pressed",),
     "tui_settings_list": ("apply_filter",),
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
-    "cli_support": ("strip_ansi", "normalize_path", "timings"),
+    "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus"),
     "cli_interactive_controller": ("decode_entity",),
     "cli_sdk": ("version_newer",),
     "provider_registry_defs": ("lookup",),
@@ -463,6 +463,11 @@ RATIO_CEILINGS = {
     # (4.55 / 2.66 us). 8.0 is first-freeze headroom.
     # Ratchet down only.
     "cli_support.timings": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_support.event_bus pair (samples=5): observed
+    # 0.33x (2.68 / 8.21 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "cli_support.event_bus": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_interactive_controller pair (samples=5): observed
     # 1.49x (0.63 / 0.42 us). 8.0 follows the
@@ -983,6 +988,11 @@ OBSERVED_EXACT = {
         "time_boot",
         "time_load",
         "time_total",
+        "eb_first",
+        "eb_n1",
+        "eb_n2",
+        "eb_n3",
+        "eb_throw",
     ),
     "cli_interactive_controller": (
         "amp",

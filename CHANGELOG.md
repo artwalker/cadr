@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.event_bus`
+  (on/emit/unsub/thrower/clear; cadr `make-event-bus`
+  vs pi `createEventBus`). Friend-MachineD n=5 **0.33×**
+  (2.68 / 8.21 µs), ceiling 8.0. cadr leads. Same
+  commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `ai_capabilities.session_resources`
   (register + cleanup recorder/thrower; cadr
   `register-session-resource-cleanup` /

@@ -71,6 +71,7 @@
 ;;;;  57. cli_support reset-timings + record-timing + print-timings vs resetTimings/time/printTimings
 ;;;;  58. ai_capabilities resolve-http-proxy-url-for-target vs resolveHttpProxyUrlForTarget
 ;;;;  59. ai_capabilities register/cleanup session resources vs registerSessionResourceCleanup
+;;;;  60. cli_support make-event-bus vs createEventBus
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -186,6 +187,7 @@
     ("cli_support.strip_ansi" . 50)
     ("cli_support.normalize_path" . 50)
     ("cli_support.timings" . 50)
+    ("cli_support.event_bus" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
@@ -4216,10 +4218,47 @@
          (or (timing-field-ms text "load") -1)
          (or (timing-field-ms text "TOTAL") -1))))))
 
+(defun run-cli-support-event-bus ()
+  (let ((recorded nil)
+        (n1 0)
+        (n2 0)
+        (n3 0)
+        (throw-ok 0))
+    (let ((bus
+            (cadr-cli::make-event-bus
+             :error-output (make-broadcast-stream))))
+      (let ((unsub
+              (cadr-cli::event-bus-on
+               bus "ch"
+               (lambda (data)
+                 (push data recorded)))))
+        (cadr-cli::event-bus-emit bus "ch" "a")
+        (cadr-cli::event-bus-emit bus "other" "b")
+        (setf n1 (length recorded))
+        (funcall unsub)
+        (cadr-cli::event-bus-emit bus "ch" "c")
+        (setf n2 (length recorded)))
+      (cadr-cli::event-bus-on
+       bus "boom"
+       (lambda (data)
+         (declare (ignore data))
+         (error "boom")))
+      (setf throw-ok
+            (handler-case
+                (progn
+                  (cadr-cli::event-bus-emit bus "boom" "x")
+                  1)
+              (error () 0)))
+      (cadr-cli::event-bus-clear bus)
+      (cadr-cli::event-bus-emit bus "ch" "d")
+      (setf n3 (length recorded)))
+    (list (or (car (last recorded)) "") n1 n2 n3 throw-ok)))
+
 (defun measure-cli-support-strip-ansi ()
   (let ((ansi (run-cli-support-strip-ansi))
         (paths (run-cli-support-normalize-path))
-        (timings (run-cli-support-timings)))
+        (timings (run-cli-support-timings))
+        (bus (run-cli-support-event-bus)))
     (json-object
      "observed"
      (json-object
@@ -4235,7 +4274,12 @@
       "time_title" (first timings)
       "time_boot" (second timings)
       "time_load" (third timings)
-      "time_total" (fourth timings))
+      "time_total" (fourth timings)
+      "eb_first" (first bus)
+      "eb_n1" (second bus)
+      "eb_n2" (third bus)
+      "eb_n3" (fourth bus)
+      "eb_throw" (fifth bus))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -4250,7 +4294,12 @@
      (collect "cli_support.timings"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-timings)))))))
+                  (run-cli-support-timings))))
+     "event_bus"
+     (collect "cli_support.event_bus"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-event-bus)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -4639,6 +4688,8 @@
       "src/cadr-cli/support/paths.lisp normalize-path-input"
       "cli_support.timings"
       "src/cadr-cli/support/timings.lisp reset-timings + record-timing + print-timings"
+      "cli_support.event_bus"
+      "src/cadr-cli/support/event-bus.lisp make-event-bus + event-bus-on + event-bus-emit"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"

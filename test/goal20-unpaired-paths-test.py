@@ -433,6 +433,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(timings), 1)
         self.assertEqual(timings[0]["class"], "paired")
         self.assertIn("cli_support.timings", timings[0]["metrics"])
+        event_bus = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/support/event-bus.lisp"
+        ]
+        self.assertEqual(len(event_bus), 1)
+        self.assertEqual(event_bus[0]["class"], "paired")
+        self.assertIn("cli_support.event_bus", event_bus[0]["metrics"])
         decode_entity = [
             row
             for row in classified["rows"]

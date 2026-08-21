@@ -186,6 +186,7 @@ const REPETITIONS = {
 	"cli_support.strip_ansi": 50,
 	"cli_support.normalize_path": 50,
 	"cli_support.timings": 50,
+	"cli_support.event_bus": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -456,6 +457,7 @@ const sessionResourcesModule = await import(
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const timingsModule = await import(moduleUrl("packages/coding-agent/src/core/timings.ts"));
+const eventBusModule = await import(moduleUrl("packages/coding-agent/src/core/event-bus.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
@@ -3497,10 +3499,50 @@ function runCliSupportTimings() {
 	};
 }
 
+function runCliSupportEventBus() {
+	const recorded = [];
+	const bus = eventBusModule.createEventBus();
+	const originalError = console.error;
+	console.error = () => {};
+	try {
+		const unsub = bus.on("ch", (data) => {
+			recorded.push(data);
+		});
+		bus.emit("ch", "a");
+		bus.emit("other", "b");
+		const n1 = recorded.length;
+		unsub();
+		bus.emit("ch", "c");
+		const n2 = recorded.length;
+		bus.on("boom", () => {
+			throw new Error("boom");
+		});
+		let throwOk = 0;
+		try {
+			bus.emit("boom", "x");
+			throwOk = 1;
+		} catch {
+			throwOk = 0;
+		}
+		bus.clear();
+		bus.emit("ch", "d");
+		return {
+			eb_first: recorded[0] ?? "",
+			eb_n1: n1,
+			eb_n2: n2,
+			eb_n3: recorded.length,
+			eb_throw: throwOk,
+		};
+	} finally {
+		console.error = originalError;
+	}
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
 	const timings = runCliSupportTimings();
+	const bus = runCliSupportEventBus();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -3511,7 +3553,10 @@ async function measureCliSupportStripAnsi() {
 		timings: await collect("cli_support.timings", () => {
 			return () => runCliSupportTimings();
 		}),
-		observed: { ...ansi, ...paths, ...timings },
+		event_bus: await collect("cli_support.event_bus", () => {
+			return () => runCliSupportEventBus();
+		}),
+		observed: { ...ansi, ...paths, ...timings, ...bus },
 	};
 }
 
@@ -4065,6 +4110,8 @@ const result = {
 				"packages/coding-agent/src/utils/paths.ts normalizePath",
 			"cli_support.timings":
 				"packages/coding-agent/src/core/timings.ts resetTimings + time + printTimings",
+			"cli_support.event_bus":
+				"packages/coding-agent/src/core/event-bus.ts createEventBus",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":
