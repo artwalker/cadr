@@ -144,6 +144,7 @@ const REPETITIONS = {
 	"session_export_html.to_html": 3,
 	"protocol_cbor.roundtrip": 50,
 	"agent_schema.validate_ok_fail": 50,
+	"harness_storage.open_walk": 3,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -330,6 +331,7 @@ const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/ses
 const exportHtmlModule = await import(moduleUrl("packages/coding-agent/src/core/export-html/index.ts"));
 const cborModule = await import(moduleUrl("packages/protocol/src/cbor/index.ts"));
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
+const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
@@ -1975,6 +1977,54 @@ function agentSchemaValidateOkFail() {
 	}
 }
 
+async function ingestJsonlFromSessionJsonl(sessionsRoot) {
+	const raw = sessionModule.loadEntriesFromFile(sessionFixturePath);
+	const header = raw[0];
+	if (!header || header.type !== "session") {
+		throw new Error("session.jsonl is missing a session header");
+	}
+	mkdirSync(sessionsRoot, { recursive: true });
+	const repo = new jsonlModule.JsonlSessionRepo({
+		fs: sqliteEnv(scratch),
+		sessionsRoot,
+	});
+	const session = await repo.create({ cwd: resolvedJournalCwd, id: header.id });
+	for (const entry of raw.slice(1)) {
+		await session.appendEntry(provisionedFromV3(entry), "main");
+	}
+	const metadata = await session.getMetadata();
+	const ingested = raw.length - 1;
+	const sourceLeafId = raw[raw.length - 1].id;
+	return { repo, metadata, ingested, sourceLeafId, sessionId: header.id };
+}
+
+async function jsonlOpenReadWalk(repo, metadata) {
+	const session = await repo.open(metadata);
+	const entries = await session.findEntries({ order: "oldestFirst" });
+	const leafId = await session.getLeafId();
+	const branch = leafId === null ? [] : await session.findEntriesOnBranch({ start: leafId });
+	return { entryCount: entries.length, leafId, branchEntryCount: branch.length };
+}
+
+async function measureHarnessStorage() {
+	const sessionsRoot = path.join(scratch, "jsonl-sessions");
+	const ingested = await ingestJsonlFromSessionJsonl(sessionsRoot);
+	const observed = await jsonlOpenReadWalk(ingested.repo, ingested.metadata);
+	return {
+		open_walk: await collect("harness_storage.open_walk", () => {
+			return () => jsonlOpenReadWalk(ingested.repo, ingested.metadata);
+		}),
+		observed: {
+			entry_count: observed.entryCount,
+			leaf_id: observed.leafId,
+			branch_entry_count: observed.branchEntryCount,
+			ingested_entry_count: ingested.ingested,
+			session_id: ingested.sessionId,
+			source_leaf_id: ingested.sourceLeafId,
+		},
+	};
+}
+
 async function measureAgentSchema() {
 	const fail = agentSchemaValidateOkFail();
 	return {
@@ -2132,6 +2182,8 @@ process.stderr.write("goal20 pi paired paths: protocol_cbor\n");
 const protocolCbor = await measureProtocolCbor();
 process.stderr.write("goal20 pi paired paths: agent_schema\n");
 const agentSchema = await measureAgentSchema();
+process.stderr.write("goal20 pi paired paths: harness_storage\n");
+const harnessStorage = await measureHarnessStorage();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2170,6 +2222,8 @@ const result = {
 			"protocol_cbor.roundtrip": "packages/protocol/src/cbor encodeCbor + decodeCbor",
 			"agent_schema.validate_ok_fail":
 				"packages/ai/src/utils/validation.ts validateToolArguments",
+			"harness_storage.open_walk":
+				"packages/agent/src/harness/session/jsonl JsonlSessionRepo.open + findEntries + findEntriesOnBranch",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2237,6 +2291,7 @@ const result = {
 		session_export_html: sessionExportHtml,
 		protocol_cbor: protocolCbor,
 		agent_schema: agentSchema,
+		harness_storage: harnessStorage,
 		render_slicing: renderSlicing,
 	},
 };

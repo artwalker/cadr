@@ -387,6 +387,20 @@ socket. Observed `ok` / `fail` / `tool` are exact. First
 Friend-MachineD freeze **0.38×** (34.2 / 89.4 µs), ceiling 1.5.
 Same commit no optimize.
 
+### Pair 26 — `harness_storage`
+
+| metric | cadr | pi |
+|---|---|---|
+| `open_walk` | `jsonl-session-repository` open + entries + branch | `JsonlSessionRepo.open` + `findEntries` + `findEntriesOnBranch` |
+
+Ingest existing `session.jsonl` into harness JSONL storage (not
+v3 `storage_journal`, not SQLite). Time open + read-all + leaf
+walk. No TUI, no socket. Observed `entry_count` / `leaf_id` /
+`ingested_entry_count` / `session_id` / `source_leaf_id` are
+exact. `branch_entry_count` is a booked shape gap (cadr 322 /
+pi 514), not exact. First Friend-MachineD freeze **1.80×**
+(11643.5 / 6484.9 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -592,14 +606,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 73 | 39,609 | 31.1% | `no worse than baseline` is falsifiable |
+| `paired` | 77 | 41,141 | 32.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 18 | 12,819 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 180 | 67,486 | 53.0% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 176 | 65,954 | 51.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 31.1% of lines (73 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 37.0% of lines.
+- **Falsifiable vs baseline:** 32.3% of lines (77 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 38.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -647,6 +661,10 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,434 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
+| `src/cadr-agent/storage/harness.lisp` | 476 | `harness_storage.open_walk` |
+| `src/cadr-agent/storage/jsonl.lisp` | 536 | `harness_storage.open_walk` |
+| `src/cadr-agent/storage/memory.lisp` | 378 | `harness_storage.open_walk` |
+| `src/cadr-agent/storage/protocol.lisp` | 142 | `harness_storage.open_walk` |
 | `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
@@ -753,7 +771,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_editor_helpers` | 9 | 1,890 |
 | `package_manager` | 2 | 1,811 |
 | `cli_sdk` | 5 | 1,712 |
-| `harness_storage` | 4 | 1,532 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
 | `tui_theme_overlay` | 3 | 1,238 |

@@ -22,6 +22,7 @@
 ;;;;   9. session_export_html export-session-html vs exportSessionToHtml
 ;;;;  10. protocol_cbor encode-cbor/decode-cbor vs encodeCbor/decodeCbor
 ;;;;  11. agent_schema validate-tool-arguments vs validateToolArguments
+;;;;  12. harness_storage jsonl repo open+walk vs JsonlSessionRepo
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -93,6 +94,7 @@
     ("session_export_html.to_html" . 3)
     ("protocol_cbor.roundtrip" . 50)
     ("agent_schema.validate_ok_fail" . 50)
+    ("harness_storage.open_walk" . 3)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -1626,6 +1628,64 @@
                  (length branch)))
       (cadr-agent:harness-session-cleanup session))))
 
+(defun jsonl-sessions-root ()
+  (merge-pathnames "jsonl-sessions/" *scratch-directory*))
+
+(defun ingest-jsonl-from-session-jsonl (sessions-root)
+  (ensure-directories-exist sessions-root)
+  (let* ((source (cadr-agent:load-session (fixture-path "session.jsonl")))
+         (cwd (journal-cwd))
+         (environment
+           (cadr-agent:make-node-execution-env :cwd cwd))
+         (repository
+           (cadr-agent:make-jsonl-session-repository
+            :environment environment
+            :sessions-root sessions-root))
+         (session
+           (cadr-agent:session-repository-create
+            repository
+            :id (cadr-agent:session-id source)
+            :cwd cwd)))
+    (dolist (entry (cadr-agent:session-entries source))
+      (cadr-agent:harness-session-append-entry session entry))
+    (let ((metadata (cadr-agent:harness-session-metadata session))
+          (entry-count (length (cadr-agent:session-entries source)))
+          (leaf-id (cadr-agent:session-leaf-id source))
+          (session-id (cadr-agent:session-id source)))
+      (cadr-agent:harness-session-cleanup session)
+      (values repository metadata entry-count leaf-id session-id))))
+
+(defun jsonl-open-read-walk (repository metadata)
+  (let ((session
+          (cadr-agent:session-repository-open repository metadata)))
+    (unwind-protect
+         (let ((entries (cadr-agent:harness-session-entries session))
+               (branch (cadr-agent:harness-session-branch session)))
+           (list (length entries)
+                 (cadr-agent:harness-session-leaf-id session)
+                 (length branch)))
+      (cadr-agent:harness-session-cleanup session))))
+
+(defun measure-harness-storage ()
+  (multiple-value-bind
+        (repository metadata entry-count leaf-id session-id)
+      (ingest-jsonl-from-session-jsonl (jsonl-sessions-root))
+    (let ((observed (jsonl-open-read-walk repository metadata)))
+      (json-object
+       "observed"
+       (json-object
+        "entry_count" (first observed)
+        "leaf_id" (second observed)
+        "branch_entry_count" (third observed)
+        "ingested_entry_count" entry-count
+        "session_id" session-id
+        "source_leaf_id" leaf-id)
+       "open_walk"
+       (collect "harness_storage.open_walk"
+                (lambda ()
+                  (lambda ()
+                    (jsonl-open-read-walk repository metadata))))))))
+
 (defun measure-sqlite-session ()
   (multiple-value-bind
         (repository metadata entry-count leaf-id session-id)
@@ -2600,6 +2660,8 @@
       "src/cadr-protocol/cbor.lisp encode-cbor + decode-cbor"
       "agent_schema.validate_ok_fail"
       "src/cadr-agent/schema.lisp validate-tool-arguments"
+      "harness_storage.open_walk"
+      "src/cadr-agent/storage/jsonl.lisp session-repository-open + harness-session-entries"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2695,6 +2757,8 @@
               (let ((cbor (measure-protocol-cbor)))
               (format *error-output* "goal20 cadr paired paths: agent_schema~%")
               (let ((schema (measure-agent-schema)))
+              (format *error-output* "goal20 cadr paired paths: harness_storage~%")
+              (let ((harness-storage (measure-harness-storage)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2737,6 +2801,7 @@
               "session_export_html" export-html
               "protocol_cbor" cbor
               "agent_schema" schema
+              "harness_storage" harness-storage
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2753,7 +2818,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

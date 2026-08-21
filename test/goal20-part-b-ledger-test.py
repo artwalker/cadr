@@ -344,6 +344,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("fail", paired.OBSERVED_EXACT["agent_schema"])
         self.assertIn("tool", paired.OBSERVED_EXACT["agent_schema"])
 
+    def test_harness_storage_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("harness_storage.open_walk", RECORD.METRIC_KEYS)
+        self.assertIn("open_walk", paired.METRICS["harness_storage"])
+        self.assertIn("harness_storage.open_walk", paired.RATIO_CEILINGS)
+        self.assertIn("entry_count", paired.OBSERVED_EXACT["harness_storage"])
+        self.assertIn("leaf_id", paired.OBSERVED_EXACT["harness_storage"])
+        self.assertIn("session_id", paired.OBSERVED_EXACT["harness_storage"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)

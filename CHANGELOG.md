@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `harness_storage.open_walk` (JSONL
+  harness repo; cadr `session-repository-open` vs pi
+  `JsonlSessionRepo.open`). Friend-MachineD n=5 **1.80×**
+  (11643.5 / 6484.9 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `agent_schema.validate_ok_fail`
   (FiveAM edit-tool JSON Schema; cadr `validate-tool-arguments`
   vs pi `validateToolArguments`). Friend-MachineD n=5 **0.38×**

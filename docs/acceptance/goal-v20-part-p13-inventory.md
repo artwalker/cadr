@@ -295,10 +295,11 @@ These must not be filed as callees.
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 |
 | `src/cadr-cli/system-prompt.lisp` | 53 |
 
-### `harness_storage` (additional)
+### `harness_storage` (additional) — paired `harness_storage.open_walk`
 
-- pi: `packages/agent/src/harness session JSONL + memory repos (not coding-agent v3 journal.lisp, already paired)`
-- fixture: Same session.jsonl ingested through harness JSONL/memory storage. Time open + append + read. Distinct from storage_journal.
+- pi: `packages/agent/src/harness/session/jsonl JsonlSessionRepo`
+- fixture: existing `session.jsonl` ingested into JSONL repo. Time open + read-all + leaf walk. Distinct from `storage_journal` and `sqlite_session`.
+- Friend-MachineD n=5: **1.80×** (11643.5 / 6484.9 µs), ceiling 8.0. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

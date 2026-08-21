@@ -93,6 +93,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(schema), 1)
         self.assertEqual(schema[0]["class"], "paired")
         self.assertIn("agent_schema.validate_ok_fail", schema[0]["metrics"])
+        jsonl = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-agent/storage/jsonl.lisp"
+        ]
+        self.assertEqual(len(jsonl), 1)
+        self.assertEqual(jsonl[0]["class"], "paired")
+        self.assertIn("harness_storage.open_walk", jsonl[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

@@ -105,6 +105,7 @@ METRICS = {
     "session_export_html": ("to_html",),
     "protocol_cbor": ("roundtrip",),
     "agent_schema": ("validate_ok_fail",),
+    "harness_storage": ("open_walk",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -218,6 +219,10 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent.
     # Ratchet down only.
     "agent_schema.validate_ok_fail": 1.5,
+    # Frozen from the first Friend-MachineD non-quick harness_storage
+    # pair (samples=5): observed 1.80x (11644 / 6485 us). 8.0 follows
+    # the journal_read / tool_read headroom precedent. Ratchet down only.
+    "harness_storage.open_walk": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -439,6 +444,13 @@ OBSERVED_EXACT = {
         "ok",
         "fail",
         "tool",
+    ),
+    "harness_storage": (
+        "entry_count",
+        "leaf_id",
+        "ingested_entry_count",
+        "session_id",
+        "source_leaf_id",
     ),
     "resource_loader": (
         "skill_count",

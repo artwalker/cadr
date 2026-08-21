@@ -24,6 +24,7 @@
   "session_export_html.to_html",
   "protocol_cbor.roundtrip",
   "agent_schema.validate_ok_fail",
+  "harness_storage.open_walk",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -670,23 +671,23 @@
   },
   {
    "prefix": "src/cadr-agent/storage/harness.lisp",
-   "class": "needs-pair",
-   "hole": "harness_storage"
+   "class": "paired",
+   "metrics": ["harness_storage.open_walk"]
   },
   {
    "prefix": "src/cadr-agent/storage/jsonl.lisp",
-   "class": "needs-pair",
-   "hole": "harness_storage"
+   "class": "paired",
+   "metrics": ["harness_storage.open_walk"]
   },
   {
    "prefix": "src/cadr-agent/storage/memory.lisp",
-   "class": "needs-pair",
-   "hole": "harness_storage"
+   "class": "paired",
+   "metrics": ["harness_storage.open_walk"]
   },
   {
    "prefix": "src/cadr-agent/storage/protocol.lisp",
-   "class": "needs-pair",
-   "hole": "harness_storage"
+   "class": "paired",
+   "metrics": ["harness_storage.open_walk"]
   },
   {
    "prefix": "src/cadr-ai/auth/device-code.lisp",
