@@ -174,6 +174,7 @@ const REPETITIONS = {
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
 	"skill_prompt_load.build_prompt": 50,
+	"cli_bootstrap_sessions.coding_tools": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -412,6 +413,7 @@ const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
+const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -3082,6 +3084,27 @@ async function measureSkillPromptBuild() {
 	};
 }
 
+function runCliBootstrapCodingTools() {
+	const tools = codingToolsModule.createCodingTools("/tmp/proj");
+	const names = tools.map((tool) => tool.name);
+	return {
+		count: names.length,
+		baseline: names.join(",") === "read,bash,edit,write" ? 1 : 0,
+		snippet_count: names.length,
+		read_first: names[0] === "read" ? 1 : 0,
+	};
+}
+
+async function measureCliBootstrapCodingTools() {
+	const observed = runCliBootstrapCodingTools();
+	return {
+		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
+			return () => runCliBootstrapCodingTools();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3338,6 +3361,8 @@ process.stderr.write("goal20 pi paired paths: provider_registry_defs\n");
 const providerRegistryDefs = await measureProviderRegistryDefs();
 process.stderr.write("goal20 pi paired paths: skill_prompt_load\n");
 const skillPromptLoad = await measureSkillPromptBuild();
+process.stderr.write("goal20 pi paired paths: cli_bootstrap_sessions\n");
+const cliBootstrap = await measureCliBootstrapCodingTools();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3431,6 +3456,8 @@ const result = {
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
+			"cli_bootstrap_sessions.coding_tools":
+				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3528,6 +3555,7 @@ const result = {
 		cli_sdk: cliSdk,
 		provider_registry_defs: providerRegistryDefs,
 		skill_prompt_load: skillPromptLoad,
+		cli_bootstrap_sessions: cliBootstrap,
 		render_slicing: renderSlicing,
 	},
 };

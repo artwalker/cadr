@@ -135,6 +135,7 @@ METRICS = {
     "cli_sdk": ("version_newer",),
     "provider_registry_defs": ("lookup",),
     "skill_prompt_load": ("build_prompt",),
+    "cli_bootstrap_sessions": ("coding_tools",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -400,6 +401,11 @@ RATIO_CEILINGS = {
     # on the custom-prompt path. 3000.0 is first-freeze
     # headroom. Ratchet down only.
     "skill_prompt_load.build_prompt": 3000.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_bootstrap_sessions pair (samples=5): observed 2.40x
+    # (11.1 / 4.6 us). 8.0 is first-freeze headroom.
+    # Ratchet down only.
+    "cli_bootstrap_sessions.coding_tools": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -838,6 +844,12 @@ OBSERVED_EXACT = {
         "has_cwd",
         "has_extra",
         "has_agents",
+    ),
+    "cli_bootstrap_sessions": (
+        "count",
+        "baseline",
+        "snippet_count",
+        "read_first",
     ),
     "resource_loader": (
         "skill_count",

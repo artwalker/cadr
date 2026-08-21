@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_bootstrap_sessions.coding_tools`
+  (cwd `/tmp/proj`; cadr `make-coding-tools` vs pi
+  `createCodingTools`). Friend-MachineD n=5 **2.40×**
+  (11.1 / 4.6 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `skill_prompt_load.build_prompt`
   (custom/append/context; cadr `build-system-prompt` vs
   pi `buildSystemPrompt`). Friend-MachineD n=5

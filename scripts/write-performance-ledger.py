@@ -70,6 +70,7 @@ METRIC_KEYS = (
     "cli_sdk.version_newer",
     "provider_registry_defs.lookup",
     "skill_prompt_load.build_prompt",
+    "cli_bootstrap_sessions.coding_tools",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

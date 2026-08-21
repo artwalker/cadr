@@ -52,6 +52,7 @@
 ;;;;  39. cli_sdk newer-package-version-p vs isNewerPackageVersion
 ;;;;  40. provider_registry_defs list/find vs getBuiltinProviders
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
+;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -155,6 +156,7 @@
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
+    ("cli_bootstrap_sessions.coding_tools" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3847,6 +3849,31 @@
                 (lambda ()
                   (run-skill-prompt-build)))))))
 
+(defun run-cli-bootstrap-coding-tools ()
+  (let* ((tools (cadr-cli:make-coding-tools "/tmp/proj"))
+         (names (mapcar #'cadr-ai:tool-name tools))
+         (snippets (cadr-cli::tool-prompt-snippets tools)))
+    (list
+     (length names)
+     (if (equal names '("read" "bash" "edit" "write")) 1 0)
+     (length snippets)
+     (if (equal (car (first snippets)) "read") 1 0))))
+
+(defun measure-cli-bootstrap-coding-tools ()
+  (let ((observed (run-cli-bootstrap-coding-tools)))
+    (json-object
+     "observed"
+     (json-object
+      "count" (first observed)
+      "baseline" (second observed)
+      "snippet_count" (third observed)
+      "read_first" (fourth observed))
+     "coding_tools"
+     (collect "cli_bootstrap_sessions.coding_tools"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-coding-tools)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3991,6 +4018,8 @@
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
+      "cli_bootstrap_sessions.coding_tools"
+      "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -4146,6 +4175,8 @@
               (let ((provider-defs (measure-provider-registry-defs)))
               (format *error-output* "goal20 cadr paired paths: skill_prompt_load~%")
               (let ((skill-prompt (measure-skill-prompt-build)))
+              (format *error-output* "goal20 cadr paired paths: cli_bootstrap_sessions~%")
+              (let ((bootstrap (measure-cli-bootstrap-coding-tools)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -4218,6 +4249,7 @@
               "cli_sdk" sdk
               "provider_registry_defs" provider-defs
               "skill_prompt_load" skill-prompt
+              "cli_bootstrap_sessions" bootstrap
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4234,7 +4266,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

@@ -54,6 +54,7 @@
   "cli_sdk.version_newer",
   "provider_registry_defs.lookup",
   "skill_prompt_load.build_prompt",
+  "cli_bootstrap_sessions.coding_tools",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -973,8 +974,8 @@
   },
   {
    "prefix": "src/cadr-cli/bootstrap/tools.lisp",
-   "class": "needs-pair",
-   "hole": "cli_bootstrap_sessions"
+   "class": "paired",
+   "metrics": ["cli_bootstrap_sessions.coding_tools"]
   },
   {
    "prefix": "src/cadr-cli/config.lisp",

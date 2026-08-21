@@ -615,6 +615,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("has_cwd", paired.OBSERVED_EXACT["skill_prompt_load"])
         self.assertIn("has_agents", paired.OBSERVED_EXACT["skill_prompt_load"])
 
+    def test_cli_bootstrap_sessions_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("cli_bootstrap_sessions.coding_tools", RECORD.METRIC_KEYS)
+        self.assertIn("coding_tools", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.coding_tools", paired.RATIO_CEILINGS)
+        self.assertIn("count", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("baseline", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("read_first", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -702,6 +711,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_sdk.version_newer`", section)
             self.assertIn("`provider_registry_defs.lookup`", section)
             self.assertIn("`skill_prompt_load.build_prompt`", section)
+            self.assertIn("`cli_bootstrap_sessions.coding_tools`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

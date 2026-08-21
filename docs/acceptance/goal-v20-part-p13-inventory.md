@@ -464,10 +464,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-ai/runtime/faux-provider.lisp` | 601 |
 
-### `cli_bootstrap_sessions` (additional)
+### `cli_bootstrap_sessions` (additional) — `tools.lisp` paired `cli_bootstrap_sessions.coding_tools`
 
-- pi: `packages/coding-agent/src/cli/* session/command/auth dispatch (not argv_parse / help_render / list_models_render, already paired)`
-- fixture: cli-argv.json extra keys for /resume /login /compact routed through command handlers with a staged agent dir. No process cold start.
+- pi: `packages/coding-agent/src/core/tools/index.ts createCodingTools`
+- fixture: cwd `/tmp/proj`. Time construct four baseline tools, not a live session.
+- Friend-MachineD n=5: **2.40×** (11.1 / 4.6 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|
