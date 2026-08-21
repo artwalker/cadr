@@ -734,11 +734,17 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_cli_sdk_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("cli_sdk.version_newer", RECORD.METRIC_KEYS)
+        self.assertIn("cli_sdk.cache_miss", RECORD.METRIC_KEYS)
         self.assertIn("version_newer", paired.METRICS["cli_sdk"])
+        self.assertIn("cache_miss", paired.METRICS["cli_sdk"])
         self.assertIn("cli_sdk.version_newer", paired.RATIO_CEILINGS)
+        self.assertIn("cli_sdk.cache_miss", paired.RATIO_CEILINGS)
         self.assertIn("beta", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("newer_flag", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("equal_flag", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("cm_tok", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("cm_idle", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("empty_hit", paired.OBSERVED_EXACT["cli_sdk"])
 
     def test_provider_registry_defs_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -894,6 +900,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_support.parse_changelog`", section)
             self.assertIn("`cli_interactive_controller.decode_entity`", section)
             self.assertIn("`cli_sdk.version_newer`", section)
+            self.assertIn("`cli_sdk.cache_miss`", section)
             self.assertIn("`provider_registry_defs.lookup`", section)
             self.assertIn("`skill_prompt_load.build_prompt`", section)
             self.assertIn("`cli_bootstrap_sessions.coding_tools`", section)

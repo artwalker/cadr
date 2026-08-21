@@ -196,6 +196,7 @@ const REPETITIONS = {
 	"cli_support.parse_changelog": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
+	"cli_sdk.cache_miss": 50,
 	"provider_registry_defs.lookup": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
@@ -481,6 +482,9 @@ const changelogModule = await import(
 );
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
+const cacheStatsModule = await import(
+	moduleUrl("packages/coding-agent/src/core/cache-stats.ts")
+);
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
@@ -3907,11 +3911,126 @@ function runCliSdkVersionNewer() {
 	};
 }
 
+const pairedCacheModels = { getModel: () => ({ cost: { cacheRead: 0.3 } }) };
+
+function pairedCacheAssistant({
+	input = 0,
+	cacheRead = 0,
+	cacheWrite = 0,
+	cost = {},
+	model = "test-model",
+	timestamp = 0,
+} = {}) {
+	return {
+		role: "assistant",
+		content: [],
+		api: "anthropic-messages",
+		provider: "test",
+		model,
+		usage: {
+			input,
+			output: 10,
+			cacheRead,
+			cacheWrite,
+			totalTokens: 0,
+			cost: {
+				input: 0,
+				output: 0,
+				cacheRead: 0,
+				cacheWrite: 0,
+				total: 0,
+				...cost,
+			},
+		},
+		stopReason: "stop",
+		timestamp,
+	};
+}
+
+function pairedCacheEntry(message) {
+	return { type: "message", id: "x", parentId: null, timestamp: "", message };
+}
+
+function cacheMissShape(miss) {
+	if (!miss) return { tok: 0, idle: 0, chg: 0, hit: 0 };
+	return {
+		tok: miss.missedTokens,
+		idle: miss.idleMs,
+		chg: miss.modelChanged ? 1 : 0,
+		hit: 1,
+	};
+}
+
+function runCliSdkCacheMiss() {
+	const turn1 = pairedCacheAssistant({
+		cacheWrite: 100_000,
+		cost: { cacheWrite: 0.375 },
+		timestamp: 0,
+	});
+	const turn2 = pairedCacheAssistant({
+		cacheRead: 100_000,
+		cacheWrite: 5_000,
+		cost: { cacheRead: 0.03, cacheWrite: 0.019 },
+		timestamp: 60_000,
+	});
+	const entries = [pairedCacheEntry(turn1), pairedCacheEntry(turn2)];
+	const miss = cacheStatsModule.detectCacheMiss(
+		entries,
+		pairedCacheAssistant({
+			cacheWrite: 110_000,
+			cost: { cacheWrite: 0.4125 },
+			timestamp: 600_000,
+		}),
+		pairedCacheModels,
+	);
+	const switched = cacheStatsModule.detectCacheMiss(
+		entries,
+		pairedCacheAssistant({
+			cacheWrite: 110_000,
+			cost: { cacheWrite: 0.4125 },
+			model: "other-model",
+			timestamp: 120_000,
+		}),
+		pairedCacheModels,
+	);
+	const healthy = cacheStatsModule.detectCacheMiss(
+		entries,
+		pairedCacheAssistant({
+			cacheRead: 105_000,
+			cacheWrite: 2_000,
+			cost: { cacheRead: 0.0315, cacheWrite: 0.0075 },
+			timestamp: 120_000,
+		}),
+		pairedCacheModels,
+	);
+	const empty = cacheStatsModule.detectCacheMiss([], turn1, pairedCacheModels);
+	const missShape = cacheMissShape(miss);
+	const switchedShape = cacheMissShape(switched);
+	return {
+		cm_tok: missShape.tok,
+		cm_idle: missShape.idle,
+		cm_chg: missShape.chg,
+		cm_hit: missShape.hit,
+		sw_tok: switchedShape.tok,
+		sw_idle: switchedShape.idle,
+		sw_chg: switchedShape.chg,
+		sw_hit: switchedShape.hit,
+		healthy_hit: healthy ? 1 : 0,
+		empty_hit: empty ? 1 : 0,
+	};
+}
+
 async function measureCliSdkVersionNewer() {
-	const observed = runCliSdkVersionNewer();
+	const observed = {
+		...runCliSdkVersionNewer(),
+		...runCliSdkCacheMiss(),
+	};
 	return {
 		version_newer: await collect("cli_sdk.version_newer", () => {
 			return () => runCliSdkVersionNewer();
+		}),
+		cache_miss: await collect("cli_sdk.cache_miss", () => {
+			return () => runCliSdkCacheMiss();
 		}),
 		observed,
 	};
@@ -4441,6 +4560,8 @@ const result = {
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":
 				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
+			"cli_sdk.cache_miss":
+				"packages/coding-agent/src/core/cache-stats.ts detectCacheMiss",
 			"provider_registry_defs.lookup":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"skill_prompt_load.build_prompt":

@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_sdk.cache_miss`
+  (in-memory assistant usage miss/healthy/empty; cadr
+  `detect-cache-miss` vs pi `detectCacheMiss`). Friend-MachineD
+  n=5 **0.55×** (2.29 / 4.13 µs), ceiling 8.0. cadr leads.
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_models_rest.auth_command`
   (argv-only parse, no live auth; cadr `parse-auth-command`
   vs pi `parseAuthCommand`). Friend-MachineD n=5 **0.47×**

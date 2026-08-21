@@ -79,6 +79,7 @@
 ;;;;  65. cli_support cadr-user-agent vs getPiUserAgent
 ;;;;  66. cli_support parse-changelog vs parseChangelog
 ;;;;  67. cli_models_rest parse-auth-command vs parseAuthCommand
+;;;;  68. cli_sdk detect-cache-miss vs detectCacheMiss
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -204,6 +205,7 @@
     ("cli_support.parse_changelog" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
+    ("cli_sdk.cache_miss" . 50)
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
@@ -4655,8 +4657,94 @@
    (if (cadr-cli::newer-package-version-p "1.2.4" "1.2.3") 1 0)
    (if (cadr-cli::newer-package-version-p "1.2.3" "1.2.3") 1 0)))
 
+(defun paired-cache-price (provider model)
+  (declare (ignore provider model))
+  0.3d0)
+
+(defun paired-cache-assistant
+    (&key (input 0) (cache-read 0) (cache-write 0)
+       (cache-read-cost 0d0) (cache-write-cost 0d0)
+       (model "test-model") (timestamp 0))
+  (cadr-ai:make-assistant-message
+   :content nil
+   :api :anthropic-messages
+   :provider :test
+   :model model
+   :usage
+   (cadr-ai:make-usage
+    :input input
+    :output 10
+    :cache-read cache-read
+    :cache-write cache-write
+    :cost
+    (cadr-ai:make-cost
+     :cache-read cache-read-cost
+     :cache-write cache-write-cost))
+   :stop-reason :stop
+   :timestamp timestamp))
+
+(defun cache-miss-shape (miss)
+  (if miss
+      (list
+       (cadr-cli::cache-miss-missed-tokens miss)
+       (cadr-cli::cache-miss-idle-milliseconds miss)
+       (if (cadr-cli::cache-miss-model-changed-p miss) 1 0)
+       1)
+      (list 0 0 0 0)))
+
+(defun run-cli-sdk-cache-miss ()
+  (let* ((turn1
+           (paired-cache-assistant
+            :cache-write 100000
+            :cache-write-cost 0.375d0
+            :timestamp 0))
+         (turn2
+           (paired-cache-assistant
+            :cache-read 100000
+            :cache-write 5000
+            :cache-read-cost 0.03d0
+            :cache-write-cost 0.019d0
+            :timestamp 60000))
+         (prior (list turn1 turn2))
+         (price #'paired-cache-price)
+         (miss
+           (cadr-cli::detect-cache-miss
+            prior
+            (paired-cache-assistant
+             :cache-write 110000
+             :cache-write-cost 0.4125d0
+             :timestamp 600000)
+            :model-price-function price))
+         (switched
+           (cadr-cli::detect-cache-miss
+            prior
+            (paired-cache-assistant
+             :cache-write 110000
+             :cache-write-cost 0.4125d0
+             :model "other-model"
+             :timestamp 120000)
+            :model-price-function price))
+         (healthy
+           (cadr-cli::detect-cache-miss
+            prior
+            (paired-cache-assistant
+             :cache-read 105000
+             :cache-write 2000
+             :cache-read-cost 0.0315d0
+             :cache-write-cost 0.0075d0
+             :timestamp 120000)
+            :model-price-function price))
+         (empty
+           (cadr-cli::detect-cache-miss
+            nil turn1 :model-price-function price)))
+    (append
+     (cache-miss-shape miss)
+     (cache-miss-shape switched)
+     (list (if healthy 1 0) (if empty 1 0)))))
+
 (defun measure-cli-sdk-version-newer ()
-  (let ((observed (run-cli-sdk-version-newer)))
+  (let ((observed (run-cli-sdk-version-newer))
+        (cache (run-cli-sdk-cache-miss)))
     (json-object
      "observed"
      (json-object
@@ -4664,12 +4752,27 @@
       "eq" (second observed)
       "older" (third observed)
       "newer_flag" (fourth observed)
-      "equal_flag" (fifth observed))
+      "equal_flag" (fifth observed)
+      "cm_tok" (nth 0 cache)
+      "cm_idle" (nth 1 cache)
+      "cm_chg" (nth 2 cache)
+      "cm_hit" (nth 3 cache)
+      "sw_tok" (nth 4 cache)
+      "sw_idle" (nth 5 cache)
+      "sw_chg" (nth 6 cache)
+      "sw_hit" (nth 7 cache)
+      "healthy_hit" (nth 8 cache)
+      "empty_hit" (nth 9 cache))
      "version_newer"
      (collect "cli_sdk.version_newer"
               (lambda ()
                 (lambda ()
-                  (run-cli-sdk-version-newer)))))))
+                  (run-cli-sdk-version-newer))))
+     "cache_miss"
+     (collect "cli_sdk.cache_miss"
+              (lambda ()
+                (lambda ()
+                  (run-cli-sdk-cache-miss)))))))
 
 (defun provider-definition-present-p (id)
   (handler-case
@@ -5016,6 +5119,8 @@
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"
       "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
+      "cli_sdk.cache_miss"
+      "src/cadr-cli/sdk/cache-version.lisp detect-cache-miss"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "skill_prompt_load.build_prompt"

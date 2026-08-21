@@ -552,11 +552,11 @@ These must not be filed as callees.
 | `src/cadr-cli/extensions/llama/ui.lisp` | 763 |
 | `src/cadr-cli/extensions/loader.lisp` | 702 |
 
-### `cli_sdk` (additional) — `cache-version.lisp` paired `cli_sdk.version_newer`
+### `cli_sdk` (additional) — `cache-version.lisp` paired `cli_sdk.version_newer` + `cli_sdk.cache_miss`
 
 - pi: `packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion`
 - fixture: valid semver compare/newer flags. No network.
-- Friend-MachineD n=5: **0.40×** (4.1 / 10.3 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
+- Friend-MachineD n=5: version_newer **0.40×** (4.1 / 10.3 µs); cache_miss **0.55×** (2.29 / 4.13 µs), ceiling 8.0. cadr leads. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

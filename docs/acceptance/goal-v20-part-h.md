@@ -1181,6 +1181,20 @@ throws). Do not exact product usage or error text. No live
 auth. First Friend-MachineD freeze **0.47×** (3.56 / 7.54 µs),
 ceiling 8.0. cadr leads. Same commit no optimize.
 
+### Pair 83 — `cli_sdk` (cache_miss)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cache_miss` | `detect-cache-miss` | `detectCacheMiss` (`packages/coding-agent/src/core/cache-stats.ts`) |
+
+Leftover sibling of `version_newer` in `cache-version.lisp`.
+In-memory assistant usage (write 100k / read 100k then full
+miss 110k write). Tokens 105000, idle 540000, model-switch
+flag. Healthy and first-turn empty. Do not exact missed-cost
+float. No live session. First Friend-MachineD freeze **0.55×**
+(2.29 / 4.13 µs), ceiling 8.0. cadr leads. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1505,7 +1519,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
-| `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer` |
+| `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
