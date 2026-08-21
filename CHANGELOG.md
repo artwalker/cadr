@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_models_rest.auth_command`
+  (argv-only parse, no live auth; cadr `parse-auth-command`
+  vs pi `parseAuthCommand`). Friend-MachineD n=5 **0.47×**
+  (3.56 / 7.54 µs), ceiling 8.0. cadr leads. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_support.parse_changelog`
   (`0.2.0` / malformed / `0.1.0` + missing empty; cadr
   `parse-changelog` vs pi `parseChangelog`). Friend-MachineD

@@ -1166,6 +1166,21 @@ exact product URLs (`normalize-changelog-links` skipped). First
 Friend-MachineD freeze **2.96×** (36.04 / 12.20 µs), ceiling
 8.0. Same commit no optimize.
 
+### Pair 82 — `cli_models_rest` (auth_command)
+
+| metric | cadr | pi |
+|---|---|---|
+| `auth_command` | `parse-auth-command` | `parseAuthCommand` (`packages/coding-agent/src/cli/auth-command.ts`) |
+
+Leftover sibling of `pattern_match`. Argv only: skip non-auth;
+api-key + `--provider openai`; bearer `--min-expiry 30m` =
+1800000; check json/credentials/no-refresh. Errors on
+min-expiry-on-api and unknown. Help via `isAuthCommandHelp`,
+not through `parseAuthCommand` (cadr returns help-p; pi
+throws). Do not exact product usage or error text. No live
+auth. First Friend-MachineD freeze **0.47×** (3.56 / 7.54 µs),
+ceiling 8.0. cadr leads. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1371,14 +1386,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 131 | 59,795 | 46.9% | `no worse than baseline` is falsifiable |
+| `paired` | 132 | 60,418 | 47.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 121 | 47,200 | 37.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 120 | 46,577 | 36.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.9% of lines (131 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 52.8% of lines.
+- **Falsifiable vs baseline:** 47.4% of lines (132 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 53.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1479,6 +1494,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,015 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/media.lisp` | 1,277 | `image_runtime.mime_type` |
+| `src/cadr-cli/models/credential-print.lisp` | 623 | `cli_models_rest.auth_command` |
 | `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
@@ -1589,7 +1605,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_print_rpc` | 6 | 1,601 |
 | `settings_load` | 4 | 1,499 |
 | `cli_sdk` | 4 | 1,214 |
-| `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
 | `provider_registry_defs` | 2 | 454 |
@@ -1599,6 +1614,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `image_runtime` | 1 | 222 |
 | `cli_support` | 6 | 186 |
 | `session_compact` | 1 | 185 |
+| `cli_models_rest` | 1 | 75 |
 | `agent_conditions` | 1 | 43 |
 | `ai_support` | 1 | 6 |
 

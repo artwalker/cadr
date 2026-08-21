@@ -152,6 +152,7 @@ const REPETITIONS = {
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
+	"cli_models_rest.auth_command": 50,
 	"image_runtime.dimensions": 50,
 	"image_runtime.mime_type": 50,
 	"image_runtime.lookup": 50,
@@ -393,6 +394,9 @@ const evalsSummaryModule = await import(
 const modelDataModule = await import(moduleUrl("packages/ai/scripts/model-data.ts"));
 const modelResolverModule = await import(
 	moduleUrl("packages/coding-agent/src/core/model-resolver.ts")
+);
+const authCommandModule = await import(
+	moduleUrl("packages/coding-agent/src/cli/auth-command.ts")
 );
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
@@ -2445,13 +2449,82 @@ function cliModelsRestObserved(rows) {
 	};
 }
 
+function authCommandErrorP(args) {
+	try {
+		authCommandModule.parseAuthCommand(args);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runCliModelsRestAuthCommand() {
+	const skip = authCommandModule.parseAuthCommand(["models"]);
+	const api = authCommandModule.parseAuthCommand([
+		"auth",
+		"print-api-key",
+		"--provider",
+		"openai",
+	]);
+	const bearer = authCommandModule.parseAuthCommand([
+		"auth",
+		"print-bearer-token",
+		"--min-expiry",
+		"30m",
+	]);
+	const check = authCommandModule.parseAuthCommand([
+		"auth",
+		"check",
+		"--json",
+		"--credentials",
+		"--no-refresh",
+		"--provider",
+		"openai",
+	]);
+	return {
+		ac_skip: skip ? 1 : 0,
+		ac_api: api?.kind === "api_key" ? 1 : 0,
+		ac_api_prov:
+			api?.args?.[0] === "--provider" && api?.args?.[1] === "openai" ? 1 : 0,
+		ac_bearer: bearer?.kind === "bearer_token" ? 1 : 0,
+		ac_exp: bearer?.minExpiryMs ?? 0,
+		ac_check: check?.kind === "check" ? 1 : 0,
+		ac_json: check?.json ? 1 : 0,
+		ac_cred: check?.credentials ? 1 : 0,
+		ac_noref: check?.noRefresh ? 1 : 0,
+		ac_chk_prov:
+			check?.args?.[0] === "--provider" && check?.args?.[1] === "openai" ? 1 : 0,
+		ac_min_api: authCommandErrorP([
+			"auth",
+			"print-api-key",
+			"--min-expiry",
+			"30m",
+		]),
+		ac_unknown: authCommandErrorP(["auth", "unknown"]),
+		ac_help: authCommandModule.isAuthCommandHelp(["auth", "--help"]) ? 1 : 0,
+		ac_help2: authCommandModule.isAuthCommandHelp([
+			"auth",
+			"print-api-key",
+			"--help",
+		])
+			? 1
+			: 0,
+	};
+}
+
 async function measureCliModelsRest() {
 	const runtime = await createModelRuntime();
 	const models = await runtime.getAvailable();
-	const observed = cliModelsRestObserved(runCliModelsRest(models));
+	const observed = {
+		...cliModelsRestObserved(runCliModelsRest(models)),
+		...runCliModelsRestAuthCommand(),
+	};
 	return {
 		pattern_match: await collect("cli_models_rest.pattern_match", () => {
 			return () => runCliModelsRest(models);
+		}),
+		auth_command: await collect("cli_models_rest.auth_command", () => {
+			return () => runCliModelsRestAuthCommand();
 		}),
 		observed,
 	};
@@ -4285,6 +4358,8 @@ const result = {
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
 			"cli_models_rest.pattern_match":
 				"packages/coding-agent/src/core/model-resolver.ts parseModelPattern",
+			"cli_models_rest.auth_command":
+				"packages/coding-agent/src/cli/auth-command.ts parseAuthCommand",
 			"image_runtime.dimensions":
 				"packages/tui/src/terminal-image.ts getImageDimensions",
 			"image_runtime.mime_type":

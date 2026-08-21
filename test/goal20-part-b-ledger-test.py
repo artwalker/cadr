@@ -410,11 +410,17 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_cli_models_rest_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("cli_models_rest.pattern_match", RECORD.METRIC_KEYS)
+        self.assertIn("cli_models_rest.auth_command", RECORD.METRIC_KEYS)
         self.assertIn("pattern_match", paired.METRICS["cli_models_rest"])
+        self.assertIn("auth_command", paired.METRICS["cli_models_rest"])
         self.assertIn("cli_models_rest.pattern_match", paired.RATIO_CEILINGS)
+        self.assertIn("cli_models_rest.auth_command", paired.RATIO_CEILINGS)
         self.assertIn("exact_id", paired.OBSERVED_EXACT["cli_models_rest"])
         self.assertIn("scoped_thinking", paired.OBSERVED_EXACT["cli_models_rest"])
         self.assertIn("miss", paired.OBSERVED_EXACT["cli_models_rest"])
+        self.assertIn("ac_api", paired.OBSERVED_EXACT["cli_models_rest"])
+        self.assertIn("ac_exp", paired.OBSERVED_EXACT["cli_models_rest"])
+        self.assertIn("ac_unknown", paired.OBSERVED_EXACT["cli_models_rest"])
 
     def test_image_runtime_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -844,6 +850,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)
+            self.assertIn("`cli_models_rest.auth_command`", section)
             self.assertIn("`image_runtime.dimensions`", section)
             self.assertIn("`image_runtime.mime_type`", section)
             self.assertIn("`image_runtime.lookup`", section)

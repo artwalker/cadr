@@ -78,6 +78,7 @@
 ;;;;  64. cli_support parse-git-source vs parseGitUrl
 ;;;;  65. cli_support cadr-user-agent vs getPiUserAgent
 ;;;;  66. cli_support parse-changelog vs parseChangelog
+;;;;  67. cli_models_rest parse-auth-command vs parseAuthCommand
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -159,6 +160,7 @@
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
+    ("cli_models_rest.auth_command" . 50)
     ("image_runtime.dimensions" . 50)
     ("image_runtime.mime_type" . 50)
     ("image_runtime.lookup" . 50)
@@ -2999,6 +3001,47 @@
           (declare (ignore warning))
           (cons pattern (model-match-fields model thinking)))))
 
+(defun auth-command-error-p (arguments)
+  (handler-case
+      (progn
+        (cadr-cli::parse-auth-command arguments)
+        0)
+    (error () 1)))
+
+(defun run-cli-models-rest-auth-command ()
+  (let ((skip (cadr-cli::parse-auth-command '("models")))
+        (api
+          (cadr-cli::parse-auth-command
+           '("auth" "print-api-key" "--provider" "openai")))
+        (bearer
+          (cadr-cli::parse-auth-command
+           '("auth" "print-bearer-token" "--min-expiry" "30m")))
+        (check
+          (cadr-cli::parse-auth-command
+           '("auth" "check" "--json" "--credentials" "--no-refresh"
+             "--provider" "openai"))))
+    (list
+     (if skip 1 0)
+     (if (eq (getf api :kind) :api-key) 1 0)
+     (if (equal (getf api :arguments) '("--provider" "openai")) 1 0)
+     (if (eq (getf bearer :kind) :bearer-token) 1 0)
+     (or (getf bearer :minimum-expiry-ms) 0)
+     (if (eq (getf check :kind) :check) 1 0)
+     (if (getf check :json-p) 1 0)
+     (if (getf check :credentials-p) 1 0)
+     (if (getf check :no-refresh-p) 1 0)
+     (if (equal (getf check :arguments) '("--provider" "openai")) 1 0)
+     (auth-command-error-p
+      '("auth" "print-api-key" "--min-expiry" "30m"))
+     (auth-command-error-p '("auth" "unknown"))
+     (if (cadr-cli::auth-command-help-request-p '("auth" "--help"))
+         1
+         0)
+     (if (cadr-cli::auth-command-help-request-p
+          '("auth" "print-api-key" "--help"))
+         1
+         0))))
+
 (defun measure-cli-models-rest ()
   (let* ((models
            (cadr-cli::model-registry-available-models
@@ -3008,7 +3051,8 @@
          (bare (second rows))
          (partial (third rows))
          (scoped (fourth rows))
-         (missing (fifth rows)))
+         (missing (fifth rows))
+         (auth (run-cli-models-rest-auth-command)))
     (json-object
      "observed"
      (json-object
@@ -3018,12 +3062,31 @@
       "partial_id" (second partial)
       "scoped_id" (second scoped)
       "scoped_thinking" (fourth scoped)
-      "miss" (if (string= (second missing) "") 1 0))
+      "miss" (if (string= (second missing) "") 1 0)
+      "ac_skip" (nth 0 auth)
+      "ac_api" (nth 1 auth)
+      "ac_api_prov" (nth 2 auth)
+      "ac_bearer" (nth 3 auth)
+      "ac_exp" (nth 4 auth)
+      "ac_check" (nth 5 auth)
+      "ac_json" (nth 6 auth)
+      "ac_cred" (nth 7 auth)
+      "ac_noref" (nth 8 auth)
+      "ac_chk_prov" (nth 9 auth)
+      "ac_min_api" (nth 10 auth)
+      "ac_unknown" (nth 11 auth)
+      "ac_help" (nth 12 auth)
+      "ac_help2" (nth 13 auth))
      "pattern_match"
      (collect "cli_models_rest.pattern_match"
               (lambda ()
                 (lambda ()
-                  (run-cli-models-rest models)))))))
+                  (run-cli-models-rest models))))
+     "auth_command"
+     (collect "cli_models_rest.auth_command"
+              (lambda ()
+                (lambda ()
+                  (run-cli-models-rest-auth-command)))))))
 
 (defparameter *png-1x1-b64*
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC")
@@ -4865,6 +4928,8 @@
       "src/cadr-ai/crypto.lisp hmac-sha256"
       "cli_models_rest.pattern_match"
       "src/cadr-cli/models/matching.lisp parse-scoped-model-pattern"
+      "cli_models_rest.auth_command"
+      "src/cadr-cli/models/credential-print.lisp parse-auth-command"
       "image_runtime.dimensions"
       "src/cadr-tui/terminal-image.lisp image-dimensions"
       "image_runtime.mime_type"

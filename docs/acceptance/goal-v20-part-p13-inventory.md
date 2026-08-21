@@ -481,11 +481,11 @@ These must not be filed as callees.
 | `src/cadr-cli/migration.lisp` | 512 |
 | `src/cadr-cli/repl.lisp` | 112 |
 
-### `cli_models_rest` (additional) — `matching.lisp` paired `cli_models_rest.pattern_match`
+### `cli_models_rest` (additional) — `matching.lisp` paired `cli_models_rest.pattern_match`; `credential-print.lisp` paired `cli_models_rest.auth_command`
 
 - pi: `packages/coding-agent/src/core/model-resolver.ts parseModelPattern`
 - fixture: staged models.json + auth.json. Time pattern match, not list_models_render / credential-print.
-- Friend-MachineD n=5: **1.65×** (31.9 / 19.4 µs), ceiling 3.0. Other files still `needs-pair`. No optimize in the booking commit.
+- Friend-MachineD n=5: pattern_match **1.65×** (31.9 / 19.4 µs), ceiling 3.0; auth_command **0.47×** (3.56 / 7.54 µs), ceiling 8.0. cadr leads on auth_command. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

@@ -112,7 +112,7 @@ METRICS = {
     "evals_harness": ("summarize",),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
-    "cli_models_rest": ("pattern_match",),
+    "cli_models_rest": ("pattern_match", "auth_command"),
     "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read"),
     "tui_latex": ("render",),
@@ -290,6 +290,11 @@ RATIO_CEILINGS = {
     # pair (samples=5): observed 1.65x (31.9 / 19.4 us). 3.0 follows
     # the argv_parse / tool_grep headroom precedent. Ratchet down only.
     "cli_models_rest.pattern_match": 3.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_models_rest.auth_command pair (samples=5): observed
+    # 0.47x (3.56 / 7.54 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "cli_models_rest.auth_command": 8.0,
     # Frozen from the first Friend-MachineD non-quick image_runtime
     # pair (samples=5): observed 5.44x (7.8 / 1.4 us). 8.0 follows
     # the tool_read / journal_read headroom precedent. Ratchet down only.
@@ -812,6 +817,20 @@ OBSERVED_EXACT = {
         "scoped_id",
         "scoped_thinking",
         "miss",
+        "ac_skip",
+        "ac_api",
+        "ac_api_prov",
+        "ac_bearer",
+        "ac_exp",
+        "ac_check",
+        "ac_json",
+        "ac_cred",
+        "ac_noref",
+        "ac_chk_prov",
+        "ac_min_api",
+        "ac_unknown",
+        "ac_help",
+        "ac_help2",
     ),
     "image_runtime": (
         "png_width",
