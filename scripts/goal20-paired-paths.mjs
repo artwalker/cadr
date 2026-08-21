@@ -155,6 +155,7 @@ const REPETITIONS = {
 	"image_runtime.dimensions": 50,
 	"image_runtime.mime_type": 50,
 	"image_runtime.lookup": 50,
+	"image_runtime.dimension_note": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"tui_latex.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
@@ -402,6 +403,9 @@ const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
 const mimeModule = await import(moduleUrl("packages/coding-agent/src/utils/mime.ts"));
 const imageModelsModule = await import(moduleUrl("packages/ai/src/image-models.ts"));
+const imageResizeModule = await import(
+	moduleUrl("packages/coding-agent/src/utils/image-resize.ts")
+);
 const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
@@ -2453,10 +2457,35 @@ function runImageRuntimeLookup() {
 	};
 }
 
+function dimNoteResult(originalWidth, originalHeight, width, height, wasResized) {
+	return {
+		data: "AA==",
+		mimeType: "image/png",
+		originalWidth,
+		originalHeight,
+		width,
+		height,
+		wasResized,
+	};
+}
+
+function dimNoteOrEmpty(result) {
+	return imageResizeModule.formatDimensionNote(result) ?? "";
+}
+
+function runImageRuntimeDimensionNote() {
+	return {
+		note_resized: dimNoteOrEmpty(dimNoteResult(2000, 1000, 1000, 500, true)),
+		note_half: dimNoteOrEmpty(dimNoteResult(1000, 800, 400, 320, true)),
+		note_plain: dimNoteOrEmpty(dimNoteResult(64, 64, 64, 64, false)),
+	};
+}
+
 async function measureImageRuntime() {
 	const dims = runImageRuntime();
 	const mime = runImageRuntimeMime();
 	const lookup = runImageRuntimeLookup();
+	const notes = runImageRuntimeDimensionNote();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -2467,7 +2496,10 @@ async function measureImageRuntime() {
 		lookup: await collect("image_runtime.lookup", () => {
 			return () => runImageRuntimeLookup();
 		}),
-		observed: { ...dims, ...mime, ...lookup },
+		dimension_note: await collect("image_runtime.dimension_note", () => {
+			return () => runImageRuntimeDimensionNote();
+		}),
+		observed: { ...dims, ...mime, ...lookup, ...notes },
 	};
 }
 
@@ -3631,6 +3663,8 @@ const result = {
 				"packages/coding-agent/src/utils/mime.ts detectSupportedImageMimeType",
 			"image_runtime.lookup":
 				"packages/ai/src/image-models.ts getImageModel",
+			"image_runtime.dimension_note":
+				"packages/coding-agent/src/utils/image-resize.ts formatDimensionNote",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",

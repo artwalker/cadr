@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `image_runtime.dimension_note`
+  (resized 2000×1000→1000×500 / 1000×800→400×320 /
+  unresized 64×64; cadr `format-image-dimension-note`
+  vs pi `formatDimensionNote`). Friend-MachineD n=5
+  **1.73×** (3.67 / 2.12 µs), ceiling 8.0. Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `image_runtime.lookup`
   (gemini / flux / nope; cadr `find-image-model` vs pi
   `getImageModel`). Friend-MachineD n=5 **7.38×**

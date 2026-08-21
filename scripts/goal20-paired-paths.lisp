@@ -61,6 +61,7 @@
 ;;;;  48. ai_support append-grammar-json-delta vs appendGrammarToolInputJsonDelta
 ;;;;  49. image_runtime detect-image-mime-type vs detectSupportedImageMimeType
 ;;;;  50. image_runtime find-image-model vs getImageModel
+;;;;  51. image_runtime format-image-dimension-note vs formatDimensionNote
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -145,6 +146,7 @@
     ("image_runtime.dimensions" . 50)
     ("image_runtime.mime_type" . 50)
     ("image_runtime.lookup" . 50)
+    ("image_runtime.dimension_note" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
@@ -3040,10 +3042,33 @@
    (image-lookup-flag "black-forest-labs/flux.2-pro")
    (image-lookup-flag "nope")))
 
+(defun dim-note-or-empty (result)
+  (or (cadr-cli:format-image-dimension-note result) ""))
+
+(defun dim-note-result (original-width original-height width height resized-p)
+  (cadr-cli::make-image-process-result
+   :bytes #()
+   :mime-type "image/png"
+   :original-width original-width
+   :original-height original-height
+   :width width
+   :height height
+   :resized-p resized-p))
+
+(defun run-image-runtime-dimension-note ()
+  (list
+   (dim-note-or-empty
+    (dim-note-result 2000 1000 1000 500 t))
+   (dim-note-or-empty
+    (dim-note-result 1000 800 400 320 t))
+   (dim-note-or-empty
+    (dim-note-result 64 64 64 64 nil))))
+
 (defun measure-image-runtime ()
   (let ((dims (run-image-runtime))
         (mime (run-image-runtime-mime))
-        (lookup (run-image-runtime-lookup)))
+        (lookup (run-image-runtime-lookup))
+        (notes (run-image-runtime-dimension-note)))
     (json-object
      "observed"
      (json-object
@@ -3059,7 +3084,10 @@
       "miss_mime" (fifth mime)
       "gemini" (first lookup)
       "flux" (second lookup)
-      "unknown" (third lookup))
+      "unknown" (third lookup)
+      "note_resized" (first notes)
+      "note_half" (second notes)
+      "note_plain" (third notes))
      "dimensions"
      (collect "image_runtime.dimensions"
               (lambda ()
@@ -3074,7 +3102,12 @@
      (collect "image_runtime.lookup"
               (lambda ()
                 (lambda ()
-                  (run-image-runtime-lookup)))))))
+                  (run-image-runtime-lookup))))
+     "dimension_note"
+     (collect "image_runtime.dimension_note"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-dimension-note)))))))
 
 (defun rpc-jsonl-object ()
   (cadr-ai::json-object
@@ -4207,6 +4240,8 @@
       "src/cadr-cli/media.lisp detect-image-mime-type"
       "image_runtime.lookup"
       "src/cadr-ai/image-models.generated.lisp find-image-model"
+      "image_runtime.dimension_note"
+      "src/cadr-cli/interactive/images.lisp format-image-dimension-note"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
       "tui_latex.render"

@@ -934,6 +934,20 @@ covered-as-callee. Observed `gemini` / `flux` /
 freeze **7.38×** (1.51 / 0.20 µs), ceiling 8.0
 (variance). Same commit no optimize.
 
+### Pair 65 — `image_runtime` (dimension_note)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dimension_note` | `format-image-dimension-note` | `formatDimensionNote` (`packages/coding-agent/src/utils/image-resize.ts`) |
+
+Leftover sibling of `dimensions` / `mime_type` / `lookup`.
+Synthetic resized 2000×1000→1000×500 (scale 2.00) and
+1000×800→400×320 (scale 2.50); unresized 64×64 is empty.
+Do not time decode/resize/Photon. Observed `note_resized`
+/ `note_half` / `note_plain` are exact. First
+Friend-MachineD freeze **1.73×** (3.67 / 2.12 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1139,14 +1153,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 117 | 58,079 | 45.6% | `no worse than baseline` is falsifiable |
+| `paired` | 118 | 58,369 | 45.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 135 | 48,916 | 38.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 134 | 48,626 | 38.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 45.6% of lines (117 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 51.5% of lines.
+- **Falsifiable vs baseline:** 45.8% of lines (118 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 51.7% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1234,6 +1248,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/bootstrap/tools.lisp` | 89 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
@@ -1345,12 +1360,12 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_sdk` | 4 | 1,214 |
 | `cli_support` | 11 | 703 |
 | `cli_models_rest` | 2 | 698 |
-| `image_runtime` | 3 | 629 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
 | `ai_capabilities` | 4 | 472 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
+| `image_runtime` | 2 | 339 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `ai_support` | 3 | 203 |

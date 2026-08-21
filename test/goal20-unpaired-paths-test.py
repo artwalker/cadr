@@ -181,6 +181,16 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(image_gen), 1)
         self.assertEqual(image_gen[0]["class"], "paired")
         self.assertIn("image_runtime.lookup", image_gen[0]["metrics"])
+        interactive_images = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/interactive/images.lisp"
+        ]
+        self.assertEqual(len(interactive_images), 1)
+        self.assertEqual(interactive_images[0]["class"], "paired")
+        self.assertIn(
+            "image_runtime.dimension_note", interactive_images[0]["metrics"]
+        )
         print_mode = [
             row
             for row in classified["rows"]

@@ -113,7 +113,7 @@ METRICS = {
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match",),
-    "image_runtime": ("dimensions", "mime_type", "lookup"),
+    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note"),
     "cli_print_rpc": ("jsonl_line",),
     "tui_latex": ("render",),
     "tui_editor_helpers": ("fuzzy_match",),
@@ -304,6 +304,11 @@ RATIO_CEILINGS = {
     # 7.38x (1.51 / 0.20 us). 8.0 is first-freeze
     # headroom (variance). Ratchet down only.
     "image_runtime.lookup": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # image_runtime.dimension_note pair (samples=5): observed
+    # 1.73x (3.67 / 2.12 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "image_runtime.dimension_note": 8.0,
     # Frozen from the first Friend-MachineD non-quick cli_print_rpc
     # pair (samples=5): observed 13.21x (3.3 / 0.25 us). 8.0 follows
     # the microsecond-floor / agent_proxy variance precedent (not
@@ -739,6 +744,9 @@ OBSERVED_EXACT = {
         "gemini",
         "flux",
         "unknown",
+        "note_resized",
+        "note_half",
+        "note_plain",
     ),
     "cli_print_rpc": (
         "line_chars",
