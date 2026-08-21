@@ -1303,4 +1303,19 @@ parking. Advisor rejects park.
 **Why it was decidable**: 屠龙 continues on load gap
 (~1.11×); side-quest losses do not empty `[ready]`.
 
+## 2026-08-21 — single-element content shortcut falsified (1763→1929)
+
+**Ruled**: executor tried single-element content array
+shortcut after compact-prefix. Friend-MachineD n=5 load
+**1763→1929 µs** (samples 1762–2538). Product restored to
+`0084f0703`. EQUAL FiveAM kept.
+
+**Decided**: do not redo this shortcut. **Next**:
+`provider_pi_messages` `WRITE-JSON-STRING` / request
+stringify residual (not event parse-json-octets). Gate:
+path improves and `session_load` **≤ ~1763**. Silent stop
+invalid. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
 

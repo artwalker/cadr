@@ -92,6 +92,40 @@
        (cadr-ai::stringify-json
         (format nil "ab\"cd\\ef~%gh")))))
 
+(test write-json-string-simple-base-equals-generic-mutants
+  ;; Unescaped simple-base-string shortcut vs generic CHAR walk
+  ;; (wide character vector). Escapes, controls, and surrogates
+  ;; still match. Drives shipped stringify-json / WRITE-JSON-STRING.
+  (flet ((wide (text)
+           (let ((padded (concatenate 'string "xx" text "yy")))
+             (make-array
+              (length text)
+              :element-type 'character
+              :displaced-to padded
+              :displaced-index-offset 2))))
+    (let ((plain "abcdefghij"))
+      (is (simple-string-p plain))
+      (is (not (simple-string-p (wide plain))))
+      (is (string=
+           (cadr-ai::stringify-json plain)
+           (cadr-ai::stringify-json (wide plain)))))
+    (let ((escaped (format nil "ab\"cd\\ef~%gh~Cij" #\Tab)))
+      (is (string=
+           "\"ab\\\"cd\\\\ef\\ngh\\tij\""
+           (cadr-ai::stringify-json escaped)))
+      (is (string=
+           (cadr-ai::stringify-json escaped)
+           (cadr-ai::stringify-json (wide escaped)))))
+    (let* ((surrogate (code-char #xd83d))
+           (emoji (code-char #x1f648))
+           (text
+             (coerce
+              (list #\a surrogate #\b emoji)
+              'string)))
+      (is (string=
+           (format nil "\"ab~C\"" emoji)
+           (cadr-ai::stringify-json text))))))
+
 (test parse-json-accepts-fill-pointer-and-displaced-source
   (let* ((text "{\"k\":\"v\"}")
          (buffer (make-array (length text)

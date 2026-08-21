@@ -272,6 +272,34 @@
              (lambda (block) (typep block 'cadr-ai:tool-call))
              (assistant-message-content message)))))))
 
+(test pairing-provider-pi-messages-request-stringify-is-json
+  ;; WRITE-JSON-STRING residual: invoke-http-request stringifies
+  ;; build-request payload (not event parse-json-octets).
+  (multiple-value-bind (provider model)
+      (provider-case :pi-messages)
+    (let ((bodies nil))
+      (let ((*http-request-function*
+              (lambda (url &rest arguments)
+                (declare (ignore url))
+                (push (getf arguments :content) bodies)
+                (values
+                 (open
+                  (fixture-path
+                   "test/fixtures/goal20-paired-paths/pi-messages.sse")
+                  :direction :input
+                  :element-type '(unsigned-byte 8))
+                 200
+                 '(("content-type" . "text/event-stream"))))))
+      (stream-chat
+       provider model (sample-context)
+       (lambda (event) (declare (ignore event))))
+      (let* ((body (first bodies))
+             (parsed (cadr-ai::parse-json body)))
+        (is (stringp body))
+        (is (string= "pi-goal20" (cadr-ai::json-get parsed "model")))
+        (is (hash-table-p (cadr-ai::json-get parsed "context")))
+        (is (search "\"model\":\"pi-goal20\"" body)))))))
+
 (test recorded-sse-fixtures-normalize-events-and-final-message
   (dolist (provider-name '(:anthropic :openai :google))
     (multiple-value-bind (provider model)

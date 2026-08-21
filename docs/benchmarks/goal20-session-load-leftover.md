@@ -5,14 +5,17 @@ Walker `0084f0703` / load ~1763.
 **Withdrawn (do not redo):** load first-byte family; inline
 consume-line; pi-event-data parse-json-octets; mistral SSE
 data-octets+parse-json-octets; **single-element content
-array shortcut** (1763→1929).
+array shortcut** (1763→1929); **WRITE-JSON-STRING
+unescaped simple-string** (1081→1189, load 1763→1838).
 
 **Do next (advisor):**
 1. ~~Load invent — single-element content array shortcut~~
    **withdrawn** Friend-MachineD load **1763→1929 µs**.
    Do not redo.
-2. Then pi_messages **WRITE-JSON-STRING / request stringify**
-   residual (not event parse-json-octets). **Now.**
+2. ~~pi_messages WRITE-JSON-STRING / request stringify~~
+   **withdrawn** stream **1081→1189 µs**, load
+   **1763→1838 µs**. Do not redo. Not event
+   parse-json-octets.
 
 G.17 stays `missing`. No silent stop. Pairing JSON/octet
 side-quests losing ≠ Goal complete.

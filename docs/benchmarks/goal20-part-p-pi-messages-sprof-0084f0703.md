@@ -26,6 +26,12 @@ Friend-MachineD n=5 stream **1081→1190 µs**, load
 **1763→1841 µs** — withdrawn. Do not redo this re-encode.
 Not intern-grow. Not fill-kernel. Not G.17 `met`.
 
+Tried: WRITE-JSON-STRING unescaped simple-string one
+WRITE-STRING (request stringify). Friend-MachineD n=5
+stream **1081→1189 µs**, load **1763→1838 µs** —
+withdrawn. Do not redo. Not event parse-json-octets.
+Not G.17 `met`.
+
 ## Executor — mistral tried (withdrawn)
 
 `sse-event-data-octets` + `parse-json-octets` on the binary
@@ -33,3 +39,9 @@ Not intern-grow. Not fill-kernel. Not G.17 `met`.
 mistral **2046→2219 µs**, load **1763→2152 µs** — revert.
 Do not redo. Not G.17 `met`. No silent stop.
 
+## Executor — do next (stringify)
+
+Single-element content shortcut **withdrawn** (1763→1929).
+**Now**: name and try one knife on `WRITE-JSON-STRING` /
+request stringify residual. Not event parse-json-octets.
+`session_load` must stay **≤ ~1763**. Not G.17 `met`.

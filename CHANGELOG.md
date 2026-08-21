@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw WRITE-JSON-STRING unescaped
+  simple-string shortcut (request stringify).
+  Friend-MachineD n=5: `provider_pi_messages`
+  **1081→1189 µs** (worse; samples 1105–1293); load
+  **1763→1838 µs**. Product restored. EQUAL tests kept.
+  Not event parse-json-octets. Ceiling not lowered.
+  Not G.17.
 - Goal 20: withdraw single-element content array
   shortcut (skip list+nreverse after compact-prefix).
   Friend-MachineD n=5: load cadr **1763→1929 µs**
