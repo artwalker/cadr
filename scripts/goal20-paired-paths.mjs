@@ -169,6 +169,7 @@ const REPETITIONS = {
 	"tui_native_modifiers.pressed": 50,
 	"tui_settings_list.apply_filter": 50,
 	"ai_capabilities.short_hash": 50,
+	"cli_support.strip_ansi": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -402,6 +403,7 @@ const inputModule = await import(moduleUrl("packages/tui/src/components/input.ts
 const nativeModifiersModule = await import(moduleUrl("packages/tui/src/native-modifiers.ts"));
 const settingsListModule = await import(moduleUrl("packages/tui/src/components/settings-list.ts"));
 const hashModule = await import(moduleUrl("packages/ai/src/utils/hash.ts"));
+const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2945,6 +2947,28 @@ async function measureAiCapabilitiesShortHash() {
 	};
 }
 
+const STRIP_ANSI_CSI_OSC =
+	"a\x1b[31mred\x1b[0m\x1b]8;;https://example.com\x07link\x1b]8;;\x07z";
+
+function runCliSupportStripAnsi() {
+	return {
+		csi_osc: ansiModule.stripAnsi(STRIP_ANSI_CSI_OSC),
+		ris: ansiModule.stripAnsi("\x1bcdone"),
+		single: ansiModule.stripAnsi("\x1bmok"),
+		plain: ansiModule.stripAnsi("hello"),
+	};
+}
+
+async function measureCliSupportStripAnsi() {
+	const observed = runCliSupportStripAnsi();
+	return {
+		strip_ansi: await collect("cli_support.strip_ansi", () => {
+			return () => runCliSupportStripAnsi();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3191,6 +3215,8 @@ process.stderr.write("goal20 pi paired paths: tui_settings_list\n");
 const tuiSettingsList = await measureTuiSettingsList();
 process.stderr.write("goal20 pi paired paths: ai_capabilities\n");
 const aiCapabilities = await measureAiCapabilitiesShortHash();
+process.stderr.write("goal20 pi paired paths: cli_support\n");
+const cliSupport = await measureCliSupportStripAnsi();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3275,6 +3301,7 @@ const result = {
 			"tui_settings_list.apply_filter":
 				"packages/tui/src/components/settings-list.ts SettingsList.applyFilter",
 			"ai_capabilities.short_hash": "packages/ai/src/utils/hash.ts shortHash",
+			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3367,6 +3394,7 @@ const result = {
 		tui_native_modifiers: tuiNativeModifiers,
 		tui_settings_list: tuiSettingsList,
 		ai_capabilities: aiCapabilities,
+		cli_support: cliSupport,
 		render_slicing: renderSlicing,
 	},
 };

@@ -130,6 +130,7 @@ METRICS = {
     "tui_native_modifiers": ("pressed",),
     "tui_settings_list": ("apply_filter",),
     "ai_capabilities": ("short_hash",),
+    "cli_support": ("strip_ansi",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -368,6 +369,11 @@ RATIO_CEILINGS = {
     # (1.5 / 0.9 us). 8.0 follows the microsecond-floor
     # first-freeze headroom. Ratchet down only.
     "ai_capabilities.short_hash": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_support pair (samples=5): observed 2.73x
+    # (1.3 / 0.5 us). 8.0 follows the microsecond-floor
+    # first-freeze headroom. Ratchet down only.
+    "cli_support.strip_ansi": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -770,6 +776,12 @@ OBSERVED_EXACT = {
         "empty",
         "abc",
         "cjk",
+    ),
+    "cli_support": (
+        "csi_osc",
+        "ris",
+        "single",
+        "plain",
     ),
     "resource_loader": (
         "skill_count",

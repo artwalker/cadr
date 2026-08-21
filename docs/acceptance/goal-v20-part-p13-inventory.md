@@ -576,10 +576,11 @@ These must not be filed as callees.
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 |
 | `src/cadr-cli/modes/rpc/ui.lisp` | 288 |
 
-### `cli_support` (additional)
+### `cli_support` (additional) — `changelog-share.lisp` paired `cli_support.strip_ansi`
 
-- pi: `packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers`
-- fixture: Callee of a parent pair. No empty per-file bench.
+- pi: `packages/coding-agent/src/utils/ansi.ts stripAnsi`
+- fixture: CSI+OSC hyperlink, RIS, single-byte ESC, plain hello. Time strip, not a TUI frame.
+- Friend-MachineD n=5: **2.73×** (1.3 / 0.5 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

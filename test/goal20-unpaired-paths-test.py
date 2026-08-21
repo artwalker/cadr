@@ -293,6 +293,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(short_hash), 1)
         self.assertEqual(short_hash[0]["class"], "paired")
         self.assertIn("ai_capabilities.short_hash", short_hash[0]["metrics"])
+        strip_ansi = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/support/changelog-share.lisp"
+        ]
+        self.assertEqual(len(strip_ansi), 1)
+        self.assertEqual(strip_ansi[0]["class"], "paired")
+        self.assertIn("cli_support.strip_ansi", strip_ansi[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

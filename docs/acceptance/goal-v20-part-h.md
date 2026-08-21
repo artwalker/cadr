@@ -732,6 +732,21 @@ Friend-MachineD freeze **1.70×** (1.5 / 0.9 µs), ceiling
 8.0 (variance / microsecond floor). Same commit no
 optimize.
 
+### Pair 51 — `cli_support`
+
+| metric | cadr | pi |
+|---|---|---|
+| `strip_ansi` | `strip-ansi` | `stripAnsi` (`packages/coding-agent/src/utils/ansi.ts`) |
+
+CSI + OSC hyperlink, RIS `ESC c`, single-byte `ESC m`,
+plain `hello`. Time strip, not a TUI frame. Observed
+`csi_osc` / `ris` / `single` / `plain` are exact
+(`aredlinkz` / `done` / `ok` / `hello`). Other
+cli_support files stay `needs-pair`. First
+Friend-MachineD freeze **2.73×** (1.3 / 0.5 µs), ceiling
+8.0 (variance / microsecond floor). Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -937,14 +952,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 103 | 51,039 | 40.1% | `no worse than baseline` is falsifiable |
+| `paired` | 104 | 51,381 | 40.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 149 | 55,956 | 43.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 148 | 55,614 | 43.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 40.1% of lines (103 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 45.9% of lines.
+- **Falsifiable vs baseline:** 40.3% of lines (104 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 46.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1038,6 +1053,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
+| `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
@@ -1129,8 +1145,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_sdk` | 5 | 1,712 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
-| `cli_support` | 13 | 1,164 |
 | `http_transport` | 1 | 858 |
+| `cli_support` | 12 | 822 |
 | `cli_models_rest` | 2 | 698 |
 | `skill_prompt_load` | 3 | 641 |
 | `websocket_stream` | 1 | 628 |

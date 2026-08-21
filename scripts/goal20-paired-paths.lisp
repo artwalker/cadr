@@ -47,6 +47,7 @@
 ;;;;  34. tui_native_modifiers is-native-modifier-pressed vs isNativeModifierPressed
 ;;;;  35. tui_settings_list apply-filter vs SettingsList.applyFilter
 ;;;;  36. ai_capabilities short-hash vs shortHash
+;;;;  37. cli_support strip-ansi vs stripAnsi
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -145,6 +146,7 @@
     ("tui_native_modifiers.pressed" . 50)
     ("tui_settings_list.apply_filter" . 50)
     ("ai_capabilities.short_hash" . 50)
+    ("cli_support.strip_ansi" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3669,6 +3671,34 @@
                 (lambda ()
                   (run-ai-capabilities-short-hash)))))))
 
+(defun strip-ansi-csi-osc ()
+  (format nil
+          "a~C[31mred~C[0m~C]8;;https://example.com~Clink~C]8;;~Cz"
+          #\Escape #\Escape #\Escape
+          (code-char 7) #\Escape (code-char 7)))
+
+(defun run-cli-support-strip-ansi ()
+  (list
+   (cadr-cli::strip-ansi (strip-ansi-csi-osc))
+   (cadr-cli::strip-ansi (format nil "~Ccdone" #\Escape))
+   (cadr-cli::strip-ansi (format nil "~Cmok" #\Escape))
+   (cadr-cli::strip-ansi "hello")))
+
+(defun measure-cli-support-strip-ansi ()
+  (let ((observed (run-cli-support-strip-ansi)))
+    (json-object
+     "observed"
+     (json-object
+      "csi_osc" (first observed)
+      "ris" (second observed)
+      "single" (third observed)
+      "plain" (fourth observed))
+     "strip_ansi"
+     (collect "cli_support.strip_ansi"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-strip-ansi)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3803,6 +3833,8 @@
       "src/cadr-tui/composition/settings-list.lisp settings-list-apply-filter"
       "ai_capabilities.short_hash"
       "src/cadr-ai/capabilities/streaming-json.lisp short-hash"
+      "cli_support.strip_ansi"
+      "src/cadr-cli/support/changelog-share.lisp strip-ansi"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3948,6 +3980,8 @@
               (let ((settings-list (measure-tui-settings-list)))
               (format *error-output* "goal20 cadr paired paths: ai_capabilities~%")
               (let ((capabilities (measure-ai-capabilities-short-hash)))
+              (format *error-output* "goal20 cadr paired paths: cli_support~%")
+              (let ((support (measure-cli-support-strip-ansi)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -4015,6 +4049,7 @@
               "tui_native_modifiers" native-modifiers
               "tui_settings_list" settings-list
               "ai_capabilities" capabilities
+              "cli_support" support
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4031,7 +4066,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
