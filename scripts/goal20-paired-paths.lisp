@@ -21,6 +21,7 @@
 ;;;;   8. session_discovery glob *.jsonl + header probe vs findMostRecentSession
 ;;;;   9. session_export_html export-session-html vs exportSessionToHtml
 ;;;;  10. protocol_cbor encode-cbor/decode-cbor vs encodeCbor/decodeCbor
+;;;;  11. agent_schema validate-tool-arguments vs validateToolArguments
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -91,6 +92,7 @@
     ("session_discovery.header_probe" . 20)
     ("session_export_html.to_html" . 3)
     ("protocol_cbor.roundtrip" . 50)
+    ("agent_schema.validate_ok_fail" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2445,6 +2447,75 @@
                 (lambda ()
                   (protocol-cbor-roundtrip)))))))
 
+(defun agent-schema-edit-schema ()
+  (json-object
+   "type" "object"
+   "properties"
+   (json-object
+    "path" (json-object "type" "string" "minLength" 1)
+    "edits"
+    (json-object
+     "type" "array"
+     "minItems" 1
+     "items"
+     (json-object
+      "type" "object"
+      "properties"
+      (json-object
+       "oldText" (json-object "type" "string")
+       "newText" (json-object "type" "string"))
+      "required" (json-array '("oldText" "newText"))
+      "additionalProperties" nil)))
+   "required" (json-array '("path" "edits"))
+   "additionalProperties" nil))
+
+(defun agent-schema-good-arguments ()
+  (json-object
+   "path" "README.md"
+   "edits"
+   (json-array
+    (list (json-object "oldText" "old" "newText" "new")))))
+
+(defun agent-schema-bad-arguments ()
+  (json-object
+   "path" "README.md"
+   "edits"
+   (json-array (list (json-object "oldText" "old")))))
+
+(defun agent-schema-validate-ok-fail (tool good bad)
+  (cadr-agent:validate-tool-arguments tool good)
+  (handler-case
+      (progn
+        (cadr-agent:validate-tool-arguments tool bad)
+        0)
+    (cadr-agent:schema-validation-error () 1)))
+
+(defun measure-agent-schema ()
+  (let* ((tool
+           (cadr-ai:make-tool
+            :name "edit"
+            :description "Edit"
+            :parameters (agent-schema-edit-schema)
+            :executor (lambda (id arguments)
+                        (declare (ignore id arguments)))))
+         (good (agent-schema-good-arguments))
+         (bad (agent-schema-bad-arguments))
+         (fail (agent-schema-validate-ok-fail tool good bad)))
+    (json-object
+     "observed"
+     (json-object
+      "ok" 1
+      "fail" fail
+      "tool" "edit")
+     "validate_ok_fail"
+     (collect "agent_schema.validate_ok_fail"
+              (lambda ()
+                (lambda ()
+                  (agent-schema-validate-ok-fail
+                   tool
+                   (agent-schema-good-arguments)
+                   (agent-schema-bad-arguments))))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2527,6 +2598,8 @@
       "src/cadr-agent/session/export-html.lisp export-session-html"
       "protocol_cbor.roundtrip"
       "src/cadr-protocol/cbor.lisp encode-cbor + decode-cbor"
+      "agent_schema.validate_ok_fail"
+      "src/cadr-agent/schema.lisp validate-tool-arguments"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2620,6 +2693,8 @@
               (let ((export-html (measure-session-export-html)))
               (format *error-output* "goal20 cadr paired paths: protocol_cbor~%")
               (let ((cbor (measure-protocol-cbor)))
+              (format *error-output* "goal20 cadr paired paths: agent_schema~%")
+              (let ((schema (measure-agent-schema)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2661,6 +2736,7 @@
               "session_discovery" discovery
               "session_export_html" export-html
               "protocol_cbor" cbor
+              "agent_schema" schema
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2677,7 +2753,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

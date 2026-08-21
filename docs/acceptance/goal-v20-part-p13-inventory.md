@@ -327,10 +327,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-agent/session/export-html.lisp` | 455 |
 
-### `agent_schema` (additional)
+### `agent_schema` (additional) — paired `agent_schema.validate_ok_fail`
 
-- pi: `packages/ai/src/utils/validation.ts`
-- fixture: JSON Schema fixtures already used by FiveAM. Time validate-ok + validate-fail.
+- pi: `packages/ai/src/utils/validation.ts validateToolArguments`
+- fixture: FiveAM nested edit-tool JSON Schema. Time ok + fail (missing newText).
+- Friend-MachineD n=5: **0.38×** (34.2 / 89.4 µs), ceiling 1.5. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

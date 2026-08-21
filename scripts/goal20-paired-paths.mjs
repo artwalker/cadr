@@ -143,6 +143,7 @@ const REPETITIONS = {
 	"session_discovery.header_probe": 20,
 	"session_export_html.to_html": 3,
 	"protocol_cbor.roundtrip": 50,
+	"agent_schema.validate_ok_fail": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -328,6 +329,7 @@ const modelRuntimeModule = await import(moduleUrl("packages/coding-agent/src/cor
 const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/session-manager.ts"));
 const exportHtmlModule = await import(moduleUrl("packages/coding-agent/src/core/export-html/index.ts"));
 const cborModule = await import(moduleUrl("packages/protocol/src/cbor/index.ts"));
+const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
@@ -1913,6 +1915,80 @@ function protocolCborRoundtrip() {
 	});
 }
 
+const AGENT_SCHEMA_TOOL = {
+	name: "edit",
+	description: "Edit",
+	parameters: {
+		type: "object",
+		properties: {
+			path: { type: "string", minLength: 1 },
+			edits: {
+				type: "array",
+				minItems: 1,
+				items: {
+					type: "object",
+					properties: {
+						oldText: { type: "string" },
+						newText: { type: "string" },
+					},
+					required: ["oldText", "newText"],
+					additionalProperties: false,
+				},
+			},
+		},
+		required: ["path", "edits"],
+		additionalProperties: false,
+	},
+};
+
+function agentSchemaGoodArguments() {
+	return {
+		path: "README.md",
+		edits: [{ oldText: "old", newText: "new" }],
+	};
+}
+
+function agentSchemaBadArguments() {
+	return {
+		path: "README.md",
+		edits: [{ oldText: "old" }],
+	};
+}
+
+function agentSchemaValidateOkFail() {
+	validationModule.validateToolArguments(AGENT_SCHEMA_TOOL, {
+		type: "toolCall",
+		id: "call-1",
+		name: "edit",
+		arguments: agentSchemaGoodArguments(),
+	});
+	try {
+		validationModule.validateToolArguments(AGENT_SCHEMA_TOOL, {
+			type: "toolCall",
+			id: "call-2",
+			name: "edit",
+			arguments: agentSchemaBadArguments(),
+		});
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+async function measureAgentSchema() {
+	const fail = agentSchemaValidateOkFail();
+	return {
+		validate_ok_fail: await collect("agent_schema.validate_ok_fail", () => {
+			return () => agentSchemaValidateOkFail();
+		}),
+		observed: {
+			ok: 1,
+			fail,
+			tool: "edit",
+		},
+	};
+}
+
 async function measureProtocolCbor() {
 	const hexes = protocolCborRoundtrip();
 	return {
@@ -2054,6 +2130,8 @@ process.stderr.write("goal20 pi paired paths: session_export_html\n");
 const sessionExportHtml = await measureSessionExportHtml();
 process.stderr.write("goal20 pi paired paths: protocol_cbor\n");
 const protocolCbor = await measureProtocolCbor();
+process.stderr.write("goal20 pi paired paths: agent_schema\n");
+const agentSchema = await measureAgentSchema();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2090,6 +2168,8 @@ const result = {
 			"session_export_html.to_html":
 				"packages/coding-agent/src/core/export-html/index.ts exportSessionToHtml",
 			"protocol_cbor.roundtrip": "packages/protocol/src/cbor encodeCbor + decodeCbor",
+			"agent_schema.validate_ok_fail":
+				"packages/ai/src/utils/validation.ts validateToolArguments",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2156,6 +2236,7 @@ const result = {
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,
 		protocol_cbor: protocolCbor,
+		agent_schema: agentSchema,
 		render_slicing: renderSlicing,
 	},
 };

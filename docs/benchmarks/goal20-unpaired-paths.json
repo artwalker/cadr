@@ -23,6 +23,7 @@
   "session_discovery.header_probe",
   "session_export_html.to_html",
   "protocol_cbor.roundtrip",
+  "agent_schema.validate_ok_fail",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -654,8 +655,8 @@
   },
   {
    "prefix": "src/cadr-agent/schema.lisp",
-   "class": "needs-pair",
-   "hole": "agent_schema"
+   "class": "paired",
+   "metrics": ["agent_schema.validate_ok_fail"]
   },
   {
    "prefix": "src/cadr-agent/session/discovery.lisp",

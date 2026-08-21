@@ -39,6 +39,7 @@ METRIC_KEYS = (
     "session_discovery.header_probe",
     "session_export_html.to_html",
     "protocol_cbor.roundtrip",
+    "agent_schema.validate_ok_fail",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

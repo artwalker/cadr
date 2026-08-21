@@ -335,6 +335,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("roundtrip_hex", paired.OBSERVED_EXACT["protocol_cbor"])
         self.assertIn("match", paired.OBSERVED_EXACT["protocol_cbor"])
 
+    def test_agent_schema_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("agent_schema.validate_ok_fail", RECORD.METRIC_KEYS)
+        self.assertIn("validate_ok_fail", paired.METRICS["agent_schema"])
+        self.assertIn("agent_schema.validate_ok_fail", paired.RATIO_CEILINGS)
+        self.assertIn("ok", paired.OBSERVED_EXACT["agent_schema"])
+        self.assertIn("fail", paired.OBSERVED_EXACT["agent_schema"])
+        self.assertIn("tool", paired.OBSERVED_EXACT["agent_schema"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)

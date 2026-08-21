@@ -375,6 +375,18 @@ callee; codec/framing/schema stay `needs-pair`. First
 Friend-MachineD freeze **0.25×** (17.7 / 70.1 µs), ceiling 1.5.
 Same commit no optimize.
 
+### Pair 25 — `agent_schema`
+
+| metric | cadr | pi |
+|---|---|---|
+| `validate_ok_fail` | `validate-tool-arguments` | `validateToolArguments` (`packages/ai/src/utils/validation.ts`) |
+
+FiveAM nested edit-tool JSON Schema (path + edits[{oldText,newText}]).
+Time one ok call and one fail call (missing `newText`). No TUI, no
+socket. Observed `ok` / `fail` / `tool` are exact. First
+Friend-MachineD freeze **0.38×** (34.2 / 89.4 µs), ceiling 1.5.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -580,14 +592,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 72 | 38,759 | 30.4% | `no worse than baseline` is falsifiable |
+| `paired` | 73 | 39,609 | 31.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 18 | 12,819 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 181 | 68,336 | 53.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 180 | 67,486 | 53.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 30.4% of lines (72 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 36.3% of lines.
+- **Falsifiable vs baseline:** 31.1% of lines (73 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 37.0% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -628,6 +640,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/loop/turns.lisp` | 393 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
+| `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe` |
 | `src/cadr-agent/session/export-html.lisp` | 455 | `session_export_html.to_html` |
@@ -749,7 +762,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_select_settings_loaders` | 3 | 1,010 |
 | `protocol_cbor` | 3 | 901 |
 | `http_transport` | 1 | 858 |
-| `agent_schema` | 1 | 850 |
 | `ai_crypto_model_data` | 2 | 774 |
 | `ai_support` | 6 | 730 |
 | `skill_prompt_load` | 3 | 641 |

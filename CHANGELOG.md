@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `agent_schema.validate_ok_fail`
+  (FiveAM edit-tool JSON Schema; cadr `validate-tool-arguments`
+  vs pi `validateToolArguments`). Friend-MachineD n=5 **0.38×**
+  (34.2 / 89.4 µs), ceiling 1.5. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `protocol_cbor.roundtrip` (16 RFC 8949
   vectors; cadr encode/decode vs pi encodeCbor/decodeCbor).
   Friend-MachineD n=5 **0.25×** (17.7 / 70.1 µs), ceiling 1.5.
