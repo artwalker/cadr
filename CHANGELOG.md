@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_support.context_overflow`
+  (prompt-too-long / rate-limit / silent stop /
+  length-full; cadr `context-overflow-p` vs pi
+  `isContextOverflow`). Friend-MachineD n=5 **1.67×**
+  (1.85 / 1.11 µs), ceiling 8.0 (variance). Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_support.normalize_path`
   (trim / @strip / unicode-nbsp / tilde+home /
   `file:///tmp/z`; cadr `normalize-path-input` vs pi

@@ -197,6 +197,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(estimate), 1)
         self.assertEqual(estimate[0]["class"], "paired")
         self.assertIn("ai_support.estimate_text", estimate[0]["metrics"])
+        overflow = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/support/overflow.lisp"
+        ]
+        self.assertEqual(len(overflow), 1)
+        self.assertEqual(overflow[0]["class"], "paired")
+        self.assertIn("ai_support.context_overflow", overflow[0]["metrics"])
         select_list = [
             row
             for row in classified["rows"]

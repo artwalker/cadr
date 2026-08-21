@@ -157,6 +157,7 @@ const REPETITIONS = {
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
 	"ai_support.estimate_text": 50,
+	"ai_support.context_overflow": 50,
 	"tui_select_settings_loaders.filter": 50,
 	"tui_word_navigation.step": 50,
 	"tui_overlay.composite_line": 50,
@@ -399,6 +400,7 @@ const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
 const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
+const overflowModule = await import(moduleUrl("packages/ai/src/utils/overflow.ts"));
 const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
 const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navigation.ts"));
 const tuiModule = await import(moduleUrl("packages/tui/src/tui.ts"));
@@ -2546,13 +2548,67 @@ function runAiSupportEstimate() {
 	};
 }
 
+function overflowErrorMessage(errorMessage) {
+	return {
+		role: "assistant",
+		content: [],
+		api: "openai-completions",
+		provider: "ollama",
+		model: "qwen",
+		usage: {
+			input: 0,
+			output: 0,
+			cacheRead: 0,
+			cacheWrite: 0,
+			totalTokens: 0,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		},
+		stopReason: "error",
+		errorMessage,
+		timestamp: 0,
+	};
+}
+
+function overflowUsageMessage(stopReason, input, output) {
+	return {
+		role: "assistant",
+		content: [],
+		api: "openai-completions",
+		provider: "ollama",
+		model: "qwen",
+		usage: {
+			input,
+			output,
+			cacheRead: 0,
+			cacheWrite: 0,
+			totalTokens: input + output,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		},
+		stopReason,
+		timestamp: 0,
+	};
+}
+
+function runAiSupportContextOverflow() {
+	return {
+		prompt: overflowModule.isContextOverflow(overflowErrorMessage("prompt is too long")) ? 1 : 0,
+		rate: overflowModule.isContextOverflow(overflowErrorMessage("rate limit")) ? 1 : 0,
+		silent: overflowModule.isContextOverflow(overflowUsageMessage("stop", 100, 0), 50) ? 1 : 0,
+		length: overflowModule.isContextOverflow(overflowUsageMessage("length", 100, 0), 100) ? 1 : 0,
+	};
+}
+
 async function measureAiSupportEstimate() {
-	const observed = runAiSupportEstimate();
+	const estimate = runAiSupportEstimate();
+	const overflow = runAiSupportContextOverflow();
 	return {
 		estimate_text: await collect("ai_support.estimate_text", () => {
 			return () => runAiSupportEstimate();
 		}),
-		observed,
+		context_overflow: await collect("ai_support.context_overflow", () => {
+			return () => runAiSupportContextOverflow();
+		}),
+		observed: { ...estimate, ...overflow },
 	};
 }
 
@@ -3495,6 +3551,8 @@ const result = {
 				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",
 			"ai_support.estimate_text":
 				"packages/ai/src/utils/estimate.ts estimateTextTokens",
+			"ai_support.context_overflow":
+				"packages/ai/src/utils/overflow.ts isContextOverflow",
 			"tui_select_settings_loaders.filter":
 				"packages/tui/src/components/select-list.ts SelectList.setFilter",
 			"tui_word_navigation.step":

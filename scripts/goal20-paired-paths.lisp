@@ -56,6 +56,7 @@
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
 ;;;;  45. cli_support normalize-path-input vs normalizePath
+;;;;  46. ai_support context-overflow-p vs isContextOverflow
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -142,6 +143,7 @@
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
     ("ai_support.estimate_text" . 50)
+    ("ai_support.context_overflow" . 50)
     ("tui_select_settings_loaders.filter" . 50)
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
@@ -3150,19 +3152,56 @@
    (cadr-ai:estimate-text-tokens *estimate-hello*)
    (cadr-ai:estimate-text-tokens *estimate-block*)))
 
+(defun overflow-error-message (text)
+  (cadr-ai::make-assistant-message
+   :api :openai-completions
+   :provider :ollama
+   :model "qwen"
+   :stop-reason :error
+   :error-message text
+   :usage (cadr-ai:make-usage)))
+
+(defun overflow-usage-message (stop-reason input output)
+  (cadr-ai::make-assistant-message
+   :api :openai-completions
+   :provider :ollama
+   :model "qwen"
+   :stop-reason stop-reason
+   :usage (cadr-ai:make-usage :input input :output output)))
+
+(defun overflow-flag (message &optional window)
+  (if (cadr-ai::context-overflow-p message window) 1 0))
+
+(defun run-ai-support-context-overflow ()
+  (list
+   (overflow-flag (overflow-error-message "prompt is too long"))
+   (overflow-flag (overflow-error-message "rate limit"))
+   (overflow-flag (overflow-usage-message :stop 100 0) 50)
+   (overflow-flag (overflow-usage-message :length 100 0) 100)))
+
 (defun measure-ai-support-estimate ()
-  (let ((observed (run-ai-support-estimate)))
+  (let ((estimate (run-ai-support-estimate))
+        (overflow (run-ai-support-context-overflow)))
     (json-object
      "observed"
      (json-object
-      "empty" (first observed)
-      "hello" (second observed)
-      "block" (third observed))
+      "empty" (first estimate)
+      "hello" (second estimate)
+      "block" (third estimate)
+      "prompt" (first overflow)
+      "rate" (second overflow)
+      "silent" (third overflow)
+      "length" (fourth overflow))
      "estimate_text"
      (collect "ai_support.estimate_text"
               (lambda ()
                 (lambda ()
-                  (run-ai-support-estimate)))))))
+                  (run-ai-support-estimate))))
+     "context_overflow"
+     (collect "ai_support.context_overflow"
+              (lambda ()
+                (lambda ()
+                  (run-ai-support-context-overflow)))))))
 
 (defun select-list-fixture ()
   (cadr-tui:make-select-list
@@ -4070,6 +4109,8 @@
       "src/cadr-tui/terminal-colors.lisp parse-osc-11-background-color"
       "ai_support.estimate_text"
       "src/cadr-ai/support/token-estimation.lisp estimate-text-tokens"
+      "ai_support.context_overflow"
+      "src/cadr-ai/support/overflow.lisp context-overflow-p"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
       "tui_word_navigation.step"

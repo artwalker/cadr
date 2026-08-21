@@ -862,6 +862,21 @@ TUI, no socket. Observed `trim` / `at` / `nbsp` /
 **2.82×** (4.58 / 1.63 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 60 — `ai_support` (context_overflow)
+
+| metric | cadr | pi |
+|---|---|---|
+| `context_overflow` | `context-overflow-p` | `isContextOverflow` (`packages/ai/src/utils/overflow.ts`) |
+
+Leftover sibling of `estimate_text`. Fixtures: error
+`prompt is too long` (1), error `rate limit` (0), stop
+with input 100 / window 50 (1), length with output 0 /
+input 100 / window 100 (1). Time classify, no socket.
+Observed `prompt` / `rate` / `silent` / `length` are
+exact. First Friend-MachineD freeze **1.67×** (1.85 /
+1.11 µs), ceiling 8.0 (variance). Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1067,14 +1082,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 112 | 55,893 | 43.9% | `no worse than baseline` is falsifiable |
+| `paired` | 113 | 55,971 | 43.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 140 | 51,102 | 40.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 139 | 51,024 | 40.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 43.9% of lines (112 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 49.7% of lines.
+- **Falsifiable vs baseline:** 43.9% of lines (113 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 49.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1150,6 +1165,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/vertex.lisp` | 134 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 601 | `ai_runtime_faux.blocks` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/support/overflow.lisp` | 78 | `ai_support.context_overflow` |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | `ai_support.estimate_text` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/transport/http.lisp` | 858 | `http_transport.parse_url` |
@@ -1271,7 +1287,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
-| `ai_support` | 5 | 560 |
+| `ai_support` | 4 | 482 |
 | `ai_capabilities` | 4 | 472 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |

@@ -54,6 +54,7 @@ METRIC_KEYS = (
     "tui_editor_helpers.fuzzy_match",
     "tui_theme_overlay.osc11_bg",
     "ai_support.estimate_text",
+    "ai_support.context_overflow",
     "tui_select_settings_loaders.filter",
     "tui_word_navigation.step",
     "tui_overlay.composite_line",
