@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw E `tagbody` merge of `put-entry-field`
+  into the record-object walk. Friend-MachineD n=5: load
+  cadr **1763→2004 µs** (worse; samples 1874–2315).
+  Product restored to `0084f0703` walker. Not SCAN-KEY
+  macrolet. Ceiling not lowered. Not G.17.
 - Goal 20: recapture `PARSE-SESSION-RECORD-OCTETS` split on
   walker `0084f0703` / Friend-MachineD **~1763 µs**. Inclusive
   `CLOCK_MONOTONIC` ns around shipped labels (this-host

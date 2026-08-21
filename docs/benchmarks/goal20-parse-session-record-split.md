@@ -110,6 +110,15 @@ path + generic fallback (not bag reuse). See leftover md +
 DeepSeek A/D and gperf `put-entry` remesure are **not** merged
 with knife 1.
 
+## Knife (falsified) — E tagbody merge of `put-entry-field`
+
+Sole call site folded into the record-object `tagbody`
+(`go record-key` / `record-end`). Parse results unchanged.
+Friend-MachineD n=5: load cadr **1763→2004 µs** (worse;
+samples 1874–2315, median 2004). Withdrawn. Do not redo
+this tagbody fold. Not SCAN-KEY macrolet. Not intern.
+Not FFI. Ceiling not lowered.
+
 ## Knife — gperf unique-prefix dispatch on `put-entry-field`
 
 Hottest remaining parent: `put-entry-field` 897 µs (includes
