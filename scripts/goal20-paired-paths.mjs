@@ -152,6 +152,7 @@ const REPETITIONS = {
 	"ai_crypto_model_data.manifest": 50,
 	"cli_models_rest.pattern_match": 50,
 	"image_runtime.dimensions": 50,
+	"cli_print_rpc.jsonl_line": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -348,6 +349,7 @@ const modelResolverModule = await import(
 );
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
+const rpcJsonlModule = await import(moduleUrl("packages/coding-agent/src/modes/rpc/jsonl.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
@@ -2355,6 +2357,38 @@ async function measureImageRuntime() {
 	};
 }
 
+function rpcJsonlObject() {
+	return {
+		command: "get_state",
+		id: "rpc-1",
+		success: true,
+		type: "response",
+	};
+}
+
+function runCliPrintRpc() {
+	return rpcJsonlModule.serializeJsonLine(rpcJsonlObject());
+}
+
+function measureCliPrintRpcObserved(line) {
+	const newline = line.endsWith("\n") ? 1 : 0;
+	return {
+		line_chars: line.length,
+		newline,
+		payload: newline ? line.slice(0, -1) : line,
+	};
+}
+
+async function measureCliPrintRpc() {
+	const observed = measureCliPrintRpcObserved(runCliPrintRpc());
+	return {
+		jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
+			return () => runCliPrintRpc();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2567,6 +2601,8 @@ process.stderr.write("goal20 pi paired paths: cli_models_rest\n");
 const cliModelsRest = await measureCliModelsRest();
 process.stderr.write("goal20 pi paired paths: image_runtime\n");
 const imageRuntime = await measureImageRuntime();
+process.stderr.write("goal20 pi paired paths: cli_print_rpc\n");
+const cliPrintRpc = await measureCliPrintRpc();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2620,6 +2656,8 @@ const result = {
 				"packages/coding-agent/src/core/model-resolver.ts parseModelPattern",
 			"image_runtime.dimensions":
 				"packages/tui/src/terminal-image.ts getImageDimensions",
+			"cli_print_rpc.jsonl_line":
+				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2695,6 +2733,7 @@ const result = {
 		ai_crypto_model_data: aiCryptoModelData,
 		cli_models_rest: cliModelsRest,
 		image_runtime: imageRuntime,
+		cli_print_rpc: cliPrintRpc,
 		render_slicing: renderSlicing,
 	},
 };

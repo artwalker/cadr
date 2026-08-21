@@ -32,6 +32,7 @@
   "ai_crypto_model_data.manifest",
   "cli_models_rest.pattern_match",
   "image_runtime.dimensions",
+  "cli_print_rpc.jsonl_line",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1177,8 +1178,8 @@
   },
   {
    "prefix": "src/cadr-cli/modes/print.lisp",
-   "class": "needs-pair",
-   "hole": "cli_print_rpc"
+   "class": "paired",
+   "metrics": ["cli_print_rpc.jsonl_line"]
   },
   {
    "prefix": "src/cadr-cli/modes/rpc/commands.lisp",

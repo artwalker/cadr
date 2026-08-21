@@ -113,6 +113,7 @@ METRICS = {
     "ai_crypto_model_data": ("manifest",),
     "cli_models_rest": ("pattern_match",),
     "image_runtime": ("dimensions",),
+    "cli_print_rpc": ("jsonl_line",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -263,6 +264,11 @@ RATIO_CEILINGS = {
     # pair (samples=5): observed 5.44x (7.8 / 1.4 us). 8.0 follows
     # the tool_read / journal_read headroom precedent. Ratchet down only.
     "image_runtime.dimensions": 8.0,
+    # Frozen from the first Friend-MachineD non-quick cli_print_rpc
+    # pair (samples=5): observed 13.21x (3.3 / 0.25 us). 8.0 follows
+    # the microsecond-floor / agent_proxy variance precedent (not
+    # the ratio). Ratchet down only.
+    "cli_print_rpc.jsonl_line": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -540,6 +546,11 @@ OBSERVED_EXACT = {
         "gif_width",
         "gif_height",
         "miss",
+    ),
+    "cli_print_rpc": (
+        "line_chars",
+        "newline",
+        "payload",
     ),
     "resource_loader": (
         "skill_count",

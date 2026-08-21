@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_print_rpc.jsonl_line` (RPC
+  `get_state` response; cadr `write-json-line` vs pi
+  `serializeJsonLine`). Friend-MachineD n=5 **13.21×**
+  (3.3 / 0.25 µs), ceiling 8.0 (variance). Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `image_runtime.dimensions` (1x1 PNG +
   2x3 GIF; cadr `image-dimensions` vs pi
   `getImageDimensions`). Friend-MachineD n=5 **5.44×**

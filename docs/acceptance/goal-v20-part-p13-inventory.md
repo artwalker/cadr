@@ -557,10 +557,11 @@ These must not be filed as callees.
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 |
 
-### `cli_print_rpc` (additional)
+### `cli_print_rpc` (additional) — `print.lisp` paired `cli_print_rpc.jsonl_line`
 
-- pi: `packages/coding-agent print mode + RPC JSONL commands`
-- fixture: Recorded JSONL RPC command stream (prompt, bash, sessions, models). Time handle-line. Print mode: same argv message to stdout bytes.
+- pi: `packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine`
+- fixture: one RPC response object. Time JSONL frame write, not a live stdin loop.
+- Friend-MachineD n=5: **13.21×** (3.3 / 0.25 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

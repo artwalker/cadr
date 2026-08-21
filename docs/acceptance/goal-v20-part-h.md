@@ -499,6 +499,20 @@ image_runtime files stay `needs-pair`. First Friend-MachineD
 freeze **5.44×** (7.8 / 1.4 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 34 — `cli_print_rpc`
+
+| metric | cadr | pi |
+|---|---|---|
+| `jsonl_line` | `write-json-line` | `serializeJsonLine` (`packages/coding-agent/src/modes/rpc/jsonl.ts`) |
+
+Same RPC response object (`command=get_state`, `id=rpc-1`).
+Time JSONL frame write (stringify + LF), not a live stdin
+RPC loop. Observed `line_chars` / `newline` / `payload` are
+exact (70 chars, LF, keys sorted). Other cli_print_rpc files
+stay `needs-pair`. First Friend-MachineD freeze **13.21×**
+(3.3 / 0.25 µs), ceiling 8.0 (variance / microsecond floor).
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -704,14 +718,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 86 | 44,838 | 35.2% | `no worse than baseline` is falsifiable |
+| `paired` | 87 | 45,416 | 35.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 166 | 62,157 | 48.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 165 | 61,579 | 48.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 35.2% of lines (86 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 41.1% of lines.
+- **Falsifiable vs baseline:** 35.7% of lines (87 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 41.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -795,6 +809,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/modes/print.lisp` | 578 | `cli_print_rpc.jsonl_line` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
@@ -871,13 +886,13 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_mermaid` | 12 | 5,042 |
 | `agent_tool_loop` | 13 | 4,094 |
 | `cli_extensions_install` | 9 | 3,489 |
-| `cli_print_rpc` | 8 | 2,302 |
 | `evals_harness` | 6 | 2,184 |
 | `image_runtime` | 5 | 2,091 |
 | `oauth_pkce_device` | 13 | 2,081 |
 | `tui_latex` | 1 | 1,950 |
 | `tui_editor_helpers` | 9 | 1,890 |
 | `package_manager` | 2 | 1,811 |
+| `cli_print_rpc` | 7 | 1,724 |
 | `cli_sdk` | 5 | 1,712 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |

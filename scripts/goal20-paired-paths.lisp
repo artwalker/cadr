@@ -30,6 +30,7 @@
 ;;;;  17. ai_crypto_model_data create-model-data-manifest vs createModelDataManifest
 ;;;;  18. cli_models_rest parse-scoped-model-pattern vs parseModelPattern
 ;;;;  19. image_runtime image-dimensions vs getImageDimensions
+;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -111,6 +112,7 @@
     ("ai_crypto_model_data.manifest" . 50)
     ("cli_models_rest.pattern_match" . 50)
     ("image_runtime.dimensions" . 50)
+    ("cli_print_rpc.jsonl_line" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2940,6 +2942,39 @@
                 (lambda ()
                   (run-image-runtime)))))))
 
+(defun rpc-jsonl-object ()
+  (cadr-ai::json-object
+   "command" "get_state"
+   "id" "rpc-1"
+   "success" t
+   "type" "response"))
+
+(defun run-cli-print-rpc ()
+  (let ((stream (make-string-output-stream)))
+    (cadr-cli::write-json-line (rpc-jsonl-object) stream)
+    (get-output-stream-string stream)))
+
+(defun measure-cli-print-rpc ()
+  (let* ((line (run-cli-print-rpc))
+         (newline-p
+           (and (plusp (length line))
+                (char= #\Newline (char line (1- (length line))))))
+         (payload
+           (if newline-p
+               (subseq line 0 (1- (length line)))
+               line)))
+    (json-object
+     "observed"
+     (json-object
+      "line_chars" (length line)
+      "newline" (if newline-p 1 0)
+      "payload" payload)
+     "jsonl_line"
+     (collect "cli_print_rpc.jsonl_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3040,6 +3075,8 @@
       "src/cadr-cli/models/matching.lisp parse-scoped-model-pattern"
       "image_runtime.dimensions"
       "src/cadr-tui/terminal-image.lisp image-dimensions"
+      "cli_print_rpc.jsonl_line"
+      "src/cadr-cli/modes/print.lisp write-json-line"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3151,6 +3188,8 @@
               (let ((models-rest (measure-cli-models-rest)))
               (format *error-output* "goal20 cadr paired paths: image_runtime~%")
               (let ((images (measure-image-runtime)))
+              (format *error-output* "goal20 cadr paired paths: cli_print_rpc~%")
+              (let ((print-rpc (measure-cli-print-rpc)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3201,6 +3240,7 @@
               "ai_crypto_model_data" crypto
               "cli_models_rest" models-rest
               "image_runtime" images
+              "cli_print_rpc" print-rpc
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3217,7 +3257,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
