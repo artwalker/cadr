@@ -66,6 +66,7 @@
 ;;;;  52. image_runtime get-images-api-provider vs getImagesApiProvider
 ;;;;  53. ai_support uuid-v7 vs uuidv7
 ;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
+;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -161,6 +162,7 @@
     ("ai_support.context_overflow" . 50)
     ("ai_support.grammar_delta" . 50)
     ("ai_support.uuid_v7" . 50)
+    ("ai_support.auth_guidance" . 50)
     ("tui_select_settings_loaders.filter" . 50)
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
@@ -3391,11 +3393,34 @@
      (fourth shape)
      (if (string= first second) 0 1))))
 
+(defun auth-prefix (text count)
+  (if (>= (length text) count)
+      (subseq text 0 count)
+      text))
+
+(defun auth-flag (text needle)
+  (if (search needle text) 1 0))
+
+(defun run-ai-support-auth-guidance ()
+  (let ((models (cadr-ai::no-models-available-message))
+        (selected (cadr-ai::no-model-selected-message))
+        (key (cadr-ai::no-api-key-found-message "openai"))
+        (unknown (cadr-ai::no-api-key-found-message "unknown")))
+    (list
+     (auth-prefix models 21)
+     (auth-prefix selected 18)
+     (auth-prefix key 28)
+     (auth-prefix unknown 40)
+     (auth-flag models "Use /login")
+     (auth-flag models "providers.md")
+     (auth-flag models "models.md"))))
+
 (defun measure-ai-support-estimate ()
   (let ((estimate (run-ai-support-estimate))
         (overflow (run-ai-support-context-overflow))
         (grammar (run-ai-support-grammar-delta))
-        (uuid (run-ai-support-uuid-v7)))
+        (uuid (run-ai-support-uuid-v7))
+        (auth (run-ai-support-auth-guidance)))
     (json-object
      "observed"
      (json-object
@@ -3415,7 +3440,14 @@
       "uuid_hyphens" (second uuid)
       "uuid_version" (third uuid)
       "uuid_variant" (fourth uuid)
-      "uuid_neq" (fifth uuid))
+      "uuid_neq" (fifth uuid)
+      "no_models" (first auth)
+      "no_selected" (second auth)
+      "no_key" (third auth)
+      "no_unknown" (fourth auth)
+      "has_login" (fifth auth)
+      "has_providers" (sixth auth)
+      "has_models" (seventh auth))
      "estimate_text"
      (collect "ai_support.estimate_text"
               (lambda ()
@@ -3435,7 +3467,12 @@
      (collect "ai_support.uuid_v7"
               (lambda ()
                 (lambda ()
-                  (run-ai-support-uuid-v7)))))))
+                  (run-ai-support-uuid-v7))))
+     "auth_guidance"
+     (collect "ai_support.auth_guidance"
+              (lambda ()
+                (lambda ()
+                  (run-ai-support-auth-guidance)))))))
 
 (defun select-list-fixture ()
   (cadr-tui:make-select-list
@@ -4411,6 +4448,8 @@
       "src/cadr-ai/support/grammar-coercion.lisp append-grammar-json-delta"
       "ai_support.uuid_v7"
       "src/cadr-ai/support/uuid.lisp uuid-v7"
+      "ai_support.auth_guidance"
+      "src/cadr-ai/support/release.lisp no-models-available-message"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
       "tui_word_navigation.step"

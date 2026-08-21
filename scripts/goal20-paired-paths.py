@@ -118,7 +118,7 @@ METRICS = {
     "tui_latex": ("render",),
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
-    "ai_support": ("estimate_text", "context_overflow", "grammar_delta", "uuid_v7"),
+    "ai_support": ("estimate_text", "context_overflow", "grammar_delta", "uuid_v7", "auth_guidance"),
     "tui_select_settings_loaders": ("filter",),
     "tui_word_navigation": ("step",),
     "tui_overlay": ("composite_line",),
@@ -359,6 +359,11 @@ RATIO_CEILINGS = {
     # 0.32x (3.08 / 9.49 us). cadr leads (entropy pool).
     # 8.0 is first-freeze headroom. Ratchet down only.
     "ai_support.uuid_v7": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # ai_support.auth_guidance pair (samples=5): observed
+    # 27.66x (1922 / 69.5 us). cadr-docs-directory hits
+    # ASDF. 50.0 is first-freeze headroom. Ratchet down only.
+    "ai_support.auth_guidance": 50.0,
     # Frozen from the first Friend-MachineD non-quick
     # tui_select_settings_loaders pair (samples=5): observed
     # 1.27x (1.2 / 1.0 us). 8.0 follows the microsecond-floor
@@ -823,6 +828,13 @@ OBSERVED_EXACT = {
         "uuid_version",
         "uuid_variant",
         "uuid_neq",
+        "no_models",
+        "no_selected",
+        "no_key",
+        "no_unknown",
+        "has_login",
+        "has_providers",
+        "has_models",
     ),
     "tui_select_settings_loaders": (
         "he_count",

@@ -1008,6 +1008,21 @@ Observed counts/names exact. First Friend-MachineD freeze
 **2.04×** (5.51 / 2.70 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 70 — `ai_support` (auth_guidance)
+
+| metric | cadr | pi |
+|---|---|---|
+| `auth_guidance` | `no-models-available-message` | `formatNoModelsAvailableMessage` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+
+Leftover sibling of estimate/overflow/grammar/uuid.
+Prefixes only: `No models available.` / `No model
+selected.` / `No API key found for openai.` / `No API
+key found for the selected model.` Flags: Use /login,
+providers.md, models.md. Do not exact docs paths
+(cadr vs pi package dir). First Friend-MachineD freeze
+**27.66×** (1922 / 69.5 µs), ceiling 50.0 (ASDF
+docs-dir). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1213,14 +1228,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 122 | 58,994 | 46.3% | `no worse than baseline` is falsifiable |
+| `paired` | 123 | 59,098 | 46.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 130 | 48,001 | 37.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 129 | 47,897 | 37.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.3% of lines (122 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 52.2% of lines.
+- **Falsifiable vs baseline:** 46.4% of lines (123 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 52.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1302,6 +1317,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/support/grammar-coercion.lisp` | 279 | `ai_support.grammar_delta` |
 | `src/cadr-ai/support/overflow.lisp` | 78 | `ai_support.context_overflow` |
+| `src/cadr-ai/support/release.lisp` | 104 | `ai_support.auth_guidance` |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | `ai_support.estimate_text` |
 | `src/cadr-ai/support/uuid.lisp` | 93 | `ai_support.uuid_v7` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
@@ -1433,8 +1449,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `image_runtime` | 1 | 222 |
 | `session_compact` | 1 | 185 |
 | `ai_capabilities` | 3 | 180 |
-| `ai_support` | 2 | 110 |
 | `agent_conditions` | 1 | 43 |
+| `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

@@ -166,6 +166,7 @@ const REPETITIONS = {
 	"ai_support.context_overflow": 50,
 	"ai_support.grammar_delta": 50,
 	"ai_support.uuid_v7": 50,
+	"ai_support.auth_guidance": 50,
 	"tui_select_settings_loaders.filter": 50,
 	"tui_word_navigation.step": 50,
 	"tui_overlay.composite_line": 50,
@@ -418,6 +419,9 @@ const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
 const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
 const uuidModule = await import(moduleUrl("packages/ai/src/utils/uuid.ts"));
+const authGuidanceModule = await import(
+	moduleUrl("packages/coding-agent/src/core/auth-guidance.ts")
+);
 const overflowModule = await import(moduleUrl("packages/ai/src/utils/overflow.ts"));
 const grammarModule = await import(moduleUrl("packages/ai/src/api/constrained-sampling.ts"));
 const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
@@ -2802,6 +2806,7 @@ async function measureAiSupportEstimate() {
 	const overflow = runAiSupportContextOverflow();
 	const grammar = runAiSupportGrammarDelta();
 	const uuid = runAiSupportUuidV7();
+	const auth = runAiSupportAuthGuidance();
 	return {
 		estimate_text: await collect("ai_support.estimate_text", () => {
 			return () => runAiSupportEstimate();
@@ -2815,7 +2820,30 @@ async function measureAiSupportEstimate() {
 		uuid_v7: await collect("ai_support.uuid_v7", () => {
 			return () => runAiSupportUuidV7();
 		}),
-		observed: { ...estimate, ...overflow, ...grammar, ...uuid },
+		auth_guidance: await collect("ai_support.auth_guidance", () => {
+			return () => runAiSupportAuthGuidance();
+		}),
+		observed: { ...estimate, ...overflow, ...grammar, ...uuid, ...auth },
+	};
+}
+
+function authPrefix(text, count) {
+	return text.length >= count ? text.slice(0, count) : text;
+}
+
+function runAiSupportAuthGuidance() {
+	const models = authGuidanceModule.formatNoModelsAvailableMessage();
+	const selected = authGuidanceModule.formatNoModelSelectedMessage();
+	const key = authGuidanceModule.formatNoApiKeyFoundMessage("openai");
+	const unknown = authGuidanceModule.formatNoApiKeyFoundMessage("unknown");
+	return {
+		no_models: authPrefix(models, 21),
+		no_selected: authPrefix(selected, 18),
+		no_key: authPrefix(key, 28),
+		no_unknown: authPrefix(unknown, 40),
+		has_login: models.includes("Use /login") ? 1 : 0,
+		has_providers: models.includes("providers.md") ? 1 : 0,
+		has_models: models.includes("models.md") ? 1 : 0,
 	};
 }
 
@@ -3848,6 +3876,8 @@ const result = {
 			"ai_support.grammar_delta":
 				"packages/ai/src/api/constrained-sampling.ts appendGrammarToolInputJsonDelta",
 			"ai_support.uuid_v7": "packages/ai/src/utils/uuid.ts uuidv7",
+			"ai_support.auth_guidance":
+				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelsAvailableMessage",
 			"tui_select_settings_loaders.filter":
 				"packages/tui/src/components/select-list.ts SelectList.setFilter",
 			"tui_word_navigation.step":

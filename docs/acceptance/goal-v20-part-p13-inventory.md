@@ -430,11 +430,11 @@ These must not be filed as callees.
 | `src/cadr-ai/capabilities/session-resources.lisp` | 34 |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 |
 
-### `ai_support` (additional) — `token-estimation.lisp` paired `ai_support.estimate_text`; `overflow.lisp` paired `ai_support.context_overflow`; `grammar-coercion.lisp` paired `ai_support.grammar_delta`; `uuid.lisp` paired `ai_support.uuid_v7`
+### `ai_support` (additional) — `token-estimation.lisp` paired `ai_support.estimate_text`; `overflow.lisp` paired `ai_support.context_overflow`; `grammar-coercion.lisp` paired `ai_support.grammar_delta`; `uuid.lisp` paired `ai_support.uuid_v7`; `release.lisp` paired `ai_support.auth_guidance`
 
-- pi: `estimateTextTokens`; `isContextOverflow`; `appendGrammarToolInputJsonDelta`; `uuidv7`
-- fixture: empty / hello world / 100 ASCII a. Overflow: error prompt-too-long / rate-limit / silent stop / length-full. Grammar: `hel` → `hello` → close. UUID: format only (36 / 4 hyphens / version 7 / variant / two distinct); do not exact hex.
-- Friend-MachineD n=5: estimate_text **3.10×** (0.54 / 0.17 µs); context_overflow **1.67×** (1.85 / 1.11 µs); grammar_delta **2.87×** (1.52 / 0.53 µs); uuid_v7 **0.32×** (3.08 / 9.49 µs); ceiling 8.0 (variance). cadr leads on uuid. Other files still `needs-pair`. retry.lisp stays covered-as-callee. No optimize in the booking commit.
+- pi: `estimateTextTokens`; `isContextOverflow`; `appendGrammarToolInputJsonDelta`; `uuidv7`; `formatNoModelsAvailableMessage`
+- fixture: empty / hello world / 100 ASCII a. Overflow: error prompt-too-long / rate-limit / silent stop / length-full. Grammar: `hel` → `hello` → close. UUID: format only. Auth: prefixes + login/providers/models flags; do not exact docs paths.
+- Friend-MachineD n=5: estimate_text **3.10×** (0.54 / 0.17 µs); context_overflow **1.67×** (1.85 / 1.11 µs); grammar_delta **2.87×** (1.52 / 0.53 µs); uuid_v7 **0.32×** (3.08 / 9.49 µs); auth_guidance **27.66×** (1922 / 69.5 µs); ceiling 8.0 (variance) / auth 50.0 (ASDF docs-dir). cadr leads on uuid. Other files still `needs-pair`. retry.lisp stays covered-as-callee. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

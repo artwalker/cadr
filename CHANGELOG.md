@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_support.auth_guidance`
+  (no-models / no-selected / no-key prefixes; cadr
+  `no-models-available-message` vs pi
+  `formatNoModelsAvailableMessage`). Friend-MachineD
+  n=5 **27.66×** (1922 / 69.5 µs), ceiling 50.0
+  (ASDF docs-dir). Same commit no optimize. G.17
+  missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `ai_capabilities.deferred_tools`
   (grep/bash immediate, read deferred when enabled;
   cadr `split-deferred-tools` vs pi
