@@ -160,6 +160,7 @@ const REPETITIONS = {
 	"tui_select_settings_loaders.filter": 50,
 	"tui_word_navigation.step": 50,
 	"tui_overlay.composite_line": 50,
+	"tui_kill_ring.push_peek": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -384,6 +385,7 @@ const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts
 const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
 const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navigation.ts"));
 const tuiModule = await import(moduleUrl("packages/tui/src/tui.ts"));
+const killRingModule = await import(moduleUrl("packages/tui/src/kill-ring.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2610,6 +2612,39 @@ async function measureTuiOverlay() {
 	};
 }
 
+function runTuiKillRing() {
+	const empty = new killRingModule.KillRing();
+	const ring = new killRingModule.KillRing();
+	ring.push("aa", { prepend: false });
+	ring.push("bbb", { prepend: false });
+	const peekTwo = (ring.peek() || "").length;
+	ring.rotate();
+	const acc = new killRingModule.KillRing();
+	acc.push("ab", { prepend: false });
+	acc.push("c", { prepend: false, accumulate: true });
+	const pre = new killRingModule.KillRing();
+	pre.push("yz", { prepend: false });
+	pre.push("x", { prepend: true, accumulate: true });
+	return {
+		empty_len: empty.length,
+		ring_len: ring.length,
+		peek_two: peekTwo,
+		peek_rot: (ring.peek() || "").length,
+		acc_append: (acc.peek() || "").length,
+		acc_prepend: (pre.peek() || "").length,
+	};
+}
+
+async function measureTuiKillRing() {
+	const observed = runTuiKillRing();
+	return {
+		push_peek: await collect("tui_kill_ring.push_peek", () => {
+			return () => runTuiKillRing();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2838,6 +2873,8 @@ process.stderr.write("goal20 pi paired paths: tui_word_navigation\n");
 const tuiWordNavigation = await measureTuiWordNavigation();
 process.stderr.write("goal20 pi paired paths: tui_overlay\n");
 const tuiOverlay = await measureTuiOverlay();
+process.stderr.write("goal20 pi paired paths: tui_kill_ring\n");
+const tuiKillRing = await measureTuiKillRing();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2905,6 +2942,8 @@ const result = {
 				"packages/tui/src/word-navigation.ts findWordBackward + findWordForward",
 			"tui_overlay.composite_line":
 				"packages/tui/src/tui.ts compositeTuiLine",
+			"tui_kill_ring.push_peek":
+				"packages/tui/src/kill-ring.ts KillRing.push + peek + rotate",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2988,6 +3027,7 @@ const result = {
 		tui_select_settings_loaders: tuiSelectSettings,
 		tui_word_navigation: tuiWordNavigation,
 		tui_overlay: tuiOverlay,
+		tui_kill_ring: tuiKillRing,
 		render_slicing: renderSlicing,
 	},
 };

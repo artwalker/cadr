@@ -38,6 +38,7 @@
 ;;;;  25. tui_select_settings_loaders select-list filter vs SelectList.setFilter
 ;;;;  26. tui_word_navigation find-word-backward/forward vs findWordBackward/Forward
 ;;;;  27. tui_overlay composite-overlay-line vs compositeTuiLine
+;;;;  28. tui_kill_ring kill-ring-push/peek/rotate vs KillRing
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -127,6 +128,7 @@
     ("tui_select_settings_loaders.filter" . 50)
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
+    ("tui_kill_ring.push_peek" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3216,6 +3218,44 @@
                 (lambda ()
                   (run-tui-overlay)))))))
 
+(defun run-tui-kill-ring ()
+  (let ((empty (cadr-tui:make-kill-ring))
+        (ring (cadr-tui:make-kill-ring))
+        (acc (cadr-tui:make-kill-ring))
+        (pre (cadr-tui:make-kill-ring)))
+    (cadr-tui:kill-ring-push ring "aa")
+    (cadr-tui:kill-ring-push ring "bbb")
+    (let ((peek-two (length (or (cadr-tui:kill-ring-peek ring) ""))))
+      (cadr-tui:kill-ring-rotate ring)
+      (cadr-tui:kill-ring-push acc "ab")
+      (cadr-tui:kill-ring-push acc "c" :accumulate-p t)
+      (cadr-tui:kill-ring-push pre "yz")
+      (cadr-tui:kill-ring-push pre "x" :prepend-p t :accumulate-p t)
+      (list
+       (cadr-tui:kill-ring-length empty)
+       (cadr-tui:kill-ring-length ring)
+       peek-two
+       (length (or (cadr-tui:kill-ring-peek ring) ""))
+       (length (or (cadr-tui:kill-ring-peek acc) ""))
+       (length (or (cadr-tui:kill-ring-peek pre) ""))))))
+
+(defun measure-tui-kill-ring ()
+  (let ((observed (run-tui-kill-ring)))
+    (json-object
+     "observed"
+     (json-object
+      "empty_len" (first observed)
+      "ring_len" (second observed)
+      "peek_two" (third observed)
+      "peek_rot" (fourth observed)
+      "acc_append" (fifth observed)
+      "acc_prepend" (sixth observed))
+     "push_peek"
+     (collect "tui_kill_ring.push_peek"
+              (lambda ()
+                (lambda ()
+                  (run-tui-kill-ring)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3332,6 +3372,8 @@
       "src/cadr-tui/word-navigation.lisp find-word-backward + find-word-forward"
       "tui_overlay.composite_line"
       "src/cadr-tui/overlay.lisp composite-overlay-line"
+      "tui_kill_ring.push_peek"
+      "src/cadr-tui/kill-ring.lisp kill-ring-push + kill-ring-peek + kill-ring-rotate"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3459,6 +3501,8 @@
               (let ((word-nav (measure-tui-word-navigation)))
               (format *error-output* "goal20 cadr paired paths: tui_overlay~%")
               (let ((overlay (measure-tui-overlay)))
+              (format *error-output* "goal20 cadr paired paths: tui_kill_ring~%")
+              (let ((kill-ring (measure-tui-kill-ring)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3517,6 +3561,7 @@
               "tui_select_settings_loaders" select-list
               "tui_word_navigation" word-nav
               "tui_overlay" overlay
+              "tui_kill_ring" kill-ring
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3533,7 +3578,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

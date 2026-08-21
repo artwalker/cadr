@@ -121,6 +121,7 @@ METRICS = {
     "tui_select_settings_loaders": ("filter",),
     "tui_word_navigation": ("step",),
     "tui_overlay": ("composite_line",),
+    "tui_kill_ring": ("push_peek",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -310,6 +311,12 @@ RATIO_CEILINGS = {
     # (19.1 / 22.0 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "tui_overlay.composite_line": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_kill_ring pair (samples=5): observed 0.85x
+    # (0.58 / 0.68 us). cadr leads. 8.0 follows the
+    # microsecond-floor first-freeze headroom.
+    # Ratchet down only.
+    "tui_kill_ring.push_peek": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -639,6 +646,14 @@ OBSERVED_EXACT = {
         "line_chars",
         "visible_width",
         "has_reset",
+    ),
+    "tui_kill_ring": (
+        "empty_len",
+        "ring_len",
+        "peek_two",
+        "peek_rot",
+        "acc_append",
+        "acc_prepend",
     ),
     "resource_loader": (
         "skill_count",

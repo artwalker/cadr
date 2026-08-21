@@ -40,6 +40,7 @@
   "tui_select_settings_loaders.filter",
   "tui_word_navigation.step",
   "tui_overlay.composite_line",
+  "tui_kill_ring.push_peek",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1565,8 +1566,8 @@
   },
   {
    "prefix": "src/cadr-tui/kill-ring.lisp",
-   "class": "needs-pair",
-   "hole": "tui_editor_helpers"
+   "class": "paired",
+   "metrics": ["tui_kill_ring.push_peek"]
   },
   {
    "prefix": "src/cadr-tui/latex.lisp",

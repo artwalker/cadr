@@ -604,6 +604,21 @@ a TUI frame. Observed `line_chars` / `visible_width` /
 `needs-pair`. First Friend-MachineD freeze **0.87×**
 (19.1 / 22.0 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 42 — `tui_kill_ring`
+
+| metric | cadr | pi |
+|---|---|---|
+| `push_peek` | `kill-ring-push` + `kill-ring-peek` + `kill-ring-rotate` | `KillRing.push` + `peek` + `rotate` (`packages/tui/src/kill-ring.ts`) |
+
+Push `aa`/`bbb`, rotate (n=2), accumulate append `ab`+`c`,
+accumulate prepend `yz`+`x`. Time the ring, not a TUI
+frame. Observed `empty_len` / `ring_len` / `peek_two` /
+`peek_rot` / `acc_append` / `acc_prepend` are exact
+(0 / 2 / 3 / 2 / 3 / 3). Other editor-helper files stay
+`needs-pair`. First Friend-MachineD freeze **0.85×**
+(0.58 / 0.68 µs), ceiling 8.0 (variance / microsecond
+floor). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -809,13 +824,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 94 | 48,769 | 38.3% | `no worse than baseline` is falsifiable |
+| `paired` | 95 | 48,807 | 38.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 158 | 58,226 | 45.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 157 | 58,188 | 45.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 38.3% of lines (94 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 38.3% of lines (95 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 44.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -931,6 +946,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/fuzzy.lisp` | 134 | `tui_editor_helpers.fuzzy_match` |
 | `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/kill-ring.lisp` | 38 | `tui_kill_ring.push_peek` |
 | `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render` |
 | `src/cadr-tui/overlay.lisp` | 485 | `tui_overlay.composite_line` |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -990,7 +1006,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 7 | 1,724 |
 | `cli_sdk` | 5 | 1,712 |
-| `tui_editor_helpers` | 7 | 1,638 |
+| `tui_editor_helpers` | 6 | 1,600 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
 | `cli_support` | 13 | 1,164 |

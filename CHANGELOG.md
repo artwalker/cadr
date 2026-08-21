@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_kill_ring.push_peek` (push/peek/
+  rotate n=2 + accumulate; cadr `kill-ring-*` vs pi
+  `KillRing`). Friend-MachineD n=5 **0.85×**
+  (0.58 / 0.68 µs), ceiling 8.0 (variance). Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_overlay.composite_line` (ASCII
   overlay at col 6; cadr `composite-overlay-line` vs pi
   `compositeTuiLine`). Friend-MachineD n=5 **0.87×**

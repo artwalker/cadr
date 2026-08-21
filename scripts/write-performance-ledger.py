@@ -56,6 +56,7 @@ METRIC_KEYS = (
     "tui_select_settings_loaders.filter",
     "tui_word_navigation.step",
     "tui_overlay.composite_line",
+    "tui_kill_ring.push_peek",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",
