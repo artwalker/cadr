@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_sdk.cache_waste`
+  (3-turn miss / healthy / compaction skip / model-switch /
+  no-cache; cadr `compute-cache-waste` vs pi
+  `computeCacheWaste`). Friend-MachineD n=5 **0.60×**
+  (3.96 / 6.56 µs), ceiling 8.0. cadr leads. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_sdk.cache_miss`
   (in-memory assistant usage miss/healthy/empty; cadr
   `detect-cache-miss` vs pi `detectCacheMiss`). Friend-MachineD

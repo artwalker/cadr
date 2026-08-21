@@ -80,6 +80,7 @@
 ;;;;  66. cli_support parse-changelog vs parseChangelog
 ;;;;  67. cli_models_rest parse-auth-command vs parseAuthCommand
 ;;;;  68. cli_sdk detect-cache-miss vs detectCacheMiss
+;;;;  69. cli_sdk compute-cache-waste vs computeCacheWaste
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -206,6 +207,7 @@
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
+    ("cli_sdk.cache_waste" . 50)
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
@@ -4742,9 +4744,73 @@
      (cache-miss-shape switched)
      (list (if healthy 1 0) (if empty 1 0)))))
 
+(defun cache-waste-shape (waste)
+  (list
+   (cadr-cli::cache-waste-missed-tokens waste)
+   (cadr-cli::cache-waste-miss-count waste)))
+
+(defun run-cli-sdk-cache-waste ()
+  (let* ((price #'paired-cache-price)
+         (turn1
+           (paired-cache-assistant
+            :cache-write 100000
+            :cache-write-cost 0.375d0
+            :timestamp 0))
+         (turn2
+           (paired-cache-assistant
+            :cache-read 100000
+            :cache-write 5000
+            :cache-read-cost 0.03d0
+            :cache-write-cost 0.019d0
+            :timestamp 60000))
+         (turn3
+           (paired-cache-assistant
+            :cache-write 110000
+            :cache-write-cost 0.4125d0
+            :timestamp 120000))
+         (after-reset
+           (paired-cache-assistant
+            :cache-write 20000
+            :cache-write-cost 0.075d0
+            :timestamp 180000))
+         (switched
+           (paired-cache-assistant
+            :cache-write 100000
+            :cache-write-cost 0.375d0
+            :model "other-model"
+            :timestamp 60000))
+         (nocache-a
+           (paired-cache-assistant :input 100000 :timestamp 0))
+         (nocache-b
+           (paired-cache-assistant :input 110000 :timestamp 60000))
+         (miss
+           (cadr-cli::compute-cache-waste
+            (list turn1 turn2 turn3) :model-price-function price))
+         (healthy
+           (cadr-cli::compute-cache-waste
+            (list turn1 turn2) :model-price-function price))
+         (reset
+           (cadr-cli::compute-cache-waste
+            (list turn1 :compaction after-reset)
+            :model-price-function price))
+         (switched-waste
+           (cadr-cli::compute-cache-waste
+            (list turn1 switched) :model-price-function price))
+         (nocache
+           (cadr-cli::compute-cache-waste
+            (list nocache-a nocache-b)
+            :model-price-function price)))
+    (append
+     (cache-waste-shape miss)
+     (cache-waste-shape healthy)
+     (cache-waste-shape reset)
+     (cache-waste-shape switched-waste)
+     (cache-waste-shape nocache))))
+
 (defun measure-cli-sdk-version-newer ()
   (let ((observed (run-cli-sdk-version-newer))
-        (cache (run-cli-sdk-cache-miss)))
+        (cache (run-cli-sdk-cache-miss))
+        (waste (run-cli-sdk-cache-waste)))
     (json-object
      "observed"
      (json-object
@@ -4762,7 +4828,14 @@
       "sw_chg" (nth 6 cache)
       "sw_hit" (nth 7 cache)
       "healthy_hit" (nth 8 cache)
-      "empty_hit" (nth 9 cache))
+      "empty_hit" (nth 9 cache)
+      "cw_tok" (nth 0 waste)
+      "cw_n" (nth 1 waste)
+      "cw_healthy" (nth 2 waste)
+      "cw_reset" (nth 4 waste)
+      "cw_sw_tok" (nth 6 waste)
+      "cw_sw_n" (nth 7 waste)
+      "cw_nocache" (nth 8 waste))
      "version_newer"
      (collect "cli_sdk.version_newer"
               (lambda ()
@@ -4772,7 +4845,12 @@
      (collect "cli_sdk.cache_miss"
               (lambda ()
                 (lambda ()
-                  (run-cli-sdk-cache-miss)))))))
+                  (run-cli-sdk-cache-miss))))
+     "cache_waste"
+     (collect "cli_sdk.cache_waste"
+              (lambda ()
+                (lambda ()
+                  (run-cli-sdk-cache-waste)))))))
 
 (defun provider-definition-present-p (id)
   (handler-case
@@ -5121,6 +5199,8 @@
       "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
       "cli_sdk.cache_miss"
       "src/cadr-cli/sdk/cache-version.lisp detect-cache-miss"
+      "cli_sdk.cache_waste"
+      "src/cadr-cli/sdk/cache-version.lisp compute-cache-waste"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "skill_prompt_load.build_prompt"

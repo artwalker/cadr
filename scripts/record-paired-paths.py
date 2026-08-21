@@ -94,6 +94,7 @@ METRIC_KEYS = (
     "cli_interactive_controller.decode_entity",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
+    "cli_sdk.cache_waste",
     "provider_registry_defs.lookup",
     "skill_prompt_load.build_prompt",
     "cli_bootstrap_sessions.coding_tools",

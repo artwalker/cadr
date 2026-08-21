@@ -197,6 +197,7 @@ const REPETITIONS = {
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
+	"cli_sdk.cache_waste": 50,
 	"provider_registry_defs.lookup": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
@@ -4020,10 +4021,73 @@ function runCliSdkCacheMiss() {
 	};
 }
 
+function runCliSdkCacheWaste() {
+	const turn1 = pairedCacheAssistant({
+		cacheWrite: 100_000,
+		cost: { cacheWrite: 0.375 },
+		timestamp: 0,
+	});
+	const turn2 = pairedCacheAssistant({
+		cacheRead: 100_000,
+		cacheWrite: 5_000,
+		cost: { cacheRead: 0.03, cacheWrite: 0.019 },
+		timestamp: 60_000,
+	});
+	const turn3 = pairedCacheAssistant({
+		cacheWrite: 110_000,
+		cost: { cacheWrite: 0.4125 },
+		timestamp: 120_000,
+	});
+	const afterReset = pairedCacheAssistant({
+		cacheWrite: 20_000,
+		cost: { cacheWrite: 0.075 },
+		timestamp: 180_000,
+	});
+	const switched = pairedCacheAssistant({
+		cacheWrite: 100_000,
+		cost: { cacheWrite: 0.375 },
+		model: "other-model",
+		timestamp: 60_000,
+	});
+	const nocacheA = pairedCacheAssistant({ input: 100_000, timestamp: 0 });
+	const nocacheB = pairedCacheAssistant({ input: 110_000, timestamp: 60_000 });
+	const compaction = { type: "compaction", id: "c", parentId: null, timestamp: "" };
+	const miss = cacheStatsModule.computeCacheWaste(
+		[pairedCacheEntry(turn1), pairedCacheEntry(turn2), pairedCacheEntry(turn3)],
+		pairedCacheModels,
+	);
+	const healthy = cacheStatsModule.computeCacheWaste(
+		[pairedCacheEntry(turn1), pairedCacheEntry(turn2)],
+		pairedCacheModels,
+	);
+	const reset = cacheStatsModule.computeCacheWaste(
+		[pairedCacheEntry(turn1), compaction, pairedCacheEntry(afterReset)],
+		pairedCacheModels,
+	);
+	const switchedWaste = cacheStatsModule.computeCacheWaste(
+		[pairedCacheEntry(turn1), pairedCacheEntry(switched)],
+		pairedCacheModels,
+	);
+	const nocache = cacheStatsModule.computeCacheWaste(
+		[pairedCacheEntry(nocacheA), pairedCacheEntry(nocacheB)],
+		pairedCacheModels,
+	);
+	return {
+		cw_tok: miss.missedTokens,
+		cw_n: miss.missCount,
+		cw_healthy: healthy.missedTokens,
+		cw_reset: reset.missedTokens,
+		cw_sw_tok: switchedWaste.missedTokens,
+		cw_sw_n: switchedWaste.missCount,
+		cw_nocache: nocache.missedTokens,
+	};
+}
+
 async function measureCliSdkVersionNewer() {
 	const observed = {
 		...runCliSdkVersionNewer(),
 		...runCliSdkCacheMiss(),
+		...runCliSdkCacheWaste(),
 	};
 	return {
 		version_newer: await collect("cli_sdk.version_newer", () => {
@@ -4031,6 +4095,9 @@ async function measureCliSdkVersionNewer() {
 		}),
 		cache_miss: await collect("cli_sdk.cache_miss", () => {
 			return () => runCliSdkCacheMiss();
+		}),
+		cache_waste: await collect("cli_sdk.cache_waste", () => {
+			return () => runCliSdkCacheWaste();
 		}),
 		observed,
 	};
@@ -4562,6 +4629,8 @@ const result = {
 				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
 			"cli_sdk.cache_miss":
 				"packages/coding-agent/src/core/cache-stats.ts detectCacheMiss",
+			"cli_sdk.cache_waste":
+				"packages/coding-agent/src/core/cache-stats.ts computeCacheWaste",
 			"provider_registry_defs.lookup":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"skill_prompt_load.build_prompt":
