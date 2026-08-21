@@ -173,6 +173,7 @@ const REPETITIONS = {
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
+	"skill_prompt_load.build_prompt": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -410,6 +411,7 @@ const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
+const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -3041,6 +3043,45 @@ async function measureProviderRegistryDefs() {
 	};
 }
 
+function runSkillPromptBuild() {
+	const cwd = "/tmp/proj";
+	const custom = systemPromptModule.buildSystemPrompt({
+		customPrompt: "hello",
+		cwd,
+		selectedTools: ["read"],
+	});
+	const appended = systemPromptModule.buildSystemPrompt({
+		customPrompt: "hello",
+		cwd,
+		appendSystemPrompt: "extra",
+		selectedTools: ["read"],
+	});
+	const withCtx = systemPromptModule.buildSystemPrompt({
+		customPrompt: "hello",
+		cwd,
+		selectedTools: ["read"],
+		contextFiles: [{ path: "AGENTS.md", content: "be careful" }],
+	});
+	return {
+		custom_len: custom.length,
+		append_len: appended.length,
+		ctx_len: withCtx.length,
+		has_cwd: custom.includes("Current working directory: /tmp/proj") ? 1 : 0,
+		has_extra: appended.includes("extra") ? 1 : 0,
+		has_agents: withCtx.includes("AGENTS.md") ? 1 : 0,
+	};
+}
+
+async function measureSkillPromptBuild() {
+	const observed = runSkillPromptBuild();
+	return {
+		build_prompt: await collect("skill_prompt_load.build_prompt", () => {
+			return () => runSkillPromptBuild();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3295,6 +3336,8 @@ process.stderr.write("goal20 pi paired paths: cli_sdk\n");
 const cliSdk = await measureCliSdkVersionNewer();
 process.stderr.write("goal20 pi paired paths: provider_registry_defs\n");
 const providerRegistryDefs = await measureProviderRegistryDefs();
+process.stderr.write("goal20 pi paired paths: skill_prompt_load\n");
+const skillPromptLoad = await measureSkillPromptBuild();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3386,6 +3429,8 @@ const result = {
 				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
 			"provider_registry_defs.lookup":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
+			"skill_prompt_load.build_prompt":
+				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3482,6 +3527,7 @@ const result = {
 		cli_interactive_controller: cliInteractive,
 		cli_sdk: cliSdk,
 		provider_registry_defs: providerRegistryDefs,
+		skill_prompt_load: skillPromptLoad,
 		render_slicing: renderSlicing,
 	},
 };

@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `skill_prompt_load.build_prompt`
+  (custom/append/context; cadr `build-system-prompt` vs
+  pi `buildSystemPrompt`). Friend-MachineD n=5
+  **1170.57×** (2196 / 1.88 µs), ceiling 3000.0. Same
+  commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `provider_registry_defs.lookup`
   (openai/anthropic/google; cadr
   `find-provider-definition` vs pi `getBuiltinProviders`).

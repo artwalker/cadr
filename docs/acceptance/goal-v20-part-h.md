@@ -789,6 +789,22 @@ registry files stay `needs-pair`. First Friend-MachineD
 freeze **4.44×** (1.03 / 0.23 µs), ceiling 8.0 (variance /
 microsecond floor). Same commit no optimize.
 
+### Pair 55 — `skill_prompt_load`
+
+| metric | cadr | pi |
+|---|---|---|
+| `build_prompt` | `build-system-prompt` | `buildSystemPrompt` (`packages/coding-agent/src/core/system-prompt.ts`) |
+
+Custom prompt `hello`, append `extra`, context
+`AGENTS.md`, cwd `/tmp/proj`. Time assemble, no TUI.
+Observed `custom_len` / `append_len` / `ctx_len` /
+`has_cwd` / `has_extra` / `has_agents` are exact
+(43 / 50 / 206 / 1 / 1 / 1). Keyword initforms still
+hit ASDF on this path. Other skill_prompt files stay
+`needs-pair`. First Friend-MachineD freeze **1170.57×**
+(2196 / 1.88 µs), ceiling 3000.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -994,14 +1010,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 107 | 54,008 | 42.4% | `no worse than baseline` is falsifiable |
+| `paired` | 108 | 54,226 | 42.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 145 | 52,987 | 41.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 144 | 52,769 | 41.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 42.4% of lines (107 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 48.3% of lines.
+- **Falsifiable vs baseline:** 42.6% of lines (108 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 48.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1096,6 +1112,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer` |
+| `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi` |
@@ -1192,13 +1209,13 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `http_transport` | 1 | 858 |
 | `cli_support` | 12 | 822 |
 | `cli_models_rest` | 2 | 698 |
-| `skill_prompt_load` | 3 | 641 |
 | `websocket_stream` | 1 | 628 |
 | `ai_runtime_faux` | 1 | 601 |
 | `tui_theme_overlay` | 1 | 562 |
 | `ai_support` | 5 | 560 |
 | `ai_capabilities` | 4 | 472 |
 | `provider_registry_defs` | 2 | 454 |
+| `skill_prompt_load` | 2 | 423 |
 | `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |

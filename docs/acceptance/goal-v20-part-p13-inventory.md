@@ -283,10 +283,11 @@ These must not be filed as callees.
 | `src/cadr-cli/packages/source.lisp` | 338 |
 | `src/cadr-cli/packages/update-checks.lisp` | 293 |
 
-### `skill_prompt_load` (required hole)
+### `skill_prompt_load` (required hole) — `sdk/system-prompt.lisp` paired `skill_prompt_load.build_prompt`
 
-- pi: `packages/coding-agent/src/core/resource-loader.ts, skills.ts, prompt-templates.ts, system-prompt.ts`
-- fixture: Agent dir with skills/*.md and prompts/*.md plus a cwd overlay. Time loadSkills + loadPromptTemplates + system-prompt assemble. Same bytes.
+- pi: `packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt`
+- fixture: custom `hello` + append `extra` + context AGENTS.md. Time assemble, no TUI.
+- Friend-MachineD n=5: **1170.57×** (2196 / 1.88 µs), ceiling 3000.0 (ASDF initforms on custom-prompt). Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

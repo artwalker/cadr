@@ -327,6 +327,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(provider_defs), 1)
         self.assertEqual(provider_defs[0]["class"], "paired")
         self.assertIn("provider_registry_defs.lookup", provider_defs[0]["metrics"])
+        skill_prompt = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/sdk/system-prompt.lisp"
+        ]
+        self.assertEqual(len(skill_prompt), 1)
+        self.assertEqual(skill_prompt[0]["class"], "paired")
+        self.assertIn("skill_prompt_load.build_prompt", skill_prompt[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

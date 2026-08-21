@@ -51,6 +51,7 @@
 ;;;;  38. cli_interactive_controller decode-highlight-entity vs decodeHtmlEntity
 ;;;;  39. cli_sdk newer-package-version-p vs isNewerPackageVersion
 ;;;;  40. provider_registry_defs list/find vs getBuiltinProviders
+;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -153,6 +154,7 @@
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
+    ("skill_prompt_load.build_prompt" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3796,6 +3798,55 @@
                 (lambda ()
                   (run-provider-registry-defs)))))))
 
+(defun run-skill-prompt-build ()
+  (let* ((cwd "/tmp/proj")
+         (custom
+           (cadr-cli:build-system-prompt
+            :custom-prompt "hello"
+            :cwd cwd
+            :selected-tools '("read")))
+         (appended
+           (cadr-cli:build-system-prompt
+            :custom-prompt "hello"
+            :cwd cwd
+            :append-system-prompt "extra"
+            :selected-tools '("read")))
+         (with-ctx
+           (cadr-cli:build-system-prompt
+            :custom-prompt "hello"
+            :cwd cwd
+            :selected-tools '("read")
+            :context-files
+            (list
+             (list :path "AGENTS.md"
+                   :content "be careful")))))
+    (list
+     (length custom)
+     (length appended)
+     (length with-ctx)
+     (if (search "Current working directory: /tmp/proj" custom)
+         1
+         0)
+     (if (search "extra" appended) 1 0)
+     (if (search "AGENTS.md" with-ctx) 1 0))))
+
+(defun measure-skill-prompt-build ()
+  (let ((observed (run-skill-prompt-build)))
+    (json-object
+     "observed"
+     (json-object
+      "custom_len" (first observed)
+      "append_len" (second observed)
+      "ctx_len" (third observed)
+      "has_cwd" (fourth observed)
+      "has_extra" (fifth observed)
+      "has_agents" (sixth observed))
+     "build_prompt"
+     (collect "skill_prompt_load.build_prompt"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-build)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3938,6 +3989,8 @@
       "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
+      "skill_prompt_load.build_prompt"
+      "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -4091,6 +4144,8 @@
               (let ((sdk (measure-cli-sdk-version-newer)))
               (format *error-output* "goal20 cadr paired paths: provider_registry_defs~%")
               (let ((provider-defs (measure-provider-registry-defs)))
+              (format *error-output* "goal20 cadr paired paths: skill_prompt_load~%")
+              (let ((skill-prompt (measure-skill-prompt-build)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -4162,6 +4217,7 @@
               "cli_interactive_controller" interactive
               "cli_sdk" sdk
               "provider_registry_defs" provider-defs
+              "skill_prompt_load" skill-prompt
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4178,7 +4234,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

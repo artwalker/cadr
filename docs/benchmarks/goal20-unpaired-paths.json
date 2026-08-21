@@ -53,6 +53,7 @@
   "cli_interactive_controller.decode_entity",
   "cli_sdk.version_newer",
   "provider_registry_defs.lookup",
+  "skill_prompt_load.build_prompt",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1306,8 +1307,8 @@
   },
   {
    "prefix": "src/cadr-cli/sdk/system-prompt.lisp",
-   "class": "needs-pair",
-   "hole": "skill_prompt_load"
+   "class": "paired",
+   "metrics": ["skill_prompt_load.build_prompt"]
   },
   {
    "prefix": "src/cadr-cli/settings/trust.lisp",

@@ -134,6 +134,7 @@ METRICS = {
     "cli_interactive_controller": ("decode_entity",),
     "cli_sdk": ("version_newer",),
     "provider_registry_defs": ("lookup",),
+    "skill_prompt_load": ("build_prompt",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -393,6 +394,12 @@ RATIO_CEILINGS = {
     # (1.03 / 0.23 us). 8.0 follows the microsecond-floor
     # first-freeze headroom. Ratchet down only.
     "provider_registry_defs.lookup": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # skill_prompt_load pair (samples=5): observed 1170.57x
+    # (2196 / 1.88 us). Keyword initforms still hit ASDF
+    # on the custom-prompt path. 3000.0 is first-freeze
+    # headroom. Ratchet down only.
+    "skill_prompt_load.build_prompt": 3000.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -823,6 +830,14 @@ OBSERVED_EXACT = {
         "anthropic",
         "google",
         "unknown",
+    ),
+    "skill_prompt_load": (
+        "custom_len",
+        "append_len",
+        "ctx_len",
+        "has_cwd",
+        "has_extra",
+        "has_agents",
     ),
     "resource_loader": (
         "skill_count",
