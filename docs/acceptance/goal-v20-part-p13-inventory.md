@@ -643,10 +643,11 @@ These must not be filed as callees.
 | `src/cadr-tui/undo-stack.lisp` | 20 |
 | `src/cadr-tui/word-navigation.lisp` | 118 |
 
-### `tui_theme_overlay` (additional)
+### `tui_theme_overlay` (additional) — `terminal-colors.lisp` paired `tui_theme_overlay.osc11_bg`
 
-- pi: `packages/tui/src/tui.ts overlay compositing + theme/color helpers`
-- fixture: One overlay (game or selector) composited onto a Goal 11-sized frame; theme resolve for a color key. Do not re-time mouse_drag.
+- pi: `packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor`
+- fixture: OSC 11 rgb:/hex + scheme report. Time parse, not a TUI frame.
+- Friend-MachineD n=5: **1.16×** (3.8 / 3.3 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

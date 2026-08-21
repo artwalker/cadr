@@ -540,6 +540,19 @@ files stay `needs-pair`. First Friend-MachineD freeze
 **0.45×** (1.8 / 4.0 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 37 — `tui_theme_overlay`
+
+| metric | cadr | pi |
+|---|---|---|
+| `osc11_bg` | `parse-osc-11-background-color` | `parseOsc11BackgroundColor` (`packages/tui/src/terminal-colors.ts`) |
+
+OSC 11 `rgb:` / `#RRGGBB` / 12-digit hex, a prefix miss,
+and `?997;1n` dark scheme. Time parse, not a TUI frame.
+Observed RGB triples / `miss` / `scheme_dark` are exact.
+`theme.lisp` / `overlay.lisp` stay `needs-pair`. First
+Friend-MachineD freeze **1.16×** (3.8 / 3.3 µs), ceiling
+8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -745,14 +758,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 89 | 47,500 | 37.3% | `no worse than baseline` is falsifiable |
+| `paired` | 90 | 47,691 | 37.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 163 | 59,495 | 46.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 162 | 59,304 | 46.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 37.3% of lines (89 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 43.2% of lines.
+- **Falsifiable vs baseline:** 37.4% of lines (90 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 43.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -872,6 +885,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/renderer/main-screen.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 78 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/terminal-colors.lisp` | 191 | `tui_theme_overlay.osc11_bg` |
 | `src/cadr-tui/terminal-image.lisp` | 686 | `image_runtime.dimensions` |
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/unicode.lisp` | 1,302 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
@@ -924,8 +938,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_sdk` | 5 | 1,712 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
-| `tui_theme_overlay` | 3 | 1,238 |
 | `cli_support` | 13 | 1,164 |
+| `tui_theme_overlay` | 2 | 1,047 |
 | `tui_select_settings_loaders` | 3 | 1,010 |
 | `http_transport` | 1 | 858 |
 | `ai_support` | 6 | 730 |

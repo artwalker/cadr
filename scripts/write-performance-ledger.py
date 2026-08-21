@@ -51,6 +51,7 @@ METRIC_KEYS = (
     "cli_print_rpc.jsonl_line",
     "tui_latex.render",
     "tui_editor_helpers.fuzzy_match",
+    "tui_theme_overlay.osc11_bg",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

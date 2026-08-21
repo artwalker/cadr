@@ -181,6 +181,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(fuzzy), 1)
         self.assertEqual(fuzzy[0]["class"], "paired")
         self.assertIn("tui_editor_helpers.fuzzy_match", fuzzy[0]["metrics"])
+        terminal_colors = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/terminal-colors.lisp"
+        ]
+        self.assertEqual(len(terminal_colors), 1)
+        self.assertEqual(terminal_colors[0]["class"], "paired")
+        self.assertIn("tui_theme_overlay.osc11_bg", terminal_colors[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

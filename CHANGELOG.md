@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_theme_overlay.osc11_bg` (OSC 11
+  rgb/hex; cadr `parse-osc-11-background-color` vs pi
+  `parseOsc11BackgroundColor`). Friend-MachineD n=5
+  **1.16×** (3.8 / 3.3 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_editor_helpers.fuzzy_match`
   (`gpt-4o` queries; cadr `fuzzy-match` vs pi `fuzzyMatch`).
   Friend-MachineD n=5 **0.45×** (1.8 / 4.0 µs), ceiling 8.0.

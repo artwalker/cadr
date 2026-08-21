@@ -33,6 +33,7 @@
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
+;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -117,6 +118,7 @@
     ("cli_print_rpc.jsonl_line" . 50)
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
+    ("tui_theme_overlay.osc11_bg" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3036,6 +3038,64 @@
                 (lambda ()
                   (run-tui-fuzzy)))))))
 
+(defun osc11-report (body terminator)
+  (concatenate 'string (string #\Escape) "]11;" body terminator))
+
+(defun rgb-triple (color)
+  (if color
+      (list (cadr-tui:rgb-color-red color)
+            (cadr-tui:rgb-color-green color)
+            (cadr-tui:rgb-color-blue color))
+      (list -1 -1 -1)))
+
+(defun run-tui-theme-overlay ()
+  (let* ((bell (string (code-char 7)))
+         (st (concatenate 'string (string #\Escape) "\\"))
+         (rgb
+           (rgb-triple
+            (cadr-tui:parse-osc-11-background-color
+             (osc11-report "rgb:ffff/8000/0000" bell))))
+         (hex6
+           (rgb-triple
+            (cadr-tui:parse-osc-11-background-color
+             (osc11-report "#112233" st))))
+         (hex12
+           (rgb-triple
+            (cadr-tui:parse-osc-11-background-color
+             (osc11-report "#ffff80000000" bell))))
+         (miss
+           (cadr-tui:parse-osc-11-background-color
+            (concatenate 'string "prefix"
+                         (osc11-report "#112233" bell))))
+         (scheme
+           (cadr-tui:parse-terminal-color-scheme-report
+            (format nil "~C[?997;1n" #\Escape))))
+    (list (first rgb) (second rgb) (third rgb)
+          (first hex6) (second hex6) (third hex6)
+          (first hex12)
+          (if miss 0 1)
+          (if (eq scheme :dark) 1 0))))
+
+(defun measure-tui-theme-overlay ()
+  (let ((observed (run-tui-theme-overlay)))
+    (json-object
+     "observed"
+     (json-object
+      "rgb_r" (first observed)
+      "rgb_g" (second observed)
+      "rgb_b" (third observed)
+      "hex6_r" (fourth observed)
+      "hex6_g" (fifth observed)
+      "hex6_b" (sixth observed)
+      "hex12_r" (seventh observed)
+      "miss" (eighth observed)
+      "scheme_dark" (ninth observed))
+     "osc11_bg"
+     (collect "tui_theme_overlay.osc11_bg"
+              (lambda ()
+                (lambda ()
+                  (run-tui-theme-overlay)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3142,6 +3202,8 @@
       "src/cadr-tui/latex.lisp render-latex"
       "tui_editor_helpers.fuzzy_match"
       "src/cadr-tui/fuzzy.lisp fuzzy-match"
+      "tui_theme_overlay.osc11_bg"
+      "src/cadr-tui/terminal-colors.lisp parse-osc-11-background-color"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3259,6 +3321,8 @@
               (let ((latex (measure-tui-latex)))
               (format *error-output* "goal20 cadr paired paths: tui_editor_helpers~%")
               (let ((fuzzy (measure-tui-fuzzy)))
+              (format *error-output* "goal20 cadr paired paths: tui_theme_overlay~%")
+              (let ((theme-overlay (measure-tui-theme-overlay)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3312,6 +3376,7 @@
               "cli_print_rpc" print-rpc
               "tui_latex" latex
               "tui_editor_helpers" fuzzy
+              "tui_theme_overlay" theme-overlay
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3328,7 +3393,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

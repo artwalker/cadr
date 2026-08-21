@@ -155,6 +155,7 @@ const REPETITIONS = {
 	"cli_print_rpc.jsonl_line": 50,
 	"tui_latex.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
+	"tui_theme_overlay.osc11_bg": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -374,6 +375,7 @@ const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
 const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
+const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2442,6 +2444,53 @@ async function measureTuiFuzzy() {
 	};
 }
 
+function osc11Report(body, terminator) {
+	return `\x1b]11;${body}${terminator}`;
+}
+
+function rgbTriple(color) {
+	return color ? [color.r, color.g, color.b] : [-1, -1, -1];
+}
+
+function runTuiThemeOverlay() {
+	const bell = "\x07";
+	const st = "\x1b\\";
+	const rgb = rgbTriple(
+		terminalColorsModule.parseOsc11BackgroundColor(osc11Report("rgb:ffff/8000/0000", bell)),
+	);
+	const hex6 = rgbTriple(
+		terminalColorsModule.parseOsc11BackgroundColor(osc11Report("#112233", st)),
+	);
+	const hex12 = rgbTriple(
+		terminalColorsModule.parseOsc11BackgroundColor(osc11Report("#ffff80000000", bell)),
+	);
+	const miss = terminalColorsModule.parseOsc11BackgroundColor(
+		`prefix${osc11Report("#112233", bell)}`,
+	);
+	const scheme = terminalColorsModule.parseTerminalColorSchemeReport("\x1b[?997;1n");
+	return {
+		rgb_r: rgb[0],
+		rgb_g: rgb[1],
+		rgb_b: rgb[2],
+		hex6_r: hex6[0],
+		hex6_g: hex6[1],
+		hex6_b: hex6[2],
+		hex12_r: hex12[0],
+		miss: miss ? 0 : 1,
+		scheme_dark: scheme === "dark" ? 1 : 0,
+	};
+}
+
+async function measureTuiThemeOverlay() {
+	const observed = runTuiThemeOverlay();
+	return {
+		osc11_bg: await collect("tui_theme_overlay.osc11_bg", () => {
+			return () => runTuiThemeOverlay();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2660,6 +2709,8 @@ process.stderr.write("goal20 pi paired paths: tui_latex\n");
 const tuiLatex = await measureTuiLatex();
 process.stderr.write("goal20 pi paired paths: tui_editor_helpers\n");
 const tuiEditorHelpers = await measureTuiFuzzy();
+process.stderr.write("goal20 pi paired paths: tui_theme_overlay\n");
+const tuiThemeOverlay = await measureTuiThemeOverlay();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2717,6 +2768,8 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
+			"tui_theme_overlay.osc11_bg":
+				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2795,6 +2848,7 @@ const result = {
 		cli_print_rpc: cliPrintRpc,
 		tui_latex: tuiLatex,
 		tui_editor_helpers: tuiEditorHelpers,
+		tui_theme_overlay: tuiThemeOverlay,
 		render_slicing: renderSlicing,
 	},
 };

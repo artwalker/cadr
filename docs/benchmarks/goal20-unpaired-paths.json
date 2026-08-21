@@ -35,6 +35,7 @@
   "cli_print_rpc.jsonl_line",
   "tui_latex.render",
   "tui_editor_helpers.fuzzy_match",
+  "tui_theme_overlay.osc11_bg",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1656,8 +1657,8 @@
   },
   {
    "prefix": "src/cadr-tui/terminal-colors.lisp",
-   "class": "needs-pair",
-   "hole": "tui_theme_overlay"
+   "class": "paired",
+   "metrics": ["tui_theme_overlay.osc11_bg"]
   },
   {
    "prefix": "src/cadr-tui/terminal-image.lisp",
