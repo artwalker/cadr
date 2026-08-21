@@ -61,6 +61,7 @@ METRIC_KEYS = (
     "ai_support.estimate_text",
     "ai_support.context_overflow",
     "ai_support.grammar_delta",
+    "ai_support.uuid_v7",
     "tui_select_settings_loaders.filter",
     "tui_word_navigation.step",
     "tui_overlay.composite_line",

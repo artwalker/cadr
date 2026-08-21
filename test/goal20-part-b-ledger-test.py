@@ -510,6 +510,14 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ai_support.grammar_delta", paired.RATIO_CEILINGS)
         self.assertIn("d1", paired.OBSERVED_EXACT["ai_support"])
         self.assertIn("closed", paired.OBSERVED_EXACT["ai_support"])
+        self.assertIn("ai_support.uuid_v7", RECORD.METRIC_KEYS)
+        self.assertIn("uuid_v7", paired.METRICS["ai_support"])
+        self.assertIn("ai_support.uuid_v7", paired.RATIO_CEILINGS)
+        self.assertIn("uuid_len", paired.OBSERVED_EXACT["ai_support"])
+        self.assertIn("uuid_hyphens", paired.OBSERVED_EXACT["ai_support"])
+        self.assertIn("uuid_version", paired.OBSERVED_EXACT["ai_support"])
+        self.assertIn("uuid_variant", paired.OBSERVED_EXACT["ai_support"])
+        self.assertIn("uuid_neq", paired.OBSERVED_EXACT["ai_support"])
 
     def test_tui_select_settings_loaders_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -776,6 +784,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`ai_support.estimate_text`", section)
             self.assertIn("`ai_support.context_overflow`", section)
             self.assertIn("`ai_support.grammar_delta`", section)
+            self.assertIn("`ai_support.uuid_v7`", section)
             self.assertIn("`tui_select_settings_loaders.filter`", section)
             self.assertIn("`tui_word_navigation.step`", section)
             self.assertIn("`tui_overlay.composite_line`", section)

@@ -64,6 +64,7 @@
 ;;;;  50. image_runtime find-image-model vs getImageModel
 ;;;;  51. image_runtime format-image-dimension-note vs formatDimensionNote
 ;;;;  52. image_runtime get-images-api-provider vs getImagesApiProvider
+;;;;  53. ai_support uuid-v7 vs uuidv7
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -158,6 +159,7 @@
     ("ai_support.estimate_text" . 50)
     ("ai_support.context_overflow" . 50)
     ("ai_support.grammar_delta" . 50)
+    ("ai_support.uuid_v7" . 50)
     ("tui_select_settings_loaders.filter" . 50)
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
@@ -3363,10 +3365,35 @@
      (if (cadr-ai::grammar-json-buffer-started-p buffer) 1 0)
      (if (cadr-ai::grammar-json-buffer-closed-p buffer) 1 0))))
 
+(defun uuid-v7-shape (id)
+  (list
+   (length id)
+   (count #\- id)
+   (if (and (> (length id) 14)
+            (char= (char id 14) #\7))
+       7
+       0)
+   (if (and (> (length id) 19)
+            (find (char id 19) "89ab"))
+       1
+       0)))
+
+(defun run-ai-support-uuid-v7 ()
+  (let* ((first (cadr-ai:uuid-v7))
+         (second (cadr-ai:uuid-v7))
+         (shape (uuid-v7-shape first)))
+    (list
+     (first shape)
+     (second shape)
+     (third shape)
+     (fourth shape)
+     (if (string= first second) 0 1))))
+
 (defun measure-ai-support-estimate ()
   (let ((estimate (run-ai-support-estimate))
         (overflow (run-ai-support-context-overflow))
-        (grammar (run-ai-support-grammar-delta)))
+        (grammar (run-ai-support-grammar-delta))
+        (uuid (run-ai-support-uuid-v7)))
     (json-object
      "observed"
      (json-object
@@ -3381,7 +3408,12 @@
       "d2" (second grammar)
       "d3" (third grammar)
       "started" (fourth grammar)
-      "closed" (fifth grammar))
+      "closed" (fifth grammar)
+      "uuid_len" (first uuid)
+      "uuid_hyphens" (second uuid)
+      "uuid_version" (third uuid)
+      "uuid_variant" (fourth uuid)
+      "uuid_neq" (fifth uuid))
      "estimate_text"
      (collect "ai_support.estimate_text"
               (lambda ()
@@ -3396,7 +3428,12 @@
      (collect "ai_support.grammar_delta"
               (lambda ()
                 (lambda ()
-                  (run-ai-support-grammar-delta)))))))
+                  (run-ai-support-grammar-delta))))
+     "uuid_v7"
+     (collect "ai_support.uuid_v7"
+              (lambda ()
+                (lambda ()
+                  (run-ai-support-uuid-v7)))))))
 
 (defun select-list-fixture ()
   (cadr-tui:make-select-list
@@ -4320,6 +4357,8 @@
       "src/cadr-ai/support/overflow.lisp context-overflow-p"
       "ai_support.grammar_delta"
       "src/cadr-ai/support/grammar-coercion.lisp append-grammar-json-delta"
+      "ai_support.uuid_v7"
+      "src/cadr-ai/support/uuid.lisp uuid-v7"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
       "tui_word_navigation.step"

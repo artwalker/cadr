@@ -249,6 +249,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(estimate), 1)
         self.assertEqual(estimate[0]["class"], "paired")
         self.assertIn("ai_support.estimate_text", estimate[0]["metrics"])
+        uuid_file = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/support/uuid.lisp"
+        ]
+        self.assertEqual(len(uuid_file), 1)
+        self.assertEqual(uuid_file[0]["class"], "paired")
+        self.assertIn("ai_support.uuid_v7", uuid_file[0]["metrics"])
         overflow = [
             row
             for row in classified["rows"]

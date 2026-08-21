@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_support.uuid_v7`
+  (format 36/4/7/variant, two distinct; cadr
+  `uuid-v7` vs pi `uuidv7`). Friend-MachineD n=5
+  **0.32×** (3.08 / 9.49 µs), ceiling 8.0. cadr
+  leads. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_print_rpc.jsonl_read`
   (3 JSONL lines including CRLF; cadr
   `read-rpc-jsonl-lines` vs pi

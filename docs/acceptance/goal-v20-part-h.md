@@ -980,6 +980,21 @@ Friend-MachineD freeze **0.03×** (0.63 / 23.84 µs),
 ceiling 8.0. cadr leads (sync `read-line` vs async
 Readable). Same commit no optimize.
 
+### Pair 68 — `ai_support` (uuid_v7)
+
+| metric | cadr | pi |
+|---|---|---|
+| `uuid_v7` | `uuid-v7` | `uuidv7` (`packages/ai/src/utils/uuid.ts`) |
+
+Leftover sibling of estimate/overflow/grammar. Time
+production UUID generation. Do not exact the hex
+(entropy). Observed `uuid_len` / `uuid_hyphens` /
+`uuid_version` / `uuid_variant` / `uuid_neq` are
+exact (36 / 4 / 7 / 1 / 1). First Friend-MachineD
+freeze **0.32×** (3.08 / 9.49 µs), ceiling 8.0.
+cadr leads (entropy pool vs `getRandomValues`).
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1185,13 +1200,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 120 | 58,609 | 46.0% | `no worse than baseline` is falsifiable |
+| `paired` | 121 | 58,702 | 46.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 132 | 48,386 | 38.0% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 131 | 48,293 | 37.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.0% of lines (120 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 46.1% of lines (121 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 51.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -1274,6 +1289,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/support/grammar-coercion.lisp` | 279 | `ai_support.grammar_delta` |
 | `src/cadr-ai/support/overflow.lisp` | 78 | `ai_support.context_overflow` |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | `ai_support.estimate_text` |
+| `src/cadr-ai/support/uuid.lisp` | 93 | `ai_support.uuid_v7` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/transport/http.lisp` | 858 | `http_transport.parse_url` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
@@ -1402,8 +1418,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
-| `ai_support` | 3 | 203 |
 | `session_compact` | 1 | 185 |
+| `ai_support` | 2 | 110 |
 | `agent_conditions` | 1 | 43 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
