@@ -34,6 +34,7 @@
   "image_runtime.dimensions",
   "cli_print_rpc.jsonl_line",
   "tui_latex.render",
+  "tui_editor_helpers.fuzzy_match",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1544,8 +1545,8 @@
   },
   {
    "prefix": "src/cadr-tui/fuzzy.lisp",
-   "class": "needs-pair",
-   "hole": "tui_editor_helpers"
+   "class": "paired",
+   "metrics": ["tui_editor_helpers.fuzzy_match"]
   },
   {
    "prefix": "src/cadr-tui/input-component.lisp",

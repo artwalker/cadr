@@ -173,6 +173,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(latex), 1)
         self.assertEqual(latex[0]["class"], "paired")
         self.assertIn("tui_latex.render", latex[0]["metrics"])
+        fuzzy = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/fuzzy.lisp"
+        ]
+        self.assertEqual(len(fuzzy), 1)
+        self.assertEqual(fuzzy[0]["class"], "paired")
+        self.assertIn("tui_editor_helpers.fuzzy_match", fuzzy[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

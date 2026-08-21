@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_editor_helpers.fuzzy_match`
+  (`gpt-4o` queries; cadr `fuzzy-match` vs pi `fuzzyMatch`).
+  Friend-MachineD n=5 **0.45×** (1.8 / 4.0 µs), ceiling 8.0.
+  Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_latex.render` (reference snippets;
   cadr `render-latex` vs pi `renderLatex`). Friend-MachineD
   n=5 **2.49×** (64.4 / 25.8 µs), ceiling 3.0. Same commit

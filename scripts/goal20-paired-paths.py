@@ -115,6 +115,7 @@ METRICS = {
     "image_runtime": ("dimensions",),
     "cli_print_rpc": ("jsonl_line",),
     "tui_latex": ("render",),
+    "tui_editor_helpers": ("fuzzy_match",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -274,6 +275,11 @@ RATIO_CEILINGS = {
     # (samples=5): observed 2.49x (64.4 / 25.8 us). 3.0 follows the
     # argv_parse / tool_grep headroom precedent. Ratchet down only.
     "tui_latex.render": 3.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_editor_helpers pair (samples=5): observed 0.45x
+    # (1.8 / 4.0 us). cadr leads. 8.0 is the first-freeze
+    # headroom (microsecond path). Ratchet down only.
+    "tui_editor_helpers.fuzzy_match": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -563,6 +569,13 @@ OBSERVED_EXACT = {
         "greek",
         "frac_display_newlines",
         "unknown_miss",
+    ),
+    "tui_editor_helpers": (
+        "gpt",
+        "id_suffix",
+        "swapped",
+        "miss",
+        "empty",
     ),
     "resource_loader": (
         "skill_count",

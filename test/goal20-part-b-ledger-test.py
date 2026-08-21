@@ -434,6 +434,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("frac_inline", paired.OBSERVED_EXACT["tui_latex"])
         self.assertIn("unknown_miss", paired.OBSERVED_EXACT["tui_latex"])
 
+    def test_tui_editor_helpers_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tui_editor_helpers.fuzzy_match", RECORD.METRIC_KEYS)
+        self.assertIn("fuzzy_match", paired.METRICS["tui_editor_helpers"])
+        self.assertIn("tui_editor_helpers.fuzzy_match", paired.RATIO_CEILINGS)
+        self.assertIn("gpt", paired.OBSERVED_EXACT["tui_editor_helpers"])
+        self.assertIn("miss", paired.OBSERVED_EXACT["tui_editor_helpers"])
+        self.assertIn("empty", paired.OBSERVED_EXACT["tui_editor_helpers"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -501,6 +510,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`image_runtime.dimensions`", section)
             self.assertIn("`cli_print_rpc.jsonl_line`", section)
             self.assertIn("`tui_latex.render`", section)
+            self.assertIn("`tui_editor_helpers.fuzzy_match`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

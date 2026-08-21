@@ -154,6 +154,7 @@ const REPETITIONS = {
 	"image_runtime.dimensions": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"tui_latex.render": 20,
+	"tui_editor_helpers.fuzzy_match": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -372,6 +373,7 @@ const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
 const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
+const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2416,6 +2418,30 @@ async function measureTuiLatex() {
 	};
 }
 
+function fuzzyHit(query, text) {
+	return fuzzyModule.fuzzyMatch(query, text).matches ? 1 : 0;
+}
+
+function runTuiFuzzy() {
+	return {
+		gpt: fuzzyHit("gpt", "gpt-4o"),
+		id_suffix: fuzzyHit("4o", "gpt-4o"),
+		swapped: fuzzyHit("g4", "gpt-4o"),
+		miss: fuzzyHit("xyzzy", "gpt-4o"),
+		empty: fuzzyHit("", "anything"),
+	};
+}
+
+async function measureTuiFuzzy() {
+	const observed = runTuiFuzzy();
+	return {
+		fuzzy_match: await collect("tui_editor_helpers.fuzzy_match", () => {
+			return () => runTuiFuzzy();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2632,6 +2658,8 @@ process.stderr.write("goal20 pi paired paths: cli_print_rpc\n");
 const cliPrintRpc = await measureCliPrintRpc();
 process.stderr.write("goal20 pi paired paths: tui_latex\n");
 const tuiLatex = await measureTuiLatex();
+process.stderr.write("goal20 pi paired paths: tui_editor_helpers\n");
+const tuiEditorHelpers = await measureTuiFuzzy();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2688,6 +2716,7 @@ const result = {
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
+			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2765,6 +2794,7 @@ const result = {
 		image_runtime: imageRuntime,
 		cli_print_rpc: cliPrintRpc,
 		tui_latex: tuiLatex,
+		tui_editor_helpers: tuiEditorHelpers,
 		render_slicing: renderSlicing,
 	},
 };

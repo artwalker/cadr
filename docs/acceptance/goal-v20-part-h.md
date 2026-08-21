@@ -526,6 +526,20 @@ render, not a TUI frame. Observed `e_mc2` / `frac_inline` /
 exact. First Friend-MachineD freeze **2.49×** (64.4 / 25.8
 µs), ceiling 3.0. Same commit no optimize.
 
+### Pair 36 — `tui_editor_helpers`
+
+| metric | cadr | pi |
+|---|---|---|
+| `fuzzy_match` | `fuzzy-match` | `fuzzyMatch` (`packages/tui/src/fuzzy.ts`) |
+
+Queries against `gpt-4o`: `gpt`, `4o`, `g4`, `xyzzy`, empty.
+Time match flags, not a TUI frame. Observed `gpt` /
+`id_suffix` / `swapped` / `empty` = 1 and `miss` = 0
+(`xyzzy` does not match) are exact. Other editor-helper
+files stay `needs-pair`. First Friend-MachineD freeze
+**0.45×** (1.8 / 4.0 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -731,14 +745,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 88 | 47,366 | 37.2% | `no worse than baseline` is falsifiable |
+| `paired` | 89 | 47,500 | 37.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 164 | 59,629 | 46.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 163 | 59,495 | 46.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 37.2% of lines (88 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 43.1% of lines.
+- **Falsifiable vs baseline:** 37.3% of lines (89 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 43.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -848,6 +862,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/text-box.lisp` | 280 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/editor.lisp` | 2,014 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/fuzzy.lisp` | 134 | `tui_editor_helpers.fuzzy_match` |
 | `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render` |
@@ -903,8 +918,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `evals_harness` | 6 | 2,184 |
 | `image_runtime` | 5 | 2,091 |
 | `oauth_pkce_device` | 13 | 2,081 |
-| `tui_editor_helpers` | 9 | 1,890 |
 | `package_manager` | 2 | 1,811 |
+| `tui_editor_helpers` | 8 | 1,756 |
 | `cli_print_rpc` | 7 | 1,724 |
 | `cli_sdk` | 5 | 1,712 |
 | `settings_load` | 4 | 1,499 |

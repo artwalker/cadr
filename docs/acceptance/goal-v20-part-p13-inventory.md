@@ -625,10 +625,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-tui/latex.lisp` | 1,950 |
 
-### `tui_editor_helpers` (additional)
+### `tui_editor_helpers` (additional) — `fuzzy.lisp` paired `tui_editor_helpers.fuzzy_match`
 
-- pi: `packages/tui/src/{autocomplete,fuzzy,input,keybindings,kill-ring,undo-stack,word-navigation,stdin-buffer,native-modifiers}.ts`
-- fixture: Editor fixture: tab-complete, word jump, yank. Goal 11 continuous_alt_input only types x/DEL, so these do not run on that thunk.
+- pi: `packages/tui/src/fuzzy.ts fuzzyMatch`
+- fixture: queries against `gpt-4o`. Time match flags, not a TUI frame.
+- Friend-MachineD n=5: **0.45×** (1.8 / 4.0 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

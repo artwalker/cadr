@@ -32,6 +32,7 @@
 ;;;;  19. image_runtime image-dimensions vs getImageDimensions
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
 ;;;;  21. tui_latex render-latex vs renderLatex
+;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -115,6 +116,7 @@
     ("image_runtime.dimensions" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("tui_latex.render" . 20)
+    ("tui_editor_helpers.fuzzy_match" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3004,6 +3006,36 @@
                 (lambda ()
                   (run-tui-latex)))))))
 
+(defun fuzzy-hit (query text)
+  (multiple-value-bind (matched-p score)
+      (cadr-tui:fuzzy-match query text)
+    (declare (ignore score))
+    (if matched-p 1 0)))
+
+(defun run-tui-fuzzy ()
+  (list
+   (fuzzy-hit "gpt" "gpt-4o")
+   (fuzzy-hit "4o" "gpt-4o")
+   (fuzzy-hit "g4" "gpt-4o")
+   (fuzzy-hit "xyzzy" "gpt-4o")
+   (fuzzy-hit "" "anything")))
+
+(defun measure-tui-fuzzy ()
+  (let ((observed (run-tui-fuzzy)))
+    (json-object
+     "observed"
+     (json-object
+      "gpt" (first observed)
+      "id_suffix" (second observed)
+      "swapped" (third observed)
+      "miss" (fourth observed)
+      "empty" (fifth observed))
+     "fuzzy_match"
+     (collect "tui_editor_helpers.fuzzy_match"
+              (lambda ()
+                (lambda ()
+                  (run-tui-fuzzy)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3108,6 +3140,8 @@
       "src/cadr-cli/modes/print.lisp write-json-line"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
+      "tui_editor_helpers.fuzzy_match"
+      "src/cadr-tui/fuzzy.lisp fuzzy-match"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3223,6 +3257,8 @@
               (let ((print-rpc (measure-cli-print-rpc)))
               (format *error-output* "goal20 cadr paired paths: tui_latex~%")
               (let ((latex (measure-tui-latex)))
+              (format *error-output* "goal20 cadr paired paths: tui_editor_helpers~%")
+              (let ((fuzzy (measure-tui-fuzzy)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3275,6 +3311,7 @@
               "image_runtime" images
               "cli_print_rpc" print-rpc
               "tui_latex" latex
+              "tui_editor_helpers" fuzzy
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3291,7 +3328,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
