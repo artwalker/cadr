@@ -463,8 +463,8 @@ directory walk (cadr reads a JSON dir; pi reads
 `models.generated.ts`). No TUI, no socket. Observed
 `schema_version` / `structure_hash` / `generated_at` /
 `file_count` / `openai_json_hash` / `anthropic_json_hash`
-are exact. `crypto.lisp` stays `needs-pair` (HMAC/SigV4 is
-not on this thunk). First Friend-MachineD freeze **8.97×**
+are exact. HMAC is a leftover sibling pair
+(`ai_crypto.hmac`). First Friend-MachineD freeze **8.97×**
 (77.3 / 8.6 µs), ceiling 20.0. Same commit no optimize.
 
 ### Pair 32 — `cli_models_rest`
@@ -877,6 +877,19 @@ exact. First Friend-MachineD freeze **1.67×** (1.85 /
 1.11 µs), ceiling 8.0 (variance). Same commit no
 optimize.
 
+### Pair 61 — `ai_crypto` (hmac)
+
+| metric | cadr | pi |
+|---|---|---|
+| `hmac` | `hmac-sha256` | `createHmac("sha256")` (`node:crypto`) |
+
+Leftover sibling of `ai_crypto_model_data.manifest`.
+Fixtures: RFC 4231 fox, empty message, 70-byte key.
+Time HMAC hex, no socket. Observed `fox` / `empty` /
+`long` are exact. Pure-Lisp SHA-256 vs OpenSSL.
+First Friend-MachineD freeze **18.81×** (133.9 / 7.1 µs),
+ceiling 30.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1082,14 +1095,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 113 | 55,971 | 43.9% | `no worse than baseline` is falsifiable |
+| `paired` | 114 | 56,338 | 44.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 139 | 51,024 | 40.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 138 | 50,657 | 39.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 43.9% of lines (113 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 49.8% of lines.
+- **Falsifiable vs baseline:** 44.2% of lines (114 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 50.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1148,6 +1161,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
+| `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
@@ -1291,7 +1305,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `ai_capabilities` | 4 | 472 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
-| `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `session_compact` | 1 | 185 |

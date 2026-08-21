@@ -33,7 +33,7 @@
 //     scripts/goal20-paired-paths.mjs "$BASELINE_WORKTREE"
 
 import { execFileSync } from "node:child_process";
-import { createHash } from "node:crypto";
+import { createHash, createHmac } from "node:crypto";
 import {
 	copyFileSync,
 	mkdirSync,
@@ -150,6 +150,7 @@ const REPETITIONS = {
 	"oauth_pkce.challenge_urls": 50,
 	"evals_harness.summarize": 20,
 	"ai_crypto_model_data.manifest": 50,
+	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
 	"image_runtime.dimensions": 50,
 	"cli_print_rpc.jsonl_line": 50,
@@ -2331,6 +2332,28 @@ async function measureAiCryptoModelData() {
 	};
 }
 
+function hmacHex(key, message) {
+	return createHmac("sha256", key).update(message).digest("hex");
+}
+
+function runAiCryptoHmac() {
+	return {
+		fox: hmacHex("key", "The quick brown fox jumps over the lazy dog"),
+		empty: hmacHex("key", ""),
+		long: hmacHex("a".repeat(70), "msg"),
+	};
+}
+
+async function measureAiCryptoHmac() {
+	const observed = runAiCryptoHmac();
+	return {
+		hmac: await collect("ai_crypto.hmac", () => {
+			return () => runAiCryptoHmac();
+		}),
+		observed,
+	};
+}
+
 const MODEL_MATCH_PATTERNS = [
 	"goal20faux/goal20-paired-0",
 	"goal20-paired-1",
@@ -3436,6 +3459,8 @@ process.stderr.write("goal20 pi paired paths: evals_harness\n");
 const evalsHarness = await measureEvalsHarness();
 process.stderr.write("goal20 pi paired paths: ai_crypto_model_data\n");
 const aiCryptoModelData = await measureAiCryptoModelData();
+process.stderr.write("goal20 pi paired paths: ai_crypto\n");
+const aiCrypto = await measureAiCryptoHmac();
 process.stderr.write("goal20 pi paired paths: cli_models_rest\n");
 const cliModelsRest = await measureCliModelsRest();
 process.stderr.write("goal20 pi paired paths: image_runtime\n");
@@ -3539,6 +3564,7 @@ const result = {
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
+			"ai_crypto.hmac": "node:crypto createHmac sha256",
 			"cli_models_rest.pattern_match":
 				"packages/coding-agent/src/core/model-resolver.ts parseModelPattern",
 			"image_runtime.dimensions":
@@ -3666,6 +3692,7 @@ const result = {
 		oauth_pkce: oauthPkce,
 		evals_harness: evalsHarness,
 		ai_crypto_model_data: aiCryptoModelData,
+		ai_crypto: aiCrypto,
 		cli_models_rest: cliModelsRest,
 		image_runtime: imageRuntime,
 		cli_print_rpc: cliPrintRpc,

@@ -398,6 +398,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("openai_json_hash", paired.OBSERVED_EXACT["ai_crypto_model_data"])
         self.assertIn("anthropic_json_hash", paired.OBSERVED_EXACT["ai_crypto_model_data"])
 
+    def test_ai_crypto_hmac_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("ai_crypto.hmac", RECORD.METRIC_KEYS)
+        self.assertIn("hmac", paired.METRICS["ai_crypto"])
+        self.assertIn("ai_crypto.hmac", paired.RATIO_CEILINGS)
+        self.assertIn("fox", paired.OBSERVED_EXACT["ai_crypto"])
+        self.assertIn("empty", paired.OBSERVED_EXACT["ai_crypto"])
+        self.assertIn("long", paired.OBSERVED_EXACT["ai_crypto"])
+
     def test_cli_models_rest_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("cli_models_rest.pattern_match", RECORD.METRIC_KEYS)
@@ -717,6 +726,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_settings.create`", section)
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
+            self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)
             self.assertIn("`image_runtime.dimensions`", section)
             self.assertIn("`cli_print_rpc.jsonl_line`", section)

@@ -46,6 +46,7 @@ METRIC_KEYS = (
     "oauth_pkce.challenge_urls",
     "evals_harness.summarize",
     "ai_crypto_model_data.manifest",
+    "ai_crypto.hmac",
     "cli_models_rest.pattern_match",
     "image_runtime.dimensions",
     "cli_print_rpc.jsonl_line",

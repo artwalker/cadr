@@ -57,6 +57,7 @@
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
 ;;;;  45. cli_support normalize-path-input vs normalizePath
 ;;;;  46. ai_support context-overflow-p vs isContextOverflow
+;;;;  47. ai_crypto hmac-sha256 vs node:crypto createHmac
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -136,6 +137,7 @@
     ("oauth_pkce.challenge_urls" . 50)
     ("evals_harness.summarize" . 20)
     ("ai_crypto_model_data.manifest" . 50)
+    ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
     ("image_runtime.dimensions" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
@@ -2908,6 +2910,30 @@
                 (lambda ()
                   (run-ai-crypto-model-data)))))))
 
+(defun run-ai-crypto-hmac ()
+  (list
+   (cadr-ai::octets-hex
+    (cadr-ai::hmac-sha256
+     "key" "The quick brown fox jumps over the lazy dog"))
+   (cadr-ai::octets-hex (cadr-ai::hmac-sha256 "key" ""))
+   (cadr-ai::octets-hex
+    (cadr-ai::hmac-sha256
+     (make-string 70 :initial-element #\a) "msg"))))
+
+(defun measure-ai-crypto-hmac ()
+  (let ((observed (run-ai-crypto-hmac)))
+    (json-object
+     "observed"
+     (json-object
+      "fox" (first observed)
+      "empty" (second observed)
+      "long" (third observed))
+     "hmac"
+     (collect "ai_crypto.hmac"
+              (lambda ()
+                (lambda ()
+                  (run-ai-crypto-hmac)))))))
+
 (defparameter *model-match-patterns*
   '("goal20faux/goal20-paired-0"
     "goal20-paired-1"
@@ -4095,6 +4121,8 @@
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
+      "ai_crypto.hmac"
+      "src/cadr-ai/crypto.lisp hmac-sha256"
       "cli_models_rest.pattern_match"
       "src/cadr-cli/models/matching.lisp parse-scoped-model-pattern"
       "image_runtime.dimensions"
@@ -4260,6 +4288,8 @@
               (let ((evals (measure-evals-harness)))
               (format *error-output* "goal20 cadr paired paths: ai_crypto_model_data~%")
               (let ((crypto (measure-ai-crypto-model-data)))
+              (format *error-output* "goal20 cadr paired paths: ai_crypto~%")
+              (let ((hmac (measure-ai-crypto-hmac)))
               (format *error-output* "goal20 cadr paired paths: cli_models_rest~%")
               (let ((models-rest (measure-cli-models-rest)))
               (format *error-output* "goal20 cadr paired paths: image_runtime~%")
@@ -4362,6 +4392,7 @@
               "oauth_pkce" oauth
               "evals_harness" evals
               "ai_crypto_model_data" crypto
+              "ai_crypto" hmac
               "cli_models_rest" models-rest
               "image_runtime" images
               "cli_print_rpc" print-rpc
@@ -4405,7 +4436,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

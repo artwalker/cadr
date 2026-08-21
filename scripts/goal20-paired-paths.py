@@ -111,6 +111,7 @@ METRICS = {
     "oauth_pkce": ("challenge_urls",),
     "evals_harness": ("summarize",),
     "ai_crypto_model_data": ("manifest",),
+    "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match",),
     "image_runtime": ("dimensions",),
     "cli_print_rpc": ("jsonl_line",),
@@ -280,6 +281,11 @@ RATIO_CEILINGS = {
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
     # truncate_head headroom precedent. Ratchet down only.
     "ai_crypto_model_data.manifest": 20.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # ai_crypto.hmac pair (samples=5): observed 18.81x
+    # (133.9 / 7.1 us). A first attempt at 8.0 failed.
+    # 30.0 is first-freeze headroom. Ratchet down only.
+    "ai_crypto.hmac": 30.0,
     # Frozen from the first Friend-MachineD non-quick cli_models_rest
     # pair (samples=5): observed 1.65x (31.9 / 19.4 us). 3.0 follows
     # the argv_parse / tool_grep headroom precedent. Ratchet down only.
@@ -689,6 +695,11 @@ OBSERVED_EXACT = {
         "file_count",
         "openai_json_hash",
         "anthropic_json_hash",
+    ),
+    "ai_crypto": (
+        "fox",
+        "empty",
+        "long",
     ),
     "cli_models_rest": (
         "exact_id",

@@ -141,6 +141,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(model_data), 1)
         self.assertEqual(model_data[0]["class"], "paired")
         self.assertIn("ai_crypto_model_data.manifest", model_data[0]["metrics"])
+        crypto = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/crypto.lisp"
+        ]
+        self.assertEqual(len(crypto), 1)
+        self.assertEqual(crypto[0]["class"], "paired")
+        self.assertIn("ai_crypto.hmac", crypto[0]["metrics"])
         matching = [
             row
             for row in classified["rows"]

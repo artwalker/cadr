@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_crypto.hmac` (fox / empty /
+  70-byte key; cadr `hmac-sha256` vs `node:crypto`
+  `createHmac`). Friend-MachineD n=5 **18.81×**
+  (133.9 / 7.1 µs), ceiling 30.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `ai_support.context_overflow`
   (prompt-too-long / rate-limit / silent stop /
   length-full; cadr `context-overflow-p` vs pi

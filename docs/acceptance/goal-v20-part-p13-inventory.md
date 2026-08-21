@@ -445,11 +445,11 @@ These must not be filed as callees.
 | `src/cadr-ai/support/token-estimation.lisp` | 170 |
 | `src/cadr-ai/support/uuid.lisp` | 65 |
 
-### `ai_crypto_model_data` (additional) — `model-data.lisp` paired `ai_crypto_model_data.manifest`
+### `ai_crypto_model_data` (additional) — `model-data.lisp` paired `ai_crypto_model_data.manifest`; `crypto.lisp` paired `ai_crypto.hmac`
 
-- pi: `packages/ai/scripts/model-data.ts createModelDataManifest` (catalog SHA-256; not `hash.ts` shortHash)
-- fixture: in-memory two-provider structure + two JSON shard strings. Time manifest, not directory walk. json.lisp pairing already uses sha256 for fixture digests outside the timed thunk.
-- Friend-MachineD n=5: **8.97×** (77.3 / 8.6 µs), ceiling 20.0. `crypto.lisp` still `needs-pair`. No optimize in the booking commit.
+- pi: `packages/ai/scripts/model-data.ts createModelDataManifest`; `node:crypto createHmac("sha256")`
+- fixture: in-memory two-provider structure + two JSON shard strings. Time manifest, not directory walk. HMAC: fox / empty / 70-byte key.
+- Friend-MachineD n=5: manifest **8.97×** (77.3 / 8.6 µs), ceiling 20.0. hmac **18.81×** (133.9 / 7.1 µs), ceiling 30.0. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|
