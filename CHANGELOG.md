@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.parse_changelog`
+  (`0.2.0` / malformed / `0.1.0` + missing empty; cadr
+  `parse-changelog` vs pi `parseChangelog`). Friend-MachineD
+  n=5 **2.96×** (36.04 / 12.20 µs), ceiling 8.0. Same
+  commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_support.user_agent`
   (version substring / parens / two semicolons; cadr
   `cadr-user-agent` vs pi `getPiUserAgent`). Friend-MachineD

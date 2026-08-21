@@ -72,6 +72,7 @@
   "cli_support.sanitize_output",
   "cli_support.git_source",
   "cli_support.user_agent",
+  "cli_support.parse_changelog",
   "cli_interactive_controller.decode_entity",
   "cli_sdk.version_newer",
   "provider_registry_defs.lookup",
@@ -1348,7 +1349,7 @@
   {
    "prefix": "src/cadr-cli/support/changelog-share.lisp",
    "class": "paired",
-   "metrics": ["cli_support.strip_ansi"]
+   "metrics": ["cli_support.strip_ansi", "cli_support.parse_changelog"]
   },
   {
    "prefix": "src/cadr-cli/support/event-bus.lisp",

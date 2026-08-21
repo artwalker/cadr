@@ -1153,6 +1153,19 @@ count=2. Do not exact product (`cadr` vs `pi`) or runtime
 (1.41 / 0.45 µs), ceiling 8.0 (variance). Same commit no
 optimize.
 
+### Pair 81 — `cli_support` (parse_changelog)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_changelog` | `parse-changelog` | `parseChangelog` (`packages/coding-agent/src/utils/changelog.ts`) |
+
+Leftover sibling of `strip_ansi` in `changelog-share.lisp`.
+Fixture CHANGELOG with `0.2.0` / malformed / `0.1.0`; missing
+file empty. Count, version strings, first-header flag. Do not
+exact product URLs (`normalize-changelog-links` skipped). First
+Friend-MachineD freeze **2.96×** (36.04 / 12.20 µs), ceiling
+8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1480,7 +1493,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
-| `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi` |
+| `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |

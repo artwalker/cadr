@@ -192,6 +192,7 @@ const REPETITIONS = {
 	"cli_support.sanitize_output": 50,
 	"cli_support.git_source": 50,
 	"cli_support.user_agent": 50,
+	"cli_support.parse_changelog": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -470,6 +471,9 @@ const shellModule = await import(moduleUrl("packages/coding-agent/src/utils/shel
 const gitModule = await import(moduleUrl("packages/coding-agent/src/utils/git.ts"));
 const userAgentModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/pi-user-agent.ts")
+);
+const changelogModule = await import(
+	moduleUrl("packages/coding-agent/src/utils/changelog.ts")
 );
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
@@ -3705,6 +3709,48 @@ function runCliSupportUserAgent() {
 	return userAgentShape(userAgentModule.getPiUserAgent("1.2.3"));
 }
 
+const pairedChangelogText = `# Changelog
+
+## [0.2.0] - 2026-01-02
+
+New.
+
+## malformed
+ignored
+
+## 0.1.0
+
+Old.
+`;
+
+function writePairedChangelog() {
+	const changelogPath = path.join(scratch, "changelog.md");
+	writeFileSync(changelogPath, pairedChangelogText, "utf8");
+	return changelogPath;
+}
+
+function changelogEntryVersion(entry) {
+	if (!entry) return "";
+	return `${entry.major}.${entry.minor}.${entry.patch}`;
+}
+
+function runCliSupportParseChangelog() {
+	const changelogPath = path.join(scratch, "changelog.md");
+	const entries = changelogModule.parseChangelog(changelogPath);
+	const first = entries[0];
+	const second = entries[1];
+	const missing = changelogModule.parseChangelog(
+		path.join(scratch, "no-such-changelog.md"),
+	);
+	return {
+		cl_n: entries.length,
+		cl_first: changelogEntryVersion(first),
+		cl_hdr: first?.content?.includes("## [0.2.0]") ? 1 : 0,
+		cl_second: changelogEntryVersion(second),
+		cl_miss: missing.length,
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -3715,6 +3761,8 @@ async function measureCliSupportStripAnsi() {
 	const sanitize = runCliSupportSanitizeOutput();
 	const git = runCliSupportGitSource();
 	const ua = runCliSupportUserAgent();
+	writePairedChangelog();
+	const changelog = runCliSupportParseChangelog();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -3743,7 +3791,10 @@ async function measureCliSupportStripAnsi() {
 		user_agent: await collect("cli_support.user_agent", () => {
 			return () => runCliSupportUserAgent();
 		}),
-		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell, ...sanitize, ...git, ...ua },
+		parse_changelog: await collect("cli_support.parse_changelog", () => {
+			return () => runCliSupportParseChangelog();
+		}),
+		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell, ...sanitize, ...git, ...ua, ...changelog },
 	};
 }
 
@@ -4309,6 +4360,8 @@ const result = {
 				"packages/coding-agent/src/utils/git.ts parseGitUrl",
 			"cli_support.user_agent":
 				"packages/coding-agent/src/utils/pi-user-agent.ts getPiUserAgent",
+			"cli_support.parse_changelog":
+				"packages/coding-agent/src/utils/changelog.ts parseChangelog",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":

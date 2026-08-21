@@ -417,6 +417,7 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(strip_ansi), 1)
         self.assertEqual(strip_ansi[0]["class"], "paired")
         self.assertIn("cli_support.strip_ansi", strip_ansi[0]["metrics"])
+        self.assertIn("cli_support.parse_changelog", strip_ansi[0]["metrics"])
         normalize_path = [
             row
             for row in classified["rows"]

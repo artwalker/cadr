@@ -77,6 +77,7 @@
 ;;;;  63. cli_support sanitize-binary-output vs sanitizeBinaryOutput
 ;;;;  64. cli_support parse-git-source vs parseGitUrl
 ;;;;  65. cli_support cadr-user-agent vs getPiUserAgent
+;;;;  66. cli_support parse-changelog vs parseChangelog
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -198,6 +199,7 @@
     ("cli_support.sanitize_output" . 50)
     ("cli_support.git_source" . 50)
     ("cli_support.user_agent" . 50)
+    ("cli_support.parse_changelog" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
@@ -4379,7 +4381,48 @@
 (defun run-cli-support-user-agent ()
   (user-agent-shape (cadr-cli::cadr-user-agent "1.2.3")))
 
+(defparameter *paired-changelog-text*
+  (format nil
+          "# Changelog~%~%## [0.2.0] - 2026-01-02~%~%New.~%~%## malformed~%ignored~%~%## 0.1.0~%~%Old.~%"))
+
+(defun paired-changelog-path ()
+  (merge-pathnames "changelog.md" *scratch-directory*))
+
+(defun write-paired-changelog ()
+  (ensure-directories-exist *scratch-directory*)
+  (with-open-file (out (paired-changelog-path)
+                       :direction :output
+                       :if-exists :supersede
+                       :if-does-not-exist :create
+                       :external-format :utf-8)
+    (write-string *paired-changelog-text* out))
+  (namestring (paired-changelog-path)))
+
+(defun changelog-entry-version (entry)
+  (or (getf entry :version) ""))
+
+(defun changelog-entry-content (entry)
+  (or (getf entry :content) ""))
+
+(defun run-cli-support-parse-changelog ()
+  (let* ((entries
+           (or (cadr-cli::parse-changelog (paired-changelog-path))
+               nil))
+         (first (first entries))
+         (second (second entries))
+         (missing
+           (cadr-cli::parse-changelog
+            (merge-pathnames
+             "no-such-changelog.md" *scratch-directory*))))
+    (list
+     (length entries)
+     (changelog-entry-version first)
+     (if (search "## [0.2.0]" (changelog-entry-content first)) 1 0)
+     (changelog-entry-version second)
+     (if missing (length missing) 0))))
+
 (defun measure-cli-support-strip-ansi ()
+  (write-paired-changelog)
   (let ((ansi (run-cli-support-strip-ansi))
         (paths (run-cli-support-normalize-path))
         (timings (run-cli-support-timings))
@@ -4388,7 +4431,8 @@
         (shell (run-cli-support-shell-config))
         (sanitize (run-cli-support-sanitize-output))
         (git (run-cli-support-git-source))
-        (ua (run-cli-support-user-agent)))
+        (ua (run-cli-support-user-agent))
+        (changelog (run-cli-support-parse-changelog)))
     (json-object
      "observed"
      (json-object
@@ -4445,7 +4489,12 @@
       "gs_abs" (nth 14 git)
       "ua_ver" (first ua)
       "ua_paren" (second ua)
-      "ua_semi" (third ua))
+      "ua_semi" (third ua)
+      "cl_n" (first changelog)
+      "cl_first" (second changelog)
+      "cl_hdr" (third changelog)
+      "cl_second" (fourth changelog)
+      "cl_miss" (fifth changelog))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -4490,7 +4539,12 @@
      (collect "cli_support.user_agent"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-user-agent)))))))
+                  (run-cli-support-user-agent))))
+     "parse_changelog"
+     (collect "cli_support.parse_changelog"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-parse-changelog)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -4891,6 +4945,8 @@
       "src/cadr-cli/support/resume-version-git.lisp parse-git-source"
       "cli_support.user_agent"
       "src/cadr-cli/support/resume-version-git.lisp cadr-user-agent"
+      "cli_support.parse_changelog"
+      "src/cadr-cli/support/changelog-share.lisp parse-changelog"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"
