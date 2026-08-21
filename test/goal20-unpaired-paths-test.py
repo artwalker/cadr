@@ -301,6 +301,16 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(strip_ansi), 1)
         self.assertEqual(strip_ansi[0]["class"], "paired")
         self.assertIn("cli_support.strip_ansi", strip_ansi[0]["metrics"])
+        decode_entity = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/interactive/syntax.lisp"
+        ]
+        self.assertEqual(len(decode_entity), 1)
+        self.assertEqual(decode_entity[0]["class"], "paired")
+        self.assertIn(
+            "cli_interactive_controller.decode_entity", decode_entity[0]["metrics"]
+        )
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

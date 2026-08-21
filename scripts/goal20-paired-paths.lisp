@@ -48,6 +48,7 @@
 ;;;;  35. tui_settings_list apply-filter vs SettingsList.applyFilter
 ;;;;  36. ai_capabilities short-hash vs shortHash
 ;;;;  37. cli_support strip-ansi vs stripAnsi
+;;;;  38. cli_interactive_controller decode-highlight-entity vs decodeHtmlEntity
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -147,6 +148,7 @@
     ("tui_settings_list.apply_filter" . 50)
     ("ai_capabilities.short_hash" . 50)
     ("cli_support.strip_ansi" . 50)
+    ("cli_interactive_controller.decode_entity" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3699,6 +3701,37 @@
                 (lambda ()
                   (run-cli-support-strip-ansi)))))))
 
+(defun decode-highlight-or-empty (entity)
+  (or (cadr-cli::decode-highlight-entity entity) ""))
+
+(defun run-cli-interactive-decode-entity ()
+  (list
+   (decode-highlight-or-empty "amp")
+   (decode-highlight-or-empty "lt")
+   (decode-highlight-or-empty "gt")
+   (decode-highlight-or-empty "quot")
+   (decode-highlight-or-empty "apos")
+   (decode-highlight-or-empty "#65")
+   (if (cadr-cli::decode-highlight-entity "nope") 1 0)))
+
+(defun measure-cli-interactive-decode-entity ()
+  (let ((observed (run-cli-interactive-decode-entity)))
+    (json-object
+     "observed"
+     (json-object
+      "amp" (first observed)
+      "lt" (second observed)
+      "gt" (third observed)
+      "quot" (fourth observed)
+      "apos" (fifth observed)
+      "hash65" (sixth observed)
+      "miss" (seventh observed))
+     "decode_entity"
+     (collect "cli_interactive_controller.decode_entity"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-decode-entity)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3835,6 +3868,8 @@
       "src/cadr-ai/capabilities/streaming-json.lisp short-hash"
       "cli_support.strip_ansi"
       "src/cadr-cli/support/changelog-share.lisp strip-ansi"
+      "cli_interactive_controller.decode_entity"
+      "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3982,6 +4017,8 @@
               (let ((capabilities (measure-ai-capabilities-short-hash)))
               (format *error-output* "goal20 cadr paired paths: cli_support~%")
               (let ((support (measure-cli-support-strip-ansi)))
+              (format *error-output* "goal20 cadr paired paths: cli_interactive_controller~%")
+              (let ((interactive (measure-cli-interactive-decode-entity)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -4050,6 +4087,7 @@
               "tui_settings_list" settings-list
               "ai_capabilities" capabilities
               "cli_support" support
+              "cli_interactive_controller" interactive
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4066,7 +4104,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

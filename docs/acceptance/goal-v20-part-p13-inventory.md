@@ -488,10 +488,11 @@ These must not be filed as callees.
 | `src/cadr-cli/models/login-selection.lisp` | 75 |
 | `src/cadr-cli/models/matching.lisp` | 398 |
 
-### `cli_interactive_controller` (additional)
+### `cli_interactive_controller` (additional) — `syntax.lisp` paired `cli_interactive_controller.decode_entity`
 
-- pi: `packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard`
-- fixture: Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.
+- pi: `packages/coding-agent/src/utils/html.ts decodeHtmlEntity`
+- fixture: named entities + `#65` + unknown. Time decode, not a live TUI.
+- Friend-MachineD n=5: **1.49×** (0.63 / 0.42 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

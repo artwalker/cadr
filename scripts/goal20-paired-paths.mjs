@@ -170,6 +170,7 @@ const REPETITIONS = {
 	"tui_settings_list.apply_filter": 50,
 	"ai_capabilities.short_hash": 50,
 	"cli_support.strip_ansi": 50,
+	"cli_interactive_controller.decode_entity": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -404,6 +405,7 @@ const nativeModifiersModule = await import(moduleUrl("packages/tui/src/native-mo
 const settingsListModule = await import(moduleUrl("packages/tui/src/components/settings-list.ts"));
 const hashModule = await import(moduleUrl("packages/ai/src/utils/hash.ts"));
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
+const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2969,6 +2971,32 @@ async function measureCliSupportStripAnsi() {
 	};
 }
 
+function decodeHtmlOrEmpty(entity) {
+	return htmlEntityModule.decodeHtmlEntity(entity) ?? "";
+}
+
+function runCliInteractiveDecodeEntity() {
+	return {
+		amp: decodeHtmlOrEmpty("amp"),
+		lt: decodeHtmlOrEmpty("lt"),
+		gt: decodeHtmlOrEmpty("gt"),
+		quot: decodeHtmlOrEmpty("quot"),
+		apos: decodeHtmlOrEmpty("apos"),
+		hash65: decodeHtmlOrEmpty("#65"),
+		miss: htmlEntityModule.decodeHtmlEntity("nope") === undefined ? 0 : 1,
+	};
+}
+
+async function measureCliInteractiveDecodeEntity() {
+	const observed = runCliInteractiveDecodeEntity();
+	return {
+		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
+			return () => runCliInteractiveDecodeEntity();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3217,6 +3245,8 @@ process.stderr.write("goal20 pi paired paths: ai_capabilities\n");
 const aiCapabilities = await measureAiCapabilitiesShortHash();
 process.stderr.write("goal20 pi paired paths: cli_support\n");
 const cliSupport = await measureCliSupportStripAnsi();
+process.stderr.write("goal20 pi paired paths: cli_interactive_controller\n");
+const cliInteractive = await measureCliInteractiveDecodeEntity();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3302,6 +3332,8 @@ const result = {
 				"packages/tui/src/components/settings-list.ts SettingsList.applyFilter",
 			"ai_capabilities.short_hash": "packages/ai/src/utils/hash.ts shortHash",
 			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
+			"cli_interactive_controller.decode_entity":
+				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3395,6 +3427,7 @@ const result = {
 		tui_settings_list: tuiSettingsList,
 		ai_capabilities: aiCapabilities,
 		cli_support: cliSupport,
+		cli_interactive_controller: cliInteractive,
 		render_slicing: renderSlicing,
 	},
 };

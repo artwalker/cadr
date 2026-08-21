@@ -747,6 +747,21 @@ Friend-MachineD freeze **2.73×** (1.3 / 0.5 µs), ceiling
 8.0 (variance / microsecond floor). Same commit no
 optimize.
 
+### Pair 52 — `cli_interactive_controller`
+
+| metric | cadr | pi |
+|---|---|---|
+| `decode_entity` | `decode-highlight-entity` | `decodeHtmlEntity` (`packages/coding-agent/src/utils/html.ts`) |
+
+Named entities amp/lt/gt/quot/apos, decimal `#65`,
+unknown `nope`. Time decode, not a live TUI. Observed
+`amp` / `lt` / `gt` / `quot` / `apos` / `hash65` /
+`miss` are exact (`&` / `<` / `>` / `"` / `'` / `A` /
+0). Other interactive-controller files stay `needs-pair`.
+First Friend-MachineD freeze **1.49×** (0.63 / 0.42 µs),
+ceiling 8.0 (variance / microsecond floor). Same commit
+no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -952,14 +967,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 104 | 51,381 | 40.3% | `no worse than baseline` is falsifiable |
+| `paired` | 105 | 52,470 | 41.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 148 | 55,614 | 43.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 147 | 54,525 | 42.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 40.3% of lines (104 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 46.2% of lines.
+- **Falsifiable vs baseline:** 41.2% of lines (105 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 47.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1041,6 +1056,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,015 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
@@ -1131,8 +1147,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_interactive_controller` | 11 | 8,044 |
 | `cli_selectors` | 14 | 7,982 |
+| `cli_interactive_controller` | 10 | 6,955 |
 | `cli_bootstrap_sessions` | 6 | 5,428 |
 | `tui_mermaid` | 12 | 5,042 |
 | `agent_tool_loop` | 13 | 4,094 |

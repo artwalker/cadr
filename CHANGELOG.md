@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair
+  `cli_interactive_controller.decode_entity` (amp/lt/`#65`;
+  cadr `decode-highlight-entity` vs pi
+  `decodeHtmlEntity`). Friend-MachineD n=5 **1.49×**
+  (0.63 / 0.42 µs), ceiling 8.0 (variance). Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_support.strip_ansi` (CSI+OSC /
   RIS / ESC m / plain; cadr `strip-ansi` vs pi
   `stripAnsi`). Friend-MachineD n=5 **2.73×**

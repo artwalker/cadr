@@ -579,6 +579,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ris", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("plain", paired.OBSERVED_EXACT["cli_support"])
 
+    def test_cli_interactive_controller_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("cli_interactive_controller.decode_entity", RECORD.METRIC_KEYS)
+        self.assertIn("decode_entity", paired.METRICS["cli_interactive_controller"])
+        self.assertIn("cli_interactive_controller.decode_entity", paired.RATIO_CEILINGS)
+        self.assertIn("amp", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("hash65", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("miss", paired.OBSERVED_EXACT["cli_interactive_controller"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -662,6 +671,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_settings_list.apply_filter`", section)
             self.assertIn("`ai_capabilities.short_hash`", section)
             self.assertIn("`cli_support.strip_ansi`", section)
+            self.assertIn("`cli_interactive_controller.decode_entity`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

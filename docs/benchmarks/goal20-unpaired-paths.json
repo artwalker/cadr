@@ -50,6 +50,7 @@
   "tui_settings_list.apply_filter",
   "ai_capabilities.short_hash",
   "cli_support.strip_ansi",
+  "cli_interactive_controller.decode_entity",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1133,8 +1134,8 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/syntax.lisp",
-   "class": "needs-pair",
-   "hole": "cli_interactive_controller"
+   "class": "paired",
+   "metrics": ["cli_interactive_controller.decode_entity"]
   },
   {
    "prefix": "src/cadr-cli/interactive/theme.lisp",

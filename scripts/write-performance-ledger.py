@@ -66,6 +66,7 @@ METRIC_KEYS = (
     "tui_settings_list.apply_filter",
     "ai_capabilities.short_hash",
     "cli_support.strip_ansi",
+    "cli_interactive_controller.decode_entity",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",
