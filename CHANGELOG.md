@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_keybindings.resolve_match` (default
+  TUI registry + `ctrl+k` clash; cadr
+  `make-keybindings-manager` vs pi `KeybindingsManager`).
+  Friend-MachineD n=5 **1.88×** (27.7 / 14.8 µs), ceiling
+  8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `tui_autocomplete.suggest_apply` (slash
   `/he`, quoted `"hel`, force Tab, `@he` no fd; cadr
   `autocomplete-get-suggestions/apply` vs pi

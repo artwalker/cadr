@@ -41,6 +41,7 @@
 ;;;;  28. tui_kill_ring kill-ring-push/peek/rotate vs KillRing
 ;;;;  29. tui_undo_stack undo-stack-push/pop/clear vs UndoStack
 ;;;;  30. tui_autocomplete get-suggestions + apply vs CombinedAutocompleteProvider
+;;;;  31. tui_keybindings make-keybindings-manager vs KeybindingsManager / getKeybindings
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -133,6 +134,7 @@
     ("tui_kill_ring.push_peek" . 50)
     ("tui_undo_stack.push_pop" . 50)
     ("tui_autocomplete.suggest_apply" . 50)
+    ("tui_keybindings.resolve_match" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3411,6 +3413,56 @@
                 (lambda ()
                   (run-tui-autocomplete provider)))))))
 
+(defun run-tui-keybindings ()
+  (let* ((manager
+           (cadr-tui:make-keybindings-manager
+            :user-bindings
+            '(("tui.editor.yank" . "ctrl+k")
+              ("tui.editor.deleteToLineEnd" . "ctrl+k"))))
+         (left
+           (cadr-tui:keybinding-keys
+            manager "tui.editor.cursorLeft"))
+         (hist
+           (cadr-tui:keybinding-keys
+            manager "tui.editor.historyPrevious"))
+         (conflicts (cadr-tui:keybinding-conflicts manager))
+         (enter (string #\Return))
+         (tab (string #\Tab)))
+    (list
+     (length left)
+     (if (find "ctrl+b" left :test #'string=) 1 0)
+     (length hist)
+     (if (cadr-tui:keybinding-matches-p
+          manager enter "tui.input.submit")
+         1 0)
+     (if (cadr-tui:keybinding-matches-p
+          manager tab "tui.input.tab")
+         1 0)
+     (if (cadr-tui:keybinding-matches-p
+          manager enter "tui.editor.undo")
+         1 0)
+     (length conflicts)
+     (length (or (car (first conflicts)) "")))))
+
+(defun measure-tui-keybindings ()
+  (let ((observed (run-tui-keybindings)))
+    (json-object
+     "observed"
+     (json-object
+      "left_count" (first observed)
+      "left_ctrl_b" (second observed)
+      "hist_count" (third observed)
+      "enter_submit" (fourth observed)
+      "tab_tab" (fifth observed)
+      "enter_undo" (sixth observed)
+      "conflict_count" (seventh observed)
+      "conflict_key_len" (eighth observed))
+     "resolve_match"
+     (collect "tui_keybindings.resolve_match"
+              (lambda ()
+                (lambda ()
+                  (run-tui-keybindings)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3533,6 +3585,8 @@
       "src/cadr-tui/undo-stack.lisp undo-stack-push + undo-stack-pop + undo-stack-clear"
       "tui_autocomplete.suggest_apply"
       "src/cadr-tui/autocomplete.lisp autocomplete-get-suggestions + autocomplete-apply"
+      "tui_keybindings.resolve_match"
+      "src/cadr-tui/keybindings.lisp make-keybindings-manager + keybinding-keys + keybinding-matches-p"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3666,6 +3720,8 @@
               (let ((undo-stack (measure-tui-undo-stack)))
               (format *error-output* "goal20 cadr paired paths: tui_autocomplete~%")
               (let ((autocomplete (measure-tui-autocomplete)))
+              (format *error-output* "goal20 cadr paired paths: tui_keybindings~%")
+              (let ((keybindings (measure-tui-keybindings)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3727,6 +3783,7 @@
               "tui_kill_ring" kill-ring
               "tui_undo_stack" undo-stack
               "tui_autocomplete" autocomplete
+              "tui_keybindings" keybindings
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3743,7 +3800,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

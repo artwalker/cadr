@@ -43,6 +43,7 @@
   "tui_kill_ring.push_peek",
   "tui_undo_stack.push_pop",
   "tui_autocomplete.suggest_apply",
+  "tui_keybindings.resolve_match",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1563,8 +1564,8 @@
   },
   {
    "prefix": "src/cadr-tui/keybindings.lisp",
-   "class": "needs-pair",
-   "hole": "tui_editor_helpers"
+   "class": "paired",
+   "metrics": ["tui_keybindings.resolve_match"]
   },
   {
    "prefix": "src/cadr-tui/kill-ring.lisp",

@@ -59,6 +59,7 @@ METRIC_KEYS = (
     "tui_kill_ring.push_peek",
     "tui_undo_stack.push_pop",
     "tui_autocomplete.suggest_apply",
+    "tui_keybindings.resolve_match",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

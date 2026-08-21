@@ -124,6 +124,7 @@ METRICS = {
     "tui_kill_ring": ("push_peek",),
     "tui_undo_stack": ("push_pop",),
     "tui_autocomplete": ("suggest_apply",),
+    "tui_keybindings": ("resolve_match",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -330,6 +331,11 @@ RATIO_CEILINGS = {
     # (136.4 / 26.4 us). 8.0 follows the tool_read /
     # journal_read first-freeze headroom. Ratchet down only.
     "tui_autocomplete.suggest_apply": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_keybindings pair (samples=5): observed 1.88x
+    # (27.7 / 14.8 us). 8.0 is first-freeze headroom.
+    # Ratchet down only.
+    "tui_keybindings.resolve_match": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -689,6 +695,16 @@ OBSERVED_EXACT = {
         "at_count",
         "apply_col",
         "apply_len",
+    ),
+    "tui_keybindings": (
+        "left_count",
+        "left_ctrl_b",
+        "hist_count",
+        "enter_submit",
+        "tab_tab",
+        "enter_undo",
+        "conflict_count",
+        "conflict_key_len",
     ),
     "resource_loader": (
         "skill_count",
