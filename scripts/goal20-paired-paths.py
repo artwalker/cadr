@@ -107,6 +107,7 @@ METRICS = {
     "agent_schema": ("validate_ok_fail",),
     "harness_storage": ("open_walk",),
     "protocol_codec": ("roundtrip",),
+    "agent_proxy": ("stream_roundtrip",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -229,6 +230,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent.
     # Ratchet down only.
     "protocol_codec.roundtrip": 1.5,
+    # Frozen from the first Friend-MachineD non-quick agent_proxy
+    # pair (samples=5): observed 1.59x (25.4 / 16.0 us). 1.5 follows
+    # the list_models_registry / microsecond-floor precedent (variance
+    # bound, not ratio). Ratchet down only.
+    "agent_proxy.stream_roundtrip": 1.5,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -464,6 +470,11 @@ OBSERVED_EXACT = {
         "type",
         "id",
         "command",
+    ),
+    "agent_proxy": (
+        "event_count",
+        "text",
+        "usage_total",
     ),
     "resource_loader": (
         "skill_count",

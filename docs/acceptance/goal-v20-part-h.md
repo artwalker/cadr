@@ -414,6 +414,17 @@ Observed `frame_bytes` / `message_count` / `type` / `id` /
 `protocol_cbor.roundtrip`. First Friend-MachineD freeze **0.10×**
 (9.6 / 94.2 µs), ceiling 1.5. Same commit no optimize.
 
+### Pair 28 — `agent_proxy`
+
+| metric | cadr | pi |
+|---|---|---|
+| `stream_roundtrip` | `stream-proxy` | `streamProxy` (`packages/agent/src/proxy.ts`) |
+
+Stub SSE (no socket): start / text_* / done. Observed `event_count`
+/ `text` / `usage_total` are exact. First Friend-MachineD freeze
+**1.59×** (25.4 / 16.0 µs), ceiling 1.5 (variance bound). Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -619,14 +630,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 80 | 42,042 | 33.0% | `no worse than baseline` is falsifiable |
+| `paired` | 81 | 42,293 | 33.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 18 | 12,819 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 173 | 65,053 | 51.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 172 | 64,802 | 50.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 33.0% of lines (80 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 38.9% of lines.
+- **Falsifiable vs baseline:** 33.2% of lines (81 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 39.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -666,6 +677,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 393 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
+| `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
@@ -801,7 +813,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `websocket_stream` | 1 | 628 |
 | `ai_runtime_faux` | 1 | 601 |
 | `core_rest` | 4 | 267 |
-| `agent_proxy` | 1 | 251 |
 | `session_compact` | 1 | 185 |
 | `agent_conditions` | 1 | 43 |
 

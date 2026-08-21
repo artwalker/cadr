@@ -24,6 +24,7 @@
 ;;;;  11. agent_schema validate-tool-arguments vs validateToolArguments
 ;;;;  12. harness_storage jsonl repo open+walk vs JsonlSessionRepo
 ;;;;  13. protocol_codec encode-client-message + decoder vs encodeClientMessage
+;;;;  14. agent_proxy stream-proxy vs streamProxy (stub SSE, no socket)
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -97,6 +98,7 @@
     ("agent_schema.validate_ok_fail" . 50)
     ("harness_storage.open_walk" . 3)
     ("protocol_codec.roundtrip" . 50)
+    ("agent_proxy.stream_roundtrip" . 10)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2617,6 +2619,66 @@
                 (lambda ()
                   (protocol-codec-roundtrip)))))))
 
+(defparameter *agent-proxy-sse-json*
+  '("{\"type\":\"start\"}"
+    "{\"type\":\"text_start\",\"contentIndex\":0}"
+    "{\"type\":\"text_delta\",\"contentIndex\":0,\"delta\":\"ok\"}"
+    "{\"type\":\"text_end\",\"contentIndex\":0}"
+    "{\"type\":\"done\",\"reason\":\"stop\",\"usage\":{\"input\":1,\"output\":2,\"cacheRead\":0,\"cacheWrite\":0,\"totalTokens\":3,\"cost\":{\"input\":0,\"output\":0,\"cacheRead\":0,\"cacheWrite\":0,\"total\":0}}}"))
+
+(defun run-agent-proxy ()
+  (let ((event-count 0)
+        (model
+          (cadr-ai:make-model
+           :id "proxy"
+           :provider :openai
+           :api :openai-responses
+           :base-url "https://example.invalid"
+           :max-tokens 100)))
+    (let ((response
+            (cadr-agent:stream-proxy
+             model
+             (cadr-ai:make-context
+              :system-prompt "system"
+              :messages
+              (list (cadr-ai:make-user-message :content "hi")))
+             (lambda (event)
+               (declare (ignore event))
+               (incf event-count))
+             :auth-token "secret"
+             :proxy-url "https://proxy.invalid"
+             :request-sse-function
+             (lambda (request consumer &key abort-p)
+               (declare (ignore request abort-p))
+               (dolist (json *agent-proxy-sse-json*)
+                 (funcall
+                  consumer
+                  (cadr-ai::make-sse-event :data json)))))))
+      (let ((block
+              (first (cadr-ai:assistant-message-content response))))
+        (list
+         event-count
+         (if (typep block 'cadr-ai:text-content)
+             (cadr-ai:text-content-text block)
+             "")
+         (or (cadr-ai:usage-total
+              (cadr-ai:assistant-message-usage response))
+             0))))))
+
+(defun measure-agent-proxy ()
+  (let ((observed (run-agent-proxy)))
+    (json-object
+     "observed"
+     (json-object
+      "event_count" (first observed)
+      "text" (second observed)
+      "usage_total" (third observed))
+     "stream_roundtrip"
+     (collect "agent_proxy.stream_roundtrip"
+              (lambda ()
+                (lambda ()
+                  (run-agent-proxy)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2705,6 +2767,8 @@
       "src/cadr-agent/storage/jsonl.lisp session-repository-open + harness-session-entries"
       "protocol_codec.roundtrip"
       "src/cadr-protocol/codec.lisp encode-client-message + message-decoder-push"
+      "agent_proxy.stream_roundtrip"
+      "src/cadr-agent/proxy.lisp stream-proxy"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2804,6 +2868,8 @@
               (let ((harness-storage (measure-harness-storage)))
               (format *error-output* "goal20 cadr paired paths: protocol_codec~%")
               (let ((codec (measure-protocol-codec)))
+              (format *error-output* "goal20 cadr paired paths: agent_proxy~%")
+              (let ((proxy (measure-agent-proxy)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2848,6 +2914,7 @@
               "agent_schema" schema
               "harness_storage" harness-storage
               "protocol_codec" codec
+              "agent_proxy" proxy
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2864,7 +2931,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

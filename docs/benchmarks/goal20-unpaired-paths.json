@@ -26,6 +26,7 @@
   "agent_schema.validate_ok_fail",
   "harness_storage.open_walk",
   "protocol_codec.roundtrip",
+  "agent_proxy.stream_roundtrip",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -647,8 +648,8 @@
   },
   {
    "prefix": "src/cadr-agent/proxy.lisp",
-   "class": "needs-pair",
-   "hole": "agent_proxy"
+   "class": "paired",
+   "metrics": ["agent_proxy.stream_roundtrip"]
   },
   {
    "prefix": "src/cadr-agent/runtime.lisp",

@@ -362,6 +362,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("type", paired.OBSERVED_EXACT["protocol_codec"])
         self.assertIn("command", paired.OBSERVED_EXACT["protocol_codec"])
 
+    def test_agent_proxy_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("agent_proxy.stream_roundtrip", RECORD.METRIC_KEYS)
+        self.assertIn("stream_roundtrip", paired.METRICS["agent_proxy"])
+        self.assertIn("agent_proxy.stream_roundtrip", paired.RATIO_CEILINGS)
+        self.assertIn("event_count", paired.OBSERVED_EXACT["agent_proxy"])
+        self.assertIn("text", paired.OBSERVED_EXACT["agent_proxy"])
+        self.assertIn("usage_total", paired.OBSERVED_EXACT["agent_proxy"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)

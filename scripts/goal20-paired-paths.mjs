@@ -146,6 +146,7 @@ const REPETITIONS = {
 	"agent_schema.validate_ok_fail": 50,
 	"harness_storage.open_walk": 3,
 	"protocol_codec.roundtrip": 50,
+	"agent_proxy.stream_roundtrip": 10,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -332,6 +333,7 @@ const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/ses
 const exportHtmlModule = await import(moduleUrl("packages/coding-agent/src/core/export-html/index.ts"));
 const cborModule = await import(moduleUrl("packages/protocol/src/cbor/index.ts"));
 const protocolCodecModule = await import(moduleUrl("packages/protocol/src/codec.ts"));
+const proxyModule = await import(moduleUrl("packages/agent/src/proxy.ts"));
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
@@ -2030,6 +2032,84 @@ function protocolCodecRoundtrip() {
 	};
 }
 
+const AGENT_PROXY_EVENTS = [
+	{ type: "start" },
+	{ type: "text_start", contentIndex: 0 },
+	{ type: "text_delta", contentIndex: 0, delta: "ok" },
+	{ type: "text_end", contentIndex: 0 },
+	{
+		type: "done",
+		reason: "stop",
+		usage: {
+			input: 1,
+			output: 2,
+			cacheRead: 0,
+			cacheWrite: 0,
+			totalTokens: 3,
+			cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+		},
+	},
+];
+
+const AGENT_PROXY_SSE_BODY = AGENT_PROXY_EVENTS.map(
+	(event) => `data: ${JSON.stringify(event)}\n\n`,
+).join("");
+
+const AGENT_PROXY_MODEL = {
+	id: "proxy",
+	name: "proxy",
+	api: "openai-responses",
+	provider: "openai",
+	baseUrl: "https://example.invalid",
+	reasoning: false,
+	input: ["text"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 1000,
+	maxTokens: 100,
+};
+
+async function runAgentProxy() {
+	const previousFetch = globalThis.fetch;
+	globalThis.fetch = async () =>
+		new Response(AGENT_PROXY_SSE_BODY, {
+			status: 200,
+			headers: { "Content-Type": "text/event-stream" },
+		});
+	try {
+		const stream = proxyModule.streamProxy(
+			AGENT_PROXY_MODEL,
+			{
+				systemPrompt: "system",
+				messages: [{ role: "user", content: "hi", timestamp: 0 }],
+			},
+			{ authToken: "secret", proxyUrl: "https://proxy.invalid" },
+		);
+		let eventCount = 0;
+		for await (const event of stream) {
+			if (event) eventCount += 1;
+		}
+		const result = await stream.result();
+		const textBlock = result.content.find((block) => block.type === "text");
+		return {
+			event_count: eventCount,
+			text: textBlock && "text" in textBlock ? textBlock.text : "",
+			usage_total: result.usage?.totalTokens ?? 0,
+		};
+	} finally {
+		globalThis.fetch = previousFetch;
+	}
+}
+
+async function measureAgentProxy() {
+	const observed = await runAgentProxy();
+	return {
+		stream_roundtrip: await collect("agent_proxy.stream_roundtrip", () => {
+			return () => runAgentProxy();
+		}),
+		observed,
+	};
+}
+
 async function measureProtocolCodec() {
 	const observed = protocolCodecRoundtrip();
 	return {
@@ -2220,6 +2300,8 @@ process.stderr.write("goal20 pi paired paths: harness_storage\n");
 const harnessStorage = await measureHarnessStorage();
 process.stderr.write("goal20 pi paired paths: protocol_codec\n");
 const protocolCodec = await measureProtocolCodec();
+process.stderr.write("goal20 pi paired paths: agent_proxy\n");
+const agentProxy = await measureAgentProxy();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2262,6 +2344,7 @@ const result = {
 				"packages/agent/src/harness/session/jsonl JsonlSessionRepo.open + findEntries + findEntriesOnBranch",
 			"protocol_codec.roundtrip":
 				"packages/protocol/src/codec.ts encodeClientMessage + createClientMessageDecoder",
+			"agent_proxy.stream_roundtrip": "packages/agent/src/proxy.ts streamProxy",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2331,6 +2414,7 @@ const result = {
 		agent_schema: agentSchema,
 		harness_storage: harnessStorage,
 		protocol_codec: protocolCodec,
+		agent_proxy: agentProxy,
 		render_slicing: renderSlicing,
 	},
 };

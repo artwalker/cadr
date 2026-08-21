@@ -338,10 +338,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-agent/schema.lisp` | 850 |
 
-### `agent_proxy` (additional)
+### `agent_proxy` (additional) — paired `agent_proxy.stream_roundtrip`
 
-- pi: `packages/coding-agent/src/core/provider-composer.ts / radius.ts`
-- fixture: Fixture model list → proxy JSON. No live Radius socket.
+- pi: `packages/agent/src/proxy.ts streamProxy`
+- fixture: stub SSE (start/text/done), no live Radius socket.
+- Friend-MachineD n=5: **1.59×** (25.4 / 16.0 µs), ceiling 1.5 (variance). No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

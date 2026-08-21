@@ -43,6 +43,7 @@ METRIC_KEYS = (
     "agent_schema.validate_ok_fail",
     "harness_storage.open_walk",
     "protocol_codec.roundtrip",
+    "agent_proxy.stream_roundtrip",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",
