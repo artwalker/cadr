@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_autocomplete.suggest_apply` (slash
+  `/he`, quoted `"hel`, force Tab, `@he` no fd; cadr
+  `autocomplete-get-suggestions/apply` vs pi
+  `CombinedAutocompleteProvider`). Friend-MachineD n=5
+  **5.17×** (136.4 / 26.4 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_undo_stack.push_pop` (clone-on-push
   `{text,n}`; cadr `undo-stack-*` vs pi `UndoStack`).
   Friend-MachineD n=5 **0.21×** (0.51 / 2.42 µs), ceiling

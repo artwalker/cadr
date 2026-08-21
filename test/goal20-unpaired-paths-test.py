@@ -237,6 +237,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(undo_stack), 1)
         self.assertEqual(undo_stack[0]["class"], "paired")
         self.assertIn("tui_undo_stack.push_pop", undo_stack[0]["metrics"])
+        autocomplete = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/autocomplete.lisp"
+        ]
+        self.assertEqual(len(autocomplete), 1)
+        self.assertEqual(autocomplete[0]["class"], "paired")
+        self.assertIn("tui_autocomplete.suggest_apply", autocomplete[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

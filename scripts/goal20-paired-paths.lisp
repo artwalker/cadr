@@ -40,6 +40,7 @@
 ;;;;  27. tui_overlay composite-overlay-line vs compositeTuiLine
 ;;;;  28. tui_kill_ring kill-ring-push/peek/rotate vs KillRing
 ;;;;  29. tui_undo_stack undo-stack-push/pop/clear vs UndoStack
+;;;;  30. tui_autocomplete get-suggestions + apply vs CombinedAutocompleteProvider
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -131,6 +132,7 @@
     ("tui_overlay.composite_line" . 50)
     ("tui_kill_ring.push_peek" . 50)
     ("tui_undo_stack.push_pop" . 50)
+    ("tui_autocomplete.suggest_apply" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3297,6 +3299,118 @@
                 (lambda ()
                   (run-tui-undo-stack)))))))
 
+(defun write-autocomplete-fixture ()
+  (let* ((root
+           (merge-pathnames "autocomplete/" *scratch-directory*))
+         (src (merge-pathnames "src/" root)))
+    (ensure-directories-exist src)
+    (dolist (name '("hello.txt" "help.md"))
+      (with-open-file
+          (out (merge-pathnames name root)
+               :direction :output
+               :if-exists :supersede
+               :if-does-not-exist :create
+               :external-format :utf-8)
+        (write-string "x" out)))
+    (with-open-file
+        (out (merge-pathnames "a.ts" src)
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create
+             :external-format :utf-8)
+      (write-string "x" out))
+    (namestring (uiop:ensure-directory-pathname root))))
+
+(defun make-paired-autocomplete-provider (root)
+  (cadr-tui:make-autocomplete-provider
+   :commands
+   (list
+    (cadr-tui:make-autocomplete-command
+     :name "help" :description "Show help")
+    (cadr-tui:make-autocomplete-command
+     :name "hello" :description "Hi"))
+   :base-path root))
+
+(defun autocomplete-result-count (result)
+  (if result
+      (length (cadr-tui:autocomplete-suggestions-items result))
+      0))
+
+(defun autocomplete-values (result)
+  (if result
+      (mapcar #'cadr-tui:autocomplete-item-value
+              (cadr-tui:autocomplete-suggestions-items result))
+      nil))
+
+(defun autocomplete-labels (result)
+  (if result
+      (mapcar #'cadr-tui:autocomplete-item-label
+              (cadr-tui:autocomplete-suggestions-items result))
+      nil))
+
+(defun run-tui-autocomplete (provider)
+  (let* ((slash
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("/he") 0 3))
+         (slash-values (autocomplete-values slash))
+         (quoted
+           (cadr-tui:autocomplete-get-suggestions
+            provider (list (format nil "~Chel" #\")) 0 4))
+         (force
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("he") 0 2 :force-p t))
+         (force-labels (autocomplete-labels force))
+         (at
+           (cadr-tui:autocomplete-get-suggestions
+            provider '("@he") 0 3))
+         (item
+           (cadr-tui:make-autocomplete-item
+            :value "help" :label "help")))
+    (multiple-value-bind (lines cursor-line cursor-col)
+        (cadr-tui:autocomplete-apply
+         '("/he") 0 3 item "/he")
+      (declare (ignore cursor-line))
+      (list
+       (autocomplete-result-count slash)
+       (if (find "help" slash-values :test #'string=) 1 0)
+       (if (find "hello" slash-values :test #'string=) 1 0)
+       (if slash
+           (length (cadr-tui:autocomplete-suggestions-prefix slash))
+           0)
+       (autocomplete-result-count quoted)
+       (length (or (first (autocomplete-values quoted)) ""))
+       (autocomplete-result-count force)
+       (if (find "hello.txt" force-labels :test #'string=) 1 0)
+       (if (find "help.md" force-labels :test #'string=) 1 0)
+       (autocomplete-result-count at)
+       cursor-col
+       (length (first lines))))))
+
+(defun measure-tui-autocomplete ()
+  (let* ((root (write-autocomplete-fixture))
+         (provider (make-paired-autocomplete-provider root))
+         (observed (run-tui-autocomplete provider)))
+    (json-object
+     "observed"
+     (json-object
+      "slash_count" (first observed)
+      "slash_help" (second observed)
+      "slash_hello" (third observed)
+      "slash_prefix" (fourth observed)
+      "quote_count" (fifth observed)
+      "quote_first_len" (sixth observed)
+      "force_count" (seventh observed)
+      "force_hello" (eighth observed)
+      "force_help" (ninth observed)
+      "at_count" (nth 9 observed)
+      "apply_col" (nth 10 observed)
+      "apply_len" (nth 11 observed))
+     "suggest_apply"
+     (collect "tui_autocomplete.suggest_apply"
+              (lambda ()
+                (lambda ()
+                  (run-tui-autocomplete provider)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3417,6 +3531,8 @@
       "src/cadr-tui/kill-ring.lisp kill-ring-push + kill-ring-peek + kill-ring-rotate"
       "tui_undo_stack.push_pop"
       "src/cadr-tui/undo-stack.lisp undo-stack-push + undo-stack-pop + undo-stack-clear"
+      "tui_autocomplete.suggest_apply"
+      "src/cadr-tui/autocomplete.lisp autocomplete-get-suggestions + autocomplete-apply"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3548,6 +3664,8 @@
               (let ((kill-ring (measure-tui-kill-ring)))
               (format *error-output* "goal20 cadr paired paths: tui_undo_stack~%")
               (let ((undo-stack (measure-tui-undo-stack)))
+              (format *error-output* "goal20 cadr paired paths: tui_autocomplete~%")
+              (let ((autocomplete (measure-tui-autocomplete)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3608,6 +3726,7 @@
               "tui_overlay" overlay
               "tui_kill_ring" kill-ring
               "tui_undo_stack" undo-stack
+              "tui_autocomplete" autocomplete
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3624,7 +3743,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

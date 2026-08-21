@@ -42,6 +42,7 @@
   "tui_overlay.composite_line",
   "tui_kill_ring.push_peek",
   "tui_undo_stack.push_pop",
+  "tui_autocomplete.suggest_apply",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1523,8 +1524,8 @@
   },
   {
    "prefix": "src/cadr-tui/autocomplete.lisp",
-   "class": "needs-pair",
-   "hole": "tui_editor_helpers"
+   "class": "paired",
+   "metrics": ["tui_autocomplete.suggest_apply"]
   },
   {
    "prefix": "src/cadr-tui/components/select-list.lisp",

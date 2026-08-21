@@ -506,6 +506,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("clone_n", paired.OBSERVED_EXACT["tui_undo_stack"])
         self.assertIn("after_clear", paired.OBSERVED_EXACT["tui_undo_stack"])
 
+    def test_tui_autocomplete_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tui_autocomplete.suggest_apply", RECORD.METRIC_KEYS)
+        self.assertIn("suggest_apply", paired.METRICS["tui_autocomplete"])
+        self.assertIn("tui_autocomplete.suggest_apply", paired.RATIO_CEILINGS)
+        self.assertIn("slash_count", paired.OBSERVED_EXACT["tui_autocomplete"])
+        self.assertIn("quote_first_len", paired.OBSERVED_EXACT["tui_autocomplete"])
+        self.assertIn("apply_col", paired.OBSERVED_EXACT["tui_autocomplete"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -581,6 +590,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_overlay.composite_line`", section)
             self.assertIn("`tui_kill_ring.push_peek`", section)
             self.assertIn("`tui_undo_stack.push_pop`", section)
+            self.assertIn("`tui_autocomplete.suggest_apply`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

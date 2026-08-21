@@ -162,6 +162,7 @@ const REPETITIONS = {
 	"tui_overlay.composite_line": 50,
 	"tui_kill_ring.push_peek": 50,
 	"tui_undo_stack.push_pop": 50,
+	"tui_autocomplete.suggest_apply": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -388,6 +389,7 @@ const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navig
 const tuiModule = await import(moduleUrl("packages/tui/src/tui.ts"));
 const killRingModule = await import(moduleUrl("packages/tui/src/kill-ring.ts"));
 const undoStackModule = await import(moduleUrl("packages/tui/src/undo-stack.ts"));
+const autocompleteModule = await import(moduleUrl("packages/tui/src/autocomplete.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2681,6 +2683,63 @@ async function measureTuiUndoStack() {
 	};
 }
 
+function writeAutocompleteFixture() {
+	const root = path.join(scratch, "autocomplete");
+	mkdirSync(path.join(root, "src"), { recursive: true });
+	writeFileSync(path.join(root, "hello.txt"), "x", "utf8");
+	writeFileSync(path.join(root, "help.md"), "x", "utf8");
+	writeFileSync(path.join(root, "src", "a.ts"), "x", "utf8");
+	return root;
+}
+
+function makePairedAutocompleteProvider(root) {
+	return new autocompleteModule.CombinedAutocompleteProvider(
+		[
+			{ name: "help", description: "Show help" },
+			{ name: "hello", description: "Hi" },
+		],
+		root,
+		null,
+	);
+}
+
+async function runTuiAutocomplete(provider) {
+	const signal = new AbortController().signal;
+	const slash = await provider.getSuggestions(["/he"], 0, 3, { signal, force: false });
+	const slashValues = (slash?.items ?? []).map((item) => item.value);
+	const quoted = await provider.getSuggestions(['"hel'], 0, 4, { signal, force: false });
+	const force = await provider.getSuggestions(["he"], 0, 2, { signal, force: true });
+	const forceLabels = (force?.items ?? []).map((item) => item.label);
+	const at = await provider.getSuggestions(["@he"], 0, 3, { signal, force: false });
+	const applied = provider.applyCompletion(["/he"], 0, 3, { value: "help", label: "help" }, "/he");
+	return {
+		slash_count: slashValues.length,
+		slash_help: slashValues.includes("help") ? 1 : 0,
+		slash_hello: slashValues.includes("hello") ? 1 : 0,
+		slash_prefix: slash?.prefix?.length ?? 0,
+		quote_count: quoted?.items?.length ?? 0,
+		quote_first_len: (quoted?.items?.[0]?.value ?? "").length,
+		force_count: force?.items?.length ?? 0,
+		force_hello: forceLabels.includes("hello.txt") ? 1 : 0,
+		force_help: forceLabels.includes("help.md") ? 1 : 0,
+		at_count: at?.items?.length ?? 0,
+		apply_col: applied.cursorCol,
+		apply_len: (applied.lines[0] ?? "").length,
+	};
+}
+
+async function measureTuiAutocomplete() {
+	const root = writeAutocompleteFixture();
+	const provider = makePairedAutocompleteProvider(root);
+	const observed = await runTuiAutocomplete(provider);
+	return {
+		suggest_apply: await collect("tui_autocomplete.suggest_apply", () => {
+			return () => runTuiAutocomplete(provider);
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2913,6 +2972,8 @@ process.stderr.write("goal20 pi paired paths: tui_kill_ring\n");
 const tuiKillRing = await measureTuiKillRing();
 process.stderr.write("goal20 pi paired paths: tui_undo_stack\n");
 const tuiUndoStack = await measureTuiUndoStack();
+process.stderr.write("goal20 pi paired paths: tui_autocomplete\n");
+const tuiAutocomplete = await measureTuiAutocomplete();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2984,6 +3045,8 @@ const result = {
 				"packages/tui/src/kill-ring.ts KillRing.push + peek + rotate",
 			"tui_undo_stack.push_pop":
 				"packages/tui/src/undo-stack.ts UndoStack.push + pop + clear",
+			"tui_autocomplete.suggest_apply":
+				"packages/tui/src/autocomplete.ts CombinedAutocompleteProvider.getSuggestions + applyCompletion",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3069,6 +3132,7 @@ const result = {
 		tui_overlay: tuiOverlay,
 		tui_kill_ring: tuiKillRing,
 		tui_undo_stack: tuiUndoStack,
+		tui_autocomplete: tuiAutocomplete,
 		render_slicing: renderSlicing,
 	},
 };

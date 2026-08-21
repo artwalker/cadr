@@ -633,6 +633,20 @@ Observed `empty_len` / `after_two` / `pop_n` /
 `needs-pair`. First Friend-MachineD freeze **0.21×**
 (0.51 / 2.42 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 44 — `tui_autocomplete`
+
+| metric | cadr | pi |
+|---|---|---|
+| `suggest_apply` | `autocomplete-get-suggestions` + `autocomplete-apply` | `CombinedAutocompleteProvider.getSuggestions` + `applyCompletion` (`packages/tui/src/autocomplete.ts`) |
+
+Slash `/he`, quoted `"hel`, force Tab `he`, `@he` with
+no fd. Fixture dir `hello.txt` / `help.md` / `src/a.ts`.
+Time token/quote + command filter + dir listing + apply,
+not a TUI frame. Observed slash/quote/force/at/apply
+fields are exact. Other editor-helper files stay
+`needs-pair`. First Friend-MachineD freeze **5.17×**
+(136.4 / 26.4 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -838,14 +852,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 96 | 48,827 | 38.3% | `no worse than baseline` is falsifiable |
+| `paired` | 97 | 49,421 | 38.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 156 | 58,168 | 45.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 155 | 57,574 | 45.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 38.3% of lines (96 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 44.2% of lines.
+- **Falsifiable vs baseline:** 38.8% of lines (97 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 44.7% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -948,6 +962,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-protocol/schema.lisp` | 610 | `protocol_codec.roundtrip` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
 | `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
+| `src/cadr-tui/autocomplete.lisp` | 594 | `tui_autocomplete.suggest_apply` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/select-list.lisp` | 305 | `tui_select_settings_loaders.filter` |
@@ -1021,10 +1036,10 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 7 | 1,724 |
 | `cli_sdk` | 5 | 1,712 |
-| `tui_editor_helpers` | 5 | 1,580 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
 | `cli_support` | 13 | 1,164 |
+| `tui_editor_helpers` | 4 | 986 |
 | `http_transport` | 1 | 858 |
 | `tui_select_settings_loaders` | 2 | 705 |
 | `cli_models_rest` | 2 | 698 |
