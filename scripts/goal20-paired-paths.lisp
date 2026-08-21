@@ -72,6 +72,7 @@
 ;;;;  58. ai_capabilities resolve-http-proxy-url-for-target vs resolveHttpProxyUrlForTarget
 ;;;;  59. ai_capabilities register/cleanup session resources vs registerSessionResourceCleanup
 ;;;;  60. cli_support make-event-bus vs createEventBus
+;;;;  61. cli_support provider-attribution-headers vs mergeProviderAttributionHeaders
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -188,6 +189,7 @@
     ("cli_support.normalize_path" . 50)
     ("cli_support.timings" . 50)
     ("cli_support.event_bus" . 50)
+    ("cli_support.attribution_headers" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
@@ -4254,11 +4256,63 @@
       (setf n3 (length recorded)))
     (list (or (car (last recorded)) "") n1 n2 n3 throw-ok)))
 
+(defun attribution-flag (headers name)
+  (if (assoc name headers :test #'string-equal) 1 0))
+
+(defun attribution-val (headers name)
+  (or (cdr (assoc name headers :test #'string-equal)) ""))
+
+(defun run-cli-support-attribution-headers ()
+  (let ((or-on
+          (cadr-cli::provider-attribution-headers
+           :provider :openrouter
+           :base-url "https://openrouter.ai/api/v1"
+           :telemetry-p t))
+        (or-off
+          (cadr-cli::provider-attribution-headers
+           :provider :openrouter
+           :base-url "https://openrouter.ai/api/v1"
+           :telemetry-p nil))
+        (nv
+          (cadr-cli::provider-attribution-headers
+           :provider :nvidia
+           :base-url "https://integrate.api.nvidia.com/v1"
+           :telemetry-p t))
+        (cf
+          (cadr-cli::provider-attribution-headers
+           :provider :cloudflare-workers-ai
+           :base-url "https://api.cloudflare.com/client/v4"
+           :telemetry-p t))
+        (oc
+          (cadr-cli::provider-attribution-headers
+           :provider :opencode
+           :base-url "https://opencode.ai/api"
+           :telemetry-p nil
+           :session-id "sess-1"))
+        (ov
+          (cadr-cli::provider-attribution-headers
+           :provider :openrouter
+           :base-url "https://openrouter.ai/api/v1"
+           :telemetry-p t
+           :request-headers
+           '(("X-OpenRouter-Title" . "custom")))))
+    (list
+     (attribution-flag or-on "HTTP-Referer")
+     (attribution-flag or-on "X-OpenRouter-Title")
+     (attribution-val or-on "X-OpenRouter-Categories")
+     (attribution-flag or-off "HTTP-Referer")
+     (attribution-flag nv "X-BILLING-INVOKE-ORIGIN")
+     (attribution-flag cf "User-Agent")
+     (attribution-val oc "x-opencode-session")
+     (attribution-flag oc "x-opencode-client")
+     (attribution-val ov "X-OpenRouter-Title"))))
+
 (defun measure-cli-support-strip-ansi ()
   (let ((ansi (run-cli-support-strip-ansi))
         (paths (run-cli-support-normalize-path))
         (timings (run-cli-support-timings))
-        (bus (run-cli-support-event-bus)))
+        (bus (run-cli-support-event-bus))
+        (headers (run-cli-support-attribution-headers)))
     (json-object
      "observed"
      (json-object
@@ -4279,7 +4333,16 @@
       "eb_n1" (second bus)
       "eb_n2" (third bus)
       "eb_n3" (fourth bus)
-      "eb_throw" (fifth bus))
+      "eb_throw" (fifth bus)
+      "at_or_ref" (first headers)
+      "at_or_title" (second headers)
+      "at_or_cat" (third headers)
+      "at_or_off" (fourth headers)
+      "at_nv" (fifth headers)
+      "at_cf" (sixth headers)
+      "at_oc_sess" (seventh headers)
+      "at_oc_client" (eighth headers)
+      "at_ov" (ninth headers))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -4299,7 +4362,12 @@
      (collect "cli_support.event_bus"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-event-bus)))))))
+                  (run-cli-support-event-bus))))
+     "attribution_headers"
+     (collect "cli_support.attribution_headers"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-attribution-headers)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -4690,6 +4758,8 @@
       "src/cadr-cli/support/timings.lisp reset-timings + record-timing + print-timings"
       "cli_support.event_bus"
       "src/cadr-cli/support/event-bus.lisp make-event-bus + event-bus-on + event-bus-emit"
+      "cli_support.attribution_headers"
+      "src/cadr-cli/support/headers.lisp provider-attribution-headers"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"

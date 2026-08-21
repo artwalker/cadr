@@ -441,6 +441,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(event_bus), 1)
         self.assertEqual(event_bus[0]["class"], "paired")
         self.assertIn("cli_support.event_bus", event_bus[0]["metrics"])
+        attribution_headers = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/support/headers.lisp"
+        ]
+        self.assertEqual(len(attribution_headers), 1)
+        self.assertEqual(attribution_headers[0]["class"], "paired")
+        self.assertIn("cli_support.attribution_headers", attribution_headers[0]["metrics"])
         decode_entity = [
             row
             for row in classified["rows"]

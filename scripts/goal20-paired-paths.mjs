@@ -187,6 +187,7 @@ const REPETITIONS = {
 	"cli_support.normalize_path": 50,
 	"cli_support.timings": 50,
 	"cli_support.event_bus": 50,
+	"cli_support.attribution_headers": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -458,6 +459,9 @@ const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const timingsModule = await import(moduleUrl("packages/coding-agent/src/core/timings.ts"));
 const eventBusModule = await import(moduleUrl("packages/coding-agent/src/core/event-bus.ts"));
+const attributionModule = await import(
+	moduleUrl("packages/coding-agent/src/core/provider-attribution.ts")
+);
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
@@ -3538,11 +3542,83 @@ function runCliSupportEventBus() {
 	}
 }
 
+function attributionFlag(headers, name) {
+	return headers && Object.prototype.hasOwnProperty.call(headers, name) ? 1 : 0;
+}
+
+function attributionVal(headers, name) {
+	return headers && headers[name] != null ? String(headers[name]) : "";
+}
+
+function mergeAttribution(model, telemetry, sessionId, ...sources) {
+	const previous = process.env.PI_TELEMETRY;
+	process.env.PI_TELEMETRY = telemetry ? "1" : "0";
+	try {
+		return (
+			attributionModule.mergeProviderAttributionHeaders(
+				model,
+				{ getEnableInstallTelemetry: () => telemetry },
+				sessionId,
+				...sources,
+			) ?? {}
+		);
+	} finally {
+		if (previous === undefined) delete process.env.PI_TELEMETRY;
+		else process.env.PI_TELEMETRY = previous;
+	}
+}
+
+function runCliSupportAttributionHeaders() {
+	const orOn = mergeAttribution(
+		{ provider: "openrouter", baseUrl: "https://openrouter.ai/api/v1" },
+		true,
+		undefined,
+	);
+	const orOff = mergeAttribution(
+		{ provider: "openrouter", baseUrl: "https://openrouter.ai/api/v1" },
+		false,
+		undefined,
+	);
+	const nv = mergeAttribution(
+		{ provider: "nvidia", baseUrl: "https://integrate.api.nvidia.com/v1" },
+		true,
+		undefined,
+	);
+	const cf = mergeAttribution(
+		{ provider: "cloudflare-workers-ai", baseUrl: "https://api.cloudflare.com/client/v4" },
+		true,
+		undefined,
+	);
+	const oc = mergeAttribution(
+		{ provider: "opencode", baseUrl: "https://opencode.ai/api" },
+		false,
+		"sess-1",
+	);
+	const ov = mergeAttribution(
+		{ provider: "openrouter", baseUrl: "https://openrouter.ai/api/v1" },
+		true,
+		undefined,
+		{ "X-OpenRouter-Title": "custom" },
+	);
+	return {
+		at_or_ref: attributionFlag(orOn, "HTTP-Referer"),
+		at_or_title: attributionFlag(orOn, "X-OpenRouter-Title"),
+		at_or_cat: attributionVal(orOn, "X-OpenRouter-Categories"),
+		at_or_off: attributionFlag(orOff, "HTTP-Referer"),
+		at_nv: attributionFlag(nv, "X-BILLING-INVOKE-ORIGIN"),
+		at_cf: attributionFlag(cf, "User-Agent"),
+		at_oc_sess: attributionVal(oc, "x-opencode-session"),
+		at_oc_client: attributionFlag(oc, "x-opencode-client"),
+		at_ov: attributionVal(ov, "X-OpenRouter-Title"),
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
 	const timings = runCliSupportTimings();
 	const bus = runCliSupportEventBus();
+	const headers = runCliSupportAttributionHeaders();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -3556,7 +3632,10 @@ async function measureCliSupportStripAnsi() {
 		event_bus: await collect("cli_support.event_bus", () => {
 			return () => runCliSupportEventBus();
 		}),
-		observed: { ...ansi, ...paths, ...timings, ...bus },
+		attribution_headers: await collect("cli_support.attribution_headers", () => {
+			return () => runCliSupportAttributionHeaders();
+		}),
+		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers },
 	};
 }
 
@@ -4112,6 +4191,8 @@ const result = {
 				"packages/coding-agent/src/core/timings.ts resetTimings + time + printTimings",
 			"cli_support.event_bus":
 				"packages/coding-agent/src/core/event-bus.ts createEventBus",
+			"cli_support.attribution_headers":
+				"packages/coding-agent/src/core/provider-attribution.ts mergeProviderAttributionHeaders",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":

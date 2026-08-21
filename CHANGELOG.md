@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.attribution_headers`
+  (OpenRouter/NVIDIA/Cloudflare/OpenCode presence flags;
+  cadr `provider-attribution-headers` vs pi
+  `mergeProviderAttributionHeaders`). Friend-MachineD
+  n=5 **0.29×** (2.70 / 9.31 µs), ceiling 8.0. cadr leads.
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_support.event_bus`
   (on/emit/unsub/thrower/clear; cadr `make-event-bus`
   vs pi `createEventBus`). Friend-MachineD n=5 **0.33×**

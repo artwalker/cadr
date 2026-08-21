@@ -1089,6 +1089,20 @@ not append. Do not exact error text. No TUI. First
 Friend-MachineD freeze **0.33×** (2.68 / 8.21 µs), ceiling
 8.0. cadr leads. Same commit no optimize.
 
+### Pair 76 — `cli_support` (attribution_headers)
+
+| metric | cadr | pi |
+|---|---|---|
+| `attribution_headers` | `provider-attribution-headers` | `mergeProviderAttributionHeaders` (`packages/coding-agent/src/core/provider-attribution.ts`) |
+
+Leftover sibling of strip_ansi / normalize_path / timings / event_bus.
+OpenRouter / NVIDIA / Cloudflare / OpenCode URLs. Telemetry on/off.
+Presence flags only for product strings (Referer, title, billing,
+UA, client). Exact: Categories `cli-agent`, session `sess-1`,
+overlay title `custom`. No live socket. First Friend-MachineD
+freeze **0.29×** (2.70 / 9.31 µs), ceiling 8.0. cadr leads.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1294,13 +1308,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 128 | 59,363 | 46.6% | `no worse than baseline` is falsifiable |
+| `paired` | 129 | 59,438 | 46.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 124 | 47,632 | 37.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 123 | 47,557 | 37.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.6% of lines (128 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 46.7% of lines (129 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 52.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -1418,6 +1432,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
+| `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
@@ -1511,8 +1526,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_sdk` | 4 | 1,214 |
 | `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |
-| `cli_support` | 9 | 618 |
 | `tui_theme_overlay` | 1 | 562 |
+| `cli_support` | 8 | 543 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `core_rest` | 4 | 267 |
