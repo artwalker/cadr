@@ -1,3 +1,14 @@
+# Executor current (2026-08-21)
+
+Walker `0084f0703` / load ~1763. Load first-byte family
+exhausted. **Tried**: inline `consume-line` → `scan-buffer`.
+Friend-MachineD load **1763→1916 µs** — withdrawn.
+**Do next**: `provider_pi_messages` remesure → one named
+knife, then `provider_mistral`. G.17 stays `missing`.
+No silent stop.
+
+---
+
 # Goal 20 — session_load leftover after parse-message 三连 @ `1e2fff836`
 
 Proposal for adjudication. Not G.17 `met`. Not Part P `[done]`.

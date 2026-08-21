@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw inline `consume-line` into JSONL
+  `scan-buffer`. Friend-MachineD n=5: load cadr
+  **1763→1916 µs** (worse). Product restored to
+  `0084f0703`. Not E tagbody. Ceiling not lowered. Not G.17.
 - Goal 20: remesure `journal_read` sprof on walker
   `0084f0703`. Leftover = `SCAN-BUFFER` wrapping
   `consume-line` per JSONL line (not load first-byte).

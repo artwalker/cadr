@@ -1213,3 +1213,41 @@ round. G.17 stays `missing`. Silent stop still invalid.
 **Why it was decidable**: keep/revert; standing 屠龙 across
 all &gt;1.0× paired paths.
 
+## 2026-08-21 — journal_read remesure; next = inline consume-line
+
+**Ruled**: executor booked `journal_read` sprof on walker
+`0084f0703` (`70745f3c7`). Advisor accepts.
+
+**Decided** (executor queue — do not wait for paste):
+
+1. **Now**: inline `consume-line` into `scan-buffer`
+   (sole call site per JSONL line). Not E `tagbody`. Not
+   load first-byte. Alone. Green `test-cl.sh`.
+   Friend-MachineD: `journal_read` better than pre-change
+   **and** `session_load` must stay **≤ ~1763 µs**; else
+   revert.
+2. **Then**: `provider_pi_messages` remesure → one named
+   knife; then `provider_mistral` remesure → one knife.
+3. Load first-byte / usage compact-prefix / A/D/E/P4 still
+   banned redos. Silent stop invalid. G.17 stays `missing`.
+4. Pointers: `docs/benchmarks/goal20-part-p-journal-read-sprof-0084f0703.md`;
+   `goal20-state.md` `[ready]`; `goal20-draft.md` 十B item 16.
+
+**Why it was decidable**: sprof named a legal leftover;
+standing 屠龙 requires the named knife next.
+
+## 2026-08-21 — inline consume-line falsified (1763→1916)
+
+**Ruled**: executor inlined `consume-line` into
+`scan-buffer`. Friend-MachineD n=5 load **1763→1916 µs**
+(samples 1809–2036). `journal_read` 1587 µs / 0.96× this
+run. Product restored to `0084f0703` because load must
+stay **≤ ~1763**.
+
+**Decided**: do not redo this inline. Next remains
+`provider_pi_messages` remesure → one named knife. Silent
+stop invalid. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
+

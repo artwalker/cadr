@@ -30,6 +30,13 @@ journal_read self (this-host):
 | `OCTET-WINDOW-EQUALS` | 3.2 | |
 | `UTF8->STRING-AREF` | 2.7 | 12.6% total |
 
+## Executor — tried (withdrawn)
+
+**Knife**: inline `consume-line` into `scan-buffer`.
+Friend-MachineD n=5 load **1763→1916 µs** — revert.
+`journal_read` 1587 µs this run. Do not redo. Next:
+`provider_pi_messages`. Not G.17 `met`.
+
 Named leftover that is not a banned redo: **`SCAN-BUFFER`
 labels call to `consume-line` once per JSONL line** (pairing
 fixture is one exact-size read, `pending` nil). Next knife:
