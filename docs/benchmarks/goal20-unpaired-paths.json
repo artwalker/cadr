@@ -60,6 +60,7 @@
   "tui_settings_list.apply_filter",
   "ai_capabilities.short_hash",
   "ai_capabilities.deferred_tools",
+  "ai_capabilities.event_stream",
   "cli_support.strip_ansi",
   "cli_support.normalize_path",
   "cli_interactive_controller.decode_entity",
@@ -755,8 +756,8 @@
   },
   {
    "prefix": "src/cadr-ai/capabilities/event-stream.lisp",
-   "class": "needs-pair",
-   "hole": "ai_capabilities"
+   "class": "paired",
+   "metrics": ["ai_capabilities.event_stream"]
   },
   {
    "prefix": "src/cadr-ai/capabilities/grammar-tools.lisp",

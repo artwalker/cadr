@@ -130,7 +130,7 @@ METRICS = {
     "tui_input_component": ("edit",),
     "tui_native_modifiers": ("pressed",),
     "tui_settings_list": ("apply_filter",),
-    "ai_capabilities": ("short_hash", "deferred_tools"),
+    "ai_capabilities": ("short_hash", "deferred_tools", "event_stream"),
     "cli_support": ("strip_ansi", "normalize_path"),
     "cli_interactive_controller": ("decode_entity",),
     "cli_sdk": ("version_newer",),
@@ -433,6 +433,11 @@ RATIO_CEILINGS = {
     # 2.04x (5.51 / 2.70 us). 8.0 is first-freeze
     # headroom. Ratchet down only.
     "ai_capabilities.deferred_tools": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # ai_capabilities.event_stream pair (samples=5): observed
+    # 1.44x (1.73 / 1.20 us). 8.0 is first-freeze
+    # headroom (variance). Ratchet down only.
+    "ai_capabilities.event_stream": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_support pair (samples=5): observed 2.73x
     # (1.3 / 0.5 us). 8.0 follows the microsecond-floor
@@ -935,6 +940,10 @@ OBSERVED_EXACT = {
         "on_first",
         "on_second",
         "on_read",
+        "ev_first",
+        "ev_second",
+        "ev_third",
+        "ev_result",
     ),
     "cli_support": (
         "csi_osc",

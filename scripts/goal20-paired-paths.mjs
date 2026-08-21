@@ -180,6 +180,7 @@ const REPETITIONS = {
 	"tui_settings_list.apply_filter": 50,
 	"ai_capabilities.short_hash": 50,
 	"ai_capabilities.deferred_tools": 50,
+	"ai_capabilities.event_stream": 50,
 	"cli_support.strip_ansi": 50,
 	"cli_support.normalize_path": 50,
 	"cli_interactive_controller.decode_entity": 50,
@@ -439,6 +440,9 @@ const hashModule = await import(moduleUrl("packages/ai/src/utils/hash.ts"));
 const deferredToolsModule = await import(
 	moduleUrl("packages/ai/src/utils/deferred-tools.ts")
 );
+const eventStreamModule = await import(
+	moduleUrl("packages/ai/src/utils/event-stream.ts")
+);
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
@@ -448,7 +452,6 @@ const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/cor
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
 const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
-const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
 const baselineRequire = createRequire(path.join(baselineDirectory, "package.json"));
 const { Type } = baselineRequire("typebox");
@@ -3311,9 +3314,28 @@ function runAiCapabilitiesDeferredTools() {
 	};
 }
 
+async function runAiCapabilitiesEventStream() {
+	const stream = new eventStreamModule.EventStream(
+		(event) => event === "end",
+		(event) => event,
+	);
+	stream.push("a");
+	stream.push("b");
+	stream.push("end");
+	const out = [];
+	for await (const event of stream) out.push(event);
+	return {
+		ev_first: out[0] ?? "",
+		ev_second: out[1] ?? "",
+		ev_third: out[2] ?? "",
+		ev_result: await stream.result(),
+	};
+}
+
 async function measureAiCapabilitiesShortHash() {
 	const hash = runAiCapabilitiesShortHash();
 	const deferred = runAiCapabilitiesDeferredTools();
+	const events = await runAiCapabilitiesEventStream();
 	return {
 		short_hash: await collect("ai_capabilities.short_hash", () => {
 			return () => runAiCapabilitiesShortHash();
@@ -3321,7 +3343,10 @@ async function measureAiCapabilitiesShortHash() {
 		deferred_tools: await collect("ai_capabilities.deferred_tools", () => {
 			return () => runAiCapabilitiesDeferredTools();
 		}),
-		observed: { ...hash, ...deferred },
+		event_stream: await collect("ai_capabilities.event_stream", () => {
+			return () => runAiCapabilitiesEventStream();
+		}),
+		observed: { ...hash, ...deferred, ...events },
 	};
 }
 
@@ -3903,6 +3928,8 @@ const result = {
 			"ai_capabilities.short_hash": "packages/ai/src/utils/hash.ts shortHash",
 			"ai_capabilities.deferred_tools":
 				"packages/ai/src/utils/deferred-tools.ts splitDeferredTools",
+			"ai_capabilities.event_stream":
+				"packages/ai/src/utils/event-stream.ts EventStream",
 			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
 			"cli_support.normalize_path":
 				"packages/coding-agent/src/utils/paths.ts normalizePath",

@@ -67,6 +67,7 @@
 ;;;;  53. ai_support uuid-v7 vs uuidv7
 ;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
 ;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
+;;;;  56. ai_capabilities make-event-stream vs EventStream
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -176,6 +177,7 @@
     ("tui_settings_list.apply_filter" . 50)
     ("ai_capabilities.short_hash" . 50)
     ("ai_capabilities.deferred_tools" . 50)
+    ("ai_capabilities.event_stream" . 50)
     ("cli_support.strip_ansi" . 50)
     ("cli_support.normalize_path" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
@@ -4017,9 +4019,24 @@
    (deferred-tools-shape nil)
    (deferred-tools-shape t)))
 
+(defun run-ai-capabilities-event-stream ()
+  (let ((stream
+          (cadr-ai:make-event-stream
+           :complete-p (lambda (event) (equal event "end"))
+           :result-function #'identity)))
+    (cadr-ai:event-stream-push stream "a")
+    (cadr-ai:event-stream-push stream "b")
+    (cadr-ai:event-stream-push stream "end")
+    (list
+     (cadr-ai:event-stream-next stream)
+     (cadr-ai:event-stream-next stream)
+     (cadr-ai:event-stream-next stream)
+     (cadr-ai:event-stream-result stream))))
+
 (defun measure-ai-capabilities-short-hash ()
   (let ((hash (run-ai-capabilities-short-hash))
-        (deferred (run-ai-capabilities-deferred-tools)))
+        (deferred (run-ai-capabilities-deferred-tools))
+        (events (run-ai-capabilities-event-stream)))
     (json-object
      "observed"
      (json-object
@@ -4035,7 +4052,11 @@
       "on_def" (seventh deferred)
       "on_first" (eighth deferred)
       "on_second" (ninth deferred)
-      "on_read" (tenth deferred))
+      "on_read" (tenth deferred)
+      "ev_first" (first events)
+      "ev_second" (second events)
+      "ev_third" (third events)
+      "ev_result" (fourth events))
      "short_hash"
      (collect "ai_capabilities.short_hash"
               (lambda ()
@@ -4045,7 +4066,12 @@
      (collect "ai_capabilities.deferred_tools"
               (lambda ()
                 (lambda ()
-                  (run-ai-capabilities-deferred-tools)))))))
+                  (run-ai-capabilities-deferred-tools))))
+     "event_stream"
+     (collect "ai_capabilities.event_stream"
+              (lambda ()
+                (lambda ()
+                  (run-ai-capabilities-event-stream)))))))
 
 (defun strip-ansi-csi-osc ()
   (format nil
@@ -4476,6 +4502,8 @@
       "src/cadr-ai/capabilities/streaming-json.lisp short-hash"
       "ai_capabilities.deferred_tools"
       "src/cadr-ai/capabilities/grammar-tools.lisp split-deferred-tools"
+      "ai_capabilities.event_stream"
+      "src/cadr-ai/capabilities/event-stream.lisp make-event-stream"
       "cli_support.strip_ansi"
       "src/cadr-cli/support/changelog-share.lisp strip-ansi"
       "cli_support.normalize_path"

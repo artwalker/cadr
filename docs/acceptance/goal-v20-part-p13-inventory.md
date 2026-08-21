@@ -416,11 +416,11 @@ These must not be filed as callees.
 | `src/cadr-cli/media.lisp` | 1,277 |
 | `src/cadr-tui/terminal-image.lisp` | 686 |
 
-### `ai_capabilities` (additional) — `streaming-json.lisp` paired `ai_capabilities.short_hash`; `grammar-tools.lisp` paired `ai_capabilities.deferred_tools`
+### `ai_capabilities` (additional) — `streaming-json.lisp` paired `ai_capabilities.short_hash`; `grammar-tools.lisp` paired `ai_capabilities.deferred_tools`; `event-stream.lisp` paired `ai_capabilities.event_stream`
 
-- pi: `shortHash`; `splitDeferredTools`
-- fixture: empty / `abc` / `中文😀`. Time UTF-16 hash, not a stream. Deferred: grep/bash/read; assistant called bash; result added `read`.
-- Friend-MachineD n=5: short_hash **1.70×** (1.5 / 0.9 µs); deferred_tools **2.04×** (5.51 / 2.70 µs); ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
+- pi: `shortHash`; `splitDeferredTools`; `EventStream`
+- fixture: empty / `abc` / `中文😀`. Time UTF-16 hash, not a stream. Deferred: grep/bash/read. Event stream: FIFO a/b/end.
+- Friend-MachineD n=5: short_hash **1.70×** (1.5 / 0.9 µs); deferred_tools **2.04×** (5.51 / 2.70 µs); event_stream **1.44×** (1.73 / 1.20 µs); ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

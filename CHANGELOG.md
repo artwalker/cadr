@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_capabilities.event_stream`
+  (FIFO a/b/end; cadr `make-event-stream` vs pi
+  `EventStream`). Friend-MachineD n=5 **1.44×**
+  (1.73 / 1.20 µs), ceiling 8.0 (variance). Same
+  commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `ai_support.auth_guidance`
   (no-models / no-selected / no-key prefixes; cadr
   `no-models-available-message` vs pi

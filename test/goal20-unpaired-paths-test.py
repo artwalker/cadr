@@ -385,6 +385,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(grammar_tools), 1)
         self.assertEqual(grammar_tools[0]["class"], "paired")
         self.assertIn("ai_capabilities.deferred_tools", grammar_tools[0]["metrics"])
+        event_stream = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/capabilities/event-stream.lisp"
+        ]
+        self.assertEqual(len(event_stream), 1)
+        self.assertEqual(event_stream[0]["class"], "paired")
+        self.assertIn("ai_capabilities.event_stream", event_stream[0]["metrics"])
         strip_ansi = [
             row
             for row in classified["rows"]

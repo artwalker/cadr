@@ -1023,6 +1023,19 @@ providers.md, models.md. Do not exact docs paths
 **27.66×** (1922 / 69.5 µs), ceiling 50.0 (ASDF
 docs-dir). Same commit no optimize.
 
+### Pair 71 — `ai_capabilities` (event_stream)
+
+| metric | cadr | pi |
+|---|---|---|
+| `event_stream` | `make-event-stream` | `EventStream` (`packages/ai/src/utils/event-stream.ts`) |
+
+Leftover sibling of `short_hash` / `deferred_tools`. FIFO
+`a`/`b`/`end`; complete on `end`. Observed `ev_first` /
+`ev_second` / `ev_third` / `ev_result` are exact
+(`a`/`b`/`end`/`end`). No live socket. First
+Friend-MachineD freeze **1.44×** (1.73 / 1.20 µs),
+ceiling 8.0 (variance). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1228,13 +1241,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 123 | 59,098 | 46.4% | `no worse than baseline` is falsifiable |
+| `paired` | 124 | 59,167 | 46.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 129 | 47,897 | 37.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 128 | 47,828 | 37.5% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.4% of lines (123 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 46.4% of lines (124 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 52.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -1293,6 +1306,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
+| `src/cadr-ai/capabilities/event-stream.lisp` | 69 | `ai_capabilities.event_stream` |
 | `src/cadr-ai/capabilities/grammar-tools.lisp` | 292 | `ai_capabilities.deferred_tools` |
 | `src/cadr-ai/capabilities/image-runtime.lisp` | 117 | `image_runtime.api_provider` |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
@@ -1448,7 +1462,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
 | `session_compact` | 1 | 185 |
-| `ai_capabilities` | 3 | 180 |
+| `ai_capabilities` | 2 | 111 |
 | `agent_conditions` | 1 | 43 |
 | `ai_support` | 1 | 6 |
 
