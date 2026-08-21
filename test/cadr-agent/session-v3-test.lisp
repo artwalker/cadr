@@ -1036,6 +1036,74 @@
     (signals error
       (parse-content "[{\"type\":\"nope\"}]"))))
 
+(test single-block-content-shortcut-equals-generic-mutants
+  ;; One-element content arrays skip list+nreverse aggregation after
+  ;; kept compact-prefix. Compact / spaced / reordered stay EQUAL on
+  ;; slots. Two-element arrays still a list of that length. Not bag,
+  ;; not D svref, not first-byte.
+  (flet ((parse-content (content-json)
+           (let* ((octets
+                    (cadr-ai::utf8-octets
+                     (format
+                      nil
+                      "{\"type\":\"message\",\"id\":\"c\",\"parentId\":null,\"timestamp\":1,\"message\":{\"role\":\"assistant\",\"content\":~A,\"timestamp\":1}}"
+                      content-json)))
+                  (entry
+                    (cadr-agent::parse-session-record-octets
+                     octets 0 (length octets))))
+             (cadr-agent::session-json-message-content
+              (cadr-agent::session-entry-message entry))))
+         (text-slot (block)
+           (cadr-ai:text-content-text block))
+         (thinking-slot (block)
+           (cadr-ai:thinking-content-thinking block))
+         (tool-slots (block)
+           (list (cadr-ai:tool-call-id block)
+                 (cadr-ai:tool-call-name block))))
+    (let ((compact (parse-content "[{\"type\":\"text\",\"text\":\"hello\"}]"))
+          (spaced
+            (parse-content
+             "[{ \"type\" : \"text\" , \"text\" : \"hello\" }]"))
+          (reordered
+            (parse-content "[{\"text\":\"hello\",\"type\":\"text\"}]")))
+      (is (listp compact))
+      (is (= 1 (length compact)))
+      (is (typep (first compact) 'cadr-ai:text-content))
+      (is (string= "hello" (text-slot (first compact))))
+      (is (equal (mapcar #'text-slot compact)
+                 (mapcar #'text-slot spaced)))
+      (is (equal (mapcar #'text-slot compact)
+                 (mapcar #'text-slot reordered))))
+    (let ((thinking
+            (parse-content
+             "[{\"type\":\"thinking\",\"thinking\":\"plan\"}]")))
+      (is (listp thinking))
+      (is (= 1 (length thinking)))
+      (is (typep (first thinking) 'cadr-ai:thinking-content))
+      (is (string= "plan" (thinking-slot (first thinking)))))
+    (let ((tool
+            (parse-content
+             "[{\"type\":\"toolCall\",\"id\":\"call-1\",\"name\":\"read\",\"arguments\":{\"path\":\"x\"}}]")))
+      (is (listp tool))
+      (is (= 1 (length tool)))
+      (is (typep (first tool) 'cadr-ai:tool-call))
+      (is (equal '("call-1" "read") (tool-slots (first tool)))))
+    (let ((two
+            (parse-content
+             "[{\"type\":\"text\",\"text\":\"a\"},{\"type\":\"thinking\",\"thinking\":\"b\"}]"))
+          (two-spaced
+            (parse-content
+             "[{ \"type\" : \"text\" , \"text\" : \"a\" } , { \"type\" : \"thinking\" , \"thinking\" : \"b\" }]")))
+      (is (listp two))
+      (is (= 2 (length two)))
+      (is (typep (first two) 'cadr-ai:text-content))
+      (is (typep (second two) 'cadr-ai:thinking-content))
+      (is (string= "a" (text-slot (first two))))
+      (is (string= "b" (thinking-slot (second two))))
+      (is (= 2 (length two-spaced)))
+      (is (string= "a" (text-slot (first two-spaced))))
+      (is (string= "b" (thinking-slot (second two-spaced)))))))
+
 (test usage-first-byte-dispatch-equals-generic-mutants
   ;; parse-usage first-byte field dispatch (proposal-3 family).
   ;; Compact pairing-fixture usage, spaced, and reordered keys

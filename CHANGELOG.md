@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw single-element content array
+  shortcut (skip list+nreverse after compact-prefix).
+  Friend-MachineD n=5: load cadr **1763→1929 µs**
+  (worse; samples 1762–2538). Product restored to
+  `0084f0703` walker. EQUAL test kept. Not bag / D
+  svref / first-byte. Ceiling not lowered. Not G.17.
 - Goal 20: withdraw SSE `data-octets` + `parse-json-octets`
   on openai-completions (mistral). Friend-MachineD n=5:
   mistral **2046→2219 µs**; load **1763→2152 µs**. Product

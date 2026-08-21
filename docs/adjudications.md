@@ -1274,11 +1274,33 @@ in openai-completions (not string→utf8-octets). Friend-MachineD
 n=5: mistral **2046→2219 µs**; load **1763→2152 µs**. Product
 restored.
 
-**Decided**: do not redo SSE data-octets JSON parse. Load
-and leftover-pairing JSON/octet side-quests on this walker
-are exhausted for now. Silent stop invalid. G.17 stays
-`missing`. Goal 20 not complete.
+**Decided**: do not redo SSE data-octets JSON parse.
+Pairing JSON/octet *side-quests* on this walker lost; that
+is not Goal completion. Silent stop invalid. G.17 stays
+`missing`. Next knives: see following adjudication.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
+
+## 2026-08-21 — after pairing JSON/octet exhaust; named load invent
+
+**Ruled**: mistral SSE data-octets+parse-json-octets
+withdrawn (`3900bb180`). Executor leftover text risked
+parking. Advisor rejects park.
+
+**Decided**:
+
+1. **Now**: `session_load` invent — **single-element
+   content array shortcut** after kept content
+   compact-prefix. Not bag reuse, not item-10 D svref,
+   not first-byte. Friend-MachineD load **&lt; ~1763** or
+   revert. EQUAL + green `test-cl.sh`.
+2. **Then**: `provider_pi_messages` leftover
+   `WRITE-JSON-STRING` / request stringify (not event
+   `parse-json-octets`).
+3. G.17 stays `missing`. No silent stop.
+4. Pointers: leftover文首; board; `goal20-draft.md` 十B.16.
+
+**Why it was decidable**: 屠龙 continues on load gap
+(~1.11×); side-quest losses do not empty `[ready]`.
 
 

@@ -24,3 +24,10 @@ Tried: `sse-event-data-octets` + `parse-json-octets` on the
 binary `data:` window. Friend-MachineD n=5 mistral
 **2046→2219 µs**, load **1763→2152 µs** — withdrawn.
 Do not redo. Not G.17 `met`.
+
+## Executor — do next (do not stop)
+
+SSE data-octets JSON parse **withdrawn**. Single-element
+content shortcut **withdrawn** (load 1763→1929). Do **not**
+park. **Next**: pi_messages WRITE-JSON-STRING residual.
+See leftover文首 + adjudications. Not G.17 `met`.

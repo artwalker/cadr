@@ -1,14 +1,22 @@
 # Executor current (2026-08-21)
 
-Walker `0084f0703` / load ~1763. Load first-byte family
-exhausted. **Tried**: inline `consume-line` → `scan-buffer`.
-Friend-MachineD load **1763→1916 µs** — withdrawn.
-**Tried**: `pi-event-data` `parse-json-octets` —
-stream **1081→1190 µs**, load **1763→1841** — withdrawn.
-**Tried**: mistral SSE `data-octets` + `parse-json-octets`
-— **2046→2219 µs**, load **1763→2152** — withdrawn.
-Leftover JSON/octet pairing knives on this walker are
-exhausted for now. G.17 stays `missing`. No silent stop.
+Walker `0084f0703` / load ~1763.
+
+**Withdrawn (do not redo):** load first-byte family; inline
+consume-line; pi-event-data parse-json-octets; mistral SSE
+data-octets+parse-json-octets; **single-element content
+array shortcut** (1763→1929).
+
+**Do next (advisor):**
+1. ~~Load invent — single-element content array shortcut~~
+   **withdrawn** Friend-MachineD load **1763→1929 µs**.
+   Do not redo.
+2. Then pi_messages **WRITE-JSON-STRING / request stringify**
+   residual (not event parse-json-octets). **Now.**
+
+G.17 stays `missing`. No silent stop. Pairing JSON/octet
+side-quests losing ≠ Goal complete.
+
 
 ---
 
