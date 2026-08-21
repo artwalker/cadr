@@ -3,9 +3,11 @@
 Walker `0084f0703` / load ~1763. Load first-byte family
 exhausted. **Tried**: inline `consume-line` → `scan-buffer`.
 Friend-MachineD load **1763→1916 µs** — withdrawn.
-**Do next**: `provider_pi_messages` remesure → one named
-knife, then `provider_mistral`. G.17 stays `missing`.
-No silent stop.
+**Tried**: `pi-event-data` `parse-json-octets` —
+stream **1081→1190 µs**, load **1763→1841** — withdrawn.
+**Do next**: `provider_mistral` remesure → one named knife
+(or a different pi_messages encoding, not utf8-octets+
+parse-json-octets). G.17 stays `missing`. No silent stop.
 
 ---
 

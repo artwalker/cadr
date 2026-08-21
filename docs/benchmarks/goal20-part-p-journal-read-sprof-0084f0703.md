@@ -37,12 +37,9 @@ Friend-MachineD n=5 load **1763→1916 µs** — revert.
 `journal_read` 1587 µs this run. Do not redo. Next:
 `provider_pi_messages`. Not G.17 `met`.
 
-Named leftover that is not a banned redo: **`SCAN-BUFFER`
-labels call to `consume-line` once per JSONL line** (pairing
-fixture is one exact-size read, `pending` nil). Next knife:
-inline `consume-line` into `scan-buffer`. Not E `tagbody`.
-Not first-byte. Must not push Friend-MachineD load past
-**~1763 µs**.
+Historical named leftover was `SCAN-BUFFER`→`consume-line`;
+that inline was tried and **withdrawn** (load 1763→1916).
+Do not redo. Executor next: `provider_pi_messages`.
 
 session_load same capture: `SCAN-BUFFER` 9.3% self /
 `PARSE-SESSION-RECORD-OCTETS` 9.2% self. Same function.

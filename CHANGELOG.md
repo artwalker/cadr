@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw `pi-event-data` `parse-json-octets`.
+  Friend-MachineD n=5: `provider_pi_messages` cadr
+  **1081→1190 µs** (worse); load **1763→1841 µs**. Product
+  restored. Not intern-grow. Ceiling not lowered. Not G.17.
+- Goal 20: remesure `provider_pi_messages` sprof on walker
+  `0084f0703`. Leftover = character `PARSE-JSON-SOURCE` on
+  SSE event payloads. Not G.17.
 - Goal 20: withdraw inline `consume-line` into JSONL
   `scan-buffer`. Friend-MachineD n=5: load cadr
   **1763→1916 µs** (worse). Product restored to

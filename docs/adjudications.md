@@ -1250,4 +1250,20 @@ stop invalid. G.17 stays `missing`.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
 
+## 2026-08-21 — pi-event-data parse-json-octets falsified (1081→1190)
+
+**Ruled**: executor remesured `provider_pi_messages`
+sprof (PARSE-JSON-SOURCE leftover) and switched
+`pi-event-data` to `parse-json-octets` / `utf8-octets`.
+Friend-MachineD n=5: stream cadr **1081→1190 µs**; load
+**1763→1841 µs**. Product restored to `0084f0703`.
+
+**Decided**: do not redo this octet re-encode of event
+JSON. Next remains `provider_mistral` remesure → one
+named knife, or a **different** named pi_messages encoding
+(not this utf8-octets+parse-json-octets). Silent stop
+invalid. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
 
