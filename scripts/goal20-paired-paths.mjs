@@ -158,6 +158,7 @@ const REPETITIONS = {
 	"image_runtime.dimension_note": 50,
 	"image_runtime.api_provider": 50,
 	"cli_print_rpc.jsonl_line": 50,
+	"cli_print_rpc.jsonl_read": 50,
 	"tui_latex.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
@@ -2552,20 +2553,49 @@ function runCliPrintRpc() {
 	return rpcJsonlModule.serializeJsonLine(rpcJsonlObject());
 }
 
-function measureCliPrintRpcObserved(line) {
+const RPC_JSONL_READ_FIXTURE = '{"id":"1"}\n{"id":"2"}\r\nlast\n';
+
+async function runCliPrintRpcRead() {
+	const lines = [];
+	const stream = Readable.from([RPC_JSONL_READ_FIXTURE]);
+	stream.pause();
+	rpcJsonlModule.attachJsonlLineReader(stream, (line) => {
+		lines.push(line);
+	});
+	const ended = new Promise((resolve) => {
+		stream.once("end", resolve);
+	});
+	stream.resume();
+	await ended;
+	return {
+		line_count: lines.length,
+		first: lines[0] ?? "",
+		second: lines[1] ?? "",
+		last_line: lines[2] ?? "",
+	};
+}
+
+function measureCliPrintRpcObserved(line, readLines) {
 	const newline = line.endsWith("\n") ? 1 : 0;
 	return {
 		line_chars: line.length,
 		newline,
 		payload: newline ? line.slice(0, -1) : line,
+		...readLines,
 	};
 }
 
 async function measureCliPrintRpc() {
-	const observed = measureCliPrintRpcObserved(runCliPrintRpc());
+	const observed = measureCliPrintRpcObserved(
+		runCliPrintRpc(),
+		await runCliPrintRpcRead(),
+	);
 	return {
 		jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
 			return () => runCliPrintRpc();
+		}),
+		jsonl_read: await collect("cli_print_rpc.jsonl_read", () => {
+			return () => runCliPrintRpcRead();
 		}),
 		observed,
 	};
@@ -3705,6 +3735,8 @@ const result = {
 				"packages/ai/src/images-api-registry.ts getImagesApiProvider",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
+			"cli_print_rpc.jsonl_read":
+				"packages/coding-agent/src/modes/rpc/jsonl.ts attachJsonlLineReader",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":

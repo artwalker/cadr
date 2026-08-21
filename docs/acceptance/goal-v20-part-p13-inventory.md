@@ -566,11 +566,11 @@ These must not be filed as callees.
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 |
 
-### `cli_print_rpc` (additional) — `print.lisp` paired `cli_print_rpc.jsonl_line`
+### `cli_print_rpc` (additional) — `print.lisp` paired `cli_print_rpc.jsonl_line`; `jsonl.lisp` paired `cli_print_rpc.jsonl_read`
 
-- pi: `packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine`
-- fixture: one RPC response object. Time JSONL frame write, not a live stdin loop.
-- Friend-MachineD n=5: **13.21×** (3.3 / 0.25 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
+- pi: `serializeJsonLine`; `attachJsonlLineReader`
+- fixture: one RPC response object. Time JSONL frame write, not a live stdin loop. Read: three lines including CRLF trim, string stream / Readable.
+- Friend-MachineD n=5: jsonl_line **13.21×** (3.3 / 0.25 µs); jsonl_read **0.03×** (0.63 / 23.84 µs); ceiling 8.0 (variance on jsonl_line). cadr leads on jsonl_read (sync vs async Readable). Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

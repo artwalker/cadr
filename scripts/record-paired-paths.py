@@ -55,6 +55,7 @@ METRIC_KEYS = (
     "image_runtime.dimension_note",
     "image_runtime.api_provider",
     "cli_print_rpc.jsonl_line",
+    "cli_print_rpc.jsonl_read",
     "tui_latex.render",
     "tui_editor_helpers.fuzzy_match",
     "tui_theme_overlay.osc11_bg",

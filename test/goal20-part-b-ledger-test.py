@@ -456,6 +456,13 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("line_chars", paired.OBSERVED_EXACT["cli_print_rpc"])
         self.assertIn("newline", paired.OBSERVED_EXACT["cli_print_rpc"])
         self.assertIn("payload", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("cli_print_rpc.jsonl_read", RECORD.METRIC_KEYS)
+        self.assertIn("jsonl_read", paired.METRICS["cli_print_rpc"])
+        self.assertIn("cli_print_rpc.jsonl_read", paired.RATIO_CEILINGS)
+        self.assertIn("line_count", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("first", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("second", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("last_line", paired.OBSERVED_EXACT["cli_print_rpc"])
 
     def test_tui_latex_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -762,6 +769,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`image_runtime.dimension_note`", section)
             self.assertIn("`image_runtime.api_provider`", section)
             self.assertIn("`cli_print_rpc.jsonl_line`", section)
+            self.assertIn("`cli_print_rpc.jsonl_read`", section)
             self.assertIn("`tui_latex.render`", section)
             self.assertIn("`tui_editor_helpers.fuzzy_match`", section)
             self.assertIn("`tui_theme_overlay.osc11_bg`", section)

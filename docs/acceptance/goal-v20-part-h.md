@@ -964,6 +964,22 @@ direct, not registry-backed at load). Observed
 Friend-MachineD freeze **1.09×** (0.23 / 0.21 µs),
 ceiling 8.0 (variance). Same commit no optimize. No HTTP.
 
+### Pair 67 — `cli_print_rpc` (jsonl_read)
+
+| metric | cadr | pi |
+|---|---|---|
+| `jsonl_read` | `read-rpc-jsonl-lines` | `attachJsonlLineReader` (`packages/coding-agent/src/modes/rpc/jsonl.ts`) |
+
+Leftover sibling of `jsonl_line`. Fixture
+`{"id":"1"}\\n{"id":"2"}\\r\\nlast\\n` on a string
+stream / Readable, not live stdin. CRLF second line
+is trimmed. Observed `line_count` / `first` /
+`second` / `last_line` are exact (3 /
+`{"id":"1"}` / `{"id":"2"}` / `last`). First
+Friend-MachineD freeze **0.03×** (0.63 / 23.84 µs),
+ceiling 8.0. cadr leads (sync `read-line` vs async
+Readable). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1169,14 +1185,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 119 | 58,486 | 45.9% | `no worse than baseline` is falsifiable |
+| `paired` | 120 | 58,609 | 46.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 133 | 48,509 | 38.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 132 | 48,386 | 38.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 45.9% of lines (119 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 51.8% of lines.
+- **Falsifiable vs baseline:** 46.0% of lines (120 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 51.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1275,6 +1291,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/modes/print.lisp` | 578 | `cli_print_rpc.jsonl_line` |
+| `src/cadr-cli/modes/rpc/jsonl.lisp` | 123 | `cli_print_rpc.jsonl_read` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
@@ -1372,7 +1389,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `evals_harness` | 6 | 2,184 |
 | `oauth_pkce_device` | 13 | 2,081 |
 | `package_manager` | 2 | 1,811 |
-| `cli_print_rpc` | 7 | 1,724 |
+| `cli_print_rpc` | 6 | 1,601 |
 | `settings_load` | 4 | 1,499 |
 | `cli_sdk` | 4 | 1,214 |
 | `cli_support` | 11 | 703 |

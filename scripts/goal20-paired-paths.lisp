@@ -31,6 +31,7 @@
 ;;;;  18. cli_models_rest parse-scoped-model-pattern vs parseModelPattern
 ;;;;  19. image_runtime image-dimensions vs getImageDimensions
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
+;;;;      leftover: read-rpc-jsonl-lines vs attachJsonlLineReader
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -150,6 +151,7 @@
     ("image_runtime.dimension_note" . 50)
     ("image_runtime.api_provider" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
+    ("cli_print_rpc.jsonl_read" . 50)
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
@@ -3149,6 +3151,26 @@
     (cadr-cli::write-json-line (rpc-jsonl-object) stream)
     (get-output-stream-string stream)))
 
+(defparameter *rpc-jsonl-read-fixture*
+  (concatenate
+   'string
+   "{\"id\":\"1\"}"
+   (string #\Newline)
+   "{\"id\":\"2\"}"
+   (string #\Return)
+   (string #\Newline)
+   "last"
+   (string #\Newline)))
+
+(defun run-cli-print-rpc-read ()
+  (let ((lines nil))
+    (with-input-from-string (stream *rpc-jsonl-read-fixture*)
+      (cadr-cli::read-rpc-jsonl-lines
+       stream
+       (lambda (line)
+         (push line lines))))
+    (nreverse lines)))
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p
@@ -3157,18 +3179,28 @@
          (payload
            (if newline-p
                (subseq line 0 (1- (length line)))
-               line)))
+               line))
+         (read-lines (run-cli-print-rpc-read)))
     (json-object
      "observed"
      (json-object
       "line_chars" (length line)
       "newline" (if newline-p 1 0)
-      "payload" payload)
+      "payload" payload
+      "line_count" (length read-lines)
+      "first" (or (first read-lines) "")
+      "second" (or (second read-lines) "")
+      "last_line" (or (third read-lines) ""))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc)))))))
+                  (run-cli-print-rpc))))
+     "jsonl_read"
+     (collect "cli_print_rpc.jsonl_read"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-read)))))))
 
 (defun latex-text (source display-p)
   (or (cadr-tui:render-latex source :display-p display-p) ""))
@@ -4274,6 +4306,8 @@
       "src/cadr-ai/capabilities/image-runtime.lisp get-images-api-provider"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
+      "cli_print_rpc.jsonl_read"
+      "src/cadr-cli/modes/rpc/jsonl.lisp read-rpc-jsonl-lines"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_editor_helpers.fuzzy_match"

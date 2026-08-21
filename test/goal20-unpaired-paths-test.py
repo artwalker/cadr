@@ -201,6 +201,14 @@ class TestClassify(unittest.TestCase):
         self.assertIn(
             "image_runtime.api_provider", image_runtime_cap[0]["metrics"]
         )
+        rpc_jsonl = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/modes/rpc/jsonl.lisp"
+        ]
+        self.assertEqual(len(rpc_jsonl), 1)
+        self.assertEqual(rpc_jsonl[0]["class"], "paired")
+        self.assertIn("cli_print_rpc.jsonl_read", rpc_jsonl[0]["metrics"])
         print_mode = [
             row
             for row in classified["rows"]

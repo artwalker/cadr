@@ -114,7 +114,7 @@ METRICS = {
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match",),
     "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider"),
-    "cli_print_rpc": ("jsonl_line",),
+    "cli_print_rpc": ("jsonl_line", "jsonl_read"),
     "tui_latex": ("render",),
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
@@ -319,6 +319,12 @@ RATIO_CEILINGS = {
     # the microsecond-floor / agent_proxy variance precedent (not
     # the ratio). Ratchet down only.
     "cli_print_rpc.jsonl_line": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_print_rpc.jsonl_read pair (samples=5): observed
+    # 0.03x (0.63 / 23.84 us). cadr leads (sync read-line vs
+    # async Readable). 8.0 is first-freeze headroom.
+    # Ratchet down only.
+    "cli_print_rpc.jsonl_read": 8.0,
     # Frozen from the first Friend-MachineD non-quick tui_latex pair
     # (samples=5): observed 2.49x (64.4 / 25.8 us). 3.0 follows the
     # argv_parse / tool_grep headroom precedent. Ratchet down only.
@@ -759,6 +765,10 @@ OBSERVED_EXACT = {
         "line_chars",
         "newline",
         "payload",
+        "line_count",
+        "first",
+        "second",
+        "last_line",
     ),
     "tui_latex": (
         "e_mc2",

@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_print_rpc.jsonl_read`
+  (3 JSONL lines including CRLF; cadr
+  `read-rpc-jsonl-lines` vs pi
+  `attachJsonlLineReader`). Friend-MachineD n=5
+  **0.03×** (0.63 / 23.84 µs), ceiling 8.0. cadr
+  leads. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `image_runtime.api_provider`
   (fixture API present / nope missing; cadr
   `get-images-api-provider` vs pi
