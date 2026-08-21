@@ -165,6 +165,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(terminal_image), 1)
         self.assertEqual(terminal_image[0]["class"], "paired")
         self.assertIn("image_runtime.dimensions", terminal_image[0]["metrics"])
+        media = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/media.lisp"
+        ]
+        self.assertEqual(len(media), 1)
+        self.assertEqual(media[0]["class"], "paired")
+        self.assertIn("image_runtime.mime_type", media[0]["metrics"])
         print_mode = [
             row
             for row in classified["rows"]

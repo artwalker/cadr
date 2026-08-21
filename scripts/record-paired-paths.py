@@ -50,6 +50,7 @@ METRIC_KEYS = (
     "ai_crypto.hmac",
     "cli_models_rest.pattern_match",
     "image_runtime.dimensions",
+    "image_runtime.mime_type",
     "cli_print_rpc.jsonl_line",
     "tui_latex.render",
     "tui_editor_helpers.fuzzy_match",

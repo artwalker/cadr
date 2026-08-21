@@ -904,6 +904,21 @@ delta assemble, no socket. First Friend-MachineD freeze
 **2.87×** (1.52 / 0.53 µs), ceiling 8.0 (variance). Same
 commit no optimize.
 
+### Pair 63 — `image_runtime` (mime_type)
+
+| metric | cadr | pi |
+|---|---|---|
+| `mime_type` | `detect-image-mime-type` | `detectSupportedImageMimeType` (`packages/coding-agent/src/utils/mime.ts`) |
+
+Leftover sibling of `dimensions`. Fixtures: 1x1 PNG,
+JPEG SOI `FF D8 FF E0`, `GIF89a`, `RIFF....WEBP`,
+`hello` miss. Do not exact JPEG `0xf7`, animated PNG,
+or invalid BMP (cadr prefix vs pi header checks).
+Observed `png_mime` / `jpeg_mime` / `gif_mime` /
+`webp_mime` / `miss_mime` are exact. Time sniff, no
+Kitty/iTerm. First Friend-MachineD freeze **1.62×**
+(6.63 / 4.09 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1109,14 +1124,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 115 | 56,617 | 44.4% | `no worse than baseline` is falsifiable |
+| `paired` | 116 | 57,894 | 45.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 137 | 50,378 | 39.5% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 136 | 49,101 | 38.5% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 44.4% of lines (115 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 50.3% of lines.
+- **Falsifiable vs baseline:** 45.4% of lines (116 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 51.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1207,6 +1222,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,015 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/media.lisp` | 1,277 | `image_runtime.mime_type` |
 | `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
@@ -1306,12 +1322,12 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `agent_tool_loop` | 13 | 4,094 |
 | `cli_extensions_install` | 9 | 3,489 |
 | `evals_harness` | 6 | 2,184 |
-| `image_runtime` | 5 | 2,091 |
 | `oauth_pkce_device` | 13 | 2,081 |
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 7 | 1,724 |
 | `settings_load` | 4 | 1,499 |
 | `cli_sdk` | 4 | 1,214 |
+| `image_runtime` | 4 | 814 |
 | `cli_support` | 11 | 703 |
 | `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |

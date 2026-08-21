@@ -153,6 +153,7 @@ const REPETITIONS = {
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
 	"image_runtime.dimensions": 50,
+	"image_runtime.mime_type": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"tui_latex.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
@@ -398,6 +399,7 @@ const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
+const mimeModule = await import(moduleUrl("packages/coding-agent/src/utils/mime.ts"));
 const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
@@ -2423,13 +2425,31 @@ function runImageRuntime() {
 	};
 }
 
+function mimeOrEmpty(bytes) {
+	return mimeModule.detectSupportedImageMimeType(bytes) ?? "";
+}
+
+function runImageRuntimeMime() {
+	return {
+		png_mime: mimeOrEmpty(Buffer.from(PNG_1X1_B64, "base64")),
+		jpeg_mime: mimeOrEmpty(Uint8Array.from([0xff, 0xd8, 0xff, 0xe0])),
+		gif_mime: mimeOrEmpty(Buffer.from("GIF89a")),
+		webp_mime: mimeOrEmpty(Buffer.from("RIFF....WEBP")),
+		miss_mime: mimeOrEmpty(Buffer.from("hello")),
+	};
+}
+
 async function measureImageRuntime() {
-	const observed = runImageRuntime();
+	const dims = runImageRuntime();
+	const mime = runImageRuntimeMime();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
 		}),
-		observed,
+		mime_type: await collect("image_runtime.mime_type", () => {
+			return () => runImageRuntimeMime();
+		}),
+		observed: { ...dims, ...mime },
 	};
 }
 
@@ -3589,6 +3609,8 @@ const result = {
 				"packages/coding-agent/src/core/model-resolver.ts parseModelPattern",
 			"image_runtime.dimensions":
 				"packages/tui/src/terminal-image.ts getImageDimensions",
+			"image_runtime.mime_type":
+				"packages/coding-agent/src/utils/mime.ts detectSupportedImageMimeType",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",

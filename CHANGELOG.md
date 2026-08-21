@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `image_runtime.mime_type`
+  (PNG / JPEG SOI / GIF89a / WEBP / miss; cadr
+  `detect-image-mime-type` vs pi
+  `detectSupportedImageMimeType`). Friend-MachineD n=5
+  **1.62×** (6.63 / 4.09 µs), ceiling 8.0. Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `ai_support.grammar_delta`
   (`hel`→`hello`→close; cadr `append-grammar-json-delta`
   vs pi `appendGrammarToolInputJsonDelta`).

@@ -419,11 +419,17 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_image_runtime_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("image_runtime.dimensions", RECORD.METRIC_KEYS)
+        self.assertIn("image_runtime.mime_type", RECORD.METRIC_KEYS)
         self.assertIn("dimensions", paired.METRICS["image_runtime"])
+        self.assertIn("mime_type", paired.METRICS["image_runtime"])
         self.assertIn("image_runtime.dimensions", paired.RATIO_CEILINGS)
+        self.assertIn("image_runtime.mime_type", paired.RATIO_CEILINGS)
         self.assertIn("png_width", paired.OBSERVED_EXACT["image_runtime"])
         self.assertIn("gif_height", paired.OBSERVED_EXACT["image_runtime"])
         self.assertIn("miss", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("png_mime", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("webp_mime", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("miss_mime", paired.OBSERVED_EXACT["image_runtime"])
 
     def test_cli_print_rpc_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -734,6 +740,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)
             self.assertIn("`image_runtime.dimensions`", section)
+            self.assertIn("`image_runtime.mime_type`", section)
             self.assertIn("`cli_print_rpc.jsonl_line`", section)
             self.assertIn("`tui_latex.render`", section)
             self.assertIn("`tui_editor_helpers.fuzzy_match`", section)

@@ -59,6 +59,7 @@
 ;;;;  46. ai_support context-overflow-p vs isContextOverflow
 ;;;;  47. ai_crypto hmac-sha256 vs node:crypto createHmac
 ;;;;  48. ai_support append-grammar-json-delta vs appendGrammarToolInputJsonDelta
+;;;;  49. image_runtime detect-image-mime-type vs detectSupportedImageMimeType
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -141,6 +142,7 @@
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
     ("image_runtime.dimensions" . 50)
+    ("image_runtime.mime_type" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
@@ -3006,21 +3008,49 @@
               1
               0))))
 
+(defun mime-or-empty (bytes)
+  (or (cadr-cli::detect-image-mime-type bytes) ""))
+
+(defun ascii-octet-vector (text)
+  (cadr-cli::simple-octet-vector
+   (map 'vector #'char-code text)))
+
+(defun run-image-runtime-mime ()
+  (list
+   (mime-or-empty
+    (cadr-cli::decode-base64-bytes *png-1x1-b64*))
+   (mime-or-empty
+    (cadr-cli::simple-octet-vector #(255 216 255 224)))
+   (mime-or-empty (ascii-octet-vector "GIF89a"))
+   (mime-or-empty (ascii-octet-vector "RIFF....WEBP"))
+   (mime-or-empty (ascii-octet-vector "hello"))))
+
 (defun measure-image-runtime ()
-  (let ((observed (run-image-runtime)))
+  (let ((dims (run-image-runtime))
+        (mime (run-image-runtime-mime)))
     (json-object
      "observed"
      (json-object
-      "png_width" (first observed)
-      "png_height" (second observed)
-      "gif_width" (third observed)
-      "gif_height" (fourth observed)
-      "miss" (fifth observed))
+      "png_width" (first dims)
+      "png_height" (second dims)
+      "gif_width" (third dims)
+      "gif_height" (fourth dims)
+      "miss" (fifth dims)
+      "png_mime" (first mime)
+      "jpeg_mime" (second mime)
+      "gif_mime" (third mime)
+      "webp_mime" (fourth mime)
+      "miss_mime" (fifth mime))
      "dimensions"
      (collect "image_runtime.dimensions"
               (lambda ()
                 (lambda ()
-                  (run-image-runtime)))))))
+                  (run-image-runtime))))
+     "mime_type"
+     (collect "image_runtime.mime_type"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-mime)))))))
 
 (defun rpc-jsonl-object ()
   (cadr-ai::json-object
@@ -4149,6 +4179,8 @@
       "src/cadr-cli/models/matching.lisp parse-scoped-model-pattern"
       "image_runtime.dimensions"
       "src/cadr-tui/terminal-image.lisp image-dimensions"
+      "image_runtime.mime_type"
+      "src/cadr-cli/media.lisp detect-image-mime-type"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
       "tui_latex.render"
