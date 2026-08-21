@@ -77,6 +77,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(export_html), 1)
         self.assertEqual(export_html[0]["class"], "paired")
         self.assertIn("session_export_html.to_html", export_html[0]["metrics"])
+        cbor = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-protocol/cbor.lisp"
+        ]
+        self.assertEqual(len(cbor), 1)
+        self.assertEqual(cbor[0]["class"], "paired")
+        self.assertIn("protocol_cbor.roundtrip", cbor[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

@@ -362,6 +362,19 @@ payload), not an exact field. First Friend-MachineD freeze
 **3.55×** (29217.8 / 8239.7 µs), ceiling 20.0. Same commit
 no optimize.
 
+### Pair 24 — `protocol_cbor`
+
+| metric | cadr | pi |
+|---|---|---|
+| `roundtrip` | `encode-cbor` + `decode-cbor` | `encodeCbor` + `decodeCbor` (`packages/protocol/src/cbor`) |
+
+16 RFC 8949 vectors (null/bool/int/string/empty array/map).
+Observed `vector_count` / `roundtrip_hex` / `match` are exact
+(match=1). `cbor.lisp` is the timed owner; `package.lisp` is a
+callee; codec/framing/schema stay `needs-pair`. First
+Friend-MachineD freeze **0.25×** (17.7 / 70.1 µs), ceiling 1.5.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -567,14 +580,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 71 | 38,267 | 30.0% | `no worse than baseline` is falsifiable |
+| `paired` | 72 | 38,759 | 30.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `covered-as-callee` | 17 | 12,786 | 10.0% | on a named paired thunk; no own bench |
-| `needs-pair` | 183 | 68,861 | 54.1% | must get an H pair; not a file-level idle bench |
+| `covered-as-callee` | 18 | 12,819 | 10.1% | on a named paired thunk; no own bench |
+| `needs-pair` | 181 | 68,336 | 53.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 30.0% of lines (71 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 35.9% of lines.
+- **Falsifiable vs baseline:** 30.4% of lines (72 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 36.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -659,6 +672,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
+| `src/cadr-protocol/cbor.lisp` | 492 | `protocol_cbor.roundtrip` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
 | `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -700,6 +714,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-core/package.lisp` | 43 | `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-core/paths.lisp` | 95 | `cli_dispatch.list_models_registry` |
 | `src/cadr-core/time.lisp` | 133 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-protocol/package.lisp` | 33 | `protocol_cbor.roundtrip` |
 | `src/cadr-tui/components/status.lisp` | 253 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/package.lisp` | 355 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input`, `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 | `src/cadr-tui/threads.lisp` | 6 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -728,11 +743,11 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `harness_storage` | 4 | 1,532 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
-| `protocol_cbor` | 5 | 1,426 |
 | `tui_theme_overlay` | 3 | 1,238 |
 | `cli_support` | 13 | 1,164 |
 | `cli_models_rest` | 3 | 1,096 |
 | `tui_select_settings_loaders` | 3 | 1,010 |
+| `protocol_cbor` | 3 | 901 |
 | `http_transport` | 1 | 858 |
 | `agent_schema` | 1 | 850 |
 | `ai_crypto_model_data` | 2 | 774 |

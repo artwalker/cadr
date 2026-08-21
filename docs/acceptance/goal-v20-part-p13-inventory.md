@@ -671,10 +671,11 @@ These must not be filed as callees.
 | `src/cadr-evals/suites.lisp` | 468 |
 | `src/cadr-evals/summary.lisp` | 732 |
 
-### `protocol_cbor` (additional)
+### `protocol_cbor` (additional) — `cbor.lisp` paired `protocol_cbor.roundtrip`
 
-- pi: `packages/protocol/src/cbor/decoder.ts + framing + schema`
-- fixture: Recorded CBOR frames (already used by protocol tests). Time decode + encode roundtrip. Output bytes must match.
+- pi: `packages/protocol/src/cbor encodeCbor + decodeCbor`
+- fixture: 16 RFC 8949 vectors. Time decode + encode. Hex roundtrip exact. codec/framing/schema still `needs-pair`.
+- Friend-MachineD n=5: **0.25×** (17.7 / 70.1 µs), ceiling 1.5. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

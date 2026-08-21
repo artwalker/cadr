@@ -142,6 +142,7 @@ const REPETITIONS = {
 	"package_manager.resolve": 5,
 	"session_discovery.header_probe": 20,
 	"session_export_html.to_html": 3,
+	"protocol_cbor.roundtrip": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -326,6 +327,7 @@ const listModelsModule = await import(moduleUrl("packages/coding-agent/src/cli/l
 const modelRuntimeModule = await import(moduleUrl("packages/coding-agent/src/core/model-runtime.ts"));
 const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/session-manager.ts"));
 const exportHtmlModule = await import(moduleUrl("packages/coding-agent/src/core/export-html/index.ts"));
+const cborModule = await import(moduleUrl("packages/protocol/src/cbor/index.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
@@ -1883,6 +1885,48 @@ function sessionDiscoveryProbe(dir) {
 	return sessionModule.findMostRecentSession(dir);
 }
 
+const CBOR_ROUNDTRIP_HEX = [
+	"f6",
+	"f4",
+	"f5",
+	"00",
+	"01",
+	"0a",
+	"17",
+	"1818",
+	"1864",
+	"1903e8",
+	"20",
+	"29",
+	"626869",
+	"60",
+	"80",
+	"a0",
+];
+
+function protocolCborRoundtrip() {
+	return CBOR_ROUNDTRIP_HEX.map((hex) => {
+		const octets = Uint8Array.from(Buffer.from(hex, "hex"));
+		const value = cborModule.decodeCbor(octets);
+		const encoded = cborModule.encodeCbor(value);
+		return Buffer.from(encoded).toString("hex");
+	});
+}
+
+async function measureProtocolCbor() {
+	const hexes = protocolCborRoundtrip();
+	return {
+		roundtrip: await collect("protocol_cbor.roundtrip", () => {
+			return () => protocolCborRoundtrip();
+		}),
+		observed: {
+			vector_count: hexes.length,
+			roundtrip_hex: hexes.join(""),
+			match: hexes.every((hex, index) => hex === CBOR_ROUNDTRIP_HEX[index]) ? 1 : 0,
+		},
+	};
+}
+
 async function measureSessionExportHtml() {
 	const dest = path.join(scratch, "export", "session.html");
 	mkdirSync(path.dirname(dest), { recursive: true });
@@ -2008,6 +2052,8 @@ process.stderr.write("goal20 pi paired paths: session_discovery\n");
 const sessionDiscovery = await measureSessionDiscovery();
 process.stderr.write("goal20 pi paired paths: session_export_html\n");
 const sessionExportHtml = await measureSessionExportHtml();
+process.stderr.write("goal20 pi paired paths: protocol_cbor\n");
+const protocolCbor = await measureProtocolCbor();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2043,6 +2089,7 @@ const result = {
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_export_html.to_html":
 				"packages/coding-agent/src/core/export-html/index.ts exportSessionToHtml",
+			"protocol_cbor.roundtrip": "packages/protocol/src/cbor encodeCbor + decodeCbor",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2108,6 +2155,7 @@ const result = {
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,
+		protocol_cbor: protocolCbor,
 		render_slicing: renderSlicing,
 	},
 };

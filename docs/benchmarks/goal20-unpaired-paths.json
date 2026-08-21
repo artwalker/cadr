@@ -22,6 +22,7 @@
   "package_manager.resolve",
   "session_discovery.header_probe",
   "session_export_html.to_html",
+  "protocol_cbor.roundtrip",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1478,8 +1479,8 @@
   },
   {
    "prefix": "src/cadr-protocol/cbor.lisp",
-   "class": "needs-pair",
-   "hole": "protocol_cbor"
+   "class": "paired",
+   "metrics": ["protocol_cbor.roundtrip"]
   },
   {
    "prefix": "src/cadr-protocol/codec.lisp",
@@ -1493,8 +1494,8 @@
   },
   {
    "prefix": "src/cadr-protocol/package.lisp",
-   "class": "needs-pair",
-   "hole": "protocol_cbor"
+   "class": "covered-as-callee",
+   "metrics": ["protocol_cbor.roundtrip"]
   },
   {
    "prefix": "src/cadr-protocol/schema.lisp",

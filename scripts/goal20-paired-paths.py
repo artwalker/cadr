@@ -103,6 +103,7 @@ METRICS = {
     "package_manager": ("resolve",),
     "session_discovery": ("header_probe",),
     "session_export_html": ("to_html",),
+    "protocol_cbor": ("roundtrip",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -206,6 +207,11 @@ RATIO_CEILINGS = {
     # pair (samples=5): observed 3.55x (29218 / 8240 us). 20.0 follows
     # the session_compact headroom precedent. Ratchet down only.
     "session_export_html.to_html": 20.0,
+    # Frozen from the first Friend-MachineD non-quick protocol_cbor
+    # pair (samples=5): observed 0.25x (17.7 / 70.1 us). cadr leads.
+    # 1.5 follows the list_models_registry / render_slicing precedent.
+    # Ratchet down only.
+    "protocol_cbor.roundtrip": 1.5,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -417,6 +423,11 @@ OBSERVED_EXACT = {
     "session_export_html": (
         "has_accent",
         "theme",
+    ),
+    "protocol_cbor": (
+        "vector_count",
+        "roundtrip_hex",
+        "match",
     ),
     "resource_loader": (
         "skill_count",

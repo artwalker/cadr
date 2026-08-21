@@ -326,6 +326,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("has_accent", paired.OBSERVED_EXACT["session_export_html"])
         self.assertIn("theme", paired.OBSERVED_EXACT["session_export_html"])
 
+    def test_protocol_cbor_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("protocol_cbor.roundtrip", RECORD.METRIC_KEYS)
+        self.assertIn("roundtrip", paired.METRICS["protocol_cbor"])
+        self.assertIn("protocol_cbor.roundtrip", paired.RATIO_CEILINGS)
+        self.assertIn("vector_count", paired.OBSERVED_EXACT["protocol_cbor"])
+        self.assertIn("roundtrip_hex", paired.OBSERVED_EXACT["protocol_cbor"])
+        self.assertIn("match", paired.OBSERVED_EXACT["protocol_cbor"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)

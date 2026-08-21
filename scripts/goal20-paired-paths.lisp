@@ -20,6 +20,7 @@
 ;;;;   7. tool_grep         production grep-lines vs pi execute (context=2)
 ;;;;   8. session_discovery glob *.jsonl + header probe vs findMostRecentSession
 ;;;;   9. session_export_html export-session-html vs exportSessionToHtml
+;;;;  10. protocol_cbor encode-cbor/decode-cbor vs encodeCbor/decodeCbor
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -43,12 +44,14 @@
                   "cadr-ai.asd"
                   "cadr-agent.asd"
                   "cadr-tui.asd"
-                  "cadr-cli.asd"))
+                  "cadr-cli.asd"
+                  "cadr-protocol.asd"))
     (asdf:load-asd
      (truename
       (merge-pathnames
        name cl-user::*cadr-bench-project-directory*))))
-  (asdf:load-system "cadr-cli" :verbose nil))
+  (asdf:load-system "cadr-cli" :verbose nil)
+  (asdf:load-system "cadr-protocol" :verbose nil))
 
 (defpackage #:cadr-goal20-paired-paths
   (:use #:cl))
@@ -87,6 +90,7 @@
     ("package_manager.resolve" . 5)
     ("session_discovery.header_probe" . 20)
     ("session_export_html.to_html" . 3)
+    ("protocol_cbor.roundtrip" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2392,6 +2396,55 @@
                     (cadr-agent:export-session-html
                      session dest :theme-name "dark"))))))))
 
+(defparameter *cbor-roundtrip-hex*
+  '("f6" "f4" "f5" "00" "01" "0a" "17" "1818" "1864" "1903e8"
+    "20" "29" "626869" "60" "80" "a0"))
+
+(defun cbor-hex-octets (hex)
+  (let ((bytes
+          (make-array
+           (/ (length hex) 2)
+           :element-type '(unsigned-byte 8))))
+    (loop for index below (length bytes)
+          do
+          (setf (aref bytes index)
+                (parse-integer
+                 hex
+                 :start (* index 2)
+                 :end (+ (* index 2) 2)
+                 :radix 16)))
+    bytes))
+
+(defun cbor-octets-hex (bytes)
+  (string-downcase
+   (with-output-to-string (stream)
+     (loop for byte across bytes
+           do (format stream "~2,'0x" byte)))))
+
+(defun protocol-cbor-roundtrip ()
+  (let ((hexes nil))
+    (dolist (hex *cbor-roundtrip-hex*)
+      (let* ((octets (cbor-hex-octets hex))
+             (value (cadr-protocol:decode-cbor octets))
+             (encoded (cadr-protocol:encode-cbor value)))
+        (push (cbor-octets-hex encoded) hexes)))
+    (nreverse hexes)))
+
+(defun measure-protocol-cbor ()
+  (let ((hexes (protocol-cbor-roundtrip)))
+    (json-object
+     "observed"
+     (json-object
+      "vector_count" (length hexes)
+      "roundtrip_hex" (apply #'concatenate 'string hexes)
+      "match"
+      (if (equal hexes *cbor-roundtrip-hex*) 1 0))
+     "roundtrip"
+     (collect "protocol_cbor.roundtrip"
+              (lambda ()
+                (lambda ()
+                  (protocol-cbor-roundtrip)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2472,6 +2525,8 @@
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_export_html.to_html"
       "src/cadr-agent/session/export-html.lisp export-session-html"
+      "protocol_cbor.roundtrip"
+      "src/cadr-protocol/cbor.lisp encode-cbor + decode-cbor"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2563,6 +2618,8 @@
               (let ((discovery (measure-session-discovery)))
               (format *error-output* "goal20 cadr paired paths: session_export_html~%")
               (let ((export-html (measure-session-export-html)))
+              (format *error-output* "goal20 cadr paired paths: protocol_cbor~%")
+              (let ((cbor (measure-protocol-cbor)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2603,6 +2660,7 @@
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html
+              "protocol_cbor" cbor
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2619,7 +2677,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
