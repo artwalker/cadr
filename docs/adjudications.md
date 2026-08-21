@@ -1375,9 +1375,28 @@ unescaped. Silent stop invalid. G.17 stays `missing`.
 `provider_pi_messages` **1081→1153 µs** (samples
 1056–1955); load **1763→1952 µs**. Product restored.
 
-**Decided**: do not redo. G.17 stays `missing`. No
-silent stop.
+**Decided**: do not redo `:json-object` pairs. **Next**:
+(1) pi_messages **pre-size** EQUAL hash tables (`:size` /
+`:rehash-size` from known key counts) — not pairs, not
+WRITE-JSON-STRING unescaped, not parse-json-octets; path
+must improve and load **≤ ~1763**. (2) Remesure load
+split → one new named invent outside banned classes.
+Silent stop invalid. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert on Friend-MachineD;
+屠龙 continues.
+
+## 2026-08-21 — pi_messages pre-size EQUAL hash falsified
+
+**Ruled**: executor tried `:size` / `:rehash-size` from
+known `pi-context-json` key counts. Friend-MachineD n=5
+`provider_pi_messages` **1081→1225 µs** (samples
+1088–1344); load **1763→1971 µs**. Product restored.
+
+**Decided**: do not redo pre-size EQUAL hash. **Next**:
+remesure load `PARSE-SESSION-RECORD-OCTETS` split → one
+new named invent outside banned classes. Silent stop
+invalid. G.17 stays `missing`.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
-
 

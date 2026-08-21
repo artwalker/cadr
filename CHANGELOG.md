@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw pi_messages pre-size EQUAL hash
+  (`:size` / `:rehash-size` from known key counts).
+  Friend-MachineD n=5: `provider_pi_messages`
+  **1081→1225 µs** (worse; samples 1088–1344); load
+  **1763→1971 µs**. Product restored. Not pairs. Not
+  WRITE-JSON-STRING unescaped. Ceiling not lowered.
+  Not G.17.
 - Goal 20: withdraw pi_messages request `:json-object`
   pairs (not EQUAL hash tables). Friend-MachineD n=5:
   `provider_pi_messages` **1081→1153 µs** (worse;

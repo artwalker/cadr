@@ -3,21 +3,18 @@
 Walker `0084f0703` / load ~1763.
 
 **Withdrawn (do not redo):** load first-byte family; inline
-consume-line; pi/mistral octets JSON; single-element content
-shortcut; WRITE-JSON-STRING unescaped simple-string
-(1081→1189, load 1763→1838); **usage ASCII number value**
-(1763→1951); **pi_messages :json-object pairs**
-(1081→1153, load 1763→1952).
+consume-line; pi/mistral octets JSON; single-element content;
+WRITE-JSON-STRING unescaped; usage ASCII number; pi_messages
+:json-object pairs; **pi_messages pre-size EQUAL hash**
+(1081→1225, load 1763→1971).
 
 **Do next (advisor):**
-1. ~~usage ASCII number value fast path~~ **withdrawn**
-   Friend-MachineD load **1763→1951 µs**. Do not redo.
-2. ~~pi_messages request `:json-object` pairs~~ **withdrawn**
-   stream **1081→1153 µs**, load **1763→1952 µs**.
-   Do not redo. Not parse-json-octets. Not
-   WRITE-JSON-STRING unescaped.
+1. ~~pi_messages pre-size EQUAL hash~~ **withdrawn**
+   stream **1081→1225 µs**, load **1763→1971 µs**. Do not redo.
+2. Then remesure load `PARSE-SESSION-RECORD-OCTETS` split →
+   one **new** named invent (outside banned list). **Now.**
 
-G.17 stays `missing`. No silent stop.
+G.17 stays `missing`. No silent stop. No empty ⚑.
 
 
 ---
