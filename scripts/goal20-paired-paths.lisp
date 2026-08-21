@@ -75,6 +75,7 @@
 ;;;;  61. cli_support provider-attribution-headers vs mergeProviderAttributionHeaders
 ;;;;  62. cli_support get-shell-config vs getShellConfig
 ;;;;  63. cli_support sanitize-binary-output vs sanitizeBinaryOutput
+;;;;  64. cli_support parse-git-source vs parseGitUrl
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -194,6 +195,7 @@
     ("cli_support.attribution_headers" . 50)
     ("cli_support.shell_config" . 50)
     ("cli_support.sanitize_output" . 50)
+    ("cli_support.git_source" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
@@ -4340,6 +4342,32 @@
    (cadr-cli::sanitize-binary-output
     (format nil "p~Cq" (code-char #x1b)))))
 
+(defun git-source-shape (source)
+  (let ((parsed (cadr-cli::parse-git-source source)))
+    (if parsed
+        (list
+         (or (getf parsed :host) "")
+         (or (getf parsed :path) "")
+         (or (getf parsed :ref) "")
+         (if (getf parsed :pinned-p) 1 0))
+        (list "" "" "" 0))))
+
+(defun run-cli-support-git-source ()
+  (append
+   (git-source-shape "https://github.com/user/repo@v1.0.0")
+   (git-source-shape "git:git@github.com:user/repo")
+   (git-source-shape "git:github.com/user/repo")
+   (list
+    (if (cadr-cli::parse-git-source "git@github.com:user/repo") 1 0)
+    (if (cadr-cli::parse-git-source
+         "git:git@evil.example:../../victim/repo")
+        1
+        0)
+    (if (cadr-cli::parse-git-source
+         "git:git@evil.example:/absolute/repo")
+        1
+        0))))
+
 (defun measure-cli-support-strip-ansi ()
   (let ((ansi (run-cli-support-strip-ansi))
         (paths (run-cli-support-normalize-path))
@@ -4347,7 +4375,8 @@
         (bus (run-cli-support-event-bus))
         (headers (run-cli-support-attribution-headers))
         (shell (run-cli-support-shell-config))
-        (sanitize (run-cli-support-sanitize-output)))
+        (sanitize (run-cli-support-sanitize-output))
+        (git (run-cli-support-git-source)))
     (json-object
      "observed"
      (json-object
@@ -4389,7 +4418,19 @@
       "sz_ctl" (second sanitize)
       "sz_tnr" (third sanitize)
       "sz_fmt" (fourth sanitize)
-      "sz_esc" (fifth sanitize))
+      "sz_esc" (fifth sanitize)
+      "gs_https_host" (nth 0 git)
+      "gs_https_path" (nth 1 git)
+      "gs_https_ref" (nth 2 git)
+      "gs_https_pin" (nth 3 git)
+      "gs_ssh_host" (nth 4 git)
+      "gs_ssh_path" (nth 5 git)
+      "gs_ssh_pin" (nth 7 git)
+      "gs_short_host" (nth 8 git)
+      "gs_short_path" (nth 9 git)
+      "gs_bare" (nth 12 git)
+      "gs_dotdot" (nth 13 git)
+      "gs_abs" (nth 14 git))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -4424,7 +4465,12 @@
      (collect "cli_support.sanitize_output"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-sanitize-output)))))))
+                  (run-cli-support-sanitize-output))))
+     "git_source"
+     (collect "cli_support.git_source"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-git-source)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -4821,6 +4867,8 @@
       "src/cadr-cli/support/shell-process.lisp get-shell-config"
       "cli_support.sanitize_output"
       "src/cadr-cli/support/shell-process.lisp sanitize-binary-output"
+      "cli_support.git_source"
+      "src/cadr-cli/support/resume-version-git.lisp parse-git-source"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"

@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.git_source`
+  (HTTPS+ref / git: scp / git: shorthand; cadr
+  `parse-git-source` vs pi `parseGitUrl`). Friend-MachineD
+  n=5 **0.48×** (26.85 / 55.99 µs), ceiling 8.0. cadr
+  leads. Same commit no optimize. G.17 missing. Not
+  Goal 20 complete.
 - Goal 20 P.13: pair `cli_support.sanitize_output`
   (NUL/BEL/ESC/U+FFF9 stripped, tab/LF/CR kept; cadr
   `sanitize-binary-output` vs pi `sanitizeBinaryOutput`).

@@ -131,7 +131,7 @@ METRICS = {
     "tui_native_modifiers": ("pressed",),
     "tui_settings_list": ("apply_filter",),
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
-    "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output"),
+    "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source"),
     "cli_interactive_controller": ("decode_entity",),
     "cli_sdk": ("version_newer",),
     "provider_registry_defs": ("lookup",),
@@ -484,6 +484,11 @@ RATIO_CEILINGS = {
     # microsecond-floor first-freeze headroom. Ratchet down
     # only.
     "cli_support.sanitize_output": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_support.git_source pair (samples=5): observed
+    # 0.48x (26.85 / 55.99 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "cli_support.git_source": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_interactive_controller pair (samples=5): observed
     # 1.49x (0.63 / 0.42 us). 8.0 follows the
@@ -1030,6 +1035,18 @@ OBSERVED_EXACT = {
         "sz_tnr",
         "sz_fmt",
         "sz_esc",
+        "gs_https_host",
+        "gs_https_path",
+        "gs_https_ref",
+        "gs_https_pin",
+        "gs_ssh_host",
+        "gs_ssh_path",
+        "gs_ssh_pin",
+        "gs_short_host",
+        "gs_short_path",
+        "gs_bare",
+        "gs_dotdot",
+        "gs_abs",
     ),
     "cli_interactive_controller": (
         "amp",

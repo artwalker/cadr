@@ -1127,6 +1127,19 @@ stripped. Do not exact lone surrogates. No live process.
 First Friend-MachineD freeze **0.91×** (1.26 / 1.39 µs),
 ceiling 8.0 (variance). cadr leads. Same commit no optimize.
 
+### Pair 79 — `cli_support` (git_source)
+
+| metric | cadr | pi |
+|---|---|---|
+| `git_source` | `parse-git-source` | `parseGitUrl` (`packages/coding-agent/src/utils/git.ts`) |
+
+Leftover sibling in `resume-version-git.lisp`. HTTPS+ref,
+`git:` scp, `git:` shorthand. Reject bare scp / traversal /
+absolute. Host/path/ref/pinned only — do not exact repo.
+Skipped `edit-in-external-editor` (pi spawn). First
+Friend-MachineD freeze **0.48×** (26.85 / 55.99 µs),
+ceiling 8.0. cadr leads. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1332,14 +1345,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 130 | 59,570 | 46.8% | `no worse than baseline` is falsifiable |
+| `paired` | 131 | 59,795 | 46.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 122 | 47,425 | 37.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 121 | 47,200 | 37.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.8% of lines (130 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 52.6% of lines.
+- **Falsifiable vs baseline:** 46.9% of lines (131 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 52.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1458,6 +1471,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
+| `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source` |
 | `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
@@ -1554,10 +1568,10 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_theme_overlay` | 1 | 562 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
-| `cli_support` | 7 | 411 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
+| `cli_support` | 6 | 186 |
 | `session_compact` | 1 | 185 |
 | `agent_conditions` | 1 | 43 |
 | `ai_support` | 1 | 6 |

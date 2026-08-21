@@ -190,6 +190,7 @@ const REPETITIONS = {
 	"cli_support.attribution_headers": 50,
 	"cli_support.shell_config": 50,
 	"cli_support.sanitize_output": 50,
+	"cli_support.git_source": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -465,6 +466,7 @@ const attributionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/provider-attribution.ts")
 );
 const shellModule = await import(moduleUrl("packages/coding-agent/src/utils/shell.ts"));
+const gitModule = await import(moduleUrl("packages/coding-agent/src/utils/git.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
@@ -3654,6 +3656,39 @@ function runCliSupportSanitizeOutput() {
 	};
 }
 
+function gitSourceShape(source) {
+	const parsed = gitModule.parseGitUrl(source);
+	if (!parsed) {
+		return { host: "", path: "", ref: "", pin: 0 };
+	}
+	return {
+		host: parsed.host,
+		path: parsed.path,
+		ref: parsed.ref ?? "",
+		pin: parsed.pinned ? 1 : 0,
+	};
+}
+
+function runCliSupportGitSource() {
+	const https = gitSourceShape("https://github.com/user/repo@v1.0.0");
+	const ssh = gitSourceShape("git:git@github.com:user/repo");
+	const short = gitSourceShape("git:github.com/user/repo");
+	return {
+		gs_https_host: https.host,
+		gs_https_path: https.path,
+		gs_https_ref: https.ref,
+		gs_https_pin: https.pin,
+		gs_ssh_host: ssh.host,
+		gs_ssh_path: ssh.path,
+		gs_ssh_pin: ssh.pin,
+		gs_short_host: short.host,
+		gs_short_path: short.path,
+		gs_bare: gitModule.parseGitUrl("git@github.com:user/repo") ? 1 : 0,
+		gs_dotdot: gitModule.parseGitUrl("git:git@evil.example:../../victim/repo") ? 1 : 0,
+		gs_abs: gitModule.parseGitUrl("git:git@evil.example:/absolute/repo") ? 1 : 0,
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -3662,6 +3697,7 @@ async function measureCliSupportStripAnsi() {
 	const headers = runCliSupportAttributionHeaders();
 	const shell = runCliSupportShellConfig();
 	const sanitize = runCliSupportSanitizeOutput();
+	const git = runCliSupportGitSource();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -3684,7 +3720,10 @@ async function measureCliSupportStripAnsi() {
 		sanitize_output: await collect("cli_support.sanitize_output", () => {
 			return () => runCliSupportSanitizeOutput();
 		}),
-		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell, ...sanitize },
+		git_source: await collect("cli_support.git_source", () => {
+			return () => runCliSupportGitSource();
+		}),
+		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell, ...sanitize, ...git },
 	};
 }
 
@@ -4246,6 +4285,8 @@ const result = {
 				"packages/coding-agent/src/utils/shell.ts getShellConfig",
 			"cli_support.sanitize_output":
 				"packages/coding-agent/src/utils/shell.ts sanitizeBinaryOutput",
+			"cli_support.git_source":
+				"packages/coding-agent/src/utils/git.ts parseGitUrl",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":

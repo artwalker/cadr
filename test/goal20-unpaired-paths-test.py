@@ -458,6 +458,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(shell_config[0]["class"], "paired")
         self.assertIn("cli_support.shell_config", shell_config[0]["metrics"])
         self.assertIn("cli_support.sanitize_output", shell_config[0]["metrics"])
+        git_source = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/support/resume-version-git.lisp"
+        ]
+        self.assertEqual(len(git_source), 1)
+        self.assertEqual(git_source[0]["class"], "paired")
+        self.assertIn("cli_support.git_source", git_source[0]["metrics"])
         decode_entity = [
             row
             for row in classified["rows"]
