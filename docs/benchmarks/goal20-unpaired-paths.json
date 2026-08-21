@@ -27,6 +27,7 @@
   "harness_storage.open_walk",
   "protocol_codec.roundtrip",
   "agent_proxy.stream_roundtrip",
+  "oauth_pkce.challenge_urls",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -795,8 +796,8 @@
   },
   {
    "prefix": "src/cadr-ai/oauth/pkce.lisp",
-   "class": "needs-pair",
-   "hole": "oauth_pkce_device"
+   "class": "paired",
+   "metrics": ["oauth_pkce.challenge_urls"]
   },
   {
    "prefix": "src/cadr-ai/oauth/providers/anthropic.lisp",

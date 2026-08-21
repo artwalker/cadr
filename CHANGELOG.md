@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `oauth_pkce.challenge_urls` (RFC 7636
+  verifier; cadr `pkce-challenge` + authorize URLs vs pi
+  SHA-256 S256 + openai/anthropic URLs). Friend-MachineD n=5
+  **0.37×** (50.6 / 135.3 µs), ceiling 1.5. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `agent_proxy.stream_roundtrip` (stub SSE;
   cadr `stream-proxy` vs pi `streamProxy`). Friend-MachineD n=5
   **1.59×** (25.4 / 16.0 µs), ceiling 1.5. Same commit no

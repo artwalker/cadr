@@ -147,6 +147,7 @@ const REPETITIONS = {
 	"harness_storage.open_walk": 3,
 	"protocol_codec.roundtrip": 50,
 	"agent_proxy.stream_roundtrip": 10,
+	"oauth_pkce.challenge_urls": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -2100,6 +2101,73 @@ async function runAgentProxy() {
 	}
 }
 
+const OAUTH_PKCE_VERIFIER = "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk";
+const OAUTH_PKCE_STATE = "goal20-oauth-state";
+
+function base64urlEncode(bytes) {
+	let binary = "";
+	for (const byte of bytes) binary += String.fromCharCode(byte);
+	return btoa(binary).replace(/\+/g, "-").replace(/\//g, "_").replace(/=/g, "");
+}
+
+async function oauthPkceChallenge(verifier) {
+	const hashBuffer = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(verifier));
+	return base64urlEncode(new Uint8Array(hashBuffer));
+}
+
+function openaiAuthorizationUrl(challenge, state) {
+	const url = new URL("https://auth.openai.com/oauth/authorize");
+	url.searchParams.set("response_type", "code");
+	url.searchParams.set("client_id", "app_EMoamEEZ73f0CkXaXp7hrann");
+	url.searchParams.set("redirect_uri", "http://localhost:1455/auth/callback");
+	url.searchParams.set("scope", "openid profile email offline_access");
+	url.searchParams.set("code_challenge", challenge);
+	url.searchParams.set("code_challenge_method", "S256");
+	url.searchParams.set("state", state);
+	url.searchParams.set("id_token_add_organizations", "true");
+	url.searchParams.set("codex_cli_simplified_flow", "true");
+	url.searchParams.set("originator", "pi");
+	return url.toString();
+}
+
+function anthropicAuthorizationUrl(challenge, state) {
+	const params = new URLSearchParams({
+		code: "true",
+		client_id: "9d1c250a-e61b-44d9-88ed-5944d1962f5e",
+		response_type: "code",
+		redirect_uri: "http://localhost:53692/callback",
+		scope:
+			"org:create_api_key user:profile user:inference user:sessions:claude_code user:mcp_servers user:file_upload",
+		code_challenge: challenge,
+		code_challenge_method: "S256",
+		state,
+	});
+	return `https://claude.ai/oauth/authorize?${params.toString()}`;
+}
+
+async function runOauthPkce() {
+	const challenge = await oauthPkceChallenge(OAUTH_PKCE_VERIFIER);
+	const openai = openaiAuthorizationUrl(challenge, OAUTH_PKCE_STATE);
+	const anthropic = anthropicAuthorizationUrl(challenge, OAUTH_PKCE_STATE);
+	return {
+		challenge,
+		openai_has_challenge: openai.includes(challenge) ? 1 : 0,
+		anthropic_has_challenge: anthropic.includes(challenge) ? 1 : 0,
+		openai_prefix: openai.split("?")[0],
+		anthropic_prefix: anthropic.split("?")[0],
+	};
+}
+
+async function measureOauthPkce() {
+	const observed = await runOauthPkce();
+	return {
+		challenge_urls: await collect("oauth_pkce.challenge_urls", () => {
+			return () => runOauthPkce();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2302,6 +2370,8 @@ process.stderr.write("goal20 pi paired paths: protocol_codec\n");
 const protocolCodec = await measureProtocolCodec();
 process.stderr.write("goal20 pi paired paths: agent_proxy\n");
 const agentProxy = await measureAgentProxy();
+process.stderr.write("goal20 pi paired paths: oauth_pkce\n");
+const oauthPkce = await measureOauthPkce();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2345,6 +2415,8 @@ const result = {
 			"protocol_codec.roundtrip":
 				"packages/protocol/src/codec.ts encodeClientMessage + createClientMessageDecoder",
 			"agent_proxy.stream_roundtrip": "packages/agent/src/proxy.ts streamProxy",
+			"oauth_pkce.challenge_urls":
+				"packages/ai/src/auth/oauth/pkce.ts SHA-256 challenge + openai-codex/anthropic authorize URLs",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2415,6 +2487,7 @@ const result = {
 		harness_storage: harnessStorage,
 		protocol_codec: protocolCodec,
 		agent_proxy: agentProxy,
+		oauth_pkce: oauthPkce,
 		render_slicing: renderSlicing,
 	},
 };

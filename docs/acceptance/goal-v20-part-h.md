@@ -425,6 +425,19 @@ Stub SSE (no socket): start / text_* / done. Observed `event_count`
 **1.59×** (25.4 / 16.0 µs), ceiling 1.5 (variance bound). Same
 commit no optimize.
 
+### Pair 29 — `oauth_pkce`
+
+| metric | cadr | pi |
+|---|---|---|
+| `challenge_urls` | `pkce-challenge` + openai/anthropic authorize URLs | SHA-256 S256 challenge + openai-codex/anthropic authorize URLs |
+
+RFC 7636 recorded verifier (no `/dev/urandom`, no browser, no
+token HTTP). Observed `challenge` is the RFC vector
+`E9Melhoa2OwvFrEMTJguCHaoeK1t8URWbuGJSstw-cM`; URL prefixes
+and `*_has_challenge` are exact. Other oauth_pkce_device files
+stay `needs-pair`. First Friend-MachineD freeze **0.37×**
+(50.6 / 135.3 µs), ceiling 1.5. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -630,14 +643,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 81 | 42,293 | 33.2% | `no worse than baseline` is falsifiable |
+| `paired` | 82 | 42,615 | 33.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 18 | 12,819 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 172 | 64,802 | 50.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 171 | 64,480 | 50.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 33.2% of lines (81 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 39.1% of lines.
+- **Falsifiable vs baseline:** 33.5% of lines (82 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 39.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -696,6 +709,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
+| `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
@@ -793,8 +807,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 9 | 3,489 |
 | `evals_harness` | 8 | 3,016 |
 | `image_runtime` | 6 | 2,777 |
-| `oauth_pkce_device` | 14 | 2,403 |
 | `cli_print_rpc` | 8 | 2,302 |
+| `oauth_pkce_device` | 13 | 2,081 |
 | `tui_latex` | 1 | 1,950 |
 | `tui_editor_helpers` | 9 | 1,890 |
 | `package_manager` | 2 | 1,811 |

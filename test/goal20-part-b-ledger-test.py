@@ -371,6 +371,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("text", paired.OBSERVED_EXACT["agent_proxy"])
         self.assertIn("usage_total", paired.OBSERVED_EXACT["agent_proxy"])
 
+    def test_oauth_pkce_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("oauth_pkce.challenge_urls", RECORD.METRIC_KEYS)
+        self.assertIn("challenge_urls", paired.METRICS["oauth_pkce"])
+        self.assertIn("oauth_pkce.challenge_urls", paired.RATIO_CEILINGS)
+        self.assertIn("challenge", paired.OBSERVED_EXACT["oauth_pkce"])
+        self.assertIn("openai_prefix", paired.OBSERVED_EXACT["oauth_pkce"])
+        self.assertIn("anthropic_prefix", paired.OBSERVED_EXACT["oauth_pkce"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)

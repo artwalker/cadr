@@ -357,10 +357,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-agent/conditions.lisp` | 43 |
 
-### `oauth_pkce_device` (additional)
+### `oauth_pkce_device` (additional) — `pkce.lisp` paired `oauth_pkce.challenge_urls`
 
-- pi: `packages/ai/src/auth/oauth/*.ts and packages/ai/src/auth/helpers.ts`
-- fixture: Recorded token JSON + PKCE verifier. Time parse + URL build. Live browser/socket stays live_provider_socket unpairable. page.lisp stays oauth_success_page_mark.
+- pi: `packages/ai/src/auth/oauth/pkce.ts` SHA-256 + openai-codex/anthropic authorize URLs
+- fixture: RFC 7636 recorded verifier. Time challenge + URL build. No browser/socket. Other oauth files still `needs-pair`; page.lisp stays unpairable.
+- Friend-MachineD n=5: **0.37×** (50.6 / 135.3 µs), ceiling 1.5. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

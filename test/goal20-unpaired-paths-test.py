@@ -117,6 +117,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(proxy), 1)
         self.assertEqual(proxy[0]["class"], "paired")
         self.assertIn("agent_proxy.stream_roundtrip", proxy[0]["metrics"])
+        pkce = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/oauth/pkce.lisp"
+        ]
+        self.assertEqual(len(pkce), 1)
+        self.assertEqual(pkce[0]["class"], "paired")
+        self.assertIn("oauth_pkce.challenge_urls", pkce[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

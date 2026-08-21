@@ -25,6 +25,7 @@
 ;;;;  12. harness_storage jsonl repo open+walk vs JsonlSessionRepo
 ;;;;  13. protocol_codec encode-client-message + decoder vs encodeClientMessage
 ;;;;  14. agent_proxy stream-proxy vs streamProxy (stub SSE, no socket)
+;;;;  15. oauth_pkce recorded verifier → challenge + authorize URLs
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -99,6 +100,7 @@
     ("harness_storage.open_walk" . 3)
     ("protocol_codec.roundtrip" . 50)
     ("agent_proxy.stream_roundtrip" . 10)
+    ("oauth_pkce.challenge_urls" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2679,6 +2681,46 @@
                 (lambda ()
                   (run-agent-proxy)))))))
 
+(defparameter *oauth-pkce-verifier*
+  "dBjftJeZ4CVP-mB92K27uhbUJU1p1r_wW1gFWFOEjXk")
+(defparameter *oauth-pkce-state* "goal20-oauth-state")
+
+(defun run-oauth-pkce ()
+  (let* ((challenge
+           (cadr-ai:pkce-challenge *oauth-pkce-verifier*))
+         (openai
+           (cadr-ai:openai-authorization-url
+            challenge *oauth-pkce-state*))
+         (anthropic
+           (cadr-ai:anthropic-authorization-url
+            challenge *oauth-pkce-state*)))
+    (list
+     challenge
+     openai
+     anthropic
+     (if (search challenge openai) 1 0)
+     (if (search challenge anthropic) 1 0))))
+
+(defun measure-oauth-pkce ()
+  (let ((observed (run-oauth-pkce)))
+    (json-object
+     "observed"
+     (json-object
+      "challenge" (first observed)
+      "openai_has_challenge" (fourth observed)
+      "anthropic_has_challenge" (fifth observed)
+      "openai_prefix"
+      (subseq (second observed) 0
+              (or (position #\? (second observed)) 0))
+      "anthropic_prefix"
+      (subseq (third observed) 0
+              (or (position #\? (third observed)) 0)))
+     "challenge_urls"
+     (collect "oauth_pkce.challenge_urls"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2769,6 +2811,8 @@
       "src/cadr-protocol/codec.lisp encode-client-message + message-decoder-push"
       "agent_proxy.stream_roundtrip"
       "src/cadr-agent/proxy.lisp stream-proxy"
+      "oauth_pkce.challenge_urls"
+      "src/cadr-ai/oauth/pkce.lisp pkce-challenge + openai/anthropic-authorization-url"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2870,6 +2914,8 @@
               (let ((codec (measure-protocol-codec)))
               (format *error-output* "goal20 cadr paired paths: agent_proxy~%")
               (let ((proxy (measure-agent-proxy)))
+              (format *error-output* "goal20 cadr paired paths: oauth_pkce~%")
+              (let ((oauth (measure-oauth-pkce)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2915,6 +2961,7 @@
               "harness_storage" harness-storage
               "protocol_codec" codec
               "agent_proxy" proxy
+              "oauth_pkce" oauth
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2931,7 +2978,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
