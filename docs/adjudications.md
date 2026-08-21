@@ -1086,3 +1086,36 @@ to open proposal 4 (2026-08-21).
 **Why it was decidable**: user explicitly agreed to open
 proposal 4 after it was held for a YES.
 
+## 2026-08-21 — E tagbody falsified (1763→2004)
+
+**Ruled**: executor withdrew E after Friend-MachineD n=5
+load **1763→2004 µs** (`b042b4fbb`); product restored to
+`0084f0703`.
+
+**Decided**: do not redo folding `put-entry-field` into the
+record-object `tagbody`. Next remains proposal 4 (user YES)
+then invent. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
+## 2026-08-21 — proposal 4 ephemeral EQ falsified (1763→2217)
+
+**Ruled**: executor remesured per-load EQUAL-hash intern-miss
+dedupe (table bound only in `load-session`; closed intern set
+unchanged). Friend-MachineD n=5 load **1763→2217 µs** (samples
+2108–2295). Product restored to `0084f0703`.
+
+**Decided**:
+
+1. Do not redo per-load EQ string tables (EQUAL keys, EQ
+   values) on this walker. Hash + extra gethash lost to
+   intern-miss copy.
+2. Do not grow a global intern table.
+3. Invent residual: leftover is still intern-miss
+   `copy-unescaped` + `parse-content-block` + `parse-usage`.
+   Banned redos (A/D/knife 1/bag/P5/octet-span/SCAN-KEY/
+   length-case/fill-kernel) are not invent. G.17 stays
+   `missing`. Goal 20 not complete.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+

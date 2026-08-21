@@ -110,6 +110,16 @@ path + generic fallback (not bag reuse). See leftover md +
 DeepSeek A/D and gperf `put-entry` remesure are **not** merged
 with knife 1.
 
+## Knife (falsified) — proposal 4 per-load ephemeral EQ
+
+`load-session` bound an EQUAL hash of intern-miss strings
+for one walk; `parse-string-value` returned the first copy
+on later EQUAL hits. Closed intern set unchanged. Table
+did not outlive the load. Friend-MachineD n=5: load cadr
+**1763→2217 µs** (worse; samples 2108–2295, median 2217).
+Withdrawn. Do not redo per-load EQ tables. Not intern-grow.
+Not FFI. Ceiling not lowered.
+
 ## Knife (falsified) — E tagbody merge of `put-entry-field`
 
 Sole call site folded into the record-object `tagbody`

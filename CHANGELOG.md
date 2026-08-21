@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw proposal 4 per-load ephemeral EQ
+  dedupe. Friend-MachineD n=5: load cadr **1763→2217 µs**
+  (worse; samples 2108–2295). Product restored to
+  `0084f0703` walker. Not intern-grow. Ceiling not
+  lowered. Not G.17.
 - Goal 20: withdraw E `tagbody` merge of `put-entry-field`
   into the record-object walk. Friend-MachineD n=5: load
   cadr **1763→2004 µs** (worse; samples 1874–2315).
