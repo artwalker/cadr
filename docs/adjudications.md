@@ -1191,3 +1191,25 @@ round. G.17 stays `missing`. Silent stop still invalid.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
 
+## 2026-08-21 — content generic first-byte falsified; leave load first-byte
+
+**Ruled**: Friend-MachineD n=5 load **1763→2470 µs**
+(`98a4c3e02`); product restored to `0084f0703`.
+
+**Decided**:
+
+1. Do not redo `put-block-field` first-byte. With usage
+   first-byte and usage compact-prefix, the load
+   first-byte / compact-prefix side-quests on this walker
+   are exhausted for now.
+2. **Next queue**: remesure + one knife on paired paths
+   still &gt;1.0× — `journal_read`, then
+   `provider_pi_messages`, then `provider_mistral`.
+   Do not regress `session_load` past ~1763.
+3. Further load invent only with a **named new encoding**
+   outside banned classes. Silent stop still invalid.
+4. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert; standing 屠龙 across
+all &gt;1.0× paired paths.
+

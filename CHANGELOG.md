@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: remesure `journal_read` sprof on walker
+  `0084f0703`. Leftover = `SCAN-BUFFER` wrapping
+  `consume-line` per JSONL line (not load first-byte).
+  Not G.17.
 - Goal 20: withdraw generic `parse-content-block` first-byte
   (`put-block-field`). Friend-MachineD n=5: load cadr
   **1763→2470 µs** (worse; samples 2345–3571). Product
