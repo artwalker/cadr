@@ -149,6 +149,7 @@ const REPETITIONS = {
 	"agent_proxy.stream_roundtrip": 10,
 	"oauth_pkce.challenge_urls": 50,
 	"evals_harness.summarize": 20,
+	"ai_crypto_model_data.manifest": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -339,6 +340,7 @@ const proxyModule = await import(moduleUrl("packages/agent/src/proxy.ts"));
 const evalsSummaryModule = await import(
 	moduleUrl("packages/evals/src/vitest-evals/summary.ts")
 );
+const modelDataModule = await import(moduleUrl("packages/ai/scripts/model-data.ts"));
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
@@ -2227,6 +2229,49 @@ async function measureOauthPkce() {
 	};
 }
 
+const MODEL_DATA_GENERATED_AT = "2026-01-01T00:00:00.000Z";
+
+function modelDataStructure() {
+	return {
+		anthropic: { "claude-3-opus": "anthropic-messages" },
+		openai: { "gpt-4o": "openai-completions", "gpt-4o-mini": "openai-completions" },
+	};
+}
+
+function modelDataFileContents() {
+	return {
+		"anthropic.json": '{"anthropic-messages":{"claude-3-opus":{"id":"claude-3-opus"}}}',
+		"openai.json":
+			'{"openai-completions":{"gpt-4o":{"id":"gpt-4o"},"gpt-4o-mini":{"id":"gpt-4o-mini"}}}',
+	};
+}
+
+function runAiCryptoModelData() {
+	const manifest = modelDataModule.createModelDataManifest(
+		modelDataStructure(),
+		modelDataFileContents(),
+		MODEL_DATA_GENERATED_AT,
+	);
+	return {
+		schema_version: manifest.schemaVersion,
+		structure_hash: manifest.structureHash,
+		generated_at: manifest.generatedAt,
+		file_count: Object.keys(manifest.files).length,
+		openai_json_hash: manifest.files["openai.json"],
+		anthropic_json_hash: manifest.files["anthropic.json"],
+	};
+}
+
+async function measureAiCryptoModelData() {
+	const observed = runAiCryptoModelData();
+	return {
+		manifest: await collect("ai_crypto_model_data.manifest", () => {
+			return () => runAiCryptoModelData();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2433,6 +2478,8 @@ process.stderr.write("goal20 pi paired paths: oauth_pkce\n");
 const oauthPkce = await measureOauthPkce();
 process.stderr.write("goal20 pi paired paths: evals_harness\n");
 const evalsHarness = await measureEvalsHarness();
+process.stderr.write("goal20 pi paired paths: ai_crypto_model_data\n");
+const aiCryptoModelData = await measureAiCryptoModelData();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2480,6 +2527,8 @@ const result = {
 				"packages/ai/src/auth/oauth/pkce.ts SHA-256 challenge + openai-codex/anthropic authorize URLs",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
+			"ai_crypto_model_data.manifest":
+				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2552,6 +2601,7 @@ const result = {
 		agent_proxy: agentProxy,
 		oauth_pkce: oauthPkce,
 		evals_harness: evalsHarness,
+		ai_crypto_model_data: aiCryptoModelData,
 		render_slicing: renderSlicing,
 	},
 };

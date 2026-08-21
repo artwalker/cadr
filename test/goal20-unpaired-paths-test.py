@@ -133,6 +133,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(evals_summary), 1)
         self.assertEqual(evals_summary[0]["class"], "paired")
         self.assertIn("evals_harness.summarize", evals_summary[0]["metrics"])
+        model_data = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/model-data.lisp"
+        ]
+        self.assertEqual(len(model_data), 1)
+        self.assertEqual(model_data[0]["class"], "paired")
+        self.assertIn("ai_crypto_model_data.manifest", model_data[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

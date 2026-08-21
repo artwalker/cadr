@@ -389,6 +389,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("candidate_wins", paired.OBSERVED_EXACT["evals_harness"])
         self.assertIn("ties", paired.OBSERVED_EXACT["evals_harness"])
 
+    def test_ai_crypto_model_data_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("ai_crypto_model_data.manifest", RECORD.METRIC_KEYS)
+        self.assertIn("manifest", paired.METRICS["ai_crypto_model_data"])
+        self.assertIn("ai_crypto_model_data.manifest", paired.RATIO_CEILINGS)
+        self.assertIn("structure_hash", paired.OBSERVED_EXACT["ai_crypto_model_data"])
+        self.assertIn("openai_json_hash", paired.OBSERVED_EXACT["ai_crypto_model_data"])
+        self.assertIn("anthropic_json_hash", paired.OBSERVED_EXACT["ai_crypto_model_data"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -451,6 +460,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`provider_bedrock.stream_roundtrip`", section)
             self.assertIn("`cli_settings.create`", section)
             self.assertIn("`resource_loader.reload`", section)
+            self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

@@ -439,10 +439,11 @@ These must not be filed as callees.
 | `src/cadr-ai/support/token-estimation.lisp` | 170 |
 | `src/cadr-ai/support/uuid.lisp` | 65 |
 
-### `ai_crypto_model_data` (additional)
+### `ai_crypto_model_data` (additional) — `model-data.lisp` paired `ai_crypto_model_data.manifest`
 
-- pi: `packages/ai/src/utils/hash.ts and packages/ai/src/model-catalog.ts persistence`
-- fixture: SHA-256 of fixture octets; model-data directory load. json.lisp pairing already uses sha256 for fixture digests outside the timed thunk — this pair is the production hash/catalog path.
+- pi: `packages/ai/scripts/model-data.ts createModelDataManifest` (catalog SHA-256; not `hash.ts` shortHash)
+- fixture: in-memory two-provider structure + two JSON shard strings. Time manifest, not directory walk. json.lisp pairing already uses sha256 for fixture digests outside the timed thunk.
+- Friend-MachineD n=5: **8.97×** (77.3 / 8.6 µs), ceiling 20.0. `crypto.lisp` still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

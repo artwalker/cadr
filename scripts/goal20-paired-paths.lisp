@@ -27,6 +27,7 @@
 ;;;;  14. agent_proxy stream-proxy vs streamProxy (stub SSE, no socket)
 ;;;;  15. oauth_pkce recorded verifier → challenge + authorize URLs
 ;;;;  16. evals_harness summarize-harness-comparisons vs summarizeHarnessComparisons
+;;;;  17. ai_crypto_model_data create-model-data-manifest vs createModelDataManifest
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -105,6 +106,7 @@
     ("agent_proxy.stream_roundtrip" . 10)
     ("oauth_pkce.challenge_urls" . 50)
     ("evals_harness.summarize" . 20)
+    ("ai_crypto_model_data.manifest" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2798,6 +2800,56 @@
                 (lambda ()
                   (run-evals-harness-summarize)))))))
 
+(defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
+
+(defun model-data-structure ()
+  (cadr-ai::json-object
+   "anthropic"
+   (cadr-ai::json-object "claude-3-opus" "anthropic-messages")
+   "openai"
+   (cadr-ai::json-object
+    "gpt-4o" "openai-completions"
+    "gpt-4o-mini" "openai-completions")))
+
+(defun model-data-file-contents ()
+  (cadr-ai::json-object
+   "anthropic.json"
+   "{\"anthropic-messages\":{\"claude-3-opus\":{\"id\":\"claude-3-opus\"}}}"
+   "openai.json"
+   "{\"openai-completions\":{\"gpt-4o\":{\"id\":\"gpt-4o\"},\"gpt-4o-mini\":{\"id\":\"gpt-4o-mini\"}}}"))
+
+(defun run-ai-crypto-model-data ()
+  (let* ((manifest
+           (cadr-ai:create-model-data-manifest
+            (model-data-structure)
+            (model-data-file-contents)
+            *model-data-generated-at*))
+         (files (cadr-ai::json-get manifest "files")))
+    (list
+     (cadr-ai::json-get manifest "schemaVersion")
+     (cadr-ai::json-get manifest "structureHash")
+     (cadr-ai::json-get manifest "generatedAt")
+     (hash-table-count files)
+     (gethash "openai.json" files)
+     (gethash "anthropic.json" files))))
+
+(defun measure-ai-crypto-model-data ()
+  (let ((observed (run-ai-crypto-model-data)))
+    (json-object
+     "observed"
+     (json-object
+      "schema_version" (first observed)
+      "structure_hash" (second observed)
+      "generated_at" (third observed)
+      "file_count" (fourth observed)
+      "openai_json_hash" (fifth observed)
+      "anthropic_json_hash" (sixth observed))
+     "manifest"
+     (collect "ai_crypto_model_data.manifest"
+              (lambda ()
+                (lambda ()
+                  (run-ai-crypto-model-data)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2892,6 +2944,8 @@
       "src/cadr-ai/oauth/pkce.lisp pkce-challenge + openai/anthropic-authorization-url"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
+      "ai_crypto_model_data.manifest"
+      "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2997,6 +3051,8 @@
               (let ((oauth (measure-oauth-pkce)))
               (format *error-output* "goal20 cadr paired paths: evals_harness~%")
               (let ((evals (measure-evals-harness)))
+              (format *error-output* "goal20 cadr paired paths: ai_crypto_model_data~%")
+              (let ((crypto (measure-ai-crypto-model-data)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3044,6 +3100,7 @@
               "agent_proxy" proxy
               "oauth_pkce" oauth
               "evals_harness" evals
+              "ai_crypto_model_data" crypto
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3060,7 +3117,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

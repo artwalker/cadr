@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_crypto_model_data.manifest`
+  (two-provider fixture; cadr `create-model-data-manifest`
+  vs pi `createModelDataManifest`). Friend-MachineD n=5
+  **8.97×** (77.3 / 8.6 µs), ceiling 20.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `evals_harness.summarize` (four scored
   observations; cadr `summarize-harness-comparisons` vs pi
   `summarizeHarnessComparisons`). Friend-MachineD n=5 **0.88×**

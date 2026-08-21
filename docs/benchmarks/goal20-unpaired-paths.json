@@ -29,6 +29,7 @@
   "agent_proxy.stream_roundtrip",
   "oauth_pkce.challenge_urls",
   "evals_harness.summarize",
+  "ai_crypto_model_data.manifest",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -768,8 +769,8 @@
   },
   {
    "prefix": "src/cadr-ai/model-data.lisp",
-   "class": "needs-pair",
-   "hole": "ai_crypto_model_data"
+   "class": "paired",
+   "metrics": ["ai_crypto_model_data.manifest"]
   },
   {
    "prefix": "src/cadr-ai/models.generated.lisp",

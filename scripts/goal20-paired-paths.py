@@ -110,6 +110,7 @@ METRICS = {
     "agent_proxy": ("stream_roundtrip",),
     "oauth_pkce": ("challenge_urls",),
     "evals_harness": ("summarize",),
+    "ai_crypto_model_data": ("manifest",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -247,6 +248,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent.
     # Ratchet down only.
     "evals_harness.summarize": 1.5,
+    # Frozen from the first Friend-MachineD non-quick
+    # ai_crypto_model_data pair (samples=5): observed 8.97x
+    # (77.3 / 8.6 us). 20.0 follows the session_compact /
+    # truncate_head headroom precedent. Ratchet down only.
+    "ai_crypto_model_data.manifest": 20.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -500,6 +506,14 @@ OBSERVED_EXACT = {
         "comparisons",
         "candidate_wins",
         "ties",
+    ),
+    "ai_crypto_model_data": (
+        "schema_version",
+        "structure_hash",
+        "generated_at",
+        "file_count",
+        "openai_json_hash",
+        "anthropic_json_hash",
     ),
     "resource_loader": (
         "skill_count",
