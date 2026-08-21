@@ -449,6 +449,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(attribution_headers), 1)
         self.assertEqual(attribution_headers[0]["class"], "paired")
         self.assertIn("cli_support.attribution_headers", attribution_headers[0]["metrics"])
+        shell_config = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/support/shell-process.lisp"
+        ]
+        self.assertEqual(len(shell_config), 1)
+        self.assertEqual(shell_config[0]["class"], "paired")
+        self.assertIn("cli_support.shell_config", shell_config[0]["metrics"])
         decode_entity = [
             row
             for row in classified["rows"]

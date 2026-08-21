@@ -188,6 +188,7 @@ const REPETITIONS = {
 	"cli_support.timings": 50,
 	"cli_support.event_bus": 50,
 	"cli_support.attribution_headers": 50,
+	"cli_support.shell_config": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -462,6 +463,7 @@ const eventBusModule = await import(moduleUrl("packages/coding-agent/src/core/ev
 const attributionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/provider-attribution.ts")
 );
+const shellModule = await import(moduleUrl("packages/coding-agent/src/utils/shell.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
@@ -3613,12 +3615,41 @@ function runCliSupportAttributionHeaders() {
 	};
 }
 
+function shellConfigShape(config) {
+	return {
+		shell: config.shell,
+		arg: config.args?.[0] ?? "",
+		stdin: config.commandTransport === "stdin" ? 1 : 0,
+	};
+}
+
+function runCliSupportShellConfig() {
+	const def = shellConfigShape(shellModule.getShellConfig());
+	const custom = shellConfigShape(shellModule.getShellConfig("/bin/bash"));
+	let miss = 0;
+	try {
+		shellModule.getShellConfig("/tmp/cadr-no-such-shell");
+	} catch {
+		miss = 1;
+	}
+	return {
+		sh_def: def.shell,
+		sh_arg: def.arg,
+		sh_stdin: def.stdin,
+		sh_custom: custom.shell,
+		sh_carg: custom.arg,
+		sh_cstdin: custom.stdin,
+		sh_miss: miss,
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
 	const timings = runCliSupportTimings();
 	const bus = runCliSupportEventBus();
 	const headers = runCliSupportAttributionHeaders();
+	const shell = runCliSupportShellConfig();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -3635,7 +3666,10 @@ async function measureCliSupportStripAnsi() {
 		attribution_headers: await collect("cli_support.attribution_headers", () => {
 			return () => runCliSupportAttributionHeaders();
 		}),
-		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers },
+		shell_config: await collect("cli_support.shell_config", () => {
+			return () => runCliSupportShellConfig();
+		}),
+		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell },
 	};
 }
 
@@ -4193,6 +4227,8 @@ const result = {
 				"packages/coding-agent/src/core/event-bus.ts createEventBus",
 			"cli_support.attribution_headers":
 				"packages/coding-agent/src/core/provider-attribution.ts mergeProviderAttributionHeaders",
+			"cli_support.shell_config":
+				"packages/coding-agent/src/utils/shell.ts getShellConfig",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":

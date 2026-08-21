@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.shell_config`
+  (default + custom `/bin/bash` + missing path; cadr
+  `get-shell-config` vs pi `getShellConfig`).
+  Friend-MachineD n=5 **2.47×** (21.07 / 8.54 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_support.attribution_headers`
   (OpenRouter/NVIDIA/Cloudflare/OpenCode presence flags;
   cadr `provider-attribution-headers` vs pi

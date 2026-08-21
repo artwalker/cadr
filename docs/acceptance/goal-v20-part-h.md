@@ -1103,6 +1103,18 @@ overlay title `custom`. No live socket. First Friend-MachineD
 freeze **0.29×** (2.70 / 9.31 µs), ceiling 8.0. cadr leads.
 Same commit no optimize.
 
+### Pair 77 — `cli_support` (shell_config)
+
+| metric | cadr | pi |
+|---|---|---|
+| `shell_config` | `get-shell-config` | `getShellConfig` (`packages/coding-agent/src/utils/shell.ts`) |
+
+Leftover sibling of strip_ansi / timings / event_bus / attribution.
+Default + custom `/bin/bash` → shell `/bin/bash`, arg `-c`, no
+stdin transport. Missing custom path errors. No live process.
+First Friend-MachineD freeze **2.47×** (21.07 / 8.54 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1308,14 +1320,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 129 | 59,438 | 46.7% | `no worse than baseline` is falsifiable |
+| `paired` | 130 | 59,570 | 46.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 123 | 47,557 | 37.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 122 | 47,425 | 37.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.7% of lines (129 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 52.5% of lines.
+- **Falsifiable vs baseline:** 46.8% of lines (130 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 52.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1434,6 +1446,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
+| `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
@@ -1527,9 +1540,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
-| `cli_support` | 8 | 543 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
+| `cli_support` | 7 | 411 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
