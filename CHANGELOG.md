@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_settings_list.apply_filter`
+  (Hello/Help/World; cadr `settings-list-apply-filter` vs
+  pi `SettingsList.applyFilter`). Friend-MachineD n=5
+  **0.47×** (5.3 / 11.4 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_native_modifiers.pressed`
   (shift/control/option/command; cadr
   `is-native-modifier-pressed` vs pi

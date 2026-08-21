@@ -167,6 +167,7 @@ const REPETITIONS = {
 	"tui_stdin_buffer.process": 50,
 	"tui_input_component.edit": 50,
 	"tui_native_modifiers.pressed": 50,
+	"tui_settings_list.apply_filter": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -398,6 +399,7 @@ const keybindingsModule = await import(moduleUrl("packages/tui/src/keybindings.t
 const stdinBufferModule = await import(moduleUrl("packages/tui/src/stdin-buffer.ts"));
 const inputModule = await import(moduleUrl("packages/tui/src/components/input.ts"));
 const nativeModifiersModule = await import(moduleUrl("packages/tui/src/native-modifiers.ts"));
+const settingsListModule = await import(moduleUrl("packages/tui/src/components/settings-list.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2861,6 +2863,68 @@ async function measureTuiNativeModifiers() {
 	};
 }
 
+const SETTINGS_LIST_THEME = {
+	label: (text) => text,
+	value: (text) => text,
+	description: (text) => text,
+	cursor: "→ ",
+	hint: (text) => text,
+};
+
+function settingsListFixture() {
+	return new settingsListModule.SettingsList(
+		[
+			{ id: "hello", label: "Hello", currentValue: "on" },
+			{ id: "help", label: "Help", currentValue: "on" },
+			{ id: "world", label: "World", currentValue: "off" },
+		],
+		5,
+		SETTINGS_LIST_THEME,
+		() => {},
+		() => {},
+		{ enableSearch: true },
+	);
+}
+
+function settingsListApplyQuery(list, query) {
+	list.searchInput.setValue(query);
+	list.applyFilter(query);
+	return list.filteredItems;
+}
+
+function settingsListHasLabel(items, label) {
+	return items.some((item) => item.label === label) ? 1 : 0;
+}
+
+function runTuiSettingsList() {
+	const list = settingsListFixture();
+	const he = settingsListApplyQuery(list, "he");
+	const heCount = he.length;
+	const heHello = settingsListHasLabel(he, "Hello");
+	const heHelp = settingsListHasLabel(he, "Help");
+	const heSelected = list.selectedIndex;
+	const woCount = settingsListApplyQuery(list, "wo").length;
+	const zzCount = settingsListApplyQuery(list, "zz").length;
+	return {
+		he_count: heCount,
+		he_hello: heHello,
+		he_help: heHelp,
+		wo_count: woCount,
+		zz_count: zzCount,
+		he_selected: heSelected,
+	};
+}
+
+async function measureTuiSettingsList() {
+	const observed = runTuiSettingsList();
+	return {
+		apply_filter: await collect("tui_settings_list.apply_filter", () => {
+			return () => runTuiSettingsList();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3103,6 +3167,8 @@ process.stderr.write("goal20 pi paired paths: tui_input_component\n");
 const tuiInputComponent = await measureTuiInputComponent();
 process.stderr.write("goal20 pi paired paths: tui_native_modifiers\n");
 const tuiNativeModifiers = await measureTuiNativeModifiers();
+process.stderr.write("goal20 pi paired paths: tui_settings_list\n");
+const tuiSettingsList = await measureTuiSettingsList();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3184,6 +3250,8 @@ const result = {
 				"packages/tui/src/components/input.ts Input.handleInput",
 			"tui_native_modifiers.pressed":
 				"packages/tui/src/native-modifiers.ts isNativeModifierPressed",
+			"tui_settings_list.apply_filter":
+				"packages/tui/src/components/settings-list.ts SettingsList.applyFilter",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3274,6 +3342,7 @@ const result = {
 		tui_stdin_buffer: tuiStdinBuffer,
 		tui_input_component: tuiInputComponent,
 		tui_native_modifiers: tuiNativeModifiers,
+		tui_settings_list: tuiSettingsList,
 		render_slicing: renderSlicing,
 	},
 };

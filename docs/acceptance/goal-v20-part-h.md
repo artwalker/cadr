@@ -704,6 +704,20 @@ Friend-MachineD freeze **7.50×** (1.22 / 0.16 µs), ceiling
 8.0 (variance / microsecond floor). Same commit no
 optimize.
 
+### Pair 49 — `tui_settings_list`
+
+| metric | cadr | pi |
+|---|---|---|
+| `apply_filter` | `settings-list-apply-filter` | `SettingsList.applyFilter` (`packages/tui/src/components/settings-list.ts`) |
+
+Items Hello/Help/World. Queries `he` / `wo` / `zz`. Time
+fuzzy filter, not a live TUI. Observed `he_count` /
+`he_hello` / `he_help` / `wo_count` / `zz_count` /
+`he_selected` are exact (2 / 1 / 1 / 1 / 0 / 0).
+`loaders.lisp` stays `needs-pair`. First Friend-MachineD
+freeze **0.47×** (5.3 / 11.4 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -909,14 +923,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 101 | 50,407 | 39.6% | `no worse than baseline` is falsifiable |
+| `paired` | 102 | 50,877 | 39.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 151 | 56,588 | 44.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 150 | 56,118 | 44.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 39.6% of lines (101 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 45.4% of lines.
+- **Falsifiable vs baseline:** 39.9% of lines (102 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 45.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1027,6 +1041,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/composition/protocol.lisp` | 143 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/settings-list.lisp` | 470 | `tui_settings_list.apply_filter` |
 | `src/cadr-tui/composition/text-box.lisp` | 280 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/editor.lisp` | 2,014 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/fuzzy.lisp` | 134 | `tui_editor_helpers.fuzzy_match` |
@@ -1101,7 +1116,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `provider_registry_defs` | 3 | 1,494 |
 | `cli_support` | 13 | 1,164 |
 | `http_transport` | 1 | 858 |
-| `tui_select_settings_loaders` | 2 | 705 |
 | `cli_models_rest` | 2 | 698 |
 | `skill_prompt_load` | 3 | 641 |
 | `ai_capabilities` | 5 | 634 |
@@ -1111,6 +1125,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `ai_support` | 5 | 560 |
 | `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |
+| `tui_select_settings_loaders` | 1 | 235 |
 | `session_compact` | 1 | 185 |
 | `agent_conditions` | 1 | 43 |
 

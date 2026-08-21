@@ -45,6 +45,7 @@
 ;;;;  32. tui_stdin_buffer stdin-buffer-process vs StdinBuffer.process
 ;;;;  33. tui_input_component handle-event vs Input.handleInput
 ;;;;  34. tui_native_modifiers is-native-modifier-pressed vs isNativeModifierPressed
+;;;;  35. tui_settings_list apply-filter vs SettingsList.applyFilter
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -141,6 +142,7 @@
     ("tui_stdin_buffer.process" . 50)
     ("tui_input_component.edit" . 50)
     ("tui_native_modifiers.pressed" . 50)
+    ("tui_settings_list.apply_filter" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3578,6 +3580,73 @@
                 (lambda ()
                   (run-tui-native-modifiers)))))))
 
+(defun settings-list-identity (text &optional selected-p)
+  (declare (ignore selected-p))
+  text)
+
+(defun settings-list-fixture ()
+  (cadr-tui:make-settings-list-component
+   (list
+    (cadr-tui:make-setting-item
+     :id "hello" :label "Hello" :current-value "on")
+    (cadr-tui:make-setting-item
+     :id "help" :label "Help" :current-value "on")
+    (cadr-tui:make-setting-item
+     :id "world" :label "World" :current-value "off"))
+   5
+   :search-enabled-p t
+   :label-function #'settings-list-identity
+   :value-function #'settings-list-identity
+   :description-function #'settings-list-identity
+   :cursor "→ "
+   :hint-function #'settings-list-identity))
+
+(defun settings-list-apply-query (component query)
+  (cadr-tui:single-line-input-set-value
+   (cadr-tui::settings-list-component-search-input component)
+   query)
+  (cadr-tui::settings-list-apply-filter component)
+  (cadr-tui::settings-list-component-filtered-items component))
+
+(defun settings-list-has-label (items label)
+  (if (find label items
+            :key #'cadr-tui:setting-item-label
+            :test #'string=)
+      1
+      0))
+
+(defun run-tui-settings-list ()
+  (let* ((component (settings-list-fixture))
+         (he (settings-list-apply-query component "he"))
+         (he-count (length he))
+         (he-hello (settings-list-has-label he "Hello"))
+         (he-help (settings-list-has-label he "Help"))
+         (he-selected
+           (cadr-tui:settings-list-component-selected-index
+            component))
+         (wo-count
+           (length (settings-list-apply-query component "wo")))
+         (zz-count
+           (length (settings-list-apply-query component "zz"))))
+    (list he-count he-hello he-help wo-count zz-count he-selected)))
+
+(defun measure-tui-settings-list ()
+  (let ((observed (run-tui-settings-list)))
+    (json-object
+     "observed"
+     (json-object
+      "he_count" (first observed)
+      "he_hello" (second observed)
+      "he_help" (third observed)
+      "wo_count" (fourth observed)
+      "zz_count" (fifth observed)
+      "he_selected" (sixth observed))
+     "apply_filter"
+     (collect "tui_settings_list.apply_filter"
+              (lambda ()
+                (lambda ()
+                  (run-tui-settings-list)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3708,6 +3777,8 @@
       "src/cadr-tui/input-component.lisp single-line-input-handle-event"
       "tui_native_modifiers.pressed"
       "src/cadr-tui/native-modifiers.lisp is-native-modifier-pressed"
+      "tui_settings_list.apply_filter"
+      "src/cadr-tui/composition/settings-list.lisp settings-list-apply-filter"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3849,6 +3920,8 @@
               (let ((input-component (measure-tui-input-component)))
               (format *error-output* "goal20 cadr paired paths: tui_native_modifiers~%")
               (let ((native-modifiers (measure-tui-native-modifiers)))
+              (format *error-output* "goal20 cadr paired paths: tui_settings_list~%")
+              (let ((settings-list (measure-tui-settings-list)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3914,6 +3987,7 @@
               "tui_stdin_buffer" stdin-buffer
               "tui_input_component" input-component
               "tui_native_modifiers" native-modifiers
+              "tui_settings_list" settings-list
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3930,7 +4004,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

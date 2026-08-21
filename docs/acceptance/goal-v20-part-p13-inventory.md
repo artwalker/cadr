@@ -660,7 +660,7 @@ These must not be filed as callees.
 
 - pi: `packages/tui/src/components/select-list.ts SelectList.setFilter`
 - fixture: hello/help/world items; filters he/wo/zz. Time prefix filter, not a live TUI.
-- Friend-MachineD n=5: **1.27×** (1.2 / 1.0 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
+- Friend-MachineD n=5: **1.27×** (1.2 / 1.0 µs), ceiling 8.0 (variance). `settings-list.lisp` now paired `tui_settings_list.apply_filter` **0.47×** (5.3 / 11.4 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

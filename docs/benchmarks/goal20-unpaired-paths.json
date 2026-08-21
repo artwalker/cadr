@@ -47,6 +47,7 @@
   "tui_stdin_buffer.process",
   "tui_input_component.edit",
   "tui_native_modifiers.pressed",
+  "tui_settings_list.apply_filter",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1552,8 +1553,8 @@
   },
   {
    "prefix": "src/cadr-tui/composition/settings-list.lisp",
-   "class": "needs-pair",
-   "hole": "tui_select_settings_loaders"
+   "class": "paired",
+   "metrics": ["tui_settings_list.apply_filter"]
   },
   {
    "prefix": "src/cadr-tui/fuzzy.lisp",
