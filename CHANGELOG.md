@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_input_component.edit` (type /
+  backspace / kill-to-start / yank; cadr
+  `single-line-input-handle-event` vs pi
+  `Input.handleInput`). Friend-MachineD n=5 **0.06×**
+  (5.5 / 97.8 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_stdin_buffer.process` (`hello` +
   incomplete CSI + up + bracketed paste; cadr
   `stdin-buffer-process` vs pi `StdinBuffer.process`).

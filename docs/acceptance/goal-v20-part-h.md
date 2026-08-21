@@ -677,6 +677,20 @@ TUI frame. Observed `hello_count` / `leftover` /
 `needs-pair`. First Friend-MachineD freeze **0.33×**
 (2.3 / 6.9 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 47 — `tui_input_component`
+
+| metric | cadr | pi |
+|---|---|---|
+| `edit` | `single-line-input-handle-event` | `Input.handleInput` (`packages/tui/src/components/input.ts`) |
+
+Type `hello world`, backspace, kill-to-line-start, yank.
+Time the input object, not a TUI frame. Observed
+`after_insert` / `after_bs` / `after_kill` /
+`after_yank` / `last_code` are exact (11 / 10 / 0 / 10 /
+108). Other editor-helper files stay `needs-pair`. First
+Friend-MachineD freeze **0.06×** (5.5 / 97.8 µs), ceiling
+8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -882,14 +896,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 99 | 49,921 | 39.2% | `no worse than baseline` is falsifiable |
+| `paired` | 100 | 50,329 | 39.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 153 | 57,074 | 44.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 152 | 56,666 | 44.5% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 39.2% of lines (99 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 45.1% of lines.
+- **Falsifiable vs baseline:** 39.5% of lines (100 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 45.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1003,6 +1017,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/composition/text-box.lisp` | 280 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/editor.lisp` | 2,014 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/fuzzy.lisp` | 134 | `tui_editor_helpers.fuzzy_match` |
+| `src/cadr-tui/input-component.lisp` | 408 | `tui_input_component.edit` |
 | `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keybindings.lisp` | 268 | `tui_keybindings.resolve_match` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -1080,10 +1095,10 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `ai_runtime_faux` | 1 | 601 |
 | `tui_theme_overlay` | 1 | 562 |
 | `ai_support` | 5 | 560 |
-| `tui_editor_helpers` | 2 | 486 |
 | `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |
 | `session_compact` | 1 | 185 |
+| `tui_editor_helpers` | 1 | 78 |
 | `agent_conditions` | 1 | 43 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

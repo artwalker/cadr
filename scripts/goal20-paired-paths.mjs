@@ -165,6 +165,7 @@ const REPETITIONS = {
 	"tui_autocomplete.suggest_apply": 50,
 	"tui_keybindings.resolve_match": 50,
 	"tui_stdin_buffer.process": 50,
+	"tui_input_component.edit": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -394,6 +395,7 @@ const undoStackModule = await import(moduleUrl("packages/tui/src/undo-stack.ts")
 const autocompleteModule = await import(moduleUrl("packages/tui/src/autocomplete.ts"));
 const keybindingsModule = await import(moduleUrl("packages/tui/src/keybindings.ts"));
 const stdinBufferModule = await import(moduleUrl("packages/tui/src/stdin-buffer.ts"));
+const inputModule = await import(moduleUrl("packages/tui/src/components/input.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2809,6 +2811,35 @@ async function measureTuiStdinBuffer() {
 	};
 }
 
+function runTuiInputComponent() {
+	const input = new inputModule.Input();
+	for (const ch of "hello world") input.handleInput(ch);
+	const afterInsert = input.getValue().length;
+	input.handleInput("\x7f");
+	const afterBs = input.getValue().length;
+	input.handleInput("\x15");
+	const afterKill = input.getValue().length;
+	input.handleInput("\x19");
+	const value = input.getValue();
+	return {
+		after_insert: afterInsert,
+		after_bs: afterBs,
+		after_kill: afterKill,
+		after_yank: value.length,
+		last_code: value.length ? value.charCodeAt(value.length - 1) : 0,
+	};
+}
+
+async function measureTuiInputComponent() {
+	const observed = runTuiInputComponent();
+	return {
+		edit: await collect("tui_input_component.edit", () => {
+			return () => runTuiInputComponent();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3047,6 +3078,8 @@ process.stderr.write("goal20 pi paired paths: tui_keybindings\n");
 const tuiKeybindings = await measureTuiKeybindings();
 process.stderr.write("goal20 pi paired paths: tui_stdin_buffer\n");
 const tuiStdinBuffer = await measureTuiStdinBuffer();
+process.stderr.write("goal20 pi paired paths: tui_input_component\n");
+const tuiInputComponent = await measureTuiInputComponent();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3124,6 +3157,8 @@ const result = {
 				"packages/tui/src/keybindings.ts KeybindingsManager / getKeybindings",
 			"tui_stdin_buffer.process":
 				"packages/tui/src/stdin-buffer.ts StdinBuffer.process",
+			"tui_input_component.edit":
+				"packages/tui/src/components/input.ts Input.handleInput",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3212,6 +3247,7 @@ const result = {
 		tui_autocomplete: tuiAutocomplete,
 		tui_keybindings: tuiKeybindings,
 		tui_stdin_buffer: tuiStdinBuffer,
+		tui_input_component: tuiInputComponent,
 		render_slicing: renderSlicing,
 	},
 };

@@ -43,6 +43,7 @@
 ;;;;  30. tui_autocomplete get-suggestions + apply vs CombinedAutocompleteProvider
 ;;;;  31. tui_keybindings make-keybindings-manager vs KeybindingsManager / getKeybindings
 ;;;;  32. tui_stdin_buffer stdin-buffer-process vs StdinBuffer.process
+;;;;  33. tui_input_component handle-event vs Input.handleInput
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -137,6 +138,7 @@
     ("tui_autocomplete.suggest_apply" . 50)
     ("tui_keybindings.resolve_match" . 50)
     ("tui_stdin_buffer.process" . 50)
+    ("tui_input_component.edit" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3504,6 +3506,54 @@
                 (lambda ()
                   (run-tui-stdin-buffer)))))))
 
+(defun feed-single-line-text (input text)
+  (loop for ch across text
+        do (cadr-tui:single-line-input-handle-event
+            input
+            (cadr-tui:make-input-event :kind :text :text (string ch)))))
+
+(defun run-tui-input-component ()
+  (let ((input (cadr-tui:make-single-line-input)))
+    (feed-single-line-text input "hello world")
+    (let ((after-insert
+            (length (cadr-tui:single-line-input-value input))))
+      (cadr-tui:single-line-input-handle-event
+       input (cadr-tui:make-input-event :kind :backspace))
+      (let ((after-bs
+              (length (cadr-tui:single-line-input-value input))))
+        (cadr-tui:single-line-input-handle-event
+         input
+         (cadr-tui:make-input-event :kind :delete-line-start))
+        (let ((after-kill
+                (length (cadr-tui:single-line-input-value input))))
+          (cadr-tui:single-line-input-handle-event
+           input (cadr-tui:make-input-event :kind :yank))
+          (let ((value (cadr-tui:single-line-input-value input)))
+            (list
+             after-insert
+             after-bs
+             after-kill
+             (length value)
+             (if (plusp (length value))
+                 (char-code (char value (1- (length value))))
+                 0))))))))
+
+(defun measure-tui-input-component ()
+  (let ((observed (run-tui-input-component)))
+    (json-object
+     "observed"
+     (json-object
+      "after_insert" (first observed)
+      "after_bs" (second observed)
+      "after_kill" (third observed)
+      "after_yank" (fourth observed)
+      "last_code" (fifth observed))
+     "edit"
+     (collect "tui_input_component.edit"
+              (lambda ()
+                (lambda ()
+                  (run-tui-input-component)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3630,6 +3680,8 @@
       "src/cadr-tui/keybindings.lisp make-keybindings-manager + keybinding-keys + keybinding-matches-p"
       "tui_stdin_buffer.process"
       "src/cadr-tui/stdin-buffer.lisp stdin-buffer-process"
+      "tui_input_component.edit"
+      "src/cadr-tui/input-component.lisp single-line-input-handle-event"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3767,6 +3819,8 @@
               (let ((keybindings (measure-tui-keybindings)))
               (format *error-output* "goal20 cadr paired paths: tui_stdin_buffer~%")
               (let ((stdin-buffer (measure-tui-stdin-buffer)))
+              (format *error-output* "goal20 cadr paired paths: tui_input_component~%")
+              (let ((input-component (measure-tui-input-component)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3830,6 +3884,7 @@
               "tui_autocomplete" autocomplete
               "tui_keybindings" keybindings
               "tui_stdin_buffer" stdin-buffer
+              "tui_input_component" input-component
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3846,7 +3901,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

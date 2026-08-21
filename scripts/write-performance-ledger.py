@@ -61,6 +61,7 @@ METRIC_KEYS = (
     "tui_autocomplete.suggest_apply",
     "tui_keybindings.resolve_match",
     "tui_stdin_buffer.process",
+    "tui_input_component.edit",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

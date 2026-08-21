@@ -45,6 +45,7 @@
   "tui_autocomplete.suggest_apply",
   "tui_keybindings.resolve_match",
   "tui_stdin_buffer.process",
+  "tui_input_component.edit",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1560,8 +1561,8 @@
   },
   {
    "prefix": "src/cadr-tui/input-component.lisp",
-   "class": "needs-pair",
-   "hole": "tui_editor_helpers"
+   "class": "paired",
+   "metrics": ["tui_input_component.edit"]
   },
   {
    "prefix": "src/cadr-tui/keybindings.lisp",
