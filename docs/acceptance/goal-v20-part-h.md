@@ -591,6 +591,19 @@ Observed `back_from_space` / `fwd_from_o` / `back_start` /
 freeze **0.17×** (0.94 / 5.4 µs), ceiling 8.0. Same commit
 no optimize.
 
+### Pair 41 — `tui_overlay`
+
+| metric | cadr | pi |
+|---|---|---|
+| `composite_line` | `composite-overlay-line` | `compositeTuiLine` (`packages/tui/src/tui.ts`) |
+
+ASCII base `"hello world this is a long line"` overlay
+`"OVER"` at col 6 width 4 total 40. Time compositing, not
+a TUI frame. Observed `line_chars` / `visible_width` /
+`has_reset` are exact (60 / 40 / 1). `theme.lisp` stays
+`needs-pair`. First Friend-MachineD freeze **0.87×**
+(19.1 / 22.0 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -796,14 +809,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 93 | 48,284 | 37.9% | `no worse than baseline` is falsifiable |
+| `paired` | 94 | 48,769 | 38.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 159 | 58,711 | 46.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 158 | 58,226 | 45.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 37.9% of lines (93 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 43.8% of lines.
+- **Falsifiable vs baseline:** 38.3% of lines (94 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 44.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -919,6 +932,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render` |
+| `src/cadr-tui/overlay.lisp` | 485 | `tui_overlay.composite_line` |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/alt-screen.lisp` | 610 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,353 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -980,7 +994,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
 | `cli_support` | 13 | 1,164 |
-| `tui_theme_overlay` | 2 | 1,047 |
 | `http_transport` | 1 | 858 |
 | `tui_select_settings_loaders` | 2 | 705 |
 | `cli_models_rest` | 2 | 698 |
@@ -988,6 +1001,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `ai_capabilities` | 5 | 634 |
 | `websocket_stream` | 1 | 628 |
 | `ai_runtime_faux` | 1 | 601 |
+| `tui_theme_overlay` | 1 | 562 |
 | `ai_support` | 5 | 560 |
 | `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |

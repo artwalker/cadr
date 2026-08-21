@@ -159,6 +159,7 @@ const REPETITIONS = {
 	"ai_support.estimate_text": 50,
 	"tui_select_settings_loaders.filter": 50,
 	"tui_word_navigation.step": 50,
+	"tui_overlay.composite_line": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -382,6 +383,7 @@ const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-c
 const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
 const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
 const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navigation.ts"));
+const tuiModule = await import(moduleUrl("packages/tui/src/tui.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2586,6 +2588,28 @@ async function measureTuiWordNavigation() {
 	};
 }
 
+const OVERLAY_BASE = "hello world this is a long line";
+const OVERLAY_TEXT = "OVER";
+
+function runTuiOverlay() {
+	const line = tuiModule.compositeTuiLine(OVERLAY_BASE, OVERLAY_TEXT, 6, 4, 40);
+	return {
+		line_chars: line.length,
+		visible_width: tuiUtilsModule.visibleWidth(line),
+		has_reset: line.includes("\x1b[0m") ? 1 : 0,
+	};
+}
+
+async function measureTuiOverlay() {
+	const observed = runTuiOverlay();
+	return {
+		composite_line: await collect("tui_overlay.composite_line", () => {
+			return () => runTuiOverlay();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2812,6 +2836,8 @@ process.stderr.write("goal20 pi paired paths: tui_select_settings_loaders\n");
 const tuiSelectSettings = await measureTuiSelectList();
 process.stderr.write("goal20 pi paired paths: tui_word_navigation\n");
 const tuiWordNavigation = await measureTuiWordNavigation();
+process.stderr.write("goal20 pi paired paths: tui_overlay\n");
+const tuiOverlay = await measureTuiOverlay();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2877,6 +2903,8 @@ const result = {
 				"packages/tui/src/components/select-list.ts SelectList.setFilter",
 			"tui_word_navigation.step":
 				"packages/tui/src/word-navigation.ts findWordBackward + findWordForward",
+			"tui_overlay.composite_line":
+				"packages/tui/src/tui.ts compositeTuiLine",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2959,6 +2987,7 @@ const result = {
 		ai_support: aiSupport,
 		tui_select_settings_loaders: tuiSelectSettings,
 		tui_word_navigation: tuiWordNavigation,
+		tui_overlay: tuiOverlay,
 		render_slicing: renderSlicing,
 	},
 };

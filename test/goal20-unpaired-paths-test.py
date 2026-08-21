@@ -213,6 +213,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(word_nav), 1)
         self.assertEqual(word_nav[0]["class"], "paired")
         self.assertIn("tui_word_navigation.step", word_nav[0]["metrics"])
+        overlay = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/overlay.lisp"
+        ]
+        self.assertEqual(len(overlay), 1)
+        self.assertEqual(overlay[0]["class"], "paired")
+        self.assertIn("tui_overlay.composite_line", overlay[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

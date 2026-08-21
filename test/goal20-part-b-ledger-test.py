@@ -479,6 +479,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("fwd_from_o", paired.OBSERVED_EXACT["tui_word_navigation"])
         self.assertIn("fwd_end", paired.OBSERVED_EXACT["tui_word_navigation"])
 
+    def test_tui_overlay_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tui_overlay.composite_line", RECORD.METRIC_KEYS)
+        self.assertIn("composite_line", paired.METRICS["tui_overlay"])
+        self.assertIn("tui_overlay.composite_line", paired.RATIO_CEILINGS)
+        self.assertIn("line_chars", paired.OBSERVED_EXACT["tui_overlay"])
+        self.assertIn("visible_width", paired.OBSERVED_EXACT["tui_overlay"])
+        self.assertIn("has_reset", paired.OBSERVED_EXACT["tui_overlay"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -551,6 +560,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`ai_support.estimate_text`", section)
             self.assertIn("`tui_select_settings_loaders.filter`", section)
             self.assertIn("`tui_word_navigation.step`", section)
+            self.assertIn("`tui_overlay.composite_line`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

@@ -120,6 +120,7 @@ METRICS = {
     "ai_support": ("estimate_text",),
     "tui_select_settings_loaders": ("filter",),
     "tui_word_navigation": ("step",),
+    "tui_overlay": ("composite_line",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -304,6 +305,11 @@ RATIO_CEILINGS = {
     # (0.94 / 5.4 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "tui_word_navigation.step": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_overlay pair (samples=5): observed 0.87x
+    # (19.1 / 22.0 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "tui_overlay.composite_line": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -628,6 +634,11 @@ OBSERVED_EXACT = {
         "fwd_from_o",
         "back_start",
         "fwd_end",
+    ),
+    "tui_overlay": (
+        "line_chars",
+        "visible_width",
+        "has_reset",
     ),
     "resource_loader": (
         "skill_count",

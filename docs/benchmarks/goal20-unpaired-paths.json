@@ -39,6 +39,7 @@
   "ai_support.estimate_text",
   "tui_select_settings_loaders.filter",
   "tui_word_navigation.step",
+  "tui_overlay.composite_line",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1639,8 +1640,8 @@
   },
   {
    "prefix": "src/cadr-tui/overlay.lisp",
-   "class": "needs-pair",
-   "hole": "tui_theme_overlay"
+   "class": "paired",
+   "metrics": ["tui_overlay.composite_line"]
   },
   {
    "prefix": "src/cadr-tui/package.lisp",
