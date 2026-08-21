@@ -890,6 +890,20 @@ Time HMAC hex, no socket. Observed `fox` / `empty` /
 First Friend-MachineD freeze **18.81×** (133.9 / 7.1 µs),
 ceiling 30.0. Same commit no optimize.
 
+### Pair 62 — `ai_support` (grammar_delta)
+
+| metric | cadr | pi |
+|---|---|---|
+| `grammar_delta` | `append-grammar-json-delta` | `appendGrammarToolInputJsonDelta` (`packages/ai/src/api/constrained-sampling.ts`) |
+
+Leftover sibling of `estimate_text` / `context_overflow`.
+Fixtures: property `input`, `hel` → `hello` → close.
+Observed `d1` / `d2` / `d3` / `started` / `closed` are
+exact (`{"input":"hel` / `lo` / `"}` / 1 / 1). Time
+delta assemble, no socket. First Friend-MachineD freeze
+**2.87×** (1.52 / 0.53 µs), ceiling 8.0 (variance). Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1095,14 +1109,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 114 | 56,338 | 44.2% | `no worse than baseline` is falsifiable |
+| `paired` | 115 | 56,617 | 44.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 138 | 50,657 | 39.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 137 | 50,378 | 39.5% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 44.2% of lines (114 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 50.1% of lines.
+- **Falsifiable vs baseline:** 44.4% of lines (115 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 50.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1179,6 +1193,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/vertex.lisp` | 134 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 601 | `ai_runtime_faux.blocks` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/support/grammar-coercion.lisp` | 279 | `ai_support.grammar_delta` |
 | `src/cadr-ai/support/overflow.lisp` | 78 | `ai_support.context_overflow` |
 | `src/cadr-ai/support/token-estimation.lisp` | 170 | `ai_support.estimate_text` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
@@ -1301,12 +1316,12 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
-| `ai_support` | 4 | 482 |
 | `ai_capabilities` | 4 | 472 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
+| `ai_support` | 3 | 203 |
 | `session_compact` | 1 | 185 |
 | `agent_conditions` | 1 | 43 |
 

@@ -213,6 +213,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(overflow), 1)
         self.assertEqual(overflow[0]["class"], "paired")
         self.assertIn("ai_support.context_overflow", overflow[0]["metrics"])
+        grammar = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/support/grammar-coercion.lisp"
+        ]
+        self.assertEqual(len(grammar), 1)
+        self.assertEqual(grammar[0]["class"], "paired")
+        self.assertIn("ai_support.grammar_delta", grammar[0]["metrics"])
         select_list = [
             row
             for row in classified["rows"]

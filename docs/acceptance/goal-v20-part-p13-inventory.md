@@ -430,11 +430,11 @@ These must not be filed as callees.
 | `src/cadr-ai/capabilities/session-resources.lisp` | 34 |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 |
 
-### `ai_support` (additional) — `token-estimation.lisp` paired `ai_support.estimate_text`; `overflow.lisp` paired `ai_support.context_overflow`
+### `ai_support` (additional) — `token-estimation.lisp` paired `ai_support.estimate_text`; `overflow.lisp` paired `ai_support.context_overflow`; `grammar-coercion.lisp` paired `ai_support.grammar_delta`
 
-- pi: `packages/ai/src/utils/estimate.ts estimateTextTokens`; `packages/ai/src/utils/overflow.ts isContextOverflow`
-- fixture: empty / hello world / 100 ASCII a. Time ceil(utf16/4). Overflow: error prompt-too-long / rate-limit / silent stop / length-full.
-- Friend-MachineD n=5: estimate_text **3.10×** (0.54 / 0.17 µs), ceiling 8.0 (variance). context_overflow **1.67×** (1.85 / 1.11 µs), ceiling 8.0 (variance). Other files still `needs-pair`. retry.lisp stays covered-as-callee. No optimize in the booking commit.
+- pi: `packages/ai/src/utils/estimate.ts estimateTextTokens`; `packages/ai/src/utils/overflow.ts isContextOverflow`; `packages/ai/src/api/constrained-sampling.ts appendGrammarToolInputJsonDelta`
+- fixture: empty / hello world / 100 ASCII a. Overflow: error prompt-too-long / rate-limit / silent stop / length-full. Grammar: `hel` → `hello` → close.
+- Friend-MachineD n=5: estimate_text **3.10×** (0.54 / 0.17 µs); context_overflow **1.67×** (1.85 / 1.11 µs); grammar_delta **2.87×** (1.52 / 0.53 µs); ceiling 8.0 (variance). Other files still `needs-pair`. retry.lisp stays covered-as-callee. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

@@ -118,7 +118,7 @@ METRICS = {
     "tui_latex": ("render",),
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
-    "ai_support": ("estimate_text", "context_overflow"),
+    "ai_support": ("estimate_text", "context_overflow", "grammar_delta"),
     "tui_select_settings_loaders": ("filter",),
     "tui_word_navigation": ("step",),
     "tui_overlay": ("composite_line",),
@@ -323,6 +323,11 @@ RATIO_CEILINGS = {
     # 1.67x (1.85 / 1.11 us). 8.0 is first-freeze
     # headroom (variance). Ratchet down only.
     "ai_support.context_overflow": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # ai_support.grammar_delta pair (samples=5): observed
+    # 2.87x (1.52 / 0.53 us). 8.0 is first-freeze
+    # headroom (variance). Ratchet down only.
+    "ai_support.grammar_delta": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # tui_select_settings_loaders pair (samples=5): observed
     # 1.27x (1.2 / 1.0 us). 8.0 follows the microsecond-floor
@@ -755,6 +760,11 @@ OBSERVED_EXACT = {
         "rate",
         "silent",
         "length",
+        "d1",
+        "d2",
+        "d3",
+        "started",
+        "closed",
     ),
     "tui_select_settings_loaders": (
         "he_count",

@@ -58,6 +58,7 @@
 ;;;;  45. cli_support normalize-path-input vs normalizePath
 ;;;;  46. ai_support context-overflow-p vs isContextOverflow
 ;;;;  47. ai_crypto hmac-sha256 vs node:crypto createHmac
+;;;;  48. ai_support append-grammar-json-delta vs appendGrammarToolInputJsonDelta
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -146,6 +147,7 @@
     ("tui_theme_overlay.osc11_bg" . 50)
     ("ai_support.estimate_text" . 50)
     ("ai_support.context_overflow" . 50)
+    ("ai_support.grammar_delta" . 50)
     ("tui_select_settings_loaders.filter" . 50)
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
@@ -3205,9 +3207,19 @@
    (overflow-flag (overflow-usage-message :stop 100 0) 50)
    (overflow-flag (overflow-usage-message :length 100 0) 100)))
 
+(defun run-ai-support-grammar-delta ()
+  (let ((buffer (cadr-ai::make-grammar-json-buffer)))
+    (list
+     (or (cadr-ai::append-grammar-json-delta buffer "input" "hel" nil) "")
+     (or (cadr-ai::append-grammar-json-delta buffer "input" "hello" nil) "")
+     (or (cadr-ai::append-grammar-json-delta buffer "input" "hello" t) "")
+     (if (cadr-ai::grammar-json-buffer-started-p buffer) 1 0)
+     (if (cadr-ai::grammar-json-buffer-closed-p buffer) 1 0))))
+
 (defun measure-ai-support-estimate ()
   (let ((estimate (run-ai-support-estimate))
-        (overflow (run-ai-support-context-overflow)))
+        (overflow (run-ai-support-context-overflow))
+        (grammar (run-ai-support-grammar-delta)))
     (json-object
      "observed"
      (json-object
@@ -3217,7 +3229,12 @@
       "prompt" (first overflow)
       "rate" (second overflow)
       "silent" (third overflow)
-      "length" (fourth overflow))
+      "length" (fourth overflow)
+      "d1" (first grammar)
+      "d2" (second grammar)
+      "d3" (third grammar)
+      "started" (fourth grammar)
+      "closed" (fifth grammar))
      "estimate_text"
      (collect "ai_support.estimate_text"
               (lambda ()
@@ -3227,7 +3244,12 @@
      (collect "ai_support.context_overflow"
               (lambda ()
                 (lambda ()
-                  (run-ai-support-context-overflow)))))))
+                  (run-ai-support-context-overflow))))
+     "grammar_delta"
+     (collect "ai_support.grammar_delta"
+              (lambda ()
+                (lambda ()
+                  (run-ai-support-grammar-delta)))))))
 
 (defun select-list-fixture ()
   (cadr-tui:make-select-list
@@ -4139,6 +4161,8 @@
       "src/cadr-ai/support/token-estimation.lisp estimate-text-tokens"
       "ai_support.context_overflow"
       "src/cadr-ai/support/overflow.lisp context-overflow-p"
+      "ai_support.grammar_delta"
+      "src/cadr-ai/support/grammar-coercion.lisp append-grammar-json-delta"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
       "tui_word_navigation.step"

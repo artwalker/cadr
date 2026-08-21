@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_support.grammar_delta`
+  (`hel`→`hello`→close; cadr `append-grammar-json-delta`
+  vs pi `appendGrammarToolInputJsonDelta`).
+  Friend-MachineD n=5 **2.87×** (1.52 / 0.53 µs),
+  ceiling 8.0 (variance). Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `ai_crypto.hmac` (fox / empty /
   70-byte key; cadr `hmac-sha256` vs `node:crypto`
   `createHmac`). Friend-MachineD n=5 **18.81×**
