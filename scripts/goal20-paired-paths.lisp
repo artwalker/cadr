@@ -81,6 +81,7 @@
 ;;;;  67. cli_models_rest parse-auth-command vs parseAuthCommand
 ;;;;  68. cli_sdk detect-cache-miss vs detectCacheMiss
 ;;;;  69. cli_sdk compute-cache-waste vs computeCacheWaste
+;;;;  70. cli_sdk valid-thinking-level-p vs isValidThinkingLevel
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -208,6 +209,7 @@
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
     ("cli_sdk.cache_waste" . 50)
+    ("cli_sdk.thinking_level" . 50)
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
@@ -4807,10 +4809,25 @@
      (cache-waste-shape switched-waste)
      (cache-waste-shape nocache))))
 
+(defun thinking-level-flag (value)
+  (if (cadr-cli::valid-thinking-level-p value) 1 0))
+
+(defun run-cli-sdk-thinking-level ()
+  (list
+   (thinking-level-flag "off")
+   (thinking-level-flag "minimal")
+   (thinking-level-flag "low")
+   (thinking-level-flag "medium")
+   (thinking-level-flag "high")
+   (thinking-level-flag "xhigh")
+   (thinking-level-flag "max")
+   (thinking-level-flag "nope")))
+
 (defun measure-cli-sdk-version-newer ()
   (let ((observed (run-cli-sdk-version-newer))
         (cache (run-cli-sdk-cache-miss))
-        (waste (run-cli-sdk-cache-waste)))
+        (waste (run-cli-sdk-cache-waste))
+        (thinking (run-cli-sdk-thinking-level)))
     (json-object
      "observed"
      (json-object
@@ -4835,7 +4852,15 @@
       "cw_reset" (nth 4 waste)
       "cw_sw_tok" (nth 6 waste)
       "cw_sw_n" (nth 7 waste)
-      "cw_nocache" (nth 8 waste))
+      "cw_nocache" (nth 8 waste)
+      "tl_off" (nth 0 thinking)
+      "tl_min" (nth 1 thinking)
+      "tl_low" (nth 2 thinking)
+      "tl_med" (nth 3 thinking)
+      "tl_high" (nth 4 thinking)
+      "tl_xhigh" (nth 5 thinking)
+      "tl_max" (nth 6 thinking)
+      "tl_miss" (nth 7 thinking))
      "version_newer"
      (collect "cli_sdk.version_newer"
               (lambda ()
@@ -4850,7 +4875,12 @@
      (collect "cli_sdk.cache_waste"
               (lambda ()
                 (lambda ()
-                  (run-cli-sdk-cache-waste)))))))
+                  (run-cli-sdk-cache-waste))))
+     "thinking_level"
+     (collect "cli_sdk.thinking_level"
+              (lambda ()
+                (lambda ()
+                  (run-cli-sdk-thinking-level)))))))
 
 (defun provider-definition-present-p (id)
   (handler-case
@@ -5201,6 +5231,8 @@
       "src/cadr-cli/sdk/cache-version.lisp detect-cache-miss"
       "cli_sdk.cache_waste"
       "src/cadr-cli/sdk/cache-version.lisp compute-cache-waste"
+      "cli_sdk.thinking_level"
+      "src/cadr-cli/sdk/cache-version.lisp valid-thinking-level-p"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "skill_prompt_load.build_prompt"

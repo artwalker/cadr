@@ -94,6 +94,7 @@ METRIC_KEYS = (
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
     "cli_sdk.cache_waste",
+    "cli_sdk.thinking_level",
     "provider_registry_defs.lookup",
     "skill_prompt_load.build_prompt",
     "cli_bootstrap_sessions.coding_tools",

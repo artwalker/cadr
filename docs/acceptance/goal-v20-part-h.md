@@ -1208,6 +1208,18 @@ exact missed-cost float. First Friend-MachineD freeze
 **0.60×** (3.96 / 6.56 µs), ceiling 8.0. cadr leads. Same
 commit no optimize.
 
+### Pair 85 — `cli_sdk` (thinking_level)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_level` | `valid-thinking-level-p` | `isValidThinkingLevel` (`packages/coding-agent/src/cli/args.ts`) |
+
+Leftover sibling in `cache-version.lisp`. Lowercase
+off/minimal/low/medium/high/xhigh/max + miss. Do not exact
+uppercase (cadr downcases; pi is case-sensitive). First
+Friend-MachineD freeze **3.21×** (0.72 / 0.22 µs), ceiling
+8.0 (variance). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1532,7 +1544,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
-| `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste` |
+| `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |

@@ -133,7 +133,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog"),
     "cli_interactive_controller": ("decode_entity",),
-    "cli_sdk": ("version_newer", "cache_miss", "cache_waste"),
+    "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level"),
     "provider_registry_defs": ("lookup",),
     "skill_prompt_load": ("build_prompt",),
     "cli_bootstrap_sessions": ("coding_tools",),
@@ -526,6 +526,12 @@ RATIO_CEILINGS = {
     # 0.60x (3.96 / 6.56 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "cli_sdk.cache_waste": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_sdk.thinking_level pair (samples=5): observed
+    # 3.21x (0.72 / 0.22 us). 8.0 follows the
+    # microsecond-floor first-freeze headroom. Ratchet down
+    # only.
+    "cli_sdk.thinking_level": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # provider_registry_defs pair (samples=5): observed 4.44x
     # (1.03 / 0.23 us). 8.0 follows the microsecond-floor
@@ -1128,6 +1134,14 @@ OBSERVED_EXACT = {
         "cw_sw_tok",
         "cw_sw_n",
         "cw_nocache",
+        "tl_off",
+        "tl_min",
+        "tl_low",
+        "tl_med",
+        "tl_high",
+        "tl_xhigh",
+        "tl_max",
+        "tl_miss",
     ),
     "provider_registry_defs": (
         "openai",

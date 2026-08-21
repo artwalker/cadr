@@ -78,6 +78,7 @@
   "cli_sdk.version_newer",
   "cli_sdk.cache_miss",
   "cli_sdk.cache_waste",
+  "cli_sdk.thinking_level",
   "provider_registry_defs.lookup",
   "skill_prompt_load.build_prompt",
   "cli_bootstrap_sessions.coding_tools",
@@ -1307,7 +1308,7 @@
   {
    "prefix": "src/cadr-cli/sdk/cache-version.lisp",
    "class": "paired",
-   "metrics": ["cli_sdk.version_newer", "cli_sdk.cache_miss", "cli_sdk.cache_waste"]
+   "metrics": ["cli_sdk.version_newer", "cli_sdk.cache_miss", "cli_sdk.cache_waste", "cli_sdk.thinking_level"]
   },
   {
    "prefix": "src/cadr-cli/sdk/model-service.lisp",

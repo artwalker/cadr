@@ -496,6 +496,7 @@ class TestClassify(unittest.TestCase):
         self.assertIn("cli_sdk.version_newer", cache_version[0]["metrics"])
         self.assertIn("cli_sdk.cache_miss", cache_version[0]["metrics"])
         self.assertIn("cli_sdk.cache_waste", cache_version[0]["metrics"])
+        self.assertIn("cli_sdk.thinking_level", cache_version[0]["metrics"])
         provider_defs = [
             row
             for row in classified["rows"]

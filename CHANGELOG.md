@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_sdk.thinking_level`
+  (lowercase off/minimal/low/medium/high/xhigh/max + miss;
+  cadr `valid-thinking-level-p` vs pi `isValidThinkingLevel`).
+  Friend-MachineD n=5 **3.21×** (0.72 / 0.22 µs), ceiling 8.0
+  (variance). Same commit no optimize. G.17 missing. Not
+  Goal 20 complete.
 - Goal 20 P.13: pair `cli_sdk.cache_waste`
   (3-turn miss / healthy / compaction skip / model-switch /
   no-cache; cadr `compute-cache-waste` vs pi

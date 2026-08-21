@@ -198,6 +198,7 @@ const REPETITIONS = {
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
 	"cli_sdk.cache_waste": 50,
+	"cli_sdk.thinking_level": 50,
 	"provider_registry_defs.lookup": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
@@ -4083,11 +4084,25 @@ function runCliSdkCacheWaste() {
 	};
 }
 
+function runCliSdkThinkingLevel() {
+	return {
+		tl_off: argsModule.isValidThinkingLevel("off") ? 1 : 0,
+		tl_min: argsModule.isValidThinkingLevel("minimal") ? 1 : 0,
+		tl_low: argsModule.isValidThinkingLevel("low") ? 1 : 0,
+		tl_med: argsModule.isValidThinkingLevel("medium") ? 1 : 0,
+		tl_high: argsModule.isValidThinkingLevel("high") ? 1 : 0,
+		tl_xhigh: argsModule.isValidThinkingLevel("xhigh") ? 1 : 0,
+		tl_max: argsModule.isValidThinkingLevel("max") ? 1 : 0,
+		tl_miss: argsModule.isValidThinkingLevel("nope") ? 1 : 0,
+	};
+}
+
 async function measureCliSdkVersionNewer() {
 	const observed = {
 		...runCliSdkVersionNewer(),
 		...runCliSdkCacheMiss(),
 		...runCliSdkCacheWaste(),
+		...runCliSdkThinkingLevel(),
 	};
 	return {
 		version_newer: await collect("cli_sdk.version_newer", () => {
@@ -4098,6 +4113,9 @@ async function measureCliSdkVersionNewer() {
 		}),
 		cache_waste: await collect("cli_sdk.cache_waste", () => {
 			return () => runCliSdkCacheWaste();
+		}),
+		thinking_level: await collect("cli_sdk.thinking_level", () => {
+			return () => runCliSdkThinkingLevel();
 		}),
 		observed,
 	};
@@ -4631,6 +4649,8 @@ const result = {
 				"packages/coding-agent/src/core/cache-stats.ts detectCacheMiss",
 			"cli_sdk.cache_waste":
 				"packages/coding-agent/src/core/cache-stats.ts computeCacheWaste",
+			"cli_sdk.thinking_level":
+				"packages/coding-agent/src/cli/args.ts isValidThinkingLevel",
 			"provider_registry_defs.lookup":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"skill_prompt_load.build_prompt":
