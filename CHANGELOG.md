@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `image_runtime.dimensions` (1x1 PNG +
+  2x3 GIF; cadr `image-dimensions` vs pi
+  `getImageDimensions`). Friend-MachineD n=5 **5.44×**
+  (7.8 / 1.4 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_models_rest.pattern_match`
   (staged models.json; cadr `parse-scoped-model-pattern` vs
   pi `parseModelPattern`). Friend-MachineD n=5 **1.65×**

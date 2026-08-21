@@ -151,6 +151,7 @@ const REPETITIONS = {
 	"evals_harness.summarize": 20,
 	"ai_crypto_model_data.manifest": 50,
 	"cli_models_rest.pattern_match": 50,
+	"image_runtime.dimensions": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -366,6 +367,7 @@ const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/to
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
+const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2321,6 +2323,38 @@ async function measureCliModelsRest() {
 	};
 }
 
+const PNG_1X1_B64 =
+	"iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC";
+const GIF_2X3_B64 = "R0lGODlhAgADAAAAADs=";
+
+function imageDimPair(base64, mime) {
+	const dims = terminalImageModule.getImageDimensions(base64, mime);
+	return { width: dims?.widthPx ?? 0, height: dims?.heightPx ?? 0 };
+}
+
+function runImageRuntime() {
+	const png = imageDimPair(PNG_1X1_B64, "image/png");
+	const gif = imageDimPair(GIF_2X3_B64, "image/gif");
+	const miss = imageDimPair("not-an-image", "image/png");
+	return {
+		png_width: png.width,
+		png_height: png.height,
+		gif_width: gif.width,
+		gif_height: gif.height,
+		miss: miss.width === 0 && miss.height === 0 ? 1 : 0,
+	};
+}
+
+async function measureImageRuntime() {
+	const observed = runImageRuntime();
+	return {
+		dimensions: await collect("image_runtime.dimensions", () => {
+			return () => runImageRuntime();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2531,6 +2565,8 @@ process.stderr.write("goal20 pi paired paths: ai_crypto_model_data\n");
 const aiCryptoModelData = await measureAiCryptoModelData();
 process.stderr.write("goal20 pi paired paths: cli_models_rest\n");
 const cliModelsRest = await measureCliModelsRest();
+process.stderr.write("goal20 pi paired paths: image_runtime\n");
+const imageRuntime = await measureImageRuntime();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2582,6 +2618,8 @@ const result = {
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"cli_models_rest.pattern_match":
 				"packages/coding-agent/src/core/model-resolver.ts parseModelPattern",
+			"image_runtime.dimensions":
+				"packages/tui/src/terminal-image.ts getImageDimensions",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2656,6 +2694,7 @@ const result = {
 		evals_harness: evalsHarness,
 		ai_crypto_model_data: aiCryptoModelData,
 		cli_models_rest: cliModelsRest,
+		image_runtime: imageRuntime,
 		render_slicing: renderSlicing,
 	},
 };

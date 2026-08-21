@@ -149,6 +149,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(matching), 1)
         self.assertEqual(matching[0]["class"], "paired")
         self.assertIn("cli_models_rest.pattern_match", matching[0]["metrics"])
+        terminal_image = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/terminal-image.lisp"
+        ]
+        self.assertEqual(len(terminal_image), 1)
+        self.assertEqual(terminal_image[0]["class"], "paired")
+        self.assertIn("image_runtime.dimensions", terminal_image[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

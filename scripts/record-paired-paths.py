@@ -48,6 +48,7 @@ METRIC_KEYS = (
     "evals_harness.summarize",
     "ai_crypto_model_data.manifest",
     "cli_models_rest.pattern_match",
+    "image_runtime.dimensions",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

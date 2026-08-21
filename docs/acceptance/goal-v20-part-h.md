@@ -485,6 +485,20 @@ files stay `needs-pair`. First Friend-MachineD freeze
 **1.65×** (31.9 / 19.4 µs), ceiling 3.0. Same commit no
 optimize.
 
+### Pair 33 — `image_runtime`
+
+| metric | cadr | pi |
+|---|---|---|
+| `dimensions` | `image-dimensions` | `getImageDimensions` (`packages/tui/src/terminal-image.ts`) |
+
+1x1 RGB PNG + 2x3 GIF89a as base64, plus a miss mime.
+Time header parse, not Kitty/iTerm encode or a live image
+API. Observed `png_width` / `png_height` / `gif_width` /
+`gif_height` / `miss` are exact (1×1, 2×3, miss=1). Other
+image_runtime files stay `needs-pair`. First Friend-MachineD
+freeze **5.44×** (7.8 / 1.4 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -690,14 +704,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 85 | 44,152 | 34.7% | `no worse than baseline` is falsifiable |
+| `paired` | 86 | 44,838 | 35.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 167 | 62,843 | 49.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 166 | 62,157 | 48.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 34.7% of lines (85 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 40.5% of lines.
+- **Falsifiable vs baseline:** 35.2% of lines (86 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 41.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -814,6 +828,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/renderer/main-screen.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 78 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/terminal-image.lisp` | 686 | `image_runtime.dimensions` |
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/unicode.lisp` | 1,302 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 
@@ -856,9 +871,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_mermaid` | 12 | 5,042 |
 | `agent_tool_loop` | 13 | 4,094 |
 | `cli_extensions_install` | 9 | 3,489 |
-| `image_runtime` | 6 | 2,777 |
 | `cli_print_rpc` | 8 | 2,302 |
 | `evals_harness` | 6 | 2,184 |
+| `image_runtime` | 5 | 2,091 |
 | `oauth_pkce_device` | 13 | 2,081 |
 | `tui_latex` | 1 | 1,950 |
 | `tui_editor_helpers` | 9 | 1,890 |

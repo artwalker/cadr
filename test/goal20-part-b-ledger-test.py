@@ -407,6 +407,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("scoped_thinking", paired.OBSERVED_EXACT["cli_models_rest"])
         self.assertIn("miss", paired.OBSERVED_EXACT["cli_models_rest"])
 
+    def test_image_runtime_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("image_runtime.dimensions", RECORD.METRIC_KEYS)
+        self.assertIn("dimensions", paired.METRICS["image_runtime"])
+        self.assertIn("image_runtime.dimensions", paired.RATIO_CEILINGS)
+        self.assertIn("png_width", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("gif_height", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("miss", paired.OBSERVED_EXACT["image_runtime"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -471,6 +480,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)
+            self.assertIn("`image_runtime.dimensions`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

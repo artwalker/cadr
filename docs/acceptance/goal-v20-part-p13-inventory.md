@@ -398,10 +398,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-ai/websocket.lisp` | 622 |
 
-### `image_runtime` (additional)
+### `image_runtime` (additional) — `terminal-image.lisp` paired `image_runtime.dimensions`
 
-- pi: `packages/ai/src/images.ts + packages/tui/src/terminal-image.ts + packages/ai/src/api/openrouter-images.ts`
-- fixture: Fixture PNG bytes + model catalog row. Time detect + render sequence. No live image API.
+- pi: `packages/tui/src/terminal-image.ts getImageDimensions`
+- fixture: 1x1 PNG + 2x3 GIF base64. Time header parse, not Kitty/iTerm or live image API.
+- Friend-MachineD n=5: **5.44×** (7.8 / 1.4 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

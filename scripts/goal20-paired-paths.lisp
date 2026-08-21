@@ -29,6 +29,7 @@
 ;;;;  16. evals_harness summarize-harness-comparisons vs summarizeHarnessComparisons
 ;;;;  17. ai_crypto_model_data create-model-data-manifest vs createModelDataManifest
 ;;;;  18. cli_models_rest parse-scoped-model-pattern vs parseModelPattern
+;;;;  19. image_runtime image-dimensions vs getImageDimensions
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -109,6 +110,7 @@
     ("evals_harness.summarize" . 20)
     ("ai_crypto_model_data.manifest" . 50)
     ("cli_models_rest.pattern_match" . 50)
+    ("image_runtime.dimensions" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2903,6 +2905,41 @@
                 (lambda ()
                   (run-cli-models-rest models)))))))
 
+(defparameter *png-1x1-b64*
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC")
+(defparameter *gif-2x3-b64* "R0lGODlhAgADAAAAADs=")
+
+(defun image-dim-pair (base64 mime)
+  (multiple-value-bind (width height)
+      (cadr-tui:image-dimensions base64 mime)
+    (list (or width 0) (or height 0))))
+
+(defun run-image-runtime ()
+  (let ((png (image-dim-pair *png-1x1-b64* "image/png"))
+        (gif (image-dim-pair *gif-2x3-b64* "image/gif"))
+        (miss (image-dim-pair "not-an-image" "image/png")))
+    (list (first png) (second png)
+          (first gif) (second gif)
+          (if (and (zerop (first miss)) (zerop (second miss)))
+              1
+              0))))
+
+(defun measure-image-runtime ()
+  (let ((observed (run-image-runtime)))
+    (json-object
+     "observed"
+     (json-object
+      "png_width" (first observed)
+      "png_height" (second observed)
+      "gif_width" (third observed)
+      "gif_height" (fourth observed)
+      "miss" (fifth observed))
+     "dimensions"
+     (collect "image_runtime.dimensions"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3001,6 +3038,8 @@
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "cli_models_rest.pattern_match"
       "src/cadr-cli/models/matching.lisp parse-scoped-model-pattern"
+      "image_runtime.dimensions"
+      "src/cadr-tui/terminal-image.lisp image-dimensions"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3110,6 +3149,8 @@
               (let ((crypto (measure-ai-crypto-model-data)))
               (format *error-output* "goal20 cadr paired paths: cli_models_rest~%")
               (let ((models-rest (measure-cli-models-rest)))
+              (format *error-output* "goal20 cadr paired paths: image_runtime~%")
+              (let ((images (measure-image-runtime)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3159,6 +3200,7 @@
               "evals_harness" evals
               "ai_crypto_model_data" crypto
               "cli_models_rest" models-rest
+              "image_runtime" images
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3175,7 +3217,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

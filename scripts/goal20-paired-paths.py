@@ -112,6 +112,7 @@ METRICS = {
     "evals_harness": ("summarize",),
     "ai_crypto_model_data": ("manifest",),
     "cli_models_rest": ("pattern_match",),
+    "image_runtime": ("dimensions",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -258,6 +259,10 @@ RATIO_CEILINGS = {
     # pair (samples=5): observed 1.65x (31.9 / 19.4 us). 3.0 follows
     # the argv_parse / tool_grep headroom precedent. Ratchet down only.
     "cli_models_rest.pattern_match": 3.0,
+    # Frozen from the first Friend-MachineD non-quick image_runtime
+    # pair (samples=5): observed 5.44x (7.8 / 1.4 us). 8.0 follows
+    # the tool_read / journal_read headroom precedent. Ratchet down only.
+    "image_runtime.dimensions": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -527,6 +532,13 @@ OBSERVED_EXACT = {
         "partial_id",
         "scoped_id",
         "scoped_thinking",
+        "miss",
+    ),
+    "image_runtime": (
+        "png_width",
+        "png_height",
+        "gif_width",
+        "gif_height",
         "miss",
     ),
     "resource_loader": (

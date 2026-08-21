@@ -31,6 +31,7 @@
   "evals_harness.summarize",
   "ai_crypto_model_data.manifest",
   "cli_models_rest.pattern_match",
+  "image_runtime.dimensions",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1657,8 +1658,8 @@
   },
   {
    "prefix": "src/cadr-tui/terminal-image.lisp",
-   "class": "needs-pair",
-   "hole": "image_runtime"
+   "class": "paired",
+   "metrics": ["image_runtime.dimensions"]
   },
   {
    "prefix": "src/cadr-tui/theme.lisp",
