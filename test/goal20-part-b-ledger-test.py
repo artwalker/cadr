@@ -430,6 +430,12 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("png_mime", paired.OBSERVED_EXACT["image_runtime"])
         self.assertIn("webp_mime", paired.OBSERVED_EXACT["image_runtime"])
         self.assertIn("miss_mime", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("image_runtime.lookup", RECORD.METRIC_KEYS)
+        self.assertIn("lookup", paired.METRICS["image_runtime"])
+        self.assertIn("image_runtime.lookup", paired.RATIO_CEILINGS)
+        self.assertIn("gemini", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("flux", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("unknown", paired.OBSERVED_EXACT["image_runtime"])
 
     def test_cli_print_rpc_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -741,6 +747,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_models_rest.pattern_match`", section)
             self.assertIn("`image_runtime.dimensions`", section)
             self.assertIn("`image_runtime.mime_type`", section)
+            self.assertIn("`image_runtime.lookup`", section)
             self.assertIn("`cli_print_rpc.jsonl_line`", section)
             self.assertIn("`tui_latex.render`", section)
             self.assertIn("`tui_editor_helpers.fuzzy_match`", section)

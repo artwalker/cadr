@@ -173,6 +173,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(media), 1)
         self.assertEqual(media[0]["class"], "paired")
         self.assertIn("image_runtime.mime_type", media[0]["metrics"])
+        image_gen = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/image-models.generated.lisp"
+        ]
+        self.assertEqual(len(image_gen), 1)
+        self.assertEqual(image_gen[0]["class"], "paired")
+        self.assertIn("image_runtime.lookup", image_gen[0]["metrics"])
         print_mode = [
             row
             for row in classified["rows"]

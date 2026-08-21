@@ -401,11 +401,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-ai/websocket.lisp` | 622 |
 
-### `image_runtime` (additional) — `terminal-image.lisp` paired `image_runtime.dimensions`; `media.lisp` paired `image_runtime.mime_type`
+### `image_runtime` (additional) — `terminal-image.lisp` paired `image_runtime.dimensions`; `media.lisp` paired `image_runtime.mime_type`; `image-models.generated.lisp` paired `image_runtime.lookup`
 
-- pi: `packages/tui/src/terminal-image.ts getImageDimensions`; `packages/coding-agent/src/utils/mime.ts detectSupportedImageMimeType`
-- fixture: 1x1 PNG + 2x3 GIF base64. MIME: PNG / JPEG SOI / GIF89a / WEBP / miss. Not Kitty/iTerm. Not JPEG `0xf7` / animated PNG / invalid BMP.
-- Friend-MachineD n=5: dimensions **5.44×** (7.8 / 1.4 µs); mime_type **1.62×** (6.63 / 4.09 µs); ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
+- pi: `getImageDimensions`; `detectSupportedImageMimeType`; `getImageModel`
+- fixture: 1x1 PNG + 2x3 GIF. MIME sniff. Lookup: gemini / flux present, nope missing. Do not exact catalog count.
+- Friend-MachineD n=5: dimensions **5.44×**; mime_type **1.62×** (6.63 / 4.09 µs); lookup **7.38×** (1.51 / 0.20 µs); ceiling 8.0 (variance on lookup). `models.lisp` stays covered-as-callee. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

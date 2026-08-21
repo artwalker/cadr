@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `image_runtime.lookup`
+  (gemini / flux / nope; cadr `find-image-model` vs pi
+  `getImageModel`). Friend-MachineD n=5 **7.38×**
+  (1.51 / 0.20 µs), ceiling 8.0 (variance). Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `image_runtime.mime_type`
   (PNG / JPEG SOI / GIF89a / WEBP / miss; cadr
   `detect-image-mime-type` vs pi

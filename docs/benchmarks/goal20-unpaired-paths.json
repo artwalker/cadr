@@ -34,6 +34,7 @@
   "cli_models_rest.pattern_match",
   "image_runtime.dimensions",
   "image_runtime.mime_type",
+  "image_runtime.lookup",
   "cli_print_rpc.jsonl_line",
   "tui_latex.render",
   "tui_editor_helpers.fuzzy_match",
@@ -791,8 +792,8 @@
   },
   {
    "prefix": "src/cadr-ai/image-models.generated.lisp",
-   "class": "needs-pair",
-   "hole": "image_runtime"
+   "class": "paired",
+   "metrics": ["image_runtime.lookup"]
   },
   {
    "prefix": "src/cadr-ai/images.lisp",

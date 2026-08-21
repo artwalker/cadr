@@ -919,6 +919,21 @@ Observed `png_mime` / `jpeg_mime` / `gif_mime` /
 Kitty/iTerm. First Friend-MachineD freeze **1.62×**
 (6.63 / 4.09 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 64 — `image_runtime` (lookup)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lookup` | `find-image-model` | `getImageModel` (`packages/ai/src/image-models.ts`) |
+
+Leftover sibling of `dimensions` / `mime_type`. Catalog
+presence for `google/gemini-2.5-flash-image` and
+`black-forest-labs/flux.2-pro`; `nope` missing. Do not
+exact catalog count. `models.lisp` stays
+covered-as-callee. Observed `gemini` / `flux` /
+`unknown` are exact (1 / 1 / 0). First Friend-MachineD
+freeze **7.38×** (1.51 / 0.20 µs), ceiling 8.0
+(variance). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1124,14 +1139,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 116 | 57,894 | 45.4% | `no worse than baseline` is falsifiable |
+| `paired` | 117 | 58,079 | 45.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 136 | 49,101 | 38.5% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 135 | 48,916 | 38.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 45.4% of lines (116 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 51.3% of lines.
+- **Falsifiable vs baseline:** 45.6% of lines (117 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 51.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1191,6 +1206,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
+| `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
@@ -1327,9 +1343,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_print_rpc` | 7 | 1,724 |
 | `settings_load` | 4 | 1,499 |
 | `cli_sdk` | 4 | 1,214 |
-| `image_runtime` | 4 | 814 |
 | `cli_support` | 11 | 703 |
 | `cli_models_rest` | 2 | 698 |
+| `image_runtime` | 3 | 629 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
 | `ai_capabilities` | 4 | 472 |

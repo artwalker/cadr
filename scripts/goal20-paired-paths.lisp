@@ -60,6 +60,7 @@
 ;;;;  47. ai_crypto hmac-sha256 vs node:crypto createHmac
 ;;;;  48. ai_support append-grammar-json-delta vs appendGrammarToolInputJsonDelta
 ;;;;  49. image_runtime detect-image-mime-type vs detectSupportedImageMimeType
+;;;;  50. image_runtime find-image-model vs getImageModel
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -143,6 +144,7 @@
     ("cli_models_rest.pattern_match" . 50)
     ("image_runtime.dimensions" . 50)
     ("image_runtime.mime_type" . 50)
+    ("image_runtime.lookup" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
@@ -3025,9 +3027,23 @@
    (mime-or-empty (ascii-octet-vector "RIFF....WEBP"))
    (mime-or-empty (ascii-octet-vector "hello"))))
 
+(defun image-lookup-flag (id)
+  (handler-case
+      (progn
+        (cadr-ai:find-image-model :openrouter id)
+        1)
+    (error () 0)))
+
+(defun run-image-runtime-lookup ()
+  (list
+   (image-lookup-flag "google/gemini-2.5-flash-image")
+   (image-lookup-flag "black-forest-labs/flux.2-pro")
+   (image-lookup-flag "nope")))
+
 (defun measure-image-runtime ()
   (let ((dims (run-image-runtime))
-        (mime (run-image-runtime-mime)))
+        (mime (run-image-runtime-mime))
+        (lookup (run-image-runtime-lookup)))
     (json-object
      "observed"
      (json-object
@@ -3040,7 +3056,10 @@
       "jpeg_mime" (second mime)
       "gif_mime" (third mime)
       "webp_mime" (fourth mime)
-      "miss_mime" (fifth mime))
+      "miss_mime" (fifth mime)
+      "gemini" (first lookup)
+      "flux" (second lookup)
+      "unknown" (third lookup))
      "dimensions"
      (collect "image_runtime.dimensions"
               (lambda ()
@@ -3050,7 +3069,12 @@
      (collect "image_runtime.mime_type"
               (lambda ()
                 (lambda ()
-                  (run-image-runtime-mime)))))))
+                  (run-image-runtime-mime))))
+     "lookup"
+     (collect "image_runtime.lookup"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-lookup)))))))
 
 (defun rpc-jsonl-object ()
   (cadr-ai::json-object
@@ -4181,6 +4205,8 @@
       "src/cadr-tui/terminal-image.lisp image-dimensions"
       "image_runtime.mime_type"
       "src/cadr-cli/media.lisp detect-image-mime-type"
+      "image_runtime.lookup"
+      "src/cadr-ai/image-models.generated.lisp find-image-model"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
       "tui_latex.render"
