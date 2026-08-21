@@ -21,6 +21,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: docs-only disposition for paired paths still
+  >1.0× (load / journal_read / pi_messages / mistral /
+  compact). Invent pause; 待本质提案. No optimize.
 - Goal 20: refresh Part P acceptance (P.1 walker ~1763 /
   invent pause; P.8 deferred; P.13 schema 0% + required
   holes; Not claimed still G.17/`met`). No optimize.

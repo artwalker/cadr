@@ -85,4 +85,4 @@ Not `parse-json-octets`. Not a G.17 close.
 |---|---|---|---|
 | P.13 schema | number | `pairable-uncovered` **0%** of 295 files / 127,389 lines (`f0e299523`). `--check` books `covered-as-callee` + `needs-pair`. | `goal20-unpaired-paths.py --check`. Not G.17. |
 | P.13 required holes | number | sqlite / tool_loop / compact / providers / settings / package / skills all have named H metrics (`315a16c1c`). No new pair. No optimize. | inventory vs `pairedMetrics`. |
-| P.13 floor / leftover | leftover | load ~1.11× / journal_read / pi_messages / mistral still >1.0×. Invent paused. Not P.13 complete. | disposition table. G.17 still `missing`. |
+| P.13 floor / leftover | leftover | load ~1.11× / journal_read / pi_messages / mistral still >1.0×. Invent paused. Not P.13 complete. | `docs/benchmarks/goal20-paired-over-1x.md`. G.17 still `missing`. |
