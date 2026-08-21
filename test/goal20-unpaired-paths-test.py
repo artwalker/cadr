@@ -319,6 +319,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(cache_version), 1)
         self.assertEqual(cache_version[0]["class"], "paired")
         self.assertIn("cli_sdk.version_newer", cache_version[0]["metrics"])
+        provider_defs = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/providers/definitions.lisp"
+        ]
+        self.assertEqual(len(provider_defs), 1)
+        self.assertEqual(provider_defs[0]["class"], "paired")
+        self.assertIn("provider_registry_defs.lookup", provider_defs[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

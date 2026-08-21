@@ -775,6 +775,20 @@ No network. Observed `beta` / `eq` / `older` /
 Friend-MachineD freeze **0.40×** (4.1 / 10.3 µs), ceiling
 8.0. Same commit no optimize.
 
+### Pair 54 — `provider_registry_defs`
+
+| metric | cadr | pi |
+|---|---|---|
+| `lookup` | `find-provider-definition` | `getBuiltinProviders` (`packages/ai/src/providers/all.ts`) |
+
+Presence of openai/anthropic/google and a miss.
+Time lookup, no socket. Observed `openai` / `anthropic` /
+`google` / `unknown` are exact (1 / 1 / 1 / 0). Catalog
+counts differ (cadr 40 / pi 39); not exact. Other
+registry files stay `needs-pair`. First Friend-MachineD
+freeze **4.44×** (1.03 / 0.23 µs), ceiling 8.0 (variance /
+microsecond floor). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -980,14 +994,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 106 | 52,968 | 41.6% | `no worse than baseline` is falsifiable |
+| `paired` | 107 | 54,008 | 42.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 146 | 54,027 | 42.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 145 | 52,987 | 41.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 41.6% of lines (106 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 47.4% of lines.
+- **Falsifiable vs baseline:** 42.4% of lines (107 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 48.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1054,6 +1068,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
 | `src/cadr-ai/providers/bedrock.lisp` | 934 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/codex.lisp` | 35 | `provider_codex.stream_roundtrip` |
+| `src/cadr-ai/providers/definitions.lisp` | 1,040 | `provider_registry_defs.lookup` |
 | `src/cadr-ai/providers/google.lisp` | 442 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | `provider_mistral.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
@@ -1173,7 +1188,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 7 | 1,724 |
 | `settings_load` | 4 | 1,499 |
-| `provider_registry_defs` | 3 | 1,494 |
 | `cli_sdk` | 4 | 1,214 |
 | `http_transport` | 1 | 858 |
 | `cli_support` | 12 | 822 |
@@ -1184,6 +1198,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_theme_overlay` | 1 | 562 |
 | `ai_support` | 5 | 560 |
 | `ai_capabilities` | 4 | 472 |
+| `provider_registry_defs` | 2 | 454 |
 | `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |

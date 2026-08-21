@@ -52,6 +52,7 @@
   "cli_support.strip_ansi",
   "cli_interactive_controller.decode_entity",
   "cli_sdk.version_newer",
+  "provider_registry_defs.lookup",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -869,8 +870,8 @@
   },
   {
    "prefix": "src/cadr-ai/providers/definitions.lisp",
-   "class": "needs-pair",
-   "hole": "provider_registry_defs"
+   "class": "paired",
+   "metrics": ["provider_registry_defs.lookup"]
   },
   {
    "prefix": "src/cadr-ai/providers/registry.lisp",

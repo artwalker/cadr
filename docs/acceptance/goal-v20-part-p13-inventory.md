@@ -243,10 +243,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-ai/providers/pi-messages.lisp` | 255 |
 
-### `provider_registry_defs` (required hole)
+### `provider_registry_defs` (required hole) — `definitions.lisp` paired `provider_registry_defs.lookup`
 
-- pi: `packages/ai/src/providers/all.ts + packages/ai/src/models.ts provider projection`
-- fixture: Covered by each new provider pair (dispatch + definition lookup). Do not invent a file-level empty bench; the first additional provider pair is the parent metric.
+- pi: `packages/ai/src/providers/all.ts getBuiltinProviders`
+- fixture: openai/anthropic/google present; unknown missing. Time lookup, no socket.
+- Friend-MachineD n=5: **4.44×** (1.03 / 0.23 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

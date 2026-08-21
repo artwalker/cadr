@@ -597,6 +597,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("newer_flag", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("equal_flag", paired.OBSERVED_EXACT["cli_sdk"])
 
+    def test_provider_registry_defs_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("provider_registry_defs.lookup", RECORD.METRIC_KEYS)
+        self.assertIn("lookup", paired.METRICS["provider_registry_defs"])
+        self.assertIn("provider_registry_defs.lookup", paired.RATIO_CEILINGS)
+        self.assertIn("openai", paired.OBSERVED_EXACT["provider_registry_defs"])
+        self.assertIn("google", paired.OBSERVED_EXACT["provider_registry_defs"])
+        self.assertIn("unknown", paired.OBSERVED_EXACT["provider_registry_defs"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -682,6 +691,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_support.strip_ansi`", section)
             self.assertIn("`cli_interactive_controller.decode_entity`", section)
             self.assertIn("`cli_sdk.version_newer`", section)
+            self.assertIn("`provider_registry_defs.lookup`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

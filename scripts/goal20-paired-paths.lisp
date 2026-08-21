@@ -50,6 +50,7 @@
 ;;;;  37. cli_support strip-ansi vs stripAnsi
 ;;;;  38. cli_interactive_controller decode-highlight-entity vs decodeHtmlEntity
 ;;;;  39. cli_sdk newer-package-version-p vs isNewerPackageVersion
+;;;;  40. provider_registry_defs list/find vs getBuiltinProviders
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -151,6 +152,7 @@
     ("cli_support.strip_ansi" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
+    ("provider_registry_defs.lookup" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3765,6 +3767,35 @@
                 (lambda ()
                   (run-cli-sdk-version-newer)))))))
 
+(defun provider-definition-present-p (id)
+  (handler-case
+      (progn
+        (cadr-ai::find-provider-definition id)
+        1)
+    (error () 0)))
+
+(defun run-provider-registry-defs ()
+  (list
+   (provider-definition-present-p :openai)
+   (provider-definition-present-p :anthropic)
+   (provider-definition-present-p :google)
+   (provider-definition-present-p :no-such-provider)))
+
+(defun measure-provider-registry-defs ()
+  (let ((observed (run-provider-registry-defs)))
+    (json-object
+     "observed"
+     (json-object
+      "openai" (first observed)
+      "anthropic" (second observed)
+      "google" (third observed)
+      "unknown" (fourth observed))
+     "lookup"
+     (collect "provider_registry_defs.lookup"
+              (lambda ()
+                (lambda ()
+                  (run-provider-registry-defs)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3905,6 +3936,8 @@
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"
       "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
+      "provider_registry_defs.lookup"
+      "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -4056,6 +4089,8 @@
               (let ((interactive (measure-cli-interactive-decode-entity)))
               (format *error-output* "goal20 cadr paired paths: cli_sdk~%")
               (let ((sdk (measure-cli-sdk-version-newer)))
+              (format *error-output* "goal20 cadr paired paths: provider_registry_defs~%")
+              (let ((provider-defs (measure-provider-registry-defs)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -4126,6 +4161,7 @@
               "cli_support" support
               "cli_interactive_controller" interactive
               "cli_sdk" sdk
+              "provider_registry_defs" provider-defs
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4142,7 +4178,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

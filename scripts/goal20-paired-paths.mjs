@@ -172,6 +172,7 @@ const REPETITIONS = {
 	"cli_support.strip_ansi": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
+	"provider_registry_defs.lookup": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -408,6 +409,7 @@ const hashModule = await import(moduleUrl("packages/ai/src/utils/hash.ts"));
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
+const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -3019,6 +3021,26 @@ async function measureCliSdkVersionNewer() {
 	};
 }
 
+function runProviderRegistryDefs() {
+	const providers = builtinProvidersModule.getBuiltinProviders();
+	return {
+		openai: providers.includes("openai") ? 1 : 0,
+		anthropic: providers.includes("anthropic") ? 1 : 0,
+		google: providers.includes("google") ? 1 : 0,
+		unknown: providers.includes("no-such-provider") ? 1 : 0,
+	};
+}
+
+async function measureProviderRegistryDefs() {
+	const observed = runProviderRegistryDefs();
+	return {
+		lookup: await collect("provider_registry_defs.lookup", () => {
+			return () => runProviderRegistryDefs();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3271,6 +3293,8 @@ process.stderr.write("goal20 pi paired paths: cli_interactive_controller\n");
 const cliInteractive = await measureCliInteractiveDecodeEntity();
 process.stderr.write("goal20 pi paired paths: cli_sdk\n");
 const cliSdk = await measureCliSdkVersionNewer();
+process.stderr.write("goal20 pi paired paths: provider_registry_defs\n");
+const providerRegistryDefs = await measureProviderRegistryDefs();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3360,6 +3384,8 @@ const result = {
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":
 				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
+			"provider_registry_defs.lookup":
+				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3455,6 +3481,7 @@ const result = {
 		cli_support: cliSupport,
 		cli_interactive_controller: cliInteractive,
 		cli_sdk: cliSdk,
+		provider_registry_defs: providerRegistryDefs,
 		render_slicing: renderSlicing,
 	},
 };
