@@ -125,6 +125,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(pkce), 1)
         self.assertEqual(pkce[0]["class"], "paired")
         self.assertIn("oauth_pkce.challenge_urls", pkce[0]["metrics"])
+        evals_summary = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-evals/summary.lisp"
+        ]
+        self.assertEqual(len(evals_summary), 1)
+        self.assertEqual(evals_summary[0]["class"], "paired")
+        self.assertIn("evals_harness.summarize", evals_summary[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

@@ -380,6 +380,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("openai_prefix", paired.OBSERVED_EXACT["oauth_pkce"])
         self.assertIn("anthropic_prefix", paired.OBSERVED_EXACT["oauth_pkce"])
 
+    def test_evals_harness_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("evals_harness.summarize", RECORD.METRIC_KEYS)
+        self.assertIn("summarize", paired.METRICS["evals_harness"])
+        self.assertIn("evals_harness.summarize", paired.RATIO_CEILINGS)
+        self.assertIn("eval_sets", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("candidate_wins", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ties", paired.OBSERVED_EXACT["evals_harness"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)

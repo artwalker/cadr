@@ -28,6 +28,7 @@
   "protocol_codec.roundtrip",
   "agent_proxy.stream_roundtrip",
   "oauth_pkce.challenge_urls",
+  "evals_harness.summarize",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1464,8 +1465,8 @@
   },
   {
    "prefix": "src/cadr-evals/package.lisp",
-   "class": "needs-pair",
-   "hole": "evals_harness"
+   "class": "covered-as-callee",
+   "metrics": ["evals_harness.summarize"]
   },
   {
    "prefix": "src/cadr-evals/reporter.lisp",
@@ -1479,8 +1480,8 @@
   },
   {
    "prefix": "src/cadr-evals/summary.lisp",
-   "class": "needs-pair",
-   "hole": "evals_harness"
+   "class": "paired",
+   "metrics": ["evals_harness.summarize"]
   },
   {
    "prefix": "src/cadr-protocol/cbor.lisp",

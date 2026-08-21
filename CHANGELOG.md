@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.summarize` (four scored
+  observations; cadr `summarize-harness-comparisons` vs pi
+  `summarizeHarnessComparisons`). Friend-MachineD n=5 **0.88×**
+  (8.0 / 9.0 µs), ceiling 1.5. Same commit no optimize. G.17
+  missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `oauth_pkce.challenge_urls` (RFC 7636
   verifier; cadr `pkce-challenge` + authorize URLs vs pi
   SHA-256 S256 + openai/anthropic URLs). Friend-MachineD n=5

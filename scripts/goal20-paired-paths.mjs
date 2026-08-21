@@ -148,6 +148,7 @@ const REPETITIONS = {
 	"protocol_codec.roundtrip": 50,
 	"agent_proxy.stream_roundtrip": 10,
 	"oauth_pkce.challenge_urls": 50,
+	"evals_harness.summarize": 20,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -335,6 +336,9 @@ const exportHtmlModule = await import(moduleUrl("packages/coding-agent/src/core/
 const cborModule = await import(moduleUrl("packages/protocol/src/cbor/index.ts"));
 const protocolCodecModule = await import(moduleUrl("packages/protocol/src/codec.ts"));
 const proxyModule = await import(moduleUrl("packages/agent/src/proxy.ts"));
+const evalsSummaryModule = await import(
+	moduleUrl("packages/evals/src/vitest-evals/summary.ts")
+);
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
@@ -2158,6 +2162,61 @@ async function runOauthPkce() {
 	};
 }
 
+function evalsHarnessObservation(harness, testName, score, extras = {}) {
+	return {
+		evalSet: "tool access",
+		groupKey: `["${testName}",1]`,
+		testName,
+		file: "src/tool-access.eval.ts",
+		harness,
+		baseline: "without-tools",
+		candidates: ["with-tools"],
+		repetition: 1,
+		outcome: "scored",
+		score,
+		...extras,
+	};
+}
+
+function evalsHarnessObservations() {
+	return [
+		evalsHarnessObservation("without-tools", "create", 0, {
+			totalTokens: 100,
+			totalMs: 1000,
+			estimatedCostUsd: 0.01,
+		}),
+		evalsHarnessObservation("with-tools", "create", 1, {
+			totalTokens: 120,
+			totalMs: 800,
+			estimatedCostUsd: 0.02,
+		}),
+		evalsHarnessObservation("without-tools", "inspect", 1, { totalTokens: 200 }),
+		evalsHarnessObservation("with-tools", "inspect", 1, { totalTokens: 180 }),
+	];
+}
+
+function runEvalsHarnessSummarize() {
+	const report = evalsSummaryModule.summarizeHarnessComparisons(evalsHarnessObservations());
+	const comparison = report.evalSets[0]?.comparisons[0];
+	const correctness = comparison?.correctness;
+	return {
+		eval_sets: report.evalSets.length,
+		comparisons: report.evalSets[0]?.comparisons.length ?? 0,
+		candidate_wins: correctness?.candidateWins ?? 0,
+		ties: correctness?.ties ?? 0,
+	};
+}
+
+async function measureEvalsHarness() {
+	const observed = runEvalsHarnessSummarize();
+	return {
+		summarize: await collect("evals_harness.summarize", () => {
+			return () => runEvalsHarnessSummarize();
+		}),
+		observed,
+	};
+}
+
 async function measureOauthPkce() {
 	const observed = await runOauthPkce();
 	return {
@@ -2372,6 +2431,8 @@ process.stderr.write("goal20 pi paired paths: agent_proxy\n");
 const agentProxy = await measureAgentProxy();
 process.stderr.write("goal20 pi paired paths: oauth_pkce\n");
 const oauthPkce = await measureOauthPkce();
+process.stderr.write("goal20 pi paired paths: evals_harness\n");
+const evalsHarness = await measureEvalsHarness();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2417,6 +2478,8 @@ const result = {
 			"agent_proxy.stream_roundtrip": "packages/agent/src/proxy.ts streamProxy",
 			"oauth_pkce.challenge_urls":
 				"packages/ai/src/auth/oauth/pkce.ts SHA-256 challenge + openai-codex/anthropic authorize URLs",
+			"evals_harness.summarize":
+				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2488,6 +2551,7 @@ const result = {
 		protocol_codec: protocolCodec,
 		agent_proxy: agentProxy,
 		oauth_pkce: oauthPkce,
+		evals_harness: evalsHarness,
 		render_slicing: renderSlicing,
 	},
 };

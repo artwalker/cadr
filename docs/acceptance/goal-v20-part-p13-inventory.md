@@ -659,10 +659,11 @@ These must not be filed as callees.
 | `src/cadr-tui/composition/loaders.lisp` | 235 |
 | `src/cadr-tui/composition/settings-list.lisp` | 470 |
 
-### `evals_harness` (additional)
+### `evals_harness` (additional) — `summary.lisp` paired `evals_harness.summarize`
 
-- pi: `packages/evals/src/* + packages/evals/scripts/run-evals.mjs`
-- fixture: Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.
+- pi: `packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons`
+- fixture: Four scored harness observations (tool access create/inspect). Time report assembly, not a live eval.
+- Friend-MachineD n=5: **0.88×** (8.0 / 9.0 µs), ceiling 1.5. Other evals files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

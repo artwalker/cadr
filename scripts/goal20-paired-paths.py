@@ -109,6 +109,7 @@ METRICS = {
     "protocol_codec": ("roundtrip",),
     "agent_proxy": ("stream_roundtrip",),
     "oauth_pkce": ("challenge_urls",),
+    "evals_harness": ("summarize",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -241,6 +242,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent.
     # Ratchet down only.
     "oauth_pkce.challenge_urls": 1.5,
+    # Frozen from the first Friend-MachineD non-quick evals_harness
+    # pair (samples=5): observed 0.88x (8.0 / 9.0 us). cadr leads.
+    # 1.5 follows the list_models_registry / render_slicing precedent.
+    # Ratchet down only.
+    "evals_harness.summarize": 1.5,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -488,6 +494,12 @@ OBSERVED_EXACT = {
         "anthropic_has_challenge",
         "openai_prefix",
         "anthropic_prefix",
+    ),
+    "evals_harness": (
+        "eval_sets",
+        "comparisons",
+        "candidate_wins",
+        "ties",
     ),
     "resource_loader": (
         "skill_count",

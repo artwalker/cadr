@@ -45,6 +45,7 @@ METRIC_KEYS = (
     "protocol_codec.roundtrip",
     "agent_proxy.stream_roundtrip",
     "oauth_pkce.challenge_urls",
+    "evals_harness.summarize",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

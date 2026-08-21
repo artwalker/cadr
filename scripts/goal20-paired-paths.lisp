@@ -26,6 +26,7 @@
 ;;;;  13. protocol_codec encode-client-message + decoder vs encodeClientMessage
 ;;;;  14. agent_proxy stream-proxy vs streamProxy (stub SSE, no socket)
 ;;;;  15. oauth_pkce recorded verifier → challenge + authorize URLs
+;;;;  16. evals_harness summarize-harness-comparisons vs summarizeHarnessComparisons
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -50,13 +51,15 @@
                   "cadr-agent.asd"
                   "cadr-tui.asd"
                   "cadr-cli.asd"
-                  "cadr-protocol.asd"))
+                  "cadr-protocol.asd"
+                  "cadr-evals.asd"))
     (asdf:load-asd
      (truename
       (merge-pathnames
        name cl-user::*cadr-bench-project-directory*))))
   (asdf:load-system "cadr-cli" :verbose nil)
-  (asdf:load-system "cadr-protocol" :verbose nil))
+  (asdf:load-system "cadr-protocol" :verbose nil)
+  (asdf:load-system "cadr-evals" :verbose nil))
 
 (defpackage #:cadr-goal20-paired-paths
   (:use #:cl))
@@ -101,6 +104,7 @@
     ("protocol_codec.roundtrip" . 50)
     ("agent_proxy.stream_roundtrip" . 10)
     ("oauth_pkce.challenge_urls" . 50)
+    ("evals_harness.summarize" . 20)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2721,6 +2725,79 @@
                 (lambda ()
                   (run-oauth-pkce)))))))
 
+(defun evals-harness-observation
+    (harness test-name score
+     &key total-tokens total-ms estimated-cost-usd)
+  (apply
+   #'cadr-evals:make-harness-observation
+   :eval-set "tool access"
+   :group-key (format nil "[\"~A\",1]" test-name)
+   :test-name test-name
+   :file "src/tool-access.eval.ts"
+   :harness harness
+   :baseline "without-tools"
+   :candidates '("with-tools")
+   :repetition 1
+   :outcome :scored
+   :score score
+   (append
+    (when total-tokens (list :total-tokens total-tokens))
+    (when total-ms (list :total-ms total-ms))
+    (when estimated-cost-usd
+      (list :estimated-cost-usd estimated-cost-usd)))))
+
+(defun evals-harness-observations ()
+  (list
+   (evals-harness-observation
+    "without-tools" "create" 0
+    :total-tokens 100 :total-ms 1000 :estimated-cost-usd 0.01d0)
+   (evals-harness-observation
+    "with-tools" "create" 1
+    :total-tokens 120 :total-ms 800 :estimated-cost-usd 0.02d0)
+   (evals-harness-observation
+    "without-tools" "inspect" 1 :total-tokens 200)
+   (evals-harness-observation
+    "with-tools" "inspect" 1 :total-tokens 180)))
+
+(defun run-evals-harness-summarize ()
+  (let* ((report
+           (cadr-evals:summarize-harness-comparisons
+            (evals-harness-observations)))
+         (sets
+           (cadr-evals:harness-comparison-report-eval-sets
+            report))
+         (comparison
+           (first
+            (cadr-evals:harness-eval-set-report-comparisons
+             (first sets))))
+         (correctness
+           (cadr-evals:harness-pair-comparison-correctness
+            comparison)))
+    (list
+     (length sets)
+     (length
+      (cadr-evals:harness-eval-set-report-comparisons
+       (first sets)))
+     (cadr-evals:correctness-lift-summary-candidate-wins
+      correctness)
+     (cadr-evals:correctness-lift-summary-ties
+      correctness))))
+
+(defun measure-evals-harness ()
+  (let ((observed (run-evals-harness-summarize)))
+    (json-object
+     "observed"
+     (json-object
+      "eval_sets" (first observed)
+      "comparisons" (second observed)
+      "candidate_wins" (third observed)
+      "ties" (fourth observed))
+     "summarize"
+     (collect "evals_harness.summarize"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-summarize)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2813,6 +2890,8 @@
       "src/cadr-agent/proxy.lisp stream-proxy"
       "oauth_pkce.challenge_urls"
       "src/cadr-ai/oauth/pkce.lisp pkce-challenge + openai/anthropic-authorization-url"
+      "evals_harness.summarize"
+      "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2916,6 +2995,8 @@
               (let ((proxy (measure-agent-proxy)))
               (format *error-output* "goal20 cadr paired paths: oauth_pkce~%")
               (let ((oauth (measure-oauth-pkce)))
+              (format *error-output* "goal20 cadr paired paths: evals_harness~%")
+              (let ((evals (measure-evals-harness)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2962,6 +3043,7 @@
               "protocol_codec" codec
               "agent_proxy" proxy
               "oauth_pkce" oauth
+              "evals_harness" evals
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2978,7 +3060,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

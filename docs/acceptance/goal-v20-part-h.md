@@ -438,6 +438,19 @@ and `*_has_challenge` are exact. Other oauth_pkce_device files
 stay `needs-pair`. First Friend-MachineD freeze **0.37×**
 (50.6 / 135.3 µs), ceiling 1.5. Same commit no optimize.
 
+### Pair 30 — `evals_harness`
+
+| metric | cadr | pi |
+|---|---|---|
+| `summarize` | `summarize-harness-comparisons` | `summarizeHarnessComparisons` |
+
+Same four scored observations as the FiveAM summary test (tool
+access create/inspect). Time report assembly, not a live eval
+run. Observed `eval_sets` / `comparisons` / `candidate_wins` /
+`ties` are exact. Other evals files stay `needs-pair`. First
+Friend-MachineD freeze **0.88×** (8.0 / 9.0 µs), ceiling 1.5.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -643,14 +656,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 82 | 42,615 | 33.5% | `no worse than baseline` is falsifiable |
+| `paired` | 83 | 43,347 | 34.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `covered-as-callee` | 18 | 12,819 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 171 | 64,480 | 50.6% | must get an H pair; not a file-level idle bench |
+| `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
+| `needs-pair` | 169 | 63,648 | 50.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 33.5% of lines (82 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 39.3% of lines.
+- **Falsifiable vs baseline:** 34.0% of lines (83 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 39.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -742,6 +755,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
+| `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize` |
 | `src/cadr-protocol/cbor.lisp` | 492 | `protocol_cbor.roundtrip` |
 | `src/cadr-protocol/codec.lisp` | 121 | `protocol_codec.roundtrip` |
 | `src/cadr-protocol/framing.lisp` | 170 | `protocol_codec.roundtrip` |
@@ -787,6 +801,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-core/package.lisp` | 43 | `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-core/paths.lisp` | 95 | `cli_dispatch.list_models_registry` |
 | `src/cadr-core/time.lisp` | 133 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-evals/package.lisp` | 100 | `evals_harness.summarize` |
 | `src/cadr-protocol/package.lisp` | 33 | `protocol_cbor.roundtrip`, `protocol_codec.roundtrip` |
 | `src/cadr-tui/components/status.lisp` | 253 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/package.lisp` | 355 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input`, `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
@@ -805,9 +820,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_mermaid` | 12 | 5,042 |
 | `agent_tool_loop` | 13 | 4,094 |
 | `cli_extensions_install` | 9 | 3,489 |
-| `evals_harness` | 8 | 3,016 |
 | `image_runtime` | 6 | 2,777 |
 | `cli_print_rpc` | 8 | 2,302 |
+| `evals_harness` | 6 | 2,184 |
 | `oauth_pkce_device` | 13 | 2,081 |
 | `tui_latex` | 1 | 1,950 |
 | `tui_editor_helpers` | 9 | 1,890 |
