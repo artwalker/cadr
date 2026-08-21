@@ -848,6 +848,20 @@ port (cadr 443 vs empty `URL.port`) or query-in-path
 **0.99×** (1.16 / 1.17 µs), ceiling 8.0 (variance). Same
 commit no optimize.
 
+### Pair 59 — `cli_support` (normalize_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `normalize_path` | `normalize-path-input` | `normalizePath` (`packages/coding-agent/src/utils/paths.ts`) |
+
+Leftover sibling of `strip_ansi`. Fixtures: trim
+`  /tmp/foo  `, `@rel` strip, unicode NBSP, `~/x` with
+home `/tmp/home`, `file:///tmp/z`. Time normalize, no
+TUI, no socket. Observed `trim` / `at` / `nbsp` /
+`tilde` / `file` are exact. First Friend-MachineD freeze
+**2.82×** (4.58 / 1.63 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1053,13 +1067,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 111 | 55,774 | 43.8% | `no worse than baseline` is falsifiable |
+| `paired` | 112 | 55,893 | 43.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 141 | 51,221 | 40.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 140 | 51,102 | 40.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 43.8% of lines (111 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 43.9% of lines (112 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 49.7% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -1162,6 +1176,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi` |
+| `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
@@ -1252,7 +1267,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_print_rpc` | 7 | 1,724 |
 | `settings_load` | 4 | 1,499 |
 | `cli_sdk` | 4 | 1,214 |
-| `cli_support` | 12 | 822 |
+| `cli_support` | 11 | 703 |
 | `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |

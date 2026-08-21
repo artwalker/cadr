@@ -301,6 +301,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(strip_ansi), 1)
         self.assertEqual(strip_ansi[0]["class"], "paired")
         self.assertIn("cli_support.strip_ansi", strip_ansi[0]["metrics"])
+        normalize_path = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/support/paths.lisp"
+        ]
+        self.assertEqual(len(normalize_path), 1)
+        self.assertEqual(normalize_path[0]["class"], "paired")
+        self.assertIn("cli_support.normalize_path", normalize_path[0]["metrics"])
         decode_entity = [
             row
             for row in classified["rows"]

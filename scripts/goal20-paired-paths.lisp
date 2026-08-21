@@ -55,6 +55,7 @@
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
+;;;;  45. cli_support normalize-path-input vs normalizePath
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -154,6 +155,7 @@
     ("tui_settings_list.apply_filter" . 50)
     ("ai_capabilities.short_hash" . 50)
     ("cli_support.strip_ansi" . 50)
+    ("cli_support.normalize_path" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
@@ -3698,20 +3700,46 @@
    (cadr-cli::strip-ansi (format nil "~Cmok" #\Escape))
    (cadr-cli::strip-ansi "hello")))
 
+(defun run-cli-support-normalize-path ()
+  (let ((nbsp (code-char #x00a0)))
+    (list
+     (cadr-cli::normalize-path-input
+      "  /tmp/foo  " :trim-p t :expand-tilde-p nil)
+     (cadr-cli::normalize-path-input
+      "@rel" :strip-at-prefix-p t :expand-tilde-p nil)
+     (cadr-cli::normalize-path-input
+      (format nil "a~Ab" nbsp)
+      :normalize-unicode-spaces-p t :expand-tilde-p nil)
+     (cadr-cli::normalize-path-input
+      "~/x" :home-directory "/tmp/home")
+     (cadr-cli::normalize-path-input
+      "file:///tmp/z" :expand-tilde-p nil))))
+
 (defun measure-cli-support-strip-ansi ()
-  (let ((observed (run-cli-support-strip-ansi)))
+  (let ((ansi (run-cli-support-strip-ansi))
+        (paths (run-cli-support-normalize-path)))
     (json-object
      "observed"
      (json-object
-      "csi_osc" (first observed)
-      "ris" (second observed)
-      "single" (third observed)
-      "plain" (fourth observed))
+      "csi_osc" (first ansi)
+      "ris" (second ansi)
+      "single" (third ansi)
+      "plain" (fourth ansi)
+      "trim" (first paths)
+      "at" (second paths)
+      "nbsp" (third paths)
+      "tilde" (fourth paths)
+      "file" (fifth paths))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-strip-ansi)))))))
+                  (run-cli-support-strip-ansi))))
+     "normalize_path"
+     (collect "cli_support.normalize_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-normalize-path)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -4068,6 +4096,8 @@
       "src/cadr-ai/capabilities/streaming-json.lisp short-hash"
       "cli_support.strip_ansi"
       "src/cadr-cli/support/changelog-share.lisp strip-ansi"
+      "cli_support.normalize_path"
+      "src/cadr-cli/support/paths.lisp normalize-path-input"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"

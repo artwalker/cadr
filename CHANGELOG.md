@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.normalize_path`
+  (trim / @strip / unicode-nbsp / tilde+home /
+  `file:///tmp/z`; cadr `normalize-path-input` vs pi
+  `normalizePath`). Friend-MachineD n=5 **2.82×**
+  (4.58 / 1.63 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `http_transport.parse_url`
   (`https://example.com/foo` + `http://localhost:8080/bar`;
   cadr `parse-http-url` vs WHATWG `URL`). Friend-MachineD

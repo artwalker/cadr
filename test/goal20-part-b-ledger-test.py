@@ -573,11 +573,17 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_cli_support_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("cli_support.strip_ansi", RECORD.METRIC_KEYS)
+        self.assertIn("cli_support.normalize_path", RECORD.METRIC_KEYS)
         self.assertIn("strip_ansi", paired.METRICS["cli_support"])
+        self.assertIn("normalize_path", paired.METRICS["cli_support"])
         self.assertIn("cli_support.strip_ansi", paired.RATIO_CEILINGS)
+        self.assertIn("cli_support.normalize_path", paired.RATIO_CEILINGS)
         self.assertIn("csi_osc", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("ris", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("plain", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("trim", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("tilde", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("file", paired.OBSERVED_EXACT["cli_support"])
 
     def test_cli_interactive_controller_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -725,6 +731,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_settings_list.apply_filter`", section)
             self.assertIn("`ai_capabilities.short_hash`", section)
             self.assertIn("`cli_support.strip_ansi`", section)
+            self.assertIn("`cli_support.normalize_path`", section)
             self.assertIn("`cli_interactive_controller.decode_entity`", section)
             self.assertIn("`cli_sdk.version_newer`", section)
             self.assertIn("`provider_registry_defs.lookup`", section)

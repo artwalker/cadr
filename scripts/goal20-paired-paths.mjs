@@ -170,6 +170,7 @@ const REPETITIONS = {
 	"tui_settings_list.apply_filter": 50,
 	"ai_capabilities.short_hash": 50,
 	"cli_support.strip_ansi": 50,
+	"cli_support.normalize_path": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -411,6 +412,7 @@ const nativeModifiersModule = await import(moduleUrl("packages/tui/src/native-mo
 const settingsListModule = await import(moduleUrl("packages/tui/src/components/settings-list.ts"));
 const hashModule = await import(moduleUrl("packages/ai/src/utils/hash.ts"));
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
+const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
@@ -2972,13 +2974,30 @@ function runCliSupportStripAnsi() {
 	};
 }
 
+function runCliSupportNormalizePath() {
+	return {
+		trim: pathsModule.normalizePath("  /tmp/foo  ", { trim: true, expandTilde: false }),
+		at: pathsModule.normalizePath("@rel", { stripAtPrefix: true, expandTilde: false }),
+		nbsp: pathsModule.normalizePath("a\u00a0b", {
+			normalizeUnicodeSpaces: true,
+			expandTilde: false,
+		}),
+		tilde: pathsModule.normalizePath("~/x", { homeDir: "/tmp/home" }),
+		file: pathsModule.normalizePath("file:///tmp/z", { expandTilde: false }),
+	};
+}
+
 async function measureCliSupportStripAnsi() {
-	const observed = runCliSupportStripAnsi();
+	const ansi = runCliSupportStripAnsi();
+	const paths = runCliSupportNormalizePath();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
 		}),
-		observed,
+		normalize_path: await collect("cli_support.normalize_path", () => {
+			return () => runCliSupportNormalizePath();
+		}),
+		observed: { ...ansi, ...paths },
 	};
 }
 
@@ -3500,6 +3519,8 @@ const result = {
 				"packages/tui/src/components/settings-list.ts SettingsList.applyFilter",
 			"ai_capabilities.short_hash": "packages/ai/src/utils/hash.ts shortHash",
 			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
+			"cli_support.normalize_path":
+				"packages/coding-agent/src/utils/paths.ts normalizePath",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":
