@@ -524,6 +524,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("enter_submit", paired.OBSERVED_EXACT["tui_keybindings"])
         self.assertIn("conflict_count", paired.OBSERVED_EXACT["tui_keybindings"])
 
+    def test_tui_stdin_buffer_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tui_stdin_buffer.process", RECORD.METRIC_KEYS)
+        self.assertIn("process", paired.METRICS["tui_stdin_buffer"])
+        self.assertIn("tui_stdin_buffer.process", paired.RATIO_CEILINGS)
+        self.assertIn("hello_count", paired.OBSERVED_EXACT["tui_stdin_buffer"])
+        self.assertIn("leftover", paired.OBSERVED_EXACT["tui_stdin_buffer"])
+        self.assertIn("paste_len", paired.OBSERVED_EXACT["tui_stdin_buffer"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -601,6 +610,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_undo_stack.push_pop`", section)
             self.assertIn("`tui_autocomplete.suggest_apply`", section)
             self.assertIn("`tui_keybindings.resolve_match`", section)
+            self.assertIn("`tui_stdin_buffer.process`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

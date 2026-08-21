@@ -663,6 +663,20 @@ editor-helper files stay `needs-pair`. First
 Friend-MachineD freeze **1.88×** (27.7 / 14.8 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 46 — `tui_stdin_buffer`
+
+| metric | cadr | pi |
+|---|---|---|
+| `process` | `stdin-buffer-process` | `StdinBuffer.process` (`packages/tui/src/stdin-buffer.ts`) |
+
+`hello`, incomplete CSI `ESC[`, complete `A` (up),
+bracketed paste `hi` then `x`. Time the buffer, not a
+TUI frame. Observed `hello_count` / `leftover` /
+`up_len` / `paste_len` / `tail_count` are exact
+(5 / 2 / 3 / 2 / 1). Other editor-helper files stay
+`needs-pair`. First Friend-MachineD freeze **0.33×**
+(2.3 / 6.9 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -868,14 +882,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 98 | 49,689 | 39.0% | `no worse than baseline` is falsifiable |
+| `paired` | 99 | 49,921 | 39.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 154 | 57,306 | 45.0% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 153 | 57,074 | 44.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 39.0% of lines (98 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 44.9% of lines.
+- **Falsifiable vs baseline:** 39.2% of lines (99 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 45.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1001,6 +1015,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/renderer/main-screen.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 78 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/stdin-buffer.lisp` | 232 | `tui_stdin_buffer.process` |
 | `src/cadr-tui/terminal-colors.lisp` | 191 | `tui_theme_overlay.osc11_bg` |
 | `src/cadr-tui/terminal-image.lisp` | 686 | `image_runtime.dimensions` |
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -1057,7 +1072,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `provider_registry_defs` | 3 | 1,494 |
 | `cli_support` | 13 | 1,164 |
 | `http_transport` | 1 | 858 |
-| `tui_editor_helpers` | 3 | 718 |
 | `tui_select_settings_loaders` | 2 | 705 |
 | `cli_models_rest` | 2 | 698 |
 | `skill_prompt_load` | 3 | 641 |
@@ -1066,6 +1080,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `ai_runtime_faux` | 1 | 601 |
 | `tui_theme_overlay` | 1 | 562 |
 | `ai_support` | 5 | 560 |
+| `tui_editor_helpers` | 2 | 486 |
 | `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |
 | `session_compact` | 1 | 185 |

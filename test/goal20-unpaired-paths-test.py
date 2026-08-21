@@ -253,6 +253,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(keybindings), 1)
         self.assertEqual(keybindings[0]["class"], "paired")
         self.assertIn("tui_keybindings.resolve_match", keybindings[0]["metrics"])
+        stdin_buffer = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/stdin-buffer.lisp"
+        ]
+        self.assertEqual(len(stdin_buffer), 1)
+        self.assertEqual(stdin_buffer[0]["class"], "paired")
+        self.assertIn("tui_stdin_buffer.process", stdin_buffer[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

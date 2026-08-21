@@ -44,6 +44,7 @@
   "tui_undo_stack.push_pop",
   "tui_autocomplete.suggest_apply",
   "tui_keybindings.resolve_match",
+  "tui_stdin_buffer.process",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1660,8 +1661,8 @@
   },
   {
    "prefix": "src/cadr-tui/stdin-buffer.lisp",
-   "class": "needs-pair",
-   "hole": "tui_editor_helpers"
+   "class": "paired",
+   "metrics": ["tui_stdin_buffer.process"]
   },
   {
    "prefix": "src/cadr-tui/terminal-colors.lisp",

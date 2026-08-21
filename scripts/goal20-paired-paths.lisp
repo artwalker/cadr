@@ -42,6 +42,7 @@
 ;;;;  29. tui_undo_stack undo-stack-push/pop/clear vs UndoStack
 ;;;;  30. tui_autocomplete get-suggestions + apply vs CombinedAutocompleteProvider
 ;;;;  31. tui_keybindings make-keybindings-manager vs KeybindingsManager / getKeybindings
+;;;;  32. tui_stdin_buffer stdin-buffer-process vs StdinBuffer.process
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -135,6 +136,7 @@
     ("tui_undo_stack.push_pop" . 50)
     ("tui_autocomplete.suggest_apply" . 50)
     ("tui_keybindings.resolve_match" . 50)
+    ("tui_stdin_buffer.process" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3463,6 +3465,45 @@
                 (lambda ()
                   (run-tui-keybindings)))))))
 
+(defun run-tui-stdin-buffer ()
+  (let ((buffer (cadr-tui:make-stdin-buffer)))
+    (multiple-value-bind (hello-seq)
+        (cadr-tui:stdin-buffer-process buffer "hello")
+      (cadr-tui:stdin-buffer-process
+       buffer (format nil "~C[" #\Escape))
+      (let ((leftover
+              (length (cadr-tui:stdin-buffer-contents buffer))))
+        (multiple-value-bind (up-seq)
+            (cadr-tui:stdin-buffer-process buffer "A")
+          (multiple-value-bind (tail-seq paste-seq)
+              (cadr-tui:stdin-buffer-process
+               buffer
+               (format nil "~C[200~~hi~C[201~~x"
+                       #\Escape #\Escape))
+            (cadr-tui:stdin-buffer-destroy buffer)
+            (list
+             (length hello-seq)
+             leftover
+             (length (or (first up-seq) ""))
+             (length (or (first paste-seq) ""))
+             (length tail-seq))))))))
+
+(defun measure-tui-stdin-buffer ()
+  (let ((observed (run-tui-stdin-buffer)))
+    (json-object
+     "observed"
+     (json-object
+      "hello_count" (first observed)
+      "leftover" (second observed)
+      "up_len" (third observed)
+      "paste_len" (fourth observed)
+      "tail_count" (fifth observed))
+     "process"
+     (collect "tui_stdin_buffer.process"
+              (lambda ()
+                (lambda ()
+                  (run-tui-stdin-buffer)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3587,6 +3628,8 @@
       "src/cadr-tui/autocomplete.lisp autocomplete-get-suggestions + autocomplete-apply"
       "tui_keybindings.resolve_match"
       "src/cadr-tui/keybindings.lisp make-keybindings-manager + keybinding-keys + keybinding-matches-p"
+      "tui_stdin_buffer.process"
+      "src/cadr-tui/stdin-buffer.lisp stdin-buffer-process"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3722,6 +3765,8 @@
               (let ((autocomplete (measure-tui-autocomplete)))
               (format *error-output* "goal20 cadr paired paths: tui_keybindings~%")
               (let ((keybindings (measure-tui-keybindings)))
+              (format *error-output* "goal20 cadr paired paths: tui_stdin_buffer~%")
+              (let ((stdin-buffer (measure-tui-stdin-buffer)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3784,6 +3829,7 @@
               "tui_undo_stack" undo-stack
               "tui_autocomplete" autocomplete
               "tui_keybindings" keybindings
+              "tui_stdin_buffer" stdin-buffer
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3800,7 +3846,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

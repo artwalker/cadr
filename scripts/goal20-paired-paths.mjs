@@ -164,6 +164,7 @@ const REPETITIONS = {
 	"tui_undo_stack.push_pop": 50,
 	"tui_autocomplete.suggest_apply": 50,
 	"tui_keybindings.resolve_match": 50,
+	"tui_stdin_buffer.process": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -392,6 +393,7 @@ const killRingModule = await import(moduleUrl("packages/tui/src/kill-ring.ts"));
 const undoStackModule = await import(moduleUrl("packages/tui/src/undo-stack.ts"));
 const autocompleteModule = await import(moduleUrl("packages/tui/src/autocomplete.ts"));
 const keybindingsModule = await import(moduleUrl("packages/tui/src/keybindings.ts"));
+const stdinBufferModule = await import(moduleUrl("packages/tui/src/stdin-buffer.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2772,6 +2774,41 @@ async function measureTuiKeybindings() {
 	};
 }
 
+function runTuiStdinBuffer() {
+	const buffer = new stdinBufferModule.StdinBuffer({ timeout: 50 });
+	const data = [];
+	const pastes = [];
+	buffer.on("data", (sequence) => data.push(sequence));
+	buffer.on("paste", (text) => pastes.push(text));
+	buffer.process("hello");
+	const helloCount = data.length;
+	buffer.process("\x1b[");
+	const leftover = buffer.getBuffer().length;
+	buffer.process("A");
+	const upLen = (data[data.length - 1] ?? "").length;
+	buffer.process("\x1b[200~hi\x1b[201~x");
+	const pasteLen = (pastes[0] ?? "").length;
+	const tailCount = data[data.length - 1] === "x" ? 1 : 0;
+	buffer.destroy();
+	return {
+		hello_count: helloCount,
+		leftover,
+		up_len: upLen,
+		paste_len: pasteLen,
+		tail_count: tailCount,
+	};
+}
+
+async function measureTuiStdinBuffer() {
+	const observed = runTuiStdinBuffer();
+	return {
+		process: await collect("tui_stdin_buffer.process", () => {
+			return () => runTuiStdinBuffer();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3008,6 +3045,8 @@ process.stderr.write("goal20 pi paired paths: tui_autocomplete\n");
 const tuiAutocomplete = await measureTuiAutocomplete();
 process.stderr.write("goal20 pi paired paths: tui_keybindings\n");
 const tuiKeybindings = await measureTuiKeybindings();
+process.stderr.write("goal20 pi paired paths: tui_stdin_buffer\n");
+const tuiStdinBuffer = await measureTuiStdinBuffer();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3083,6 +3122,8 @@ const result = {
 				"packages/tui/src/autocomplete.ts CombinedAutocompleteProvider.getSuggestions + applyCompletion",
 			"tui_keybindings.resolve_match":
 				"packages/tui/src/keybindings.ts KeybindingsManager / getKeybindings",
+			"tui_stdin_buffer.process":
+				"packages/tui/src/stdin-buffer.ts StdinBuffer.process",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3170,6 +3211,7 @@ const result = {
 		tui_undo_stack: tuiUndoStack,
 		tui_autocomplete: tuiAutocomplete,
 		tui_keybindings: tuiKeybindings,
+		tui_stdin_buffer: tuiStdinBuffer,
 		render_slicing: renderSlicing,
 	},
 };

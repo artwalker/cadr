@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_stdin_buffer.process` (`hello` +
+  incomplete CSI + up + bracketed paste; cadr
+  `stdin-buffer-process` vs pi `StdinBuffer.process`).
+  Friend-MachineD n=5 **0.33×** (2.3 / 6.9 µs), ceiling
+  8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `tui_keybindings.resolve_match` (default
   TUI registry + `ctrl+k` clash; cadr
   `make-keybindings-manager` vs pi `KeybindingsManager`).
