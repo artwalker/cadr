@@ -55,6 +55,7 @@
   "provider_registry_defs.lookup",
   "skill_prompt_load.build_prompt",
   "cli_bootstrap_sessions.coding_tools",
+  "ai_runtime_faux.blocks",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -887,8 +888,8 @@
   },
   {
    "prefix": "src/cadr-ai/runtime/faux-provider.lisp",
-   "class": "needs-pair",
-   "hole": "ai_runtime_faux"
+   "class": "paired",
+   "metrics": ["ai_runtime_faux.blocks"]
   },
   {
    "prefix": "src/cadr-ai/runtime/models.lisp",

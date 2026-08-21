@@ -624,6 +624,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("baseline", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("read_first", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
 
+    def test_ai_runtime_faux_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("ai_runtime_faux.blocks", RECORD.METRIC_KEYS)
+        self.assertIn("blocks", paired.METRICS["ai_runtime_faux"])
+        self.assertIn("ai_runtime_faux.blocks", paired.RATIO_CEILINGS)
+        self.assertIn("text_len", paired.OBSERVED_EXACT["ai_runtime_faux"])
+        self.assertIn("text", paired.OBSERVED_EXACT["ai_runtime_faux"])
+        self.assertIn("think", paired.OBSERVED_EXACT["ai_runtime_faux"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -712,6 +721,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`provider_registry_defs.lookup`", section)
             self.assertIn("`skill_prompt_load.build_prompt`", section)
             self.assertIn("`cli_bootstrap_sessions.coding_tools`", section)
+            self.assertIn("`ai_runtime_faux.blocks`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

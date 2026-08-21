@@ -53,6 +53,7 @@
 ;;;;  40. provider_registry_defs list/find vs getBuiltinProviders
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
+;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -157,6 +158,7 @@
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
+    ("ai_runtime_faux.blocks" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3874,6 +3876,30 @@
                 (lambda ()
                   (run-cli-bootstrap-coding-tools)))))))
 
+(defun run-ai-runtime-faux-blocks ()
+  (let ((text (cadr-ai:faux-text "hello"))
+        (think (cadr-ai:faux-thinking "hmm")))
+    (list
+     (length (cadr-ai:text-content-text text))
+     (cadr-ai:text-content-text text)
+     (length (cadr-ai:thinking-content-thinking think))
+     (cadr-ai:thinking-content-thinking think))))
+
+(defun measure-ai-runtime-faux-blocks ()
+  (let ((observed (run-ai-runtime-faux-blocks)))
+    (json-object
+     "observed"
+     (json-object
+      "text_len" (first observed)
+      "text" (second observed)
+      "think_len" (third observed)
+      "think" (fourth observed))
+     "blocks"
+     (collect "ai_runtime_faux.blocks"
+              (lambda ()
+                (lambda ()
+                  (run-ai-runtime-faux-blocks)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -4020,6 +4046,8 @@
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "cli_bootstrap_sessions.coding_tools"
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
+      "ai_runtime_faux.blocks"
+      "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -4177,6 +4205,8 @@
               (let ((skill-prompt (measure-skill-prompt-build)))
               (format *error-output* "goal20 cadr paired paths: cli_bootstrap_sessions~%")
               (let ((bootstrap (measure-cli-bootstrap-coding-tools)))
+              (format *error-output* "goal20 cadr paired paths: ai_runtime_faux~%")
+              (let ((faux (measure-ai-runtime-faux-blocks)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -4250,6 +4280,7 @@
               "provider_registry_defs" provider-defs
               "skill_prompt_load" skill-prompt
               "cli_bootstrap_sessions" bootstrap
+              "ai_runtime_faux" faux
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4266,7 +4297,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

@@ -175,6 +175,7 @@ const REPETITIONS = {
 	"provider_registry_defs.lookup": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
+	"ai_runtime_faux.blocks": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -414,6 +415,7 @@ const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/uti
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
+const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -3105,6 +3107,27 @@ async function measureCliBootstrapCodingTools() {
 	};
 }
 
+function runAiRuntimeFauxBlocks() {
+	const text = fauxProviderModule.fauxText("hello");
+	const think = fauxProviderModule.fauxThinking("hmm");
+	return {
+		text_len: text.text.length,
+		text: text.text,
+		think_len: think.thinking.length,
+		think: think.thinking,
+	};
+}
+
+async function measureAiRuntimeFauxBlocks() {
+	const observed = runAiRuntimeFauxBlocks();
+	return {
+		blocks: await collect("ai_runtime_faux.blocks", () => {
+			return () => runAiRuntimeFauxBlocks();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3363,6 +3386,8 @@ process.stderr.write("goal20 pi paired paths: skill_prompt_load\n");
 const skillPromptLoad = await measureSkillPromptBuild();
 process.stderr.write("goal20 pi paired paths: cli_bootstrap_sessions\n");
 const cliBootstrap = await measureCliBootstrapCodingTools();
+process.stderr.write("goal20 pi paired paths: ai_runtime_faux\n");
+const aiRuntimeFaux = await measureAiRuntimeFauxBlocks();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3458,6 +3483,8 @@ const result = {
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"cli_bootstrap_sessions.coding_tools":
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
+			"ai_runtime_faux.blocks":
+				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3556,6 +3583,7 @@ const result = {
 		provider_registry_defs: providerRegistryDefs,
 		skill_prompt_load: skillPromptLoad,
 		cli_bootstrap_sessions: cliBootstrap,
+		ai_runtime_faux: aiRuntimeFaux,
 		render_slicing: renderSlicing,
 	},
 };

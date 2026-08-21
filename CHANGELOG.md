@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_runtime_faux.blocks`
+  (`hello`/`hmm`; cadr `faux-text`+`faux-thinking` vs pi
+  `fauxText`+`fauxThinking`). Friend-MachineD n=5
+  **1.76×** (0.27 / 0.15 µs), ceiling 8.0 (variance).
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_bootstrap_sessions.coding_tools`
   (cwd `/tmp/proj`; cadr `make-coding-tools` vs pi
   `createCodingTools`). Friend-MachineD n=5 **2.40×**

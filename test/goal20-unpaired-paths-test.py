@@ -343,6 +343,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(bootstrap_tools), 1)
         self.assertEqual(bootstrap_tools[0]["class"], "paired")
         self.assertIn("cli_bootstrap_sessions.coding_tools", bootstrap_tools[0]["metrics"])
+        faux = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/runtime/faux-provider.lisp"
+        ]
+        self.assertEqual(len(faux), 1)
+        self.assertEqual(faux[0]["class"], "paired")
+        self.assertIn("ai_runtime_faux.blocks", faux[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

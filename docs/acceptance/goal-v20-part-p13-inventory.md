@@ -455,10 +455,11 @@ These must not be filed as callees.
 | `src/cadr-ai/crypto.lisp` | 367 |
 | `src/cadr-ai/model-data.lisp` | 407 |
 
-### `ai_runtime_faux` (additional)
+### `ai_runtime_faux` (additional) — `faux-provider.lisp` paired `ai_runtime_faux.blocks`
 
-- pi: `packages/ai/src/providers/faux.ts`
-- fixture: Faux event script (text + tool call). Parent of agent_tool_loop; do not split a second empty bench.
+- pi: `packages/ai/src/providers/faux.ts fauxText + fauxThinking`
+- fixture: `hello` / `hmm`. Time construct the two content blocks, not a live faux stream.
+- Friend-MachineD n=5: **1.76×** (0.27 / 0.15 µs), ceiling 8.0 (variance). No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

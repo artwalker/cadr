@@ -71,6 +71,7 @@ METRIC_KEYS = (
     "provider_registry_defs.lookup",
     "skill_prompt_load.build_prompt",
     "cli_bootstrap_sessions.coding_tools",
+    "ai_runtime_faux.blocks",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

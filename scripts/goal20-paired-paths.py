@@ -136,6 +136,7 @@ METRICS = {
     "provider_registry_defs": ("lookup",),
     "skill_prompt_load": ("build_prompt",),
     "cli_bootstrap_sessions": ("coding_tools",),
+    "ai_runtime_faux": ("blocks",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -406,6 +407,11 @@ RATIO_CEILINGS = {
     # (11.1 / 4.6 us). 8.0 is first-freeze headroom.
     # Ratchet down only.
     "cli_bootstrap_sessions.coding_tools": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # ai_runtime_faux pair (samples=5): observed 1.76x
+    # (0.27 / 0.15 us). 8.0 is first-freeze headroom
+    # (variance; sub-10 us floor). Ratchet down only.
+    "ai_runtime_faux.blocks": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -850,6 +856,12 @@ OBSERVED_EXACT = {
         "baseline",
         "snippet_count",
         "read_first",
+    ),
+    "ai_runtime_faux": (
+        "text_len",
+        "text",
+        "think_len",
+        "think",
     ),
     "resource_loader": (
         "skill_count",
