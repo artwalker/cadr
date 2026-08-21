@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `image_runtime.api_provider`
+  (fixture API present / nope missing; cadr
+  `get-images-api-provider` vs pi
+  `getImagesApiProvider`). Friend-MachineD n=5
+  **1.09×** (0.23 / 0.21 µs), ceiling 8.0 (variance).
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `image_runtime.dimension_note`
   (resized 2000×1000→1000×500 / 1000×800→400×320 /
   unresized 64×64; cadr `format-image-dimension-note`

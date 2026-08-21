@@ -62,6 +62,7 @@
 ;;;;  49. image_runtime detect-image-mime-type vs detectSupportedImageMimeType
 ;;;;  50. image_runtime find-image-model vs getImageModel
 ;;;;  51. image_runtime format-image-dimension-note vs formatDimensionNote
+;;;;  52. image_runtime get-images-api-provider vs getImagesApiProvider
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -147,6 +148,7 @@
     ("image_runtime.mime_type" . 50)
     ("image_runtime.lookup" . 50)
     ("image_runtime.dimension_note" . 50)
+    ("image_runtime.api_provider" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
@@ -3064,11 +3066,30 @@
    (dim-note-or-empty
     (dim-note-result 64 64 64 64 nil))))
 
+(defun ensure-fixture-images-api-provider ()
+  (unless (cadr-ai:get-images-api-provider :fixture-images)
+    (cadr-ai:register-images-api-provider
+     :fixture-images
+     (lambda (model context options)
+       (declare (ignore model context options))
+       nil)
+     :source-id "goal20-pair")))
+
+(defun image-api-provider-flag (api)
+  (if (cadr-ai:get-images-api-provider api) 1 0))
+
+(defun run-image-runtime-api-provider ()
+  (ensure-fixture-images-api-provider)
+  (list
+   (image-api-provider-flag :fixture-images)
+   (image-api-provider-flag :nope)))
+
 (defun measure-image-runtime ()
   (let ((dims (run-image-runtime))
         (mime (run-image-runtime-mime))
         (lookup (run-image-runtime-lookup))
-        (notes (run-image-runtime-dimension-note)))
+        (notes (run-image-runtime-dimension-note))
+        (api (run-image-runtime-api-provider)))
     (json-object
      "observed"
      (json-object
@@ -3087,7 +3108,9 @@
       "unknown" (third lookup)
       "note_resized" (first notes)
       "note_half" (second notes)
-      "note_plain" (third notes))
+      "note_plain" (third notes)
+      "api_fixture" (first api)
+      "api_unknown" (second api))
      "dimensions"
      (collect "image_runtime.dimensions"
               (lambda ()
@@ -3107,7 +3130,12 @@
      (collect "image_runtime.dimension_note"
               (lambda ()
                 (lambda ()
-                  (run-image-runtime-dimension-note)))))))
+                  (run-image-runtime-dimension-note))))
+     "api_provider"
+     (collect "image_runtime.api_provider"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-api-provider)))))))
 
 (defun rpc-jsonl-object ()
   (cadr-ai::json-object
@@ -4242,6 +4270,8 @@
       "src/cadr-ai/image-models.generated.lisp find-image-model"
       "image_runtime.dimension_note"
       "src/cadr-cli/interactive/images.lisp format-image-dimension-note"
+      "image_runtime.api_provider"
+      "src/cadr-ai/capabilities/image-runtime.lisp get-images-api-provider"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
       "tui_latex.render"

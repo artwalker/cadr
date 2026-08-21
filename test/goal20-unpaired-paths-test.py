@@ -191,6 +191,16 @@ class TestClassify(unittest.TestCase):
         self.assertIn(
             "image_runtime.dimension_note", interactive_images[0]["metrics"]
         )
+        image_runtime_cap = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/capabilities/image-runtime.lisp"
+        ]
+        self.assertEqual(len(image_runtime_cap), 1)
+        self.assertEqual(image_runtime_cap[0]["class"], "paired")
+        self.assertIn(
+            "image_runtime.api_provider", image_runtime_cap[0]["metrics"]
+        )
         print_mode = [
             row
             for row in classified["rows"]

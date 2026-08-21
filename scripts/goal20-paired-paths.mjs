@@ -156,6 +156,7 @@ const REPETITIONS = {
 	"image_runtime.mime_type": 50,
 	"image_runtime.lookup": 50,
 	"image_runtime.dimension_note": 50,
+	"image_runtime.api_provider": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"tui_latex.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
@@ -405,6 +406,9 @@ const mimeModule = await import(moduleUrl("packages/coding-agent/src/utils/mime.
 const imageModelsModule = await import(moduleUrl("packages/ai/src/image-models.ts"));
 const imageResizeModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/image-resize.ts")
+);
+const imageApiRegistryModule = await import(
+	moduleUrl("packages/ai/src/images-api-registry.ts")
 );
 const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
@@ -2481,11 +2485,40 @@ function runImageRuntimeDimensionNote() {
 	};
 }
 
+function ensureFixtureImagesApiProvider() {
+	if (imageApiRegistryModule.getImagesApiProvider("fixture-images")) return;
+	imageApiRegistryModule.registerImagesApiProvider(
+		{
+			api: "fixture-images",
+			generateImages: async () => ({
+				api: "fixture-images",
+				provider: "fixture",
+				model: "x",
+				output: [],
+			}),
+		},
+		"goal20-pair",
+	);
+}
+
+function imageApiProviderFlag(api) {
+	return imageApiRegistryModule.getImagesApiProvider(api) ? 1 : 0;
+}
+
+function runImageRuntimeApiProvider() {
+	ensureFixtureImagesApiProvider();
+	return {
+		api_fixture: imageApiProviderFlag("fixture-images"),
+		api_unknown: imageApiProviderFlag("nope"),
+	};
+}
+
 async function measureImageRuntime() {
 	const dims = runImageRuntime();
 	const mime = runImageRuntimeMime();
 	const lookup = runImageRuntimeLookup();
 	const notes = runImageRuntimeDimensionNote();
+	const api = runImageRuntimeApiProvider();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -2499,7 +2532,10 @@ async function measureImageRuntime() {
 		dimension_note: await collect("image_runtime.dimension_note", () => {
 			return () => runImageRuntimeDimensionNote();
 		}),
-		observed: { ...dims, ...mime, ...lookup, ...notes },
+		api_provider: await collect("image_runtime.api_provider", () => {
+			return () => runImageRuntimeApiProvider();
+		}),
+		observed: { ...dims, ...mime, ...lookup, ...notes, ...api },
 	};
 }
 
@@ -3665,6 +3701,8 @@ const result = {
 				"packages/ai/src/image-models.ts getImageModel",
 			"image_runtime.dimension_note":
 				"packages/coding-agent/src/utils/image-resize.ts formatDimensionNote",
+			"image_runtime.api_provider":
+				"packages/ai/src/images-api-registry.ts getImagesApiProvider",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",

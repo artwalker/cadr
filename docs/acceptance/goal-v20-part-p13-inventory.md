@@ -401,11 +401,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-ai/websocket.lisp` | 622 |
 
-### `image_runtime` (additional) — `terminal-image.lisp` paired `image_runtime.dimensions`; `media.lisp` paired `image_runtime.mime_type`; `image-models.generated.lisp` paired `image_runtime.lookup`; `interactive/images.lisp` paired `image_runtime.dimension_note`
+### `image_runtime` (additional) — `terminal-image.lisp` paired `image_runtime.dimensions`; `media.lisp` paired `image_runtime.mime_type`; `image-models.generated.lisp` paired `image_runtime.lookup`; `interactive/images.lisp` paired `image_runtime.dimension_note`; `image-runtime.lisp` paired `image_runtime.api_provider`
 
-- pi: `getImageDimensions`; `detectSupportedImageMimeType`; `getImageModel`; `formatDimensionNote`
-- fixture: 1x1 PNG + 2x3 GIF. MIME sniff. Lookup: gemini / flux present, nope missing. Do not exact catalog count. Dimension note: 2000×1000→1000×500 / 1000×800→400×320 / unresized 64×64 empty.
-- Friend-MachineD n=5: dimensions **5.44×**; mime_type **1.62×** (6.63 / 4.09 µs); lookup **7.38×** (1.51 / 0.20 µs); dimension_note **1.73×** (3.67 / 2.12 µs); ceiling 8.0 (variance on lookup). `models.lisp` stays covered-as-callee. Other files still `needs-pair`. No optimize in the booking commit.
+- pi: `getImageDimensions`; `detectSupportedImageMimeType`; `getImageModel`; `formatDimensionNote`; `getImagesApiProvider`
+- fixture: 1x1 PNG + 2x3 GIF. MIME sniff. Lookup: gemini / flux present, nope missing. Do not exact catalog count. Dimension note: 2000×1000→1000×500 / 1000×800→400×320 / unresized 64×64 empty. API provider: fixture present / nope missing. Do not exact builtin openrouter-images.
+- Friend-MachineD n=5: dimensions **5.44×**; mime_type **1.62×** (6.63 / 4.09 µs); lookup **7.38×** (1.51 / 0.20 µs); dimension_note **1.73×** (3.67 / 2.12 µs); api_provider **1.09×** (0.23 / 0.21 µs); ceiling 8.0 (variance on lookup/api_provider). `models.lisp` stays covered-as-callee. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

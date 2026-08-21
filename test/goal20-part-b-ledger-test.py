@@ -442,6 +442,11 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("note_resized", paired.OBSERVED_EXACT["image_runtime"])
         self.assertIn("note_half", paired.OBSERVED_EXACT["image_runtime"])
         self.assertIn("note_plain", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("image_runtime.api_provider", RECORD.METRIC_KEYS)
+        self.assertIn("api_provider", paired.METRICS["image_runtime"])
+        self.assertIn("image_runtime.api_provider", paired.RATIO_CEILINGS)
+        self.assertIn("api_fixture", paired.OBSERVED_EXACT["image_runtime"])
+        self.assertIn("api_unknown", paired.OBSERVED_EXACT["image_runtime"])
 
     def test_cli_print_rpc_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -755,6 +760,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`image_runtime.mime_type`", section)
             self.assertIn("`image_runtime.lookup`", section)
             self.assertIn("`image_runtime.dimension_note`", section)
+            self.assertIn("`image_runtime.api_provider`", section)
             self.assertIn("`cli_print_rpc.jsonl_line`", section)
             self.assertIn("`tui_latex.render`", section)
             self.assertIn("`tui_editor_helpers.fuzzy_match`", section)

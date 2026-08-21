@@ -948,6 +948,22 @@ Do not time decode/resize/Photon. Observed `note_resized`
 Friend-MachineD freeze **1.73×** (3.67 / 2.12 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 66 — `image_runtime` (api_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `api_provider` | `get-images-api-provider` | `getImagesApiProvider` (`packages/ai/src/images-api-registry.ts`) |
+
+Leftover sibling of `dimensions` / `mime_type` / `lookup`
+/ `dimension_note`. Register fixture API
+`:fixture-images` / `"fixture-images"`, then lookup
+present vs `nope` missing. Do not exact builtin
+openrouter-images (cadr product generate-images is
+direct, not registry-backed at load). Observed
+`api_fixture` / `api_unknown` are exact (1 / 0). First
+Friend-MachineD freeze **1.09×** (0.23 / 0.21 µs),
+ceiling 8.0 (variance). Same commit no optimize. No HTTP.
+
 ## 2. How to run
 
 ```bash
@@ -1153,14 +1169,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 118 | 58,369 | 45.8% | `no worse than baseline` is falsifiable |
+| `paired` | 119 | 58,486 | 45.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 134 | 48,626 | 38.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 133 | 48,509 | 38.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 45.8% of lines (118 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 51.7% of lines.
+- **Falsifiable vs baseline:** 45.9% of lines (119 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 51.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1218,6 +1234,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
+| `src/cadr-ai/capabilities/image-runtime.lisp` | 117 | `image_runtime.api_provider` |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
@@ -1365,9 +1382,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `ai_capabilities` | 4 | 472 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
-| `image_runtime` | 2 | 339 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
+| `image_runtime` | 1 | 222 |
 | `ai_support` | 3 | 203 |
 | `session_compact` | 1 | 185 |
 | `agent_conditions` | 1 | 43 |
