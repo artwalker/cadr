@@ -553,6 +553,19 @@ Observed RGB triples / `miss` / `scheme_dark` are exact.
 Friend-MachineD freeze **1.16×** (3.8 / 3.3 µs), ceiling
 8.0. Same commit no optimize.
 
+### Pair 38 — `ai_support`
+
+| metric | cadr | pi |
+|---|---|---|
+| `estimate_text` | `estimate-text-tokens` | `estimateTextTokens` (`packages/ai/src/utils/estimate.ts`) |
+
+Empty / `hello world` / 100 ASCII `a`. Time `ceil(utf16/4)`,
+no TUI, no socket. Observed `empty` / `hello` / `block` are
+exact (0 / 3 / 25). Other ai_support files stay `needs-pair`.
+First Friend-MachineD freeze **3.10×** (0.54 / 0.17 µs),
+ceiling 8.0 (variance / microsecond floor). Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -758,14 +771,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 90 | 47,691 | 37.4% | `no worse than baseline` is falsifiable |
+| `paired` | 91 | 47,861 | 37.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 162 | 59,304 | 46.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 161 | 59,134 | 46.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 37.4% of lines (90 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 43.3% of lines.
+- **Falsifiable vs baseline:** 37.6% of lines (91 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 43.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -838,6 +851,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/pi-messages.lisp` | 255 | `provider_pi_messages.stream_roundtrip` |
 | `src/cadr-ai/providers/vertex.lisp` | 134 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/support/token-estimation.lisp` | 170 | `ai_support.estimate_text` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
@@ -942,12 +956,12 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_theme_overlay` | 2 | 1,047 |
 | `tui_select_settings_loaders` | 3 | 1,010 |
 | `http_transport` | 1 | 858 |
-| `ai_support` | 6 | 730 |
 | `cli_models_rest` | 2 | 698 |
 | `skill_prompt_load` | 3 | 641 |
 | `ai_capabilities` | 5 | 634 |
 | `websocket_stream` | 1 | 628 |
 | `ai_runtime_faux` | 1 | 601 |
+| `ai_support` | 5 | 560 |
 | `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |
 | `session_compact` | 1 | 185 |

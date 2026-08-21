@@ -36,6 +36,7 @@
   "tui_latex.render",
   "tui_editor_helpers.fuzzy_match",
   "tui_theme_overlay.osc11_bg",
+  "ai_support.estimate_text",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -907,8 +908,8 @@
   },
   {
    "prefix": "src/cadr-ai/support/token-estimation.lisp",
-   "class": "needs-pair",
-   "hole": "ai_support"
+   "class": "paired",
+   "metrics": ["ai_support.estimate_text"]
   },
   {
    "prefix": "src/cadr-ai/support/uuid.lisp",

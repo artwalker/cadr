@@ -34,6 +34,7 @@
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
+;;;;  24. ai_support estimate-text-tokens vs estimateTextTokens
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -119,6 +120,7 @@
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
+    ("ai_support.estimate_text" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3096,6 +3098,30 @@
                 (lambda ()
                   (run-tui-theme-overlay)))))))
 
+(defparameter *estimate-empty* "")
+(defparameter *estimate-hello* "hello world")
+(defparameter *estimate-block* (make-string 100 :initial-element #\a))
+
+(defun run-ai-support-estimate ()
+  (list
+   (cadr-ai:estimate-text-tokens *estimate-empty*)
+   (cadr-ai:estimate-text-tokens *estimate-hello*)
+   (cadr-ai:estimate-text-tokens *estimate-block*)))
+
+(defun measure-ai-support-estimate ()
+  (let ((observed (run-ai-support-estimate)))
+    (json-object
+     "observed"
+     (json-object
+      "empty" (first observed)
+      "hello" (second observed)
+      "block" (third observed))
+     "estimate_text"
+     (collect "ai_support.estimate_text"
+              (lambda ()
+                (lambda ()
+                  (run-ai-support-estimate)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3204,6 +3230,8 @@
       "src/cadr-tui/fuzzy.lisp fuzzy-match"
       "tui_theme_overlay.osc11_bg"
       "src/cadr-tui/terminal-colors.lisp parse-osc-11-background-color"
+      "ai_support.estimate_text"
+      "src/cadr-ai/support/token-estimation.lisp estimate-text-tokens"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3323,6 +3351,8 @@
               (let ((fuzzy (measure-tui-fuzzy)))
               (format *error-output* "goal20 cadr paired paths: tui_theme_overlay~%")
               (let ((theme-overlay (measure-tui-theme-overlay)))
+              (format *error-output* "goal20 cadr paired paths: ai_support~%")
+              (let ((estimate (measure-ai-support-estimate)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3377,6 +3407,7 @@
               "tui_latex" latex
               "tui_editor_helpers" fuzzy
               "tui_theme_overlay" theme-overlay
+              "ai_support" estimate
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3393,7 +3424,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

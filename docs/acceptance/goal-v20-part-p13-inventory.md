@@ -426,10 +426,11 @@ These must not be filed as callees.
 | `src/cadr-ai/capabilities/session-resources.lisp` | 34 |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 |
 
-### `ai_support` (additional)
+### `ai_support` (additional) — `token-estimation.lisp` paired `ai_support.estimate_text`
 
-- pi: `packages/ai/src/utils/{overflow,retry,estimate,uuid,hash}.ts`
-- fixture: Callee of an existing or new pair once that pair's sprof names it. retry.lisp is already covered-as-callee of stream_roundtrip.
+- pi: `packages/ai/src/utils/estimate.ts estimateTextTokens`
+- fixture: empty / hello world / 100 ASCII a. Time ceil(utf16/4).
+- Friend-MachineD n=5: **3.10×** (0.54 / 0.17 µs), ceiling 8.0 (variance). Other files still `needs-pair`. retry.lisp stays covered-as-callee. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_support.estimate_text` (empty /
+  hello / 100 `a`; cadr `estimate-text-tokens` vs pi
+  `estimateTextTokens`). Friend-MachineD n=5 **3.10×**
+  (0.54 / 0.17 µs), ceiling 8.0 (variance). Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_theme_overlay.osc11_bg` (OSC 11
   rgb/hex; cadr `parse-osc-11-background-color` vs pi
   `parseOsc11BackgroundColor`). Friend-MachineD n=5

@@ -452,6 +452,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("hex6_b", paired.OBSERVED_EXACT["tui_theme_overlay"])
         self.assertIn("scheme_dark", paired.OBSERVED_EXACT["tui_theme_overlay"])
 
+    def test_ai_support_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("ai_support.estimate_text", RECORD.METRIC_KEYS)
+        self.assertIn("estimate_text", paired.METRICS["ai_support"])
+        self.assertIn("ai_support.estimate_text", paired.RATIO_CEILINGS)
+        self.assertIn("empty", paired.OBSERVED_EXACT["ai_support"])
+        self.assertIn("hello", paired.OBSERVED_EXACT["ai_support"])
+        self.assertIn("block", paired.OBSERVED_EXACT["ai_support"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -521,6 +530,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_latex.render`", section)
             self.assertIn("`tui_editor_helpers.fuzzy_match`", section)
             self.assertIn("`tui_theme_overlay.osc11_bg`", section)
+            self.assertIn("`ai_support.estimate_text`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

@@ -156,6 +156,7 @@ const REPETITIONS = {
 	"tui_latex.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
+	"ai_support.estimate_text": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -376,6 +377,7 @@ const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-im
 const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
+const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2491,6 +2493,28 @@ async function measureTuiThemeOverlay() {
 	};
 }
 
+const ESTIMATE_EMPTY = "";
+const ESTIMATE_HELLO = "hello world";
+const ESTIMATE_BLOCK = "a".repeat(100);
+
+function runAiSupportEstimate() {
+	return {
+		empty: estimateModule.estimateTextTokens(ESTIMATE_EMPTY),
+		hello: estimateModule.estimateTextTokens(ESTIMATE_HELLO),
+		block: estimateModule.estimateTextTokens(ESTIMATE_BLOCK),
+	};
+}
+
+async function measureAiSupportEstimate() {
+	const observed = runAiSupportEstimate();
+	return {
+		estimate_text: await collect("ai_support.estimate_text", () => {
+			return () => runAiSupportEstimate();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2711,6 +2735,8 @@ process.stderr.write("goal20 pi paired paths: tui_editor_helpers\n");
 const tuiEditorHelpers = await measureTuiFuzzy();
 process.stderr.write("goal20 pi paired paths: tui_theme_overlay\n");
 const tuiThemeOverlay = await measureTuiThemeOverlay();
+process.stderr.write("goal20 pi paired paths: ai_support\n");
+const aiSupport = await measureAiSupportEstimate();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2770,6 +2796,8 @@ const result = {
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":
 				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",
+			"ai_support.estimate_text":
+				"packages/ai/src/utils/estimate.ts estimateTextTokens",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2849,6 +2877,7 @@ const result = {
 		tui_latex: tuiLatex,
 		tui_editor_helpers: tuiEditorHelpers,
 		tui_theme_overlay: tuiThemeOverlay,
+		ai_support: aiSupport,
 		render_slicing: renderSlicing,
 	},
 };

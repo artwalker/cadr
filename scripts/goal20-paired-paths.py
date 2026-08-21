@@ -117,6 +117,7 @@ METRICS = {
     "tui_latex": ("render",),
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
+    "ai_support": ("estimate_text",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -286,6 +287,11 @@ RATIO_CEILINGS = {
     # (3.8 / 3.3 us). 8.0 follows the microsecond-floor
     # first-freeze headroom. Ratchet down only.
     "tui_theme_overlay.osc11_bg": 8.0,
+    # Frozen from the first Friend-MachineD non-quick ai_support
+    # pair (samples=5): observed 3.10x (0.54 / 0.17 us). 8.0 follows
+    # the microsecond-floor / agent_proxy variance precedent.
+    # Ratchet down only.
+    "ai_support.estimate_text": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -593,6 +599,11 @@ OBSERVED_EXACT = {
         "hex12_r",
         "miss",
         "scheme_dark",
+    ),
+    "ai_support": (
+        "empty",
+        "hello",
+        "block",
     ),
     "resource_loader": (
         "skill_count",

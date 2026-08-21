@@ -189,6 +189,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(terminal_colors), 1)
         self.assertEqual(terminal_colors[0]["class"], "paired")
         self.assertIn("tui_theme_overlay.osc11_bg", terminal_colors[0]["metrics"])
+        estimate = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/support/token-estimation.lisp"
+        ]
+        self.assertEqual(len(estimate), 1)
+        self.assertEqual(estimate[0]["class"], "paired")
+        self.assertIn("ai_support.estimate_text", estimate[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
