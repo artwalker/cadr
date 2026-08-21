@@ -656,10 +656,11 @@ These must not be filed as callees.
 | `src/cadr-tui/terminal-colors.lisp` | 191 |
 | `src/cadr-tui/theme.lisp` | 562 |
 
-### `tui_select_settings_loaders` (additional)
+### `tui_select_settings_loaders` (additional) — `select-list.lisp` paired `tui_select_settings_loaders.filter`
 
-- pi: `packages/tui/src/components/{select-list,settings-list,loader}.ts`
-- fixture: Parent = cli_selectors / settings UI. Loader frames can ride goal11 only if the bench sets busy-p; it currently does not force this file.
+- pi: `packages/tui/src/components/select-list.ts SelectList.setFilter`
+- fixture: hello/help/world items; filters he/wo/zz. Time prefix filter, not a live TUI.
+- Friend-MachineD n=5: **1.27×** (1.2 / 1.0 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

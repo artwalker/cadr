@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_select_settings_loaders.filter`
+  (hello/help/world; cadr `select-list-filtered-items` vs pi
+  `SelectList.setFilter`). Friend-MachineD n=5 **1.27×**
+  (1.2 / 1.0 µs), ceiling 8.0 (variance). Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `ai_support.estimate_text` (empty /
   hello / 100 `a`; cadr `estimate-text-tokens` vs pi
   `estimateTextTokens`). Friend-MachineD n=5 **3.10×**

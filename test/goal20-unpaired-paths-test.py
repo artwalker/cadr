@@ -197,6 +197,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(estimate), 1)
         self.assertEqual(estimate[0]["class"], "paired")
         self.assertIn("ai_support.estimate_text", estimate[0]["metrics"])
+        select_list = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/components/select-list.lisp"
+        ]
+        self.assertEqual(len(select_list), 1)
+        self.assertEqual(select_list[0]["class"], "paired")
+        self.assertIn("tui_select_settings_loaders.filter", select_list[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

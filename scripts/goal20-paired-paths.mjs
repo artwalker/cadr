@@ -157,6 +157,7 @@ const REPETITIONS = {
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
 	"ai_support.estimate_text": 50,
+	"tui_select_settings_loaders.filter": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -378,6 +379,7 @@ const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
 const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
+const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2515,6 +2517,52 @@ async function measureAiSupportEstimate() {
 	};
 }
 
+const SELECT_LIST_THEME = {
+	selectedPrefix: (text) => text,
+	selectedText: (text) => text,
+	description: (text) => text,
+	scrollInfo: (text) => text,
+	noMatch: (text) => text,
+};
+
+function selectListFixture() {
+	return new selectListModule.SelectList(
+		[
+			{ label: "Hello", value: "hello" },
+			{ label: "Help", value: "help" },
+			{ label: "World", value: "world" },
+		],
+		5,
+		SELECT_LIST_THEME,
+	);
+}
+
+function runTuiSelectList() {
+	const list = selectListFixture();
+	list.setFilter("he");
+	const heItems = list.filteredItems;
+	list.setFilter("wo");
+	const woItems = list.filteredItems;
+	list.setFilter("zz");
+	const zzItems = list.filteredItems;
+	return {
+		he_count: heItems.length,
+		he_first: heItems[0]?.value ?? "",
+		wo_count: woItems.length,
+		zz_count: zzItems.length,
+	};
+}
+
+async function measureTuiSelectList() {
+	const observed = runTuiSelectList();
+	return {
+		filter: await collect("tui_select_settings_loaders.filter", () => {
+			return () => runTuiSelectList();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2737,6 +2785,8 @@ process.stderr.write("goal20 pi paired paths: tui_theme_overlay\n");
 const tuiThemeOverlay = await measureTuiThemeOverlay();
 process.stderr.write("goal20 pi paired paths: ai_support\n");
 const aiSupport = await measureAiSupportEstimate();
+process.stderr.write("goal20 pi paired paths: tui_select_settings_loaders\n");
+const tuiSelectSettings = await measureTuiSelectList();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2798,6 +2848,8 @@ const result = {
 				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",
 			"ai_support.estimate_text":
 				"packages/ai/src/utils/estimate.ts estimateTextTokens",
+			"tui_select_settings_loaders.filter":
+				"packages/tui/src/components/select-list.ts SelectList.setFilter",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2878,6 +2930,7 @@ const result = {
 		tui_editor_helpers: tuiEditorHelpers,
 		tui_theme_overlay: tuiThemeOverlay,
 		ai_support: aiSupport,
+		tui_select_settings_loaders: tuiSelectSettings,
 		render_slicing: renderSlicing,
 	},
 };

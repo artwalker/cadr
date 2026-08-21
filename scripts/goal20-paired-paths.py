@@ -118,6 +118,7 @@ METRICS = {
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
     "ai_support": ("estimate_text",),
+    "tui_select_settings_loaders": ("filter",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -292,6 +293,11 @@ RATIO_CEILINGS = {
     # the microsecond-floor / agent_proxy variance precedent.
     # Ratchet down only.
     "ai_support.estimate_text": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_select_settings_loaders pair (samples=5): observed
+    # 1.27x (1.2 / 1.0 us). 8.0 follows the microsecond-floor
+    # first-freeze headroom. Ratchet down only.
+    "tui_select_settings_loaders.filter": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -604,6 +610,12 @@ OBSERVED_EXACT = {
         "empty",
         "hello",
         "block",
+    ),
+    "tui_select_settings_loaders": (
+        "he_count",
+        "he_first",
+        "wo_count",
+        "zz_count",
     ),
     "resource_loader": (
         "skill_count",

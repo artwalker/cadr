@@ -461,6 +461,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("hello", paired.OBSERVED_EXACT["ai_support"])
         self.assertIn("block", paired.OBSERVED_EXACT["ai_support"])
 
+    def test_tui_select_settings_loaders_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tui_select_settings_loaders.filter", RECORD.METRIC_KEYS)
+        self.assertIn("filter", paired.METRICS["tui_select_settings_loaders"])
+        self.assertIn("tui_select_settings_loaders.filter", paired.RATIO_CEILINGS)
+        self.assertIn("he_count", paired.OBSERVED_EXACT["tui_select_settings_loaders"])
+        self.assertIn("he_first", paired.OBSERVED_EXACT["tui_select_settings_loaders"])
+        self.assertIn("zz_count", paired.OBSERVED_EXACT["tui_select_settings_loaders"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -531,6 +540,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_editor_helpers.fuzzy_match`", section)
             self.assertIn("`tui_theme_overlay.osc11_bg`", section)
             self.assertIn("`ai_support.estimate_text`", section)
+            self.assertIn("`tui_select_settings_loaders.filter`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

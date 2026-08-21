@@ -35,6 +35,7 @@
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
 ;;;;  24. ai_support estimate-text-tokens vs estimateTextTokens
+;;;;  25. tui_select_settings_loaders select-list filter vs SelectList.setFilter
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -121,6 +122,7 @@
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
     ("ai_support.estimate_text" . 50)
+    ("tui_select_settings_loaders.filter" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3122,6 +3124,44 @@
                 (lambda ()
                   (run-ai-support-estimate)))))))
 
+(defun select-list-fixture ()
+  (cadr-tui:make-select-list
+   :show-filter-p nil
+   :items
+   (list
+    (cadr-tui:make-select-item :label "Hello" :value "hello")
+    (cadr-tui:make-select-item :label "Help" :value "help")
+    (cadr-tui:make-select-item :label "World" :value "world"))))
+
+(defun select-list-filter-count (list query)
+  (setf (cadr-tui:select-list-query list) query)
+  (length (cadr-tui:select-list-filtered-items list)))
+
+(defun run-tui-select-list ()
+  (let ((list (select-list-fixture)))
+    (list
+     (select-list-filter-count list "he")
+     (let ((first
+             (first (cadr-tui:select-list-filtered-items list))))
+       (if first (cadr-tui:select-item-value first) ""))
+     (select-list-filter-count list "wo")
+     (select-list-filter-count list "zz"))))
+
+(defun measure-tui-select-list ()
+  (let ((observed (run-tui-select-list)))
+    (json-object
+     "observed"
+     (json-object
+      "he_count" (first observed)
+      "he_first" (second observed)
+      "wo_count" (third observed)
+      "zz_count" (fourth observed))
+     "filter"
+     (collect "tui_select_settings_loaders.filter"
+              (lambda ()
+                (lambda ()
+                  (run-tui-select-list)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3232,6 +3272,8 @@
       "src/cadr-tui/terminal-colors.lisp parse-osc-11-background-color"
       "ai_support.estimate_text"
       "src/cadr-ai/support/token-estimation.lisp estimate-text-tokens"
+      "tui_select_settings_loaders.filter"
+      "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3353,6 +3395,8 @@
               (let ((theme-overlay (measure-tui-theme-overlay)))
               (format *error-output* "goal20 cadr paired paths: ai_support~%")
               (let ((estimate (measure-ai-support-estimate)))
+              (format *error-output* "goal20 cadr paired paths: tui_select_settings_loaders~%")
+              (let ((select-list (measure-tui-select-list)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3408,6 +3452,7 @@
               "tui_editor_helpers" fuzzy
               "tui_theme_overlay" theme-overlay
               "ai_support" estimate
+              "tui_select_settings_loaders" select-list
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3424,7 +3469,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
