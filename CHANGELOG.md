@@ -21,6 +21,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw pi_messages request `:json-object`
+  pairs (not EQUAL hash tables). Friend-MachineD n=5:
+  `provider_pi_messages` **1081→1153 µs** (worse;
+  samples 1056–1955); load **1763→1952 µs**. Product
+  restored. Not parse-json-octets. Not WRITE-JSON-STRING
+  unescaped. Ceiling not lowered. Not G.17.
+- Goal 20: remesure `provider_pi_messages` sprof on
+  walker `0084f0703`. Leftover = character
+  `PARSE-JSON-SOURCE` on SSE + `WRITE-JSON-STRING` +
+  EQUAL hash grow. Not G.17.
 - Goal 20: withdraw usage ASCII number value fast
   path (not usage key first-byte). Friend-MachineD
   n=5: load cadr **1763→1951 µs** (worse; samples

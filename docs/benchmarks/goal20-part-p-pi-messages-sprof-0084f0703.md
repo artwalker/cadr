@@ -32,6 +32,17 @@ stream **1081→1189 µs**, load **1763→1838 µs** —
 withdrawn. Do not redo. Not event parse-json-octets.
 Not G.17 `met`.
 
+Remesure (this-host, 4 s, 0.001 s): PARSE-STRING 6.6%,
+WRITE-JSON-STRING 6.0%, COPY-UNESCAPED-JSON-OCTETS 5.7%,
+COPY-UTF8-OCTETS 5.2%, PARSE-VALUE 4.1% (32.9% total),
+READ-SSE-STREAM 3.3% (68.1% total), GROW-HASH-TABLE 2.2%,
+MAKE-HASH-TABLE 1.4%.
+
+Tried: request `:json-object` pairs instead of EQUAL
+hash tables in `pi-context-json`. Friend-MachineD n=5
+stream **1081→1153 µs**, load **1763→1952 µs** —
+withdrawn. Do not redo. Not G.17 `met`.
+
 ## Executor — mistral tried (withdrawn)
 
 `sse-event-data-octets` + `parse-json-octets` on the binary
@@ -39,9 +50,10 @@ Not G.17 `met`.
 mistral **2046→2219 µs**, load **1763→2152 µs** — revert.
 Do not redo. Not G.17 `met`. No silent stop.
 
-## Executor — do next (stringify)
+## Executor — do next
 
-Single-element content shortcut **withdrawn** (1763→1929).
-**Now**: name and try one knife on `WRITE-JSON-STRING` /
-request stringify residual. Not event parse-json-octets.
-`session_load` must stay **≤ ~1763**. Not G.17 `met`.
+usage ASCII number **withdrawn** (1763→1951).
+**Now:** remesure this path sprof → one **new** named knife
+(not parse-json-octets, not WRITE-JSON-STRING unescaped,
+not usage ASCII number). `session_load` ≤ ~1763.
+Not G.17 `met`. No silent stop.

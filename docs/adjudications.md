@@ -1367,4 +1367,17 @@ unescaped. Silent stop invalid. G.17 stays `missing`.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
 
+## 2026-08-21 — pi_messages request :json-object pairs falsified
+
+**Ruled**: after remesure, executor tried request
+`:json-object` pairs instead of EQUAL hash tables in
+`pi-context-json`. Friend-MachineD n=5
+`provider_pi_messages` **1081→1153 µs** (samples
+1056–1955); load **1763→1952 µs**. Product restored.
+
+**Decided**: do not redo. G.17 stays `missing`. No
+silent stop.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
 
