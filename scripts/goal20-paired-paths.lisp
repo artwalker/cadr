@@ -19,6 +19,7 @@
 ;;;;   6. tool_read         production read-tool-file vs pi execute
 ;;;;   7. tool_grep         production grep-lines vs pi execute (context=2)
 ;;;;   8. session_discovery glob *.jsonl + header probe vs findMostRecentSession
+;;;;   9. session_export_html export-session-html vs exportSessionToHtml
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -85,6 +86,7 @@
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
     ("session_discovery.header_probe" . 20)
+    ("session_export_html.to_html" . 3)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2366,6 +2368,30 @@
                   (lambda ()
                     (session-discovery-probe directory))))))))
 
+(defun session-export-html-path ()
+  (merge-pathnames "export/session.html" *scratch-directory*))
+
+(defun measure-session-export-html ()
+  (let* ((session
+           (cadr-agent:load-session (fixture-path "session.jsonl")))
+         (dest (session-export-html-path)))
+    (ensure-directories-exist dest)
+    (cadr-agent:export-session-html session dest :theme-name "dark")
+    (let ((html
+            (uiop:read-file-string dest :external-format :utf-8)))
+      (json-object
+       "observed"
+       (json-object
+        "html_chars" (length html)
+        "has_accent" (if (search "--accent:" html) 1 0)
+        "theme" "dark")
+       "to_html"
+       (collect "session_export_html.to_html"
+                (lambda ()
+                  (lambda ()
+                    (cadr-agent:export-session-html
+                     session dest :theme-name "dark"))))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2444,6 +2470,8 @@
       "src/cadr-cli/packages/manifest.lisp package-resource-paths"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
+      "session_export_html.to_html"
+      "src/cadr-agent/session/export-html.lisp export-session-html"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2533,6 +2561,8 @@
               (let ((packages (measure-package-manager)))
               (format *error-output* "goal20 cadr paired paths: session_discovery~%")
               (let ((discovery (measure-session-discovery)))
+              (format *error-output* "goal20 cadr paired paths: session_export_html~%")
+              (let ((export-html (measure-session-export-html)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2572,6 +2602,7 @@
               "resource_loader" resources
               "package_manager" packages
               "session_discovery" discovery
+              "session_export_html" export-html
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2588,7 +2619,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

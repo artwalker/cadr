@@ -317,10 +317,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-agent/session/discovery.lisp` | 154 |
 
-### `session_export_html` (additional)
+### `session_export_html` (additional) — paired `session_export_html.to_html`
 
-- pi: `packages/coding-agent/src/core/export-html/index.ts`
-- fixture: session.jsonl → HTML bytes. Compare output bytes, time the transform.
+- pi: `packages/coding-agent/src/core/export-html/index.ts exportSessionToHtml`
+- fixture: existing `session.jsonl`, theme=dark. Time HTML write. `html_chars` not exact (cadr 555702 / pi 546995).
+- Friend-MachineD n=5: **3.55×** (29217.8 / 8239.7 µs), ceiling 20.0. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

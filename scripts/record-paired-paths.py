@@ -38,6 +38,7 @@ METRIC_KEYS = (
     "resource_loader.reload",
     "package_manager.resolve",
     "session_discovery.header_probe",
+    "session_export_html.to_html",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

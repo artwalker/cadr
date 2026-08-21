@@ -69,6 +69,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(discovery), 1)
         self.assertEqual(discovery[0]["class"], "paired")
         self.assertIn("session_discovery.header_probe", discovery[0]["metrics"])
+        export_html = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-agent/session/export-html.lisp"
+        ]
+        self.assertEqual(len(export_html), 1)
+        self.assertEqual(export_html[0]["class"], "paired")
+        self.assertIn("session_export_html.to_html", export_html[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

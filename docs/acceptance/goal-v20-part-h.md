@@ -348,6 +348,20 @@ No TUI, no socket. Observed `file_count` / `header_count` /
 First Friend-MachineD freeze **2.05×** (1449.6 / 708.6 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 23 — `session_export_html`
+
+| metric | cadr | pi |
+|---|---|---|
+| `to_html` | `export-session-html` | `exportSessionToHtml` (`packages/coding-agent/src/core/export-html/index.ts`) |
+
+Existing `session.jsonl` loaded once, then timed HTML write
+(`theme=dark`). No TUI, no socket. Observed `has_accent` /
+`theme` are exact. `html_chars` is a booked size gap (cadr
+555702 / pi 546995, +1.6%; JSON key order in the embedded
+payload), not an exact field. First Friend-MachineD freeze
+**3.55×** (29217.8 / 8239.7 µs), ceiling 20.0. Same commit
+no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -553,14 +567,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 70 | 37,812 | 29.7% | `no worse than baseline` is falsifiable |
+| `paired` | 71 | 38,267 | 30.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 17 | 12,786 | 10.0% | on a named paired thunk; no own bench |
-| `needs-pair` | 184 | 69,316 | 54.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 183 | 68,861 | 54.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 29.7% of lines (70 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 35.6% of lines.
+- **Falsifiable vs baseline:** 30.0% of lines (71 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 35.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -603,6 +617,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe` |
+| `src/cadr-agent/session/export-html.lisp` | 455 | `session_export_html.to_html` |
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,434 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
@@ -726,7 +741,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `ai_capabilities` | 5 | 634 |
 | `websocket_stream` | 1 | 628 |
 | `ai_runtime_faux` | 1 | 601 |
-| `session_export_html` | 1 | 455 |
 | `core_rest` | 4 | 267 |
 | `agent_proxy` | 1 | 251 |
 | `session_compact` | 1 | 185 |

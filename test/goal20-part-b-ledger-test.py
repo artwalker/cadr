@@ -318,6 +318,14 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("session_id", paired.OBSERVED_EXACT["session_discovery"])
         self.assertIn("most_recent_name", paired.OBSERVED_EXACT["session_discovery"])
 
+    def test_session_export_html_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("session_export_html.to_html", RECORD.METRIC_KEYS)
+        self.assertIn("to_html", paired.METRICS["session_export_html"])
+        self.assertIn("session_export_html.to_html", paired.RATIO_CEILINGS)
+        self.assertIn("has_accent", paired.OBSERVED_EXACT["session_export_html"])
+        self.assertIn("theme", paired.OBSERVED_EXACT["session_export_html"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)

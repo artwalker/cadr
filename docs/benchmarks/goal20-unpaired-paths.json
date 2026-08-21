@@ -21,6 +21,7 @@
   "provider_pi_messages.stream_roundtrip",
   "package_manager.resolve",
   "session_discovery.header_probe",
+  "session_export_html.to_html",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -662,8 +663,8 @@
   },
   {
    "prefix": "src/cadr-agent/session/export-html.lisp",
-   "class": "needs-pair",
-   "hole": "session_export_html"
+   "class": "paired",
+   "metrics": ["session_export_html.to_html"]
   },
   {
    "prefix": "src/cadr-agent/storage/harness.lisp",

@@ -102,6 +102,7 @@ METRICS = {
     "resource_loader": ("reload",),
     "package_manager": ("resolve",),
     "session_discovery": ("header_probe",),
+    "session_export_html": ("to_html",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -201,6 +202,10 @@ RATIO_CEILINGS = {
     # pair (samples=5): observed 2.05x (1450 / 709 us). 8.0 follows
     # the journal_read / tool_read headroom precedent. Ratchet down only.
     "session_discovery.header_probe": 8.0,
+    # Frozen from the first Friend-MachineD non-quick session_export_html
+    # pair (samples=5): observed 3.55x (29218 / 8240 us). 20.0 follows
+    # the session_compact headroom precedent. Ratchet down only.
+    "session_export_html.to_html": 20.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -408,6 +413,10 @@ OBSERVED_EXACT = {
         "found",
         "session_id",
         "most_recent_name",
+    ),
+    "session_export_html": (
+        "has_accent",
+        "theme",
     ),
     "resource_loader": (
         "skill_count",

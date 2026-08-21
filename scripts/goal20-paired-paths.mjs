@@ -141,6 +141,7 @@ const REPETITIONS = {
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
 	"session_discovery.header_probe": 20,
+	"session_export_html.to_html": 3,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -324,6 +325,7 @@ const argsModule = await import(moduleUrl("packages/coding-agent/src/cli/args.ts
 const listModelsModule = await import(moduleUrl("packages/coding-agent/src/cli/list-models.ts"));
 const modelRuntimeModule = await import(moduleUrl("packages/coding-agent/src/core/model-runtime.ts"));
 const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/session-manager.ts"));
+const exportHtmlModule = await import(moduleUrl("packages/coding-agent/src/core/export-html/index.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
@@ -1881,6 +1883,31 @@ function sessionDiscoveryProbe(dir) {
 	return sessionModule.findMostRecentSession(dir);
 }
 
+async function measureSessionExportHtml() {
+	const dest = path.join(scratch, "export", "session.html");
+	mkdirSync(path.dirname(dest), { recursive: true });
+	const manager = sessionModule.SessionManager.open(sessionFixturePath);
+	await exportHtmlModule.exportSessionToHtml(manager, undefined, {
+		outputPath: dest,
+		themeName: "dark",
+	});
+	const html = readFileSync(dest, "utf8");
+	return {
+		to_html: await collect("session_export_html.to_html", () => {
+			return () =>
+				exportHtmlModule.exportSessionToHtml(manager, undefined, {
+					outputPath: dest,
+					themeName: "dark",
+				});
+		}),
+		observed: {
+			html_chars: html.length,
+			has_accent: html.includes("--accent:") ? 1 : 0,
+			theme: "dark",
+		},
+	};
+}
+
 async function measureSessionDiscovery() {
 	const dir = stageSessionDiscovery();
 	const found = sessionDiscoveryProbe(dir);
@@ -1979,6 +2006,8 @@ process.stderr.write("goal20 pi paired paths: package_manager\n");
 const packageManager = await measurePackageManager();
 process.stderr.write("goal20 pi paired paths: session_discovery\n");
 const sessionDiscovery = await measureSessionDiscovery();
+process.stderr.write("goal20 pi paired paths: session_export_html\n");
+const sessionExportHtml = await measureSessionExportHtml();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2012,6 +2041,8 @@ const result = {
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
+			"session_export_html.to_html":
+				"packages/coding-agent/src/core/export-html/index.ts exportSessionToHtml",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2076,6 +2107,7 @@ const result = {
 		resource_loader: resourceLoader,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
+		session_export_html: sessionExportHtml,
 		render_slicing: renderSlicing,
 	},
 };

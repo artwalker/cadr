@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `session_export_html.to_html`
+  (`session.jsonl` → HTML; cadr `export-session-html` vs pi
+  `exportSessionToHtml`). Friend-MachineD n=5 **3.55×**
+  (29217.8 / 8239.7 µs), ceiling 20.0. `html_chars` size gap
+  booked, not exact. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `session_discovery.header_probe`
   (32 copies of `session.jsonl`; cadr header probe vs pi
   `findMostRecentSession`). Friend-MachineD n=5 **2.05×**
