@@ -111,6 +111,7 @@ METRICS = {
     "oauth_pkce": ("challenge_urls",),
     "evals_harness": ("summarize",),
     "ai_crypto_model_data": ("manifest",),
+    "cli_models_rest": ("pattern_match",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -253,6 +254,10 @@ RATIO_CEILINGS = {
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
     # truncate_head headroom precedent. Ratchet down only.
     "ai_crypto_model_data.manifest": 20.0,
+    # Frozen from the first Friend-MachineD non-quick cli_models_rest
+    # pair (samples=5): observed 1.65x (31.9 / 19.4 us). 3.0 follows
+    # the argv_parse / tool_grep headroom precedent. Ratchet down only.
+    "cli_models_rest.pattern_match": 3.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -514,6 +519,15 @@ OBSERVED_EXACT = {
         "file_count",
         "openai_json_hash",
         "anthropic_json_hash",
+    ),
+    "cli_models_rest": (
+        "exact_id",
+        "exact_provider",
+        "bare_id",
+        "partial_id",
+        "scoped_id",
+        "scoped_thinking",
+        "miss",
     ),
     "resource_loader": (
         "skill_count",

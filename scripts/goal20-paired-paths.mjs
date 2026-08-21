@@ -150,6 +150,7 @@ const REPETITIONS = {
 	"oauth_pkce.challenge_urls": 50,
 	"evals_harness.summarize": 20,
 	"ai_crypto_model_data.manifest": 50,
+	"cli_models_rest.pattern_match": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -341,6 +342,9 @@ const evalsSummaryModule = await import(
 	moduleUrl("packages/evals/src/vitest-evals/summary.ts")
 );
 const modelDataModule = await import(moduleUrl("packages/ai/scripts/model-data.ts"));
+const modelResolverModule = await import(
+	moduleUrl("packages/coding-agent/src/core/model-resolver.ts")
+);
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
@@ -2272,6 +2276,51 @@ async function measureAiCryptoModelData() {
 	};
 }
 
+const MODEL_MATCH_PATTERNS = [
+	"goal20faux/goal20-paired-0",
+	"goal20-paired-1",
+	"paired-2",
+	"goal20-paired-3:high",
+	"does-not-exist-xyzzy",
+];
+
+function runCliModelsRest(models) {
+	return MODEL_MATCH_PATTERNS.map((pattern) => {
+		const result = modelResolverModule.parseModelPattern(pattern, models);
+		return {
+			pattern,
+			id: result.model?.id ?? "",
+			provider: result.model?.provider ?? "",
+			thinking: result.thinkingLevel ?? "",
+		};
+	});
+}
+
+function cliModelsRestObserved(rows) {
+	const [exact, bare, partial, scoped, missing] = rows;
+	return {
+		exact_id: exact.id,
+		exact_provider: exact.provider,
+		bare_id: bare.id,
+		partial_id: partial.id,
+		scoped_id: scoped.id,
+		scoped_thinking: scoped.thinking,
+		miss: missing.id === "" ? 1 : 0,
+	};
+}
+
+async function measureCliModelsRest() {
+	const runtime = await createModelRuntime();
+	const models = await runtime.getAvailable();
+	const observed = cliModelsRestObserved(runCliModelsRest(models));
+	return {
+		pattern_match: await collect("cli_models_rest.pattern_match", () => {
+			return () => runCliModelsRest(models);
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2480,6 +2529,8 @@ process.stderr.write("goal20 pi paired paths: evals_harness\n");
 const evalsHarness = await measureEvalsHarness();
 process.stderr.write("goal20 pi paired paths: ai_crypto_model_data\n");
 const aiCryptoModelData = await measureAiCryptoModelData();
+process.stderr.write("goal20 pi paired paths: cli_models_rest\n");
+const cliModelsRest = await measureCliModelsRest();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2529,6 +2580,8 @@ const result = {
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
+			"cli_models_rest.pattern_match":
+				"packages/coding-agent/src/core/model-resolver.ts parseModelPattern",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2602,6 +2655,7 @@ const result = {
 		oauth_pkce: oauthPkce,
 		evals_harness: evalsHarness,
 		ai_crypto_model_data: aiCryptoModelData,
+		cli_models_rest: cliModelsRest,
 		render_slicing: renderSlicing,
 	},
 };

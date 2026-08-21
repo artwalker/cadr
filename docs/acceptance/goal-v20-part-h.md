@@ -467,6 +467,24 @@ are exact. `crypto.lisp` stays `needs-pair` (HMAC/SigV4 is
 not on this thunk). First Friend-MachineD freeze **8.97×**
 (77.3 / 8.6 µs), ceiling 20.0. Same commit no optimize.
 
+### Pair 32 — `cli_models_rest`
+
+| metric | cadr | pi |
+|---|---|---|
+| `pattern_match` | `parse-scoped-model-pattern` | `parseModelPattern` (`packages/coding-agent/src/core/model-resolver.ts`) |
+
+Staged `models.json` / `auth.json` (same agent dir as
+`list_models_registry`). Time five patterns: canonical
+`goal20faux/goal20-paired-0`, bare id, substring `paired-2`,
+`goal20-paired-3:high`, and a miss. No TUI, no socket.
+Observed `exact_id` / `exact_provider` / `bare_id` /
+`partial_id` / `scoped_id` / `scoped_thinking` / `miss` are
+exact (`partial_id` is `goal20-paired-23`: highest alias
+substring, not `goal20-paired-2`). Other cli_models_rest
+files stay `needs-pair`. First Friend-MachineD freeze
+**1.65×** (31.9 / 19.4 µs), ceiling 3.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -672,14 +690,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 84 | 43,754 | 34.3% | `no worse than baseline` is falsifiable |
+| `paired` | 85 | 44,152 | 34.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 168 | 63,241 | 49.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 167 | 62,843 | 49.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 34.3% of lines (84 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 40.2% of lines.
+- **Falsifiable vs baseline:** 34.7% of lines (85 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 40.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -760,6 +778,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,015 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
@@ -849,10 +868,10 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `provider_registry_defs` | 3 | 1,494 |
 | `tui_theme_overlay` | 3 | 1,238 |
 | `cli_support` | 13 | 1,164 |
-| `cli_models_rest` | 3 | 1,096 |
 | `tui_select_settings_loaders` | 3 | 1,010 |
 | `http_transport` | 1 | 858 |
 | `ai_support` | 6 | 730 |
+| `cli_models_rest` | 2 | 698 |
 | `skill_prompt_load` | 3 | 641 |
 | `ai_capabilities` | 5 | 634 |
 | `websocket_stream` | 1 | 628 |

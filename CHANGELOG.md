@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_models_rest.pattern_match`
+  (staged models.json; cadr `parse-scoped-model-pattern` vs
+  pi `parseModelPattern`). Friend-MachineD n=5 **1.65×**
+  (31.9 / 19.4 µs), ceiling 3.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `ai_crypto_model_data.manifest`
   (two-provider fixture; cadr `create-model-data-manifest`
   vs pi `createModelDataManifest`). Friend-MachineD n=5

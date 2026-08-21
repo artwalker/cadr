@@ -30,6 +30,7 @@
   "oauth_pkce.challenge_urls",
   "evals_harness.summarize",
   "ai_crypto_model_data.manifest",
+  "cli_models_rest.pattern_match",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1170,8 +1171,8 @@
   },
   {
    "prefix": "src/cadr-cli/models/matching.lisp",
-   "class": "needs-pair",
-   "hole": "cli_models_rest"
+   "class": "paired",
+   "metrics": ["cli_models_rest.pattern_match"]
   },
   {
    "prefix": "src/cadr-cli/modes/print.lisp",

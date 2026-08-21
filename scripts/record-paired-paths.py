@@ -47,6 +47,7 @@ METRIC_KEYS = (
     "oauth_pkce.challenge_urls",
     "evals_harness.summarize",
     "ai_crypto_model_data.manifest",
+    "cli_models_rest.pattern_match",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

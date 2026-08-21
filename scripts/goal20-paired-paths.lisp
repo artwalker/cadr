@@ -28,6 +28,7 @@
 ;;;;  15. oauth_pkce recorded verifier → challenge + authorize URLs
 ;;;;  16. evals_harness summarize-harness-comparisons vs summarizeHarnessComparisons
 ;;;;  17. ai_crypto_model_data create-model-data-manifest vs createModelDataManifest
+;;;;  18. cli_models_rest parse-scoped-model-pattern vs parseModelPattern
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -107,6 +108,7 @@
     ("oauth_pkce.challenge_urls" . 50)
     ("evals_harness.summarize" . 20)
     ("ai_crypto_model_data.manifest" . 50)
+    ("cli_models_rest.pattern_match" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2850,6 +2852,57 @@
                 (lambda ()
                   (run-ai-crypto-model-data)))))))
 
+(defparameter *model-match-patterns*
+  '("goal20faux/goal20-paired-0"
+    "goal20-paired-1"
+    "paired-2"
+    "goal20-paired-3:high"
+    "does-not-exist-xyzzy"))
+
+(defun model-match-fields (model thinking)
+  (list
+   (if model (cadr-ai:model-id model) "")
+   (if model
+       (cadr-cli::provider-key (cadr-ai:model-provider model))
+       "")
+   (if thinking
+       (string-downcase (symbol-name thinking))
+       "")))
+
+(defun run-cli-models-rest (models)
+  (loop for pattern in *model-match-patterns*
+        collect
+        (multiple-value-bind (model thinking warning)
+            (cadr-cli::parse-scoped-model-pattern pattern models)
+          (declare (ignore warning))
+          (cons pattern (model-match-fields model thinking)))))
+
+(defun measure-cli-models-rest ()
+  (let* ((models
+           (cadr-cli::model-registry-available-models
+            (list-models-registry)))
+         (rows (run-cli-models-rest models))
+         (exact (first rows))
+         (bare (second rows))
+         (partial (third rows))
+         (scoped (fourth rows))
+         (missing (fifth rows)))
+    (json-object
+     "observed"
+     (json-object
+      "exact_id" (second exact)
+      "exact_provider" (third exact)
+      "bare_id" (second bare)
+      "partial_id" (second partial)
+      "scoped_id" (second scoped)
+      "scoped_thinking" (fourth scoped)
+      "miss" (if (string= (second missing) "") 1 0))
+     "pattern_match"
+     (collect "cli_models_rest.pattern_match"
+              (lambda ()
+                (lambda ()
+                  (run-cli-models-rest models)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2946,6 +2999,8 @@
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
+      "cli_models_rest.pattern_match"
+      "src/cadr-cli/models/matching.lisp parse-scoped-model-pattern"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3053,6 +3108,8 @@
               (let ((evals (measure-evals-harness)))
               (format *error-output* "goal20 cadr paired paths: ai_crypto_model_data~%")
               (let ((crypto (measure-ai-crypto-model-data)))
+              (format *error-output* "goal20 cadr paired paths: cli_models_rest~%")
+              (let ((models-rest (measure-cli-models-rest)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3101,6 +3158,7 @@
               "oauth_pkce" oauth
               "evals_harness" evals
               "ai_crypto_model_data" crypto
+              "cli_models_rest" models-rest
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3117,7 +3175,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

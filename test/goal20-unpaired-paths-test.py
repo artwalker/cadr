@@ -141,6 +141,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(model_data), 1)
         self.assertEqual(model_data[0]["class"], "paired")
         self.assertIn("ai_crypto_model_data.manifest", model_data[0]["metrics"])
+        matching = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/models/matching.lisp"
+        ]
+        self.assertEqual(len(matching), 1)
+        self.assertEqual(matching[0]["class"], "paired")
+        self.assertIn("cli_models_rest.pattern_match", matching[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
