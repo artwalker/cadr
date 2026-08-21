@@ -21,6 +21,20 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: user pause on circling invent (2026-08-21).
+  Walker remains `0084f0703` / load ~1763 µs. G.17 stays
+  missing. Resume only with a concrete algorithm/DS
+  proposal or user reopen (`docs/adjudications.md`).
+- Goal 20: withdraw interned-ascii value length-gate
+  (skip intern labels when n is outside 4–18).
+  Friend-MachineD n=5: load cadr **1763→1901 µs**
+  (worse; samples 1767–2802). Product restored to
+  `0084f0703`. EQUAL test kept. Not intern-grow.
+  Ceiling not lowered. Not G.17.
+- Goal 20: remesure load `PARSE-SESSION-RECORD-OCTETS`
+  sprof on walker `0084f0703`. Self%: parse 10.2,
+  SCAN-KEY 8.2, SCAN-BUFFER 7.9, PARSE-STRING-VALUE 7.0,
+  PARSE-USAGE 4.5, COPY-UNESCAPED 4.1. Not G.17.
 - Goal 20: withdraw pi_messages pre-size EQUAL hash
   (`:size` / `:rehash-size` from known key counts).
   Friend-MachineD n=5: `provider_pi_messages`

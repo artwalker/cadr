@@ -1152,6 +1152,45 @@
       (is (eql 6 (cadr-ai:usage-cache-write snake)))
       (is (eql 7 (cadr-ai:usage-total snake))))))
 
+(test interned-ascii-value-length-gate-equals-closed-set
+  ;; parse-string-value skips intern labels when n is outside 4–18.
+  ;; Closed-set values still interned (eq). Long text still copies.
+  ;; Drives shipped parse-session-record-octets. Not intern-grow.
+  (flet ((parse-message-json (role content-json)
+           (let* ((octets
+                    (cadr-ai::utf8-octets
+                     (format
+                      nil
+                      "{\"type\":\"message\",\"id\":\"i\",\"parentId\":null,\"timestamp\":1,\"message\":{\"role\":~S,\"content\":~A,\"timestamp\":1}}"
+                      role
+                      content-json)))
+                  (entry
+                    (cadr-agent::parse-session-record-octets
+                     octets 0 (length octets))))
+             (cadr-agent::session-entry-message entry))))
+    (let ((msg (parse-message-json "assistant" "\"text\""))
+          (msg2 (parse-message-json "assistant" "\"text\"")))
+      (is (string=
+           "assistant"
+           (cadr-agent::session-json-message-role msg)))
+      (is (eq (cadr-agent::session-json-message-role msg)
+              (cadr-agent::session-json-message-role msg2)))
+      (is (eq (cadr-agent::session-json-message-content msg)
+              (cadr-agent::session-json-message-content msg2)))
+      (is (string=
+           "text"
+           (cadr-agent::session-json-message-content msg))))
+    (let* ((long (make-string 40 :initial-element #\a))
+           (msg
+             (parse-message-json
+              "user"
+              (cadr-ai::stringify-json long)))
+           (content
+             (cadr-agent::session-json-message-content msg)))
+      (is (string= "user" (cadr-agent::session-json-message-role msg)))
+      (is (string= long content))
+      (is (not (eq long content))))))
+
 (test usage-ascii-number-value-equals-generic-mutants
   ;; Usage value-side ASCII integer (not key first-byte).
   ;; Compact / spaced / reordered EQUAL slots. Exponent and

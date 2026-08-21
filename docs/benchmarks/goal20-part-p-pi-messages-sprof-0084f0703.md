@@ -52,8 +52,5 @@ Do not redo. Not G.17 `met`. No silent stop.
 
 ## Executor — do next
 
-usage ASCII number **withdrawn** (1763→1951).
-**Now:** remesure this path sprof → one **new** named knife
-(not parse-json-octets, not WRITE-JSON-STRING unescaped,
-not usage ASCII number). `session_load` ≤ ~1763.
-Not G.17 `met`. No silent stop.
+User pause (2026-08-21): no further case/shortcut invent
+until a concrete algorithm/DS proposal. Not G.17 `met`.

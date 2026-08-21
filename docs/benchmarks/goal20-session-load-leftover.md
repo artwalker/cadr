@@ -1,23 +1,21 @@
 # Executor current (2026-08-21)
 
-Walker `0084f0703` / load ~1763.
+Walker `0084f0703` / load ~1763 (~1.11×).
 
-**Withdrawn (do not redo):** load first-byte family; inline
-consume-line; pi/mistral octets JSON; single-element content;
-WRITE-JSON-STRING unescaped; usage ASCII number; pi_messages
-:json-object pairs; **pi_messages pre-size EQUAL hash**
-(1081→1225, load 1763→1971).
+**User ruling 2026-08-21 14:00:** stop circling invent.
+No further load/pairing micro-knives until a concrete
+algorithm/DS proposal exists (or user reopens). G.17 stays
+`missing`. Goal 20 not complete.
 
-**Do next (advisor):**
-1. ~~pi_messages pre-size EQUAL hash~~ **withdrawn**
-   stream **1081→1225 µs**, load **1763→1971 µs**. Do not redo.
-2. Then remesure load `PARSE-SESSION-RECORD-OCTETS` split →
-   one **new** named invent (outside banned list). **Now.**
+**Kept walker:** proposal-3 era (`0084f0703`). Net keep from
+earlier: compact-prefix + put-entry u32 + put-message
+first-byte (~1879→1763).
 
-G.17 stays `missing`. No silent stop. No empty ⚑.
-
+**Do not:** raise empty ⚑ to farm new case/shortcut knives;
+mark G.17 `met`; redo withdrawn classes.
 
 ---
+
 
 # Goal 20 — session_load leftover after parse-message 三连 @ `1e2fff836`
 

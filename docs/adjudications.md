@@ -1400,3 +1400,58 @@ invalid. G.17 stays `missing`.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
 
+## 2026-08-21 — stop circling invent (user pause)
+
+**Ruled**: user 2026-08-21 ~14:00 — stop circling; if no
+other data structure/algorithm can improve, pause for now.
+
+**Decided**:
+
+1. Advisor **agrees**: recent knives (first-byte family,
+   content/usage shortcuts, consume-line, pi_messages
+   stringify/hash/octets side-quests) were circling, not
+   cutting the allocation essence vs V8 `JSON.parse`.
+2. **Pause** the continuous invent `[ready]` treadmill.
+   Product walker remains `0084f0703` / Friend-MachineD
+   load **~1763 µs**. Earlier keeps stand (compact-prefix,
+   put-entry u32, put-message first-byte).
+3. **G.17 stays `missing`**. This pause is not Goal 20
+   completion and not a ceiling change.
+4. **Resume only when**: user reopens, or a concrete
+   algorithm/DS proposal (published design or invented
+   Lisp encoding) with an allocation story is named into
+   `[ready]` by the advisor.
+5. Empty ⚑ that only lists banned classes to solicit
+   another case/shortcut knife remains rejected.
+6. Pointers: leftover文首; board `[paused]`;
+   `goal20-draft.md` 十B item 17.
+
+**Why it was decidable**: explicit user stop; standing
+屠龙 allows pause when invent lacks a non-circling lever.
+
+## 2026-08-21 — essence over phenomena (load leftover)
+
+**Ruled**: user affirmed 透过现象看本质 — only that class of
+work is worth reopening invent after the circling pause
+(2026-08-21).
+
+**Decided**:
+
+1. **Phenomenon (do not farm):** another `case`/prefix/
+   shortcut/dispatch micro-encoding that does not change
+   how many strings/objects are allocated or how values are
+   represented. Recent Friend-MachineD withdraws were this
+   class.
+2. **Essence (only reopen class):** reduce the gap to V8's
+   cheap `MakeString` / `BuildJsonObject` path — fewer
+   allocations, cheaper young objects, or a different
+   intermediate representation with an EQUAL-contract story
+   (tape / lazy materialization / etc.). Must name the
+   allocation delta before code.
+3. Pause stands until such a proposal is advisor-named
+   `[ready]`. G.17 stays `missing`.
+
+**Why it was decidable**: user restated the method after the
+stop-circling ruling.
+
+
