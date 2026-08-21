@@ -61,6 +61,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(sqlite), 1)
         self.assertEqual(sqlite[0]["class"], "paired")
         self.assertIn("sqlite_session.open_walk", sqlite[0]["metrics"])
+        discovery = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-agent/session/discovery.lisp"
+        ]
+        self.assertEqual(len(discovery), 1)
+        self.assertEqual(discovery[0]["class"], "paired")
+        self.assertIn("session_discovery.header_probe", discovery[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

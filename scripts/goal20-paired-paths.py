@@ -101,6 +101,7 @@ METRICS = {
     "cli_settings": ("create",),
     "resource_loader": ("reload",),
     "package_manager": ("resolve",),
+    "session_discovery": ("header_probe",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -196,6 +197,10 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent.
     # Ratchet down only.
     "package_manager.resolve": 1.5,
+    # Frozen from the first Friend-MachineD non-quick session_discovery
+    # pair (samples=5): observed 2.05x (1450 / 709 us). 8.0 follows
+    # the journal_read / tool_read headroom precedent. Ratchet down only.
+    "session_discovery.header_probe": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -396,6 +401,13 @@ OBSERVED_EXACT = {
         "prompt_count",
         "theme_count",
         "extension_count",
+    ),
+    "session_discovery": (
+        "file_count",
+        "header_count",
+        "found",
+        "session_id",
+        "most_recent_name",
     ),
     "resource_loader": (
         "skill_count",

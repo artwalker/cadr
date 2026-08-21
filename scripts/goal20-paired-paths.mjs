@@ -39,8 +39,10 @@ import {
 	mkdirSync,
 	mkdtempSync,
 	readFileSync,
+	readdirSync,
 	realpathSync,
 	rmSync,
+	utimesSync,
 	writeFileSync,
 } from "node:fs";
 import { hostname, tmpdir } from "node:os";
@@ -138,6 +140,7 @@ const REPETITIONS = {
 	"cli_settings.create": 5,
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
+	"session_discovery.header_probe": 20,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -1860,6 +1863,47 @@ async function measureSessionCompact() {
 	};
 }
 
+const SESSION_DISCOVERY_FILE_COUNT = 32;
+
+function stageSessionDiscovery() {
+	const dir = path.join(scratch, "discovery-sessions");
+	mkdirSync(dir, { recursive: true });
+	for (let index = 0; index < SESSION_DISCOVERY_FILE_COUNT; index += 1) {
+		const dest = path.join(dir, `sess-${String(index).padStart(2, "0")}.jsonl`);
+		copyFileSync(sessionFixturePath, dest);
+		const stamp = 1_700_000_000 + index;
+		utimesSync(dest, stamp, stamp);
+	}
+	return dir;
+}
+
+function sessionDiscoveryProbe(dir) {
+	return sessionModule.findMostRecentSession(dir);
+}
+
+async function measureSessionDiscovery() {
+	const dir = stageSessionDiscovery();
+	const found = sessionDiscoveryProbe(dir);
+	const files = readdirSync(dir).filter((name) => name.endsWith(".jsonl"));
+	let sessionId = "";
+	if (found) {
+		const firstLine = readFileSync(found, "utf8").split("\n", 1)[0];
+		sessionId = JSON.parse(firstLine).id;
+	}
+	return {
+		header_probe: await collect("session_discovery.header_probe", () => {
+			return () => sessionDiscoveryProbe(dir);
+		}),
+		observed: {
+			file_count: files.length,
+			header_count: files.length,
+			found: found ? 1 : 0,
+			session_id: sessionId,
+			most_recent_name: found ? path.basename(found) : "",
+		},
+	};
+}
+
 async function measureRenderSlicing() {
 	const dense = Array.from(
 		{ length: 200 },
@@ -1933,6 +1977,8 @@ process.stderr.write("goal20 pi paired paths: resource_loader\n");
 const resourceLoader = await measureResourceLoader();
 process.stderr.write("goal20 pi paired paths: package_manager\n");
 const packageManager = await measurePackageManager();
+process.stderr.write("goal20 pi paired paths: session_discovery\n");
+const sessionDiscovery = await measureSessionDiscovery();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -1964,6 +2010,8 @@ const result = {
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
+			"session_discovery.header_probe":
+				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2027,6 +2075,7 @@ const result = {
 		cli_settings: cliSettings,
 		resource_loader: resourceLoader,
 		package_manager: packageManager,
+		session_discovery: sessionDiscovery,
 		render_slicing: renderSlicing,
 	},
 };

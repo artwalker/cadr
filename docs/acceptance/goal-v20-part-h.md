@@ -335,6 +335,19 @@ Observed `stop_reason` / `tool_call_count` / `usage_*` /
 `text_characters` / `payload_tool_count` are exact.
 First Friend-MachineD freeze 1.25× (1103 / 885 µs), ceiling 1.5.
 
+### Pair 22 — `session_discovery`
+
+| metric | cadr | pi |
+|---|---|---|
+| `header_probe` | `read-session-header-for-discovery` over `*.jsonl` + newest mtime | `findMostRecentSession` (`packages/coding-agent/src/core/session-manager.ts`) |
+
+32 copies of the existing `session.jsonl` fixture with distinct
+utimes. Time directory list + header probe, not `load-session`.
+No TUI, no socket. Observed `file_count` / `header_count` /
+`found` / `session_id` / `most_recent_name` are exact.
+First Friend-MachineD freeze **2.05×** (1449.6 / 708.6 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -540,14 +553,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 69 | 37,658 | 29.6% | `no worse than baseline` is falsifiable |
+| `paired` | 70 | 37,812 | 29.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 17 | 12,786 | 10.0% | on a named paired thunk; no own bench |
-| `needs-pair` | 185 | 69,470 | 54.5% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 184 | 69,316 | 54.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 29.6% of lines (69 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 35.4% of lines.
+- **Falsifiable vs baseline:** 29.7% of lines (70 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 35.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -589,6 +602,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe` |
 | `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,434 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
@@ -716,7 +730,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `core_rest` | 4 | 267 |
 | `agent_proxy` | 1 | 251 |
 | `session_compact` | 1 | 185 |
-| `session_discovery` | 1 | 154 |
 | `agent_conditions` | 1 | 43 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

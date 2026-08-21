@@ -18,6 +18,7 @@
 ;;;;   5. sqlite_session    SQLite open + read-all + leaf walk
 ;;;;   6. tool_read         production read-tool-file vs pi execute
 ;;;;   7. tool_grep         production grep-lines vs pi execute (context=2)
+;;;;   8. session_discovery glob *.jsonl + header probe vs findMostRecentSession
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -83,6 +84,7 @@
     ("cli_settings.create" . 5)
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
+    ("session_discovery.header_probe" . 20)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2300,6 +2302,70 @@
 
 ;;; ---------------------------------------------------------------------
 
+(defparameter *session-discovery-file-count* 32)
+
+(defun session-discovery-directory ()
+  (merge-pathnames "discovery-sessions/" *scratch-directory*))
+
+(defun stage-session-discovery ()
+  (let ((directory
+          (uiop:ensure-directory-pathname
+           (session-discovery-directory))))
+    (ensure-directories-exist directory)
+    (loop for index from 0 below *session-discovery-file-count*
+          for name = (format nil "sess-~2,'0D.jsonl" index)
+          for path = (merge-pathnames name directory)
+          for stamp = (+ 1700000000 index)
+          do
+          (uiop:copy-file (fixture-path "session.jsonl") path)
+          (sb-posix:utimes (namestring path) stamp stamp))
+    directory))
+
+(defun session-discovery-probe (directory)
+  (let ((best-path nil)
+        (best-mtime nil)
+        (file-count 0)
+        (header-count 0)
+        (session-id ""))
+    (dolist
+        (path
+         (directory
+          (merge-pathnames
+           (make-pathname :name :wild :type "jsonl")
+           (uiop:ensure-directory-pathname directory))))
+      (incf file-count)
+      (let ((header
+              (cadr-agent::read-session-header-for-discovery path)))
+        (when header
+          (incf header-count)
+          (let ((mtime (sb-posix:stat-mtime (sb-posix:stat path))))
+            (when (or (null best-mtime) (>= mtime best-mtime))
+              (setf best-mtime mtime
+                    best-path path
+                    session-id
+                    (or (cadr-ai::json-get header "id") "")))))))
+    (values best-path file-count header-count session-id)))
+
+(defun measure-session-discovery ()
+  (let ((directory (stage-session-discovery)))
+    (multiple-value-bind
+          (best-path file-count header-count session-id)
+        (session-discovery-probe directory)
+      (json-object
+       "observed"
+       (json-object
+        "file_count" file-count
+        "header_count" header-count
+        "found" (if best-path 1 0)
+        "session_id" session-id
+        "most_recent_name"
+        (if best-path (file-namestring best-path) ""))
+       "header_probe"
+       (collect "session_discovery.header_probe"
+                (lambda ()
+                  (lambda ()
+                    (session-discovery-probe directory))))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2376,6 +2442,8 @@
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "package_manager.resolve"
       "src/cadr-cli/packages/manifest.lisp package-resource-paths"
+      "session_discovery.header_probe"
+      "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2463,6 +2531,8 @@
               (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: package_manager~%")
               (let ((packages (measure-package-manager)))
+              (format *error-output* "goal20 cadr paired paths: session_discovery~%")
+              (let ((discovery (measure-session-discovery)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2501,6 +2571,7 @@
               "cli_settings" settings
               "resource_loader" resources
               "package_manager" packages
+              "session_discovery" discovery
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2517,7 +2588,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

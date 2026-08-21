@@ -20,6 +20,7 @@
   "provider_codex.stream_roundtrip",
   "provider_pi_messages.stream_roundtrip",
   "package_manager.resolve",
+  "session_discovery.header_probe",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -656,8 +657,8 @@
   },
   {
    "prefix": "src/cadr-agent/session/discovery.lisp",
-   "class": "needs-pair",
-   "hole": "session_discovery"
+   "class": "paired",
+   "metrics": ["session_discovery.header_probe"]
   },
   {
    "prefix": "src/cadr-agent/session/export-html.lisp",

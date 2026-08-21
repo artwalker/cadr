@@ -307,10 +307,11 @@ These must not be filed as callees.
 | `src/cadr-agent/storage/memory.lisp` | 378 |
 | `src/cadr-agent/storage/protocol.lisp` | 142 |
 
-### `session_discovery` (additional)
+### `session_discovery` (additional) — paired `session_discovery.header_probe`
 
-- pi: `packages/coding-agent/src/core/session-manager.ts session listing/header probe`
-- fixture: Directory of N session.jsonl files. Time discover + header parse.
+- pi: `packages/coding-agent/src/core/session-manager.ts findMostRecentSession`
+- fixture: 32 copies of `session.jsonl` with distinct utimes. Time discover + header parse. Not `load-session`.
+- Friend-MachineD n=5: **2.05×** (1449.6 / 708.6 µs), ceiling 8.0. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

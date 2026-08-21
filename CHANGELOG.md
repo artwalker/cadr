@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `session_discovery.header_probe`
+  (32 copies of `session.jsonl`; cadr header probe vs pi
+  `findMostRecentSession`). Friend-MachineD n=5 **2.05×**
+  (1449.6 / 708.6 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20: docs-only disposition for paired paths still
   >1.0× (load / journal_read / pi_messages / mistral /
   compact). Invent pause; 待本质提案. No optimize.
