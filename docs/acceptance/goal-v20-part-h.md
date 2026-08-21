@@ -579,6 +579,18 @@ prefix filter, not a live TUI. Observed `he_count` /
 Friend-MachineD freeze **1.27×** (1.2 / 1.0 µs), ceiling
 8.0 (variance). Same commit no optimize.
 
+### Pair 40 — `tui_word_navigation`
+
+| metric | cadr | pi |
+|---|---|---|
+| `step` | `find-word-backward` + `find-word-forward` | `findWordBackward` + `findWordForward` (`packages/tui/src/word-navigation.ts`) |
+
+ASCII `"hello world"`. Time word steps, not a TUI frame.
+Observed `back_from_space` / `fwd_from_o` / `back_start` /
+`fwd_end` are exact (6 / 11 / 0 / 11). First Friend-MachineD
+freeze **0.17×** (0.94 / 5.4 µs), ceiling 8.0. Same commit
+no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -784,14 +796,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 92 | 48,166 | 37.8% | `no worse than baseline` is falsifiable |
+| `paired` | 93 | 48,284 | 37.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 160 | 58,829 | 46.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 159 | 58,711 | 46.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 37.8% of lines (92 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 43.7% of lines.
+- **Falsifiable vs baseline:** 37.9% of lines (93 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 43.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -917,6 +929,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/terminal-image.lisp` | 686 | `image_runtime.dimensions` |
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/unicode.lisp` | 1,302 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
+| `src/cadr-tui/word-navigation.lisp` | 118 | `tui_word_navigation.step` |
 
 ### 6.3 Covered as callee
 
@@ -961,9 +974,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `image_runtime` | 5 | 2,091 |
 | `oauth_pkce_device` | 13 | 2,081 |
 | `package_manager` | 2 | 1,811 |
-| `tui_editor_helpers` | 8 | 1,756 |
 | `cli_print_rpc` | 7 | 1,724 |
 | `cli_sdk` | 5 | 1,712 |
+| `tui_editor_helpers` | 7 | 1,638 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
 | `cli_support` | 13 | 1,164 |

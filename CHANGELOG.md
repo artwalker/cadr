@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_word_navigation.step` (`hello world`;
+  cadr `find-word-backward/forward` vs pi
+  `findWordBackward/Forward`). Friend-MachineD n=5 **0.17×**
+  (0.94 / 5.4 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_select_settings_loaders.filter`
   (hello/help/world; cadr `select-list-filtered-items` vs pi
   `SelectList.setFilter`). Friend-MachineD n=5 **1.27×**

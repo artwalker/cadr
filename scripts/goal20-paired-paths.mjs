@@ -158,6 +158,7 @@ const REPETITIONS = {
 	"tui_theme_overlay.osc11_bg": 50,
 	"ai_support.estimate_text": 50,
 	"tui_select_settings_loaders.filter": 50,
+	"tui_word_navigation.step": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -380,6 +381,7 @@ const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
 const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
 const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
+const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navigation.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2563,6 +2565,27 @@ async function measureTuiSelectList() {
 	};
 }
 
+const WORD_NAV_TEXT = "hello world";
+
+function runTuiWordNavigation() {
+	return {
+		back_from_space: wordNavigationModule.findWordBackward(WORD_NAV_TEXT, 11),
+		fwd_from_o: wordNavigationModule.findWordForward(WORD_NAV_TEXT, 5),
+		back_start: wordNavigationModule.findWordBackward(WORD_NAV_TEXT, 0),
+		fwd_end: wordNavigationModule.findWordForward(WORD_NAV_TEXT, WORD_NAV_TEXT.length),
+	};
+}
+
+async function measureTuiWordNavigation() {
+	const observed = runTuiWordNavigation();
+	return {
+		step: await collect("tui_word_navigation.step", () => {
+			return () => runTuiWordNavigation();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2787,6 +2810,8 @@ process.stderr.write("goal20 pi paired paths: ai_support\n");
 const aiSupport = await measureAiSupportEstimate();
 process.stderr.write("goal20 pi paired paths: tui_select_settings_loaders\n");
 const tuiSelectSettings = await measureTuiSelectList();
+process.stderr.write("goal20 pi paired paths: tui_word_navigation\n");
+const tuiWordNavigation = await measureTuiWordNavigation();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2850,6 +2875,8 @@ const result = {
 				"packages/ai/src/utils/estimate.ts estimateTextTokens",
 			"tui_select_settings_loaders.filter":
 				"packages/tui/src/components/select-list.ts SelectList.setFilter",
+			"tui_word_navigation.step":
+				"packages/tui/src/word-navigation.ts findWordBackward + findWordForward",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2931,6 +2958,7 @@ const result = {
 		tui_theme_overlay: tuiThemeOverlay,
 		ai_support: aiSupport,
 		tui_select_settings_loaders: tuiSelectSettings,
+		tui_word_navigation: tuiWordNavigation,
 		render_slicing: renderSlicing,
 	},
 };

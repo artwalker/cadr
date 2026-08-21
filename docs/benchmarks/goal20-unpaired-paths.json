@@ -38,6 +38,7 @@
   "tui_theme_overlay.osc11_bg",
   "ai_support.estimate_text",
   "tui_select_settings_loaders.filter",
+  "tui_word_navigation.step",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1688,8 +1689,8 @@
   },
   {
    "prefix": "src/cadr-tui/word-navigation.lisp",
-   "class": "needs-pair",
-   "hole": "tui_editor_helpers"
+   "class": "paired",
+   "metrics": ["tui_word_navigation.step"]
   }
  ]
 }

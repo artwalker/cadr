@@ -205,6 +205,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(select_list), 1)
         self.assertEqual(select_list[0]["class"], "paired")
         self.assertIn("tui_select_settings_loaders.filter", select_list[0]["metrics"])
+        word_nav = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/word-navigation.lisp"
+        ]
+        self.assertEqual(len(word_nav), 1)
+        self.assertEqual(word_nav[0]["class"], "paired")
+        self.assertIn("tui_word_navigation.step", word_nav[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

@@ -36,6 +36,7 @@
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
 ;;;;  24. ai_support estimate-text-tokens vs estimateTextTokens
 ;;;;  25. tui_select_settings_loaders select-list filter vs SelectList.setFilter
+;;;;  26. tui_word_navigation find-word-backward/forward vs findWordBackward/Forward
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -123,6 +124,7 @@
     ("tui_theme_overlay.osc11_bg" . 50)
     ("ai_support.estimate_text" . 50)
     ("tui_select_settings_loaders.filter" . 50)
+    ("tui_word_navigation.step" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3162,6 +3164,30 @@
                 (lambda ()
                   (run-tui-select-list)))))))
 
+(defparameter *word-nav-text* "hello world")
+
+(defun run-tui-word-navigation ()
+  (list
+   (cadr-tui:find-word-backward *word-nav-text* 11)
+   (cadr-tui:find-word-forward *word-nav-text* 5)
+   (cadr-tui:find-word-backward *word-nav-text* 0)
+   (cadr-tui:find-word-forward *word-nav-text* (length *word-nav-text*))))
+
+(defun measure-tui-word-navigation ()
+  (let ((observed (run-tui-word-navigation)))
+    (json-object
+     "observed"
+     (json-object
+      "back_from_space" (first observed)
+      "fwd_from_o" (second observed)
+      "back_start" (third observed)
+      "fwd_end" (fourth observed))
+     "step"
+     (collect "tui_word_navigation.step"
+              (lambda ()
+                (lambda ()
+                  (run-tui-word-navigation)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3274,6 +3300,8 @@
       "src/cadr-ai/support/token-estimation.lisp estimate-text-tokens"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
+      "tui_word_navigation.step"
+      "src/cadr-tui/word-navigation.lisp find-word-backward + find-word-forward"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3397,6 +3425,8 @@
               (let ((estimate (measure-ai-support-estimate)))
               (format *error-output* "goal20 cadr paired paths: tui_select_settings_loaders~%")
               (let ((select-list (measure-tui-select-list)))
+              (format *error-output* "goal20 cadr paired paths: tui_word_navigation~%")
+              (let ((word-nav (measure-tui-word-navigation)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3453,6 +3483,7 @@
               "tui_theme_overlay" theme-overlay
               "ai_support" estimate
               "tui_select_settings_loaders" select-list
+              "tui_word_navigation" word-nav
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3469,7 +3500,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
