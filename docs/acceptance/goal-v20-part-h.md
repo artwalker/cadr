@@ -1049,6 +1049,20 @@ then `load`; print. Observed `time_title` / `time_boot` /
 No TUI frame. First Friend-MachineD freeze **1.71×**
 (4.55 / 2.66 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 73 — `ai_capabilities` (http_proxy)
+
+| metric | cadr | pi |
+|---|---|---|
+| `http_proxy` | `resolve-http-proxy-url-for-target` | `resolveHttpProxyUrlForTarget` (`packages/ai/src/utils/node-http-proxy.ts`) |
+
+Leftover sibling of `short_hash` / `deferred_tools` / `event_stream`.
+Fixture env maps (no live socket, no process-env leak):
+HTTPS_PROXY hit / NO_PROXY `*` / host skip / host keep / SOCKS
+error. Observed `px_hit` / `px_star` / `px_skip` / `px_keep`
+exact strings; `px_socks` is the error flag. First
+Friend-MachineD freeze **0.45×** (5.71 / 12.59 µs),
+ceiling 8.0. cadr leads. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1254,14 +1268,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 125 | 59,212 | 46.5% | `no worse than baseline` is falsifiable |
+| `paired` | 126 | 59,289 | 46.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 127 | 47,783 | 37.5% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 126 | 47,706 | 37.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.5% of lines (125 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 52.3% of lines.
+- **Falsifiable vs baseline:** 46.5% of lines (126 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 52.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1322,6 +1336,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/capabilities/event-stream.lisp` | 69 | `ai_capabilities.event_stream` |
 | `src/cadr-ai/capabilities/grammar-tools.lisp` | 292 | `ai_capabilities.deferred_tools` |
 | `src/cadr-ai/capabilities/image-runtime.lisp` | 117 | `image_runtime.api_provider` |
+| `src/cadr-ai/capabilities/proxy-config.lisp` | 77 | `ai_capabilities.http_proxy` |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
@@ -1476,8 +1491,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
 | `session_compact` | 1 | 185 |
-| `ai_capabilities` | 2 | 111 |
 | `agent_conditions` | 1 | 43 |
+| `ai_capabilities` | 1 | 34 |
 | `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

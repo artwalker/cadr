@@ -393,6 +393,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(event_stream), 1)
         self.assertEqual(event_stream[0]["class"], "paired")
         self.assertIn("ai_capabilities.event_stream", event_stream[0]["metrics"])
+        http_proxy = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/capabilities/proxy-config.lisp"
+        ]
+        self.assertEqual(len(http_proxy), 1)
+        self.assertEqual(http_proxy[0]["class"], "paired")
+        self.assertIn("ai_capabilities.http_proxy", http_proxy[0]["metrics"])
         strip_ansi = [
             row
             for row in classified["rows"]

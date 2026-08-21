@@ -181,6 +181,7 @@ const REPETITIONS = {
 	"ai_capabilities.short_hash": 50,
 	"ai_capabilities.deferred_tools": 50,
 	"ai_capabilities.event_stream": 50,
+	"ai_capabilities.http_proxy": 50,
 	"cli_support.strip_ansi": 50,
 	"cli_support.normalize_path": 50,
 	"cli_support.timings": 50,
@@ -444,6 +445,9 @@ const deferredToolsModule = await import(
 );
 const eventStreamModule = await import(
 	moduleUrl("packages/ai/src/utils/event-stream.ts")
+);
+const nodeHttpProxyModule = await import(
+	moduleUrl("packages/ai/src/utils/node-http-proxy.ts")
 );
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
@@ -3335,10 +3339,50 @@ async function runAiCapabilitiesEventStream() {
 	};
 }
 
+function resolveProxyOrEmpty(target, env) {
+	try {
+		const resolved = nodeHttpProxyModule.resolveHttpProxyUrlForTarget(target, env);
+		return resolved ? resolved.href : "";
+	} catch {
+		return "ERR";
+	}
+}
+
+function runAiCapabilitiesHttpProxy() {
+	const hit = {
+		HTTPS_PROXY: "http://proxy.local:8080/",
+		NO_PROXY: "none.invalid",
+	};
+	const star = {
+		HTTPS_PROXY: "http://proxy.local:8080/",
+		NO_PROXY: "*",
+	};
+	const skip = {
+		HTTPS_PROXY: "http://proxy.local:8080/",
+		NO_PROXY: "example.com",
+	};
+	const keep = {
+		HTTPS_PROXY: "http://proxy.local:8080/",
+		NO_PROXY: "other.com",
+	};
+	const socks = {
+		HTTPS_PROXY: "socks://127.0.0.1:1080/",
+		NO_PROXY: "none.invalid",
+	};
+	return {
+		px_hit: resolveProxyOrEmpty("https://keep.example.com/x", hit),
+		px_star: resolveProxyOrEmpty("https://keep.example.com/x", star),
+		px_skip: resolveProxyOrEmpty("https://example.com/x", skip),
+		px_keep: resolveProxyOrEmpty("https://keep.example.com/x", keep),
+		px_socks: resolveProxyOrEmpty("https://keep.example.com/x", socks) === "ERR" ? 1 : 0,
+	};
+}
+
 async function measureAiCapabilitiesShortHash() {
 	const hash = runAiCapabilitiesShortHash();
 	const deferred = runAiCapabilitiesDeferredTools();
 	const events = await runAiCapabilitiesEventStream();
+	const proxy = runAiCapabilitiesHttpProxy();
 	return {
 		short_hash: await collect("ai_capabilities.short_hash", () => {
 			return () => runAiCapabilitiesShortHash();
@@ -3349,7 +3393,10 @@ async function measureAiCapabilitiesShortHash() {
 		event_stream: await collect("ai_capabilities.event_stream", () => {
 			return () => runAiCapabilitiesEventStream();
 		}),
-		observed: { ...hash, ...deferred, ...events },
+		http_proxy: await collect("ai_capabilities.http_proxy", () => {
+			return () => runAiCapabilitiesHttpProxy();
+		}),
+		observed: { ...hash, ...deferred, ...events, ...proxy },
 	};
 }
 
@@ -3972,6 +4019,8 @@ const result = {
 				"packages/ai/src/utils/deferred-tools.ts splitDeferredTools",
 			"ai_capabilities.event_stream":
 				"packages/ai/src/utils/event-stream.ts EventStream",
+			"ai_capabilities.http_proxy":
+				"packages/ai/src/utils/node-http-proxy.ts resolveHttpProxyUrlForTarget",
 			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
 			"cli_support.normalize_path":
 				"packages/coding-agent/src/utils/paths.ts normalizePath",

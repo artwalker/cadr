@@ -69,6 +69,7 @@
 ;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
 ;;;;  56. ai_capabilities make-event-stream vs EventStream
 ;;;;  57. cli_support reset-timings + record-timing + print-timings vs resetTimings/time/printTimings
+;;;;  58. ai_capabilities resolve-http-proxy-url-for-target vs resolveHttpProxyUrlForTarget
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -179,6 +180,7 @@
     ("ai_capabilities.short_hash" . 50)
     ("ai_capabilities.deferred_tools" . 50)
     ("ai_capabilities.event_stream" . 50)
+    ("ai_capabilities.http_proxy" . 50)
     ("cli_support.strip_ansi" . 50)
     ("cli_support.normalize_path" . 50)
     ("cli_support.timings" . 50)
@@ -4035,10 +4037,43 @@
      (cadr-ai:event-stream-next stream)
      (cadr-ai:event-stream-result stream))))
 
+(defun resolve-proxy-or-empty (target environment)
+  (handler-case
+      (or (cadr-ai:resolve-http-proxy-url-for-target target environment) "")
+    (error ()
+      "ERR")))
+
+(defun run-ai-capabilities-http-proxy ()
+  (let ((hit
+          '(("HTTPS_PROXY" . "http://proxy.local:8080/")
+            ("NO_PROXY" . "none.invalid")))
+        (star
+          '(("HTTPS_PROXY" . "http://proxy.local:8080/")
+            ("NO_PROXY" . "*")))
+        (skip
+          '(("HTTPS_PROXY" . "http://proxy.local:8080/")
+            ("NO_PROXY" . "example.com")))
+        (keep
+          '(("HTTPS_PROXY" . "http://proxy.local:8080/")
+            ("NO_PROXY" . "other.com")))
+        (socks
+          '(("HTTPS_PROXY" . "socks://127.0.0.1:1080/")
+            ("NO_PROXY" . "none.invalid"))))
+    (list
+     (resolve-proxy-or-empty "https://keep.example.com/x" hit)
+     (resolve-proxy-or-empty "https://keep.example.com/x" star)
+     (resolve-proxy-or-empty "https://example.com/x" skip)
+     (resolve-proxy-or-empty "https://keep.example.com/x" keep)
+     (if (string= (resolve-proxy-or-empty "https://keep.example.com/x" socks)
+                  "ERR")
+         1
+         0))))
+
 (defun measure-ai-capabilities-short-hash ()
   (let ((hash (run-ai-capabilities-short-hash))
         (deferred (run-ai-capabilities-deferred-tools))
-        (events (run-ai-capabilities-event-stream)))
+        (events (run-ai-capabilities-event-stream))
+        (proxy (run-ai-capabilities-http-proxy)))
     (json-object
      "observed"
      (json-object
@@ -4058,7 +4093,12 @@
       "ev_first" (first events)
       "ev_second" (second events)
       "ev_third" (third events)
-      "ev_result" (fourth events))
+      "ev_result" (fourth events)
+      "px_hit" (first proxy)
+      "px_star" (second proxy)
+      "px_skip" (third proxy)
+      "px_keep" (fourth proxy)
+      "px_socks" (fifth proxy))
      "short_hash"
      (collect "ai_capabilities.short_hash"
               (lambda ()
@@ -4073,7 +4113,12 @@
      (collect "ai_capabilities.event_stream"
               (lambda ()
                 (lambda ()
-                  (run-ai-capabilities-event-stream)))))))
+                  (run-ai-capabilities-event-stream))))
+     "http_proxy"
+     (collect "ai_capabilities.http_proxy"
+              (lambda ()
+                (lambda ()
+                  (run-ai-capabilities-http-proxy)))))))
 
 (defun strip-ansi-csi-osc ()
   (format nil
@@ -4543,6 +4588,8 @@
       "src/cadr-ai/capabilities/grammar-tools.lisp split-deferred-tools"
       "ai_capabilities.event_stream"
       "src/cadr-ai/capabilities/event-stream.lisp make-event-stream"
+      "ai_capabilities.http_proxy"
+      "src/cadr-ai/capabilities/proxy-config.lisp resolve-http-proxy-url-for-target"
       "cli_support.strip_ansi"
       "src/cadr-cli/support/changelog-share.lisp strip-ansi"
       "cli_support.normalize_path"
