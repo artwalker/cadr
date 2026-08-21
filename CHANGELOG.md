@@ -21,6 +21,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_capabilities.session_resources`
+  (register + cleanup recorder/thrower; cadr
+  `register-session-resource-cleanup` /
+  `cleanup-session-resources` vs pi
+  `registerSessionResourceCleanup` /
+  `cleanupSessionResources`). Friend-MachineD n=5
+  **0.16×** (1.41 / 9.04 µs), ceiling 8.0. cadr leads.
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `ai_capabilities.http_proxy`
   (HTTPS_PROXY hit / NO_PROXY skip; cadr
   `resolve-http-proxy-url-for-target` vs pi

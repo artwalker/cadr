@@ -416,11 +416,11 @@ These must not be filed as callees.
 | `src/cadr-cli/media.lisp` | 1,277 |
 | `src/cadr-tui/terminal-image.lisp` | 686 |
 
-### `ai_capabilities` (additional) — `streaming-json.lisp` paired `ai_capabilities.short_hash`; `grammar-tools.lisp` paired `ai_capabilities.deferred_tools`; `event-stream.lisp` paired `ai_capabilities.event_stream`; `proxy-config.lisp` paired `ai_capabilities.http_proxy`
+### `ai_capabilities` (additional) — `streaming-json.lisp` paired `ai_capabilities.short_hash`; `grammar-tools.lisp` paired `ai_capabilities.deferred_tools`; `event-stream.lisp` paired `ai_capabilities.event_stream`; `proxy-config.lisp` paired `ai_capabilities.http_proxy`; `session-resources.lisp` paired `ai_capabilities.session_resources`
 
-- pi: `shortHash`; `splitDeferredTools`; `EventStream`; `resolveHttpProxyUrlForTarget`
-- fixture: empty / `abc` / `中文😀`. Time UTF-16 hash, not a stream. Deferred: grep/bash/read. Event stream: FIFO a/b/end. Proxy: HTTPS_PROXY hit / NO_PROXY star / host skip / keep / SOCKS error. No live socket.
-- Friend-MachineD n=5: short_hash **1.70×** (1.5 / 0.9 µs); deferred_tools **2.04×** (5.51 / 2.70 µs); event_stream **1.44×** (1.73 / 1.20 µs); http_proxy **0.45×** (5.71 / 12.59 µs); ceiling 8.0 (variance on hash/event). cadr leads on proxy. Other files still `needs-pair`. No optimize in the booking commit.
+- pi: `shortHash`; `splitDeferredTools`; `EventStream`; `resolveHttpProxyUrlForTarget`; `registerSessionResourceCleanup` + `cleanupSessionResources`
+- fixture: empty / `abc` / `中文😀`. Time UTF-16 hash, not a stream. Deferred: grep/bash/read. Event stream: FIFO a/b/end. Proxy: HTTPS_PROXY hit / NO_PROXY star / host skip / keep / SOCKS error. Session resources: recorder sess-1 / unregister / sess-2 no-append / thrower error. No live socket.
+- Friend-MachineD n=5: short_hash **1.70×** (1.5 / 0.9 µs); deferred_tools **2.04×** (5.51 / 2.70 µs); event_stream **1.44×** (1.73 / 1.20 µs); http_proxy **0.45×** (5.71 / 12.59 µs); session_resources **0.16×** (1.41 / 9.04 µs); ceiling 8.0 (variance on hash). cadr leads on proxy/resources. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

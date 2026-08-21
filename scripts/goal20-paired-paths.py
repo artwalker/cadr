@@ -130,7 +130,7 @@ METRICS = {
     "tui_input_component": ("edit",),
     "tui_native_modifiers": ("pressed",),
     "tui_settings_list": ("apply_filter",),
-    "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy"),
+    "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings"),
     "cli_interactive_controller": ("decode_entity",),
     "cli_sdk": ("version_newer",),
@@ -443,6 +443,11 @@ RATIO_CEILINGS = {
     # 0.45x (5.71 / 12.59 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "ai_capabilities.http_proxy": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # ai_capabilities.session_resources pair (samples=5):
+    # observed 0.16x (1.41 / 9.04 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "ai_capabilities.session_resources": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_support pair (samples=5): observed 2.73x
     # (1.3 / 0.5 us). 8.0 follows the microsecond-floor
@@ -959,6 +964,10 @@ OBSERVED_EXACT = {
         "px_skip",
         "px_keep",
         "px_socks",
+        "sr_first",
+        "sr_n1",
+        "sr_n2",
+        "sr_err",
     ),
     "cli_support": (
         "csi_osc",

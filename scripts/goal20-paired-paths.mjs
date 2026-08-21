@@ -182,6 +182,7 @@ const REPETITIONS = {
 	"ai_capabilities.deferred_tools": 50,
 	"ai_capabilities.event_stream": 50,
 	"ai_capabilities.http_proxy": 50,
+	"ai_capabilities.session_resources": 50,
 	"cli_support.strip_ansi": 50,
 	"cli_support.normalize_path": 50,
 	"cli_support.timings": 50,
@@ -448,6 +449,9 @@ const eventStreamModule = await import(
 );
 const nodeHttpProxyModule = await import(
 	moduleUrl("packages/ai/src/utils/node-http-proxy.ts")
+);
+const sessionResourcesModule = await import(
+	moduleUrl("packages/ai/src/session-resources.ts")
 );
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
@@ -3378,11 +3382,41 @@ function runAiCapabilitiesHttpProxy() {
 	};
 }
 
+function runAiCapabilitiesSessionResources() {
+	const recorded = [];
+	const unreg = sessionResourcesModule.registerSessionResourceCleanup((sessionId) => {
+		recorded.push(sessionId ?? "");
+	});
+	sessionResourcesModule.cleanupSessionResources("sess-1");
+	const n1 = recorded.length;
+	unreg();
+	sessionResourcesModule.cleanupSessionResources("sess-2");
+	const n2 = recorded.length;
+	const unregErr = sessionResourcesModule.registerSessionResourceCleanup(() => {
+		throw new Error("boom");
+	});
+	let err = 0;
+	try {
+		sessionResourcesModule.cleanupSessionResources("sess-err");
+	} catch {
+		err = 1;
+	} finally {
+		unregErr();
+	}
+	return {
+		sr_first: recorded[0] ?? "",
+		sr_n1: n1,
+		sr_n2: n2,
+		sr_err: err,
+	};
+}
+
 async function measureAiCapabilitiesShortHash() {
 	const hash = runAiCapabilitiesShortHash();
 	const deferred = runAiCapabilitiesDeferredTools();
 	const events = await runAiCapabilitiesEventStream();
 	const proxy = runAiCapabilitiesHttpProxy();
+	const resources = runAiCapabilitiesSessionResources();
 	return {
 		short_hash: await collect("ai_capabilities.short_hash", () => {
 			return () => runAiCapabilitiesShortHash();
@@ -3396,7 +3430,10 @@ async function measureAiCapabilitiesShortHash() {
 		http_proxy: await collect("ai_capabilities.http_proxy", () => {
 			return () => runAiCapabilitiesHttpProxy();
 		}),
-		observed: { ...hash, ...deferred, ...events, ...proxy },
+		session_resources: await collect("ai_capabilities.session_resources", () => {
+			return () => runAiCapabilitiesSessionResources();
+		}),
+		observed: { ...hash, ...deferred, ...events, ...proxy, ...resources },
 	};
 }
 
@@ -4021,6 +4058,8 @@ const result = {
 				"packages/ai/src/utils/event-stream.ts EventStream",
 			"ai_capabilities.http_proxy":
 				"packages/ai/src/utils/node-http-proxy.ts resolveHttpProxyUrlForTarget",
+			"ai_capabilities.session_resources":
+				"packages/ai/src/session-resources.ts registerSessionResourceCleanup + cleanupSessionResources",
 			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
 			"cli_support.normalize_path":
 				"packages/coding-agent/src/utils/paths.ts normalizePath",

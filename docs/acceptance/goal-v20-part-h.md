@@ -1063,6 +1063,19 @@ exact strings; `px_socks` is the error flag. First
 Friend-MachineD freeze **0.45×** (5.71 / 12.59 µs),
 ceiling 8.0. cadr leads. Same commit no optimize.
 
+### Pair 74 — `ai_capabilities` (session_resources)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_resources` | `register-session-resource-cleanup` + `cleanup-session-resources` | `registerSessionResourceCleanup` + `cleanupSessionResources` (`packages/ai/src/session-resources.ts`) |
+
+Leftover sibling of short_hash / deferred / event_stream / http_proxy.
+Recorder cleanup `sess-1`; unregister; `sess-2` must not append;
+thrower must error. Do not exact error text. No live socket. Do
+not call cadr-only `clear-session-resource-cleanups`. First
+Friend-MachineD freeze **0.16×** (1.41 / 9.04 µs), ceiling
+8.0. cadr leads. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1268,13 +1281,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 126 | 59,289 | 46.5% | `no worse than baseline` is falsifiable |
+| `paired` | 127 | 59,323 | 46.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 126 | 47,706 | 37.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 125 | 47,672 | 37.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.5% of lines (126 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 46.6% of lines (127 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 52.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -1337,6 +1350,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/capabilities/grammar-tools.lisp` | 292 | `ai_capabilities.deferred_tools` |
 | `src/cadr-ai/capabilities/image-runtime.lisp` | 117 | `image_runtime.api_provider` |
 | `src/cadr-ai/capabilities/proxy-config.lisp` | 77 | `ai_capabilities.http_proxy` |
+| `src/cadr-ai/capabilities/session-resources.lisp` | 34 | `ai_capabilities.session_resources` |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
@@ -1492,7 +1506,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `image_runtime` | 1 | 222 |
 | `session_compact` | 1 | 185 |
 | `agent_conditions` | 1 | 43 |
-| `ai_capabilities` | 1 | 34 |
 | `ai_support` | 1 | 6 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->

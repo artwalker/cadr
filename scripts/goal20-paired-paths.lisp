@@ -70,6 +70,7 @@
 ;;;;  56. ai_capabilities make-event-stream vs EventStream
 ;;;;  57. cli_support reset-timings + record-timing + print-timings vs resetTimings/time/printTimings
 ;;;;  58. ai_capabilities resolve-http-proxy-url-for-target vs resolveHttpProxyUrlForTarget
+;;;;  59. ai_capabilities register/cleanup session resources vs registerSessionResourceCleanup
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -181,6 +182,7 @@
     ("ai_capabilities.deferred_tools" . 50)
     ("ai_capabilities.event_stream" . 50)
     ("ai_capabilities.http_proxy" . 50)
+    ("ai_capabilities.session_resources" . 50)
     ("cli_support.strip_ansi" . 50)
     ("cli_support.normalize_path" . 50)
     ("cli_support.timings" . 50)
@@ -4069,11 +4071,41 @@
          1
          0))))
 
+(defun run-ai-capabilities-session-resources ()
+  (let ((recorded nil)
+        (n1 0)
+        (n2 0)
+        (err 0))
+    (let ((unreg
+            (cadr-ai:register-session-resource-cleanup
+             (lambda (session-id)
+               (push (or session-id "") recorded)))))
+      (cadr-ai:cleanup-session-resources "sess-1")
+      (setf n1 (length recorded))
+      (funcall unreg)
+      (cadr-ai:cleanup-session-resources "sess-2")
+      (setf n2 (length recorded)))
+    (let ((unreg-err
+            (cadr-ai:register-session-resource-cleanup
+             (lambda (session-id)
+               (declare (ignore session-id))
+               (error "boom")))))
+      (unwind-protect
+           (setf err
+                 (handler-case
+                     (progn
+                       (cadr-ai:cleanup-session-resources "sess-err")
+                       0)
+                   (error () 1)))
+        (funcall unreg-err)))
+    (list (or (car (last recorded)) "") n1 n2 err)))
+
 (defun measure-ai-capabilities-short-hash ()
   (let ((hash (run-ai-capabilities-short-hash))
         (deferred (run-ai-capabilities-deferred-tools))
         (events (run-ai-capabilities-event-stream))
-        (proxy (run-ai-capabilities-http-proxy)))
+        (proxy (run-ai-capabilities-http-proxy))
+        (resources (run-ai-capabilities-session-resources)))
     (json-object
      "observed"
      (json-object
@@ -4098,7 +4130,11 @@
       "px_star" (second proxy)
       "px_skip" (third proxy)
       "px_keep" (fourth proxy)
-      "px_socks" (fifth proxy))
+      "px_socks" (fifth proxy)
+      "sr_first" (first resources)
+      "sr_n1" (second resources)
+      "sr_n2" (third resources)
+      "sr_err" (fourth resources))
      "short_hash"
      (collect "ai_capabilities.short_hash"
               (lambda ()
@@ -4118,7 +4154,12 @@
      (collect "ai_capabilities.http_proxy"
               (lambda ()
                 (lambda ()
-                  (run-ai-capabilities-http-proxy)))))))
+                  (run-ai-capabilities-http-proxy))))
+     "session_resources"
+     (collect "ai_capabilities.session_resources"
+              (lambda ()
+                (lambda ()
+                  (run-ai-capabilities-session-resources)))))))
 
 (defun strip-ansi-csi-osc ()
   (format nil
@@ -4590,6 +4631,8 @@
       "src/cadr-ai/capabilities/event-stream.lisp make-event-stream"
       "ai_capabilities.http_proxy"
       "src/cadr-ai/capabilities/proxy-config.lisp resolve-http-proxy-url-for-target"
+      "ai_capabilities.session_resources"
+      "src/cadr-ai/capabilities/session-resources.lisp register-session-resource-cleanup + cleanup-session-resources"
       "cli_support.strip_ansi"
       "src/cadr-cli/support/changelog-share.lisp strip-ansi"
       "cli_support.normalize_path"

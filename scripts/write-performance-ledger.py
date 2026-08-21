@@ -78,6 +78,7 @@ METRIC_KEYS = (
     "ai_capabilities.deferred_tools",
     "ai_capabilities.event_stream",
     "ai_capabilities.http_proxy",
+    "ai_capabilities.session_resources",
     "cli_support.strip_ansi",
     "cli_support.normalize_path",
     "cli_support.timings",

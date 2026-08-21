@@ -62,6 +62,7 @@
   "ai_capabilities.deferred_tools",
   "ai_capabilities.event_stream",
   "ai_capabilities.http_proxy",
+  "ai_capabilities.session_resources",
   "cli_support.strip_ansi",
   "cli_support.normalize_path",
   "cli_support.timings",
@@ -778,8 +779,8 @@
   },
   {
    "prefix": "src/cadr-ai/capabilities/session-resources.lisp",
-   "class": "needs-pair",
-   "hole": "ai_capabilities"
+   "class": "paired",
+   "metrics": ["ai_capabilities.session_resources"]
   },
   {
    "prefix": "src/cadr-ai/capabilities/streaming-json.lisp",

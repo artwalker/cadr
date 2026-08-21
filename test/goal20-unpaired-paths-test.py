@@ -401,6 +401,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(http_proxy), 1)
         self.assertEqual(http_proxy[0]["class"], "paired")
         self.assertIn("ai_capabilities.http_proxy", http_proxy[0]["metrics"])
+        session_resources = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/capabilities/session-resources.lisp"
+        ]
+        self.assertEqual(len(session_resources), 1)
+        self.assertEqual(session_resources[0]["class"], "paired")
+        self.assertIn("ai_capabilities.session_resources", session_resources[0]["metrics"])
         strip_ansi = [
             row
             for row in classified["rows"]
