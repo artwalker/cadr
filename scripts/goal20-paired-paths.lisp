@@ -31,6 +31,7 @@
 ;;;;  18. cli_models_rest parse-scoped-model-pattern vs parseModelPattern
 ;;;;  19. image_runtime image-dimensions vs getImageDimensions
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
+;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -113,6 +114,7 @@
     ("cli_models_rest.pattern_match" . 50)
     ("image_runtime.dimensions" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
+    ("tui_latex.render" . 20)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2975,6 +2977,33 @@
                 (lambda ()
                   (run-cli-print-rpc)))))))
 
+(defun latex-text (source display-p)
+  (or (cadr-tui:render-latex source :display-p display-p) ""))
+
+(defun run-tui-latex ()
+  (list
+   (latex-text "E = mc^2" nil)
+   (latex-text "\\frac{1}{2}" nil)
+   (latex-text "\\alpha + \\beta \\times \\gamma" nil)
+   (count #\Newline (latex-text "\\frac{1}{2}" t))
+   (if (string= (latex-text "\\unknowncmd{x}" nil) "") 1 0)))
+
+(defun measure-tui-latex ()
+  (let ((observed (run-tui-latex)))
+    (json-object
+     "observed"
+     (json-object
+      "e_mc2" (first observed)
+      "frac_inline" (second observed)
+      "greek" (third observed)
+      "frac_display_newlines" (fourth observed)
+      "unknown_miss" (fifth observed))
+     "render"
+     (collect "tui_latex.render"
+              (lambda ()
+                (lambda ()
+                  (run-tui-latex)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3077,6 +3106,8 @@
       "src/cadr-tui/terminal-image.lisp image-dimensions"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
+      "tui_latex.render"
+      "src/cadr-tui/latex.lisp render-latex"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3190,6 +3221,8 @@
               (let ((images (measure-image-runtime)))
               (format *error-output* "goal20 cadr paired paths: cli_print_rpc~%")
               (let ((print-rpc (measure-cli-print-rpc)))
+              (format *error-output* "goal20 cadr paired paths: tui_latex~%")
+              (let ((latex (measure-tui-latex)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3241,6 +3274,7 @@
               "cli_models_rest" models-rest
               "image_runtime" images
               "cli_print_rpc" print-rpc
+              "tui_latex" latex
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3257,7 +3291,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

@@ -425,6 +425,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("newline", paired.OBSERVED_EXACT["cli_print_rpc"])
         self.assertIn("payload", paired.OBSERVED_EXACT["cli_print_rpc"])
 
+    def test_tui_latex_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tui_latex.render", RECORD.METRIC_KEYS)
+        self.assertIn("render", paired.METRICS["tui_latex"])
+        self.assertIn("tui_latex.render", paired.RATIO_CEILINGS)
+        self.assertIn("e_mc2", paired.OBSERVED_EXACT["tui_latex"])
+        self.assertIn("frac_inline", paired.OBSERVED_EXACT["tui_latex"])
+        self.assertIn("unknown_miss", paired.OBSERVED_EXACT["tui_latex"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -491,6 +500,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_models_rest.pattern_match`", section)
             self.assertIn("`image_runtime.dimensions`", section)
             self.assertIn("`cli_print_rpc.jsonl_line`", section)
+            self.assertIn("`tui_latex.render`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

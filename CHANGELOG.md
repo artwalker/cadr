@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_latex.render` (reference snippets;
+  cadr `render-latex` vs pi `renderLatex`). Friend-MachineD
+  n=5 **2.49×** (64.4 / 25.8 µs), ceiling 3.0. Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_print_rpc.jsonl_line` (RPC
   `get_state` response; cadr `write-json-line` vs pi
   `serializeJsonLine`). Friend-MachineD n=5 **13.21×**

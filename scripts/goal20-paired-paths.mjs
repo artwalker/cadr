@@ -153,6 +153,7 @@ const REPETITIONS = {
 	"cli_models_rest.pattern_match": 50,
 	"image_runtime.dimensions": 50,
 	"cli_print_rpc.jsonl_line": 50,
+	"tui_latex.render": 20,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -370,6 +371,7 @@ const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
+const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2389,6 +2391,31 @@ async function measureCliPrintRpc() {
 	};
 }
 
+function latexText(source, display) {
+	return latexModule.renderLatex(source, { display }) ?? "";
+}
+
+function runTuiLatex() {
+	const fracDisplay = latexText("\\frac{1}{2}", true);
+	return {
+		e_mc2: latexText("E = mc^2", false),
+		frac_inline: latexText("\\frac{1}{2}", false),
+		greek: latexText("\\alpha + \\beta \\times \\gamma", false),
+		frac_display_newlines: (fracDisplay.match(/\n/g) || []).length,
+		unknown_miss: latexText("\\unknowncmd{x}", false) === "" ? 1 : 0,
+	};
+}
+
+async function measureTuiLatex() {
+	const observed = runTuiLatex();
+	return {
+		render: await collect("tui_latex.render", () => {
+			return () => runTuiLatex();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2603,6 +2630,8 @@ process.stderr.write("goal20 pi paired paths: image_runtime\n");
 const imageRuntime = await measureImageRuntime();
 process.stderr.write("goal20 pi paired paths: cli_print_rpc\n");
 const cliPrintRpc = await measureCliPrintRpc();
+process.stderr.write("goal20 pi paired paths: tui_latex\n");
+const tuiLatex = await measureTuiLatex();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2658,6 +2687,7 @@ const result = {
 				"packages/tui/src/terminal-image.ts getImageDimensions",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
+			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2734,6 +2764,7 @@ const result = {
 		cli_models_rest: cliModelsRest,
 		image_runtime: imageRuntime,
 		cli_print_rpc: cliPrintRpc,
+		tui_latex: tuiLatex,
 		render_slicing: renderSlicing,
 	},
 };

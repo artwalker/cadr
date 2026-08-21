@@ -513,6 +513,19 @@ stay `needs-pair`. First Friend-MachineD freeze **13.21×**
 (3.3 / 0.25 µs), ceiling 8.0 (variance / microsecond floor).
 Same commit no optimize.
 
+### Pair 35 — `tui_latex`
+
+| metric | cadr | pi |
+|---|---|---|
+| `render` | `render-latex` | `renderLatex` (`packages/tui/src/latex.ts`) |
+
+FiveAM reference snippets: `E = mc^2`, inline/display
+`\frac{1}{2}`, greek, unsupported command. Time Unicode
+render, not a TUI frame. Observed `e_mc2` / `frac_inline` /
+`greek` / `frac_display_newlines` / `unknown_miss` are
+exact. First Friend-MachineD freeze **2.49×** (64.4 / 25.8
+µs), ceiling 3.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -718,14 +731,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 87 | 45,416 | 35.7% | `no worse than baseline` is falsifiable |
+| `paired` | 88 | 47,366 | 37.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 165 | 61,579 | 48.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 164 | 59,629 | 46.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 35.7% of lines (87 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 41.5% of lines.
+- **Falsifiable vs baseline:** 37.2% of lines (88 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 43.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -837,6 +850,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/editor.lisp` | 2,014 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/input.lisp` | 333 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render` |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/alt-screen.lisp` | 610 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/lifecycle-input.lisp` | 1,353 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -889,7 +903,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `evals_harness` | 6 | 2,184 |
 | `image_runtime` | 5 | 2,091 |
 | `oauth_pkce_device` | 13 | 2,081 |
-| `tui_latex` | 1 | 1,950 |
 | `tui_editor_helpers` | 9 | 1,890 |
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 7 | 1,724 |

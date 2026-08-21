@@ -49,6 +49,7 @@ METRIC_KEYS = (
     "cli_models_rest.pattern_match",
     "image_runtime.dimensions",
     "cli_print_rpc.jsonl_line",
+    "tui_latex.render",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

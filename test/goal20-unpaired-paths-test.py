@@ -165,6 +165,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(print_mode), 1)
         self.assertEqual(print_mode[0]["class"], "paired")
         self.assertIn("cli_print_rpc.jsonl_line", print_mode[0]["metrics"])
+        latex = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/latex.lisp"
+        ]
+        self.assertEqual(len(latex), 1)
+        self.assertEqual(latex[0]["class"], "paired")
+        self.assertIn("tui_latex.render", latex[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

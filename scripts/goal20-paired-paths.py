@@ -114,6 +114,7 @@ METRICS = {
     "cli_models_rest": ("pattern_match",),
     "image_runtime": ("dimensions",),
     "cli_print_rpc": ("jsonl_line",),
+    "tui_latex": ("render",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -269,6 +270,10 @@ RATIO_CEILINGS = {
     # the microsecond-floor / agent_proxy variance precedent (not
     # the ratio). Ratchet down only.
     "cli_print_rpc.jsonl_line": 8.0,
+    # Frozen from the first Friend-MachineD non-quick tui_latex pair
+    # (samples=5): observed 2.49x (64.4 / 25.8 us). 3.0 follows the
+    # argv_parse / tool_grep headroom precedent. Ratchet down only.
+    "tui_latex.render": 3.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -551,6 +556,13 @@ OBSERVED_EXACT = {
         "line_chars",
         "newline",
         "payload",
+    ),
+    "tui_latex": (
+        "e_mc2",
+        "frac_inline",
+        "greek",
+        "frac_display_newlines",
+        "unknown_miss",
     ),
     "resource_loader": (
         "skill_count",

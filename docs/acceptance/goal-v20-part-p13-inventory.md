@@ -615,10 +615,11 @@ These must not be filed as callees.
 | `src/cadr-tui/mermaid/width-data.lisp` | 1,008 |
 | `src/cadr-tui/mermaid/width.lisp` | 72 |
 
-### `tui_latex` (additional)
+### `tui_latex` (additional) — `latex.lisp` paired `tui_latex.render`
 
-- pi: `packages/tui/src/latex.ts`
-- fixture: Checked-in LaTeX snippets → Unicode. markdown.lisp can call render-latex, but Goal 11 fixtures do not contain math; K8 left it uncovered.
+- pi: `packages/tui/src/latex.ts renderLatex`
+- fixture: FiveAM reference snippets. Time Unicode render, not a TUI frame.
+- Friend-MachineD n=5: **2.49×** (64.4 / 25.8 µs), ceiling 3.0. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|
