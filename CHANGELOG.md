@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw generic `parse-content-block` first-byte
+  (`put-block-field`). Friend-MachineD n=5: load cadr
+  **1763→2470 µs** (worse; samples 2345–3571). Product
+  restored to `0084f0703` walker. Not bag reuse. Ceiling
+  not lowered. Not G.17.
 - Goal 20: withdraw `parse-usage` first-byte field dispatch.
   Friend-MachineD n=5: load cadr **1763→1996 µs** (worse;
   samples 1773–2127). Product restored to `0084f0703`

@@ -110,6 +110,14 @@ path + generic fallback (not bag reuse). See leftover md +
 DeepSeek A/D and gperf `put-entry` remesure are **not** merged
 with knife 1.
 
+## Knife (falsified) — parse-content-block generic first-byte
+
+`put-block-field` `case` on the first key byte after
+compact-prefix miss. Not bag reuse. Friend-MachineD n=5:
+load cadr **1763→2470 µs** (worse; samples 2345–3571,
+median 2470). Withdrawn. Do not redo this content
+first-byte. Ceiling not lowered.
+
 ## Knife (falsified) — parse-usage first-byte field dispatch
 
 Proposal-3 family: `case` on the first usage-key byte,

@@ -1176,3 +1176,18 @@ or leftover pairing `journal_read` / `pi_messages` /
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
 
+## 2026-08-21 — parse-content-block generic first-byte falsified (1763→2470)
+
+**Ruled**: executor remesured first-byte on generic
+`put-block-field` (compact miss). Friend-MachineD n=5 load
+**1763→2470 µs** (samples 2345–3571). Product restored to
+`0084f0703`.
+
+**Decided**: do not redo content generic first-byte. Load
+first-byte family exhausted on this walker. Leftover
+pairing still >1.0× on some samples (`journal_read`,
+`provider_pi_messages`) has no newly named encoding this
+round. G.17 stays `missing`. Silent stop still invalid.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
