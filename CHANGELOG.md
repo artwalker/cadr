@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_capabilities.deferred_tools`
+  (grep/bash immediate, read deferred when enabled;
+  cadr `split-deferred-tools` vs pi
+  `splitDeferredTools`). Friend-MachineD n=5
+  **2.04×** (5.51 / 2.70 µs), ceiling 8.0. Same
+  commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `ai_support.uuid_v7`
   (format 36/4/7/variant, two distinct; cadr
   `uuid-v7` vs pi `uuidv7`). Friend-MachineD n=5

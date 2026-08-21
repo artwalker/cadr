@@ -369,6 +369,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(short_hash), 1)
         self.assertEqual(short_hash[0]["class"], "paired")
         self.assertIn("ai_capabilities.short_hash", short_hash[0]["metrics"])
+        grammar_tools = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/capabilities/grammar-tools.lisp"
+        ]
+        self.assertEqual(len(grammar_tools), 1)
+        self.assertEqual(grammar_tools[0]["class"], "paired")
+        self.assertIn("ai_capabilities.deferred_tools", grammar_tools[0]["metrics"])
         strip_ansi = [
             row
             for row in classified["rows"]

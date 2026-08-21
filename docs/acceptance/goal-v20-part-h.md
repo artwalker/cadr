@@ -995,6 +995,19 @@ freeze **0.32×** (3.08 / 9.49 µs), ceiling 8.0.
 cadr leads (entropy pool vs `getRandomValues`).
 Same commit no optimize.
 
+### Pair 69 — `ai_capabilities` (deferred_tools)
+
+| metric | cadr | pi |
+|---|---|---|
+| `deferred_tools` | `split-deferred-tools` | `splitDeferredTools` (`packages/ai/src/utils/deferred-tools.ts`) |
+
+Leftover sibling of `short_hash`. Fixture tools grep/bash/read;
+assistant called bash; tool result added `read`. Disabled:
+all immediate. Enabled: grep+bash immediate, read deferred.
+Observed counts/names exact. First Friend-MachineD freeze
+**2.04×** (5.51 / 2.70 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1200,14 +1213,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 121 | 58,702 | 46.1% | `no worse than baseline` is falsifiable |
+| `paired` | 122 | 58,994 | 46.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 131 | 48,293 | 37.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 130 | 48,001 | 37.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 46.1% of lines (121 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 51.9% of lines.
+- **Falsifiable vs baseline:** 46.3% of lines (122 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 52.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1265,6 +1278,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
+| `src/cadr-ai/capabilities/grammar-tools.lisp` | 292 | `ai_capabilities.deferred_tools` |
 | `src/cadr-ai/capabilities/image-runtime.lisp` | 117 | `image_runtime.api_provider` |
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
@@ -1412,13 +1426,13 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_models_rest` | 2 | 698 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
-| `ai_capabilities` | 4 | 472 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
 | `session_compact` | 1 | 185 |
+| `ai_capabilities` | 3 | 180 |
 | `ai_support` | 2 | 110 |
 | `agent_conditions` | 1 | 43 |
 

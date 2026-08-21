@@ -75,6 +75,7 @@ METRIC_KEYS = (
     "tui_native_modifiers.pressed",
     "tui_settings_list.apply_filter",
     "ai_capabilities.short_hash",
+    "ai_capabilities.deferred_tools",
     "cli_support.strip_ansi",
     "cli_support.normalize_path",
     "cli_interactive_controller.decode_entity",

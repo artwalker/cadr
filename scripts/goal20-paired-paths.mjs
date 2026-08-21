@@ -178,6 +178,7 @@ const REPETITIONS = {
 	"tui_native_modifiers.pressed": 50,
 	"tui_settings_list.apply_filter": 50,
 	"ai_capabilities.short_hash": 50,
+	"ai_capabilities.deferred_tools": 50,
 	"cli_support.strip_ansi": 50,
 	"cli_support.normalize_path": 50,
 	"cli_interactive_controller.decode_entity": 50,
@@ -431,6 +432,9 @@ const inputModule = await import(moduleUrl("packages/tui/src/components/input.ts
 const nativeModifiersModule = await import(moduleUrl("packages/tui/src/native-modifiers.ts"));
 const settingsListModule = await import(moduleUrl("packages/tui/src/components/settings-list.ts"));
 const hashModule = await import(moduleUrl("packages/ai/src/utils/hash.ts"));
+const deferredToolsModule = await import(
+	moduleUrl("packages/ai/src/utils/deferred-tools.ts")
+);
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
@@ -3211,13 +3215,85 @@ function runAiCapabilitiesShortHash() {
 	};
 }
 
+function deferredToolsFixture() {
+	const emptyUsage = {
+		input: 0,
+		output: 0,
+		cacheRead: 0,
+		cacheWrite: 0,
+		totalTokens: 0,
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, total: 0 },
+	};
+	const emptySchema = { type: "object", properties: {} };
+	return {
+		messages: [
+			{
+				role: "assistant",
+				content: [{ type: "toolCall", id: "1", name: "bash", arguments: {} }],
+				api: "openai-completions",
+				provider: "openai",
+				model: "x",
+				usage: emptyUsage,
+				stopReason: "toolUse",
+				timestamp: 0,
+			},
+			{
+				role: "toolResult",
+				toolCallId: "1",
+				toolName: "bash",
+				content: [],
+				addedToolNames: ["read"],
+				isError: false,
+				timestamp: 0,
+			},
+		],
+		tools: [
+			{ name: "grep", description: "", parameters: emptySchema },
+			{ name: "bash", description: "", parameters: emptySchema },
+			{ name: "read", description: "", parameters: emptySchema },
+		],
+	};
+}
+
+function deferredToolsShape(enabled) {
+	const split = deferredToolsModule.splitDeferredTools(deferredToolsFixture(), enabled);
+	return {
+		imm: split.immediate.length,
+		def: split.deferred.size,
+		first: split.immediate[0]?.name ?? "",
+		second: split.immediate[1]?.name ?? "",
+		read: split.deferred.has("read") ? 1 : 0,
+	};
+}
+
+function runAiCapabilitiesDeferredTools() {
+	const off = deferredToolsShape(false);
+	const on = deferredToolsShape(true);
+	return {
+		off_imm: off.imm,
+		off_def: off.def,
+		off_first: off.first,
+		off_second: off.second,
+		off_read: off.read,
+		on_imm: on.imm,
+		on_def: on.def,
+		on_first: on.first,
+		on_second: on.second,
+		on_read: on.read,
+	};
+}
+
 async function measureAiCapabilitiesShortHash() {
-	const observed = runAiCapabilitiesShortHash();
+	const hash = runAiCapabilitiesShortHash();
+	const deferred = runAiCapabilitiesDeferredTools();
 	return {
 		short_hash: await collect("ai_capabilities.short_hash", () => {
 			return () => runAiCapabilitiesShortHash();
 		}),
-		observed,
+		deferred_tools: await collect("ai_capabilities.deferred_tools", () => {
+			return () => runAiCapabilitiesDeferredTools();
+		}),
+		observed: { ...hash, ...deferred },
 	};
 }
 
@@ -3795,6 +3871,8 @@ const result = {
 			"tui_settings_list.apply_filter":
 				"packages/tui/src/components/settings-list.ts SettingsList.applyFilter",
 			"ai_capabilities.short_hash": "packages/ai/src/utils/hash.ts shortHash",
+			"ai_capabilities.deferred_tools":
+				"packages/ai/src/utils/deferred-tools.ts splitDeferredTools",
 			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
 			"cli_support.normalize_path":
 				"packages/coding-agent/src/utils/paths.ts normalizePath",

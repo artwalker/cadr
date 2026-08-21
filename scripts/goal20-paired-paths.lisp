@@ -65,6 +65,7 @@
 ;;;;  51. image_runtime format-image-dimension-note vs formatDimensionNote
 ;;;;  52. image_runtime get-images-api-provider vs getImagesApiProvider
 ;;;;  53. ai_support uuid-v7 vs uuidv7
+;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -172,6 +173,7 @@
     ("tui_native_modifiers.pressed" . 50)
     ("tui_settings_list.apply_filter" . 50)
     ("ai_capabilities.short_hash" . 50)
+    ("ai_capabilities.deferred_tools" . 50)
     ("cli_support.strip_ansi" . 50)
     ("cli_support.normalize_path" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
@@ -3944,19 +3946,69 @@
    (cadr-ai:short-hash "abc")
    (cadr-ai:short-hash "中文😀")))
 
+(defun deferred-tools-fixture ()
+  (cadr-ai:make-context
+   :tools
+   (list
+    (cadr-ai:make-tool :name "grep")
+    (cadr-ai:make-tool :name "bash")
+    (cadr-ai:make-tool :name "read"))
+   :messages
+   (list
+    (cadr-ai:make-assistant-message
+     :content
+     (list (cadr-ai:make-tool-call :id "1" :name "bash")))
+    (cadr-ai:make-tool-result-message
+     :tool-call-id "1"
+     :tool-name "bash"
+     :added-tool-names '("read")))))
+
+(defun deferred-tools-shape (enabled-p)
+  (multiple-value-bind (immediate deferred)
+      (cadr-ai:split-deferred-tools (deferred-tools-fixture) enabled-p)
+    (list
+     (length immediate)
+     (hash-table-count deferred)
+     (if immediate (cadr-ai:tool-name (first immediate)) "")
+     (if (rest immediate)
+         (cadr-ai:tool-name (second immediate))
+         "")
+     (if (gethash "read" deferred) 1 0))))
+
+(defun run-ai-capabilities-deferred-tools ()
+  (append
+   (deferred-tools-shape nil)
+   (deferred-tools-shape t)))
+
 (defun measure-ai-capabilities-short-hash ()
-  (let ((observed (run-ai-capabilities-short-hash)))
+  (let ((hash (run-ai-capabilities-short-hash))
+        (deferred (run-ai-capabilities-deferred-tools)))
     (json-object
      "observed"
      (json-object
-      "empty" (first observed)
-      "abc" (second observed)
-      "cjk" (third observed))
+      "empty" (first hash)
+      "abc" (second hash)
+      "cjk" (third hash)
+      "off_imm" (first deferred)
+      "off_def" (second deferred)
+      "off_first" (third deferred)
+      "off_second" (fourth deferred)
+      "off_read" (fifth deferred)
+      "on_imm" (sixth deferred)
+      "on_def" (seventh deferred)
+      "on_first" (eighth deferred)
+      "on_second" (ninth deferred)
+      "on_read" (tenth deferred))
      "short_hash"
      (collect "ai_capabilities.short_hash"
               (lambda ()
                 (lambda ()
-                  (run-ai-capabilities-short-hash)))))))
+                  (run-ai-capabilities-short-hash))))
+     "deferred_tools"
+     (collect "ai_capabilities.deferred_tools"
+              (lambda ()
+                (lambda ()
+                  (run-ai-capabilities-deferred-tools)))))))
 
 (defun strip-ansi-csi-osc ()
   (format nil
@@ -4383,6 +4435,8 @@
       "src/cadr-tui/composition/settings-list.lisp settings-list-apply-filter"
       "ai_capabilities.short_hash"
       "src/cadr-ai/capabilities/streaming-json.lisp short-hash"
+      "ai_capabilities.deferred_tools"
+      "src/cadr-ai/capabilities/grammar-tools.lisp split-deferred-tools"
       "cli_support.strip_ansi"
       "src/cadr-cli/support/changelog-share.lisp strip-ansi"
       "cli_support.normalize_path"
