@@ -1119,3 +1119,21 @@ unchanged). Friend-MachineD n=5 load **1763→2217 µs** (samples
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
 
+## 2026-08-21 — invent usage compact-prefix falsified (1763→1805)
+
+**Ruled**: executor tried pairing-fixture usage compact
+prefix (same family as kept content compact-prefix, not a
+banned redo). Friend-MachineD n=5 load **1763→1805 µs**
+(samples 1768–1832). Product restored to `0084f0703`.
+
+**Decided**:
+
+1. Do not redo this usage key-order prefix.
+2. Leftovers (not a `[ready]`): intern-miss
+   `copy-unescaped`; `parse-content-block` residual after
+   compact-prefix; `parse-usage` after this miss; E/P4/A/D
+   already withdrawn.
+3. G.17 stays `missing`. Goal 20 not complete.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+

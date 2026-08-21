@@ -110,6 +110,16 @@ path + generic fallback (not bag reuse). See leftover md +
 DeepSeek A/D and gperf `put-entry` remesure are **not** merged
 with knife 1.
 
+## Knife (falsified) — invent usage compact-prefix
+
+Pairing-fixture key order (`input`/`output`/`cacheRead`/
+`cacheWrite`/`totalTokens`/`cost`) fills typed usage
+without the field loop; miss rewinds. `totalTokens` still
+dropped. Friend-MachineD n=5: load cadr **1763→1805 µs**
+(worse; samples 1768–1832, median 1805). Withdrawn. Do
+not redo this usage prefix. Not bag reuse. Not EQ table.
+Not E tagbody. Ceiling not lowered.
+
 ## Knife (falsified) — proposal 4 per-load ephemeral EQ
 
 `load-session` bound an EQUAL hash of intern-miss strings

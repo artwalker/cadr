@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw invent usage compact-prefix (pairing
+  fixture key order). Friend-MachineD n=5: load cadr
+  **1763→1805 µs** (worse; samples 1768–1832). Product
+  restored to `0084f0703` walker. Not bag reuse. Not EQ
+  table. Ceiling not lowered. Not G.17.
 - Goal 20: withdraw proposal 4 per-load ephemeral EQ
   dedupe. Friend-MachineD n=5: load cadr **1763→2217 µs**
   (worse; samples 2108–2295). Product restored to
