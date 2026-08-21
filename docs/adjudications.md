@@ -1129,11 +1129,36 @@ banned redo). Friend-MachineD n=5 load **1763→1805 µs**
 **Decided**:
 
 1. Do not redo this usage key-order prefix.
-2. Leftovers (not a `[ready]`): intern-miss
-   `copy-unescaped`; `parse-content-block` residual after
-   compact-prefix; `parse-usage` after this miss; E/P4/A/D
-   already withdrawn.
+2. Next invent targets remain `[ready]`: intern-miss
+   `copy-unescaped` (not fill-kernel / knife 1 / EQ / A);
+   `parse-content-block` residual after kept compact-prefix
+   (not bag / not usage prefix redo). Do not park on empty ⚑.
 3. G.17 stays `missing`. Goal 20 not complete.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
+
+## 2026-08-21 — silent stop after invent miss; name next knives
+
+**Ruled**: user reported grok Goal stopped (2026-08-21 ~10:27).
+Board still had invent `[ready]`; no `⚑`. Last HEAD
+`f72150c2e` (usage compact-prefix withdraw).
+
+**Decided**:
+
+1. Silent stop is invalid. Either continue `[ready]` or raise
+   `⚑` with tried/banned list.
+2. **Named next knives** (one at a time, Friend-MachineD
+   cadr **&lt; ~1763** or revert):
+   - `parse-usage` **first-byte field dispatch** (proposal-3
+     family). Not the withdrawn whole-object usage
+     compact-prefix.
+   - Then `parse-content-block` first-byte on the **generic**
+     path after compact-prefix miss (not bag).
+3. Parallel OK if load knives keep losing: paired paths still
+   &gt;1.0× (`journal_read`, `provider_pi_messages`,
+   `provider_mistral`).
+4. G.17 stays `missing`.
+
+**Why it was decidable**: board state + standing no-silent-stop
+rule; concrete encodings replace vague invent.
 

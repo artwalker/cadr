@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: silent stop after invent miss is invalid
+  (`docs/adjudications.md`). Named next: `parse-usage`
+  first-byte field dispatch, then generic
+  `parse-content-block` first-byte. G.17 stays missing.
+  Not G.17.
 - Goal 20: withdraw invent usage compact-prefix (pairing
   fixture key order). Friend-MachineD n=5: load cadr
   **1763→1805 µs** (worse; samples 1768–1832). Product
