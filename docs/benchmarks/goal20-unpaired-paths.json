@@ -25,6 +25,7 @@
   "protocol_cbor.roundtrip",
   "agent_schema.validate_ok_fail",
   "harness_storage.open_walk",
+  "protocol_codec.roundtrip",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1486,23 +1487,23 @@
   },
   {
    "prefix": "src/cadr-protocol/codec.lisp",
-   "class": "needs-pair",
-   "hole": "protocol_cbor"
+   "class": "paired",
+   "metrics": ["protocol_codec.roundtrip"]
   },
   {
    "prefix": "src/cadr-protocol/framing.lisp",
-   "class": "needs-pair",
-   "hole": "protocol_cbor"
+   "class": "paired",
+   "metrics": ["protocol_codec.roundtrip"]
   },
   {
    "prefix": "src/cadr-protocol/package.lisp",
    "class": "covered-as-callee",
-   "metrics": ["protocol_cbor.roundtrip"]
+   "metrics": ["protocol_cbor.roundtrip", "protocol_codec.roundtrip"]
   },
   {
    "prefix": "src/cadr-protocol/schema.lisp",
-   "class": "needs-pair",
-   "hole": "protocol_cbor"
+   "class": "paired",
+   "metrics": ["protocol_codec.roundtrip"]
   },
   {
    "prefix": "src/cadr-tui/autocomplete.lisp",

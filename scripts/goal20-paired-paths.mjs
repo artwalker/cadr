@@ -145,6 +145,7 @@ const REPETITIONS = {
 	"protocol_cbor.roundtrip": 50,
 	"agent_schema.validate_ok_fail": 50,
 	"harness_storage.open_walk": 3,
+	"protocol_codec.roundtrip": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -330,6 +331,7 @@ const modelRuntimeModule = await import(moduleUrl("packages/coding-agent/src/cor
 const sessionModule = await import(moduleUrl("packages/coding-agent/src/core/session-manager.ts"));
 const exportHtmlModule = await import(moduleUrl("packages/coding-agent/src/core/export-html/index.ts"));
 const cborModule = await import(moduleUrl("packages/protocol/src/cbor/index.ts"));
+const protocolCodecModule = await import(moduleUrl("packages/protocol/src/codec.ts"));
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
@@ -2006,6 +2008,38 @@ async function jsonlOpenReadWalk(repo, metadata) {
 	return { entryCount: entries.length, leafId, branchEntryCount: branch.length };
 }
 
+const PROTOCOL_CODEC_LIST_REQUEST = {
+	type: "request",
+	id: "request-1",
+	request: { command: "list" },
+};
+
+function protocolCodecRoundtrip() {
+	const frame = protocolCodecModule.encodeClientMessage(PROTOCOL_CODEC_LIST_REQUEST);
+	const decoder = protocolCodecModule.createClientMessageDecoder();
+	const messages = decoder.push(frame);
+	decoder.end();
+	const decoded = messages[0] || {};
+	const request = decoded.request || {};
+	return {
+		frame_bytes: frame.byteLength,
+		message_count: messages.length,
+		type: decoded.type || "",
+		id: decoded.id || "",
+		command: request.command || "",
+	};
+}
+
+async function measureProtocolCodec() {
+	const observed = protocolCodecRoundtrip();
+	return {
+		roundtrip: await collect("protocol_codec.roundtrip", () => {
+			return () => protocolCodecRoundtrip();
+		}),
+		observed,
+	};
+}
+
 async function measureHarnessStorage() {
 	const sessionsRoot = path.join(scratch, "jsonl-sessions");
 	const ingested = await ingestJsonlFromSessionJsonl(sessionsRoot);
@@ -2184,6 +2218,8 @@ process.stderr.write("goal20 pi paired paths: agent_schema\n");
 const agentSchema = await measureAgentSchema();
 process.stderr.write("goal20 pi paired paths: harness_storage\n");
 const harnessStorage = await measureHarnessStorage();
+process.stderr.write("goal20 pi paired paths: protocol_codec\n");
+const protocolCodec = await measureProtocolCodec();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2224,6 +2260,8 @@ const result = {
 				"packages/ai/src/utils/validation.ts validateToolArguments",
 			"harness_storage.open_walk":
 				"packages/agent/src/harness/session/jsonl JsonlSessionRepo.open + findEntries + findEntriesOnBranch",
+			"protocol_codec.roundtrip":
+				"packages/protocol/src/codec.ts encodeClientMessage + createClientMessageDecoder",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -2292,6 +2330,7 @@ const result = {
 		protocol_cbor: protocolCbor,
 		agent_schema: agentSchema,
 		harness_storage: harnessStorage,
+		protocol_codec: protocolCodec,
 		render_slicing: renderSlicing,
 	},
 };

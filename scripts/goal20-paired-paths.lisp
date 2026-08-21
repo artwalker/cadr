@@ -23,6 +23,7 @@
 ;;;;  10. protocol_cbor encode-cbor/decode-cbor vs encodeCbor/decodeCbor
 ;;;;  11. agent_schema validate-tool-arguments vs validateToolArguments
 ;;;;  12. harness_storage jsonl repo open+walk vs JsonlSessionRepo
+;;;;  13. protocol_codec encode-client-message + decoder vs encodeClientMessage
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -95,6 +96,7 @@
     ("protocol_cbor.roundtrip" . 50)
     ("agent_schema.validate_ok_fail" . 50)
     ("harness_storage.open_walk" . 3)
+    ("protocol_codec.roundtrip" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -2576,6 +2578,45 @@
                    (agent-schema-good-arguments)
                    (agent-schema-bad-arguments))))))))
 
+(defun protocol-codec-list-request ()
+  (json-object
+   "type" "request"
+   "id" "request-1"
+   "request" (json-object "command" "list")))
+
+(defun protocol-codec-roundtrip ()
+  (let* ((message (protocol-codec-list-request))
+         (frame (cadr-protocol:encode-client-message message))
+         (decoder (cadr-protocol:make-client-message-decoder))
+         (messages
+           (cadr-protocol:message-decoder-push decoder frame)))
+    (cadr-protocol:message-decoder-end decoder)
+    (let* ((decoded (first messages))
+           (request
+             (and decoded (cadr-ai::json-get decoded "request"))))
+      (list
+       (length frame)
+       (length messages)
+       (and decoded (cadr-ai::json-get decoded "type"))
+       (and decoded (cadr-ai::json-get decoded "id"))
+       (and request (cadr-ai::json-get request "command"))))))
+
+(defun measure-protocol-codec ()
+  (let ((observed (protocol-codec-roundtrip)))
+    (json-object
+     "observed"
+     (json-object
+      "frame_bytes" (first observed)
+      "message_count" (second observed)
+      "type" (or (third observed) "")
+      "id" (or (fourth observed) "")
+      "command" (or (fifth observed) ""))
+     "roundtrip"
+     (collect "protocol_codec.roundtrip"
+              (lambda ()
+                (lambda ()
+                  (protocol-codec-roundtrip)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -2662,6 +2703,8 @@
       "src/cadr-agent/schema.lisp validate-tool-arguments"
       "harness_storage.open_walk"
       "src/cadr-agent/storage/jsonl.lisp session-repository-open + harness-session-entries"
+      "protocol_codec.roundtrip"
+      "src/cadr-protocol/codec.lisp encode-client-message + message-decoder-push"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -2759,6 +2802,8 @@
               (let ((schema (measure-agent-schema)))
               (format *error-output* "goal20 cadr paired paths: harness_storage~%")
               (let ((harness-storage (measure-harness-storage)))
+              (format *error-output* "goal20 cadr paired paths: protocol_codec~%")
+              (let ((codec (measure-protocol-codec)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -2802,6 +2847,7 @@
               "protocol_cbor" cbor
               "agent_schema" schema
               "harness_storage" harness-storage
+              "protocol_codec" codec
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -2818,7 +2864,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

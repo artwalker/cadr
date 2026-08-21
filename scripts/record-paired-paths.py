@@ -42,6 +42,7 @@ METRIC_KEYS = (
     "protocol_cbor.roundtrip",
     "agent_schema.validate_ok_fail",
     "harness_storage.open_walk",
+    "protocol_codec.roundtrip",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

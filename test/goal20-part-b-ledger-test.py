@@ -353,6 +353,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("leaf_id", paired.OBSERVED_EXACT["harness_storage"])
         self.assertIn("session_id", paired.OBSERVED_EXACT["harness_storage"])
 
+    def test_protocol_codec_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("protocol_codec.roundtrip", RECORD.METRIC_KEYS)
+        self.assertIn("roundtrip", paired.METRICS["protocol_codec"])
+        self.assertIn("protocol_codec.roundtrip", paired.RATIO_CEILINGS)
+        self.assertIn("frame_bytes", paired.OBSERVED_EXACT["protocol_codec"])
+        self.assertIn("type", paired.OBSERVED_EXACT["protocol_codec"])
+        self.assertIn("command", paired.OBSERVED_EXACT["protocol_codec"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)

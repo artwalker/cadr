@@ -106,6 +106,7 @@ METRICS = {
     "protocol_cbor": ("roundtrip",),
     "agent_schema": ("validate_ok_fail",),
     "harness_storage": ("open_walk",),
+    "protocol_codec": ("roundtrip",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -223,6 +224,11 @@ RATIO_CEILINGS = {
     # pair (samples=5): observed 1.80x (11644 / 6485 us). 8.0 follows
     # the journal_read / tool_read headroom precedent. Ratchet down only.
     "harness_storage.open_walk": 8.0,
+    # Frozen from the first Friend-MachineD non-quick protocol_codec
+    # pair (samples=5): observed 0.10x (9.6 / 94.2 us). cadr leads.
+    # 1.5 follows the list_models_registry / render_slicing precedent.
+    # Ratchet down only.
+    "protocol_codec.roundtrip": 1.5,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -451,6 +457,13 @@ OBSERVED_EXACT = {
         "ingested_entry_count",
         "session_id",
         "source_leaf_id",
+    ),
+    "protocol_codec": (
+        "frame_bytes",
+        "message_count",
+        "type",
+        "id",
+        "command",
     ),
     "resource_loader": (
         "skill_count",

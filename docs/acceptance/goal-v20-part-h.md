@@ -401,6 +401,19 @@ exact. `branch_entry_count` is a booked shape gap (cadr 322 /
 pi 514), not exact. First Friend-MachineD freeze **1.80×**
 (11643.5 / 6484.9 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 27 — `protocol_codec`
+
+| metric | cadr | pi |
+|---|---|---|
+| `roundtrip` | `encode-client-message` + `message-decoder-push` | `encodeClientMessage` + `createClientMessageDecoder` |
+
+Same-input client `list` request (`type=request`, `command=list`).
+Time encode + incremental decode through length-prefixed frames.
+Observed `frame_bytes` / `message_count` / `type` / `id` /
+`command` are exact (53-byte frame). Independent of
+`protocol_cbor.roundtrip`. First Friend-MachineD freeze **0.10×**
+(9.6 / 94.2 µs), ceiling 1.5. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -606,14 +619,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 77 | 41,141 | 32.3% | `no worse than baseline` is falsifiable |
+| `paired` | 80 | 42,042 | 33.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 18 | 12,819 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 176 | 65,954 | 51.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 173 | 65,053 | 51.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 32.3% of lines (77 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 38.2% of lines.
+- **Falsifiable vs baseline:** 33.0% of lines (80 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 38.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -704,6 +717,9 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-protocol/cbor.lisp` | 492 | `protocol_cbor.roundtrip` |
+| `src/cadr-protocol/codec.lisp` | 121 | `protocol_codec.roundtrip` |
+| `src/cadr-protocol/framing.lisp` | 170 | `protocol_codec.roundtrip` |
+| `src/cadr-protocol/schema.lisp` | 610 | `protocol_codec.roundtrip` |
 | `src/cadr-storage/package.lisp` | 19 | `sqlite_session.open_walk` |
 | `src/cadr-storage/sqlite.lisp` | 12 | `sqlite_session.open_walk` |
 | `src/cadr-tui/components/image.lisp` | 40 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -745,7 +761,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-core/package.lisp` | 43 | `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-core/paths.lisp` | 95 | `cli_dispatch.list_models_registry` |
 | `src/cadr-core/time.lisp` | 133 | `session_pipeline.session_load`, `storage_journal.journal_read` |
-| `src/cadr-protocol/package.lisp` | 33 | `protocol_cbor.roundtrip` |
+| `src/cadr-protocol/package.lisp` | 33 | `protocol_cbor.roundtrip`, `protocol_codec.roundtrip` |
 | `src/cadr-tui/components/status.lisp` | 253 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/package.lisp` | 355 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input`, `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 | `src/cadr-tui/threads.lisp` | 6 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -777,7 +793,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_support` | 13 | 1,164 |
 | `cli_models_rest` | 3 | 1,096 |
 | `tui_select_settings_loaders` | 3 | 1,010 |
-| `protocol_cbor` | 3 | 901 |
 | `http_transport` | 1 | 858 |
 | `ai_crypto_model_data` | 2 | 774 |
 | `ai_support` | 6 | 730 |

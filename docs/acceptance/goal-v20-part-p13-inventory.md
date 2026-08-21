@@ -673,11 +673,11 @@ These must not be filed as callees.
 | `src/cadr-evals/suites.lisp` | 468 |
 | `src/cadr-evals/summary.lisp` | 732 |
 
-### `protocol_cbor` (additional) — `cbor.lisp` paired `protocol_cbor.roundtrip`
+### `protocol_cbor` (additional) — `cbor.lisp` paired `protocol_cbor.roundtrip`; codec/framing/schema paired `protocol_codec.roundtrip`
 
-- pi: `packages/protocol/src/cbor encodeCbor + decodeCbor`
-- fixture: 16 RFC 8949 vectors. Time decode + encode. Hex roundtrip exact. codec/framing/schema still `needs-pair`.
-- Friend-MachineD n=5: **0.25×** (17.7 / 70.1 µs), ceiling 1.5. No optimize in the booking commit.
+- pi: `packages/protocol/src/cbor encodeCbor + decodeCbor` and `packages/protocol/src/codec.ts encodeClientMessage`
+- fixture: 16 RFC 8949 vectors (cbor) + client `list` request through frames (codec).
+- Friend-MachineD n=5: cbor **0.25×** (17.7 / 70.1 µs), ceiling 1.5; codec **0.10×** (9.6 / 94.2 µs), ceiling 1.5. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

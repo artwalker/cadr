@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `protocol_codec.roundtrip` (client
+  `list` request; cadr `encode-client-message` vs pi
+  `encodeClientMessage`). Friend-MachineD n=5 **0.10×**
+  (9.6 / 94.2 µs), ceiling 1.5. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `harness_storage.open_walk` (JSONL
   harness repo; cadr `session-repository-open` vs pi
   `JsonlSessionRepo.open`). Friend-MachineD n=5 **1.80×**
