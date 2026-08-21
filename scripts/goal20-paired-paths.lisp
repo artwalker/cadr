@@ -74,6 +74,7 @@
 ;;;;  60. cli_support make-event-bus vs createEventBus
 ;;;;  61. cli_support provider-attribution-headers vs mergeProviderAttributionHeaders
 ;;;;  62. cli_support get-shell-config vs getShellConfig
+;;;;  63. cli_support sanitize-binary-output vs sanitizeBinaryOutput
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -192,6 +193,7 @@
     ("cli_support.event_bus" . 50)
     ("cli_support.attribution_headers" . 50)
     ("cli_support.shell_config" . 50)
+    ("cli_support.sanitize_output" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
@@ -4326,13 +4328,26 @@
             (error () 1))))
     (append default custom (list miss))))
 
+(defun run-cli-support-sanitize-output ()
+  (list
+   (cadr-cli::sanitize-binary-output "hello")
+   (cadr-cli::sanitize-binary-output
+    (format nil "a~Cb~Cc" (code-char 0) (code-char 7)))
+   (cadr-cli::sanitize-binary-output
+    (format nil "a~Cb~Cc~Cd" #\Tab #\Newline #\Return))
+   (cadr-cli::sanitize-binary-output
+    (format nil "x~Ay" (code-char #xfff9)))
+   (cadr-cli::sanitize-binary-output
+    (format nil "p~Cq" (code-char #x1b)))))
+
 (defun measure-cli-support-strip-ansi ()
   (let ((ansi (run-cli-support-strip-ansi))
         (paths (run-cli-support-normalize-path))
         (timings (run-cli-support-timings))
         (bus (run-cli-support-event-bus))
         (headers (run-cli-support-attribution-headers))
-        (shell (run-cli-support-shell-config)))
+        (shell (run-cli-support-shell-config))
+        (sanitize (run-cli-support-sanitize-output)))
     (json-object
      "observed"
      (json-object
@@ -4369,7 +4384,12 @@
       "sh_custom" (fourth shell)
       "sh_carg" (fifth shell)
       "sh_cstdin" (sixth shell)
-      "sh_miss" (seventh shell))
+      "sh_miss" (seventh shell)
+      "sz_plain" (first sanitize)
+      "sz_ctl" (second sanitize)
+      "sz_tnr" (third sanitize)
+      "sz_fmt" (fourth sanitize)
+      "sz_esc" (fifth sanitize))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -4399,7 +4419,12 @@
      (collect "cli_support.shell_config"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-shell-config)))))))
+                  (run-cli-support-shell-config))))
+     "sanitize_output"
+     (collect "cli_support.sanitize_output"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-sanitize-output)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -4794,6 +4819,8 @@
       "src/cadr-cli/support/headers.lisp provider-attribution-headers"
       "cli_support.shell_config"
       "src/cadr-cli/support/shell-process.lisp get-shell-config"
+      "cli_support.sanitize_output"
+      "src/cadr-cli/support/shell-process.lisp sanitize-binary-output"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"

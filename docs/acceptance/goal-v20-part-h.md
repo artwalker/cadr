@@ -1115,6 +1115,18 @@ stdin transport. Missing custom path errors. No live process.
 First Friend-MachineD freeze **2.47×** (21.07 / 8.54 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 78 — `cli_support` (sanitize_output)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sanitize_output` | `sanitize-binary-output` | `sanitizeBinaryOutput` (`packages/coding-agent/src/utils/shell.ts`) |
+
+Leftover sibling of `shell_config` in the same file. hello;
+NUL+BEL stripped; tab/LF/CR kept; U+FFF9 stripped; ESC
+stripped. Do not exact lone surrogates. No live process.
+First Friend-MachineD freeze **0.91×** (1.26 / 1.39 µs),
+ceiling 8.0 (variance). cadr leads. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1446,7 +1458,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
-| `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config` |
+| `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |

@@ -457,6 +457,7 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(shell_config), 1)
         self.assertEqual(shell_config[0]["class"], "paired")
         self.assertIn("cli_support.shell_config", shell_config[0]["metrics"])
+        self.assertIn("cli_support.sanitize_output", shell_config[0]["metrics"])
         decode_entity = [
             row
             for row in classified["rows"]

@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.sanitize_output`
+  (NUL/BEL/ESC/U+FFF9 stripped, tab/LF/CR kept; cadr
+  `sanitize-binary-output` vs pi `sanitizeBinaryOutput`).
+  Friend-MachineD n=5 **0.91×** (1.26 / 1.39 µs), ceiling
+  8.0 (variance). cadr leads. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_support.shell_config`
   (default + custom `/bin/bash` + missing path; cadr
   `get-shell-config` vs pi `getShellConfig`).

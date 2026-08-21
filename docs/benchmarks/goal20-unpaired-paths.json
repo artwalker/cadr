@@ -69,6 +69,7 @@
   "cli_support.event_bus",
   "cli_support.attribution_headers",
   "cli_support.shell_config",
+  "cli_support.sanitize_output",
   "cli_interactive_controller.decode_entity",
   "cli_sdk.version_newer",
   "provider_registry_defs.lookup",
@@ -1390,7 +1391,7 @@
   {
    "prefix": "src/cadr-cli/support/shell-process.lisp",
    "class": "paired",
-   "metrics": ["cli_support.shell_config"]
+   "metrics": ["cli_support.shell_config", "cli_support.sanitize_output"]
   },
   {
    "prefix": "src/cadr-cli/support/threads.lisp",

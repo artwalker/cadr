@@ -189,6 +189,7 @@ const REPETITIONS = {
 	"cli_support.event_bus": 50,
 	"cli_support.attribution_headers": 50,
 	"cli_support.shell_config": 50,
+	"cli_support.sanitize_output": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -3643,6 +3644,16 @@ function runCliSupportShellConfig() {
 	};
 }
 
+function runCliSupportSanitizeOutput() {
+	return {
+		sz_plain: shellModule.sanitizeBinaryOutput("hello"),
+		sz_ctl: shellModule.sanitizeBinaryOutput("a\x00b\x07c"),
+		sz_tnr: shellModule.sanitizeBinaryOutput("a\tb\nc\rd"),
+		sz_fmt: shellModule.sanitizeBinaryOutput("x\uFFF9y"),
+		sz_esc: shellModule.sanitizeBinaryOutput("p\x1bq"),
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -3650,6 +3661,7 @@ async function measureCliSupportStripAnsi() {
 	const bus = runCliSupportEventBus();
 	const headers = runCliSupportAttributionHeaders();
 	const shell = runCliSupportShellConfig();
+	const sanitize = runCliSupportSanitizeOutput();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -3669,7 +3681,10 @@ async function measureCliSupportStripAnsi() {
 		shell_config: await collect("cli_support.shell_config", () => {
 			return () => runCliSupportShellConfig();
 		}),
-		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell },
+		sanitize_output: await collect("cli_support.sanitize_output", () => {
+			return () => runCliSupportSanitizeOutput();
+		}),
+		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell, ...sanitize },
 	};
 }
 
@@ -4229,6 +4244,8 @@ const result = {
 				"packages/coding-agent/src/core/provider-attribution.ts mergeProviderAttributionHeaders",
 			"cli_support.shell_config":
 				"packages/coding-agent/src/utils/shell.ts getShellConfig",
+			"cli_support.sanitize_output":
+				"packages/coding-agent/src/utils/shell.ts sanitizeBinaryOutput",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":

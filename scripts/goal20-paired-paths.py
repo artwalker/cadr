@@ -131,7 +131,7 @@ METRICS = {
     "tui_native_modifiers": ("pressed",),
     "tui_settings_list": ("apply_filter",),
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
-    "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config"),
+    "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output"),
     "cli_interactive_controller": ("decode_entity",),
     "cli_sdk": ("version_newer",),
     "provider_registry_defs": ("lookup",),
@@ -478,6 +478,12 @@ RATIO_CEILINGS = {
     # 2.47x (21.07 / 8.54 us). 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_support.shell_config": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_support.sanitize_output pair (samples=5): observed
+    # 0.91x (1.26 / 1.39 us). cadr leads. 8.0 follows the
+    # microsecond-floor first-freeze headroom. Ratchet down
+    # only.
+    "cli_support.sanitize_output": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_interactive_controller pair (samples=5): observed
     # 1.49x (0.63 / 0.42 us). 8.0 follows the
@@ -1019,6 +1025,11 @@ OBSERVED_EXACT = {
         "sh_carg",
         "sh_cstdin",
         "sh_miss",
+        "sz_plain",
+        "sz_ctl",
+        "sz_tnr",
+        "sz_fmt",
+        "sz_esc",
     ),
     "cli_interactive_controller": (
         "amp",

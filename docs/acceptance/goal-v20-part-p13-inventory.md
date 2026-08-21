@@ -583,11 +583,11 @@ These must not be filed as callees.
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 |
 | `src/cadr-cli/modes/rpc/ui.lisp` | 288 |
 
-### `cli_support` (additional) — `changelog-share.lisp` paired `cli_support.strip_ansi`; `paths.lisp` paired `cli_support.normalize_path`; `timings.lisp` paired `cli_support.timings`; `event-bus.lisp` paired `cli_support.event_bus`; `headers.lisp` paired `cli_support.attribution_headers`; `shell-process.lisp` paired `cli_support.shell_config`
+### `cli_support` (additional) — `changelog-share.lisp` paired `cli_support.strip_ansi`; `paths.lisp` paired `cli_support.normalize_path`; `timings.lisp` paired `cli_support.timings`; `event-bus.lisp` paired `cli_support.event_bus`; `headers.lisp` paired `cli_support.attribution_headers`; `shell-process.lisp` paired `cli_support.shell_config` + `cli_support.sanitize_output`
 
 - pi: `stripAnsi`; `normalizePath`; `resetTimings`/`time`/`printTimings`; `createEventBus`; `mergeProviderAttributionHeaders`
 - fixture: CSI+OSC, timings fake clock, event bus recorder, attribution OpenRouter/NVIDIA/Cloudflare/OpenCode + overlay. Product strings are presence flags only.
-- Friend-MachineD n=5: strip_ansi **2.73×**; normalize_path **2.82×**; timings **1.71×**; event_bus **0.33×**; attribution_headers **0.29×** (2.70 / 9.31 µs); shell_config **2.47×** (21.07 / 8.54 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
+- Friend-MachineD n=5: strip_ansi **2.73×**; normalize_path **2.82×**; timings **1.71×**; event_bus **0.33×**; attribution_headers **0.29×** (2.70 / 9.31 µs); shell_config **2.47×** (21.07 / 8.54 µs); sanitize_output **0.91×** (1.26 / 1.39 µs), ceiling 8.0 (variance). cadr leads on sanitize. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|
