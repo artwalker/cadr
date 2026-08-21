@@ -5,9 +5,10 @@ exhausted. **Tried**: inline `consume-line` → `scan-buffer`.
 Friend-MachineD load **1763→1916 µs** — withdrawn.
 **Tried**: `pi-event-data` `parse-json-octets` —
 stream **1081→1190 µs**, load **1763→1841** — withdrawn.
-**Do next**: `provider_mistral` remesure → one named knife
-(or a different pi_messages encoding, not utf8-octets+
-parse-json-octets). G.17 stays `missing`. No silent stop.
+**Tried**: mistral SSE `data-octets` + `parse-json-octets`
+— **2046→2219 µs**, load **1763→2152** — withdrawn.
+Leftover JSON/octet pairing knives on this walker are
+exhausted for now. G.17 stays `missing`. No silent stop.
 
 ---
 

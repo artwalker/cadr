@@ -25,3 +25,11 @@ Tried: `pi-event-data` → `parse-json-octets` / `utf8-octets`.
 Friend-MachineD n=5 stream **1081→1190 µs**, load
 **1763→1841 µs** — withdrawn. Do not redo this re-encode.
 Not intern-grow. Not fill-kernel. Not G.17 `met`.
+
+## Executor — mistral tried (withdrawn)
+
+`sse-event-data-octets` + `parse-json-octets` on the binary
+`data:` window (not string re-encode). Friend-MachineD n=5
+mistral **2046→2219 µs**, load **1763→2152 µs** — revert.
+Do not redo. Not G.17 `met`. No silent stop.
+

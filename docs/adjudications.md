@@ -1266,4 +1266,19 @@ invalid. G.17 stays `missing`.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
 
+## 2026-08-21 — SSE data-octets parse-json-octets falsified (2046→2219)
+
+**Ruled**: executor remesured mistral sprof and kept binary
+`data:` octets on `sse-event`, parsed with `parse-json-octets`
+in openai-completions (not string→utf8-octets). Friend-MachineD
+n=5: mistral **2046→2219 µs**; load **1763→2152 µs**. Product
+restored.
+
+**Decided**: do not redo SSE data-octets JSON parse. Load
+and leftover-pairing JSON/octet side-quests on this walker
+are exhausted for now. Silent stop invalid. G.17 stays
+`missing`. Goal 20 not complete.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
 

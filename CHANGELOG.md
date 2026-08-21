@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw SSE `data-octets` + `parse-json-octets`
+  on openai-completions (mistral). Friend-MachineD n=5:
+  mistral **2046→2219 µs**; load **1763→2152 µs**. Product
+  restored. Ceiling not lowered. Not G.17.
+- Goal 20: remesure `provider_mistral` sprof on walker
+  `0084f0703`. Leftover = character `PARSE-JSON-SOURCE` on
+  SSE data. Not G.17.
 - Goal 20: withdraw `pi-event-data` `parse-json-octets`.
   Friend-MachineD n=5: `provider_pi_messages` cadr
   **1081→1190 µs** (worse); load **1763→1841 µs**. Product
