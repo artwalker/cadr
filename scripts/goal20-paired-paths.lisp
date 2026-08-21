@@ -39,6 +39,7 @@
 ;;;;  26. tui_word_navigation find-word-backward/forward vs findWordBackward/Forward
 ;;;;  27. tui_overlay composite-overlay-line vs compositeTuiLine
 ;;;;  28. tui_kill_ring kill-ring-push/peek/rotate vs KillRing
+;;;;  29. tui_undo_stack undo-stack-push/pop/clear vs UndoStack
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -129,6 +130,7 @@
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
     ("tui_kill_ring.push_peek" . 50)
+    ("tui_undo_stack.push_pop" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3256,6 +3258,45 @@
                 (lambda ()
                   (run-tui-kill-ring)))))))
 
+(defun run-tui-undo-stack ()
+  (let ((empty (cadr-tui:make-undo-stack))
+        (stack (cadr-tui:make-undo-stack))
+        (state (list :text "hello" :n 1)))
+    (cadr-tui:undo-stack-push stack state)
+    (setf (getf state :n) 99)
+    (cadr-tui:undo-stack-push stack (list :text "world" :n 2))
+    (let* ((after-two (cadr-tui:undo-stack-length stack))
+           (popped (cadr-tui:undo-stack-pop stack))
+           (pop-n (getf popped :n))
+           (after-pop (cadr-tui:undo-stack-length stack))
+           (first (cadr-tui:undo-stack-pop stack))
+           (clone-n (getf first :n)))
+      (cadr-tui:undo-stack-clear stack)
+      (list
+       (cadr-tui:undo-stack-length empty)
+       after-two
+       pop-n
+       after-pop
+       clone-n
+       (cadr-tui:undo-stack-length stack)))))
+
+(defun measure-tui-undo-stack ()
+  (let ((observed (run-tui-undo-stack)))
+    (json-object
+     "observed"
+     (json-object
+      "empty_len" (first observed)
+      "after_two" (second observed)
+      "pop_n" (third observed)
+      "after_pop" (fourth observed)
+      "clone_n" (fifth observed)
+      "after_clear" (sixth observed))
+     "push_pop"
+     (collect "tui_undo_stack.push_pop"
+              (lambda ()
+                (lambda ()
+                  (run-tui-undo-stack)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3374,6 +3415,8 @@
       "src/cadr-tui/overlay.lisp composite-overlay-line"
       "tui_kill_ring.push_peek"
       "src/cadr-tui/kill-ring.lisp kill-ring-push + kill-ring-peek + kill-ring-rotate"
+      "tui_undo_stack.push_pop"
+      "src/cadr-tui/undo-stack.lisp undo-stack-push + undo-stack-pop + undo-stack-clear"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3503,6 +3546,8 @@
               (let ((overlay (measure-tui-overlay)))
               (format *error-output* "goal20 cadr paired paths: tui_kill_ring~%")
               (let ((kill-ring (measure-tui-kill-ring)))
+              (format *error-output* "goal20 cadr paired paths: tui_undo_stack~%")
+              (let ((undo-stack (measure-tui-undo-stack)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3562,6 +3607,7 @@
               "tui_word_navigation" word-nav
               "tui_overlay" overlay
               "tui_kill_ring" kill-ring
+              "tui_undo_stack" undo-stack
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3578,7 +3624,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

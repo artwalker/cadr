@@ -161,6 +161,7 @@ const REPETITIONS = {
 	"tui_word_navigation.step": 50,
 	"tui_overlay.composite_line": 50,
 	"tui_kill_ring.push_peek": 50,
+	"tui_undo_stack.push_pop": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -386,6 +387,7 @@ const selectListModule = await import(moduleUrl("packages/tui/src/components/sel
 const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navigation.ts"));
 const tuiModule = await import(moduleUrl("packages/tui/src/tui.ts"));
 const killRingModule = await import(moduleUrl("packages/tui/src/kill-ring.ts"));
+const undoStackModule = await import(moduleUrl("packages/tui/src/undo-stack.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2645,6 +2647,40 @@ async function measureTuiKillRing() {
 	};
 }
 
+function runTuiUndoStack() {
+	const empty = new undoStackModule.UndoStack();
+	const stack = new undoStackModule.UndoStack();
+	const state = { text: "hello", n: 1 };
+	stack.push(state);
+	state.n = 99;
+	stack.push({ text: "world", n: 2 });
+	const afterTwo = stack.length;
+	const popped = stack.pop();
+	const popN = popped?.n ?? -1;
+	const afterPop = stack.length;
+	const first = stack.pop();
+	const cloneN = first?.n ?? -1;
+	stack.clear();
+	return {
+		empty_len: empty.length,
+		after_two: afterTwo,
+		pop_n: popN,
+		after_pop: afterPop,
+		clone_n: cloneN,
+		after_clear: stack.length,
+	};
+}
+
+async function measureTuiUndoStack() {
+	const observed = runTuiUndoStack();
+	return {
+		push_pop: await collect("tui_undo_stack.push_pop", () => {
+			return () => runTuiUndoStack();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -2875,6 +2911,8 @@ process.stderr.write("goal20 pi paired paths: tui_overlay\n");
 const tuiOverlay = await measureTuiOverlay();
 process.stderr.write("goal20 pi paired paths: tui_kill_ring\n");
 const tuiKillRing = await measureTuiKillRing();
+process.stderr.write("goal20 pi paired paths: tui_undo_stack\n");
+const tuiUndoStack = await measureTuiUndoStack();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -2944,6 +2982,8 @@ const result = {
 				"packages/tui/src/tui.ts compositeTuiLine",
 			"tui_kill_ring.push_peek":
 				"packages/tui/src/kill-ring.ts KillRing.push + peek + rotate",
+			"tui_undo_stack.push_pop":
+				"packages/tui/src/undo-stack.ts UndoStack.push + pop + clear",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3028,6 +3068,7 @@ const result = {
 		tui_word_navigation: tuiWordNavigation,
 		tui_overlay: tuiOverlay,
 		tui_kill_ring: tuiKillRing,
+		tui_undo_stack: tuiUndoStack,
 		render_slicing: renderSlicing,
 	},
 };

@@ -497,6 +497,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("peek_two", paired.OBSERVED_EXACT["tui_kill_ring"])
         self.assertIn("acc_prepend", paired.OBSERVED_EXACT["tui_kill_ring"])
 
+    def test_tui_undo_stack_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tui_undo_stack.push_pop", RECORD.METRIC_KEYS)
+        self.assertIn("push_pop", paired.METRICS["tui_undo_stack"])
+        self.assertIn("tui_undo_stack.push_pop", paired.RATIO_CEILINGS)
+        self.assertIn("empty_len", paired.OBSERVED_EXACT["tui_undo_stack"])
+        self.assertIn("clone_n", paired.OBSERVED_EXACT["tui_undo_stack"])
+        self.assertIn("after_clear", paired.OBSERVED_EXACT["tui_undo_stack"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -571,6 +580,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_word_navigation.step`", section)
             self.assertIn("`tui_overlay.composite_line`", section)
             self.assertIn("`tui_kill_ring.push_peek`", section)
+            self.assertIn("`tui_undo_stack.push_pop`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

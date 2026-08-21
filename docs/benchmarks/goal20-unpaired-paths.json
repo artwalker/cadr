@@ -41,6 +41,7 @@
   "tui_word_navigation.step",
   "tui_overlay.composite_line",
   "tui_kill_ring.push_peek",
+  "tui_undo_stack.push_pop",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1686,8 +1687,8 @@
   },
   {
    "prefix": "src/cadr-tui/undo-stack.lisp",
-   "class": "needs-pair",
-   "hole": "tui_editor_helpers"
+   "class": "paired",
+   "metrics": ["tui_undo_stack.push_pop"]
   },
   {
    "prefix": "src/cadr-tui/word-navigation.lisp",

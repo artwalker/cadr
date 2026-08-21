@@ -619,6 +619,20 @@ frame. Observed `empty_len` / `ring_len` / `peek_two` /
 (0.58 / 0.68 µs), ceiling 8.0 (variance / microsecond
 floor). Same commit no optimize.
 
+### Pair 43 — `tui_undo_stack`
+
+| metric | cadr | pi |
+|---|---|---|
+| `push_pop` | `undo-stack-push` + `undo-stack-pop` + `undo-stack-clear` | `UndoStack.push` + `pop` + `clear` (`packages/tui/src/undo-stack.ts`) |
+
+Clone-on-push `{text,n}`, mutate source, push a second
+snapshot, pop, clear. Time the stack, not a TUI frame.
+Observed `empty_len` / `after_two` / `pop_n` /
+`after_pop` / `clone_n` / `after_clear` are exact
+(0 / 2 / 2 / 1 / 1 / 0). Other editor-helper files stay
+`needs-pair`. First Friend-MachineD freeze **0.21×**
+(0.51 / 2.42 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -824,13 +838,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 95 | 48,807 | 38.3% | `no worse than baseline` is falsifiable |
+| `paired` | 96 | 48,827 | 38.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 157 | 58,188 | 45.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 156 | 58,168 | 45.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 38.3% of lines (95 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 38.3% of lines (96 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 44.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -958,6 +972,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/terminal-colors.lisp` | 191 | `tui_theme_overlay.osc11_bg` |
 | `src/cadr-tui/terminal-image.lisp` | 686 | `image_runtime.dimensions` |
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/undo-stack.lisp` | 20 | `tui_undo_stack.push_pop` |
 | `src/cadr-tui/unicode.lisp` | 1,302 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 | `src/cadr-tui/word-navigation.lisp` | 118 | `tui_word_navigation.step` |
 
@@ -1006,7 +1021,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 7 | 1,724 |
 | `cli_sdk` | 5 | 1,712 |
-| `tui_editor_helpers` | 6 | 1,600 |
+| `tui_editor_helpers` | 5 | 1,580 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
 | `cli_support` | 13 | 1,164 |

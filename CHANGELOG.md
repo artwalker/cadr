@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_undo_stack.push_pop` (clone-on-push
+  `{text,n}`; cadr `undo-stack-*` vs pi `UndoStack`).
+  Friend-MachineD n=5 **0.21×** (0.51 / 2.42 µs), ceiling
+  8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `tui_kill_ring.push_peek` (push/peek/
   rotate n=2 + accumulate; cadr `kill-ring-*` vs pi
   `KillRing`). Friend-MachineD n=5 **0.85×**

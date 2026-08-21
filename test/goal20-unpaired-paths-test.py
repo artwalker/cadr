@@ -229,6 +229,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(kill_ring), 1)
         self.assertEqual(kill_ring[0]["class"], "paired")
         self.assertIn("tui_kill_ring.push_peek", kill_ring[0]["metrics"])
+        undo_stack = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/undo-stack.lisp"
+        ]
+        self.assertEqual(len(undo_stack), 1)
+        self.assertEqual(undo_stack[0]["class"], "paired")
+        self.assertIn("tui_undo_stack.push_pop", undo_stack[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

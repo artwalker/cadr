@@ -630,7 +630,7 @@ These must not be filed as callees.
 
 - pi: `packages/tui/src/fuzzy.ts fuzzyMatch`
 - fixture: queries against `gpt-4o`. Time match flags, not a TUI frame.
-- Friend-MachineD n=5: **0.45×** (1.8 / 4.0 µs), ceiling 8.0. `word-navigation.lisp` now paired `tui_word_navigation.step` **0.17×** (0.94 / 5.4 µs), ceiling 8.0. `kill-ring.lisp` now paired `tui_kill_ring.push_peek` **0.85×** (0.58 / 0.68 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
+- Friend-MachineD n=5: **0.45×** (1.8 / 4.0 µs), ceiling 8.0. `word-navigation.lisp` now paired `tui_word_navigation.step` **0.17×** (0.94 / 5.4 µs), ceiling 8.0. `kill-ring.lisp` now paired `tui_kill_ring.push_peek` **0.85×** (0.58 / 0.68 µs), ceiling 8.0. `undo-stack.lisp` now paired `tui_undo_stack.push_pop` **0.21×** (0.51 / 2.42 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|
