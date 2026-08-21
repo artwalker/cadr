@@ -409,6 +409,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(normalize_path), 1)
         self.assertEqual(normalize_path[0]["class"], "paired")
         self.assertIn("cli_support.normalize_path", normalize_path[0]["metrics"])
+        timings = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/support/timings.lisp"
+        ]
+        self.assertEqual(len(timings), 1)
+        self.assertEqual(timings[0]["class"], "paired")
+        self.assertIn("cli_support.timings", timings[0]["metrics"])
         decode_entity = [
             row
             for row in classified["rows"]

@@ -583,11 +583,11 @@ These must not be filed as callees.
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 |
 | `src/cadr-cli/modes/rpc/ui.lisp` | 288 |
 
-### `cli_support` (additional) — `changelog-share.lisp` paired `cli_support.strip_ansi`; `paths.lisp` paired `cli_support.normalize_path`
+### `cli_support` (additional) — `changelog-share.lisp` paired `cli_support.strip_ansi`; `paths.lisp` paired `cli_support.normalize_path`; `timings.lisp` paired `cli_support.timings`
 
-- pi: `packages/coding-agent/src/utils/ansi.ts stripAnsi`; `packages/coding-agent/src/utils/paths.ts normalizePath`
-- fixture: CSI+OSC hyperlink, RIS, single-byte ESC, plain hello. Time strip, not a TUI frame.
-- Friend-MachineD n=5: strip_ansi **2.73×** (1.3 / 0.5 µs), ceiling 8.0 (variance). normalize_path **2.82×** (4.58 / 1.63 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
+- pi: `packages/coding-agent/src/utils/ansi.ts stripAnsi`; `packages/coding-agent/src/utils/paths.ts normalizePath`; `packages/coding-agent/src/core/timings.ts resetTimings + time + printTimings`
+- fixture: CSI+OSC hyperlink, RIS, single-byte ESC, plain hello. Time strip, not a TUI frame. Timings: fake clock +10 ms/step, boot then load.
+- Friend-MachineD n=5: strip_ansi **2.73×** (1.3 / 0.5 µs), ceiling 8.0 (variance). normalize_path **2.82×** (4.58 / 1.63 µs), ceiling 8.0. timings **1.71×** (4.55 / 2.66 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

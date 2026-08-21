@@ -183,6 +183,7 @@ const REPETITIONS = {
 	"ai_capabilities.event_stream": 50,
 	"cli_support.strip_ansi": 50,
 	"cli_support.normalize_path": 50,
+	"cli_support.timings": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -387,6 +388,7 @@ const modelResolverModule = await import(
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
 const rpcJsonlModule = await import(moduleUrl("packages/coding-agent/src/modes/rpc/jsonl.ts"));
+process.env.PI_TIMING = "1";
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
@@ -445,6 +447,7 @@ const eventStreamModule = await import(
 );
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
+const timingsModule = await import(moduleUrl("packages/coding-agent/src/core/timings.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
@@ -3375,9 +3378,45 @@ function runCliSupportNormalizePath() {
 	};
 }
 
+function timingFieldMs(text, label) {
+	const match = text.match(new RegExp(`  ${label}: (\\d+)ms`));
+	return match ? Number(match[1]) : -1;
+}
+
+function runCliSupportTimings() {
+	let now = 0;
+	const originalNow = Date.now;
+	Date.now = () => {
+		now += 10;
+		return now;
+	};
+	const lines = [];
+	const originalError = console.error;
+	console.error = (message) => {
+		lines.push(String(message));
+	};
+	try {
+		timingsModule.resetTimings();
+		timingsModule.time("boot");
+		timingsModule.time("load");
+		timingsModule.printTimings();
+	} finally {
+		Date.now = originalNow;
+		console.error = originalError;
+	}
+	const text = lines.join("\n");
+	return {
+		time_title: text.includes("Startup Timings: main") ? 1 : 0,
+		time_boot: timingFieldMs(text, "boot"),
+		time_load: timingFieldMs(text, "load"),
+		time_total: timingFieldMs(text, "TOTAL"),
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
+	const timings = runCliSupportTimings();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -3385,7 +3424,10 @@ async function measureCliSupportStripAnsi() {
 		normalize_path: await collect("cli_support.normalize_path", () => {
 			return () => runCliSupportNormalizePath();
 		}),
-		observed: { ...ansi, ...paths },
+		timings: await collect("cli_support.timings", () => {
+			return () => runCliSupportTimings();
+		}),
+		observed: { ...ansi, ...paths, ...timings },
 	};
 }
 
@@ -3933,6 +3975,8 @@ const result = {
 			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
 			"cli_support.normalize_path":
 				"packages/coding-agent/src/utils/paths.ts normalizePath",
+			"cli_support.timings":
+				"packages/coding-agent/src/core/timings.ts resetTimings + time + printTimings",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":

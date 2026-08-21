@@ -68,6 +68,7 @@
 ;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
 ;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
 ;;;;  56. ai_capabilities make-event-stream vs EventStream
+;;;;  57. cli_support reset-timings + record-timing + print-timings vs resetTimings/time/printTimings
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -180,6 +181,7 @@
     ("ai_capabilities.event_stream" . 50)
     ("cli_support.strip_ansi" . 50)
     ("cli_support.normalize_path" . 50)
+    ("cli_support.timings" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
@@ -4101,9 +4103,37 @@
      (cadr-cli::normalize-path-input
       "file:///tmp/z" :expand-tilde-p nil))))
 
+(defun timing-field-ms (text label)
+  (let* ((needle (format nil "  ~A: " label))
+         (start (search needle text)))
+    (when start
+      (let* ((num-start (+ start (length needle)))
+             (ms (search "ms" text :start2 num-start)))
+        (when ms
+          (parse-integer text :start num-start :end ms))))))
+
+(defun run-cli-support-timings ()
+  (let ((now 0))
+    (let ((cadr-cli::*timing-enabled-p* t)
+          (cadr-cli::*timing-clock*
+            (lambda ()
+              (incf now 10))))
+      (cadr-cli::reset-timings)
+      (cadr-cli::record-timing "boot")
+      (cadr-cli::record-timing "load")
+      (let ((text
+              (with-output-to-string (stream)
+                (cadr-cli::print-timings stream))))
+        (list
+         (if (search "Startup Timings: main" text) 1 0)
+         (or (timing-field-ms text "boot") -1)
+         (or (timing-field-ms text "load") -1)
+         (or (timing-field-ms text "TOTAL") -1))))))
+
 (defun measure-cli-support-strip-ansi ()
   (let ((ansi (run-cli-support-strip-ansi))
-        (paths (run-cli-support-normalize-path)))
+        (paths (run-cli-support-normalize-path))
+        (timings (run-cli-support-timings)))
     (json-object
      "observed"
      (json-object
@@ -4115,7 +4145,11 @@
       "at" (second paths)
       "nbsp" (third paths)
       "tilde" (fourth paths)
-      "file" (fifth paths))
+      "file" (fifth paths)
+      "time_title" (first timings)
+      "time_boot" (second timings)
+      "time_load" (third timings)
+      "time_total" (fourth timings))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -4125,7 +4159,12 @@
      (collect "cli_support.normalize_path"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-normalize-path)))))))
+                  (run-cli-support-normalize-path))))
+     "timings"
+     (collect "cli_support.timings"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-timings)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -4508,6 +4547,8 @@
       "src/cadr-cli/support/changelog-share.lisp strip-ansi"
       "cli_support.normalize_path"
       "src/cadr-cli/support/paths.lisp normalize-path-input"
+      "cli_support.timings"
+      "src/cadr-cli/support/timings.lisp reset-timings + record-timing + print-timings"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"

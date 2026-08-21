@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.timings`
+  (reset + boot/load print; cadr `reset-timings` /
+  `record-timing` / `print-timings` vs pi `resetTimings` /
+  `time` / `printTimings`). Friend-MachineD n=5 **1.71×**
+  (4.55 / 2.66 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `ai_capabilities.event_stream`
   (FIFO a/b/end; cadr `make-event-stream` vs pi
   `EventStream`). Friend-MachineD n=5 **1.44×**
