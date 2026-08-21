@@ -1035,3 +1035,51 @@
       (is (string= "read" (cadr-ai:tool-call-name (first tool)))))
     (signals error
       (parse-content "[{\"type\":\"nope\"}]"))))
+
+(test usage-first-byte-dispatch-equals-generic-mutants
+  ;; parse-usage first-byte field dispatch (proposal-3 family).
+  ;; Compact pairing-fixture usage, spaced, and reordered keys
+  ;; EQUAL on slots. Unknown keys (totalTokens) still skip so
+  ;; usage-total stays 0. Not whole-object compact-prefix.
+  (flet ((parse-usage-json (usage-json)
+           (let* ((octets
+                    (cadr-ai::utf8-octets
+                     (format
+                      nil
+                      "{\"type\":\"message\",\"id\":\"u\",\"parentId\":null,\"timestamp\":1,\"message\":{\"role\":\"assistant\",\"content\":\"x\",\"usage\":~A,\"timestamp\":1}}"
+                      usage-json)))
+                  (entry
+                    (cadr-agent::parse-session-record-octets
+                     octets 0 (length octets))))
+             (cadr-agent::session-json-message-usage
+              (cadr-agent::session-entry-message entry))))
+         (usage-slots (usage)
+           (list (cadr-ai:usage-input usage)
+                 (cadr-ai:usage-output usage)
+                 (cadr-ai:usage-cache-read usage)
+                 (cadr-ai:usage-cache-write usage)
+                 (cadr-ai:usage-total usage)
+                 (cadr-ai:cost-input (cadr-ai:usage-cost usage))
+                 (cadr-ai:cost-output (cadr-ai:usage-cost usage))
+                 (cadr-ai:cost-total (cadr-ai:usage-cost usage)))))
+    (let* ((compact
+             (parse-usage-json
+              "{\"input\":1201,\"output\":65,\"cacheRead\":0,\"cacheWrite\":0,\"totalTokens\":1266,\"cost\":{\"input\":0,\"output\":0,\"cacheRead\":0,\"cacheWrite\":0,\"total\":0}}"))
+           (spaced
+             (parse-usage-json
+              "{ \"input\" : 1201 , \"output\" : 65 , \"cacheRead\" : 0 , \"cacheWrite\" : 0 , \"totalTokens\" : 1266 , \"cost\" : { \"input\" : 0 , \"output\" : 0 , \"cacheRead\" : 0 , \"cacheWrite\" : 0 , \"total\" : 0 } }"))
+           (reordered
+             (parse-usage-json
+              "{\"output\":65,\"input\":1201,\"cacheRead\":0,\"cacheWrite\":0,\"totalTokens\":1266,\"cost\":{\"input\":0,\"output\":0,\"cacheRead\":0,\"cacheWrite\":0,\"total\":0}}"))
+           (snake
+             (parse-usage-json
+              "{\"input\":3,\"output\":4,\"cache_read\":5,\"cache_write\":6,\"total\":7}")))
+      (is (typep compact 'cadr-ai:usage))
+      (is (equal (usage-slots compact) (usage-slots spaced)))
+      (is (equal (usage-slots compact) (usage-slots reordered)))
+      (is (eql 1201 (cadr-ai:usage-input compact)))
+      (is (eql 65 (cadr-ai:usage-output compact)))
+      (is (eql 0 (cadr-ai:usage-total compact)))
+      (is (eql 5 (cadr-ai:usage-cache-read snake)))
+      (is (eql 6 (cadr-ai:usage-cache-write snake)))
+      (is (eql 7 (cadr-ai:usage-total snake))))))

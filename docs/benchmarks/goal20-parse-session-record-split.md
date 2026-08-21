@@ -110,6 +110,16 @@ path + generic fallback (not bag reuse). See leftover md +
 DeepSeek A/D and gperf `put-entry` remesure are **not** merged
 with knife 1.
 
+## Knife (falsified) — parse-usage first-byte field dispatch
+
+Proposal-3 family: `case` on the first usage-key byte,
+then the small same-initial-letter set (`input` / `output`
+/ cache*+`cost` / `reasoning` / `total`). Miss skips.
+Not whole-object compact-prefix. Friend-MachineD n=5:
+load cadr **1763→1996 µs** (worse; samples 1773–2127,
+median 1996). Withdrawn. Do not redo this usage first-byte.
+Ceiling not lowered.
+
 ## Knife (falsified) — invent usage compact-prefix
 
 Pairing-fixture key order (`input`/`output`/`cacheRead`/

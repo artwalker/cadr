@@ -1162,3 +1162,17 @@ Board still had invent `[ready]`; no `⚑`. Last HEAD
 **Why it was decidable**: board state + standing no-silent-stop
 rule; concrete encodings replace vague invent.
 
+## 2026-08-21 — parse-usage first-byte falsified (1763→1996)
+
+**Ruled**: executor remesured proposal-3-family first-byte
+on `put-usage-field`. Friend-MachineD n=5 load
+**1763→1996 µs** (samples 1773–2127). Product restored to
+`0084f0703`.
+
+**Decided**: do not redo usage first-byte. Next remains
+`parse-content-block` generic first-byte (compact miss),
+or leftover pairing `journal_read` / `pi_messages` /
+`mistral`. Silent stop still invalid. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
