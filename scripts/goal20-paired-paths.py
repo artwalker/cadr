@@ -132,6 +132,7 @@ METRICS = {
     "ai_capabilities": ("short_hash",),
     "cli_support": ("strip_ansi",),
     "cli_interactive_controller": ("decode_entity",),
+    "cli_sdk": ("version_newer",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -381,6 +382,11 @@ RATIO_CEILINGS = {
     # microsecond-floor first-freeze headroom.
     # Ratchet down only.
     "cli_interactive_controller.decode_entity": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_sdk pair (samples=5): observed 0.40x
+    # (4.1 / 10.3 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "cli_sdk.version_newer": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -798,6 +804,13 @@ OBSERVED_EXACT = {
         "apos",
         "hash65",
         "miss",
+    ),
+    "cli_sdk": (
+        "beta",
+        "eq",
+        "older",
+        "newer_flag",
+        "equal_flag",
     ),
     "resource_loader": (
         "skill_count",

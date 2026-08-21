@@ -547,10 +547,11 @@ These must not be filed as callees.
 | `src/cadr-cli/extensions/llama/ui.lisp` | 763 |
 | `src/cadr-cli/extensions/loader.lisp` | 702 |
 
-### `cli_sdk` (additional)
+### `cli_sdk` (additional) — `cache-version.lisp` paired `cli_sdk.version_newer`
 
-- pi: `packages/coding-agent/src/core/sdk.ts + agent-session.ts + agent-session-runtime.ts`
-- fixture: SDK create-session + prompt + read with faux provider. Overlaps agent_tool_loop; first pair should own both rather than two empty benches.
+- pi: `packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion`
+- fixture: valid semver compare/newer flags. No network.
+- Friend-MachineD n=5: **0.40×** (4.1 / 10.3 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

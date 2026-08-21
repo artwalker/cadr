@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_sdk.version_newer` (valid
+  semver; cadr `newer-package-version-p` vs pi
+  `isNewerPackageVersion`). Friend-MachineD n=5
+  **0.40×** (4.1 / 10.3 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair
   `cli_interactive_controller.decode_entity` (amp/lt/`#65`;
   cadr `decode-highlight-entity` vs pi

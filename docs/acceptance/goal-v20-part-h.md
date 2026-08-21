@@ -762,6 +762,19 @@ First Friend-MachineD freeze **1.49×** (0.63 / 0.42 µs),
 ceiling 8.0 (variance / microsecond floor). Same commit
 no optimize.
 
+### Pair 53 — `cli_sdk`
+
+| metric | cadr | pi |
+|---|---|---|
+| `version_newer` | `newer-package-version-p` | `isNewerPackageVersion` (`packages/coding-agent/src/utils/version-check.ts`) |
+
+Valid semver `5.0.0-beta.20`/`9`, `1.2.3`/`1.2.4`/`1.3.0`.
+No network. Observed `beta` / `eq` / `older` /
+`newer_flag` / `equal_flag` are exact (1 / 0 / -1 / 1 /
+0). Other cli_sdk files stay `needs-pair`. First
+Friend-MachineD freeze **0.40×** (4.1 / 10.3 µs), ceiling
+8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -967,14 +980,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 105 | 52,470 | 41.2% | `no worse than baseline` is falsifiable |
+| `paired` | 106 | 52,968 | 41.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 147 | 54,525 | 42.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 146 | 54,027 | 42.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 41.2% of lines (105 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 47.1% of lines.
+- **Falsifiable vs baseline:** 41.6% of lines (106 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 47.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1067,6 +1080,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
+| `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi` |
@@ -1158,9 +1172,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `oauth_pkce_device` | 13 | 2,081 |
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 7 | 1,724 |
-| `cli_sdk` | 5 | 1,712 |
 | `settings_load` | 4 | 1,499 |
 | `provider_registry_defs` | 3 | 1,494 |
+| `cli_sdk` | 4 | 1,214 |
 | `http_transport` | 1 | 858 |
 | `cli_support` | 12 | 822 |
 | `cli_models_rest` | 2 | 698 |

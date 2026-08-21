@@ -171,6 +171,7 @@ const REPETITIONS = {
 	"ai_capabilities.short_hash": 50,
 	"cli_support.strip_ansi": 50,
 	"cli_interactive_controller.decode_entity": 50,
+	"cli_sdk.version_newer": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -406,6 +407,7 @@ const settingsListModule = await import(moduleUrl("packages/tui/src/components/s
 const hashModule = await import(moduleUrl("packages/ai/src/utils/hash.ts"));
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
+const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2997,6 +2999,26 @@ async function measureCliInteractiveDecodeEntity() {
 	};
 }
 
+function runCliSdkVersionNewer() {
+	return {
+		beta: versionCheckModule.comparePackageVersions("5.0.0-beta.20", "5.0.0-beta.9"),
+		eq: versionCheckModule.comparePackageVersions("1.2.3", "1.2.3"),
+		older: versionCheckModule.comparePackageVersions("1.2.3", "1.3.0"),
+		newer_flag: versionCheckModule.isNewerPackageVersion("1.2.4", "1.2.3") ? 1 : 0,
+		equal_flag: versionCheckModule.isNewerPackageVersion("1.2.3", "1.2.3") ? 1 : 0,
+	};
+}
+
+async function measureCliSdkVersionNewer() {
+	const observed = runCliSdkVersionNewer();
+	return {
+		version_newer: await collect("cli_sdk.version_newer", () => {
+			return () => runCliSdkVersionNewer();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3247,6 +3269,8 @@ process.stderr.write("goal20 pi paired paths: cli_support\n");
 const cliSupport = await measureCliSupportStripAnsi();
 process.stderr.write("goal20 pi paired paths: cli_interactive_controller\n");
 const cliInteractive = await measureCliInteractiveDecodeEntity();
+process.stderr.write("goal20 pi paired paths: cli_sdk\n");
+const cliSdk = await measureCliSdkVersionNewer();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3334,6 +3358,8 @@ const result = {
 			"cli_support.strip_ansi": "packages/coding-agent/src/utils/ansi.ts stripAnsi",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
+			"cli_sdk.version_newer":
+				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3428,6 +3454,7 @@ const result = {
 		ai_capabilities: aiCapabilities,
 		cli_support: cliSupport,
 		cli_interactive_controller: cliInteractive,
+		cli_sdk: cliSdk,
 		render_slicing: renderSlicing,
 	},
 };

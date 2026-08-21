@@ -68,6 +68,7 @@ METRIC_KEYS = (
     "ai_capabilities.short_hash",
     "cli_support.strip_ansi",
     "cli_interactive_controller.decode_entity",
+    "cli_sdk.version_newer",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

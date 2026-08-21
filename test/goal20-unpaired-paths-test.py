@@ -311,6 +311,14 @@ class TestClassify(unittest.TestCase):
         self.assertIn(
             "cli_interactive_controller.decode_entity", decode_entity[0]["metrics"]
         )
+        cache_version = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/sdk/cache-version.lisp"
+        ]
+        self.assertEqual(len(cache_version), 1)
+        self.assertEqual(cache_version[0]["class"], "paired")
+        self.assertIn("cli_sdk.version_newer", cache_version[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

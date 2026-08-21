@@ -51,6 +51,7 @@
   "ai_capabilities.short_hash",
   "cli_support.strip_ansi",
   "cli_interactive_controller.decode_entity",
+  "cli_sdk.version_newer",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -1274,8 +1275,8 @@
   },
   {
    "prefix": "src/cadr-cli/sdk/cache-version.lisp",
-   "class": "needs-pair",
-   "hole": "cli_sdk"
+   "class": "paired",
+   "metrics": ["cli_sdk.version_newer"]
   },
   {
    "prefix": "src/cadr-cli/sdk/model-service.lisp",

@@ -49,6 +49,7 @@
 ;;;;  36. ai_capabilities short-hash vs shortHash
 ;;;;  37. cli_support strip-ansi vs stripAnsi
 ;;;;  38. cli_interactive_controller decode-highlight-entity vs decodeHtmlEntity
+;;;;  39. cli_sdk newer-package-version-p vs isNewerPackageVersion
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -149,6 +150,7 @@
     ("ai_capabilities.short_hash" . 50)
     ("cli_support.strip_ansi" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
+    ("cli_sdk.version_newer" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3732,6 +3734,37 @@
                 (lambda ()
                   (run-cli-interactive-decode-entity)))))))
 
+(defun version-cmp-sign (left right)
+  (let ((value (cadr-cli::compare-package-versions left right)))
+    (cond
+      ((plusp value) 1)
+      ((minusp value) -1)
+      (t 0))))
+
+(defun run-cli-sdk-version-newer ()
+  (list
+   (version-cmp-sign "5.0.0-beta.20" "5.0.0-beta.9")
+   (version-cmp-sign "1.2.3" "1.2.3")
+   (version-cmp-sign "1.2.3" "1.3.0")
+   (if (cadr-cli::newer-package-version-p "1.2.4" "1.2.3") 1 0)
+   (if (cadr-cli::newer-package-version-p "1.2.3" "1.2.3") 1 0)))
+
+(defun measure-cli-sdk-version-newer ()
+  (let ((observed (run-cli-sdk-version-newer)))
+    (json-object
+     "observed"
+     (json-object
+      "beta" (first observed)
+      "eq" (second observed)
+      "older" (third observed)
+      "newer_flag" (fourth observed)
+      "equal_flag" (fifth observed))
+     "version_newer"
+     (collect "cli_sdk.version_newer"
+              (lambda ()
+                (lambda ()
+                  (run-cli-sdk-version-newer)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3870,6 +3903,8 @@
       "src/cadr-cli/support/changelog-share.lisp strip-ansi"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
+      "cli_sdk.version_newer"
+      "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -4019,6 +4054,8 @@
               (let ((support (measure-cli-support-strip-ansi)))
               (format *error-output* "goal20 cadr paired paths: cli_interactive_controller~%")
               (let ((interactive (measure-cli-interactive-decode-entity)))
+              (format *error-output* "goal20 cadr paired paths: cli_sdk~%")
+              (let ((sdk (measure-cli-sdk-version-newer)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -4088,6 +4125,7 @@
               "ai_capabilities" capabilities
               "cli_support" support
               "cli_interactive_controller" interactive
+              "cli_sdk" sdk
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4104,7 +4142,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
