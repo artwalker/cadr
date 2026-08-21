@@ -3,22 +3,21 @@
 Walker `0084f0703` / load ~1763.
 
 **Withdrawn (do not redo):** load first-byte family; inline
-consume-line; pi-event-data parse-json-octets; mistral SSE
-data-octets+parse-json-octets; **single-element content
-array shortcut** (1763→1929); **WRITE-JSON-STRING
-unescaped simple-string** (1081→1189, load 1763→1838).
+consume-line; pi/mistral octets JSON; single-element content
+shortcut; WRITE-JSON-STRING unescaped simple-string
+(1081→1189, load 1763→1838); **usage ASCII number value**
+(1763→1951).
 
 **Do next (advisor):**
-1. ~~Load invent — single-element content array shortcut~~
-   **withdrawn** Friend-MachineD load **1763→1929 µs**.
-   Do not redo.
-2. ~~pi_messages WRITE-JSON-STRING / request stringify~~
-   **withdrawn** stream **1081→1189 µs**, load
-   **1763→1838 µs**. Do not redo. Not event
-   parse-json-octets.
+1. ~~usage ASCII number value fast path~~ **withdrawn**
+   Friend-MachineD load **1763→1951 µs**. Do not redo.
+2. Then remesure pi_messages sprof → one **new** named knife
+   (not parse-json-octets, not WRITE-JSON-STRING unescaped).
+   **Now.**
 
-G.17 stays `missing`. No silent stop. Pairing JSON/octet
-side-quests losing ≠ Goal complete.
+G.17 stays `missing`. No silent stop.
+Do **not** raise ⚑ claiming empty ready while items
+1–2 above are still open.
 
 
 ---

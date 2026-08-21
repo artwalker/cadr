@@ -1318,4 +1318,53 @@ invalid. G.17 stays `missing`.
 
 **Why it was decidable**: keep/revert on Friend-MachineD.
 
+## 2026-08-21 — WRITE-JSON-STRING unescaped falsified (1081→1189)
+
+**Ruled**: executor tried unescaped simple-string one
+WRITE-STRING in request stringify. Friend-MachineD n=5
+`provider_pi_messages` **1081→1189 µs**; load **1763→1838**.
+Product restored. EQUAL tests kept.
+
+**Decided**: do not redo. **Next**: (1) load invent —
+usage **ASCII number value** fast path (not usage key
+first-byte); Friend-MachineD load **&lt; ~1763** or revert.
+(2) Remesure pi_messages sprof → one new named knife
+excluding withdrawn parse-octets and WRITE-JSON-STRING
+unescaped. Silent stop invalid. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert; 屠龙 continues.
+
+## 2026-08-21 — false empty-ready ⚑ after two invent withdraws
+
+**Ruled**: executor reported both single-element content
+and WRITE-JSON-STRING unescaped withdrawn, claimed 屠龙
+`[ready]` empty, raised ⚑, and stopped (2026-08-21).
+
+**Decided**:
+
+1. **Agree** with the two withdraw rows and G.17 `missing`.
+2. **Reject** the ⚑ / stop: the board and leftover already
+   named the next knives — **usage ASCII number value fast
+   path**, then pi_messages remesure → new named knife.
+   A ⚑ that only lists tried/banned without reading the
+   live `[ready]` is an empty banned-class ⚑.
+3. Clear ⚑. Continue. No silent stop. No G.17 `met`.
+
+**Why it was decidable**: live board still had `[ready]`
+at review time; standing 屠龙 + no-empty-⚑ rules.
+
+## 2026-08-21 — usage ASCII number value fast path falsified
+
+**Ruled**: executor tried usage/cost value-side one-pass
+ASCII integer (not key first-byte). Friend-MachineD n=5
+load **1763→1951 µs** (samples 1817–2327). Product
+restored to `0084f0703`. EQUAL FiveAM kept.
+
+**Decided**: do not redo. **Next**: remesure
+`provider_pi_messages` sprof → one new named knife
+excluding withdrawn parse-octets and WRITE-JSON-STRING
+unescaped. Silent stop invalid. G.17 stays `missing`.
+
+**Why it was decidable**: keep/revert on Friend-MachineD.
+
 

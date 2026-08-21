@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: withdraw usage ASCII number value fast
+  path (not usage key first-byte). Friend-MachineD
+  n=5: load cadr **1763→1951 µs** (worse; samples
+  1817–2327). Product restored to `0084f0703`.
+  EQUAL test kept. Ceiling not lowered. Not G.17.
 - Goal 20: withdraw WRITE-JSON-STRING unescaped
   simple-string shortcut (request stringify).
   Friend-MachineD n=5: `provider_pi_messages`
