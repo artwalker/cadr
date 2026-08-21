@@ -542,6 +542,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("after_yank", paired.OBSERVED_EXACT["tui_input_component"])
         self.assertIn("last_code", paired.OBSERVED_EXACT["tui_input_component"])
 
+    def test_tui_native_modifiers_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("tui_native_modifiers.pressed", RECORD.METRIC_KEYS)
+        self.assertIn("pressed", paired.METRICS["tui_native_modifiers"])
+        self.assertIn("tui_native_modifiers.pressed", paired.RATIO_CEILINGS)
+        self.assertIn("shift", paired.OBSERVED_EXACT["tui_native_modifiers"])
+        self.assertIn("control", paired.OBSERVED_EXACT["tui_native_modifiers"])
+        self.assertIn("command", paired.OBSERVED_EXACT["tui_native_modifiers"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -621,6 +630,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_keybindings.resolve_match`", section)
             self.assertIn("`tui_stdin_buffer.process`", section)
             self.assertIn("`tui_input_component.edit`", section)
+            self.assertIn("`tui_native_modifiers.pressed`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

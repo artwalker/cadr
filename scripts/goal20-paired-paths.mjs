@@ -166,6 +166,7 @@ const REPETITIONS = {
 	"tui_keybindings.resolve_match": 50,
 	"tui_stdin_buffer.process": 50,
 	"tui_input_component.edit": 50,
+	"tui_native_modifiers.pressed": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -396,6 +397,7 @@ const autocompleteModule = await import(moduleUrl("packages/tui/src/autocomplete
 const keybindingsModule = await import(moduleUrl("packages/tui/src/keybindings.ts"));
 const stdinBufferModule = await import(moduleUrl("packages/tui/src/stdin-buffer.ts"));
 const inputModule = await import(moduleUrl("packages/tui/src/components/input.ts"));
+const nativeModifiersModule = await import(moduleUrl("packages/tui/src/native-modifiers.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2840,6 +2842,25 @@ async function measureTuiInputComponent() {
 	};
 }
 
+function runTuiNativeModifiers() {
+	return {
+		shift: nativeModifiersModule.isNativeModifierPressed("shift") ? 1 : 0,
+		control: nativeModifiersModule.isNativeModifierPressed("control") ? 1 : 0,
+		option: nativeModifiersModule.isNativeModifierPressed("option") ? 1 : 0,
+		command: nativeModifiersModule.isNativeModifierPressed("command") ? 1 : 0,
+	};
+}
+
+async function measureTuiNativeModifiers() {
+	const observed = runTuiNativeModifiers();
+	return {
+		pressed: await collect("tui_native_modifiers.pressed", () => {
+			return () => runTuiNativeModifiers();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3080,6 +3101,8 @@ process.stderr.write("goal20 pi paired paths: tui_stdin_buffer\n");
 const tuiStdinBuffer = await measureTuiStdinBuffer();
 process.stderr.write("goal20 pi paired paths: tui_input_component\n");
 const tuiInputComponent = await measureTuiInputComponent();
+process.stderr.write("goal20 pi paired paths: tui_native_modifiers\n");
+const tuiNativeModifiers = await measureTuiNativeModifiers();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3159,6 +3182,8 @@ const result = {
 				"packages/tui/src/stdin-buffer.ts StdinBuffer.process",
 			"tui_input_component.edit":
 				"packages/tui/src/components/input.ts Input.handleInput",
+			"tui_native_modifiers.pressed":
+				"packages/tui/src/native-modifiers.ts isNativeModifierPressed",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3248,6 +3273,7 @@ const result = {
 		tui_keybindings: tuiKeybindings,
 		tui_stdin_buffer: tuiStdinBuffer,
 		tui_input_component: tuiInputComponent,
+		tui_native_modifiers: tuiNativeModifiers,
 		render_slicing: renderSlicing,
 	},
 };

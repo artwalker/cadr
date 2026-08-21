@@ -62,6 +62,7 @@ METRIC_KEYS = (
     "tui_keybindings.resolve_match",
     "tui_stdin_buffer.process",
     "tui_input_component.edit",
+    "tui_native_modifiers.pressed",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "storage_journal.journal_read",

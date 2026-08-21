@@ -44,6 +44,7 @@
 ;;;;  31. tui_keybindings make-keybindings-manager vs KeybindingsManager / getKeybindings
 ;;;;  32. tui_stdin_buffer stdin-buffer-process vs StdinBuffer.process
 ;;;;  33. tui_input_component handle-event vs Input.handleInput
+;;;;  34. tui_native_modifiers is-native-modifier-pressed vs isNativeModifierPressed
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -139,6 +140,7 @@
     ("tui_keybindings.resolve_match" . 50)
     ("tui_stdin_buffer.process" . 50)
     ("tui_input_component.edit" . 50)
+    ("tui_native_modifiers.pressed" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3554,6 +3556,28 @@
                 (lambda ()
                   (run-tui-input-component)))))))
 
+(defun run-tui-native-modifiers ()
+  (list
+   (if (cadr-tui:is-native-modifier-pressed "shift") 1 0)
+   (if (cadr-tui:is-native-modifier-pressed "control") 1 0)
+   (if (cadr-tui:is-native-modifier-pressed "option") 1 0)
+   (if (cadr-tui:is-native-modifier-pressed "command") 1 0)))
+
+(defun measure-tui-native-modifiers ()
+  (let ((observed (run-tui-native-modifiers)))
+    (json-object
+     "observed"
+     (json-object
+      "shift" (first observed)
+      "control" (second observed)
+      "option" (third observed)
+      "command" (fourth observed))
+     "pressed"
+     (collect "tui_native_modifiers.pressed"
+              (lambda ()
+                (lambda ()
+                  (run-tui-native-modifiers)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3682,6 +3706,8 @@
       "src/cadr-tui/stdin-buffer.lisp stdin-buffer-process"
       "tui_input_component.edit"
       "src/cadr-tui/input-component.lisp single-line-input-handle-event"
+      "tui_native_modifiers.pressed"
+      "src/cadr-tui/native-modifiers.lisp is-native-modifier-pressed"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3821,6 +3847,8 @@
               (let ((stdin-buffer (measure-tui-stdin-buffer)))
               (format *error-output* "goal20 cadr paired paths: tui_input_component~%")
               (let ((input-component (measure-tui-input-component)))
+              (format *error-output* "goal20 cadr paired paths: tui_native_modifiers~%")
+              (let ((native-modifiers (measure-tui-native-modifiers)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3885,6 +3913,7 @@
               "tui_keybindings" keybindings
               "tui_stdin_buffer" stdin-buffer
               "tui_input_component" input-component
+              "tui_native_modifiers" native-modifiers
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -3901,7 +3930,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

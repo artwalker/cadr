@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_native_modifiers.pressed`
+  (shift/control/option/command; cadr
+  `is-native-modifier-pressed` vs pi
+  `isNativeModifierPressed`). Friend-MachineD n=5 **7.50×**
+  (1.22 / 0.16 µs), ceiling 8.0 (variance). Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_input_component.edit` (type /
   backspace / kill-to-start / yank; cadr
   `single-line-input-handle-event` vs pi

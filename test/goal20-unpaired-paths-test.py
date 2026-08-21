@@ -269,6 +269,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(input_component), 1)
         self.assertEqual(input_component[0]["class"], "paired")
         self.assertIn("tui_input_component.edit", input_component[0]["metrics"])
+        native_modifiers = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/native-modifiers.lisp"
+        ]
+        self.assertEqual(len(native_modifiers), 1)
+        self.assertEqual(native_modifiers[0]["class"], "paired")
+        self.assertIn("tui_native_modifiers.pressed", native_modifiers[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
