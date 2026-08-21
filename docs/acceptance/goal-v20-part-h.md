@@ -532,23 +532,25 @@ Item 3: this share is the Part K advanceable surface.
 Produced by `scripts/goal20-unpaired-paths.py` from
 `docs/benchmarks/goal20-unpaired-paths.json`. Do not edit the
 tables by hand. `--check` fails when a new `src/**/*.lisp` file
-is not reflected in the booked denominator, or when a prefix
-matches nothing.
+is not reflected in the booked denominator, when a prefix
+matches nothing, or when `pairable-uncovered` lines are not 0.
 
 Denominator: **295 files / 127,389 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
-| class | files | lines | share of lines | Part K |
+| class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
 | `paired` | 69 | 37,658 | 29.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `pairable-uncovered` | 202 | 82,256 | 64.6% | blocked by Part A hard condition 2 |
+| `covered-as-callee` | 17 | 12,786 | 10.0% | on a named paired thunk; no own bench |
+| `needs-pair` | 185 | 69,470 | 54.5% | must get an H pair; not a file-level idle bench |
+| `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 29.6% of lines (69 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 35.4% of lines.
-- **K-blocked** until a new pair or a booked unpairable finding: 64.6% of lines.
+- **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
-H does not require the paired ratios to be ≤ 1.0×; that is Part O.
+H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
 
 ### 6.1 Unpairable paths
 
@@ -570,14 +572,12 @@ inside otherwise-pairable tool execution).
 | cadr-server session-server contract | Baseline v0.84.1 rewrote packages/server; cadr-server still speaks the v0.83 session-server contract (goal 18 L1b pending adjudication). Same-input pairing is undefined until that alignment lands. | `src/cadr-server/config.lisp`<br>`src/cadr-server/handler.lisp`<br>`src/cadr-server/ipc.lisp`<br>`src/cadr-server/main.lisp`<br>`src/cadr-server/package.lisp`<br>`src/cadr-server/protocol.lisp`<br>`src/cadr-server/radius.lisp`<br>`src/cadr-server/rpc-process.lisp`<br>`src/cadr-server/storage.lisp`<br>`src/cadr-server/supervisor.lisp`<br>`src/cadr-server/types.lisp` |
 
 `src/cadr-agent/sqlite-storage.lisp` and `src/cadr-storage/` are
-**not** unpairable: the baseline ships `packages/session-backends/sqlite-node`,
-so SQLite is pairable and simply not covered yet.
+**not** unpairable: they own `sqlite_session.open_walk`.
 
 ### 6.2 Currently paired owners
 
 A file is `paired` when a live Part H or Goal 11 thunk names it as
-production work, not merely as a transitive callee. Callees that
-are not named stay `pairable-uncovered`.
+production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
@@ -651,100 +651,73 @@ are not named stay `pairable-uncovered`.
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/unicode.lisp` | 1,302 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 
-### 6.3 Pairable, not yet paired
+### 6.3 Covered as callee
 
-Grouped by directory. Every line here still has a baseline
-counterpart; large-scale Lisp-ification is blocked until a pair
-is added or the path is booked unpairable above.
+On a named paired thunk. No own bench (G.12).
 
-| module | files | lines |
+| file | lines | parent metrics |
+|---|---:|---|
+| `src/cadr-agent/package.lisp` | 456 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/models.generated.lisp` | 8,711 | `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/package.lisp` | 480 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/runtime/models.lisp` | 809 | `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/support/retry.lisp` | 178 | `provider_stream.stream_roundtrip` |
+| `src/cadr-ai/types.lisp` | 207 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
+| `src/cadr-cli/interactive/pending-messages.lisp` | 63 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/models/auth-storage.lisp` | 376 | `cli_dispatch.list_models_registry` |
+| `src/cadr-cli/package.lisp` | 289 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-core/package.lisp` | 43 | `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
+| `src/cadr-core/paths.lisp` | 95 | `cli_dispatch.list_models_registry` |
+| `src/cadr-core/time.lisp` | 133 | `session_pipeline.session_load`, `storage_journal.journal_read` |
+| `src/cadr-tui/components/status.lisp` | 253 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/package.lisp` | 355 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input`, `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
+| `src/cadr-tui/threads.lisp` | 6 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+
+### 6.4 Needs an H pair
+
+Same-path baseline counterpart, not on an existing timed stack.
+Grouped by hole. Do not invent a file-level idle bench.
+
+| hole | files | lines |
 |---|---:|---:|
-| `src/cadr-cli/interactive` | 27 | 16,379 |
-| `src/cadr-ai/models.generated.lisp` | 1 | 8,711 |
-| `src/cadr-cli/bootstrap` | 5 | 5,632 |
-| `src/cadr-tui/mermaid` | 12 | 5,042 |
-| `src/cadr-cli/extensions` | 9 | 3,489 |
-| `src/cadr-cli/sdk` | 8 | 2,471 |
-| `src/cadr-cli/modes` | 8 | 2,302 |
-| `src/cadr-cli/tools` | 7 | 2,166 |
-| `src/cadr-tui/latex.lisp` | 1 | 1,950 |
-| `src/cadr-cli/packages` | 2 | 1,811 |
-| `src/cadr-ai/oauth` | 10 | 1,786 |
-| `src/cadr-agent/storage` | 4 | 1,532 |
-| `src/cadr-ai/providers` | 3 | 1,494 |
-| `src/cadr-cli/models` | 4 | 1,472 |
-| `src/cadr-ai/runtime` | 2 | 1,410 |
-| `src/cadr-cli/media.lisp` | 1 | 1,277 |
-| `src/cadr-cli/support` | 13 | 1,164 |
-| `src/cadr-ai/support` | 7 | 908 |
-| `src/cadr-ai/transport` | 1 | 858 |
-| `src/cadr-agent/execution-env.lisp` | 1 | 855 |
-| `src/cadr-agent/schema.lisp` | 1 | 850 |
-| `src/cadr-ai/capabilities` | 6 | 751 |
-| `src/cadr-evals/harness.lisp` | 1 | 737 |
-| `src/cadr-evals/summary.lisp` | 1 | 732 |
-| `src/cadr-tui/composition` | 2 | 705 |
-| `src/cadr-tui/terminal-image.lisp` | 1 | 686 |
-| `src/cadr-ai/websocket.lisp` | 1 | 628 |
-| `src/cadr-protocol/schema.lisp` | 1 | 610 |
-| `src/cadr-agent/session` | 2 | 609 |
-| `src/cadr-tui/autocomplete.lisp` | 1 | 594 |
-| `src/cadr-tui/theme.lisp` | 1 | 562 |
-| `src/cadr-tui/components` | 2 | 558 |
-| `src/cadr-cli/migration.lisp` | 1 | 512 |
-| `src/cadr-protocol/cbor.lisp` | 1 | 492 |
-| `src/cadr-tui/overlay.lisp` | 1 | 485 |
-| `src/cadr-ai/package.lisp` | 1 | 480 |
-| `src/cadr-evals/suites.lisp` | 1 | 468 |
-| `src/cadr-agent/package.lisp` | 1 | 456 |
-| `src/cadr-agent/runtime.lisp` | 1 | 421 |
-| `src/cadr-ai/auth` | 3 | 410 |
-| `src/cadr-tui/input-component.lisp` | 1 | 408 |
-| `src/cadr-ai/model-data.lisp` | 1 | 407 |
-| `src/cadr-ai/crypto.lisp` | 1 | 367 |
-| `src/cadr-tui/package.lisp` | 1 | 355 |
-| `src/cadr-evals/harness-table.lisp` | 1 | 339 |
-| `src/cadr-evals/reporter.lisp` | 1 | 314 |
-| `src/cadr-cli/package.lisp` | 1 | 289 |
-| `src/cadr-ai/models.lisp` | 1 | 288 |
-| `src/cadr-cli/tool-manager.lisp` | 1 | 286 |
-| `src/cadr-cli/config.lisp` | 1 | 284 |
-| `src/cadr-tui/keybindings.lisp` | 1 | 268 |
-| `src/cadr-agent/proxy.lisp` | 1 | 251 |
-| `src/cadr-tui/stdin-buffer.lisp` | 1 | 232 |
-| `src/cadr-ai/images.lisp` | 1 | 222 |
-| `src/cadr-cli/settings` | 1 | 216 |
-| `src/cadr-ai/auth.lisp` | 1 | 207 |
-| `src/cadr-ai/types.lisp` | 1 | 207 |
-| `src/cadr-cli/output-accumulator.lisp` | 1 | 199 |
-| `src/cadr-tui/terminal-colors.lisp` | 1 | 191 |
-| `src/cadr-agent/branch-summarization.lisp` | 1 | 185 |
-| `src/cadr-ai/image-models.generated.lisp` | 1 | 185 |
-| `src/cadr-protocol/framing.lisp` | 1 | 170 |
-| `src/cadr-evals/artifacts.lisp` | 1 | 168 |
-| `src/cadr-evals/main.lisp` | 1 | 158 |
-| `src/cadr-tui/fuzzy.lisp` | 1 | 134 |
-| `src/cadr-core/time.lisp` | 1 | 133 |
-| `src/cadr-protocol/codec.lisp` | 1 | 121 |
-| `src/cadr-tui/word-navigation.lisp` | 1 | 118 |
-| `src/cadr-cli/repl.lisp` | 1 | 112 |
-| `src/cadr-core/atomic-file.lisp` | 1 | 106 |
-| `src/cadr-evals/package.lisp` | 1 | 100 |
-| `src/cadr-core/paths.lisp` | 1 | 95 |
-| `src/cadr-agent/file-mutation-queue.lisp` | 1 | 92 |
-| `src/cadr-tui/native-modifiers.lisp` | 1 | 78 |
-| `src/cadr-agent/harness-events.lisp` | 1 | 75 |
-| `src/cadr-core/cancellation.lisp` | 1 | 70 |
-| `src/cadr-cli/system-prompt.lisp` | 1 | 53 |
-| `src/cadr-core/threads.lisp` | 1 | 47 |
-| `src/cadr-ai/conditions.lisp` | 1 | 44 |
-| `src/cadr-core/redacted-print.lisp` | 1 | 44 |
-| `src/cadr-agent/conditions.lisp` | 1 | 43 |
-| `src/cadr-core/package.lisp` | 1 | 43 |
-| `src/cadr-tui/kill-ring.lisp` | 1 | 38 |
-| `src/cadr-protocol/package.lisp` | 1 | 33 |
-| `src/cadr-tui/undo-stack.lisp` | 1 | 20 |
-| `src/cadr-tui/threads.lisp` | 1 | 6 |
+| `cli_interactive_controller` | 11 | 8,044 |
+| `cli_selectors` | 14 | 7,982 |
+| `cli_bootstrap_sessions` | 6 | 5,428 |
+| `tui_mermaid` | 12 | 5,042 |
+| `agent_tool_loop` | 13 | 4,094 |
+| `cli_extensions_install` | 9 | 3,489 |
+| `evals_harness` | 8 | 3,016 |
+| `image_runtime` | 6 | 2,777 |
+| `oauth_pkce_device` | 14 | 2,403 |
+| `cli_print_rpc` | 8 | 2,302 |
+| `tui_latex` | 1 | 1,950 |
+| `tui_editor_helpers` | 9 | 1,890 |
+| `package_manager` | 2 | 1,811 |
+| `cli_sdk` | 5 | 1,712 |
+| `harness_storage` | 4 | 1,532 |
+| `settings_load` | 4 | 1,499 |
+| `provider_registry_defs` | 3 | 1,494 |
+| `protocol_cbor` | 5 | 1,426 |
+| `tui_theme_overlay` | 3 | 1,238 |
+| `cli_support` | 13 | 1,164 |
+| `cli_models_rest` | 3 | 1,096 |
+| `tui_select_settings_loaders` | 3 | 1,010 |
+| `http_transport` | 1 | 858 |
+| `agent_schema` | 1 | 850 |
+| `ai_crypto_model_data` | 2 | 774 |
+| `ai_support` | 6 | 730 |
+| `skill_prompt_load` | 3 | 641 |
+| `ai_capabilities` | 5 | 634 |
+| `websocket_stream` | 1 | 628 |
+| `ai_runtime_faux` | 1 | 601 |
+| `session_export_html` | 1 | 455 |
+| `core_rest` | 4 | 267 |
+| `agent_proxy` | 1 | 251 |
+| `session_compact` | 1 | 185 |
+| `session_discovery` | 1 | 154 |
+| `agent_conditions` | 1 | 43 |
 
 <!-- GOAL20_UNPAIRED_PATHS_END -->
 ## 7. Policy for unpaired paths

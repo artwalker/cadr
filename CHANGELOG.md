@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: unpaired-paths schema books
+  `covered-as-callee` and `needs-pair`. `--check`
+  requires `pairable-uncovered` lines = 0 (295 files /
+  127,389 lines; uncovered 82,256 → 0). No new
+  unpairable. No file-level idle bench. G.17 missing.
 - Goal 20: user pause on circling invent (2026-08-21).
   Walker remains `0084f0703` / load ~1763 µs. G.17 stays
   missing. Resume only with a concrete algorithm/DS

@@ -41,23 +41,34 @@ class TestClassify(unittest.TestCase):
     def test_inventory_classifies_the_locked_tree(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
         classified = MODULE.classify_tree(ROOT, inventory)
-        self.assertEqual(classified["files"], 293)
-        self.assertEqual(classified["lines"], 120897)
+        self.assertEqual(classified["files"], inventory["denominator"]["files"])
+        self.assertEqual(classified["lines"], inventory["denominator"]["lines"])
         totals = classified["totals"]
         self.assertEqual(
             totals["paired"]["files"]
             + totals["unpairable"]["files"]
+            + totals["covered-as-callee"]["files"]
+            + totals["needs-pair"]["files"]
             + totals["pairable-uncovered"]["files"],
-            293,
+            classified["files"],
         )
-        self.assertGreater(totals["pairable-uncovered"]["lines"], totals["paired"]["lines"])
+        self.assertEqual(totals["pairable-uncovered"]["lines"], 0)
         sqlite = [
             row
             for row in classified["rows"]
             if row["path"] == "src/cadr-agent/sqlite-storage.lisp"
         ]
         self.assertEqual(len(sqlite), 1)
-        self.assertEqual(sqlite[0]["class"], "pairable-uncovered")
+        self.assertEqual(sqlite[0]["class"], "paired")
+        self.assertIn("sqlite_session.open_walk", sqlite[0]["metrics"])
+
+    def test_booked_classes_include_callee_and_needs_pair(self) -> None:
+        inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)
+        classified = MODULE.classify_tree(ROOT, inventory)
+        classes = {row["class"] for row in classified["rows"]}
+        self.assertIn("covered-as-callee", classes)
+        self.assertIn("needs-pair", classes)
+        self.assertNotIn("pairable-uncovered", classes)
 
     def test_stale_denominator_fails_closed(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

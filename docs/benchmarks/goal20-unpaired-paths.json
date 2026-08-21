@@ -603,6 +603,1075 @@
     "goal11.wheel",
     "goal11.continuous_alt_input"
    ]
+  },
+  {
+   "prefix": "src/cadr-agent/branch-summarization.lisp",
+   "class": "needs-pair",
+   "hole": "session_compact"
+  },
+  {
+   "prefix": "src/cadr-agent/conditions.lisp",
+   "class": "needs-pair",
+   "hole": "agent_conditions"
+  },
+  {
+   "prefix": "src/cadr-agent/execution-env.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-agent/file-mutation-queue.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-agent/harness-events.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-agent/package.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "session_pipeline.session_load",
+    "session_pipeline.context_walk",
+    "storage_journal.journal_read",
+    "storage_journal.journal_append"
+   ]
+  },
+  {
+   "prefix": "src/cadr-agent/proxy.lisp",
+   "class": "needs-pair",
+   "hole": "agent_proxy"
+  },
+  {
+   "prefix": "src/cadr-agent/runtime.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-agent/schema.lisp",
+   "class": "needs-pair",
+   "hole": "agent_schema"
+  },
+  {
+   "prefix": "src/cadr-agent/session/discovery.lisp",
+   "class": "needs-pair",
+   "hole": "session_discovery"
+  },
+  {
+   "prefix": "src/cadr-agent/session/export-html.lisp",
+   "class": "needs-pair",
+   "hole": "session_export_html"
+  },
+  {
+   "prefix": "src/cadr-agent/storage/harness.lisp",
+   "class": "needs-pair",
+   "hole": "harness_storage"
+  },
+  {
+   "prefix": "src/cadr-agent/storage/jsonl.lisp",
+   "class": "needs-pair",
+   "hole": "harness_storage"
+  },
+  {
+   "prefix": "src/cadr-agent/storage/memory.lisp",
+   "class": "needs-pair",
+   "hole": "harness_storage"
+  },
+  {
+   "prefix": "src/cadr-agent/storage/protocol.lisp",
+   "class": "needs-pair",
+   "hole": "harness_storage"
+  },
+  {
+   "prefix": "src/cadr-ai/auth/device-code.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/auth/github-copilot.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/auth/radius-cloudflare.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/auth.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/capabilities/event-stream.lisp",
+   "class": "needs-pair",
+   "hole": "ai_capabilities"
+  },
+  {
+   "prefix": "src/cadr-ai/capabilities/grammar-tools.lisp",
+   "class": "needs-pair",
+   "hole": "ai_capabilities"
+  },
+  {
+   "prefix": "src/cadr-ai/capabilities/image-runtime.lisp",
+   "class": "needs-pair",
+   "hole": "image_runtime"
+  },
+  {
+   "prefix": "src/cadr-ai/capabilities/proxy-config.lisp",
+   "class": "needs-pair",
+   "hole": "ai_capabilities"
+  },
+  {
+   "prefix": "src/cadr-ai/capabilities/session-resources.lisp",
+   "class": "needs-pair",
+   "hole": "ai_capabilities"
+  },
+  {
+   "prefix": "src/cadr-ai/capabilities/streaming-json.lisp",
+   "class": "needs-pair",
+   "hole": "ai_capabilities"
+  },
+  {
+   "prefix": "src/cadr-ai/conditions.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "provider_stream.stream_roundtrip",
+    "cli_dispatch.list_models_registry"
+   ]
+  },
+  {
+   "prefix": "src/cadr-ai/crypto.lisp",
+   "class": "needs-pair",
+   "hole": "ai_crypto_model_data"
+  },
+  {
+   "prefix": "src/cadr-ai/image-models.generated.lisp",
+   "class": "needs-pair",
+   "hole": "image_runtime"
+  },
+  {
+   "prefix": "src/cadr-ai/images.lisp",
+   "class": "needs-pair",
+   "hole": "image_runtime"
+  },
+  {
+   "prefix": "src/cadr-ai/model-data.lisp",
+   "class": "needs-pair",
+   "hole": "ai_crypto_model_data"
+  },
+  {
+   "prefix": "src/cadr-ai/models.generated.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ]
+  },
+  {
+   "prefix": "src/cadr-ai/models.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ]
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/callback.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/openai-anthropic.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/pkce.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/providers/anthropic.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/providers/github-copilot.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/providers/kimi.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/providers/radius.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/oauth/providers/xai.lisp",
+   "class": "needs-pair",
+   "hole": "oauth_pkce_device"
+  },
+  {
+   "prefix": "src/cadr-ai/package.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "provider_stream.stream_roundtrip",
+    "session_pipeline.session_load",
+    "cli_dispatch.list_models_registry"
+   ]
+  },
+  {
+   "prefix": "src/cadr-ai/providers/definitions.lisp",
+   "class": "needs-pair",
+   "hole": "provider_registry_defs"
+  },
+  {
+   "prefix": "src/cadr-ai/providers/registry.lisp",
+   "class": "needs-pair",
+   "hole": "provider_registry_defs"
+  },
+  {
+   "prefix": "src/cadr-ai/providers/runtime-projection.lisp",
+   "class": "needs-pair",
+   "hole": "provider_registry_defs"
+  },
+  {
+   "prefix": "src/cadr-ai/runtime/faux-provider.lisp",
+   "class": "needs-pair",
+   "hole": "ai_runtime_faux"
+  },
+  {
+   "prefix": "src/cadr-ai/runtime/models.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ]
+  },
+  {
+   "prefix": "src/cadr-ai/support/grammar-coercion.lisp",
+   "class": "needs-pair",
+   "hole": "ai_support"
+  },
+  {
+   "prefix": "src/cadr-ai/support/overflow.lisp",
+   "class": "needs-pair",
+   "hole": "ai_support"
+  },
+  {
+   "prefix": "src/cadr-ai/support/release.lisp",
+   "class": "needs-pair",
+   "hole": "ai_support"
+  },
+  {
+   "prefix": "src/cadr-ai/support/retry.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "provider_stream.stream_roundtrip"
+   ]
+  },
+  {
+   "prefix": "src/cadr-ai/support/threads.lisp",
+   "class": "needs-pair",
+   "hole": "ai_support"
+  },
+  {
+   "prefix": "src/cadr-ai/support/token-estimation.lisp",
+   "class": "needs-pair",
+   "hole": "ai_support"
+  },
+  {
+   "prefix": "src/cadr-ai/support/uuid.lisp",
+   "class": "needs-pair",
+   "hole": "ai_support"
+  },
+  {
+   "prefix": "src/cadr-ai/transport/http.lisp",
+   "class": "needs-pair",
+   "hole": "http_transport"
+  },
+  {
+   "prefix": "src/cadr-ai/types.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "provider_stream.stream_roundtrip",
+    "session_pipeline.session_load"
+   ]
+  },
+  {
+   "prefix": "src/cadr-ai/websocket.lisp",
+   "class": "needs-pair",
+   "hole": "websocket_stream"
+  },
+  {
+   "prefix": "src/cadr-cli/bootstrap/auth.lisp",
+   "class": "needs-pair",
+   "hole": "cli_bootstrap_sessions"
+  },
+  {
+   "prefix": "src/cadr-cli/bootstrap/commands.lisp",
+   "class": "needs-pair",
+   "hole": "cli_bootstrap_sessions"
+  },
+  {
+   "prefix": "src/cadr-cli/bootstrap/sessions.lisp",
+   "class": "needs-pair",
+   "hole": "cli_bootstrap_sessions"
+  },
+  {
+   "prefix": "src/cadr-cli/bootstrap/settings.lisp",
+   "class": "needs-pair",
+   "hole": "settings_load"
+  },
+  {
+   "prefix": "src/cadr-cli/bootstrap/tools.lisp",
+   "class": "needs-pair",
+   "hole": "cli_bootstrap_sessions"
+  },
+  {
+   "prefix": "src/cadr-cli/config.lisp",
+   "class": "needs-pair",
+   "hole": "settings_load"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/commands.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/discovery.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/installer.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/llama/client.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/llama/extension.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/llama/huggingface.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/llama/provider.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/llama/ui.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/extensions/loader.lisp",
+   "class": "needs-pair",
+   "hole": "cli_extensions_install"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/autocomplete.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/clipboard.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/components/announcement.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/components/armin.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/components/countdown.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/components/loaders.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/controller.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/extension-ui.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/footer.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/images.lisp",
+   "class": "needs-pair",
+   "hole": "image_runtime"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/pending-messages.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/auth.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/common.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/fork.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/login-dialog.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/models.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/sessions.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/settings.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/tree.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/selectors/trust.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/syntax.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/theme.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/themes.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/tool-render-session.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/transcript.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/interactive/user-bash.lisp",
+   "class": "needs-pair",
+   "hole": "cli_interactive_controller"
+  },
+  {
+   "prefix": "src/cadr-cli/media.lisp",
+   "class": "needs-pair",
+   "hole": "image_runtime"
+  },
+  {
+   "prefix": "src/cadr-cli/migration.lisp",
+   "class": "needs-pair",
+   "hole": "cli_bootstrap_sessions"
+  },
+  {
+   "prefix": "src/cadr-cli/models/auth-storage.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/models/credential-print.lisp",
+   "class": "needs-pair",
+   "hole": "cli_models_rest"
+  },
+  {
+   "prefix": "src/cadr-cli/models/login-selection.lisp",
+   "class": "needs-pair",
+   "hole": "cli_models_rest"
+  },
+  {
+   "prefix": "src/cadr-cli/models/matching.lisp",
+   "class": "needs-pair",
+   "hole": "cli_models_rest"
+  },
+  {
+   "prefix": "src/cadr-cli/modes/print.lisp",
+   "class": "needs-pair",
+   "hole": "cli_print_rpc"
+  },
+  {
+   "prefix": "src/cadr-cli/modes/rpc/commands.lisp",
+   "class": "needs-pair",
+   "hole": "cli_print_rpc"
+  },
+  {
+   "prefix": "src/cadr-cli/modes/rpc/jsonl.lisp",
+   "class": "needs-pair",
+   "hole": "cli_print_rpc"
+  },
+  {
+   "prefix": "src/cadr-cli/modes/rpc/mode.lisp",
+   "class": "needs-pair",
+   "hole": "cli_print_rpc"
+  },
+  {
+   "prefix": "src/cadr-cli/modes/rpc/models.lisp",
+   "class": "needs-pair",
+   "hole": "cli_print_rpc"
+  },
+  {
+   "prefix": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
+   "class": "needs-pair",
+   "hole": "cli_print_rpc"
+  },
+  {
+   "prefix": "src/cadr-cli/modes/rpc/sessions.lisp",
+   "class": "needs-pair",
+   "hole": "cli_print_rpc"
+  },
+  {
+   "prefix": "src/cadr-cli/modes/rpc/ui.lisp",
+   "class": "needs-pair",
+   "hole": "cli_print_rpc"
+  },
+  {
+   "prefix": "src/cadr-cli/output-accumulator.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/package.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.argv_parse",
+    "cli_dispatch.help_render",
+    "cli_dispatch.list_models_registry",
+    "cli_dispatch.list_models_render",
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ]
+  },
+  {
+   "prefix": "src/cadr-cli/packages/config-selector.lisp",
+   "class": "needs-pair",
+   "hole": "package_manager"
+  },
+  {
+   "prefix": "src/cadr-cli/packages/update-checks.lisp",
+   "class": "needs-pair",
+   "hole": "package_manager"
+  },
+  {
+   "prefix": "src/cadr-cli/repl.lisp",
+   "class": "needs-pair",
+   "hole": "cli_bootstrap_sessions"
+  },
+  {
+   "prefix": "src/cadr-cli/sdk/agent-session.lisp",
+   "class": "needs-pair",
+   "hole": "cli_sdk"
+  },
+  {
+   "prefix": "src/cadr-cli/sdk/cache-version.lisp",
+   "class": "needs-pair",
+   "hole": "cli_sdk"
+  },
+  {
+   "prefix": "src/cadr-cli/sdk/model-service.lisp",
+   "class": "needs-pair",
+   "hole": "cli_sdk"
+  },
+  {
+   "prefix": "src/cadr-cli/sdk/resource-service.lisp",
+   "class": "needs-pair",
+   "hole": "skill_prompt_load"
+  },
+  {
+   "prefix": "src/cadr-cli/sdk/session-manager.lisp",
+   "class": "needs-pair",
+   "hole": "cli_sdk"
+  },
+  {
+   "prefix": "src/cadr-cli/sdk/session-runtime.lisp",
+   "class": "needs-pair",
+   "hole": "cli_sdk"
+  },
+  {
+   "prefix": "src/cadr-cli/sdk/settings-service.lisp",
+   "class": "needs-pair",
+   "hole": "settings_load"
+  },
+  {
+   "prefix": "src/cadr-cli/sdk/system-prompt.lisp",
+   "class": "needs-pair",
+   "hole": "skill_prompt_load"
+  },
+  {
+   "prefix": "src/cadr-cli/settings/trust.lisp",
+   "class": "needs-pair",
+   "hole": "settings_load"
+  },
+  {
+   "prefix": "src/cadr-cli/support/atomic-write.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/changelog-share.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/event-bus.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/external-editor.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/file-watcher.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/headers.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/html.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/model-help.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/paths.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/resume-version-git.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/shell-process.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/threads.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/support/timings.lisp",
+   "class": "needs-pair",
+   "hole": "cli_support"
+  },
+  {
+   "prefix": "src/cadr-cli/system-prompt.lisp",
+   "class": "needs-pair",
+   "hole": "skill_prompt_load"
+  },
+  {
+   "prefix": "src/cadr-cli/tool-manager.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/tools/bash.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/tools/edit.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/tools/find.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/tools/glob.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/tools/ls.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/tools/path.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/tools/write.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-core/atomic-file.lisp",
+   "class": "needs-pair",
+   "hole": "core_rest"
+  },
+  {
+   "prefix": "src/cadr-core/cancellation.lisp",
+   "class": "needs-pair",
+   "hole": "core_rest"
+  },
+  {
+   "prefix": "src/cadr-core/package.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "session_pipeline.session_load",
+    "cli_dispatch.list_models_registry"
+   ]
+  },
+  {
+   "prefix": "src/cadr-core/paths.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "cli_dispatch.list_models_registry"
+   ]
+  },
+  {
+   "prefix": "src/cadr-core/redacted-print.lisp",
+   "class": "needs-pair",
+   "hole": "core_rest"
+  },
+  {
+   "prefix": "src/cadr-core/threads.lisp",
+   "class": "needs-pair",
+   "hole": "core_rest"
+  },
+  {
+   "prefix": "src/cadr-core/time.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "session_pipeline.session_load",
+    "storage_journal.journal_read"
+   ]
+  },
+  {
+   "prefix": "src/cadr-evals/artifacts.lisp",
+   "class": "needs-pair",
+   "hole": "evals_harness"
+  },
+  {
+   "prefix": "src/cadr-evals/harness-table.lisp",
+   "class": "needs-pair",
+   "hole": "evals_harness"
+  },
+  {
+   "prefix": "src/cadr-evals/harness.lisp",
+   "class": "needs-pair",
+   "hole": "evals_harness"
+  },
+  {
+   "prefix": "src/cadr-evals/main.lisp",
+   "class": "needs-pair",
+   "hole": "evals_harness"
+  },
+  {
+   "prefix": "src/cadr-evals/package.lisp",
+   "class": "needs-pair",
+   "hole": "evals_harness"
+  },
+  {
+   "prefix": "src/cadr-evals/reporter.lisp",
+   "class": "needs-pair",
+   "hole": "evals_harness"
+  },
+  {
+   "prefix": "src/cadr-evals/suites.lisp",
+   "class": "needs-pair",
+   "hole": "evals_harness"
+  },
+  {
+   "prefix": "src/cadr-evals/summary.lisp",
+   "class": "needs-pair",
+   "hole": "evals_harness"
+  },
+  {
+   "prefix": "src/cadr-protocol/cbor.lisp",
+   "class": "needs-pair",
+   "hole": "protocol_cbor"
+  },
+  {
+   "prefix": "src/cadr-protocol/codec.lisp",
+   "class": "needs-pair",
+   "hole": "protocol_cbor"
+  },
+  {
+   "prefix": "src/cadr-protocol/framing.lisp",
+   "class": "needs-pair",
+   "hole": "protocol_cbor"
+  },
+  {
+   "prefix": "src/cadr-protocol/package.lisp",
+   "class": "needs-pair",
+   "hole": "protocol_cbor"
+  },
+  {
+   "prefix": "src/cadr-protocol/schema.lisp",
+   "class": "needs-pair",
+   "hole": "protocol_cbor"
+  },
+  {
+   "prefix": "src/cadr-tui/autocomplete.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
+  },
+  {
+   "prefix": "src/cadr-tui/components/select-list.lisp",
+   "class": "needs-pair",
+   "hole": "tui_select_settings_loaders"
+  },
+  {
+   "prefix": "src/cadr-tui/components/status.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ]
+  },
+  {
+   "prefix": "src/cadr-tui/composition/loaders.lisp",
+   "class": "needs-pair",
+   "hole": "tui_select_settings_loaders"
+  },
+  {
+   "prefix": "src/cadr-tui/composition/settings-list.lisp",
+   "class": "needs-pair",
+   "hole": "tui_select_settings_loaders"
+  },
+  {
+   "prefix": "src/cadr-tui/fuzzy.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
+  },
+  {
+   "prefix": "src/cadr-tui/input-component.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
+  },
+  {
+   "prefix": "src/cadr-tui/keybindings.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
+  },
+  {
+   "prefix": "src/cadr-tui/kill-ring.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
+  },
+  {
+   "prefix": "src/cadr-tui/latex.lisp",
+   "class": "needs-pair",
+   "hole": "tui_latex"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/ansi.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/canvas.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/graph.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/index.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/labels.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/layout-seq.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/layout.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/parse.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/source-box.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/transform.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/width-data.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/mermaid/width.lisp",
+   "class": "needs-pair",
+   "hole": "tui_mermaid"
+  },
+  {
+   "prefix": "src/cadr-tui/native-modifiers.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
+  },
+  {
+   "prefix": "src/cadr-tui/overlay.lisp",
+   "class": "needs-pair",
+   "hole": "tui_theme_overlay"
+  },
+  {
+   "prefix": "src/cadr-tui/package.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input",
+    "render_slicing.slice_ansi_clip",
+    "render_slicing.slice_plain_clip"
+   ]
+  },
+  {
+   "prefix": "src/cadr-tui/stdin-buffer.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
+  },
+  {
+   "prefix": "src/cadr-tui/terminal-colors.lisp",
+   "class": "needs-pair",
+   "hole": "tui_theme_overlay"
+  },
+  {
+   "prefix": "src/cadr-tui/terminal-image.lisp",
+   "class": "needs-pair",
+   "hole": "image_runtime"
+  },
+  {
+   "prefix": "src/cadr-tui/theme.lisp",
+   "class": "needs-pair",
+   "hole": "tui_theme_overlay"
+  },
+  {
+   "prefix": "src/cadr-tui/threads.lisp",
+   "class": "covered-as-callee",
+   "metrics": [
+    "goal11.mouse_drag",
+    "goal11.wheel",
+    "goal11.continuous_alt_input"
+   ]
+  },
+  {
+   "prefix": "src/cadr-tui/undo-stack.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
+  },
+  {
+   "prefix": "src/cadr-tui/word-navigation.lisp",
+   "class": "needs-pair",
+   "hole": "tui_editor_helpers"
   }
  ]
 }

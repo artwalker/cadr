@@ -5,9 +5,11 @@ A file with no same-path baseline counterpart may use the single reference
 "no worse than cadr before the change". That finding has to be booked here;
 declaring it at the rewrite site does not discharge the evidence burden.
 
-Files the timed thunks actually own are `paired`. Everything else that still
-has a baseline counterpart is `pairable-uncovered` (Part K blocked by Part A
-hard condition 2 until a pair exists). `unpairable` is the booked exception.
+Files the timed thunks actually own are `paired`. Callees on those
+timed stacks are `covered-as-callee`. Remaining same-path baseline
+counterparts are `needs-pair` (must get an H pair later, not a
+file-level idle bench). `unpairable` is the booked exception.
+P.13 closes when `pairable-uncovered` line share is 0%.
 
 usage:
   python3 scripts/goal20-unpaired-paths.py --check
@@ -27,7 +29,12 @@ INVENTORY_PATH = PROJECT_DIRECTORY / "docs/benchmarks/goal20-unpaired-paths.json
 LEDGER_PATH = PROJECT_DIRECTORY / "docs/acceptance/goal-v20-part-h.md"
 START = "<!-- GOAL20_UNPAIRED_PATHS_START -->"
 END = "<!-- GOAL20_UNPAIRED_PATHS_END -->"
-VALID_CLASSES = frozenset(("paired", "unpairable", "pairable-uncovered"))
+VALID_CLASSES = frozenset(
+    ("paired", "unpairable", "covered-as-callee", "needs-pair", "pairable-uncovered")
+)
+BOOKED_RULE_CLASSES = frozenset(
+    ("paired", "unpairable", "covered-as-callee", "needs-pair")
+)
 
 
 class GateError(Exception):
@@ -75,9 +82,10 @@ def load_inventory(path: Path) -> dict:
         klass = rule.get("class")
         if not isinstance(prefix, str) or not prefix.startswith("src/"):
             raise GateError(f"fileRules[{index}].prefix must start with src/")
-        if klass not in ("paired", "unpairable"):
+        if klass not in BOOKED_RULE_CLASSES:
             raise GateError(
-                f"fileRules[{index}].class must be paired or unpairable "
+                f"fileRules[{index}].class must be paired, unpairable, "
+                "covered-as-callee, or needs-pair "
                 "(unmatched files default to pairable-uncovered)"
             )
         if klass == "unpairable":
@@ -86,15 +94,19 @@ def load_inventory(path: Path) -> dict:
                 raise GateError(
                     f"fileRules[{index}].pathId {path_id!r} is not in unpairablePaths"
                 )
-        if klass == "paired":
+        if klass in ("paired", "covered-as-callee"):
             listed = rule.get("metrics")
             if not isinstance(listed, list) or not listed:
-                raise GateError(f"fileRules[{index}] paired rule needs metrics")
+                raise GateError(f"fileRules[{index}] {klass} rule needs metrics")
             unknown = [item for item in listed if item not in metrics]
             if unknown:
                 raise GateError(
                     f"fileRules[{index}] unknown metrics: {unknown}"
                 )
+        if klass == "needs-pair":
+            hole = rule.get("hole")
+            if not isinstance(hole, str) or not hole:
+                raise GateError(f"fileRules[{index}] needs-pair rule needs hole")
     return document
 
 
@@ -123,12 +135,19 @@ def classify(relative: str, rules: list[dict]) -> dict:
                 best = rule
                 best_len = len(prefix)
     if best is None:
-        return {"class": "pairable-uncovered", "prefix": "", "metrics": [], "pathId": None}
+        return {
+            "class": "pairable-uncovered",
+            "prefix": "",
+            "metrics": [],
+            "pathId": None,
+            "hole": None,
+        }
     return {
         "class": best["class"],
         "prefix": best["prefix"],
         "metrics": list(best.get("metrics") or []),
         "pathId": best.get("pathId"),
+        "hole": best.get("hole"),
     }
 
 
@@ -161,6 +180,7 @@ def classify_tree(root: Path, inventory: dict) -> dict:
                 "class": klass,
                 "metrics": decision["metrics"],
                 "pathId": decision["pathId"],
+                "hole": decision.get("hole"),
             }
         )
         totals[klass]["files"] += 1
@@ -201,6 +221,8 @@ def render_section(inventory: dict, classified: dict) -> str:
     lines = classified["lines"]
     paired = totals["paired"]
     unpairable = totals["unpairable"]
+    callee = totals["covered-as-callee"]
+    needs = totals["needs-pair"]
     uncovered = totals["pairable-uncovered"]
     advanceable = paired["lines"] + unpairable["lines"]
     rows = [
@@ -209,25 +231,27 @@ def render_section(inventory: dict, classified: dict) -> str:
         "Produced by `scripts/goal20-unpaired-paths.py` from",
         "`docs/benchmarks/goal20-unpaired-paths.json`. Do not edit the",
         "tables by hand. `--check` fails when a new `src/**/*.lisp` file",
-        "is not reflected in the booked denominator, or when a prefix",
-        "matches nothing.",
+        "is not reflected in the booked denominator, when a prefix",
+        "matches nothing, or when `pairable-uncovered` lines are not 0.",
         "",
         f"Denominator: **{classified['files']} files / {classified['lines']:,} lines**",
         "(same Part I lock: `src/**/*.lisp`, `wc -l`).",
         "",
-        "| class | files | lines | share of lines | Part K |",
+        "| class | files | lines | share of lines | Part K / P.13 |",
         "|---|---:|---:|---:|---|",
         f"| `paired` | {paired['files']} | {paired['lines']:,} | {percent(paired['lines'], lines)} | `no worse than baseline` is falsifiable |",
         f"| `unpairable` | {unpairable['files']} | {unpairable['lines']:,} | {percent(unpairable['lines'], lines)} | single reference vs previous cadr |",
-        f"| `pairable-uncovered` | {uncovered['files']} | {uncovered['lines']:,} | {percent(uncovered['lines'], lines)} | blocked by Part A hard condition 2 |",
+        f"| `covered-as-callee` | {callee['files']} | {callee['lines']:,} | {percent(callee['lines'], lines)} | on a named paired thunk; no own bench |",
+        f"| `needs-pair` | {needs['files']} | {needs['lines']:,} | {percent(needs['lines'], lines)} | must get an H pair; not a file-level idle bench |",
+        f"| `pairable-uncovered` | {uncovered['files']} | {uncovered['lines']:,} | {percent(uncovered['lines'], lines)} | P.13 requires 0% |",
         "",
         f"- **Falsifiable vs baseline:** {percent(paired['lines'], lines)} of lines "
         f"({paired['files']} files). This is the share whose `no worse than baseline` claim is a measured pair.",
         f"- **K-advanceable** (paired ∪ unpairable): {percent(advanceable, lines)} of lines.",
-        f"- **K-blocked** until a new pair or a booked unpairable finding: "
-        f"{percent(uncovered['lines'], lines)} of lines.",
+        f"- **P.13 `pairable-uncovered`:** {percent(uncovered['lines'], lines)} of lines "
+        f"(must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.",
         "",
-        "H does not require the paired ratios to be ≤ 1.0×; that is Part O.",
+        "H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.",
         "",
         "### 6.1 Unpairable paths",
         "",
@@ -256,14 +280,12 @@ def render_section(inventory: dict, classified: dict) -> str:
         [
             "",
             "`src/cadr-agent/sqlite-storage.lisp` and `src/cadr-storage/` are",
-            "**not** unpairable: the baseline ships `packages/session-backends/sqlite-node`,",
-            "so SQLite is pairable and simply not covered yet.",
+            "**not** unpairable: they own `sqlite_session.open_walk`.",
             "",
             "### 6.2 Currently paired owners",
             "",
             "A file is `paired` when a live Part H or Goal 11 thunk names it as",
-            "production work, not merely as a transitive callee. Callees that",
-            "are not named stay `pairable-uncovered`.",
+            "production work, not merely as a transitive callee.",
             "",
             "| file | lines | metrics |",
             "|---|---:|---|",
@@ -277,21 +299,38 @@ def render_section(inventory: dict, classified: dict) -> str:
     rows.extend(
         [
             "",
-            "### 6.3 Pairable, not yet paired",
+            "### 6.3 Covered as callee",
             "",
-            "Grouped by directory. Every line here still has a baseline",
-            "counterpart; large-scale Lisp-ification is blocked until a pair",
-            "is added or the path is booked unpairable above.",
+            "On a named paired thunk. No own bench (G.12).",
             "",
-            "| module | files | lines |",
+            "| file | lines | parent metrics |",
+            "|---|---:|---|",
+        ]
+    )
+    callee_rows = [
+        row for row in classified["rows"] if row["class"] == "covered-as-callee"
+    ]
+    callee_rows.sort(key=lambda row: row["path"])
+    for row in callee_rows:
+        metrics = ", ".join(f"`{item}`" for item in row["metrics"])
+        rows.append(f"| `{row['path']}` | {row['lines']:,} | {metrics} |")
+    rows.extend(
+        [
+            "",
+            "### 6.4 Needs an H pair",
+            "",
+            "Same-path baseline counterpart, not on an existing timed stack.",
+            "Grouped by hole. Do not invent a file-level idle bench.",
+            "",
+            "| hole | files | lines |",
             "|---|---:|---:|",
         ]
     )
     grouped: dict[str, list[int]] = defaultdict(lambda: [0, 0])
     for row in classified["rows"]:
-        if row["class"] != "pairable-uncovered":
+        if row["class"] != "needs-pair":
             continue
-        key = module_key(row["path"])
+        key = row.get("hole") or module_key(row["path"])
         grouped[key][0] += 1
         grouped[key][1] += row["lines"]
     for key, counts in sorted(grouped.items(), key=lambda item: (-item[1][1], item[0])):
@@ -348,6 +387,13 @@ def main() -> int:
     inventory = load_inventory(args.inventory)
     try:
         classified = classify_tree(root, inventory)
+        uncovered_lines = classified["totals"]["pairable-uncovered"]["lines"]
+        if uncovered_lines:
+            raise GateError(
+                "pairable-uncovered lines must be 0 after P.13 schema "
+                f"(got {uncovered_lines}). Book the file as paired, "
+                "covered-as-callee, needs-pair, or an existing unpairable path."
+            )
         if args.write:
             write_ledger(root, inventory, classified)
         if args.check or not args.write:
@@ -361,6 +407,8 @@ def main() -> int:
         f"files={classified['files']} lines={classified['lines']} "
         f"paired={totals['paired']['lines']} "
         f"unpairable={totals['unpairable']['lines']} "
+        f"callee={totals['covered-as-callee']['lines']} "
+        f"needs-pair={totals['needs-pair']['lines']} "
         f"uncovered={totals['pairable-uncovered']['lines']}"
     )
     return 0

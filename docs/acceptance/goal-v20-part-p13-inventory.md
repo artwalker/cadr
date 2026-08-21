@@ -31,9 +31,9 @@ Denominator: **295 files / 126,497 lines**
 | `needs-pair` | 219 | 81,344 | 64.3% |
 | `pairable-uncovered` | 0 | 0 | 0.0% |
 
-H JSON still reports `pairable-uncovered` until the schema knife
-copies this inventory. `--check` of the old three-class table is
-unchanged on this commit.
+H JSON + `--check` now book `covered-as-callee` and
+`needs-pair`. `pairable-uncovered` line share is 0%.
+Not G.17 `met`.
 
 ## Required needs-pair holes
 
