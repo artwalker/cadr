@@ -42,7 +42,7 @@ FFI.**
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.1 JSON read | leftover | Load ~1.15× (cadr ~1879 µs). **Next: knife 1** (high-byte on quote-scan + check-less ASCII copy); then knife 2 (content shape fast-path). Do not redo bag-reuse / 三连. Not FFI. | adjudications 2026-08-21 ban scope + knives 1/2. Not G.17. |
+| P.1 JSON read | leftover | Walker `0084f0703` / Friend-MachineD load **~1763 µs** (~1.11×). Invent **paused** (user 2026-08-21). Do not redo: knife 1, A/D/E, bag, first-byte family, single-block shortcut, usage ASCII number (`56ef6f06a` 1763→1951), intern length-gate, fill-kernel, WRITE-JSON-STRING unescaped, `:json-object` pairs, pre-size EQUAL hash. Resume only with algorithm/DS + allocation story. | leftover 文首; adjudications stop circling / essence over phenomena; 十B.17–18. Not G.17. |
 | P.2 JSON write | number | typed emit + reused journal fd + schema octet emit. this-host create+128 append 4069 µs / 1,273,115 B → 1311 µs / 185,013 B | this knife. Bytes match stringify. Not intern. Not FFI. |
 | P.3 list_models_render | number | available-models cached on registry. this-host 2189→199 µs; pairing 1.57×→0.06×, cadr 2088→97 µs | remesure `8d7917472`. |
 | P.4 help / argv / walk | number | remesure `b7f1f7de0`: argv 0.98× (3.0 / 3.1 µs). `cli-token-tail=` now `schar`; this-host 3.0→1.96 µs | this knife for argv. Not intern. |
@@ -50,7 +50,7 @@ FFI.**
 | P.5 declarations | number | folded into P.1 / P.2 | `safety` unchanged. |
 | P.6 alloc | number | stream 2,350,697 B; snake overlay 39,963 B; ttt overlay 47,819 B | ttt visual-board stream rewrite. |
 | P.7 H pairing | leftover | P.13 reopens remaining `needs-pair`. Existing 16 named metrics stay. Not 148 file benches. | user 2026-08-19 18:30 |
-| P.8 three games | number | user 2026-08-18 18:09 deferred live play; reopen if a defect appears | Overlay: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. Not FiveAM. |
+| P.8 three games | number | user 2026-08-21: stay deferred; report later if defects. Not a Goal 20 stop. | Overlay: ttt `edb9d6dca`, snake/invaders `f3ccf75f6`. Not FiveAM. |
 | P.9 live image | number | 1 runbook, 2 paths | `docs/runbooks/live-image.md`: disk `/reload`; host rebuild. Rechecked this turn. |
 | P.10 input-to-screen | number | key→overlay 0.050 ms, spinner=NIL, thinking=NIL | This host, 80× snake key+render after `f3ccf75f6`. |
 | P.11 tool restarts | number | 14/14 FiveAM, fail=0 | this turn: retry 7 + skip 3 + abort 4 (`tool-loop-test.lisp`). |
@@ -76,12 +76,13 @@ Not `parse-json-octets`. Not a G.17 close.
 - Goal 20 complete.
 - G.17 `met`.
 - Live three-game play (deferred 18:09).
-- P.13 complete (H JSON still three-class; inventory
-  `docs/acceptance/goal-v20-part-p13-inventory.md` has
-  `pairable-uncovered` 0% pending the schema knife).
+- P.13 complete (schema 0% uncovered; required holes have H
+  metrics; floor on >1.0× paths still leftover + invent pause).
 
 ## P.13 (user 2026-08-19 18:30)
 
 | item | status | number or leftover | evidence |
 |---|---|---|---|
-| P.13 pairable coverage | leftover | Truncate head/tail **0.72× / 0.87×** (383.5 / 529.0 µs, 462.7 / 534.5 µs) Friend-MachineD n=5 `635ac76a1`. load **1.27×** (cadr **1882→1857 µs**) / journal **1.15×**. `pairable-uncovered` not 0%. Not P.13 complete. | H pair booked. G.17 still `missing`. Part P still `[open]`. |
+| P.13 schema | number | `pairable-uncovered` **0%** of 295 files / 127,389 lines (`f0e299523`). `--check` books `covered-as-callee` + `needs-pair`. | `goal20-unpaired-paths.py --check`. Not G.17. |
+| P.13 required holes | number | sqlite / tool_loop / compact / providers / settings / package / skills all have named H metrics (`315a16c1c`). No new pair. No optimize. | inventory vs `pairedMetrics`. |
+| P.13 floor / leftover | leftover | load ~1.11× / journal_read / pi_messages / mistral still >1.0×. Invent paused. Not P.13 complete. | disposition table. G.17 still `missing`. |

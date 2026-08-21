@@ -21,6 +21,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: refresh Part P acceptance (P.1 walker ~1763 /
+  invent pause; P.8 deferred; P.13 schema 0% + required
+  holes; Not claimed still G.17/`met`). No optimize.
 - Goal 20 P.13: required holes all have H metrics
   (sqlite / tool_loop / compact / providers / settings /
   package / skills). No new pair. No optimize. G.17 missing.
