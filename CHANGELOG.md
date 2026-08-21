@@ -21,6 +21,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20: user YES on proposal 4 (per-load ephemeral EQ
+  dedupe). No global or cross-load intern. E `tagbody`
+  stays a separate knife. G.17 stays missing. Not G.17.
 - Goal 20: withdraw per-load string-arena / displaced ASCII
   views (item 10 A). Friend-MachineD n=5: load cadr
   **1763→3667 µs** (worse). Product restored. Fill kernel

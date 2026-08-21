@@ -997,5 +997,92 @@ are worth trying; clarifies the COPY-UNESCAPED ban.
 **Why it was decidable**: user asked yes/no on ban scope
 and to put worth-trying knives in docs for grok.
 
+## 2026-08-21 — item 10 A/D falsified; invent next load knife
 
+**Ruled**: executor remesured authorized item 10 knives after
+proposal 3 keep (`0084f0703`, Friend-MachineD load ~1763 µs).
+
+**Decided**:
+
+1. **Item 10 D withdrawn** (`4bc73e29d`): exact-length /
+   `svref` content fill **1763→1838 µs**. Do not redo.
+2. **Item 10 A withdrawn** (`27c197192`): per-load
+   string-arena + displaced ASCII views **1763→3667 µs**.
+   Do not redo. COPY-UNESCAPED fill kernel was untouched.
+3. **Next**: remesure `PARSE-SESSION-RECORD-OCTETS` split on
+   the current walker, then invent **one** new Lisp encoding
+   (屠龙刀). Keep/revert on Friend-MachineD cadr **&lt; ~1763 µs**.
+4. Still forbidden without a new ruling: bag/token reuse,
+   knife 1 high-byte redo, length-case/key-tag redo, proposal 4
+   EQ dedupe, proposal 5 productization, FFI, mmap, intern grow,
+   COPY-UNESCAPED fill-kernel micro-rewrite, empty ⚑ that only
+   repeats banned classes. Default-reject B/E unless a distinct
+   proof.
+5. Pointers: this file; `goal20-draft.md` 十B items 10–11;
+   leftover; split note; board `[ready]`.
+
+**Why it was decidable**: keep/revert numbers on Friend-MachineD
+falsified both remaining item-10 cold knives; continuous 屠龙
+requires invent-from-residual, not park.
+
+## 2026-08-21 — after A/D withdraw: E authorized; 4/5/octet-span ruled
+
+**Ruled**: executor reported item 10 A/D withdrawn, walker
+`0084f0703` @ ~1763 µs, empty `[ready]`, and ⚑ waiting on
+proposals 4/5/octet-span (2026-08-21). Advisor **agrees** with
+the keep/withdraw table and **rejects** the empty ⚑.
+
+**Decided**:
+
+1. **Facts kept**: product walker `0084f0703`; baseline
+   Friend-MachineD load **~1763 µs**; D `4bc73e29d`
+   (1763→1838) and A `27c197192` (1763→3667) withdrawn —
+   do not redo. G.17 stays `missing`. Goal 20 not done.
+2. **Empty ⚑ rejected**: listing "needs ruling on 4/5/octet-span"
+   without a keep/revert knife is banned-class ⚑ (十B item 8).
+3. **Authorized next (order)**:
+   - Remesure `PARSE-SESSION-RECORD-OCTETS` split on the
+     current walker (docs).
+   - **(E) `tagbody` merge of hot labels** — last-resort from
+     item 10, now that A/D are done. Alone; Friend-MachineD
+     cadr **&lt; ~1763** or revert. Not a SCAN-KEY macrolet redo.
+   - Then invent one new Lisp encoding from residual if needed.
+4. **Proposal 5 productization — rejected**: whole-line /
+   displaced views are the same tax family as withdrawn A.
+   Research notes only.
+5. **octet-span lazy materialization — not the next cold
+   knife**: still changes internal representation; needs a
+   separate EQUAL-contract ruling if ever proposed with
+   numbers. Not a stop reason.
+6. **Proposal 4 (per-load EQ dedupe) — still forbidden**
+   until the user explicitly says YES (near intern-grow).
+   Do not code it on ⚑.
+7. Pointers: this file; `goal20-draft.md` 十B; leftover;
+   split note; board `[ready]`.
+
+**Why it was decidable**: A/D falsifications + standing 屠龙
+rules decide E and reject 5; 4 still needs the user; empty
+⚑ is already banned.
+
+## 2026-08-21 — user YES on proposal 4 (per-load EQ dedupe)
+
+**Ruled**: user replied 同意 to the advisor question whether
+to open proposal 4 (2026-08-21).
+
+**Decided**:
+
+1. **Proposal 4 authorized**: per-load **ephemeral** EQ
+   dedupe table for repeated string values during one
+   `session_load` (or equivalent walk). Alone; Friend-MachineD
+   cadr **&lt; ~1763 µs** or revert; strings EQUAL to current
+   walker; green `test-cl.sh`.
+2. **Still banned**: growing a **global / cross-load** intern
+   table; persisting the dedupe map beyond the load; merging
+   with E/`tagbody` or other knives in one keep/revert.
+3. Proposal 5 productization and octet-span-as-cold-knife
+   rulings from the prior adjudication stand.
+4. Pointers: this file; `goal20-draft.md` 十B; board `[ready]`.
+
+**Why it was decidable**: user explicitly agreed to open
+proposal 4 after it was held for a YES.
 
