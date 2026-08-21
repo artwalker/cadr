@@ -88,6 +88,7 @@ METRIC_KEYS = (
     "cli_support.shell_config",
     "cli_support.sanitize_output",
     "cli_support.git_source",
+    "cli_support.user_agent",
     "cli_interactive_controller.decode_entity",
     "cli_sdk.version_newer",
     "provider_registry_defs.lookup",

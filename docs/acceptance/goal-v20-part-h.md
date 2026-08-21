@@ -1140,6 +1140,19 @@ Skipped `edit-in-external-editor` (pi spawn). First
 Friend-MachineD freeze **0.48×** (26.85 / 55.99 µs),
 ceiling 8.0. cadr leads. Same commit no optimize.
 
+### Pair 80 — `cli_support` (user_agent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `user_agent` | `cadr-user-agent` | `getPiUserAgent` (`packages/coding-agent/src/utils/pi-user-agent.ts`) |
+
+Leftover sibling of `git_source` in the same file. Version
+`1.2.3`; observe version substring, parens, semicolon
+count=2. Do not exact product (`cadr` vs `pi`) or runtime
+(`sbcl` vs `node`). First Friend-MachineD freeze **3.14×**
+(1.41 / 0.45 µs), ceiling 8.0 (variance). Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1471,7 +1484,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
-| `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source` |
+| `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |

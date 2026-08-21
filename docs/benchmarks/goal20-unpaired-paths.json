@@ -71,6 +71,7 @@
   "cli_support.shell_config",
   "cli_support.sanitize_output",
   "cli_support.git_source",
+  "cli_support.user_agent",
   "cli_interactive_controller.decode_entity",
   "cli_sdk.version_newer",
   "provider_registry_defs.lookup",
@@ -1387,7 +1388,7 @@
   {
    "prefix": "src/cadr-cli/support/resume-version-git.lisp",
    "class": "paired",
-   "metrics": ["cli_support.git_source"]
+   "metrics": ["cli_support.git_source", "cli_support.user_agent"]
   },
   {
    "prefix": "src/cadr-cli/support/shell-process.lisp",

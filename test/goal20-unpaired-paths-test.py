@@ -466,6 +466,7 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(git_source), 1)
         self.assertEqual(git_source[0]["class"], "paired")
         self.assertIn("cli_support.git_source", git_source[0]["metrics"])
+        self.assertIn("cli_support.user_agent", git_source[0]["metrics"])
         decode_entity = [
             row
             for row in classified["rows"]

@@ -191,6 +191,7 @@ const REPETITIONS = {
 	"cli_support.shell_config": 50,
 	"cli_support.sanitize_output": 50,
 	"cli_support.git_source": 50,
+	"cli_support.user_agent": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_sdk.version_newer": 50,
 	"provider_registry_defs.lookup": 50,
@@ -467,6 +468,9 @@ const attributionModule = await import(
 );
 const shellModule = await import(moduleUrl("packages/coding-agent/src/utils/shell.ts"));
 const gitModule = await import(moduleUrl("packages/coding-agent/src/utils/git.ts"));
+const userAgentModule = await import(
+	moduleUrl("packages/coding-agent/src/utils/pi-user-agent.ts")
+);
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
@@ -3689,6 +3693,18 @@ function runCliSupportGitSource() {
 	};
 }
 
+function userAgentShape(ua) {
+	return {
+		ua_ver: ua.includes("1.2.3") ? 1 : 0,
+		ua_paren: ua.includes("(") && ua.includes(")") ? 1 : 0,
+		ua_semi: (ua.match(/;/g) || []).length,
+	};
+}
+
+function runCliSupportUserAgent() {
+	return userAgentShape(userAgentModule.getPiUserAgent("1.2.3"));
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -3698,6 +3714,7 @@ async function measureCliSupportStripAnsi() {
 	const shell = runCliSupportShellConfig();
 	const sanitize = runCliSupportSanitizeOutput();
 	const git = runCliSupportGitSource();
+	const ua = runCliSupportUserAgent();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -3723,7 +3740,10 @@ async function measureCliSupportStripAnsi() {
 		git_source: await collect("cli_support.git_source", () => {
 			return () => runCliSupportGitSource();
 		}),
-		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell, ...sanitize, ...git },
+		user_agent: await collect("cli_support.user_agent", () => {
+			return () => runCliSupportUserAgent();
+		}),
+		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell, ...sanitize, ...git, ...ua },
 	};
 }
 
@@ -4287,6 +4307,8 @@ const result = {
 				"packages/coding-agent/src/utils/shell.ts sanitizeBinaryOutput",
 			"cli_support.git_source":
 				"packages/coding-agent/src/utils/git.ts parseGitUrl",
+			"cli_support.user_agent":
+				"packages/coding-agent/src/utils/pi-user-agent.ts getPiUserAgent",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_sdk.version_newer":

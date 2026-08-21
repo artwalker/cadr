@@ -76,6 +76,7 @@
 ;;;;  62. cli_support get-shell-config vs getShellConfig
 ;;;;  63. cli_support sanitize-binary-output vs sanitizeBinaryOutput
 ;;;;  64. cli_support parse-git-source vs parseGitUrl
+;;;;  65. cli_support cadr-user-agent vs getPiUserAgent
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -196,6 +197,7 @@
     ("cli_support.shell_config" . 50)
     ("cli_support.sanitize_output" . 50)
     ("cli_support.git_source" . 50)
+    ("cli_support.user_agent" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_sdk.version_newer" . 50)
     ("provider_registry_defs.lookup" . 50)
@@ -4368,6 +4370,15 @@
         1
         0))))
 
+(defun user-agent-shape (ua)
+  (list
+   (if (search "1.2.3" ua) 1 0)
+   (if (and (find #\( ua) (find #\) ua)) 1 0)
+   (count #\; ua)))
+
+(defun run-cli-support-user-agent ()
+  (user-agent-shape (cadr-cli::cadr-user-agent "1.2.3")))
+
 (defun measure-cli-support-strip-ansi ()
   (let ((ansi (run-cli-support-strip-ansi))
         (paths (run-cli-support-normalize-path))
@@ -4376,7 +4387,8 @@
         (headers (run-cli-support-attribution-headers))
         (shell (run-cli-support-shell-config))
         (sanitize (run-cli-support-sanitize-output))
-        (git (run-cli-support-git-source)))
+        (git (run-cli-support-git-source))
+        (ua (run-cli-support-user-agent)))
     (json-object
      "observed"
      (json-object
@@ -4430,7 +4442,10 @@
       "gs_short_path" (nth 9 git)
       "gs_bare" (nth 12 git)
       "gs_dotdot" (nth 13 git)
-      "gs_abs" (nth 14 git))
+      "gs_abs" (nth 14 git)
+      "ua_ver" (first ua)
+      "ua_paren" (second ua)
+      "ua_semi" (third ua))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -4470,7 +4485,12 @@
      (collect "cli_support.git_source"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-git-source)))))))
+                  (run-cli-support-git-source))))
+     "user_agent"
+     (collect "cli_support.user_agent"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-user-agent)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -4869,6 +4889,8 @@
       "src/cadr-cli/support/shell-process.lisp sanitize-binary-output"
       "cli_support.git_source"
       "src/cadr-cli/support/resume-version-git.lisp parse-git-source"
+      "cli_support.user_agent"
+      "src/cadr-cli/support/resume-version-git.lisp cadr-user-agent"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_sdk.version_newer"

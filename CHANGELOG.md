@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.user_agent`
+  (version substring / parens / two semicolons; cadr
+  `cadr-user-agent` vs pi `getPiUserAgent`). Friend-MachineD
+  n=5 **3.14×** (1.41 / 0.45 µs), ceiling 8.0 (variance).
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_support.git_source`
   (HTTPS+ref / git: scp / git: shorthand; cadr
   `parse-git-source` vs pi `parseGitUrl`). Friend-MachineD
