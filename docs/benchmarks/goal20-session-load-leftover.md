@@ -11,6 +11,8 @@ algorithm/DS proposal exists (or user reopens). G.17 stays
 earlier: compact-prefix + put-entry u32 + put-message
 first-byte (~1879→1763).
 
+**Also withdrawn in `e363ea889`:** intern length-gate (1763→1901). Do not redo.
+
 **Do not:** raise empty ⚑ to farm new case/shortcut knives;
 mark G.17 `met`; redo withdrawn classes.
 
