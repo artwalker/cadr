@@ -168,6 +168,7 @@ const REPETITIONS = {
 	"tui_input_component.edit": 50,
 	"tui_native_modifiers.pressed": 50,
 	"tui_settings_list.apply_filter": 50,
+	"ai_capabilities.short_hash": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"storage_journal.journal_read": 5,
@@ -400,6 +401,7 @@ const stdinBufferModule = await import(moduleUrl("packages/tui/src/stdin-buffer.
 const inputModule = await import(moduleUrl("packages/tui/src/components/input.ts"));
 const nativeModifiersModule = await import(moduleUrl("packages/tui/src/native-modifiers.ts"));
 const settingsListModule = await import(moduleUrl("packages/tui/src/components/settings-list.ts"));
+const hashModule = await import(moduleUrl("packages/ai/src/utils/hash.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const eventStreamModule = await import(moduleUrl("packages/ai/src/utils/event-stream.ts"));
 const { createRequire } = await import("node:module");
@@ -2925,6 +2927,24 @@ async function measureTuiSettingsList() {
 	};
 }
 
+function runAiCapabilitiesShortHash() {
+	return {
+		empty: hashModule.shortHash(""),
+		abc: hashModule.shortHash("abc"),
+		cjk: hashModule.shortHash("中文😀"),
+	};
+}
+
+async function measureAiCapabilitiesShortHash() {
+	const observed = runAiCapabilitiesShortHash();
+	return {
+		short_hash: await collect("ai_capabilities.short_hash", () => {
+			return () => runAiCapabilitiesShortHash();
+		}),
+		observed,
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -3169,6 +3189,8 @@ process.stderr.write("goal20 pi paired paths: tui_native_modifiers\n");
 const tuiNativeModifiers = await measureTuiNativeModifiers();
 process.stderr.write("goal20 pi paired paths: tui_settings_list\n");
 const tuiSettingsList = await measureTuiSettingsList();
+process.stderr.write("goal20 pi paired paths: ai_capabilities\n");
+const aiCapabilities = await measureAiCapabilitiesShortHash();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 
@@ -3252,6 +3274,7 @@ const result = {
 				"packages/tui/src/native-modifiers.ts isNativeModifierPressed",
 			"tui_settings_list.apply_filter":
 				"packages/tui/src/components/settings-list.ts SettingsList.applyFilter",
+			"ai_capabilities.short_hash": "packages/ai/src/utils/hash.ts shortHash",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -3343,6 +3366,7 @@ const result = {
 		tui_input_component: tuiInputComponent,
 		tui_native_modifiers: tuiNativeModifiers,
 		tui_settings_list: tuiSettingsList,
+		ai_capabilities: aiCapabilities,
 		render_slicing: renderSlicing,
 	},
 };

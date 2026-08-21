@@ -718,6 +718,20 @@ fuzzy filter, not a live TUI. Observed `he_count` /
 freeze **0.47×** (5.3 / 11.4 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 50 — `ai_capabilities`
+
+| metric | cadr | pi |
+|---|---|---|
+| `short_hash` | `short-hash` | `shortHash` (`packages/ai/src/utils/hash.ts`) |
+
+Empty / `abc` / `中文😀`. Time UTF-16 hash, not a stream.
+Observed `empty` / `abc` / `cjk` are exact
+(`k4n83c7h0j2b` / `y0biex7f9bbh` / `1uqnrlm1d9i9jc`).
+Other ai_capabilities files stay `needs-pair`. First
+Friend-MachineD freeze **1.70×** (1.5 / 0.9 µs), ceiling
+8.0 (variance / microsecond floor). Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -923,14 +937,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 102 | 50,877 | 39.9% | `no worse than baseline` is falsifiable |
+| `paired` | 103 | 51,039 | 40.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 150 | 56,118 | 44.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 149 | 55,956 | 43.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 39.9% of lines (102 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 45.8% of lines.
+- **Falsifiable vs baseline:** 40.1% of lines (103 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 45.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -988,6 +1002,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
+| `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
@@ -1118,11 +1133,11 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `http_transport` | 1 | 858 |
 | `cli_models_rest` | 2 | 698 |
 | `skill_prompt_load` | 3 | 641 |
-| `ai_capabilities` | 5 | 634 |
 | `websocket_stream` | 1 | 628 |
 | `ai_runtime_faux` | 1 | 601 |
 | `tui_theme_overlay` | 1 | 562 |
 | `ai_support` | 5 | 560 |
+| `ai_capabilities` | 4 | 472 |
 | `ai_crypto_model_data` | 1 | 367 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |

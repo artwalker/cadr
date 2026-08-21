@@ -561,6 +561,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("he_help", paired.OBSERVED_EXACT["tui_settings_list"])
         self.assertIn("he_selected", paired.OBSERVED_EXACT["tui_settings_list"])
 
+    def test_ai_capabilities_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("ai_capabilities.short_hash", RECORD.METRIC_KEYS)
+        self.assertIn("short_hash", paired.METRICS["ai_capabilities"])
+        self.assertIn("ai_capabilities.short_hash", paired.RATIO_CEILINGS)
+        self.assertIn("empty", paired.OBSERVED_EXACT["ai_capabilities"])
+        self.assertIn("abc", paired.OBSERVED_EXACT["ai_capabilities"])
+        self.assertIn("cjk", paired.OBSERVED_EXACT["ai_capabilities"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -642,6 +651,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tui_input_component.edit`", section)
             self.assertIn("`tui_native_modifiers.pressed`", section)
             self.assertIn("`tui_settings_list.apply_filter`", section)
+            self.assertIn("`ai_capabilities.short_hash`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)

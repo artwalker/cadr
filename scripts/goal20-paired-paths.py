@@ -129,6 +129,7 @@ METRICS = {
     "tui_input_component": ("edit",),
     "tui_native_modifiers": ("pressed",),
     "tui_settings_list": ("apply_filter",),
+    "ai_capabilities": ("short_hash",),
     "session_pipeline": ("session_load", "context_walk"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
@@ -362,6 +363,11 @@ RATIO_CEILINGS = {
     # (5.3 / 11.4 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "tui_settings_list.apply_filter": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # ai_capabilities pair (samples=5): observed 1.70x
+    # (1.5 / 0.9 us). 8.0 follows the microsecond-floor
+    # first-freeze headroom. Ratchet down only.
+    "ai_capabilities.short_hash": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     "storage_journal.journal_read": 8.0,
@@ -759,6 +765,11 @@ OBSERVED_EXACT = {
         "wo_count",
         "zz_count",
         "he_selected",
+    ),
+    "ai_capabilities": (
+        "empty",
+        "abc",
+        "cjk",
     ),
     "resource_loader": (
         "skill_count",

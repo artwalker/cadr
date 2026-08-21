@@ -46,6 +46,7 @@
 ;;;;  33. tui_input_component handle-event vs Input.handleInput
 ;;;;  34. tui_native_modifiers is-native-modifier-pressed vs isNativeModifierPressed
 ;;;;  35. tui_settings_list apply-filter vs SettingsList.applyFilter
+;;;;  36. ai_capabilities short-hash vs shortHash
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -143,6 +144,7 @@
     ("tui_input_component.edit" . 50)
     ("tui_native_modifiers.pressed" . 50)
     ("tui_settings_list.apply_filter" . 50)
+    ("ai_capabilities.short_hash" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("storage_journal.journal_read" . 5)
@@ -3647,6 +3649,26 @@
                 (lambda ()
                   (run-tui-settings-list)))))))
 
+(defun run-ai-capabilities-short-hash ()
+  (list
+   (cadr-ai:short-hash "")
+   (cadr-ai:short-hash "abc")
+   (cadr-ai:short-hash "中文😀")))
+
+(defun measure-ai-capabilities-short-hash ()
+  (let ((observed (run-ai-capabilities-short-hash)))
+    (json-object
+     "observed"
+     (json-object
+      "empty" (first observed)
+      "abc" (second observed)
+      "cjk" (third observed))
+     "short_hash"
+     (collect "ai_capabilities.short_hash"
+              (lambda ()
+                (lambda ()
+                  (run-ai-capabilities-short-hash)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -3779,6 +3801,8 @@
       "src/cadr-tui/native-modifiers.lisp is-native-modifier-pressed"
       "tui_settings_list.apply_filter"
       "src/cadr-tui/composition/settings-list.lisp settings-list-apply-filter"
+      "ai_capabilities.short_hash"
+      "src/cadr-ai/capabilities/streaming-json.lisp short-hash"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -3922,6 +3946,8 @@
               (let ((native-modifiers (measure-tui-native-modifiers)))
               (format *error-output* "goal20 cadr paired paths: tui_settings_list~%")
               (let ((settings-list (measure-tui-settings-list)))
+              (format *error-output* "goal20 cadr paired paths: ai_capabilities~%")
+              (let ((capabilities (measure-ai-capabilities-short-hash)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
             (json-object
@@ -3988,6 +4014,7 @@
               "tui_input_component" input-component
               "tui_native_modifiers" native-modifiers
               "tui_settings_list" settings-list
+              "ai_capabilities" capabilities
               "render_slicing" slicing)
              "parameters"
              (json-object
@@ -4004,7 +4031,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

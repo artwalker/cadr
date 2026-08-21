@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ai_capabilities.short_hash` (empty /
+  `abc` / CJK+emoji; cadr `short-hash` vs pi `shortHash`).
+  Friend-MachineD n=5 **1.70×** (1.5 / 0.9 µs), ceiling
+  8.0 (variance). Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_settings_list.apply_filter`
   (Hello/Help/World; cadr `settings-list-apply-filter` vs
   pi `SettingsList.applyFilter`). Friend-MachineD n=5

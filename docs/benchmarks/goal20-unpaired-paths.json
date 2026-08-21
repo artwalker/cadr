@@ -48,6 +48,7 @@
   "tui_input_component.edit",
   "tui_native_modifiers.pressed",
   "tui_settings_list.apply_filter",
+  "ai_capabilities.short_hash",
   "cli_settings.create",
   "resource_loader.reload",
   "session_pipeline.session_load",
@@ -759,8 +760,8 @@
   },
   {
    "prefix": "src/cadr-ai/capabilities/streaming-json.lisp",
-   "class": "needs-pair",
-   "hole": "ai_capabilities"
+   "class": "paired",
+   "metrics": ["ai_capabilities.short_hash"]
   },
   {
    "prefix": "src/cadr-ai/conditions.lisp",
