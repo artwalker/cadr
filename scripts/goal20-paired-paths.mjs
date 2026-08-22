@@ -158,6 +158,7 @@ const REPETITIONS = {
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"evals_harness.summarize": 20,
+	"evals_harness.group_key": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -405,6 +406,9 @@ const protocolCodecModule = await import(moduleUrl("packages/protocol/src/codec.
 const proxyModule = await import(moduleUrl("packages/agent/src/proxy.ts"));
 const evalsSummaryModule = await import(
 	moduleUrl("packages/evals/src/vitest-evals/summary.ts")
+);
+const evalsTableModule = await import(
+	moduleUrl("packages/evals/src/vitest-evals/harness-table.ts")
 );
 const modelDataModule = await import(moduleUrl("packages/ai/scripts/model-data.ts"));
 const modelResolverModule = await import(
@@ -2493,11 +2497,45 @@ function runEvalsHarnessSummarize() {
 	};
 }
 
+function evalGroupKeyFlag(input, repetition, expectedId, expectedRep) {
+	try {
+		const parsed = JSON.parse(evalsTableModule.deriveEvalGroupKey(input, repetition));
+		return Array.isArray(parsed) && parsed[0] === expectedId && parsed[1] === expectedRep ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runEvalsHarnessGroupKey() {
+	const ok = {
+		schemaVersion: 1,
+		evalSet: "set-a",
+		groupKey: '["case-1",1]',
+		harness: "cadr",
+		baseline: "base",
+		candidates: ["cand"],
+		repetition: 1,
+	};
+	const bad = { ...ok, schemaVersion: 2 };
+	return {
+		gk_id: evalGroupKeyFlag({ id: "case-1" }, 1, "case-1", 1),
+		gk_trim: evalGroupKeyFlag({ id: "  case-2  " }, 2, "case-2", 2),
+		art_ok: evalsTableModule.parseEvalHarnessIterationArtifact(ok) ? 1 : 0,
+		art_bad: evalsTableModule.parseEvalHarnessIterationArtifact(bad) ? 1 : 0,
+	};
+}
+
 async function measureEvalsHarness() {
-	const observed = runEvalsHarnessSummarize();
+	const observed = {
+		...runEvalsHarnessSummarize(),
+		...runEvalsHarnessGroupKey(),
+	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
 			return () => runEvalsHarnessSummarize();
+		}),
+		group_key: await collect("evals_harness.group_key", () => {
+			return () => runEvalsHarnessGroupKey();
 		}),
 		observed,
 	};
@@ -5116,6 +5154,8 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/huggingface.ts findHuggingFaceToken",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
+			"evals_harness.group_key":
+				"packages/evals/src/vitest-evals/harness-table.ts deriveEvalGroupKey",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

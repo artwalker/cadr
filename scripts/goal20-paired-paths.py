@@ -112,7 +112,7 @@ METRICS = {
     "oauth_pkce": ("challenge_urls",),
     "oauth_pkce_device": ("poll", "auth_json", "copilot_url", "cloudflare_url", "radius_gateway"),
     "cli_extensions_install": ("llama_url", "hf_token"),
-    "evals_harness": ("summarize",),
+    "evals_harness": ("summarize", "group_key"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command"),
@@ -324,6 +324,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent.
     # Ratchet down only.
     "evals_harness.summarize": 1.5,
+    # Frozen from the first Friend-MachineD non-quick
+    # evals_harness.group_key pair (samples=5): observed
+    # 4.06x (5.01 / 1.23 us). 8.0 is first-freeze
+    # headroom (microsecond-floor / variance). Ratchet down only.
+    "evals_harness.group_key": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -927,6 +932,10 @@ OBSERVED_EXACT = {
         "comparisons",
         "candidate_wins",
         "ties",
+        "gk_id",
+        "gk_trim",
+        "art_ok",
+        "art_bad",
     ),
     "ai_crypto_model_data": (
         "schema_version",

@@ -1275,6 +1275,20 @@ falls through to live getenv). No TUI, no clipboard spawn. First
 Friend-MachineD freeze **1.17×** (0.36 / 0.30 µs), ceiling 8.0
 (variance). Same commit no optimize.
 
+### Pair 90 — `evals_harness` (group_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `group_key` | `derive-eval-group-key` | `deriveEvalGroupKey` (`packages/evals/src/vitest-evals/harness-table.ts`) |
+
+Leftover sibling of the `evals_harness` hole. id-bearing inputs
+only (`case-1`, trimmed `case-2`). Do not exact a no-id SHA path
+(cadr stringify vs pi canonicalizeJson) or repetition 0 (cadr
+errors, pi stringifies). Artifact parse: schema 1 ok / schema 2
+nil. No live eval run. First Friend-MachineD freeze **4.06×**
+(5.01 / 1.23 µs), ceiling 8.0 (variance). Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1480,14 +1494,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 143 | 62,911 | 49.4% | `no worse than baseline` is falsifiable |
+| `paired` | 144 | 63,250 | 49.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 109 | 44,084 | 34.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 108 | 43,745 | 34.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 49.4% of lines (143 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 55.3% of lines.
+- **Falsifiable vs baseline:** 49.7% of lines (144 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 55.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1624,6 +1638,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
+| `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
 | `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize` |
 | `src/cadr-protocol/cbor.lisp` | 492 | `protocol_cbor.roundtrip` |
 | `src/cadr-protocol/codec.lisp` | 121 | `protocol_codec.roundtrip` |
@@ -1704,7 +1719,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_mermaid` | 12 | 5,042 |
 | `agent_tool_loop` | 13 | 4,094 |
 | `cli_extensions_install` | 7 | 2,727 |
-| `evals_harness` | 6 | 2,184 |
+| `evals_harness` | 5 | 1,845 |
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 5 | 1,375 |
 | `oauth_pkce_device` | 8 | 1,348 |

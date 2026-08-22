@@ -55,6 +55,7 @@ METRIC_KEYS = (
     "cli_extensions_install.llama_url",
     "cli_extensions_install.hf_token",
     "evals_harness.summarize",
+    "evals_harness.group_key",
     "ai_crypto_model_data.manifest",
     "ai_crypto.hmac",
     "cli_models_rest.pattern_match",

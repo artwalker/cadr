@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.group_key`
+  (id-bearing inputs + artifact parse; cadr
+  `derive-eval-group-key` vs pi `deriveEvalGroupKey`).
+  Friend-MachineD n=5 **4.06×** (5.01 / 1.23 µs), ceiling
+  8.0 (variance). Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_interactive_controller.wayland`
   (injected env; cadr `clipboard-wayland-p` vs pi
   `isWaylandSession`). Friend-MachineD n=5 **1.17×**

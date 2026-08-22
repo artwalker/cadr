@@ -679,11 +679,11 @@ These must not be filed as callees.
 | `src/cadr-tui/composition/loaders.lisp` | 235 |
 | `src/cadr-tui/composition/settings-list.lisp` | 470 |
 
-### `evals_harness` (additional) — `summary.lisp` paired `evals_harness.summarize`
+### `evals_harness` (additional) — `summary.lisp` paired `evals_harness.summarize`; `harness-table.lisp` paired `evals_harness.group_key`
 
-- pi: `packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons`
-- fixture: Four scored harness observations (tool access create/inspect). Time report assembly, not a live eval.
-- Friend-MachineD n=5: **0.88×** (8.0 / 9.0 µs), ceiling 1.5. Other evals files still `needs-pair`. No optimize in the booking commit.
+- pi: `packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons`; `packages/evals/src/vitest-evals/harness-table.ts deriveEvalGroupKey` / `parseEvalHarnessIterationArtifact`
+- fixture: Four scored harness observations (tool access create/inspect). Time report assembly, not a live eval. Group key: id-bearing inputs only; do not exact no-id SHA or repetition 0. Artifact parse schema 1 / 2.
+- Friend-MachineD n=5: summarize **0.88×** (8.0 / 9.0 µs), ceiling 1.5; group_key **4.06×** (5.01 / 1.23 µs), ceiling 8.0 (variance). Other evals files still `needs-pair`. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

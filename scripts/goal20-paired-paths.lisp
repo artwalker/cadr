@@ -94,6 +94,7 @@
 ;;;;  80. oauth_pkce_device materialize-cloudflare-url vs resolveCloudflareModel
 ;;;;  81. oauth_pkce_device normalize-radius-gateway vs normalizeRadiusGatewayUrl
 ;;;;  82. cli_interactive_controller clipboard-wayland-p vs isWaylandSession
+;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -181,6 +182,7 @@
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("evals_harness.summarize" . 20)
+    ("evals_harness.group_key" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -3410,20 +3412,76 @@
      (cadr-evals:correctness-lift-summary-ties
       correctness))))
 
+(defun eval-group-key-flag (input repetition expected-id expected-rep)
+  (handler-case
+      (let* ((text
+               (cadr-evals:derive-eval-group-key input repetition))
+             (parsed (cadr-ai::parse-json text)))
+        (if (and (vectorp parsed)
+                 (= 2 (length parsed))
+                 (string= (aref parsed 0) expected-id)
+                 (= (aref parsed 1) expected-rep))
+            1
+            0))
+    (error () 0)))
+
+(defun eval-artifact-ok-flag (value)
+  (if (cadr-evals:parse-eval-harness-iteration-artifact value)
+      1
+      0))
+
+(defun run-evals-harness-group-key ()
+  ;; id-bearing inputs only. Do not exact a no-id SHA path
+  ;; (cadr stringify-json vs pi canonicalizeJson key order).
+  ;; Do not exact repetition 0 (cadr errors, pi JSON.stringifies).
+  (list
+   (eval-group-key-flag
+    (cadr-ai::json-object "id" "case-1") 1 "case-1" 1)
+   (eval-group-key-flag
+    (cadr-ai::json-object "id" "  case-2  ") 2 "case-2" 2)
+   (eval-artifact-ok-flag
+    (cadr-ai::json-object
+     "schemaVersion" 1
+     "evalSet" "set-a"
+     "groupKey" "[\"case-1\",1]"
+     "harness" "cadr"
+     "baseline" "base"
+     "candidates" (vector "cand")
+     "repetition" 1))
+   (eval-artifact-ok-flag
+    (cadr-ai::json-object
+     "schemaVersion" 2
+     "evalSet" "set-a"
+     "groupKey" "k"
+     "harness" "cadr"
+     "baseline" "base"
+     "candidates" (vector "cand")
+     "repetition" 1))))
+
 (defun measure-evals-harness ()
-  (let ((observed (run-evals-harness-summarize)))
+  (let ((observed (run-evals-harness-summarize))
+        (group (run-evals-harness-group-key)))
     (json-object
      "observed"
      (json-object
       "eval_sets" (first observed)
       "comparisons" (second observed)
       "candidate_wins" (third observed)
-      "ties" (fourth observed))
+      "ties" (fourth observed)
+      "gk_id" (first group)
+      "gk_trim" (second group)
+      "art_ok" (third group)
+      "art_bad" (fourth group))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-summarize)))))))
+                  (run-evals-harness-summarize))))
+     "group_key"
+     (collect "evals_harness.group_key"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-group-key)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -5817,6 +5875,8 @@
       "src/cadr-cli/extensions/llama/huggingface.lisp find-hugging-face-token"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
+      "evals_harness.group_key"
+      "src/cadr-evals/harness-table.lisp derive-eval-group-key"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
