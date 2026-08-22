@@ -393,10 +393,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-ai/transport/http.lisp` | 831 |
 
-### `websocket_stream` (additional)
+### `websocket_stream` (additional) — `websocket.lisp` paired `websocket_stream.stream_roundtrip`
 
-- pi: `packages/ai websocket stream (provider websocket branch)`
-- fixture: Recorded websocket frames for a provider that uses them. No live socket.
+- pi: `packages/ai/src/api/openai-codex-responses.ts stream` (`transport: "websocket"`)
+- fixture: Recorded `response.*` frames. cadr Goal 12 `usocket` loopback. pi MockWebSocket. No live Codex socket.
+- Friend-MachineD n=5: **507.72×** (44298 / 87.25 µs), ceiling 800.0 (TCP loopback vs MockWebSocket). Same commit no optimize.
 
 | file | lines |
 |---|---:|

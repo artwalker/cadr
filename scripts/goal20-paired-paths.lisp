@@ -105,6 +105,7 @@
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
+;;;;  94. websocket_stream stream-chat websocket vs openai-codex-responses stream
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -249,6 +250,7 @@
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
     ("cli_selectors.session_search" . 50)
+    ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
     ("cli_sdk.cache_waste" . 50)
@@ -5660,6 +5662,172 @@
                 (lambda ()
                   (run-cli-selectors-session-search)))))))
 
+(defun websocket-loopback-write-http (stream text)
+  (write-sequence
+   (babel:string-to-octets text :encoding :utf-8)
+   stream)
+  (finish-output stream))
+
+(defun websocket-recorded-response-events ()
+  (list
+   (cadr-ai::json-object
+    "type" "response.created"
+    "response" (cadr-ai::json-object "id" "resp-1"))
+   (cadr-ai::json-object
+    "type" "response.output_item.added" "output_index" 0
+    "item" (cadr-ai::json-object "type" "message"))
+   (cadr-ai::json-object
+    "type" "response.content_part.added"
+    "part" (cadr-ai::json-object "type" "output_text" "text" ""))
+   (cadr-ai::json-object
+    "type" "response.output_text.delta" "output_index" 0
+    "delta" "Hello")
+   (cadr-ai::json-object
+    "type" "response.output_item.done" "output_index" 0
+    "item"
+    (cadr-ai::json-object
+     "type" "message" "id" "msg-resp-1"
+     "content"
+     (vector
+      (cadr-ai::json-object "type" "output_text" "text" "Hello"))))
+   (cadr-ai::json-object
+    "type" "response.completed"
+    "response"
+    (cadr-ai::json-object
+     "id" "resp-1" "status" "completed"
+     "usage"
+     (cadr-ai::json-object
+      "input_tokens" 1 "output_tokens" 1
+      "input_tokens_details"
+      (cadr-ai::json-object "cached_tokens" 0))))))
+
+(defun websocket-loopback-accept (listener)
+  (let* ((client
+           (usocket:socket-accept
+            listener :element-type '(unsigned-byte 8)))
+         (stream (usocket:socket-stream client))
+         (key nil))
+    (cadr-ai::read-http-line stream)
+    (loop for line = (cadr-ai::read-http-line stream)
+          until (or (null line) (zerop (length line)))
+          when (uiop:string-prefix-p "Sec-WebSocket-Key:" line)
+            do (setf key
+                     (string-trim '(#\Space #\Tab)
+                                  (subseq line (1+ (position #\: line))))))
+    (websocket-loopback-write-http
+     stream
+     (format nil
+             "HTTP/1.1 101 Switching Protocols~C~CUpgrade: websocket~C~CConnection: Upgrade~C~CSec-WebSocket-Accept: ~A~C~C~C~C"
+             #\Return #\Linefeed #\Return #\Linefeed
+             #\Return #\Linefeed
+             (cadr-ai::websocket-accept-value key)
+             #\Return #\Linefeed #\Return #\Linefeed))
+    (values client stream)))
+
+(defun websocket-loopback-write-events (stream)
+  (dolist (event (websocket-recorded-response-events))
+    (cadr-ai::write-websocket-frame
+     stream #x1
+     (babel:string-to-octets
+      (cadr-ai::stringify-json event) :encoding :utf-8)
+     :mask-p nil))
+  (finish-output stream))
+
+(defun websocket-stream-context ()
+  (cadr-ai:make-context
+   :system-prompt "You are a helpful assistant."
+   :messages
+   (list (cadr-ai:make-user-message :content "Say hello"))))
+
+(defun run-websocket-stream (provider model context)
+  (cadr-ai:close-openai-codex-websocket-sessions)
+  (cadr-ai::stream-chat
+   provider model context
+   (lambda (event) (declare (ignore event)) nil)
+   :transport :websocket))
+
+(defun measure-websocket-stream ()
+  (let* ((stop-p nil)
+         (server-error nil)
+         (listener
+           (usocket:socket-listen
+            "127.0.0.1" 0 :reuse-address t
+            :element-type '(unsigned-byte 8)))
+         (port (usocket:get-local-port listener))
+         (server
+           (sb-thread:make-thread
+            (lambda ()
+              (loop
+                (when stop-p (return))
+                (when (usocket:wait-for-input
+                       listener :timeout 0.05 :ready-only t)
+                  (handler-case
+                      (multiple-value-bind (client stream)
+                          (websocket-loopback-accept listener)
+                        (unwind-protect
+                             (progn
+                               (cadr-ai::read-websocket-frame stream)
+                               (websocket-loopback-write-events stream))
+                          (ignore-errors (usocket:socket-close client))))
+                    (error (condition)
+                      (when stop-p (return))
+                      (setf server-error condition)
+                      (format *error-output*
+                              "goal20 websocket loopback: ~A~%"
+                              condition)
+                      (finish-output *error-output*)
+                      (return))))))
+            :name "goal20-websocket-loopback"))
+         (provider
+           (cadr-ai:make-openai-codex-provider
+            :oauth-access-token *codex-oauth-token*
+            :oauth-account-id "goal20-codex-account"))
+         (model
+           (cadr-ai:make-model
+            :id "gpt-5.5"
+            :name "Goal 20 Codex WS"
+            :api :openai-codex-responses
+            :provider :openai-codex
+            :base-url (format nil "http://127.0.0.1:~D" port)
+            :max-tokens 4096))
+         (context (websocket-stream-context)))
+    (unwind-protect
+         (let ((message (run-websocket-stream provider model context)))
+           (unless (eq :stop (cadr-ai:assistant-message-stop-reason message))
+             (error "websocket fixture stream produced stop reason ~S ~A"
+                    (cadr-ai:assistant-message-stop-reason message)
+                    (cadr-ai:assistant-message-error-message message)))
+           (let* ((blocks (cadr-ai:assistant-message-content message))
+                  (text
+                    (apply #'concatenate 'string
+                           (mapcar #'cadr-ai:text-content-text
+                                   (remove-if-not
+                                    (lambda (block)
+                                      (typep block 'cadr-ai:text-content))
+                                    blocks)))))
+             (json-object
+              "observed"
+              (json-object
+               "ws_text" text
+               "stop_reason" "stop"
+               "text_characters" (length text)
+               "usage_input"
+               (cadr-ai:usage-input
+                (cadr-ai:assistant-message-usage message))
+               "usage_output"
+               (cadr-ai:usage-output
+                (cadr-ai:assistant-message-usage message)))
+              "stream_roundtrip"
+              (collect "websocket_stream.stream_roundtrip"
+                       (lambda ()
+                         (lambda ()
+                           (run-websocket-stream
+                            provider model context)))))))
+      (setf stop-p t)
+      (ignore-errors (usocket:socket-close listener))
+      (ignore-errors (sb-thread:join-thread server))
+      (when server-error (error server-error)))))
+
 (defun version-cmp-sign (left right)
   (let ((value (cadr-cli::compare-package-versions left right)))
     (cond
@@ -6529,6 +6697,8 @@
       "src/cadr-cli/interactive/footer.lisp format-cwd-for-footer"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
+      "websocket_stream.stream_roundtrip"
+      "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
       "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
       "cli_sdk.cache_miss"
@@ -6730,6 +6900,8 @@
               (let ((http-transport (measure-http-transport-parse-url)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
+              (format *error-output* "goal20 cadr paired paths: websocket_stream~%")
+              (let ((websocket (measure-websocket-stream)))
             (json-object
              "kind" "cadr-goal20-part-h-paired-paths"
              ;; machine_instance / hostname are the field names
@@ -6809,7 +6981,8 @@
               "cli_bootstrap_sessions" bootstrap
               "ai_runtime_faux" faux
               "http_transport" http-transport
-              "render_slicing" slicing)
+              "render_slicing" slicing
+              "websocket_stream" websocket)
              "parameters"
              (json-object
               "journal_append_entry_count" *journal-append-entry-count*
@@ -6825,7 +6998,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

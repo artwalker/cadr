@@ -1448,6 +1448,22 @@ Other selector files stay `needs-pair`. First Friend-MachineD
 freeze **2.48×** (42.40 / 17.10 µs), ceiling 8.0. Same commit
 no optimize.
 
+### Pair 102 — `websocket_stream` (stream_roundtrip)
+
+| metric | cadr | pi |
+|---|---|---|
+| `stream_roundtrip` | `stream-chat` `:transport :websocket` (`src/cadr-ai/websocket.lisp`) | `stream` `transport: "websocket"` (`packages/ai/src/api/openai-codex-responses.ts`) |
+
+Independent named metric for the `websocket_stream` hole.
+Recorded `response.*` frames. cadr Goal 12 `usocket` loopback
+on `127.0.0.1` (not openai.com). pi MockWebSocket (no TCP).
+One user message `Say hello`; text `Hello`; usage 1/1.
+Observed `ws_text` / `stop_reason` / `text_characters` /
+`usage_input` / `usage_output` are exact. Do not exact
+session/debug stats. First Friend-MachineD freeze
+**507.72×** (44298 / 87.25 µs), ceiling 800.0 (TCP
+loopback vs MockWebSocket). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1653,14 +1669,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 155 | 67,772 | 53.2% | `no worse than baseline` is falsifiable |
+| `paired` | 156 | 68,400 | 53.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 27 | 17,314 | 13.6% | on a named paired thunk; no own bench |
-| `needs-pair` | 89 | 34,828 | 27.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 88 | 34,200 | 26.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 53.2% of lines (155 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 59.1% of lines.
+- **Falsifiable vs baseline:** 53.7% of lines (156 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 59.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1756,6 +1772,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/support/uuid.lisp` | 93 | `ai_support.uuid_v7` |
 | `src/cadr-ai/transport/aws-event-stream.lisp` | 222 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/transport/http.lisp` | 858 | `http_transport.parse_url` |
+| `src/cadr-ai/websocket.lisp` | 628 | `websocket_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 89 | `cli_bootstrap_sessions.coding_tools` |
@@ -1901,7 +1918,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `settings_load` | 3 | 1,283 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
-| `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |

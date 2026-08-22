@@ -553,6 +553,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(http_transport), 1)
         self.assertEqual(http_transport[0]["class"], "paired")
         self.assertIn("http_transport.parse_url", http_transport[0]["metrics"])
+        websocket = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/websocket.lisp"
+        ]
+        self.assertEqual(len(websocket), 1)
+        self.assertEqual(websocket[0]["class"], "paired")
+        self.assertIn("websocket_stream.stream_roundtrip", websocket[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

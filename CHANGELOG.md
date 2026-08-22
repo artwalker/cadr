@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `websocket_stream.stream_roundtrip`
+  (recorded Codex WS frames; cadr Goal 12 loopback vs
+  pi MockWebSocket). Friend-MachineD n=5 **507.72×**
+  (44298 / 87.25 µs), ceiling 800.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.session_search`
   (empty / substring / miss / `re:` / invalid regex /
   named filter; cadr `filter-and-sort-sessions` vs pi

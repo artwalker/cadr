@@ -890,6 +890,13 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ss_re", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("ss_badre", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("ss_named", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("websocket_stream.stream_roundtrip", RECORD.METRIC_KEYS)
+        self.assertIn("stream_roundtrip", paired.METRICS["websocket_stream"])
+        self.assertIn("websocket_stream.stream_roundtrip", paired.RATIO_CEILINGS)
+        self.assertIn("ws_text", paired.OBSERVED_EXACT["websocket_stream"])
+        self.assertIn("stop_reason", paired.OBSERVED_EXACT["websocket_stream"])
+        self.assertIn("usage_input", paired.OBSERVED_EXACT["websocket_stream"])
+        self.assertIn("usage_output", paired.OBSERVED_EXACT["websocket_stream"])
 
     def test_cli_sdk_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

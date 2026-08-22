@@ -145,6 +145,7 @@ METRICS = {
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer"),
     "cli_selectors": ("session_search",),
+    "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
     "skill_prompt_load": ("build_prompt",),
@@ -623,6 +624,12 @@ RATIO_CEILINGS = {
     # 2.48x (42.40 / 17.10 us). 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_selectors.session_search": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # websocket_stream.stream_roundtrip pair (samples=5):
+    # observed 507.72x (44298 / 87.25 us). TCP loopback
+    # vs MockWebSocket. 800.0 is first-freeze headroom.
+    # Ratchet down only.
+    "websocket_stream.stream_roundtrip": 800.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_sdk pair (samples=5): observed 0.40x
     # (4.1 / 10.3 us). cadr leads. 8.0 is first-freeze
@@ -1358,6 +1365,13 @@ OBSERVED_EXACT = {
         "ss_re",
         "ss_badre",
         "ss_named",
+    ),
+    "websocket_stream": (
+        "ws_text",
+        "stop_reason",
+        "text_characters",
+        "usage_input",
+        "usage_output",
     ),
     "cli_sdk": (
         "beta",

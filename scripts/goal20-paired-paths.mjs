@@ -215,6 +215,7 @@ const REPETITIONS = {
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
 	"cli_selectors.session_search": 50,
+	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
 	"cli_sdk.cache_waste": 50,
@@ -4743,6 +4744,140 @@ async function measureCliSelectorsSessionSearch() {
 	};
 }
 
+const websocketRecordedEvents = [
+	{ type: "response.created", response: { id: "resp-1" } },
+	{
+		type: "response.output_item.added",
+		output_index: 0,
+		item: { type: "message" },
+	},
+	{
+		type: "response.content_part.added",
+		part: { type: "output_text", text: "" },
+	},
+	{ type: "response.output_text.delta", output_index: 0, delta: "Hello" },
+	{
+		type: "response.output_item.done",
+		output_index: 0,
+		item: {
+			type: "message",
+			id: "msg-resp-1",
+			content: [{ type: "output_text", text: "Hello" }],
+		},
+	},
+	{
+		type: "response.completed",
+		response: {
+			id: "resp-1",
+			status: "completed",
+			usage: {
+				input_tokens: 1,
+				output_tokens: 1,
+				input_tokens_details: { cached_tokens: 0 },
+			},
+		},
+	},
+];
+
+class Goal20MockWebSocket {
+	static OPEN = 1;
+	readyState = Goal20MockWebSocket.OPEN;
+	#listeners = new Map();
+
+	constructor(_url, _protocols) {
+		queueMicrotask(() => this.#dispatch("open", {}));
+	}
+
+	addEventListener(type, listener) {
+		let listeners = this.#listeners.get(type);
+		if (!listeners) {
+			listeners = new Set();
+			this.#listeners.set(type, listeners);
+		}
+		listeners.add(listener);
+	}
+
+	removeEventListener(type, listener) {
+		this.#listeners.get(type)?.delete(listener);
+	}
+
+	send(_data) {
+		queueMicrotask(() => {
+			for (const event of websocketRecordedEvents) {
+				this.#dispatch("message", { data: JSON.stringify(event) });
+			}
+		});
+	}
+
+	close() {}
+
+	#dispatch(type, event) {
+		for (const listener of this.#listeners.get(type) ?? []) listener(event);
+	}
+}
+
+const websocketModel = {
+	id: "gpt-5.5",
+	name: "Goal 20 Codex WS",
+	api: "openai-codex-responses",
+	provider: "openai-codex",
+	baseUrl: "https://chatgpt.com/backend-api",
+	reasoning: false,
+	input: ["text"],
+	cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+	contextWindow: 128000,
+	maxTokens: 4096,
+};
+
+const websocketContext = {
+	systemPrompt: "You are a helpful assistant.",
+	messages: [{ role: "user", content: "Say hello", timestamp: 1 }],
+};
+
+function installGoal20MockWebSocket() {
+	globalThis.WebSocket = Goal20MockWebSocket;
+}
+
+async function runWebsocketStream(collectEvents) {
+	const events = collectEvents ? [] : undefined;
+	const stream = openaiCodexModule.stream(websocketModel, websocketContext, {
+		apiKey: openaiCodexOauthToken,
+		transport: "websocket",
+		fetch: async () => {
+			throw new Error("websocket pair must not use fetch");
+		},
+	});
+	for await (const event of stream) events?.push(event.type);
+	const message = await stream.result();
+	return { events, message };
+}
+
+async function measureWebsocketStream() {
+	installGoal20MockWebSocket();
+	const observed = await runWebsocketStream(true);
+	if (observed.message.stopReason !== "stop") {
+		throw new Error(
+			`websocket fixture stream produced stopReason ${observed.message.stopReason}`,
+		);
+	}
+	const text = observed.message.content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("");
+	return {
+		stream_roundtrip: await collect("websocket_stream.stream_roundtrip", () => {
+			return () => runWebsocketStream(false);
+		}),
+		observed: {
+			ws_text: text,
+			stop_reason: observed.message.stopReason,
+			text_characters: [...text].length,
+			usage_input: observed.message.usage.input,
+			usage_output: observed.message.usage.output,
+		},
+	};
+}
+
 function runCliSdkVersionNewer() {
 	return {
 		beta: versionCheckModule.comparePackageVersions("5.0.0-beta.20", "5.0.0-beta.9"),
@@ -5507,6 +5642,8 @@ process.stderr.write("goal20 pi paired paths: http_transport\n");
 const httpTransport = await measureHttpTransportParseUrl();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
+process.stderr.write("goal20 pi paired paths: websocket_stream\n");
+const websocketStream = await measureWebsocketStream();
 
 const result = {
 	schema_version: 1,
@@ -5676,6 +5813,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/footer.ts formatCwdForFooter",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
+			"websocket_stream.stream_roundtrip":
+				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":
 				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
 			"cli_sdk.cache_miss":
@@ -5809,6 +5948,7 @@ const result = {
 		ai_runtime_faux: aiRuntimeFaux,
 		http_transport: httpTransport,
 		render_slicing: renderSlicing,
+		websocket_stream: websocketStream,
 	},
 };
 

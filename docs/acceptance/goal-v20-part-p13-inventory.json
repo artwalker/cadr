@@ -1140,8 +1140,10 @@
   {
    "path": "src/cadr-ai/websocket.lisp",
    "lines": 622,
-   "class": "needs-pair",
-   "metrics": [],
+   "class": "paired",
+   "metrics": [
+    "websocket_stream.stream_roundtrip"
+   ],
    "pathId": "websocket_stream",
    "pi": "packages/ai websocket stream (provider websocket branch)",
    "fixture": "Recorded websocket frames for a provider that uses them. No live socket.",

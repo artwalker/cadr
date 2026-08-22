@@ -111,6 +111,7 @@ METRIC_KEYS = (
     "cli_interactive_controller.wayland",
     "cli_interactive_controller.cwd_footer",
     "cli_selectors.session_search",
+    "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
     "cli_sdk.cache_waste",
