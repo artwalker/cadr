@@ -1494,6 +1494,20 @@ predicate, not HTML escape or a live TUI. Values `"1"` / empty /
 Friend-MachineD freeze **0.05×** (0.23 / 4.77 µs), ceiling
 8.0 (microsecond-floor). cadr leads. Same commit no optimize.
 
+### Pair 105 — `cli_selectors` (key_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `key_text` | `format-key-text` | `formatKeyText` (`packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts`) |
+
+Leftover sibling of the `cli_selectors` hole. Time string
+format, not TUI hint render. `ctrl+c` / slash alternatives /
+`shift+tab` / capitalize / empty. Do not exact darwin
+alt→option. Observed `kt_ctrl` / `kt_slash` / `kt_shift` /
+`kt_cap` / `kt_empty` are exact. First Friend-MachineD freeze
+**2.86×** (5.76 / 2.01 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1699,14 +1713,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 158 | 68,631 | 53.9% | `no worse than baseline` is falsifiable |
+| `paired` | 159 | 68,786 | 54.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 85 | 33,863 | 26.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 84 | 33,708 | 26.5% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 53.9% of lines (158 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 59.7% of lines.
+- **Falsifiable vs baseline:** 54.0% of lines (159 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 59.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1810,6 +1824,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 315 | `cli_extensions_install.llama_catalog` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
+| `src/cadr-cli/interactive/components/loaders.lisp` | 155 | `cli_selectors.key_text` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -1941,7 +1956,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_selectors` | 13 | 6,505 |
+| `cli_selectors` | 12 | 6,350 |
 | `cli_interactive_controller` | 8 | 5,970 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
 | `agent_tool_loop` | 13 | 4,094 |

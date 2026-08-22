@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.key_text`
+  (`ctrl+c` / slash / `shift+tab` / capitalize / empty;
+  cadr `format-key-text` vs pi `formatKeyText`).
+  Friend-MachineD n=5 **2.86×** (5.76 / 2.01 µs), ceiling
+  8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_support.experimental`
   (`"1"` / empty / `"0"` / `"true"` / nil; cadr
   `experimental-features-enabled-p` vs pi

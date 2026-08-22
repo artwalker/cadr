@@ -144,7 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer"),
-    "cli_selectors": ("session_search",),
+    "cli_selectors": ("session_search", "key_text"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
@@ -634,6 +634,11 @@ RATIO_CEILINGS = {
     # 2.48x (42.40 / 17.10 us). 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_selectors.session_search": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_selectors.key_text pair (samples=5): observed
+    # 2.86x (5.76 / 2.01 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "cli_selectors.key_text": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
@@ -1387,6 +1392,11 @@ OBSERVED_EXACT = {
         "ss_re",
         "ss_badre",
         "ss_named",
+        "kt_ctrl",
+        "kt_slash",
+        "kt_shift",
+        "kt_cap",
+        "kt_empty",
     ),
     "websocket_stream": (
         "ws_text",

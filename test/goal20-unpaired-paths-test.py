@@ -442,6 +442,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(html_file), 1)
         self.assertEqual(html_file[0]["class"], "paired")
         self.assertIn("cli_support.experimental", html_file[0]["metrics"])
+        loaders = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/interactive/components/loaders.lisp"
+        ]
+        self.assertEqual(len(loaders), 1)
+        self.assertEqual(loaders[0]["class"], "paired")
+        self.assertIn("cli_selectors.key_text", loaders[0]["metrics"])
         normalize_path = [
             row
             for row in classified["rows"]

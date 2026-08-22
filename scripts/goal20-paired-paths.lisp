@@ -106,6 +106,7 @@
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
+;;;;  95. cli_selectors format-key-text vs formatKeyText
 ;;;;  94. websocket_stream stream-chat websocket vs openai-codex-responses stream
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
@@ -253,6 +254,7 @@
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
     ("cli_selectors.session_search" . 50)
+    ("cli_selectors.key_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -5755,8 +5757,18 @@
    (session-search-count "re:[")
    (session-search-count "" :name-filter :named)))
 
+(defun run-cli-selectors-key-text ()
+  ;; Linux: do not exact darwin alt→option.
+  (list
+   (cadr-cli:format-key-text "ctrl+c")
+   (cadr-cli:format-key-text "ctrl+c/escape")
+   (cadr-cli:format-key-text "shift+tab")
+   (cadr-cli:format-key-text "ctrl+c" :capitalize-p t)
+   (cadr-cli:format-key-text "")))
+
 (defun measure-cli-selectors-session-search ()
-  (let ((observed (run-cli-selectors-session-search)))
+  (let ((observed (run-cli-selectors-session-search))
+        (keys (run-cli-selectors-key-text)))
     (json-object
      "observed"
      (json-object
@@ -5765,12 +5777,22 @@
       "ss_miss" (nth 2 observed)
       "ss_re" (nth 3 observed)
       "ss_badre" (nth 4 observed)
-      "ss_named" (nth 5 observed))
+      "ss_named" (nth 5 observed)
+      "kt_ctrl" (nth 0 keys)
+      "kt_slash" (nth 1 keys)
+      "kt_shift" (nth 2 keys)
+      "kt_cap" (nth 3 keys)
+      "kt_empty" (nth 4 keys))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-session-search)))))))
+                  (run-cli-selectors-session-search))))
+     "key_text"
+     (collect "cli_selectors.key_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-key-text)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -6811,6 +6833,8 @@
       "src/cadr-cli/interactive/footer.lisp format-cwd-for-footer"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
+      "cli_selectors.key_text"
+      "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

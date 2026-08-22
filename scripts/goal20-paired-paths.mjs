@@ -218,6 +218,7 @@ const REPETITIONS = {
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
 	"cli_selectors.session_search": 50,
+	"cli_selectors.key_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -510,6 +511,9 @@ const mermaidTransformModule = await import(
 );
 const sessionSelectorSearchModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/components/session-selector-search.ts")
+);
+const keybindingHintsModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts")
 );
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
@@ -4831,11 +4835,27 @@ function runCliSelectorsSessionSearch() {
 	};
 }
 
+function runCliSelectorsKeyText() {
+	return {
+		kt_ctrl: keybindingHintsModule.formatKeyText("ctrl+c"),
+		kt_slash: keybindingHintsModule.formatKeyText("ctrl+c/escape"),
+		kt_shift: keybindingHintsModule.formatKeyText("shift+tab"),
+		kt_cap: keybindingHintsModule.formatKeyText("ctrl+c", { capitalize: true }),
+		kt_empty: keybindingHintsModule.formatKeyText(""),
+	};
+}
+
 async function measureCliSelectorsSessionSearch() {
-	const observed = runCliSelectorsSessionSearch();
+	const observed = {
+		...runCliSelectorsSessionSearch(),
+		...runCliSelectorsKeyText(),
+	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
 			return () => runCliSelectorsSessionSearch();
+		}),
+		key_text: await collect("cli_selectors.key_text", () => {
+			return () => runCliSelectorsKeyText();
 		}),
 		observed,
 	};
@@ -5914,6 +5934,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/footer.ts formatCwdForFooter",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
+			"cli_selectors.key_text":
+				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":
