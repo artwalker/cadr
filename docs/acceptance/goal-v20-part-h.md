@@ -1761,6 +1761,20 @@ with oauth/trust overlay strings. Observed `otl_short` / `otl_trunc` /
 First Friend-MachineD freeze **0.16×** (33.4 / 205.6 µs), ceiling 8.0.
 Same commit no optimize.
 
+### Pair 124 — `cli_selectors` (input_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `input_line` | `selector-input-line` | `Input.render` |
+
+Leftover sibling of the `cli_selectors` hole. Time single-line
+selector search input render only (`> ` prompt, software cursor at end).
+Fixtures: empty; short ascii; two-char width; grapheme value; narrow
+width; wide scroll. Observed `il_empty` / `il_short` / `il_ab12` /
+`il_grapheme` / `il_narrow` / `il_scroll` are exact. First
+Friend-MachineD freeze **0.05×** (39.4 / 272.8 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2084,7 +2098,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index`, `cli_selectors.align_left_right`, `cli_selectors.fit_line`, `cli_selectors.border_line`, `cli_selectors.selected_line`, `cli_selectors.muted_line`, `cli_selectors.dim_line`, `cli_selectors.modified_cursor_key`, `cli_selectors.title_line`, `cli_selectors.overlay_title_line` |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index`, `cli_selectors.align_left_right`, `cli_selectors.fit_line`, `cli_selectors.border_line`, `cli_selectors.selected_line`, `cli_selectors.muted_line`, `cli_selectors.dim_line`, `cli_selectors.modified_cursor_key`, `cli_selectors.title_line`, `cli_selectors.overlay_title_line`, `cli_selectors.input_line` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |

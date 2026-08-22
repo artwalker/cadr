@@ -103,6 +103,7 @@
 ;;;; 121. cli_selectors selector-modified-cursor-key vs parseKey CSI arrows
 ;;;; 122. cli_selectors selector-title-line vs theme accent bold Text margins
 ;;;; 123. cli_selectors selector-overlay-title-line vs oauth auth overlay title
+;;;; 124. cli_selectors selector-input-line vs Input.render
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -289,6 +290,7 @@
     ("cli_selectors.modified_cursor_key" . 50)
     ("cli_selectors.title_line" . 50)
     ("cli_selectors.overlay_title_line" . 50)
+    ("cli_selectors.input_line" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6080,6 +6082,15 @@
    (cadr-cli::selector-overlay-title-line "A" 5)
    (cadr-cli::selector-overlay-title-line "Project trust" 30)))
 
+(defun run-cli-selectors-input-line ()
+  (list
+   (cadr-cli::selector-input-line "" 20)
+   (cadr-cli::selector-input-line "hello" 20)
+   (cadr-cli::selector-input-line "ab" 12)
+   (cadr-cli::selector-input-line "你🙂a" 10)
+   (cadr-cli::selector-input-line "你🙂a" 3)
+   (cadr-cli::selector-input-line "가나다라마바사아자차카타파하" 20)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6095,7 +6106,8 @@
         (dim-line (run-cli-selectors-dim-line))
         (modified-cursor-key (run-cli-selectors-modified-cursor-key))
         (title-line (run-cli-selectors-title-line))
-        (overlay-title-line (run-cli-selectors-overlay-title-line)))
+        (overlay-title-line (run-cli-selectors-overlay-title-line))
+        (input-line (run-cli-selectors-input-line)))
     (json-object
      "observed"
      (json-object
@@ -6191,7 +6203,13 @@
       "otl_empty" (nth 2 overlay-title-line)
       "otl_wide" (nth 3 overlay-title-line)
       "otl_narrow" (nth 4 overlay-title-line)
-      "otl_normal" (nth 5 overlay-title-line))
+      "otl_normal" (nth 5 overlay-title-line)
+      "il_empty" (nth 0 input-line)
+      "il_short" (nth 1 input-line)
+      "il_ab12" (nth 2 input-line)
+      "il_grapheme" (nth 3 input-line)
+      "il_narrow" (nth 4 input-line)
+      "il_scroll" (nth 5 input-line))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6266,7 +6284,12 @@
      (collect "cli_selectors.overlay_title_line"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-overlay-title-line)))))))
+                  (run-cli-selectors-overlay-title-line))))
+     "input_line"
+     (collect "cli_selectors.input_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-input-line)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7341,6 +7364,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-title-line"
       "cli_selectors.overlay_title_line"
       "src/cadr-cli/interactive/selectors/common.lisp selector-overlay-title-line"
+      "cli_selectors.input_line"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-input-line"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

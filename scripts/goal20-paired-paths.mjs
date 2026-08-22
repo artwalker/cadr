@@ -235,6 +235,7 @@ const REPETITIONS = {
 	"cli_selectors.modified_cursor_key": 50,
 	"cli_selectors.title_line": 50,
 	"cli_selectors.overlay_title_line": 50,
+	"cli_selectors.input_line": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5229,6 +5230,26 @@ function runCliSelectorsOverlayTitleLine() {
 	];
 }
 
+function selectorInputLinePi(value, width) {
+	const input = new inputModule.Input();
+	for (const ch of value) {
+		input.handleInput(ch);
+	}
+	input.focused = false;
+	return input.render(width)[0];
+}
+
+function runCliSelectorsInputLine() {
+	return [
+		selectorInputLinePi("", 20),
+		selectorInputLinePi("hello", 20),
+		selectorInputLinePi("ab", 12),
+		selectorInputLinePi("你🙂a", 10),
+		selectorInputLinePi("你🙂a", 3),
+		selectorInputLinePi("가나다라마바사아자차카타파하", 20),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -5241,6 +5262,7 @@ async function measureCliSelectorsSessionSearch() {
 	const modifiedCursorKeyResults = runCliSelectorsModifiedCursorKey();
 	const titleLineResults = runCliSelectorsTitleLine();
 	const overlayTitleLineResults = runCliSelectorsOverlayTitleLine();
+	const inputLineResults = runCliSelectorsInputLine();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5317,6 +5339,12 @@ async function measureCliSelectorsSessionSearch() {
 		otl_wide: overlayTitleLineResults[3],
 		otl_narrow: overlayTitleLineResults[4],
 		otl_normal: overlayTitleLineResults[5],
+		il_empty: inputLineResults[0],
+		il_short: inputLineResults[1],
+		il_ab12: inputLineResults[2],
+		il_grapheme: inputLineResults[3],
+		il_narrow: inputLineResults[4],
+		il_scroll: inputLineResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5363,6 +5391,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		overlay_title_line: await collect("cli_selectors.overlay_title_line", () => {
 			return () => runCliSelectorsOverlayTitleLine();
+		}),
+		input_line: await collect("cli_selectors.input_line", () => {
+			return () => runCliSelectorsInputLine();
 		}),
 		observed,
 	};
@@ -6474,6 +6505,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts theme.fg accent theme.bold TruncatedText margins",
 			"cli_selectors.overlay_title_line":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts theme.fg accent theme.bold TruncatedText margins",
+			"cli_selectors.input_line":
+				"packages/tui/src/components/input.ts Input.render",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

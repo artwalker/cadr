@@ -21,10 +21,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.input_line`
+  (selector search input render fixtures; cadr `selector-input-line` vs
+  pi `Input.render`). Friend-MachineD n=5 **0.05×** (39.4 / 272.8 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_selectors.overlay_title_line`
   (auth overlay accent bold title fixtures; cadr
   `selector-overlay-title-line` vs pi oauth `TruncatedText` margins).
-  Friend-MachineD n=5 **0.16×** (5.4 / 33.3 µs), ceiling 8.0. Same
+  Friend-MachineD n=5 **0.16×** (33.4 / 205.6 µs), ceiling 8.0. Same
   commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.title_line`
   (accent bold title fixtures; cadr `selector-title-line` vs pi
