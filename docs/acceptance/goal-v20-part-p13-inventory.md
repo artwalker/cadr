@@ -494,11 +494,11 @@ These must not be filed as callees.
 | `src/cadr-cli/models/login-selection.lisp` | 75 |
 | `src/cadr-cli/models/matching.lisp` | 398 |
 
-### `cli_interactive_controller` (additional) — `syntax.lisp` paired `cli_interactive_controller.decode_entity`; `clipboard.lisp` paired `cli_interactive_controller.wayland`
+### `cli_interactive_controller` (additional) — `syntax.lisp` paired `cli_interactive_controller.decode_entity`; `clipboard.lisp` paired `cli_interactive_controller.wayland`; `footer.lisp` paired `cli_interactive_controller.cwd_footer`
 
-- pi: `packages/coding-agent/src/utils/html.ts decodeHtmlEntity`; `packages/coding-agent/src/utils/clipboard-image.ts isWaylandSession`
-- fixture: named entities + `#65` + unknown. Time decode, not a live TUI. Wayland: injected `WAYLAND_DISPLAY` / `XDG_SESSION_TYPE=wayland` / `x11` / dummy `FOO`. Do not exact empty display or mixed-case session type. Dummy alist, not NIL.
-- Friend-MachineD n=5: decode_entity **1.49×** (0.63 / 0.42 µs); wayland **1.17×** (0.36 / 0.30 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commits.
+- pi: `packages/coding-agent/src/utils/html.ts decodeHtmlEntity`; `packages/coding-agent/src/utils/clipboard-image.ts isWaylandSession`; `packages/coding-agent/src/modes/interactive/components/footer.ts formatCwdForFooter`
+- fixture: named entities + `#65` + unknown. Time decode, not a live TUI. Wayland: injected `WAYLAND_DISPLAY` / `XDG_SESSION_TYPE=wayland` / `x11` / dummy `FOO`. Do not exact empty display or mixed-case session type. Dummy alist, not NIL. Cwd footer: POSIX home / `~/proj` / outside `/tmp` / trailing slashes. Do not exact missing home or Windows seps.
+- Friend-MachineD n=5: decode_entity **1.49×** (0.63 / 0.42 µs); wayland **1.17×** (0.36 / 0.30 µs); cwd_footer **0.34×** (0.78 / 2.31 µs), ceiling 8.0. cadr leads on cwd_footer. Other files still `needs-pair`. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

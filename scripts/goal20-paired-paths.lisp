@@ -96,6 +96,7 @@
 ;;;;  82. cli_interactive_controller clipboard-wayland-p vs isWaylandSession
 ;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
+;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -233,6 +234,7 @@
     ("cli_support.parse_changelog" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
+    ("cli_interactive_controller.cwd_footer" . 50)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
     ("cli_sdk.cache_waste" . 50)
@@ -5336,9 +5338,24 @@
    (wayland-session-flag '(("XDG_SESSION_TYPE" . "x11")))
    (wayland-session-flag '(("FOO" . "1")))))
 
+(defun cwd-footer-flag (cwd home expected)
+  (if (string= (cadr-cli::format-cwd-for-footer cwd home) expected)
+      1
+      0))
+
+(defun run-cli-interactive-cwd-footer ()
+  ;; POSIX only. Do not exact a missing home (cadr still trims;
+  ;; pi returns cwd as-is) or Windows separators.
+  (list
+   (cwd-footer-flag "/home/u" "/home/u" "~")
+   (cwd-footer-flag "/home/u/proj" "/home/u" "~/proj")
+   (cwd-footer-flag "/tmp" "/home/u" "/tmp")
+   (cwd-footer-flag "/home/u/proj/" "/home/u/" "~/proj")))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
-        (wayland (run-cli-interactive-wayland)))
+        (wayland (run-cli-interactive-wayland))
+        (cwd (run-cli-interactive-cwd-footer)))
     (json-object
      "observed"
      (json-object
@@ -5352,7 +5369,11 @@
       "wl_disp" (first wayland)
       "wl_type" (second wayland)
       "wl_x11" (third wayland)
-      "wl_none" (fourth wayland))
+      "wl_none" (fourth wayland)
+      "cf_home" (first cwd)
+      "cf_proj" (second cwd)
+      "cf_out" (third cwd)
+      "cf_slash" (fourth cwd))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -5362,7 +5383,12 @@
      (collect "cli_interactive_controller.wayland"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-wayland)))))))
+                  (run-cli-interactive-wayland))))
+     "cwd_footer"
+     (collect "cli_interactive_controller.cwd_footer"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-cwd-footer)))))))
 
 (defun version-cmp-sign (left right)
   (let ((value (cadr-cli::compare-package-versions left right)))
@@ -6044,6 +6070,8 @@
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"
       "src/cadr-cli/interactive/clipboard.lisp clipboard-wayland-p"
+      "cli_interactive_controller.cwd_footer"
+      "src/cadr-cli/interactive/footer.lisp format-cwd-for-footer"
       "cli_sdk.version_newer"
       "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
       "cli_sdk.cache_miss"

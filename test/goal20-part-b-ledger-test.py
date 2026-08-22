@@ -831,6 +831,13 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("wl_type", paired.OBSERVED_EXACT["cli_interactive_controller"])
         self.assertIn("wl_x11", paired.OBSERVED_EXACT["cli_interactive_controller"])
         self.assertIn("wl_none", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("cli_interactive_controller.cwd_footer", RECORD.METRIC_KEYS)
+        self.assertIn("cwd_footer", paired.METRICS["cli_interactive_controller"])
+        self.assertIn("cli_interactive_controller.cwd_footer", paired.RATIO_CEILINGS)
+        self.assertIn("cf_home", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("cf_proj", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("cf_out", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("cf_slash", paired.OBSERVED_EXACT["cli_interactive_controller"])
 
     def test_cli_sdk_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

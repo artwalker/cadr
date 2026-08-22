@@ -1302,6 +1302,19 @@ missing ctx → 128000. No socket, no TUI. First Friend-MachineD
 freeze **0.36×** (4.78 / 13.41 µs), ceiling 8.0. cadr leads.
 Same commit no optimize.
 
+### Pair 92 — `cli_interactive_controller` (cwd_footer)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cwd_footer` | `format-cwd-for-footer` | `formatCwdForFooter` (`packages/coding-agent/src/modes/interactive/components/footer.ts`) |
+
+Leftover sibling of the `cli_interactive_controller` hole.
+POSIX home / `~/proj` / outside `/tmp` / trailing slashes. Do not
+exact a missing home (cadr still trims; pi returns cwd) or Windows
+separators. No TUI. First Friend-MachineD freeze **0.34×**
+(0.78 / 2.31 µs), ceiling 8.0. cadr leads. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1507,14 +1520,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 145 | 63,565 | 49.9% | `no worse than baseline` is falsifiable |
+| `paired` | 146 | 64,101 | 50.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 107 | 43,430 | 34.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 106 | 42,894 | 33.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 49.9% of lines (145 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 55.8% of lines.
+- **Falsifiable vs baseline:** 50.3% of lines (146 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 56.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1617,6 +1630,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/llama/provider.lisp` | 315 | `cli_extensions_install.llama_catalog` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -1728,7 +1742,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | hole | files | lines |
 |---|---:|---:|
 | `cli_selectors` | 14 | 7,982 |
-| `cli_interactive_controller` | 9 | 6,506 |
+| `cli_interactive_controller` | 8 | 5,970 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
 | `tui_mermaid` | 12 | 5,042 |
 | `agent_tool_loop` | 13 | 4,094 |

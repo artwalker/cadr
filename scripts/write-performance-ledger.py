@@ -104,6 +104,7 @@ METRIC_KEYS = (
     "cli_support.parse_changelog",
     "cli_interactive_controller.decode_entity",
     "cli_interactive_controller.wayland",
+    "cli_interactive_controller.cwd_footer",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
     "cli_sdk.cache_waste",

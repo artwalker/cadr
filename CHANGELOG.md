@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_interactive_controller.cwd_footer`
+  (POSIX home/`~/proj`/outside; cadr `format-cwd-for-footer` vs
+  pi `formatCwdForFooter`). Friend-MachineD n=5 **0.34×**
+  (0.78 / 2.31 µs), ceiling 8.0. cadr leads. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_extensions_install.llama_catalog`
   (loaded catalog only; cadr `llama-provider-set-catalog` vs pi
   `createLlamaProvider().setCatalog`). Friend-MachineD n=5

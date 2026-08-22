@@ -208,6 +208,7 @@ const REPETITIONS = {
 	"cli_support.parse_changelog": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
+	"cli_interactive_controller.cwd_footer": 50,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
 	"cli_sdk.cache_waste": 50,
@@ -536,6 +537,9 @@ const changelogModule = await import(
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
 const clipboardImageModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/clipboard-image.ts")
+);
+const footerModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/components/footer.ts")
 );
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const cacheStatsModule = await import(
@@ -4453,10 +4457,24 @@ function runCliInteractiveWayland() {
 	};
 }
 
+function cwdFooterFlag(cwd, home, expected) {
+	return footerModule.formatCwdForFooter(cwd, home) === expected ? 1 : 0;
+}
+
+function runCliInteractiveCwdFooter() {
+	return {
+		cf_home: cwdFooterFlag("/home/u", "/home/u", "~"),
+		cf_proj: cwdFooterFlag("/home/u/proj", "/home/u", "~/proj"),
+		cf_out: cwdFooterFlag("/tmp", "/home/u", "/tmp"),
+		cf_slash: cwdFooterFlag("/home/u/proj/", "/home/u/", "~/proj"),
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
 		...runCliInteractiveWayland(),
+		...runCliInteractiveCwdFooter(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -4464,6 +4482,9 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		wayland: await collect("cli_interactive_controller.wayland", () => {
 			return () => runCliInteractiveWayland();
+		}),
+		cwd_footer: await collect("cli_interactive_controller.cwd_footer", () => {
+			return () => runCliInteractiveCwdFooter();
 		}),
 		observed,
 	};
@@ -5287,6 +5308,8 @@ const result = {
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":
 				"packages/coding-agent/src/utils/clipboard-image.ts isWaylandSession",
+			"cli_interactive_controller.cwd_footer":
+				"packages/coding-agent/src/modes/interactive/components/footer.ts formatCwdForFooter",
 			"cli_sdk.version_newer":
 				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
 			"cli_sdk.cache_miss":
