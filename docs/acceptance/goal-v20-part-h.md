@@ -1341,6 +1341,19 @@ diagnostics (pi also `refresh({allowNetwork:false})`). No socket.
 First Friend-MachineD freeze **0.24×** (2306 / 9493 µs), ceiling
 8.0. cadr leads. Same commit no optimize.
 
+### Pair 95 — `cli_sdk` (model_runtime)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_runtime` | `sdk-model-runtime-providers` + `sdk-model-runtime-model` | `ModelRuntime.getProviders` + `getModel` (`packages/coding-agent/src/core/model-runtime.ts`) |
+
+Independent named metric for `model-service.lisp`. Isolated empty
+auth/models. openai/anthropic present; unknown provider/model
+absent; `gpt-4o-mini` present. Do not exact provider count (cadr
+40 vs pi 39). No socket. First Friend-MachineD freeze **0.58×**
+(2243 / 3858 µs), ceiling 8.0. cadr leads. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1546,14 +1559,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 148 | 64,859 | 50.9% | `no worse than baseline` is falsifiable |
+| `paired` | 149 | 65,208 | 51.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 104 | 42,136 | 33.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 103 | 41,787 | 32.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 50.9% of lines (148 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 56.8% of lines.
+- **Falsifiable vs baseline:** 51.2% of lines (149 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 57.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1678,6 +1691,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
+| `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
@@ -1784,7 +1798,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `tui_theme_overlay` | 1 | 562 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
-| `cli_sdk` | 1 | 349 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |

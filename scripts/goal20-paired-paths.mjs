@@ -216,6 +216,7 @@ const REPETITIONS = {
 	"cli_sdk.session_list": 5,
 	"cli_sdk.agent_session": 5,
 	"cli_sdk.session_services": 5,
+	"cli_sdk.model_runtime": 5,
 	"provider_registry_defs.lookup": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
@@ -4799,6 +4800,22 @@ async function runCliSdkSessionServices() {
 	};
 }
 
+async function runCliSdkModelRuntime() {
+	const { agentDir } = stageCliSdkAgentSession();
+	const runtime = await modelRuntimeModule.ModelRuntime.create({
+		authPath: path.join(agentDir, "auth.json"),
+		modelsPath: path.join(agentDir, "models.json"),
+	});
+	const ids = runtime.getProviders().map((provider) => provider.id);
+	return {
+		mr_oa: ids.includes("openai") ? 1 : 0,
+		mr_an: ids.includes("anthropic") ? 1 : 0,
+		mr_missp: ids.includes("no-such-provider") ? 1 : 0,
+		mr_gpt: runtime.getModel("openai", "gpt-4o-mini") ? 1 : 0,
+		mr_missm: runtime.getModel("openai", "no-such") ? 1 : 0,
+	};
+}
+
 async function measureCliSdkVersionNewer() {
 	const observed = {
 		...runCliSdkVersionNewer(),
@@ -4808,6 +4825,7 @@ async function measureCliSdkVersionNewer() {
 		...(await runCliSdkSessionList()),
 		...(await runCliSdkAgentSession()),
 		...(await runCliSdkSessionServices()),
+		...(await runCliSdkModelRuntime()),
 	};
 	return {
 		version_newer: await collect("cli_sdk.version_newer", () => {
@@ -4830,6 +4848,9 @@ async function measureCliSdkVersionNewer() {
 		}),
 		session_services: await collect("cli_sdk.session_services", () => {
 			return () => runCliSdkSessionServices();
+		}),
+		model_runtime: await collect("cli_sdk.model_runtime", () => {
+			return () => runCliSdkModelRuntime();
 		}),
 		observed,
 	};
@@ -5405,6 +5426,8 @@ const result = {
 				"packages/coding-agent/src/core/sdk.ts createAgentSession",
 			"cli_sdk.session_services":
 				"packages/coding-agent/src/core/agent-session-services.ts createAgentSessionServices",
+			"cli_sdk.model_runtime":
+				"packages/coding-agent/src/core/model-runtime.ts ModelRuntime.getProviders + getModel",
 			"provider_registry_defs.lookup":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"skill_prompt_load.build_prompt":

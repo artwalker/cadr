@@ -99,6 +99,7 @@
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
 ;;;;  87. cli_sdk create-agent-session-services vs createAgentSessionServices
+;;;;  88. cli_sdk sdk-model-runtime-providers vs ModelRuntime.getProviders
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -244,6 +245,7 @@
     ("cli_sdk.session_list" . 5)
     ("cli_sdk.agent_session" . 5)
     ("cli_sdk.session_services" . 5)
+    ("cli_sdk.model_runtime" . 5)
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
@@ -5749,6 +5751,40 @@
            1
            0)))))
 
+(defun sdk-model-runtime-has-provider-p (runtime id)
+  (if (find
+       id
+       (mapcar
+        #'cadr-ai:runtime-provider-id
+        (cadr-cli::sdk-model-runtime-providers runtime)))
+      1
+      0))
+
+(defun run-cli-sdk-model-runtime ()
+  ;; Builtin catalog lookup only. Do not exact provider count
+  ;; (cadr 40 vs pi 39). Isolated empty auth/models.
+  (destructuring-bind (cwd agent-dir)
+      (stage-cli-sdk-agent-session)
+    (declare (ignore cwd))
+    (let ((runtime
+            (cadr-cli::make-sdk-model-runtime
+             :auth-path
+             (merge-pathnames "auth.json" agent-dir)
+             :models-path
+             (merge-pathnames "models.json" agent-dir))))
+      (list
+       (sdk-model-runtime-has-provider-p runtime :openai)
+       (sdk-model-runtime-has-provider-p runtime :anthropic)
+       (sdk-model-runtime-has-provider-p runtime :no-such-provider)
+       (if (cadr-cli::sdk-model-runtime-model
+            runtime :openai "gpt-4o-mini")
+           1
+           0)
+       (if (cadr-cli::sdk-model-runtime-model
+            runtime :openai "no-such")
+           1
+           0)))))
+
 (defun measure-cli-sdk-version-newer ()
   (let ((observed (run-cli-sdk-version-newer))
         (cache (run-cli-sdk-cache-miss))
@@ -5756,7 +5792,8 @@
         (thinking (run-cli-sdk-thinking-level))
         (sessions (run-cli-sdk-session-list))
         (agent (run-cli-sdk-agent-session))
-        (services (run-cli-sdk-session-services)))
+        (services (run-cli-sdk-session-services))
+        (models (run-cli-sdk-model-runtime)))
     (json-object
      "observed"
      (json-object
@@ -5798,7 +5835,12 @@
       "as_fb" (nth 2 agent)
       "ss_ok" (nth 0 services)
       "ss_cwd" (nth 1 services)
-      "ss_snap" (nth 2 services))
+      "ss_snap" (nth 2 services)
+      "mr_oa" (nth 0 models)
+      "mr_an" (nth 1 models)
+      "mr_missp" (nth 2 models)
+      "mr_gpt" (nth 3 models)
+      "mr_missm" (nth 4 models))
      "version_newer"
      (collect "cli_sdk.version_newer"
               (lambda ()
@@ -5833,7 +5875,12 @@
      (collect "cli_sdk.session_services"
               (lambda ()
                 (lambda ()
-                  (run-cli-sdk-session-services)))))))
+                  (run-cli-sdk-session-services))))
+     "model_runtime"
+     (collect "cli_sdk.model_runtime"
+              (lambda ()
+                (lambda ()
+                  (run-cli-sdk-model-runtime)))))))
 
 (defun provider-definition-present-p (id)
   (handler-case
@@ -6220,6 +6267,8 @@
       "src/cadr-cli/sdk/agent-session.lisp create-agent-session"
       "cli_sdk.session_services"
       "src/cadr-cli/sdk/session-runtime.lisp create-agent-session-services"
+      "cli_sdk.model_runtime"
+      "src/cadr-cli/sdk/model-service.lisp sdk-model-runtime-providers + sdk-model-runtime-model"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "skill_prompt_load.build_prompt"

@@ -883,6 +883,14 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ss_ok", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("ss_cwd", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("ss_snap", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("cli_sdk.model_runtime", RECORD.METRIC_KEYS)
+        self.assertIn("model_runtime", paired.METRICS["cli_sdk"])
+        self.assertIn("cli_sdk.model_runtime", paired.RATIO_CEILINGS)
+        self.assertIn("mr_oa", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("mr_an", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("mr_missp", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("mr_gpt", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("mr_missm", paired.OBSERVED_EXACT["cli_sdk"])
 
     def test_provider_registry_defs_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
