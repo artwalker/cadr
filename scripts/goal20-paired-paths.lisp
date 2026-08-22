@@ -97,6 +97,7 @@
 ;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
+;;;;  86. cli_sdk create-agent-session vs createAgentSession
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -240,6 +241,7 @@
     ("cli_sdk.cache_waste" . 50)
     ("cli_sdk.thinking_level" . 50)
     ("cli_sdk.session_list" . 5)
+    ("cli_sdk.agent_session" . 5)
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
@@ -5633,12 +5635,90 @@
            0)
        (length missing)))))
 
+(defparameter *cli-sdk-agent-session-model*
+  (cadr-ai:make-model
+   :id "dummy"
+   :name "dummy"
+   :provider :openai
+   :api :openai-completions
+   :context-window 128000
+   :max-tokens 4096))
+
+(defun stage-cli-sdk-agent-session ()
+  (let* ((cwd
+           (namestring
+            (truename
+             (ensure-directories-exist
+              (merge-pathnames
+               "sdk-agent-cwd/" *scratch-directory*)))))
+         (agent
+           (namestring
+            (truename
+             (ensure-directories-exist
+              (merge-pathnames
+               "sdk-agent-dir/" *scratch-directory*))))))
+    (ensure-directories-exist
+     (merge-pathnames ".cadr/" cwd))
+    (ensure-directories-exist
+     (merge-pathnames ".pi/" cwd))
+    (list cwd agent)))
+
+(defun run-cli-sdk-agent-session ()
+  ;; Empty isolated cwd/agentDir, in-memory session, no-tools :all.
+  ;; Do not exact fallback copy (cadr vs pi product strings) or
+  ;; model catalog 39 vs 40. No socket.
+  (destructuring-bind (cwd agent-dir)
+      (stage-cli-sdk-agent-session)
+    (let* ((settings (cadr-cli::make-memory-sdk-settings-manager))
+           (loader
+             (cadr-cli::make-sdk-resource-loader
+              :cwd cwd
+              :agent-directory agent-dir
+              :settings-manager settings
+              :no-extensions-p t
+              :no-skills-p t
+              :no-prompts-p t
+              :no-themes-p t
+              :no-context-files-p t))
+           (runtime
+             (cadr-cli::make-sdk-model-runtime
+              :auth-path
+              (merge-pathnames "auth.json" agent-dir)
+              :models-path
+              (merge-pathnames "models.json" agent-dir)))
+           (manager (cadr-cli::session-manager-in-memory cwd))
+           session)
+      (cadr-cli::sdk-resource-loader-reload loader)
+      (unwind-protect
+           (multiple-value-bind (created extensions fallback)
+               (cadr-cli::create-agent-session
+                :cwd cwd
+                :agent-directory agent-dir
+                :settings-manager settings
+                :resource-loader loader
+                :model-runtime runtime
+                :session-manager manager
+                :model *cli-sdk-agent-session-model*
+                :no-tools :all)
+             (declare (ignore extensions))
+             (setf session created)
+             (list
+              (if session 1 0)
+              (if (cadr-agent:agent-model
+                   (cadr-cli::agent-session-agent session))
+                  1
+                  0)
+              (if (stringp fallback) 1 0)))
+        (when session
+          (cadr-cli::agent-session-dispose session))))))
+
 (defun measure-cli-sdk-version-newer ()
   (let ((observed (run-cli-sdk-version-newer))
         (cache (run-cli-sdk-cache-miss))
         (waste (run-cli-sdk-cache-waste))
         (thinking (run-cli-sdk-thinking-level))
-        (sessions (run-cli-sdk-session-list)))
+        (sessions (run-cli-sdk-session-list))
+        (agent (run-cli-sdk-agent-session)))
     (json-object
      "observed"
      (json-object
@@ -5674,7 +5754,10 @@
       "tl_miss" (nth 7 thinking)
       "sl_n" (nth 0 sessions)
       "sl_id" (nth 1 sessions)
-      "sl_empty" (nth 2 sessions))
+      "sl_empty" (nth 2 sessions)
+      "as_ok" (nth 0 agent)
+      "as_model" (nth 1 agent)
+      "as_fb" (nth 2 agent))
      "version_newer"
      (collect "cli_sdk.version_newer"
               (lambda ()
@@ -5699,7 +5782,12 @@
      (collect "cli_sdk.session_list"
               (lambda ()
                 (lambda ()
-                  (run-cli-sdk-session-list)))))))
+                  (run-cli-sdk-session-list))))
+     "agent_session"
+     (collect "cli_sdk.agent_session"
+              (lambda ()
+                (lambda ()
+                  (run-cli-sdk-agent-session)))))))
 
 (defun provider-definition-present-p (id)
   (handler-case
@@ -6082,6 +6170,8 @@
       "src/cadr-cli/sdk/cache-version.lisp valid-thinking-level-p"
       "cli_sdk.session_list"
       "src/cadr-cli/sdk/session-manager.lisp session-manager-list"
+      "cli_sdk.agent_session"
+      "src/cadr-cli/sdk/agent-session.lisp create-agent-session"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "skill_prompt_load.build_prompt"

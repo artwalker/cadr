@@ -214,6 +214,7 @@ const REPETITIONS = {
 	"cli_sdk.cache_waste": 50,
 	"cli_sdk.thinking_level": 50,
 	"cli_sdk.session_list": 5,
+	"cli_sdk.agent_session": 5,
 	"provider_registry_defs.lookup": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
@@ -4726,6 +4727,54 @@ async function runCliSdkSessionList() {
 	};
 }
 
+function stageCliSdkAgentSession() {
+	const cwdDir = path.join(scratch, "sdk-agent-cwd");
+	const agentDir = path.join(scratch, "sdk-agent-dir");
+	mkdirSync(cwdDir, { recursive: true });
+	mkdirSync(agentDir, { recursive: true });
+	mkdirSync(path.join(cwdDir, ".cadr"), { recursive: true });
+	mkdirSync(path.join(cwdDir, ".pi"), { recursive: true });
+	return { cwd: realpathSync(cwdDir), agentDir: realpathSync(agentDir) };
+}
+
+async function runCliSdkAgentSession() {
+	const { cwd, agentDir } = stageCliSdkAgentSession();
+	const settings = settingsModule.SettingsManager.create(cwd, agentDir);
+	const loader = new resourceLoaderModule.DefaultResourceLoader({
+		cwd,
+		agentDir,
+		settingsManager: settings,
+	});
+	await loader.reload();
+	const modelRuntime = await modelRuntimeModule.ModelRuntime.create({
+		authPath: path.join(agentDir, "auth.json"),
+		modelsPath: path.join(agentDir, "models.json"),
+	});
+	const sessionManager = sessionModule.SessionManager.inMemory(cwd);
+	const { getModel } = await import(moduleUrl("packages/ai/src/compat.ts"));
+	const { createAgentSession } = await import(moduleUrl("packages/coding-agent/src/core/sdk.ts"));
+	const model = getModel("openai", "gpt-4o-mini");
+	const result = await createAgentSession({
+		cwd,
+		agentDir,
+		settingsManager: settings,
+		resourceLoader: loader,
+		modelRuntime,
+		sessionManager,
+		model,
+		noTools: "all",
+	});
+	try {
+		return {
+			as_ok: result.session ? 1 : 0,
+			as_model: result.session.model ? 1 : 0,
+			as_fb: typeof result.modelFallbackMessage === "string" ? 1 : 0,
+		};
+	} finally {
+		result.session?.dispose();
+	}
+}
+
 async function measureCliSdkVersionNewer() {
 	const observed = {
 		...runCliSdkVersionNewer(),
@@ -4733,6 +4782,7 @@ async function measureCliSdkVersionNewer() {
 		...runCliSdkCacheWaste(),
 		...runCliSdkThinkingLevel(),
 		...(await runCliSdkSessionList()),
+		...(await runCliSdkAgentSession()),
 	};
 	return {
 		version_newer: await collect("cli_sdk.version_newer", () => {
@@ -4749,6 +4799,9 @@ async function measureCliSdkVersionNewer() {
 		}),
 		session_list: await collect("cli_sdk.session_list", () => {
 			return () => runCliSdkSessionList();
+		}),
+		agent_session: await collect("cli_sdk.agent_session", () => {
+			return () => runCliSdkAgentSession();
 		}),
 		observed,
 	};
@@ -5320,6 +5373,8 @@ const result = {
 				"packages/coding-agent/src/cli/args.ts isValidThinkingLevel",
 			"cli_sdk.session_list":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.list",
+			"cli_sdk.agent_session":
+				"packages/coding-agent/src/core/sdk.ts createAgentSession",
 			"provider_registry_defs.lookup":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"skill_prompt_load.build_prompt":

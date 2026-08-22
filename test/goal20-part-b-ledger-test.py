@@ -853,6 +853,9 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_sdk.cache_miss", paired.RATIO_CEILINGS)
         self.assertIn("cli_sdk.cache_waste", paired.RATIO_CEILINGS)
         self.assertIn("cli_sdk.thinking_level", paired.RATIO_CEILINGS)
+        self.assertIn("cli_sdk.agent_session", RECORD.METRIC_KEYS)
+        self.assertIn("agent_session", paired.METRICS["cli_sdk"])
+        self.assertIn("cli_sdk.agent_session", paired.RATIO_CEILINGS)
         self.assertIn("beta", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("newer_flag", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("equal_flag", paired.OBSERVED_EXACT["cli_sdk"])
@@ -871,6 +874,9 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("sl_id", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("sl_empty", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("tl_miss", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("as_ok", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("as_model", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("as_fb", paired.OBSERVED_EXACT["cli_sdk"])
 
     def test_provider_registry_defs_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

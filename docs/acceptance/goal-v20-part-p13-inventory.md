@@ -554,11 +554,11 @@ These must not be filed as callees.
 | `src/cadr-cli/extensions/llama/ui.lisp` | 763 |
 | `src/cadr-cli/extensions/loader.lisp` | 702 |
 
-### `cli_sdk` (additional) — `cache-version.lisp` paired `cli_sdk.version_newer` + `cli_sdk.cache_miss` + `cli_sdk.cache_waste` + `cli_sdk.thinking_level`; `session-manager.lisp` paired `cli_sdk.session_list`
+### `cli_sdk` (additional) — `cache-version.lisp` paired `cli_sdk.version_newer` + `cli_sdk.cache_miss` + `cli_sdk.cache_waste` + `cli_sdk.thinking_level`; `session-manager.lisp` paired `cli_sdk.session_list`; `agent-session.lisp` paired `cli_sdk.agent_session`
 
-- pi: `packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion`; `SessionManager.list`
-- fixture: valid semver compare/newer flags. No network. Session list: two session.jsonl copies with rewritten cwd + empty dir. Do not exact paths.
-- Friend-MachineD n=5: version_newer **0.40×** (4.1 / 10.3 µs); cache_miss **0.55×** (2.29 / 4.13 µs); cache_waste **0.60×** (3.96 / 6.56 µs); thinking_level **3.21×** (0.72 / 0.22 µs); session_list **1.93×** (15402 / 7989 µs), ceiling 8.0 (variance on thinking_level). cadr leads on cache paths. Other files still `needs-pair`. No optimize in the booking commits.
+- pi: `packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion`; `SessionManager.list`; `createAgentSession`
+- fixture: valid semver compare/newer flags. No network. Session list: two session.jsonl copies with rewritten cwd + empty dir. Do not exact paths. Agent session: isolated cwd/agentDir, in-memory session, explicit dummy model, no-tools. Do not exact fallback copy or thinking-level default.
+- Friend-MachineD n=5: version_newer **0.40×** (4.1 / 10.3 µs); cache_miss **0.55×** (2.29 / 4.13 µs); cache_waste **0.60×** (3.96 / 6.56 µs); thinking_level **3.21×** (0.72 / 0.22 µs); session_list **1.93×** (15402 / 7989 µs); agent_session **0.36×** (3151 / 8769 µs), ceiling 8.0 (variance on thinking_level). cadr leads on cache paths and agent_session. Other files still `needs-pair`. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

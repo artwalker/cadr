@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_sdk.agent_session`
+  (isolated cwd, in-memory session, explicit model,
+  no-tools; cadr `create-agent-session` vs pi
+  `createAgentSession`). Friend-MachineD n=5 **0.36×**
+  (3151 / 8769 µs), ceiling 8.0. cadr leads. Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_interactive_controller.cwd_footer`
   (POSIX home/`~/proj`/outside; cadr `format-cwd-for-footer` vs
   pi `formatCwdForFooter`). Friend-MachineD n=5 **0.34×**

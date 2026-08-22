@@ -1315,6 +1315,20 @@ separators. No TUI. First Friend-MachineD freeze **0.34×**
 (0.78 / 2.31 µs), ceiling 8.0. cadr leads. Same commit no
 optimize.
 
+### Pair 93 — `cli_sdk` (agent_session)
+
+| metric | cadr | pi |
+|---|---|---|
+| `agent_session` | `create-agent-session` | `createAgentSession` (`packages/coding-agent/src/core/sdk.ts`) |
+
+Independent named metric for the remaining `cli_sdk` agent-session
+file. Isolated cwd/agentDir, in-memory session, explicit dummy
+model, `no-tools :all` / `noTools: "all"`. Do not exact fallback
+copy or thinking-level default. Dispose after each sample. No
+socket, no TUI. First Friend-MachineD freeze **0.36×**
+(3151 / 8769 µs), ceiling 8.0. cadr leads. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1520,14 +1534,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 146 | 64,101 | 50.3% | `no worse than baseline` is falsifiable |
+| `paired` | 147 | 64,582 | 50.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 106 | 42,894 | 33.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 105 | 42,413 | 33.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 50.3% of lines (146 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 56.2% of lines.
+- **Falsifiable vs baseline:** 50.7% of lines (147 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 56.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1650,6 +1664,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
+| `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 | `cli_sdk.session_list` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
@@ -1752,8 +1767,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_print_rpc` | 5 | 1,375 |
 | `oauth_pkce_device` | 8 | 1,348 |
 | `settings_load` | 3 | 1,283 |
-| `cli_sdk` | 3 | 1,107 |
 | `websocket_stream` | 1 | 628 |
+| `cli_sdk` | 2 | 626 |
 | `tui_theme_overlay` | 1 | 562 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
