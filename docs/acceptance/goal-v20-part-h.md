@@ -1247,6 +1247,19 @@ exact error text. First Friend-MachineD freeze **0.09×**
 (1.01 / 11.51 µs), ceiling 8.0. cadr leads. Same commit no
 optimize.
 
+### Pair 88 — `oauth_pkce_device` (radius_gateway)
+
+| metric | cadr | pi |
+|---|---|---|
+| `radius_gateway` | `normalize-radius-gateway` | `normalizeRadiusGatewayUrl` (`packages/ai/src/providers/radius-config.ts`) |
+
+Leftover sibling of the `oauth_pkce_device` hole. Already-schemed
+URLs only: trailing slash / no slash / `http://localhost`. Do not
+exact a bare host without a scheme (pi prepends `https://`; cadr
+only right-trims `/`). No socket. First Friend-MachineD freeze
+**1.05×** (0.57 / 0.54 µs), ceiling 8.0 (variance). Same commit
+no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1452,14 +1465,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 141 | 62,346 | 48.9% | `no worse than baseline` is falsifiable |
+| `paired` | 142 | 62,462 | 49.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 111 | 44,649 | 35.0% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 110 | 44,533 | 35.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 48.9% of lines (141 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 54.8% of lines.
+- **Falsifiable vs baseline:** 49.0% of lines (142 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 54.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1532,6 +1545,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
+| `src/cadr-ai/oauth/providers/radius.lisp` | 116 | `oauth_pkce_device.radius_gateway` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
@@ -1676,8 +1690,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 7 | 2,727 |
 | `evals_harness` | 6 | 2,184 |
 | `package_manager` | 2 | 1,811 |
-| `oauth_pkce_device` | 9 | 1,464 |
 | `cli_print_rpc` | 5 | 1,375 |
+| `oauth_pkce_device` | 8 | 1,348 |
 | `settings_load` | 3 | 1,283 |
 | `cli_sdk` | 3 | 1,107 |
 | `websocket_stream` | 1 | 628 |

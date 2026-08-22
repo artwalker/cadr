@@ -154,6 +154,7 @@ const REPETITIONS = {
 	"oauth_pkce_device.auth_json": 50,
 	"oauth_pkce_device.copilot_url": 50,
 	"oauth_pkce_device.cloudflare_url": 50,
+	"oauth_pkce_device.radius_gateway": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"evals_harness.summarize": 20,
@@ -435,6 +436,9 @@ const githubCopilotOAuthModule = await import(
 );
 const cloudflareStreamModule = await import(
 	moduleUrl("packages/ai/src/providers/cloudflare-stream.ts")
+);
+const radiusConfigModule = await import(
+	moduleUrl("packages/ai/src/providers/radius-config.ts")
 );
 const authStorageModule = await import(
 	moduleUrl("packages/coding-agent/src/core/auth-storage.ts")
@@ -2648,11 +2652,22 @@ function runOauthPkceDeviceCloudflareUrl() {
 	};
 }
 
+function runOauthPkceDeviceRadiusGateway() {
+	const equals = (value, expected) =>
+		radiusConfigModule.normalizeRadiusGatewayUrl(value) === expected ? 1 : 0;
+	return {
+		rg_slash: equals("https://radius.example.com/", "https://radius.example.com"),
+		rg_plain: equals("https://radius.example.com", "https://radius.example.com"),
+		rg_http: equals("http://localhost:8080/", "http://localhost:8080"),
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
 	const copilot = await runOauthPkceDeviceCopilotUrl();
 	const cloudflare = runOauthPkceDeviceCloudflareUrl();
+	const radius = runOauthPkceDeviceRadiusGateway();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -2666,7 +2681,10 @@ async function measureOauthPkceDevice() {
 		cloudflare_url: await collect("oauth_pkce_device.cloudflare_url", () => {
 			return () => runOauthPkceDeviceCloudflareUrl();
 		}),
-		observed: { ...poll, ...auth, ...copilot, ...cloudflare },
+		radius_gateway: await collect("oauth_pkce_device.radius_gateway", () => {
+			return () => runOauthPkceDeviceRadiusGateway();
+		}),
+		observed: { ...poll, ...auth, ...copilot, ...cloudflare, ...radius },
 	};
 }
 
@@ -5067,6 +5085,8 @@ const result = {
 				"packages/ai/src/auth/oauth/github-copilot.ts githubCopilotOAuth.toAuth",
 			"oauth_pkce_device.cloudflare_url":
 				"packages/ai/src/providers/cloudflare-stream.ts resolveCloudflareModel",
+			"oauth_pkce_device.radius_gateway":
+				"packages/ai/src/providers/radius-config.ts normalizeRadiusGatewayUrl",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

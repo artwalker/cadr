@@ -92,6 +92,7 @@
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
 ;;;;  79. cli_sdk session-manager-list vs SessionManager.list
 ;;;;  80. oauth_pkce_device materialize-cloudflare-url vs resolveCloudflareModel
+;;;;  81. oauth_pkce_device normalize-radius-gateway vs normalizeRadiusGatewayUrl
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -175,6 +176,7 @@
     ("oauth_pkce_device.auth_json" . 50)
     ("oauth_pkce_device.copilot_url" . 50)
     ("oauth_pkce_device.cloudflare_url" . 50)
+    ("oauth_pkce_device.radius_gateway" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("evals_harness.summarize" . 20)
@@ -3121,11 +3123,29 @@
     "https://x/{CLOUDFLARE_GATEWAY_ID}" "acct" "gw"
     "https://x/gw")))
 
+(defun radius-gateway-flag (value expected)
+  (if (string= (cadr-ai::normalize-radius-gateway value) expected)
+      1
+      0))
+
+(defun run-oauth-pkce-device-radius-gateway ()
+  (list
+   (radius-gateway-flag
+    "https://radius.example.com/"
+    "https://radius.example.com")
+   (radius-gateway-flag
+    "https://radius.example.com"
+    "https://radius.example.com")
+   (radius-gateway-flag
+    "http://localhost:8080/"
+    "http://localhost:8080")))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
         (copilot (run-oauth-pkce-device-copilot-url))
-        (cloudflare (run-oauth-pkce-device-cloudflare-url)))
+        (cloudflare (run-oauth-pkce-device-cloudflare-url))
+        (radius (run-oauth-pkce-device-radius-gateway)))
     (json-object
      "observed"
      (json-object
@@ -3144,7 +3164,10 @@
       "gc_dom" (nth 3 copilot)
       "cf_plain" (nth 0 cloudflare)
       "cf_ok" (nth 1 cloudflare)
-      "cf_gw" (nth 2 cloudflare))
+      "cf_gw" (nth 2 cloudflare)
+      "rg_slash" (nth 0 radius)
+      "rg_plain" (nth 1 radius)
+      "rg_http" (nth 2 radius))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -3164,7 +3187,12 @@
      (collect "oauth_pkce_device.cloudflare_url"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-cloudflare-url)))))))
+                  (run-oauth-pkce-device-cloudflare-url))))
+     "radius_gateway"
+     (collect "oauth_pkce_device.radius_gateway"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-radius-gateway)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -5753,6 +5781,8 @@
       "src/cadr-ai/auth/github-copilot.lisp github-copilot-base-url"
       "oauth_pkce_device.cloudflare_url"
       "src/cadr-ai/auth/radius-cloudflare.lisp materialize-cloudflare-url"
+      "oauth_pkce_device.radius_gateway"
+      "src/cadr-ai/oauth/providers/radius.lisp normalize-radius-gateway"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
