@@ -241,6 +241,7 @@ const REPETITIONS = {
 	"cli_selectors.session_format_age": 50,
 	"cli_selectors.session_record_label": 50,
 	"cli_selectors.session_shorten_path": 50,
+	"cli_selectors.session_quoted_search": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5071,6 +5072,70 @@ function runCliSelectorsSessionShortenPath() {
 	};
 }
 
+function normalizedSearchTextPi(text) {
+	return (text ?? "").toLowerCase().replace(/\s+/g, " ");
+}
+
+function getSessionSearchTextPi(session) {
+	return `${session.id} ${session.name ?? ""} ${session.allMessagesText} ${session.cwd}`;
+}
+
+function quotedSearchPi(query) {
+	return query.length >= 2 && query[0] === '"' && query[query.length - 1] === '"';
+}
+
+function searchRecordPositionPi(session, query) {
+	const haystack = normalizedSearchTextPi(getSessionSearchTextPi(session));
+	if (query.startsWith("re:")) {
+		const pattern = query.slice(3);
+		try {
+			const idx = haystack.search(new RegExp(pattern, "i"));
+			return idx < 0 ? -1 : idx;
+		} catch {
+			return -1;
+		}
+	}
+	const needle = normalizedSearchTextPi(
+		quotedSearchPi(query) ? query.slice(1, -1) : query,
+	);
+	if (needle.length === 0) {
+		return 0;
+	}
+	const idx = haystack.indexOf(needle);
+	return idx < 0 ? -1 : idx;
+}
+
+function sessionQuotedSearchFixtureSessions() {
+	return [
+		{
+			id: "019f0000-0000-7000-8000-00000000cadr",
+			name: "alpha",
+			cwd: "/tmp/a",
+			allMessagesText: "hello cadr world",
+			modified: new Date(3),
+		},
+		{
+			id: "other-id",
+			name: null,
+			cwd: "/tmp/b",
+			allMessagesText: "nope",
+			modified: new Date(2),
+		},
+	];
+}
+
+function runCliSelectorsSessionQuotedSearch() {
+	const [hit, miss] = sessionQuotedSearchFixtureSessions();
+	return {
+		sqs_cadr: searchRecordPositionPi(hit, '"cadr"'),
+		sqs_phrase: searchRecordPositionPi(hit, '"hello cadr"'),
+		sqs_miss: searchRecordPositionPi(hit, '"not-found"'),
+		sqs_other_miss: searchRecordPositionPi(miss, '"cadr"'),
+		sqs_name: searchRecordPositionPi(hit, '"alpha"'),
+		sqs_other_hit: searchRecordPositionPi(hit, '"nope"'),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5408,6 +5473,7 @@ async function measureCliSelectorsSessionSearch() {
 	const sessionFormatAgeResults = runCliSelectorsSessionFormatAge();
 	const sessionRecordLabelResults = runCliSelectorsSessionRecordLabel();
 	const sessionShortenPathResults = runCliSelectorsSessionShortenPath();
+	const sessionQuotedSearchResults = runCliSelectorsSessionQuotedSearch();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5518,6 +5584,12 @@ async function measureCliSelectorsSessionSearch() {
 		ssp_abs: sessionShortenPathResults.ssp_abs,
 		ssp_proj: sessionShortenPathResults.ssp_proj,
 		ssp_empty: sessionShortenPathResults.ssp_empty,
+		sqs_cadr: sessionQuotedSearchResults.sqs_cadr,
+		sqs_phrase: sessionQuotedSearchResults.sqs_phrase,
+		sqs_miss: sessionQuotedSearchResults.sqs_miss,
+		sqs_other_miss: sessionQuotedSearchResults.sqs_other_miss,
+		sqs_name: sessionQuotedSearchResults.sqs_name,
+		sqs_other_hit: sessionQuotedSearchResults.sqs_other_hit,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5582,6 +5654,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		session_shorten_path: await collect("cli_selectors.session_shorten_path", () => {
 			return () => runCliSelectorsSessionShortenPath();
+		}),
+		session_quoted_search: await collect("cli_selectors.session_quoted_search", () => {
+			return () => runCliSelectorsSessionQuotedSearch();
 		}),
 		observed,
 	};
@@ -6672,6 +6747,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts session list label",
 			"cli_selectors.session_shorten_path":
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts shortenPath",
+			"cli_selectors.session_quoted_search":
+				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts phrase indexOf",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

@@ -1847,6 +1847,22 @@ are exact. `session-selector-gutter-prefixes` stays unpaired
 differs). First Friend-MachineD freeze **5.05×** (5.5 / 1.1 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 130 — `cli_selectors` (session_quoted_search)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_quoted_search` | `search-record-position` (quoted) | phrase `indexOf` (`session-selector-search.ts`) |
+
+Leftover sibling of the `sessions.lisp` hole. Quoted phrase
+position lookup via `quoted-search-p`, not full
+`filter-and-sort-sessions`. Fixtures reuse the
+`session_search` records; misses encode as `-1`. Observed
+`sqs_cadr` / `sqs_phrase` / `sqs_miss` / `sqs_other_miss` /
+`sqs_name` / `sqs_other_hit` are exact. Do not exact
+unquoted fuzzy-token AND. First Friend-MachineD freeze
+**1.29×** (11.0 / 8.6 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2171,7 +2187,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label` |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
