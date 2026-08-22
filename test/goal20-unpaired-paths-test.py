@@ -125,6 +125,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(pkce), 1)
         self.assertEqual(pkce[0]["class"], "paired")
         self.assertIn("oauth_pkce.challenge_urls", pkce[0]["metrics"])
+        device_code = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-ai/auth/device-code.lisp"
+        ]
+        self.assertEqual(len(device_code), 1)
+        self.assertEqual(device_code[0]["class"], "paired")
+        self.assertIn("oauth_pkce_device.poll", device_code[0]["metrics"])
         evals_summary = [
             row
             for row in classified["rows"]

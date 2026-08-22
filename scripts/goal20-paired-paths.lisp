@@ -83,6 +83,7 @@
 ;;;;  69. cli_sdk compute-cache-waste vs computeCacheWaste
 ;;;;  70. cli_sdk valid-thinking-level-p vs isValidThinkingLevel
 ;;;;  71. settings_load resolve-project-trusted vs resolveProjectTrusted
+;;;;  72. oauth_pkce_device poll-device-authorization vs pollOAuthDeviceCodeFlow
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -161,6 +162,7 @@
     ("protocol_codec.roundtrip" . 50)
     ("agent_proxy.stream_roundtrip" . 10)
     ("oauth_pkce.challenge_urls" . 50)
+    ("oauth_pkce_device.poll" . 50)
     ("evals_harness.summarize" . 20)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
@@ -2923,6 +2925,62 @@
                 (lambda ()
                   (run-oauth-pkce)))))))
 
+(defun noop-device-sleep (seconds)
+  (declare (ignore seconds)))
+
+(defun frozen-device-time ()
+  0)
+
+(defun run-oauth-pkce-device-poll ()
+  (let ((ok
+          (cadr-ai:poll-device-authorization
+           (lambda () (list :status :complete :value "tok"))
+           :interval 5
+           :expires-in 900
+           :sleep-function #'noop-device-sleep
+           :time-function #'frozen-device-time))
+        (fail
+          (handler-case
+              (progn
+                (cadr-ai:poll-device-authorization
+                 (lambda () (list :status :failed :message "nope"))
+                 :interval 5
+                 :expires-in 900
+                 :sleep-function #'noop-device-sleep
+                 :time-function #'frozen-device-time)
+                0)
+            (error () 1)))
+        (cancel
+          (handler-case
+              (progn
+                (cadr-ai:poll-device-authorization
+                 (lambda () (list :status :pending))
+                 :interval 5
+                 :expires-in 900
+                 :cancelled-p (constantly t)
+                 :sleep-function #'noop-device-sleep
+                 :time-function #'frozen-device-time)
+                0)
+            (error () 1))))
+    (list
+     (if (string= ok "tok") 1 0)
+     fail
+     cancel)))
+
+(defun measure-oauth-pkce-device ()
+  (let ((observed (run-oauth-pkce-device-poll)))
+    (json-object
+     "observed"
+     (json-object
+      "dc_ok" (first observed)
+      "dc_fail" (second observed)
+      "dc_cancel" (third observed))
+     "poll"
+     (collect "oauth_pkce_device.poll"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-poll)))))))
+
 (defun evals-harness-observation
     (harness test-name score
      &key total-tokens total-ms estimated-cost-usd)
@@ -5221,6 +5279,8 @@
       "src/cadr-agent/proxy.lisp stream-proxy"
       "oauth_pkce.challenge_urls"
       "src/cadr-ai/oauth/pkce.lisp pkce-challenge + openai/anthropic-authorization-url"
+      "oauth_pkce_device.poll"
+      "src/cadr-ai/auth/device-code.lisp poll-device-authorization"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "ai_crypto_model_data.manifest"
@@ -5438,6 +5498,8 @@
               (let ((proxy (measure-agent-proxy)))
               (format *error-output* "goal20 cadr paired paths: oauth_pkce~%")
               (let ((oauth (measure-oauth-pkce)))
+              (format *error-output* "goal20 cadr paired paths: oauth_pkce_device~%")
+              (let ((oauth-device (measure-oauth-pkce-device)))
               (format *error-output* "goal20 cadr paired paths: evals_harness~%")
               (let ((evals (measure-evals-harness)))
               (format *error-output* "goal20 cadr paired paths: ai_crypto_model_data~%")
@@ -5545,6 +5607,7 @@
               "protocol_codec" codec
               "agent_proxy" proxy
               "oauth_pkce" oauth
+              "oauth_pkce_device" oauth-device
               "evals_harness" evals
               "ai_crypto_model_data" crypto
               "ai_crypto" hmac
@@ -5591,7 +5654,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

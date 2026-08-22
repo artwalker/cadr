@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `oauth_pkce_device.poll`
+  (injected poll, no socket; cadr
+  `poll-device-authorization` vs pi
+  `pollOAuthDeviceCodeFlow`). Friend-MachineD n=5 **0.09×**
+  (1.01 / 11.51 µs), ceiling 8.0. cadr leads. Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `settings_load.project_trust`
   (empty vs project resources; ask/always/never/override;
   cadr `resolve-project-trusted` vs pi

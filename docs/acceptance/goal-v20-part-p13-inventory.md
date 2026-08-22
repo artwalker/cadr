@@ -360,11 +360,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-agent/conditions.lisp` | 43 |
 
-### `oauth_pkce_device` (additional) — `pkce.lisp` paired `oauth_pkce.challenge_urls`
+### `oauth_pkce_device` (additional) — `pkce.lisp` paired `oauth_pkce.challenge_urls`; `device-code.lisp` paired `oauth_pkce_device.poll`
 
-- pi: `packages/ai/src/auth/oauth/pkce.ts` SHA-256 + openai-codex/anthropic authorize URLs
-- fixture: RFC 7636 recorded verifier. Time challenge + URL build. No browser/socket. Other oauth files still `needs-pair`; page.lisp stays unpairable.
-- Friend-MachineD n=5: **0.37×** (50.6 / 135.3 µs), ceiling 1.5. No optimize in the booking commit.
+- pi: `packages/ai/src/auth/oauth/pkce.ts` SHA-256 + openai-codex/anthropic authorize URLs; `pollOAuthDeviceCodeFlow`
+- fixture: RFC 7636 recorded verifier. Time challenge + URL build. Device poll: injected complete/fail/cancel, noop sleep, no socket. Other oauth files still `needs-pair`; page.lisp stays unpairable.
+- Friend-MachineD n=5: challenge_urls **0.37×** (50.6 / 135.3 µs), ceiling 1.5; poll **0.09×** (1.01 / 11.51 µs), ceiling 8.0. cadr leads. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

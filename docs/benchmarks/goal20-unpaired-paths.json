@@ -28,6 +28,7 @@
   "protocol_codec.roundtrip",
   "agent_proxy.stream_roundtrip",
   "oauth_pkce.challenge_urls",
+  "oauth_pkce_device.poll",
   "evals_harness.summarize",
   "ai_crypto_model_data.manifest",
   "ai_crypto.hmac",
@@ -751,8 +752,8 @@
   },
   {
    "prefix": "src/cadr-ai/auth/device-code.lisp",
-   "class": "needs-pair",
-   "hole": "oauth_pkce_device"
+   "class": "paired",
+   "metrics": ["oauth_pkce_device.poll"]
   },
   {
    "prefix": "src/cadr-ai/auth/github-copilot.lisp",

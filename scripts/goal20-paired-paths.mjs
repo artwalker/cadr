@@ -149,6 +149,7 @@ const REPETITIONS = {
 	"protocol_codec.roundtrip": 50,
 	"agent_proxy.stream_roundtrip": 10,
 	"oauth_pkce.challenge_urls": 50,
+	"oauth_pkce_device.poll": 50,
 	"evals_harness.summarize": 20,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
@@ -418,6 +419,9 @@ const azureOpenaiModule = await import(moduleUrl("packages/ai/src/api/azure-open
 const vertexModule = await import(moduleUrl("packages/ai/src/api/google-vertex.ts"));
 const openaiCodexModule = await import(moduleUrl("packages/ai/src/api/openai-codex-responses.ts"));
 const piMessagesModule = await import(moduleUrl("packages/ai/src/api/pi-messages.ts"));
+const deviceCodeModule = await import(
+	moduleUrl("packages/ai/src/auth/oauth/device-code.ts")
+);
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const projectTrustModule = await import(
 	moduleUrl("packages/coding-agent/src/core/project-trust.ts")
@@ -2449,6 +2453,58 @@ async function measureOauthPkce() {
 	return {
 		challenge_urls: await collect("oauth_pkce.challenge_urls", () => {
 			return () => runOauthPkce();
+		}),
+		observed,
+	};
+}
+
+function liveAbortSignal() {
+	return new AbortController().signal;
+}
+
+async function runOauthPkceDevicePoll() {
+	const ok = await deviceCodeModule.pollOAuthDeviceCodeFlow({
+		intervalSeconds: 5,
+		expiresInSeconds: 900,
+		poll: async () => ({ status: "complete", value: "tok" }),
+		signal: liveAbortSignal(),
+	});
+	let fail = 0;
+	try {
+		await deviceCodeModule.pollOAuthDeviceCodeFlow({
+			intervalSeconds: 5,
+			expiresInSeconds: 900,
+			poll: async () => ({ status: "failed", message: "nope" }),
+			signal: liveAbortSignal(),
+		});
+	} catch {
+		fail = 1;
+	}
+	let cancel = 0;
+	const aborted = new AbortController();
+	aborted.abort();
+	try {
+		await deviceCodeModule.pollOAuthDeviceCodeFlow({
+			intervalSeconds: 5,
+			expiresInSeconds: 900,
+			poll: async () => ({ status: "pending" }),
+			signal: aborted.signal,
+		});
+	} catch {
+		cancel = 1;
+	}
+	return {
+		dc_ok: ok === "tok" ? 1 : 0,
+		dc_fail: fail,
+		dc_cancel: cancel,
+	};
+}
+
+async function measureOauthPkceDevice() {
+	const observed = await runOauthPkceDevicePoll();
+	return {
+		poll: await collect("oauth_pkce_device.poll", () => {
+			return () => runOauthPkceDevicePoll();
 		}),
 		observed,
 	};
@@ -4549,6 +4605,8 @@ process.stderr.write("goal20 pi paired paths: agent_proxy\n");
 const agentProxy = await measureAgentProxy();
 process.stderr.write("goal20 pi paired paths: oauth_pkce\n");
 const oauthPkce = await measureOauthPkce();
+process.stderr.write("goal20 pi paired paths: oauth_pkce_device\n");
+const oauthPkceDevice = await measureOauthPkceDevice();
 process.stderr.write("goal20 pi paired paths: evals_harness\n");
 const evalsHarness = await measureEvalsHarness();
 process.stderr.write("goal20 pi paired paths: ai_crypto_model_data\n");
@@ -4656,6 +4714,8 @@ const result = {
 			"agent_proxy.stream_roundtrip": "packages/agent/src/proxy.ts streamProxy",
 			"oauth_pkce.challenge_urls":
 				"packages/ai/src/auth/oauth/pkce.ts SHA-256 challenge + openai-codex/anthropic authorize URLs",
+			"oauth_pkce_device.poll":
+				"packages/ai/src/auth/oauth/device-code.ts pollOAuthDeviceCodeFlow",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"ai_crypto_model_data.manifest":
@@ -4834,6 +4894,7 @@ const result = {
 		protocol_codec: protocolCodec,
 		agent_proxy: agentProxy,
 		oauth_pkce: oauthPkce,
+		oauth_pkce_device: oauthPkceDevice,
 		evals_harness: evalsHarness,
 		ai_crypto_model_data: aiCryptoModelData,
 		ai_crypto: aiCrypto,

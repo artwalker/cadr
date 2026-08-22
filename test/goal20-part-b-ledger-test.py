@@ -389,6 +389,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("openai_prefix", paired.OBSERVED_EXACT["oauth_pkce"])
         self.assertIn("anthropic_prefix", paired.OBSERVED_EXACT["oauth_pkce"])
 
+    def test_oauth_pkce_device_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("oauth_pkce_device.poll", RECORD.METRIC_KEYS)
+        self.assertIn("poll", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.poll", paired.RATIO_CEILINGS)
+        self.assertIn("dc_ok", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("dc_fail", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("dc_cancel", paired.OBSERVED_EXACT["oauth_pkce_device"])
+
     def test_evals_harness_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("evals_harness.summarize", RECORD.METRIC_KEYS)
@@ -874,6 +883,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`provider_bedrock.stream_roundtrip`", section)
             self.assertIn("`cli_settings.create`", section)
             self.assertIn("`settings_load.project_trust`", section)
+            self.assertIn("`oauth_pkce_device.poll`", section)
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)

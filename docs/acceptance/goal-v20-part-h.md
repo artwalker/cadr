@@ -1234,6 +1234,19 @@ extension host, no socket. First Friend-MachineD freeze
 **0.24×** (330.6 / 1402.9 µs), ceiling 8.0. cadr leads.
 Same commit no optimize.
 
+### Pair 87 — `oauth_pkce_device` (poll)
+
+| metric | cadr | pi |
+|---|---|---|
+| `poll` | `poll-device-authorization` | `pollOAuthDeviceCodeFlow` (`packages/ai/src/auth/oauth/device-code.ts`) |
+
+Independent named metric for the `oauth_pkce_device` hole.
+Injected poll + noop sleep + frozen clock. Complete `"tok"`;
+failed throws; cancelled/aborted throws. No socket. Do not
+exact error text. First Friend-MachineD freeze **0.09×**
+(1.01 / 11.51 µs), ceiling 8.0. cadr leads. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1439,14 +1452,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 133 | 60,634 | 47.6% | `no worse than baseline` is falsifiable |
+| `paired` | 134 | 60,873 | 47.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 119 | 46,361 | 36.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 118 | 46,122 | 36.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 47.6% of lines (133 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 53.5% of lines.
+- **Falsifiable vs baseline:** 47.8% of lines (134 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 53.7% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1503,6 +1516,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
+| `src/cadr-ai/auth/device-code.lisp` | 239 | `oauth_pkce_device.poll` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/capabilities/event-stream.lisp` | 69 | `ai_capabilities.event_stream` |
 | `src/cadr-ai/capabilities/grammar-tools.lisp` | 292 | `ai_capabilities.deferred_tools` |
@@ -1654,7 +1668,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `agent_tool_loop` | 13 | 4,094 |
 | `cli_extensions_install` | 9 | 3,489 |
 | `evals_harness` | 6 | 2,184 |
-| `oauth_pkce_device` | 13 | 2,081 |
+| `oauth_pkce_device` | 12 | 1,842 |
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 6 | 1,601 |
 | `settings_load` | 3 | 1,283 |
