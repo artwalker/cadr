@@ -163,6 +163,7 @@ const REPETITIONS = {
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
+	"evals_harness.format": 20,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -2611,11 +2612,42 @@ async function runEvalsHarnessArtifactPersist() {
 	};
 }
 
+function evalsFormatFlags(text) {
+	const stripped = ansiModule.stripAnsi(text);
+	return {
+		empty: stripped === "" ? 1 : 0,
+		hdr: stripped.includes("Eval Comparisons") ? 1 : 0,
+		base: stripped.includes("Baseline") ? 1 : 0,
+		pass: stripped.includes("Pass rate") ? 1 : 0,
+	};
+}
+
+function runEvalsHarnessFormat(emptyReport, report) {
+	const empty = evalsFormatFlags(
+		evalsSummaryModule.formatHarnessComparisonReport(emptyReport),
+	);
+	const full = evalsFormatFlags(
+		evalsSummaryModule.formatHarnessComparisonReport(report),
+	);
+	return {
+		fmt_empty: empty.empty,
+		fmt_empty_hdr: empty.hdr,
+		fmt_hdr: full.hdr,
+		fmt_base: full.base,
+		fmt_pass: full.pass,
+	};
+}
+
 async function measureEvalsHarness() {
+	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
+	const report = evalsSummaryModule.summarizeHarnessComparisons(
+		evalsHarnessObservations(),
+	);
 	const observed = {
 		...runEvalsHarnessSummarize(),
 		...runEvalsHarnessGroupKey(),
 		...(await runEvalsHarnessArtifactPersist()),
+		...runEvalsHarnessFormat(emptyReport, report),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -2626,6 +2658,9 @@ async function measureEvalsHarness() {
 		}),
 		artifact_persist: await collect("evals_harness.artifact_persist", () => {
 			return () => runEvalsHarnessArtifactPersist();
+		}),
+		format: await collect("evals_harness.format", () => {
+			return () => evalsSummaryModule.formatHarnessComparisonReport(report);
 		}),
 		observed,
 	};
@@ -5832,6 +5867,8 @@ const result = {
 				"packages/evals/src/vitest-evals/harness-table.ts deriveEvalGroupKey",
 			"evals_harness.artifact_persist":
 				"packages/evals/src/vitest-evals/artifacts.ts persistEvalArtifactReferences",
+			"evals_harness.format":
+				"packages/evals/src/vitest-evals/summary.ts formatHarnessComparisonReport",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

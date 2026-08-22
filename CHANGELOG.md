@@ -21,6 +21,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.format`
+  (empty + four scored observations; cadr
+  `format-harness-comparison-report` vs pi
+  `formatHarnessComparisonReport`). Strip ANSI
+  for flags; do not exact full report text.
+  Friend-MachineD n=5 **1.14×** (20.62 / 18.10 µs),
+  ceiling 8.0. Same commit no optimize. G.17
+  missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.key_text`
   (`ctrl+c` / slash / `shift+tab` / capitalize / empty;
   cadr `format-key-text` vs pi `formatKeyText`).

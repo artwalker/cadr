@@ -96,6 +96,7 @@
 ;;;;  82. cli_interactive_controller clipboard-wayland-p vs isWaylandSession
 ;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
+;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
@@ -199,6 +200,7 @@
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
+    ("evals_harness.format" . 20)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -3680,10 +3682,31 @@
          1
          0))))
 
+(defun evals-format-flags (text)
+  (let ((stripped (cadr-cli::strip-ansi text)))
+    (list
+     (if (string= stripped "") 1 0)
+     (if (search "Eval Comparisons" stripped) 1 0)
+     (if (search "Baseline" stripped) 1 0)
+     (if (search "Pass rate" stripped) 1 0))))
+
+(defun run-evals-harness-format (empty-report report)
+  (append
+   (evals-format-flags
+    (cadr-evals:format-harness-comparison-report empty-report))
+   (evals-format-flags
+    (cadr-evals:format-harness-comparison-report report))))
+
 (defun measure-evals-harness ()
-  (let ((observed (run-evals-harness-summarize))
-        (group (run-evals-harness-group-key))
-        (persist (run-evals-harness-artifact-persist)))
+  (let* ((observed (run-evals-harness-summarize))
+         (group (run-evals-harness-group-key))
+         (persist (run-evals-harness-artifact-persist))
+         (empty-report
+           (cadr-evals:summarize-harness-comparisons nil))
+         (report
+           (cadr-evals:summarize-harness-comparisons
+            (evals-harness-observations)))
+         (fmt (run-evals-harness-format empty-report report)))
     (json-object
      "observed"
      (json-object
@@ -3701,7 +3724,12 @@
       "ap_sess_prefix" (nth 3 persist)
       "ap_src_prefix" (nth 4 persist)
       "ap_sess_file" (nth 5 persist)
-      "ap_src_file" (nth 6 persist))
+      "ap_src_file" (nth 6 persist)
+      "fmt_empty" (nth 0 fmt)
+      "fmt_empty_hdr" (nth 1 fmt)
+      "fmt_hdr" (nth 5 fmt)
+      "fmt_base" (nth 6 fmt)
+      "fmt_pass" (nth 7 fmt))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -3716,7 +3744,13 @@
      (collect "evals_harness.artifact_persist"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-artifact-persist)))))))
+                  (run-evals-harness-artifact-persist))))
+     "format"
+     (collect "evals_harness.format"
+              (lambda ()
+                (lambda ()
+                  (cadr-evals:format-harness-comparison-report
+                   report)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -6723,6 +6757,8 @@
       "src/cadr-evals/harness-table.lisp derive-eval-group-key"
       "evals_harness.artifact_persist"
       "src/cadr-evals/artifacts.lisp persist-eval-artifact-references"
+      "evals_harness.format"
+      "src/cadr-evals/summary.lisp format-harness-comparison-report"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

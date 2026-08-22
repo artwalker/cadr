@@ -58,6 +58,7 @@ METRIC_KEYS = (
     "evals_harness.summarize",
     "evals_harness.group_key",
     "evals_harness.artifact_persist",
+    "evals_harness.format",
     "ai_crypto_model_data.manifest",
     "ai_crypto.hmac",
     "cli_models_rest.pattern_match",

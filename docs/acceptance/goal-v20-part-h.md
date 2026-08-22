@@ -1508,6 +1508,22 @@ alt→option. Observed `kt_ctrl` / `kt_slash` / `kt_shift` /
 **2.86×** (5.76 / 2.01 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 106 — `evals_harness` (format)
+
+| metric | cadr | pi |
+|---|---|---|
+| `format` | `format-harness-comparison-report` | `formatHarnessComparisonReport` (`packages/evals/src/vitest-evals/summary.ts`) |
+
+Leftover sibling of the `evals_harness` hole. Time
+report format only (summarize in prepare), not a live
+vitest run. Empty report vs four scored observations.
+Strip ANSI for flags; do not exact full report text
+(pi `styleText` vs cadr unstyled). Observed `fmt_empty`
+/ `fmt_empty_hdr` / `fmt_hdr` / `fmt_base` / `fmt_pass`
+are exact (1 / 0 / 1 / 1 / 1). First Friend-MachineD
+freeze **1.14×** (20.62 / 18.10 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1870,7 +1886,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
-| `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize` |
+| `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize`, `evals_harness.format` |
 | `src/cadr-protocol/cbor.lisp` | 492 | `protocol_cbor.roundtrip` |
 | `src/cadr-protocol/codec.lisp` | 121 | `protocol_codec.roundtrip` |
 | `src/cadr-protocol/framing.lisp` | 170 | `protocol_codec.roundtrip` |

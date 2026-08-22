@@ -141,6 +141,7 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(evals_summary), 1)
         self.assertEqual(evals_summary[0]["class"], "paired")
         self.assertIn("evals_harness.summarize", evals_summary[0]["metrics"])
+        self.assertIn("evals_harness.format", evals_summary[0]["metrics"])
         model_data = [
             row
             for row in classified["rows"]

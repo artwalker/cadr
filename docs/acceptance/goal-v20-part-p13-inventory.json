@@ -2618,8 +2618,11 @@
   {
    "path": "src/cadr-evals/summary.lisp",
    "lines": 732,
-   "class": "needs-pair",
-   "metrics": [],
+   "class": "paired",
+   "metrics": [
+    "evals_harness.summarize",
+    "evals_harness.format"
+   ],
    "pathId": "evals_harness",
    "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
    "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",
