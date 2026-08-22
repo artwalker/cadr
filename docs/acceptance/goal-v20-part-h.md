@@ -1832,6 +1832,21 @@ whitespace-only `name` (cadr `named-session-p` vs pi
 Friend-MachineD freeze **1.84×** (2.6 / 1.4 µs), ceiling 8.0.
 Same commit no optimize.
 
+### Pair 129 — `cli_selectors` (session_shorten_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_shorten_path` | `session-selector-shorten-path` | `shortenPath` |
+
+Leftover sibling of the `sessions.lisp` hole. Home-dir tilde
+shortening only; fixtures cover bare home, prefix-only edge case,
+absolute path, nested home path, and empty string. Observed
+`ssp_home` / `ssp_prefix` / `ssp_abs` / `ssp_proj` / `ssp_empty`
+are exact. `session-selector-gutter-prefixes` stays unpaired
+(cadr batch gutter vs pi `buildTreePrefix` ancestor padding
+differs). First Friend-MachineD freeze **5.05×** (5.5 / 1.1 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

@@ -46,7 +46,7 @@ import {
 	utimesSync,
 	writeFileSync,
 } from "node:fs";
-import { hostname, tmpdir } from "node:os";
+import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
@@ -240,6 +240,7 @@ const REPETITIONS = {
 	"cli_selectors.keybinding_hint": 50,
 	"cli_selectors.session_format_age": 50,
 	"cli_selectors.session_record_label": 50,
+	"cli_selectors.session_shorten_path": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5048,6 +5049,28 @@ function runCliSelectorsSessionRecordLabel() {
 	};
 }
 
+function shortenPathPi(path) {
+	const home = homedir();
+	if (!path) {
+		return path;
+	}
+	if (path.startsWith(home)) {
+		return `~${path.slice(home.length)}`;
+	}
+	return path;
+}
+
+function runCliSelectorsSessionShortenPath() {
+	const home = homedir();
+	return {
+		ssp_home: shortenPathPi(home),
+		ssp_prefix: shortenPathPi(`${home}land/session.jsonl`),
+		ssp_abs: shortenPathPi("/tmp/session.jsonl"),
+		ssp_proj: shortenPathPi(`${home}projects/pi-mono/README.md`),
+		ssp_empty: shortenPathPi(""),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5384,6 +5407,7 @@ async function measureCliSelectorsSessionSearch() {
 	const keybindingHintResults = runCliSelectorsKeybindingHint();
 	const sessionFormatAgeResults = runCliSelectorsSessionFormatAge();
 	const sessionRecordLabelResults = runCliSelectorsSessionRecordLabel();
+	const sessionShortenPathResults = runCliSelectorsSessionShortenPath();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5489,6 +5513,11 @@ async function measureCliSelectorsSessionSearch() {
 		srl_empty: sessionRecordLabelResults.srl_empty,
 		srl_ctrl: sessionRecordLabelResults.srl_ctrl,
 		srl_name_ctrl: sessionRecordLabelResults.srl_name_ctrl,
+		ssp_home: sessionShortenPathResults.ssp_home,
+		ssp_prefix: sessionShortenPathResults.ssp_prefix,
+		ssp_abs: sessionShortenPathResults.ssp_abs,
+		ssp_proj: sessionShortenPathResults.ssp_proj,
+		ssp_empty: sessionShortenPathResults.ssp_empty,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5550,6 +5579,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		session_record_label: await collect("cli_selectors.session_record_label", () => {
 			return () => runCliSelectorsSessionRecordLabel();
+		}),
+		session_shorten_path: await collect("cli_selectors.session_shorten_path", () => {
+			return () => runCliSelectorsSessionShortenPath();
 		}),
 		observed,
 	};
@@ -6638,6 +6670,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts formatSessionDate",
 			"cli_selectors.session_record_label":
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts session list label",
+			"cli_selectors.session_shorten_path":
+				"packages/coding-agent/src/modes/interactive/components/session-selector.ts shortenPath",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

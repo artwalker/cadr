@@ -108,6 +108,7 @@
 ;;;; 126. cli_selectors selector-keybinding-hint vs rawKeyHint dim/muted
 ;;;; 127. cli_selectors session-selector-format-age vs formatSessionDate
 ;;;; 128. cli_selectors session-selector-record-label vs session-selector render label
+;;;; 129. cli_selectors session-selector-shorten-path vs shortenPath
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -299,6 +300,7 @@
     ("cli_selectors.keybinding_hint" . 50)
     ("cli_selectors.session_format_age" . 50)
     ("cli_selectors.session_record_label" . 50)
+    ("cli_selectors.session_shorten_path" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6164,6 +6166,20 @@
   (mapcar #'cadr-cli::session-selector-record-label
           (session-record-label-fixture-records)))
 
+(defun run-cli-selectors-session-shorten-path ()
+  (let ((home
+          (string-right-trim
+           "/" (namestring (user-homedir-pathname)))))
+    (list
+     (cadr-cli::session-selector-shorten-path home)
+     (cadr-cli::session-selector-shorten-path
+      (concatenate 'string home "land/session.jsonl"))
+     (cadr-cli::session-selector-shorten-path
+      "/tmp/session.jsonl")
+     (cadr-cli::session-selector-shorten-path
+      (concatenate 'string home "projects/pi-mono/README.md"))
+     (cadr-cli::session-selector-shorten-path ""))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6184,7 +6200,8 @@
         (keybinding-text (run-cli-selectors-keybinding-text))
         (keybinding-hint (run-cli-selectors-keybinding-hint))
         (session-format-age (run-cli-selectors-session-format-age))
-        (session-record-label (run-cli-selectors-session-record-label)))
+        (session-record-label (run-cli-selectors-session-record-label))
+        (session-shorten-path (run-cli-selectors-session-shorten-path)))
     (json-object
      "observed"
      (json-object
@@ -6309,7 +6326,12 @@
       "srl_first" (nth 1 session-record-label)
       "srl_empty" (nth 2 session-record-label)
       "srl_ctrl" (nth 3 session-record-label)
-      "srl_name_ctrl" (nth 4 session-record-label))
+      "srl_name_ctrl" (nth 4 session-record-label)
+      "ssp_home" (nth 0 session-shorten-path)
+      "ssp_prefix" (nth 1 session-shorten-path)
+      "ssp_abs" (nth 2 session-shorten-path)
+      "ssp_proj" (nth 3 session-shorten-path)
+      "ssp_empty" (nth 4 session-shorten-path))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6409,7 +6431,12 @@
      (collect "cli_selectors.session_record_label"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-session-record-label)))))))
+                  (run-cli-selectors-session-record-label))))
+     "session_shorten_path"
+     (collect "cli_selectors.session_shorten_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-shorten-path)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7460,6 +7487,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-format-age"
       "cli_selectors.session_record_label"
       "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-record-label"
+      "cli_selectors.session_shorten_path"
+      "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-shorten-path"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

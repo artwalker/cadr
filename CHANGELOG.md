@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.session_shorten_path`
+  (session path tilde fixtures; cadr `session-selector-shorten-path`
+  vs pi `shortenPath`). Friend-MachineD n=5 **5.05×** (5.5 / 1.1 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_selectors.session_record_label`
   (session row label fixtures; cadr `session-selector-record-label`
   vs pi session list label). Friend-MachineD n=5 **1.84×** (2.6 /
