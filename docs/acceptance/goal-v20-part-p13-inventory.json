@@ -2448,8 +2448,10 @@
   {
    "path": "src/cadr-core/atomic-file.lisp",
    "lines": 106,
-   "class": "needs-pair",
-   "metrics": [],
+   "class": "covered-as-callee",
+   "metrics": [
+    "evals_harness.artifact_persist"
+   ],
    "pathId": "core_rest",
    "pi": "shared Node helpers (fs atomic write, abort, threads, redacted print, cancellation)",
    "fixture": "Callee of a parent pair (journal persist, settings write). No empty per-file bench. time.lisp and paths.lisp are already covered-as-callee.",
@@ -2533,8 +2535,10 @@
   {
    "path": "src/cadr-evals/artifacts.lisp",
    "lines": 168,
-   "class": "needs-pair",
-   "metrics": [],
+   "class": "paired",
+   "metrics": [
+    "evals_harness.artifact_persist"
+   ],
    "pathId": "evals_harness",
    "pi": "packages/evals/src/* + packages/evals/scripts/run-evals.mjs",
    "fixture": "Smoke eval case with faux provider. Time harness + reporter + summary over recorded events.",

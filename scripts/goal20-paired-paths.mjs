@@ -38,6 +38,7 @@ import {
 	copyFileSync,
 	mkdirSync,
 	mkdtempSync,
+	existsSync,
 	readFileSync,
 	readdirSync,
 	realpathSync,
@@ -161,6 +162,7 @@ const REPETITIONS = {
 	"cli_extensions_install.llama_catalog": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
+	"evals_harness.artifact_persist": 3,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -421,6 +423,9 @@ const evalsSummaryModule = await import(
 );
 const evalsTableModule = await import(
 	moduleUrl("packages/evals/src/vitest-evals/harness-table.ts")
+);
+const evalsArtifactsModule = await import(
+	moduleUrl("packages/evals/src/vitest-evals/artifacts.ts")
 );
 const modelDataModule = await import(moduleUrl("packages/ai/scripts/model-data.ts"));
 const modelResolverModule = await import(
@@ -2552,10 +2557,59 @@ function runEvalsHarnessGroupKey() {
 	};
 }
 
+const evalArtifactDirectory = path.join(scratch, "eval-artifacts");
+
+async function runEvalsHarnessArtifactPersist() {
+	mkdirSync(evalArtifactDirectory, { recursive: true });
+	const refs = await evalsArtifactsModule.persistEvalArtifactReferences(
+		[
+			{
+				type: "@earendil-works/pi-evals:session",
+				runId: "run-1",
+				attachments: [
+					{
+						name: "session.jsonl",
+						contentType: "application/jsonl",
+						body: "session-body",
+						bodyEncoding: "utf-8",
+					},
+				],
+			},
+			{
+				type: "@earendil-works/pi-evals:source",
+				runId: "run-1",
+				attachments: [
+					{
+						name: "source.txt",
+						contentType: "text/plain",
+						body: "source-body",
+						bodyEncoding: "utf-8",
+					},
+				],
+			},
+		],
+		"run-1",
+		evalArtifactDirectory,
+	);
+	const session = refs.find((ref) => ref.name === "session.jsonl");
+	const source = refs.find((ref) => ref.name === "source.txt");
+	const exists = (relative) => (relative && existsSync(path.join(evalArtifactDirectory, relative)) ? 1 : 0);
+	return {
+		ap_n: refs.length,
+		ap_sess: session ? 1 : 0,
+		ap_src: source ? 1 : 0,
+		ap_sess_prefix: session?.path.startsWith("sessions/") ? 1 : 0,
+		ap_src_prefix: source?.path.startsWith("sources/") ? 1 : 0,
+		ap_sess_file: exists(session?.path),
+		ap_src_file: exists(source?.path),
+	};
+}
+
 async function measureEvalsHarness() {
 	const observed = {
 		...runEvalsHarnessSummarize(),
 		...runEvalsHarnessGroupKey(),
+		...(await runEvalsHarnessArtifactPersist()),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -2563,6 +2617,9 @@ async function measureEvalsHarness() {
 		}),
 		group_key: await collect("evals_harness.group_key", () => {
 			return () => runEvalsHarnessGroupKey();
+		}),
+		artifact_persist: await collect("evals_harness.artifact_persist", () => {
+			return () => runEvalsHarnessArtifactPersist();
 		}),
 		observed,
 	};
@@ -5713,6 +5770,8 @@ const result = {
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":
 				"packages/evals/src/vitest-evals/harness-table.ts deriveEvalGroupKey",
+			"evals_harness.artifact_persist":
+				"packages/evals/src/vitest-evals/artifacts.ts persistEvalArtifactReferences",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

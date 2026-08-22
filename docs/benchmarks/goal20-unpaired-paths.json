@@ -39,6 +39,7 @@
   "cli_extensions_install.llama_catalog",
   "evals_harness.summarize",
   "evals_harness.group_key",
+  "evals_harness.artifact_persist",
   "ai_crypto_model_data.manifest",
   "ai_crypto.hmac",
   "cli_models_rest.pattern_match",
@@ -1483,8 +1484,8 @@
   },
   {
    "prefix": "src/cadr-core/atomic-file.lisp",
-   "class": "needs-pair",
-   "hole": "core_rest"
+   "class": "covered-as-callee",
+   "metrics": ["evals_harness.artifact_persist"]
   },
   {
    "prefix": "src/cadr-core/cancellation.lisp",
@@ -1526,8 +1527,8 @@
   },
   {
    "prefix": "src/cadr-evals/artifacts.lisp",
-   "class": "needs-pair",
-   "hole": "evals_harness"
+   "class": "paired",
+   "metrics": ["evals_harness.artifact_persist"]
   },
   {
    "prefix": "src/cadr-evals/harness-table.lisp",

@@ -483,6 +483,12 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("gk_trim", paired.OBSERVED_EXACT["evals_harness"])
         self.assertIn("art_ok", paired.OBSERVED_EXACT["evals_harness"])
         self.assertIn("art_bad", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("evals_harness.artifact_persist", RECORD.METRIC_KEYS)
+        self.assertIn("artifact_persist", paired.METRICS["evals_harness"])
+        self.assertIn("evals_harness.artifact_persist", paired.RATIO_CEILINGS)
+        self.assertIn("ap_n", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ap_sess", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ap_src", paired.OBSERVED_EXACT["evals_harness"])
 
     def test_ai_crypto_model_data_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

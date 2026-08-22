@@ -95,6 +95,7 @@
 ;;;;  81. oauth_pkce_device normalize-radius-gateway vs normalizeRadiusGatewayUrl
 ;;;;  82. cli_interactive_controller clipboard-wayland-p vs isWaylandSession
 ;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
+;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
@@ -196,6 +197,7 @@
     ("cli_extensions_install.llama_catalog" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
+    ("evals_harness.artifact_persist" . 3)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -3605,9 +3607,80 @@
      "candidates" (vector "cand")
      "repetition" 1))))
 
+(defun evals-artifact-directory ()
+  (let ((directory
+          (merge-pathnames
+           "eval-artifacts/"
+           *scratch-directory*)))
+    (ensure-directories-exist directory)
+    directory))
+
+(defun evals-persist-artifacts ()
+  (cadr-evals:persist-eval-artifact-references
+   (list
+    (cadr-evals:make-eval-artifact
+     :type :session
+     :run-id "run-1"
+     :attachments
+     (list
+      (cadr-evals:make-eval-attachment
+       :name "session.jsonl"
+       :content-type "application/jsonl"
+       :body "session-body")))
+    (cadr-evals:make-eval-artifact
+     :type :source
+     :run-id "run-1"
+     :attachments
+     (list
+      (cadr-evals:make-eval-attachment
+       :name "source.txt"
+       :content-type "text/plain"
+       :body "source-body"))))
+   "run-1"
+   (namestring (evals-artifact-directory))))
+
+(defun run-evals-harness-artifact-persist ()
+  (let* ((refs (evals-persist-artifacts))
+         (root (evals-artifact-directory))
+         (session
+           (find "session.jsonl" refs
+                 :key #'cadr-evals:eval-artifact-reference-name
+                 :test #'string=))
+         (source
+           (find "source.txt" refs
+                 :key #'cadr-evals:eval-artifact-reference-name
+                 :test #'string=))
+         (session-path
+           (and session
+                (cadr-evals:eval-artifact-reference-path session)))
+         (source-path
+           (and source
+                (cadr-evals:eval-artifact-reference-path source))))
+    (list
+     (length refs)
+     (if session 1 0)
+     (if source 1 0)
+     (if (and session-path
+              (uiop:string-prefix-p "sessions/" session-path))
+         1
+         0)
+     (if (and source-path
+              (uiop:string-prefix-p "sources/" source-path))
+         1
+         0)
+     (if (and session-path
+              (probe-file (merge-pathnames session-path root)))
+         1
+         0)
+     (if (and source-path
+              (probe-file (merge-pathnames source-path root)))
+         1
+         0))))
+
 (defun measure-evals-harness ()
   (let ((observed (run-evals-harness-summarize))
-        (group (run-evals-harness-group-key)))
+        (group (run-evals-harness-group-key))
+        (persist (run-evals-harness-artifact-persist)))
     (json-object
      "observed"
      (json-object
@@ -3618,7 +3691,14 @@
       "gk_id" (first group)
       "gk_trim" (second group)
       "art_ok" (third group)
-      "art_bad" (fourth group))
+      "art_bad" (fourth group)
+      "ap_n" (nth 0 persist)
+      "ap_sess" (nth 1 persist)
+      "ap_src" (nth 2 persist)
+      "ap_sess_prefix" (nth 3 persist)
+      "ap_src_prefix" (nth 4 persist)
+      "ap_sess_file" (nth 5 persist)
+      "ap_src_file" (nth 6 persist))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -3628,7 +3708,12 @@
      (collect "evals_harness.group_key"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-group-key)))))))
+                  (run-evals-harness-group-key))))
+     "artifact_persist"
+     (collect "evals_harness.artifact_persist"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-artifact-persist)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -6589,6 +6674,8 @@
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"
       "src/cadr-evals/harness-table.lisp derive-eval-group-key"
+      "evals_harness.artifact_persist"
+      "src/cadr-evals/artifacts.lisp persist-eval-artifact-references"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

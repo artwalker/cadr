@@ -682,11 +682,11 @@ These must not be filed as callees.
 | `src/cadr-tui/composition/loaders.lisp` | 235 |
 | `src/cadr-tui/composition/settings-list.lisp` | 470 |
 
-### `evals_harness` (additional) — `summary.lisp` paired `evals_harness.summarize`; `harness-table.lisp` paired `evals_harness.group_key`
+### `evals_harness` (additional) — `summary.lisp` paired `evals_harness.summarize`; `harness-table.lisp` paired `evals_harness.group_key`; `artifacts.lisp` paired `evals_harness.artifact_persist`
 
 - pi: `packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons`; `packages/evals/src/vitest-evals/harness-table.ts deriveEvalGroupKey` / `parseEvalHarnessIterationArtifact`
 - fixture: Four scored harness observations (tool access create/inspect). Time report assembly, not a live eval. Group key: id-bearing inputs only; do not exact no-id SHA or repetition 0. Artifact parse schema 1 / 2.
-- Friend-MachineD n=5: summarize **0.88×** (8.0 / 9.0 µs), ceiling 1.5; group_key **4.06×** (5.01 / 1.23 µs), ceiling 8.0 (variance). Other evals files still `needs-pair`. No optimize in the booking commits.
+- Friend-MachineD n=5: summarize **0.88×** (8.0 / 9.0 µs), ceiling 1.5; group_key **4.06×** (5.01 / 1.23 µs), ceiling 8.0 (variance); artifact_persist **0.53×** (595 / 1130 µs), ceiling 8.0. cadr leads on persist. Other evals files still `needs-pair`. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|
@@ -713,10 +713,10 @@ These must not be filed as callees.
 | `src/cadr-protocol/package.lisp` | 33 |
 | `src/cadr-protocol/schema.lisp` | 610 |
 
-### `core_rest` (additional)
+### `core_rest` (additional) — `atomic-file.lisp` covered-as-callee of `evals_harness.artifact_persist`
 
 - pi: `shared Node helpers (fs atomic write, abort, threads, redacted print, cancellation)`
-- fixture: Callee of a parent pair (journal persist, settings write). No empty per-file bench. time.lisp and paths.lisp are already covered-as-callee.
+- fixture: Callee of a parent pair (journal persist, eval artifact persist). No empty per-file bench. time.lisp and paths.lisp are already covered-as-callee. atomic-file is called from `persist-eval-artifact-references`.
 
 | file | lines |
 |---|---:|

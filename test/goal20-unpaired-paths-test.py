@@ -561,6 +561,22 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(websocket), 1)
         self.assertEqual(websocket[0]["class"], "paired")
         self.assertIn("websocket_stream.stream_roundtrip", websocket[0]["metrics"])
+        artifacts = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-evals/artifacts.lisp"
+        ]
+        self.assertEqual(len(artifacts), 1)
+        self.assertEqual(artifacts[0]["class"], "paired")
+        self.assertIn("evals_harness.artifact_persist", artifacts[0]["metrics"])
+        atomic_file = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-core/atomic-file.lisp"
+        ]
+        self.assertEqual(len(atomic_file), 1)
+        self.assertEqual(atomic_file[0]["class"], "covered-as-callee")
+        self.assertIn("evals_harness.artifact_persist", atomic_file[0]["metrics"])
 
     def test_booked_classes_include_callee_and_needs_pair(self) -> None:
         inventory = MODULE.load_inventory(MODULE.INVENTORY_PATH)

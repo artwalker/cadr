@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.artifact_persist`
+  (session+source fixture; cadr
+  `persist-eval-artifact-references` vs pi
+  `persistEvalArtifactReferences`). Friend-MachineD n=5
+  **0.53×** (595 / 1130 µs), ceiling 8.0. cadr leads.
+  `atomic-file.lisp` covered-as-callee. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `websocket_stream.stream_roundtrip`
   (recorded Codex WS frames; cadr Goal 12 loopback vs
   pi MockWebSocket). Friend-MachineD n=5 **507.72×**

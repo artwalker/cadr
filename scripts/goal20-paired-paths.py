@@ -119,7 +119,7 @@ METRICS = {
         "copilot_auth",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog"),
-    "evals_harness": ("summarize", "group_key"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command"),
@@ -349,6 +349,11 @@ RATIO_CEILINGS = {
     # 4.06x (5.01 / 1.23 us). 8.0 is first-freeze
     # headroom (microsecond-floor / variance). Ratchet down only.
     "evals_harness.group_key": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # evals_harness.artifact_persist pair (samples=5):
+    # observed 0.53x (595 / 1130 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "evals_harness.artifact_persist": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -1018,6 +1023,13 @@ OBSERVED_EXACT = {
         "gk_trim",
         "art_ok",
         "art_bad",
+        "ap_n",
+        "ap_sess",
+        "ap_src",
+        "ap_sess_prefix",
+        "ap_src_prefix",
+        "ap_sess_file",
+        "ap_src_file",
     ),
     "ai_crypto_model_data": (
         "schema_version",
