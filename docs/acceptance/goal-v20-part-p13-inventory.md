@@ -536,10 +536,11 @@ These must not be filed as callees.
 | `src/cadr-cli/interactive/selectors/tree.lisp` | 1,812 |
 | `src/cadr-cli/interactive/selectors/trust.lisp` | 293 |
 
-### `cli_extensions_install` (additional)
+### `cli_extensions_install` (additional) — `llama/client.lisp` paired `cli_extensions_install.llama_url`
 
-- pi: `packages/coding-agent/src/core/extensions/loader.ts (JS extension install/discover). Lisp extension host stays lisp_extension_host unpairable.`
-- fixture: Fixture extension manifest on disk. Time discover + load metadata. No network install. Llama UI is the llama.cpp extension's TUI, pair against that extension's TS if present.
+- pi: `packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl` (+ `llamaInferenceUrl` / `formatBytes`). Discover/load stays SP-F7 (`discoverAndLoadExtensions` maps to cadr-agent extensions, not cadr-cli `discover-extension-sources`). Lisp extension host stays lisp_extension_host unpairable. Llama UI is TUI.
+- fixture: strip `/v1` + query + hash; `file://` error flag; inference URL ends `/v1`; `512 B` / KiB. Do not exact error text or float byte format. No network install.
+- Friend-MachineD n=5: llama_url **0.45×** (4.79 / 10.52 µs), ceiling 8.0. cadr leads. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

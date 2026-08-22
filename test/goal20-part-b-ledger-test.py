@@ -398,6 +398,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("dc_fail", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("dc_cancel", paired.OBSERVED_EXACT["oauth_pkce_device"])
 
+    def test_cli_extensions_install_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("cli_extensions_install.llama_url", RECORD.METRIC_KEYS)
+        self.assertIn("llama_url", paired.METRICS["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.llama_url", paired.RATIO_CEILINGS)
+        self.assertIn("nu_local", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("nu_https", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("nu_file", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("inf_ok", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("fb_b", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("fb_k", paired.OBSERVED_EXACT["cli_extensions_install"])
+
     def test_evals_harness_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("evals_harness.summarize", RECORD.METRIC_KEYS)

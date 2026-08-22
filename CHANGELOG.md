@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_extensions_install.llama_url`
+  (strip `/v1`+query+hash, file:// error, `/v1` inference,
+  byte units; cadr `normalize-llama-server-url` vs pi
+  `normalizeLlamaServerUrl`). Friend-MachineD n=5 **0.45×**
+  (4.79 / 10.52 µs), ceiling 8.0. cadr leads. Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `oauth_pkce_device.poll`
   (injected poll, no socket; cadr
   `poll-device-authorization` vs pi

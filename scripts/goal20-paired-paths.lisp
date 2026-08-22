@@ -84,6 +84,7 @@
 ;;;;  70. cli_sdk valid-thinking-level-p vs isValidThinkingLevel
 ;;;;  71. settings_load resolve-project-trusted vs resolveProjectTrusted
 ;;;;  72. oauth_pkce_device poll-device-authorization vs pollOAuthDeviceCodeFlow
+;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -163,6 +164,7 @@
     ("agent_proxy.stream_roundtrip" . 10)
     ("oauth_pkce.challenge_urls" . 50)
     ("oauth_pkce_device.poll" . 50)
+    ("cli_extensions_install.llama_url" . 50)
     ("evals_harness.summarize" . 20)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
@@ -2981,6 +2983,63 @@
                 (lambda ()
                   (run-oauth-pkce-device-poll)))))))
 
+(defun llama-url-flag (value expected)
+  (handler-case
+      (if (string=
+           (cadr-cli::normalize-llama-server-url value)
+           expected)
+          1
+          0)
+    (error () 0)))
+
+(defun llama-url-error-flag (value)
+  (handler-case
+      (progn
+        (cadr-cli::normalize-llama-server-url value)
+        0)
+    (error () 1)))
+
+(defun run-cli-extensions-llama-url ()
+  (list
+   (llama-url-flag
+    "http://127.0.0.1:8080/v1/"
+    "http://127.0.0.1:8080")
+   (llama-url-flag
+    "https://example.com/foo/v1?x=1#h"
+    "https://example.com/foo")
+   (llama-url-error-flag "file:///tmp/llama")
+   (handler-case
+       (if (string=
+            (cadr-cli::llama-inference-url
+             "http://127.0.0.1:8080/v1/")
+            "http://127.0.0.1:8080/v1")
+           1
+           0)
+     (error () 0))
+   (if (string= (cadr-cli::format-llama-bytes 512) "512 B")
+       1
+       0)
+   (if (search "KiB" (cadr-cli::format-llama-bytes 1024))
+       1
+       0)))
+
+(defun measure-cli-extensions-install ()
+  (let ((observed (run-cli-extensions-llama-url)))
+    (json-object
+     "observed"
+     (json-object
+      "nu_local" (nth 0 observed)
+      "nu_https" (nth 1 observed)
+      "nu_file" (nth 2 observed)
+      "inf_ok" (nth 3 observed)
+      "fb_b" (nth 4 observed)
+      "fb_k" (nth 5 observed))
+     "llama_url"
+     (collect "cli_extensions_install.llama_url"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-url)))))))
+
 (defun evals-harness-observation
     (harness test-name score
      &key total-tokens total-ms estimated-cost-usd)
@@ -5281,6 +5340,8 @@
       "src/cadr-ai/oauth/pkce.lisp pkce-challenge + openai/anthropic-authorization-url"
       "oauth_pkce_device.poll"
       "src/cadr-ai/auth/device-code.lisp poll-device-authorization"
+      "cli_extensions_install.llama_url"
+      "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "ai_crypto_model_data.manifest"
@@ -5500,6 +5561,8 @@
               (let ((oauth (measure-oauth-pkce)))
               (format *error-output* "goal20 cadr paired paths: oauth_pkce_device~%")
               (let ((oauth-device (measure-oauth-pkce-device)))
+              (format *error-output* "goal20 cadr paired paths: cli_extensions_install~%")
+              (let ((extensions (measure-cli-extensions-install)))
               (format *error-output* "goal20 cadr paired paths: evals_harness~%")
               (let ((evals (measure-evals-harness)))
               (format *error-output* "goal20 cadr paired paths: ai_crypto_model_data~%")
@@ -5608,6 +5671,7 @@
               "agent_proxy" proxy
               "oauth_pkce" oauth
               "oauth_pkce_device" oauth-device
+              "cli_extensions_install" extensions
               "evals_harness" evals
               "ai_crypto_model_data" crypto
               "ai_crypto" hmac
@@ -5654,7 +5718,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

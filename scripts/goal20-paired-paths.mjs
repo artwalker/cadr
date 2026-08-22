@@ -150,6 +150,7 @@ const REPETITIONS = {
 	"agent_proxy.stream_roundtrip": 10,
 	"oauth_pkce.challenge_urls": 50,
 	"oauth_pkce_device.poll": 50,
+	"cli_extensions_install.llama_url": 50,
 	"evals_harness.summarize": 20,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
@@ -421,6 +422,9 @@ const openaiCodexModule = await import(moduleUrl("packages/ai/src/api/openai-cod
 const piMessagesModule = await import(moduleUrl("packages/ai/src/api/pi-messages.ts"));
 const deviceCodeModule = await import(
 	moduleUrl("packages/ai/src/auth/oauth/device-code.ts")
+);
+const llamaClientModule = await import(
+	moduleUrl("packages/coding-agent/src/extensions/llama/client.ts")
 );
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const projectTrustModule = await import(
@@ -2505,6 +2509,54 @@ async function measureOauthPkceDevice() {
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
+		}),
+		observed,
+	};
+}
+
+function llamaUrlOk(value, expected) {
+	try {
+		return llamaClientModule.normalizeLlamaServerUrl(value) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function llamaUrlError(value) {
+	try {
+		llamaClientModule.normalizeLlamaServerUrl(value);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runCliExtensionsLlamaUrl() {
+	let infOk = 0;
+	try {
+		infOk =
+			llamaClientModule.llamaInferenceUrl("http://127.0.0.1:8080/v1/") ===
+			"http://127.0.0.1:8080/v1"
+				? 1
+				: 0;
+	} catch {
+		infOk = 0;
+	}
+	return {
+		nu_local: llamaUrlOk("http://127.0.0.1:8080/v1/", "http://127.0.0.1:8080"),
+		nu_https: llamaUrlOk("https://example.com/foo/v1?x=1#h", "https://example.com/foo"),
+		nu_file: llamaUrlError("file:///tmp/llama"),
+		inf_ok: infOk,
+		fb_b: llamaClientModule.formatBytes(512) === "512 B" ? 1 : 0,
+		fb_k: llamaClientModule.formatBytes(1024).includes("KiB") ? 1 : 0,
+	};
+}
+
+async function measureCliExtensionsInstall() {
+	const observed = runCliExtensionsLlamaUrl();
+	return {
+		llama_url: await collect("cli_extensions_install.llama_url", () => {
+			return () => runCliExtensionsLlamaUrl();
 		}),
 		observed,
 	};
@@ -4607,6 +4659,8 @@ process.stderr.write("goal20 pi paired paths: oauth_pkce\n");
 const oauthPkce = await measureOauthPkce();
 process.stderr.write("goal20 pi paired paths: oauth_pkce_device\n");
 const oauthPkceDevice = await measureOauthPkceDevice();
+process.stderr.write("goal20 pi paired paths: cli_extensions_install\n");
+const cliExtensionsInstall = await measureCliExtensionsInstall();
 process.stderr.write("goal20 pi paired paths: evals_harness\n");
 const evalsHarness = await measureEvalsHarness();
 process.stderr.write("goal20 pi paired paths: ai_crypto_model_data\n");
@@ -4716,6 +4770,8 @@ const result = {
 				"packages/ai/src/auth/oauth/pkce.ts SHA-256 challenge + openai-codex/anthropic authorize URLs",
 			"oauth_pkce_device.poll":
 				"packages/ai/src/auth/oauth/device-code.ts pollOAuthDeviceCodeFlow",
+			"cli_extensions_install.llama_url":
+				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"ai_crypto_model_data.manifest":
@@ -4895,6 +4951,7 @@ const result = {
 		agent_proxy: agentProxy,
 		oauth_pkce: oauthPkce,
 		oauth_pkce_device: oauthPkceDevice,
+		cli_extensions_install: cliExtensionsInstall,
 		evals_harness: evalsHarness,
 		ai_crypto_model_data: aiCryptoModelData,
 		ai_crypto: aiCrypto,
