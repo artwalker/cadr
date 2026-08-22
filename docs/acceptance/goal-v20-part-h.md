@@ -2034,6 +2034,18 @@ Observed `ssc_true` / `ssc_transport` / `ssc_wrap` / `ssc_missing` are
 exact. First Friend-MachineD freeze **4.13×** (2.0 / 0.5 µs), ceiling
 8.0. Same commit no optimize.
 
+### Pair 143 — `cli_selectors` (settings_apply_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `settings_apply_filter` | `settings-selector-apply-filter` | `SettingsList.applyFilter` (`settings-list.ts`) |
+
+Settings selector query filter only: fuzzy label match plus selected
+reset to 0. Fixtures: empty query (all visible), single match, no match,
+multi match. Encoded as `count|selected`. Observed `sap_empty` /
+`sap_trans` / `sap_none` / `sap_app` are exact. First Friend-MachineD
+freeze **1.61×** (7.8 / 4.8 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2359,7 +2371,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path`, `cli_selectors.session_quoted_p`, `cli_selectors.session_named_p` |
-| `src/cadr-cli/interactive/selectors/settings.lisp` | 893 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle` |
+| `src/cadr-cli/interactive/selectors/settings.lisp` | 893 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |

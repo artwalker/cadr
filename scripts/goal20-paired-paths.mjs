@@ -254,6 +254,7 @@ const REPETITIONS = {
 	"cli_selectors.settings_automatic_theme_setting": 50,
 	"cli_selectors.settings_active_automatic_theme": 50,
 	"cli_selectors.settings_cycle": 50,
+	"cli_selectors.settings_apply_filter": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5447,6 +5448,24 @@ function runCliSelectorsSettingsCycle() {
 	};
 }
 
+function settingsApplyFilterEncodedPi(labels, query) {
+	const items = labels.map((label) => ({ label }));
+	const filtered =
+		query.length === 0
+			? items
+			: fuzzyModule.fuzzyFilter(items, query, (item) => item.label);
+	return `${filtered.length}|0`;
+}
+
+function runCliSelectorsSettingsApplyFilter() {
+	return {
+		sap_empty: settingsApplyFilterEncodedPi(["auto-compact", "transport", "theme"], ""),
+		sap_trans: settingsApplyFilterEncodedPi(["auto-compact", "transport", "theme"], "trans"),
+		sap_none: settingsApplyFilterEncodedPi(["auto-compact", "transport", "theme"], "zzz"),
+		sap_app: settingsApplyFilterEncodedPi(["apple", "application", "banana"], "app"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5795,6 +5814,7 @@ async function measureCliSelectorsSessionSearch() {
 	const settingsAutomaticThemeSettingResults = runCliSelectorsSettingsAutomaticThemeSetting();
 	const settingsActiveAutomaticThemeResults = runCliSelectorsSettingsActiveAutomaticTheme();
 	const settingsCycleResults = runCliSelectorsSettingsCycle();
+	const settingsApplyFilterResults = runCliSelectorsSettingsApplyFilter();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5957,6 +5977,10 @@ async function measureCliSelectorsSessionSearch() {
 		ssc_transport: settingsCycleResults.ssc_transport,
 		ssc_wrap: settingsCycleResults.ssc_wrap,
 		ssc_missing: settingsCycleResults.ssc_missing,
+		sap_empty: settingsApplyFilterResults.sap_empty,
+		sap_trans: settingsApplyFilterResults.sap_trans,
+		sap_none: settingsApplyFilterResults.sap_none,
+		sap_app: settingsApplyFilterResults.sap_app,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6063,6 +6087,9 @@ async function measureCliSelectorsSessionSearch() {
 		),
 		settings_cycle: await collect("cli_selectors.settings_cycle", () => {
 			return () => runCliSelectorsSettingsCycle();
+		}),
+		settings_apply_filter: await collect("cli_selectors.settings_apply_filter", () => {
+			return () => runCliSelectorsSettingsApplyFilter();
 		}),
 		observed,
 	};
@@ -7179,6 +7206,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts ThemeSubmenu getActiveAutomaticTheme",
 			"cli_selectors.settings_cycle":
 				"packages/tui/src/components/settings-list.ts SettingsList cycle values",
+			"cli_selectors.settings_apply_filter":
+				"packages/tui/src/components/settings-list.ts SettingsList applyFilter",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
