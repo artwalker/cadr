@@ -244,6 +244,7 @@ const REPETITIONS = {
 	"cli_selectors.session_quoted_search": 50,
 	"cli_selectors.session_thread_records": 50,
 	"cli_selectors.session_binding_label": 50,
+	"cli_selectors.session_same_path": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5260,6 +5261,27 @@ function runCliSelectorsSessionBindingLabel() {
 	};
 }
 
+function sessionSamePathPi(left, right) {
+	if (!left || !right) {
+		return false;
+	}
+	return pathsModule.canonicalizePath(left) === pathsModule.canonicalizePath(right);
+}
+
+function sessionSamePathInt(left, right) {
+	return sessionSamePathPi(left, right) ? 1 : 0;
+}
+
+function runCliSelectorsSessionSamePath() {
+	return {
+		ssp_same: sessionSamePathInt("/tmp/goal20/session-a.jsonl", "/tmp/goal20/session-a.jsonl"),
+		ssp_diff: sessionSamePathInt("/tmp/goal20/session-a.jsonl", "/tmp/goal20/session-b.jsonl"),
+		ssp_nil_left: sessionSamePathInt(null, "/tmp/goal20/session-a.jsonl"),
+		ssp_nil_right: sessionSamePathInt("/tmp/goal20/session-a.jsonl", null),
+		ssp_nil_both: sessionSamePathInt(null, null),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5600,6 +5622,7 @@ async function measureCliSelectorsSessionSearch() {
 	const sessionQuotedSearchResults = runCliSelectorsSessionQuotedSearch();
 	const sessionThreadRecordsResults = runCliSelectorsSessionThreadRecords();
 	const sessionBindingLabelResults = runCliSelectorsSessionBindingLabel();
+	const sessionSamePathResults = runCliSelectorsSessionSamePath();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5724,6 +5747,11 @@ async function measureCliSelectorsSessionSearch() {
 		sbl_noninvasive: sessionBindingLabelResults.sbl_noninvasive,
 		sbl_fallback: sessionBindingLabelResults.sbl_fallback,
 		sbl_custom: sessionBindingLabelResults.sbl_custom,
+		ssp_same: sessionSamePathResults.ssp_same,
+		ssp_diff: sessionSamePathResults.ssp_diff,
+		ssp_nil_left: sessionSamePathResults.ssp_nil_left,
+		ssp_nil_right: sessionSamePathResults.ssp_nil_right,
+		ssp_nil_both: sessionSamePathResults.ssp_nil_both,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5797,6 +5825,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		session_binding_label: await collect("cli_selectors.session_binding_label", () => {
 			return () => runCliSelectorsSessionBindingLabel();
+		}),
+		session_same_path: await collect("cli_selectors.session_same_path", () => {
+			return () => runCliSelectorsSessionSamePath();
 		}),
 		observed,
 	};
@@ -6893,6 +6924,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts buildSessionTree flattenSessionTree",
 			"cli_selectors.session_binding_label":
 				"packages/coding-agent/src/core/keybindings.ts KeybindingsManager.getKeys first-or-name",
+			"cli_selectors.session_same_path":
+				"packages/coding-agent/src/utils/paths.ts canonicalizePath equality",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

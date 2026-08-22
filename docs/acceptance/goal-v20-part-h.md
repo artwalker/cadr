@@ -1896,6 +1896,21 @@ falls back to the binding id; custom user override on
 Friend-MachineD freeze **1.43×** (41.2 / 28.9 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 133 — `cli_selectors` (session_same_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_same_path` | `same-session-path-p` | `canonicalizePath` equality |
+
+Leftover sibling of the `sessions.lisp` hole. Canonical session path
+equality only (`canonical-file-name` vs `realpathSync` fallback), not
+full delete/rename state machine. Fixtures: equal paths, different
+paths, nil left/right/both (encoded as 1/0). Observed `ssp_same` /
+`ssp_diff` / `ssp_nil_left` / `ssp_nil_right` / `ssp_nil_both` are
+exact. `session-selector-gutter-prefixes` stays unpaired. First
+Friend-MachineD freeze **0.65×** (22.1 / 33.9 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2220,7 +2235,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label` |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |

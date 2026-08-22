@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.session_same_path`
+  (session path equality fixtures; cadr `same-session-path-p` vs pi
+  `canonicalizePath` equality). Friend-MachineD n=5 **0.65×** (22.1 / 33.9 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.session_binding_label`
   (session selector keybinding fixtures; cadr `session-selector-binding-label`
   vs pi `KeybindingsManager.getKeys` first-or-name). Friend-MachineD n=5

@@ -112,6 +112,7 @@
 ;;;; 130. cli_selectors search-record-position quoted phrase vs phrase token indexOf
 ;;;; 131. cli_selectors thread-session-records vs buildSessionTree flattenSessionTree
 ;;;; 132. cli_selectors session-selector-binding-label vs KeybindingsManager.getKeys first
+;;;; 133. cli_selectors same-session-path-p vs canonicalizePath equality
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -307,6 +308,7 @@
     ("cli_selectors.session_quoted_search" . 50)
     ("cli_selectors.session_thread_records" . 50)
     ("cli_selectors.session_binding_label" . 50)
+    ("cli_selectors.session_same_path" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6248,6 +6250,21 @@
      (cadr-cli::session-selector-binding-label
       custom "app.session.toggleSort"))))
 
+(defun session-same-path-int (left right)
+  (if (cadr-cli::same-session-path-p left right) 1 0))
+
+(defun run-cli-selectors-session-same-path ()
+  (list
+   (session-same-path-int
+    "/tmp/goal20/session-a.jsonl"
+    "/tmp/goal20/session-a.jsonl")
+   (session-same-path-int
+    "/tmp/goal20/session-a.jsonl"
+    "/tmp/goal20/session-b.jsonl")
+   (session-same-path-int nil "/tmp/goal20/session-a.jsonl")
+   (session-same-path-int "/tmp/goal20/session-a.jsonl" nil)
+   (session-same-path-int nil nil)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6272,7 +6289,8 @@
         (session-shorten-path (run-cli-selectors-session-shorten-path))
         (session-quoted-search (run-cli-selectors-session-quoted-search))
         (session-thread-records (run-cli-selectors-session-thread-records))
-        (session-binding-label (run-cli-selectors-session-binding-label)))
+        (session-binding-label (run-cli-selectors-session-binding-label))
+        (session-same-path (run-cli-selectors-session-same-path)))
     (json-object
      "observed"
      (json-object
@@ -6416,7 +6434,12 @@
       "sbl_delete" (nth 1 session-binding-label)
       "sbl_noninvasive" (nth 2 session-binding-label)
       "sbl_fallback" (nth 3 session-binding-label)
-      "sbl_custom" (nth 4 session-binding-label))
+      "sbl_custom" (nth 4 session-binding-label)
+      "ssp_same" (nth 0 session-same-path)
+      "ssp_diff" (nth 1 session-same-path)
+      "ssp_nil_left" (nth 2 session-same-path)
+      "ssp_nil_right" (nth 3 session-same-path)
+      "ssp_nil_both" (nth 4 session-same-path))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6536,7 +6559,12 @@
      (collect "cli_selectors.session_binding_label"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-session-binding-label)))))))
+                  (run-cli-selectors-session-binding-label))))
+     "session_same_path"
+     (collect "cli_selectors.session_same_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-same-path)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7595,6 +7623,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp thread-session-records"
       "cli_selectors.session_binding_label"
       "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-binding-label"
+      "cli_selectors.session_same_path"
+      "src/cadr-cli/interactive/selectors/sessions.lisp same-session-path-p"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
