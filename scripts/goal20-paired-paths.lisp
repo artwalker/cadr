@@ -106,6 +106,7 @@
 ;;;; 124. cli_selectors selector-input-line vs Input.render
 ;;;; 125. cli_selectors selector-keybinding-text vs KeybindingsManager.getKeys join
 ;;;; 126. cli_selectors selector-keybinding-hint vs rawKeyHint dim/muted
+;;;; 127. cli_selectors session-selector-format-age vs formatSessionDate
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -295,6 +296,7 @@
     ("cli_selectors.input_line" . 50)
     ("cli_selectors.keybinding_text" . 50)
     ("cli_selectors.keybinding_hint" . 50)
+    ("cli_selectors.session_format_age" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6125,6 +6127,18 @@
      (cadr-cli::selector-keybinding-hint custom "tui.select.confirm" "save")
      (cadr-cli::selector-keybinding-hint custom "tui.select.cancel" "cancel"))))
 
+(defparameter *session-format-age-now* 1700000000000)
+
+(defun run-cli-selectors-session-format-age ()
+  (let ((now *session-format-age-now*))
+    (list
+     (cadr-cli::session-selector-format-age now now)
+     (cadr-cli::session-selector-format-age (- now 45000) now)
+     (cadr-cli::session-selector-format-age (- now 120000) now)
+     (cadr-cli::session-selector-format-age (- now 3600000) now)
+     (cadr-cli::session-selector-format-age (- now 86400000) now)
+     (cadr-cli::session-selector-format-age (- now (* 10 86400000)) now))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6143,7 +6157,8 @@
         (overlay-title-line (run-cli-selectors-overlay-title-line))
         (input-line (run-cli-selectors-input-line))
         (keybinding-text (run-cli-selectors-keybinding-text))
-        (keybinding-hint (run-cli-selectors-keybinding-hint)))
+        (keybinding-hint (run-cli-selectors-keybinding-hint))
+        (session-format-age (run-cli-selectors-session-format-age)))
     (json-object
      "observed"
      (json-object
@@ -6257,7 +6272,13 @@
       "kbh_left" (nth 2 keybinding-hint)
       "kbh_empty" (nth 3 keybinding-hint)
       "kbh_custom_save" (nth 4 keybinding-hint)
-      "kbh_custom_cancel" (nth 5 keybinding-hint))
+      "kbh_custom_cancel" (nth 5 keybinding-hint)
+      "sfa_now" (nth 0 session-format-age)
+      "sfa_sec" (nth 1 session-format-age)
+      "sfa_min" (nth 2 session-format-age)
+      "sfa_hour" (nth 3 session-format-age)
+      "sfa_day" (nth 4 session-format-age)
+      "sfa_week" (nth 5 session-format-age))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6347,7 +6368,12 @@
      (collect "cli_selectors.keybinding_hint"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-keybinding-hint)))))))
+                  (run-cli-selectors-keybinding-hint))))
+     "session_format_age"
+     (collect "cli_selectors.session_format_age"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-format-age)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7394,6 +7420,8 @@
       "src/cadr-cli/interactive/autocomplete.lisp tui-auth-type-label"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
+      "cli_selectors.session_format_age"
+      "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-format-age"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

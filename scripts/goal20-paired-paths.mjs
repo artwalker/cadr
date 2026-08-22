@@ -238,6 +238,7 @@ const REPETITIONS = {
 	"cli_selectors.input_line": 50,
 	"cli_selectors.keybinding_text": 50,
 	"cli_selectors.keybinding_hint": 50,
+	"cli_selectors.session_format_age": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -4973,6 +4974,34 @@ function sessionSearchCount(query, nameFilter = "all") {
 	).length;
 }
 
+const SESSION_FORMAT_AGE_NOW_MS = 1_700_000_000_000;
+
+function formatSessionDatePi(modifiedMs, nowMs = SESSION_FORMAT_AGE_NOW_MS) {
+	const diffMs = nowMs - modifiedMs;
+	const diffMins = Math.floor(diffMs / 60_000);
+	const diffHours = Math.floor(diffMs / 3_600_000);
+	const diffDays = Math.floor(diffMs / 86_400_000);
+	if (diffMins < 1) return "now";
+	if (diffMins < 60) return `${diffMins}m`;
+	if (diffHours < 24) return `${diffHours}h`;
+	if (diffDays < 7) return `${diffDays}d`;
+	if (diffDays < 30) return `${Math.floor(diffDays / 7)}w`;
+	if (diffDays < 365) return `${Math.floor(diffDays / 30)}mo`;
+	return `${Math.floor(diffDays / 365)}y`;
+}
+
+function runCliSelectorsSessionFormatAge() {
+	const now = SESSION_FORMAT_AGE_NOW_MS;
+	return {
+		sfa_now: formatSessionDatePi(now, now),
+		sfa_sec: formatSessionDatePi(now - 45_000, now),
+		sfa_min: formatSessionDatePi(now - 120_000, now),
+		sfa_hour: formatSessionDatePi(now - 3_600_000, now),
+		sfa_day: formatSessionDatePi(now - 86_400_000, now),
+		sfa_week: formatSessionDatePi(now - 10 * 86_400_000, now),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5307,6 +5336,7 @@ async function measureCliSelectorsSessionSearch() {
 	const inputLineResults = runCliSelectorsInputLine();
 	const keybindingTextResults = runCliSelectorsKeybindingText();
 	const keybindingHintResults = runCliSelectorsKeybindingHint();
+	const sessionFormatAgeResults = runCliSelectorsSessionFormatAge();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5401,6 +5431,12 @@ async function measureCliSelectorsSessionSearch() {
 		kbh_empty: keybindingHintResults[3],
 		kbh_custom_save: keybindingHintResults[4],
 		kbh_custom_cancel: keybindingHintResults[5],
+		sfa_now: sessionFormatAgeResults.sfa_now,
+		sfa_sec: sessionFormatAgeResults.sfa_sec,
+		sfa_min: sessionFormatAgeResults.sfa_min,
+		sfa_hour: sessionFormatAgeResults.sfa_hour,
+		sfa_day: sessionFormatAgeResults.sfa_day,
+		sfa_week: sessionFormatAgeResults.sfa_week,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5456,6 +5492,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		keybinding_hint: await collect("cli_selectors.keybinding_hint", () => {
 			return () => runCliSelectorsKeybindingHint();
+		}),
+		session_format_age: await collect("cli_selectors.session_format_age", () => {
+			return () => runCliSelectorsSessionFormatAge();
 		}),
 		observed,
 	};
@@ -6540,6 +6579,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatAuthSelectorProviderType",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
+			"cli_selectors.session_format_age":
+				"packages/coding-agent/src/modes/interactive/components/session-selector.ts formatSessionDate",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.session_format_age`
+  (session age label fixtures; cadr `session-selector-format-age` vs pi
+  `formatSessionDate`). Friend-MachineD n=5 **1.00×** (0.7 / 0.7 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_selectors.keybinding_hint`
   (selector footer hint fixtures; cadr `selector-keybinding-hint` vs pi
   `rawKeyHint`). Friend-MachineD n=5 **1.32×** (59.9 / 23.2 µs),

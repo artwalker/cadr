@@ -1803,6 +1803,19 @@ mirror `keybinding_text` with description strings. Observed
 Friend-MachineD freeze **1.32×** (59.9 / 23.2 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 127 — `cli_selectors` (session_format_age)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_format_age` | `session-selector-format-age` | `formatSessionDate` |
+
+Leftover sibling of the `sessions.lisp` hole. Time relative session
+age labels with fixed `now` (1700000000000). Fixtures cover now,
+45s, 2m, 1h, 1d, and 10d (week bucket; avoids 30-day boundary
+mismatch). Observed `sfa_now` / `sfa_sec` / `sfa_min` / `sfa_hour` /
+`sfa_day` / `sfa_week` are exact. First Friend-MachineD freeze
+**1.00×** (0.7 / 0.7 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2127,7 +2140,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index`, `cli_selectors.align_left_right`, `cli_selectors.fit_line`, `cli_selectors.border_line`, `cli_selectors.selected_line`, `cli_selectors.muted_line`, `cli_selectors.dim_line`, `cli_selectors.modified_cursor_key`, `cli_selectors.title_line`, `cli_selectors.overlay_title_line`, `cli_selectors.input_line`, `cli_selectors.keybinding_text`, `cli_selectors.keybinding_hint` |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search` |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
