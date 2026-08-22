@@ -86,6 +86,7 @@
 ;;;;  72. oauth_pkce_device poll-device-authorization vs pollOAuthDeviceCodeFlow
 ;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
+;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -154,6 +155,7 @@
     ("provider_pi_messages.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
     ("settings_load.project_trust" . 20)
+    ("settings_load.config_value" . 50)
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
     ("session_discovery.header_probe" . 20)
@@ -2339,11 +2341,41 @@
       (cadr-cli::resolve-project-trusted
        store project :override nil :override-supplied-p t)))))
 
+(defun config-value-equals (config environment expected)
+  (let ((value
+          (cadr-cli::resolve-config-value
+           config
+           :environment environment)))
+    (if (and value (string= value expected))
+        1
+        0)))
+
+(defun config-value-missing-p (config environment)
+  (if (cadr-cli::resolve-config-value
+       config
+       :environment environment)
+      0
+      1))
+
+(defun run-settings-load-config-value ()
+  (let ((environment '(("GOAL20_CV_FOO" . "bar"))))
+    (list
+     (config-value-equals "abc" environment "abc")
+     (config-value-equals "$GOAL20_CV_FOO" environment "bar")
+     (config-value-equals "${GOAL20_CV_FOO}" environment "bar")
+     (config-value-equals "$$x" environment "$x")
+     (config-value-equals "$!x" environment "!x")
+     (config-value-missing-p "$GOAL20_CV_NOPE" environment)
+     (config-value-equals
+      "pre-$GOAL20_CV_FOO-post" environment "pre-bar-post")
+     (if (uiop:string-prefix-p "!" "!echo hi") 1 0))))
+
 (defun measure-settings-load ()
   (destructuring-bind (empty project store-path)
       (stage-settings-load-trust)
     (let ((observed
-            (run-settings-load-project-trust empty project store-path)))
+            (run-settings-load-project-trust empty project store-path))
+          (config (run-settings-load-config-value)))
       (json-object
        "observed"
        (json-object
@@ -2354,13 +2386,26 @@
         "rs_always" (nth 4 observed)
         "rs_never" (nth 5 observed)
         "rs_ov_yes" (nth 6 observed)
-        "rs_ov_no" (nth 7 observed))
+        "rs_ov_no" (nth 7 observed)
+        "cv_lit" (nth 0 config)
+        "cv_dol" (nth 1 config)
+        "cv_brace" (nth 2 config)
+        "cv_esc" (nth 3 config)
+        "cv_bang" (nth 4 config)
+        "cv_miss" (nth 5 config)
+        "cv_mix" (nth 6 config)
+        "cv_cmd" (nth 7 config))
        "project_trust"
        (collect "settings_load.project_trust"
                 (lambda ()
                   (lambda ()
                     (run-settings-load-project-trust
-                     empty project store-path))))))))
+                     empty project store-path))))
+       "config_value"
+       (collect "settings_load.config_value"
+                (lambda ()
+                  (lambda ()
+                    (run-settings-load-config-value))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -5419,6 +5464,8 @@
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
+      "settings_load.config_value"
+      "src/cadr-cli/settings/config-values.lisp resolve-config-value"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "package_manager.resolve"

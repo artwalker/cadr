@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `settings_load.config_value`
+  (literal / `$FOO` / `${FOO}` / `$$` / `$!` / miss / mix;
+  `!command` flag only, no spawn; cadr `resolve-config-value`
+  vs pi `resolveConfigValue`). Friend-MachineD n=5 **0.43×**
+  (2.70 / 6.21 µs), ceiling 8.0. cadr leads. Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_extensions_install.hf_token`
   (env / token-path / HF_HOME / miss / blank; isolated HOME;
   cadr `find-hugging-face-token` vs pi `findHuggingFaceToken`).

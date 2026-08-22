@@ -36,6 +36,7 @@ METRIC_KEYS = (
     "provider_pi_messages.stream_roundtrip",
     "cli_settings.create",
     "settings_load.project_trust",
+    "settings_load.config_value",
     "resource_loader.reload",
     "package_manager.resolve",
     "session_discovery.header_probe",

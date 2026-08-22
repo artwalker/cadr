@@ -89,6 +89,7 @@
   "http_transport.parse_url",
   "cli_settings.create",
   "settings_load.project_trust",
+  "settings_load.config_value",
   "resource_loader.reload",
   "session_pipeline.session_load",
   "session_pipeline.context_walk",
@@ -328,7 +329,8 @@
    "prefix": "src/cadr-cli/settings/config-values.lisp",
    "class": "paired",
    "metrics": [
-    "cli_settings.create"
+    "cli_settings.create",
+    "settings_load.config_value"
    ]
   },
   {

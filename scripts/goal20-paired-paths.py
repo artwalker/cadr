@@ -99,7 +99,7 @@ METRICS = {
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
     "cli_settings": ("create",),
-    "settings_load": ("project_trust",),
+    "settings_load": ("project_trust", "config_value"),
     "resource_loader": ("reload",),
     "package_manager": ("resolve",),
     "session_discovery": ("header_probe",),
@@ -232,6 +232,11 @@ RATIO_CEILINGS = {
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "settings_load.project_trust": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # settings_load.config_value pair (samples=5): observed
+    # 0.43x (2.70 / 6.21 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "settings_load.config_value": 8.0,
     # Frozen from the first Friend-MachineD non-quick resource_loader
     # pair (samples=5): observed 0.29x (568 / 1978 µs). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent
@@ -784,6 +789,14 @@ OBSERVED_EXACT = {
         "rs_never",
         "rs_ov_yes",
         "rs_ov_no",
+        "cv_lit",
+        "cv_dol",
+        "cv_brace",
+        "cv_esc",
+        "cv_bang",
+        "cv_miss",
+        "cv_mix",
+        "cv_cmd",
     ),
     "package_manager": (
         "package_count",

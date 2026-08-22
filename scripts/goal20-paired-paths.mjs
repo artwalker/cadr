@@ -139,6 +139,7 @@ const REPETITIONS = {
 	"provider_pi_messages.stream_roundtrip": 10,
 	"cli_settings.create": 5,
 	"settings_load.project_trust": 20,
+	"settings_load.config_value": 50,
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
 	"session_discovery.header_probe": 20,
@@ -433,6 +434,9 @@ const llamaHfModule = await import(
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const projectTrustModule = await import(
 	moduleUrl("packages/coding-agent/src/core/project-trust.ts")
+);
+const resolveConfigValueModule = await import(
+	moduleUrl("packages/coding-agent/src/core/resolve-config-value.ts")
 );
 const trustManagerModule = await import(
 	moduleUrl("packages/coding-agent/src/core/trust-manager.ts")
@@ -1501,14 +1505,34 @@ async function runSettingsLoadProjectTrust(empty, project, agent) {
 	};
 }
 
+function runSettingsLoadConfigValue() {
+	const env = { GOAL20_CV_FOO: "bar" };
+	const equals = (config, expected) =>
+		resolveConfigValueModule.resolveConfigValue(config, env) === expected ? 1 : 0;
+	return {
+		cv_lit: equals("abc", "abc"),
+		cv_dol: equals("$GOAL20_CV_FOO", "bar"),
+		cv_brace: equals("${GOAL20_CV_FOO}", "bar"),
+		cv_esc: equals("$$x", "$x"),
+		cv_bang: equals("$!x", "!x"),
+		cv_miss: resolveConfigValueModule.resolveConfigValue("$GOAL20_CV_NOPE", env) ? 0 : 1,
+		cv_mix: equals("pre-$GOAL20_CV_FOO-post", "pre-bar-post"),
+		cv_cmd: resolveConfigValueModule.isCommandConfigValue("!echo hi") ? 1 : 0,
+	};
+}
+
 async function measureSettingsLoad() {
 	const { empty, project, agent } = stageSettingsLoadTrust();
-	const observed = await runSettingsLoadProjectTrust(empty, project, agent);
+	const trust = await runSettingsLoadProjectTrust(empty, project, agent);
+	const config = runSettingsLoadConfigValue();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
 		}),
-		observed,
+		config_value: await collect("settings_load.config_value", () => {
+			return () => runSettingsLoadConfigValue();
+		}),
+		observed: { ...trust, ...config },
 	};
 }
 
@@ -4809,6 +4833,8 @@ const result = {
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
+			"settings_load.config_value":
+				"packages/coding-agent/src/core/resolve-config-value.ts resolveConfigValue",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"session_discovery.header_probe":
