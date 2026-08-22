@@ -98,6 +98,7 @@
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
+;;;;  87. cli_sdk create-agent-session-services vs createAgentSessionServices
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -242,6 +243,7 @@
     ("cli_sdk.thinking_level" . 50)
     ("cli_sdk.session_list" . 5)
     ("cli_sdk.agent_session" . 5)
+    ("cli_sdk.session_services" . 5)
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
@@ -5712,13 +5714,49 @@
         (when session
           (cadr-cli::agent-session-dispose session))))))
 
+(defun run-cli-sdk-session-services ()
+  ;; Isolated cwd/agentDir. Do not exact diagnostics (pi also
+  ;; refresh({allowNetwork:false}) + extension flag apply).
+  (destructuring-bind (cwd agent-dir)
+      (stage-cli-sdk-agent-session)
+    (let* ((settings (cadr-cli::make-memory-sdk-settings-manager))
+           (runtime
+             (cadr-cli::make-sdk-model-runtime
+              :auth-path
+              (merge-pathnames "auth.json" agent-dir)
+              :models-path
+              (merge-pathnames "models.json" agent-dir)))
+           (services
+             (cadr-cli::create-agent-session-services
+              :cwd cwd
+              :agent-directory agent-dir
+              :settings-manager settings
+              :model-runtime runtime)))
+      (list
+       (if services 1 0)
+       (if (string=
+            (string-right-trim
+             "/"
+             (namestring
+              (truename
+               (cadr-cli::agent-session-services-cwd services))))
+            (string-right-trim "/" (namestring (truename cwd))))
+           1
+           0)
+       (if (cadr-cli::sdk-resource-loader-snapshot
+            (cadr-cli::agent-session-services-resource-loader
+             services))
+           1
+           0)))))
+
 (defun measure-cli-sdk-version-newer ()
   (let ((observed (run-cli-sdk-version-newer))
         (cache (run-cli-sdk-cache-miss))
         (waste (run-cli-sdk-cache-waste))
         (thinking (run-cli-sdk-thinking-level))
         (sessions (run-cli-sdk-session-list))
-        (agent (run-cli-sdk-agent-session)))
+        (agent (run-cli-sdk-agent-session))
+        (services (run-cli-sdk-session-services)))
     (json-object
      "observed"
      (json-object
@@ -5757,7 +5795,10 @@
       "sl_empty" (nth 2 sessions)
       "as_ok" (nth 0 agent)
       "as_model" (nth 1 agent)
-      "as_fb" (nth 2 agent))
+      "as_fb" (nth 2 agent)
+      "ss_ok" (nth 0 services)
+      "ss_cwd" (nth 1 services)
+      "ss_snap" (nth 2 services))
      "version_newer"
      (collect "cli_sdk.version_newer"
               (lambda ()
@@ -5787,7 +5828,12 @@
      (collect "cli_sdk.agent_session"
               (lambda ()
                 (lambda ()
-                  (run-cli-sdk-agent-session)))))))
+                  (run-cli-sdk-agent-session))))
+     "session_services"
+     (collect "cli_sdk.session_services"
+              (lambda ()
+                (lambda ()
+                  (run-cli-sdk-session-services)))))))
 
 (defun provider-definition-present-p (id)
   (handler-case
@@ -6172,6 +6218,8 @@
       "src/cadr-cli/sdk/session-manager.lisp session-manager-list"
       "cli_sdk.agent_session"
       "src/cadr-cli/sdk/agent-session.lisp create-agent-session"
+      "cli_sdk.session_services"
+      "src/cadr-cli/sdk/session-runtime.lisp create-agent-session-services"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "skill_prompt_load.build_prompt"

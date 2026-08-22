@@ -111,6 +111,7 @@ METRIC_KEYS = (
     "cli_sdk.thinking_level",
     "cli_sdk.session_list",
     "cli_sdk.agent_session",
+    "cli_sdk.session_services",
     "provider_registry_defs.lookup",
     "skill_prompt_load.build_prompt",
     "cli_bootstrap_sessions.coding_tools",

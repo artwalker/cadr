@@ -136,7 +136,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer"),
-    "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session"),
+    "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services"),
     "provider_registry_defs": ("lookup",),
     "skill_prompt_load": ("build_prompt",),
     "cli_bootstrap_sessions": ("coding_tools",),
@@ -616,6 +616,11 @@ RATIO_CEILINGS = {
     # 0.36x (3151 / 8769 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "cli_sdk.agent_session": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_sdk.session_services pair (samples=5): observed
+    # 0.24x (2306 / 9493 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "cli_sdk.session_services": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # provider_registry_defs pair (samples=5): observed 4.44x
     # (1.03 / 0.23 us). 8.0 follows the microsecond-floor
@@ -1310,6 +1315,9 @@ OBSERVED_EXACT = {
         "as_ok",
         "as_model",
         "as_fb",
+        "ss_ok",
+        "ss_cwd",
+        "ss_snap",
     ),
     "provider_registry_defs": (
         "openai",
