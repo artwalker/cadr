@@ -236,6 +236,7 @@ const REPETITIONS = {
 	"cli_selectors.title_line": 50,
 	"cli_selectors.overlay_title_line": 50,
 	"cli_selectors.input_line": 50,
+	"cli_selectors.keybinding_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5250,6 +5251,26 @@ function runCliSelectorsInputLine() {
 	];
 }
 
+function selectorKeybindingTextPi(manager, name) {
+	return manager.getKeys(name).join("/");
+}
+
+function runCliSelectorsKeybindingText() {
+	const defaultManager = new keybindingsModule.KeybindingsManager(keybindingsModule.TUI_KEYBINDINGS);
+	const customManager = new keybindingsModule.KeybindingsManager(keybindingsModule.TUI_KEYBINDINGS, {
+		"tui.select.confirm": "ctrl+x",
+		"tui.select.cancel": ["alt+x", "ctrl+c"],
+	});
+	return [
+		selectorKeybindingTextPi(defaultManager, "tui.select.confirm"),
+		selectorKeybindingTextPi(defaultManager, "tui.select.cancel"),
+		selectorKeybindingTextPi(defaultManager, "tui.editor.cursorLeft"),
+		selectorKeybindingTextPi(defaultManager, "tui.editor.historyPrevious"),
+		selectorKeybindingTextPi(customManager, "tui.select.confirm"),
+		selectorKeybindingTextPi(customManager, "tui.select.cancel"),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -5263,6 +5284,7 @@ async function measureCliSelectorsSessionSearch() {
 	const titleLineResults = runCliSelectorsTitleLine();
 	const overlayTitleLineResults = runCliSelectorsOverlayTitleLine();
 	const inputLineResults = runCliSelectorsInputLine();
+	const keybindingTextResults = runCliSelectorsKeybindingText();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5345,6 +5367,12 @@ async function measureCliSelectorsSessionSearch() {
 		il_grapheme: inputLineResults[3],
 		il_narrow: inputLineResults[4],
 		il_scroll: inputLineResults[5],
+		kbt_confirm: keybindingTextResults[0],
+		kbt_cancel: keybindingTextResults[1],
+		kbt_left: keybindingTextResults[2],
+		kbt_empty: keybindingTextResults[3],
+		kbt_custom_confirm: keybindingTextResults[4],
+		kbt_custom_cancel: keybindingTextResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5394,6 +5422,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		input_line: await collect("cli_selectors.input_line", () => {
 			return () => runCliSelectorsInputLine();
+		}),
+		keybinding_text: await collect("cli_selectors.keybinding_text", () => {
+			return () => runCliSelectorsKeybindingText();
 		}),
 		observed,
 	};
@@ -6507,6 +6538,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts theme.fg accent theme.bold TruncatedText margins",
 			"cli_selectors.input_line":
 				"packages/tui/src/components/input.ts Input.render",
+			"cli_selectors.keybinding_text":
+				"packages/tui/src/keybindings.ts KeybindingsManager.getKeys join",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

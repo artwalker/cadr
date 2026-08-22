@@ -104,6 +104,7 @@
 ;;;; 122. cli_selectors selector-title-line vs theme accent bold Text margins
 ;;;; 123. cli_selectors selector-overlay-title-line vs oauth auth overlay title
 ;;;; 124. cli_selectors selector-input-line vs Input.render
+;;;; 125. cli_selectors selector-keybinding-text vs KeybindingsManager.getKeys join
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -291,6 +292,7 @@
     ("cli_selectors.title_line" . 50)
     ("cli_selectors.overlay_title_line" . 50)
     ("cli_selectors.input_line" . 50)
+    ("cli_selectors.keybinding_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6091,6 +6093,21 @@
    (cadr-cli::selector-input-line "你🙂a" 3)
    (cadr-cli::selector-input-line "가나다라마바사아자차카타파하" 20)))
 
+(defun run-cli-selectors-keybinding-text ()
+  (let ((default (cadr-tui:make-keybindings-manager))
+        (custom
+          (cadr-tui:make-keybindings-manager
+           :user-bindings
+           '(("tui.select.confirm" . "ctrl+x")
+             ("tui.select.cancel" . ("alt+x" "ctrl+c"))))))
+    (list
+     (cadr-cli::selector-keybinding-text default "tui.select.confirm")
+     (cadr-cli::selector-keybinding-text default "tui.select.cancel")
+     (cadr-cli::selector-keybinding-text default "tui.editor.cursorLeft")
+     (cadr-cli::selector-keybinding-text default "tui.editor.historyPrevious")
+     (cadr-cli::selector-keybinding-text custom "tui.select.confirm")
+     (cadr-cli::selector-keybinding-text custom "tui.select.cancel"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6107,7 +6124,8 @@
         (modified-cursor-key (run-cli-selectors-modified-cursor-key))
         (title-line (run-cli-selectors-title-line))
         (overlay-title-line (run-cli-selectors-overlay-title-line))
-        (input-line (run-cli-selectors-input-line)))
+        (input-line (run-cli-selectors-input-line))
+        (keybinding-text (run-cli-selectors-keybinding-text)))
     (json-object
      "observed"
      (json-object
@@ -6209,7 +6227,13 @@
       "il_ab12" (nth 2 input-line)
       "il_grapheme" (nth 3 input-line)
       "il_narrow" (nth 4 input-line)
-      "il_scroll" (nth 5 input-line))
+      "il_scroll" (nth 5 input-line)
+      "kbt_confirm" (nth 0 keybinding-text)
+      "kbt_cancel" (nth 1 keybinding-text)
+      "kbt_left" (nth 2 keybinding-text)
+      "kbt_empty" (nth 3 keybinding-text)
+      "kbt_custom_confirm" (nth 4 keybinding-text)
+      "kbt_custom_cancel" (nth 5 keybinding-text))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6289,7 +6313,12 @@
      (collect "cli_selectors.input_line"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-input-line)))))))
+                  (run-cli-selectors-input-line))))
+     "keybinding_text"
+     (collect "cli_selectors.keybinding_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-keybinding-text)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7366,6 +7395,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-overlay-title-line"
       "cli_selectors.input_line"
       "src/cadr-cli/interactive/selectors/common.lisp selector-input-line"
+      "cli_selectors.keybinding_text"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-text"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
