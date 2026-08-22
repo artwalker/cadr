@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.settings_display_value`
+  (settings value label fixtures; cadr `settings-display-value` vs pi
+  boolean/value formatting). Friend-MachineD n=5 **3.39×** (0.6 / 0.2 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.settings_thinking_description`
   (thinking-level description fixtures; cadr `settings-thinking-description`
   vs pi `THINKING_DESCRIPTIONS`). Friend-MachineD n=5 **0.80×** (0.3 / 0.3 µs),

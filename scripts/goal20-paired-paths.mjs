@@ -248,6 +248,7 @@ const REPETITIONS = {
 	"cli_selectors.session_quoted_p": 50,
 	"cli_selectors.session_named_p": 50,
 	"cli_selectors.settings_thinking_description": 50,
+	"cli_selectors.settings_display_value": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5340,6 +5341,29 @@ function runCliSelectorsSettingsThinkingDescription() {
 	};
 }
 
+function settingsDisplayValuePi(value) {
+	if (value === true) {
+		return "true";
+	}
+	if (value === false || value == null) {
+		return "false";
+	}
+	if (typeof value === "object" && value !== null && "__lispSymbol" in value) {
+		return value.__lispSymbol.toLowerCase();
+	}
+	return String(value);
+}
+
+function runCliSelectorsSettingsDisplayValue() {
+	return {
+		sdv_true: settingsDisplayValuePi(true),
+		sdv_false: settingsDisplayValuePi(null),
+		sdv_symbol: settingsDisplayValuePi({ __lispSymbol: "MEDIUM" }),
+		sdv_int: settingsDisplayValuePi(42),
+		sdv_string: settingsDisplayValuePi("hello"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5684,6 +5708,7 @@ async function measureCliSelectorsSessionSearch() {
 	const sessionQuotedPResults = runCliSelectorsSessionQuotedP();
 	const sessionNamedPResults = runCliSelectorsSessionNamedP();
 	const settingsThinkingDescriptionResults = runCliSelectorsSettingsThinkingDescription();
+	const settingsDisplayValueResults = runCliSelectorsSettingsDisplayValue();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5831,6 +5856,11 @@ async function measureCliSelectorsSessionSearch() {
 		std_xhigh: settingsThinkingDescriptionResults.std_xhigh,
 		std_max: settingsThinkingDescriptionResults.std_max,
 		std_unknown: settingsThinkingDescriptionResults.std_unknown,
+		sdv_true: settingsDisplayValueResults.sdv_true,
+		sdv_false: settingsDisplayValueResults.sdv_false,
+		sdv_symbol: settingsDisplayValueResults.sdv_symbol,
+		sdv_int: settingsDisplayValueResults.sdv_int,
+		sdv_string: settingsDisplayValueResults.sdv_string,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5920,6 +5950,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsSettingsThinkingDescription();
 			},
 		),
+		settings_display_value: await collect("cli_selectors.settings_display_value", () => {
+			return () => runCliSelectorsSettingsDisplayValue();
+		}),
 		observed,
 	};
 }
@@ -7023,6 +7056,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts hasSessionName",
 			"cli_selectors.settings_thinking_description":
 				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts THINKING_DESCRIPTIONS",
+			"cli_selectors.settings_display_value":
+				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts currentValue boolean formatting",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

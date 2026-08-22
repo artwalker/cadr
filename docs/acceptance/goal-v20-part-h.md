@@ -1955,6 +1955,19 @@ description lookup only, not submenu render or cycle. Fixtures cover
 Friend-MachineD freeze **0.80×** (0.3 / 0.3 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 137 — `cli_selectors` (settings_display_value)
+
+| metric | cadr | pi |
+|---|---|---|
+| `settings_display_value` | `settings-display-value` | boolean/value `currentValue` formatting (`settings-selector.ts`) |
+
+`settings.lisp` sibling. Value-to-label string only (`t`/`nil`/symbol/
+number/string), not `settings-option-display-value` format hooks.
+Fixtures: `t`, `nil`, `:medium`, `42`, `"hello"`. Observed `sdv_true` /
+`sdv_false` / `sdv_symbol` / `sdv_int` / `sdv_string` are exact. First
+Friend-MachineD freeze **3.39×** (0.6 / 0.2 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2160,14 +2173,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 164 | 71,425 | 56.1% | `no worse than baseline` is falsifiable |
+| `paired` | 165 | 72,318 | 56.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 79 | 31,069 | 24.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 78 | 30,176 | 23.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 56.1% of lines (164 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 61.9% of lines.
+- **Falsifiable vs baseline:** 56.8% of lines (165 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 62.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -2280,6 +2293,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path`, `cli_selectors.session_quoted_p`, `cli_selectors.session_named_p` |
+| `src/cadr-cli/interactive/selectors/settings.lisp` | 893 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
@@ -2408,9 +2422,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_selectors` | 11 | 5,956 |
 | `cli_interactive_controller` | 7 | 5,639 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
+| `cli_selectors` | 10 | 5,063 |
 | `agent_tool_loop` | 11 | 3,008 |
 | `cli_extensions_install` | 6 | 2,412 |
 | `package_manager` | 2 | 1,811 |

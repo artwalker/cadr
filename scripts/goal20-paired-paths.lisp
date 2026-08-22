@@ -116,6 +116,7 @@
 ;;;; 134. cli_selectors quoted-search-p vs session-selector-search quoted phrase predicate
 ;;;; 135. cli_selectors named-session-p vs session-selector-search hasSessionName
 ;;;; 136. cli_selectors settings-thinking-description vs settings-selector THINKING_DESCRIPTIONS
+;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -315,6 +316,7 @@
     ("cli_selectors.session_quoted_p" . 50)
     ("cli_selectors.session_named_p" . 50)
     ("cli_selectors.settings_thinking_description" . 50)
+    ("cli_selectors.settings_display_value" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6310,6 +6312,14 @@
    (settings-thinking-desc-str :max)
    (settings-thinking-desc-str :bogus)))
 
+(defun run-cli-selectors-settings-display-value ()
+  (list
+   (cadr-cli::settings-display-value t)
+   (cadr-cli::settings-display-value nil)
+   (cadr-cli::settings-display-value :medium)
+   (cadr-cli::settings-display-value 42)
+   (cadr-cli::settings-display-value "hello")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6339,7 +6349,9 @@
         (session-quoted-p (run-cli-selectors-session-quoted-p))
         (session-named-p (run-cli-selectors-session-named-p))
         (settings-thinking-description
-          (run-cli-selectors-settings-thinking-description)))
+          (run-cli-selectors-settings-thinking-description))
+        (settings-display-value
+          (run-cli-selectors-settings-display-value)))
     (json-object
      "observed"
      (json-object
@@ -6506,7 +6518,12 @@
       "std_high" (nth 4 settings-thinking-description)
       "std_xhigh" (nth 5 settings-thinking-description)
       "std_max" (nth 6 settings-thinking-description)
-      "std_unknown" (nth 7 settings-thinking-description))
+      "std_unknown" (nth 7 settings-thinking-description)
+      "sdv_true" (nth 0 settings-display-value)
+      "sdv_false" (nth 1 settings-display-value)
+      "sdv_symbol" (nth 2 settings-display-value)
+      "sdv_int" (nth 3 settings-display-value)
+      "sdv_string" (nth 4 settings-display-value))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6646,7 +6663,12 @@
      (collect "cli_selectors.settings_thinking_description"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-settings-thinking-description)))))))
+                  (run-cli-selectors-settings-thinking-description))))
+     "settings_display_value"
+     (collect "cli_selectors.settings_display_value"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-settings-display-value)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7713,6 +7735,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp named-session-p"
       "cli_selectors.settings_thinking_description"
       "src/cadr-cli/interactive/selectors/settings.lisp settings-thinking-description"
+      "cli_selectors.settings_display_value"
+      "src/cadr-cli/interactive/selectors/settings.lisp settings-display-value"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
