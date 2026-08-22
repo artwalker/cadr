@@ -89,6 +89,7 @@
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
+;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -170,6 +171,7 @@
     ("oauth_pkce.challenge_urls" . 50)
     ("oauth_pkce_device.poll" . 50)
     ("oauth_pkce_device.auth_json" . 50)
+    ("oauth_pkce_device.copilot_url" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("evals_harness.summarize" . 20)
@@ -3067,9 +3069,34 @@
            0)
        (error () 1)))))
 
+(defun copilot-url-flag (token enterprise expected)
+  (if (string=
+       (cadr-ai:github-copilot-base-url token enterprise)
+       expected)
+      1
+      0))
+
+(defun run-oauth-pkce-device-copilot-url ()
+  (list
+   (copilot-url-flag
+    nil nil
+    "https://api.individual.githubcopilot.com")
+   (copilot-url-flag
+    "tid=test;exp=1;proxy-ep=proxy.individual.githubcopilot.com;"
+    nil
+    "https://api.individual.githubcopilot.com")
+   (copilot-url-flag
+    "tid=test;exp=1;proxy-ep=proxy.enterprise.githubcopilot.com;"
+    nil
+    "https://api.enterprise.githubcopilot.com")
+   (copilot-url-flag
+    nil "example.com"
+    "https://copilot-api.example.com")))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
-        (auth (run-oauth-pkce-device-auth-json)))
+        (auth (run-oauth-pkce-device-auth-json))
+        (copilot (run-oauth-pkce-device-copilot-url)))
     (json-object
      "observed"
      (json-object
@@ -3081,7 +3108,11 @@
       "oa_ok" (nth 2 auth)
       "oa_len" (nth 3 auth)
       "auth_miss" (nth 4 auth)
-      "auth_bad" (nth 5 auth))
+      "auth_bad" (nth 5 auth)
+      "gc_def" (nth 0 copilot)
+      "gc_ind" (nth 1 copilot)
+      "gc_ent" (nth 2 copilot)
+      "gc_dom" (nth 3 copilot))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -3091,7 +3122,12 @@
      (collect "oauth_pkce_device.auth_json"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-auth-json)))))))
+                  (run-oauth-pkce-device-auth-json))))
+     "copilot_url"
+     (collect "oauth_pkce_device.copilot_url"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-copilot-url)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -5601,6 +5637,8 @@
       "src/cadr-ai/auth/device-code.lisp poll-device-authorization"
       "oauth_pkce_device.auth_json"
       "src/cadr-ai/auth.lisp read-auth-credential"
+      "oauth_pkce_device.copilot_url"
+      "src/cadr-ai/auth/github-copilot.lisp github-copilot-base-url"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

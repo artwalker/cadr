@@ -49,6 +49,7 @@ METRIC_KEYS = (
     "oauth_pkce.challenge_urls",
     "oauth_pkce_device.poll",
     "oauth_pkce_device.auth_json",
+    "oauth_pkce_device.copilot_url",
     "cli_extensions_install.llama_url",
     "cli_extensions_install.hf_token",
     "evals_harness.summarize",

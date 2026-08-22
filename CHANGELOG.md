@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `oauth_pkce_device.copilot_url`
+  (default / individual proxy-ep / enterprise proxy-ep /
+  enterprise domain; cadr `github-copilot-base-url` vs pi
+  `githubCopilotOAuth.toAuth`). Friend-MachineD n=5 **1.15×**
+  (2.12 / 1.85 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `oauth_pkce_device.auth_json`
   (api_key / oauth / miss / invalid JSON; cadr
   `read-auth-credential` vs pi `ReadOnlyAuthStorage.read`).

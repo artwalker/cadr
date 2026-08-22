@@ -152,6 +152,7 @@ const REPETITIONS = {
 	"oauth_pkce.challenge_urls": 50,
 	"oauth_pkce_device.poll": 50,
 	"oauth_pkce_device.auth_json": 50,
+	"oauth_pkce_device.copilot_url": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"evals_harness.summarize": 20,
@@ -426,6 +427,9 @@ const openaiCodexModule = await import(moduleUrl("packages/ai/src/api/openai-cod
 const piMessagesModule = await import(moduleUrl("packages/ai/src/api/pi-messages.ts"));
 const deviceCodeModule = await import(
 	moduleUrl("packages/ai/src/auth/oauth/device-code.ts")
+);
+const githubCopilotOAuthModule = await import(
+	moduleUrl("packages/ai/src/auth/oauth/github-copilot.ts")
 );
 const authStorageModule = await import(
 	moduleUrl("packages/coding-agent/src/core/auth-storage.ts")
@@ -2572,9 +2576,38 @@ async function runOauthPkceDeviceAuthJson() {
 	};
 }
 
+function copilotOauthCredential(access, enterpriseUrl) {
+	return {
+		type: "oauth",
+		access,
+		refresh: "r",
+		expires: 1,
+		...(enterpriseUrl ? { enterpriseUrl } : {}),
+	};
+}
+
+async function runOauthPkceDeviceCopilotUrl() {
+	const toAuth = githubCopilotOAuthModule.githubCopilotOAuth.toAuth;
+	const def = await toAuth(copilotOauthCredential(""));
+	const ind = await toAuth(
+		copilotOauthCredential("tid=test;exp=1;proxy-ep=proxy.individual.githubcopilot.com;"),
+	);
+	const ent = await toAuth(
+		copilotOauthCredential("tid=test;exp=1;proxy-ep=proxy.enterprise.githubcopilot.com;"),
+	);
+	const dom = await toAuth(copilotOauthCredential("", "example.com"));
+	return {
+		gc_def: def.baseUrl === "https://api.individual.githubcopilot.com" ? 1 : 0,
+		gc_ind: ind.baseUrl === "https://api.individual.githubcopilot.com" ? 1 : 0,
+		gc_ent: ent.baseUrl === "https://api.enterprise.githubcopilot.com" ? 1 : 0,
+		gc_dom: dom.baseUrl === "https://copilot-api.example.com" ? 1 : 0,
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
+	const copilot = await runOauthPkceDeviceCopilotUrl();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -2582,7 +2615,10 @@ async function measureOauthPkceDevice() {
 		auth_json: await collect("oauth_pkce_device.auth_json", () => {
 			return () => runOauthPkceDeviceAuthJson();
 		}),
-		observed: { ...poll, ...auth },
+		copilot_url: await collect("oauth_pkce_device.copilot_url", () => {
+			return () => runOauthPkceDeviceCopilotUrl();
+		}),
+		observed: { ...poll, ...auth, ...copilot },
 	};
 }
 
@@ -4933,6 +4969,8 @@ const result = {
 				"packages/ai/src/auth/oauth/device-code.ts pollOAuthDeviceCodeFlow",
 			"oauth_pkce_device.auth_json":
 				"packages/coding-agent/src/core/auth-storage.ts ReadOnlyAuthStorage.read",
+			"oauth_pkce_device.copilot_url":
+				"packages/ai/src/auth/oauth/github-copilot.ts githubCopilotOAuth.toAuth",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

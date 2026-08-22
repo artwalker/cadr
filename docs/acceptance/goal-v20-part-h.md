@@ -1452,13 +1452,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 138 | 62,068 | 48.7% | `no worse than baseline` is falsifiable |
+| `paired` | 139 | 62,121 | 48.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 114 | 44,927 | 35.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 113 | 44,874 | 35.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 48.7% of lines (138 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 48.8% of lines (139 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 54.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -1518,6 +1518,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/auth.lisp` | 207 | `oauth_pkce_device.auth_json` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/device-code.lisp` | 239 | `oauth_pkce_device.poll` |
+| `src/cadr-ai/auth/github-copilot.lisp` | 53 | `oauth_pkce_device.copilot_url` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/capabilities/event-stream.lisp` | 69 | `ai_capabilities.event_stream` |
 | `src/cadr-ai/capabilities/grammar-tools.lisp` | 292 | `ai_capabilities.deferred_tools` |
@@ -1673,7 +1674,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 7 | 2,727 |
 | `evals_harness` | 6 | 2,184 |
 | `package_manager` | 2 | 1,811 |
-| `oauth_pkce_device` | 11 | 1,635 |
+| `oauth_pkce_device` | 10 | 1,582 |
 | `cli_print_rpc` | 5 | 1,375 |
 | `settings_load` | 3 | 1,283 |
 | `cli_sdk` | 4 | 1,214 |
