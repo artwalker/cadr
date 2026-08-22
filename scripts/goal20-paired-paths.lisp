@@ -93,6 +93,7 @@
 ;;;; 111. cli_selectors selector-fuzzy-filter vs fuzzyFilter
 ;;;; 112. cli_selectors selector-delete-query-character vs Input backspace grapheme delete
 ;;;; 113. cli_selectors selector-frame-visible-slice vs selector viewport slice
+;;;; 114. cli_selectors selector-frame-move-index vs selector wrap index
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -269,6 +270,7 @@
     ("cli_selectors.fuzzy_filter" . 50)
     ("cli_selectors.delete_query" . 50)
     ("cli_selectors.visible_slice" . 50)
+    ("cli_selectors.move_index" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -5960,12 +5962,19 @@
      (apply #'visible-slice-summary fixture))
    '((0 0 8) (5 2 8) (20 10 8) (20 0 8) (20 19 8) (3 1 8))))
 
+(defun run-cli-selectors-move-index ()
+  (mapcar
+   (lambda (fixture)
+     (apply #'cadr-cli::selector-frame-move-index fixture))
+   '((0 0 1) (0 5 -1) (4 5 1) (2 5 3) (2 5 -2) (1 5 10))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
         (fuzzy (run-cli-selectors-fuzzy-filter))
         (delete-query (run-cli-selectors-delete-query))
-        (visible-slice (run-cli-selectors-visible-slice)))
+        (visible-slice (run-cli-selectors-visible-slice))
+        (move-index (run-cli-selectors-move-index)))
     (json-object
      "observed"
      (json-object
@@ -6001,7 +6010,13 @@
       "vs20_top" (first (fourth visible-slice))
       "vs20_bot" (first (fifth visible-slice))
       "vs20_bot_vis" (third (fifth visible-slice))
-      "vs3_vis" (third (sixth visible-slice)))
+      "vs3_vis" (third (sixth visible-slice))
+      "mi_empty" (nth 0 move-index)
+      "mi_wrap_up" (nth 1 move-index)
+      "mi_wrap_dn" (nth 2 move-index)
+      "mi_fwd" (nth 3 move-index)
+      "mi_back" (nth 4 move-index)
+      "mi_big" (nth 5 move-index))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6026,7 +6041,12 @@
      (collect "cli_selectors.visible_slice"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-visible-slice)))))))
+                  (run-cli-selectors-visible-slice))))
+     "move_index"
+     (collect "cli_selectors.move_index"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-move-index)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7081,6 +7101,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-delete-query-character"
       "cli_selectors.visible_slice"
       "src/cadr-cli/interactive/selectors/common.lisp selector-frame-visible-slice"
+      "cli_selectors.move_index"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-frame-move-index"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

@@ -1628,6 +1628,19 @@ Observed `vs0` / `vs0_end` / `vs0_vis` / `vs5` / `vs5_vis` /
 freeze **2.23×** (2.5 / 1.1 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 114 — `cli_selectors` (move_index)
+
+| metric | cadr | pi |
+|---|---|---|
+| `move_index` | `selector-frame-move-index` | wrap selection index (`select-list.ts` up/down) |
+
+Leftover sibling of the `cli_selectors` hole. Time mod-wrap
+only, not render. Fixtures: empty count; wrap up/down; forward/
+back; large delta. Observed `mi_empty` / `mi_wrap_up` /
+`mi_wrap_dn` / `mi_fwd` / `mi_back` / `mi_big` are exact.
+First Friend-MachineD freeze **1.44×** (4.5 / 3.1 µs), ceiling 8.0.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1951,7 +1964,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice` |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |

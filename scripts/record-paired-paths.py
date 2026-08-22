@@ -121,6 +121,7 @@ METRIC_KEYS = (
     "cli_selectors.fuzzy_filter",
     "cli_selectors.delete_query",
     "cli_selectors.visible_slice",
+    "cli_selectors.move_index",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

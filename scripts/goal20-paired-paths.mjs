@@ -225,6 +225,7 @@ const REPETITIONS = {
 	"cli_selectors.fuzzy_filter": 50,
 	"cli_selectors.delete_query": 50,
 	"cli_selectors.visible_slice": 50,
+	"cli_selectors.move_index": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5026,8 +5027,28 @@ function runCliSelectorsVisibleSlice() {
 	return fixtures.map((fixture) => visibleSliceSummary(...fixture));
 }
 
+function moveIndex(selected, count, delta) {
+	if (count <= 0) {
+		return 0;
+	}
+	return ((selected + delta) % count + count) % count;
+}
+
+function runCliSelectorsMoveIndex() {
+	const fixtures = [
+		[0, 0, 1],
+		[0, 5, -1],
+		[4, 5, 1],
+		[2, 5, 3],
+		[2, 5, -2],
+		[1, 5, 10],
+	];
+	return fixtures.map((fixture) => moveIndex(...fixture));
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
+	const moveIndexResults = runCliSelectorsMoveIndex();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5044,6 +5065,12 @@ async function measureCliSelectorsSessionSearch() {
 		vs20_bot: visibleSlice[4][0],
 		vs20_bot_vis: visibleSlice[4][2],
 		vs3_vis: visibleSlice[5][2],
+		mi_empty: moveIndexResults[0],
+		mi_wrap_up: moveIndexResults[1],
+		mi_wrap_dn: moveIndexResults[2],
+		mi_fwd: moveIndexResults[3],
+		mi_back: moveIndexResults[4],
+		mi_big: moveIndexResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5060,6 +5087,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		visible_slice: await collect("cli_selectors.visible_slice", () => {
 			return () => runCliSelectorsVisibleSlice();
+		}),
+		move_index: await collect("cli_selectors.move_index", () => {
+			return () => runCliSelectorsMoveIndex();
 		}),
 		observed,
 	};
@@ -6151,6 +6181,8 @@ const result = {
 				"packages/tui/src/components/input.ts Input.handleInput backspace grapheme delete",
 			"cli_selectors.visible_slice":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts viewport slice (same formula in session/model/tree selectors)",
+			"cli_selectors.move_index":
+				"packages/tui/src/components/select-list.ts wrap selection index (up/down)",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

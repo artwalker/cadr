@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.move_index`
+  (wrap fixtures; cadr `selector-frame-move-index` vs pi mod-wrap).
+  Friend-MachineD n=5 **1.44×** (4.5 / 3.1 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.visible_slice`
   (centered viewport fixtures; cadr
   `selector-frame-visible-slice` vs pi selector slice formula).
