@@ -562,6 +562,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(skill_prompt), 1)
         self.assertEqual(skill_prompt[0]["class"], "paired")
         self.assertIn("skill_prompt_load.build_prompt", skill_prompt[0]["metrics"])
+        tool_path = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/tools/path.lisp"
+        ]
+        self.assertEqual(len(tool_path), 1)
+        self.assertEqual(tool_path[0]["class"], "paired")
+        self.assertIn("agent_tool_loop.tool_path", tool_path[0]["metrics"])
         bootstrap_tools = [
             row
             for row in classified["rows"]

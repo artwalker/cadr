@@ -118,10 +118,11 @@ These must not be filed as callees.
 | `src/cadr-storage/package.lisp` | 19 |
 | `src/cadr-storage/sqlite.lisp` | 12 |
 
-### `agent_tool_loop` (required hole)
+### `agent_tool_loop` (required hole) — `loop/agent-loop.lisp` paired `agent_tool_loop.roundtrip`; `tools/path.lisp` paired `agent_tool_loop.tool_path`
 
-- pi: `packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts`
-- fixture: Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.
+- pi: `packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts`; `resolveToCwd`
+- fixture: Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts. Path: relative / abs / `@` / nbsp / parent. POSIX. Do not exact empty or `~`.
+- Friend-MachineD n=5: tool_path **2.44×** (12.74 / 5.23 µs), ceiling 8.0. Other tool files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

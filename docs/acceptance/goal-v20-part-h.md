@@ -1554,6 +1554,21 @@ exact a custom timeout (cadr `~,3G` vs pi
 **0.47×** (0.25 / 0.53 µs), ceiling 8.0 (microsecond-floor).
 cadr leads. Same commit no optimize.
 
+### Pair 109 — `agent_tool_loop` (tool_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tool_path` | `resolve-tool-path` | `resolveToCwd` (`packages/coding-agent/src/core/tools/path-utils.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole. Time path
+resolve only, not a tool execute or a live FS probe.
+Relative `foo.txt`; abs `/tmp/abs/bar`; `@rel.txt`;
+nbsp; `../x`. POSIX. Do not exact empty (cadr errors) or
+`~` (cadr directory namestring trailing slash). Observed
+`tp_rel` / `tp_abs` / `tp_at` / `tp_nbsp` / `tp_parent`
+are exact. First Friend-MachineD freeze **2.44×**
+(12.74 / 5.23 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1759,14 +1774,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 161 | 69,945 | 54.9% | `no worse than baseline` is falsifiable |
+| `paired` | 162 | 70,278 | 55.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 82 | 32,549 | 25.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 81 | 32,216 | 25.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 54.9% of lines (161 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 60.8% of lines.
+- **Falsifiable vs baseline:** 55.2% of lines (162 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 61.0% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1914,6 +1929,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
+| `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
@@ -2007,7 +2023,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_selectors` | 12 | 6,350 |
 | `cli_interactive_controller` | 7 | 5,639 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
-| `agent_tool_loop` | 13 | 4,094 |
+| `agent_tool_loop` | 12 | 3,761 |
 | `cli_extensions_install` | 6 | 2,412 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |

@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `agent_tool_loop.tool_path`
+  (relative / abs / `@` / nbsp / parent; cadr
+  `resolve-tool-path` vs pi `resolveToCwd`). Do not
+  exact empty or `~` (trailing slash). Friend-MachineD
+  n=5 **2.44×** (12.74 / 5.23 µs), ceiling 8.0. Same
+  commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `settings_load.http_idle`
   (named timeout choices; cadr
   `http-idle-timeout-label` vs pi

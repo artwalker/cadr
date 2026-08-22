@@ -2412,8 +2412,10 @@
   {
    "path": "src/cadr-cli/tools/path.lisp",
    "lines": 333,
-   "class": "needs-pair",
-   "metrics": [],
+   "class": "paired",
+   "metrics": [
+    "agent_tool_loop.tool_path"
+   ],
    "pathId": "agent_tool_loop",
    "pi": "packages/agent/src/agent-loop.ts (runAgentLoop) + packages/coding-agent/src/core/tools/*.ts",
    "fixture": "Faux provider, no socket. One user message, one streamed tool call, one tool result, one final assistant. Reuse FiveAM tool-loop fixtures; Lisp-only retry/skip/abort UX stays unpairable as tool_failure_restarts.",

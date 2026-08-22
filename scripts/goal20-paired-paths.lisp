@@ -88,6 +88,7 @@
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
+;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -283,6 +284,7 @@
     ("tool_read.text_file" . 5)
     ("tool_grep.context_file" . 5)
     ("agent_tool_loop.roundtrip" . 3)
+    ("agent_tool_loop.tool_path" . 50)
     ("session_compact.compact" . 3)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
@@ -2129,12 +2131,31 @@
     (cadr-agent:agent-prompt agent "echo")
     (values agent (car executed))))
 
+(defun tool-path-flag (cwd path expected)
+  (if (string= (namestring (cadr-cli::resolve-tool-path cwd path))
+               expected)
+      1
+      0))
+
+(defun run-agent-tool-loop-tool-path ()
+  ;; POSIX only. Do not exact empty (cadr errors) or "~"
+  ;; (cadr directory namestring keeps a trailing slash).
+  (let ((cwd "/tmp/goal20-tp/cwd")
+        (nbsp (format nil "a~Cb.txt" (code-char #xa0))))
+    (list
+     (tool-path-flag cwd "foo.txt" "/tmp/goal20-tp/cwd/foo.txt")
+     (tool-path-flag cwd "/tmp/abs/bar" "/tmp/abs/bar")
+     (tool-path-flag cwd "@rel.txt" "/tmp/goal20-tp/cwd/rel.txt")
+     (tool-path-flag cwd nbsp "/tmp/goal20-tp/cwd/a b.txt")
+     (tool-path-flag cwd "../x" "/tmp/goal20-tp/x"))))
+
 (defun measure-agent-tool-loop ()
   (multiple-value-bind (agent executed)
       (run-paired-tool-loop)
     (let* ((messages (cadr-agent:agent-messages agent))
            (last (car (last messages)))
-           (result (third messages)))
+           (result (third messages))
+           (paths (run-agent-tool-loop-tool-path)))
       (json-object
        "observed"
        (json-object
@@ -2147,12 +2168,22 @@
                  (cadr-ai:tool-result-message-is-error result))
             1
             0)
-        "tool_value" (or executed ""))
+        "tool_value" (or executed "")
+        "tp_rel" (nth 0 paths)
+        "tp_abs" (nth 1 paths)
+        "tp_at" (nth 2 paths)
+        "tp_nbsp" (nth 3 paths)
+        "tp_parent" (nth 4 paths))
        "roundtrip"
        (collect "agent_tool_loop.roundtrip"
                 (lambda ()
                   (lambda ()
-                    (run-paired-tool-loop))))))))
+                    (run-paired-tool-loop))))
+       "tool_path"
+       (collect "agent_tool_loop.tool_path"
+                (lambda ()
+                  (lambda ()
+                    (run-agent-tool-loop-tool-path))))))))
 
 (defun paired-compact-model ()
   (cadr-ai:make-model
@@ -6969,6 +7000,8 @@
       "src/cadr-cli/tools/grep.lisp grep-lines"
       "agent_tool_loop.roundtrip"
       "src/cadr-agent/loop/agent-loop.lisp agent-prompt"
+      "agent_tool_loop.tool_path"
+      "src/cadr-cli/tools/path.lisp resolve-tool-path"
       "session_compact.compact"
       "src/cadr-agent/compaction.lisp compact-from-preparation"
       "text_truncation.truncate_head"

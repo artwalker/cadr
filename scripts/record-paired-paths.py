@@ -140,6 +140,7 @@ METRIC_KEYS = (
     "tool_read.text_file",
     "tool_grep.context_file",
     "agent_tool_loop.roundtrip",
+    "agent_tool_loop.tool_path",
     "session_compact.compact",
 )
 

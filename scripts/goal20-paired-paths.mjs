@@ -244,6 +244,7 @@ const REPETITIONS = {
 	"tool_read.text_file": 5,
 	"tool_grep.context_file": 5,
 	"agent_tool_loop.roundtrip": 3,
+	"agent_tool_loop.tool_path": 50,
 	"session_compact.compact": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
@@ -497,6 +498,7 @@ const packageManagerModule = await import(moduleUrl("packages/coding-agent/src/c
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
+const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
 const mimeModule = await import(moduleUrl("packages/coding-agent/src/utils/mime.ts"));
@@ -2108,20 +2110,41 @@ async function runPairedToolLoop() {
 	return { agent, executed };
 }
 
+function toolPathFlag(cwd, path, expected) {
+	return toolPathModule.resolveToCwd(path, cwd) === expected ? 1 : 0;
+}
+
+function runAgentToolLoopToolPath() {
+	const cwd = "/tmp/goal20-tp/cwd";
+	const nbsp = "a\u00a0b.txt";
+	return {
+		tp_rel: toolPathFlag(cwd, "foo.txt", "/tmp/goal20-tp/cwd/foo.txt"),
+		tp_abs: toolPathFlag(cwd, "/tmp/abs/bar", "/tmp/abs/bar"),
+		tp_at: toolPathFlag(cwd, "@rel.txt", "/tmp/goal20-tp/cwd/rel.txt"),
+		tp_nbsp: toolPathFlag(cwd, nbsp, "/tmp/goal20-tp/cwd/a b.txt"),
+		tp_parent: toolPathFlag(cwd, "../x", "/tmp/goal20-tp/x"),
+	};
+}
+
 async function measureAgentToolLoop() {
 	const once = await runPairedToolLoop();
 	const messages = once.agent.state.messages;
 	const last = messages[messages.length - 1];
 	const result = messages[2];
+	const paths = runAgentToolLoopToolPath();
 	return {
 		roundtrip: await collect("agent_tool_loop.roundtrip", () => {
 			return () => runPairedToolLoop();
+		}),
+		tool_path: await collect("agent_tool_loop.tool_path", () => {
+			return () => runAgentToolLoopToolPath();
 		}),
 		observed: {
 			final_text: last.content[0].text,
 			message_count: messages.length,
 			tool_error: result.isError ? 1 : 0,
 			tool_value: once.executed.value,
+			...paths,
 		},
 	};
 }
@@ -6062,6 +6085,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/grep.ts createGrepToolDefinition.execute",
 			"agent_tool_loop.roundtrip":
 				"packages/agent/src/agent.ts Agent.prompt + packages/agent/src/agent-loop.ts runAgentLoop",
+			"agent_tool_loop.tool_path":
+				"packages/coding-agent/src/core/tools/path-utils.ts resolveToCwd",
 			"session_compact.compact":
 				"packages/coding-agent/src/core/compaction/compaction.ts prepareCompaction + compact",
 			"text_truncation.truncate_head":

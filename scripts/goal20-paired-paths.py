@@ -157,7 +157,7 @@ METRICS = {
     "sqlite_session": ("open_walk",),
     "tool_read": ("text_file",),
     "tool_grep": ("context_file",),
-    "agent_tool_loop": ("roundtrip",),
+    "agent_tool_loop": ("roundtrip", "tool_path"),
     "session_compact": ("compact",),
     "text_truncation": ("truncate_head", "truncate_tail"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
@@ -750,6 +750,11 @@ RATIO_CEILINGS = {
     # follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "agent_tool_loop.roundtrip": 1.5,
+    # Frozen from the first Friend-MachineD non-quick
+    # agent_tool_loop.tool_path pair (samples=5): observed
+    # 2.44x (12.74 / 5.23 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "agent_tool_loop.tool_path": 8.0,
     # Frozen from the first Friend-MachineD non-quick session_compact
     # pair (samples=5): observed 11.33x (965 / 85 µs). 20.0 follows
     # the truncate_head headroom precedent. Ratchet down only.
@@ -1560,6 +1565,11 @@ OBSERVED_EXACT = {
         "message_count",
         "tool_error",
         "tool_value",
+        "tp_rel",
+        "tp_abs",
+        "tp_at",
+        "tp_nbsp",
+        "tp_parent",
     ),
     "session_compact": (
         "compacted",
