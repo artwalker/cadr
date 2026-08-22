@@ -822,6 +822,12 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cw_nocache", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("tl_off", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("tl_xhigh", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("cli_sdk.session_list", RECORD.METRIC_KEYS)
+        self.assertIn("session_list", paired.METRICS["cli_sdk"])
+        self.assertIn("cli_sdk.session_list", paired.RATIO_CEILINGS)
+        self.assertIn("sl_n", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("sl_id", paired.OBSERVED_EXACT["cli_sdk"])
+        self.assertIn("sl_empty", paired.OBSERVED_EXACT["cli_sdk"])
         self.assertIn("tl_miss", paired.OBSERVED_EXACT["cli_sdk"])
 
     def test_provider_registry_defs_is_a_recorded_metric(self) -> None:

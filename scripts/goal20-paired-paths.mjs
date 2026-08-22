@@ -207,6 +207,7 @@ const REPETITIONS = {
 	"cli_sdk.cache_miss": 50,
 	"cli_sdk.cache_waste": 50,
 	"cli_sdk.thinking_level": 50,
+	"cli_sdk.session_list": 5,
 	"provider_registry_defs.lookup": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
@@ -4497,12 +4498,55 @@ function runCliSdkThinkingLevel() {
 	};
 }
 
+const SDK_SESSION_LIST_ID = "019f0000-0000-7000-8000-00000000cadr";
+
+function rewriteSessionJsonlCwd(source, dest, cwd) {
+	const text = readFileSync(source, "utf8");
+	const nl = text.indexOf("\n");
+	const header = JSON.parse(text.slice(0, nl));
+	header.cwd = cwd;
+	mkdirSync(path.dirname(dest), { recursive: true });
+	writeFileSync(dest, `${JSON.stringify(header)}${text.slice(nl)}`, "utf8");
+}
+
+function stageCliSdkSessionList() {
+	const cwdDir = path.join(scratch, "sdk-cwd");
+	const sessionDir = path.join(scratch, "sdk-sessions");
+	const emptyDir = path.join(scratch, "sdk-sessions-empty");
+	mkdirSync(cwdDir, { recursive: true });
+	mkdirSync(sessionDir, { recursive: true });
+	mkdirSync(emptyDir, { recursive: true });
+	const cwd = realpathSync(cwdDir);
+	const directory = realpathSync(sessionDir);
+	const empty = realpathSync(emptyDir);
+	for (let index = 0; index < 2; index += 1) {
+		rewriteSessionJsonlCwd(
+			path.join(fixtureDirectory, "session.jsonl"),
+			path.join(directory, `sess-${index}.jsonl`),
+			cwd,
+		);
+	}
+	return { cwd, directory, empty };
+}
+
+async function runCliSdkSessionList() {
+	const { cwd, directory, empty } = stageCliSdkSessionList();
+	const listed = await sessionModule.SessionManager.list(cwd, directory);
+	const missing = await sessionModule.SessionManager.list(cwd, empty);
+	return {
+		sl_n: listed.length,
+		sl_id: listed.some((session) => session.id === SDK_SESSION_LIST_ID) ? 1 : 0,
+		sl_empty: missing.length,
+	};
+}
+
 async function measureCliSdkVersionNewer() {
 	const observed = {
 		...runCliSdkVersionNewer(),
 		...runCliSdkCacheMiss(),
 		...runCliSdkCacheWaste(),
 		...runCliSdkThinkingLevel(),
+		...(await runCliSdkSessionList()),
 	};
 	return {
 		version_newer: await collect("cli_sdk.version_newer", () => {
@@ -4516,6 +4560,9 @@ async function measureCliSdkVersionNewer() {
 		}),
 		thinking_level: await collect("cli_sdk.thinking_level", () => {
 			return () => runCliSdkThinkingLevel();
+		}),
+		session_list: await collect("cli_sdk.session_list", () => {
+			return () => runCliSdkSessionList();
 		}),
 		observed,
 	};
@@ -5073,6 +5120,8 @@ const result = {
 				"packages/coding-agent/src/core/cache-stats.ts computeCacheWaste",
 			"cli_sdk.thinking_level":
 				"packages/coding-agent/src/cli/args.ts isValidThinkingLevel",
+			"cli_sdk.session_list":
+				"packages/coding-agent/src/core/session-manager.ts SessionManager.list",
 			"provider_registry_defs.lookup":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"skill_prompt_load.build_prompt":

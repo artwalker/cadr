@@ -90,6 +90,7 @@
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
+;;;;  79. cli_sdk session-manager-list vs SessionManager.list
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -226,6 +227,7 @@
     ("cli_sdk.cache_miss" . 50)
     ("cli_sdk.cache_waste" . 50)
     ("cli_sdk.thinking_level" . 50)
+    ("cli_sdk.session_list" . 5)
     ("provider_registry_defs.lookup" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
@@ -5321,11 +5323,78 @@
    (thinking-level-flag "max")
    (thinking-level-flag "nope")))
 
+(defparameter *sdk-session-list-id*
+  "019f0000-0000-7000-8000-00000000cadr")
+
+(defun rewrite-session-jsonl-cwd (source dest cwd)
+  (let* ((text
+           (uiop:read-file-string
+            source :external-format :utf-8))
+         (nl (position #\Newline text))
+         (header
+           (cadr-ai::parse-json (subseq text 0 nl))))
+    (cadr-ai::json-put header "cwd" cwd)
+    (ensure-directories-exist dest)
+    (with-open-file (stream dest
+                            :direction :output
+                            :if-exists :supersede
+                            :if-does-not-exist :create
+                            :external-format :utf-8)
+      (write-string (cadr-ai::stringify-json header) stream)
+      (write-string (subseq text nl) stream)))
+  dest)
+
+(defun stage-cli-sdk-session-list ()
+  (let* ((cwd
+           (namestring
+            (truename
+             (ensure-directories-exist
+              (merge-pathnames
+               "sdk-cwd/" *scratch-directory*)))))
+         (directory
+           (namestring
+            (truename
+             (ensure-directories-exist
+              (merge-pathnames
+               "sdk-sessions/" *scratch-directory*)))))
+         (empty
+           (namestring
+            (truename
+             (ensure-directories-exist
+              (merge-pathnames
+               "sdk-sessions-empty/" *scratch-directory*))))))
+    (loop for index from 0 below 2
+          do
+          (rewrite-session-jsonl-cwd
+           (fixture-path "session.jsonl")
+           (merge-pathnames
+            (format nil "sess-~D.jsonl" index)
+            (uiop:ensure-directory-pathname directory))
+           cwd))
+    (list cwd directory empty)))
+
+(defun run-cli-sdk-session-list ()
+  (destructuring-bind (cwd directory empty)
+      (stage-cli-sdk-session-list)
+    (let ((listed
+            (cadr-cli:session-manager-list cwd directory))
+          (missing
+            (cadr-cli:session-manager-list cwd empty)))
+      (list
+       (length listed)
+       (if (find *sdk-session-list-id* listed
+                 :key #'cadr-agent:session-id
+                 :test #'string=)
+           1
+           0)
+       (length missing)))))
+
 (defun measure-cli-sdk-version-newer ()
   (let ((observed (run-cli-sdk-version-newer))
         (cache (run-cli-sdk-cache-miss))
         (waste (run-cli-sdk-cache-waste))
-        (thinking (run-cli-sdk-thinking-level)))
+        (thinking (run-cli-sdk-thinking-level))
+        (sessions (run-cli-sdk-session-list)))
     (json-object
      "observed"
      (json-object
@@ -5358,7 +5427,10 @@
       "tl_high" (nth 4 thinking)
       "tl_xhigh" (nth 5 thinking)
       "tl_max" (nth 6 thinking)
-      "tl_miss" (nth 7 thinking))
+      "tl_miss" (nth 7 thinking)
+      "sl_n" (nth 0 sessions)
+      "sl_id" (nth 1 sessions)
+      "sl_empty" (nth 2 sessions))
      "version_newer"
      (collect "cli_sdk.version_newer"
               (lambda ()
@@ -5378,7 +5450,12 @@
      (collect "cli_sdk.thinking_level"
               (lambda ()
                 (lambda ()
-                  (run-cli-sdk-thinking-level)))))))
+                  (run-cli-sdk-thinking-level))))
+     "session_list"
+     (collect "cli_sdk.session_list"
+              (lambda ()
+                (lambda ()
+                  (run-cli-sdk-session-list)))))))
 
 (defun provider-definition-present-p (id)
   (handler-case
@@ -5747,6 +5824,8 @@
       "src/cadr-cli/sdk/cache-version.lisp compute-cache-waste"
       "cli_sdk.thinking_level"
       "src/cadr-cli/sdk/cache-version.lisp valid-thinking-level-p"
+      "cli_sdk.session_list"
+      "src/cadr-cli/sdk/session-manager.lisp session-manager-list"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "skill_prompt_load.build_prompt"

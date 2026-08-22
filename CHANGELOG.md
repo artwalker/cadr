@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_sdk.session_list`
+  (two rewritten-cwd copies of session.jsonl + empty dir;
+  cadr `session-manager-list` vs pi `SessionManager.list`).
+  Friend-MachineD n=5 **1.93×** (15402 / 7989 µs), ceiling
+  8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `oauth_pkce_device.copilot_url`
   (default / individual proxy-ep / enterprise proxy-ep /
   enterprise domain; cadr `github-copilot-base-url` vs pi

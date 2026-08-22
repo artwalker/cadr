@@ -85,6 +85,7 @@
   "cli_sdk.cache_miss",
   "cli_sdk.cache_waste",
   "cli_sdk.thinking_level",
+  "cli_sdk.session_list",
   "provider_registry_defs.lookup",
   "skill_prompt_load.build_prompt",
   "cli_bootstrap_sessions.coding_tools",
@@ -1331,8 +1332,8 @@
   },
   {
    "prefix": "src/cadr-cli/sdk/session-manager.lisp",
-   "class": "needs-pair",
-   "hole": "cli_sdk"
+   "class": "paired",
+   "metrics": ["cli_sdk.session_list"]
   },
   {
    "prefix": "src/cadr-cli/sdk/session-runtime.lisp",
