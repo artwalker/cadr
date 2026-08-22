@@ -252,6 +252,7 @@ const REPETITIONS = {
 	"cli_selectors.settings_thinking_description": 50,
 	"cli_selectors.settings_display_value": 50,
 	"cli_selectors.settings_automatic_theme_setting": 50,
+	"cli_selectors.settings_active_automatic_theme": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5418,6 +5419,18 @@ function runCliSelectorsSettingsAutomaticThemeSetting() {
 	};
 }
 
+function activeAutomaticThemePi(light, dark, terminalTheme) {
+	return terminalTheme === "light" ? light : dark;
+}
+
+function runCliSelectorsSettingsActiveAutomaticTheme() {
+	return {
+		saat_light_term: activeAutomaticThemePi("solarized", "dark", "light"),
+		saat_dark_term: activeAutomaticThemePi("solarized", "dark", "dark"),
+		saat_light_pair: activeAutomaticThemePi("light", "dark", "light"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5764,6 +5777,7 @@ async function measureCliSelectorsSessionSearch() {
 	const settingsThinkingDescriptionResults = runCliSelectorsSettingsThinkingDescription();
 	const settingsDisplayValueResults = runCliSelectorsSettingsDisplayValue();
 	const settingsAutomaticThemeSettingResults = runCliSelectorsSettingsAutomaticThemeSetting();
+	const settingsActiveAutomaticThemeResults = runCliSelectorsSettingsActiveAutomaticTheme();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5919,6 +5933,9 @@ async function measureCliSelectorsSessionSearch() {
 		sats_solarized: settingsAutomaticThemeSettingResults.sats_solarized,
 		sats_same: settingsAutomaticThemeSettingResults.sats_same,
 		sats_light_dark: settingsAutomaticThemeSettingResults.sats_light_dark,
+		saat_light_term: settingsActiveAutomaticThemeResults.saat_light_term,
+		saat_dark_term: settingsActiveAutomaticThemeResults.saat_dark_term,
+		saat_light_pair: settingsActiveAutomaticThemeResults.saat_light_pair,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6015,6 +6032,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.settings_automatic_theme_setting",
 			() => {
 				return () => runCliSelectorsSettingsAutomaticThemeSetting();
+			},
+		),
+		settings_active_automatic_theme: await collect(
+			"cli_selectors.settings_active_automatic_theme",
+			() => {
+				return () => runCliSelectorsSettingsActiveAutomaticTheme();
 			},
 		),
 		observed,
@@ -7128,6 +7151,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts currentValue boolean formatting",
 			"cli_selectors.settings_automatic_theme_setting":
 				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts ThemeSubmenu getAutomaticThemeSetting",
+			"cli_selectors.settings_active_automatic_theme":
+				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts ThemeSubmenu getActiveAutomaticTheme",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

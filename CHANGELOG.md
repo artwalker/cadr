@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.settings_active_automatic_theme`
+  (active automatic theme fixtures; cadr `settings-selector-active-automatic-theme`
+  vs pi `ThemeSubmenu.getActiveAutomaticTheme`). Friend-MachineD n=5 **1.33×**
+  (0.2 / 0.1 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.settings_automatic_theme_setting`
   (automatic theme format fixtures; cadr `settings-selector-automatic-theme-setting`
   vs pi `ThemeSubmenu.getAutomaticThemeSetting`). Friend-MachineD n=5 **2.42×**
