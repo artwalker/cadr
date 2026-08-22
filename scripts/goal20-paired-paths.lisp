@@ -103,6 +103,7 @@
 ;;;;  89. cli_print_rpc rpc-session-stats vs AgentSession.getSessionStats
 ;;;;  90. oauth_pkce_device github-copilot-oauth-to-auth vs githubCopilotOAuth.toAuth
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
+;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -209,6 +210,7 @@
     ("tui_latex.render" . 20)
     ("tui_mermaid.render" . 20)
     ("tui_mermaid.source_box" . 20)
+    ("tui_mermaid.transform" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
     ("ai_support.estimate_text" . 50)
@@ -4132,9 +4134,43 @@
      (if narrow (length (getf narrow :plain)) 0)
      (if empty (getf empty :width) 0))))
 
+(defparameter *mermaid-md*
+  (format nil "```mermaid~%flowchart LR~%  A-->B~%```~%"))
+
+(defun mermaid-transform
+    (src &key (mode "streaming") message-type streaming-p (width 80))
+  (cadr-tui:transform-mermaid-markdown
+   src
+   :mode mode
+   :message-type message-type
+   :streaming-p streaming-p
+   :available-width width
+   :theme-p nil))
+
+(defun run-tui-mermaid-transform ()
+  (let* ((ok (mermaid-transform *mermaid-md*))
+         (off (mermaid-transform *mermaid-md* :mode "off"))
+         (think
+           (mermaid-transform
+            *mermaid-md*
+            :message-type "assistant-thinking"))
+         (wide (mermaid-transform *mermaid-md* :width 5)))
+    (list
+     (if (and (plusp (length ok))
+              (char= (char ok 0) #\`)
+              (not (search "```mermaid" ok)))
+         1
+         0)
+     (if (search "──" ok) 1 0)
+     (if (string= off *mermaid-md*) 1 0)
+     (if (string= think *mermaid-md*) 1 0)
+     (if (string= wide *mermaid-md*) 1 0)
+     (length ok))))
+
 (defun measure-tui-mermaid ()
   (let ((observed (run-tui-mermaid))
-        (box (run-tui-mermaid-source-box)))
+        (box (run-tui-mermaid-source-box))
+        (transform (run-tui-mermaid-transform)))
     (json-object
      "observed"
      (json-object
@@ -4147,7 +4183,13 @@
       "sb_wide_w" (nth 0 box)
       "sb_wide_first" (nth 1 box)
       "sb_narrow_rows" (nth 2 box)
-      "sb_empty_w" (nth 3 box))
+      "sb_empty_w" (nth 3 box)
+      "tf_ok" (nth 0 transform)
+      "tf_art" (nth 1 transform)
+      "tf_off" (nth 2 transform)
+      "tf_think" (nth 3 transform)
+      "tf_wide" (nth 4 transform)
+      "tf_len" (nth 5 transform))
      "render"
      (collect "tui_mermaid.render"
               (lambda ()
@@ -4157,7 +4199,12 @@
      (collect "tui_mermaid.source_box"
               (lambda ()
                 (lambda ()
-                  (run-tui-mermaid-source-box)))))))
+                  (run-tui-mermaid-source-box))))
+     "transform"
+     (collect "tui_mermaid.transform"
+              (lambda ()
+                (lambda ()
+                  (run-tui-mermaid-transform)))))))
 
 (defun latex-text (source display-p)
   (or (cadr-tui:render-latex source :display-p display-p) ""))
@@ -6349,6 +6396,8 @@
       "src/cadr-tui/mermaid/index.lisp gm-render"
       "tui_mermaid.source_box"
       "src/cadr-tui/mermaid/source-box.lisp gm-source-box"
+      "tui_mermaid.transform"
+      "src/cadr-tui/mermaid/transform.lisp transform-mermaid-markdown"
       "tui_editor_helpers.fuzzy_match"
       "src/cadr-tui/fuzzy.lisp fuzzy-match"
       "tui_theme_overlay.osc11_bg"

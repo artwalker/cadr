@@ -607,11 +607,11 @@ These must not be filed as callees.
 | `src/cadr-cli/support/threads.lisp` | 7 |
 | `src/cadr-cli/support/timings.lisp` | 45 |
 
-### `tui_mermaid` (additional) — `index.lisp` paired `tui_mermaid.render`; `source-box.lisp` paired `tui_mermaid.source_box`; parse/layout/canvas/graph/labels/width covered-as-callee
+### `tui_mermaid` (additional) — `index.lisp` paired `tui_mermaid.render`; `source-box.lisp` paired `tui_mermaid.source_box`; `transform.lisp` paired `tui_mermaid.transform`; parse/layout/canvas/graph/labels/width covered-as-callee
 
-- pi: grok-mermaid `render` + `sourceBox`
-- fixture: FiveAM reference snippets. Time parse+layout+Unicode art, not a TUI frame. flowchart LR A-->B; empty; `notadiagram`; CJK flowchart. Source box: same flowchart at max-width 80 and 12 + empty. Exact width/first-row/rows/empty/unknown/CJK-width + box width/header/narrow-rows/empty-width.
-- Friend-MachineD n=5: render **0.30×** (75.31 / 255.24 µs); source_box **0.38×** (58.73 / 155.58 µs), ceiling 8.0. cadr leads. `transform.lisp` / `ansi.lisp` still `needs-pair`. No optimize in the booking commits.
+- pi: grok-mermaid `render` + `sourceBox`; `createMermaidMarkdownTransformer` (unstyled)
+- fixture: FiveAM reference snippets. Time parse+layout+Unicode art, not a TUI frame. flowchart LR A-->B; empty; `notadiagram`; CJK flowchart. Source box: same flowchart at max-width 80 and 12 + empty. Transform: fenced flowchart; mode off; assistant-thinking; availableWidth 5. Exact width/first-row/rows/empty/unknown/CJK-width + box width/header/narrow-rows/empty-width + ok/art/off/think/wide/len.
+- Friend-MachineD n=5: render **0.30×** (75.31 / 255.24 µs); source_box **0.38×** (58.73 / 155.58 µs); transform **0.65×** (69.67 / 107.87 µs), ceiling 8.0. cadr leads. `ansi.lisp` still `needs-pair` (no Lisp `toAnsi`). No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

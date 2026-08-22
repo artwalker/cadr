@@ -177,6 +177,7 @@ const REPETITIONS = {
 	"tui_latex.render": 20,
 	"tui_mermaid.render": 20,
 	"tui_mermaid.source_box": 20,
+	"tui_mermaid.transform": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
 	"ai_support.estimate_text": 50,
@@ -495,6 +496,9 @@ const imageApiRegistryModule = await import(
 const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
 const grokMermaidModule = await import(
 	pathToFileURL(path.join(baselineDirectory, "node_modules/grok-mermaid/dist/index.js")).href
+);
+const mermaidTransformModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/components/mermaid.ts")
 );
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
@@ -3433,14 +3437,56 @@ function runTuiMermaidSourceBox() {
 	};
 }
 
+const MERMAID_MD = "```mermaid\nflowchart LR\n  A-->B\n```\n";
+
+function mermaidTransformContext(over = {}) {
+	return {
+		messageType: "assistant",
+		isStreaming: false,
+		availableWidth: 80,
+		...over,
+	};
+}
+
+function runTuiMermaidTransform() {
+	const streaming = mermaidTransformModule.createMermaidMarkdownTransformer({
+		getMode: () => "streaming",
+	});
+	const off = mermaidTransformModule.createMermaidMarkdownTransformer({
+		getMode: () => "off",
+	});
+	const ok = streaming(MERMAID_MD, mermaidTransformContext());
+	const offOut = off(MERMAID_MD, mermaidTransformContext());
+	const think = streaming(
+		MERMAID_MD,
+		mermaidTransformContext({ messageType: "assistant-thinking" }),
+	);
+	const wide = streaming(MERMAID_MD, mermaidTransformContext({ availableWidth: 5 }));
+	return {
+		tf_ok: ok.startsWith("`") && !ok.includes("```mermaid") ? 1 : 0,
+		tf_art: ok.includes("──") ? 1 : 0,
+		tf_off: offOut === MERMAID_MD ? 1 : 0,
+		tf_think: think === MERMAID_MD ? 1 : 0,
+		tf_wide: wide === MERMAID_MD ? 1 : 0,
+		tf_len: ok.length,
+	};
+}
+
 async function measureTuiMermaid() {
-	const observed = { ...runTuiMermaid(), ...runTuiMermaidSourceBox() };
+	const observed = {
+		...runTuiMermaid(),
+		...runTuiMermaidSourceBox(),
+		...runTuiMermaidTransform(),
+	};
 	return {
 		render: await collect("tui_mermaid.render", () => {
 			return () => runTuiMermaid();
 		}),
 		source_box: await collect("tui_mermaid.source_box", () => {
 			return () => runTuiMermaidSourceBox();
+		}),
+		transform: await collect("tui_mermaid.transform", () => {
+			return () => runTuiMermaidTransform();
 		}),
 		observed,
 	};
@@ -5496,6 +5542,8 @@ const result = {
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_mermaid.render": "grok-mermaid render (dist/index.js)",
 			"tui_mermaid.source_box": "grok-mermaid sourceBox (dist/source-box.js)",
+			"tui_mermaid.transform":
+				"packages/coding-agent/src/modes/interactive/components/mermaid.ts createMermaidMarkdownTransformer",
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":
 				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",

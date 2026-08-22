@@ -55,6 +55,7 @@
   "tui_latex.render",
   "tui_mermaid.render",
   "tui_mermaid.source_box",
+  "tui_mermaid.transform",
   "tui_editor_helpers.fuzzy_match",
   "tui_theme_overlay.osc11_bg",
   "ai_support.estimate_text",
@@ -1687,8 +1688,8 @@
   },
   {
    "prefix": "src/cadr-tui/mermaid/transform.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "paired",
+   "metrics": ["tui_mermaid.transform"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/width-data.lisp",

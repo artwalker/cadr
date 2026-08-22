@@ -126,7 +126,7 @@ METRICS = {
     "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats"),
     "tui_latex": ("render",),
-    "tui_mermaid": ("render", "source_box"),
+    "tui_mermaid": ("render", "source_box", "transform"),
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
     "ai_support": ("estimate_text", "context_overflow", "grammar_delta", "uuid_v7", "auth_guidance"),
@@ -425,6 +425,11 @@ RATIO_CEILINGS = {
     # 0.38x (58.73 / 155.58 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "tui_mermaid.source_box": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_mermaid.transform pair (samples=5): observed
+    # 0.65x (69.67 / 107.87 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "tui_mermaid.transform": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # tui_editor_helpers pair (samples=5): observed 0.45x
     # (1.8 / 4.0 us). cadr leads. 8.0 is the first-freeze
@@ -1098,6 +1103,12 @@ OBSERVED_EXACT = {
         "sb_wide_first",
         "sb_narrow_rows",
         "sb_empty_w",
+        "tf_ok",
+        "tf_art",
+        "tf_off",
+        "tf_think",
+        "tf_wide",
+        "tf_len",
     ),
     "tui_editor_helpers": (
         "gpt",
