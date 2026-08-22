@@ -89,6 +89,7 @@
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
+;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -285,6 +286,7 @@
     ("tool_grep.context_file" . 5)
     ("agent_tool_loop.roundtrip" . 3)
     ("agent_tool_loop.tool_path" . 50)
+    ("agent_tool_loop.line_ending" . 50)
     ("session_compact.compact" . 3)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
@@ -2149,13 +2151,29 @@
      (tool-path-flag cwd nbsp "/tmp/goal20-tp/cwd/a b.txt")
      (tool-path-flag cwd "../x" "/tmp/goal20-tp/x"))))
 
+(defun line-ending-flag (text expected)
+  (if (eq (cadr-cli::detect-line-ending text) expected)
+      1
+      0))
+
+(defun run-agent-tool-loop-line-ending ()
+  ;; Do not exact mixed first-LF-then-CRLF (cadr searches any CRLF;
+  ;; pi compares the first \\n against the first \\r\\n).
+  (list
+   (line-ending-flag (format nil "a~Cb" #\Newline) :lf)
+   (line-ending-flag
+    (format nil "a~C~Cb" #\Return #\Newline) :crlf)
+   (line-ending-flag "ab" :lf)
+   (line-ending-flag "" :lf)))
+
 (defun measure-agent-tool-loop ()
   (multiple-value-bind (agent executed)
       (run-paired-tool-loop)
     (let* ((messages (cadr-agent:agent-messages agent))
            (last (car (last messages)))
            (result (third messages))
-           (paths (run-agent-tool-loop-tool-path)))
+           (paths (run-agent-tool-loop-tool-path))
+           (endings (run-agent-tool-loop-line-ending)))
       (json-object
        "observed"
        (json-object
@@ -2173,7 +2191,11 @@
         "tp_abs" (nth 1 paths)
         "tp_at" (nth 2 paths)
         "tp_nbsp" (nth 3 paths)
-        "tp_parent" (nth 4 paths))
+        "tp_parent" (nth 4 paths)
+        "le_lf" (nth 0 endings)
+        "le_crlf" (nth 1 endings)
+        "le_none" (nth 2 endings)
+        "le_empty" (nth 3 endings))
        "roundtrip"
        (collect "agent_tool_loop.roundtrip"
                 (lambda ()
@@ -2183,7 +2205,12 @@
        (collect "agent_tool_loop.tool_path"
                 (lambda ()
                   (lambda ()
-                    (run-agent-tool-loop-tool-path))))))))
+                    (run-agent-tool-loop-tool-path))))
+       "line_ending"
+       (collect "agent_tool_loop.line_ending"
+                (lambda ()
+                  (lambda ()
+                    (run-agent-tool-loop-line-ending))))))))
 
 (defun paired-compact-model ()
   (cadr-ai:make-model
@@ -7002,6 +7029,8 @@
       "src/cadr-agent/loop/agent-loop.lisp agent-prompt"
       "agent_tool_loop.tool_path"
       "src/cadr-cli/tools/path.lisp resolve-tool-path"
+      "agent_tool_loop.line_ending"
+      "src/cadr-cli/tools/edit.lisp detect-line-ending"
       "session_compact.compact"
       "src/cadr-agent/compaction.lisp compact-from-preparation"
       "text_truncation.truncate_head"

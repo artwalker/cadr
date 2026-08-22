@@ -245,6 +245,7 @@ const REPETITIONS = {
 	"tool_grep.context_file": 5,
 	"agent_tool_loop.roundtrip": 3,
 	"agent_tool_loop.tool_path": 50,
+	"agent_tool_loop.line_ending": 50,
 	"session_compact.compact": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
@@ -499,6 +500,7 @@ const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/to
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
+const editDiffModule = await import(moduleUrl("packages/coding-agent/src/core/tools/edit-diff.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
 const mimeModule = await import(moduleUrl("packages/coding-agent/src/utils/mime.ts"));
@@ -2126,12 +2128,26 @@ function runAgentToolLoopToolPath() {
 	};
 }
 
+function lineEndingFlag(text, expected) {
+	return editDiffModule.detectLineEnding(text) === expected ? 1 : 0;
+}
+
+function runAgentToolLoopLineEnding() {
+	return {
+		le_lf: lineEndingFlag("a\nb", "\n"),
+		le_crlf: lineEndingFlag("a\r\nb", "\r\n"),
+		le_none: lineEndingFlag("ab", "\n"),
+		le_empty: lineEndingFlag("", "\n"),
+	};
+}
+
 async function measureAgentToolLoop() {
 	const once = await runPairedToolLoop();
 	const messages = once.agent.state.messages;
 	const last = messages[messages.length - 1];
 	const result = messages[2];
 	const paths = runAgentToolLoopToolPath();
+	const endings = runAgentToolLoopLineEnding();
 	return {
 		roundtrip: await collect("agent_tool_loop.roundtrip", () => {
 			return () => runPairedToolLoop();
@@ -2139,12 +2155,16 @@ async function measureAgentToolLoop() {
 		tool_path: await collect("agent_tool_loop.tool_path", () => {
 			return () => runAgentToolLoopToolPath();
 		}),
+		line_ending: await collect("agent_tool_loop.line_ending", () => {
+			return () => runAgentToolLoopLineEnding();
+		}),
 		observed: {
 			final_text: last.content[0].text,
 			message_count: messages.length,
 			tool_error: result.isError ? 1 : 0,
 			tool_value: once.executed.value,
 			...paths,
+			...endings,
 		},
 	};
 }
@@ -6087,6 +6107,8 @@ const result = {
 				"packages/agent/src/agent.ts Agent.prompt + packages/agent/src/agent-loop.ts runAgentLoop",
 			"agent_tool_loop.tool_path":
 				"packages/coding-agent/src/core/tools/path-utils.ts resolveToCwd",
+			"agent_tool_loop.line_ending":
+				"packages/coding-agent/src/core/tools/edit-diff.ts detectLineEnding",
 			"session_compact.compact":
 				"packages/coding-agent/src/core/compaction/compaction.ts prepareCompaction + compact",
 			"text_truncation.truncate_head":

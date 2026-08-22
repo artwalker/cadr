@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `agent_tool_loop.line_ending`
+  (LF / CRLF / none / empty; cadr `detect-line-ending` vs pi
+  `detectLineEnding`). Do not exact mixed LF-then-CRLF. Friend-
+  MachineD n=5 **1.99×** (0.75 / 0.38 µs), ceiling 8.0. Same
+  commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `agent_tool_loop.tool_path`
   (relative / abs / `@` / nbsp / parent; cadr
   `resolve-tool-path` vs pi `resolveToCwd`). Do not

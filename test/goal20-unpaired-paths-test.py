@@ -570,6 +570,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(tool_path), 1)
         self.assertEqual(tool_path[0]["class"], "paired")
         self.assertIn("agent_tool_loop.tool_path", tool_path[0]["metrics"])
+        edit_file = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/tools/edit.lisp"
+        ]
+        self.assertEqual(len(edit_file), 1)
+        self.assertEqual(edit_file[0]["class"], "paired")
+        self.assertIn("agent_tool_loop.line_ending", edit_file[0]["metrics"])
         bootstrap_tools = [
             row
             for row in classified["rows"]

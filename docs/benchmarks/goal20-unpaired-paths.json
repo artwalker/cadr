@@ -126,6 +126,7 @@
   "tool_grep.context_file",
   "agent_tool_loop.roundtrip",
   "agent_tool_loop.tool_path",
+  "agent_tool_loop.line_ending",
   "session_compact.compact",
   "goal11.mouse_drag",
   "goal11.wheel",
@@ -1460,8 +1461,8 @@
   },
   {
    "prefix": "src/cadr-cli/tools/edit.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": ["agent_tool_loop.line_ending"]
   },
   {
    "prefix": "src/cadr-cli/tools/find.lisp",

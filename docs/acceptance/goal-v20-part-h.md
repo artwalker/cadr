@@ -1569,6 +1569,21 @@ nbsp; `../x`. POSIX. Do not exact empty (cadr errors) or
 are exact. First Friend-MachineD freeze **2.44×**
 (12.74 / 5.23 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 110 — `agent_tool_loop` (line_ending)
+
+| metric | cadr | pi |
+|---|---|---|
+| `line_ending` | `detect-line-ending` | `detectLineEnding` (`packages/coding-agent/src/core/tools/edit-diff.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole. Time line-ending
+probe only, not normalize/restore or a live edit apply.
+LF `a\nb`; CRLF `a\r\nb`; no newline `ab`; empty `""`. Do not
+exact mixed first-LF-then-CRLF (cadr searches any CRLF; pi
+compares the first `\n` against the first `\r\n`). Observed
+`le_lf` / `le_crlf` / `le_none` / `le_empty` are exact. First
+Friend-MachineD freeze **1.99×** (0.75 / 0.38 µs), ceiling 8.0
+(microsecond-floor). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1774,14 +1789,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 162 | 70,278 | 55.2% | `no worse than baseline` is falsifiable |
+| `paired` | 163 | 71,031 | 55.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 81 | 32,216 | 25.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 80 | 31,463 | 24.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 55.2% of lines (162 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 61.0% of lines.
+- **Falsifiable vs baseline:** 55.8% of lines (163 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 61.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1928,6 +1943,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
+| `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
@@ -2023,7 +2039,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_selectors` | 12 | 6,350 |
 | `cli_interactive_controller` | 7 | 5,639 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
-| `agent_tool_loop` | 12 | 3,761 |
+| `agent_tool_loop` | 11 | 3,008 |
 | `cli_extensions_install` | 6 | 2,412 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
