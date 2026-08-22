@@ -256,6 +256,7 @@ const REPETITIONS = {
 	"cli_selectors.settings_cycle": 50,
 	"cli_selectors.settings_apply_filter": 50,
 	"cli_selectors.tree_entry_filtered": 50,
+	"cli_selectors.tree_query_matches": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5551,6 +5552,45 @@ function runCliSelectorsTreeEntryFiltered() {
 	};
 }
 
+function treeEntrySearchText(entry) {
+	return [
+		entry.label,
+		entry.role,
+		entry.text,
+		entry.summary,
+		entry.name,
+		entry.modelId,
+		entry.thinkingLevel,
+		entry.customType,
+	]
+		.filter((part) => part !== undefined && part !== null)
+		.join(" ");
+}
+
+function treeQueryMatchesPi(entry, query) {
+	const haystack = treeEntrySearchText(entry).toLowerCase();
+	const tokens = query
+		.toLowerCase()
+		.split(/\s+/)
+		.filter(Boolean);
+	return tokens.every((token) => haystack.includes(token));
+}
+
+function treeQueryMatchesEncodedPi(entry, query) {
+	return treeQueryMatchesPi(entry, query) ? "t" : "";
+}
+
+function runCliSelectorsTreeQueryMatches() {
+	const entry = { label: "alpha", role: "user", text: "hello world" };
+	return {
+		tqm_hit: treeQueryMatchesEncodedPi(entry, "hello"),
+		tqm_miss: treeQueryMatchesEncodedPi(entry, "nope"),
+		tqm_multi: treeQueryMatchesEncodedPi(entry, "hello world"),
+		tqm_partial: treeQueryMatchesEncodedPi(entry, "hello beta"),
+		tqm_empty: treeQueryMatchesEncodedPi(entry, ""),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5901,6 +5941,7 @@ async function measureCliSelectorsSessionSearch() {
 	const settingsCycleResults = runCliSelectorsSettingsCycle();
 	const settingsApplyFilterResults = runCliSelectorsSettingsApplyFilter();
 	const treeEntryFilteredResults = runCliSelectorsTreeEntryFiltered();
+	const treeQueryMatchesResults = runCliSelectorsTreeQueryMatches();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6073,6 +6114,11 @@ async function measureCliSelectorsSessionSearch() {
 		tef_tool_nt: treeEntryFilteredResults.tef_tool_nt,
 		tef_labeled_lo: treeEntryFilteredResults.tef_labeled_lo,
 		tef_all_label: treeEntryFilteredResults.tef_all_label,
+		tqm_hit: treeQueryMatchesResults.tqm_hit,
+		tqm_miss: treeQueryMatchesResults.tqm_miss,
+		tqm_multi: treeQueryMatchesResults.tqm_multi,
+		tqm_partial: treeQueryMatchesResults.tqm_partial,
+		tqm_empty: treeQueryMatchesResults.tqm_empty,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6185,6 +6231,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_entry_filtered: await collect("cli_selectors.tree_entry_filtered", () => {
 			return () => runCliSelectorsTreeEntryFiltered();
+		}),
+		tree_query_matches: await collect("cli_selectors.tree_query_matches", () => {
+			return () => runCliSelectorsTreeQueryMatches();
 		}),
 		observed,
 	};
@@ -7305,6 +7354,8 @@ const result = {
 				"packages/tui/src/components/settings-list.ts SettingsList applyFilter",
 			"cli_selectors.tree_entry_filtered":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts filter mode predicate",
+			"cli_selectors.tree_query_matches":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts search token predicate",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

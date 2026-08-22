@@ -2060,6 +2060,20 @@ labeled message, settings all pass. Encoded as `t` or empty. Observed
 `tef_labeled_lo` / `tef_all_label` are exact. First Friend-MachineD freeze
 **0.56×** (0.4 / 0.6 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 145 — `cli_selectors` (tree_query_matches)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_query_matches` | `tree-selector-query-matches-p` | tree search token predicate (`tree-selector.ts`) |
+
+Per-entry search-token match only: lowercase haystack from label/role/text,
+whitespace-split query tokens, all tokens must appear. Not filter mode or
+fold skipping. Fixtures: single-token hit/miss, multi-token hit, partial
+miss (`hello beta`), empty query (vacuous match). Encoded as `t` or empty.
+Observed `tqm_hit` / `tqm_miss` / `tqm_multi` / `tqm_partial` /
+`tqm_empty` are exact. First Friend-MachineD freeze **2.20×** (5.2 / 2.3 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2265,14 +2279,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 166 | 72,533 | 56.9% | `no worse than baseline` is falsifiable |
+| `paired` | 167 | 74,345 | 58.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 77 | 29,961 | 23.5% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 76 | 28,149 | 22.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 56.9% of lines (166 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 62.8% of lines.
+- **Falsifiable vs baseline:** 58.4% of lines (167 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 64.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -2518,7 +2532,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 |---|---:|---:|
 | `cli_interactive_controller` | 6 | 5,424 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
-| `cli_selectors` | 10 | 5,063 |
+| `cli_selectors` | 9 | 3,251 |
 | `agent_tool_loop` | 11 | 3,008 |
 | `cli_extensions_install` | 6 | 2,412 |
 | `package_manager` | 2 | 1,811 |

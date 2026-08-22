@@ -120,4 +120,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_selectors.settings_apply_filter` | 7.8 | 4.8 | 1.61× | 8.00× | measure-only pair `ef32cddbe`; settings filter + selected reset | invent pause；地板优化另刀 |
 
+| `cli_selectors.tree_query_matches` | 5.2 | 2.3 | 2.20× | 8.00× | measure-only pair `12b48fb83`; tree search token predicate only | invent pause；地板优化另刀 |
+
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

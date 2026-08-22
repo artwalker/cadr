@@ -124,6 +124,7 @@
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
 ;;;; 143. cli_selectors settings-selector-apply-filter vs SettingsList applyFilter
 ;;;; 144. cli_selectors tree-selector-entry-filtered-p vs tree-selector filter modes
+;;;; 145. cli_selectors tree-selector-query-matches-p vs tree-selector search tokens
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -331,6 +332,7 @@
     ("cli_selectors.settings_cycle" . 50)
     ("cli_selectors.settings_apply_filter" . 50)
     ("cli_selectors.tree_entry_filtered" . 50)
+    ("cli_selectors.tree_query_matches" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6493,6 +6495,21 @@
     '(:id "l1" :type :label :label "bookmark")
     :all "leaf")))
 
+(defun tree-query-matches-encoded (entry query)
+  (if (cadr-cli::tree-selector-query-matches-p entry query)
+      "t"
+      ""))
+
+(defun run-cli-selectors-tree-query-matches ()
+  (let ((entry
+          '(:label "alpha" :role :user :text "hello world")))
+    (list
+     (tree-query-matches-encoded entry "hello")
+     (tree-query-matches-encoded entry "nope")
+     (tree-query-matches-encoded entry "hello world")
+     (tree-query-matches-encoded entry "hello beta")
+     (tree-query-matches-encoded entry ""))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6534,7 +6551,9 @@
         (settings-apply-filter
           (run-cli-selectors-settings-apply-filter))
         (tree-entry-filtered
-          (run-cli-selectors-tree-entry-filtered)))
+          (run-cli-selectors-tree-entry-filtered))
+        (tree-query-matches
+          (run-cli-selectors-tree-query-matches)))
     (json-object
      "observed"
      (json-object
@@ -6726,7 +6745,12 @@
       "tef_user_uo" (nth 2 tree-entry-filtered)
       "tef_tool_nt" (nth 3 tree-entry-filtered)
       "tef_labeled_lo" (nth 4 tree-entry-filtered)
-      "tef_all_label" (nth 5 tree-entry-filtered))
+      "tef_all_label" (nth 5 tree-entry-filtered)
+      "tqm_hit" (nth 0 tree-query-matches)
+      "tqm_miss" (nth 1 tree-query-matches)
+      "tqm_multi" (nth 2 tree-query-matches)
+      "tqm_partial" (nth 3 tree-query-matches)
+      "tqm_empty" (nth 4 tree-query-matches))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6896,7 +6920,12 @@
      (collect "cli_selectors.tree_entry_filtered"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-entry-filtered)))))))
+                  (run-cli-selectors-tree-entry-filtered))))
+     "tree_query_matches"
+     (collect "cli_selectors.tree_query_matches"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-query-matches)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7979,6 +8008,8 @@
       "src/cadr-cli/interactive/selectors/settings.lisp settings-selector-apply-filter"
       "cli_selectors.tree_entry_filtered"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-filtered-p"
+      "cli_selectors.tree_query_matches"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-query-matches-p"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
