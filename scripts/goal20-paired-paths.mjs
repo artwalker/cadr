@@ -176,6 +176,7 @@ const REPETITIONS = {
 	"cli_print_rpc.session_stats": 20,
 	"tui_latex.render": 20,
 	"tui_mermaid.render": 20,
+	"tui_mermaid.source_box": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
 	"ai_support.estimate_text": 50,
@@ -3416,11 +3417,30 @@ function runTuiMermaid() {
 	};
 }
 
+function mermaidBox(src, maxWidth) {
+	return grokMermaidModule.sourceBox(src, maxWidth);
+}
+
+function runTuiMermaidSourceBox() {
+	const wide = mermaidBox(MERMAID_LR, 80);
+	const narrow = mermaidBox(MERMAID_LR, 12);
+	const empty = mermaidBox("", 80);
+	return {
+		sb_wide_w: wide ? wide.width : 0,
+		sb_wide_first: wide && Array.isArray(wide.plain) ? (wide.plain[0] ?? "") : "",
+		sb_narrow_rows: narrow && Array.isArray(narrow.plain) ? narrow.plain.length : 0,
+		sb_empty_w: empty ? empty.width : 0,
+	};
+}
+
 async function measureTuiMermaid() {
-	const observed = runTuiMermaid();
+	const observed = { ...runTuiMermaid(), ...runTuiMermaidSourceBox() };
 	return {
 		render: await collect("tui_mermaid.render", () => {
 			return () => runTuiMermaid();
+		}),
+		source_box: await collect("tui_mermaid.source_box", () => {
+			return () => runTuiMermaidSourceBox();
 		}),
 		observed,
 	};
@@ -5475,6 +5495,7 @@ const result = {
 				"packages/coding-agent/src/core/agent-session.ts AgentSession.getSessionStats",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_mermaid.render": "grok-mermaid render (dist/index.js)",
+			"tui_mermaid.source_box": "grok-mermaid sourceBox (dist/source-box.js)",
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":
 				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",

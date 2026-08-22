@@ -1400,6 +1400,21 @@ and not live mermaid play. Observed `mm_lr_w` / `mm_lr_first` /
 Friend-MachineD freeze **0.30×** (75.31 / 255.24 µs), ceiling
 8.0. cadr leads. Same commit no optimize.
 
+### Pair 99 — `tui_mermaid` (source_box)
+
+| metric | cadr | pi |
+|---|---|---|
+| `source_box` | `gm-source-box` | `sourceBox` (`grok-mermaid` dist/source-box.js) |
+
+Leftover sibling of the `tui_mermaid` hole. Flowchart LR
+`A-->B` at max-width 80 and 12, plus empty source. Time the
+framed source box, not a TUI frame. Observed `sb_wide_w` /
+`sb_wide_first` / `sb_narrow_rows` / `sb_empty_w` are exact
+(24 / titled header / 5 / 22). `transform.lisp` / `ansi.lisp`
+stay `needs-pair`. First Friend-MachineD freeze **0.38×**
+(58.73 / 155.58 µs), ceiling 8.0. cadr leads. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1605,14 +1620,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 152 | 65,774 | 51.6% | `no worse than baseline` is falsifiable |
+| `paired` | 153 | 65,867 | 51.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 27 | 17,314 | 13.6% | on a named paired thunk; no own bench |
-| `needs-pair` | 92 | 36,826 | 28.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 91 | 36,733 | 28.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 51.6% of lines (152 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 57.5% of lines.
+- **Falsifiable vs baseline:** 51.7% of lines (153 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 57.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1783,6 +1798,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/kill-ring.lisp` | 38 | `tui_kill_ring.push_peek` |
 | `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render` |
 | `src/cadr-tui/mermaid/index.lisp` | 109 | `tui_mermaid.render` |
+| `src/cadr-tui/mermaid/source-box.lisp` | 93 | `tui_mermaid.source_box` |
 | `src/cadr-tui/native-modifiers.lisp` | 78 | `tui_native_modifiers.pressed` |
 | `src/cadr-tui/overlay.lisp` | 485 | `tui_overlay.composite_line` |
 | `src/cadr-tui/renderer/alt-screen-search.lisp` | 181 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -1852,8 +1868,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_print_rpc` | 4 | 1,092 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
-| `tui_mermaid` | 3 | 538 |
 | `provider_registry_defs` | 2 | 454 |
+| `tui_mermaid` | 2 | 445 |
 | `skill_prompt_load` | 2 | 423 |
 | `core_rest` | 4 | 267 |
 | `tui_select_settings_loaders` | 1 | 235 |

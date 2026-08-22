@@ -208,6 +208,7 @@
     ("cli_print_rpc.session_stats" . 20)
     ("tui_latex.render" . 20)
     ("tui_mermaid.render" . 20)
+    ("tui_mermaid.source_box" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
     ("ai_support.estimate_text" . 50)
@@ -4118,8 +4119,22 @@
      (if (null unk) 1 0)
      (if cjk (getf cjk :width) 0))))
 
+(defun mermaid-box (src max-width)
+  (cadr-tui::gm-source-box src max-width))
+
+(defun run-tui-mermaid-source-box ()
+  (let ((wide (mermaid-box *mermaid-lr* 80))
+        (narrow (mermaid-box *mermaid-lr* 12))
+        (empty (mermaid-box "" 80)))
+    (list
+     (if wide (getf wide :width) 0)
+     (if wide (or (first (getf wide :plain)) "") "")
+     (if narrow (length (getf narrow :plain)) 0)
+     (if empty (getf empty :width) 0))))
+
 (defun measure-tui-mermaid ()
-  (let ((observed (run-tui-mermaid)))
+  (let ((observed (run-tui-mermaid))
+        (box (run-tui-mermaid-source-box)))
     (json-object
      "observed"
      (json-object
@@ -4128,12 +4143,21 @@
       "mm_lr_rows" (nth 2 observed)
       "mm_empty" (nth 3 observed)
       "mm_unk" (nth 4 observed)
-      "mm_cjk_w" (nth 5 observed))
+      "mm_cjk_w" (nth 5 observed)
+      "sb_wide_w" (nth 0 box)
+      "sb_wide_first" (nth 1 box)
+      "sb_narrow_rows" (nth 2 box)
+      "sb_empty_w" (nth 3 box))
      "render"
      (collect "tui_mermaid.render"
               (lambda ()
                 (lambda ()
-                  (run-tui-mermaid)))))))
+                  (run-tui-mermaid))))
+     "source_box"
+     (collect "tui_mermaid.source_box"
+              (lambda ()
+                (lambda ()
+                  (run-tui-mermaid-source-box)))))))
 
 (defun latex-text (source display-p)
   (or (cadr-tui:render-latex source :display-p display-p) ""))
@@ -6323,6 +6347,8 @@
       "src/cadr-tui/latex.lisp render-latex"
       "tui_mermaid.render"
       "src/cadr-tui/mermaid/index.lisp gm-render"
+      "tui_mermaid.source_box"
+      "src/cadr-tui/mermaid/source-box.lisp gm-source-box"
       "tui_editor_helpers.fuzzy_match"
       "src/cadr-tui/fuzzy.lisp fuzzy-match"
       "tui_theme_overlay.osc11_bg"

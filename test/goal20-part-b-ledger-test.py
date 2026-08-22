@@ -590,6 +590,13 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("mm_empty", paired.OBSERVED_EXACT["tui_mermaid"])
         self.assertIn("mm_unk", paired.OBSERVED_EXACT["tui_mermaid"])
         self.assertIn("mm_cjk_w", paired.OBSERVED_EXACT["tui_mermaid"])
+        self.assertIn("tui_mermaid.source_box", RECORD.METRIC_KEYS)
+        self.assertIn("source_box", paired.METRICS["tui_mermaid"])
+        self.assertIn("tui_mermaid.source_box", paired.RATIO_CEILINGS)
+        self.assertIn("sb_wide_w", paired.OBSERVED_EXACT["tui_mermaid"])
+        self.assertIn("sb_wide_first", paired.OBSERVED_EXACT["tui_mermaid"])
+        self.assertIn("sb_narrow_rows", paired.OBSERVED_EXACT["tui_mermaid"])
+        self.assertIn("sb_empty_w", paired.OBSERVED_EXACT["tui_mermaid"])
 
     def test_tui_latex_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

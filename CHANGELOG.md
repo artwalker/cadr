@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_mermaid.source_box`
+  (flowchart LR at 80/12 cols + empty; cadr `gm-source-box`
+  vs grok-mermaid `sourceBox`). Friend-MachineD n=5
+  **0.38×** (58.73 / 155.58 µs), ceiling 8.0. cadr leads.
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `tui_mermaid.render`
   (flowchart LR / empty / unknown / CJK; cadr `gm-render` vs
   grok-mermaid `render`). Friend-MachineD n=5 **0.30×**
