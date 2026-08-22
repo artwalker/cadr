@@ -222,6 +222,7 @@ const REPETITIONS = {
 	"cli_interactive_controller.auth_type": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
+	"cli_selectors.fuzzy_filter": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -4964,10 +4965,30 @@ function runCliSelectorsKeyText() {
 	};
 }
 
+function fuzzyFilterJoin(items, query, getText) {
+	return fuzzyModule.fuzzyFilter(items, query, getText).join(",");
+}
+
+function runCliSelectorsFuzzyFilter() {
+	const items = ["apple", "banana", "cherry"];
+	const apps = ["a_p_p", "app", "application"];
+	const cls = ["clone", "cl"];
+	const model = [{ id: "gpt-5.5", provider: "openai-codex" }];
+	return {
+		ff_empty: fuzzyModule.fuzzyFilter(items, "", (item) => item).length,
+		ff_an: fuzzyFilterJoin(items, "an", (item) => item),
+		ff_app: fuzzyFilterJoin(apps, "app", (item) => item),
+		ff_cl: fuzzyFilterJoin(cls, "cl", (item) => item),
+		ff_slash: fuzzyModule.fuzzyFilter(model, "openai-codex/gpt-5.5", (entry) => `${entry.id} ${entry.provider}`)
+			.length,
+	};
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
+		...runCliSelectorsFuzzyFilter(),
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -4975,6 +4996,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		key_text: await collect("cli_selectors.key_text", () => {
 			return () => runCliSelectorsKeyText();
+		}),
+		fuzzy_filter: await collect("cli_selectors.fuzzy_filter", () => {
+			return () => runCliSelectorsFuzzyFilter();
 		}),
 		observed,
 	};
@@ -6061,6 +6085,7 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
+			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

@@ -1550,8 +1550,10 @@
   {
    "path": "src/cadr-cli/interactive/selectors/common.lisp",
    "lines": 394,
-   "class": "needs-pair",
-   "metrics": [],
+   "class": "paired",
+   "metrics": [
+    "cli_selectors.fuzzy_filter"
+   ],
    "pathId": "cli_selectors",
    "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",
    "fixture": "Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.",

@@ -117,6 +117,7 @@ METRIC_KEYS = (
     "cli_interactive_controller.auth_type",
     "cli_selectors.session_search",
     "cli_selectors.key_text",
+    "cli_selectors.fuzzy_filter",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

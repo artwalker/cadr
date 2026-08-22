@@ -1584,6 +1584,21 @@ compares the first `\n` against the first `\r\n`). Observed
 Friend-MachineD freeze **1.99×** (0.75 / 0.38 µs), ceiling 8.0
 (microsecond-floor). Same commit no optimize.
 
+### Pair 111 — `cli_selectors` (fuzzy_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `fuzzy_filter` | `selector-fuzzy-filter` | `fuzzyFilter` (`packages/tui/src/fuzzy.ts`) |
+
+Leftover sibling of the `cli_selectors` hole. Time filter +
+sort only, not selector render or confirm. Empty query; token
+`an`; `app` on `a_p_p`/`app`/`application`; `cl` on `clone`/`cl`;
+slash token `openai-codex/gpt-5.5` on one model row. Do not
+exact mixed scoring edges beyond the booked fixtures. Observed
+`ff_empty` / `ff_an` / `ff_app` / `ff_cl` / `ff_slash` are
+exact. First Friend-MachineD freeze **0.34×** (8.2 / 23.7 µs),
+ceiling 8.0. cadr leads. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1789,14 +1804,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 163 | 71,031 | 55.8% | `no worse than baseline` is falsifiable |
+| `paired` | 164 | 71,425 | 56.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 80 | 31,463 | 24.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 79 | 31,069 | 24.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 55.8% of lines (163 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 61.6% of lines.
+- **Falsifiable vs baseline:** 56.1% of lines (164 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 61.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1907,6 +1922,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
@@ -2036,7 +2052,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_selectors` | 12 | 6,350 |
+| `cli_selectors` | 11 | 5,956 |
 | `cli_interactive_controller` | 7 | 5,639 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
 | `agent_tool_loop` | 11 | 3,008 |

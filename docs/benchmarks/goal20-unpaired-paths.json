@@ -98,6 +98,7 @@
   "cli_interactive_controller.auth_type",
   "cli_selectors.session_search",
   "cli_selectors.key_text",
+  "cli_selectors.fuzzy_filter",
   "websocket_stream.stream_roundtrip",
   "cli_sdk.version_newer",
   "cli_sdk.cache_miss",
@@ -1161,8 +1162,8 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/common.lisp",
-   "class": "needs-pair",
-   "hole": "cli_selectors"
+   "class": "paired",
+   "metrics": ["cli_selectors.fuzzy_filter"]
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/fork.lisp",

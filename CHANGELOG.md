@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.fuzzy_filter`
+  (empty / token / slash fixtures; cadr `selector-fuzzy-filter` vs pi
+  `fuzzyFilter`). Friend-MachineD n=5 **0.34×** (8.2 / 23.7 µs),
+  ceiling 8.0. cadr leads. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `agent_tool_loop.line_ending`
   (LF / CRLF / none / empty; cadr `detect-line-ending` vs pi
   `detectLineEnding`). Do not exact mixed LF-then-CRLF. Friend-

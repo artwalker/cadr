@@ -90,6 +90,7 @@
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
+;;;; 111. cli_selectors selector-fuzzy-filter vs fuzzyFilter
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -263,6 +264,7 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
+    ("cli_selectors.fuzzy_filter" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -5908,9 +5910,32 @@
    (cadr-cli:format-key-text "ctrl+c" :capitalize-p t)
    (cadr-cli:format-key-text "")))
 
+(defun fuzzy-filter-join (items query text-function)
+  (format nil "~{~A~^,~}"
+          (cadr-cli::selector-fuzzy-filter items query text-function)))
+
+(defun run-cli-selectors-fuzzy-filter ()
+  (let ((items '("apple" "banana" "cherry"))
+        (apps '("a_p_p" "app" "application"))
+        (cls '("clone" "cl"))
+        (model '((:id "gpt-5.5" :provider "openai-codex"))))
+    (list
+     (length (cadr-cli::selector-fuzzy-filter items "" #'identity))
+     (fuzzy-filter-join items "an" #'identity)
+     (fuzzy-filter-join apps "app" #'identity)
+     (fuzzy-filter-join cls "cl" #'identity)
+     (length
+      (cadr-cli::selector-fuzzy-filter
+       model "openai-codex/gpt-5.5"
+       (lambda (entry)
+         (format nil "~A ~A"
+                 (getf entry :id)
+                 (getf entry :provider))))))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
-        (keys (run-cli-selectors-key-text)))
+        (keys (run-cli-selectors-key-text))
+        (fuzzy (run-cli-selectors-fuzzy-filter)))
     (json-object
      "observed"
      (json-object
@@ -5924,7 +5949,12 @@
       "kt_slash" (nth 1 keys)
       "kt_shift" (nth 2 keys)
       "kt_cap" (nth 3 keys)
-      "kt_empty" (nth 4 keys))
+      "kt_empty" (nth 4 keys)
+      "ff_empty" (nth 0 fuzzy)
+      "ff_an" (nth 1 fuzzy)
+      "ff_app" (nth 2 fuzzy)
+      "ff_cl" (nth 3 fuzzy)
+      "ff_slash" (nth 4 fuzzy))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -5934,7 +5964,12 @@
      (collect "cli_selectors.key_text"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-key-text)))))))
+                  (run-cli-selectors-key-text))))
+     "fuzzy_filter"
+     (collect "cli_selectors.fuzzy_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-fuzzy-filter)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -6983,6 +7018,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
+      "cli_selectors.fuzzy_filter"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-fuzzy-filter"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
