@@ -87,6 +87,7 @@
 ;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
+;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -181,6 +182,7 @@
     ("image_runtime.api_provider" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("cli_print_rpc.jsonl_read" . 50)
+    ("cli_print_rpc.clamp_thinking" . 50)
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
@@ -3619,6 +3621,40 @@
          (push line lines))))
     (nreverse lines)))
 
+(defun clamp-thinking-fixture-model (map)
+  (cadr-ai:make-model
+   :id "goal20-clamp"
+   :name "goal20-clamp"
+   :provider :openai
+   :api :openai-completions
+   :base-url "http://localhost"
+   :reasoning-p t
+   :thinking-level-map map
+   :context-window 128000
+   :max-tokens 4096))
+
+(defun clamp-thinking-name (level available)
+  (string-downcase
+   (symbol-name
+    (cadr-cli::rpc-clamp-thinking-level level available))))
+
+(defun run-cli-print-rpc-clamp-thinking ()
+  (let* ((full
+           (clamp-thinking-fixture-model
+            '((:xhigh . "x") (:max . "m"))))
+         (short (clamp-thinking-fixture-model nil))
+         (full-av (cadr-ai::supported-thinking-levels full))
+         (short-av (cadr-ai::supported-thinking-levels short)))
+    (list
+     (clamp-thinking-name :off full-av)
+     (clamp-thinking-name :high full-av)
+     (clamp-thinking-name :xhigh full-av)
+     (clamp-thinking-name :max full-av)
+     (clamp-thinking-name :xhigh short-av)
+     (clamp-thinking-name :nope full-av)
+     (length full-av)
+     (length short-av))))
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p
@@ -3628,7 +3664,8 @@
            (if newline-p
                (subseq line 0 (1- (length line)))
                line))
-         (read-lines (run-cli-print-rpc-read)))
+         (read-lines (run-cli-print-rpc-read))
+         (clamp (run-cli-print-rpc-clamp-thinking)))
     (json-object
      "observed"
      (json-object
@@ -3638,7 +3675,15 @@
       "line_count" (length read-lines)
       "first" (or (first read-lines) "")
       "second" (or (second read-lines) "")
-      "last_line" (or (third read-lines) ""))
+      "last_line" (or (third read-lines) "")
+      "tl_off" (nth 0 clamp)
+      "tl_high" (nth 1 clamp)
+      "tl_xh" (nth 2 clamp)
+      "tl_max" (nth 3 clamp)
+      "tl_xh_down" (nth 4 clamp)
+      "tl_unk" (nth 5 clamp)
+      "tl_full_n" (nth 6 clamp)
+      "tl_short_n" (nth 7 clamp))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -3648,7 +3693,12 @@
      (collect "cli_print_rpc.jsonl_read"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-read)))))))
+                  (run-cli-print-rpc-read))))
+     "clamp_thinking"
+     (collect "cli_print_rpc.clamp_thinking"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-clamp-thinking)))))))
 
 (defun latex-text (source display-p)
   (or (cadr-tui:render-latex source :display-p display-p) ""))
@@ -5516,6 +5566,8 @@
       "src/cadr-cli/modes/print.lisp write-json-line"
       "cli_print_rpc.jsonl_read"
       "src/cadr-cli/modes/rpc/jsonl.lisp read-rpc-jsonl-lines"
+      "cli_print_rpc.clamp_thinking"
+      "src/cadr-cli/modes/rpc/models.lisp rpc-clamp-thinking-level"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_editor_helpers.fuzzy_match"

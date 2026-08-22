@@ -1452,14 +1452,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 136 | 61,635 | 48.4% | `no worse than baseline` is falsifiable |
+| `paired` | 137 | 61,861 | 48.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 116 | 45,360 | 35.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 115 | 45,134 | 35.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 48.4% of lines (136 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 54.3% of lines.
+- **Falsifiable vs baseline:** 48.6% of lines (137 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 54.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1569,6 +1569,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/modes/print.lisp` | 578 | `cli_print_rpc.jsonl_line` |
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 123 | `cli_print_rpc.jsonl_read` |
+| `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
@@ -1672,7 +1673,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `evals_harness` | 6 | 2,184 |
 | `oauth_pkce_device` | 12 | 1,842 |
 | `package_manager` | 2 | 1,811 |
-| `cli_print_rpc` | 6 | 1,601 |
+| `cli_print_rpc` | 5 | 1,375 |
 | `settings_load` | 3 | 1,283 |
 | `cli_sdk` | 4 | 1,214 |
 | `websocket_stream` | 1 | 628 |

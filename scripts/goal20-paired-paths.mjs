@@ -165,6 +165,7 @@ const REPETITIONS = {
 	"image_runtime.api_provider": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
+	"cli_print_rpc.clamp_thinking": 50,
 	"tui_latex.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
@@ -450,6 +451,7 @@ const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
 const mimeModule = await import(moduleUrl("packages/coding-agent/src/utils/mime.ts"));
 const imageModelsModule = await import(moduleUrl("packages/ai/src/image-models.ts"));
+const aiModelsModule = await import(moduleUrl("packages/ai/src/models.ts"));
 const imageResizeModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/image-resize.ts")
 );
@@ -2993,17 +2995,51 @@ function measureCliPrintRpcObserved(line, readLines) {
 	};
 }
 
+function clampThinkingFixtureModel(thinkingLevelMap) {
+	return {
+		id: "goal20-clamp",
+		name: "goal20-clamp",
+		api: "openai-completions",
+		provider: "openai",
+		baseUrl: "http://localhost",
+		reasoning: true,
+		thinkingLevelMap,
+		input: ["text"],
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+		contextWindow: 128000,
+		maxTokens: 4096,
+	};
+}
+
+function runCliPrintRpcClampThinking() {
+	const full = clampThinkingFixtureModel({ xhigh: "x", max: "m" });
+	const shortened = clampThinkingFixtureModel(undefined);
+	return {
+		tl_off: aiModelsModule.clampThinkingLevel(full, "off"),
+		tl_high: aiModelsModule.clampThinkingLevel(full, "high"),
+		tl_xh: aiModelsModule.clampThinkingLevel(full, "xhigh"),
+		tl_max: aiModelsModule.clampThinkingLevel(full, "max"),
+		tl_xh_down: aiModelsModule.clampThinkingLevel(shortened, "xhigh"),
+		tl_unk: aiModelsModule.clampThinkingLevel(full, "nope"),
+		tl_full_n: aiModelsModule.getSupportedThinkingLevels(full).length,
+		tl_short_n: aiModelsModule.getSupportedThinkingLevels(shortened).length,
+	};
+}
+
 async function measureCliPrintRpc() {
-	const observed = measureCliPrintRpcObserved(
-		runCliPrintRpc(),
-		await runCliPrintRpcRead(),
-	);
+	const observed = {
+		...measureCliPrintRpcObserved(runCliPrintRpc(), await runCliPrintRpcRead()),
+		...runCliPrintRpcClampThinking(),
+	};
 	return {
 		jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
 			return () => runCliPrintRpc();
 		}),
 		jsonl_read: await collect("cli_print_rpc.jsonl_read", () => {
 			return () => runCliPrintRpcRead();
+		}),
+		clamp_thinking: await collect("cli_print_rpc.clamp_thinking", () => {
+			return () => runCliPrintRpcClampThinking();
 		}),
 		observed,
 	};
@@ -4880,6 +4916,8 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"cli_print_rpc.jsonl_read":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts attachJsonlLineReader",
+			"cli_print_rpc.clamp_thinking":
+				"packages/ai/src/models.ts clampThinkingLevel",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":

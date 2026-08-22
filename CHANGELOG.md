@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_print_rpc.clamp_thinking`
+  (off/high/xhigh/max + xhigh-down + unknown; cadr
+  `rpc-clamp-thinking-level` vs pi `clampThinkingLevel`).
+  Friend-MachineD n=5 **0.59×** (1.37 / 2.33 µs), ceiling
+  8.0. cadr leads. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `settings_load.config_value`
   (literal / `$FOO` / `${FOO}` / `$$` / `$!` / miss / mix;
   `!command` flag only, no spawn; cadr `resolve-config-value`
