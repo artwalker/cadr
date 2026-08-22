@@ -231,6 +231,7 @@ const REPETITIONS = {
 	"cli_selectors.border_line": 50,
 	"cli_selectors.selected_line": 50,
 	"cli_selectors.muted_line": 50,
+	"cli_selectors.dim_line": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5149,6 +5150,21 @@ function runCliSelectorsMutedLine() {
 	];
 }
 
+function dimLinePi(line, width) {
+	return fitLine(themeModule.theme.fg("dim", line), width);
+}
+
+function runCliSelectorsDimLine() {
+	return [
+		dimLinePi("hello", 10),
+		dimLinePi("hello world", 8),
+		dimLinePi("café🙂", 6),
+		dimLinePi("", 5),
+		dimLinePi("item", 20),
+		dimLinePi("ABCDEFGHIJ", 5),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -5157,6 +5173,7 @@ async function measureCliSelectorsSessionSearch() {
 	const borderLineResults = runCliSelectorsBorderLine();
 	const selectedLineResults = runCliSelectorsSelectedLine();
 	const mutedLineResults = runCliSelectorsMutedLine();
+	const dimLineResults = runCliSelectorsDimLine();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5209,6 +5226,12 @@ async function measureCliSelectorsSessionSearch() {
 		ml_empty: mutedLineResults[3],
 		ml_item20: mutedLineResults[4],
 		ml_narrow: mutedLineResults[5],
+		dl_short: dimLineResults[0],
+		dl_trunc: dimLineResults[1],
+		dl_wide: dimLineResults[2],
+		dl_empty: dimLineResults[3],
+		dl_item20: dimLineResults[4],
+		dl_narrow: dimLineResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5243,6 +5266,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		muted_line: await collect("cli_selectors.muted_line", () => {
 			return () => runCliSelectorsMutedLine();
+		}),
+		dim_line: await collect("cli_selectors.dim_line", () => {
+			return () => runCliSelectorsDimLine();
 		}),
 		observed,
 	};
@@ -6346,6 +6372,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.bg selectedBg + truncateToWidth pad",
 			"cli_selectors.muted_line":
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.fg muted + truncateToWidth",
+			"cli_selectors.dim_line":
+				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.fg dim + truncateToWidth",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

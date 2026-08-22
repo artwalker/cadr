@@ -99,6 +99,7 @@
 ;;;; 117. cli_selectors selector-border-line vs DynamicBorder render
 ;;;; 118. cli_selectors selector-selected-line vs theme.bg selectedBg + fit
 ;;;; 119. cli_selectors selector-muted-line vs theme.fg muted + fit
+;;;; 120. cli_selectors selector-dim-line vs theme.fg dim + fit
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -281,6 +282,7 @@
     ("cli_selectors.border_line" . 50)
     ("cli_selectors.selected_line" . 50)
     ("cli_selectors.muted_line" . 50)
+    ("cli_selectors.dim_line" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6026,6 +6028,15 @@
    (cadr-cli::selector-muted-line "item" 20)
    (cadr-cli::selector-muted-line "ABCDEFGHIJ" 5)))
 
+(defun run-cli-selectors-dim-line ()
+  (list
+   (cadr-cli::selector-dim-line "hello" 10)
+   (cadr-cli::selector-dim-line "hello world" 8)
+   (cadr-cli::selector-dim-line "café🙂" 6)
+   (cadr-cli::selector-dim-line "" 5)
+   (cadr-cli::selector-dim-line "item" 20)
+   (cadr-cli::selector-dim-line "ABCDEFGHIJ" 5)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6037,7 +6048,8 @@
         (fit-line (run-cli-selectors-fit-line))
         (border-line (run-cli-selectors-border-line))
         (selected-line (run-cli-selectors-selected-line))
-        (muted-line (run-cli-selectors-muted-line)))
+        (muted-line (run-cli-selectors-muted-line))
+        (dim-line (run-cli-selectors-dim-line)))
     (json-object
      "observed"
      (json-object
@@ -6109,7 +6121,13 @@
       "ml_wide" (nth 2 muted-line)
       "ml_empty" (nth 3 muted-line)
       "ml_item20" (nth 4 muted-line)
-      "ml_narrow" (nth 5 muted-line))
+      "ml_narrow" (nth 5 muted-line)
+      "dl_short" (nth 0 dim-line)
+      "dl_trunc" (nth 1 dim-line)
+      "dl_wide" (nth 2 dim-line)
+      "dl_empty" (nth 3 dim-line)
+      "dl_item20" (nth 4 dim-line)
+      "dl_narrow" (nth 5 dim-line))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6164,7 +6182,12 @@
      (collect "cli_selectors.muted_line"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-muted-line)))))))
+                  (run-cli-selectors-muted-line))))
+     "dim_line"
+     (collect "cli_selectors.dim_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-dim-line)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7231,6 +7254,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-selected-line"
       "cli_selectors.muted_line"
       "src/cadr-cli/interactive/selectors/common.lisp selector-muted-line"
+      "cli_selectors.dim_line"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-dim-line"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
