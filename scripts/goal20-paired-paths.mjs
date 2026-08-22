@@ -251,6 +251,7 @@ const REPETITIONS = {
 	"cli_selectors.session_named_p": 50,
 	"cli_selectors.settings_thinking_description": 50,
 	"cli_selectors.settings_display_value": 50,
+	"cli_selectors.settings_automatic_theme_setting": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5405,6 +5406,18 @@ function runCliSelectorsSettingsDisplayValue() {
 	};
 }
 
+function automaticThemeSettingPi(light, dark) {
+	return `${light}/${dark}`;
+}
+
+function runCliSelectorsSettingsAutomaticThemeSetting() {
+	return {
+		sats_solarized: automaticThemeSettingPi("solarized", "dark"),
+		sats_same: automaticThemeSettingPi("dark", "dark"),
+		sats_light_dark: automaticThemeSettingPi("light", "dark"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5750,6 +5763,7 @@ async function measureCliSelectorsSessionSearch() {
 	const sessionNamedPResults = runCliSelectorsSessionNamedP();
 	const settingsThinkingDescriptionResults = runCliSelectorsSettingsThinkingDescription();
 	const settingsDisplayValueResults = runCliSelectorsSettingsDisplayValue();
+	const settingsAutomaticThemeSettingResults = runCliSelectorsSettingsAutomaticThemeSetting();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5902,6 +5916,9 @@ async function measureCliSelectorsSessionSearch() {
 		sdv_symbol: settingsDisplayValueResults.sdv_symbol,
 		sdv_int: settingsDisplayValueResults.sdv_int,
 		sdv_string: settingsDisplayValueResults.sdv_string,
+		sats_solarized: settingsAutomaticThemeSettingResults.sats_solarized,
+		sats_same: settingsAutomaticThemeSettingResults.sats_same,
+		sats_light_dark: settingsAutomaticThemeSettingResults.sats_light_dark,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5994,6 +6011,12 @@ async function measureCliSelectorsSessionSearch() {
 		settings_display_value: await collect("cli_selectors.settings_display_value", () => {
 			return () => runCliSelectorsSettingsDisplayValue();
 		}),
+		settings_automatic_theme_setting: await collect(
+			"cli_selectors.settings_automatic_theme_setting",
+			() => {
+				return () => runCliSelectorsSettingsAutomaticThemeSetting();
+			},
+		),
 		observed,
 	};
 }
@@ -7103,6 +7126,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts THINKING_DESCRIPTIONS",
 			"cli_selectors.settings_display_value":
 				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts currentValue boolean formatting",
+			"cli_selectors.settings_automatic_theme_setting":
+				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts ThemeSubmenu getAutomaticThemeSetting",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

@@ -119,6 +119,7 @@
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
+;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -321,6 +322,7 @@
     ("cli_selectors.session_named_p" . 50)
     ("cli_selectors.settings_thinking_description" . 50)
     ("cli_selectors.settings_display_value" . 50)
+    ("cli_selectors.settings_automatic_theme_setting" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6375,6 +6377,21 @@
    (cadr-cli::settings-display-value 42)
    (cadr-cli::settings-display-value "hello")))
 
+(defun make-settings-auto-theme-fixture (light dark)
+  (cadr-cli::make-settings-selector-state
+   :current-theme (format nil "~A/~A" light dark)
+   :theme-names (list light dark "solarized")))
+
+(defparameter +settings-auto-theme-fixtures+
+  (list
+   (make-settings-auto-theme-fixture "solarized" "dark")
+   (make-settings-auto-theme-fixture "dark" "dark")
+   (make-settings-auto-theme-fixture "light" "dark")))
+
+(defun run-cli-selectors-settings-automatic-theme-setting ()
+  (mapcar #'cadr-cli::settings-selector-automatic-theme-setting
+          +settings-auto-theme-fixtures+))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6406,7 +6423,9 @@
         (settings-thinking-description
           (run-cli-selectors-settings-thinking-description))
         (settings-display-value
-          (run-cli-selectors-settings-display-value)))
+          (run-cli-selectors-settings-display-value))
+        (settings-automatic-theme-setting
+          (run-cli-selectors-settings-automatic-theme-setting)))
     (json-object
      "observed"
      (json-object
@@ -6578,7 +6597,10 @@
       "sdv_false" (nth 1 settings-display-value)
       "sdv_symbol" (nth 2 settings-display-value)
       "sdv_int" (nth 3 settings-display-value)
-      "sdv_string" (nth 4 settings-display-value))
+      "sdv_string" (nth 4 settings-display-value)
+      "sats_solarized" (nth 0 settings-automatic-theme-setting)
+      "sats_same" (nth 1 settings-automatic-theme-setting)
+      "sats_light_dark" (nth 2 settings-automatic-theme-setting))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6723,7 +6745,12 @@
      (collect "cli_selectors.settings_display_value"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-settings-display-value)))))))
+                  (run-cli-selectors-settings-display-value))))
+     "settings_automatic_theme_setting"
+     (collect "cli_selectors.settings_automatic_theme_setting"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-settings-automatic-theme-setting)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7796,6 +7823,8 @@
       "src/cadr-cli/interactive/selectors/settings.lisp settings-thinking-description"
       "cli_selectors.settings_display_value"
       "src/cadr-cli/interactive/selectors/settings.lisp settings-display-value"
+      "cli_selectors.settings_automatic_theme_setting"
+      "src/cadr-cli/interactive/selectors/settings.lisp settings-selector-automatic-theme-setting"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
