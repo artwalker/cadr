@@ -94,6 +94,7 @@
 ;;;; 112. cli_selectors selector-delete-query-character vs Input backspace grapheme delete
 ;;;; 113. cli_selectors selector-frame-visible-slice vs selector viewport slice
 ;;;; 114. cli_selectors selector-frame-move-index vs selector wrap index
+;;;; 115. cli_selectors selector-align-left-right vs session-selector header align
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -271,6 +272,7 @@
     ("cli_selectors.delete_query" . 50)
     ("cli_selectors.visible_slice" . 50)
     ("cli_selectors.move_index" . 50)
+    ("cli_selectors.align_left_right" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -5968,13 +5970,26 @@
      (apply #'cadr-cli::selector-frame-move-index fixture))
    '((0 0 1) (0 5 -1) (4 5 1) (2 5 3) (2 5 -2) (1 5 10))))
 
+(defun run-cli-selectors-align-left-right ()
+  (mapcar
+   (lambda (fixture)
+     (destructuring-bind (left right width) fixture
+       (cadr-cli::selector-align-left-right left right width)))
+   '(("Title" "Sort: Recent" 40)
+     ("Very Long Left Title Here" "Right" 20)
+     ("Left" "Very Long Right Side Text" 20)
+     ("ABCDEFGHIJ" "KLMNOPQRST" 10)
+     ("" "Right Only" 15)
+     ("Left Only" "" 15))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
         (fuzzy (run-cli-selectors-fuzzy-filter))
         (delete-query (run-cli-selectors-delete-query))
         (visible-slice (run-cli-selectors-visible-slice))
-        (move-index (run-cli-selectors-move-index)))
+        (move-index (run-cli-selectors-move-index))
+        (align-left-right (run-cli-selectors-align-left-right)))
     (json-object
      "observed"
      (json-object
@@ -6016,7 +6031,13 @@
       "mi_wrap_dn" (nth 2 move-index)
       "mi_fwd" (nth 3 move-index)
       "mi_back" (nth 4 move-index)
-      "mi_big" (nth 5 move-index))
+      "mi_big" (nth 5 move-index)
+      "alr_wide" (nth 0 align-left-right)
+      "alr_trunc_left" (nth 1 align-left-right)
+      "alr_trunc_right" (nth 2 align-left-right)
+      "alr_narrow" (nth 3 align-left-right)
+      "alr_empty_left" (nth 4 align-left-right)
+      "alr_empty_right" (nth 5 align-left-right))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6046,7 +6067,12 @@
      (collect "cli_selectors.move_index"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-move-index)))))))
+                  (run-cli-selectors-move-index))))
+     "align_left_right"
+     (collect "cli_selectors.align_left_right"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-align-left-right)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7103,6 +7129,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-frame-visible-slice"
       "cli_selectors.move_index"
       "src/cadr-cli/interactive/selectors/common.lisp selector-frame-move-index"
+      "cli_selectors.align_left_right"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-align-left-right"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

@@ -226,6 +226,7 @@ const REPETITIONS = {
 	"cli_selectors.delete_query": 50,
 	"cli_selectors.visible_slice": 50,
 	"cli_selectors.move_index": 50,
+	"cli_selectors.align_left_right": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5046,9 +5047,33 @@ function runCliSelectorsMoveIndex() {
 	return fixtures.map((fixture) => moveIndex(...fixture));
 }
 
+function alignLeftRight(left, right, width) {
+	const rightText = tuiUtilsModule.truncateToWidth(right, Math.max(0, width), "");
+	const availableLeft = Math.max(0, width - tuiUtilsModule.visibleWidth(rightText) - 1);
+	const leftText = tuiUtilsModule.truncateToWidth(left, availableLeft, "");
+	const spacing = Math.max(
+		0,
+		width - tuiUtilsModule.visibleWidth(leftText) - tuiUtilsModule.visibleWidth(rightText),
+	);
+	return `${leftText}${" ".repeat(spacing)}${rightText}`;
+}
+
+function runCliSelectorsAlignLeftRight() {
+	const fixtures = [
+		["Title", "Sort: Recent", 40],
+		["Very Long Left Title Here", "Right", 20],
+		["Left", "Very Long Right Side Text", 20],
+		["ABCDEFGHIJ", "KLMNOPQRST", 10],
+		["", "Right Only", 15],
+		["Left Only", "", 15],
+	];
+	return fixtures.map(([left, right, w]) => alignLeftRight(left, right, w));
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
+	const alignLeftRightResults = runCliSelectorsAlignLeftRight();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5071,6 +5096,12 @@ async function measureCliSelectorsSessionSearch() {
 		mi_fwd: moveIndexResults[3],
 		mi_back: moveIndexResults[4],
 		mi_big: moveIndexResults[5],
+		alr_wide: alignLeftRightResults[0],
+		alr_trunc_left: alignLeftRightResults[1],
+		alr_trunc_right: alignLeftRightResults[2],
+		alr_narrow: alignLeftRightResults[3],
+		alr_empty_left: alignLeftRightResults[4],
+		alr_empty_right: alignLeftRightResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5090,6 +5121,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		move_index: await collect("cli_selectors.move_index", () => {
 			return () => runCliSelectorsMoveIndex();
+		}),
+		align_left_right: await collect("cli_selectors.align_left_right", () => {
+			return () => runCliSelectorsAlignLeftRight();
 		}),
 		observed,
 	};
@@ -6183,6 +6217,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts viewport slice (same formula in session/model/tree selectors)",
 			"cli_selectors.move_index":
 				"packages/tui/src/components/select-list.ts wrap selection index (up/down)",
+			"cli_selectors.align_left_right":
+				"packages/coding-agent/src/modes/interactive/components/session-selector.ts header left/right align",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":
