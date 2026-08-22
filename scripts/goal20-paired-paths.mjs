@@ -228,6 +228,7 @@ const REPETITIONS = {
 	"cli_selectors.move_index": 50,
 	"cli_selectors.align_left_right": 50,
 	"cli_selectors.fit_line": 50,
+	"cli_selectors.border_line": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -531,6 +532,13 @@ const sessionSelectorSearchModule = await import(
 const keybindingHintsModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts")
 );
+const themeModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/theme/theme.ts")
+);
+const dynamicBorderModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/components/dynamic-border.ts")
+);
+themeModule.initTheme("dark", false);
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
 const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
@@ -5091,11 +5099,30 @@ function runCliSelectorsFitLine() {
 	];
 }
 
+function borderLinePi(width, colorName = "border") {
+	const border = new dynamicBorderModule.DynamicBorder((segment) =>
+		themeModule.theme.fg(colorName, segment),
+	);
+	return border.render(width)[0];
+}
+
+function runCliSelectorsBorderLine() {
+	return [
+		borderLinePi(40),
+		borderLinePi(40, "accent"),
+		borderLinePi(1),
+		borderLinePi(80),
+		borderLinePi(10, "accent"),
+		borderLinePi(20),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
 	const alignLeftRightResults = runCliSelectorsAlignLeftRight();
 	const fitLineResults = runCliSelectorsFitLine();
+	const borderLineResults = runCliSelectorsBorderLine();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5130,6 +5157,12 @@ async function measureCliSelectorsSessionSearch() {
 		fl_ellipsis: fitLineResults[3],
 		fl_wide: fitLineResults[4],
 		fl_empty: fitLineResults[5],
+		bl_w40: borderLineResults[0],
+		bl_w40_acc: borderLineResults[1],
+		bl_w1: borderLineResults[2],
+		bl_w80: borderLineResults[3],
+		bl_w10_acc: borderLineResults[4],
+		bl_w20: borderLineResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5155,6 +5188,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		fit_line: await collect("cli_selectors.fit_line", () => {
 			return () => runCliSelectorsFitLine();
+		}),
+		border_line: await collect("cli_selectors.border_line", () => {
+			return () => runCliSelectorsBorderLine();
 		}),
 		observed,
 	};
@@ -6252,6 +6288,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts header left/right align",
 			"cli_selectors.fit_line":
 				"packages/tui/src/utils.ts truncateToWidth + visibleWidth pad (selector-fit-line sites)",
+			"cli_selectors.border_line":
+				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts DynamicBorder.render",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

@@ -144,7 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type"),
-    "cli_selectors": ("session_search", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line"),
+    "cli_selectors": ("session_search", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
@@ -672,6 +672,9 @@ RATIO_CEILINGS = {
     # First-freeze headroom for cli_selectors.fit_line.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.fit_line": 8.0,
+    # First-freeze headroom for cli_selectors.border_line.
+    # Ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_selectors.border_line": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
@@ -1490,6 +1493,12 @@ OBSERVED_EXACT = {
         "fl_ellipsis",
         "fl_wide",
         "fl_empty",
+        "bl_w40",
+        "bl_w40_acc",
+        "bl_w1",
+        "bl_w80",
+        "bl_w10_acc",
+        "bl_w20",
     ),
     "websocket_stream": (
         "ws_text",

@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.border_line`
+  (themed rule fixtures; cadr `selector-border-line` vs pi
+  `DynamicBorder.render`). Friend-MachineD n=5 **0.65×**
+  (8.6 / 13.2 µs), ceiling 8.0. Same commit no optimize. G.17
+  missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.fit_line`
   (truncate/pad fixtures; cadr `selector-fit-line` vs pi
   `truncateToWidth` + pad). Friend-MachineD n=5 **0.32×**
