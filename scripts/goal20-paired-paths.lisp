@@ -121,6 +121,7 @@
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
+;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -325,6 +326,7 @@
     ("cli_selectors.settings_display_value" . 50)
     ("cli_selectors.settings_automatic_theme_setting" . 50)
     ("cli_selectors.settings_active_automatic_theme" . 50)
+    ("cli_selectors.settings_cycle" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6410,6 +6412,26 @@
   (mapcar #'cadr-cli::settings-selector-active-automatic-theme
           +settings-active-auto-theme-fixtures+))
 
+(defun settings-cycle-encoded (id values value)
+  (let* ((option
+           (cadr-cli::make-settings-option
+            :id id :label id :description id
+            :value value :values values))
+         (state
+           (cadr-cli::%make-settings-selector-state
+            :options (list option)
+            :filtered-options (list option)
+            :selected 0)))
+    (cadr-cli::settings-selector-cycle state)
+    (format nil "~A|~A" id (cadr-cli::settings-option-value option))))
+
+(defun run-cli-selectors-settings-cycle ()
+  (list
+   (settings-cycle-encoded "auto-compact" '("true" "false") "true")
+   (settings-cycle-encoded "transport" '("sse" "websocket" "auto") "sse")
+   (settings-cycle-encoded "mode" '("a" "b") "b")
+   (settings-cycle-encoded "flag" '("true" "false") "bogus")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6445,7 +6467,9 @@
         (settings-automatic-theme-setting
           (run-cli-selectors-settings-automatic-theme-setting))
         (settings-active-automatic-theme
-          (run-cli-selectors-settings-active-automatic-theme)))
+          (run-cli-selectors-settings-active-automatic-theme))
+        (settings-cycle
+          (run-cli-selectors-settings-cycle)))
     (json-object
      "observed"
      (json-object
@@ -6623,7 +6647,11 @@
       "sats_light_dark" (nth 2 settings-automatic-theme-setting)
       "saat_light_term" (nth 0 settings-active-automatic-theme)
       "saat_dark_term" (nth 1 settings-active-automatic-theme)
-      "saat_light_pair" (nth 2 settings-active-automatic-theme))
+      "saat_light_pair" (nth 2 settings-active-automatic-theme)
+      "ssc_true" (nth 0 settings-cycle)
+      "ssc_transport" (nth 1 settings-cycle)
+      "ssc_wrap" (nth 2 settings-cycle)
+      "ssc_missing" (nth 3 settings-cycle))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6778,7 +6806,12 @@
      (collect "cli_selectors.settings_active_automatic_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-settings-active-automatic-theme)))))))
+                  (run-cli-selectors-settings-active-automatic-theme))))
+     "settings_cycle"
+     (collect "cli_selectors.settings_cycle"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-settings-cycle)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7855,6 +7888,8 @@
       "src/cadr-cli/interactive/selectors/settings.lisp settings-selector-automatic-theme-setting"
       "cli_selectors.settings_active_automatic_theme"
       "src/cadr-cli/interactive/selectors/settings.lisp settings-selector-active-automatic-theme"
+      "cli_selectors.settings_cycle"
+      "src/cadr-cli/interactive/selectors/settings.lisp settings-selector-cycle"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

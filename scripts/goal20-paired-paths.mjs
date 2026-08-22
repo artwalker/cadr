@@ -253,6 +253,7 @@ const REPETITIONS = {
 	"cli_selectors.settings_display_value": 50,
 	"cli_selectors.settings_automatic_theme_setting": 50,
 	"cli_selectors.settings_active_automatic_theme": 50,
+	"cli_selectors.settings_cycle": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5431,6 +5432,21 @@ function runCliSelectorsSettingsActiveAutomaticTheme() {
 	};
 }
 
+function cycleSettingEncodedPi(id, values, currentValue) {
+	const currentIndex = values.indexOf(currentValue);
+	const nextIndex = (currentIndex + 1) % values.length;
+	return `${id}|${values[nextIndex]}`;
+}
+
+function runCliSelectorsSettingsCycle() {
+	return {
+		ssc_true: cycleSettingEncodedPi("auto-compact", ["true", "false"], "true"),
+		ssc_transport: cycleSettingEncodedPi("transport", ["sse", "websocket", "auto"], "sse"),
+		ssc_wrap: cycleSettingEncodedPi("mode", ["a", "b"], "b"),
+		ssc_missing: cycleSettingEncodedPi("flag", ["true", "false"], "bogus"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5778,6 +5794,7 @@ async function measureCliSelectorsSessionSearch() {
 	const settingsDisplayValueResults = runCliSelectorsSettingsDisplayValue();
 	const settingsAutomaticThemeSettingResults = runCliSelectorsSettingsAutomaticThemeSetting();
 	const settingsActiveAutomaticThemeResults = runCliSelectorsSettingsActiveAutomaticTheme();
+	const settingsCycleResults = runCliSelectorsSettingsCycle();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5936,6 +5953,10 @@ async function measureCliSelectorsSessionSearch() {
 		saat_light_term: settingsActiveAutomaticThemeResults.saat_light_term,
 		saat_dark_term: settingsActiveAutomaticThemeResults.saat_dark_term,
 		saat_light_pair: settingsActiveAutomaticThemeResults.saat_light_pair,
+		ssc_true: settingsCycleResults.ssc_true,
+		ssc_transport: settingsCycleResults.ssc_transport,
+		ssc_wrap: settingsCycleResults.ssc_wrap,
+		ssc_missing: settingsCycleResults.ssc_missing,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6040,6 +6061,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsSettingsActiveAutomaticTheme();
 			},
 		),
+		settings_cycle: await collect("cli_selectors.settings_cycle", () => {
+			return () => runCliSelectorsSettingsCycle();
+		}),
 		observed,
 	};
 }
@@ -7153,6 +7177,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts ThemeSubmenu getAutomaticThemeSetting",
 			"cli_selectors.settings_active_automatic_theme":
 				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts ThemeSubmenu getActiveAutomaticTheme",
+			"cli_selectors.settings_cycle":
+				"packages/tui/src/components/settings-list.ts SettingsList cycle values",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

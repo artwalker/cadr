@@ -148,6 +148,7 @@ METRIC_KEYS = (
     "cli_selectors.settings_display_value",
     "cli_selectors.settings_automatic_theme_setting",
     "cli_selectors.settings_active_automatic_theme",
+    "cli_selectors.settings_cycle",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
