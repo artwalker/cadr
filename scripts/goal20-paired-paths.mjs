@@ -141,6 +141,7 @@ const REPETITIONS = {
 	"cli_settings.create": 5,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
+	"settings_load.http_idle": 50,
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
 	"session_discovery.header_probe": 20,
@@ -484,6 +485,9 @@ const projectTrustModule = await import(
 );
 const resolveConfigValueModule = await import(
 	moduleUrl("packages/coding-agent/src/core/resolve-config-value.ts")
+);
+const httpDispatcherModule = await import(
+	moduleUrl("packages/coding-agent/src/core/http-dispatcher.ts")
 );
 const trustManagerModule = await import(
 	moduleUrl("packages/coding-agent/src/core/trust-manager.ts")
@@ -1591,10 +1595,25 @@ function runSettingsLoadConfigValue() {
 	};
 }
 
+function httpIdleLabelFlag(timeoutMs, expected) {
+	return httpDispatcherModule.formatHttpIdleTimeoutMs(timeoutMs) === expected ? 1 : 0;
+}
+
+function runSettingsLoadHttpIdle() {
+	return {
+		ht_30: httpIdleLabelFlag(30000, "30 sec"),
+		ht_1m: httpIdleLabelFlag(60000, "1 min"),
+		ht_2m: httpIdleLabelFlag(120000, "2 min"),
+		ht_5m: httpIdleLabelFlag(300000, "5 min"),
+		ht_off: httpIdleLabelFlag(0, "disabled"),
+	};
+}
+
 async function measureSettingsLoad() {
 	const { empty, project, agent } = stageSettingsLoadTrust();
 	const trust = await runSettingsLoadProjectTrust(empty, project, agent);
 	const config = runSettingsLoadConfigValue();
+	const idle = runSettingsLoadHttpIdle();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -1602,7 +1621,10 @@ async function measureSettingsLoad() {
 		config_value: await collect("settings_load.config_value", () => {
 			return () => runSettingsLoadConfigValue();
 		}),
-		observed: { ...trust, ...config },
+		http_idle: await collect("settings_load.http_idle", () => {
+			return () => runSettingsLoadHttpIdle();
+		}),
+		observed: { ...trust, ...config, ...idle },
 	};
 }
 
@@ -5846,6 +5868,8 @@ const result = {
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
 				"packages/coding-agent/src/core/resolve-config-value.ts resolveConfigValue",
+			"settings_load.http_idle":
+				"packages/coding-agent/src/core/http-dispatcher.ts formatHttpIdleTimeoutMs",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"session_discovery.header_probe":

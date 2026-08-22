@@ -306,6 +306,11 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cv_dol", paired.OBSERVED_EXACT["settings_load"])
         self.assertIn("cv_miss", paired.OBSERVED_EXACT["settings_load"])
         self.assertIn("cv_cmd", paired.OBSERVED_EXACT["settings_load"])
+        self.assertIn("settings_load.http_idle", RECORD.METRIC_KEYS)
+        self.assertIn("http_idle", paired.METRICS["settings_load"])
+        self.assertIn("settings_load.http_idle", paired.RATIO_CEILINGS)
+        self.assertIn("ht_30", paired.OBSERVED_EXACT["settings_load"])
+        self.assertIn("ht_off", paired.OBSERVED_EXACT["settings_load"])
 
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

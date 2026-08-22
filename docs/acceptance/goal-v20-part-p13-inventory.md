@@ -255,11 +255,11 @@ These must not be filed as callees.
 | `src/cadr-ai/providers/registry.lisp` | 157 |
 | `src/cadr-ai/providers/runtime-projection.lisp` | 297 |
 
-### `settings_load` (required hole) — `manager.lisp` paired `cli_settings.create`; `trust.lisp` paired `settings_load.project_trust`; `config-values.lisp` paired `settings_load.config_value`
+### `settings_load` (required hole) — `manager.lisp` paired `cli_settings.create`; `trust.lisp` paired `settings_load.project_trust`; `config-values.lisp` paired `settings_load.config_value`; `bootstrap/settings.lisp` paired `settings_load.http_idle`
 
-- pi: `packages/coding-agent/src/core/settings-manager.ts`; `resolveProjectTrusted`; `resolveConfigValue`
-- fixture: Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides. Trust: empty cwd vs `.cadr`+`.pi` settings; resolve ask/always/never/override. No UI. Config value: literal / `$FOO` / `${FOO}` / `$$` / `$!` / miss / mix; `!command` is a prefix flag only, no spawn.
-- Friend-MachineD n=5: create **0.13×** (105 / 813 µs), ceiling 1.5; project_trust **0.24×** (330.6 / 1402.9 µs); config_value **0.43×** (2.70 / 6.21 µs), ceiling 8.0. cadr leads. Other files still `needs-pair`. No optimize in the booking commits.
+- pi: `packages/coding-agent/src/core/settings-manager.ts`; `resolveProjectTrusted`; `resolveConfigValue`; `formatHttpIdleTimeoutMs`
+- fixture: Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides. Trust: empty cwd vs `.cadr`+`.pi` settings; resolve ask/always/never/override. No UI. Config value: literal / `$FOO` / `${FOO}` / `$$` / `$!` / miss / mix; `!command` is a prefix flag only, no spawn. HTTP idle: named timeout choices only; do not exact custom `~,3G` vs `${ms/1000} sec`.
+- Friend-MachineD n=5: create **0.13×** (105 / 813 µs), ceiling 1.5; project_trust **0.24×** (330.6 / 1402.9 µs); config_value **0.43×** (2.70 / 6.21 µs); http_idle **0.47×** (0.25 / 0.53 µs), ceiling 8.0. cadr leads. Other files still `needs-pair`. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

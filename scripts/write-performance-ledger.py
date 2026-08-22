@@ -36,6 +36,7 @@ METRIC_KEYS = (
     "cli_settings.create",
     "settings_load.project_trust",
     "settings_load.config_value",
+    "settings_load.http_idle",
     "resource_loader.reload",
     "package_manager.resolve",
     "session_discovery.header_probe",

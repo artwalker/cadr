@@ -451,6 +451,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(loaders), 1)
         self.assertEqual(loaders[0]["class"], "paired")
         self.assertIn("cli_selectors.key_text", loaders[0]["metrics"])
+        bootstrap_settings = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/bootstrap/settings.lisp"
+        ]
+        self.assertEqual(len(bootstrap_settings), 1)
+        self.assertEqual(bootstrap_settings[0]["class"], "paired")
+        self.assertIn("settings_load.http_idle", bootstrap_settings[0]["metrics"])
         normalize_path = [
             row
             for row in classified["rows"]

@@ -1539,6 +1539,21 @@ selector render. `:oauth` → `subscription`; `:api-key` →
 Friend-MachineD freeze **1.44×** (0.21 / 0.15 µs), ceiling
 8.0 (microsecond-floor). Same commit no optimize.
 
+### Pair 108 — `settings_load` (http_idle)
+
+| metric | cadr | pi |
+|---|---|---|
+| `http_idle` | `http-idle-timeout-label` | `formatHttpIdleTimeoutMs` (`packages/coding-agent/src/core/http-dispatcher.ts`) |
+
+Leftover sibling of the `settings_load` hole. Time named
+timeout labels, not settings UI or a live dispatcher.
+`30000` / `60000` / `120000` / `300000` / `0`. Do not
+exact a custom timeout (cadr `~,3G` vs pi
+`${ms/1000} sec`). Observed `ht_30` / `ht_1m` / `ht_2m` /
+`ht_5m` / `ht_off` are exact. First Friend-MachineD freeze
+**0.47×** (0.25 / 0.53 µs), ceiling 8.0 (microsecond-floor).
+cadr leads. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1744,14 +1759,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 160 | 69,117 | 54.3% | `no worse than baseline` is falsifiable |
+| `paired` | 161 | 69,945 | 54.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 83 | 33,377 | 26.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 82 | 32,549 | 25.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 54.3% of lines (160 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 60.1% of lines.
+- **Falsifiable vs baseline:** 54.9% of lines (161 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 60.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1850,6 +1865,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/websocket.lisp` | 628 | `websocket_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
+| `src/cadr-cli/bootstrap/settings.lisp` | 828 | `settings_load.http_idle` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 89 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/extensions/llama/client.lisp` | 472 | `cli_extensions_install.llama_url` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
@@ -1995,10 +2011,10 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 6 | 2,412 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
-| `settings_load` | 3 | 1,283 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |
+| `settings_load` | 2 | 455 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |

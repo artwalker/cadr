@@ -87,6 +87,7 @@
 ;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
+;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -179,6 +180,7 @@
     ("cli_settings.create" . 5)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
+    ("settings_load.http_idle" . 50)
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
     ("session_discovery.header_probe" . 20)
@@ -2418,12 +2420,28 @@
       "pre-$GOAL20_CV_FOO-post" environment "pre-bar-post")
      (if (uiop:string-prefix-p "!" "!echo hi") 1 0))))
 
+(defun http-idle-label-flag (timeout-ms expected)
+  (if (string= (cadr-cli::http-idle-timeout-label timeout-ms) expected)
+      1
+      0))
+
+(defun run-settings-load-http-idle ()
+  ;; Named HTTP_IDLE_TIMEOUT_CHOICES only. Do not exact a custom
+  ;; timeout (cadr ~,3G vs pi `${ms/1000} sec`).
+  (list
+   (http-idle-label-flag 30000 "30 sec")
+   (http-idle-label-flag 60000 "1 min")
+   (http-idle-label-flag 120000 "2 min")
+   (http-idle-label-flag 300000 "5 min")
+   (http-idle-label-flag 0 "disabled")))
+
 (defun measure-settings-load ()
   (destructuring-bind (empty project store-path)
       (stage-settings-load-trust)
     (let ((observed
             (run-settings-load-project-trust empty project store-path))
-          (config (run-settings-load-config-value)))
+          (config (run-settings-load-config-value))
+          (idle (run-settings-load-http-idle)))
       (json-object
        "observed"
        (json-object
@@ -2442,7 +2460,12 @@
         "cv_bang" (nth 4 config)
         "cv_miss" (nth 5 config)
         "cv_mix" (nth 6 config)
-        "cv_cmd" (nth 7 config))
+        "cv_cmd" (nth 7 config)
+        "ht_30" (nth 0 idle)
+        "ht_1m" (nth 1 idle)
+        "ht_2m" (nth 2 idle)
+        "ht_5m" (nth 3 idle)
+        "ht_off" (nth 4 idle))
        "project_trust"
        (collect "settings_load.project_trust"
                 (lambda ()
@@ -2453,7 +2476,12 @@
        (collect "settings_load.config_value"
                 (lambda ()
                   (lambda ()
-                    (run-settings-load-config-value))))))))
+                    (run-settings-load-config-value))))
+       "http_idle"
+       (collect "settings_load.http_idle"
+                (lambda ()
+                  (lambda ()
+                    (run-settings-load-http-idle))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -6735,6 +6763,8 @@
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
       "src/cadr-cli/settings/config-values.lisp resolve-config-value"
+      "settings_load.http_idle"
+      "src/cadr-cli/bootstrap/settings.lisp http-idle-timeout-label"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "package_manager.resolve"

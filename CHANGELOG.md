@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `settings_load.http_idle`
+  (named timeout choices; cadr
+  `http-idle-timeout-label` vs pi
+  `formatHttpIdleTimeoutMs`). Do not exact custom
+  timeouts. Friend-MachineD n=5 **0.47×** (0.25 / 0.53 µs),
+  ceiling 8.0. cadr leads. Same commit no optimize. G.17
+  missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_interactive_controller.auth_type`
   (`:oauth` / `:api-key`; cadr `tui-auth-type-label` vs pi
   `formatAuthSelectorProviderType`). Do not exact other
