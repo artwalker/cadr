@@ -494,11 +494,11 @@ These must not be filed as callees.
 | `src/cadr-cli/models/login-selection.lisp` | 75 |
 | `src/cadr-cli/models/matching.lisp` | 398 |
 
-### `cli_interactive_controller` (additional) — `syntax.lisp` paired `cli_interactive_controller.decode_entity`
+### `cli_interactive_controller` (additional) — `syntax.lisp` paired `cli_interactive_controller.decode_entity`; `clipboard.lisp` paired `cli_interactive_controller.wayland`
 
-- pi: `packages/coding-agent/src/utils/html.ts decodeHtmlEntity`
-- fixture: named entities + `#65` + unknown. Time decode, not a live TUI.
-- Friend-MachineD n=5: **1.49×** (0.63 / 0.42 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commit.
+- pi: `packages/coding-agent/src/utils/html.ts decodeHtmlEntity`; `packages/coding-agent/src/utils/clipboard-image.ts isWaylandSession`
+- fixture: named entities + `#65` + unknown. Time decode, not a live TUI. Wayland: injected `WAYLAND_DISPLAY` / `XDG_SESSION_TYPE=wayland` / `x11` / dummy `FOO`. Do not exact empty display or mixed-case session type. Dummy alist, not NIL.
+- Friend-MachineD n=5: decode_entity **1.49×** (0.63 / 0.42 µs); wayland **1.17×** (0.36 / 0.30 µs), ceiling 8.0 (variance). Other files still `needs-pair`. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

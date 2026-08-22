@@ -808,6 +808,13 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("amp", paired.OBSERVED_EXACT["cli_interactive_controller"])
         self.assertIn("hash65", paired.OBSERVED_EXACT["cli_interactive_controller"])
         self.assertIn("miss", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("cli_interactive_controller.wayland", RECORD.METRIC_KEYS)
+        self.assertIn("wayland", paired.METRICS["cli_interactive_controller"])
+        self.assertIn("cli_interactive_controller.wayland", paired.RATIO_CEILINGS)
+        self.assertIn("wl_disp", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("wl_type", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("wl_x11", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("wl_none", paired.OBSERVED_EXACT["cli_interactive_controller"])
 
     def test_cli_sdk_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -997,6 +1004,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_support.user_agent`", section)
             self.assertIn("`cli_support.parse_changelog`", section)
             self.assertIn("`cli_interactive_controller.decode_entity`", section)
+            self.assertIn("`cli_interactive_controller.wayland`", section)
             self.assertIn("`cli_sdk.version_newer`", section)
             self.assertIn("`cli_sdk.cache_miss`", section)
             self.assertIn("`cli_sdk.cache_waste`", section)

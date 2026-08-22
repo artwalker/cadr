@@ -83,6 +83,7 @@
   "cli_support.user_agent",
   "cli_support.parse_changelog",
   "cli_interactive_controller.decode_entity",
+  "cli_interactive_controller.wayland",
   "cli_sdk.version_newer",
   "cli_sdk.cache_miss",
   "cli_sdk.cache_waste",
@@ -1075,8 +1076,8 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/clipboard.lisp",
-   "class": "needs-pair",
-   "hole": "cli_interactive_controller"
+   "class": "paired",
+   "metrics": ["cli_interactive_controller.wayland"]
   },
   {
    "prefix": "src/cadr-cli/interactive/components/announcement.lisp",

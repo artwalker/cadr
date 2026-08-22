@@ -1260,6 +1260,21 @@ only right-trims `/`). No socket. First Friend-MachineD freeze
 **1.05×** (0.57 / 0.54 µs), ceiling 8.0 (variance). Same commit
 no optimize.
 
+### Pair 89 — `cli_interactive_controller` (wayland)
+
+| metric | cadr | pi |
+|---|---|---|
+| `wayland` | `clipboard-wayland-p` | `isWaylandSession` (`packages/coding-agent/src/utils/clipboard-image.ts`) |
+
+Leftover sibling of the `cli_interactive_controller` hole.
+Injected env: `WAYLAND_DISPLAY=wayland-0` / `XDG_SESSION_TYPE=wayland`
+/ `x11` / dummy `FOO`. Do not exact empty `WAYLAND_DISPLAY` (Lisp
+non-empty vs JS `Boolean("")`) or mixed-case session type
+(`string-equal` vs `=== "wayland"`). Dummy alist, not NIL (NIL
+falls through to live getenv). No TUI, no clipboard spawn. First
+Friend-MachineD freeze **1.17×** (0.36 / 0.30 µs), ceiling 8.0
+(variance). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1465,14 +1480,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 142 | 62,462 | 49.0% | `no worse than baseline` is falsifiable |
+| `paired` | 143 | 62,911 | 49.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 110 | 44,533 | 35.0% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 109 | 44,084 | 34.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 49.0% of lines (142 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 54.9% of lines.
+- **Falsifiable vs baseline:** 49.4% of lines (143 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 55.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1572,6 +1587,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/bootstrap/tools.lisp` | 89 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/extensions/llama/client.lisp` | 472 | `cli_extensions_install.llama_url` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
+| `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
@@ -1683,7 +1699,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | hole | files | lines |
 |---|---:|---:|
 | `cli_selectors` | 14 | 7,982 |
-| `cli_interactive_controller` | 10 | 6,955 |
+| `cli_interactive_controller` | 9 | 6,506 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
 | `tui_mermaid` | 12 | 5,042 |
 | `agent_tool_loop` | 13 | 4,094 |

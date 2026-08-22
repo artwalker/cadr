@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_interactive_controller.wayland`
+  (injected env; cadr `clipboard-wayland-p` vs pi
+  `isWaylandSession`). Friend-MachineD n=5 **1.17×**
+  (0.36 / 0.30 µs), ceiling 8.0 (variance). Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `oauth_pkce_device.radius_gateway`
   (already-schemed URLs only; cadr
   `normalize-radius-gateway` vs pi

@@ -93,6 +93,7 @@
 ;;;;  79. cli_sdk session-manager-list vs SessionManager.list
 ;;;;  80. oauth_pkce_device materialize-cloudflare-url vs resolveCloudflareModel
 ;;;;  81. oauth_pkce_device normalize-radius-gateway vs normalizeRadiusGatewayUrl
+;;;;  82. cli_interactive_controller clipboard-wayland-p vs isWaylandSession
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -227,6 +228,7 @@
     ("cli_support.user_agent" . 50)
     ("cli_support.parse_changelog" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
+    ("cli_interactive_controller.wayland" . 50)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
     ("cli_sdk.cache_waste" . 50)
@@ -5191,8 +5193,25 @@
    (decode-highlight-or-empty "#65")
    (if (cadr-cli::decode-highlight-entity "nope") 1 0)))
 
+(defun wayland-session-flag (environment)
+  (if (cadr-cli::clipboard-wayland-p environment)
+      1
+      0))
+
+(defun run-cli-interactive-wayland ()
+  ;; Empty env must be a non-NIL dummy alist: NIL falls through to
+  ;; live getenv. Do not exact empty WAYLAND_DISPLAY (Lisp non-empty
+  ;; vs JS Boolean("")) or mixed-case XDG_SESSION_TYPE (string-equal
+  ;; vs === "wayland").
+  (list
+   (wayland-session-flag '(("WAYLAND_DISPLAY" . "wayland-0")))
+   (wayland-session-flag '(("XDG_SESSION_TYPE" . "wayland")))
+   (wayland-session-flag '(("XDG_SESSION_TYPE" . "x11")))
+   (wayland-session-flag '(("FOO" . "1")))))
+
 (defun measure-cli-interactive-decode-entity ()
-  (let ((observed (run-cli-interactive-decode-entity)))
+  (let ((observed (run-cli-interactive-decode-entity))
+        (wayland (run-cli-interactive-wayland)))
     (json-object
      "observed"
      (json-object
@@ -5202,12 +5221,21 @@
       "quot" (fourth observed)
       "apos" (fifth observed)
       "hash65" (sixth observed)
-      "miss" (seventh observed))
+      "miss" (seventh observed)
+      "wl_disp" (first wayland)
+      "wl_type" (second wayland)
+      "wl_x11" (third wayland)
+      "wl_none" (fourth wayland))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-decode-entity)))))))
+                  (run-cli-interactive-decode-entity))))
+     "wayland"
+     (collect "cli_interactive_controller.wayland"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-wayland)))))))
 
 (defun version-cmp-sign (left right)
   (let ((value (cadr-cli::compare-package-versions left right)))
@@ -5883,6 +5911,8 @@
       "src/cadr-cli/support/changelog-share.lisp parse-changelog"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
+      "cli_interactive_controller.wayland"
+      "src/cadr-cli/interactive/clipboard.lisp clipboard-wayland-p"
       "cli_sdk.version_newer"
       "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
       "cli_sdk.cache_miss"

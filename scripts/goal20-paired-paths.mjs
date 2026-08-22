@@ -205,6 +205,7 @@ const REPETITIONS = {
 	"cli_support.user_agent": 50,
 	"cli_support.parse_changelog": 50,
 	"cli_interactive_controller.decode_entity": 50,
+	"cli_interactive_controller.wayland": 50,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
 	"cli_sdk.cache_waste": 50,
@@ -525,6 +526,9 @@ const changelogModule = await import(
 	moduleUrl("packages/coding-agent/src/utils/changelog.ts")
 );
 const htmlEntityModule = await import(moduleUrl("packages/coding-agent/src/utils/html.ts"));
+const clipboardImageModule = await import(
+	moduleUrl("packages/coding-agent/src/utils/clipboard-image.ts")
+);
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const cacheStatsModule = await import(
 	moduleUrl("packages/coding-agent/src/core/cache-stats.ts")
@@ -4359,11 +4363,30 @@ function runCliInteractiveDecodeEntity() {
 	};
 }
 
+function waylandSessionFlag(env) {
+	return clipboardImageModule.isWaylandSession(env) ? 1 : 0;
+}
+
+function runCliInteractiveWayland() {
+	return {
+		wl_disp: waylandSessionFlag({ WAYLAND_DISPLAY: "wayland-0" }),
+		wl_type: waylandSessionFlag({ XDG_SESSION_TYPE: "wayland" }),
+		wl_x11: waylandSessionFlag({ XDG_SESSION_TYPE: "x11" }),
+		wl_none: waylandSessionFlag({ FOO: "1" }),
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
-	const observed = runCliInteractiveDecodeEntity();
+	const observed = {
+		...runCliInteractiveDecodeEntity(),
+		...runCliInteractiveWayland(),
+	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
 			return () => runCliInteractiveDecodeEntity();
+		}),
+		wayland: await collect("cli_interactive_controller.wayland", () => {
+			return () => runCliInteractiveWayland();
 		}),
 		observed,
 	};
@@ -5181,6 +5204,8 @@ const result = {
 				"packages/coding-agent/src/utils/changelog.ts parseChangelog",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
+			"cli_interactive_controller.wayland":
+				"packages/coding-agent/src/utils/clipboard-image.ts isWaylandSession",
 			"cli_sdk.version_newer":
 				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
 			"cli_sdk.cache_miss":
