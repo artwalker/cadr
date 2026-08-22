@@ -117,6 +117,7 @@
 ;;;; 135. cli_selectors named-session-p vs session-selector-search hasSessionName
 ;;;; 136. cli_selectors settings-thinking-description vs settings-selector THINKING_DESCRIPTIONS
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
+;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -288,6 +289,7 @@
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
     ("cli_interactive_controller.auth_type" . 50)
+    ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -5869,11 +5871,29 @@
    (auth-type-label-flag :oauth "subscription")
    (auth-type-label-flag :api-key "API key")))
 
+(defun parse-auto-theme-encoded (setting)
+  (let ((parsed (cadr-cli:parse-auto-theme-setting setting)))
+    (if parsed
+        (format nil "~A|~A"
+                (getf parsed :light-theme)
+                (getf parsed :dark-theme))
+        "")))
+
+(defun run-cli-interactive-parse-auto-theme ()
+  (list
+   (parse-auto-theme-encoded "  light / dark  ")
+   (parse-auto-theme-encoded " /dark")
+   (parse-auto-theme-encoded "light/  ")
+   (parse-auto-theme-encoded nil)
+   (parse-auto-theme-encoded "light/dark/extra")
+   (parse-auto-theme-encoded "dark")))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
-        (auth (run-cli-interactive-auth-type)))
+        (auth (run-cli-interactive-auth-type))
+        (parse-auto-theme (run-cli-interactive-parse-auto-theme)))
     (json-object
      "observed"
      (json-object
@@ -5893,7 +5913,13 @@
       "cf_out" (third cwd)
       "cf_slash" (fourth cwd)
       "al_oauth" (first auth)
-      "al_key" (second auth))
+      "al_key" (second auth)
+      "pat_valid" (first parse-auto-theme)
+      "pat_empty_left" (second parse-auto-theme)
+      "pat_empty_right" (third parse-auto-theme)
+      "pat_nil" (fourth parse-auto-theme)
+      "pat_double" (fifth parse-auto-theme)
+      "pat_fixed" (sixth parse-auto-theme))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -5913,7 +5939,12 @@
      (collect "cli_interactive_controller.auth_type"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-auth-type)))))))
+                  (run-cli-interactive-auth-type))))
+     "parse_auto_theme"
+     (collect "cli_interactive_controller.parse_auto_theme"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-parse-auto-theme)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -7713,6 +7744,8 @@
       "src/cadr-cli/interactive/footer.lisp format-cwd-for-footer"
       "cli_interactive_controller.auth_type"
       "src/cadr-cli/interactive/autocomplete.lisp tui-auth-type-label"
+      "cli_interactive_controller.parse_auto_theme"
+      "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

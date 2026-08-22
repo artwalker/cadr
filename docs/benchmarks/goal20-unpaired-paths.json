@@ -96,6 +96,7 @@
   "cli_interactive_controller.wayland",
   "cli_interactive_controller.cwd_footer",
   "cli_interactive_controller.auth_type",
+  "cli_interactive_controller.parse_auto_theme",
   "cli_selectors.session_search",
   "cli_selectors.session_format_age",
   "cli_selectors.session_record_label",
@@ -1235,8 +1236,10 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/theme.lisp",
-   "class": "needs-pair",
-   "hole": "cli_interactive_controller"
+   "class": "paired",
+   "metrics": [
+    "cli_interactive_controller.parse_auto_theme"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/themes.lisp",

@@ -115,6 +115,7 @@ METRIC_KEYS = (
     "cli_interactive_controller.wayland",
     "cli_interactive_controller.cwd_footer",
     "cli_interactive_controller.auth_type",
+    "cli_interactive_controller.parse_auto_theme",
     "cli_selectors.session_search",
     "cli_selectors.key_text",
     "cli_selectors.fuzzy_filter",

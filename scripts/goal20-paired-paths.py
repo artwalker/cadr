@@ -143,7 +143,7 @@ METRICS = {
     "tui_settings_list": ("apply_filter",),
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
-    "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type"),
+    "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type", "parse_auto_theme"),
     "cli_selectors": ("session_search", "session_format_age", "session_record_label", "session_shorten_path", "session_quoted_search", "session_thread_records", "session_binding_label", "session_same_path", "session_quoted_p", "session_named_p", "settings_thinking_description", "settings_display_value", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
@@ -644,6 +644,9 @@ RATIO_CEILINGS = {
     # observed 1.44x (0.21 / 0.15 us). 8.0 is first-freeze
     # headroom (microsecond-floor / variance). Ratchet down only.
     "cli_interactive_controller.auth_type": 8.0,
+    # First-freeze headroom for cli_interactive_controller.parse_auto_theme.
+    # Ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.parse_auto_theme": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_selectors.session_search pair (samples=5): observed
     # 2.48x (42.40 / 17.10 us). 8.0 is first-freeze
@@ -1500,6 +1503,12 @@ OBSERVED_EXACT = {
         "cf_slash",
         "al_oauth",
         "al_key",
+        "pat_valid",
+        "pat_empty_left",
+        "pat_empty_right",
+        "pat_nil",
+        "pat_double",
+        "pat_fixed",
     ),
     "cli_selectors": (
         "ss_empty",

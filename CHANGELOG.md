@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_interactive_controller.parse_auto_theme`
+  (auto theme parse fixtures; cadr `parse-auto-theme-setting` vs pi
+  `parseAutoThemeSetting`). Friend-MachineD n=5 **1.96×** (1.0 / 0.5 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.settings_display_value`
   (settings value label fixtures; cadr `settings-display-value` vs pi
   boolean/value formatting). Friend-MachineD n=5 **3.39×** (0.6 / 0.2 µs),

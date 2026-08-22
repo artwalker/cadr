@@ -220,6 +220,7 @@ const REPETITIONS = {
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
 	"cli_interactive_controller.auth_type": 50,
+	"cli_interactive_controller.parse_auto_theme": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -4928,12 +4929,29 @@ function runCliInteractiveAuthType() {
 	};
 }
 
+function parseAutoThemeEncoded(setting) {
+	const parsed = themeModule.parseAutoThemeSetting(setting);
+	return parsed ? `${parsed.lightTheme}|${parsed.darkTheme}` : "";
+}
+
+function runCliInteractiveParseAutoTheme() {
+	return {
+		pat_valid: parseAutoThemeEncoded("  light / dark  "),
+		pat_empty_left: parseAutoThemeEncoded(" /dark"),
+		pat_empty_right: parseAutoThemeEncoded("light/  "),
+		pat_nil: parseAutoThemeEncoded(undefined),
+		pat_double: parseAutoThemeEncoded("light/dark/extra"),
+		pat_fixed: parseAutoThemeEncoded("dark"),
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
 		...runCliInteractiveWayland(),
 		...runCliInteractiveCwdFooter(),
 		...runCliInteractiveAuthType(),
+		...runCliInteractiveParseAutoTheme(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -4947,6 +4965,9 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		auth_type: await collect("cli_interactive_controller.auth_type", () => {
 			return () => runCliInteractiveAuthType();
+		}),
+		parse_auto_theme: await collect("cli_interactive_controller.parse_auto_theme", () => {
+			return () => runCliInteractiveParseAutoTheme();
 		}),
 		observed,
 	};
@@ -7034,6 +7055,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/footer.ts formatCwdForFooter",
 			"cli_interactive_controller.auth_type":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatAuthSelectorProviderType",
+			"cli_interactive_controller.parse_auto_theme":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts parseAutoThemeSetting",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

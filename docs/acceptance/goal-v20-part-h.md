@@ -1968,6 +1968,20 @@ Fixtures: `t`, `nil`, `:medium`, `42`, `"hello"`. Observed `sdv_true` /
 Friend-MachineD freeze **3.39×** (0.6 / 0.2 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 138 — `cli_interactive_controller` (parse_auto_theme)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_auto_theme` | `parse-auto-theme-setting` | `parseAutoThemeSetting` (`theme.ts`) |
+
+First `theme.lisp` hole sibling under `cli_interactive_controller`.
+Automatic theme setting parse only (`light/dark` split), not
+`resolve-theme-setting`. Fixtures: valid `"light/dark"`, empty halves,
+nil, double slash, fixed theme without slash. Encoded as `light|dark` or
+empty. Observed `pat_valid` / `pat_empty_left` / `pat_empty_right` /
+`pat_nil` / `pat_double` / `pat_fixed` are exact. First Friend-MachineD
+freeze **1.96×** (1.0 / 0.5 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2173,14 +2187,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 165 | 72,318 | 56.8% | `no worse than baseline` is falsifiable |
+| `paired` | 166 | 72,533 | 56.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 78 | 30,176 | 23.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 77 | 29,961 | 23.5% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 56.8% of lines (165 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 62.6% of lines.
+- **Falsifiable vs baseline:** 56.9% of lines (166 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 62.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -2297,6 +2311,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
+| `src/cadr-cli/interactive/theme.lisp` | 215 | `cli_interactive_controller.parse_auto_theme` |
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,015 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/media.lisp` | 1,277 | `image_runtime.mime_type` |
 | `src/cadr-cli/models/credential-print.lisp` | 623 | `cli_models_rest.auth_command` |
@@ -2422,7 +2437,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_interactive_controller` | 7 | 5,639 |
+| `cli_interactive_controller` | 6 | 5,424 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
 | `cli_selectors` | 10 | 5,063 |
 | `agent_tool_loop` | 11 | 3,008 |
