@@ -1863,6 +1863,22 @@ unquoted fuzzy-token AND. First Friend-MachineD freeze
 **1.29×** (11.0 / 8.6 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 131 — `cli_selectors` (session_thread_records)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_thread_records` | `thread-session-records` | `buildSessionTree` + `flattenSessionTree` |
+
+Leftover sibling of the `sessions.lisp` hole. Parent/child session
+tree flatten only, not gutter render or full selector state machine.
+Five-session fixture: `parent` → `child1` → `grand`, sibling
+`child2`, separate root `root2`. Observed `str_count` / `str_depths`
+/ `str_ids` are exact (flat order `parent,child1,grand,child2,root2`
+at depths `0,1,2,1,0`). `session-selector-gutter-prefixes` stays
+unpaired (cadr batch gutter vs pi `buildTreePrefix` ancestor padding
+differs). First Friend-MachineD freeze **13.07×** (165.9 / 12.7 µs),
+ceiling 30.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2187,7 +2203,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path` |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |

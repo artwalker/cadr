@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.session_thread_records`
+  (parent/child session tree fixtures; cadr `thread-session-records`
+  vs pi `buildSessionTree` + `flattenSessionTree`). Friend-MachineD n=5
+  **13.07×** (165.9 / 12.7 µs), ceiling 30.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.session_quoted_search`
   (quoted phrase position fixtures; cadr `search-record-position`
   vs pi phrase indexOf). Friend-MachineD n=5 **1.29×** (11.0 / 8.6 µs),

@@ -138,6 +138,7 @@ METRIC_KEYS = (
     "cli_selectors.session_record_label",
     "cli_selectors.session_shorten_path",
     "cli_selectors.session_quoted_search",
+    "cli_selectors.session_thread_records",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

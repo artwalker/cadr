@@ -242,6 +242,7 @@ const REPETITIONS = {
 	"cli_selectors.session_record_label": 50,
 	"cli_selectors.session_shorten_path": 50,
 	"cli_selectors.session_quoted_search": 50,
+	"cli_selectors.session_thread_records": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5136,6 +5137,102 @@ function runCliSelectorsSessionQuotedSearch() {
 	};
 }
 
+function canonicalizePathPi(path) {
+	return path ?? undefined;
+}
+
+function sessionThreadFixtureSessions() {
+	return [
+		{ id: "parent", path: "/tmp/goal20/parent.jsonl", modified: new Date(10) },
+		{
+			id: "child1",
+			path: "/tmp/goal20/child1.jsonl",
+			parentSessionPath: "/tmp/goal20/parent.jsonl",
+			modified: new Date(8),
+		},
+		{
+			id: "grand",
+			path: "/tmp/goal20/grand.jsonl",
+			parentSessionPath: "/tmp/goal20/child1.jsonl",
+			modified: new Date(7),
+		},
+		{
+			id: "child2",
+			path: "/tmp/goal20/child2.jsonl",
+			parentSessionPath: "/tmp/goal20/parent.jsonl",
+			modified: new Date(6),
+		},
+		{ id: "root2", path: "/tmp/goal20/root2.jsonl", modified: new Date(5) },
+	];
+}
+
+function buildSessionTreePi(sessions) {
+	const byPath = new Map();
+	for (const session of sessions) {
+		const sessionPath = canonicalizePathPi(session.path) ?? session.path;
+		byPath.set(sessionPath, {
+			session,
+			children: [],
+			latestActivity: session.modified.getTime(),
+		});
+	}
+	const roots = [];
+	for (const session of sessions) {
+		const sessionPath = canonicalizePathPi(session.path) ?? session.path;
+		const node = byPath.get(sessionPath);
+		const parentPath = canonicalizePathPi(session.parentSessionPath);
+		if (parentPath && byPath.has(parentPath)) {
+			byPath.get(parentPath).children.push(node);
+		} else {
+			roots.push(node);
+		}
+	}
+	const updateLatestActivity = (node) => {
+		let latestActivity = node.session.modified.getTime();
+		for (const child of node.children) {
+			latestActivity = Math.max(latestActivity, updateLatestActivity(child));
+		}
+		node.latestActivity = latestActivity;
+		return latestActivity;
+	};
+	for (const root of roots) {
+		updateLatestActivity(root);
+	}
+	const sortNodes = (nodes) => {
+		nodes.sort((a, b) => b.latestActivity - a.latestActivity);
+		for (const node of nodes) {
+			sortNodes(node.children);
+		}
+	};
+	sortNodes(roots);
+	return roots;
+}
+
+function flattenSessionTreePi(roots) {
+	const result = [];
+	const walk = (node, depth, ancestorContinues, isLast) => {
+		result.push({ session: node.session, depth, isLast, ancestorContinues });
+		for (let i = 0; i < node.children.length; i++) {
+			const childIsLast = i === node.children.length - 1;
+			const continues = depth > 0 ? !isLast : false;
+			walk(node.children[i], depth + 1, [...ancestorContinues, continues], childIsLast);
+		}
+	};
+	for (let i = 0; i < roots.length; i++) {
+		walk(roots[i], 0, [], i === roots.length - 1);
+	}
+	return result;
+}
+
+function runCliSelectorsSessionThreadRecords() {
+	const flat = flattenSessionTreePi(buildSessionTreePi(sessionThreadFixtureSessions()));
+	return {
+		str_count: flat.length,
+		str_depths: flat.map((node) => node.depth).join(","),
+		str_ids: flat.map((node) => node.session.id).join(","),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5474,6 +5571,7 @@ async function measureCliSelectorsSessionSearch() {
 	const sessionRecordLabelResults = runCliSelectorsSessionRecordLabel();
 	const sessionShortenPathResults = runCliSelectorsSessionShortenPath();
 	const sessionQuotedSearchResults = runCliSelectorsSessionQuotedSearch();
+	const sessionThreadRecordsResults = runCliSelectorsSessionThreadRecords();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5590,6 +5688,9 @@ async function measureCliSelectorsSessionSearch() {
 		sqs_other_miss: sessionQuotedSearchResults.sqs_other_miss,
 		sqs_name: sessionQuotedSearchResults.sqs_name,
 		sqs_other_hit: sessionQuotedSearchResults.sqs_other_hit,
+		str_count: sessionThreadRecordsResults.str_count,
+		str_depths: sessionThreadRecordsResults.str_depths,
+		str_ids: sessionThreadRecordsResults.str_ids,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5657,6 +5758,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		session_quoted_search: await collect("cli_selectors.session_quoted_search", () => {
 			return () => runCliSelectorsSessionQuotedSearch();
+		}),
+		session_thread_records: await collect("cli_selectors.session_thread_records", () => {
+			return () => runCliSelectorsSessionThreadRecords();
 		}),
 		observed,
 	};
@@ -6749,6 +6853,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts shortenPath",
 			"cli_selectors.session_quoted_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts phrase indexOf",
+			"cli_selectors.session_thread_records":
+				"packages/coding-agent/src/modes/interactive/components/session-selector.ts buildSessionTree flattenSessionTree",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

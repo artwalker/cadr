@@ -110,6 +110,7 @@
 ;;;; 128. cli_selectors session-selector-record-label vs session-selector render label
 ;;;; 129. cli_selectors session-selector-shorten-path vs shortenPath
 ;;;; 130. cli_selectors search-record-position quoted phrase vs phrase token indexOf
+;;;; 131. cli_selectors thread-session-records vs buildSessionTree flattenSessionTree
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -303,6 +304,7 @@
     ("cli_selectors.session_record_label" . 50)
     ("cli_selectors.session_shorten_path" . 50)
     ("cli_selectors.session_quoted_search" . 50)
+    ("cli_selectors.session_thread_records" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6196,6 +6198,35 @@
      (session-quoted-search-position hit "\"alpha\"")
      (session-quoted-search-position hit "\"nope\""))))
 
+(defun session-thread-fixture-records ()
+  (list
+   (cadr-cli:make-session-search-record
+    :id "parent" :path "/tmp/goal20/parent.jsonl" :modified 10)
+   (cadr-cli:make-session-search-record
+    :id "child1" :path "/tmp/goal20/child1.jsonl"
+    :parent-path "/tmp/goal20/parent.jsonl" :modified 8)
+   (cadr-cli:make-session-search-record
+    :id "grand" :path "/tmp/goal20/grand.jsonl"
+    :parent-path "/tmp/goal20/child1.jsonl" :modified 7)
+   (cadr-cli:make-session-search-record
+    :id "child2" :path "/tmp/goal20/child2.jsonl"
+    :parent-path "/tmp/goal20/parent.jsonl" :modified 6)
+   (cadr-cli:make-session-search-record
+    :id "root2" :path "/tmp/goal20/root2.jsonl" :modified 5)))
+
+(defun run-cli-selectors-session-thread-records ()
+  (let ((threaded
+          (cadr-cli:thread-session-records
+           (session-thread-fixture-records))))
+    (list
+     (length threaded)
+     (format nil "~{~A~^,~}" (mapcar #'car threaded))
+     (format nil "~{~A~^,~}"
+              (mapcar
+               (lambda (node)
+                 (cadr-cli:session-search-record-id (cdr node)))
+               threaded)))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6218,7 +6249,8 @@
         (session-format-age (run-cli-selectors-session-format-age))
         (session-record-label (run-cli-selectors-session-record-label))
         (session-shorten-path (run-cli-selectors-session-shorten-path))
-        (session-quoted-search (run-cli-selectors-session-quoted-search)))
+        (session-quoted-search (run-cli-selectors-session-quoted-search))
+        (session-thread-records (run-cli-selectors-session-thread-records)))
     (json-object
      "observed"
      (json-object
@@ -6354,7 +6386,10 @@
       "sqs_miss" (nth 2 session-quoted-search)
       "sqs_other_miss" (nth 3 session-quoted-search)
       "sqs_name" (nth 4 session-quoted-search)
-      "sqs_other_hit" (nth 5 session-quoted-search))
+      "sqs_other_hit" (nth 5 session-quoted-search)
+      "str_count" (nth 0 session-thread-records)
+      "str_depths" (nth 1 session-thread-records)
+      "str_ids" (nth 2 session-thread-records))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6464,7 +6499,12 @@
      (collect "cli_selectors.session_quoted_search"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-session-quoted-search)))))))
+                  (run-cli-selectors-session-quoted-search))))
+     "session_thread_records"
+     (collect "cli_selectors.session_thread_records"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-thread-records)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7519,6 +7559,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-shorten-path"
       "cli_selectors.session_quoted_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp search-record-position"
+      "cli_selectors.session_thread_records"
+      "src/cadr-cli/interactive/selectors/sessions.lisp thread-session-records"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
