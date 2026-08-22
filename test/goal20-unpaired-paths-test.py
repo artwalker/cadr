@@ -511,6 +511,14 @@ class TestClassify(unittest.TestCase):
         self.assertIn(
             "cli_interactive_controller.decode_entity", decode_entity[0]["metrics"]
         )
+        autocomplete = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/interactive/autocomplete.lisp"
+        ]
+        self.assertEqual(len(autocomplete), 1)
+        self.assertEqual(autocomplete[0]["class"], "paired")
+        self.assertIn("cli_interactive_controller.auth_type", autocomplete[0]["metrics"])
         cache_version = [
             row
             for row in classified["rows"]

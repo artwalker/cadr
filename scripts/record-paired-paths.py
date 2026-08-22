@@ -114,6 +114,7 @@ METRIC_KEYS = (
     "cli_interactive_controller.decode_entity",
     "cli_interactive_controller.wayland",
     "cli_interactive_controller.cwd_footer",
+    "cli_interactive_controller.auth_type",
     "cli_selectors.session_search",
     "cli_selectors.key_text",
     "websocket_stream.stream_roundtrip",

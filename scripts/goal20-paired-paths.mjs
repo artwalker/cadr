@@ -218,6 +218,7 @@ const REPETITIONS = {
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
+	"cli_interactive_controller.auth_type": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
@@ -571,6 +572,9 @@ const clipboardImageModule = await import(
 );
 const footerModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/components/footer.ts")
+);
+const oauthSelectorModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/components/oauth-selector.ts")
 );
 const versionCheckModule = await import(moduleUrl("packages/coding-agent/src/utils/version-check.ts"));
 const cacheStatsModule = await import(
@@ -4804,11 +4808,23 @@ function runCliInteractiveCwdFooter() {
 	};
 }
 
+function authTypeLabelFlag(authType, expected) {
+	return oauthSelectorModule.formatAuthSelectorProviderType(authType) === expected ? 1 : 0;
+}
+
+function runCliInteractiveAuthType() {
+	return {
+		al_oauth: authTypeLabelFlag("oauth", "subscription"),
+		al_key: authTypeLabelFlag("api_key", "API key"),
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
 		...runCliInteractiveWayland(),
 		...runCliInteractiveCwdFooter(),
+		...runCliInteractiveAuthType(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -4819,6 +4835,9 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		cwd_footer: await collect("cli_interactive_controller.cwd_footer", () => {
 			return () => runCliInteractiveCwdFooter();
+		}),
+		auth_type: await collect("cli_interactive_controller.auth_type", () => {
+			return () => runCliInteractiveAuthType();
 		}),
 		observed,
 	};
@@ -5969,6 +5988,8 @@ const result = {
 				"packages/coding-agent/src/utils/clipboard-image.ts isWaylandSession",
 			"cli_interactive_controller.cwd_footer":
 				"packages/coding-agent/src/modes/interactive/components/footer.ts formatCwdForFooter",
+			"cli_interactive_controller.auth_type":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatAuthSelectorProviderType",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.key_text":

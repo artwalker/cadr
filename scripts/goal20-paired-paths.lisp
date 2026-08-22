@@ -99,6 +99,7 @@
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
+;;;; 107. cli_interactive_controller tui-auth-type-label vs formatAuthSelectorProviderType
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
 ;;;;  87. cli_sdk create-agent-session-services vs createAgentSessionServices
 ;;;;  88. cli_sdk sdk-model-runtime-providers vs ModelRuntime.getProviders
@@ -255,6 +256,7 @@
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
+    ("cli_interactive_controller.auth_type" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
@@ -5715,10 +5717,23 @@
    (cwd-footer-flag "/tmp" "/home/u" "/tmp")
    (cwd-footer-flag "/home/u/proj/" "/home/u/" "~/proj")))
 
+(defun auth-type-label-flag (auth-type expected)
+  (if (string= (cadr-cli::tui-auth-type-label auth-type) expected)
+      1
+      0))
+
+(defun run-cli-interactive-auth-type ()
+  ;; oauth / api-key only. Do not exact other types (cadr's else
+  ;; branch is "API key"; pi's union is those two strings).
+  (list
+   (auth-type-label-flag :oauth "subscription")
+   (auth-type-label-flag :api-key "API key")))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
-        (cwd (run-cli-interactive-cwd-footer)))
+        (cwd (run-cli-interactive-cwd-footer))
+        (auth (run-cli-interactive-auth-type)))
     (json-object
      "observed"
      (json-object
@@ -5736,7 +5751,9 @@
       "cf_home" (first cwd)
       "cf_proj" (second cwd)
       "cf_out" (third cwd)
-      "cf_slash" (fourth cwd))
+      "cf_slash" (fourth cwd)
+      "al_oauth" (first auth)
+      "al_key" (second auth))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -5751,7 +5768,12 @@
      (collect "cli_interactive_controller.cwd_footer"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-cwd-footer)))))))
+                  (run-cli-interactive-cwd-footer))))
+     "auth_type"
+     (collect "cli_interactive_controller.auth_type"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-auth-type)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -6867,6 +6889,8 @@
       "src/cadr-cli/interactive/clipboard.lisp clipboard-wayland-p"
       "cli_interactive_controller.cwd_footer"
       "src/cadr-cli/interactive/footer.lisp format-cwd-for-footer"
+      "cli_interactive_controller.auth_type"
+      "src/cadr-cli/interactive/autocomplete.lisp tui-auth-type-label"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.key_text"

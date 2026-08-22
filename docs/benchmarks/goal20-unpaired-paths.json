@@ -95,6 +95,7 @@
   "cli_interactive_controller.decode_entity",
   "cli_interactive_controller.wayland",
   "cli_interactive_controller.cwd_footer",
+  "cli_interactive_controller.auth_type",
   "cli_selectors.session_search",
   "cli_selectors.key_text",
   "websocket_stream.stream_roundtrip",
@@ -1088,8 +1089,8 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/autocomplete.lisp",
-   "class": "needs-pair",
-   "hole": "cli_interactive_controller"
+   "class": "paired",
+   "metrics": ["cli_interactive_controller.auth_type"]
   },
   {
    "prefix": "src/cadr-cli/interactive/clipboard.lisp",

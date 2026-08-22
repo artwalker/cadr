@@ -1367,8 +1367,10 @@
   {
    "path": "src/cadr-cli/interactive/autocomplete.lisp",
    "lines": 331,
-   "class": "needs-pair",
-   "metrics": [],
+   "class": "paired",
+   "metrics": [
+    "cli_interactive_controller.auth_type"
+   ],
    "pathId": "cli_interactive_controller",
    "pi": "packages/coding-agent/src/modes/interactive/* controller, transcript, theme, syntax, clipboard",
    "fixture": "Goal 11 already times mouse/wheel/editor-key through frame.lisp. These files are the rest of the interactive app (slash palette, transcript rebuild, theme switch). Same virtual terminal, fixture key sequence that actually opens those surfaces. Do not re-bench mouse_drag.",

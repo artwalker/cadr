@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_interactive_controller.auth_type`
+  (`:oauth` / `:api-key`; cadr `tui-auth-type-label` vs pi
+  `formatAuthSelectorProviderType`). Do not exact other
+  types. Friend-MachineD n=5 **1.44×** (0.21 / 0.15 µs),
+  ceiling 8.0 (microsecond-floor). Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `evals_harness.format`
   (empty + four scored observations; cadr
   `format-harness-comparison-report` vs pi

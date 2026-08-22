@@ -1524,6 +1524,21 @@ are exact (1 / 0 / 1 / 1 / 1). First Friend-MachineD
 freeze **1.14×** (20.62 / 18.10 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 107 — `cli_interactive_controller` (auth_type)
+
+| metric | cadr | pi |
+|---|---|---|
+| `auth_type` | `tui-auth-type-label` | `formatAuthSelectorProviderType` (`packages/coding-agent/src/modes/interactive/components/oauth-selector.ts`) |
+
+Leftover sibling of the `cli_interactive_controller` hole.
+Time the oauth/api-key label, not TUI autocomplete or
+selector render. `:oauth` → `subscription`; `:api-key` →
+`API key`. Do not exact other types (cadr else-branch is
+`API key`; pi union is those two strings). Observed
+`al_oauth` / `al_key` are exact (1 / 1). First
+Friend-MachineD freeze **1.44×** (0.21 / 0.15 µs), ceiling
+8.0 (microsecond-floor). Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1729,14 +1744,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 159 | 68,786 | 54.0% | `no worse than baseline` is falsifiable |
+| `paired` | 160 | 69,117 | 54.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 84 | 33,708 | 26.5% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 83 | 33,377 | 26.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 54.0% of lines (159 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 59.9% of lines.
+- **Falsifiable vs baseline:** 54.3% of lines (160 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 60.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1839,6 +1854,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/extensions/llama/client.lisp` | 472 | `cli_extensions_install.llama_url` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 315 | `cli_extensions_install.llama_catalog` |
+| `src/cadr-cli/interactive/autocomplete.lisp` | 331 | `cli_interactive_controller.auth_type` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/components/loaders.lisp` | 155 | `cli_selectors.key_text` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -1973,7 +1989,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | hole | files | lines |
 |---|---:|---:|
 | `cli_selectors` | 12 | 6,350 |
-| `cli_interactive_controller` | 8 | 5,970 |
+| `cli_interactive_controller` | 7 | 5,639 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
 | `agent_tool_loop` | 13 | 4,094 |
 | `cli_extensions_install` | 6 | 2,412 |
