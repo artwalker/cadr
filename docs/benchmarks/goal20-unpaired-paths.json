@@ -30,6 +30,7 @@
   "oauth_pkce.challenge_urls",
   "oauth_pkce_device.poll",
   "cli_extensions_install.llama_url",
+  "cli_extensions_install.hf_token",
   "evals_harness.summarize",
   "ai_crypto_model_data.manifest",
   "ai_crypto.hmac",
@@ -1041,8 +1042,8 @@
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/huggingface.lisp",
-   "class": "needs-pair",
-   "hole": "cli_extensions_install"
+   "class": "paired",
+   "metrics": ["cli_extensions_install.hf_token"]
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/provider.lisp",

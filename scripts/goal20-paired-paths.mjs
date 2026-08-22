@@ -151,6 +151,7 @@ const REPETITIONS = {
 	"oauth_pkce.challenge_urls": 50,
 	"oauth_pkce_device.poll": 50,
 	"cli_extensions_install.llama_url": 50,
+	"cli_extensions_install.hf_token": 50,
 	"evals_harness.summarize": 20,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
@@ -425,6 +426,9 @@ const deviceCodeModule = await import(
 );
 const llamaClientModule = await import(
 	moduleUrl("packages/coding-agent/src/extensions/llama/client.ts")
+);
+const llamaHfModule = await import(
+	moduleUrl("packages/coding-agent/src/extensions/llama/huggingface.ts")
 );
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const projectTrustModule = await import(
@@ -2552,13 +2556,66 @@ function runCliExtensionsLlamaUrl() {
 	};
 }
 
+function ensureHfLookupFixtures() {
+	const root = path.join(scratch, "hf-lookup");
+	const emptyHome = path.join(root, "empty-home");
+	const hfHome = path.join(root, "hf-home");
+	const tokenPath = path.join(root, "token-path");
+	mkdirSync(emptyHome, { recursive: true });
+	mkdirSync(hfHome, { recursive: true });
+	writeFileSync(tokenPath, "from-path", "utf8");
+	writeFileSync(path.join(hfHome, "token"), "from-home", "utf8");
+	return { emptyHome, tokenPath, hfHome };
+}
+
+async function withIsolatedHome(emptyHome, thunk) {
+	const previous = process.env.HOME;
+	process.env.HOME = emptyHome;
+	try {
+		return await thunk();
+	} finally {
+		if (previous === undefined) delete process.env.HOME;
+		else process.env.HOME = previous;
+	}
+}
+
+async function runCliExtensionsHfToken() {
+	const { emptyHome, tokenPath, hfHome } = ensureHfLookupFixtures();
+	return withIsolatedHome(emptyHome, async () => {
+		const envHit = await llamaHfModule.findHuggingFaceToken({
+			HF_TOKEN: "  tok  ",
+		});
+		const pathHit = await llamaHfModule.findHuggingFaceToken({
+			HF_TOKEN_PATH: tokenPath,
+		});
+		const homeHit = await llamaHfModule.findHuggingFaceToken({
+			HF_HOME: hfHome,
+		});
+		const miss = await llamaHfModule.findHuggingFaceToken({});
+		const blank = await llamaHfModule.findHuggingFaceToken({
+			HF_TOKEN: "   ",
+		});
+		return {
+			hf_env: envHit === "tok" ? 1 : 0,
+			hf_path: pathHit === "from-path" ? 1 : 0,
+			hf_home: homeHit === "from-home" ? 1 : 0,
+			hf_miss: miss ? 0 : 1,
+			hf_blank: blank ? 0 : 1,
+		};
+	});
+}
+
 async function measureCliExtensionsInstall() {
-	const observed = runCliExtensionsLlamaUrl();
+	const url = runCliExtensionsLlamaUrl();
+	const token = await runCliExtensionsHfToken();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
 		}),
-		observed,
+		hf_token: await collect("cli_extensions_install.hf_token", () => {
+			return () => runCliExtensionsHfToken();
+		}),
+		observed: { ...url, ...token },
 	};
 }
 
@@ -4772,6 +4829,8 @@ const result = {
 				"packages/ai/src/auth/oauth/device-code.ts pollOAuthDeviceCodeFlow",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
+			"cli_extensions_install.hf_token":
+				"packages/coding-agent/src/extensions/llama/huggingface.ts findHuggingFaceToken",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"ai_crypto_model_data.manifest":

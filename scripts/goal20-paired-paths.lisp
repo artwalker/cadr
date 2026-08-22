@@ -85,6 +85,7 @@
 ;;;;  71. settings_load resolve-project-trusted vs resolveProjectTrusted
 ;;;;  72. oauth_pkce_device poll-device-authorization vs pollOAuthDeviceCodeFlow
 ;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
+;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -165,6 +166,7 @@
     ("oauth_pkce.challenge_urls" . 50)
     ("oauth_pkce_device.poll" . 50)
     ("cli_extensions_install.llama_url" . 50)
+    ("cli_extensions_install.hf_token" . 50)
     ("evals_harness.summarize" . 20)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
@@ -3023,22 +3025,121 @@
        1
        0)))
 
+(defparameter *hf-lookup-env-names*
+  '("HF_TOKEN" "HF_TOKEN_PATH" "HF_HOME" "XDG_CACHE_HOME" "HOME"))
+
+(defun write-hf-lookup-file (path text)
+  (ensure-directories-exist path)
+  (with-open-file (stream path
+                          :direction :output
+                          :if-exists :supersede
+                          :if-does-not-exist :create
+                          :external-format :utf-8)
+    (write-string text stream))
+  (namestring (truename path)))
+
+(defun hf-lookup-fixtures ()
+  (let* ((root
+           (merge-pathnames
+            "hf-lookup/"
+            *scratch-directory*))
+         (empty-home
+           (namestring
+            (ensure-directories-exist
+             (merge-pathnames "empty-home/" root))))
+         (hf-home
+           (namestring
+            (ensure-directories-exist
+             (merge-pathnames "hf-home/" root))))
+         (token-path
+           (write-hf-lookup-file
+            (merge-pathnames "token-path" root)
+            "from-path")))
+    (write-hf-lookup-file
+     (merge-pathnames "token"
+                      (uiop:ensure-directory-pathname hf-home))
+     "from-home")
+    (list empty-home token-path hf-home)))
+
+(defun call-with-hf-lookup-env (bindings thunk)
+  (let ((saved
+          (mapcar
+           (lambda (name)
+             (cons name (uiop:getenv name)))
+           *hf-lookup-env-names*)))
+    (unwind-protect
+         (progn
+           (dolist (name *hf-lookup-env-names*)
+             (sb-posix:unsetenv name))
+           (dolist (pair bindings)
+             (when (cdr pair)
+               (sb-posix:setenv (car pair) (cdr pair) 1)))
+           (funcall thunk))
+      (dolist (pair saved)
+        (if (cdr pair)
+            (sb-posix:setenv (car pair) (cdr pair) 1)
+            (sb-posix:unsetenv (car pair)))))))
+
+(defun hf-token-equals (expected)
+  (let ((token (cadr-cli::find-hugging-face-token)))
+    (if (and token (string= token expected))
+        1
+        0)))
+
+(defun hf-token-missing-p ()
+  (if (cadr-cli::find-hugging-face-token) 0 1))
+
+(defun run-cli-extensions-hf-token ()
+  (destructuring-bind (empty-home token-path hf-home)
+      (hf-lookup-fixtures)
+    (list
+     (call-with-hf-lookup-env
+      (list (cons "HOME" empty-home)
+            (cons "HF_TOKEN" "  tok  "))
+      (lambda () (hf-token-equals "tok")))
+     (call-with-hf-lookup-env
+      (list (cons "HOME" empty-home)
+            (cons "HF_TOKEN_PATH" token-path))
+      (lambda () (hf-token-equals "from-path")))
+     (call-with-hf-lookup-env
+      (list (cons "HOME" empty-home)
+            (cons "HF_HOME" hf-home))
+      (lambda () (hf-token-equals "from-home")))
+     (call-with-hf-lookup-env
+      (list (cons "HOME" empty-home))
+      (lambda () (hf-token-missing-p)))
+     (call-with-hf-lookup-env
+      (list (cons "HOME" empty-home)
+            (cons "HF_TOKEN" "   "))
+      (lambda () (hf-token-missing-p))))))
+
 (defun measure-cli-extensions-install ()
-  (let ((observed (run-cli-extensions-llama-url)))
+  (let ((url (run-cli-extensions-llama-url))
+        (token (run-cli-extensions-hf-token)))
     (json-object
      "observed"
      (json-object
-      "nu_local" (nth 0 observed)
-      "nu_https" (nth 1 observed)
-      "nu_file" (nth 2 observed)
-      "inf_ok" (nth 3 observed)
-      "fb_b" (nth 4 observed)
-      "fb_k" (nth 5 observed))
+      "nu_local" (nth 0 url)
+      "nu_https" (nth 1 url)
+      "nu_file" (nth 2 url)
+      "inf_ok" (nth 3 url)
+      "fb_b" (nth 4 url)
+      "fb_k" (nth 5 url)
+      "hf_env" (nth 0 token)
+      "hf_path" (nth 1 token)
+      "hf_home" (nth 2 token)
+      "hf_miss" (nth 3 token)
+      "hf_blank" (nth 4 token))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-llama-url)))))))
+                  (run-cli-extensions-llama-url))))
+     "hf_token"
+     (collect "cli_extensions_install.hf_token"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-hf-token)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -5342,6 +5443,8 @@
       "src/cadr-ai/auth/device-code.lisp poll-device-authorization"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
+      "cli_extensions_install.hf_token"
+      "src/cadr-cli/extensions/llama/huggingface.lisp find-hugging-face-token"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "ai_crypto_model_data.manifest"

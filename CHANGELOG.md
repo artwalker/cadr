@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_extensions_install.hf_token`
+  (env / token-path / HF_HOME / miss / blank; isolated HOME;
+  cadr `find-hugging-face-token` vs pi `findHuggingFaceToken`).
+  Friend-MachineD n=5 **0.28×** (277.4 / 1002.4 µs), ceiling
+  8.0. cadr leads. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_extensions_install.llama_url`
   (strip `/v1`+query+hash, file:// error, `/v1` inference,
   byte units; cadr `normalize-llama-server-url` vs pi
