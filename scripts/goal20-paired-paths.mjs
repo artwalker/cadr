@@ -153,6 +153,7 @@ const REPETITIONS = {
 	"oauth_pkce_device.poll": 50,
 	"oauth_pkce_device.auth_json": 50,
 	"oauth_pkce_device.copilot_url": 50,
+	"oauth_pkce_device.cloudflare_url": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"evals_harness.summarize": 20,
@@ -431,6 +432,9 @@ const deviceCodeModule = await import(
 );
 const githubCopilotOAuthModule = await import(
 	moduleUrl("packages/ai/src/auth/oauth/github-copilot.ts")
+);
+const cloudflareStreamModule = await import(
+	moduleUrl("packages/ai/src/providers/cloudflare-stream.ts")
 );
 const authStorageModule = await import(
 	moduleUrl("packages/coding-agent/src/core/auth-storage.ts")
@@ -2605,10 +2609,50 @@ async function runOauthPkceDeviceCopilotUrl() {
 	};
 }
 
+const CLOUDFLARE_GATEWAY_TEMPLATE =
+	"https://gateway.ai.cloudflare.com/v1/{CLOUDFLARE_ACCOUNT_ID}/{CLOUDFLARE_GATEWAY_ID}/openai";
+
+function cloudflareModel(baseUrl) {
+	return {
+		id: "cf",
+		name: "cf",
+		api: "openai-completions",
+		provider: "cloudflare-ai-gateway",
+		baseUrl,
+		reasoning: false,
+		input: ["text"],
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+		contextWindow: 1,
+		maxTokens: 1,
+	};
+}
+
+function runOauthPkceDeviceCloudflareUrl() {
+	const env = { CLOUDFLARE_ACCOUNT_ID: "acct", CLOUDFLARE_GATEWAY_ID: "gw" };
+	const plain = cloudflareStreamModule.resolveCloudflareModel(
+		cloudflareModel("https://api.example.com/v1"),
+		env,
+	);
+	const ok = cloudflareStreamModule.resolveCloudflareModel(
+		cloudflareModel(CLOUDFLARE_GATEWAY_TEMPLATE),
+		env,
+	);
+	const gw = cloudflareStreamModule.resolveCloudflareModel(
+		cloudflareModel("https://x/{CLOUDFLARE_GATEWAY_ID}"),
+		env,
+	);
+	return {
+		cf_plain: plain.baseUrl === "https://api.example.com/v1" ? 1 : 0,
+		cf_ok: ok.baseUrl === "https://gateway.ai.cloudflare.com/v1/acct/gw/openai" ? 1 : 0,
+		cf_gw: gw.baseUrl === "https://x/gw" ? 1 : 0,
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
 	const copilot = await runOauthPkceDeviceCopilotUrl();
+	const cloudflare = runOauthPkceDeviceCloudflareUrl();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -2619,7 +2663,10 @@ async function measureOauthPkceDevice() {
 		copilot_url: await collect("oauth_pkce_device.copilot_url", () => {
 			return () => runOauthPkceDeviceCopilotUrl();
 		}),
-		observed: { ...poll, ...auth, ...copilot },
+		cloudflare_url: await collect("oauth_pkce_device.cloudflare_url", () => {
+			return () => runOauthPkceDeviceCloudflareUrl();
+		}),
+		observed: { ...poll, ...auth, ...copilot, ...cloudflare },
 	};
 }
 
@@ -5018,6 +5065,8 @@ const result = {
 				"packages/coding-agent/src/core/auth-storage.ts ReadOnlyAuthStorage.read",
 			"oauth_pkce_device.copilot_url":
 				"packages/ai/src/auth/oauth/github-copilot.ts githubCopilotOAuth.toAuth",
+			"oauth_pkce_device.cloudflare_url":
+				"packages/ai/src/providers/cloudflare-stream.ts resolveCloudflareModel",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

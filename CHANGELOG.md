@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `oauth_pkce_device.cloudflare_url`
+  (plain URL / account+gateway placeholders / gateway-only;
+  cadr `materialize-cloudflare-url` vs pi
+  `resolveCloudflareModel`). Friend-MachineD n=5 **6.66×**
+  (9.27 / 1.39 µs), ceiling 8.0 (variance). Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_sdk.session_list`
   (two rewritten-cwd copies of session.jsonl + empty dir;
   cadr `session-manager-list` vs pi `SessionManager.list`).

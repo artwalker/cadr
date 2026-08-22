@@ -91,6 +91,7 @@
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
 ;;;;  79. cli_sdk session-manager-list vs SessionManager.list
+;;;;  80. oauth_pkce_device materialize-cloudflare-url vs resolveCloudflareModel
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -173,6 +174,7 @@
     ("oauth_pkce_device.poll" . 50)
     ("oauth_pkce_device.auth_json" . 50)
     ("oauth_pkce_device.copilot_url" . 50)
+    ("oauth_pkce_device.cloudflare_url" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("evals_harness.summarize" . 20)
@@ -3095,10 +3097,35 @@
     nil "example.com"
     "https://copilot-api.example.com")))
 
+(defparameter *cloudflare-gateway-template*
+  "https://gateway.ai.cloudflare.com/v1/{CLOUDFLARE_ACCOUNT_ID}/{CLOUDFLARE_GATEWAY_ID}/openai")
+
+(defun cloudflare-url-flag (base account gateway expected)
+  (handler-case
+      (if (string=
+           (cadr-ai:materialize-cloudflare-url base account gateway)
+           expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-cloudflare-url ()
+  (list
+   (cloudflare-url-flag
+    "https://api.example.com/v1" "acct" "gw"
+    "https://api.example.com/v1")
+   (cloudflare-url-flag
+    *cloudflare-gateway-template* "acct" "gw"
+    "https://gateway.ai.cloudflare.com/v1/acct/gw/openai")
+   (cloudflare-url-flag
+    "https://x/{CLOUDFLARE_GATEWAY_ID}" "acct" "gw"
+    "https://x/gw")))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
-        (copilot (run-oauth-pkce-device-copilot-url)))
+        (copilot (run-oauth-pkce-device-copilot-url))
+        (cloudflare (run-oauth-pkce-device-cloudflare-url)))
     (json-object
      "observed"
      (json-object
@@ -3114,7 +3141,10 @@
       "gc_def" (nth 0 copilot)
       "gc_ind" (nth 1 copilot)
       "gc_ent" (nth 2 copilot)
-      "gc_dom" (nth 3 copilot))
+      "gc_dom" (nth 3 copilot)
+      "cf_plain" (nth 0 cloudflare)
+      "cf_ok" (nth 1 cloudflare)
+      "cf_gw" (nth 2 cloudflare))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -3129,7 +3159,12 @@
      (collect "oauth_pkce_device.copilot_url"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-copilot-url)))))))
+                  (run-oauth-pkce-device-copilot-url))))
+     "cloudflare_url"
+     (collect "oauth_pkce_device.cloudflare_url"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-cloudflare-url)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -5716,6 +5751,8 @@
       "src/cadr-ai/auth.lisp read-auth-credential"
       "oauth_pkce_device.copilot_url"
       "src/cadr-ai/auth/github-copilot.lisp github-copilot-base-url"
+      "oauth_pkce_device.cloudflare_url"
+      "src/cadr-ai/auth/radius-cloudflare.lisp materialize-cloudflare-url"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
