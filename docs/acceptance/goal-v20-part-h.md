@@ -1289,6 +1289,19 @@ nil. No live eval run. First Friend-MachineD freeze **4.06×**
 (5.01 / 1.23 µs), ceiling 8.0 (variance). Same commit no
 optimize.
 
+### Pair 91 — `cli_extensions_install` (llama_catalog)
+
+| metric | cadr | pi |
+|---|---|---|
+| `llama_catalog` | `llama-provider-set-catalog` | `createLlamaProvider().setCatalog` (`packages/coding-agent/src/extensions/llama/provider.ts`) |
+
+Leftover sibling of the `cli_extensions_install` hole. Loaded
+text/image + fallback ctx + sleeping/unloaded. Count 3 loaded;
+image input; ctx 4096; `/v1` base URL; sleeping excluded;
+missing ctx → 128000. No socket, no TUI. First Friend-MachineD
+freeze **0.36×** (4.78 / 13.41 µs), ceiling 8.0. cadr leads.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1494,14 +1507,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 144 | 63,250 | 49.7% | `no worse than baseline` is falsifiable |
+| `paired` | 145 | 63,565 | 49.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 108 | 43,745 | 34.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 107 | 43,430 | 34.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 49.7% of lines (144 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 55.5% of lines.
+- **Falsifiable vs baseline:** 49.9% of lines (145 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 55.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1601,6 +1614,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/bootstrap/tools.lisp` | 89 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/extensions/llama/client.lisp` | 472 | `cli_extensions_install.llama_url` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
+| `src/cadr-cli/extensions/llama/provider.lisp` | 315 | `cli_extensions_install.llama_catalog` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -1718,7 +1732,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_bootstrap_sessions` | 5 | 5,339 |
 | `tui_mermaid` | 12 | 5,042 |
 | `agent_tool_loop` | 13 | 4,094 |
-| `cli_extensions_install` | 7 | 2,727 |
+| `cli_extensions_install` | 6 | 2,412 |
 | `evals_harness` | 5 | 1,845 |
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 5 | 1,375 |

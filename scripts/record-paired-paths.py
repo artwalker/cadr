@@ -54,6 +54,7 @@ METRIC_KEYS = (
     "oauth_pkce_device.radius_gateway",
     "cli_extensions_install.llama_url",
     "cli_extensions_install.hf_token",
+    "cli_extensions_install.llama_catalog",
     "evals_harness.summarize",
     "evals_harness.group_key",
     "ai_crypto_model_data.manifest",

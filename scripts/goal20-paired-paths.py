@@ -111,7 +111,7 @@ METRICS = {
     "agent_proxy": ("stream_roundtrip",),
     "oauth_pkce": ("challenge_urls",),
     "oauth_pkce_device": ("poll", "auth_json", "copilot_url", "cloudflare_url", "radius_gateway"),
-    "cli_extensions_install": ("llama_url", "hf_token"),
+    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog"),
     "evals_harness": ("summarize", "group_key"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
@@ -319,6 +319,11 @@ RATIO_CEILINGS = {
     # 0.28x (277.4 / 1002.4 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "cli_extensions_install.hf_token": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_extensions_install.llama_catalog pair (samples=5): observed
+    # 0.36x (4.78 / 13.41 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "cli_extensions_install.llama_catalog": 8.0,
     # Frozen from the first Friend-MachineD non-quick evals_harness
     # pair (samples=5): observed 0.88x (8.0 / 9.0 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -926,6 +931,12 @@ OBSERVED_EXACT = {
         "hf_home",
         "hf_miss",
         "hf_blank",
+        "lc_n",
+        "lc_img",
+        "lc_ctx",
+        "lc_url",
+        "lc_sleep",
+        "lc_fb",
     ),
     "evals_harness": (
         "eval_sets",

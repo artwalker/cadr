@@ -157,6 +157,7 @@ const REPETITIONS = {
 	"oauth_pkce_device.radius_gateway": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
+	"cli_extensions_install.llama_catalog": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"ai_crypto_model_data.manifest": 50,
@@ -453,6 +454,9 @@ const llamaClientModule = await import(
 );
 const llamaHfModule = await import(
 	moduleUrl("packages/coding-agent/src/extensions/llama/huggingface.ts")
+);
+const llamaProviderModule = await import(
+	moduleUrl("packages/coding-agent/src/extensions/llama/provider.ts")
 );
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const projectTrustModule = await import(
@@ -2817,9 +2821,41 @@ async function runCliExtensionsHfToken() {
 	});
 }
 
+function runCliExtensionsLlamaCatalog() {
+	const controller = llamaProviderModule.createLlamaProvider();
+	controller.setCatalog(
+		[
+			{ id: "loaded-text", status: { value: "loaded" }, meta: { n_ctx: 4096 } },
+			{
+				id: "loaded-img",
+				status: { value: "loaded" },
+				architecture: { input_modalities: ["image"] },
+				meta: { n_ctx: 8192 },
+			},
+			{ id: "fb", status: { value: "loaded" } },
+			{ id: "sleeping", status: { value: "sleeping" }, meta: { n_ctx: 4096 } },
+			{ id: "unloaded", status: { value: "unloaded" } },
+		],
+		"http://127.0.0.1:8080/",
+	);
+	const models = controller.provider.getModels();
+	const text = models.find((model) => model.id === "loaded-text");
+	const img = models.find((model) => model.id === "loaded-img");
+	const fb = models.find((model) => model.id === "fb");
+	return {
+		lc_n: models.length,
+		lc_img: img?.input?.includes("image") ? 1 : 0,
+		lc_ctx: text?.contextWindow === 4096 ? 1 : 0,
+		lc_url: img?.baseUrl === "http://127.0.0.1:8080/v1" ? 1 : 0,
+		lc_sleep: models.some((model) => model.id === "sleeping") ? 1 : 0,
+		lc_fb: fb?.contextWindow === 128000 ? 1 : 0,
+	};
+}
+
 async function measureCliExtensionsInstall() {
 	const url = runCliExtensionsLlamaUrl();
 	const token = await runCliExtensionsHfToken();
+	const catalog = runCliExtensionsLlamaCatalog();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -2827,7 +2863,10 @@ async function measureCliExtensionsInstall() {
 		hf_token: await collect("cli_extensions_install.hf_token", () => {
 			return () => runCliExtensionsHfToken();
 		}),
-		observed: { ...url, ...token },
+		llama_catalog: await collect("cli_extensions_install.llama_catalog", () => {
+			return () => runCliExtensionsLlamaCatalog();
+		}),
+		observed: { ...url, ...token, ...catalog },
 	};
 }
 
@@ -5152,6 +5191,8 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":
 				"packages/coding-agent/src/extensions/llama/huggingface.ts findHuggingFaceToken",
+			"cli_extensions_install.llama_catalog":
+				"packages/coding-agent/src/extensions/llama/provider.ts createLlamaProvider.setCatalog",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

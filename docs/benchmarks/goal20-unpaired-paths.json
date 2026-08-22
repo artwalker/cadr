@@ -35,6 +35,7 @@
   "oauth_pkce_device.radius_gateway",
   "cli_extensions_install.llama_url",
   "cli_extensions_install.hf_token",
+  "cli_extensions_install.llama_catalog",
   "evals_harness.summarize",
   "evals_harness.group_key",
   "ai_crypto_model_data.manifest",
@@ -1057,8 +1058,8 @@
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/provider.lisp",
-   "class": "needs-pair",
-   "hole": "cli_extensions_install"
+   "class": "paired",
+   "metrics": ["cli_extensions_install.llama_catalog"]
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/ui.lisp",

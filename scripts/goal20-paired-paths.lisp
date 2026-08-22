@@ -95,6 +95,7 @@
 ;;;;  81. oauth_pkce_device normalize-radius-gateway vs normalizeRadiusGatewayUrl
 ;;;;  82. cli_interactive_controller clipboard-wayland-p vs isWaylandSession
 ;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
+;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -181,6 +182,7 @@
     ("oauth_pkce_device.radius_gateway" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
+    ("cli_extensions_install.llama_catalog" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("ai_crypto_model_data.manifest" . 50)
@@ -3326,9 +3328,65 @@
             (cons "HF_TOKEN" "   "))
       (lambda () (hf-token-missing-p))))))
 
+(defun llama-catalog-info (id status &key modalities ctx)
+  (cadr-cli::make-llama-model-info
+   :id id
+   :status status
+   :input-modalities modalities
+   :context-window ctx))
+
+(defun run-cli-extensions-llama-catalog ()
+  ;; Loaded only. Sleeping/unloaded stay out. Do not exact
+  ;; n_ctx_train-only fallback vs cadr training-context-window
+  ;; when both are set differently.
+  (let* ((controller (cadr-cli::make-llama-provider-controller))
+         (models
+           (progn
+             (cadr-cli::llama-provider-set-catalog
+              controller
+              (list
+               (llama-catalog-info "loaded-text" :loaded :ctx 4096)
+               (llama-catalog-info
+                "loaded-img" :loaded
+                :modalities '("image") :ctx 8192)
+               (llama-catalog-info "fb" :loaded)
+               (llama-catalog-info "sleeping" :sleeping :ctx 4096)
+               (llama-catalog-info "unloaded" :unloaded))
+              "http://127.0.0.1:8080/")
+             (cadr-ai:runtime-provider-models
+              (cadr-cli::llama-provider-controller-provider
+               controller))))
+         (text
+           (find "loaded-text" models
+                 :key #'cadr-ai:model-id :test #'string=))
+         (img
+           (find "loaded-img" models
+                 :key #'cadr-ai:model-id :test #'string=))
+         (fb
+           (find "fb" models
+                 :key #'cadr-ai:model-id :test #'string=)))
+    (list
+     (length models)
+     (if (and img (cadr-ai:model-supports-images-p img)) 1 0)
+     (if (and text (= (cadr-ai:model-context-window text) 4096)) 1 0)
+     (if (and img
+              (string=
+               (cadr-ai:model-base-url img)
+               "http://127.0.0.1:8080/v1"))
+         1
+         0)
+     (if (find "sleeping" models
+               :key #'cadr-ai:model-id :test #'string=)
+         1
+         0)
+     (if (and fb (= (cadr-ai:model-context-window fb) 128000))
+         1
+         0))))
+
 (defun measure-cli-extensions-install ()
   (let ((url (run-cli-extensions-llama-url))
-        (token (run-cli-extensions-hf-token)))
+        (token (run-cli-extensions-hf-token))
+        (catalog (run-cli-extensions-llama-catalog)))
     (json-object
      "observed"
      (json-object
@@ -3342,7 +3400,13 @@
       "hf_path" (nth 1 token)
       "hf_home" (nth 2 token)
       "hf_miss" (nth 3 token)
-      "hf_blank" (nth 4 token))
+      "hf_blank" (nth 4 token)
+      "lc_n" (nth 0 catalog)
+      "lc_img" (nth 1 catalog)
+      "lc_ctx" (nth 2 catalog)
+      "lc_url" (nth 3 catalog)
+      "lc_sleep" (nth 4 catalog)
+      "lc_fb" (nth 5 catalog))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -3352,7 +3416,12 @@
      (collect "cli_extensions_install.hf_token"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-hf-token)))))))
+                  (run-cli-extensions-hf-token))))
+     "llama_catalog"
+     (collect "cli_extensions_install.llama_catalog"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-catalog)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -5873,6 +5942,8 @@
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
       "src/cadr-cli/extensions/llama/huggingface.lisp find-hugging-face-token"
+      "cli_extensions_install.llama_catalog"
+      "src/cadr-cli/extensions/llama/provider.lisp llama-provider-set-catalog"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

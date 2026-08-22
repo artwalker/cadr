@@ -536,11 +536,11 @@ These must not be filed as callees.
 | `src/cadr-cli/interactive/selectors/tree.lisp` | 1,812 |
 | `src/cadr-cli/interactive/selectors/trust.lisp` | 293 |
 
-### `cli_extensions_install` (additional) — `llama/client.lisp` paired `cli_extensions_install.llama_url`; `llama/huggingface.lisp` paired `cli_extensions_install.hf_token`
+### `cli_extensions_install` (additional) — `llama/client.lisp` paired `cli_extensions_install.llama_url`; `llama/huggingface.lisp` paired `cli_extensions_install.hf_token`; `llama/provider.lisp` paired `cli_extensions_install.llama_catalog`
 
-- pi: `packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl` (+ `llamaInferenceUrl` / `formatBytes`); `huggingface.ts findHuggingFaceToken`. Discover/load stays SP-F7. Lisp extension host stays lisp_extension_host unpairable. Llama UI is TUI.
-- fixture: URL strip `/v1`+query+hash; `file://` error; inference `/v1`; byte units. Token: env trim / `HF_TOKEN_PATH` / `HF_HOME` / miss / blank; isolated HOME; no network.
-- Friend-MachineD n=5: llama_url **0.45×** (4.79 / 10.52 µs); hf_token **0.28×** (277.4 / 1002.4 µs), ceiling 8.0. cadr leads. Other files still `needs-pair`. No optimize in the booking commits.
+- pi: `packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl` (+ `llamaInferenceUrl` / `formatBytes`); `huggingface.ts findHuggingFaceToken`; `provider.ts createLlamaProvider().setCatalog`. Discover/load stays SP-F7. Lisp extension host stays lisp_extension_host unpairable. Llama UI is TUI.
+- fixture: URL strip `/v1`+query+hash; `file://` error; inference `/v1`; byte units. Token: env trim / `HF_TOKEN_PATH` / `HF_HOME` / miss / blank; isolated HOME; no network. Catalog: loaded text/image + ctx fallback + sleeping/unloaded excluded.
+- Friend-MachineD n=5: llama_url **0.45×** (4.79 / 10.52 µs); hf_token **0.28×** (277.4 / 1002.4 µs); llama_catalog **0.36×** (4.78 / 13.41 µs), ceiling 8.0. cadr leads. Other files still `needs-pair`. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

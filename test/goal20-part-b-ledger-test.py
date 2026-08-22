@@ -450,6 +450,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("hf_home", paired.OBSERVED_EXACT["cli_extensions_install"])
         self.assertIn("hf_miss", paired.OBSERVED_EXACT["cli_extensions_install"])
         self.assertIn("hf_blank", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.llama_catalog", RECORD.METRIC_KEYS)
+        self.assertIn("llama_catalog", paired.METRICS["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.llama_catalog", paired.RATIO_CEILINGS)
+        self.assertIn("lc_n", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("lc_img", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("lc_ctx", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("lc_url", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("lc_sleep", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("lc_fb", paired.OBSERVED_EXACT["cli_extensions_install"])
 
     def test_evals_harness_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
