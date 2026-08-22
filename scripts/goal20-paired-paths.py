@@ -144,7 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type"),
-    "cli_selectors": ("session_search", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key"),
+    "cli_selectors": ("session_search", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
@@ -687,6 +687,9 @@ RATIO_CEILINGS = {
     # First-freeze headroom for cli_selectors.modified_cursor_key.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.modified_cursor_key": 20.0,
+    # First-freeze headroom for cli_selectors.title_line.
+    # Ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_selectors.title_line": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
@@ -1535,6 +1538,12 @@ OBSERVED_EXACT = {
         "mck_alt_lt",
         "mck_ctrl_shift_up",
         "mck_super_dn",
+        "tl_short",
+        "tl_trunc",
+        "tl_empty",
+        "tl_wide",
+        "tl_narrow",
+        "tl_normal",
     ),
     "websocket_stream": (
         "ws_text",

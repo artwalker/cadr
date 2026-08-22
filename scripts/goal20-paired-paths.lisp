@@ -101,6 +101,7 @@
 ;;;; 119. cli_selectors selector-muted-line vs theme.fg muted + fit
 ;;;; 120. cli_selectors selector-dim-line vs theme.fg dim + fit
 ;;;; 121. cli_selectors selector-modified-cursor-key vs parseKey CSI arrows
+;;;; 122. cli_selectors selector-title-line vs theme accent bold Text margins
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -285,6 +286,7 @@
     ("cli_selectors.muted_line" . 50)
     ("cli_selectors.dim_line" . 50)
     ("cli_selectors.modified_cursor_key" . 50)
+    ("cli_selectors.title_line" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6057,6 +6059,15 @@
    (cadr-cli::selector-modified-cursor-key
     (csi-modified-arrow 9 #\B))))
 
+(defun run-cli-selectors-title-line ()
+  (list
+   (cadr-cli::selector-title-line "Resume Session" 40)
+   (cadr-cli::selector-title-line "Very Long Title Here That Truncates" 20)
+   (cadr-cli::selector-title-line "" 10)
+   (cadr-cli::selector-title-line "café" 15)
+   (cadr-cli::selector-title-line "A" 5)
+   (cadr-cli::selector-title-line "Models" 30)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6070,7 +6081,8 @@
         (selected-line (run-cli-selectors-selected-line))
         (muted-line (run-cli-selectors-muted-line))
         (dim-line (run-cli-selectors-dim-line))
-        (modified-cursor-key (run-cli-selectors-modified-cursor-key)))
+        (modified-cursor-key (run-cli-selectors-modified-cursor-key))
+        (title-line (run-cli-selectors-title-line)))
     (json-object
      "observed"
      (json-object
@@ -6154,7 +6166,13 @@
       "mck_ctrl_rt" (nth 2 modified-cursor-key)
       "mck_alt_lt" (nth 3 modified-cursor-key)
       "mck_ctrl_shift_up" (nth 4 modified-cursor-key)
-      "mck_super_dn" (nth 5 modified-cursor-key))
+      "mck_super_dn" (nth 5 modified-cursor-key)
+      "tl_short" (nth 0 title-line)
+      "tl_trunc" (nth 1 title-line)
+      "tl_empty" (nth 2 title-line)
+      "tl_wide" (nth 3 title-line)
+      "tl_narrow" (nth 4 title-line)
+      "tl_normal" (nth 5 title-line))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6219,7 +6237,12 @@
      (collect "cli_selectors.modified_cursor_key"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-modified-cursor-key)))))))
+                  (run-cli-selectors-modified-cursor-key))))
+     "title_line"
+     (collect "cli_selectors.title_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-title-line)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7290,6 +7313,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-dim-line"
       "cli_selectors.modified_cursor_key"
       "src/cadr-cli/interactive/selectors/common.lisp selector-modified-cursor-key"
+      "cli_selectors.title_line"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-title-line"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

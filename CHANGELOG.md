@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.title_line`
+  (accent bold title fixtures; cadr `selector-title-line` vs pi
+  `theme.fg accent` + `theme.bold` + Text margins). Friend-MachineD
+  n=5 **0.61×** (33.3 / 51.3 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.modified_cursor_key`
   (CSI modified-arrow fixtures; cadr `selector-modified-cursor-key`
   vs pi `parseKey`). Friend-MachineD n=5 **11.56×** (47.3 / 4.1 µs),

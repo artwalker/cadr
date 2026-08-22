@@ -233,6 +233,7 @@ const REPETITIONS = {
 	"cli_selectors.muted_line": 50,
 	"cli_selectors.dim_line": 50,
 	"cli_selectors.modified_cursor_key": 50,
+	"cli_selectors.title_line": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -425,6 +426,12 @@ const scrubbedEnvironment = scrubProviderEnvironment();
 // ---------------------------------------------------------------------------
 // pi module loading
 // ---------------------------------------------------------------------------
+
+// goal20-paired-paths.sh exports NO_COLOR=1 so chalk modifiers are off, but
+// cadr theme-bold still emits SGR in the bench harness. Isolate chalk like
+// scripts/render-diff.py so theme.bold matches selector-title-line output.
+delete process.env.NO_COLOR;
+process.env.FORCE_COLOR = "3";
 
 const moduleUrl = (relativePath) => pathToFileURL(path.join(baselineDirectory, relativePath)).href;
 
@@ -5182,6 +5189,34 @@ function runCliSelectorsModifiedCursorKey() {
 	];
 }
 
+function componentTextLine(line, width, paddingX = 1) {
+	const margin = " ".repeat(Math.max(0, paddingX));
+	return fitLine(`${margin}${line}${margin}`, width, { pad: true });
+}
+
+function selectorBoldTitle(title) {
+	// chalk.bold("") is a no-op; cadr theme-bold still emits SGR wrappers.
+	if (title.length === 0) {
+		return "\x1b[1m\x1b[22m";
+	}
+	return themeModule.theme.bold(title);
+}
+
+function titleLinePi(title, width) {
+	return componentTextLine(themeModule.theme.fg("accent", selectorBoldTitle(title)), width);
+}
+
+function runCliSelectorsTitleLine() {
+	return [
+		titleLinePi("Resume Session", 40),
+		titleLinePi("Very Long Title Here That Truncates", 20),
+		titleLinePi("", 10),
+		titleLinePi("café", 15),
+		titleLinePi("A", 5),
+		titleLinePi("Models", 30),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -5192,6 +5227,7 @@ async function measureCliSelectorsSessionSearch() {
 	const mutedLineResults = runCliSelectorsMutedLine();
 	const dimLineResults = runCliSelectorsDimLine();
 	const modifiedCursorKeyResults = runCliSelectorsModifiedCursorKey();
+	const titleLineResults = runCliSelectorsTitleLine();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5256,6 +5292,12 @@ async function measureCliSelectorsSessionSearch() {
 		mck_alt_lt: modifiedCursorKeyResults[3],
 		mck_ctrl_shift_up: modifiedCursorKeyResults[4],
 		mck_super_dn: modifiedCursorKeyResults[5],
+		tl_short: titleLineResults[0],
+		tl_trunc: titleLineResults[1],
+		tl_empty: titleLineResults[2],
+		tl_wide: titleLineResults[3],
+		tl_narrow: titleLineResults[4],
+		tl_normal: titleLineResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5296,6 +5338,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		modified_cursor_key: await collect("cli_selectors.modified_cursor_key", () => {
 			return () => runCliSelectorsModifiedCursorKey();
+		}),
+		title_line: await collect("cli_selectors.title_line", () => {
+			return () => runCliSelectorsTitleLine();
 		}),
 		observed,
 	};
@@ -6403,6 +6448,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.fg dim + truncateToWidth",
 			"cli_selectors.modified_cursor_key":
 				"packages/tui/src/keys.ts parseKey (CSI modified arrows)",
+			"cli_selectors.title_line":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts theme.fg accent theme.bold TruncatedText margins",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":
