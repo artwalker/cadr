@@ -360,11 +360,11 @@ These must not be filed as callees.
 |---|---:|
 | `src/cadr-agent/conditions.lisp` | 43 |
 
-### `oauth_pkce_device` (additional) — `pkce.lisp` paired `oauth_pkce.challenge_urls`; `device-code.lisp` paired `oauth_pkce_device.poll`
+### `oauth_pkce_device` (additional) — `pkce.lisp` paired `oauth_pkce.challenge_urls`; `device-code.lisp` paired `oauth_pkce_device.poll`; `auth.lisp` paired `oauth_pkce_device.auth_json`
 
-- pi: `packages/ai/src/auth/oauth/pkce.ts` SHA-256 + openai-codex/anthropic authorize URLs; `pollOAuthDeviceCodeFlow`
-- fixture: RFC 7636 recorded verifier. Time challenge + URL build. Device poll: injected complete/fail/cancel, noop sleep, no socket. Other oauth files still `needs-pair`; page.lisp stays unpairable.
-- Friend-MachineD n=5: challenge_urls **0.37×** (50.6 / 135.3 µs), ceiling 1.5; poll **0.09×** (1.01 / 11.51 µs), ceiling 8.0. cadr leads. No optimize in the booking commit.
+- pi: `packages/ai/src/auth/oauth/pkce.ts` SHA-256 + openai-codex/anthropic authorize URLs; `pollOAuthDeviceCodeFlow`; `ReadOnlyAuthStorage.read`
+- fixture: RFC 7636 recorded verifier. Time challenge + URL build. Device poll: injected complete/fail/cancel, noop sleep, no socket. Auth JSON: api_key + oauth + miss + invalid JSON. Do not exact keys. Other oauth files still `needs-pair`; page.lisp stays unpairable.
+- Friend-MachineD n=5: challenge_urls **0.37×** (50.6 / 135.3 µs), ceiling 1.5; poll **0.09×** (1.01 / 11.51 µs); auth_json **1.21×** (257.5 / 212.9 µs), ceiling 8.0. cadr leads on poll. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

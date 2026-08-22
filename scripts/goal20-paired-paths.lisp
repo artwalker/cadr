@@ -88,6 +88,7 @@
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
+;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -168,6 +169,7 @@
     ("agent_proxy.stream_roundtrip" . 10)
     ("oauth_pkce.challenge_urls" . 50)
     ("oauth_pkce_device.poll" . 50)
+    ("oauth_pkce_device.auth_json" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("evals_harness.summarize" . 20)
@@ -3018,19 +3020,78 @@
      fail
      cancel)))
 
+(defparameter *oauth-auth-json-fixture*
+  "{\"openai\":{\"type\":\"api_key\",\"key\":\"sk-test\"},\"anthropic\":{\"type\":\"oauth\",\"access\":\"acc\",\"refresh\":\"ref\",\"expires\":9999999999}}")
+
+(defun write-oauth-auth-json-file (path text)
+  (ensure-directories-exist path)
+  (with-open-file (stream path
+                          :direction :output
+                          :if-exists :supersede
+                          :if-does-not-exist :create
+                          :external-format :utf-8)
+    (write-string text stream))
+  (namestring (truename path)))
+
+(defun run-oauth-pkce-device-auth-json ()
+  (let* ((root
+           (merge-pathnames
+            "oauth-auth-json/"
+            *scratch-directory*))
+         (good
+           (write-oauth-auth-json-file
+            (merge-pathnames "auth.json" root)
+            *oauth-auth-json-fixture*))
+         (bad
+           (write-oauth-auth-json-file
+            (merge-pathnames "bad.json" root)
+            "["))
+         (ak (cadr-ai:read-auth-credential good :openai))
+         (oa (cadr-ai:read-auth-credential good :anthropic))
+         (miss (cadr-ai:read-auth-credential good :github)))
+    (list
+     (if (typep ak 'cadr-ai:api-key-credential) 1 0)
+     (if (and (typep ak 'cadr-ai:api-key-credential)
+              (= (length (cadr-ai:api-key-credential-key ak)) 7))
+         1
+         0)
+     (if (typep oa 'cadr-ai:oauth-credential) 1 0)
+     (if (and (typep oa 'cadr-ai:oauth-credential)
+              (= (length (cadr-ai:oauth-credential-access oa)) 3))
+         1
+         0)
+     (if miss 0 1)
+     (handler-case
+         (progn
+           (cadr-ai:read-auth-credential bad :openai)
+           0)
+       (error () 1)))))
+
 (defun measure-oauth-pkce-device ()
-  (let ((observed (run-oauth-pkce-device-poll)))
+  (let ((poll (run-oauth-pkce-device-poll))
+        (auth (run-oauth-pkce-device-auth-json)))
     (json-object
      "observed"
      (json-object
-      "dc_ok" (first observed)
-      "dc_fail" (second observed)
-      "dc_cancel" (third observed))
+      "dc_ok" (first poll)
+      "dc_fail" (second poll)
+      "dc_cancel" (third poll)
+      "ak_ok" (nth 0 auth)
+      "ak_len" (nth 1 auth)
+      "oa_ok" (nth 2 auth)
+      "oa_len" (nth 3 auth)
+      "auth_miss" (nth 4 auth)
+      "auth_bad" (nth 5 auth))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-poll)))))))
+                  (run-oauth-pkce-device-poll))))
+     "auth_json"
+     (collect "oauth_pkce_device.auth_json"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-auth-json)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -5538,6 +5599,8 @@
       "src/cadr-ai/oauth/pkce.lisp pkce-challenge + openai/anthropic-authorization-url"
       "oauth_pkce_device.poll"
       "src/cadr-ai/auth/device-code.lisp poll-device-authorization"
+      "oauth_pkce_device.auth_json"
+      "src/cadr-ai/auth.lisp read-auth-credential"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

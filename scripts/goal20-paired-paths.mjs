@@ -151,6 +151,7 @@ const REPETITIONS = {
 	"agent_proxy.stream_roundtrip": 10,
 	"oauth_pkce.challenge_urls": 50,
 	"oauth_pkce_device.poll": 50,
+	"oauth_pkce_device.auth_json": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"evals_harness.summarize": 20,
@@ -425,6 +426,9 @@ const openaiCodexModule = await import(moduleUrl("packages/ai/src/api/openai-cod
 const piMessagesModule = await import(moduleUrl("packages/ai/src/api/pi-messages.ts"));
 const deviceCodeModule = await import(
 	moduleUrl("packages/ai/src/auth/oauth/device-code.ts")
+);
+const authStorageModule = await import(
+	moduleUrl("packages/coding-agent/src/core/auth-storage.ts")
 );
 const llamaClientModule = await import(
 	moduleUrl("packages/coding-agent/src/extensions/llama/client.ts")
@@ -2534,13 +2538,51 @@ async function runOauthPkceDevicePoll() {
 	};
 }
 
+const OAUTH_AUTH_JSON_FIXTURE =
+	'{"openai":{"type":"api_key","key":"sk-test"},"anthropic":{"type":"oauth","access":"acc","refresh":"ref","expires":9999999999}}';
+
+function writeOauthAuthJsonFile(name, text) {
+	const root = path.join(scratch, "oauth-auth-json");
+	mkdirSync(root, { recursive: true });
+	const filePath = path.join(root, name);
+	writeFileSync(filePath, text, "utf8");
+	return filePath;
+}
+
+async function runOauthPkceDeviceAuthJson() {
+	const good = writeOauthAuthJsonFile("auth.json", OAUTH_AUTH_JSON_FIXTURE);
+	const bad = writeOauthAuthJsonFile("bad.json", "[");
+	const storage = new authStorageModule.ReadOnlyAuthStorage(good);
+	const ak = await storage.read("openai");
+	const oa = await storage.read("anthropic");
+	const miss = await storage.read("github");
+	let authBad = 0;
+	try {
+		await new authStorageModule.ReadOnlyAuthStorage(bad).read("openai");
+	} catch {
+		authBad = 1;
+	}
+	return {
+		ak_ok: ak?.type === "api_key" ? 1 : 0,
+		ak_len: ak?.type === "api_key" && typeof ak.key === "string" && ak.key.length === 7 ? 1 : 0,
+		oa_ok: oa?.type === "oauth" ? 1 : 0,
+		oa_len: oa?.type === "oauth" && typeof oa.access === "string" && oa.access.length === 3 ? 1 : 0,
+		auth_miss: miss ? 0 : 1,
+		auth_bad: authBad,
+	};
+}
+
 async function measureOauthPkceDevice() {
-	const observed = await runOauthPkceDevicePoll();
+	const poll = await runOauthPkceDevicePoll();
+	const auth = await runOauthPkceDeviceAuthJson();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
 		}),
-		observed,
+		auth_json: await collect("oauth_pkce_device.auth_json", () => {
+			return () => runOauthPkceDeviceAuthJson();
+		}),
+		observed: { ...poll, ...auth },
 	};
 }
 
@@ -4889,6 +4931,8 @@ const result = {
 				"packages/ai/src/auth/oauth/pkce.ts SHA-256 challenge + openai-codex/anthropic authorize URLs",
 			"oauth_pkce_device.poll":
 				"packages/ai/src/auth/oauth/device-code.ts pollOAuthDeviceCodeFlow",
+			"oauth_pkce_device.auth_json":
+				"packages/coding-agent/src/core/auth-storage.ts ReadOnlyAuthStorage.read",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

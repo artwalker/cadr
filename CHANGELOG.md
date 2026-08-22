@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `oauth_pkce_device.auth_json`
+  (api_key / oauth / miss / invalid JSON; cadr
+  `read-auth-credential` vs pi `ReadOnlyAuthStorage.read`).
+  Friend-MachineD n=5 **1.21×** (257.5 / 212.9 µs), ceiling
+  8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_print_rpc.clamp_thinking`
   (off/high/xhigh/max + xhigh-down + unknown; cadr
   `rpc-clamp-thinking-level` vs pi `clampThinkingLevel`).

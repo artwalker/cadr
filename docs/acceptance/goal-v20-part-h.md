@@ -1452,14 +1452,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 137 | 61,861 | 48.6% | `no worse than baseline` is falsifiable |
+| `paired` | 138 | 62,068 | 48.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 115 | 45,134 | 35.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 114 | 44,927 | 35.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 48.6% of lines (137 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 54.4% of lines.
+- **Falsifiable vs baseline:** 48.7% of lines (138 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 54.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1515,6 +1515,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
+| `src/cadr-ai/auth.lisp` | 207 | `oauth_pkce_device.auth_json` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/device-code.lisp` | 239 | `oauth_pkce_device.poll` |
 | `src/cadr-ai/auth/vertex.lisp` | 212 | `provider_vertex.stream_roundtrip` |
@@ -1671,8 +1672,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `agent_tool_loop` | 13 | 4,094 |
 | `cli_extensions_install` | 7 | 2,727 |
 | `evals_harness` | 6 | 2,184 |
-| `oauth_pkce_device` | 12 | 1,842 |
 | `package_manager` | 2 | 1,811 |
+| `oauth_pkce_device` | 11 | 1,635 |
 | `cli_print_rpc` | 5 | 1,375 |
 | `settings_load` | 3 | 1,283 |
 | `cli_sdk` | 4 | 1,214 |

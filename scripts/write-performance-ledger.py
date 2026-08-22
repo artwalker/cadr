@@ -47,6 +47,7 @@ METRIC_KEYS = (
     "agent_proxy.stream_roundtrip",
     "oauth_pkce.challenge_urls",
     "oauth_pkce_device.poll",
+    "oauth_pkce_device.auth_json",
     "cli_extensions_install.llama_url",
     "cli_extensions_install.hf_token",
     "evals_harness.summarize",
