@@ -144,7 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type"),
-    "cli_selectors": ("session_search", "session_format_age", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
+    "cli_selectors": ("session_search", "session_format_age", "session_record_label", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
@@ -705,6 +705,9 @@ RATIO_CEILINGS = {
     # First-freeze headroom for cli_selectors.session_format_age.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.session_format_age": 8.0,
+    # First-freeze headroom for cli_selectors.session_record_label.
+    # Ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_selectors.session_record_label": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
@@ -1589,6 +1592,11 @@ OBSERVED_EXACT = {
         "sfa_hour",
         "sfa_day",
         "sfa_week",
+        "srl_named",
+        "srl_first",
+        "srl_empty",
+        "srl_ctrl",
+        "srl_name_ctrl",
     ),
     "websocket_stream": (
         "ws_text",

@@ -239,6 +239,7 @@ const REPETITIONS = {
 	"cli_selectors.keybinding_text": 50,
 	"cli_selectors.keybinding_hint": 50,
 	"cli_selectors.session_format_age": 50,
+	"cli_selectors.session_record_label": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5002,6 +5003,51 @@ function runCliSelectorsSessionFormatAge() {
 	};
 }
 
+function sessionRecordLabelFixtureSessions() {
+	const escape = String.fromCharCode(27);
+	const del = String.fromCharCode(127);
+	return [
+		{
+			id: "named",
+			name: "My Session",
+			firstMessage: "ignored",
+		},
+		{
+			id: "first",
+			firstMessage: "hello world",
+		},
+		{
+			id: "empty",
+			firstMessage: "(no messages)",
+		},
+		{
+			id: "ctrl",
+			firstMessage: `first\nsecond\ttab${escape}[2Jclear${del}end`,
+		},
+		{
+			id: "name-ctrl",
+			name: `bad${del}name`,
+			firstMessage: "ignored",
+		},
+	];
+}
+
+function sessionRecordLabelPi(session) {
+	const displayText = session.name ?? session.firstMessage;
+	return displayText.replace(/[\x00-\x1f\x7f]/g, " ").trim();
+}
+
+function runCliSelectorsSessionRecordLabel() {
+	const labels = sessionRecordLabelFixtureSessions().map(sessionRecordLabelPi);
+	return {
+		srl_named: labels[0],
+		srl_first: labels[1],
+		srl_empty: labels[2],
+		srl_ctrl: labels[3],
+		srl_name_ctrl: labels[4],
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5337,6 +5383,7 @@ async function measureCliSelectorsSessionSearch() {
 	const keybindingTextResults = runCliSelectorsKeybindingText();
 	const keybindingHintResults = runCliSelectorsKeybindingHint();
 	const sessionFormatAgeResults = runCliSelectorsSessionFormatAge();
+	const sessionRecordLabelResults = runCliSelectorsSessionRecordLabel();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5437,6 +5484,11 @@ async function measureCliSelectorsSessionSearch() {
 		sfa_hour: sessionFormatAgeResults.sfa_hour,
 		sfa_day: sessionFormatAgeResults.sfa_day,
 		sfa_week: sessionFormatAgeResults.sfa_week,
+		srl_named: sessionRecordLabelResults.srl_named,
+		srl_first: sessionRecordLabelResults.srl_first,
+		srl_empty: sessionRecordLabelResults.srl_empty,
+		srl_ctrl: sessionRecordLabelResults.srl_ctrl,
+		srl_name_ctrl: sessionRecordLabelResults.srl_name_ctrl,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5495,6 +5547,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		session_format_age: await collect("cli_selectors.session_format_age", () => {
 			return () => runCliSelectorsSessionFormatAge();
+		}),
+		session_record_label: await collect("cli_selectors.session_record_label", () => {
+			return () => runCliSelectorsSessionRecordLabel();
 		}),
 		observed,
 	};
@@ -6581,6 +6636,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts formatSessionDate",
+			"cli_selectors.session_record_label":
+				"packages/coding-agent/src/modes/interactive/components/session-selector.ts session list label",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

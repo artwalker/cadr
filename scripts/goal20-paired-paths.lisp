@@ -107,6 +107,7 @@
 ;;;; 125. cli_selectors selector-keybinding-text vs KeybindingsManager.getKeys join
 ;;;; 126. cli_selectors selector-keybinding-hint vs rawKeyHint dim/muted
 ;;;; 127. cli_selectors session-selector-format-age vs formatSessionDate
+;;;; 128. cli_selectors session-selector-record-label vs session-selector render label
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -297,6 +298,7 @@
     ("cli_selectors.keybinding_text" . 50)
     ("cli_selectors.keybinding_hint" . 50)
     ("cli_selectors.session_format_age" . 50)
+    ("cli_selectors.session_record_label" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6139,6 +6141,29 @@
      (cadr-cli::session-selector-format-age (- now 86400000) now)
      (cadr-cli::session-selector-format-age (- now (* 10 86400000)) now))))
 
+(defun session-record-label-fixture-records ()
+  (list
+   (cadr-cli:make-session-search-record
+    :id "named" :name "My Session" :first-message "ignored")
+   (cadr-cli:make-session-search-record
+    :id "first" :name nil :first-message "hello world")
+   (cadr-cli:make-session-search-record
+    :id "empty" :name nil :first-message "")
+   (cadr-cli:make-session-search-record
+    :id "ctrl"
+    :name nil
+    :first-message
+    (format nil "first~%second~Ctab~A[2Jclear~Cend"
+            #\Tab (string (code-char 27)) (code-char 127)))
+   (cadr-cli:make-session-search-record
+    :id "name-ctrl"
+    :name (format nil "bad~Cname" (code-char 127))
+    :first-message "ignored")))
+
+(defun run-cli-selectors-session-record-label ()
+  (mapcar #'cadr-cli::session-selector-record-label
+          (session-record-label-fixture-records)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6158,7 +6183,8 @@
         (input-line (run-cli-selectors-input-line))
         (keybinding-text (run-cli-selectors-keybinding-text))
         (keybinding-hint (run-cli-selectors-keybinding-hint))
-        (session-format-age (run-cli-selectors-session-format-age)))
+        (session-format-age (run-cli-selectors-session-format-age))
+        (session-record-label (run-cli-selectors-session-record-label)))
     (json-object
      "observed"
      (json-object
@@ -6278,7 +6304,12 @@
       "sfa_min" (nth 2 session-format-age)
       "sfa_hour" (nth 3 session-format-age)
       "sfa_day" (nth 4 session-format-age)
-      "sfa_week" (nth 5 session-format-age))
+      "sfa_week" (nth 5 session-format-age)
+      "srl_named" (nth 0 session-record-label)
+      "srl_first" (nth 1 session-record-label)
+      "srl_empty" (nth 2 session-record-label)
+      "srl_ctrl" (nth 3 session-record-label)
+      "srl_name_ctrl" (nth 4 session-record-label))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6373,7 +6404,12 @@
      (collect "cli_selectors.session_format_age"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-session-format-age)))))))
+                  (run-cli-selectors-session-format-age))))
+     "session_record_label"
+     (collect "cli_selectors.session_record_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-record-label)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7422,6 +7458,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
       "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-format-age"
+      "cli_selectors.session_record_label"
+      "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-record-label"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

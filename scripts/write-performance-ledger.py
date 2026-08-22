@@ -134,6 +134,7 @@ METRIC_KEYS = (
     "cli_selectors.keybinding_text",
     "cli_selectors.keybinding_hint",
     "cli_selectors.session_format_age",
+    "cli_selectors.session_record_label",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

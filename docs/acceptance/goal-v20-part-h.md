@@ -1816,6 +1816,22 @@ mismatch). Observed `sfa_now` / `sfa_sec` / `sfa_min` / `sfa_hour` /
 `sfa_day` / `sfa_week` are exact. First Friend-MachineD freeze
 **1.00×** (0.7 / 0.7 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 128 — `cli_selectors` (session_record_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_record_label` | `session-selector-record-label` | session list row label (`session-selector.ts`) |
+
+Leftover sibling of the `sessions.lisp` hole. Row label text
+only: named session, first-message fallback, empty
+`(no messages)`, control-char neutralization, named label with
+DEL. Uses `sanitize-session-selector-label`. Fixtures avoid
+whitespace-only `name` (cadr `named-session-p` vs pi
+`name ?? firstMessage`). Observed `srl_named` / `srl_first` /
+`srl_empty` / `srl_ctrl` / `srl_name_ctrl` are exact. First
+Friend-MachineD freeze **1.84×** (2.6 / 1.4 µs), ceiling 8.0.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2139,8 +2155,8 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index`, `cli_selectors.align_left_right`, `cli_selectors.fit_line`, `cli_selectors.border_line`, `cli_selectors.selected_line`, `cli_selectors.muted_line`, `cli_selectors.dim_line`, `cli_selectors.modified_cursor_key`, `cli_selectors.title_line`, `cli_selectors.overlay_title_line`, `cli_selectors.input_line`, `cli_selectors.keybinding_text`, `cli_selectors.keybinding_hint` |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age` |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |

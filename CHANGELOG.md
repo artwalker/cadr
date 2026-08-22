@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.session_record_label`
+  (session row label fixtures; cadr `session-selector-record-label`
+  vs pi session list label). Friend-MachineD n=5 **1.84×** (2.6 /
+  1.4 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not
+  Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.session_format_age`
   (session age label fixtures; cadr `session-selector-format-age` vs pi
   `formatSessionDate`). Friend-MachineD n=5 **1.00×** (0.7 / 0.7 µs),

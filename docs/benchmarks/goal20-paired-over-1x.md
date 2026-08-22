@@ -94,4 +94,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_selectors.keybinding_hint` | 59.9 | 23.2 | 1.32× | 8.00× | measure-only pair `120292c32`; rawKeyHint dim/muted on joined keys | invent pause；地板优化另刀 |
 
+| `cli_selectors.session_record_label` | 2.6 | 1.4 | 1.84× | 8.00× | measure-only pair `c10fe79bb`; row label sanitize only | invent pause；地板优化另刀 |
+
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
