@@ -291,6 +291,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("compaction_reserve_tokens", paired.OBSERVED_EXACT["cli_settings"])
         self.assertIn("project_trusted", paired.OBSERVED_EXACT["cli_settings"])
 
+    def test_settings_load_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("settings_load.project_trust", RECORD.METRIC_KEYS)
+        self.assertIn("project_trust", paired.METRICS["settings_load"])
+        self.assertIn("settings_load.project_trust", paired.RATIO_CEILINGS)
+        self.assertIn("tr_empty", paired.OBSERVED_EXACT["settings_load"])
+        self.assertIn("rs_always", paired.OBSERVED_EXACT["settings_load"])
+        self.assertIn("rs_ov_no", paired.OBSERVED_EXACT["settings_load"])
+
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("resource_loader.reload", RECORD.METRIC_KEYS)
@@ -864,6 +873,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`provider_google.stream_roundtrip`", section)
             self.assertIn("`provider_bedrock.stream_roundtrip`", section)
             self.assertIn("`cli_settings.create`", section)
+            self.assertIn("`settings_load.project_trust`", section)
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)

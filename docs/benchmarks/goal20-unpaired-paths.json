@@ -85,6 +85,7 @@
   "ai_runtime_faux.blocks",
   "http_transport.parse_url",
   "cli_settings.create",
+  "settings_load.project_trust",
   "resource_loader.reload",
   "session_pipeline.session_load",
   "session_pipeline.context_walk",
@@ -1342,8 +1343,8 @@
   },
   {
    "prefix": "src/cadr-cli/settings/trust.lisp",
-   "class": "needs-pair",
-   "hole": "settings_load"
+   "class": "paired",
+   "metrics": ["settings_load.project_trust"]
   },
   {
    "prefix": "src/cadr-cli/support/atomic-write.lisp",

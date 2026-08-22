@@ -497,6 +497,14 @@ class TestClassify(unittest.TestCase):
         self.assertIn("cli_sdk.cache_miss", cache_version[0]["metrics"])
         self.assertIn("cli_sdk.cache_waste", cache_version[0]["metrics"])
         self.assertIn("cli_sdk.thinking_level", cache_version[0]["metrics"])
+        trust = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/settings/trust.lisp"
+        ]
+        self.assertEqual(len(trust), 1)
+        self.assertEqual(trust[0]["class"], "paired")
+        self.assertIn("settings_load.project_trust", trust[0]["metrics"])
         provider_defs = [
             row
             for row in classified["rows"]

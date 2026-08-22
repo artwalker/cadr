@@ -82,6 +82,7 @@
 ;;;;  68. cli_sdk detect-cache-miss vs detectCacheMiss
 ;;;;  69. cli_sdk compute-cache-waste vs computeCacheWaste
 ;;;;  70. cli_sdk valid-thinking-level-p vs isValidThinkingLevel
+;;;;  71. settings_load resolve-project-trusted vs resolveProjectTrusted
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -149,6 +150,7 @@
     ("provider_codex.stream_roundtrip" . 10)
     ("provider_pi_messages.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
+    ("settings_load.project_trust" . 20)
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
     ("session_discovery.header_probe" . 20)
@@ -2267,6 +2269,92 @@
                 (lambda ()
                   (lambda ()
                     (run-cli-settings global project))))))))
+
+(defun stage-settings-load-trust ()
+  (let* ((empty
+           (merge-pathnames "trust-empty/" *scratch-directory*))
+         (project
+           (merge-pathnames "trust-project/" *scratch-directory*))
+         (cadr-config
+           (merge-pathnames ".cadr/settings.json" project))
+         (pi-config
+           (merge-pathnames ".pi/settings.json" project))
+         (agent
+           (merge-pathnames "trust-agent/" *scratch-directory*))
+         (store-path
+           (merge-pathnames "trust.json" agent)))
+    (ensure-directories-exist empty)
+    (ensure-directories-exist cadr-config)
+    (ensure-directories-exist pi-config)
+    (ensure-directories-exist agent)
+    (with-open-file (out cadr-config
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string "{}" out))
+    (with-open-file (out pi-config
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string "{}" out))
+    (list
+     (namestring (uiop:ensure-directory-pathname empty))
+     (namestring (uiop:ensure-directory-pathname project))
+     (namestring store-path))))
+
+(defun trust-bool (value)
+  (if value 1 0))
+
+(defun run-settings-load-project-trust (empty project store-path)
+  (let ((store (cadr-cli::make-project-trust-store store-path)))
+    (list
+     (trust-bool
+      (cadr-cli::trust-requiring-project-resources-p empty))
+     (trust-bool
+      (cadr-cli::trust-requiring-project-resources-p project))
+     (trust-bool
+      (cadr-cli::resolve-project-trusted
+       store empty :default :ask :has-ui-p nil))
+     (trust-bool
+      (cadr-cli::resolve-project-trusted
+       store project :default :ask :has-ui-p nil))
+     (trust-bool
+      (cadr-cli::resolve-project-trusted
+       store project :default :always :has-ui-p nil))
+     (trust-bool
+      (cadr-cli::resolve-project-trusted
+       store project :default :never :has-ui-p nil))
+     (trust-bool
+      (cadr-cli::resolve-project-trusted
+       store project :override t :override-supplied-p t))
+     (trust-bool
+      (cadr-cli::resolve-project-trusted
+       store project :override nil :override-supplied-p t)))))
+
+(defun measure-settings-load ()
+  (destructuring-bind (empty project store-path)
+      (stage-settings-load-trust)
+    (let ((observed
+            (run-settings-load-project-trust empty project store-path)))
+      (json-object
+       "observed"
+       (json-object
+        "tr_empty" (nth 0 observed)
+        "tr_proj" (nth 1 observed)
+        "rs_empty" (nth 2 observed)
+        "rs_ask" (nth 3 observed)
+        "rs_always" (nth 4 observed)
+        "rs_never" (nth 5 observed)
+        "rs_ov_yes" (nth 6 observed)
+        "rs_ov_no" (nth 7 observed))
+       "project_trust"
+       (collect "settings_load.project_trust"
+                (lambda ()
+                  (lambda ()
+                    (run-settings-load-project-trust
+                     empty project store-path))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -5111,6 +5199,8 @@
       "src/cadr-ai/providers/pi-messages.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
+      "settings_load.project_trust"
+      "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "package_manager.resolve"
@@ -5326,6 +5416,8 @@
               (let ((pi-messages (measure-provider-pi-messages)))
               (format *error-output* "goal20 cadr paired paths: cli_settings~%")
               (let ((settings (measure-cli-settings)))
+              (format *error-output* "goal20 cadr paired paths: settings_load~%")
+              (let ((settings-load (measure-settings-load)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
               (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: package_manager~%")
@@ -5442,6 +5534,7 @@
               "provider_codex" codex
               "provider_pi_messages" pi-messages
               "cli_settings" settings
+              "settings_load" settings-load
               "resource_loader" resources
               "package_manager" packages
               "session_discovery" discovery
@@ -5498,7 +5591,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

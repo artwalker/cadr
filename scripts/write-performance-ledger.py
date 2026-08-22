@@ -34,6 +34,7 @@ METRIC_KEYS = (
     "provider_codex.stream_roundtrip",
     "provider_pi_messages.stream_roundtrip",
     "cli_settings.create",
+    "settings_load.project_trust",
     "resource_loader.reload",
     "package_manager.resolve",
     "session_discovery.header_probe",

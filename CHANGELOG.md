@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `settings_load.project_trust`
+  (empty vs project resources; ask/always/never/override;
+  cadr `resolve-project-trusted` vs pi
+  `resolveProjectTrusted`). Friend-MachineD n=5 **0.24×**
+  (330.6 / 1402.9 µs), ceiling 8.0. cadr leads. Same
+  commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_sdk.thinking_level`
   (lowercase off/minimal/low/medium/high/xhigh/max + miss;
   cadr `valid-thinking-level-p` vs pi `isValidThinkingLevel`).

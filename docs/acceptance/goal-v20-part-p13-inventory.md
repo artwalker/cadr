@@ -255,10 +255,11 @@ These must not be filed as callees.
 | `src/cadr-ai/providers/registry.lisp` | 157 |
 | `src/cadr-ai/providers/runtime-projection.lisp` | 297 |
 
-### `settings_load` (required hole)
+### `settings_load` (required hole) — `manager.lisp` paired `cli_settings.create`; `trust.lisp` paired `settings_load.project_trust`
 
-- pi: `packages/coding-agent/src/core/settings-manager.ts`
-- fixture: Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides.
+- pi: `packages/coding-agent/src/core/settings-manager.ts`; `resolveProjectTrusted`
+- fixture: Checked-in settings.json covering compaction, theme, model, project trust. Time load + get + scoped override. Same bytes both sides. Trust: empty cwd vs `.cadr`+`.pi` settings; resolve ask/always/never/override. No UI.
+- Friend-MachineD n=5: create **0.13×** (105 / 813 µs), ceiling 1.5; project_trust **0.24×** (330.6 / 1402.9 µs), ceiling 8.0. cadr leads. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

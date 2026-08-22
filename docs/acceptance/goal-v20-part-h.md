@@ -1220,6 +1220,20 @@ uppercase (cadr downcases; pi is case-sensitive). First
 Friend-MachineD freeze **3.21×** (0.72 / 0.22 µs), ceiling
 8.0 (variance). Same commit no optimize.
 
+### Pair 86 — `settings_load` (project_trust)
+
+| metric | cadr | pi |
+|---|---|---|
+| `project_trust` | `resolve-project-trusted` | `resolveProjectTrusted` (`packages/coding-agent/src/core/project-trust.ts`) |
+
+Independent named metric for the `settings_load` hole
+(not a `cli_sdk` leftover). Empty cwd vs cwd with both
+`.cadr/settings.json` and `.pi/settings.json`. Resolve:
+empty/ask/always/never + override yes/no. No UI, no
+extension host, no socket. First Friend-MachineD freeze
+**0.24×** (330.6 / 1402.9 µs), ceiling 8.0. cadr leads.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1425,14 +1439,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 132 | 60,418 | 47.4% | `no worse than baseline` is falsifiable |
+| `paired` | 133 | 60,634 | 47.6% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 120 | 46,577 | 36.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 119 | 46,361 | 36.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 47.4% of lines (132 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 53.3% of lines.
+- **Falsifiable vs baseline:** 47.6% of lines (133 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 53.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1548,6 +1562,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create` |
 | `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
+| `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
@@ -1642,7 +1657,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `oauth_pkce_device` | 13 | 2,081 |
 | `package_manager` | 2 | 1,811 |
 | `cli_print_rpc` | 6 | 1,601 |
-| `settings_load` | 4 | 1,499 |
+| `settings_load` | 3 | 1,283 |
 | `cli_sdk` | 4 | 1,214 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |

@@ -99,6 +99,7 @@ METRICS = {
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
     "cli_settings": ("create",),
+    "settings_load": ("project_trust",),
     "resource_loader": ("reload",),
     "package_manager": ("resolve",),
     "session_discovery": ("header_probe",),
@@ -224,6 +225,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "cli_settings.create": 1.5,
+    # Frozen from the first Friend-MachineD non-quick
+    # settings_load.project_trust pair (samples=5): observed
+    # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "settings_load.project_trust": 8.0,
     # Frozen from the first Friend-MachineD non-quick resource_loader
     # pair (samples=5): observed 0.29x (568 / 1978 µs). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent
@@ -751,6 +757,16 @@ OBSERVED_EXACT = {
         "default_project_trust",
         "http_idle_timeout_ms",
         "project_trusted",
+    ),
+    "settings_load": (
+        "tr_empty",
+        "tr_proj",
+        "rs_empty",
+        "rs_ask",
+        "rs_always",
+        "rs_never",
+        "rs_ov_yes",
+        "rs_ov_no",
     ),
     "package_manager": (
         "package_count",

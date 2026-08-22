@@ -138,6 +138,7 @@ const REPETITIONS = {
 	"provider_codex.stream_roundtrip": 10,
 	"provider_pi_messages.stream_roundtrip": 10,
 	"cli_settings.create": 5,
+	"settings_load.project_trust": 20,
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
 	"session_discovery.header_probe": 20,
@@ -418,6 +419,12 @@ const vertexModule = await import(moduleUrl("packages/ai/src/api/google-vertex.t
 const openaiCodexModule = await import(moduleUrl("packages/ai/src/api/openai-codex-responses.ts"));
 const piMessagesModule = await import(moduleUrl("packages/ai/src/api/pi-messages.ts"));
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
+const projectTrustModule = await import(
+	moduleUrl("packages/coding-agent/src/core/project-trust.ts")
+);
+const trustManagerModule = await import(
+	moduleUrl("packages/coding-agent/src/core/trust-manager.ts")
+);
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
 const packageManagerModule = await import(moduleUrl("packages/coding-agent/src/core/package-manager.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
@@ -1400,6 +1407,96 @@ async function measureCliSettings() {
 			http_idle_timeout_ms: manager.getHttpIdleTimeoutMs(),
 			project_trusted: manager.isProjectTrusted(),
 		},
+	};
+}
+
+function dummyProjectTrustContext(cwd) {
+	return {
+		cwd,
+		mode: "rpc",
+		hasUI: false,
+		ui: {
+			select: async () => undefined,
+			confirm: async () => false,
+			input: async () => "",
+			notify: () => {},
+		},
+	};
+}
+
+function stageSettingsLoadTrust() {
+	const empty = path.join(scratch, "trust-empty");
+	const project = path.join(scratch, "trust-project");
+	const agent = path.join(scratch, "trust-agent");
+	mkdirSync(empty, { recursive: true });
+	mkdirSync(path.join(project, ".cadr"), { recursive: true });
+	mkdirSync(path.join(project, ".pi"), { recursive: true });
+	mkdirSync(agent, { recursive: true });
+	writeFileSync(path.join(project, ".cadr", "settings.json"), "{}", "utf8");
+	writeFileSync(path.join(project, ".pi", "settings.json"), "{}", "utf8");
+	return { empty, project, agent };
+}
+
+async function runSettingsLoadProjectTrust(empty, project, agent) {
+	const store = new trustManagerModule.ProjectTrustStore(agent);
+	const ctxEmpty = dummyProjectTrustContext(empty);
+	const ctxProject = dummyProjectTrustContext(project);
+	const rsEmpty = await projectTrustModule.resolveProjectTrusted({
+		cwd: empty,
+		trustStore: store,
+		defaultProjectTrust: "ask",
+		projectTrustContext: ctxEmpty,
+	});
+	const rsAsk = await projectTrustModule.resolveProjectTrusted({
+		cwd: project,
+		trustStore: store,
+		defaultProjectTrust: "ask",
+		projectTrustContext: ctxProject,
+	});
+	const rsAlways = await projectTrustModule.resolveProjectTrusted({
+		cwd: project,
+		trustStore: store,
+		defaultProjectTrust: "always",
+		projectTrustContext: ctxProject,
+	});
+	const rsNever = await projectTrustModule.resolveProjectTrusted({
+		cwd: project,
+		trustStore: store,
+		defaultProjectTrust: "never",
+		projectTrustContext: ctxProject,
+	});
+	const rsOvYes = await projectTrustModule.resolveProjectTrusted({
+		cwd: project,
+		trustStore: store,
+		trustOverride: true,
+		projectTrustContext: ctxProject,
+	});
+	const rsOvNo = await projectTrustModule.resolveProjectTrusted({
+		cwd: project,
+		trustStore: store,
+		trustOverride: false,
+		projectTrustContext: ctxProject,
+	});
+	return {
+		tr_empty: trustManagerModule.hasTrustRequiringProjectResources(empty) ? 1 : 0,
+		tr_proj: trustManagerModule.hasTrustRequiringProjectResources(project) ? 1 : 0,
+		rs_empty: rsEmpty ? 1 : 0,
+		rs_ask: rsAsk ? 1 : 0,
+		rs_always: rsAlways ? 1 : 0,
+		rs_never: rsNever ? 1 : 0,
+		rs_ov_yes: rsOvYes ? 1 : 0,
+		rs_ov_no: rsOvNo ? 1 : 0,
+	};
+}
+
+async function measureSettingsLoad() {
+	const { empty, project, agent } = stageSettingsLoadTrust();
+	const observed = await runSettingsLoadProjectTrust(empty, project, agent);
+	return {
+		project_trust: await collect("settings_load.project_trust", () => {
+			return () => runSettingsLoadProjectTrust(empty, project, agent);
+		}),
+		observed,
 	};
 }
 
@@ -4430,6 +4527,8 @@ process.stderr.write("goal20 pi paired paths: provider_pi_messages\n");
 const providerPiMessages = await measureProviderPiMessages();
 process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
+process.stderr.write("goal20 pi paired paths: settings_load\n");
+const settingsLoad = await measureSettingsLoad();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
 const resourceLoader = await measureResourceLoader();
 process.stderr.write("goal20 pi paired paths: package_manager\n");
@@ -4539,6 +4638,8 @@ const result = {
 			"provider_codex.stream_roundtrip": "packages/ai/src/api/openai-codex-responses.ts stream",
 			"provider_pi_messages.stream_roundtrip": "packages/ai/src/api/pi-messages.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
+			"settings_load.project_trust":
+				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"session_discovery.header_probe":
@@ -4722,6 +4823,7 @@ const result = {
 		provider_codex: providerCodex,
 		provider_pi_messages: providerPiMessages,
 		cli_settings: cliSettings,
+		settings_load: settingsLoad,
 		resource_loader: resourceLoader,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
