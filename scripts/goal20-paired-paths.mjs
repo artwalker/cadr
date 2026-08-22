@@ -229,6 +229,7 @@ const REPETITIONS = {
 	"cli_selectors.align_left_right": 50,
 	"cli_selectors.fit_line": 50,
 	"cli_selectors.border_line": 50,
+	"cli_selectors.selected_line": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5117,12 +5118,28 @@ function runCliSelectorsBorderLine() {
 	];
 }
 
+function selectedLinePi(line, width) {
+	return themeModule.theme.bg("selectedBg", fitLine(line, width, { pad: true }));
+}
+
+function runCliSelectorsSelectedLine() {
+	return [
+		selectedLinePi("hello", 10),
+		selectedLinePi("hello world", 8),
+		selectedLinePi("café🙂", 6),
+		selectedLinePi("", 5),
+		selectedLinePi("item", 20),
+		selectedLinePi("ABCDEFGHIJ", 5),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
 	const alignLeftRightResults = runCliSelectorsAlignLeftRight();
 	const fitLineResults = runCliSelectorsFitLine();
 	const borderLineResults = runCliSelectorsBorderLine();
+	const selectedLineResults = runCliSelectorsSelectedLine();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5163,6 +5180,12 @@ async function measureCliSelectorsSessionSearch() {
 		bl_w80: borderLineResults[3],
 		bl_w10_acc: borderLineResults[4],
 		bl_w20: borderLineResults[5],
+		sl_short: selectedLineResults[0],
+		sl_trunc: selectedLineResults[1],
+		sl_wide: selectedLineResults[2],
+		sl_empty: selectedLineResults[3],
+		sl_pad20: selectedLineResults[4],
+		sl_narrow: selectedLineResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5191,6 +5214,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		border_line: await collect("cli_selectors.border_line", () => {
 			return () => runCliSelectorsBorderLine();
+		}),
+		selected_line: await collect("cli_selectors.selected_line", () => {
+			return () => runCliSelectorsSelectedLine();
 		}),
 		observed,
 	};
@@ -6290,6 +6316,8 @@ const result = {
 				"packages/tui/src/utils.ts truncateToWidth + visibleWidth pad (selector-fit-line sites)",
 			"cli_selectors.border_line":
 				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts DynamicBorder.render",
+			"cli_selectors.selected_line":
+				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.bg selectedBg + truncateToWidth pad",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

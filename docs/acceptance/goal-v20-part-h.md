@@ -1681,6 +1681,19 @@ border/accent; width 1/80/10/20. Observed `bl_w40` / `bl_w40_acc`
 Friend-MachineD freeze **0.65×** (8.6 / 13.2 µs), ceiling 8.0.
 Same commit no optimize.
 
+### Pair 118 — `cli_selectors` (selected_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `selected_line` | `selector-selected-line` | `theme.bg selectedBg` + truncate/pad |
+
+Leftover sibling of the `cli_selectors` hole. Time selected-bg
+fit only, not full item render. Fixtures: short; truncate; wide
+char; empty; pad wide; narrow. Observed `sl_short` / `sl_trunc` /
+`sl_wide` / `sl_empty` / `sl_pad20` / `sl_narrow` are exact. First
+Friend-MachineD freeze **0.83×** (22.0 / 26.4 µs), ceiling 8.0.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2004,7 +2017,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index`, `cli_selectors.align_left_right`, `cli_selectors.fit_line`, `cli_selectors.border_line` |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index`, `cli_selectors.align_left_right`, `cli_selectors.fit_line`, `cli_selectors.border_line`, `cli_selectors.selected_line` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |

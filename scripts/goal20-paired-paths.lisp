@@ -97,6 +97,7 @@
 ;;;; 115. cli_selectors selector-align-left-right vs session-selector header align
 ;;;; 116. cli_selectors selector-fit-line vs truncateToWidth + pad
 ;;;; 117. cli_selectors selector-border-line vs DynamicBorder render
+;;;; 118. cli_selectors selector-selected-line vs theme.bg selectedBg + fit
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -277,6 +278,7 @@
     ("cli_selectors.align_left_right" . 50)
     ("cli_selectors.fit_line" . 50)
     ("cli_selectors.border_line" . 50)
+    ("cli_selectors.selected_line" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6004,6 +6006,15 @@
    (cadr-cli::selector-border-line 10 :accent)
    (cadr-cli::selector-border-line 20)))
 
+(defun run-cli-selectors-selected-line ()
+  (list
+   (cadr-cli::selector-selected-line "hello" 10)
+   (cadr-cli::selector-selected-line "hello world" 8)
+   (cadr-cli::selector-selected-line "café🙂" 6)
+   (cadr-cli::selector-selected-line "" 5)
+   (cadr-cli::selector-selected-line "item" 20)
+   (cadr-cli::selector-selected-line "ABCDEFGHIJ" 5)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6013,7 +6024,8 @@
         (move-index (run-cli-selectors-move-index))
         (align-left-right (run-cli-selectors-align-left-right))
         (fit-line (run-cli-selectors-fit-line))
-        (border-line (run-cli-selectors-border-line)))
+        (border-line (run-cli-selectors-border-line))
+        (selected-line (run-cli-selectors-selected-line)))
     (json-object
      "observed"
      (json-object
@@ -6073,7 +6085,13 @@
       "bl_w1" (nth 2 border-line)
       "bl_w80" (nth 3 border-line)
       "bl_w10_acc" (nth 4 border-line)
-      "bl_w20" (nth 5 border-line))
+      "bl_w20" (nth 5 border-line)
+      "sl_short" (nth 0 selected-line)
+      "sl_trunc" (nth 1 selected-line)
+      "sl_wide" (nth 2 selected-line)
+      "sl_empty" (nth 3 selected-line)
+      "sl_pad20" (nth 4 selected-line)
+      "sl_narrow" (nth 5 selected-line))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6118,7 +6136,12 @@
      (collect "cli_selectors.border_line"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-border-line)))))))
+                  (run-cli-selectors-border-line))))
+     "selected_line"
+     (collect "cli_selectors.selected_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-selected-line)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7181,6 +7204,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-fit-line"
       "cli_selectors.border_line"
       "src/cadr-cli/interactive/selectors/common.lisp selector-border-line"
+      "cli_selectors.selected_line"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-selected-line"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
