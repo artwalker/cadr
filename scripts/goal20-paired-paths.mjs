@@ -214,6 +214,7 @@ const REPETITIONS = {
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
+	"cli_selectors.session_search": 50,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
 	"cli_sdk.cache_waste": 50,
@@ -499,6 +500,9 @@ const grokMermaidModule = await import(
 );
 const mermaidTransformModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/components/mermaid.ts")
+);
+const sessionSelectorSearchModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/components/session-selector-search.ts")
 );
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
@@ -4683,6 +4687,62 @@ async function measureCliInteractiveDecodeEntity() {
 	};
 }
 
+function sessionSearchFixtureRecords() {
+	return [
+		{
+			id: "019f0000-0000-7000-8000-00000000cadr",
+			name: "alpha",
+			cwd: "/tmp/a",
+			allMessagesText: "hello cadr world",
+			modified: new Date(3),
+		},
+		{
+			id: "other-id",
+			name: undefined,
+			cwd: "/tmp/b",
+			allMessagesText: "nope",
+			modified: new Date(2),
+		},
+		{
+			id: "named-sess",
+			name: "  named  ",
+			cwd: "/proj",
+			allMessagesText: "foo",
+			modified: new Date(1),
+		},
+	];
+}
+
+function sessionSearchCount(query, nameFilter = "all") {
+	return sessionSelectorSearchModule.filterAndSortSessions(
+		sessionSearchFixtureRecords(),
+		query,
+		"recent",
+		nameFilter,
+	).length;
+}
+
+function runCliSelectorsSessionSearch() {
+	return {
+		ss_empty: sessionSearchCount(""),
+		ss_hit: sessionSearchCount("cadr"),
+		ss_miss: sessionSearchCount("no-such-session-zz"),
+		ss_re: sessionSearchCount("re:cadr"),
+		ss_badre: sessionSearchCount("re:["),
+		ss_named: sessionSearchCount("", "named"),
+	};
+}
+
+async function measureCliSelectorsSessionSearch() {
+	const observed = runCliSelectorsSessionSearch();
+	return {
+		session_search: await collect("cli_selectors.session_search", () => {
+			return () => runCliSelectorsSessionSearch();
+		}),
+		observed,
+	};
+}
+
 function runCliSdkVersionNewer() {
 	return {
 		beta: versionCheckModule.comparePackageVersions("5.0.0-beta.20", "5.0.0-beta.9"),
@@ -5431,6 +5491,8 @@ process.stderr.write("goal20 pi paired paths: cli_support\n");
 const cliSupport = await measureCliSupportStripAnsi();
 process.stderr.write("goal20 pi paired paths: cli_interactive_controller\n");
 const cliInteractive = await measureCliInteractiveDecodeEntity();
+process.stderr.write("goal20 pi paired paths: cli_selectors\n");
+const cliSelectors = await measureCliSelectorsSessionSearch();
 process.stderr.write("goal20 pi paired paths: cli_sdk\n");
 const cliSdk = await measureCliSdkVersionNewer();
 process.stderr.write("goal20 pi paired paths: provider_registry_defs\n");
@@ -5612,6 +5674,8 @@ const result = {
 				"packages/coding-agent/src/utils/clipboard-image.ts isWaylandSession",
 			"cli_interactive_controller.cwd_footer":
 				"packages/coding-agent/src/modes/interactive/components/footer.ts formatCwdForFooter",
+			"cli_selectors.session_search":
+				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_sdk.version_newer":
 				"packages/coding-agent/src/utils/version-check.ts isNewerPackageVersion",
 			"cli_sdk.cache_miss":
@@ -5737,6 +5801,7 @@ const result = {
 		ai_capabilities: aiCapabilities,
 		cli_support: cliSupport,
 		cli_interactive_controller: cliInteractive,
+		cli_selectors: cliSelectors,
 		cli_sdk: cliSdk,
 		provider_registry_defs: providerRegistryDefs,
 		skill_prompt_load: skillPromptLoad,

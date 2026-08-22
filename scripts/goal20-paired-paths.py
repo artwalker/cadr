@@ -144,6 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer"),
+    "cli_selectors": ("session_search",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
     "skill_prompt_load": ("build_prompt",),
@@ -617,6 +618,11 @@ RATIO_CEILINGS = {
     # 0.34x (0.78 / 2.31 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "cli_interactive_controller.cwd_footer": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_selectors.session_search pair (samples=5): observed
+    # 2.48x (42.40 / 17.10 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "cli_selectors.session_search": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_sdk pair (samples=5): observed 0.40x
     # (4.1 / 10.3 us). cadr leads. 8.0 is first-freeze
@@ -1344,6 +1350,14 @@ OBSERVED_EXACT = {
         "cf_proj",
         "cf_out",
         "cf_slash",
+    ),
+    "cli_selectors": (
+        "ss_empty",
+        "ss_hit",
+        "ss_miss",
+        "ss_re",
+        "ss_badre",
+        "ss_named",
     ),
     "cli_sdk": (
         "beta",

@@ -514,10 +514,11 @@ These must not be filed as callees.
 | `src/cadr-cli/interactive/transcript.lisp` | 1,070 |
 | `src/cadr-cli/interactive/user-bash.lisp` | 213 |
 
-### `cli_selectors` (additional)
+### `cli_selectors` (additional) — `selectors/sessions.lisp` paired `cli_selectors.session_search`
 
-- pi: `packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)`
-- fixture: Open each selector on a staged session/model/settings tree; time render + one move + confirm. Same bytes of the backing JSON.
+- pi: `filterAndSortSessions` (`packages/coding-agent/src/modes/interactive/components/session-selector-search.ts`)
+- fixture: three synthetic search records. Time filter/sort only, not selector render or TUI move/confirm. empty query; substring `cadr`; miss; `re:cadr`; invalid `re:[`; name-filter named. sort-mode recent. Do not exact fuzzy-token AND vs cadr whole-needle or relevance scores.
+- Friend-MachineD n=5: **2.48×** (42.40 / 17.10 µs), ceiling 8.0. Other selector/component files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

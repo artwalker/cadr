@@ -92,6 +92,7 @@
   "cli_interactive_controller.decode_entity",
   "cli_interactive_controller.wayland",
   "cli_interactive_controller.cwd_footer",
+  "cli_selectors.session_search",
   "cli_sdk.version_newer",
   "cli_sdk.cache_miss",
   "cli_sdk.cache_waste",
@@ -1171,8 +1172,8 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/sessions.lisp",
-   "class": "needs-pair",
-   "hole": "cli_selectors"
+   "class": "paired",
+   "metrics": ["cli_selectors.session_search"]
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/settings.lisp",

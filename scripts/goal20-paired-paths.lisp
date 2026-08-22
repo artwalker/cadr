@@ -104,6 +104,7 @@
 ;;;;  90. oauth_pkce_device github-copilot-oauth-to-auth vs githubCopilotOAuth.toAuth
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
+;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -247,6 +248,7 @@
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
+    ("cli_selectors.session_search" . 50)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
     ("cli_sdk.cache_waste" . 50)
@@ -5603,6 +5605,61 @@
                 (lambda ()
                   (run-cli-interactive-cwd-footer)))))))
 
+(defun session-search-fixture-records ()
+  (list
+   (cadr-cli:make-session-search-record
+    :id "019f0000-0000-7000-8000-00000000cadr"
+    :name "alpha"
+    :cwd "/tmp/a"
+    :all-messages-text "hello cadr world"
+    :modified 3)
+   (cadr-cli:make-session-search-record
+    :id "other-id"
+    :name nil
+    :cwd "/tmp/b"
+    :all-messages-text "nope"
+    :modified 2)
+   (cadr-cli:make-session-search-record
+    :id "named-sess"
+    :name "  named  "
+    :cwd "/proj"
+    :all-messages-text "foo"
+    :modified 1)))
+
+(defun session-search-count (query &key (name-filter :all))
+  (length
+   (cadr-cli:filter-and-sort-sessions
+    (session-search-fixture-records)
+    query
+    :sort-mode :recent
+    :name-filter name-filter)))
+
+(defun run-cli-selectors-session-search ()
+  (list
+   (session-search-count "")
+   (session-search-count "cadr")
+   (session-search-count "no-such-session-zz")
+   (session-search-count "re:cadr")
+   (session-search-count "re:[")
+   (session-search-count "" :name-filter :named)))
+
+(defun measure-cli-selectors-session-search ()
+  (let ((observed (run-cli-selectors-session-search)))
+    (json-object
+     "observed"
+     (json-object
+      "ss_empty" (nth 0 observed)
+      "ss_hit" (nth 1 observed)
+      "ss_miss" (nth 2 observed)
+      "ss_re" (nth 3 observed)
+      "ss_badre" (nth 4 observed)
+      "ss_named" (nth 5 observed))
+     "session_search"
+     (collect "cli_selectors.session_search"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-search)))))))
+
 (defun version-cmp-sign (left right)
   (let ((value (cadr-cli::compare-package-versions left right)))
     (cond
@@ -6470,6 +6527,8 @@
       "src/cadr-cli/interactive/clipboard.lisp clipboard-wayland-p"
       "cli_interactive_controller.cwd_footer"
       "src/cadr-cli/interactive/footer.lisp format-cwd-for-footer"
+      "cli_selectors.session_search"
+      "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_sdk.version_newer"
       "src/cadr-cli/sdk/cache-version.lisp newer-package-version-p"
       "cli_sdk.cache_miss"
@@ -6655,6 +6714,8 @@
               (let ((support (measure-cli-support-strip-ansi)))
               (format *error-output* "goal20 cadr paired paths: cli_interactive_controller~%")
               (let ((interactive (measure-cli-interactive-decode-entity)))
+              (format *error-output* "goal20 cadr paired paths: cli_selectors~%")
+              (let ((selectors (measure-cli-selectors-session-search)))
               (format *error-output* "goal20 cadr paired paths: cli_sdk~%")
               (let ((sdk (measure-cli-sdk-version-newer)))
               (format *error-output* "goal20 cadr paired paths: provider_registry_defs~%")
@@ -6741,6 +6802,7 @@
               "ai_capabilities" capabilities
               "cli_support" support
               "cli_interactive_controller" interactive
+              "cli_selectors" selectors
               "cli_sdk" sdk
               "provider_registry_defs" provider-defs
               "skill_prompt_load" skill-prompt
@@ -6763,7 +6825,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

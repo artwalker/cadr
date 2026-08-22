@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.session_search`
+  (empty / substring / miss / `re:` / invalid regex /
+  named filter; cadr `filter-and-sort-sessions` vs pi
+  `filterAndSortSessions`). Friend-MachineD n=5 **2.48×**
+  (42.40 / 17.10 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_mermaid.transform`
   (fence / mode off / thinking / too-wide; cadr
   `transform-mermaid-markdown` vs pi
