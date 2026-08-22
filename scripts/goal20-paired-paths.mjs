@@ -213,6 +213,7 @@ const REPETITIONS = {
 	"cli_support.git_source": 50,
 	"cli_support.user_agent": 50,
 	"cli_support.parse_changelog": 50,
+	"cli_support.experimental": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
@@ -546,6 +547,7 @@ const sessionResourcesModule = await import(
 const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.ts"));
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const timingsModule = await import(moduleUrl("packages/coding-agent/src/core/timings.ts"));
+const experimentalModule = await import(moduleUrl("packages/coding-agent/src/core/experimental.ts"));
 const eventBusModule = await import(moduleUrl("packages/coding-agent/src/core/event-bus.ts"));
 const attributionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/provider-attribution.ts")
@@ -4619,6 +4621,28 @@ function changelogEntryVersion(entry) {
 	return `${entry.major}.${entry.minor}.${entry.patch}`;
 }
 
+function experimentalFlag(value) {
+	const previous = process.env.PI_EXPERIMENTAL;
+	if (value === null) delete process.env.PI_EXPERIMENTAL;
+	else process.env.PI_EXPERIMENTAL = value;
+	try {
+		return experimentalModule.areExperimentalFeaturesEnabled() ? 1 : 0;
+	} finally {
+		if (previous === undefined) delete process.env.PI_EXPERIMENTAL;
+		else process.env.PI_EXPERIMENTAL = previous;
+	}
+}
+
+function runCliSupportExperimental() {
+	return {
+		ex_on: experimentalFlag("1"),
+		ex_empty: experimentalFlag(""),
+		ex_zero: experimentalFlag("0"),
+		ex_true: experimentalFlag("true"),
+		ex_nil: experimentalFlag(null),
+	};
+}
+
 function runCliSupportParseChangelog() {
 	const changelogPath = path.join(scratch, "changelog.md");
 	const entries = changelogModule.parseChangelog(changelogPath);
@@ -4648,6 +4672,7 @@ async function measureCliSupportStripAnsi() {
 	const ua = runCliSupportUserAgent();
 	writePairedChangelog();
 	const changelog = runCliSupportParseChangelog();
+	const experimental = runCliSupportExperimental();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -4679,7 +4704,22 @@ async function measureCliSupportStripAnsi() {
 		parse_changelog: await collect("cli_support.parse_changelog", () => {
 			return () => runCliSupportParseChangelog();
 		}),
-		observed: { ...ansi, ...paths, ...timings, ...bus, ...headers, ...shell, ...sanitize, ...git, ...ua, ...changelog },
+		experimental: await collect("cli_support.experimental", () => {
+			return () => runCliSupportExperimental();
+		}),
+		observed: {
+			...ansi,
+			...paths,
+			...timings,
+			...bus,
+			...headers,
+			...shell,
+			...sanitize,
+			...git,
+			...ua,
+			...changelog,
+			...experimental,
+		},
 	};
 }
 
@@ -5864,6 +5904,8 @@ const result = {
 				"packages/coding-agent/src/utils/pi-user-agent.ts getPiUserAgent",
 			"cli_support.parse_changelog":
 				"packages/coding-agent/src/utils/changelog.ts parseChangelog",
+			"cli_support.experimental":
+				"packages/coding-agent/src/core/experimental.ts areExperimentalFeaturesEnabled",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":

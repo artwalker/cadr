@@ -248,6 +248,7 @@
     ("cli_support.git_source" . 50)
     ("cli_support.user_agent" . 50)
     ("cli_support.parse_changelog" . 50)
+    ("cli_support.experimental" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -5486,6 +5487,19 @@
      (changelog-entry-version second)
      (if missing (length missing) 0))))
 
+(defun experimental-flag (value)
+  (if (cadr-cli::experimental-features-enabled-p value) 1 0))
+
+(defun run-cli-support-experimental ()
+  ;; Production predicate string= "1". Pass the value; do not exact
+  ;; CADR_EXPERIMENTAL vs PI_EXPERIMENTAL.
+  (list
+   (experimental-flag "1")
+   (experimental-flag "")
+   (experimental-flag "0")
+   (experimental-flag "true")
+   (experimental-flag nil)))
+
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
   (let ((ansi (run-cli-support-strip-ansi))
@@ -5497,7 +5511,8 @@
         (sanitize (run-cli-support-sanitize-output))
         (git (run-cli-support-git-source))
         (ua (run-cli-support-user-agent))
-        (changelog (run-cli-support-parse-changelog)))
+        (changelog (run-cli-support-parse-changelog))
+        (experimental (run-cli-support-experimental)))
     (json-object
      "observed"
      (json-object
@@ -5559,7 +5574,12 @@
       "cl_first" (second changelog)
       "cl_hdr" (third changelog)
       "cl_second" (fourth changelog)
-      "cl_miss" (fifth changelog))
+      "cl_miss" (fifth changelog)
+      "ex_on" (nth 0 experimental)
+      "ex_empty" (nth 1 experimental)
+      "ex_zero" (nth 2 experimental)
+      "ex_true" (nth 3 experimental)
+      "ex_nil" (nth 4 experimental))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -5609,7 +5629,12 @@
      (collect "cli_support.parse_changelog"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-parse-changelog)))))))
+                  (run-cli-support-parse-changelog))))
+     "experimental"
+     (collect "cli_support.experimental"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-experimental)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -6776,6 +6801,8 @@
       "src/cadr-cli/support/resume-version-git.lisp cadr-user-agent"
       "cli_support.parse_changelog"
       "src/cadr-cli/support/changelog-share.lisp parse-changelog"
+      "cli_support.experimental"
+      "src/cadr-cli/support/html.lisp experimental-features-enabled-p"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"

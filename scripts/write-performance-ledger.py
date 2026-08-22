@@ -108,6 +108,7 @@ METRIC_KEYS = (
     "cli_support.git_source",
     "cli_support.user_agent",
     "cli_support.parse_changelog",
+    "cli_support.experimental",
     "cli_interactive_controller.decode_entity",
     "cli_interactive_controller.wayland",
     "cli_interactive_controller.cwd_footer",

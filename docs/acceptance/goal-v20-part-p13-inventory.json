@@ -2239,8 +2239,10 @@
   {
    "path": "src/cadr-cli/support/html.lisp",
    "lines": 63,
-   "class": "needs-pair",
-   "metrics": [],
+   "class": "paired",
+   "metrics": [
+    "cli_support.experimental"
+   ],
    "pathId": "cli_support",
    "pi": "packages/coding-agent/src/core/{event-bus,timings,exec,diagnostics}.ts and path helpers",
    "fixture": "Callee of a parent pair. No empty per-file bench.",

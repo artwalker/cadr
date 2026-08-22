@@ -1480,6 +1480,20 @@ to a scratch directory, not a live vitest run. Observed
 freeze **0.53×** (595 / 1130 µs), ceiling 8.0. cadr leads.
 Same commit no optimize.
 
+### Pair 104 — `cli_support` (experimental)
+
+| metric | cadr | pi |
+|---|---|---|
+| `experimental` | `experimental-features-enabled-p` | `areExperimentalFeaturesEnabled` (`packages/coding-agent/src/core/experimental.ts`) |
+
+Leftover sibling of the `cli_support` hole. Time the `"1"`
+predicate, not HTML escape or a live TUI. Values `"1"` / empty /
+`"0"` / `"true"` / nil. Do not exact `CADR_EXPERIMENTAL` vs
+`PI_EXPERIMENTAL`. Observed `ex_on` / `ex_empty` / `ex_zero` /
+`ex_true` / `ex_nil` are exact (1 / 0 / 0 / 0 / 0). First
+Friend-MachineD freeze **0.05×** (0.23 / 4.77 µs), ceiling
+8.0 (microsecond-floor). cadr leads. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1685,13 +1699,13 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 157 | 68,568 | 53.8% | `no worse than baseline` is falsifiable |
+| `paired` | 158 | 68,631 | 53.9% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 86 | 33,926 | 26.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 85 | 33,863 | 26.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 53.8% of lines (157 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 53.9% of lines (158 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 59.7% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -1831,6 +1845,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
 | `src/cadr-cli/support/headers.lisp` | 75 | `cli_support.attribution_headers` |
+| `src/cadr-cli/support/html.lisp` | 63 | `cli_support.experimental` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config`, `cli_support.sanitize_output` |
@@ -1941,9 +1956,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
-| `cli_support` | 6 | 186 |
 | `session_compact` | 1 | 185 |
 | `core_rest` | 3 | 161 |
+| `cli_support` | 5 | 123 |
 | `cli_models_rest` | 1 | 75 |
 | `agent_conditions` | 1 | 43 |
 | `tui_mermaid` | 1 | 17 |

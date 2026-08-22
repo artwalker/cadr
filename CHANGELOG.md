@@ -21,6 +21,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_support.experimental`
+  (`"1"` / empty / `"0"` / `"true"` / nil; cadr
+  `experimental-features-enabled-p` vs pi
+  `areExperimentalFeaturesEnabled`). Friend-MachineD n=5
+  **0.05×** (0.23 / 4.77 µs), ceiling 8.0. cadr leads.
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `evals_harness.artifact_persist`
   (session+source fixture; cadr
   `persist-eval-artifact-references` vs pi

@@ -815,6 +815,7 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_support.git_source", RECORD.METRIC_KEYS)
         self.assertIn("cli_support.user_agent", RECORD.METRIC_KEYS)
         self.assertIn("cli_support.parse_changelog", RECORD.METRIC_KEYS)
+        self.assertIn("cli_support.experimental", RECORD.METRIC_KEYS)
         self.assertIn("strip_ansi", paired.METRICS["cli_support"])
         self.assertIn("normalize_path", paired.METRICS["cli_support"])
         self.assertIn("timings", paired.METRICS["cli_support"])
@@ -825,6 +826,7 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("git_source", paired.METRICS["cli_support"])
         self.assertIn("user_agent", paired.METRICS["cli_support"])
         self.assertIn("parse_changelog", paired.METRICS["cli_support"])
+        self.assertIn("experimental", paired.METRICS["cli_support"])
         self.assertIn("cli_support.strip_ansi", paired.RATIO_CEILINGS)
         self.assertIn("cli_support.normalize_path", paired.RATIO_CEILINGS)
         self.assertIn("cli_support.timings", paired.RATIO_CEILINGS)
@@ -863,6 +865,12 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ua_semi", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("cl_n", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("cl_first", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("cli_support.experimental", paired.RATIO_CEILINGS)
+        self.assertIn("ex_on", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("ex_empty", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("ex_zero", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("ex_true", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("ex_nil", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("cl_miss", paired.OBSERVED_EXACT["cli_support"])
 
     def test_cli_interactive_controller_is_a_recorded_metric(self) -> None:

@@ -434,6 +434,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(strip_ansi[0]["class"], "paired")
         self.assertIn("cli_support.strip_ansi", strip_ansi[0]["metrics"])
         self.assertIn("cli_support.parse_changelog", strip_ansi[0]["metrics"])
+        html_file = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/support/html.lisp"
+        ]
+        self.assertEqual(len(html_file), 1)
+        self.assertEqual(html_file[0]["class"], "paired")
+        self.assertIn("cli_support.experimental", html_file[0]["metrics"])
         normalize_path = [
             row
             for row in classified["rows"]
