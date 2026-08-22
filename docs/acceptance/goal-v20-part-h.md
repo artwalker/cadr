@@ -1879,6 +1879,23 @@ unpaired (cadr batch gutter vs pi `buildTreePrefix` ancestor padding
 differs). First Friend-MachineD freeze **13.07×** (165.9 / 12.7 µs),
 ceiling 30.0. Same commit no optimize.
 
+### Pair 132 — `cli_selectors` (session_binding_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_binding_label` | `session-selector-binding-label` | `KeybindingsManager.getKeys` first-or-name |
+
+Leftover sibling of the `sessions.lisp` hole. First bound key text
+only (rename/delete footer paths), not full `keybinding_text` join or
+`keybinding_hint` styling. Fixtures: default `tui.select.confirm` /
+`app.session.delete` / `app.session.deleteNoninvasive`; unknown name
+falls back to the binding id; custom user override on
+`app.session.toggleSort`. Observed `sbl_confirm` / `sbl_delete` /
+`sbl_noninvasive` / `sbl_fallback` / `sbl_custom` are exact.
+`session-selector-gutter-prefixes` stays unpaired. First
+Friend-MachineD freeze **1.43×** (41.2 / 28.9 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2203,7 +2220,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
-| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records` |
+| `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |

@@ -111,6 +111,7 @@
 ;;;; 129. cli_selectors session-selector-shorten-path vs shortenPath
 ;;;; 130. cli_selectors search-record-position quoted phrase vs phrase token indexOf
 ;;;; 131. cli_selectors thread-session-records vs buildSessionTree flattenSessionTree
+;;;; 132. cli_selectors session-selector-binding-label vs KeybindingsManager.getKeys first
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -305,6 +306,7 @@
     ("cli_selectors.session_shorten_path" . 50)
     ("cli_selectors.session_quoted_search" . 50)
     ("cli_selectors.session_thread_records" . 50)
+    ("cli_selectors.session_binding_label" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6227,6 +6229,25 @@
                  (cadr-cli:session-search-record-id (cdr node)))
                threaded)))))
 
+(defun run-cli-selectors-session-binding-label ()
+  (let ((default (cadr-cli::make-session-selector-state))
+        (custom
+          (cadr-cli::make-session-selector-state
+           :keybindings
+           (cadr-cli::make-session-selector-keybindings
+            '(("app.session.toggleSort" . "ctrl+k"))))))
+    (list
+     (cadr-cli::session-selector-binding-label
+      default "tui.select.confirm")
+     (cadr-cli::session-selector-binding-label
+      default "app.session.delete")
+     (cadr-cli::session-selector-binding-label
+      default "app.session.deleteNoninvasive")
+     (cadr-cli::session-selector-binding-label
+      default "app.session.not-a-binding")
+     (cadr-cli::session-selector-binding-label
+      custom "app.session.toggleSort"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6250,7 +6271,8 @@
         (session-record-label (run-cli-selectors-session-record-label))
         (session-shorten-path (run-cli-selectors-session-shorten-path))
         (session-quoted-search (run-cli-selectors-session-quoted-search))
-        (session-thread-records (run-cli-selectors-session-thread-records)))
+        (session-thread-records (run-cli-selectors-session-thread-records))
+        (session-binding-label (run-cli-selectors-session-binding-label)))
     (json-object
      "observed"
      (json-object
@@ -6389,7 +6411,12 @@
       "sqs_other_hit" (nth 5 session-quoted-search)
       "str_count" (nth 0 session-thread-records)
       "str_depths" (nth 1 session-thread-records)
-      "str_ids" (nth 2 session-thread-records))
+      "str_ids" (nth 2 session-thread-records)
+      "sbl_confirm" (nth 0 session-binding-label)
+      "sbl_delete" (nth 1 session-binding-label)
+      "sbl_noninvasive" (nth 2 session-binding-label)
+      "sbl_fallback" (nth 3 session-binding-label)
+      "sbl_custom" (nth 4 session-binding-label))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6504,7 +6531,12 @@
      (collect "cli_selectors.session_thread_records"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-session-thread-records)))))))
+                  (run-cli-selectors-session-thread-records))))
+     "session_binding_label"
+     (collect "cli_selectors.session_binding_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-binding-label)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7561,6 +7593,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp search-record-position"
       "cli_selectors.session_thread_records"
       "src/cadr-cli/interactive/selectors/sessions.lisp thread-session-records"
+      "cli_selectors.session_binding_label"
+      "src/cadr-cli/interactive/selectors/sessions.lisp session-selector-binding-label"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

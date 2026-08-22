@@ -243,6 +243,7 @@ const REPETITIONS = {
 	"cli_selectors.session_shorten_path": 50,
 	"cli_selectors.session_quoted_search": 50,
 	"cli_selectors.session_thread_records": 50,
+	"cli_selectors.session_binding_label": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -576,6 +577,9 @@ const killRingModule = await import(moduleUrl("packages/tui/src/kill-ring.ts"));
 const undoStackModule = await import(moduleUrl("packages/tui/src/undo-stack.ts"));
 const autocompleteModule = await import(moduleUrl("packages/tui/src/autocomplete.ts"));
 const keybindingsModule = await import(moduleUrl("packages/tui/src/keybindings.ts"));
+const appKeybindingsModule = await import(
+	moduleUrl("packages/coding-agent/src/core/keybindings.ts"),
+);
 const stdinBufferModule = await import(moduleUrl("packages/tui/src/stdin-buffer.ts"));
 const inputModule = await import(moduleUrl("packages/tui/src/components/input.ts"));
 const nativeModifiersModule = await import(moduleUrl("packages/tui/src/native-modifiers.ts"));
@@ -5233,6 +5237,29 @@ function runCliSelectorsSessionThreadRecords() {
 	};
 }
 
+function makeSessionSelectorKeybindingsPi(userBindings) {
+	return new keybindingsModule.KeybindingsManager(appKeybindingsModule.KEYBINDINGS, userBindings);
+}
+
+function sessionBindingLabelPi(manager, name) {
+	const keys = manager.getKeys(name);
+	return keys.length > 0 ? keys[0] : name;
+}
+
+function runCliSelectorsSessionBindingLabel() {
+	const defaultManager = makeSessionSelectorKeybindingsPi();
+	const customManager = makeSessionSelectorKeybindingsPi({
+		"app.session.toggleSort": "ctrl+k",
+	});
+	return {
+		sbl_confirm: sessionBindingLabelPi(defaultManager, "tui.select.confirm"),
+		sbl_delete: sessionBindingLabelPi(defaultManager, "app.session.delete"),
+		sbl_noninvasive: sessionBindingLabelPi(defaultManager, "app.session.deleteNoninvasive"),
+		sbl_fallback: sessionBindingLabelPi(defaultManager, "app.session.not-a-binding"),
+		sbl_custom: sessionBindingLabelPi(customManager, "app.session.toggleSort"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5572,6 +5599,7 @@ async function measureCliSelectorsSessionSearch() {
 	const sessionShortenPathResults = runCliSelectorsSessionShortenPath();
 	const sessionQuotedSearchResults = runCliSelectorsSessionQuotedSearch();
 	const sessionThreadRecordsResults = runCliSelectorsSessionThreadRecords();
+	const sessionBindingLabelResults = runCliSelectorsSessionBindingLabel();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5691,6 +5719,11 @@ async function measureCliSelectorsSessionSearch() {
 		str_count: sessionThreadRecordsResults.str_count,
 		str_depths: sessionThreadRecordsResults.str_depths,
 		str_ids: sessionThreadRecordsResults.str_ids,
+		sbl_confirm: sessionBindingLabelResults.sbl_confirm,
+		sbl_delete: sessionBindingLabelResults.sbl_delete,
+		sbl_noninvasive: sessionBindingLabelResults.sbl_noninvasive,
+		sbl_fallback: sessionBindingLabelResults.sbl_fallback,
+		sbl_custom: sessionBindingLabelResults.sbl_custom,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5761,6 +5794,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		session_thread_records: await collect("cli_selectors.session_thread_records", () => {
 			return () => runCliSelectorsSessionThreadRecords();
+		}),
+		session_binding_label: await collect("cli_selectors.session_binding_label", () => {
+			return () => runCliSelectorsSessionBindingLabel();
 		}),
 		observed,
 	};
@@ -6855,6 +6891,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts phrase indexOf",
 			"cli_selectors.session_thread_records":
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts buildSessionTree flattenSessionTree",
+			"cli_selectors.session_binding_label":
+				"packages/coding-agent/src/core/keybindings.ts KeybindingsManager.getKeys first-or-name",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

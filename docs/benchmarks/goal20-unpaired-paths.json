@@ -102,6 +102,7 @@
   "cli_selectors.session_shorten_path",
   "cli_selectors.session_quoted_search",
   "cli_selectors.session_thread_records",
+  "cli_selectors.session_binding_label",
   "cli_selectors.key_text",
   "cli_selectors.fuzzy_filter",
   "cli_selectors.delete_query",
@@ -1197,7 +1198,8 @@
     "cli_selectors.session_record_label",
     "cli_selectors.session_shorten_path",
     "cli_selectors.session_quoted_search",
-    "cli_selectors.session_thread_records"
+    "cli_selectors.session_thread_records",
+    "cli_selectors.session_binding_label"
    ]
   },
   {

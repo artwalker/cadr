@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.session_binding_label`
+  (session selector keybinding fixtures; cadr `session-selector-binding-label`
+  vs pi `KeybindingsManager.getKeys` first-or-name). Friend-MachineD n=5
+  **1.43×** (41.2 / 28.9 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.session_thread_records`
   (parent/child session tree fixtures; cadr `thread-session-records`
   vs pi `buildSessionTree` + `flattenSessionTree`). Friend-MachineD n=5
