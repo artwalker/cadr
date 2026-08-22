@@ -100,6 +100,7 @@
 ;;;; 118. cli_selectors selector-selected-line vs theme.bg selectedBg + fit
 ;;;; 119. cli_selectors selector-muted-line vs theme.fg muted + fit
 ;;;; 120. cli_selectors selector-dim-line vs theme.fg dim + fit
+;;;; 121. cli_selectors selector-modified-cursor-key vs parseKey CSI arrows
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -283,6 +284,7 @@
     ("cli_selectors.selected_line" . 50)
     ("cli_selectors.muted_line" . 50)
     ("cli_selectors.dim_line" . 50)
+    ("cli_selectors.modified_cursor_key" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6037,6 +6039,24 @@
    (cadr-cli::selector-dim-line "item" 20)
    (cadr-cli::selector-dim-line "ABCDEFGHIJ" 5)))
 
+(defun csi-modified-arrow (modifier direction)
+  (format nil "~c[1;~a~a" #\Escape modifier direction))
+
+(defun run-cli-selectors-modified-cursor-key ()
+  (list
+   (cadr-cli::selector-modified-cursor-key
+    (csi-modified-arrow 1 #\A))
+   (cadr-cli::selector-modified-cursor-key
+    (csi-modified-arrow 2 #\B))
+   (cadr-cli::selector-modified-cursor-key
+    (csi-modified-arrow 5 #\C))
+   (cadr-cli::selector-modified-cursor-key
+    (csi-modified-arrow 3 #\D))
+   (cadr-cli::selector-modified-cursor-key
+    (csi-modified-arrow 6 #\A))
+   (cadr-cli::selector-modified-cursor-key
+    (csi-modified-arrow 9 #\B))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6049,7 +6069,8 @@
         (border-line (run-cli-selectors-border-line))
         (selected-line (run-cli-selectors-selected-line))
         (muted-line (run-cli-selectors-muted-line))
-        (dim-line (run-cli-selectors-dim-line)))
+        (dim-line (run-cli-selectors-dim-line))
+        (modified-cursor-key (run-cli-selectors-modified-cursor-key)))
     (json-object
      "observed"
      (json-object
@@ -6127,7 +6148,13 @@
       "dl_wide" (nth 2 dim-line)
       "dl_empty" (nth 3 dim-line)
       "dl_item20" (nth 4 dim-line)
-      "dl_narrow" (nth 5 dim-line))
+      "dl_narrow" (nth 5 dim-line)
+      "mck_up" (nth 0 modified-cursor-key)
+      "mck_shift_dn" (nth 1 modified-cursor-key)
+      "mck_ctrl_rt" (nth 2 modified-cursor-key)
+      "mck_alt_lt" (nth 3 modified-cursor-key)
+      "mck_ctrl_shift_up" (nth 4 modified-cursor-key)
+      "mck_super_dn" (nth 5 modified-cursor-key))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6187,7 +6214,12 @@
      (collect "cli_selectors.dim_line"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-dim-line)))))))
+                  (run-cli-selectors-dim-line))))
+     "modified_cursor_key"
+     (collect "cli_selectors.modified_cursor_key"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-modified-cursor-key)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7256,6 +7288,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-muted-line"
       "cli_selectors.dim_line"
       "src/cadr-cli/interactive/selectors/common.lisp selector-dim-line"
+      "cli_selectors.modified_cursor_key"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-modified-cursor-key"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

@@ -232,6 +232,7 @@ const REPETITIONS = {
 	"cli_selectors.selected_line": 50,
 	"cli_selectors.muted_line": 50,
 	"cli_selectors.dim_line": 50,
+	"cli_selectors.modified_cursor_key": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -538,6 +539,7 @@ const keybindingHintsModule = await import(
 const themeModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/theme/theme.ts")
 );
+const keysModule = await import(moduleUrl("packages/tui/src/keys.ts"));
 const dynamicBorderModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/components/dynamic-border.ts")
 );
@@ -5165,6 +5167,21 @@ function runCliSelectorsDimLine() {
 	];
 }
 
+function csiModifiedArrow(modifier, direction) {
+	return `\x1b[1;${modifier}${direction}`;
+}
+
+function runCliSelectorsModifiedCursorKey() {
+	return [
+		keysModule.parseKey(csiModifiedArrow(1, "A")),
+		keysModule.parseKey(csiModifiedArrow(2, "B")),
+		keysModule.parseKey(csiModifiedArrow(5, "C")),
+		keysModule.parseKey(csiModifiedArrow(3, "D")),
+		keysModule.parseKey(csiModifiedArrow(6, "A")),
+		keysModule.parseKey(csiModifiedArrow(9, "B")),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -5174,6 +5191,7 @@ async function measureCliSelectorsSessionSearch() {
 	const selectedLineResults = runCliSelectorsSelectedLine();
 	const mutedLineResults = runCliSelectorsMutedLine();
 	const dimLineResults = runCliSelectorsDimLine();
+	const modifiedCursorKeyResults = runCliSelectorsModifiedCursorKey();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5232,6 +5250,12 @@ async function measureCliSelectorsSessionSearch() {
 		dl_empty: dimLineResults[3],
 		dl_item20: dimLineResults[4],
 		dl_narrow: dimLineResults[5],
+		mck_up: modifiedCursorKeyResults[0],
+		mck_shift_dn: modifiedCursorKeyResults[1],
+		mck_ctrl_rt: modifiedCursorKeyResults[2],
+		mck_alt_lt: modifiedCursorKeyResults[3],
+		mck_ctrl_shift_up: modifiedCursorKeyResults[4],
+		mck_super_dn: modifiedCursorKeyResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5269,6 +5293,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		dim_line: await collect("cli_selectors.dim_line", () => {
 			return () => runCliSelectorsDimLine();
+		}),
+		modified_cursor_key: await collect("cli_selectors.modified_cursor_key", () => {
+			return () => runCliSelectorsModifiedCursorKey();
 		}),
 		observed,
 	};
@@ -6374,6 +6401,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.fg muted + truncateToWidth",
 			"cli_selectors.dim_line":
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.fg dim + truncateToWidth",
+			"cli_selectors.modified_cursor_key":
+				"packages/tui/src/keys.ts parseKey (CSI modified arrows)",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":
