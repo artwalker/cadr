@@ -155,6 +155,7 @@ const REPETITIONS = {
 	"oauth_pkce_device.copilot_url": 50,
 	"oauth_pkce_device.cloudflare_url": 50,
 	"oauth_pkce_device.radius_gateway": 50,
+	"oauth_pkce_device.copilot_auth": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -2667,6 +2668,26 @@ async function runOauthPkceDeviceCopilotUrl() {
 	};
 }
 
+async function runOauthPkceDeviceCopilotAuth() {
+	const toAuth = githubCopilotOAuthModule.githubCopilotOAuth.toAuth;
+	const def = await toAuth(copilotOauthCredential(""));
+	const ind = await toAuth(
+		copilotOauthCredential("tid=test;exp=1;proxy-ep=proxy.individual.githubcopilot.com;"),
+	);
+	const ent = await toAuth(
+		copilotOauthCredential("tid=test;exp=1;proxy-ep=proxy.enterprise.githubcopilot.com;"),
+	);
+	const dom = await toAuth(copilotOauthCredential("", "example.com"));
+	const keyed = await toAuth(copilotOauthCredential("tok"));
+	return {
+		ga_def: def.baseUrl === "https://api.individual.githubcopilot.com" ? 1 : 0,
+		ga_ind: ind.baseUrl === "https://api.individual.githubcopilot.com" ? 1 : 0,
+		ga_ent: ent.baseUrl === "https://api.enterprise.githubcopilot.com" ? 1 : 0,
+		ga_dom: dom.baseUrl === "https://copilot-api.example.com" ? 1 : 0,
+		ga_key: keyed.apiKey === "tok" ? 1 : 0,
+	};
+}
+
 const CLOUDFLARE_GATEWAY_TEMPLATE =
 	"https://gateway.ai.cloudflare.com/v1/{CLOUDFLARE_ACCOUNT_ID}/{CLOUDFLARE_GATEWAY_ID}/openai";
 
@@ -2722,6 +2743,7 @@ async function measureOauthPkceDevice() {
 	const copilot = await runOauthPkceDeviceCopilotUrl();
 	const cloudflare = runOauthPkceDeviceCloudflareUrl();
 	const radius = runOauthPkceDeviceRadiusGateway();
+	const copilotAuth = await runOauthPkceDeviceCopilotAuth();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -2738,7 +2760,10 @@ async function measureOauthPkceDevice() {
 		radius_gateway: await collect("oauth_pkce_device.radius_gateway", () => {
 			return () => runOauthPkceDeviceRadiusGateway();
 		}),
-		observed: { ...poll, ...auth, ...copilot, ...cloudflare, ...radius },
+		copilot_auth: await collect("oauth_pkce_device.copilot_auth", () => {
+			return () => runOauthPkceDeviceCopilotAuth();
+		}),
+		observed: { ...poll, ...auth, ...copilot, ...cloudflare, ...radius, ...copilotAuth },
 	};
 }
 
@@ -5373,6 +5398,8 @@ const result = {
 				"packages/ai/src/providers/cloudflare-stream.ts resolveCloudflareModel",
 			"oauth_pkce_device.radius_gateway":
 				"packages/ai/src/providers/radius-config.ts normalizeRadiusGatewayUrl",
+			"oauth_pkce_device.copilot_auth":
+				"packages/ai/src/auth/oauth/github-copilot.ts githubCopilotOAuth.toAuth",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

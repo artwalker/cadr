@@ -1370,6 +1370,20 @@ branch_summary usage). No socket, no TUI. First Friend-MachineD
 freeze **0.19×** (13.16 / 70.76 µs), ceiling 8.0. cadr leads.
 Same commit no optimize.
 
+### Pair 97 — `oauth_pkce_device` (copilot_auth)
+
+| metric | cadr | pi |
+|---|---|---|
+| `copilot_auth` | `github-copilot-oauth-to-auth` | `githubCopilotOAuth.toAuth` (`packages/ai/src/auth/oauth/github-copilot.ts`) |
+
+Leftover sibling of the `oauth_pkce_device` hole. Same four
+Copilot credential cases as `copilot_url` plus api-key identity.
+Observed `ga_def` / `ga_ind` / `ga_ent` / `ga_dom` / `ga_key`
+are exact. Do not exact source/type (cadr sets `OAuth` / `:oauth`;
+pi `toAuth` omits them). No socket. First Friend-MachineD freeze
+**1.35×** (3.21 / 2.38 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1575,14 +1589,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 150 | 65,491 | 51.4% | `no worse than baseline` is falsifiable |
+| `paired` | 151 | 65,665 | 51.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 102 | 41,504 | 32.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 101 | 41,330 | 32.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 51.4% of lines (150 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 57.3% of lines.
+- **Falsifiable vs baseline:** 51.5% of lines (151 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 57.4% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1655,6 +1669,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
+| `src/cadr-ai/oauth/providers/github-copilot.lisp` | 174 | `oauth_pkce_device.copilot_auth` |
 | `src/cadr-ai/oauth/providers/radius.lisp` | 116 | `oauth_pkce_device.radius_gateway` |
 | `src/cadr-ai/provider.lisp` | 799 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/anthropic.lisp` | 644 | `provider_anthropic.stream_roundtrip` |
@@ -1808,8 +1823,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 6 | 2,412 |
 | `evals_harness` | 5 | 1,845 |
 | `package_manager` | 2 | 1,811 |
-| `oauth_pkce_device` | 8 | 1,348 |
 | `settings_load` | 3 | 1,283 |
+| `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |

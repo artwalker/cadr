@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `oauth_pkce_device.copilot_auth`
+  (default / proxy-ep / enterprise domain; cadr
+  `github-copilot-oauth-to-auth` vs pi
+  `githubCopilotOAuth.toAuth`). Friend-MachineD n=5
+  **1.35×** (3.21 / 2.38 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_print_rpc.session_stats`
   (fixture session.jsonl; cadr `rpc-session-stats` vs pi
   `AgentSession.getSessionStats`). Friend-MachineD n=5

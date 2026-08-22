@@ -430,6 +430,14 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("rg_slash", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("rg_plain", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("rg_http", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.copilot_auth", RECORD.METRIC_KEYS)
+        self.assertIn("copilot_auth", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.copilot_auth", paired.RATIO_CEILINGS)
+        self.assertIn("ga_def", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("ga_ind", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("ga_ent", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("ga_dom", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("ga_key", paired.OBSERVED_EXACT["oauth_pkce_device"])
 
     def test_cli_extensions_install_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

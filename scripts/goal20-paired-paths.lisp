@@ -101,6 +101,7 @@
 ;;;;  87. cli_sdk create-agent-session-services vs createAgentSessionServices
 ;;;;  88. cli_sdk sdk-model-runtime-providers vs ModelRuntime.getProviders
 ;;;;  89. cli_print_rpc rpc-session-stats vs AgentSession.getSessionStats
+;;;;  90. oauth_pkce_device github-copilot-oauth-to-auth vs githubCopilotOAuth.toAuth
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -185,6 +186,7 @@
     ("oauth_pkce_device.copilot_url" . 50)
     ("oauth_pkce_device.cloudflare_url" . 50)
     ("oauth_pkce_device.radius_gateway" . 50)
+    ("oauth_pkce_device.copilot_auth" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -3115,6 +3117,52 @@
     nil "example.com"
     "https://copilot-api.example.com")))
 
+(defun copilot-auth-credential (access &optional enterprise)
+  (cadr-ai:make-oauth-credential
+   :provider :github-copilot
+   :access (or access "")
+   :refresh "r"
+   :expires 1
+   :metadata
+   (when enterprise
+     (list (cons "enterpriseUrl" enterprise)))))
+
+(defun copilot-auth-flag (access enterprise expected)
+  (let ((result
+          (cadr-ai::github-copilot-oauth-to-auth
+           (copilot-auth-credential access enterprise))))
+    (if (and (string=
+              (cadr-ai:runtime-auth-result-api-key result)
+              (or access ""))
+             (string=
+              (cadr-ai:runtime-auth-result-base-url result)
+              expected))
+        1
+        0)))
+
+(defun run-oauth-pkce-device-copilot-auth ()
+  (list
+   (copilot-auth-flag
+    "" nil
+    "https://api.individual.githubcopilot.com")
+   (copilot-auth-flag
+    "tid=test;exp=1;proxy-ep=proxy.individual.githubcopilot.com;"
+    nil
+    "https://api.individual.githubcopilot.com")
+   (copilot-auth-flag
+    "tid=test;exp=1;proxy-ep=proxy.enterprise.githubcopilot.com;"
+    nil
+    "https://api.enterprise.githubcopilot.com")
+   (copilot-auth-flag
+    "" "example.com"
+    "https://copilot-api.example.com")
+   (let ((result
+           (cadr-ai::github-copilot-oauth-to-auth
+            (copilot-auth-credential "tok" nil))))
+     (if (string= (cadr-ai:runtime-auth-result-api-key result) "tok")
+         1
+         0))))
+
 (defparameter *cloudflare-gateway-template*
   "https://gateway.ai.cloudflare.com/v1/{CLOUDFLARE_ACCOUNT_ID}/{CLOUDFLARE_GATEWAY_ID}/openai")
 
@@ -3161,7 +3209,8 @@
         (auth (run-oauth-pkce-device-auth-json))
         (copilot (run-oauth-pkce-device-copilot-url))
         (cloudflare (run-oauth-pkce-device-cloudflare-url))
-        (radius (run-oauth-pkce-device-radius-gateway)))
+        (radius (run-oauth-pkce-device-radius-gateway))
+        (copilot-auth (run-oauth-pkce-device-copilot-auth)))
     (json-object
      "observed"
      (json-object
@@ -3183,7 +3232,12 @@
       "cf_gw" (nth 2 cloudflare)
       "rg_slash" (nth 0 radius)
       "rg_plain" (nth 1 radius)
-      "rg_http" (nth 2 radius))
+      "rg_http" (nth 2 radius)
+      "ga_def" (nth 0 copilot-auth)
+      "ga_ind" (nth 1 copilot-auth)
+      "ga_ent" (nth 2 copilot-auth)
+      "ga_dom" (nth 3 copilot-auth)
+      "ga_key" (nth 4 copilot-auth))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -3208,7 +3262,12 @@
      (collect "oauth_pkce_device.radius_gateway"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-radius-gateway)))))))
+                  (run-oauth-pkce-device-radius-gateway))))
+     "copilot_auth"
+     (collect "oauth_pkce_device.copilot_auth"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-copilot-auth)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -6181,6 +6240,8 @@
       "src/cadr-ai/auth/radius-cloudflare.lisp materialize-cloudflare-url"
       "oauth_pkce_device.radius_gateway"
       "src/cadr-ai/oauth/providers/radius.lisp normalize-radius-gateway"
+      "oauth_pkce_device.copilot_auth"
+      "src/cadr-ai/oauth/providers/github-copilot.lisp github-copilot-oauth-to-auth"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

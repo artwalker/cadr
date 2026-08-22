@@ -110,7 +110,14 @@ METRICS = {
     "protocol_codec": ("roundtrip",),
     "agent_proxy": ("stream_roundtrip",),
     "oauth_pkce": ("challenge_urls",),
-    "oauth_pkce_device": ("poll", "auth_json", "copilot_url", "cloudflare_url", "radius_gateway"),
+    "oauth_pkce_device": (
+        "poll",
+        "auth_json",
+        "copilot_url",
+        "cloudflare_url",
+        "radius_gateway",
+        "copilot_auth",
+    ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog"),
     "evals_harness": ("summarize", "group_key"),
     "ai_crypto_model_data": ("manifest",),
@@ -309,6 +316,11 @@ RATIO_CEILINGS = {
     # 1.05x (0.57 / 0.54 us). 8.0 is first-freeze
     # headroom (microsecond-floor / variance). Ratchet down only.
     "oauth_pkce_device.radius_gateway": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # oauth_pkce_device.copilot_auth pair (samples=5): observed
+    # 1.35x (3.21 / 2.38 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "oauth_pkce_device.copilot_auth": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed
     # 0.45x (4.79 / 10.52 us). cadr leads. 8.0 is
@@ -943,6 +955,11 @@ OBSERVED_EXACT = {
         "rg_slash",
         "rg_plain",
         "rg_http",
+        "ga_def",
+        "ga_ind",
+        "ga_ent",
+        "ga_dom",
+        "ga_key",
     ),
     "cli_extensions_install": (
         "nu_local",

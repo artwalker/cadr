@@ -52,6 +52,7 @@ METRIC_KEYS = (
     "oauth_pkce_device.copilot_url",
     "oauth_pkce_device.cloudflare_url",
     "oauth_pkce_device.radius_gateway",
+    "oauth_pkce_device.copilot_auth",
     "cli_extensions_install.llama_url",
     "cli_extensions_install.hf_token",
     "cli_extensions_install.llama_catalog",
