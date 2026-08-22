@@ -123,6 +123,7 @@ METRIC_KEYS = (
     "cli_selectors.visible_slice",
     "cli_selectors.move_index",
     "cli_selectors.align_left_right",
+    "cli_selectors.fit_line",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

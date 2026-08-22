@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.fit_line`
+  (truncate/pad fixtures; cadr `selector-fit-line` vs pi
+  `truncateToWidth` + pad). Friend-MachineD n=5 **0.32×**
+  (10.3 / 31.7 µs), ceiling 8.0. Same commit no optimize. G.17
+  missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.align_left_right`
   (truncate/pad fixtures; cadr `selector-align-left-right` vs pi
   session-selector header align). Friend-MachineD n=5 **3.79×**

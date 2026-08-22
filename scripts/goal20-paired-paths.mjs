@@ -227,6 +227,7 @@ const REPETITIONS = {
 	"cli_selectors.visible_slice": 50,
 	"cli_selectors.move_index": 50,
 	"cli_selectors.align_left_right": 50,
+	"cli_selectors.fit_line": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5070,10 +5071,31 @@ function runCliSelectorsAlignLeftRight() {
 	return fixtures.map(([left, right, w]) => alignLeftRight(left, right, w));
 }
 
+function fitLine(line, width, { pad = false, ellipsis = "" } = {}) {
+	const available = Math.max(0, width);
+	const limited = tuiUtilsModule.truncateToWidth(line, available, ellipsis);
+	const padding = pad
+		? Math.max(0, available - tuiUtilsModule.visibleWidth(limited))
+		: 0;
+	return `${limited}${" ".repeat(padding)}`;
+}
+
+function runCliSelectorsFitLine() {
+	return [
+		fitLine("hello", 10),
+		fitLine("hello world", 5),
+		fitLine("hello", 10, { pad: true }),
+		fitLine("hello world", 8, { ellipsis: "..." }),
+		fitLine("café🙂", 4),
+		fitLine("", 5, { pad: true }),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
 	const alignLeftRightResults = runCliSelectorsAlignLeftRight();
+	const fitLineResults = runCliSelectorsFitLine();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5102,6 +5124,12 @@ async function measureCliSelectorsSessionSearch() {
 		alr_narrow: alignLeftRightResults[3],
 		alr_empty_left: alignLeftRightResults[4],
 		alr_empty_right: alignLeftRightResults[5],
+		fl_short: fitLineResults[0],
+		fl_trunc: fitLineResults[1],
+		fl_pad: fitLineResults[2],
+		fl_ellipsis: fitLineResults[3],
+		fl_wide: fitLineResults[4],
+		fl_empty: fitLineResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5124,6 +5152,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		align_left_right: await collect("cli_selectors.align_left_right", () => {
 			return () => runCliSelectorsAlignLeftRight();
+		}),
+		fit_line: await collect("cli_selectors.fit_line", () => {
+			return () => runCliSelectorsFitLine();
 		}),
 		observed,
 	};
@@ -6219,6 +6250,8 @@ const result = {
 				"packages/tui/src/components/select-list.ts wrap selection index (up/down)",
 			"cli_selectors.align_left_right":
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts header left/right align",
+			"cli_selectors.fit_line":
+				"packages/tui/src/utils.ts truncateToWidth + visibleWidth pad (selector-fit-line sites)",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

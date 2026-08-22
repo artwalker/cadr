@@ -95,6 +95,7 @@
 ;;;; 113. cli_selectors selector-frame-visible-slice vs selector viewport slice
 ;;;; 114. cli_selectors selector-frame-move-index vs selector wrap index
 ;;;; 115. cli_selectors selector-align-left-right vs session-selector header align
+;;;; 116. cli_selectors selector-fit-line vs truncateToWidth + pad
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -273,6 +274,7 @@
     ("cli_selectors.visible_slice" . 50)
     ("cli_selectors.move_index" . 50)
     ("cli_selectors.align_left_right" . 50)
+    ("cli_selectors.fit_line" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -5982,6 +5984,15 @@
      ("" "Right Only" 15)
      ("Left Only" "" 15))))
 
+(defun run-cli-selectors-fit-line ()
+  (list
+   (cadr-cli::selector-fit-line "hello" 10)
+   (cadr-cli::selector-fit-line "hello world" 5)
+   (cadr-cli::selector-fit-line "hello" 10 :pad-p t)
+   (cadr-cli::selector-fit-line "hello world" 8 :ellipsis "...")
+   (cadr-cli::selector-fit-line "café🙂" 4)
+   (cadr-cli::selector-fit-line "" 5 :pad-p t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -5989,7 +6000,8 @@
         (delete-query (run-cli-selectors-delete-query))
         (visible-slice (run-cli-selectors-visible-slice))
         (move-index (run-cli-selectors-move-index))
-        (align-left-right (run-cli-selectors-align-left-right)))
+        (align-left-right (run-cli-selectors-align-left-right))
+        (fit-line (run-cli-selectors-fit-line)))
     (json-object
      "observed"
      (json-object
@@ -6037,7 +6049,13 @@
       "alr_trunc_right" (nth 2 align-left-right)
       "alr_narrow" (nth 3 align-left-right)
       "alr_empty_left" (nth 4 align-left-right)
-      "alr_empty_right" (nth 5 align-left-right))
+      "alr_empty_right" (nth 5 align-left-right)
+      "fl_short" (nth 0 fit-line)
+      "fl_trunc" (nth 1 fit-line)
+      "fl_pad" (nth 2 fit-line)
+      "fl_ellipsis" (nth 3 fit-line)
+      "fl_wide" (nth 4 fit-line)
+      "fl_empty" (nth 5 fit-line))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6072,7 +6090,12 @@
      (collect "cli_selectors.align_left_right"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-align-left-right)))))))
+                  (run-cli-selectors-align-left-right))))
+     "fit_line"
+     (collect "cli_selectors.fit_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-fit-line)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7131,6 +7154,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-frame-move-index"
       "cli_selectors.align_left_right"
       "src/cadr-cli/interactive/selectors/common.lisp selector-align-left-right"
+      "cli_selectors.fit_line"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-fit-line"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
