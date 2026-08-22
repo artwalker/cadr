@@ -21,6 +21,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.keybinding_hint`
+  (selector footer hint fixtures; cadr `selector-keybinding-hint` vs pi
+  `rawKeyHint`). Friend-MachineD n=5 **1.32×** (59.9 / 23.2 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
+- Goal 20 P.13: pair `cli_selectors.keybinding_text`
+  (selector footer key join fixtures; cadr `selector-keybinding-text`
+  vs pi `KeybindingsManager.getKeys` join). Friend-MachineD n=5
+  **0.61×** (36.7 / 23.3 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.input_line`
   (selector search input render fixtures; cadr `selector-input-line` vs
   pi `Input.render`). Friend-MachineD n=5 **0.05×** (39.4 / 272.8 µs),

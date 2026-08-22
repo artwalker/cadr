@@ -132,6 +132,7 @@ METRIC_KEYS = (
     "cli_selectors.overlay_title_line",
     "cli_selectors.input_line",
     "cli_selectors.keybinding_text",
+    "cli_selectors.keybinding_hint",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
