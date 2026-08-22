@@ -230,6 +230,7 @@ const REPETITIONS = {
 	"cli_selectors.fit_line": 50,
 	"cli_selectors.border_line": 50,
 	"cli_selectors.selected_line": 50,
+	"cli_selectors.muted_line": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5133,6 +5134,21 @@ function runCliSelectorsSelectedLine() {
 	];
 }
 
+function mutedLinePi(line, width) {
+	return fitLine(themeModule.theme.fg("muted", line), width);
+}
+
+function runCliSelectorsMutedLine() {
+	return [
+		mutedLinePi("hello", 10),
+		mutedLinePi("hello world", 8),
+		mutedLinePi("café🙂", 6),
+		mutedLinePi("", 5),
+		mutedLinePi("item", 20),
+		mutedLinePi("ABCDEFGHIJ", 5),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -5140,6 +5156,7 @@ async function measureCliSelectorsSessionSearch() {
 	const fitLineResults = runCliSelectorsFitLine();
 	const borderLineResults = runCliSelectorsBorderLine();
 	const selectedLineResults = runCliSelectorsSelectedLine();
+	const mutedLineResults = runCliSelectorsMutedLine();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5186,6 +5203,12 @@ async function measureCliSelectorsSessionSearch() {
 		sl_empty: selectedLineResults[3],
 		sl_pad20: selectedLineResults[4],
 		sl_narrow: selectedLineResults[5],
+		ml_short: mutedLineResults[0],
+		ml_trunc: mutedLineResults[1],
+		ml_wide: mutedLineResults[2],
+		ml_empty: mutedLineResults[3],
+		ml_item20: mutedLineResults[4],
+		ml_narrow: mutedLineResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5217,6 +5240,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		selected_line: await collect("cli_selectors.selected_line", () => {
 			return () => runCliSelectorsSelectedLine();
+		}),
+		muted_line: await collect("cli_selectors.muted_line", () => {
+			return () => runCliSelectorsMutedLine();
 		}),
 		observed,
 	};
@@ -6318,6 +6344,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts DynamicBorder.render",
 			"cli_selectors.selected_line":
 				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.bg selectedBg + truncateToWidth pad",
+			"cli_selectors.muted_line":
+				"packages/coding-agent/src/modes/interactive/components/session-selector.ts theme.fg muted + truncateToWidth",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

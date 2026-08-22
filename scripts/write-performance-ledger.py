@@ -125,6 +125,7 @@ METRIC_KEYS = (
     "cli_selectors.fit_line",
     "cli_selectors.border_line",
     "cli_selectors.selected_line",
+    "cli_selectors.muted_line",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

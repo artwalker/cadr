@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.muted_line`
+  (muted fg + truncate fixtures; cadr `selector-muted-line` vs pi
+  `theme.fg muted` + truncate). Friend-MachineD n=5 **0.24×**
+  (19.2 / 80.9 µs), ceiling 8.0. Same commit no optimize. G.17
+  missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.selected_line`
   (selected-bg fit fixtures; cadr `selector-selected-line` vs pi
   `theme.bg selectedBg` + pad). Friend-MachineD n=5 **0.83×**
