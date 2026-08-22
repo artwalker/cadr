@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `tui_mermaid.render`
+  (flowchart LR / empty / unknown / CJK; cadr `gm-render` vs
+  grok-mermaid `render`). Friend-MachineD n=5 **0.30×**
+  (75.31 / 255.24 µs), ceiling 8.0. cadr leads. Same commit
+  no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `oauth_pkce_device.copilot_auth`
   (default / proxy-ep / enterprise domain; cadr
   `github-copilot-oauth-to-auth` vs pi

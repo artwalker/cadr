@@ -102,6 +102,7 @@
 ;;;;  88. cli_sdk sdk-model-runtime-providers vs ModelRuntime.getProviders
 ;;;;  89. cli_print_rpc rpc-session-stats vs AgentSession.getSessionStats
 ;;;;  90. oauth_pkce_device github-copilot-oauth-to-auth vs githubCopilotOAuth.toAuth
+;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -206,6 +207,7 @@
     ("cli_print_rpc.clamp_thinking" . 50)
     ("cli_print_rpc.session_stats" . 20)
     ("tui_latex.render" . 20)
+    ("tui_mermaid.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
     ("ai_support.estimate_text" . 50)
@@ -4094,6 +4096,45 @@
                 (lambda ()
                   (run-cli-print-rpc-session-stats session)))))))
 
+(defparameter *mermaid-lr*
+  (format nil "flowchart LR~%  A-->B"))
+
+(defparameter *mermaid-cjk*
+  (format nil "flowchart LR~%  A[你好世界]-->B[测试]"))
+
+(defun mermaid-art (src)
+  (cadr-tui::gm-render src))
+
+(defun run-tui-mermaid ()
+  (let ((lr (mermaid-art *mermaid-lr*))
+        (empty (mermaid-art ""))
+        (unk (mermaid-art "notadiagram"))
+        (cjk (mermaid-art *mermaid-cjk*)))
+    (list
+     (if lr (getf lr :width) 0)
+     (if lr (or (first (getf lr :plain)) "") "")
+     (if lr (length (getf lr :plain)) 0)
+     (if (null empty) 1 0)
+     (if (null unk) 1 0)
+     (if cjk (getf cjk :width) 0))))
+
+(defun measure-tui-mermaid ()
+  (let ((observed (run-tui-mermaid)))
+    (json-object
+     "observed"
+     (json-object
+      "mm_lr_w" (nth 0 observed)
+      "mm_lr_first" (nth 1 observed)
+      "mm_lr_rows" (nth 2 observed)
+      "mm_empty" (nth 3 observed)
+      "mm_unk" (nth 4 observed)
+      "mm_cjk_w" (nth 5 observed))
+     "render"
+     (collect "tui_mermaid.render"
+              (lambda ()
+                (lambda ()
+                  (run-tui-mermaid)))))))
+
 (defun latex-text (source display-p)
   (or (cadr-tui:render-latex source :display-p display-p) ""))
 
@@ -6280,6 +6321,8 @@
       "src/cadr-cli/modes/rpc/sessions.lisp rpc-session-stats"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
+      "tui_mermaid.render"
+      "src/cadr-tui/mermaid/index.lisp gm-render"
       "tui_editor_helpers.fuzzy_match"
       "src/cadr-tui/fuzzy.lisp fuzzy-match"
       "tui_theme_overlay.osc11_bg"
@@ -6501,6 +6544,8 @@
               (let ((print-rpc (measure-cli-print-rpc)))
               (format *error-output* "goal20 cadr paired paths: tui_latex~%")
               (let ((latex (measure-tui-latex)))
+              (format *error-output* "goal20 cadr paired paths: tui_mermaid~%")
+              (let ((mermaid (measure-tui-mermaid)))
               (format *error-output* "goal20 cadr paired paths: tui_editor_helpers~%")
               (let ((fuzzy (measure-tui-fuzzy)))
               (format *error-output* "goal20 cadr paired paths: tui_theme_overlay~%")
@@ -6603,6 +6648,7 @@
               "image_runtime" images
               "cli_print_rpc" print-rpc
               "tui_latex" latex
+              "tui_mermaid" mermaid
               "tui_editor_helpers" fuzzy
               "tui_theme_overlay" theme-overlay
               "ai_support" estimate
@@ -6642,7 +6688,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

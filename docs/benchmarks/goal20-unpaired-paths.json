@@ -53,6 +53,7 @@
   "cli_print_rpc.clamp_thinking",
   "cli_print_rpc.session_stats",
   "tui_latex.render",
+  "tui_mermaid.render",
   "tui_editor_helpers.fuzzy_match",
   "tui_theme_overlay.osc11_bg",
   "ai_support.estimate_text",
@@ -1645,38 +1646,38 @@
   },
   {
    "prefix": "src/cadr-tui/mermaid/canvas.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/graph.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/index.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "paired",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/labels.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/layout-seq.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/layout.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/parse.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/source-box.lisp",
@@ -1690,13 +1691,13 @@
   },
   {
    "prefix": "src/cadr-tui/mermaid/width-data.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/mermaid/width.lisp",
-   "class": "needs-pair",
-   "hole": "tui_mermaid"
+   "class": "covered-as-callee",
+   "metrics": ["tui_mermaid.render"]
   },
   {
    "prefix": "src/cadr-tui/native-modifiers.lisp",

@@ -175,6 +175,7 @@ const REPETITIONS = {
 	"cli_print_rpc.clamp_thinking": 50,
 	"cli_print_rpc.session_stats": 20,
 	"tui_latex.render": 20,
+	"tui_mermaid.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
 	"ai_support.estimate_text": 50,
@@ -491,6 +492,9 @@ const imageApiRegistryModule = await import(
 	moduleUrl("packages/ai/src/images-api-registry.ts")
 );
 const latexModule = await import(moduleUrl("packages/tui/src/latex.ts"));
+const grokMermaidModule = await import(
+	pathToFileURL(path.join(baselineDirectory, "node_modules/grok-mermaid/dist/index.js")).href
+);
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
 const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
@@ -3390,6 +3394,38 @@ async function measureTuiLatex() {
 	};
 }
 
+const MERMAID_LR = "flowchart LR\n  A-->B";
+const MERMAID_CJK = "flowchart LR\n  A[你好世界]-->B[测试]";
+
+function mermaidArt(src) {
+	return grokMermaidModule.render(src);
+}
+
+function runTuiMermaid() {
+	const lr = mermaidArt(MERMAID_LR);
+	const empty = mermaidArt("");
+	const unk = mermaidArt("notadiagram");
+	const cjk = mermaidArt(MERMAID_CJK);
+	return {
+		mm_lr_w: lr ? lr.width : 0,
+		mm_lr_first: lr && Array.isArray(lr.plain) ? (lr.plain[0] ?? "") : "",
+		mm_lr_rows: lr && Array.isArray(lr.plain) ? lr.plain.length : 0,
+		mm_empty: empty ? 0 : 1,
+		mm_unk: unk ? 0 : 1,
+		mm_cjk_w: cjk ? cjk.width : 0,
+	};
+}
+
+async function measureTuiMermaid() {
+	const observed = runTuiMermaid();
+	return {
+		render: await collect("tui_mermaid.render", () => {
+			return () => runTuiMermaid();
+		}),
+		observed,
+	};
+}
+
 function fuzzyHit(query, text) {
 	return fuzzyModule.fuzzyMatch(query, text).matches ? 1 : 0;
 }
@@ -5293,6 +5329,8 @@ process.stderr.write("goal20 pi paired paths: cli_print_rpc\n");
 const cliPrintRpc = await measureCliPrintRpc();
 process.stderr.write("goal20 pi paired paths: tui_latex\n");
 const tuiLatex = await measureTuiLatex();
+process.stderr.write("goal20 pi paired paths: tui_mermaid\n");
+const tuiMermaid = await measureTuiMermaid();
 process.stderr.write("goal20 pi paired paths: tui_editor_helpers\n");
 const tuiEditorHelpers = await measureTuiFuzzy();
 process.stderr.write("goal20 pi paired paths: tui_theme_overlay\n");
@@ -5436,6 +5474,7 @@ const result = {
 			"cli_print_rpc.session_stats":
 				"packages/coding-agent/src/core/agent-session.ts AgentSession.getSessionStats",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
+			"tui_mermaid.render": "grok-mermaid render (dist/index.js)",
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":
 				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",
@@ -5611,6 +5650,7 @@ const result = {
 		image_runtime: imageRuntime,
 		cli_print_rpc: cliPrintRpc,
 		tui_latex: tuiLatex,
+		tui_mermaid: tuiMermaid,
 		tui_editor_helpers: tuiEditorHelpers,
 		tui_theme_overlay: tuiThemeOverlay,
 		ai_support: aiSupport,

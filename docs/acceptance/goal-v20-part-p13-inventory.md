@@ -607,10 +607,11 @@ These must not be filed as callees.
 | `src/cadr-cli/support/threads.lisp` | 7 |
 | `src/cadr-cli/support/timings.lisp` | 45 |
 
-### `tui_mermaid` (additional)
+### `tui_mermaid` (additional) — `index.lisp` paired `tui_mermaid.render`; parse/layout/canvas/graph/labels/width covered-as-callee
 
-- pi: `grok-mermaid dist/*.js + packages/coding-agent/src/modes/interactive/components/mermaid.ts`
-- fixture: Checked-in mermaid fences (already used by FiveAM). Time parse + layout + ANSI art. Goal 11 markdown does not run this unless the transcript contains a mermaid fence; K8 left it uncovered.
+- pi: grok-mermaid `render` (`packages/coding-agent/src/modes/interactive/components/mermaid.ts` calls it)
+- fixture: FiveAM reference snippets. Time parse+layout+Unicode art, not a TUI frame and not live mermaid play. flowchart LR A-->B; empty; `notadiagram`; CJK flowchart. Exact width/first-row/rows/empty/unknown/CJK-width.
+- Friend-MachineD n=5: **0.30×** (75.31 / 255.24 µs), ceiling 8.0. cadr leads. `source-box.lisp` / `transform.lisp` / `ansi.lisp` still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|
