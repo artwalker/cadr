@@ -245,6 +245,7 @@ const REPETITIONS = {
 	"cli_selectors.session_thread_records": 50,
 	"cli_selectors.session_binding_label": 50,
 	"cli_selectors.session_same_path": 50,
+	"cli_selectors.session_quoted_p": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5282,6 +5283,21 @@ function runCliSelectorsSessionSamePath() {
 	};
 }
 
+function quotedSearchPInt(query) {
+	return quotedSearchPi(query) ? 1 : 0;
+}
+
+function runCliSelectorsSessionQuotedP() {
+	return {
+		sqp_phrase: quotedSearchPInt('"cadr"'),
+		sqp_words: quotedSearchPInt('"hello world"'),
+		sqp_plain: quotedSearchPInt("cadr"),
+		sqp_empty: quotedSearchPInt(""),
+		sqp_one: quotedSearchPInt('"'),
+		sqp_open: quotedSearchPInt('"open'),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5623,6 +5639,7 @@ async function measureCliSelectorsSessionSearch() {
 	const sessionThreadRecordsResults = runCliSelectorsSessionThreadRecords();
 	const sessionBindingLabelResults = runCliSelectorsSessionBindingLabel();
 	const sessionSamePathResults = runCliSelectorsSessionSamePath();
+	const sessionQuotedPResults = runCliSelectorsSessionQuotedP();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5752,6 +5769,12 @@ async function measureCliSelectorsSessionSearch() {
 		ssp_nil_left: sessionSamePathResults.ssp_nil_left,
 		ssp_nil_right: sessionSamePathResults.ssp_nil_right,
 		ssp_nil_both: sessionSamePathResults.ssp_nil_both,
+		sqp_phrase: sessionQuotedPResults.sqp_phrase,
+		sqp_words: sessionQuotedPResults.sqp_words,
+		sqp_plain: sessionQuotedPResults.sqp_plain,
+		sqp_empty: sessionQuotedPResults.sqp_empty,
+		sqp_one: sessionQuotedPResults.sqp_one,
+		sqp_open: sessionQuotedPResults.sqp_open,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5828,6 +5851,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		session_same_path: await collect("cli_selectors.session_same_path", () => {
 			return () => runCliSelectorsSessionSamePath();
+		}),
+		session_quoted_p: await collect("cli_selectors.session_quoted_p", () => {
+			return () => runCliSelectorsSessionQuotedP();
 		}),
 		observed,
 	};
@@ -6926,6 +6952,8 @@ const result = {
 				"packages/coding-agent/src/core/keybindings.ts KeybindingsManager.getKeys first-or-name",
 			"cli_selectors.session_same_path":
 				"packages/coding-agent/src/utils/paths.ts canonicalizePath equality",
+			"cli_selectors.session_quoted_p":
+				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts quoted phrase predicate",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
