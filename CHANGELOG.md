@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.delete_query`
+  (grapheme backspace fixtures; cadr
+  `selector-delete-query-character` vs pi `Input` backspace).
+  Friend-MachineD n=5 **0.19×** (2.2 / 11.3 µs), ceiling 8.0. cadr
+  leads. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.fuzzy_filter`
   (empty / token / slash fixtures; cadr `selector-fuzzy-filter` vs pi
   `fuzzyFilter`). Friend-MachineD n=5 **0.34×** (8.2 / 23.7 µs),

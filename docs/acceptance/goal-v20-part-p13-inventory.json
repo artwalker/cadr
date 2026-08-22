@@ -1552,7 +1552,8 @@
    "lines": 394,
    "class": "paired",
    "metrics": [
-    "cli_selectors.fuzzy_filter"
+    "cli_selectors.fuzzy_filter",
+    "cli_selectors.delete_query"
    ],
    "pathId": "cli_selectors",
    "pi": "packages/coding-agent/src/modes/interactive selectors (models, sessions, settings, tree, auth, login)",

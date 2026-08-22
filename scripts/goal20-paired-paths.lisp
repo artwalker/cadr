@@ -91,6 +91,7 @@
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 111. cli_selectors selector-fuzzy-filter vs fuzzyFilter
+;;;; 112. cli_selectors selector-delete-query-character vs Input backspace grapheme delete
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -265,6 +266,7 @@
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
+    ("cli_selectors.delete_query" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -5932,10 +5934,21 @@
                  (getf entry :id)
                  (getf entry :provider))))))))
 
+(defun run-cli-selectors-delete-query ()
+  (list
+   (cadr-cli::selector-delete-query-character "")
+   (cadr-cli::selector-delete-query-character "a")
+   (cadr-cli::selector-delete-query-character "abc")
+   (cadr-cli::selector-delete-query-character "café")
+   (cadr-cli::selector-delete-query-character "a🙂b")
+   (cadr-cli::selector-delete-query-character
+    (concatenate 'string "e" (string (code-char #x301))))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
-        (fuzzy (run-cli-selectors-fuzzy-filter)))
+        (fuzzy (run-cli-selectors-fuzzy-filter))
+        (delete-query (run-cli-selectors-delete-query)))
     (json-object
      "observed"
      (json-object
@@ -5954,7 +5967,13 @@
       "ff_an" (nth 1 fuzzy)
       "ff_app" (nth 2 fuzzy)
       "ff_cl" (nth 3 fuzzy)
-      "ff_slash" (nth 4 fuzzy))
+      "ff_slash" (nth 4 fuzzy)
+      "dq_empty" (nth 0 delete-query)
+      "dq_a" (nth 1 delete-query)
+      "dq_abc" (nth 2 delete-query)
+      "dq_cafe" (nth 3 delete-query)
+      "dq_emoji" (nth 4 delete-query)
+      "dq_combining" (nth 5 delete-query))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -5969,7 +5988,12 @@
      (collect "cli_selectors.fuzzy_filter"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-fuzzy-filter)))))))
+                  (run-cli-selectors-fuzzy-filter))))
+     "delete_query"
+     (collect "cli_selectors.delete_query"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-delete-query)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7020,6 +7044,8 @@
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
       "src/cadr-cli/interactive/selectors/common.lisp selector-fuzzy-filter"
+      "cli_selectors.delete_query"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-delete-query-character"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

@@ -223,6 +223,7 @@ const REPETITIONS = {
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
+	"cli_selectors.delete_query": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -4984,11 +4985,34 @@ function runCliSelectorsFuzzyFilter() {
 	};
 }
 
+function deleteQueryChar(value) {
+	if (value.length === 0) {
+		return value;
+	}
+	const segmenter = tuiUtilsModule.getGraphemeSegmenter();
+	const graphemes = [...segmenter.segment(value)];
+	const lastGrapheme = graphemes[graphemes.length - 1];
+	const graphemeLength = lastGrapheme ? lastGrapheme.segment.length : 1;
+	return value.slice(0, value.length - graphemeLength);
+}
+
+function runCliSelectorsDeleteQuery() {
+	return {
+		dq_empty: deleteQueryChar(""),
+		dq_a: deleteQueryChar("a"),
+		dq_abc: deleteQueryChar("abc"),
+		dq_cafe: deleteQueryChar("café"),
+		dq_emoji: deleteQueryChar("a🙂b"),
+		dq_combining: deleteQueryChar(`e\u0301`),
+	};
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
 		...runCliSelectorsFuzzyFilter(),
+		...runCliSelectorsDeleteQuery(),
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -4999,6 +5023,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		fuzzy_filter: await collect("cli_selectors.fuzzy_filter", () => {
 			return () => runCliSelectorsFuzzyFilter();
+		}),
+		delete_query: await collect("cli_selectors.delete_query", () => {
+			return () => runCliSelectorsDeleteQuery();
 		}),
 		observed,
 	};
@@ -6086,6 +6113,8 @@ const result = {
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
+			"cli_selectors.delete_query":
+				"packages/tui/src/components/input.ts Input.handleInput backspace grapheme delete",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

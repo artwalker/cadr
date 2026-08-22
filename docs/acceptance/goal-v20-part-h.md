@@ -1599,6 +1599,20 @@ exact mixed scoring edges beyond the booked fixtures. Observed
 exact. First Friend-MachineD freeze **0.34×** (8.2 / 23.7 µs),
 ceiling 8.0. cadr leads. Same commit no optimize.
 
+### Pair 112 — `cli_selectors` (delete_query)
+
+| metric | cadr | pi |
+|---|---|---|
+| `delete_query` | `selector-delete-query-character` | `Input.handleInput` backspace grapheme delete (`packages/tui/src/components/input.ts`) |
+
+Leftover sibling of the `cli_selectors` hole. Time grapheme
+backspace on the filter query only, not selector render.
+Empty / `a` / `abc` / `café` / `a🙂b` / combining `é`.
+Observed `dq_empty` / `dq_a` / `dq_abc` / `dq_cafe` /
+`dq_emoji` / `dq_combining` are exact. First Friend-MachineD
+freeze **0.19×** (2.2 / 11.3 µs), ceiling 8.0. cadr leads.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1922,7 +1936,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter` |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
