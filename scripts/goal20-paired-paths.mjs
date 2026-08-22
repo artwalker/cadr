@@ -247,6 +247,7 @@ const REPETITIONS = {
 	"cli_selectors.session_same_path": 50,
 	"cli_selectors.session_quoted_p": 50,
 	"cli_selectors.session_named_p": 50,
+	"cli_selectors.settings_thinking_description": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5312,6 +5313,33 @@ function runCliSelectorsSessionNamedP() {
 	};
 }
 
+const thinkingDescriptionsPi = {
+	off: "No reasoning",
+	minimal: "Very brief reasoning (~1k tokens)",
+	low: "Light reasoning (~2k tokens)",
+	medium: "Moderate reasoning (~8k tokens)",
+	high: "Deep reasoning (~16k tokens)",
+	xhigh: "Extra-high reasoning (~32k tokens)",
+	max: "Maximum reasoning",
+};
+
+function settingsThinkingDescriptionPi(level) {
+	return thinkingDescriptionsPi[level] ?? "";
+}
+
+function runCliSelectorsSettingsThinkingDescription() {
+	return {
+		std_off: settingsThinkingDescriptionPi("off"),
+		std_minimal: settingsThinkingDescriptionPi("minimal"),
+		std_low: settingsThinkingDescriptionPi("low"),
+		std_medium: settingsThinkingDescriptionPi("medium"),
+		std_high: settingsThinkingDescriptionPi("high"),
+		std_xhigh: settingsThinkingDescriptionPi("xhigh"),
+		std_max: settingsThinkingDescriptionPi("max"),
+		std_unknown: settingsThinkingDescriptionPi("bogus"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5655,6 +5683,7 @@ async function measureCliSelectorsSessionSearch() {
 	const sessionSamePathResults = runCliSelectorsSessionSamePath();
 	const sessionQuotedPResults = runCliSelectorsSessionQuotedP();
 	const sessionNamedPResults = runCliSelectorsSessionNamedP();
+	const settingsThinkingDescriptionResults = runCliSelectorsSettingsThinkingDescription();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5794,6 +5823,14 @@ async function measureCliSelectorsSessionSearch() {
 		snp_whitespace: sessionNamedPResults.snp_whitespace,
 		snp_empty: sessionNamedPResults.snp_empty,
 		snp_nil: sessionNamedPResults.snp_nil,
+		std_off: settingsThinkingDescriptionResults.std_off,
+		std_minimal: settingsThinkingDescriptionResults.std_minimal,
+		std_low: settingsThinkingDescriptionResults.std_low,
+		std_medium: settingsThinkingDescriptionResults.std_medium,
+		std_high: settingsThinkingDescriptionResults.std_high,
+		std_xhigh: settingsThinkingDescriptionResults.std_xhigh,
+		std_max: settingsThinkingDescriptionResults.std_max,
+		std_unknown: settingsThinkingDescriptionResults.std_unknown,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5877,6 +5914,12 @@ async function measureCliSelectorsSessionSearch() {
 		session_named_p: await collect("cli_selectors.session_named_p", () => {
 			return () => runCliSelectorsSessionNamedP();
 		}),
+		settings_thinking_description: await collect(
+			"cli_selectors.settings_thinking_description",
+			() => {
+				return () => runCliSelectorsSettingsThinkingDescription();
+			},
+		),
 		observed,
 	};
 }
@@ -6978,6 +7021,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts quoted phrase predicate",
 			"cli_selectors.session_named_p":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts hasSessionName",
+			"cli_selectors.settings_thinking_description":
+				"packages/coding-agent/src/modes/interactive/components/settings-selector.ts THINKING_DESCRIPTIONS",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

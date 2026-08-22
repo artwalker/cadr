@@ -115,6 +115,7 @@
 ;;;; 133. cli_selectors same-session-path-p vs canonicalizePath equality
 ;;;; 134. cli_selectors quoted-search-p vs session-selector-search quoted phrase predicate
 ;;;; 135. cli_selectors named-session-p vs session-selector-search hasSessionName
+;;;; 136. cli_selectors settings-thinking-description vs settings-selector THINKING_DESCRIPTIONS
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -313,6 +314,7 @@
     ("cli_selectors.session_same_path" . 50)
     ("cli_selectors.session_quoted_p" . 50)
     ("cli_selectors.session_named_p" . 50)
+    ("cli_selectors.settings_thinking_description" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6294,6 +6296,20 @@
    (session-named-p-int "")
    (session-named-p-int nil)))
 
+(defun settings-thinking-desc-str (value)
+  (or (cadr-cli::settings-thinking-description value) ""))
+
+(defun run-cli-selectors-settings-thinking-description ()
+  (list
+   (settings-thinking-desc-str :off)
+   (settings-thinking-desc-str :minimal)
+   (settings-thinking-desc-str :low)
+   (settings-thinking-desc-str :medium)
+   (settings-thinking-desc-str :high)
+   (settings-thinking-desc-str :xhigh)
+   (settings-thinking-desc-str :max)
+   (settings-thinking-desc-str :bogus)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6321,7 +6337,9 @@
         (session-binding-label (run-cli-selectors-session-binding-label))
         (session-same-path (run-cli-selectors-session-same-path))
         (session-quoted-p (run-cli-selectors-session-quoted-p))
-        (session-named-p (run-cli-selectors-session-named-p)))
+        (session-named-p (run-cli-selectors-session-named-p))
+        (settings-thinking-description
+          (run-cli-selectors-settings-thinking-description)))
     (json-object
      "observed"
      (json-object
@@ -6480,7 +6498,15 @@
       "snp_named" (nth 0 session-named-p)
       "snp_whitespace" (nth 1 session-named-p)
       "snp_empty" (nth 2 session-named-p)
-      "snp_nil" (nth 3 session-named-p))
+      "snp_nil" (nth 3 session-named-p)
+      "std_off" (nth 0 settings-thinking-description)
+      "std_minimal" (nth 1 settings-thinking-description)
+      "std_low" (nth 2 settings-thinking-description)
+      "std_medium" (nth 3 settings-thinking-description)
+      "std_high" (nth 4 settings-thinking-description)
+      "std_xhigh" (nth 5 settings-thinking-description)
+      "std_max" (nth 6 settings-thinking-description)
+      "std_unknown" (nth 7 settings-thinking-description))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6615,7 +6641,12 @@
      (collect "cli_selectors.session_named_p"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-session-named-p)))))))
+                  (run-cli-selectors-session-named-p))))
+     "settings_thinking_description"
+     (collect "cli_selectors.settings_thinking_description"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-settings-thinking-description)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7680,6 +7711,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp quoted-search-p"
       "cli_selectors.session_named_p"
       "src/cadr-cli/interactive/selectors/sessions.lisp named-session-p"
+      "cli_selectors.settings_thinking_description"
+      "src/cadr-cli/interactive/selectors/settings.lisp settings-thinking-description"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

@@ -1941,6 +1941,20 @@ only (`string-trim` whitespace vs `name?.trim()`), not full
 Friend-MachineD freeze **2.11×** (0.6 / 0.3 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 136 — `cli_selectors` (settings_thinking_description)
+
+| metric | cadr | pi |
+|---|---|---|
+| `settings_thinking_description` | `settings-thinking-description` | `THINKING_DESCRIPTIONS` (`settings-selector.ts`) |
+
+First `settings.lisp` hole sibling under `cli_selectors`. Thinking-level
+description lookup only, not submenu render or cycle. Fixtures cover
+`:off` through `:max` plus unknown keyword (empty string). Observed
+`std_off` / `std_minimal` / `std_low` / `std_medium` / `std_high` /
+`std_xhigh` / `std_max` / `std_unknown` are exact. First
+Friend-MachineD freeze **0.80×** (0.3 / 0.3 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash

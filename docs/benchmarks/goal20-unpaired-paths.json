@@ -106,6 +106,7 @@
   "cli_selectors.session_same_path",
   "cli_selectors.session_quoted_p",
   "cli_selectors.session_named_p",
+  "cli_selectors.settings_thinking_description",
   "cli_selectors.key_text",
   "cli_selectors.fuzzy_filter",
   "cli_selectors.delete_query",
@@ -1210,8 +1211,10 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/settings.lisp",
-   "class": "needs-pair",
-   "hole": "cli_selectors"
+   "class": "paired",
+   "metrics": [
+    "cli_selectors.settings_thinking_description"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/tree.lisp",

@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.settings_thinking_description`
+  (thinking-level description fixtures; cadr `settings-thinking-description`
+  vs pi `THINKING_DESCRIPTIONS`). Friend-MachineD n=5 **0.80×** (0.3 / 0.3 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.session_named_p`
   (named session predicate fixtures; cadr `named-session-p` vs pi
   `hasSessionName`). Friend-MachineD n=5 **2.11×** (0.6 / 0.3 µs),
