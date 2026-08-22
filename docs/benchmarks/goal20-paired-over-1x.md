@@ -110,4 +110,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_interactive_controller.parse_auto_theme` | 1.0 | 0.5 | 1.96× | 8.00× | measure-only pair `ea3915685`; auto theme parse only | invent pause；地板优化另刀 |
 
+| `cli_interactive_controller.resolve_theme` | 0.8 | 0.7 | 1.16× | 8.00× | measure-only pair TBD; resolve auto/fixed theme only | invent pause；地板优化另刀 |
+
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

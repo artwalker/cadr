@@ -1982,6 +1982,20 @@ empty. Observed `pat_valid` / `pat_empty_left` / `pat_empty_right` /
 `pat_nil` / `pat_double` / `pat_fixed` are exact. First Friend-MachineD
 freeze **1.96×** (1.0 / 0.5 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 139 — `cli_interactive_controller` (resolve_theme)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resolve_theme` | `resolve-theme-setting` | `resolveThemeSetting` (`theme.ts`) |
+
+Sibling of Pair 138 on `theme.lisp`. Theme resolution only: auto
+`light/dark` picks terminal background branch; fixed theme passthrough;
+invalid slash forms return empty. Fixtures: auto light/dark, fixed
+`solarized`, bad double-slash, nil. Encoded as theme string or empty.
+Observed `rts_auto_light` / `rts_auto_dark` / `rts_fixed` / `rts_bad` /
+`rts_nil` are exact. First Friend-MachineD freeze **1.16×** (0.8 / 0.7 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
