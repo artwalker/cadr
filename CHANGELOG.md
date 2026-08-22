@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.session_named_p`
+  (named session predicate fixtures; cadr `named-session-p` vs pi
+  `hasSessionName`). Friend-MachineD n=5 **2.11×** (0.6 / 0.3 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.session_quoted_p`
   (quoted phrase predicate fixtures; cadr `quoted-search-p` vs pi
   `quotedSearchPi`). Friend-MachineD n=5 **0.43×** (0.3 / 0.7 µs),

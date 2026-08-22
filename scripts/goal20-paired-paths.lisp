@@ -114,6 +114,7 @@
 ;;;; 132. cli_selectors session-selector-binding-label vs KeybindingsManager.getKeys first
 ;;;; 133. cli_selectors same-session-path-p vs canonicalizePath equality
 ;;;; 134. cli_selectors quoted-search-p vs session-selector-search quoted phrase predicate
+;;;; 135. cli_selectors named-session-p vs session-selector-search hasSessionName
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -311,6 +312,7 @@
     ("cli_selectors.session_binding_label" . 50)
     ("cli_selectors.session_same_path" . 50)
     ("cli_selectors.session_quoted_p" . 50)
+    ("cli_selectors.session_named_p" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6279,6 +6281,19 @@
    (session-quoted-p-int "\"")
    (session-quoted-p-int "\"open")))
 
+(defun session-named-p-int (name)
+  (if (cadr-cli::named-session-p
+       (cadr-cli::make-session-search-record :name name))
+      1
+      0))
+
+(defun run-cli-selectors-session-named-p ()
+  (list
+   (session-named-p-int "alpha")
+   (session-named-p-int "   ")
+   (session-named-p-int "")
+   (session-named-p-int nil)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6305,7 +6320,8 @@
         (session-thread-records (run-cli-selectors-session-thread-records))
         (session-binding-label (run-cli-selectors-session-binding-label))
         (session-same-path (run-cli-selectors-session-same-path))
-        (session-quoted-p (run-cli-selectors-session-quoted-p)))
+        (session-quoted-p (run-cli-selectors-session-quoted-p))
+        (session-named-p (run-cli-selectors-session-named-p)))
     (json-object
      "observed"
      (json-object
@@ -6460,7 +6476,11 @@
       "sqp_plain" (nth 2 session-quoted-p)
       "sqp_empty" (nth 3 session-quoted-p)
       "sqp_one" (nth 4 session-quoted-p)
-      "sqp_open" (nth 5 session-quoted-p))
+      "sqp_open" (nth 5 session-quoted-p)
+      "snp_named" (nth 0 session-named-p)
+      "snp_whitespace" (nth 1 session-named-p)
+      "snp_empty" (nth 2 session-named-p)
+      "snp_nil" (nth 3 session-named-p))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6590,7 +6610,12 @@
      (collect "cli_selectors.session_quoted_p"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-session-quoted-p)))))))
+                  (run-cli-selectors-session-quoted-p))))
+     "session_named_p"
+     (collect "cli_selectors.session_named_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-named-p)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7653,6 +7678,8 @@
       "src/cadr-cli/interactive/selectors/sessions.lisp same-session-path-p"
       "cli_selectors.session_quoted_p"
       "src/cadr-cli/interactive/selectors/sessions.lisp quoted-search-p"
+      "cli_selectors.session_named_p"
+      "src/cadr-cli/interactive/selectors/sessions.lisp named-session-p"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
