@@ -100,6 +100,7 @@
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
 ;;;;  87. cli_sdk create-agent-session-services vs createAgentSessionServices
 ;;;;  88. cli_sdk sdk-model-runtime-providers vs ModelRuntime.getProviders
+;;;;  89. cli_print_rpc rpc-session-stats vs AgentSession.getSessionStats
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -201,6 +202,7 @@
     ("cli_print_rpc.jsonl_line" . 50)
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
+    ("cli_print_rpc.session_stats" . 20)
     ("tui_latex.render" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
@@ -3937,6 +3939,24 @@
    (symbol-name
     (cadr-cli::rpc-clamp-thinking-level level available))))
 
+(defparameter *rpc-stats-session-id*
+  "019f0000-0000-7000-8000-00000000cadr")
+
+(defun run-cli-print-rpc-session-stats (session)
+  (cadr-cli::rpc-session-stats session))
+
+(defun cli-print-rpc-session-stats-observed (stats)
+  (list
+   (cadr-ai::json-get stats "userMessages")
+   (cadr-ai::json-get stats "assistantMessages")
+   (cadr-ai::json-get stats "toolResults")
+   (cadr-ai::json-get stats "toolCalls")
+   (cadr-ai::json-get stats "totalMessages")
+   (if (string= (cadr-ai::json-get stats "sessionId")
+                *rpc-stats-session-id*)
+       1
+       0)))
+
 (defun run-cli-print-rpc-clamp-thinking ()
   (let* ((full
            (clamp-thinking-fixture-model
@@ -3964,7 +3984,12 @@
                (subseq line 0 (1- (length line)))
                line))
          (read-lines (run-cli-print-rpc-read))
-         (clamp (run-cli-print-rpc-clamp-thinking)))
+         (clamp (run-cli-print-rpc-clamp-thinking))
+         (session
+           (cadr-agent:load-session (fixture-path "session.jsonl")))
+         (stats-obs
+           (cli-print-rpc-session-stats-observed
+            (run-cli-print-rpc-session-stats session))))
     (json-object
      "observed"
      (json-object
@@ -3982,7 +4007,13 @@
       "tl_xh_down" (nth 4 clamp)
       "tl_unk" (nth 5 clamp)
       "tl_full_n" (nth 6 clamp)
-      "tl_short_n" (nth 7 clamp))
+      "tl_short_n" (nth 7 clamp)
+      "ss_user" (nth 0 stats-obs)
+      "ss_asst" (nth 1 stats-obs)
+      "ss_tool" (nth 2 stats-obs)
+      "ss_calls" (nth 3 stats-obs)
+      "ss_total" (nth 4 stats-obs)
+      "ss_id" (nth 5 stats-obs))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -3997,7 +4028,12 @@
      (collect "cli_print_rpc.clamp_thinking"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-clamp-thinking)))))))
+                  (run-cli-print-rpc-clamp-thinking))))
+     "session_stats"
+     (collect "cli_print_rpc.session_stats"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-session-stats session)))))))
 
 (defun latex-text (source display-p)
   (or (cadr-tui:render-latex source :display-p display-p) ""))
@@ -6179,6 +6215,8 @@
       "src/cadr-cli/modes/rpc/jsonl.lisp read-rpc-jsonl-lines"
       "cli_print_rpc.clamp_thinking"
       "src/cadr-cli/modes/rpc/models.lisp rpc-clamp-thinking-level"
+      "cli_print_rpc.session_stats"
+      "src/cadr-cli/modes/rpc/sessions.lisp rpc-session-stats"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_editor_helpers.fuzzy_match"

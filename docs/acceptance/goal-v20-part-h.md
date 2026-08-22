@@ -1354,6 +1354,22 @@ absent; `gpt-4o-mini` present. Do not exact provider count (cadr
 (2243 / 3858 µs), ceiling 8.0. cadr leads. Same commit no
 optimize.
 
+### Pair 96 — `cli_print_rpc` (session_stats)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_stats` | `rpc-session-stats` | `AgentSession.getSessionStats` (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of the `cli_print_rpc` hole. Fixture
+`session.jsonl` (119 user / 240 assistant / 120 toolResult /
+120 toolCalls). Load in collect prepare; time the stats fold
+only. Observed `ss_user` / `ss_asst` / `ss_tool` / `ss_calls` /
+`ss_total` / `ss_id` are exact. Do not exact tokens, cost,
+sessionFile, or contextUsage (pi also folds compaction /
+branch_summary usage). No socket, no TUI. First Friend-MachineD
+freeze **0.19×** (13.16 / 70.76 µs), ceiling 8.0. cadr leads.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1559,14 +1575,14 @@ Denominator: **295 files / 127,389 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 149 | 65,208 | 51.2% | `no worse than baseline` is falsifiable |
+| `paired` | 150 | 65,491 | 51.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 19 | 12,919 | 10.1% | on a named paired thunk; no own bench |
-| `needs-pair` | 103 | 41,787 | 32.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 102 | 41,504 | 32.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 51.2% of lines (149 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 57.1% of lines.
+- **Falsifiable vs baseline:** 51.4% of lines (150 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 57.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -1684,6 +1700,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/modes/print.lisp` | 578 | `cli_print_rpc.jsonl_line` |
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 123 | `cli_print_rpc.jsonl_read` |
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
+| `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | `cli_print_rpc.session_stats` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
@@ -1791,9 +1808,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 6 | 2,412 |
 | `evals_harness` | 5 | 1,845 |
 | `package_manager` | 2 | 1,811 |
-| `cli_print_rpc` | 5 | 1,375 |
 | `oauth_pkce_device` | 8 | 1,348 |
 | `settings_load` | 3 | 1,283 |
+| `cli_print_rpc` | 4 | 1,092 |
 | `websocket_stream` | 1 | 628 |
 | `tui_theme_overlay` | 1 | 562 |
 | `provider_registry_defs` | 2 | 454 |

@@ -563,6 +563,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("tl_xh_down", paired.OBSERVED_EXACT["cli_print_rpc"])
         self.assertIn("tl_unk", paired.OBSERVED_EXACT["cli_print_rpc"])
         self.assertIn("tl_full_n", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("cli_print_rpc.session_stats", RECORD.METRIC_KEYS)
+        self.assertIn("session_stats", paired.METRICS["cli_print_rpc"])
+        self.assertIn("cli_print_rpc.session_stats", paired.RATIO_CEILINGS)
+        self.assertIn("ss_user", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("ss_asst", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("ss_tool", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("ss_calls", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("ss_total", paired.OBSERVED_EXACT["cli_print_rpc"])
+        self.assertIn("ss_id", paired.OBSERVED_EXACT["cli_print_rpc"])
 
     def test_tui_latex_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

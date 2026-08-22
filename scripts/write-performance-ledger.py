@@ -68,6 +68,7 @@ METRIC_KEYS = (
     "cli_print_rpc.jsonl_line",
     "cli_print_rpc.jsonl_read",
     "cli_print_rpc.clamp_thinking",
+    "cli_print_rpc.session_stats",
     "tui_latex.render",
     "tui_editor_helpers.fuzzy_match",
     "tui_theme_overlay.osc11_bg",

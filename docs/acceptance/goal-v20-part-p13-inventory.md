@@ -568,11 +568,11 @@ These must not be filed as callees.
 | `src/cadr-cli/sdk/session-manager.lisp` | 107 |
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 |
 
-### `cli_print_rpc` (additional) — `print.lisp` paired `cli_print_rpc.jsonl_line`; `jsonl.lisp` paired `cli_print_rpc.jsonl_read`; `rpc/models.lisp` paired `cli_print_rpc.clamp_thinking`
+### `cli_print_rpc` (additional) — `print.lisp` paired `cli_print_rpc.jsonl_line`; `jsonl.lisp` paired `cli_print_rpc.jsonl_read`; `rpc/models.lisp` paired `cli_print_rpc.clamp_thinking`; `rpc/sessions.lisp` paired `cli_print_rpc.session_stats`
 
-- pi: `serializeJsonLine`; `attachJsonlLineReader`; `clampThinkingLevel`
-- fixture: one RPC response object. Time JSONL frame write, not a live stdin loop. Read: three lines including CRLF trim, string stream / Readable. Clamp: reasoning model with/without xhigh+max map; off/high/xhigh/max + unknown. Do not exact catalog.
-- Friend-MachineD n=5: jsonl_line **13.21×** (3.3 / 0.25 µs); jsonl_read **0.03×** (0.63 / 23.84 µs); clamp_thinking **0.59×** (1.37 / 2.33 µs), ceiling 8.0 (variance on jsonl_line). cadr leads on jsonl_read and clamp_thinking. Other files still `needs-pair`. No optimize in the booking commits.
+- pi: `serializeJsonLine`; `attachJsonlLineReader`; `clampThinkingLevel`; `AgentSession.getSessionStats`
+- fixture: one RPC response object. Time JSONL frame write, not a live stdin loop. Read: three lines including CRLF trim, string stream / Readable. Clamp: reasoning model with/without xhigh+max map; off/high/xhigh/max + unknown. Do not exact catalog. Stats: session.jsonl load in prepare; time the fold. Exact user/assistant/tool/toolCall/total/id; do not exact tokens (pi also folds compaction usage).
+- Friend-MachineD n=5: jsonl_line **13.21×** (3.3 / 0.25 µs); jsonl_read **0.03×** (0.63 / 23.84 µs); clamp_thinking **0.59×** (1.37 / 2.33 µs); session_stats **0.19×** (13.16 / 70.76 µs), ceiling 8.0 (variance on jsonl_line). cadr leads on jsonl_read, clamp_thinking, and session_stats. Other files still `needs-pair`. No optimize in the booking commits.
 
 | file | lines |
 |---|---:|

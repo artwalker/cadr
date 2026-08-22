@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_print_rpc.session_stats`
+  (fixture session.jsonl; cadr `rpc-session-stats` vs pi
+  `AgentSession.getSessionStats`). Friend-MachineD n=5
+  **0.19×** (13.16 / 70.76 µs), ceiling 8.0. cadr leads.
+  Same commit no optimize. G.17 missing. Not Goal 20
+  complete.
 - Goal 20 P.13: pair `cli_sdk.model_runtime`
   (builtin providers + `gpt-4o-mini`; cadr
   `sdk-model-runtime-providers` vs pi

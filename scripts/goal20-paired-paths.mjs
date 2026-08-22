@@ -172,6 +172,7 @@ const REPETITIONS = {
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
+	"cli_print_rpc.session_stats": 20,
 	"tui_latex.render": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
@@ -3258,23 +3259,85 @@ function runCliPrintRpcClampThinking() {
 	};
 }
 
-async function measureCliPrintRpc() {
-	const observed = {
-		...measureCliPrintRpcObserved(runCliPrintRpc(), await runCliPrintRpcRead()),
-		...runCliPrintRpcClampThinking(),
-	};
+const RPC_STATS_SESSION_ID = "019f0000-0000-7000-8000-00000000cadr";
+
+async function stageCliPrintRpcSessionStats() {
+	const cwdDir = path.join(scratch, "rpc-stats-cwd");
+	const agentDir = path.join(scratch, "rpc-stats-agent");
+	mkdirSync(cwdDir, { recursive: true });
+	mkdirSync(agentDir, { recursive: true });
+	mkdirSync(path.join(cwdDir, ".cadr"), { recursive: true });
+	mkdirSync(path.join(cwdDir, ".pi"), { recursive: true });
+	const cwd = realpathSync(cwdDir);
+	const resolvedAgent = realpathSync(agentDir);
+	const dest = path.join(scratch, "rpc-stats", "session.jsonl");
+	rewriteSessionJsonlCwd(path.join(fixtureDirectory, "session.jsonl"), dest, cwd);
+	const settings = settingsModule.SettingsManager.create(cwd, resolvedAgent);
+	const loader = new resourceLoaderModule.DefaultResourceLoader({
+		cwd,
+		agentDir: resolvedAgent,
+		settingsManager: settings,
+	});
+	await loader.reload();
+	const modelRuntime = await modelRuntimeModule.ModelRuntime.create({
+		authPath: path.join(resolvedAgent, "auth.json"),
+		modelsPath: path.join(resolvedAgent, "models.json"),
+	});
+	const sessionManager = sessionModule.SessionManager.open(dest, path.dirname(dest), cwd);
+	const { getModel } = await import(moduleUrl("packages/ai/src/compat.ts"));
+	const { createAgentSession } = await import(
+		moduleUrl("packages/coding-agent/src/core/sdk.ts")
+	);
+	const model = getModel("openai", "gpt-4o-mini");
+	return createAgentSession({
+		cwd,
+		agentDir: resolvedAgent,
+		settingsManager: settings,
+		resourceLoader: loader,
+		modelRuntime,
+		sessionManager,
+		model,
+		noTools: "all",
+	});
+}
+
+function measureCliPrintRpcSessionStatsObserved(stats) {
 	return {
-		jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
-			return () => runCliPrintRpc();
-		}),
-		jsonl_read: await collect("cli_print_rpc.jsonl_read", () => {
-			return () => runCliPrintRpcRead();
-		}),
-		clamp_thinking: await collect("cli_print_rpc.clamp_thinking", () => {
-			return () => runCliPrintRpcClampThinking();
-		}),
-		observed,
+		ss_user: stats.userMessages,
+		ss_asst: stats.assistantMessages,
+		ss_tool: stats.toolResults,
+		ss_calls: stats.toolCalls,
+		ss_total: stats.totalMessages,
+		ss_id: stats.sessionId === RPC_STATS_SESSION_ID ? 1 : 0,
 	};
+}
+
+async function measureCliPrintRpc() {
+	const staged = await stageCliPrintRpcSessionStats();
+	try {
+		const observed = {
+			...measureCliPrintRpcObserved(runCliPrintRpc(), await runCliPrintRpcRead()),
+			...runCliPrintRpcClampThinking(),
+			...measureCliPrintRpcSessionStatsObserved(staged.session.getSessionStats()),
+		};
+		return {
+			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
+				return () => runCliPrintRpc();
+			}),
+			jsonl_read: await collect("cli_print_rpc.jsonl_read", () => {
+				return () => runCliPrintRpcRead();
+			}),
+			clamp_thinking: await collect("cli_print_rpc.clamp_thinking", () => {
+				return () => runCliPrintRpcClampThinking();
+			}),
+			session_stats: await collect("cli_print_rpc.session_stats", () => {
+				return () => staged.session.getSessionStats();
+			}),
+			observed,
+		};
+	} finally {
+		staged.session?.dispose();
+	}
 }
 
 function latexText(source, display) {
@@ -5343,6 +5406,8 @@ const result = {
 				"packages/coding-agent/src/modes/rpc/jsonl.ts attachJsonlLineReader",
 			"cli_print_rpc.clamp_thinking":
 				"packages/ai/src/models.ts clampThinkingLevel",
+			"cli_print_rpc.session_stats":
+				"packages/coding-agent/src/core/agent-session.ts AgentSession.getSessionStats",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":
