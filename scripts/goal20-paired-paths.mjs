@@ -224,6 +224,7 @@ const REPETITIONS = {
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
 	"cli_selectors.delete_query": 50,
+	"cli_selectors.visible_slice": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5007,12 +5008,42 @@ function runCliSelectorsDeleteQuery() {
 	};
 }
 
+function visibleSliceSummary(count, selected, maximum) {
+	const start = Math.max(0, Math.min(selected - Math.floor(maximum / 2), count - maximum));
+	const end = Math.min(start + maximum, count);
+	return [start, end, end - start, count];
+}
+
+function runCliSelectorsVisibleSlice() {
+	const fixtures = [
+		[0, 0, 8],
+		[5, 2, 8],
+		[20, 10, 8],
+		[20, 0, 8],
+		[20, 19, 8],
+		[3, 1, 8],
+	];
+	return fixtures.map((fixture) => visibleSliceSummary(...fixture));
+}
+
 async function measureCliSelectorsSessionSearch() {
+	const visibleSlice = runCliSelectorsVisibleSlice();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
 		...runCliSelectorsFuzzyFilter(),
 		...runCliSelectorsDeleteQuery(),
+		vs0: visibleSlice[0][0],
+		vs0_end: visibleSlice[0][1],
+		vs0_vis: visibleSlice[0][2],
+		vs5: visibleSlice[1][0],
+		vs5_vis: visibleSlice[1][2],
+		vs20_mid: visibleSlice[2][0],
+		vs20_mid_vis: visibleSlice[2][2],
+		vs20_top: visibleSlice[3][0],
+		vs20_bot: visibleSlice[4][0],
+		vs20_bot_vis: visibleSlice[4][2],
+		vs3_vis: visibleSlice[5][2],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5026,6 +5057,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		delete_query: await collect("cli_selectors.delete_query", () => {
 			return () => runCliSelectorsDeleteQuery();
+		}),
+		visible_slice: await collect("cli_selectors.visible_slice", () => {
+			return () => runCliSelectorsVisibleSlice();
 		}),
 		observed,
 	};
@@ -6115,6 +6149,8 @@ const result = {
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
 			"cli_selectors.delete_query":
 				"packages/tui/src/components/input.ts Input.handleInput backspace grapheme delete",
+			"cli_selectors.visible_slice":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts viewport slice (same formula in session/model/tree selectors)",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":

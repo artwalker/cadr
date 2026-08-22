@@ -92,6 +92,7 @@
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 111. cli_selectors selector-fuzzy-filter vs fuzzyFilter
 ;;;; 112. cli_selectors selector-delete-query-character vs Input backspace grapheme delete
+;;;; 113. cli_selectors selector-frame-visible-slice vs selector viewport slice
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -267,6 +268,7 @@
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
     ("cli_selectors.delete_query" . 50)
+    ("cli_selectors.visible_slice" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -5944,11 +5946,26 @@
    (cadr-cli::selector-delete-query-character
     (concatenate 'string "e" (string (code-char #x301))))))
 
+(defun visible-slice-summary (count selected maximum)
+  (let ((items (loop for i below count collect i)))
+    (multiple-value-bind (visible start end total)
+        (cadr-cli::selector-frame-visible-slice
+         items selected maximum)
+      (declare (ignore visible))
+      (list start end (- end start) total))))
+
+(defun run-cli-selectors-visible-slice ()
+  (mapcar
+   (lambda (fixture)
+     (apply #'visible-slice-summary fixture))
+   '((0 0 8) (5 2 8) (20 10 8) (20 0 8) (20 19 8) (3 1 8))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
         (fuzzy (run-cli-selectors-fuzzy-filter))
-        (delete-query (run-cli-selectors-delete-query)))
+        (delete-query (run-cli-selectors-delete-query))
+        (visible-slice (run-cli-selectors-visible-slice)))
     (json-object
      "observed"
      (json-object
@@ -5973,7 +5990,18 @@
       "dq_abc" (nth 2 delete-query)
       "dq_cafe" (nth 3 delete-query)
       "dq_emoji" (nth 4 delete-query)
-      "dq_combining" (nth 5 delete-query))
+      "dq_combining" (nth 5 delete-query)
+      "vs0" (first (first visible-slice))
+      "vs0_end" (second (first visible-slice))
+      "vs0_vis" (third (first visible-slice))
+      "vs5" (first (second visible-slice))
+      "vs5_vis" (third (second visible-slice))
+      "vs20_mid" (first (third visible-slice))
+      "vs20_mid_vis" (third (third visible-slice))
+      "vs20_top" (first (fourth visible-slice))
+      "vs20_bot" (first (fifth visible-slice))
+      "vs20_bot_vis" (third (fifth visible-slice))
+      "vs3_vis" (third (sixth visible-slice)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -5993,7 +6021,12 @@
      (collect "cli_selectors.delete_query"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-delete-query)))))))
+                  (run-cli-selectors-delete-query))))
+     "visible_slice"
+     (collect "cli_selectors.visible_slice"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-visible-slice)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7046,6 +7079,8 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-fuzzy-filter"
       "cli_selectors.delete_query"
       "src/cadr-cli/interactive/selectors/common.lisp selector-delete-query-character"
+      "cli_selectors.visible_slice"
+      "src/cadr-cli/interactive/selectors/common.lisp selector-frame-visible-slice"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

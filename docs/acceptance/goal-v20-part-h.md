@@ -1613,6 +1613,21 @@ Observed `dq_empty` / `dq_a` / `dq_abc` / `dq_cafe` /
 freeze **0.19×** (2.2 / 11.3 µs), ceiling 8.0. cadr leads.
 Same commit no optimize.
 
+### Pair 113 — `cli_selectors` (visible_slice)
+
+| metric | cadr | pi |
+|---|---|---|
+| `visible_slice` | `selector-frame-visible-slice` | selector viewport slice (`oauth-selector.ts` et al.) |
+
+Leftover sibling of the `cli_selectors` hole. Time centered
+viewport window only, not render or confirm. Count/selected/max
+fixtures: 0/0/8, 5/2/8, 20/10/8, 20/0/8, 20/19/8, 3/1/8.
+Observed `vs0` / `vs0_end` / `vs0_vis` / `vs5` / `vs5_vis` /
+`vs20_mid` / `vs20_mid_vis` / `vs20_top` / `vs20_bot` /
+`vs20_bot_vis` / `vs3_vis` are exact. First Friend-MachineD
+freeze **2.23×** (2.5 / 1.1 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
@@ -1936,7 +1951,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
 | `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
-| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query` |
+| `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |

@@ -144,7 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type"),
-    "cli_selectors": ("session_search", "key_text", "fuzzy_filter", "delete_query"),
+    "cli_selectors": ("session_search", "key_text", "fuzzy_filter", "delete_query", "visible_slice"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
@@ -660,6 +660,9 @@ RATIO_CEILINGS = {
     # First-freeze headroom for cli_selectors.delete_query.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.delete_query": 8.0,
+    # First-freeze headroom for cli_selectors.visible_slice.
+    # Ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_selectors.visible_slice": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
@@ -1449,6 +1452,17 @@ OBSERVED_EXACT = {
         "dq_cafe",
         "dq_emoji",
         "dq_combining",
+        "vs0",
+        "vs0_end",
+        "vs0_vis",
+        "vs5",
+        "vs5_vis",
+        "vs20_mid",
+        "vs20_mid_vis",
+        "vs20_top",
+        "vs20_bot",
+        "vs20_bot_vis",
+        "vs3_vis",
     ),
     "websocket_stream": (
         "ws_text",

@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.visible_slice`
+  (centered viewport fixtures; cadr
+  `selector-frame-visible-slice` vs pi selector slice formula).
+  Friend-MachineD n=5 **2.23×** (2.5 / 1.1 µs), ceiling 8.0.
+  Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.delete_query`
   (grapheme backspace fixtures; cadr
   `selector-delete-query-character` vs pi `Input` backspace).
