@@ -234,6 +234,7 @@ const REPETITIONS = {
 	"cli_selectors.dim_line": 50,
 	"cli_selectors.modified_cursor_key": 50,
 	"cli_selectors.title_line": 50,
+	"cli_selectors.overlay_title_line": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5217,6 +5218,17 @@ function runCliSelectorsTitleLine() {
 	];
 }
 
+function runCliSelectorsOverlayTitleLine() {
+	return [
+		titleLinePi("Select provider to configure:", 40),
+		titleLinePi("Very Long Auth Overlay Title That Truncates", 20),
+		titleLinePi("", 10),
+		titleLinePi("café", 15),
+		titleLinePi("A", 5),
+		titleLinePi("Project trust", 30),
+	];
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -5228,6 +5240,7 @@ async function measureCliSelectorsSessionSearch() {
 	const dimLineResults = runCliSelectorsDimLine();
 	const modifiedCursorKeyResults = runCliSelectorsModifiedCursorKey();
 	const titleLineResults = runCliSelectorsTitleLine();
+	const overlayTitleLineResults = runCliSelectorsOverlayTitleLine();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5298,6 +5311,12 @@ async function measureCliSelectorsSessionSearch() {
 		tl_wide: titleLineResults[3],
 		tl_narrow: titleLineResults[4],
 		tl_normal: titleLineResults[5],
+		otl_short: overlayTitleLineResults[0],
+		otl_trunc: overlayTitleLineResults[1],
+		otl_empty: overlayTitleLineResults[2],
+		otl_wide: overlayTitleLineResults[3],
+		otl_narrow: overlayTitleLineResults[4],
+		otl_normal: overlayTitleLineResults[5],
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -5341,6 +5360,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		title_line: await collect("cli_selectors.title_line", () => {
 			return () => runCliSelectorsTitleLine();
+		}),
+		overlay_title_line: await collect("cli_selectors.overlay_title_line", () => {
+			return () => runCliSelectorsOverlayTitleLine();
 		}),
 		observed,
 	};
@@ -6449,6 +6471,8 @@ const result = {
 			"cli_selectors.modified_cursor_key":
 				"packages/tui/src/keys.ts parseKey (CSI modified arrows)",
 			"cli_selectors.title_line":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts theme.fg accent theme.bold TruncatedText margins",
+			"cli_selectors.overlay_title_line":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts theme.fg accent theme.bold TruncatedText margins",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
