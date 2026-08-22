@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_entry_filtered`
+  (tree filter fixtures; cadr `tree-selector-entry-filtered-p` vs pi filter
+  mode predicate). Friend-MachineD n=5 **0.56×** (0.4 / 0.6 µs), ceiling 8.0.
+  Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.settings_apply_filter`
   (settings filter fixtures; cadr `settings-selector-apply-filter` vs pi
   `SettingsList.applyFilter`). Friend-MachineD n=5 **1.61×**

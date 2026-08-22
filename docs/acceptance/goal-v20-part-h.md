@@ -2046,6 +2046,20 @@ multi match. Encoded as `count|selected`. Observed `sap_empty` /
 `sap_trans` / `sap_none` / `sap_app` are exact. First Friend-MachineD
 freeze **1.61×** (7.8 / 4.8 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 144 — `cli_selectors` (tree_entry_filtered)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_entry_filtered` | `tree-selector-entry-filtered-p` | tree-selector filter mode predicate (`tree-selector.ts`) |
+
+Per-entry filter predicate only (default / user-only / no-tools /
+labeled-only / all), not search tokens or fold skipping. Fixtures cover
+user default pass, settings default fail, user-only, tool-result no-tools,
+labeled message, settings all pass. Encoded as `t` or empty. Observed
+`tef_user_def` / `tef_label_def` / `tef_user_uo` / `tef_tool_nt` /
+`tef_labeled_lo` / `tef_all_label` are exact. First Friend-MachineD freeze
+**0.56×** (0.4 / 0.6 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
@@ -2372,6 +2386,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path`, `cli_selectors.session_quoted_p`, `cli_selectors.session_named_p` |
 | `src/cadr-cli/interactive/selectors/settings.lisp` | 893 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
+| `src/cadr-cli/interactive/selectors/tree.lisp` | 1,812 | `cli_selectors.tree_entry_filtered` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |

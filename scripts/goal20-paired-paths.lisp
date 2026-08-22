@@ -123,6 +123,7 @@
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
 ;;;; 143. cli_selectors settings-selector-apply-filter vs SettingsList applyFilter
+;;;; 144. cli_selectors tree-selector-entry-filtered-p vs tree-selector filter modes
 ;;;;  76. cli_print_rpc rpc-clamp-thinking-level vs clampThinkingLevel
 ;;;;  77. oauth_pkce_device read-auth-credential vs ReadOnlyAuthStorage.read
 ;;;;  78. oauth_pkce_device github-copilot-base-url vs githubCopilotOAuth.toAuth
@@ -329,6 +330,7 @@
     ("cli_selectors.settings_active_automatic_theme" . 50)
     ("cli_selectors.settings_cycle" . 50)
     ("cli_selectors.settings_apply_filter" . 50)
+    ("cli_selectors.tree_entry_filtered" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6464,6 +6466,33 @@
    (settings-apply-filter-encoded
     '("apple" "application" "banana") "app")))
 
+(defun tree-entry-filtered-encoded (entry filter current-leaf-id)
+  (if (cadr-cli::tree-selector-entry-filtered-p
+       entry filter current-leaf-id)
+      "t"
+      ""))
+
+(defun run-cli-selectors-tree-entry-filtered ()
+  (list
+   (tree-entry-filtered-encoded
+    '(:id "u1" :type :message :role :user :text "hello")
+    :default "leaf")
+   (tree-entry-filtered-encoded
+    '(:id "l1" :type :label :label "bookmark")
+    :default "leaf")
+   (tree-entry-filtered-encoded
+    '(:id "u1" :type :message :role :user :text "hello")
+    :user-only "leaf")
+   (tree-entry-filtered-encoded
+    '(:id "t1" :type :message :role :tool-result :text "ok")
+    :no-tools "leaf")
+   (tree-entry-filtered-encoded
+    '(:id "m1" :type :message :role :user :text "hi" :label "pin")
+    :labeled-only "leaf")
+   (tree-entry-filtered-encoded
+    '(:id "l1" :type :label :label "bookmark")
+    :all "leaf")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6503,7 +6532,9 @@
         (settings-cycle
           (run-cli-selectors-settings-cycle))
         (settings-apply-filter
-          (run-cli-selectors-settings-apply-filter)))
+          (run-cli-selectors-settings-apply-filter))
+        (tree-entry-filtered
+          (run-cli-selectors-tree-entry-filtered)))
     (json-object
      "observed"
      (json-object
@@ -6689,7 +6720,13 @@
       "sap_empty" (nth 0 settings-apply-filter)
       "sap_trans" (nth 1 settings-apply-filter)
       "sap_none" (nth 2 settings-apply-filter)
-      "sap_app" (nth 3 settings-apply-filter))
+      "sap_app" (nth 3 settings-apply-filter)
+      "tef_user_def" (nth 0 tree-entry-filtered)
+      "tef_label_def" (nth 1 tree-entry-filtered)
+      "tef_user_uo" (nth 2 tree-entry-filtered)
+      "tef_tool_nt" (nth 3 tree-entry-filtered)
+      "tef_labeled_lo" (nth 4 tree-entry-filtered)
+      "tef_all_label" (nth 5 tree-entry-filtered))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6854,7 +6891,12 @@
      (collect "cli_selectors.settings_apply_filter"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-settings-apply-filter)))))))
+                  (run-cli-selectors-settings-apply-filter))))
+     "tree_entry_filtered"
+     (collect "cli_selectors.tree_entry_filtered"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-entry-filtered)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -7935,6 +7977,8 @@
       "src/cadr-cli/interactive/selectors/settings.lisp settings-selector-cycle"
       "cli_selectors.settings_apply_filter"
       "src/cadr-cli/interactive/selectors/settings.lisp settings-selector-apply-filter"
+      "cli_selectors.tree_entry_filtered"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-filtered-p"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

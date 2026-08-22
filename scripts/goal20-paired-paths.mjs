@@ -255,6 +255,7 @@ const REPETITIONS = {
 	"cli_selectors.settings_active_automatic_theme": 50,
 	"cli_selectors.settings_cycle": 50,
 	"cli_selectors.settings_apply_filter": 50,
+	"cli_selectors.tree_entry_filtered": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5466,6 +5467,90 @@ function runCliSelectorsSettingsApplyFilter() {
 	};
 }
 
+function isTreeSettingsEntry(type) {
+	return (
+		type === "label" ||
+		type === "custom" ||
+		type === "model_change" ||
+		type === "thinking_level_change" ||
+		type === "session_info"
+	);
+}
+
+function treeAssistantHiddenPi(entry, currentLeafId) {
+	if (entry.type !== "message" || entry.role !== "assistant") {
+		return false;
+	}
+	if (entry.id === currentLeafId) {
+		return false;
+	}
+	const text = entry.text ?? "";
+	const stopReason = entry.stopReason;
+	const isErrorOrAborted =
+		stopReason && stopReason !== "stop" && stopReason !== "toolUse";
+	return text.length === 0 && !isErrorOrAborted;
+}
+
+function treeEntryFilteredPi(entry, filter, currentLeafId) {
+	if (treeAssistantHiddenPi(entry, currentLeafId)) {
+		return false;
+	}
+	switch (filter) {
+		case "user-only":
+			return entry.type === "message" && entry.role === "user";
+		case "no-tools":
+			return (
+				!isTreeSettingsEntry(entry.type) &&
+				!(entry.type === "message" && entry.role === "toolResult")
+			);
+		case "labeled-only":
+			return entry.label !== undefined;
+		case "all":
+			return true;
+		default:
+			return !isTreeSettingsEntry(entry.type);
+	}
+}
+
+function treeEntryFilteredEncodedPi(entry, filter, currentLeafId) {
+	return treeEntryFilteredPi(entry, filter, currentLeafId) ? "t" : "";
+}
+
+function runCliSelectorsTreeEntryFiltered() {
+	return {
+		tef_user_def: treeEntryFilteredEncodedPi(
+			{ id: "u1", type: "message", role: "user", text: "hello" },
+			"default",
+			"leaf",
+		),
+		tef_label_def: treeEntryFilteredEncodedPi(
+			{ id: "l1", type: "label", label: "bookmark" },
+			"default",
+			"leaf",
+		),
+		tef_user_uo: treeEntryFilteredEncodedPi(
+			{ id: "u1", type: "message", role: "user", text: "hello" },
+			"user-only",
+			"leaf",
+		),
+		tef_tool_nt: treeEntryFilteredEncodedPi(
+			{ id: "t1", type: "message", role: "toolResult", text: "ok" },
+			"no-tools",
+			"leaf",
+		),
+		tef_labeled_lo: treeEntryFilteredEncodedPi(
+			{ id: "m1", type: "message", role: "user", text: "hi", label: "pin" },
+			"labeled-only",
+			"leaf",
+		),
+		tef_all_label: treeEntryFilteredEncodedPi(
+			{ id: "l1", type: "label", label: "bookmark" },
+			"all",
+			"leaf",
+		),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5815,6 +5900,7 @@ async function measureCliSelectorsSessionSearch() {
 	const settingsActiveAutomaticThemeResults = runCliSelectorsSettingsActiveAutomaticTheme();
 	const settingsCycleResults = runCliSelectorsSettingsCycle();
 	const settingsApplyFilterResults = runCliSelectorsSettingsApplyFilter();
+	const treeEntryFilteredResults = runCliSelectorsTreeEntryFiltered();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -5981,6 +6067,12 @@ async function measureCliSelectorsSessionSearch() {
 		sap_trans: settingsApplyFilterResults.sap_trans,
 		sap_none: settingsApplyFilterResults.sap_none,
 		sap_app: settingsApplyFilterResults.sap_app,
+		tef_user_def: treeEntryFilteredResults.tef_user_def,
+		tef_label_def: treeEntryFilteredResults.tef_label_def,
+		tef_user_uo: treeEntryFilteredResults.tef_user_uo,
+		tef_tool_nt: treeEntryFilteredResults.tef_tool_nt,
+		tef_labeled_lo: treeEntryFilteredResults.tef_labeled_lo,
+		tef_all_label: treeEntryFilteredResults.tef_all_label,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6090,6 +6182,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		settings_apply_filter: await collect("cli_selectors.settings_apply_filter", () => {
 			return () => runCliSelectorsSettingsApplyFilter();
+		}),
+		tree_entry_filtered: await collect("cli_selectors.tree_entry_filtered", () => {
+			return () => runCliSelectorsTreeEntryFiltered();
 		}),
 		observed,
 	};
@@ -7208,6 +7303,8 @@ const result = {
 				"packages/tui/src/components/settings-list.ts SettingsList cycle values",
 			"cli_selectors.settings_apply_filter":
 				"packages/tui/src/components/settings-list.ts SettingsList applyFilter",
+			"cli_selectors.tree_entry_filtered":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts filter mode predicate",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

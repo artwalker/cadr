@@ -114,6 +114,7 @@
   "cli_selectors.settings_active_automatic_theme",
   "cli_selectors.settings_cycle",
   "cli_selectors.settings_apply_filter",
+  "cli_selectors.tree_entry_filtered",
   "cli_selectors.key_text",
   "cli_selectors.fuzzy_filter",
   "cli_selectors.delete_query",
@@ -1230,8 +1231,10 @@
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/tree.lisp",
-   "class": "needs-pair",
-   "hole": "cli_selectors"
+   "class": "paired",
+   "metrics": [
+    "cli_selectors.tree_entry_filtered"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/trust.lisp",
