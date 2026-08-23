@@ -345,6 +345,7 @@
     ("cli_selectors.tree_format_tool_call" . 50)
     ("cli_selectors.tree_entry_display_text" . 50)
     ("cli_selectors.tree_prefix" . 50)
+    ("cli_selectors.tree_visual_nodes" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6830,6 +6831,63 @@
        :virtual-root-child-p t)
       t))))
 
+(defun tree-gutters-encoded (gutters)
+  (if (null gutters)
+      ""
+    (format nil "~{~a:~a~^,~}"
+            (loop for g in (sort (copy-list gutters) #'< :key #'car)
+                  append (list (car g) (if (cdr g) "1" "0"))))))
+
+(defun tree-visual-node-encoded (visual)
+  (format nil "~a,~a,~a,~a,~a"
+          (getf visual :indent)
+          (if (getf visual :show-connector-p) "1" "0")
+          (if (getf visual :last-p) "1" "0")
+          (tree-gutters-encoded (getf visual :gutters))
+          (if (getf visual :virtual-root-child-p) "1" "0")))
+
+(defun tree-visual-nodes-encoded (state)
+  (multiple-value-bind (visuals multiple-roots-p)
+      (cadr-cli::tree-selector-visual-nodes state)
+    (let ((ids (sort (loop for k being the hash-keys of visuals collect k)
+                     #'string<))
+          (parts nil))
+      (dolist (id ids)
+        (push (format nil "~a=~a" id
+                      (tree-visual-node-encoded (gethash id visuals)))
+              parts))
+      (concatenate 'string
+                   (if multiple-roots-p "1" "0")
+                   "|"
+                   (format nil "~{~a~^;~}" (reverse parts))))))
+
+(defun tree-visual-state-with-children (children-alist)
+  (let ((state (cadr-cli::%make-tree-selector-state)))
+    (dolist (pair children-alist)
+      (setf (gethash (car pair)
+                     (cadr-cli::tree-selector-state-visible-children
+                      state))
+            (cdr pair)))
+    state))
+
+(defun run-cli-selectors-tree-visual-nodes ()
+  (list
+   (tree-visual-nodes-encoded
+    (tree-visual-state-with-children
+     '((nil . ("r")) ("r" . ("a")))))
+   (tree-visual-nodes-encoded
+    (tree-visual-state-with-children
+     '((nil . ("p")) ("p" . ("a" "b")))))
+   (tree-visual-nodes-encoded
+    (tree-visual-state-with-children
+     '((nil . ("a" "b")))))
+   (tree-visual-nodes-encoded
+    (tree-visual-state-with-children
+     '((nil . ("a")) ("a" . ("b")) ("b" . ("c")))))
+   (tree-visual-nodes-encoded
+    (tree-visual-state-with-children
+     '((nil . ("r")) ("r" . ("p")) ("p" . ("a" "b")))))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6897,7 +6955,9 @@
         (tree-entry-display-text
           (run-cli-selectors-tree-entry-display-text))
         (tree-prefix
-          (run-cli-selectors-tree-prefix)))
+          (run-cli-selectors-tree-prefix))
+        (tree-visual-nodes
+          (run-cli-selectors-tree-visual-nodes)))
     (json-object
      "observed"
      (json-object
@@ -7169,7 +7229,12 @@
       "tp_fold" (nth 3 tree-prefix)
       "tp_gutter" (nth 4 tree-prefix)
       "tp_deep" (nth 5 tree-prefix)
-      "tp_vroot" (nth 6 tree-prefix))
+      "tp_vroot" (nth 6 tree-prefix)
+      "tvn_single" (nth 0 tree-visual-nodes)
+      "tvn_branch" (nth 1 tree-visual-nodes)
+      "tvn_multi" (nth 2 tree-visual-nodes)
+      "tvn_chain" (nth 3 tree-visual-nodes)
+      "tvn_deep" (nth 4 tree-visual-nodes))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7404,7 +7469,12 @@
      (collect "cli_selectors.tree_prefix"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-prefix)))))))
+                  (run-cli-selectors-tree-prefix))))
+     "tree_visual_nodes"
+     (collect "cli_selectors.tree_visual_nodes"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-visual-nodes)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8513,6 +8583,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-display-text"
       "cli_selectors.tree_prefix"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-prefix"
+      "cli_selectors.tree_visual_nodes"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-visual-nodes"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

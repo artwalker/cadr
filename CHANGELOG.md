@@ -21,6 +21,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_visual_nodes`
+  (visible-tree indent/connector/gutter fixtures; cadr `tree-selector-visual-nodes`
+  vs pi `recalculateVisualStructure` DFS). Friend-MachineD n=5 **0.92×**
+  (17.2 / 18.7 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not
+  Goal 20 complete.
+- Goal 20 P.13: pair `cli_selectors.tree_prefix`
+  (tree gutter prefix fixtures; cadr `tree-selector-prefix` vs pi render prefix
+  char loop). Friend-MachineD n=5 **0.48×** (4.2 / 8.9 µs), ceiling 8.0. Same
+  commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_entry_display_text`
   (tree entry display fixtures; cadr `tree-selector-entry-display-text` vs pi
   `getEntryDisplayText`). Friend-MachineD n=5 **5.79×** (19.2 / 3.3 µs),

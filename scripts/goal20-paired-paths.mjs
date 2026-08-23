@@ -269,6 +269,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_format_tool_call": 50,
 	"cli_selectors.tree_entry_display_text": 50,
 	"cli_selectors.tree_prefix": 50,
+	"cli_selectors.tree_visual_nodes": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6070,7 +6071,7 @@ function runCliSelectorsTreePrefix() {
 			},
 			false,
 			false,
-			true,
+			false,
 		),
 		tp_deep: treePrefixPi(
 			{
@@ -6089,6 +6090,131 @@ function runCliSelectorsTreePrefix() {
 			true,
 			false,
 			false,
+		),
+	};
+}
+
+function treeGuttersEncoded(gutters) {
+	if (!gutters || gutters.length === 0) {
+		return "";
+	}
+	return [...gutters]
+		.sort((a, b) => a.position - b.position)
+		.map((g) => `${g.position}:${g.show ? "1" : "0"}`)
+		.join(",");
+}
+
+function treeVisualNodeEncoded(visual) {
+	return [
+		visual.indent,
+		visual.showConnector ? "1" : "0",
+		visual.isLast ? "1" : "0",
+		treeGuttersEncoded(visual.gutters),
+		visual.isVirtualRootChild ? "1" : "0",
+	].join(",");
+}
+
+function treeVisualNodesPi(visibleChildren) {
+	const visibleRootIds = visibleChildren.get(null) ?? [];
+	const multipleRoots = visibleRootIds.length > 1;
+	const visuals = new Map();
+	const stack = [];
+	for (let i = visibleRootIds.length - 1; i >= 0; i--) {
+		const isLast = i === visibleRootIds.length - 1;
+		stack.push([
+			visibleRootIds[i],
+			multipleRoots ? 1 : 0,
+			multipleRoots,
+			multipleRoots,
+			isLast,
+			[],
+			multipleRoots,
+		]);
+	}
+	while (stack.length > 0) {
+		const [
+			nodeId,
+			indent,
+			justBranched,
+			showConnector,
+			isLast,
+			gutters,
+			isVirtualRootChild,
+		] = stack.pop();
+		visuals.set(nodeId, {
+			indent,
+			showConnector,
+			isLast,
+			gutters,
+			isVirtualRootChild,
+		});
+		const children = visibleChildren.get(nodeId) ?? [];
+		const multipleChildren = children.length > 1;
+		let childIndent;
+		if (multipleChildren) {
+			childIndent = indent + 1;
+		} else if (justBranched && indent > 0) {
+			childIndent = indent + 1;
+		} else {
+			childIndent = indent;
+		}
+		const connectorDisplayed = showConnector && !isVirtualRootChild;
+		const currentDisplayIndent = multipleRoots ? Math.max(0, indent - 1) : indent;
+		const connectorPosition = Math.max(0, currentDisplayIndent - 1);
+		const childGutters = connectorDisplayed
+			? [...gutters, { position: connectorPosition, show: !isLast }]
+			: gutters;
+		for (let i = children.length - 1; i >= 0; i--) {
+			const childIsLast = i === children.length - 1;
+			stack.push([
+				children[i],
+				childIndent,
+				multipleChildren,
+				multipleChildren,
+				childIsLast,
+				childGutters,
+				false,
+			]);
+		}
+	}
+	return { visuals, multipleRoots };
+}
+
+function treeVisualNodesEncoded(visibleChildren) {
+	const { visuals, multipleRoots } = treeVisualNodesPi(visibleChildren);
+	const ids = [...visuals.keys()].sort();
+	const body = ids.map((id) => `${id}=${treeVisualNodeEncoded(visuals.get(id))}`).join(";");
+	return `${multipleRoots ? "1" : "0"}|${body}`;
+}
+
+function runCliSelectorsTreeVisualNodes() {
+	return {
+		tvn_single: treeVisualNodesEncoded(
+			new Map([
+				[null, ["r"]],
+				["r", ["a"]],
+			]),
+		),
+		tvn_branch: treeVisualNodesEncoded(
+			new Map([
+				[null, ["p"]],
+				["p", ["a", "b"]],
+			]),
+		),
+		tvn_multi: treeVisualNodesEncoded(new Map([[null, ["a", "b"]]])),
+		tvn_chain: treeVisualNodesEncoded(
+			new Map([
+				[null, ["a"]],
+				["a", ["b"]],
+				["b", ["c"]],
+			]),
+		),
+		tvn_deep: treeVisualNodesEncoded(
+			new Map([
+				[null, ["r"]],
+				["r", ["p"]],
+				["p", ["a", "b"]],
+			]),
 		),
 	};
 }
@@ -6456,6 +6582,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeFormatToolCallResults = runCliSelectorsTreeFormatToolCall();
 	const treeEntryDisplayTextResults = runCliSelectorsTreeEntryDisplayText();
 	const treePrefixResults = runCliSelectorsTreePrefix();
+	const treeVisualNodesResults = runCliSelectorsTreeVisualNodes();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6678,6 +6805,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeFormatToolCallResults,
 		...treeEntryDisplayTextResults,
 		...treePrefixResults,
+		...treeVisualNodesResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6829,6 +6957,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_prefix: await collect("cli_selectors.tree_prefix", () => {
 			return () => runCliSelectorsTreePrefix();
+		}),
+		tree_visual_nodes: await collect("cli_selectors.tree_visual_nodes", () => {
+			return () => runCliSelectorsTreeVisualNodes();
 		}),
 		observed,
 	};
@@ -7975,6 +8106,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getEntryDisplayText",
 			"cli_selectors.tree_prefix":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts render prefix char loop",
+			"cli_selectors.tree_visual_nodes":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts recalculateVisualStructure DFS",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

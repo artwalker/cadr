@@ -2227,6 +2227,18 @@ root child under multiple roots. Observed `tp_branch` / `tp_last` / `tp_open` /
 Friend-MachineD freeze **0.48×** (4.2 / 8.9 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 158 — `cli_selectors` (tree_visual_nodes)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_visual_nodes` | `tree-selector-visual-nodes` | `recalculateVisualStructure` DFS (`tree-selector.ts`) |
+
+Visible-tree indent/connector/gutter layout: single root+child, branch with two
+children, multiple roots, single-child chain, deep branch. Observed `tvn_single`
+/ `tvn_branch` / `tvn_multi` / `tvn_chain` / `tvn_deep` are exact. First
+Friend-MachineD freeze **0.92×** (17.2 / 18.7 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
