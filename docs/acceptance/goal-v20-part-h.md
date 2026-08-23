@@ -2150,6 +2150,18 @@ visible-children maps (no apply-filter). Encoded as `t` or empty. Observed
 Friend-MachineD freeze **2.79×** (4.1 / 1.5 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 152 — `cli_selectors` (tree_tool_argument)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_tool_argument` | `tree-selector-tool-argument` | `formatToolCall` arg lookup (`tree-selector.ts`) |
+
+Tool-args JSON lookup only: primary key then fallback (`path` / `file_path`).
+Fixtures: path hit, file_path fallback, primary wins, missing keys, nil args.
+Observed `tta_path` / `tta_file` / `tta_prio` / `tta_miss` / `tta_nil` are exact.
+First Friend-MachineD freeze **3.32×** (24.7 / 7.4 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash

@@ -339,6 +339,7 @@
     ("cli_selectors.tree_status_labels" . 50)
     ("cli_selectors.tree_shorten_path" . 50)
     ("cli_selectors.tree_foldable_p" . 50)
+    ("cli_selectors.tree_tool_argument" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6623,6 +6624,20 @@
      '(("a" . "p") ("b" . "p") ("x" . "a")))
     "a")))
 
+(defun run-cli-selectors-tree-tool-argument ()
+  (list
+   (cadr-cli::tree-selector-tool-argument
+    (json-object "path" "/tmp/foo") "path" "file_path")
+   (cadr-cli::tree-selector-tool-argument
+    (json-object "file_path" "/tmp/bar") "path" "file_path")
+   (cadr-cli::tree-selector-tool-argument
+    (json-object "path" "/prio" "file_path" "/alt")
+    "path" "file_path")
+   (cadr-cli::tree-selector-tool-argument
+    (json-object "offset" 5) "path" "file_path")
+   (cadr-cli::tree-selector-tool-argument
+    nil "path" "file_path")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6678,7 +6693,9 @@
         (tree-shorten-path
           (run-cli-selectors-tree-shorten-path))
         (tree-foldable-p
-          (run-cli-selectors-tree-foldable-p)))
+          (run-cli-selectors-tree-foldable-p))
+        (tree-tool-argument
+          (run-cli-selectors-tree-tool-argument)))
     (json-object
      "observed"
      (json-object
@@ -6907,7 +6924,12 @@
       "tfp_root" (nth 0 tree-foldable-p)
       "tfp_leaf" (nth 1 tree-foldable-p)
       "tfp_only_child" (nth 2 tree-foldable-p)
-      "tfp_branch" (nth 3 tree-foldable-p))
+      "tfp_branch" (nth 3 tree-foldable-p)
+      "tta_path" (nth 0 tree-tool-argument)
+      "tta_file" (nth 1 tree-tool-argument)
+      "tta_prio" (nth 2 tree-tool-argument)
+      "tta_miss" (nth 3 tree-tool-argument)
+      "tta_nil" (nth 4 tree-tool-argument))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7112,7 +7134,12 @@
      (collect "cli_selectors.tree_foldable_p"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-foldable-p)))))))
+                  (run-cli-selectors-tree-foldable-p))))
+     "tree_tool_argument"
+     (collect "cli_selectors.tree_tool_argument"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-tool-argument)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8209,6 +8236,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-shorten-path"
       "cli_selectors.tree_foldable_p"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-foldable-p"
+      "cli_selectors.tree_tool_argument"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-tool-argument"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

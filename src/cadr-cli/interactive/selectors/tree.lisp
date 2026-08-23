@@ -1200,11 +1200,15 @@
 
 (defun tree-selector-tool-argument
     (arguments name &optional fallback)
-  (or
-   (and arguments
-        (cadr-ai::json-get arguments name))
-   (and fallback arguments
-        (cadr-ai::json-get arguments fallback))))
+  (labels ((resolved (key)
+             (when (and arguments
+                        (cadr-ai::json-present-p arguments key))
+               (let ((value (cadr-ai::json-get arguments key)))
+                 (unless (cadr-ai::json-null-p value)
+                   (format nil "~A" value))))))
+    (or (resolved name)
+        (and fallback (resolved fallback))
+        "")))
 
 (defun tree-selector-format-tool-call
     (name arguments)

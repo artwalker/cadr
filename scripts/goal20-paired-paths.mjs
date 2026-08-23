@@ -263,6 +263,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_status_labels": 50,
 	"cli_selectors.tree_shorten_path": 50,
 	"cli_selectors.tree_foldable_p": 50,
+	"cli_selectors.tree_tool_argument": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5747,6 +5748,23 @@ function runCliSelectorsTreeFoldableP() {
 	};
 }
 
+function treeToolArgumentPi(args, name, fallback) {
+	if (!args) return "";
+	if (args[name] != null && args[name] !== undefined) return String(args[name]);
+	if (fallback && args[fallback] != null && args[fallback] !== undefined) return String(args[fallback]);
+	return "";
+}
+
+function runCliSelectorsTreeToolArgument() {
+	return {
+		tta_path: treeToolArgumentPi({ path: "/tmp/foo" }, "path", "file_path"),
+		tta_file: treeToolArgumentPi({ file_path: "/tmp/bar" }, "path", "file_path"),
+		tta_prio: treeToolArgumentPi({ path: "/prio", file_path: "/alt" }, "path", "file_path"),
+		tta_miss: treeToolArgumentPi({ offset: 5 }, "path", "file_path"),
+		tta_nil: treeToolArgumentPi(null, "path", "file_path"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6104,6 +6122,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeStatusLabelsResults = runCliSelectorsTreeStatusLabels();
 	const treeShortenPathResults = runCliSelectorsTreeShortenPath();
 	const treeFoldablePResults = runCliSelectorsTreeFoldableP();
+	const treeToolArgumentResults = runCliSelectorsTreeToolArgument();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6313,6 +6332,11 @@ async function measureCliSelectorsSessionSearch() {
 		tfp_leaf: treeFoldablePResults.tfp_leaf,
 		tfp_only_child: treeFoldablePResults.tfp_only_child,
 		tfp_branch: treeFoldablePResults.tfp_branch,
+		tta_path: treeToolArgumentResults.tta_path,
+		tta_file: treeToolArgumentResults.tta_file,
+		tta_prio: treeToolArgumentResults.tta_prio,
+		tta_miss: treeToolArgumentResults.tta_miss,
+		tta_nil: treeToolArgumentResults.tta_nil,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6446,6 +6470,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_foldable_p: await collect("cli_selectors.tree_foldable_p", () => {
 			return () => runCliSelectorsTreeFoldableP();
+		}),
+		tree_tool_argument: await collect("cli_selectors.tree_tool_argument", () => {
+			return () => runCliSelectorsTreeToolArgument();
 		}),
 		observed,
 	};
@@ -7580,6 +7607,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall shortenPath",
 			"cli_selectors.tree_foldable_p":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts isFoldable",
+			"cli_selectors.tree_tool_argument":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall args.path || args.file_path",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

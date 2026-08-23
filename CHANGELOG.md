@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_tool_argument`
+  (tree tool-arg fixtures; cadr `tree-selector-tool-argument` vs pi formatToolCall
+  path lookup). Friend-MachineD n=5 **3.32×** (24.7 / 7.4 µs), ceiling 8.0. Same
+  commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_foldable_p`
   (tree foldable fixtures; cadr `tree-selector-foldable-p` vs pi `isFoldable`).
   Friend-MachineD n=5 **2.79×** (4.1 / 1.5 µs), ceiling 8.0. Same commit no
