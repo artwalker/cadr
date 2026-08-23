@@ -2714,6 +2714,17 @@ lists). Observed `oesp_nil` / `oesp_oauth` / `oesp_single_env` /
 First Friend-MachineD freeze **3.51×** (1.2 / 0.3 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 201 — `cli_selectors` (oauth_selector_selection)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_selector_selection` | `oauth-selector-selection` | `filteredProviders[selectedIndex]` |
+
+OAuth selector selected provider; encoded as `id|auth_type`. Observed
+`oss_first` / `oss_second` / `oss_third` / `oss_filter_hit` /
+`oss_filter_miss` are exact. First Friend-MachineD freeze **3.80×**
+(103.4 / 27.2 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

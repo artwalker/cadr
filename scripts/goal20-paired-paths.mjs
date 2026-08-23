@@ -312,6 +312,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_option_status_label": 50,
 	"cli_selectors.credential_entry_auth_type": 50,
 	"cli_selectors.oauth_environment_source_p": 50,
+	"cli_selectors.oauth_selector_selection": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8460,6 +8461,44 @@ function runCliSelectorsOauthEnvironmentSourceP() {
 	};
 }
 
+function makeOauthSelectorTestOptions() {
+	return [
+		{ id: "anthropic", name: "Anthropic", authType: "oauth" },
+		{ id: "openai", name: "OpenAI", authType: "api_key" },
+		{ id: "google", name: "Google", authType: "oauth" },
+	];
+}
+
+function encodeOauthSelectorOption(provider) {
+	if (!provider) {
+		return "null";
+	}
+	return `${provider.id}|${provider.authType}`;
+}
+
+function oauthSelectorSelectionEncoded(providers, selected, query = "") {
+	const filtered = query
+		? fuzzyModule.fuzzyFilter(
+				providers,
+				query,
+				(provider) =>
+					`${provider.name} ${provider.id} ${provider.authType} ${provider.method?.name ?? ""}`,
+			)
+		: providers;
+	return encodeOauthSelectorOption(filtered[selected]);
+}
+
+function runCliSelectorsOauthSelectorSelection() {
+	const options = makeOauthSelectorTestOptions();
+	return {
+		oss_first: oauthSelectorSelectionEncoded(options, 0),
+		oss_second: oauthSelectorSelectionEncoded(options, 1),
+		oss_third: oauthSelectorSelectionEncoded(options, 2),
+		oss_filter_hit: oauthSelectorSelectionEncoded(options, 0, "open"),
+		oss_filter_miss: oauthSelectorSelectionEncoded(options, 0, "nope"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8866,6 +8905,7 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthOptionStatusLabelResults = runCliSelectorsOauthOptionStatusLabel();
 	const credentialEntryAuthTypeResults = runCliSelectorsCredentialEntryAuthType();
 	const oauthEnvironmentSourcePResults = runCliSelectorsOauthEnvironmentSourceP();
+	const oauthSelectorSelectionResults = runCliSelectorsOauthSelectorSelection();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9131,6 +9171,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthOptionStatusLabelResults,
 		...credentialEntryAuthTypeResults,
 		...oauthEnvironmentSourcePResults,
+		...oauthSelectorSelectionResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9411,6 +9452,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_environment_source_p: await collect("cli_selectors.oauth_environment_source_p", () => {
 			return () => runCliSelectorsOauthEnvironmentSourceP();
+		}),
+		oauth_selector_selection: await collect("cli_selectors.oauth_selector_selection", () => {
+			return () => runCliSelectorsOauthSelectorSelection();
 		}),
 		observed,
 	};
@@ -10643,6 +10687,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions authType",
 			"cli_selectors.oauth_environment_source_p":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator env source regex",
+			"cli_selectors.oauth_selector_selection":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filteredProviders[selectedIndex]",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

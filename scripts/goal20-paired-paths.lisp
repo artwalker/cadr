@@ -388,6 +388,7 @@
     ("cli_selectors.oauth_option_status_label" . 50)
     ("cli_selectors.credential_entry_auth_type" . 50)
     ("cli_selectors.oauth_environment_source_p" . 50)
+    ("cli_selectors.oauth_selector_selection" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8444,6 +8445,41 @@
    (encode-oauth-environment-source-p "stored credential")
    (encode-oauth-environment-source-p "anthropic_api_key")))
 
+(defun make-oauth-selector-test-options ()
+  (list
+   (make-oauth-option-status-fixture :id :anthropic :name "Anthropic")
+   (make-oauth-option-status-fixture
+    :id :openai :name "OpenAI" :auth-type :api-key)
+   (make-oauth-option-status-fixture :id :google :name "Google")))
+
+(defun encode-oauth-selector-option (option)
+  (if (null option)
+      "null"
+      (format nil "~A|~A"
+              (cadr-cli::provider-key
+               (cadr-cli::oauth-selector-option-id option))
+              (if (eq (cadr-cli::oauth-selector-option-auth-type option)
+                      :oauth)
+                  "oauth"
+                  "api_key"))))
+
+(defun oauth-selector-selection-encoded (options selected &key query)
+  (let ((state
+          (cadr-cli::make-oauth-selector-state
+           :options options :query (or query ""))))
+    (setf (cadr-cli::oauth-selector-state-selected state) selected)
+    (encode-oauth-selector-option
+     (cadr-cli::oauth-selector-selection state))))
+
+(defun run-cli-selectors-oauth-selector-selection ()
+  (let ((options (make-oauth-selector-test-options)))
+    (list
+     (oauth-selector-selection-encoded options 0)
+     (oauth-selector-selection-encoded options 1)
+     (oauth-selector-selection-encoded options 2)
+     (oauth-selector-selection-encoded options 0 :query "open")
+     (oauth-selector-selection-encoded options 0 :query "nope"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8597,7 +8633,9 @@
         (credential-entry-auth-type
           (run-cli-selectors-credential-entry-auth-type))
         (oauth-environment-source-p
-          (run-cli-selectors-oauth-environment-source-p)))
+          (run-cli-selectors-oauth-environment-source-p))
+        (oauth-selector-selection
+          (run-cli-selectors-oauth-selector-selection)))
     (json-object
      "observed"
      (json-object
@@ -9116,7 +9154,12 @@
       "oesp_multi_env" (nth 3 oauth-environment-source-p)
       "oesp_runtime" (nth 4 oauth-environment-source-p)
       "oesp_stored" (nth 5 oauth-environment-source-p)
-      "oesp_lower" (nth 6 oauth-environment-source-p))
+      "oesp_lower" (nth 6 oauth-environment-source-p)
+      "oss_first" (nth 0 oauth-selector-selection)
+      "oss_second" (nth 1 oauth-selector-selection)
+      "oss_third" (nth 2 oauth-selector-selection)
+      "oss_filter_hit" (nth 3 oauth-selector-selection)
+      "oss_filter_miss" (nth 4 oauth-selector-selection))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9566,7 +9609,12 @@
      (collect "cli_selectors.oauth_environment_source_p"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-oauth-environment-source-p)))))))
+                  (run-cli-selectors-oauth-environment-source-p))))
+     "oauth_selector_selection"
+     (collect "cli_selectors.oauth_selector_selection"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-selection)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10761,6 +10809,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp credential-entry-auth-type"
       "cli_selectors.oauth_environment_source_p"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p"
+      "cli_selectors.oauth_selector_selection"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-selection"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
