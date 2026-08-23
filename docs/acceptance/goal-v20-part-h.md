@@ -2251,6 +2251,22 @@ narrow width clip, no-selection no-scroll, ANSI body slice. Observed
 exact. First Friend-MachineD freeze **0.89×** (66.2 / 74.5 µs), ceiling 8.0.
 Same commit no optimize.
 
+### Pair 160 — `cli_selectors` (tree_help_keys)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_help_keys` | `tree-selector-help-keys` | `formatHelpKeys` (`tree-selector.ts`) |
+
+Tree help keybinding text compaction: move/page/branch/copy/filter/cycle groups
+plus custom `ctrl+k` up override. Observed `thk_move` / `thk_page` / `thk_branch`
+/ `thk_copy` / `thk_filters` / `thk_cycle` / `thk_custom` are exact. First
+Friend-MachineD freeze **4.56×** (190.2 / 41.7 µs), ceiling 8.0. Same commit no
+optimize.
+
+**sessions.lisp gutter note:** `session-selector-gutter-prefixes` /
+`session-selector-node-prefix` remain unpaired — gate attempt `sgp_simple` pi
+`   └─ ` vs cadr `└─ ` (ancestor padding); measure-only, no optimize this commit.
+
 ## 2. How to run
 
 ```bash

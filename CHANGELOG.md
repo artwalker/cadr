@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_help_keys`
+  (tree help keybinding compaction fixtures; cadr `tree-selector-help-keys`
+  vs pi `formatHelpKeys`). Friend-MachineD n=5 **4.56×** (190.2 / 41.7 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_horizontal_viewport`
   (horizontal pan/truncate fixtures; cadr `tree-selector-horizontal-viewport`
   vs pi `renderHorizontalViewport`). Friend-MachineD n=5 **0.89×**

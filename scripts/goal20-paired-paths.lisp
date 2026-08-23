@@ -347,6 +347,7 @@
     ("cli_selectors.tree_prefix" . 50)
     ("cli_selectors.tree_visual_nodes" . 50)
     ("cli_selectors.tree_horizontal_viewport" . 50)
+    ("cli_selectors.tree_help_keys" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6935,6 +6936,37 @@
              :body-width 50 :selected-p t))
       30))))
 
+(defun tree-help-state (&optional user-bindings)
+  (cadr-cli::%make-tree-selector-state
+   :keybindings
+   (cadr-cli::make-tree-selector-keybindings user-bindings)))
+
+(defun run-cli-selectors-tree-help-keys ()
+  (let ((default (tree-help-state))
+        (custom
+          (tree-help-state
+           '(("tui.select.up" . "ctrl+k")))))
+    (list
+     (cadr-cli::tree-selector-help-keys
+      default '("tui.select.up" "tui.select.down"))
+     (cadr-cli::tree-selector-help-keys
+      default '("tui.editor.cursorLeft" "tui.editor.cursorRight"))
+     (cadr-cli::tree-selector-help-keys
+      default '("app.tree.foldOrUp" "app.tree.unfoldOrDown"))
+     (cadr-cli::tree-selector-help-keys
+      default '("app.message.copy"))
+     (cadr-cli::tree-selector-help-keys
+      default '("app.tree.filter.default"
+                "app.tree.filter.noTools"
+                "app.tree.filter.userOnly"
+                "app.tree.filter.labeledOnly"
+                "app.tree.filter.all"))
+     (cadr-cli::tree-selector-help-keys
+      default '("app.tree.filter.cycleForward"
+                "app.tree.filter.cycleBackward"))
+     (cadr-cli::tree-selector-help-keys
+      custom '("tui.select.up" "tui.select.down")))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7006,7 +7038,9 @@
         (tree-visual-nodes
           (run-cli-selectors-tree-visual-nodes))
         (tree-horizontal-viewport
-          (run-cli-selectors-tree-horizontal-viewport)))
+          (run-cli-selectors-tree-horizontal-viewport))
+        (tree-help-keys
+          (run-cli-selectors-tree-help-keys)))
     (json-object
      "observed"
      (json-object
@@ -7288,7 +7322,14 @@
       "thv_scroll" (nth 1 tree-horizontal-viewport)
       "thv_narrow" (nth 2 tree-horizontal-viewport)
       "thv_noselect" (nth 3 tree-horizontal-viewport)
-      "thv_ansi" (nth 4 tree-horizontal-viewport))
+      "thv_ansi" (nth 4 tree-horizontal-viewport)
+      "thk_move" (nth 0 tree-help-keys)
+      "thk_page" (nth 1 tree-help-keys)
+      "thk_branch" (nth 2 tree-help-keys)
+      "thk_copy" (nth 3 tree-help-keys)
+      "thk_filters" (nth 4 tree-help-keys)
+      "thk_cycle" (nth 5 tree-help-keys)
+      "thk_custom" (nth 6 tree-help-keys))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7533,7 +7574,12 @@
      (collect "cli_selectors.tree_horizontal_viewport"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-horizontal-viewport)))))))
+                  (run-cli-selectors-tree-horizontal-viewport))))
+     "tree_help_keys"
+     (collect "cli_selectors.tree_help_keys"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-help-keys)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8646,6 +8692,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-visual-nodes"
       "cli_selectors.tree_horizontal_viewport"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-horizontal-viewport"
+      "cli_selectors.tree_help_keys"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-keys"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

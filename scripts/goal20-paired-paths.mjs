@@ -271,6 +271,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_prefix": 50,
 	"cli_selectors.tree_visual_nodes": 50,
 	"cli_selectors.tree_horizontal_viewport": 50,
+	"cli_selectors.tree_help_keys": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6337,6 +6338,82 @@ function runCliSelectorsTreeHorizontalViewport() {
 	};
 }
 
+function makeTreeSelectorKeybindingsPi(userBindings) {
+	return new keybindingsModule.KeybindingsManager(
+		appKeybindingsModule.KEYBINDINGS,
+		userBindings,
+	);
+}
+
+function compactRawKeysPi(keys) {
+	if (keys.length === 1) {
+		return keys[0];
+	}
+	const parts = keys.map((key) => {
+		const separatorIndex = key.lastIndexOf("+");
+		return separatorIndex === -1
+			? { prefix: "", suffix: key }
+			: { prefix: key.slice(0, separatorIndex + 1), suffix: key.slice(separatorIndex + 1) };
+	});
+	const prefix = parts[0].prefix;
+	return prefix && parts.every((part) => part.prefix === prefix)
+		? `${prefix}${parts.map((part) => part.suffix).join("/")}`
+		: keys.join("/");
+}
+
+function formatHelpKeysPi(keybindings, manager) {
+	const keys = [];
+	for (const keybinding of keybindings) {
+		const key = manager.getKeys(keybinding)[0];
+		if (key !== undefined) {
+			keys.push(key);
+		}
+	}
+	if (keys.length === 0) {
+		return "";
+	}
+	return keybindingHintsModule
+		.formatKeyText(compactRawKeysPi(keys))
+		.replace(/\bpageUp\b/g, "pgup")
+		.replace(/\bpageDown\b/g, "pgdn")
+		.replace(/\bup\b/g, "↑")
+		.replace(/\bdown\b/g, "↓")
+		.replace(/\bleft\b/g, "←")
+		.replace(/\bright\b/g, "→");
+}
+
+function runCliSelectorsTreeHelpKeys() {
+	const defaultManager = makeTreeSelectorKeybindingsPi();
+	const customManager = makeTreeSelectorKeybindingsPi({ "tui.select.up": "ctrl+k" });
+	return {
+		thk_move: formatHelpKeysPi(["tui.select.up", "tui.select.down"], defaultManager),
+		thk_page: formatHelpKeysPi(
+			["tui.editor.cursorLeft", "tui.editor.cursorRight"],
+			defaultManager,
+		),
+		thk_branch: formatHelpKeysPi(
+			["app.tree.foldOrUp", "app.tree.unfoldOrDown"],
+			defaultManager,
+		),
+		thk_copy: formatHelpKeysPi(["app.message.copy"], defaultManager),
+		thk_filters: formatHelpKeysPi(
+			[
+				"app.tree.filter.default",
+				"app.tree.filter.noTools",
+				"app.tree.filter.userOnly",
+				"app.tree.filter.labeledOnly",
+				"app.tree.filter.all",
+			],
+			defaultManager,
+		),
+		thk_cycle: formatHelpKeysPi(
+			["app.tree.filter.cycleForward", "app.tree.filter.cycleBackward"],
+			defaultManager,
+		),
+		thk_custom: formatHelpKeysPi(["tui.select.up", "tui.select.down"], customManager),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6702,6 +6779,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treePrefixResults = runCliSelectorsTreePrefix();
 	const treeVisualNodesResults = runCliSelectorsTreeVisualNodes();
 	const treeHorizontalViewportResults = runCliSelectorsTreeHorizontalViewport();
+	const treeHelpKeysResults = runCliSelectorsTreeHelpKeys();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6926,6 +7004,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treePrefixResults,
 		...treeVisualNodesResults,
 		...treeHorizontalViewportResults,
+		...treeHelpKeysResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7083,6 +7162,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_horizontal_viewport: await collect("cli_selectors.tree_horizontal_viewport", () => {
 			return () => runCliSelectorsTreeHorizontalViewport();
+		}),
+		tree_help_keys: await collect("cli_selectors.tree_help_keys", () => {
+			return () => runCliSelectorsTreeHelpKeys();
 		}),
 		observed,
 	};
@@ -8233,6 +8315,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts recalculateVisualStructure DFS",
 			"cli_selectors.tree_horizontal_viewport":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts renderHorizontalViewport",
+			"cli_selectors.tree_help_keys":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatHelpKeys",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

@@ -166,6 +166,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_prefix",
     "cli_selectors.tree_visual_nodes",
     "cli_selectors.tree_horizontal_viewport",
+    "cli_selectors.tree_help_keys",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
