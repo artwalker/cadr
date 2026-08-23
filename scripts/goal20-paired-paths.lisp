@@ -353,6 +353,7 @@
     ("cli_selectors.tree_nearest_visible_id" . 50)
     ("cli_selectors.tree_prioritize_active" . 50)
     ("cli_selectors.tree_entry_map" . 50)
+    ("cli_selectors.tree_order_entries" . 50)
     ("cli_selectors.tree_rebuild_visible_maps" . 50)
     ("cli_selectors.tree_apply_filter" . 50)
     ("cli_selectors.tree_render_lines" . 20)
@@ -7136,6 +7137,27 @@
      (tree-prioritize-active-encoded entries "user-1")
      (tree-prioritize-active-encoded entries nil))))
 
+(defun tree-order-entries-encoded (entries leaf-id)
+  (format nil "~{~a~^,~}"
+          (mapcar
+           (lambda (entry)
+             (getf entry :id))
+           (cadr-cli::tree-selector-order-entries
+            entries leaf-id))))
+
+(defun run-cli-selectors-tree-order-entries ()
+  (list
+   (tree-order-entries-encoded
+    *tree-active-path-branching-entries* "asst-4a")
+   (tree-order-entries-encoded
+    *tree-active-path-branching-entries* "user-4b")
+   (tree-order-entries-encoded
+    *tree-active-path-branching-entries* "user-1")
+   (tree-order-entries-encoded
+    *tree-active-path-branching-entries* nil)
+   (tree-order-entries-encoded
+    *tree-apply-filter-entries* "user-3")))
+
 (defun tree-visible-entries-by-ids (ids)
   (remove-if-not
    (lambda (entry)
@@ -8090,6 +8112,8 @@
           (run-cli-selectors-tree-prioritize-active))
         (tree-entry-map
           (run-cli-selectors-tree-entry-map))
+        (tree-order-entries
+          (run-cli-selectors-tree-order-entries))
         (tree-rebuild-visible-maps
           (run-cli-selectors-tree-rebuild-visible-maps))
         (tree-apply-filter
@@ -8446,6 +8470,11 @@
       "tem_empty" (nth 2 tree-entry-map)
       "tem_solo" (nth 3 tree-entry-map)
       "tem_single" (nth 4 tree-entry-map)
+      "toe_leaf_a" (nth 0 tree-order-entries)
+      "toe_leaf_b" (nth 1 tree-order-entries)
+      "toe_root" (nth 2 tree-order-entries)
+      "toe_nil" (nth 3 tree-order-entries)
+      "toe_filter" (nth 4 tree-order-entries)
       "trvm_full" (nth 0 tree-rebuild-visible-maps)
       "trvm_sparse" (nth 1 tree-rebuild-visible-maps)
       "trvm_branch_b" (nth 2 tree-rebuild-visible-maps)
@@ -8846,6 +8875,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-tree-entry-map))))
+     "tree_order_entries"
+     (collect "cli_selectors.tree_order_entries"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-order-entries))))
      "tree_rebuild_visible_maps"
      (collect "cli_selectors.tree_rebuild_visible_maps"
               (lambda ()
@@ -10075,6 +10109,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-prioritize-active"
       "cli_selectors.tree_entry_map"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-map"
+      "cli_selectors.tree_order_entries"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-order-entries"
       "cli_selectors.tree_rebuild_visible_maps"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-rebuild-visible-maps"
       "cli_selectors.tree_apply_filter"

@@ -277,6 +277,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_nearest_visible_id": 50,
 	"cli_selectors.tree_prioritize_active": 50,
 	"cli_selectors.tree_entry_map": 50,
+	"cli_selectors.tree_order_entries": 50,
 	"cli_selectors.tree_rebuild_visible_maps": 50,
 	"cli_selectors.tree_apply_filter": 50,
 	"cli_selectors.tree_render_lines": 20,
@@ -6600,11 +6601,62 @@ function treeActivePathSetPi(entries, leafId) {
 	return active;
 }
 
+function treePrioritizeActivePi(entries, activePath) {
+	const prioritized = entries.filter((entry) => activePath.has(entry.id));
+	const rest = entries.filter((entry) => !activePath.has(entry.id));
+	return [...prioritized, ...rest];
+}
+
 function treePrioritizeActiveEncodedPi(entries, leafId) {
 	const active = treeActivePathSetPi(entries, leafId);
-	const prioritized = entries.filter((entry) => active.has(entry.id));
-	const rest = entries.filter((entry) => !active.has(entry.id));
-	return [...prioritized, ...rest].map((entry) => entry.id).join(",");
+	return treePrioritizeActivePi(entries, active)
+		.map((entry) => entry.id)
+		.join(",");
+}
+
+function treeOrderEntriesPi(entries, leafId) {
+	const known = new Map(entries.map((entry) => [entry.id, entry]));
+	const activePath = treeActivePathSetPi(entries, leafId);
+	const children = new Map();
+	const roots = [];
+	for (const entry of entries) {
+		const parentId = entry.parentId ?? null;
+		if (parentId !== null && known.has(parentId)) {
+			const list = children.get(parentId) ?? [];
+			list.push(entry);
+			children.set(parentId, list);
+		} else {
+			roots.push(entry);
+		}
+	}
+	const result = [];
+	const stack = [...treePrioritizeActivePi(roots, activePath)];
+	while (stack.length > 0) {
+		const entry = stack.pop();
+		result.push(entry);
+		const entryChildren = children.get(entry.id) ?? [];
+		const prioritizedChildren = treePrioritizeActivePi(entryChildren, activePath);
+		for (let i = prioritizedChildren.length - 1; i >= 0; i--) {
+			stack.push(prioritizedChildren[i]);
+		}
+	}
+	return result;
+}
+
+function treeOrderEntriesEncodedPi(entries, leafId) {
+	return treeOrderEntriesPi(entries, leafId)
+		.map((entry) => entry.id)
+		.join(",");
+}
+
+function runCliSelectorsTreeOrderEntries() {
+	return {
+		toe_leaf_a: treeOrderEntriesEncodedPi(TREE_ACTIVE_PATH_BRANCHING_ENTRIES, "asst-4a"),
+		toe_leaf_b: treeOrderEntriesEncodedPi(TREE_ACTIVE_PATH_BRANCHING_ENTRIES, "user-4b"),
+		toe_root: treeOrderEntriesEncodedPi(TREE_ACTIVE_PATH_BRANCHING_ENTRIES, "user-1"),
+		toe_nil: treeOrderEntriesEncodedPi(TREE_ACTIVE_PATH_BRANCHING_ENTRIES, null),
+		toe_filter: treeOrderEntriesEncodedPi(TREE_APPLY_FILTER_ENTRIES, "user-3"),
+	};
 }
 
 function runCliSelectorsTreePrioritizeActive() {
@@ -8234,6 +8286,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeNearestVisibleIdResults = runCliSelectorsTreeNearestVisibleId();
 	const treePrioritizeActiveResults = runCliSelectorsTreePrioritizeActive();
 	const treeEntryMapResults = runCliSelectorsTreeEntryMap();
+	const treeOrderEntriesResults = runCliSelectorsTreeOrderEntries();
 	const treeRebuildVisibleMapsResults = runCliSelectorsTreeRebuildVisibleMaps();
 	const treeApplyFilterResults = runCliSelectorsTreeApplyFilter();
 	const treeRenderLinesResults = runCliSelectorsTreeRenderLines();
@@ -8485,6 +8538,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeNearestVisibleIdResults,
 		...treePrioritizeActiveResults,
 		...treeEntryMapResults,
+		...treeOrderEntriesResults,
 		...treeRebuildVisibleMapsResults,
 		...treeApplyFilterResults,
 		...treeRenderLinesResults,
@@ -8681,6 +8735,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_entry_map: await collect("cli_selectors.tree_entry_map", () => {
 			return () => runCliSelectorsTreeEntryMap();
+		}),
+		tree_order_entries: await collect("cli_selectors.tree_order_entries", () => {
+			return () => runCliSelectorsTreeOrderEntries();
 		}),
 		tree_rebuild_visible_maps: await collect("cli_selectors.tree_rebuild_visible_maps", () => {
 			return () => runCliSelectorsTreeRebuildVisibleMaps();
@@ -9906,6 +9963,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts flattenTree active-branch ordering",
 			"cli_selectors.tree_entry_map":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts entry id map",
+			"cli_selectors.tree_order_entries":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts flattenTree entry ordering",
 			"cli_selectors.tree_rebuild_visible_maps":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts recalculateVisualStructure visible parent/children maps",
 			"cli_selectors.tree_apply_filter":

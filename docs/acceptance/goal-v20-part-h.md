@@ -2552,6 +2552,17 @@ Observed `tem_branching` / `tem_filter` / `tem_empty` / `tem_solo` / `tem_single
 First Friend-MachineD freeze **2.76×**
 (11.6 / 4.2 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 187 — `cli_selectors` (tree_order_entries)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_order_entries` | `tree-selector-order-entries` | DFS entry order with active-path sibling priority (`tree-selector.ts`) |
+
+Pre-filter entry ordering for tree flatten; encoded as comma-separated ids.
+Observed `toe_leaf_a` / `toe_leaf_b` / `toe_root` / `toe_nil` / `toe_filter` are exact.
+First Friend-MachineD freeze **1.21×**
+(38.4 / 31.7 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
