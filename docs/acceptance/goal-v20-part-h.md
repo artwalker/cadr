@@ -2463,6 +2463,17 @@ Observed `tclc_pinned` / `tclc_plain` / `tclc_assistant` / `tclc_bookmark` /
 `tclc_dirty` / `tclc_nop` are exact. First Friend-MachineD freeze **1.57×**
 (214.6 / 136.7 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 179 — `cli_selectors` (tree_handle_raw_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_handle_raw_input` | `tree-selector-handle-raw-input` | `TreeList.handleInput` (`tree-selector.ts`) |
+
+Keybinding dispatch: copy, edit label, fold, filter toggle, label cancel, noop.
+Observed `thri_copy` / `thri_edit` / `thri_fold` / `thri_notools` /
+`thri_lcancel` / `thri_nop` are exact. First Friend-MachineD freeze **4.06×**
+(1068.1 / 263.3 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

@@ -366,6 +366,7 @@
     ("cli_selectors.tree_start_label_edit" . 50)
     ("cli_selectors.tree_confirm_label" . 50)
     ("cli_selectors.tree_cancel_label" . 50)
+    ("cli_selectors.tree_handle_raw_input" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7640,6 +7641,115 @@
    (tree-cancel-label-encoded "user-3" :dirty-input "newtag")
    (tree-cancel-label-encoded "user-1" :nop t)))
 
+(defun tree-raw-input-key-data (state key-name)
+  (first (cadr-tui:keybinding-keys
+          (cadr-cli::tree-selector-state-keybindings state)
+          key-name)))
+
+(defun tree-handle-raw-input-encoded-copy (selected-id)
+  (let ((copied nil)
+        (state
+          (cadr-cli::make-tree-selector-state
+           :entries *tree-apply-filter-entries*
+           :current-leaf-id "user-3"
+           :initial-selected-id selected-id
+           :copy-callback
+           (lambda (text)
+             (setf copied text)))))
+    (cadr-cli::tree-selector-select-id state selected-id)
+    (cadr-cli::tree-selector-handle-raw-input
+     state (tree-raw-input-key-data state "app.message.copy"))
+    (if copied copied "null")))
+
+(defun tree-handle-raw-input-encoded-edit (selected-id)
+  (let ((state
+          (cadr-cli::make-tree-selector-state
+           :entries *tree-apply-filter-entries*
+           :current-leaf-id "user-3"
+           :initial-selected-id selected-id)))
+    (cadr-cli::tree-selector-select-id state selected-id)
+    (cadr-cli::tree-selector-handle-raw-input
+     state (tree-raw-input-key-data state "app.tree.editLabel"))
+    (format nil "~a|~a|~a"
+            (case (cadr-cli::tree-selector-state-mode state)
+              (:label "label")
+              (otherwise "list"))
+            (or (cadr-cli::tree-selector-state-label-edit-id state)
+                "null")
+            (cadr-cli::tree-selector-state-label-input state))))
+
+(defun tree-handle-raw-input-encoded-fold (selected-id)
+  (let ((state (tree-render-state :selected-id selected-id)))
+    (cadr-cli::tree-selector-handle-raw-input
+     state (tree-raw-input-key-data state "app.tree.foldOrUp"))
+    (format nil "~a|~{~a~^,~}"
+            (or (cadr-cli::tree-selector-selected-id state)
+                "null")
+            (cadr-cli::tree-selector-state-visible-ids
+             state))))
+
+(defun tree-handle-raw-input-encoded-notools (selected-id)
+  (let ((state
+          (cadr-cli::make-tree-selector-state
+           :entries *tree-apply-filter-entries*
+           :current-leaf-id "user-3"
+           :initial-selected-id selected-id
+           :filter :default)))
+    (cadr-cli::tree-selector-select-id state selected-id)
+    (cadr-cli::tree-selector-handle-raw-input
+     state (tree-raw-input-key-data state "app.tree.filter.noTools"))
+    (format nil "~a|~a|~a"
+            (format nil "~{~a~^,~}"
+                    (cadr-cli::tree-selector-state-visible-ids
+                     state))
+            (or (cadr-cli::tree-selector-state-selected-id state)
+                "null")
+            (or (cadr-cli::tree-selector-state-preserved-id state)
+                "null"))))
+
+(defun tree-handle-raw-input-encoded-label-cancel (selected-id dirty-input)
+  (let ((state
+          (cadr-cli::make-tree-selector-state
+           :entries *tree-apply-filter-entries*
+           :current-leaf-id "user-3"
+           :initial-selected-id selected-id)))
+    (cadr-cli::tree-selector-select-id state selected-id)
+    (cadr-cli::tree-selector-start-label-edit state)
+    (setf (cadr-cli::tree-selector-state-label-input state)
+          dirty-input)
+    (cadr-cli::tree-selector-handle-raw-input
+     state (tree-raw-input-key-data state "tui.select.cancel"))
+    (let ((entry
+            (find selected-id *tree-apply-filter-entries*
+                  :key (lambda (candidate)
+                         (getf candidate :id))
+                  :test #'equal)))
+      (format nil "~a|~a|~a"
+              "list"
+              "null"
+              (if (and entry (getf entry :label))
+                  (getf entry :label)
+                  "null")))))
+
+(defun tree-handle-raw-input-encoded-nop (selected-id)
+  (let ((state
+          (cadr-cli::make-tree-selector-state
+           :entries *tree-apply-filter-entries*
+           :current-leaf-id "user-3"
+           :initial-selected-id selected-id)))
+    (cadr-cli::tree-selector-select-id state selected-id)
+    (cadr-cli::tree-selector-handle-raw-input state "q")
+    "noop"))
+
+(defun run-cli-selectors-tree-handle-raw-input ()
+  (list
+   (tree-handle-raw-input-encoded-copy "user-1")
+   (tree-handle-raw-input-encoded-edit "user-3")
+   (tree-handle-raw-input-encoded-fold "asst-2")
+   (tree-handle-raw-input-encoded-notools "user-3")
+   (tree-handle-raw-input-encoded-label-cancel "user-3" "newtag")
+   (tree-handle-raw-input-encoded-nop "user-1")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7749,7 +7859,9 @@
         (tree-confirm-label
           (run-cli-selectors-tree-confirm-label))
         (tree-cancel-label
-          (run-cli-selectors-tree-cancel-label)))
+          (run-cli-selectors-tree-cancel-label))
+        (tree-handle-raw-input
+          (run-cli-selectors-tree-handle-raw-input)))
     (json-object
      "observed"
      (json-object
@@ -8142,7 +8254,13 @@
       "tclc_assistant" (nth 2 tree-cancel-label)
       "tclc_bookmark" (nth 3 tree-cancel-label)
       "tclc_dirty" (nth 4 tree-cancel-label)
-      "tclc_nop" (nth 5 tree-cancel-label))
+      "tclc_nop" (nth 5 tree-cancel-label)
+      "thri_copy" (nth 0 tree-handle-raw-input)
+      "thri_edit" (nth 1 tree-handle-raw-input)
+      "thri_fold" (nth 2 tree-handle-raw-input)
+      "thri_notools" (nth 3 tree-handle-raw-input)
+      "thri_lcancel" (nth 4 tree-handle-raw-input)
+      "thri_nop" (nth 5 tree-handle-raw-input))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8482,7 +8600,12 @@
      (collect "cli_selectors.tree_cancel_label"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-cancel-label)))))))
+                  (run-cli-selectors-tree-cancel-label))))
+     "tree_handle_raw_input"
+     (collect "cli_selectors.tree_handle_raw_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-handle-raw-input)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9633,6 +9756,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-confirm-label"
       "cli_selectors.tree_cancel_label"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-cancel-label"
+      "cli_selectors.tree_handle_raw_input"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-handle-raw-input"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

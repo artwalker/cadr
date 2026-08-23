@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_handle_raw_input`
+  (keybinding dispatch fixtures; cadr `tree-selector-handle-raw-input`
+  vs pi `TreeList.handleInput`). Friend-MachineD n=5 **4.06×**
+  (3078.0 / 758.9 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_cancel_label`
   (label cancel fixtures; cadr `tree-selector-cancel-label`
   vs pi `LabelInput` onCancel). Friend-MachineD n=5 **1.57×**

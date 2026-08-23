@@ -290,6 +290,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_start_label_edit": 50,
 	"cli_selectors.tree_confirm_label": 50,
 	"cli_selectors.tree_cancel_label": 50,
+	"cli_selectors.tree_handle_raw_input": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7340,6 +7341,177 @@ function runCliSelectorsTreeCancelLabel() {
 	};
 }
 
+function treeRawInputKeyDataPi(keyName) {
+	return makeTreeSelectorKeybindingsPi().getKeys(keyName)[0];
+}
+
+function treeHandleRawInputEncodedCopyPi(selectedId) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	let copied = "null";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId,
+		"default",
+	);
+	component.onCopy = (text) => {
+		copied = text ?? "null";
+	};
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	treeList.handleInput(treeRawInputKeyDataPi("app.message.copy"));
+	return copied;
+}
+
+function treeHandleRawInputEncodedEditPi(selectedId) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	treeList.handleInput(treeRawInputKeyDataPi("app.tree.editLabel"));
+	const labelInput = component.labelInput;
+	const mode = labelInput ? "label" : "list";
+	const editId = labelInput?.entryId ?? "null";
+	const input = labelInput?.input?.getValue?.() ?? "";
+	return `${mode}|${editId}|${input}`;
+}
+
+function treeHandleRawInputEncodedFoldPi(selectedId) {
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(TREE_ACTIVE_PATH_BRANCHING_ENTRIES),
+		"asst-4a",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId ?? "asst-4a",
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	treeList.handleInput(treeRawInputKeyDataPi("app.tree.foldOrUp"));
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node.entry.id ?? "null";
+	const visible = treeList.filteredNodes.map((node) => node.node.entry.id).join(",");
+	return `${selected}|${visible}`;
+}
+
+function treeHandleRawInputEncodedNotoolsPi(selectedId) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	treeList.handleInput(treeRawInputKeyDataPi("app.tree.filter.noTools"));
+	const visible = treeList.filteredNodes.map((node) => node.node.entry.id).join(",");
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node.entry.id ?? "null";
+	const preserved = "null";
+	return `${visible}|${selected}|${preserved}`;
+}
+
+function treeHandleRawInputEncodedLabelCancelPi(selectedId, dirtyInput) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node;
+	if (selected) {
+		component.showLabelInput(selected.entry.id, selected.label);
+		component.labelInput.input.setValue(dirtyInput);
+		component.handleInput(treeRawInputKeyDataPi("tui.select.cancel"));
+	}
+	let label = "null";
+	for (const flatNode of treeList.flatNodes) {
+		if (flatNode.node.entry.id === selectedId) {
+			label = flatNode.node.label ?? "null";
+			break;
+		}
+	}
+	return `list|null|${label}`;
+}
+
+function treeHandleRawInputEncodedNopPi(selectedId) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	treeList.handleInput("q");
+	return "noop";
+}
+
+function runCliSelectorsTreeHandleRawInput() {
+	return {
+		thri_copy: treeHandleRawInputEncodedCopyPi("user-1"),
+		thri_edit: treeHandleRawInputEncodedEditPi("user-3"),
+		thri_fold: treeHandleRawInputEncodedFoldPi("asst-2"),
+		thri_notools: treeHandleRawInputEncodedNotoolsPi("user-3"),
+		thri_lcancel: treeHandleRawInputEncodedLabelCancelPi("user-3", "newtag"),
+		thri_nop: treeHandleRawInputEncodedNopPi("user-1"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7724,6 +7896,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeStartLabelEditResults = runCliSelectorsTreeStartLabelEdit();
 	const treeConfirmLabelResults = runCliSelectorsTreeConfirmLabel();
 	const treeCancelLabelResults = runCliSelectorsTreeCancelLabel();
+	const treeHandleRawInputResults = runCliSelectorsTreeHandleRawInput();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7967,6 +8140,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeStartLabelEditResults,
 		...treeConfirmLabelResults,
 		...treeCancelLabelResults,
+		...treeHandleRawInputResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8181,6 +8355,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_cancel_label: await collect("cli_selectors.tree_cancel_label", () => {
 			return () => runCliSelectorsTreeCancelLabel();
+		}),
+		tree_handle_raw_input: await collect("cli_selectors.tree_handle_raw_input", () => {
+			return () => runCliSelectorsTreeHandleRawInput();
 		}),
 		observed,
 	};
@@ -9369,6 +9546,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput onSubmit",
 			"cli_selectors.tree_cancel_label":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput onCancel",
+			"cli_selectors.tree_handle_raw_input":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.handleInput",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
