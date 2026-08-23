@@ -342,6 +342,7 @@
     ("cli_selectors.tree_tool_argument" . 50)
     ("cli_selectors.tree_cycle_filter" . 50)
     ("cli_selectors.tree_format_label_timestamp" . 50)
+    ("cli_selectors.tree_format_tool_call" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6699,6 +6700,36 @@
           (setf (uiop:getenv "TZ") tz)
           (sb-posix:unsetenv "TZ")))))
 
+(defun run-cli-selectors-tree-format-tool-call ()
+  (let ((long-bash
+          (make-string 55 :initial-element #\a)))
+    (list
+     (cadr-cli::tree-selector-format-tool-call
+      "read" (json-object "path" "/tmp/foo"))
+     (cadr-cli::tree-selector-format-tool-call
+      "read"
+      (json-object "path" "/tmp/foo" "offset" 10 "limit" 5))
+     (cadr-cli::tree-selector-format-tool-call
+      "read" (json-object "path" "/tmp/foo" "offset" 3))
+     (cadr-cli::tree-selector-format-tool-call
+      "write" (json-object "path" "/tmp/out"))
+     (cadr-cli::tree-selector-format-tool-call
+      "edit" (json-object "file_path" "/tmp/edit"))
+     (cadr-cli::tree-selector-format-tool-call
+      "bash" (json-object "command" "echo hi"))
+     (cadr-cli::tree-selector-format-tool-call
+      "bash" (json-object "command" long-bash))
+     (cadr-cli::tree-selector-format-tool-call
+      "grep"
+      (json-object "pattern" "needle" "path" "/tmp"))
+     (cadr-cli::tree-selector-format-tool-call
+      "find"
+      (json-object "pattern" "*.ts" "path" "/src"))
+     (cadr-cli::tree-selector-format-tool-call
+      "ls" (json-object "path" "/var"))
+     (cadr-cli::tree-selector-format-tool-call
+      "mytool" (json-object "alpha" 1 "beta" "two")))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6760,7 +6791,9 @@
         (tree-cycle-filter
           (run-cli-selectors-tree-cycle-filter))
         (tree-format-label-timestamp
-          (run-cli-selectors-tree-format-label-timestamp)))
+          (run-cli-selectors-tree-format-label-timestamp))
+        (tree-format-tool-call
+          (run-cli-selectors-tree-format-tool-call)))
     (json-object
      "observed"
      (json-object
@@ -7003,7 +7036,18 @@
       "3/28 14:32" (nth 1 tree-format-label-timestamp)
       "25/12/31 23:59" (nth 2 tree-format-label-timestamp)
       "07:30" (nth 3 tree-format-label-timestamp)
-      "not-a-date" (nth 4 tree-format-label-timestamp))
+      "not-a-date" (nth 4 tree-format-label-timestamp)
+      "tfc_read" (nth 0 tree-format-tool-call)
+      "tfc_read_rng" (nth 1 tree-format-tool-call)
+      "tfc_read_off" (nth 2 tree-format-tool-call)
+      "tfc_write" (nth 3 tree-format-tool-call)
+      "tfc_edit" (nth 4 tree-format-tool-call)
+      "tfc_bash" (nth 5 tree-format-tool-call)
+      "tfc_bash_long" (nth 6 tree-format-tool-call)
+      "tfc_grep" (nth 7 tree-format-tool-call)
+      "tfc_find" (nth 8 tree-format-tool-call)
+      "tfc_ls" (nth 9 tree-format-tool-call)
+      "tfc_custom" (nth 10 tree-format-tool-call))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7223,7 +7267,12 @@
      (collect "cli_selectors.tree_format_label_timestamp"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-format-label-timestamp)))))))
+                  (run-cli-selectors-tree-format-label-timestamp))))
+     "tree_format_tool_call"
+     (collect "cli_selectors.tree_format_tool_call"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-format-tool-call)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8326,6 +8375,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-cycle-filter"
       "cli_selectors.tree_format_label_timestamp"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-format-label-timestamp"
+      "cli_selectors.tree_format_tool_call"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-format-tool-call"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

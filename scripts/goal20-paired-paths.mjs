@@ -266,6 +266,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_tool_argument": 50,
 	"cli_selectors.tree_cycle_filter": 50,
 	"cli_selectors.tree_format_label_timestamp": 50,
+	"cli_selectors.tree_format_tool_call": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5830,6 +5831,74 @@ function runCliSelectorsTreeFormatLabelTimestamp() {
 	return observed;
 }
 
+function formatToolCallPi(name, args) {
+	switch (name) {
+		case "read": {
+			const path = shortenPathPi(String(args.path || args.file_path || ""));
+			const offset = args.offset;
+			const limit = args.limit;
+			let display = path;
+			if (offset !== undefined || limit !== undefined) {
+				const start = offset ?? 1;
+				const end = limit !== undefined ? start + limit - 1 : "";
+				display += `:${start}${end ? `-${end}` : ""}`;
+			}
+			return `[read: ${display}]`;
+		}
+		case "write": {
+			const path = shortenPathPi(String(args.path || args.file_path || ""));
+			return `[write: ${path}]`;
+		}
+		case "edit": {
+			const path = shortenPathPi(String(args.path || args.file_path || ""));
+			return `[edit: ${path}]`;
+		}
+		case "bash": {
+			const rawCmd = String(args.command || "");
+			const cmd = rawCmd
+				.replace(/[\n\t]/g, " ")
+				.trim()
+				.slice(0, 50);
+			return `[bash: ${cmd}${rawCmd.length > 50 ? "..." : ""}]`;
+		}
+		case "grep": {
+			const pattern = String(args.pattern || "");
+			const path = shortenPathPi(String(args.path || "."));
+			return `[grep: /${pattern}/ in ${path}]`;
+		}
+		case "find": {
+			const pattern = String(args.pattern || "");
+			const path = shortenPathPi(String(args.path || "."));
+			return `[find: ${pattern} in ${path}]`;
+		}
+		case "ls": {
+			const path = shortenPathPi(String(args.path || "."));
+			return `[ls: ${path}]`;
+		}
+		default: {
+			const argsStr = JSON.stringify(args).slice(0, 40);
+			return `[${name}: ${argsStr}${JSON.stringify(args).length > 40 ? "..." : ""}]`;
+		}
+	}
+}
+
+function runCliSelectorsTreeFormatToolCall() {
+	const longBash = "a".repeat(55);
+	return {
+		tfc_read: formatToolCallPi("read", { path: "/tmp/foo" }),
+		tfc_read_rng: formatToolCallPi("read", { path: "/tmp/foo", offset: 10, limit: 5 }),
+		tfc_read_off: formatToolCallPi("read", { path: "/tmp/foo", offset: 3 }),
+		tfc_write: formatToolCallPi("write", { path: "/tmp/out" }),
+		tfc_edit: formatToolCallPi("edit", { file_path: "/tmp/edit" }),
+		tfc_bash: formatToolCallPi("bash", { command: "echo hi" }),
+		tfc_bash_long: formatToolCallPi("bash", { command: longBash }),
+		tfc_grep: formatToolCallPi("grep", { pattern: "needle", path: "/tmp" }),
+		tfc_find: formatToolCallPi("find", { pattern: "*.ts", path: "/src" }),
+		tfc_ls: formatToolCallPi("ls", { path: "/var" }),
+		tfc_custom: formatToolCallPi("mytool", { alpha: 1, beta: "two" }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6190,6 +6259,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeToolArgumentResults = runCliSelectorsTreeToolArgument();
 	const treeCycleFilterResults = runCliSelectorsTreeCycleFilter();
 	const treeFormatLabelTimestampResults = runCliSelectorsTreeFormatLabelTimestamp();
+	const treeFormatToolCallResults = runCliSelectorsTreeFormatToolCall();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6409,6 +6479,7 @@ async function measureCliSelectorsSessionSearch() {
 		tcf_all_fwd: treeCycleFilterResults.tcf_all_fwd,
 		tcf_user_fwd: treeCycleFilterResults.tcf_user_fwd,
 		...treeFormatLabelTimestampResults,
+		...treeFormatToolCallResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6551,6 +6622,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_format_label_timestamp: await collect("cli_selectors.tree_format_label_timestamp", () => {
 			return () => runCliSelectorsTreeFormatLabelTimestamp();
+		}),
+		tree_format_tool_call: await collect("cli_selectors.tree_format_tool_call", () => {
+			return () => runCliSelectorsTreeFormatToolCall();
 		}),
 		observed,
 	};
@@ -7691,6 +7765,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts filter cycle keybindings modes array index math",
 			"cli_selectors.tree_format_label_timestamp":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatLabelTimestamp",
+			"cli_selectors.tree_format_tool_call":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

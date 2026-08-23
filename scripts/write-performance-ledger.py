@@ -161,6 +161,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_tool_argument",
     "cli_selectors.tree_cycle_filter",
     "cli_selectors.tree_format_label_timestamp",
+    "cli_selectors.tree_format_tool_call",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
