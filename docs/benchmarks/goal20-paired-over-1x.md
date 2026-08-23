@@ -164,5 +164,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.tree_entry_map` | 11.6 | 4.2 | 2.76× | 8.00× | measure-only pair (Pair 186); id→entry map | invent pause；地板优化另刀 |
 | `cli_selectors.tree_order_entries` | 38.4 | 31.7 | 1.21× | 8.00× | measure-only pair (Pair 187); DFS entry order | invent pause；地板优化另刀 |
 | `cli_selectors.tree_iso_timestamp` | 6.1 | 4.3 | 1.43× | 8.00× | measure-only pair (Pair 188); ISO timestamp formatter | invent pause；地板优化另刀 |
+| `cli_selectors.tree_help_key` | 58.4 | 34.4 | 1.70× | 8.00× | measure-only pair (Pair 189); single help key lookup | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

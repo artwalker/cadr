@@ -273,6 +273,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_visual_nodes": 50,
 	"cli_selectors.tree_horizontal_viewport": 50,
 	"cli_selectors.tree_help_keys": 50,
+	"cli_selectors.tree_help_key": 50,
 	"cli_selectors.tree_help_lines": 50,
 	"cli_selectors.tree_active_path": 50,
 	"cli_selectors.tree_nearest_visible_id": 50,
@@ -6443,6 +6444,22 @@ function formatHelpKeysPi(keybindings, manager) {
 		.replace(/\bright\b/g, "→");
 }
 
+const TREE_HELP_KEY_FALLBACKS = {
+	"tui.select.up": "up",
+	"tui.select.down": "down",
+	"tui.editor.cursorLeft": "left",
+	"tui.editor.cursorRight": "right",
+};
+
+function treeHelpKeyPi(name, manager) {
+	const keys = manager.getKeys(name);
+	if (keys.length > 0 && keys[0] !== undefined) {
+		return keys[0];
+	}
+	const fallback = TREE_HELP_KEY_FALLBACKS[name];
+	return fallback !== undefined ? fallback : "null";
+}
+
 function runCliSelectorsTreeHelpKeys() {
 	const defaultManager = makeTreeSelectorKeybindingsPi();
 	const customManager = makeTreeSelectorKeybindingsPi({ "tui.select.up": "ctrl+k" });
@@ -6472,6 +6489,19 @@ function runCliSelectorsTreeHelpKeys() {
 			defaultManager,
 		),
 		thk_custom: formatHelpKeysPi(["tui.select.up", "tui.select.down"], customManager),
+	};
+}
+
+function runCliSelectorsTreeHelpKey() {
+	const defaultManager = makeTreeSelectorKeybindingsPi();
+	const customManager = makeTreeSelectorKeybindingsPi({ "tui.select.up": "ctrl+k" });
+	return {
+		thkey_up: treeHelpKeyPi("tui.select.up", defaultManager),
+		thkey_fold: treeHelpKeyPi("app.tree.foldOrUp", defaultManager),
+		thkey_filter_all: treeHelpKeyPi("app.tree.filter.all", defaultManager),
+		thkey_left: treeHelpKeyPi("tui.editor.cursorLeft", defaultManager),
+		thkey_custom_up: treeHelpKeyPi("tui.select.up", customManager),
+		thkey_missing: treeHelpKeyPi("unknown.binding", defaultManager),
 	};
 }
 
@@ -8313,6 +8343,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeVisualNodesResults = runCliSelectorsTreeVisualNodes();
 	const treeHorizontalViewportResults = runCliSelectorsTreeHorizontalViewport();
 	const treeHelpKeysResults = runCliSelectorsTreeHelpKeys();
+	const treeHelpKeyResults = runCliSelectorsTreeHelpKey();
 	const treeHelpLinesResults = runCliSelectorsTreeHelpLines();
 	const treeActivePathResults = runCliSelectorsTreeActivePath();
 	const treeNearestVisibleIdResults = runCliSelectorsTreeNearestVisibleId();
@@ -8566,6 +8597,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeVisualNodesResults,
 		...treeHorizontalViewportResults,
 		...treeHelpKeysResults,
+		...treeHelpKeyResults,
 		...treeHelpLinesResults,
 		...treeActivePathResults,
 		...treeNearestVisibleIdResults,
@@ -8756,6 +8788,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_help_keys: await collect("cli_selectors.tree_help_keys", () => {
 			return () => runCliSelectorsTreeHelpKeys();
+		}),
+		tree_help_key: await collect("cli_selectors.tree_help_key", () => {
+			return () => runCliSelectorsTreeHelpKey();
 		}),
 		tree_help_lines: await collect("cli_selectors.tree_help_lines", () => {
 			return () => runCliSelectorsTreeHelpLines();
@@ -9991,6 +10026,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts renderHorizontalViewport",
 			"cli_selectors.tree_help_keys":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatHelpKeys",
+			"cli_selectors.tree_help_key":
+				"packages/coding-agent/src/core/keybindings.ts KeybindingsManager.getKeys first-or-fallback",
 			"cli_selectors.tree_help_lines":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeHelp.render",
 			"cli_selectors.tree_active_path":

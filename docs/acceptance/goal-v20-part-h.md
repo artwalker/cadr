@@ -2574,6 +2574,17 @@ Observed `tis_afternoon` / `tis_epoch` / `tis_eoy` / `tis_midnight` / `tis_noon`
 First Friend-MachineD freeze **1.43×**
 (6.1 / 4.3 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 189 — `cli_selectors` (tree_help_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_help_key` | `tree-selector-help-key` | keybinding key lookup with fallbacks (`tree-selector.ts`) |
+
+Single binding name → raw key string; `null` when unbound.
+Observed `thkey_up` / `thkey_fold` / `thkey_filter_all` / `thkey_left` / `thkey_custom_up` /
+`thkey_missing` are exact. First Friend-MachineD freeze **1.70×**
+(58.4 / 34.4 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

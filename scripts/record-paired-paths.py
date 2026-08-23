@@ -168,6 +168,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_visual_nodes",
     "cli_selectors.tree_horizontal_viewport",
     "cli_selectors.tree_help_keys",
+    "cli_selectors.tree_help_key",
     "cli_selectors.tree_help_lines",
     "cli_selectors.tree_active_path",
     "cli_selectors.tree_nearest_visible_id",

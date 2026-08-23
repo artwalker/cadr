@@ -349,6 +349,7 @@
     ("cli_selectors.tree_visual_nodes" . 50)
     ("cli_selectors.tree_horizontal_viewport" . 50)
     ("cli_selectors.tree_help_keys" . 50)
+    ("cli_selectors.tree_help_key" . 50)
     ("cli_selectors.tree_help_lines" . 50)
     ("cli_selectors.tree_active_path" . 50)
     ("cli_selectors.tree_nearest_visible_id" . 50)
@@ -7021,6 +7022,22 @@
      (cadr-cli::tree-selector-help-keys
       custom '("tui.select.up" "tui.select.down")))))
 
+(defun tree-help-key-encoded (state name)
+  (or (cadr-cli::tree-selector-help-key state name) "null"))
+
+(defun run-cli-selectors-tree-help-key ()
+  (let ((default (tree-help-state))
+        (custom
+          (tree-help-state
+           '(("tui.select.up" . "ctrl+k")))))
+    (list
+     (tree-help-key-encoded default "tui.select.up")
+     (tree-help-key-encoded default "app.tree.foldOrUp")
+     (tree-help-key-encoded default "app.tree.filter.all")
+     (tree-help-key-encoded default "tui.editor.cursorLeft")
+     (tree-help-key-encoded custom "tui.select.up")
+     (tree-help-key-encoded default "unknown.binding"))))
+
 (defun tree-help-lines-encoded (state width)
   (format nil "~{~a~^|~}"
           (cadr-cli::tree-selector-help-lines state width)))
@@ -8131,6 +8148,8 @@
           (run-cli-selectors-tree-horizontal-viewport))
         (tree-help-keys
           (run-cli-selectors-tree-help-keys))
+        (tree-help-key
+          (run-cli-selectors-tree-help-key))
         (tree-help-lines
           (run-cli-selectors-tree-help-lines))
         (tree-active-path
@@ -8479,6 +8498,12 @@
       "thk_filters" (nth 4 tree-help-keys)
       "thk_cycle" (nth 5 tree-help-keys)
       "thk_custom" (nth 6 tree-help-keys)
+      "thkey_up" (nth 0 tree-help-key)
+      "thkey_fold" (nth 1 tree-help-key)
+      "thkey_filter_all" (nth 2 tree-help-key)
+      "thkey_left" (nth 3 tree-help-key)
+      "thkey_custom_up" (nth 4 tree-help-key)
+      "thkey_missing" (nth 5 tree-help-key)
       "thl_w80" (nth 0 tree-help-lines)
       "thl_w50" (nth 1 tree-help-lines)
       "thl_w30" (nth 2 tree-help-lines)
@@ -8889,6 +8914,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-tree-help-keys))))
+     "tree_help_key"
+     (collect "cli_selectors.tree_help_key"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-help-key))))
      "tree_help_lines"
      (collect "cli_selectors.tree_help_lines"
               (lambda ()
@@ -10140,6 +10170,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-horizontal-viewport"
       "cli_selectors.tree_help_keys"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-keys"
+      "cli_selectors.tree_help_key"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-key"
       "cli_selectors.tree_help_lines"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-lines"
       "cli_selectors.tree_active_path"
