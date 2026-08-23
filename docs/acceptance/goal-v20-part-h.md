@@ -2530,6 +2530,17 @@ Observed `tvi_default` / `tvi_user_only` / `tvi_no_tools` / `tvi_query` / `tvi_f
 `tvi_all` are exact. First Friend-MachineD freeze **5.78×**
 (82.1 / 14.2 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 185 — `cli_selectors` (tree_selected_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_selected_id` | `tree-selector-selected-id` | `TreeList.filteredNodes` selected id (`tree-selector.ts`) |
+
+Selected id accessor after fixture state setup; `null` when no selection.
+Observed `tslid_pinned` / `tslid_plain` / `tslid_assistant` / `tslid_label` / `tslid_empty` /
+`tslid_noselect` are exact. First Friend-MachineD freeze **2.50×**
+(213.4 / 85.3 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

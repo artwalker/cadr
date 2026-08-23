@@ -294,6 +294,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_handle_event": 50,
 	"cli_selectors.tree_handle_label_event": 50,
 	"cli_selectors.tree_selected_entry": 50,
+	"cli_selectors.tree_selected_id": 50,
 	"cli_selectors.tree_select_id": 50,
 	"cli_selectors.tree_visible_ids": 50,
 	"websocket_stream.stream_roundtrip": 10,
@@ -7726,6 +7727,44 @@ function runCliSelectorsTreeSelectedEntry() {
 	};
 }
 
+function treeSelectedIdEncodedPi(selectedId, { noSelect = false } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		noSelect ? undefined : (selectedId ?? "user-3"),
+		"default",
+	);
+	const treeList = component.getTreeList();
+	if (!noSelect && selectedId) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+	}
+	if (noSelect) {
+		treeList.selectedIndex = -1;
+	}
+	const node = treeList.getSelectedNode();
+	return node?.entry.id ?? "null";
+}
+
+function runCliSelectorsTreeSelectedId() {
+	return {
+		tslid_pinned: treeSelectedIdEncodedPi("user-3"),
+		tslid_plain: treeSelectedIdEncodedPi("user-1"),
+		tslid_assistant: treeSelectedIdEncodedPi("asst-1"),
+		tslid_label: treeSelectedIdEncodedPi("label-1"),
+		tslid_empty: treeSelectedIdEncodedPi("asst-empty"),
+		tslid_noselect: treeSelectedIdEncodedPi(null, { noSelect: true }),
+	};
+}
+
 function treeSelectIdEncodedPi({ selectedId, targetId, filter = "default", foldedIds = [] } = {}) {
 	const entries = TREE_APPLY_FILTER_ENTRIES;
 	const component = new treeSelectorModule.TreeSelectorComponent(
@@ -8187,6 +8226,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeHandleEventResults = runCliSelectorsTreeHandleEvent();
 	const treeHandleLabelEventResults = runCliSelectorsTreeHandleLabelEvent();
 	const treeSelectedEntryResults = runCliSelectorsTreeSelectedEntry();
+	const treeSelectedIdResults = runCliSelectorsTreeSelectedId();
 	const treeSelectIdResults = runCliSelectorsTreeSelectId();
 	const treeVisibleIdsResults = runCliSelectorsTreeVisibleIds();
 	const observed = {
@@ -8436,6 +8476,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeHandleEventResults,
 		...treeHandleLabelEventResults,
 		...treeSelectedEntryResults,
+		...treeSelectedIdResults,
 		...treeSelectIdResults,
 		...treeVisibleIdsResults,
 	};
@@ -8664,6 +8705,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_selected_entry: await collect("cli_selectors.tree_selected_entry", () => {
 			return () => runCliSelectorsTreeSelectedEntry();
+		}),
+		tree_selected_id: await collect("cli_selectors.tree_selected_id", () => {
+			return () => runCliSelectorsTreeSelectedId();
 		}),
 		tree_select_id: await collect("cli_selectors.tree_select_id", () => {
 			return () => runCliSelectorsTreeSelectId();
@@ -9866,6 +9910,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput.handleInput",
 			"cli_selectors.tree_selected_entry":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.getSelectedNode",
+			"cli_selectors.tree_selected_id":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.filteredNodes selected id",
 			"cli_selectors.tree_select_id":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList filteredNodes index by id",
 			"cli_selectors.tree_visible_ids":

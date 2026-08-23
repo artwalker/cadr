@@ -370,6 +370,7 @@
     ("cli_selectors.tree_handle_event" . 50)
     ("cli_selectors.tree_handle_label_event" . 50)
     ("cli_selectors.tree_selected_entry" . 50)
+    ("cli_selectors.tree_selected_id" . 50)
     ("cli_selectors.tree_select_id" . 50)
     ("cli_selectors.tree_visible_ids" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
@@ -7888,6 +7889,32 @@
    (tree-selected-entry-encoded "asst-empty")
    (tree-selected-entry-encoded nil :no-select-p t)))
 
+(defun tree-selected-id-encoded (selected-id &key no-select-p)
+  (let* ((entries *tree-apply-filter-entries*)
+         (current-leaf-id "user-3")
+         (state
+           (cadr-cli::make-tree-selector-state
+            :entries entries
+            :current-leaf-id current-leaf-id
+            :initial-selected-id
+            (unless no-select-p selected-id))))
+    (when (and selected-id (not no-select-p))
+      (cadr-cli::tree-selector-select-id state selected-id))
+    (when no-select-p
+      (setf (cadr-cli::tree-selector-state-selected-id state)
+            nil))
+    (or (cadr-cli::tree-selector-selected-id state)
+        "null")))
+
+(defun run-cli-selectors-tree-selected-id ()
+  (list
+   (tree-selected-id-encoded "user-3")
+   (tree-selected-id-encoded "user-1")
+   (tree-selected-id-encoded "asst-1")
+   (tree-selected-id-encoded "label-1")
+   (tree-selected-id-encoded "asst-empty")
+   (tree-selected-id-encoded nil :no-select-p t)))
+
 (defun tree-select-id-encoded (&key selected-id target-id filter folded-ids)
   (let* ((entries *tree-apply-filter-entries*)
          (current-leaf-id "user-3")
@@ -8066,6 +8093,8 @@
           (run-cli-selectors-tree-handle-label-event))
         (tree-selected-entry
           (run-cli-selectors-tree-selected-entry))
+        (tree-selected-id
+          (run-cli-selectors-tree-selected-id))
         (tree-select-id
           (run-cli-selectors-tree-select-id))
         (tree-visible-ids
@@ -8486,6 +8515,12 @@
       "tse_label" (nth 3 tree-selected-entry)
       "tse_empty" (nth 4 tree-selected-entry)
       "tse_noselect" (nth 5 tree-selected-entry)
+      "tslid_pinned" (nth 0 tree-selected-id)
+      "tslid_plain" (nth 1 tree-selected-id)
+      "tslid_assistant" (nth 2 tree-selected-id)
+      "tslid_label" (nth 3 tree-selected-id)
+      "tslid_empty" (nth 4 tree-selected-id)
+      "tslid_noselect" (nth 5 tree-selected-id)
       "tsid_hit" (nth 0 tree-select-id)
       "tsid_same" (nth 1 tree-select-id)
       "tsid_miss" (nth 2 tree-select-id)
@@ -8858,6 +8893,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-tree-selected-entry))))
+     "tree_selected_id"
+     (collect "cli_selectors.tree_selected_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-selected-id))))
      "tree_select_id"
      (collect "cli_selectors.tree_select_id"
               (lambda ()
@@ -10026,6 +10066,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-handle-label-event"
       "cli_selectors.tree_selected_entry"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-selected-entry"
+      "cli_selectors.tree_selected_id"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-selected-id"
       "cli_selectors.tree_select_id"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-select-id"
       "cli_selectors.tree_visible_ids"
