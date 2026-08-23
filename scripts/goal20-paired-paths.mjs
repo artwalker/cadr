@@ -292,6 +292,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_cancel_label": 50,
 	"cli_selectors.tree_handle_raw_input": 50,
 	"cli_selectors.tree_handle_event": 50,
+	"cli_selectors.tree_handle_label_event": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7590,6 +7591,87 @@ function runCliSelectorsTreeHandleEvent() {
 	};
 }
 
+function treeHandleLabelEventEncodedPi(selectedId, eventKind, { text = null, initialInput = null } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	let callbackId = "null";
+	let callbackLabel = "null";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		(id, label) => {
+			callbackId = id;
+			callbackLabel = label ?? "null";
+		},
+		selectedId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node;
+	if (selected) {
+		component.showLabelInput(selected.entry.id, selected.label);
+		if (initialInput !== null) {
+			component.labelInput.input.setValue(initialInput);
+		}
+		const manager = makeTreeSelectorKeybindingsPi();
+		const keyFor = (name) => manager.getKeys(name)[0];
+		switch (eventKind) {
+			case "text":
+				component.handleInput(text ?? "");
+				break;
+			case "backspace":
+				component.handleInput(keyFor("tui.editor.deleteCharBackward"));
+				break;
+			case "enter":
+				component.handleInput(keyFor("tui.select.confirm"));
+				break;
+			case "escape":
+				component.handleInput(keyFor("tui.select.cancel"));
+				break;
+			default:
+				break;
+		}
+	}
+	if (component.labelInput) {
+		return `label|${component.labelInput.entryId}|${component.labelInput.input.getValue()}`;
+	}
+	let label = "null";
+	for (const flatNode of treeList.flatNodes) {
+		if (flatNode.node.entry.id === selectedId) {
+			label = flatNode.node.label ?? "null";
+			break;
+		}
+	}
+	if (eventKind === "escape") {
+		return `list|null|${label}`;
+	}
+	let timestampSet = "false";
+	for (const flatNode of treeList.flatNodes) {
+		if (flatNode.node.entry.id === selectedId) {
+			timestampSet = flatNode.node.labelTimestamp ? "true" : "false";
+			break;
+		}
+	}
+	return `list|${callbackId}|${callbackLabel}|${timestampSet}`;
+}
+
+function runCliSelectorsTreeHandleLabelEvent() {
+	return {
+		thle_text: treeHandleLabelEventEncodedPi("user-3", "text", { text: "x" }),
+		thle_bs: treeHandleLabelEventEncodedPi("user-3", "backspace", { initialInput: "abcd" }),
+		thle_enter: treeHandleLabelEventEncodedPi("user-3", "enter", { initialInput: "newtag" }),
+		thle_escape: treeHandleLabelEventEncodedPi("user-3", "escape", { initialInput: "newtag" }),
+		thle_nop: treeHandleLabelEventEncodedPi("user-3", "tab"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7976,6 +8058,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeCancelLabelResults = runCliSelectorsTreeCancelLabel();
 	const treeHandleRawInputResults = runCliSelectorsTreeHandleRawInput();
 	const treeHandleEventResults = runCliSelectorsTreeHandleEvent();
+	const treeHandleLabelEventResults = runCliSelectorsTreeHandleLabelEvent();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8221,6 +8304,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeCancelLabelResults,
 		...treeHandleRawInputResults,
 		...treeHandleEventResults,
+		...treeHandleLabelEventResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8441,6 +8525,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_handle_event: await collect("cli_selectors.tree_handle_event", () => {
 			return () => runCliSelectorsTreeHandleEvent();
+		}),
+		tree_handle_label_event: await collect("cli_selectors.tree_handle_label_event", () => {
+			return () => runCliSelectorsTreeHandleLabelEvent();
 		}),
 		observed,
 	};
@@ -9633,6 +9720,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.handleInput",
 			"cli_selectors.tree_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.handleInput (structured events)",
+			"cli_selectors.tree_handle_label_event":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput.handleInput",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

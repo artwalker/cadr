@@ -2485,6 +2485,17 @@ Observed `the_down` / `the_up` / `the_enter` / `the_text` / `the_esc_clear` /
 `the_nop` are exact. First Friend-MachineD freeze **0.73×**
 (245.2 / 333.8 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 181 — `cli_selectors` (tree_handle_label_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_handle_label_event` | `tree-selector-handle-label-event` | `LabelInput.handleInput` (`tree-selector.ts`) |
+
+Label-mode structured events: text append, backspace, confirm, cancel, noop.
+Observed `thle_text` / `thle_bs` / `thle_enter` / `thle_escape` / `thle_nop` are
+exact. First Friend-MachineD freeze **0.69×**
+(159.7 / 232.7 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

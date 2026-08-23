@@ -368,6 +368,7 @@
     ("cli_selectors.tree_cancel_label" . 50)
     ("cli_selectors.tree_handle_raw_input" . 50)
     ("cli_selectors.tree_handle_event" . 50)
+    ("cli_selectors.tree_handle_label_event" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7785,6 +7786,64 @@
    (tree-handle-event-encoded "user-3" :escape :query "branch")
    (tree-handle-event-encoded "user-1" :tab)))
 
+(defun tree-handle-label-event-encoded (selected-id event-kind &key text initial-input)
+  (let* ((entries *tree-apply-filter-entries*)
+         (current-leaf-id "user-3")
+         (callback-id nil)
+         (callback-label nil)
+         (state
+           (cadr-cli::make-tree-selector-state
+            :entries entries
+            :current-leaf-id current-leaf-id
+            :initial-selected-id selected-id
+            :label-callback
+            (lambda (id label)
+              (setf callback-id id)
+              (setf callback-label label)))))
+    (cadr-cli::tree-selector-select-id state selected-id)
+    (cadr-cli::tree-selector-start-label-edit state)
+    (when initial-input
+      (setf (cadr-cli::tree-selector-state-label-input state)
+            initial-input))
+    (let ((event
+            (if text
+                (cadr-tui:make-input-event
+                 :kind event-kind :text text)
+                (cadr-tui:make-input-event :kind event-kind))))
+      (cadr-cli::tree-selector-handle-label-event state event))
+    (if (eq :label (cadr-cli::tree-selector-state-mode state))
+        (format nil "label|~a|~a"
+                (or (cadr-cli::tree-selector-state-label-edit-id state)
+                    "null")
+                (cadr-cli::tree-selector-state-label-input state))
+        (let ((entry
+                (find selected-id entries
+                      :key (lambda (candidate)
+                             (getf candidate :id))
+                      :test #'equal)))
+          (if (eq event-kind :escape)
+              (format nil "list|null|~a"
+                      (if (and entry (getf entry :label))
+                          (getf entry :label)
+                          "null"))
+              (format nil "list|~a|~a|~a"
+                      (or callback-id "null")
+                      (if callback-label callback-label "null")
+                      (if (and entry (getf entry :label-timestamp))
+                          "true"
+                          "false")))))))
+
+(defun run-cli-selectors-tree-handle-label-event ()
+  (list
+   (tree-handle-label-event-encoded "user-3" :text :text "x")
+   (tree-handle-label-event-encoded "user-3" :backspace
+                                    :initial-input "abcd")
+   (tree-handle-label-event-encoded "user-3" :enter
+                                    :initial-input "newtag")
+   (tree-handle-label-event-encoded "user-3" :escape
+                                    :initial-input "newtag")
+   (tree-handle-label-event-encoded "user-3" :tab)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7898,7 +7957,9 @@
         (tree-handle-raw-input
           (run-cli-selectors-tree-handle-raw-input))
         (tree-handle-event
-          (run-cli-selectors-tree-handle-event)))
+          (run-cli-selectors-tree-handle-event))
+        (tree-handle-label-event
+          (run-cli-selectors-tree-handle-label-event)))
     (json-object
      "observed"
      (json-object
@@ -8303,7 +8364,12 @@
       "the_enter" (nth 2 tree-handle-event)
       "the_text" (nth 3 tree-handle-event)
       "the_esc_clear" (nth 4 tree-handle-event)
-      "the_nop" (nth 5 tree-handle-event))
+      "the_nop" (nth 5 tree-handle-event)
+      "thle_text" (nth 0 tree-handle-label-event)
+      "thle_bs" (nth 1 tree-handle-label-event)
+      "thle_enter" (nth 2 tree-handle-label-event)
+      "thle_escape" (nth 3 tree-handle-label-event)
+      "thle_nop" (nth 4 tree-handle-label-event))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8653,7 +8719,12 @@
      (collect "cli_selectors.tree_handle_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-handle-event)))))))
+                  (run-cli-selectors-tree-handle-event))))
+     "tree_handle_label_event"
+     (collect "cli_selectors.tree_handle_label_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-handle-label-event)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9808,6 +9879,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-handle-raw-input"
       "cli_selectors.tree_handle_event"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-handle-event"
+      "cli_selectors.tree_handle_label_event"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-handle-label-event"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
