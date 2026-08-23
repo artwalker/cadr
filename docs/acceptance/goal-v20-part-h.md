@@ -2267,6 +2267,17 @@ optimize.
 `session-selector-node-prefix` remain unpaired — gate attempt `sgp_simple` pi
 `   └─ ` vs cadr `└─ ` (ancestor padding); measure-only, no optimize this commit.
 
+### Pair 161 — `cli_selectors` (tree_help_lines)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_help_lines` | `tree-selector-help-lines` | `TreeHelp.render` (`tree-selector.ts`) |
+
+Tree help footer: chunk-aware line packing with muted theme at widths 80/50/30/20/12.
+Observed `thl_w80` / `thl_w50` / `thl_w30` / `thl_w20` / `thl_w12` are exact. First
+Friend-MachineD freeze **3.33×** (979.6 / 293.8 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash

@@ -272,6 +272,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_visual_nodes": 50,
 	"cli_selectors.tree_horizontal_viewport": 50,
 	"cli_selectors.tree_help_keys": 50,
+	"cli_selectors.tree_help_lines": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6414,6 +6415,79 @@ function runCliSelectorsTreeHelpKeys() {
 	};
 }
 
+const TREE_HELP_ITEMS_PI = [
+	{ keys: ["tui.select.up", "tui.select.down"], label: "move" },
+	{ keys: ["tui.editor.cursorLeft", "tui.editor.cursorRight"], label: "page" },
+	{ keys: ["app.tree.foldOrUp", "app.tree.unfoldOrDown"], label: "branch" },
+	{ keys: ["app.message.copy"], label: "copy" },
+	{ keys: ["app.tree.editLabel"], label: "label" },
+	{ keys: ["app.tree.toggleLabelTimestamp"], label: "label time" },
+	{
+		keys: [
+			"app.tree.filter.default",
+			"app.tree.filter.noTools",
+			"app.tree.filter.userOnly",
+			"app.tree.filter.labeledOnly",
+			"app.tree.filter.all",
+		],
+		label: "filters",
+		labelFirst: true,
+	},
+	{
+		keys: ["app.tree.filter.cycleForward", "app.tree.filter.cycleBackward"],
+		label: "cycle",
+		labelFirst: true,
+	},
+];
+
+function formatTreeHelpLinesPi(width) {
+	const manager = makeTreeSelectorKeybindingsPi();
+	const items = TREE_HELP_ITEMS_PI.map(({ keys, label, labelFirst }) => {
+		const text = formatHelpKeysPi(keys, manager);
+		if (!text) {
+			return label;
+		}
+		return labelFirst ? `${label} ${text}` : `${text} ${label}`;
+	});
+	const availableWidth = Math.max(1, width);
+	const indent = "  ";
+	const separator = " · ";
+	const lines = [];
+	let currentLine = "";
+	for (const item of items) {
+		const candidate = currentLine
+			? `${currentLine}${separator}${item}`
+			: tuiUtilsModule.visibleWidth(`${indent}${item}`) <= availableWidth
+				? `${indent}${item}`
+				: item;
+		if (!currentLine || tuiUtilsModule.visibleWidth(candidate) <= availableWidth) {
+			currentLine = candidate;
+			continue;
+		}
+		lines.push(...tuiUtilsModule.wrapTextWithAnsi(currentLine.trimEnd(), availableWidth));
+		currentLine =
+			tuiUtilsModule.visibleWidth(`${indent}${item}`) <= availableWidth ? `${indent}${item}` : item;
+	}
+	if (currentLine) {
+		lines.push(...tuiUtilsModule.wrapTextWithAnsi(currentLine.trimEnd(), availableWidth));
+	}
+	return lines.map((line) => themeModule.theme.fg("muted", line));
+}
+
+function treeHelpLinesEncodedPi(width) {
+	return formatTreeHelpLinesPi(width).join("|");
+}
+
+function runCliSelectorsTreeHelpLines() {
+	return {
+		thl_w80: treeHelpLinesEncodedPi(80),
+		thl_w50: treeHelpLinesEncodedPi(50),
+		thl_w30: treeHelpLinesEncodedPi(30),
+		thl_w20: treeHelpLinesEncodedPi(20),
+		thl_w12: treeHelpLinesEncodedPi(12),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6780,6 +6854,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeVisualNodesResults = runCliSelectorsTreeVisualNodes();
 	const treeHorizontalViewportResults = runCliSelectorsTreeHorizontalViewport();
 	const treeHelpKeysResults = runCliSelectorsTreeHelpKeys();
+	const treeHelpLinesResults = runCliSelectorsTreeHelpLines();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7005,6 +7080,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeVisualNodesResults,
 		...treeHorizontalViewportResults,
 		...treeHelpKeysResults,
+		...treeHelpLinesResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7165,6 +7241,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_help_keys: await collect("cli_selectors.tree_help_keys", () => {
 			return () => runCliSelectorsTreeHelpKeys();
+		}),
+		tree_help_lines: await collect("cli_selectors.tree_help_lines", () => {
+			return () => runCliSelectorsTreeHelpLines();
 		}),
 		observed,
 	};
@@ -8317,6 +8396,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts renderHorizontalViewport",
 			"cli_selectors.tree_help_keys":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatHelpKeys",
+			"cli_selectors.tree_help_lines":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeHelp.render",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

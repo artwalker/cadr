@@ -348,6 +348,7 @@
     ("cli_selectors.tree_visual_nodes" . 50)
     ("cli_selectors.tree_horizontal_viewport" . 50)
     ("cli_selectors.tree_help_keys" . 50)
+    ("cli_selectors.tree_help_lines" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6967,6 +6968,19 @@
      (cadr-cli::tree-selector-help-keys
       custom '("tui.select.up" "tui.select.down")))))
 
+(defun tree-help-lines-encoded (state width)
+  (format nil "~{~a~^|~}"
+          (cadr-cli::tree-selector-help-lines state width)))
+
+(defun run-cli-selectors-tree-help-lines ()
+  (let ((state (tree-help-state)))
+    (list
+     (tree-help-lines-encoded state 80)
+     (tree-help-lines-encoded state 50)
+     (tree-help-lines-encoded state 30)
+     (tree-help-lines-encoded state 20)
+     (tree-help-lines-encoded state 12))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7040,7 +7054,9 @@
         (tree-horizontal-viewport
           (run-cli-selectors-tree-horizontal-viewport))
         (tree-help-keys
-          (run-cli-selectors-tree-help-keys)))
+          (run-cli-selectors-tree-help-keys))
+        (tree-help-lines
+          (run-cli-selectors-tree-help-lines)))
     (json-object
      "observed"
      (json-object
@@ -7329,7 +7345,12 @@
       "thk_copy" (nth 3 tree-help-keys)
       "thk_filters" (nth 4 tree-help-keys)
       "thk_cycle" (nth 5 tree-help-keys)
-      "thk_custom" (nth 6 tree-help-keys))
+      "thk_custom" (nth 6 tree-help-keys)
+      "thl_w80" (nth 0 tree-help-lines)
+      "thl_w50" (nth 1 tree-help-lines)
+      "thl_w30" (nth 2 tree-help-lines)
+      "thl_w20" (nth 3 tree-help-lines)
+      "thl_w12" (nth 4 tree-help-lines))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7579,7 +7600,12 @@
      (collect "cli_selectors.tree_help_keys"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-help-keys)))))))
+                  (run-cli-selectors-tree-help-keys))))
+     "tree_help_lines"
+     (collect "cli_selectors.tree_help_lines"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-help-lines)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8694,6 +8720,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-horizontal-viewport"
       "cli_selectors.tree_help_keys"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-keys"
+      "cli_selectors.tree_help_lines"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-lines"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

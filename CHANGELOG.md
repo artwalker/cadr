@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_help_lines`
+  (tree help footer wrap fixtures; cadr `tree-selector-help-lines`
+  vs pi `TreeHelp.render`). Friend-MachineD n=5 **3.33×** (979.6 / 293.8 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_help_keys`
   (tree help keybinding compaction fixtures; cadr `tree-selector-help-keys`
   vs pi `formatHelpKeys`). Friend-MachineD n=5 **4.56×** (190.2 / 41.7 µs),
