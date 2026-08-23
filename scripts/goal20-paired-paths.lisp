@@ -380,6 +380,7 @@
     ("cli_selectors.tree_visible_ids" . 50)
     ("cli_selectors.project_trust_options" . 50)
     ("cli_selectors.trust_selector_selection" . 50)
+    ("cli_selectors.trust_decision_description" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8109,7 +8110,7 @@
     (ensure-directories-exist parent)
     (ensure-directories-exist child)
     (ensure-directories-exist single)
-    (list :child child :single single)))
+    (list :parent parent :child child :single single)))
 
 (defun encode-trust-path (path)
   (if path
@@ -8190,6 +8191,39 @@
        (encode-trust-selector-selection
         (cadr-cli::trust-selector-selection
          (make-trust-selector-state-with-selected single 2)))))))
+
+(defun encode-trust-decision-description (cwd saved-entry)
+  (if (null saved-entry)
+      "none"
+      (let* ((state
+               (cadr-cli::make-trust-selector-state
+                :cwd cwd :saved-entry saved-entry))
+             (entry-path (getf saved-entry :path))
+             (decision-label
+               (if (getf saved-entry :decision) "trusted" "untrusted")))
+        (if (string=
+             (cadr-cli::display-directory-name entry-path)
+             (cadr-cli::trust-selector-state-cwd state))
+            (format nil "~a (~a)"
+                    decision-label
+                    (encode-trust-path entry-path))
+            (format nil "~a (inherited from ~a)"
+                    decision-label
+                    (encode-trust-path entry-path))))))
+
+(defun run-cli-selectors-trust-decision-description ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let ((child (namestring (getf fixtures :child)))
+          (parent (namestring (getf fixtures :parent)))
+          (single (namestring (getf fixtures :single))))
+      (list
+       (encode-trust-decision-description child nil)
+       (encode-trust-decision-description
+        child `(:path ,child :decision t))
+       (encode-trust-decision-description
+        child `(:path ,parent :decision t))
+       (encode-trust-decision-description
+        single `(:path ,single :decision nil))))))
 
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
@@ -8328,7 +8362,9 @@
         (project-trust-options
           (run-cli-selectors-project-trust-options))
         (trust-selector-selection
-          (run-cli-selectors-trust-selector-selection)))
+          (run-cli-selectors-trust-selector-selection))
+        (trust-decision-description
+          (run-cli-selectors-trust-decision-description)))
     (json-object
      "observed"
      (json-object
@@ -8796,7 +8832,11 @@
       "tss_child_parent" (nth 1 trust-selector-selection)
       "tss_child_distrust" (nth 2 trust-selector-selection)
       "tss_single_trust" (nth 3 trust-selector-selection)
-      "tss_single_distrust" (nth 4 trust-selector-selection))
+      "tss_single_distrust" (nth 4 trust-selector-selection)
+      "tdd_none" (nth 0 trust-decision-description)
+      "tdd_child_local" (nth 1 trust-decision-description)
+      "tdd_child_inherited" (nth 2 trust-decision-description)
+      "tdd_single_untrusted" (nth 3 trust-decision-description))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9206,7 +9246,12 @@
      (collect "cli_selectors.trust_selector_selection"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-trust-selector-selection)))))))
+                  (run-cli-selectors-trust-selector-selection))))
+     "trust_decision_description"
+     (collect "cli_selectors.trust_decision_description"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-decision-description)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10385,6 +10430,8 @@
       "src/cadr-cli/interactive/selectors/trust.lisp project-trust-options"
       "cli_selectors.trust_selector_selection"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-selection"
+      "cli_selectors.trust_decision_description"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-decision-description"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

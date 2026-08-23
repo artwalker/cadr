@@ -304,6 +304,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_visible_ids": 50,
 	"cli_selectors.project_trust_options": 50,
 	"cli_selectors.trust_selector_selection": 50,
+	"cli_selectors.trust_decision_description": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8084,7 +8085,7 @@ function stageProjectTrustOptionsFixtures() {
 	mkdirSync(parent, { recursive: true });
 	mkdirSync(child, { recursive: true });
 	mkdirSync(single, { recursive: true });
-	return { child, single };
+	return { parent, child, single };
 }
 
 function encodeTrustDecision(decision) {
@@ -8147,6 +8148,30 @@ function runCliSelectorsTrustSelectorSelection() {
 		tss_child_distrust: encodeTrustSelectorSelection(childOptions[2]),
 		tss_single_trust: encodeTrustSelectorSelection(singleOptions[0]),
 		tss_single_distrust: encodeTrustSelectorSelection(singleOptions[2]),
+	};
+}
+
+function encodeTrustDecisionDescription(cwd, savedDecision) {
+	if (savedDecision === null) {
+		return "none";
+	}
+	const options = trustManagerModule.getProjectTrustOptions(cwd);
+	const trustPath = options[0]?.savedPath;
+	const label = savedDecision.decision ? "trusted" : "untrusted";
+	const entryPath = encodeTrustPath(savedDecision.path);
+	if (savedDecision.path !== trustPath) {
+		return `${label} (inherited from ${entryPath})`;
+	}
+	return `${label} (${entryPath})`;
+}
+
+function runCliSelectorsTrustDecisionDescription() {
+	const { child, parent, single } = stageProjectTrustOptionsFixtures();
+	return {
+		tdd_none: encodeTrustDecisionDescription(child, null),
+		tdd_child_local: encodeTrustDecisionDescription(child, { path: child, decision: true }),
+		tdd_child_inherited: encodeTrustDecisionDescription(child, { path: parent, decision: true }),
+		tdd_single_untrusted: encodeTrustDecisionDescription(single, { path: single, decision: false }),
 	};
 }
 
@@ -8548,6 +8573,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeVisibleIdsResults = runCliSelectorsTreeVisibleIds();
 	const projectTrustOptionsResults = runCliSelectorsProjectTrustOptions();
 	const trustSelectorSelectionResults = runCliSelectorsTrustSelectorSelection();
+	const trustDecisionDescriptionResults = runCliSelectorsTrustDecisionDescription();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8805,6 +8831,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeVisibleIdsResults,
 		...projectTrustOptionsResults,
 		...trustSelectorSelectionResults,
+		...trustDecisionDescriptionResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9061,6 +9088,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		trust_selector_selection: await collect("cli_selectors.trust_selector_selection", () => {
 			return () => runCliSelectorsTrustSelectorSelection();
+		}),
+		trust_decision_description: await collect("cli_selectors.trust_decision_description", () => {
+			return () => runCliSelectorsTrustDecisionDescription();
 		}),
 		observed,
 	};
@@ -10277,6 +10307,8 @@ const result = {
 				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions",
 			"cli_selectors.trust_selector_selection":
 				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions index selection",
+			"cli_selectors.trust_decision_description":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts formatDecision",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

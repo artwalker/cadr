@@ -2617,6 +2617,17 @@ Observed `tss_child_trust` / `tss_child_parent` / `tss_child_distrust` /
 `tss_single_trust` / `tss_single_distrust` are exact. First Friend-MachineD freeze **3.78×**
 (242.4 / 64.1 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 193 — `cli_selectors` (trust_decision_description)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trust_decision_description` | `trust-decision-description` | `formatDecision` (`trust-selector.ts`) |
+
+Saved trust decision label for the selector header; fixture-relative paths.
+Observed `tdd_none` / `tdd_child_local` / `tdd_child_inherited` /
+`tdd_single_untrusted` are exact. First Friend-MachineD freeze **2.36×**
+(156.7 / 66.4 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
