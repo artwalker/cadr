@@ -173,5 +173,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.trust_selector_handle_raw_input` | 693.8 | 233.2 | 2.98× | 8.00× | measure-only pair (Pair 196); trust raw input dispatch | invent pause；地板优化另刀 |
 | `cli_selectors.trust_selector_ui_state` | 394.9 | 173.7 | 2.27× | 8.00× | measure-only pair (Pair 197); trust selector UI state digest | invent pause；地板优化另刀 |
 | `cli_selectors.oauth_option_status_label` | 2.1 | 0.8 | 2.46× | 8.00× | measure-only pair (Pair 198); oauth status label | invent pause；地板优化另刀 |
+| `cli_selectors.credential_entry_auth_type` | 0.6 | 0.3 | 1.87× | 8.00× | measure-only pair (Pair 199); credential kind normalization | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

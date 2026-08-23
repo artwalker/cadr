@@ -206,6 +206,7 @@ METRIC_KEYS = (
     "cli_selectors.trust_selector_handle_raw_input",
     "cli_selectors.trust_selector_ui_state",
     "cli_selectors.oauth_option_status_label",
+    "cli_selectors.credential_entry_auth_type",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

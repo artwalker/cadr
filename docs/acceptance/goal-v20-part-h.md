@@ -2690,6 +2690,18 @@ stored credential, env source, and custom source fixtures. Observed
 are exact. First Friend-MachineD freeze **2.46×** (2.1 / 0.8 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 199 — `cli_selectors` (credential_entry_auth_type)
+
+| metric | cadr | pi |
+|---|---|---|
+| `credential_entry_auth_type` | `credential-entry-auth-type` | logout credential type normalization |
+
+Maps stored credential kind strings/symbols to `oauth` or `api_key`.
+Observed `ceat_oauth` / `ceat_api_key` / `ceat_api_key_hyphen` /
+`ceat_oauth_sym` / `ceat_api_key_sym` / `ceat_oauth_mixed` /
+`ceat_api_key_upper` are exact. First Friend-MachineD freeze **1.87×**
+(0.6 / 0.3 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

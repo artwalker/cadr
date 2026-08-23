@@ -310,6 +310,7 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_handle_raw_input": 50,
 	"cli_selectors.trust_selector_ui_state": 50,
 	"cli_selectors.oauth_option_status_label": 50,
+	"cli_selectors.credential_entry_auth_type": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8413,6 +8414,32 @@ function runCliSelectorsOauthOptionStatusLabel() {
 	};
 }
 
+function credentialEntryAuthType(kind) {
+	const normalized =
+		typeof kind === "string"
+			? kind.toLowerCase()
+			: String(kind).toLowerCase().replace(/^:/, "");
+	if (normalized === "oauth") {
+		return "oauth";
+	}
+	if (normalized === "api-key" || normalized === "api_key") {
+		return "api_key";
+	}
+	throw new Error(`Unsupported credential type: ${kind}`);
+}
+
+function runCliSelectorsCredentialEntryAuthType() {
+	return {
+		ceat_oauth: credentialEntryAuthType("oauth"),
+		ceat_api_key: credentialEntryAuthType("api_key"),
+		ceat_api_key_hyphen: credentialEntryAuthType("api-key"),
+		ceat_oauth_sym: credentialEntryAuthType("oauth"),
+		ceat_api_key_sym: credentialEntryAuthType("api-key"),
+		ceat_oauth_mixed: credentialEntryAuthType("OAuth"),
+		ceat_api_key_upper: credentialEntryAuthType("API_KEY"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8817,6 +8844,7 @@ async function measureCliSelectorsSessionSearch() {
 	const trustSelectorHandleRawInputResults = runCliSelectorsTrustSelectorHandleRawInput();
 	const trustSelectorRenderLinesResults = runCliSelectorsTrustSelectorUiState();
 	const oauthOptionStatusLabelResults = runCliSelectorsOauthOptionStatusLabel();
+	const credentialEntryAuthTypeResults = runCliSelectorsCredentialEntryAuthType();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9080,6 +9108,7 @@ async function measureCliSelectorsSessionSearch() {
 		...trustSelectorHandleRawInputResults,
 		...trustSelectorRenderLinesResults,
 		...oauthOptionStatusLabelResults,
+		...credentialEntryAuthTypeResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9354,6 +9383,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_option_status_label: await collect("cli_selectors.oauth_option_status_label", () => {
 			return () => runCliSelectorsOauthOptionStatusLabel();
+		}),
+		credential_entry_auth_type: await collect("cli_selectors.credential_entry_auth_type", () => {
+			return () => runCliSelectorsCredentialEntryAuthType();
 		}),
 		observed,
 	};
@@ -10582,6 +10614,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent UI state",
 			"cli_selectors.oauth_option_status_label":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator plain label",
+			"cli_selectors.credential_entry_auth_type":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions authType",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
