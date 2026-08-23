@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_unfold_or_down`
+  (unfold/down fixtures; cadr `tree-selector-unfold-or-down`
+  vs pi `unfoldOrDown` handleInput). Friend-MachineD n=5 **1.82×**
+  (324.4 / 178.0 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_fold_or_up`
   (fold/branch-segment fixtures; cadr `tree-selector-fold-or-up`
   vs pi `foldOrUp` handleInput). Friend-MachineD n=5 **1.76×**

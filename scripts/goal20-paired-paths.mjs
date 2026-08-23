@@ -281,6 +281,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_render_lines": 20,
 	"cli_selectors.tree_move": 50,
 	"cli_selectors.tree_fold_or_up": 50,
+	"cli_selectors.tree_unfold_or_down": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6928,6 +6929,57 @@ function runCliSelectorsTreeFoldOrUp() {
 	};
 }
 
+function treeUnfoldOrDownEncodedPi(selectedId, { preFoldedIds = [] } = {}) {
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(TREE_ACTIVE_PATH_BRANCHING_ENTRIES),
+		"asst-4a",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId ?? "asst-4a",
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	for (const id of preFoldedIds) {
+		treeList.foldedNodes.add(id);
+	}
+	if (preFoldedIds.length > 0) {
+		treeList.applyFilter();
+		const visibleIds = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const nextIndex = visibleIds.indexOf(selectedId);
+		if (nextIndex >= 0) {
+			treeList.selectedIndex = nextIndex;
+		}
+	}
+	const currentId = treeList.filteredNodes[treeList.selectedIndex]?.node.entry.id;
+	if (currentId && treeList.foldedNodes.has(currentId)) {
+		treeList.foldedNodes.delete(currentId);
+		treeList.applyFilter();
+	} else {
+		treeList.selectedIndex = treeList.findBranchSegmentStart("down");
+	}
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node.entry.id ?? "null";
+	const visible = treeList.filteredNodes.map((node) => node.node.entry.id).join(",");
+	return `${selected}|${visible}`;
+}
+
+function runCliSelectorsTreeUnfoldOrDown() {
+	return {
+		tuod_unfold: treeUnfoldOrDownEncodedPi("asst-2", { preFoldedIds: ["asst-2"] }),
+		tuod_leaf: treeUnfoldOrDownEncodedPi("asst-4a"),
+		tuod_mid: treeUnfoldOrDownEncodedPi("user-4a"),
+		tuod_prefold: treeUnfoldOrDownEncodedPi("user-3a", { preFoldedIds: ["asst-2"] }),
+		tuod_root: treeUnfoldOrDownEncodedPi("user-1"),
+		tuod_branch_b: treeUnfoldOrDownEncodedPi("user-4b"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7303,6 +7355,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeRenderLinesResults = runCliSelectorsTreeRenderLines();
 	const treeMoveResults = runCliSelectorsTreeMove();
 	const treeFoldOrUpResults = runCliSelectorsTreeFoldOrUp();
+	const treeUnfoldOrDownResults = runCliSelectorsTreeUnfoldOrDown();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7537,6 +7590,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeRenderLinesResults,
 		...treeMoveResults,
 		...treeFoldOrUpResults,
+		...treeUnfoldOrDownResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7724,6 +7778,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_fold_or_up: await collect("cli_selectors.tree_fold_or_up", () => {
 			return () => runCliSelectorsTreeFoldOrUp();
+		}),
+		tree_unfold_or_down: await collect("cli_selectors.tree_unfold_or_down", () => {
+			return () => runCliSelectorsTreeUnfoldOrDown();
 		}),
 		observed,
 	};
@@ -8894,6 +8951,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList selection index wrap",
 			"cli_selectors.tree_fold_or_up":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts foldOrUp handleInput",
+			"cli_selectors.tree_unfold_or_down":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts unfoldOrDown handleInput",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

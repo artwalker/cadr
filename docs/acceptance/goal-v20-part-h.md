@@ -2362,7 +2362,18 @@ Observed `tm_down` / `tm_up` / `tm_wrap_up` / `tm_wrap_down` / `tm_page` /
 Fold branch point or jump to branch-segment start on branching fixtures.
 Observed `tfo_fold` / `tfo_leaf` / `tfo_mid` / `tfo_prefold` / `tfo_root` /
 `tfo_branch_b` are exact. First Friend-MachineD freeze **1.76×**
-(1,031.1 / 585.2 µs), ceiling 8.0. Same commit no optimize.
+(316.9 / 179.6 µs), ceiling 8.0. Same commit no optimize.
+
+### Pair 170 — `cli_selectors` (tree_unfold_or_down)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_unfold_or_down` | `tree-selector-unfold-or-down` | `unfoldOrDown` handleInput (`tree-selector.ts`) |
+
+Unfold folded branch or move down on branching fixtures.
+Observed `tuod_unfold` / `tuod_leaf` / `tuod_mid` / `tuod_prefold` / `tuod_root` /
+`tuod_branch_b` are exact. First Friend-MachineD freeze **1.82×**
+(324.4 / 178.0 µs), ceiling 8.0. Same commit no optimize.
 
 ## 2. How to run
 
