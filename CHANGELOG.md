@@ -21,6 +21,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_start_label_edit`
+  (label-edit start fixtures; cadr `tree-selector-start-label-edit`
+  vs pi `showLabelInput`). Friend-MachineD n=5 **2.40×**
+  (150.8 / 62.9 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `cli_selectors.tree_toggle_label_timestamps`
+  (label-timestamp toggle fixtures; cadr `tree-selector-toggle-label-timestamps`
+  vs pi `showLabelTimestamps` toggle). Friend-MachineD n=5 **0.04×**
+  (4.3 / 118.4 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_copy_selected`
   (copy-text fixtures; cadr `tree-selector-copy-selected`
   vs pi `copySelected`). Friend-MachineD n=5 **2.87×**

@@ -2430,6 +2430,17 @@ Observed `ttlt_off` / `ttlt_on` / `ttlt_twice` / `ttlt_notools` / `ttlt_labeled`
 `ttlt_thrice` are exact. First Friend-MachineD freeze **0.04×**
 (4.3 / 118.4 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 176 — `cli_selectors` (tree_start_label_edit)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_start_label_edit` | `tree-selector-start-label-edit` | `showLabelInput` (`tree-selector.ts`) |
+
+Enter label-edit mode for selected entry on apply-filter fixtures.
+Observed `tsle_pinned` / `tsle_plain` / `tsle_assistant` / `tsle_bookmark` /
+`tsle_empty` / `tsle_noselect` are exact. First Friend-MachineD freeze **2.40×**
+(150.8 / 62.9 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

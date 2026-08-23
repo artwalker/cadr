@@ -363,6 +363,7 @@
     ("cli_selectors.tree_set_filter" . 50)
     ("cli_selectors.tree_copy_selected" . 50)
     ("cli_selectors.tree_toggle_label_timestamps" . 50)
+    ("cli_selectors.tree_start_label_edit" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7524,6 +7525,41 @@
     :toggles 1 :filter "labeled-only")
    (tree-toggle-label-timestamps-encoded :toggles 3)))
 
+(defun tree-start-label-edit-encoded (selected-id &key empty-p no-select-p)
+  (let* ((entries (if empty-p '() *tree-apply-filter-entries*))
+         (current-leaf-id (if empty-p nil "user-3"))
+         (state
+           (if empty-p
+               (cadr-cli::%make-tree-selector-state
+                :entries '() :ordered-entries '())
+               (cadr-cli::make-tree-selector-state
+                :entries entries
+                :current-leaf-id current-leaf-id
+                :initial-selected-id
+                (or selected-id current-leaf-id)))))
+    (when no-select-p
+      (setf (cadr-cli::tree-selector-state-selected-id state)
+            nil))
+    (when (and selected-id (not empty-p) (not no-select-p))
+      (cadr-cli::tree-selector-select-id state selected-id))
+    (cadr-cli::tree-selector-start-label-edit state)
+    (format nil "~a|~a|~a"
+            (case (cadr-cli::tree-selector-state-mode state)
+              (:label "label")
+              (otherwise "list"))
+            (or (cadr-cli::tree-selector-state-label-edit-id state)
+                "null")
+            (cadr-cli::tree-selector-state-label-input state))))
+
+(defun run-cli-selectors-tree-start-label-edit ()
+  (list
+   (tree-start-label-edit-encoded "user-3")
+   (tree-start-label-edit-encoded "user-1")
+   (tree-start-label-edit-encoded "asst-1")
+   (tree-start-label-edit-encoded "label-1")
+   (tree-start-label-edit-encoded nil :empty-p t)
+   (tree-start-label-edit-encoded nil :no-select-p t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7627,7 +7663,9 @@
         (tree-copy-selected
           (run-cli-selectors-tree-copy-selected))
         (tree-toggle-label-timestamps
-          (run-cli-selectors-tree-toggle-label-timestamps)))
+          (run-cli-selectors-tree-toggle-label-timestamps))
+        (tree-start-label-edit
+          (run-cli-selectors-tree-start-label-edit)))
     (json-object
      "observed"
      (json-object
@@ -8002,7 +8040,13 @@
       "ttlt_twice" (nth 2 tree-toggle-label-timestamps)
       "ttlt_notools" (nth 3 tree-toggle-label-timestamps)
       "ttlt_labeled" (nth 4 tree-toggle-label-timestamps)
-      "ttlt_thrice" (nth 5 tree-toggle-label-timestamps))
+      "ttlt_thrice" (nth 5 tree-toggle-label-timestamps)
+      "tsle_pinned" (nth 0 tree-start-label-edit)
+      "tsle_plain" (nth 1 tree-start-label-edit)
+      "tsle_assistant" (nth 2 tree-start-label-edit)
+      "tsle_bookmark" (nth 3 tree-start-label-edit)
+      "tsle_empty" (nth 4 tree-start-label-edit)
+      "tsle_noselect" (nth 5 tree-start-label-edit))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8327,7 +8371,12 @@
      (collect "cli_selectors.tree_toggle_label_timestamps"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-toggle-label-timestamps)))))))
+                  (run-cli-selectors-tree-toggle-label-timestamps))))
+     "tree_start_label_edit"
+     (collect "cli_selectors.tree_start_label_edit"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-start-label-edit)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9472,6 +9521,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-copy-selected"
       "cli_selectors.tree_toggle_label_timestamps"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-toggle-label-timestamps"
+      "cli_selectors.tree_start_label_edit"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-start-label-edit"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

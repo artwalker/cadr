@@ -152,5 +152,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.tree_fold_or_up` | 316.9 | 179.6 | 1.76× | 8.00× | measure-only pair (Pair 169); fold or branch-segment up | invent pause；地板优化另刀 |
 | `cli_selectors.tree_unfold_or_down` | 324.4 | 178.0 | 1.82× | 8.00× | measure-only pair (Pair 170); unfold or move down | invent pause；地板优化另刀 |
 | `cli_selectors.tree_branch_segment_id` | 264.9 | 145.6 | 1.82× | 8.00× | measure-only pair (Pair 171); branch-segment start up/down | invent pause；地板优化另刀 |
+| `cli_selectors.tree_copy_selected` | 142.5 | 49.6 | 2.87× | 8.00× | measure-only pair (Pair 174); copy selected entry text | invent pause；地板优化另刀 |
+| `cli_selectors.tree_start_label_edit` | 150.8 | 62.9 | 2.40× | 8.00× | measure-only pair (Pair 176); enter label-edit mode | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

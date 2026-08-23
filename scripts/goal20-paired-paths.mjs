@@ -287,6 +287,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_set_filter": 50,
 	"cli_selectors.tree_copy_selected": 50,
 	"cli_selectors.tree_toggle_label_timestamps": 50,
+	"cli_selectors.tree_start_label_edit": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7183,6 +7184,52 @@ function runCliSelectorsTreeToggleLabelTimestamps() {
 	};
 }
 
+function treeStartLabelEditEncodedPi(selectedId, { empty = false, noSelect = false } = {}) {
+	const entries = empty ? [] : TREE_APPLY_FILTER_ENTRIES;
+	const currentLeafId = empty ? null : "user-3";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		entries.length === 0 ? [] : flatEntriesToSessionTree(entries),
+		currentLeafId,
+		16,
+		() => {},
+		() => {},
+		undefined,
+		noSelect ? undefined : (selectedId ?? currentLeafId),
+		"default",
+	);
+	const treeList = component.getTreeList();
+	if (!empty && !noSelect && selectedId) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+	}
+	if (noSelect && !empty) {
+		treeList.selectedIndex = -1;
+	}
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node;
+	if (selected) {
+		component.showLabelInput(selected.entry.id, selected.label);
+	}
+	const labelInput = component.labelInput;
+	const mode = labelInput ? "label" : "list";
+	const editId = labelInput?.entryId ?? "null";
+	const input = labelInput?.input?.getValue?.() ?? "";
+	return `${mode}|${editId}|${input}`;
+}
+
+function runCliSelectorsTreeStartLabelEdit() {
+	return {
+		tsle_pinned: treeStartLabelEditEncodedPi("user-3"),
+		tsle_plain: treeStartLabelEditEncodedPi("user-1"),
+		tsle_assistant: treeStartLabelEditEncodedPi("asst-1"),
+		tsle_bookmark: treeStartLabelEditEncodedPi("label-1"),
+		tsle_empty: treeStartLabelEditEncodedPi(null, { empty: true }),
+		tsle_noselect: treeStartLabelEditEncodedPi(null, { noSelect: true }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7564,6 +7611,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeSetFilterResults = runCliSelectorsTreeSetFilter();
 	const treeCopySelectedResults = runCliSelectorsTreeCopySelected();
 	const treeToggleLabelTimestampsResults = runCliSelectorsTreeToggleLabelTimestamps();
+	const treeStartLabelEditResults = runCliSelectorsTreeStartLabelEdit();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7804,6 +7852,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeSetFilterResults,
 		...treeCopySelectedResults,
 		...treeToggleLabelTimestampsResults,
+		...treeStartLabelEditResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8009,6 +8058,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_toggle_label_timestamps: await collect("cli_selectors.tree_toggle_label_timestamps", () => {
 			return () => runCliSelectorsTreeToggleLabelTimestamps();
+		}),
+		tree_start_label_edit: await collect("cli_selectors.tree_start_label_edit", () => {
+			return () => runCliSelectorsTreeStartLabelEdit();
 		}),
 		observed,
 	};
@@ -9191,6 +9243,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts copySelected",
 			"cli_selectors.tree_toggle_label_timestamps":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts showLabelTimestamps toggle",
+			"cli_selectors.tree_start_label_edit":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts showLabelInput",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
