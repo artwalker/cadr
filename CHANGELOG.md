@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.trust_selector_move`
+  (wrap-move fixtures; cadr `trust-selector-move`
+  vs pi wrap index on trust option count). Friend-MachineD n=5 **2.46×**
+  (328.1 / 133.3 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.trust_decision_description`
   (saved-decision fixtures; cadr `trust-decision-description`
   vs pi `formatDecision`). Friend-MachineD n=5 **2.36×**

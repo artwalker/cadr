@@ -381,6 +381,7 @@
     ("cli_selectors.project_trust_options" . 50)
     ("cli_selectors.trust_selector_selection" . 50)
     ("cli_selectors.trust_decision_description" . 50)
+    ("cli_selectors.trust_selector_move" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8225,6 +8226,24 @@
        (encode-trust-decision-description
         single `(:path ,single :decision nil))))))
 
+(defun trust-selector-move-encoded (cwd selected delta)
+  (let ((state (make-trust-selector-state-with-selected cwd selected)))
+    (cadr-cli::trust-selector-move state delta)
+    (write-to-string (cadr-cli::trust-selector-state-selected state))))
+
+(defun run-cli-selectors-trust-selector-move ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let ((child (namestring (getf fixtures :child)))
+          (single (namestring (getf fixtures :single))))
+      (list
+       (trust-selector-move-encoded child 0 1)
+       (trust-selector-move-encoded child 1 -1)
+       (trust-selector-move-encoded child 0 -1)
+       (trust-selector-move-encoded child 2 1)
+       (trust-selector-move-encoded child 1 10)
+       (trust-selector-move-encoded single 0 1)
+       (trust-selector-move-encoded single 1 1)))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8364,7 +8383,9 @@
         (trust-selector-selection
           (run-cli-selectors-trust-selector-selection))
         (trust-decision-description
-          (run-cli-selectors-trust-decision-description)))
+          (run-cli-selectors-trust-decision-description))
+        (trust-selector-move
+          (run-cli-selectors-trust-selector-move)))
     (json-object
      "observed"
      (json-object
@@ -8836,7 +8857,14 @@
       "tdd_none" (nth 0 trust-decision-description)
       "tdd_child_local" (nth 1 trust-decision-description)
       "tdd_child_inherited" (nth 2 trust-decision-description)
-      "tdd_single_untrusted" (nth 3 trust-decision-description))
+      "tdd_single_untrusted" (nth 3 trust-decision-description)
+      "tsm_child_down" (nth 0 trust-selector-move)
+      "tsm_child_up" (nth 1 trust-selector-move)
+      "tsm_child_wrap_up" (nth 2 trust-selector-move)
+      "tsm_child_wrap_down" (nth 3 trust-selector-move)
+      "tsm_child_page" (nth 4 trust-selector-move)
+      "tsm_single_down" (nth 5 trust-selector-move)
+      "tsm_single_wrap" (nth 6 trust-selector-move))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9251,7 +9279,12 @@
      (collect "cli_selectors.trust_decision_description"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-trust-decision-description)))))))
+                  (run-cli-selectors-trust-decision-description))))
+     "trust_selector_move"
+     (collect "cli_selectors.trust_selector_move"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-move)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10432,6 +10465,8 @@
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-selection"
       "cli_selectors.trust_decision_description"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-decision-description"
+      "cli_selectors.trust_selector_move"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-move"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

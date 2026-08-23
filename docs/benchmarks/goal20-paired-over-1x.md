@@ -168,5 +168,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.project_trust_options` | 72.9 | 62.9 | 1.16× | 8.00× | measure-only pair (Pair 191); trust option list | invent pause；地板优化另刀 |
 | `cli_selectors.trust_selector_selection` | 242.4 | 64.1 | 3.78× | 8.00× | measure-only pair (Pair 192); trust selection at index | invent pause；地板优化另刀 |
 | `cli_selectors.trust_decision_description` | 156.7 | 66.4 | 2.36× | 8.00× | measure-only pair (Pair 193); saved decision label | invent pause；地板优化另刀 |
+| `cli_selectors.trust_selector_move` | 328.1 | 133.3 | 2.46× | 8.00× | measure-only pair (Pair 194); trust list navigation | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

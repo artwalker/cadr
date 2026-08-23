@@ -2628,6 +2628,18 @@ Observed `tdd_none` / `tdd_child_local` / `tdd_child_inherited` /
 `tdd_single_untrusted` are exact. First Friend-MachineD freeze **2.36×**
 (156.7 / 66.4 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 194 — `cli_selectors` (trust_selector_move)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trust_selector_move` | `trust-selector-move` | wrap index on `getProjectTrustOptions` count |
+
+Trust selector list navigation; encoded as resulting selected index.
+Observed `tsm_child_down` / `tsm_child_up` / `tsm_child_wrap_up` /
+`tsm_child_wrap_down` / `tsm_child_page` / `tsm_single_down` / `tsm_single_wrap`
+are exact. First Friend-MachineD freeze **2.46×**
+(328.1 / 133.3 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
