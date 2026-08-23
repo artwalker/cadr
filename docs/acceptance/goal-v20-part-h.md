@@ -2408,6 +2408,17 @@ Observed `tsf_default` / `tsf_user_only` / `tsf_no_tools` / `tsf_fold_clear` /
 `tsf_labeled_only` / `tsf_reselect` are exact. First Friend-MachineD freeze **0.60×**
 (71.4 / 119.0 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 174 — `cli_selectors` (tree_copy_selected)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_copy_selected` | `tree-selector-copy-selected` | `copySelected` (`tree-selector.ts`) |
+
+Copy selected entry text via callback on apply-filter fixtures.
+Observed `tcs_user` / `tcs_assistant` / `tcs_tool` / `tcs_empty` / `tcs_label` /
+`tcs_none` are exact. First Friend-MachineD freeze **2.87×**
+(142.5 / 49.6 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

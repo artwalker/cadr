@@ -285,6 +285,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_branch_segment_id": 50,
 	"cli_selectors.tree_set_query": 50,
 	"cli_selectors.tree_set_filter": 50,
+	"cli_selectors.tree_copy_selected": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7109,6 +7110,49 @@ function runCliSelectorsTreeSetFilter() {
 	};
 }
 
+function treeCopySelectedEncodedPi(selectedId, { empty = false } = {}) {
+	const entries = empty ? [] : TREE_APPLY_FILTER_ENTRIES;
+	const currentLeafId = empty ? null : "user-3";
+	let copied = "null";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		entries.length === 0 ? [] : flatEntriesToSessionTree(entries),
+		currentLeafId,
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId ?? currentLeafId ?? undefined,
+		"default",
+	);
+	component.onCopy = (text) => {
+		copied = text ?? "null";
+	};
+	const treeList = component.getTreeList();
+	if (selectedId && !empty) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+	}
+	if (empty) {
+		treeList.selectedIndex = -1;
+	}
+	treeList.copySelected();
+	return copied;
+}
+
+function runCliSelectorsTreeCopySelected() {
+	return {
+		tcs_user: treeCopySelectedEncodedPi("user-1"),
+		tcs_assistant: treeCopySelectedEncodedPi("asst-1"),
+		tcs_tool: treeCopySelectedEncodedPi("tool-1"),
+		tcs_empty: treeCopySelectedEncodedPi("asst-empty"),
+		tcs_label: treeCopySelectedEncodedPi("label-1"),
+		tcs_none: treeCopySelectedEncodedPi(null, { empty: true }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7488,6 +7532,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeBranchSegmentIdResults = runCliSelectorsTreeBranchSegmentId();
 	const treeSetQueryResults = runCliSelectorsTreeSetQuery();
 	const treeSetFilterResults = runCliSelectorsTreeSetFilter();
+	const treeCopySelectedResults = runCliSelectorsTreeCopySelected();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7726,6 +7771,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeBranchSegmentIdResults,
 		...treeSetQueryResults,
 		...treeSetFilterResults,
+		...treeCopySelectedResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7925,6 +7971,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_set_filter: await collect("cli_selectors.tree_set_filter", () => {
 			return () => runCliSelectorsTreeSetFilter();
+		}),
+		tree_copy_selected: await collect("cli_selectors.tree_copy_selected", () => {
+			return () => runCliSelectorsTreeCopySelected();
 		}),
 		observed,
 	};
@@ -9103,6 +9152,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList searchQuery + applyFilter",
 			"cli_selectors.tree_set_filter":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList filterMode + applyFilter",
+			"cli_selectors.tree_copy_selected":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts copySelected",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

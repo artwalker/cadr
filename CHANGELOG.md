@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_copy_selected`
+  (copy-text fixtures; cadr `tree-selector-copy-selected`
+  vs pi `copySelected`). Friend-MachineD n=5 **2.87×**
+  (142.5 / 49.6 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_set_filter`
   (filter-mode fixtures; cadr `tree-selector-set-filter`
   vs pi `TreeList` filterMode + applyFilter). Friend-MachineD n=5 **0.60×**

@@ -361,6 +361,7 @@
     ("cli_selectors.tree_branch_segment_id" . 50)
     ("cli_selectors.tree_set_query" . 50)
     ("cli_selectors.tree_set_filter" . 50)
+    ("cli_selectors.tree_copy_selected" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7462,6 +7463,42 @@
    (tree-set-filter-encoded
     :filter "user-only" :selected-id "tool-1")))
 
+(defun tree-copy-selected-encoded (selected-id &key empty-p)
+  (let ((copied nil)
+        (entries (if empty-p '() *tree-apply-filter-entries*))
+        (current-leaf-id (if empty-p nil "user-3")))
+    (let ((state
+            (if empty-p
+                (cadr-cli::%make-tree-selector-state
+                 :entries '() :ordered-entries '()
+                 :copy-callback
+                 (lambda (text)
+                   (setf copied text)))
+                (cadr-cli::make-tree-selector-state
+                 :entries entries
+                 :current-leaf-id current-leaf-id
+                 :initial-selected-id
+                 (or selected-id current-leaf-id)
+                 :copy-callback
+                 (lambda (text)
+                   (setf copied text))))))
+      (when (and selected-id (not empty-p))
+        (cadr-cli::tree-selector-select-id state selected-id))
+      (when empty-p
+        (setf (cadr-cli::tree-selector-state-selected-id state)
+              nil))
+      (cadr-cli::tree-selector-copy-selected state)
+      (if copied copied "null"))))
+
+(defun run-cli-selectors-tree-copy-selected ()
+  (list
+   (tree-copy-selected-encoded "user-1")
+   (tree-copy-selected-encoded "asst-1")
+   (tree-copy-selected-encoded "tool-1")
+   (tree-copy-selected-encoded "asst-empty")
+   (tree-copy-selected-encoded "label-1")
+   (tree-copy-selected-encoded nil :empty-p t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7561,7 +7598,9 @@
         (tree-set-query
           (run-cli-selectors-tree-set-query))
         (tree-set-filter
-          (run-cli-selectors-tree-set-filter)))
+          (run-cli-selectors-tree-set-filter))
+        (tree-copy-selected
+          (run-cli-selectors-tree-copy-selected)))
     (json-object
      "observed"
      (json-object
@@ -7924,7 +7963,13 @@
       "tsf_no_tools" (nth 2 tree-set-filter)
       "tsf_fold_clear" (nth 3 tree-set-filter)
       "tsf_labeled_only" (nth 4 tree-set-filter)
-      "tsf_reselect" (nth 5 tree-set-filter))
+      "tsf_reselect" (nth 5 tree-set-filter)
+      "tcs_user" (nth 0 tree-copy-selected)
+      "tcs_assistant" (nth 1 tree-copy-selected)
+      "tcs_tool" (nth 2 tree-copy-selected)
+      "tcs_empty" (nth 3 tree-copy-selected)
+      "tcs_label" (nth 4 tree-copy-selected)
+      "tcs_none" (nth 5 tree-copy-selected))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8239,7 +8284,12 @@
      (collect "cli_selectors.tree_set_filter"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-set-filter)))))))
+                  (run-cli-selectors-tree-set-filter))))
+     "tree_copy_selected"
+     (collect "cli_selectors.tree_copy_selected"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-copy-selected)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9380,6 +9430,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-set-query"
       "cli_selectors.tree_set_filter"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-set-filter"
+      "cli_selectors.tree_copy_selected"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-copy-selected"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
