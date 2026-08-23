@@ -349,6 +349,7 @@
     ("cli_selectors.tree_horizontal_viewport" . 50)
     ("cli_selectors.tree_help_keys" . 50)
     ("cli_selectors.tree_help_lines" . 50)
+    ("cli_selectors.tree_active_path" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6981,6 +6982,59 @@
      (tree-help-lines-encoded state 20)
      (tree-help-lines-encoded state 12))))
 
+(defparameter *tree-active-path-branching-entries*
+  '((:id "user-1" :parent-id nil
+     :type :message :role :user
+     :text "first message")
+    (:id "asst-1" :parent-id "user-1"
+     :type :message :role :assistant
+     :text "response 1")
+    (:id "user-2" :parent-id "asst-1"
+     :type :message :role :user
+     :text "second message")
+    (:id "asst-2" :parent-id "user-2"
+     :type :message :role :assistant
+     :text "response 2")
+    (:id "user-3a" :parent-id "asst-2"
+     :type :message :role :user
+     :text "branch A start")
+    (:id "asst-3a" :parent-id "user-3a"
+     :type :message :role :assistant
+     :text "branch A response")
+    (:id "user-4a" :parent-id "asst-3a"
+     :type :message :role :user
+     :text "branch A deep")
+    (:id "asst-4a" :parent-id "user-4a"
+     :type :message :role :assistant
+     :text "branch A leaf")
+    (:id "user-3b" :parent-id "asst-2"
+     :type :message :role :user
+     :text "branch B start")
+    (:id "asst-3b" :parent-id "user-3b"
+     :type :message :role :assistant
+     :text "branch B response")
+    (:id "user-4b" :parent-id "asst-3b"
+     :type :message :role :user
+     :text "branch B deep")))
+
+(defun tree-active-path-encoded (entries leaf-id)
+  (format nil "~{~a~^,~}"
+          (sort
+           (loop for id being the hash-keys
+                 of (cadr-cli::tree-selector-active-path
+                     entries leaf-id)
+                 collect id)
+           #'string<)))
+
+(defun run-cli-selectors-tree-active-path ()
+  (let ((entries *tree-active-path-branching-entries*))
+    (list
+     (tree-active-path-encoded entries "asst-4a")
+     (tree-active-path-encoded entries "user-2")
+     (tree-active-path-encoded entries "user-1")
+     (tree-active-path-encoded entries nil)
+     (tree-active-path-encoded entries "missing"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7056,7 +7110,9 @@
         (tree-help-keys
           (run-cli-selectors-tree-help-keys))
         (tree-help-lines
-          (run-cli-selectors-tree-help-lines)))
+          (run-cli-selectors-tree-help-lines))
+        (tree-active-path
+          (run-cli-selectors-tree-active-path)))
     (json-object
      "observed"
      (json-object
@@ -7350,7 +7406,12 @@
       "thl_w50" (nth 1 tree-help-lines)
       "thl_w30" (nth 2 tree-help-lines)
       "thl_w20" (nth 3 tree-help-lines)
-      "thl_w12" (nth 4 tree-help-lines))
+      "thl_w12" (nth 4 tree-help-lines)
+      "tap_leaf" (nth 0 tree-active-path)
+      "tap_mid" (nth 1 tree-active-path)
+      "tap_root" (nth 2 tree-active-path)
+      "tap_nil" (nth 3 tree-active-path)
+      "tap_missing" (nth 4 tree-active-path))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7605,7 +7666,12 @@
      (collect "cli_selectors.tree_help_lines"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-help-lines)))))))
+                  (run-cli-selectors-tree-help-lines))))
+     "tree_active_path"
+     (collect "cli_selectors.tree_active_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-active-path)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8722,6 +8788,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-keys"
       "cli_selectors.tree_help_lines"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-lines"
+      "cli_selectors.tree_active_path"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-active-path"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

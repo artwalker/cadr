@@ -273,6 +273,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_horizontal_viewport": 50,
 	"cli_selectors.tree_help_keys": 50,
 	"cli_selectors.tree_help_lines": 50,
+	"cli_selectors.tree_active_path": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6488,6 +6489,46 @@ function runCliSelectorsTreeHelpLines() {
 	};
 }
 
+const TREE_ACTIVE_PATH_BRANCHING_ENTRIES = [
+	{ id: "user-1", parentId: null, type: "message", role: "user", text: "first message" },
+	{ id: "asst-1", parentId: "user-1", type: "message", role: "assistant", text: "response 1" },
+	{ id: "user-2", parentId: "asst-1", type: "message", role: "user", text: "second message" },
+	{ id: "asst-2", parentId: "user-2", type: "message", role: "assistant", text: "response 2" },
+	{ id: "user-3a", parentId: "asst-2", type: "message", role: "user", text: "branch A start" },
+	{ id: "asst-3a", parentId: "user-3a", type: "message", role: "assistant", text: "branch A response" },
+	{ id: "user-4a", parentId: "asst-3a", type: "message", role: "user", text: "branch A deep" },
+	{ id: "asst-4a", parentId: "user-4a", type: "message", role: "assistant", text: "branch A leaf" },
+	{ id: "user-3b", parentId: "asst-2", type: "message", role: "user", text: "branch B start" },
+	{ id: "asst-3b", parentId: "user-3b", type: "message", role: "assistant", text: "branch B response" },
+	{ id: "user-4b", parentId: "asst-3b", type: "message", role: "user", text: "branch B deep" },
+];
+
+function treeActivePathEncodedPi(entries, leafId) {
+	const byId = new Map(entries.map((entry) => [entry.id, entry]));
+	const ids = [];
+	let current = leafId;
+	while (current) {
+		const entry = byId.get(current);
+		if (!entry) {
+			break;
+		}
+		ids.push(current);
+		current = entry.parentId ?? null;
+	}
+	return ids.sort().join(",");
+}
+
+function runCliSelectorsTreeActivePath() {
+	const entries = TREE_ACTIVE_PATH_BRANCHING_ENTRIES;
+	return {
+		tap_leaf: treeActivePathEncodedPi(entries, "asst-4a"),
+		tap_mid: treeActivePathEncodedPi(entries, "user-2"),
+		tap_root: treeActivePathEncodedPi(entries, "user-1"),
+		tap_nil: treeActivePathEncodedPi(entries, null),
+		tap_missing: treeActivePathEncodedPi(entries, "missing"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6855,6 +6896,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeHorizontalViewportResults = runCliSelectorsTreeHorizontalViewport();
 	const treeHelpKeysResults = runCliSelectorsTreeHelpKeys();
 	const treeHelpLinesResults = runCliSelectorsTreeHelpLines();
+	const treeActivePathResults = runCliSelectorsTreeActivePath();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7081,6 +7123,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeHorizontalViewportResults,
 		...treeHelpKeysResults,
 		...treeHelpLinesResults,
+		...treeActivePathResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7244,6 +7287,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_help_lines: await collect("cli_selectors.tree_help_lines", () => {
 			return () => runCliSelectorsTreeHelpLines();
+		}),
+		tree_active_path: await collect("cli_selectors.tree_active_path", () => {
+			return () => runCliSelectorsTreeActivePath();
 		}),
 		observed,
 	};
@@ -8398,6 +8444,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatHelpKeys",
 			"cli_selectors.tree_help_lines":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeHelp.render",
+			"cli_selectors.tree_active_path":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts buildActivePath",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

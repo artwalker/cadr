@@ -2278,6 +2278,16 @@ Observed `thl_w80` / `thl_w50` / `thl_w30` / `thl_w20` / `thl_w12` are exact. Fi
 Friend-MachineD freeze **3.33×** (979.6 / 293.8 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 162 — `cli_selectors` (tree_active_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_active_path` | `tree-selector-active-path` | `buildActivePath` (`tree-selector.ts`) |
+
+Leaf-to-root ancestor walk on branching session-tree fixtures. Observed `tap_leaf` /
+`tap_mid` / `tap_root` / `tap_nil` / `tap_missing` are exact. First Friend-MachineD
+freeze **2.43×** (11.8 / 4.8 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
