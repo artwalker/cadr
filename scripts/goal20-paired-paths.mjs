@@ -291,6 +291,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_confirm_label": 50,
 	"cli_selectors.tree_cancel_label": 50,
 	"cli_selectors.tree_handle_raw_input": 50,
+	"cli_selectors.tree_handle_event": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7512,6 +7513,83 @@ function runCliSelectorsTreeHandleRawInput() {
 	};
 }
 
+function treeHandleEventEncodedPi(selectedId, eventKind, { text = null, query = "" } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	let selectId = "null";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		(id) => {
+			selectId = id;
+		},
+		() => {},
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	if (query) {
+		treeList.searchQuery = query;
+		treeList.foldedNodes.clear();
+		treeList.applyFilter();
+		const visibleIds = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const nextIndex = visibleIds.indexOf(selectedId);
+		if (nextIndex >= 0) {
+			treeList.selectedIndex = nextIndex;
+		}
+	}
+	const manager = makeTreeSelectorKeybindingsPi();
+	const keyFor = (name) => manager.getKeys(name)[0];
+	switch (eventKind) {
+		case "up":
+			treeList.handleInput(keyFor("tui.select.up"));
+			break;
+		case "down":
+			treeList.handleInput(keyFor("tui.select.down"));
+			break;
+		case "enter":
+			treeList.handleInput(keyFor("tui.select.confirm"));
+			break;
+		case "escape":
+			treeList.handleInput(keyFor("tui.select.cancel"));
+			break;
+		case "backspace":
+			treeList.handleInput(keyFor("tui.editor.deleteCharBackward"));
+			break;
+		case "text":
+			treeList.handleInput(text ?? "");
+			break;
+		default:
+			break;
+	}
+	let action = "null";
+	let value = "null";
+	if (eventKind === "enter") {
+		action = "select";
+		value = selectId;
+	} else if (eventKind === "escape" && !query) {
+		action = "cancel";
+	} else if (eventKind !== "tab") {
+		action = "changed";
+	}
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node.entry.id ?? "null";
+	return `${action}|${value}|${selected}|${treeList.searchQuery}`;
+}
+
+function runCliSelectorsTreeHandleEvent() {
+	return {
+		the_down: treeHandleEventEncodedPi("user-1", "down"),
+		the_up: treeHandleEventEncodedPi("user-2", "up"),
+		the_enter: treeHandleEventEncodedPi("user-3", "enter"),
+		the_text: treeHandleEventEncodedPi("user-3", "text", { text: "pin" }),
+		the_esc_clear: treeHandleEventEncodedPi("user-3", "escape", { query: "branch" }),
+		the_nop: treeHandleEventEncodedPi("user-1", "tab"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7897,6 +7975,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeConfirmLabelResults = runCliSelectorsTreeConfirmLabel();
 	const treeCancelLabelResults = runCliSelectorsTreeCancelLabel();
 	const treeHandleRawInputResults = runCliSelectorsTreeHandleRawInput();
+	const treeHandleEventResults = runCliSelectorsTreeHandleEvent();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8141,6 +8220,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeConfirmLabelResults,
 		...treeCancelLabelResults,
 		...treeHandleRawInputResults,
+		...treeHandleEventResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8358,6 +8438,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_handle_raw_input: await collect("cli_selectors.tree_handle_raw_input", () => {
 			return () => runCliSelectorsTreeHandleRawInput();
+		}),
+		tree_handle_event: await collect("cli_selectors.tree_handle_event", () => {
+			return () => runCliSelectorsTreeHandleEvent();
 		}),
 		observed,
 	};
@@ -9548,6 +9631,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput onCancel",
 			"cli_selectors.tree_handle_raw_input":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.handleInput",
+			"cli_selectors.tree_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.handleInput (structured events)",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

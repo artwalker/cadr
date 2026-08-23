@@ -2474,6 +2474,17 @@ Observed `thri_copy` / `thri_edit` / `thri_fold` / `thri_notools` /
 `thri_lcancel` / `thri_nop` are exact. First Friend-MachineD freeze **4.06×**
 (1068.1 / 263.3 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 180 — `cli_selectors` (tree_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_handle_event` | `tree-selector-handle-event` | `TreeList.handleInput` (`tree-selector.ts`) |
+
+Structured event dispatch: move, select, search text, escape clear/cancel, noop.
+Observed `the_down` / `the_up` / `the_enter` / `the_text` / `the_esc_clear` /
+`the_nop` are exact. First Friend-MachineD freeze **0.73×**
+(245.2 / 333.8 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
