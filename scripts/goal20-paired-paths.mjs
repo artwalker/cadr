@@ -276,6 +276,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_active_path": 50,
 	"cli_selectors.tree_nearest_visible_id": 50,
 	"cli_selectors.tree_prioritize_active": 50,
+	"cli_selectors.tree_entry_map": 50,
 	"cli_selectors.tree_rebuild_visible_maps": 50,
 	"cli_selectors.tree_apply_filter": 50,
 	"cli_selectors.tree_render_lines": 20,
@@ -6616,6 +6617,30 @@ function runCliSelectorsTreePrioritizeActive() {
 	};
 }
 
+function treeEntryMapEncodedPi(entries) {
+	const entryMap = new Map(entries.map((entry) => [entry.id, entry]));
+	return [...entryMap.keys()]
+		.sort()
+		.map((id) => {
+			const entry = entryMap.get(id);
+			const parent = entry.parentId ?? "null";
+			return `${id}|${entry.type}|${parent}`;
+		})
+		.join(";");
+}
+
+function runCliSelectorsTreeEntryMap() {
+	return {
+		tem_branching: treeEntryMapEncodedPi(TREE_ACTIVE_PATH_BRANCHING_ENTRIES),
+		tem_filter: treeEntryMapEncodedPi(TREE_APPLY_FILTER_ENTRIES),
+		tem_empty: treeEntryMapEncodedPi([]),
+		tem_solo: treeEntryMapEncodedPi([
+			{ id: "solo", parentId: null, type: "message", role: "user", text: "only" },
+		]),
+		tem_single: treeEntryMapEncodedPi([TREE_APPLY_FILTER_ENTRIES[0]]),
+	};
+}
+
 function treeVisibleEntriesByIds(ids) {
 	const idSet = new Set(ids);
 	return TREE_ACTIVE_PATH_BRANCHING_ENTRIES.filter((entry) => idSet.has(entry.id));
@@ -8208,6 +8233,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeActivePathResults = runCliSelectorsTreeActivePath();
 	const treeNearestVisibleIdResults = runCliSelectorsTreeNearestVisibleId();
 	const treePrioritizeActiveResults = runCliSelectorsTreePrioritizeActive();
+	const treeEntryMapResults = runCliSelectorsTreeEntryMap();
 	const treeRebuildVisibleMapsResults = runCliSelectorsTreeRebuildVisibleMaps();
 	const treeApplyFilterResults = runCliSelectorsTreeApplyFilter();
 	const treeRenderLinesResults = runCliSelectorsTreeRenderLines();
@@ -8458,6 +8484,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeActivePathResults,
 		...treeNearestVisibleIdResults,
 		...treePrioritizeActiveResults,
+		...treeEntryMapResults,
 		...treeRebuildVisibleMapsResults,
 		...treeApplyFilterResults,
 		...treeRenderLinesResults,
@@ -8651,6 +8678,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_prioritize_active: await collect("cli_selectors.tree_prioritize_active", () => {
 			return () => runCliSelectorsTreePrioritizeActive();
+		}),
+		tree_entry_map: await collect("cli_selectors.tree_entry_map", () => {
+			return () => runCliSelectorsTreeEntryMap();
 		}),
 		tree_rebuild_visible_maps: await collect("cli_selectors.tree_rebuild_visible_maps", () => {
 			return () => runCliSelectorsTreeRebuildVisibleMaps();
@@ -9874,6 +9904,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts findNearestVisibleIndex id walk",
 			"cli_selectors.tree_prioritize_active":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts flattenTree active-branch ordering",
+			"cli_selectors.tree_entry_map":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts entry id map",
 			"cli_selectors.tree_rebuild_visible_maps":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts recalculateVisualStructure visible parent/children maps",
 			"cli_selectors.tree_apply_filter":

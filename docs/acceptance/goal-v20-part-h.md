@@ -2541,6 +2541,17 @@ Observed `tslid_pinned` / `tslid_plain` / `tslid_assistant` / `tslid_label` / `t
 `tslid_noselect` are exact. First Friend-MachineD freeze **2.50×**
 (213.4 / 85.3 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 186 — `cli_selectors` (tree_entry_map)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_entry_map` | `tree-selector-entry-map` | id→entry map from flat entries (`tree-selector.ts`) |
+
+Build id lookup table; encoded as sorted `id|type|parent` joined by `;`.
+Observed `tem_branching` / `tem_filter` / `tem_empty` / `tem_solo` / `tem_single` are exact.
+First Friend-MachineD freeze **2.76×**
+(11.6 / 4.2 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

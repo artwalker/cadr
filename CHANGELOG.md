@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_entry_map`
+  (entry-map fixtures; cadr `tree-selector-entry-map`
+  vs pi flat-entry id map). Friend-MachineD n=5 **2.76×**
+  (11.6 / 4.2 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_selected_id`
   (selected-id fixtures; cadr `tree-selector-selected-id`
   vs pi `TreeList.filteredNodes` selected id). Friend-MachineD n=5 **2.50×**

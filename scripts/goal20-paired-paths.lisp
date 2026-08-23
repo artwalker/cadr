@@ -352,6 +352,7 @@
     ("cli_selectors.tree_active_path" . 50)
     ("cli_selectors.tree_nearest_visible_id" . 50)
     ("cli_selectors.tree_prioritize_active" . 50)
+    ("cli_selectors.tree_entry_map" . 50)
     ("cli_selectors.tree_rebuild_visible_maps" . 50)
     ("cli_selectors.tree_apply_filter" . 50)
     ("cli_selectors.tree_render_lines" . 20)
@@ -7040,6 +7041,36 @@
      :type :message :role :user
      :text "branch B deep")))
 
+(defun tree-entry-map-encoded (entries)
+  (let ((entry-map (cadr-cli::tree-selector-entry-map entries)))
+    (format nil "~{~a~^;~}"
+            (sort
+             (mapcar
+              (lambda (id)
+                (let ((entry (gethash id entry-map)))
+                  (format nil "~a|~a|~a"
+                          id
+                          (string-downcase
+                           (symbol-name (getf entry :type)))
+                          (or (getf entry :parent-id) "null"))))
+              (loop for id being the hash-keys of entry-map
+                    collect id))
+             #'string<))))
+
+(defun run-cli-selectors-tree-entry-map ()
+  (list
+   (tree-entry-map-encoded
+    *tree-active-path-branching-entries*)
+   (tree-entry-map-encoded
+    *tree-apply-filter-entries*)
+   (tree-entry-map-encoded '())
+   (tree-entry-map-encoded
+    '((:id "solo" :parent-id nil
+       :type :message :role :user
+       :text "only")))
+   (tree-entry-map-encoded
+    (list (first *tree-apply-filter-entries*)))))
+
 (defun tree-active-path-encoded (entries leaf-id)
   (format nil "~{~a~^,~}"
           (sort
@@ -8057,6 +8088,8 @@
           (run-cli-selectors-tree-nearest-visible-id))
         (tree-prioritize-active
           (run-cli-selectors-tree-prioritize-active))
+        (tree-entry-map
+          (run-cli-selectors-tree-entry-map))
         (tree-rebuild-visible-maps
           (run-cli-selectors-tree-rebuild-visible-maps))
         (tree-apply-filter
@@ -8408,6 +8441,11 @@
       "tpa_leaf_b" (nth 1 tree-prioritize-active)
       "tpa_root" (nth 2 tree-prioritize-active)
       "tpa_nil" (nth 3 tree-prioritize-active)
+      "tem_branching" (nth 0 tree-entry-map)
+      "tem_filter" (nth 1 tree-entry-map)
+      "tem_empty" (nth 2 tree-entry-map)
+      "tem_solo" (nth 3 tree-entry-map)
+      "tem_single" (nth 4 tree-entry-map)
       "trvm_full" (nth 0 tree-rebuild-visible-maps)
       "trvm_sparse" (nth 1 tree-rebuild-visible-maps)
       "trvm_branch_b" (nth 2 tree-rebuild-visible-maps)
@@ -8803,6 +8841,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-tree-prioritize-active))))
+     "tree_entry_map"
+     (collect "cli_selectors.tree_entry_map"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-entry-map))))
      "tree_rebuild_visible_maps"
      (collect "cli_selectors.tree_rebuild_visible_maps"
               (lambda ()
@@ -10030,6 +10073,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-nearest-visible-id"
       "cli_selectors.tree_prioritize_active"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-prioritize-active"
+      "cli_selectors.tree_entry_map"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-map"
       "cli_selectors.tree_rebuild_visible_maps"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-rebuild-visible-maps"
       "cli_selectors.tree_apply_filter"
