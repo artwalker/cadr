@@ -340,6 +340,7 @@
     ("cli_selectors.tree_shorten_path" . 50)
     ("cli_selectors.tree_foldable_p" . 50)
     ("cli_selectors.tree_tool_argument" . 50)
+    ("cli_selectors.tree_cycle_filter" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6638,6 +6639,39 @@
    (cadr-cli::tree-selector-tool-argument
     nil "path" "file_path")))
 
+(defun tree-filter-keyword (name)
+  (cond
+    ((string= name "default") :default)
+    ((string= name "no-tools") :no-tools)
+    ((string= name "user-only") :user-only)
+    ((string= name "labeled-only") :labeled-only)
+    ((string= name "all") :all)
+    (t :default)))
+
+(defun tree-filter-name (filter)
+  (ecase filter
+    (:default "default")
+    (:no-tools "no-tools")
+    (:user-only "user-only")
+    (:labeled-only "labeled-only")
+    (:all "all")))
+
+(defun tree-cycle-filter-encoded (start direction)
+  (let ((state
+          (cadr-cli::%make-tree-selector-state
+           :entries '() :ordered-entries '()
+           :filter (tree-filter-keyword start))))
+    (cadr-cli::tree-selector-cycle-filter state direction)
+    (tree-filter-name
+     (cadr-cli::tree-selector-state-filter state))))
+
+(defun run-cli-selectors-tree-cycle-filter ()
+  (list
+   (tree-cycle-filter-encoded "default" 1)
+   (tree-cycle-filter-encoded "no-tools" -1)
+   (tree-cycle-filter-encoded "all" 1)
+   (tree-cycle-filter-encoded "user-only" 1)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6695,7 +6729,9 @@
         (tree-foldable-p
           (run-cli-selectors-tree-foldable-p))
         (tree-tool-argument
-          (run-cli-selectors-tree-tool-argument)))
+          (run-cli-selectors-tree-tool-argument))
+        (tree-cycle-filter
+          (run-cli-selectors-tree-cycle-filter)))
     (json-object
      "observed"
      (json-object
@@ -6929,7 +6965,11 @@
       "tta_file" (nth 1 tree-tool-argument)
       "tta_prio" (nth 2 tree-tool-argument)
       "tta_miss" (nth 3 tree-tool-argument)
-      "tta_nil" (nth 4 tree-tool-argument))
+      "tta_nil" (nth 4 tree-tool-argument)
+      "tcf_def_fwd" (nth 0 tree-cycle-filter)
+      "tcf_nt_back" (nth 1 tree-cycle-filter)
+      "tcf_all_fwd" (nth 2 tree-cycle-filter)
+      "tcf_user_fwd" (nth 3 tree-cycle-filter))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7139,7 +7179,12 @@
      (collect "cli_selectors.tree_tool_argument"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-tool-argument)))))))
+                  (run-cli-selectors-tree-tool-argument))))
+     "tree_cycle_filter"
+     (collect "cli_selectors.tree_cycle_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-cycle-filter)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8238,6 +8283,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-foldable-p"
       "cli_selectors.tree_tool_argument"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-tool-argument"
+      "cli_selectors.tree_cycle_filter"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-cycle-filter"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

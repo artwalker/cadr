@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_cycle_filter`
+  (tree filter cycle fixtures; cadr `tree-selector-cycle-filter` vs pi filter
+  cycle keybindings). Friend-MachineD n=5 **17.08×** (4.8 / 0.3 µs), ceiling 8.0.
+  Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_tool_argument`
   (tree tool-arg fixtures; cadr `tree-selector-tool-argument` vs pi formatToolCall
   path lookup). Friend-MachineD n=5 **3.32×** (24.7 / 7.4 µs), ceiling 8.0. Same

@@ -2162,6 +2162,18 @@ Observed `tta_path` / `tta_file` / `tta_prio` / `tta_miss` / `tta_nil` are exact
 First Friend-MachineD freeze **3.32×** (24.7 / 7.4 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 153 — `cli_selectors` (tree_cycle_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_cycle_filter` | `tree-selector-cycle-filter` | filter cycle keybindings (`tree-selector.ts`) |
+
+Filter-mode advance only on empty tree state: `default`→`no-tools` (+1),
+`no-tools`→`default` (−1), `all`→`default` (+1 wrap), `user-only`→`labeled-only`
+(+1). Encoded as filter name string. Observed `tcf_def_fwd` / `tcf_nt_back` /
+`tcf_all_fwd` / `tcf_user_fwd` are exact. First Friend-MachineD freeze **17.08×**
+(4.8 / 0.3 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

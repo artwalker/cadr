@@ -264,6 +264,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_shorten_path": 50,
 	"cli_selectors.tree_foldable_p": 50,
 	"cli_selectors.tree_tool_argument": 50,
+	"cli_selectors.tree_cycle_filter": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5765,6 +5766,23 @@ function runCliSelectorsTreeToolArgument() {
 	};
 }
 
+const TREE_FILTER_MODES = ["default", "no-tools", "user-only", "labeled-only", "all"];
+
+function treeCycleFilterPi(start, direction) {
+	const index = TREE_FILTER_MODES.indexOf(start);
+	const currentIndex = index >= 0 ? index : 0;
+	return TREE_FILTER_MODES[(currentIndex + direction + TREE_FILTER_MODES.length) % TREE_FILTER_MODES.length];
+}
+
+function runCliSelectorsTreeCycleFilter() {
+	return {
+		tcf_def_fwd: treeCycleFilterPi("default", 1),
+		tcf_nt_back: treeCycleFilterPi("no-tools", -1),
+		tcf_all_fwd: treeCycleFilterPi("all", 1),
+		tcf_user_fwd: treeCycleFilterPi("user-only", 1),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6123,6 +6141,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeShortenPathResults = runCliSelectorsTreeShortenPath();
 	const treeFoldablePResults = runCliSelectorsTreeFoldableP();
 	const treeToolArgumentResults = runCliSelectorsTreeToolArgument();
+	const treeCycleFilterResults = runCliSelectorsTreeCycleFilter();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6337,6 +6356,10 @@ async function measureCliSelectorsSessionSearch() {
 		tta_prio: treeToolArgumentResults.tta_prio,
 		tta_miss: treeToolArgumentResults.tta_miss,
 		tta_nil: treeToolArgumentResults.tta_nil,
+		tcf_def_fwd: treeCycleFilterResults.tcf_def_fwd,
+		tcf_nt_back: treeCycleFilterResults.tcf_nt_back,
+		tcf_all_fwd: treeCycleFilterResults.tcf_all_fwd,
+		tcf_user_fwd: treeCycleFilterResults.tcf_user_fwd,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6473,6 +6496,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_tool_argument: await collect("cli_selectors.tree_tool_argument", () => {
 			return () => runCliSelectorsTreeToolArgument();
+		}),
+		tree_cycle_filter: await collect("cli_selectors.tree_cycle_filter", () => {
+			return () => runCliSelectorsTreeCycleFilter();
 		}),
 		observed,
 	};
@@ -7609,6 +7635,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts isFoldable",
 			"cli_selectors.tree_tool_argument":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall args.path || args.file_path",
+			"cli_selectors.tree_cycle_filter":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts filter cycle keybindings modes array index math",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
