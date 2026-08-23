@@ -2702,6 +2702,18 @@ Observed `ceat_oauth` / `ceat_api_key` / `ceat_api_key_hyphen` /
 `ceat_api_key_upper` are exact. First Friend-MachineD freeze **1.87×**
 (0.6 / 0.3 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 200 — `cli_selectors` (oauth_environment_source_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_environment_source_p` | `oauth-environment-source-p` | `formatStatusIndicator` env-source regex |
+
+Detects uppercase env-var credential sources (`ANTHROPIC_API_KEY`, comma
+lists). Observed `oesp_nil` / `oesp_oauth` / `oesp_single_env` /
+`oesp_multi_env` / `oesp_runtime` / `oesp_stored` / `oesp_lower` are exact.
+First Friend-MachineD freeze **3.51×** (1.2 / 0.3 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash

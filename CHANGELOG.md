@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_environment_source_p`
+  (env-source regex fixtures; cadr `oauth-environment-source-p`
+  vs pi `formatStatusIndicator` env detection). Friend-MachineD n=5
+  **3.51×** (1.2 / 0.3 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.credential_entry_auth_type`
   (credential-kind fixtures; cadr `credential-entry-auth-type`
   vs pi logout authType normalization). Friend-MachineD n=5 **1.87×**

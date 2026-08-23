@@ -387,6 +387,7 @@
     ("cli_selectors.trust_selector_ui_state" . 50)
     ("cli_selectors.oauth_option_status_label" . 50)
     ("cli_selectors.credential_entry_auth_type" . 50)
+    ("cli_selectors.oauth_environment_source_p" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8430,6 +8431,19 @@
    (encode-credential-entry-auth-type "OAuth")
    (encode-credential-entry-auth-type "API_KEY")))
 
+(defun encode-oauth-environment-source-p (source)
+  (if (cadr-cli::oauth-environment-source-p source) 1 0))
+
+(defun run-cli-selectors-oauth-environment-source-p ()
+  (list
+   (encode-oauth-environment-source-p nil)
+   (encode-oauth-environment-source-p "OAuth")
+   (encode-oauth-environment-source-p "ANTHROPIC_API_KEY")
+   (encode-oauth-environment-source-p "OPENAI_API_KEY, ANTHROPIC_API_KEY")
+   (encode-oauth-environment-source-p "runtime key")
+   (encode-oauth-environment-source-p "stored credential")
+   (encode-oauth-environment-source-p "anthropic_api_key")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8581,7 +8595,9 @@
         (oauth-option-status-label
           (run-cli-selectors-oauth-option-status-label))
         (credential-entry-auth-type
-          (run-cli-selectors-credential-entry-auth-type)))
+          (run-cli-selectors-credential-entry-auth-type))
+        (oauth-environment-source-p
+          (run-cli-selectors-oauth-environment-source-p)))
     (json-object
      "observed"
      (json-object
@@ -9093,7 +9109,14 @@
       "ceat_oauth_sym" (nth 3 credential-entry-auth-type)
       "ceat_api_key_sym" (nth 4 credential-entry-auth-type)
       "ceat_oauth_mixed" (nth 5 credential-entry-auth-type)
-      "ceat_api_key_upper" (nth 6 credential-entry-auth-type))
+      "ceat_api_key_upper" (nth 6 credential-entry-auth-type)
+      "oesp_nil" (nth 0 oauth-environment-source-p)
+      "oesp_oauth" (nth 1 oauth-environment-source-p)
+      "oesp_single_env" (nth 2 oauth-environment-source-p)
+      "oesp_multi_env" (nth 3 oauth-environment-source-p)
+      "oesp_runtime" (nth 4 oauth-environment-source-p)
+      "oesp_stored" (nth 5 oauth-environment-source-p)
+      "oesp_lower" (nth 6 oauth-environment-source-p))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9538,7 +9561,12 @@
      (collect "cli_selectors.credential_entry_auth_type"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-credential-entry-auth-type)))))))
+                  (run-cli-selectors-credential-entry-auth-type))))
+     "oauth_environment_source_p"
+     (collect "cli_selectors.oauth_environment_source_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-environment-source-p)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10731,6 +10759,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label"
       "cli_selectors.credential_entry_auth_type"
       "src/cadr-cli/interactive/selectors/auth.lisp credential-entry-auth-type"
+      "cli_selectors.oauth_environment_source_p"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

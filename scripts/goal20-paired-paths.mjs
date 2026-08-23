@@ -311,6 +311,7 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_ui_state": 50,
 	"cli_selectors.oauth_option_status_label": 50,
 	"cli_selectors.credential_entry_auth_type": 50,
+	"cli_selectors.oauth_environment_source_p": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8440,6 +8441,25 @@ function runCliSelectorsCredentialEntryAuthType() {
 	};
 }
 
+function oauthEnvironmentSourceP(source) {
+	return (
+		typeof source === "string" &&
+		/^[A-Z][A-Z0-9_]*(?:, [A-Z][A-Z0-9_]*)*$/.test(source)
+	);
+}
+
+function runCliSelectorsOauthEnvironmentSourceP() {
+	return {
+		oesp_nil: oauthEnvironmentSourceP(null) ? 1 : 0,
+		oesp_oauth: oauthEnvironmentSourceP("OAuth") ? 1 : 0,
+		oesp_single_env: oauthEnvironmentSourceP("ANTHROPIC_API_KEY") ? 1 : 0,
+		oesp_multi_env: oauthEnvironmentSourceP("OPENAI_API_KEY, ANTHROPIC_API_KEY") ? 1 : 0,
+		oesp_runtime: oauthEnvironmentSourceP("runtime key") ? 1 : 0,
+		oesp_stored: oauthEnvironmentSourceP("stored credential") ? 1 : 0,
+		oesp_lower: oauthEnvironmentSourceP("anthropic_api_key") ? 1 : 0,
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8845,6 +8865,7 @@ async function measureCliSelectorsSessionSearch() {
 	const trustSelectorRenderLinesResults = runCliSelectorsTrustSelectorUiState();
 	const oauthOptionStatusLabelResults = runCliSelectorsOauthOptionStatusLabel();
 	const credentialEntryAuthTypeResults = runCliSelectorsCredentialEntryAuthType();
+	const oauthEnvironmentSourcePResults = runCliSelectorsOauthEnvironmentSourceP();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9109,6 +9130,7 @@ async function measureCliSelectorsSessionSearch() {
 		...trustSelectorRenderLinesResults,
 		...oauthOptionStatusLabelResults,
 		...credentialEntryAuthTypeResults,
+		...oauthEnvironmentSourcePResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9386,6 +9408,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		credential_entry_auth_type: await collect("cli_selectors.credential_entry_auth_type", () => {
 			return () => runCliSelectorsCredentialEntryAuthType();
+		}),
+		oauth_environment_source_p: await collect("cli_selectors.oauth_environment_source_p", () => {
+			return () => runCliSelectorsOauthEnvironmentSourceP();
 		}),
 		observed,
 	};
@@ -10616,6 +10641,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator plain label",
 			"cli_selectors.credential_entry_auth_type":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions authType",
+			"cli_selectors.oauth_environment_source_p":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator env source regex",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
