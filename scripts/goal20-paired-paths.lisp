@@ -341,6 +341,7 @@
     ("cli_selectors.tree_foldable_p" . 50)
     ("cli_selectors.tree_tool_argument" . 50)
     ("cli_selectors.tree_cycle_filter" . 50)
+    ("cli_selectors.tree_format_label_timestamp" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6672,6 +6673,32 @@
    (tree-cycle-filter-encoded "all" 1)
    (tree-cycle-filter-encoded "user-only" 1)))
 
+(defparameter *tree-format-label-timestamp-now*
+  (encode-universal-time 0 0 15 2 8 2026 0))
+
+(defparameter *tree-format-label-timestamp-display-tz* 0)
+
+(defparameter *tree-format-label-timestamp-inputs*
+  '("2026-08-02T09:07:11.000Z"
+    "2026-03-28T14:32:00.000Z"
+    "2025-12-31T23:59:00.000Z"
+    "2026-08-02T10:00:00+02:30"
+    "not-a-date"))
+
+(defun run-cli-selectors-tree-format-label-timestamp ()
+  (let* ((tz (uiop:getenv "TZ"))
+         (now *tree-format-label-timestamp-now*))
+    (setf (uiop:getenv "TZ") "UTC")
+    (unwind-protect
+         (mapcar
+          (lambda (input)
+            (cadr-cli::tree-selector-format-label-timestamp
+             input now *tree-format-label-timestamp-display-tz*))
+          *tree-format-label-timestamp-inputs*)
+      (if tz
+          (setf (uiop:getenv "TZ") tz)
+          (sb-posix:unsetenv "TZ")))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6731,7 +6758,9 @@
         (tree-tool-argument
           (run-cli-selectors-tree-tool-argument))
         (tree-cycle-filter
-          (run-cli-selectors-tree-cycle-filter)))
+          (run-cli-selectors-tree-cycle-filter))
+        (tree-format-label-timestamp
+          (run-cli-selectors-tree-format-label-timestamp)))
     (json-object
      "observed"
      (json-object
@@ -6969,7 +6998,12 @@
       "tcf_def_fwd" (nth 0 tree-cycle-filter)
       "tcf_nt_back" (nth 1 tree-cycle-filter)
       "tcf_all_fwd" (nth 2 tree-cycle-filter)
-      "tcf_user_fwd" (nth 3 tree-cycle-filter))
+      "tcf_user_fwd" (nth 3 tree-cycle-filter)
+      "09:07" (nth 0 tree-format-label-timestamp)
+      "3/28 14:32" (nth 1 tree-format-label-timestamp)
+      "25/12/31 23:59" (nth 2 tree-format-label-timestamp)
+      "07:30" (nth 3 tree-format-label-timestamp)
+      "not-a-date" (nth 4 tree-format-label-timestamp))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7184,7 +7218,12 @@
      (collect "cli_selectors.tree_cycle_filter"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-cycle-filter)))))))
+                  (run-cli-selectors-tree-cycle-filter))))
+     "tree_format_label_timestamp"
+     (collect "cli_selectors.tree_format_label_timestamp"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-format-label-timestamp)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8285,6 +8324,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-tool-argument"
       "cli_selectors.tree_cycle_filter"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-cycle-filter"
+      "cli_selectors.tree_format_label_timestamp"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-format-label-timestamp"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

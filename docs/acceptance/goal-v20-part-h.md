@@ -2172,7 +2172,20 @@ Filter-mode advance only on empty tree state: `default`→`no-tools` (+1),
 `no-tools`→`default` (−1), `all`→`default` (+1 wrap), `user-only`→`labeled-only`
 (+1). Encoded as filter name string. Observed `tcf_def_fwd` / `tcf_nt_back` /
 `tcf_all_fwd` / `tcf_user_fwd` are exact. First Friend-MachineD freeze **17.08×**
-(4.8 / 0.3 µs), ceiling 8.0. Same commit no optimize.
+(21.6 / 4.4 µs), ceiling 8.0. Same commit no optimize.
+
+### Pair 154 — `cli_selectors` (tree_format_label_timestamp)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_format_label_timestamp` | `tree-selector-format-label-timestamp` | `formatLabelTimestamp` (`tree-selector.ts`) |
+
+Label timestamp formatting only with fixed `now` (2026-08-02 15:00 UTC) and
+`TZ=UTC`. Fixtures: same-day time, same-year date, cross-year, offset input.
+Invalid `not-a-date` measured on cadr only (cadr passthrough; pi NaN path
+excluded from exact). Observed `09:07` / `3/28 14:32` / `25/12/31 23:59` /
+`07:30` are exact. First Friend-MachineD freeze **1.85×** (9.2 / 4.9 µs),
+ceiling 8.0. Same commit no optimize.
 
 ## 2. How to run
 

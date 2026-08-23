@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_format_label_timestamp`
+  (tree label timestamp fixtures; cadr `tree-selector-format-label-timestamp` vs
+  pi `formatLabelTimestamp`). Friend-MachineD n=5 **1.85×** (9.2 / 4.9 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_cycle_filter`
   (tree filter cycle fixtures; cadr `tree-selector-cycle-filter` vs pi filter
   cycle keybindings). Friend-MachineD n=5 **17.08×** (4.8 / 0.3 µs), ceiling 8.0.

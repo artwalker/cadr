@@ -265,6 +265,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_foldable_p": 50,
 	"cli_selectors.tree_tool_argument": 50,
 	"cli_selectors.tree_cycle_filter": 50,
+	"cli_selectors.tree_format_label_timestamp": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5783,6 +5784,52 @@ function runCliSelectorsTreeCycleFilter() {
 	};
 }
 
+const TREE_FORMAT_LABEL_TIMESTAMP_NOW_MS = Date.UTC(2026, 7, 2, 15, 0, 0);
+
+const TREE_FORMAT_LABEL_TIMESTAMP_INPUTS = [
+	"2026-08-02T09:07:11.000Z",
+	"2026-03-28T14:32:00.000Z",
+	"2025-12-31T23:59:00.000Z",
+	"2026-08-02T10:00:00+02:30",
+	"not-a-date",
+];
+
+function formatLabelTimestampPi(timestamp, nowMs) {
+	const date = new Date(timestamp);
+	const now = new Date(nowMs);
+	const hours = date.getHours().toString().padStart(2, "0");
+	const minutes = date.getMinutes().toString().padStart(2, "0");
+	const time = `${hours}:${minutes}`;
+
+	if (
+		date.getFullYear() === now.getFullYear() &&
+		date.getMonth() === now.getMonth() &&
+		date.getDate() === now.getDate()
+	) {
+		return time;
+	}
+
+	const month = date.getMonth() + 1;
+	const day = date.getDate();
+	if (date.getFullYear() === now.getFullYear()) {
+		return `${month}/${day} ${time}`;
+	}
+
+	const year = date.getFullYear().toString().slice(-2);
+	return `${year}/${month}/${day} ${time}`;
+}
+
+function runCliSelectorsTreeFormatLabelTimestamp() {
+	process.env.TZ = "UTC";
+	const now = TREE_FORMAT_LABEL_TIMESTAMP_NOW_MS;
+	const observed = {};
+	for (const input of TREE_FORMAT_LABEL_TIMESTAMP_INPUTS) {
+		const formatted = formatLabelTimestampPi(input, now);
+		observed[formatted] = formatted;
+	}
+	return observed;
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6142,6 +6189,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeFoldablePResults = runCliSelectorsTreeFoldableP();
 	const treeToolArgumentResults = runCliSelectorsTreeToolArgument();
 	const treeCycleFilterResults = runCliSelectorsTreeCycleFilter();
+	const treeFormatLabelTimestampResults = runCliSelectorsTreeFormatLabelTimestamp();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6360,6 +6408,7 @@ async function measureCliSelectorsSessionSearch() {
 		tcf_nt_back: treeCycleFilterResults.tcf_nt_back,
 		tcf_all_fwd: treeCycleFilterResults.tcf_all_fwd,
 		tcf_user_fwd: treeCycleFilterResults.tcf_user_fwd,
+		...treeFormatLabelTimestampResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6499,6 +6548,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_cycle_filter: await collect("cli_selectors.tree_cycle_filter", () => {
 			return () => runCliSelectorsTreeCycleFilter();
+		}),
+		tree_format_label_timestamp: await collect("cli_selectors.tree_format_label_timestamp", () => {
+			return () => runCliSelectorsTreeFormatLabelTimestamp();
 		}),
 		observed,
 	};
@@ -7637,6 +7689,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall args.path || args.file_path",
 			"cli_selectors.tree_cycle_filter":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts filter cycle keybindings modes array index math",
+			"cli_selectors.tree_format_label_timestamp":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatLabelTimestamp",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
