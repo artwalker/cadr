@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_fold_or_up`
+  (fold/branch-segment fixtures; cadr `tree-selector-fold-or-up`
+  vs pi `foldOrUp` handleInput). Friend-MachineD n=5 **1.76×**
+  (316.9 / 179.6 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_move`
   (visible-id selection move fixtures; cadr `tree-selector-move`
   vs pi `TreeList` index wrap). Friend-MachineD n=5 **1.74×**

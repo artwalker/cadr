@@ -356,6 +356,7 @@
     ("cli_selectors.tree_apply_filter" . 50)
     ("cli_selectors.tree_render_lines" . 20)
     ("cli_selectors.tree_move" . 50)
+    ("cli_selectors.tree_fold_or_up" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7304,6 +7305,32 @@
    (tree-move-encoded "user-2" -10)
    (tree-move-encoded nil 1 :empty-p t)))
 
+(defun tree-fold-or-up-encoded (selected-id &key pre-folded-ids)
+  (let ((state (tree-render-state :selected-id selected-id)))
+    (when pre-folded-ids
+      (dolist (id pre-folded-ids)
+        (setf (gethash id
+                       (cadr-cli::tree-selector-state-folded
+                        state))
+              t))
+      (cadr-cli::tree-selector-apply-filter state)
+      (cadr-cli::tree-selector-select-id state selected-id))
+    (cadr-cli::tree-selector-fold-or-up state)
+    (format nil "~a|~{~a~^,~}"
+            (or (cadr-cli::tree-selector-selected-id state)
+                "null")
+            (cadr-cli::tree-selector-state-visible-ids
+             state))))
+
+(defun run-cli-selectors-tree-fold-or-up ()
+  (list
+   (tree-fold-or-up-encoded "asst-2")
+   (tree-fold-or-up-encoded "asst-4a")
+   (tree-fold-or-up-encoded "user-4a")
+   (tree-fold-or-up-encoded "user-3a" :pre-folded-ids '("asst-2"))
+   (tree-fold-or-up-encoded "user-1")
+   (tree-fold-or-up-encoded "user-4b")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7393,7 +7420,9 @@
         (tree-render-lines
           (run-cli-selectors-tree-render-lines))
         (tree-move
-          (run-cli-selectors-tree-move)))
+          (run-cli-selectors-tree-move))
+        (tree-fold-or-up
+          (run-cli-selectors-tree-fold-or-up)))
     (json-object
      "observed"
      (json-object
@@ -7726,7 +7755,13 @@
       "tm_wrap_down" (nth 3 tree-move)
       "tm_page" (nth 4 tree-move)
       "tm_page_neg" (nth 5 tree-move)
-      "tm_empty" (nth 6 tree-move))
+      "tm_empty" (nth 6 tree-move)
+      "tfo_fold" (nth 0 tree-fold-or-up)
+      "tfo_leaf" (nth 1 tree-fold-or-up)
+      "tfo_mid" (nth 2 tree-fold-or-up)
+      "tfo_prefold" (nth 3 tree-fold-or-up)
+      "tfo_root" (nth 4 tree-fold-or-up)
+      "tfo_branch_b" (nth 5 tree-fold-or-up))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8016,7 +8051,12 @@
      (collect "cli_selectors.tree_move"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-move)))))))
+                  (run-cli-selectors-tree-move))))
+     "tree_fold_or_up"
+     (collect "cli_selectors.tree_fold_or_up"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-fold-or-up)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9147,6 +9187,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-render-lines"
       "cli_selectors.tree_move"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-move"
+      "cli_selectors.tree_fold_or_up"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-fold-or-up"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

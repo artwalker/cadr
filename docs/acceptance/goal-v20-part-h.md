@@ -2351,7 +2351,18 @@ short viewport. Observed `trl_wide` / `trl_mid` / `trl_narrow` / `trl_fold` /
 Visible-id selection move on branching fixtures: step, wrap, page delta, empty.
 Observed `tm_down` / `tm_up` / `tm_wrap_up` / `tm_wrap_down` / `tm_page` /
 `tm_page_neg` / `tm_empty` are exact. First Friend-MachineD freeze **1.74×**
-(30.1 / 17.3 µs), ceiling 8.0. Same commit no optimize.
+(331.4 / 190.3 µs), ceiling 8.0. Same commit no optimize.
+
+### Pair 169 — `cli_selectors` (tree_fold_or_up)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_fold_or_up` | `tree-selector-fold-or-up` | `foldOrUp` handleInput (`tree-selector.ts`) |
+
+Fold branch point or jump to branch-segment start on branching fixtures.
+Observed `tfo_fold` / `tfo_leaf` / `tfo_mid` / `tfo_prefold` / `tfo_root` /
+`tfo_branch_b` are exact. First Friend-MachineD freeze **1.76×**
+(1,031.1 / 585.2 µs), ceiling 8.0. Same commit no optimize.
 
 ## 2. How to run
 
