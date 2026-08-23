@@ -284,6 +284,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_unfold_or_down": 50,
 	"cli_selectors.tree_branch_segment_id": 50,
 	"cli_selectors.tree_set_query": 50,
+	"cli_selectors.tree_set_filter": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7061,6 +7062,53 @@ function runCliSelectorsTreeSetQuery() {
 	};
 }
 
+function treeSetFilterEncodedPi({ filter = "default", foldedIds = [], selectedId = null } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const currentLeafId = "user-3";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		currentLeafId,
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId ?? currentLeafId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	if (selectedId) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+	}
+	for (const id of foldedIds) {
+		treeList.foldedNodes.add(id);
+	}
+	if (foldedIds.length > 0) {
+		treeList.applyFilter();
+	}
+	treeList.filterMode = filter;
+	treeList.foldedNodes.clear();
+	treeList.applyFilter();
+	const visibleIds = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node.entry.id ?? null;
+	const preserved = selected ? null : (selectedId ?? currentLeafId);
+	return `${visibleIds.join(",")}|${selected ?? "null"}|${preserved ?? "null"}`;
+}
+
+function runCliSelectorsTreeSetFilter() {
+	return {
+		tsf_default: treeSetFilterEncodedPi({ filter: "default" }),
+		tsf_user_only: treeSetFilterEncodedPi({ filter: "user-only" }),
+		tsf_no_tools: treeSetFilterEncodedPi({ filter: "no-tools" }),
+		tsf_fold_clear: treeSetFilterEncodedPi({ filter: "user-only", foldedIds: ["user-2"] }),
+		tsf_labeled_only: treeSetFilterEncodedPi({ filter: "labeled-only" }),
+		tsf_reselect: treeSetFilterEncodedPi({ filter: "user-only", selectedId: "tool-1" }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7439,6 +7487,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeUnfoldOrDownResults = runCliSelectorsTreeUnfoldOrDown();
 	const treeBranchSegmentIdResults = runCliSelectorsTreeBranchSegmentId();
 	const treeSetQueryResults = runCliSelectorsTreeSetQuery();
+	const treeSetFilterResults = runCliSelectorsTreeSetFilter();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7676,6 +7725,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeUnfoldOrDownResults,
 		...treeBranchSegmentIdResults,
 		...treeSetQueryResults,
+		...treeSetFilterResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7872,6 +7922,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_set_query: await collect("cli_selectors.tree_set_query", () => {
 			return () => runCliSelectorsTreeSetQuery();
+		}),
+		tree_set_filter: await collect("cli_selectors.tree_set_filter", () => {
+			return () => runCliSelectorsTreeSetFilter();
 		}),
 		observed,
 	};
@@ -9048,6 +9101,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts findBranchSegmentStart",
 			"cli_selectors.tree_set_query":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList searchQuery + applyFilter",
+			"cli_selectors.tree_set_filter":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList filterMode + applyFilter",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

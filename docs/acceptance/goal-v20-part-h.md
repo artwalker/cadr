@@ -2397,6 +2397,17 @@ Observed `tsq_empty` / `tsq_branch` / `tsq_fold_clear` / `tsq_miss` / `tsq_pinne
 `tsq_multi` are exact. First Friend-MachineD freeze **0.66×**
 (88.9 / 135.2 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 173 — `cli_selectors` (tree_set_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_set_filter` | `tree-selector-set-filter` | `TreeList` filterMode + `applyFilter` (`tree-selector.ts`) |
+
+Filter mode update clears folded state and reapplies filter on apply-filter fixtures.
+Observed `tsf_default` / `tsf_user_only` / `tsf_no_tools` / `tsf_fold_clear` /
+`tsf_labeled_only` / `tsf_reselect` are exact. First Friend-MachineD freeze **0.60×**
+(71.4 / 119.0 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

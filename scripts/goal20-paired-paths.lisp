@@ -360,6 +360,7 @@
     ("cli_selectors.tree_unfold_or_down" . 50)
     ("cli_selectors.tree_branch_segment_id" . 50)
     ("cli_selectors.tree_set_query" . 50)
+    ("cli_selectors.tree_set_filter" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7417,6 +7418,50 @@
    (tree-set-query-encoded :query "pinned")
    (tree-set-query-encoded :query "branch query")))
 
+(defun tree-set-filter-encoded (&key filter folded-ids selected-id)
+  (let* ((entries *tree-apply-filter-entries*)
+         (current-leaf-id "user-3")
+         (state
+           (cadr-cli::%make-tree-selector-state
+            :entries entries
+            :ordered-entries
+            (cadr-cli::tree-selector-order-entries
+             entries current-leaf-id)
+            :current-leaf-id current-leaf-id
+            :filter :default
+            :selected-id
+            (or selected-id current-leaf-id))))
+    (dolist (id folded-ids)
+      (setf (gethash id
+                     (cadr-cli::tree-selector-state-folded
+                      state))
+            t))
+    (when folded-ids
+      (cadr-cli::tree-selector-apply-filter state))
+    (when selected-id
+      (cadr-cli::tree-selector-select-id state selected-id))
+    (cadr-cli::tree-selector-set-filter
+     state (tree-filter-keyword filter))
+    (format nil "~a|~a|~a"
+            (format nil "~{~a~^,~}"
+                    (cadr-cli::tree-selector-state-visible-ids
+                     state))
+            (or (cadr-cli::tree-selector-state-selected-id state)
+                "null")
+            (or (cadr-cli::tree-selector-state-preserved-id state)
+                "null"))))
+
+(defun run-cli-selectors-tree-set-filter ()
+  (list
+   (tree-set-filter-encoded :filter "default")
+   (tree-set-filter-encoded :filter "user-only")
+   (tree-set-filter-encoded :filter "no-tools")
+   (tree-set-filter-encoded
+    :filter "user-only" :folded-ids '("user-2"))
+   (tree-set-filter-encoded :filter "labeled-only")
+   (tree-set-filter-encoded
+    :filter "user-only" :selected-id "tool-1")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7514,7 +7559,9 @@
         (tree-branch-segment-id
           (run-cli-selectors-tree-branch-segment-id))
         (tree-set-query
-          (run-cli-selectors-tree-set-query)))
+          (run-cli-selectors-tree-set-query))
+        (tree-set-filter
+          (run-cli-selectors-tree-set-filter)))
     (json-object
      "observed"
      (json-object
@@ -7871,7 +7918,13 @@
       "tsq_fold_clear" (nth 2 tree-set-query)
       "tsq_miss" (nth 3 tree-set-query)
       "tsq_pinned" (nth 4 tree-set-query)
-      "tsq_multi" (nth 5 tree-set-query))
+      "tsq_multi" (nth 5 tree-set-query)
+      "tsf_default" (nth 0 tree-set-filter)
+      "tsf_user_only" (nth 1 tree-set-filter)
+      "tsf_no_tools" (nth 2 tree-set-filter)
+      "tsf_fold_clear" (nth 3 tree-set-filter)
+      "tsf_labeled_only" (nth 4 tree-set-filter)
+      "tsf_reselect" (nth 5 tree-set-filter))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8181,7 +8234,12 @@
      (collect "cli_selectors.tree_set_query"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-set-query)))))))
+                  (run-cli-selectors-tree-set-query))))
+     "tree_set_filter"
+     (collect "cli_selectors.tree_set_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-set-filter)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9320,6 +9378,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-branch-segment-id"
       "cli_selectors.tree_set_query"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-set-query"
+      "cli_selectors.tree_set_filter"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-set-filter"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
