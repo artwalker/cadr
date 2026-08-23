@@ -308,6 +308,7 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_move": 50,
 	"cli_selectors.trust_selector_handle_event": 50,
 	"cli_selectors.trust_selector_handle_raw_input": 50,
+	"cli_selectors.trust_selector_ui_state": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8294,6 +8295,56 @@ function runCliSelectorsTrustSelectorHandleRawInput() {
 	};
 }
 
+function encodeTrustOptionLabel(option) {
+	if (option.label.includes("parent folder")) {
+		return `Trust parent folder (${encodeTrustPath(option.savedPath)})`;
+	}
+	return option.label;
+}
+
+function trustSelectorUiEncoded(cwd, { savedDecision = null, projectTrusted = false } = {}) {
+	const options = trustManagerModule.getProjectTrustOptions(cwd);
+	const selectedIndex = Math.max(
+		0,
+		options.findIndex(
+			(option) =>
+				option.savedPath !== undefined &&
+				savedDecision?.decision === option.trusted &&
+				savedDecision?.path === option.savedPath,
+		),
+	);
+	const rows = options.map((option, index) => {
+		const saved =
+			option.savedPath !== undefined &&
+			savedDecision?.decision === option.trusted &&
+			savedDecision?.path === option.savedPath;
+		const selected = index === selectedIndex ? "sel" : "nosel";
+		const savedFlag = saved ? "saved" : "nosaved";
+		return `${encodeTrustOptionLabel(option)}|${selected}|${savedFlag}`;
+	});
+	return `${encodeTrustDecisionDescription(cwd, savedDecision)}|${projectTrusted ? "trusted" : "untrusted"}|${rows.join(";")}`;
+}
+
+function runCliSelectorsTrustSelectorUiState() {
+	const { child, parent, single } = stageProjectTrustOptionsFixtures();
+	return {
+		rts_child_default: trustSelectorUiEncoded(child),
+		rts_child_saved: trustSelectorUiEncoded(child, {
+			savedDecision: { path: child, decision: true },
+			projectTrusted: true,
+		}),
+		rts_child_inherited: trustSelectorUiEncoded(child, {
+			savedDecision: { path: parent, decision: true },
+			projectTrusted: true,
+		}),
+		rts_child_distrust: trustSelectorUiEncoded(child, {
+			savedDecision: { path: child, decision: false },
+			projectTrusted: false,
+		}),
+		rts_single: trustSelectorUiEncoded(single),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8696,6 +8747,7 @@ async function measureCliSelectorsSessionSearch() {
 	const trustSelectorMoveResults = runCliSelectorsTrustSelectorMove();
 	const trustSelectorHandleEventResults = runCliSelectorsTrustSelectorHandleEvent();
 	const trustSelectorHandleRawInputResults = runCliSelectorsTrustSelectorHandleRawInput();
+	const trustSelectorRenderLinesResults = runCliSelectorsTrustSelectorUiState();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8957,6 +9009,7 @@ async function measureCliSelectorsSessionSearch() {
 		...trustSelectorMoveResults,
 		...trustSelectorHandleEventResults,
 		...trustSelectorHandleRawInputResults,
+		...trustSelectorRenderLinesResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9225,6 +9278,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		trust_selector_handle_raw_input: await collect("cli_selectors.trust_selector_handle_raw_input", () => {
 			return () => runCliSelectorsTrustSelectorHandleRawInput();
+		}),
+		trust_selector_ui_state: await collect("cli_selectors.trust_selector_ui_state", () => {
+			return () => runCliSelectorsTrustSelectorUiState();
 		}),
 		observed,
 	};
@@ -10449,6 +10505,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-event dispatch",
 			"cli_selectors.trust_selector_handle_raw_input":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-raw-input dispatch",
+			"cli_selectors.trust_selector_ui_state":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent UI state",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

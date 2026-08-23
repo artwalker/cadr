@@ -2664,6 +2664,19 @@ Observed `tshri_child_down` / `tshri_child_k` / `tshri_child_enter` /
 are exact. First Friend-MachineD freeze **2.98×**
 (693.8 / 233.2 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 197 — `cli_selectors` (trust_selector_ui_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trust_selector_ui_state` | `trust-selector-ui-encoded` | structural UI state digest |
+
+Trust selector UI state; encoded as `saved_decision|session_trusted|option_rows`
+with each option row `label|sel/nosel|saved/nosaved`. Parent-folder labels use
+fixture-relative path encoding. Observed `rts_child_default` / `rts_child_saved` /
+`rts_child_inherited` / `rts_child_distrust` / `rts_single` are exact. First
+Friend-MachineD freeze **2.27×** (394.9 / 173.7 µs), ceiling 8.0. Same commit
+no optimize.
+
 ## 2. How to run
 
 ```bash

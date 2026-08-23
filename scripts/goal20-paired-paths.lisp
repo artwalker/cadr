@@ -384,6 +384,7 @@
     ("cli_selectors.trust_selector_move" . 50)
     ("cli_selectors.trust_selector_handle_event" . 50)
     ("cli_selectors.trust_selector_handle_raw_input" . 50)
+    ("cli_selectors.trust_selector_ui_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8320,6 +8321,67 @@
        (trust-handle-raw-input-encoded child 1 "j")
        (trust-handle-raw-input-encoded-key child 0 "tui.select.confirm")))))
 
+(defun encode-trust-option-label (option)
+  (let ((label (getf option :label))
+        (saved-path (getf option :saved-path)))
+    (if (search "parent folder" label)
+        (format nil "Trust parent folder (~a)"
+                (encode-trust-path saved-path))
+        label)))
+
+(defun trust-selector-ui-encoded (state)
+  (format nil "~a|~a|~{~a~^;~}"
+          (encode-trust-decision-description
+           (cadr-cli::trust-selector-state-cwd state)
+           (cadr-cli::trust-selector-state-saved-entry state))
+          (if (cadr-cli::trust-selector-state-project-trusted-p state)
+              "trusted" "untrusted")
+          (loop for index from 0
+                below (length (cadr-cli::trust-selector-state-options state))
+                collect
+                (let ((option
+                        (nth index
+                             (cadr-cli::trust-selector-state-options state))))
+                  (format nil "~a|~a|~a"
+                          (encode-trust-option-label option)
+                          (if (= index
+                                 (cadr-cli::trust-selector-state-selected state))
+                              "sel" "nosel")
+                          (if (cadr-cli::trust-option-saved-p
+                               option
+                               (cadr-cli::trust-selector-state-saved-entry state))
+                              "saved" "nosaved"))))))
+
+(defun make-trust-render-state (cwd &key saved-entry project-trusted-p)
+  (cadr-cli::make-trust-selector-state
+   :cwd cwd
+   :saved-entry saved-entry
+   :project-trusted-p project-trusted-p))
+
+(defun run-cli-selectors-trust-selector-ui-state ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let ((child (namestring (getf fixtures :child)))
+          (parent (namestring (getf fixtures :parent)))
+          (single (namestring (getf fixtures :single))))
+      (list
+       (trust-selector-ui-encoded (make-trust-render-state child))
+       (trust-selector-ui-encoded
+        (make-trust-render-state
+         child
+         :saved-entry `(:path ,child :decision t)
+         :project-trusted-p t))
+       (trust-selector-ui-encoded
+        (make-trust-render-state
+         child
+         :saved-entry `(:path ,parent :decision t)
+         :project-trusted-p t))
+       (trust-selector-ui-encoded
+        (make-trust-render-state
+         child
+         :saved-entry `(:path ,child :decision nil)
+         :project-trusted-p nil))
+       (trust-selector-ui-encoded (make-trust-render-state single))))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8465,7 +8527,9 @@
         (trust-selector-handle-event
           (run-cli-selectors-trust-selector-handle-event))
         (trust-selector-handle-raw-input
-          (run-cli-selectors-trust-selector-handle-raw-input)))
+          (run-cli-selectors-trust-selector-handle-raw-input))
+        (trust-selector-ui-state
+          (run-cli-selectors-trust-selector-ui-state)))
     (json-object
      "observed"
      (json-object
@@ -8958,7 +9022,12 @@
       "tshri_child_esc" (nth 3 trust-selector-handle-raw-input)
       "tshri_child_bad" (nth 4 trust-selector-handle-raw-input)
       "tshri_child_j" (nth 5 trust-selector-handle-raw-input)
-      "tshri_child_confirm" (nth 6 trust-selector-handle-raw-input))
+      "tshri_child_confirm" (nth 6 trust-selector-handle-raw-input)
+      "rts_child_default" (nth 0 trust-selector-ui-state)
+      "rts_child_saved" (nth 1 trust-selector-ui-state)
+      "rts_child_inherited" (nth 2 trust-selector-ui-state)
+      "rts_child_distrust" (nth 3 trust-selector-ui-state)
+      "rts_single" (nth 4 trust-selector-ui-state))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9388,7 +9457,12 @@
      (collect "cli_selectors.trust_selector_handle_raw_input"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-trust-selector-handle-raw-input)))))))
+                  (run-cli-selectors-trust-selector-handle-raw-input))))
+     "trust_selector_ui_state"
+     (collect "cli_selectors.trust_selector_ui_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-ui-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10575,6 +10649,8 @@
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-event"
       "cli_selectors.trust_selector_handle_raw_input"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-raw-input"
+      "cli_selectors.trust_selector_ui_state"
+      "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
