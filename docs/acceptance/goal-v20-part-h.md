@@ -2198,7 +2198,7 @@ custom. Fixtures cover path, offset/limit range, offset-only, long bash
 truncation, and custom JSON truncation. Observed `tfc_read` / `tfc_read_rng` /
 `tfc_read_off` / `tfc_write` / `tfc_edit` / `tfc_bash` / `tfc_bash_long` /
 `tfc_grep` / `tfc_find` / `tfc_ls` / `tfc_custom` are exact. First
-Friend-MachineD freeze **5.86×** (15.4 / 2.6 µs), ceiling 8.0. Same commit no
+Friend-MachineD freeze **5.86×** (14.1 / 2.4 µs), ceiling 8.0. Same commit no
 optimize.
 
 ## 2. How to run

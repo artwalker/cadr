@@ -23,7 +23,7 @@ tag/Release step.
 
 - Goal 20 P.13: pair `cli_selectors.tree_format_tool_call`
   (tree tool-call format fixtures; cadr `tree-selector-format-tool-call` vs pi
-  `formatToolCall`). Friend-MachineD n=5 **5.86×** (15.4 / 2.6 µs), ceiling 8.0.
+  `formatToolCall`). Friend-MachineD n=5 **5.86×** (14.1 / 2.4 µs), ceiling 8.0.
   Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_format_label_timestamp`
   (tree label timestamp fixtures; cadr `tree-selector-format-label-timestamp` vs
