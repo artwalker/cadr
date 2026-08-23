@@ -383,6 +383,7 @@
     ("cli_selectors.trust_decision_description" . 50)
     ("cli_selectors.trust_selector_move" . 50)
     ("cli_selectors.trust_selector_handle_event" . 50)
+    ("cli_selectors.trust_selector_handle_raw_input" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8278,6 +8279,47 @@
        (trust-handle-event-encoded child 1 :escape)
        (trust-handle-event-encoded child 0 :tab)))))
 
+(defun trust-raw-input-key-data (state key-name)
+  (first (cadr-tui:keybinding-keys
+          (cadr-cli::trust-selector-state-keybindings state)
+          key-name)))
+
+(defun encode-trust-handle-raw-input-result (state action value consumed)
+  (format nil "~a|~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (if (and (eq action :select) value)
+              (encode-trust-selector-selection value)
+              "null")
+          (write-to-string
+           (cadr-cli::trust-selector-state-selected state))
+          (if consumed "true" "false")))
+
+(defun trust-handle-raw-input-encoded (cwd selected data)
+  (let ((state (make-trust-selector-state-with-selected cwd selected)))
+    (multiple-value-bind (action value consumed)
+        (cadr-cli::trust-selector-handle-raw-input state data)
+      (encode-trust-handle-raw-input-result state action value consumed))))
+
+(defun trust-handle-raw-input-encoded-key (cwd selected key-name)
+  (let ((state (make-trust-selector-state-with-selected cwd selected)))
+    (trust-handle-raw-input-encoded
+     cwd selected (trust-raw-input-key-data state key-name))))
+
+(defun run-cli-selectors-trust-selector-handle-raw-input ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let ((child (namestring (getf fixtures :child))))
+      (list
+       (trust-handle-raw-input-encoded-key child 0 "tui.select.down")
+       (trust-handle-raw-input-encoded child 1 "k")
+       (trust-handle-raw-input-encoded
+        child 0 (string #\Newline))
+       (trust-handle-raw-input-encoded-key child 1 "tui.select.cancel")
+       (trust-handle-raw-input-encoded child 0 "q")
+       (trust-handle-raw-input-encoded child 1 "j")
+       (trust-handle-raw-input-encoded-key child 0 "tui.select.confirm")))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8421,7 +8463,9 @@
         (trust-selector-move
           (run-cli-selectors-trust-selector-move))
         (trust-selector-handle-event
-          (run-cli-selectors-trust-selector-handle-event)))
+          (run-cli-selectors-trust-selector-handle-event))
+        (trust-selector-handle-raw-input
+          (run-cli-selectors-trust-selector-handle-raw-input)))
     (json-object
      "observed"
      (json-object
@@ -8907,7 +8951,14 @@
       "tshe_child_k" (nth 3 trust-selector-handle-event)
       "tshe_child_bad" (nth 4 trust-selector-handle-event)
       "tshe_child_esc" (nth 5 trust-selector-handle-event)
-      "tshe_child_nop" (nth 6 trust-selector-handle-event))
+      "tshe_child_nop" (nth 6 trust-selector-handle-event)
+      "tshri_child_down" (nth 0 trust-selector-handle-raw-input)
+      "tshri_child_k" (nth 1 trust-selector-handle-raw-input)
+      "tshri_child_enter" (nth 2 trust-selector-handle-raw-input)
+      "tshri_child_esc" (nth 3 trust-selector-handle-raw-input)
+      "tshri_child_bad" (nth 4 trust-selector-handle-raw-input)
+      "tshri_child_j" (nth 5 trust-selector-handle-raw-input)
+      "tshri_child_confirm" (nth 6 trust-selector-handle-raw-input))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9332,7 +9383,12 @@
      (collect "cli_selectors.trust_selector_handle_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-trust-selector-handle-event)))))))
+                  (run-cli-selectors-trust-selector-handle-event))))
+     "trust_selector_handle_raw_input"
+     (collect "cli_selectors.trust_selector_handle_raw_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-handle-raw-input)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10517,6 +10573,8 @@
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-move"
       "cli_selectors.trust_selector_handle_event"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-event"
+      "cli_selectors.trust_selector_handle_raw_input"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-raw-input"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

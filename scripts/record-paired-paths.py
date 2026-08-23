@@ -203,6 +203,7 @@ METRIC_KEYS = (
     "cli_selectors.trust_decision_description",
     "cli_selectors.trust_selector_move",
     "cli_selectors.trust_selector_handle_event",
+    "cli_selectors.trust_selector_handle_raw_input",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

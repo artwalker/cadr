@@ -2652,6 +2652,18 @@ Observed `tshe_child_down` / `tshe_child_up` / `tshe_child_enter` /
 are exact. First Friend-MachineD freeze **2.35×**
 (333.3 / 142.1 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 196 — `cli_selectors` (trust_selector_handle_raw_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trust_selector_handle_raw_input` | `trust-selector-handle-raw-input` | raw-input dispatch on trust selector state |
+
+Trust selector raw key input; encoded as `action|selection|null|selectedIndex|consumed`.
+Observed `tshri_child_down` / `tshri_child_k` / `tshri_child_enter` /
+`tshri_child_esc` / `tshri_child_bad` / `tshri_child_j` / `tshri_child_confirm`
+are exact. First Friend-MachineD freeze **2.98×**
+(693.8 / 233.2 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

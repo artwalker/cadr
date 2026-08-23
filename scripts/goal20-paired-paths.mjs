@@ -307,6 +307,7 @@ const REPETITIONS = {
 	"cli_selectors.trust_decision_description": 50,
 	"cli_selectors.trust_selector_move": 50,
 	"cli_selectors.trust_selector_handle_event": 50,
+	"cli_selectors.trust_selector_handle_raw_input": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8248,6 +8249,51 @@ function runCliSelectorsTrustSelectorHandleEvent() {
 	};
 }
 
+function trustRawInputKeyDataPi(keyName) {
+	return new keybindingsModule.KeybindingsManager(keybindingsModule.TUI_KEYBINDINGS).getKeys(keyName)[0];
+}
+
+function trustHandleRawInputEncoded(cwd, selected, data) {
+	const manager = new keybindingsModule.KeybindingsManager(keybindingsModule.TUI_KEYBINDINGS);
+	const options = trustManagerModule.getProjectTrustOptions(cwd);
+	let selectedIndex = selected;
+	let action = "null";
+	let value = "null";
+	let consumed = "false";
+
+	if (data === "k" || selectorKeybindingMatchesPi(manager, data, "tui.select.up")) {
+		selectedIndex = moveIndex(selected, options.length, -1);
+		action = "changed";
+		consumed = "true";
+	} else if (data === "j" || selectorKeybindingMatchesPi(manager, data, "tui.select.down")) {
+		selectedIndex = moveIndex(selected, options.length, 1);
+		action = "changed";
+		consumed = "true";
+	} else if (data === "\n" || selectorKeybindingMatchesPi(manager, data, "tui.select.confirm")) {
+		action = "select";
+		value = encodeTrustSelectorSelection(options[selected]);
+		consumed = "true";
+	} else if (selectorKeybindingMatchesPi(manager, data, "tui.select.cancel")) {
+		action = "cancel";
+		consumed = "true";
+	}
+
+	return `${action}|${value}|${selectedIndex}|${consumed}`;
+}
+
+function runCliSelectorsTrustSelectorHandleRawInput() {
+	const { child } = stageProjectTrustOptionsFixtures();
+	return {
+		tshri_child_down: trustHandleRawInputEncoded(child, 0, trustRawInputKeyDataPi("tui.select.down")),
+		tshri_child_k: trustHandleRawInputEncoded(child, 1, "k"),
+		tshri_child_enter: trustHandleRawInputEncoded(child, 0, "\n"),
+		tshri_child_esc: trustHandleRawInputEncoded(child, 1, trustRawInputKeyDataPi("tui.select.cancel")),
+		tshri_child_bad: trustHandleRawInputEncoded(child, 0, "q"),
+		tshri_child_j: trustHandleRawInputEncoded(child, 1, "j"),
+		tshri_child_confirm: trustHandleRawInputEncoded(child, 0, trustRawInputKeyDataPi("tui.select.confirm")),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8649,6 +8695,7 @@ async function measureCliSelectorsSessionSearch() {
 	const trustDecisionDescriptionResults = runCliSelectorsTrustDecisionDescription();
 	const trustSelectorMoveResults = runCliSelectorsTrustSelectorMove();
 	const trustSelectorHandleEventResults = runCliSelectorsTrustSelectorHandleEvent();
+	const trustSelectorHandleRawInputResults = runCliSelectorsTrustSelectorHandleRawInput();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8909,6 +8956,7 @@ async function measureCliSelectorsSessionSearch() {
 		...trustDecisionDescriptionResults,
 		...trustSelectorMoveResults,
 		...trustSelectorHandleEventResults,
+		...trustSelectorHandleRawInputResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9174,6 +9222,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		trust_selector_handle_event: await collect("cli_selectors.trust_selector_handle_event", () => {
 			return () => runCliSelectorsTrustSelectorHandleEvent();
+		}),
+		trust_selector_handle_raw_input: await collect("cli_selectors.trust_selector_handle_raw_input", () => {
+			return () => runCliSelectorsTrustSelectorHandleRawInput();
 		}),
 		observed,
 	};
@@ -10396,6 +10447,8 @@ const result = {
 				"packages/tui/src/components/select-list.ts wrap selection index on getProjectTrustOptions count",
 			"cli_selectors.trust_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-event dispatch",
+			"cli_selectors.trust_selector_handle_raw_input":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-raw-input dispatch",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

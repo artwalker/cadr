@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.trust_selector_handle_raw_input`
+  (raw-input fixtures; cadr `trust-selector-handle-raw-input`
+  vs pi raw-input dispatch). Friend-MachineD n=5 **2.98×**
+  (693.8 / 233.2 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.trust_selector_handle_event`
   (event fixtures; cadr `trust-selector-handle-event`
   vs pi event dispatch). Friend-MachineD n=5 **2.35×**
