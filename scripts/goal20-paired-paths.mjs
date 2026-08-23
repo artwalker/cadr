@@ -267,6 +267,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_cycle_filter": 50,
 	"cli_selectors.tree_format_label_timestamp": 50,
 	"cli_selectors.tree_format_tool_call": 50,
+	"cli_selectors.tree_entry_display_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5899,6 +5900,107 @@ function runCliSelectorsTreeFormatToolCall() {
 	};
 }
 
+function treeEntryDisplayTextPi(entry, isSelected) {
+	const theme = themeModule.theme;
+	const normalize = (text) => (text ?? "").replace(/[\n\t]/g, " ").trim();
+	let result = "";
+
+	switch (entry.type) {
+		case "message": {
+			const role = entry.role;
+			if (role === "user") {
+				result = theme.fg("accent", "user: ") + normalize(entry.text);
+			} else if (role === "assistant") {
+				const textContent = normalize(entry.text);
+				if (textContent) {
+					result = theme.fg("success", "assistant: ") + textContent;
+				} else if (entry.stopReason === "aborted") {
+					result = theme.fg("success", "assistant: ") + theme.fg("muted", "(aborted)");
+				} else if (entry.errorMessage) {
+					const errMsg = normalize(entry.errorMessage).slice(0, 80);
+					result = theme.fg("success", "assistant: ") + theme.fg("error", errMsg);
+				} else {
+					result = theme.fg("success", "assistant: ") + theme.fg("muted", "(no content)");
+				}
+			} else if (role === "toolResult") {
+				if (entry.toolCall) {
+					result = theme.fg("muted", formatToolCallPi(entry.toolCall.name, entry.toolCall.arguments));
+				} else {
+					result = theme.fg("muted", `[${entry.toolName ?? "tool"}]`);
+				}
+			} else if (role === "bashExecution") {
+				result = theme.fg("dim", `[bash]: ${normalize(entry.command)}`);
+			} else {
+				result = theme.fg("dim", `[${role}]`);
+			}
+			break;
+		}
+		case "custom_message":
+			result =
+				theme.fg("customMessageLabel", `[${entry.customType}]: `) + normalize(entry.text);
+			break;
+		case "compaction":
+			result = theme.fg("borderAccent", `[compaction: ${Math.round(entry.tokensBefore / 1000)}k tokens]`);
+			break;
+		case "branch_summary":
+			result = theme.fg("warning", "[branch summary]: ") + normalize(entry.text);
+			break;
+		case "model_change":
+			result = theme.fg("dim", `[model: ${entry.modelId}]`);
+			break;
+		case "thinking_level_change":
+			result = theme.fg("dim", `[thinking: ${entry.thinkingLevel}]`);
+			break;
+		case "custom":
+			result = theme.fg("dim", `[custom: ${entry.customType}]`);
+			break;
+		case "label":
+			result = theme.fg("dim", `[label: ${entry.label ?? "(cleared)"}]`);
+			break;
+		case "session_info":
+			result = entry.name
+				? [theme.fg("dim", "[title: "), theme.fg("dim", entry.name), theme.fg("dim", "]")].join("")
+				: [theme.fg("dim", "[title: "), theme.italic(theme.fg("dim", "empty")), theme.fg("dim", "]")].join("");
+			break;
+		default:
+			result = "";
+	}
+
+	return isSelected ? theme.bold(result) : result;
+}
+
+function runCliSelectorsTreeEntryDisplayText() {
+	return {
+		ted_user: treeEntryDisplayTextPi({ type: "message", role: "user", text: "hello" }, false),
+		ted_asst: treeEntryDisplayTextPi({ type: "message", role: "assistant", text: "reply text" }, false),
+		ted_empty: treeEntryDisplayTextPi({ type: "message", role: "assistant", text: "" }, false),
+		ted_abort: treeEntryDisplayTextPi(
+			{ type: "message", role: "assistant", stopReason: "aborted", text: "" },
+			false,
+		),
+		ted_bash: treeEntryDisplayTextPi(
+			{ type: "message", role: "bashExecution", command: "echo hi" },
+			false,
+		),
+		ted_compact: treeEntryDisplayTextPi({ type: "compaction", tokensBefore: 42000 }, false),
+		ted_branch: treeEntryDisplayTextPi({ type: "branch_summary", text: "summary text" }, false),
+		ted_label: treeEntryDisplayTextPi({ type: "label", label: "bookmark" }, false),
+		ted_tool: treeEntryDisplayTextPi(
+			{
+				type: "message",
+				role: "toolResult",
+				toolCall: { name: "read", arguments: { path: "/tmp/foo" } },
+			},
+			false,
+		),
+		ted_custom: treeEntryDisplayTextPi(
+			{ type: "custom_message", customType: "note", text: "body" },
+			false,
+		),
+		ted_sel: treeEntryDisplayTextPi({ type: "message", role: "user", text: "selected" }, true),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6260,6 +6362,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeCycleFilterResults = runCliSelectorsTreeCycleFilter();
 	const treeFormatLabelTimestampResults = runCliSelectorsTreeFormatLabelTimestamp();
 	const treeFormatToolCallResults = runCliSelectorsTreeFormatToolCall();
+	const treeEntryDisplayTextResults = runCliSelectorsTreeEntryDisplayText();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6480,6 +6583,7 @@ async function measureCliSelectorsSessionSearch() {
 		tcf_user_fwd: treeCycleFilterResults.tcf_user_fwd,
 		...treeFormatLabelTimestampResults,
 		...treeFormatToolCallResults,
+		...treeEntryDisplayTextResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6625,6 +6729,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_format_tool_call: await collect("cli_selectors.tree_format_tool_call", () => {
 			return () => runCliSelectorsTreeFormatToolCall();
+		}),
+		tree_entry_display_text: await collect("cli_selectors.tree_entry_display_text", () => {
+			return () => runCliSelectorsTreeEntryDisplayText();
 		}),
 		observed,
 	};
@@ -7767,6 +7874,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatLabelTimestamp",
 			"cli_selectors.tree_format_tool_call":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall",
+			"cli_selectors.tree_entry_display_text":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getEntryDisplayText",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

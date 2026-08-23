@@ -2201,6 +2201,19 @@ truncation, and custom JSON truncation. Observed `tfc_read` / `tfc_read_rng` /
 Friend-MachineD freeze **5.86×** (14.1 / 2.4 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 156 — `cli_selectors` (tree_entry_display_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_entry_display_text` | `tree-selector-entry-display-text` | `getEntryDisplayText` (`tree-selector.ts`) |
+
+Entry row text only (themed): user/assistant empty+aborted, bash, compaction,
+branch summary, label, tool-result read, custom message, selected bold.
+Observed `ted_user` / `ted_asst` / `ted_empty` / `ted_abort` / `ted_bash` /
+`ted_compact` / `ted_branch` / `ted_label` / `ted_tool` / `ted_custom` /
+`ted_sel` are exact. First Friend-MachineD freeze **5.79×** (19.2 / 3.3 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

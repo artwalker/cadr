@@ -343,6 +343,7 @@
     ("cli_selectors.tree_cycle_filter" . 50)
     ("cli_selectors.tree_format_label_timestamp" . 50)
     ("cli_selectors.tree_format_tool_call" . 50)
+    ("cli_selectors.tree_entry_display_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6730,6 +6731,33 @@
      (cadr-cli::tree-selector-format-tool-call
       "mytool" (json-object "alpha" 1 "beta" "two")))))
 
+(defun run-cli-selectors-tree-entry-display-text ()
+  (list
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :message :role :user :text "hello") nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :message :role :assistant :text "reply text") nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :message :role :assistant :text "") nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :message :role :assistant :stop-reason :aborted :text "") nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :message :role :bash-execution :text "echo hi") nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :compaction :tokens-before 42000) nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :branch-summary :text "summary text") nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :label :entry-label "bookmark") nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :message :role :tool-result
+      :tool-call-name "read"
+      :tool-call-arguments (json-object "path" "/tmp/foo")) nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :custom-message :custom-type "note" :text "body") nil)
+   (cadr-cli::tree-selector-entry-display-text
+    '(:type :message :role :user :text "selected") t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6793,7 +6821,9 @@
         (tree-format-label-timestamp
           (run-cli-selectors-tree-format-label-timestamp))
         (tree-format-tool-call
-          (run-cli-selectors-tree-format-tool-call)))
+          (run-cli-selectors-tree-format-tool-call))
+        (tree-entry-display-text
+          (run-cli-selectors-tree-entry-display-text)))
     (json-object
      "observed"
      (json-object
@@ -7047,7 +7077,18 @@
       "tfc_grep" (nth 7 tree-format-tool-call)
       "tfc_find" (nth 8 tree-format-tool-call)
       "tfc_ls" (nth 9 tree-format-tool-call)
-      "tfc_custom" (nth 10 tree-format-tool-call))
+      "tfc_custom" (nth 10 tree-format-tool-call)
+      "ted_user" (nth 0 tree-entry-display-text)
+      "ted_asst" (nth 1 tree-entry-display-text)
+      "ted_empty" (nth 2 tree-entry-display-text)
+      "ted_abort" (nth 3 tree-entry-display-text)
+      "ted_bash" (nth 4 tree-entry-display-text)
+      "ted_compact" (nth 5 tree-entry-display-text)
+      "ted_branch" (nth 6 tree-entry-display-text)
+      "ted_label" (nth 7 tree-entry-display-text)
+      "ted_tool" (nth 8 tree-entry-display-text)
+      "ted_custom" (nth 9 tree-entry-display-text)
+      "ted_sel" (nth 10 tree-entry-display-text))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7272,7 +7313,12 @@
      (collect "cli_selectors.tree_format_tool_call"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-format-tool-call)))))))
+                  (run-cli-selectors-tree-format-tool-call))))
+     "tree_entry_display_text"
+     (collect "cli_selectors.tree_entry_display_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-entry-display-text)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8377,6 +8423,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-format-label-timestamp"
       "cli_selectors.tree_format_tool_call"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-format-tool-call"
+      "cli_selectors.tree_entry_display_text"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-display-text"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

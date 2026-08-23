@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_entry_display_text`
+  (tree entry display fixtures; cadr `tree-selector-entry-display-text` vs pi
+  `getEntryDisplayText`). Friend-MachineD n=5 **5.79×** (19.2 / 3.3 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_format_tool_call`
   (tree tool-call format fixtures; cadr `tree-selector-format-tool-call` vs pi
   `formatToolCall`). Friend-MachineD n=5 **5.86×** (14.1 / 2.4 µs), ceiling 8.0.
