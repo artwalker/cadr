@@ -259,6 +259,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_query_matches": 50,
 	"cli_selectors.tree_entry_search_text": 50,
 	"cli_selectors.tree_settings_entry_p": 50,
+	"cli_selectors.tree_normalize_display_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5626,6 +5627,20 @@ function runCliSelectorsTreeSettingsEntryP() {
 	};
 }
 
+function treeNormalizeDisplayTextPi(text) {
+	return (text ?? "").replace(/[\n\t]/g, " ").trim();
+}
+
+function runCliSelectorsTreeNormalizeDisplayText() {
+	return {
+		tnd_hello: treeNormalizeDisplayTextPi("hello"),
+		tnd_spaced: treeNormalizeDisplayTextPi("  spaced  "),
+		tnd_newline: treeNormalizeDisplayTextPi("\nfoo\tbar\n"),
+		tnd_empty: treeNormalizeDisplayTextPi(null),
+		tnd_ws: treeNormalizeDisplayTextPi("   \t\n  "),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5979,6 +5994,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeQueryMatchesResults = runCliSelectorsTreeQueryMatches();
 	const treeEntrySearchTextResults = runCliSelectorsTreeEntrySearchText();
 	const treeSettingsEntryPResults = runCliSelectorsTreeSettingsEntryP();
+	const treeNormalizeDisplayTextResults = runCliSelectorsTreeNormalizeDisplayText();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6167,6 +6183,11 @@ async function measureCliSelectorsSessionSearch() {
 		tsep_model: treeSettingsEntryPResults.tsep_model,
 		tsep_think: treeSettingsEntryPResults.tsep_think,
 		tsep_session: treeSettingsEntryPResults.tsep_session,
+		tnd_hello: treeNormalizeDisplayTextResults.tnd_hello,
+		tnd_spaced: treeNormalizeDisplayTextResults.tnd_spaced,
+		tnd_newline: treeNormalizeDisplayTextResults.tnd_newline,
+		tnd_empty: treeNormalizeDisplayTextResults.tnd_empty,
+		tnd_ws: treeNormalizeDisplayTextResults.tnd_ws,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6288,6 +6309,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_settings_entry_p: await collect("cli_selectors.tree_settings_entry_p", () => {
 			return () => runCliSelectorsTreeSettingsEntryP();
+		}),
+		tree_normalize_display_text: await collect("cli_selectors.tree_normalize_display_text", () => {
+			return () => runCliSelectorsTreeNormalizeDisplayText();
 		}),
 		observed,
 	};
@@ -7414,6 +7438,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getSearchableText field join",
 			"cli_selectors.tree_settings_entry_p":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts isSettingsEntry predicate",
+			"cli_selectors.tree_normalize_display_text":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getEntryDisplayText normalize",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

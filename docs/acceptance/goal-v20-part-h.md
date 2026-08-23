@@ -2099,6 +2099,18 @@ empty. Observed `tsep_label` / `tsep_user` / `tsep_custom` / `tsep_model` /
 `tsep_think` / `tsep_session` are exact. First Friend-MachineD freeze
 **0.65×** (0.3 / 0.5 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 148 — `cli_selectors` (tree_normalize_display_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_normalize_display_text` | `tree-selector-normalize-display-text` | `getEntryDisplayText` normalize (`tree-selector.ts`) |
+
+Display-text whitespace normalization only: newline/tab to space, then trim. Not
+theme or entry-type formatting. Fixtures: plain, padded, newline/tab, nil, whitespace-only.
+Observed `tnd_hello` / `tnd_spaced` / `tnd_newline` / `tnd_empty` / `tnd_ws` are
+exact. First Friend-MachineD freeze **2.88×** (4.3 / 1.5 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash

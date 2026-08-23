@@ -335,6 +335,7 @@
     ("cli_selectors.tree_query_matches" . 50)
     ("cli_selectors.tree_entry_search_text" . 50)
     ("cli_selectors.tree_settings_entry_p" . 50)
+    ("cli_selectors.tree_normalize_display_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6541,6 +6542,16 @@
     '(:type :thinking-level-change :thinking-level "high"))
    (tree-settings-entry-p-encoded '(:type :session-info))))
 
+(defun run-cli-selectors-tree-normalize-display-text ()
+  (list
+   (cadr-cli::tree-selector-normalize-display-text "hello")
+   (cadr-cli::tree-selector-normalize-display-text "  spaced  ")
+   (cadr-cli::tree-selector-normalize-display-text
+    (format nil "~Cfoo~Cbar~C" #\Newline #\Tab #\Newline))
+   (cadr-cli::tree-selector-normalize-display-text nil)
+   (cadr-cli::tree-selector-normalize-display-text
+    (format nil "   ~C~C  " #\Tab #\Newline))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6588,7 +6599,9 @@
         (tree-entry-search-text
           (run-cli-selectors-tree-entry-search-text))
         (tree-settings-entry-p
-          (run-cli-selectors-tree-settings-entry-p)))
+          (run-cli-selectors-tree-settings-entry-p))
+        (tree-normalize-display-text
+          (run-cli-selectors-tree-normalize-display-text)))
     (json-object
      "observed"
      (json-object
@@ -6796,7 +6809,12 @@
       "tsep_custom" (nth 2 tree-settings-entry-p)
       "tsep_model" (nth 3 tree-settings-entry-p)
       "tsep_think" (nth 4 tree-settings-entry-p)
-      "tsep_session" (nth 5 tree-settings-entry-p))
+      "tsep_session" (nth 5 tree-settings-entry-p)
+      "tnd_hello" (nth 0 tree-normalize-display-text)
+      "tnd_spaced" (nth 1 tree-normalize-display-text)
+      "tnd_newline" (nth 2 tree-normalize-display-text)
+      "tnd_empty" (nth 3 tree-normalize-display-text)
+      "tnd_ws" (nth 4 tree-normalize-display-text))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6981,7 +6999,12 @@
      (collect "cli_selectors.tree_settings_entry_p"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-settings-entry-p)))))))
+                  (run-cli-selectors-tree-settings-entry-p))))
+     "tree_normalize_display_text"
+     (collect "cli_selectors.tree_normalize_display_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-normalize-display-text)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8070,6 +8093,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-search-text"
       "cli_selectors.tree_settings_entry_p"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-settings-entry-p"
+      "cli_selectors.tree_normalize_display_text"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-normalize-display-text"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

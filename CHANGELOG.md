@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_normalize_display_text`
+  (tree display normalize fixtures; cadr `tree-selector-normalize-display-text` vs
+  pi `getEntryDisplayText` normalize). Friend-MachineD n=5 **2.88×**
+  (4.3 / 1.5 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_settings_entry_p`
   (tree settings-entry fixtures; cadr `tree-selector-settings-entry-p` vs pi
   `isSettingsEntry`). Friend-MachineD n=5 **0.65×** (0.3 / 0.5 µs), ceiling 8.0.
