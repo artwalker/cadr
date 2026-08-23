@@ -130,4 +130,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_selectors.tree_shorten_path` | 2.7 | 1.6 | 1.76× | 8.00× | measure-only pair `de5c850ff`; tree formatToolCall shortenPath only | invent pause；地板优化另刀 |
 
+| `cli_selectors.tree_foldable_p` | 4.1 | 1.5 | 2.79× | 8.00× | measure-only pair `abe413c80`; tree isFoldable predicate only | invent pause；地板优化另刀 |
+
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

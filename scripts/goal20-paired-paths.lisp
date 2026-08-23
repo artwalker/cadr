@@ -338,6 +338,7 @@
     ("cli_selectors.tree_normalize_display_text" . 50)
     ("cli_selectors.tree_status_labels" . 50)
     ("cli_selectors.tree_shorten_path" . 50)
+    ("cli_selectors.tree_foldable_p" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6584,6 +6585,44 @@
       (concatenate 'string home "/projects/pi-mono/README.md"))
      (cadr-cli::tree-selector-shorten-path ""))))
 
+(defun tree-foldable-state-with-maps (children-alist parent-alist)
+  (let ((state (cadr-cli::%make-tree-selector-state)))
+    (dolist (pair children-alist)
+      (setf (gethash (car pair)
+                     (cadr-cli::tree-selector-state-visible-children state))
+            (cdr pair)))
+    (dolist (pair parent-alist)
+      (setf (gethash (car pair)
+                     (cadr-cli::tree-selector-state-visible-parent state))
+            (cdr pair)))
+    state))
+
+(defun tree-foldable-p-encoded (state id)
+  (if (cadr-cli::tree-selector-foldable-p state id)
+      "t"
+      ""))
+
+(defun run-cli-selectors-tree-foldable-p ()
+  (list
+   (tree-foldable-p-encoded
+    (tree-foldable-state-with-maps
+     '(("r" . ("a")))
+     '(("a" . "r")))
+    "r")
+   (tree-foldable-p-encoded
+    (tree-foldable-state-with-maps nil nil)
+    "x")
+   (tree-foldable-p-encoded
+    (tree-foldable-state-with-maps
+     '(("r" . ("p")) ("p" . ("c")))
+     '(("p" . "r") ("c" . "p")))
+    "p")
+   (tree-foldable-p-encoded
+    (tree-foldable-state-with-maps
+     '(("p" . ("a" "b")) ("a" . ("x")))
+     '(("a" . "p") ("b" . "p") ("x" . "a")))
+    "a")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6637,7 +6676,9 @@
         (tree-status-labels
           (run-cli-selectors-tree-status-labels))
         (tree-shorten-path
-          (run-cli-selectors-tree-shorten-path)))
+          (run-cli-selectors-tree-shorten-path))
+        (tree-foldable-p
+          (run-cli-selectors-tree-foldable-p)))
     (json-object
      "observed"
      (json-object
@@ -6862,7 +6903,11 @@
       "tsp_prefix" (nth 1 tree-shorten-path)
       "tsp_abs" (nth 2 tree-shorten-path)
       "tsp_proj" (nth 3 tree-shorten-path)
-      "tsp_empty" (nth 4 tree-shorten-path))
+      "tsp_empty" (nth 4 tree-shorten-path)
+      "tfp_root" (nth 0 tree-foldable-p)
+      "tfp_leaf" (nth 1 tree-foldable-p)
+      "tfp_only_child" (nth 2 tree-foldable-p)
+      "tfp_branch" (nth 3 tree-foldable-p))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7062,7 +7107,12 @@
      (collect "cli_selectors.tree_shorten_path"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-shorten-path)))))))
+                  (run-cli-selectors-tree-shorten-path))))
+     "tree_foldable_p"
+     (collect "cli_selectors.tree_foldable_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-foldable-p)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8157,6 +8207,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-status-labels"
       "cli_selectors.tree_shorten_path"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-shorten-path"
+      "cli_selectors.tree_foldable_p"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-foldable-p"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

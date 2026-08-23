@@ -2137,6 +2137,19 @@ path, empty. Observed `tsp_home` / `tsp_prefix` / `tsp_abs` / `tsp_proj` /
 `tsp_empty` are exact. First Friend-MachineD freeze **1.76×** (2.7 / 1.6 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 151 — `cli_selectors` (tree_foldable_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_foldable_p` | `tree-selector-foldable-p` | `isFoldable` (`tree-selector.ts`) |
+
+Foldable predicate only: visible children present and either root or multi-sibling
+branch. Bench uses `%make-tree-selector-state` with hand-built visible-parent/
+visible-children maps (no apply-filter). Encoded as `t` or empty. Observed
+`tfp_root` / `tfp_leaf` / `tfp_only_child` / `tfp_branch` are exact. First
+Friend-MachineD freeze **2.79×** (4.1 / 1.5 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash

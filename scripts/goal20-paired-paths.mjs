@@ -262,6 +262,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_normalize_display_text": 50,
 	"cli_selectors.tree_status_labels": 50,
 	"cli_selectors.tree_shorten_path": 50,
+	"cli_selectors.tree_foldable_p": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5696,6 +5697,56 @@ function runCliSelectorsTreeShortenPath() {
 	};
 }
 
+function treeFoldableStateWithMaps(childrenEntries, parentEntries) {
+	const childrenMap = new Map(childrenEntries);
+	const parentMap = new Map(parentEntries);
+	return { childrenMap, parentMap };
+}
+
+function treeFoldablePi(childrenMap, parentMap, entryId) {
+	const children = childrenMap.get(entryId);
+	if (!children || children.length === 0) return false;
+	const parentId = parentMap.get(entryId);
+	if (parentId === null || parentId === undefined) return true;
+	const siblings = childrenMap.get(parentId);
+	return siblings !== undefined && siblings.length > 1;
+}
+
+function treeFoldableEncodedPi(childrenEntries, parentEntries, entryId) {
+	const { childrenMap, parentMap } = treeFoldableStateWithMaps(childrenEntries, parentEntries);
+	return treeFoldablePi(childrenMap, parentMap, entryId) ? "t" : "";
+}
+
+function runCliSelectorsTreeFoldableP() {
+	return {
+		tfp_root: treeFoldableEncodedPi([["r", ["a"]]], [["a", "r"]], "r"),
+		tfp_leaf: treeFoldableEncodedPi([], [], "x"),
+		tfp_only_child: treeFoldableEncodedPi(
+			[
+				["r", ["p"]],
+				["p", ["c"]],
+			],
+			[
+				["p", "r"],
+				["c", "p"],
+			],
+			"p",
+		),
+		tfp_branch: treeFoldableEncodedPi(
+			[
+				["p", ["a", "b"]],
+				["a", ["x"]],
+			],
+			[
+				["a", "p"],
+				["b", "p"],
+				["x", "a"],
+			],
+			"a",
+		),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6052,6 +6103,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeNormalizeDisplayTextResults = runCliSelectorsTreeNormalizeDisplayText();
 	const treeStatusLabelsResults = runCliSelectorsTreeStatusLabels();
 	const treeShortenPathResults = runCliSelectorsTreeShortenPath();
+	const treeFoldablePResults = runCliSelectorsTreeFoldableP();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6257,6 +6309,10 @@ async function measureCliSelectorsSessionSearch() {
 		tsp_abs: treeShortenPathResults.tsp_abs,
 		tsp_proj: treeShortenPathResults.tsp_proj,
 		tsp_empty: treeShortenPathResults.tsp_empty,
+		tfp_root: treeFoldablePResults.tfp_root,
+		tfp_leaf: treeFoldablePResults.tfp_leaf,
+		tfp_only_child: treeFoldablePResults.tfp_only_child,
+		tfp_branch: treeFoldablePResults.tfp_branch,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6387,6 +6443,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_shorten_path: await collect("cli_selectors.tree_shorten_path", () => {
 			return () => runCliSelectorsTreeShortenPath();
+		}),
+		tree_foldable_p: await collect("cli_selectors.tree_foldable_p", () => {
+			return () => runCliSelectorsTreeFoldableP();
 		}),
 		observed,
 	};
@@ -7519,6 +7578,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getStatusLabels",
 			"cli_selectors.tree_shorten_path":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall shortenPath",
+			"cli_selectors.tree_foldable_p":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts isFoldable",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
