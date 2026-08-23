@@ -173,6 +173,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_prioritize_active",
     "cli_selectors.tree_entry_map",
     "cli_selectors.tree_order_entries",
+    "cli_selectors.tree_iso_timestamp",
     "cli_selectors.tree_rebuild_visible_maps",
     "cli_selectors.tree_apply_filter",
     "cli_selectors.tree_render_lines",

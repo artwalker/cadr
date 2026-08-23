@@ -266,6 +266,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_tool_argument": 50,
 	"cli_selectors.tree_cycle_filter": 50,
 	"cli_selectors.tree_format_label_timestamp": 50,
+	"cli_selectors.tree_iso_timestamp": 50,
 	"cli_selectors.tree_format_tool_call": 50,
 	"cli_selectors.tree_entry_display_text": 50,
 	"cli_selectors.tree_prefix": 50,
@@ -5866,6 +5867,36 @@ function runCliSelectorsTreeFormatLabelTimestamp() {
 	return observed;
 }
 
+// Lisp universal time epoch offset: (encode-universal-time 0 0 0 1 1 1970 0)
+const LISP_UNIX_EPOCH = 2208988800;
+
+function lispEncodeUniversalTime(second, minute, hour, day, month, year) {
+	return Math.floor(Date.UTC(year, month - 1, day, hour, minute, second) / 1000) + LISP_UNIX_EPOCH;
+}
+
+/** Local ISO timestamp YYYY-MM-DDTHH:MM:SS (no Z/ms); pair tree-selector-iso-timestamp. */
+function treeIsoTimestampPi(universalSeconds) {
+	const date = new Date((universalSeconds - LISP_UNIX_EPOCH) * 1000);
+	const year = date.getFullYear();
+	const month = date.getMonth() + 1;
+	const day = date.getDate();
+	const hour = date.getHours();
+	const minute = date.getMinutes();
+	const second = date.getSeconds();
+	return `${String(year).padStart(4, "0")}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}T${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}:${String(second).padStart(2, "0")}`;
+}
+
+function runCliSelectorsTreeIsoTimestamp() {
+	process.env.TZ = "UTC";
+	return {
+		tis_afternoon: treeIsoTimestampPi(lispEncodeUniversalTime(0, 0, 15, 2, 8, 2026)),
+		tis_epoch: treeIsoTimestampPi(lispEncodeUniversalTime(0, 0, 0, 1, 1, 1970)),
+		tis_eoy: treeIsoTimestampPi(lispEncodeUniversalTime(59, 59, 23, 31, 12, 2025)),
+		tis_midnight: treeIsoTimestampPi(lispEncodeUniversalTime(0, 0, 0, 1, 6, 2024)),
+		tis_noon: treeIsoTimestampPi(lispEncodeUniversalTime(0, 0, 12, 15, 3, 2023)),
+	};
+}
+
 function formatToolCallPi(name, args) {
 	switch (name) {
 		case "read": {
@@ -8275,6 +8306,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeToolArgumentResults = runCliSelectorsTreeToolArgument();
 	const treeCycleFilterResults = runCliSelectorsTreeCycleFilter();
 	const treeFormatLabelTimestampResults = runCliSelectorsTreeFormatLabelTimestamp();
+	const treeIsoTimestampResults = runCliSelectorsTreeIsoTimestamp();
 	const treeFormatToolCallResults = runCliSelectorsTreeFormatToolCall();
 	const treeEntryDisplayTextResults = runCliSelectorsTreeEntryDisplayText();
 	const treePrefixResults = runCliSelectorsTreePrefix();
@@ -8527,6 +8559,7 @@ async function measureCliSelectorsSessionSearch() {
 		tcf_all_fwd: treeCycleFilterResults.tcf_all_fwd,
 		tcf_user_fwd: treeCycleFilterResults.tcf_user_fwd,
 		...treeFormatLabelTimestampResults,
+		...treeIsoTimestampResults,
 		...treeFormatToolCallResults,
 		...treeEntryDisplayTextResults,
 		...treePrefixResults,
@@ -8702,6 +8735,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_format_label_timestamp: await collect("cli_selectors.tree_format_label_timestamp", () => {
 			return () => runCliSelectorsTreeFormatLabelTimestamp();
+		}),
+		tree_iso_timestamp: await collect("cli_selectors.tree_iso_timestamp", () => {
+			return () => runCliSelectorsTreeIsoTimestamp();
 		}),
 		tree_format_tool_call: await collect("cli_selectors.tree_format_tool_call", () => {
 			return () => runCliSelectorsTreeFormatToolCall();
@@ -9941,6 +9977,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts filter cycle keybindings modes array index math",
 			"cli_selectors.tree_format_label_timestamp":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatLabelTimestamp",
+			"cli_selectors.tree_iso_timestamp":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts updateNodeLabel labelTimestamp toISOString; pair standalone local ISO timestamp formatter without Z/ms",
 			"cli_selectors.tree_format_tool_call":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall",
 			"cli_selectors.tree_entry_display_text":

@@ -2563,6 +2563,17 @@ Observed `toe_leaf_a` / `toe_leaf_b` / `toe_root` / `toe_nil` / `toe_filter` are
 First Friend-MachineD freeze **1.21×**
 (38.4 / 31.7 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 188 — `cli_selectors` (tree_iso_timestamp)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_iso_timestamp` | `tree-selector-iso-timestamp` | local `YYYY-MM-DDTHH:MM:SS` formatter (`tree-selector.ts`) |
+
+ISO timestamp without zone/ms; fixtures run under `TZ=UTC`.
+Observed `tis_afternoon` / `tis_epoch` / `tis_eoy` / `tis_midnight` / `tis_noon` are exact.
+First Friend-MachineD freeze **1.43×**
+(6.1 / 4.3 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

@@ -21,6 +21,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_iso_timestamp`
+  (ISO timestamp fixtures under `TZ=UTC`; cadr `tree-selector-iso-timestamp`
+  vs pi local `YYYY-MM-DDTHH:MM:SS` formatter). Friend-MachineD n=5 **1.43×**
+  (6.1 / 4.3 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `cli_selectors.tree_order_entries`
+  (order-entries fixtures; cadr `tree-selector-order-entries`
+  vs pi DFS entry order). Friend-MachineD n=5 **1.21×**
+  (38.4 / 31.7 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_entry_map`
   (entry-map fixtures; cadr `tree-selector-entry-map`
   vs pi flat-entry id map). Friend-MachineD n=5 **2.76×**

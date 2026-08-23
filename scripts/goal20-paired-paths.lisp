@@ -342,6 +342,7 @@
     ("cli_selectors.tree_tool_argument" . 50)
     ("cli_selectors.tree_cycle_filter" . 50)
     ("cli_selectors.tree_format_label_timestamp" . 50)
+    ("cli_selectors.tree_iso_timestamp" . 50)
     ("cli_selectors.tree_format_tool_call" . 50)
     ("cli_selectors.tree_entry_display_text" . 50)
     ("cli_selectors.tree_prefix" . 50)
@@ -6732,6 +6733,32 @@
           (setf (uiop:getenv "TZ") tz)
           (sb-posix:unsetenv "TZ")))))
 
+(defparameter *tree-iso-timestamp-fixtures*
+  (list
+   (cons :tis_afternoon
+         (encode-universal-time 0 0 15 2 8 2026 0))
+   (cons :tis_epoch
+         (encode-universal-time 0 0 0 1 1 1970 0))
+   (cons :tis_eoy
+         (encode-universal-time 59 59 23 31 12 2025 0))
+   (cons :tis_midnight
+         (encode-universal-time 0 0 0 1 6 2024 0))
+   (cons :tis_noon
+         (encode-universal-time 0 0 12 15 3 2023 0))))
+
+(defun run-cli-selectors-tree-iso-timestamp ()
+  (let ((tz (uiop:getenv "TZ")))
+    (setf (uiop:getenv "TZ") "UTC")
+    (unwind-protect
+         (mapcar
+          (lambda (fixture)
+            (cadr-cli::tree-selector-iso-timestamp
+             (cdr fixture)))
+          *tree-iso-timestamp-fixtures*)
+      (if tz
+          (setf (uiop:getenv "TZ") tz)
+          (sb-posix:unsetenv "TZ")))))
+
 (defun run-cli-selectors-tree-format-tool-call ()
   (let ((long-bash
           (make-string 55 :initial-element #\a)))
@@ -8090,6 +8117,8 @@
           (run-cli-selectors-tree-cycle-filter))
         (tree-format-label-timestamp
           (run-cli-selectors-tree-format-label-timestamp))
+        (tree-iso-timestamp
+          (run-cli-selectors-tree-iso-timestamp))
         (tree-format-tool-call
           (run-cli-selectors-tree-format-tool-call))
         (tree-entry-display-text
@@ -8399,6 +8428,11 @@
       "25/12/31 23:59" (nth 2 tree-format-label-timestamp)
       "07:30" (nth 3 tree-format-label-timestamp)
       "not-a-date" (nth 4 tree-format-label-timestamp)
+      "tis_afternoon" (nth 0 tree-iso-timestamp)
+      "tis_epoch" (nth 1 tree-iso-timestamp)
+      "tis_eoy" (nth 2 tree-iso-timestamp)
+      "tis_midnight" (nth 3 tree-iso-timestamp)
+      "tis_noon" (nth 4 tree-iso-timestamp)
       "tfc_read" (nth 0 tree-format-tool-call)
       "tfc_read_rng" (nth 1 tree-format-tool-call)
       "tfc_read_off" (nth 2 tree-format-tool-call)
@@ -8820,6 +8854,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-tree-format-label-timestamp))))
+     "tree_iso_timestamp"
+     (collect "cli_selectors.tree_iso_timestamp"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-iso-timestamp))))
      "tree_format_tool_call"
      (collect "cli_selectors.tree_format_tool_call"
               (lambda ()
@@ -10087,6 +10126,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-cycle-filter"
       "cli_selectors.tree_format_label_timestamp"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-format-label-timestamp"
+      "cli_selectors.tree_iso_timestamp"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-iso-timestamp"
       "cli_selectors.tree_format_tool_call"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-format-tool-call"
       "cli_selectors.tree_entry_display_text"
