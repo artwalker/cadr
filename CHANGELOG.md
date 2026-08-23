@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_branch_segment_id`
+  (branch-segment fixtures; cadr `tree-selector-branch-segment-id`
+  vs pi `findBranchSegmentStart`). Friend-MachineD n=5 **1.82×**
+  (264.9 / 145.6 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_unfold_or_down`
   (unfold/down fixtures; cadr `tree-selector-unfold-or-down`
   vs pi `unfoldOrDown` handleInput). Friend-MachineD n=5 **1.82×**

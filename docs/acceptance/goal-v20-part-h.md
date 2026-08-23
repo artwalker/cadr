@@ -2375,6 +2375,17 @@ Observed `tuod_unfold` / `tuod_leaf` / `tuod_mid` / `tuod_prefold` / `tuod_root`
 `tuod_branch_b` are exact. First Friend-MachineD freeze **1.82×**
 (324.4 / 178.0 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 171 — `cli_selectors` (tree_branch_segment_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_branch_segment_id` | `tree-selector-branch-segment-id` | `findBranchSegmentStart` (`tree-selector.ts`) |
+
+Branch-segment start lookup up/down on branching fixtures.
+Observed `tbs_down_branch` / `tbs_down_leaf` / `tbs_down_mid` / `tbs_up_mid` /
+`tbs_up_root` / `tbs_up_branch_b` are exact. First Friend-MachineD freeze **1.82×**
+(264.9 / 145.6 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

@@ -358,6 +358,7 @@
     ("cli_selectors.tree_move" . 50)
     ("cli_selectors.tree_fold_or_up" . 50)
     ("cli_selectors.tree_unfold_or_down" . 50)
+    ("cli_selectors.tree_branch_segment_id" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7358,6 +7359,21 @@
    (tree-unfold-or-down-encoded "user-1")
    (tree-unfold-or-down-encoded "user-4b")))
 
+(defun tree-branch-segment-encoded (selected-id direction)
+  (let ((state (tree-render-state :selected-id selected-id)))
+    (cadr-cli::tree-selector-select-id state selected-id)
+    (or (cadr-cli::tree-selector-branch-segment-id state direction)
+        "null")))
+
+(defun run-cli-selectors-tree-branch-segment-id ()
+  (list
+   (tree-branch-segment-encoded "asst-2" :down)
+   (tree-branch-segment-encoded "asst-4a" :down)
+   (tree-branch-segment-encoded "user-4a" :down)
+   (tree-branch-segment-encoded "user-4a" :up)
+   (tree-branch-segment-encoded "user-1" :up)
+   (tree-branch-segment-encoded "user-4b" :up)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7451,7 +7467,9 @@
         (tree-fold-or-up
           (run-cli-selectors-tree-fold-or-up))
         (tree-unfold-or-down
-          (run-cli-selectors-tree-unfold-or-down)))
+          (run-cli-selectors-tree-unfold-or-down))
+        (tree-branch-segment-id
+          (run-cli-selectors-tree-branch-segment-id)))
     (json-object
      "observed"
      (json-object
@@ -7796,7 +7814,13 @@
       "tuod_mid" (nth 2 tree-unfold-or-down)
       "tuod_prefold" (nth 3 tree-unfold-or-down)
       "tuod_root" (nth 4 tree-unfold-or-down)
-      "tuod_branch_b" (nth 5 tree-unfold-or-down))
+      "tuod_branch_b" (nth 5 tree-unfold-or-down)
+      "tbs_down_branch" (nth 0 tree-branch-segment-id)
+      "tbs_down_leaf" (nth 1 tree-branch-segment-id)
+      "tbs_down_mid" (nth 2 tree-branch-segment-id)
+      "tbs_up_mid" (nth 3 tree-branch-segment-id)
+      "tbs_up_root" (nth 4 tree-branch-segment-id)
+      "tbs_up_branch_b" (nth 5 tree-branch-segment-id))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8096,7 +8120,12 @@
      (collect "cli_selectors.tree_unfold_or_down"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-unfold-or-down)))))))
+                  (run-cli-selectors-tree-unfold-or-down))))
+     "tree_branch_segment_id"
+     (collect "cli_selectors.tree_branch_segment_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-branch-segment-id)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9231,6 +9260,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-fold-or-up"
       "cli_selectors.tree_unfold_or_down"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-unfold-or-down"
+      "cli_selectors.tree_branch_segment_id"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-branch-segment-id"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

@@ -282,6 +282,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_move": 50,
 	"cli_selectors.tree_fold_or_up": 50,
 	"cli_selectors.tree_unfold_or_down": 50,
+	"cli_selectors.tree_branch_segment_id": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6980,6 +6981,38 @@ function runCliSelectorsTreeUnfoldOrDown() {
 	};
 }
 
+function treeBranchSegmentEncodedPi(selectedId, direction) {
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(TREE_ACTIVE_PATH_BRANCHING_ENTRIES),
+		"asst-4a",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId ?? "asst-4a",
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const index = ids.indexOf(selectedId);
+	if (index >= 0) {
+		treeList.selectedIndex = index;
+	}
+	const segmentIndex = treeList.findBranchSegmentStart(direction);
+	return treeList.filteredNodes[segmentIndex]?.node.entry.id ?? "null";
+}
+
+function runCliSelectorsTreeBranchSegmentId() {
+	return {
+		tbs_down_branch: treeBranchSegmentEncodedPi("asst-2", "down"),
+		tbs_down_leaf: treeBranchSegmentEncodedPi("asst-4a", "down"),
+		tbs_down_mid: treeBranchSegmentEncodedPi("user-4a", "down"),
+		tbs_up_mid: treeBranchSegmentEncodedPi("user-4a", "up"),
+		tbs_up_root: treeBranchSegmentEncodedPi("user-1", "up"),
+		tbs_up_branch_b: treeBranchSegmentEncodedPi("user-4b", "up"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7356,6 +7389,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeMoveResults = runCliSelectorsTreeMove();
 	const treeFoldOrUpResults = runCliSelectorsTreeFoldOrUp();
 	const treeUnfoldOrDownResults = runCliSelectorsTreeUnfoldOrDown();
+	const treeBranchSegmentIdResults = runCliSelectorsTreeBranchSegmentId();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7591,6 +7625,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeMoveResults,
 		...treeFoldOrUpResults,
 		...treeUnfoldOrDownResults,
+		...treeBranchSegmentIdResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7781,6 +7816,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_unfold_or_down: await collect("cli_selectors.tree_unfold_or_down", () => {
 			return () => runCliSelectorsTreeUnfoldOrDown();
+		}),
+		tree_branch_segment_id: await collect("cli_selectors.tree_branch_segment_id", () => {
+			return () => runCliSelectorsTreeBranchSegmentId();
 		}),
 		observed,
 	};
@@ -8953,6 +8991,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts foldOrUp handleInput",
 			"cli_selectors.tree_unfold_or_down":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts unfoldOrDown handleInput",
+			"cli_selectors.tree_branch_segment_id":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts findBranchSegmentStart",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
