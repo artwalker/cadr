@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_nearest_visible_id`
+  (visible-id ancestor walk fixtures; cadr `tree-selector-nearest-visible-id`
+  vs pi `findNearestVisibleIndex` id walk). Friend-MachineD n=5 **2.34×**
+  (14.9 / 6.4 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_active_path`
   (leaf-to-root path walk fixtures; cadr `tree-selector-active-path`
   vs pi `buildActivePath`). Friend-MachineD n=5 **2.43×** (11.8 / 4.8 µs),

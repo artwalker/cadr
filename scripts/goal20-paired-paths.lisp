@@ -350,6 +350,7 @@
     ("cli_selectors.tree_help_keys" . 50)
     ("cli_selectors.tree_help_lines" . 50)
     ("cli_selectors.tree_active_path" . 50)
+    ("cli_selectors.tree_nearest_visible_id" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7035,6 +7036,35 @@
      (tree-active-path-encoded entries nil)
      (tree-active-path-encoded entries "missing"))))
 
+(defun tree-nearest-visible-state (visible-ids)
+  (let ((state
+          (cadr-cli::%make-tree-selector-state
+           :entries *tree-active-path-branching-entries*)))
+    (setf (cadr-cli::tree-selector-state-visible-ids state)
+          visible-ids)
+    state))
+
+(defun tree-visible-set (visible-ids)
+  (let ((result (make-hash-table :test #'equal)))
+    (dolist (id visible-ids)
+      (setf (gethash id result) t))
+    result))
+
+(defun tree-nearest-visible-id-encoded (visible-ids target)
+  (let ((state (tree-nearest-visible-state visible-ids)))
+    (cadr-cli::tree-selector-nearest-visible-id
+     state target
+     (tree-visible-set visible-ids))))
+
+(defun run-cli-selectors-tree-nearest-visible-id ()
+  (list
+   (tree-nearest-visible-id-encoded '("asst-4a") "asst-4a")
+   (tree-nearest-visible-id-encoded '("user-1" "user-4a") "asst-4a")
+   (tree-nearest-visible-id-encoded '("user-1" "asst-1") "asst-4a")
+   (tree-nearest-visible-id-encoded '("user-3b") "asst-4a")
+   (tree-nearest-visible-id-encoded '("user-3b") "missing")
+   (tree-nearest-visible-id-encoded '("user-3b") nil)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7112,7 +7142,9 @@
         (tree-help-lines
           (run-cli-selectors-tree-help-lines))
         (tree-active-path
-          (run-cli-selectors-tree-active-path)))
+          (run-cli-selectors-tree-active-path))
+        (tree-nearest-visible-id
+          (run-cli-selectors-tree-nearest-visible-id)))
     (json-object
      "observed"
      (json-object
@@ -7411,7 +7443,13 @@
       "tap_mid" (nth 1 tree-active-path)
       "tap_root" (nth 2 tree-active-path)
       "tap_nil" (nth 3 tree-active-path)
-      "tap_missing" (nth 4 tree-active-path))
+      "tap_missing" (nth 4 tree-active-path)
+      "tnvi_hit" (nth 0 tree-nearest-visible-id)
+      "tnvi_ancestor" (nth 1 tree-nearest-visible-id)
+      "tnvi_branch" (nth 2 tree-nearest-visible-id)
+      "tnvi_fallback" (nth 3 tree-nearest-visible-id)
+      "tnvi_missing" (nth 4 tree-nearest-visible-id)
+      "tnvi_nil" (nth 5 tree-nearest-visible-id))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7671,7 +7709,12 @@
      (collect "cli_selectors.tree_active_path"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-active-path)))))))
+                  (run-cli-selectors-tree-active-path))))
+     "tree_nearest_visible_id"
+     (collect "cli_selectors.tree_nearest_visible_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-nearest-visible-id)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8790,6 +8833,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-lines"
       "cli_selectors.tree_active_path"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-active-path"
+      "cli_selectors.tree_nearest_visible_id"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-nearest-visible-id"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

@@ -274,6 +274,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_help_keys": 50,
 	"cli_selectors.tree_help_lines": 50,
 	"cli_selectors.tree_active_path": 50,
+	"cli_selectors.tree_nearest_visible_id": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6529,6 +6530,35 @@ function runCliSelectorsTreeActivePath() {
 	};
 }
 
+function treeNearestVisibleIdPi(entries, visibleIds, target) {
+	const byId = new Map(entries.map((entry) => [entry.id, entry]));
+	const visibleSet = new Set(visibleIds);
+	let current = target;
+	while (current) {
+		if (visibleSet.has(current)) {
+			return current;
+		}
+		const entry = byId.get(current);
+		if (!entry) {
+			break;
+		}
+		current = entry.parentId ?? null;
+	}
+	return visibleIds.length > 0 ? visibleIds[visibleIds.length - 1] : null;
+}
+
+function runCliSelectorsTreeNearestVisibleId() {
+	const entries = TREE_ACTIVE_PATH_BRANCHING_ENTRIES;
+	return {
+		tnvi_hit: treeNearestVisibleIdPi(entries, ["asst-4a"], "asst-4a"),
+		tnvi_ancestor: treeNearestVisibleIdPi(entries, ["user-1", "user-4a"], "asst-4a"),
+		tnvi_branch: treeNearestVisibleIdPi(entries, ["user-1", "asst-1"], "asst-4a"),
+		tnvi_fallback: treeNearestVisibleIdPi(entries, ["user-3b"], "asst-4a"),
+		tnvi_missing: treeNearestVisibleIdPi(entries, ["user-3b"], "missing"),
+		tnvi_nil: treeNearestVisibleIdPi(entries, ["user-3b"], null),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6897,6 +6927,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeHelpKeysResults = runCliSelectorsTreeHelpKeys();
 	const treeHelpLinesResults = runCliSelectorsTreeHelpLines();
 	const treeActivePathResults = runCliSelectorsTreeActivePath();
+	const treeNearestVisibleIdResults = runCliSelectorsTreeNearestVisibleId();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7124,6 +7155,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeHelpKeysResults,
 		...treeHelpLinesResults,
 		...treeActivePathResults,
+		...treeNearestVisibleIdResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7290,6 +7322,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_active_path: await collect("cli_selectors.tree_active_path", () => {
 			return () => runCliSelectorsTreeActivePath();
+		}),
+		tree_nearest_visible_id: await collect("cli_selectors.tree_nearest_visible_id", () => {
+			return () => runCliSelectorsTreeNearestVisibleId();
 		}),
 		observed,
 	};
@@ -8446,6 +8481,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeHelp.render",
 			"cli_selectors.tree_active_path":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts buildActivePath",
+			"cli_selectors.tree_nearest_visible_id":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts findNearestVisibleIndex id walk",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

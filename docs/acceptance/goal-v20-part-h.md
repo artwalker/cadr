@@ -2288,6 +2288,17 @@ Leaf-to-root ancestor walk on branching session-tree fixtures. Observed `tap_lea
 `tap_mid` / `tap_root` / `tap_nil` / `tap_missing` are exact. First Friend-MachineD
 freeze **2.43×** (11.8 / 4.8 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 163 — `cli_selectors` (tree_nearest_visible_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_nearest_visible_id` | `tree-selector-nearest-visible-id` | `findNearestVisibleIndex` id walk (`tree-selector.ts`) |
+
+Walk from target toward root until a visible id is found; fallback to last visible id.
+Observed `tnvi_hit` / `tnvi_ancestor` / `tnvi_branch` / `tnvi_fallback` / `tnvi_missing` /
+`tnvi_nil` are exact. First Friend-MachineD freeze **2.34×** (14.9 / 6.4 µs), ceiling 8.0.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
