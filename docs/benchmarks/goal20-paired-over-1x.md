@@ -134,6 +134,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `cli_selectors.tree_tool_argument` | 24.7 | 7.4 | 3.32× | 8.00× | measure-only pair `841211d61`; tree tool-arg path lookup only | invent pause；地板优化另刀 |
 
-| `cli_selectors.tree_cycle_filter` | 4.8 | 0.3 | 17.08× | 8.00× | measure-only pair `COMMIT`; tree filter cycle only | invent pause；地板优化另刀 |
+| `cli_selectors.tree_cycle_filter` | 4.8 | 0.3 | 17.08× | 8.00× | measure-only pair `637496621`; tree filter cycle only | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
