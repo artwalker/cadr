@@ -344,6 +344,7 @@
     ("cli_selectors.tree_format_label_timestamp" . 50)
     ("cli_selectors.tree_format_tool_call" . 50)
     ("cli_selectors.tree_entry_display_text" . 50)
+    ("cli_selectors.tree_prefix" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6758,6 +6759,77 @@
    (cadr-cli::tree-selector-entry-display-text
     '(:type :message :role :user :text "selected") t)))
 
+(defparameter *tree-prefix-branch-state*
+  (tree-foldable-state-with-maps
+   '(("p" . ("a" "b")))
+   '(("a" . "p") ("b" . "p"))))
+
+(defparameter *tree-prefix-leaf-state*
+  (tree-foldable-state-with-maps
+   '(("r" . ("a")))
+   '(("a" . "r"))))
+
+(defun tree-prefix-visual (&key (indent 1) (show-connector-p t) (last-p nil)
+                                 (gutters nil) (virtual-root-child-p nil))
+  (list :indent indent
+        :show-connector-p show-connector-p
+        :last-p last-p
+        :gutters gutters
+        :virtual-root-child-p virtual-root-child-p))
+
+(defun tree-prefix-encoded (state id visual &optional (multiple-roots-p nil))
+  (cadr-cli::tree-selector-prefix state id visual multiple-roots-p))
+
+(defun run-cli-selectors-tree-prefix ()
+  (let ((branch *tree-prefix-branch-state*)
+        (leaf *tree-prefix-leaf-state*)
+        (folded (let ((state (cadr-cli::%make-tree-selector-state)))
+                  (setf (gethash "p"
+                                 (cadr-cli::tree-selector-state-visible-children
+                                  state))
+                        '("a" "b"))
+                  (setf (gethash "a"
+                                 (cadr-cli::tree-selector-state-visible-parent
+                                  state))
+                        "p")
+                  (setf (gethash "b"
+                                 (cadr-cli::tree-selector-state-visible-parent
+                                  state))
+                        "p")
+                  (setf (gethash "p"
+                                 (cadr-cli::tree-selector-state-folded state))
+                        t)
+                  state)))
+    (list
+     (tree-prefix-encoded
+      leaf "a"
+      (tree-prefix-visual :indent 1 :last-p nil))
+     (tree-prefix-encoded
+      leaf "a"
+      (tree-prefix-visual :indent 1 :last-p t))
+     (tree-prefix-encoded
+      branch "p"
+      (tree-prefix-visual :indent 1 :last-p nil))
+     (tree-prefix-encoded
+      folded "p"
+      (tree-prefix-visual :indent 1 :last-p nil))
+     (tree-prefix-encoded
+      branch "p"
+      (tree-prefix-visual
+       :indent 2 :last-p t
+       :gutters '((0 . t))))
+     (tree-prefix-encoded
+      leaf "a"
+      (tree-prefix-visual
+       :indent 2 :last-p nil
+       :gutters '((0 . nil))))
+     (tree-prefix-encoded
+      leaf "a"
+      (tree-prefix-visual
+       :indent 1 :show-connector-p nil
+       :virtual-root-child-p t)
+      t))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6823,7 +6895,9 @@
         (tree-format-tool-call
           (run-cli-selectors-tree-format-tool-call))
         (tree-entry-display-text
-          (run-cli-selectors-tree-entry-display-text)))
+          (run-cli-selectors-tree-entry-display-text))
+        (tree-prefix
+          (run-cli-selectors-tree-prefix)))
     (json-object
      "observed"
      (json-object
@@ -7088,7 +7162,14 @@
       "ted_label" (nth 7 tree-entry-display-text)
       "ted_tool" (nth 8 tree-entry-display-text)
       "ted_custom" (nth 9 tree-entry-display-text)
-      "ted_sel" (nth 10 tree-entry-display-text))
+      "ted_sel" (nth 10 tree-entry-display-text)
+      "tp_branch" (nth 0 tree-prefix)
+      "tp_last" (nth 1 tree-prefix)
+      "tp_open" (nth 2 tree-prefix)
+      "tp_fold" (nth 3 tree-prefix)
+      "tp_gutter" (nth 4 tree-prefix)
+      "tp_deep" (nth 5 tree-prefix)
+      "tp_vroot" (nth 6 tree-prefix))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7318,7 +7399,12 @@
      (collect "cli_selectors.tree_entry_display_text"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-entry-display-text)))))))
+                  (run-cli-selectors-tree-entry-display-text))))
+     "tree_prefix"
+     (collect "cli_selectors.tree_prefix"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-prefix)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8425,6 +8511,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-format-tool-call"
       "cli_selectors.tree_entry_display_text"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-display-text"
+      "cli_selectors.tree_prefix"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-prefix"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

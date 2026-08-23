@@ -2214,6 +2214,19 @@ Observed `ted_user` / `ted_asst` / `ted_empty` / `ted_abort` / `ted_bash` /
 `ted_sel` are exact. First Friend-MachineD freeze **5.79×** (19.2 / 3.3 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 157 — `cli_selectors` (tree_prefix)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_prefix` | `tree-selector-prefix` | render prefix char loop (`tree-selector.ts`) |
+
+Tree gutter/connector prefix only (no theme dim wrapper): branch/last
+connectors, fold open/closed (⊟/⊞), gutter continuation, deep indent, virtual
+root child under multiple roots. Observed `tp_branch` / `tp_last` / `tp_open` /
+`tp_fold` / `tp_gutter` / `tp_deep` / `tp_vroot` are exact. First
+Friend-MachineD freeze **0.48×** (4.2 / 8.9 µs), ceiling 8.0. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash

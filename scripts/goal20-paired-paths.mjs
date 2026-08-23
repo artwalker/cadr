@@ -268,6 +268,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_format_label_timestamp": 50,
 	"cli_selectors.tree_format_tool_call": 50,
 	"cli_selectors.tree_entry_display_text": 50,
+	"cli_selectors.tree_prefix": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6001,6 +6002,97 @@ function runCliSelectorsTreeEntryDisplayText() {
 	};
 }
 
+function treePrefixPi(flatNode, multipleRoots, folded, foldable) {
+	const displayIndent = multipleRoots ? Math.max(0, flatNode.indent - 1) : flatNode.indent;
+	const connector =
+		flatNode.showConnector && !flatNode.isVirtualRootChild ? (flatNode.isLast ? "└─ " : "├─ ") : "";
+	const connectorPosition = connector ? displayIndent - 1 : -1;
+	const totalChars = displayIndent * 3;
+	const prefixChars = [];
+	for (let i = 0; i < totalChars; i++) {
+		const level = Math.floor(i / 3);
+		const posInLevel = i % 3;
+		const gutter = flatNode.gutters.find((g) => g.position === level);
+		if (gutter) {
+			if (posInLevel === 0) {
+				prefixChars.push(gutter.show ? "│" : " ");
+			} else {
+				prefixChars.push(" ");
+			}
+		} else if (connector && level === connectorPosition) {
+			if (posInLevel === 0) {
+				prefixChars.push(flatNode.isLast ? "└" : "├");
+			} else if (posInLevel === 1) {
+				prefixChars.push(folded ? "⊞" : foldable ? "⊟" : "─");
+			} else {
+				prefixChars.push(" ");
+			}
+		} else {
+			prefixChars.push(" ");
+		}
+	}
+	return prefixChars.join("");
+}
+
+function runCliSelectorsTreePrefix() {
+	return {
+		tp_branch: treePrefixPi(
+			{ indent: 1, showConnector: true, isVirtualRootChild: false, isLast: false, gutters: [] },
+			false,
+			false,
+			false,
+		),
+		tp_last: treePrefixPi(
+			{ indent: 1, showConnector: true, isVirtualRootChild: false, isLast: true, gutters: [] },
+			false,
+			false,
+			false,
+		),
+		tp_open: treePrefixPi(
+			{ indent: 1, showConnector: true, isVirtualRootChild: false, isLast: false, gutters: [] },
+			false,
+			false,
+			true,
+		),
+		tp_fold: treePrefixPi(
+			{ indent: 1, showConnector: true, isVirtualRootChild: false, isLast: false, gutters: [] },
+			false,
+			true,
+			true,
+		),
+		tp_gutter: treePrefixPi(
+			{
+				indent: 2,
+				showConnector: true,
+				isVirtualRootChild: false,
+				isLast: true,
+				gutters: [{ position: 0, show: true }],
+			},
+			false,
+			false,
+			true,
+		),
+		tp_deep: treePrefixPi(
+			{
+				indent: 2,
+				showConnector: true,
+				isVirtualRootChild: false,
+				isLast: false,
+				gutters: [{ position: 0, show: false }],
+			},
+			false,
+			false,
+			false,
+		),
+		tp_vroot: treePrefixPi(
+			{ indent: 1, showConnector: false, isVirtualRootChild: true, isLast: false, gutters: [] },
+			true,
+			false,
+			false,
+		),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6363,6 +6455,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeFormatLabelTimestampResults = runCliSelectorsTreeFormatLabelTimestamp();
 	const treeFormatToolCallResults = runCliSelectorsTreeFormatToolCall();
 	const treeEntryDisplayTextResults = runCliSelectorsTreeEntryDisplayText();
+	const treePrefixResults = runCliSelectorsTreePrefix();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6584,6 +6677,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeFormatLabelTimestampResults,
 		...treeFormatToolCallResults,
 		...treeEntryDisplayTextResults,
+		...treePrefixResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6732,6 +6826,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_entry_display_text: await collect("cli_selectors.tree_entry_display_text", () => {
 			return () => runCliSelectorsTreeEntryDisplayText();
+		}),
+		tree_prefix: await collect("cli_selectors.tree_prefix", () => {
+			return () => runCliSelectorsTreePrefix();
 		}),
 		observed,
 	};
@@ -7876,6 +7973,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall",
 			"cli_selectors.tree_entry_display_text":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getEntryDisplayText",
+			"cli_selectors.tree_prefix":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts render prefix char loop",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
