@@ -2419,6 +2419,17 @@ Observed `tcs_user` / `tcs_assistant` / `tcs_tool` / `tcs_empty` / `tcs_label` /
 `tcs_none` are exact. First Friend-MachineD freeze **2.87×**
 (142.5 / 49.6 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 175 — `cli_selectors` (tree_toggle_label_timestamps)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_toggle_label_timestamps` | `tree-selector-toggle-label-timestamps` | `showLabelTimestamps` toggle (`tree-selector.ts`) |
+
+Toggle label-timestamp display flag and refresh status labels.
+Observed `ttlt_off` / `ttlt_on` / `ttlt_twice` / `ttlt_notools` / `ttlt_labeled` /
+`ttlt_thrice` are exact. First Friend-MachineD freeze **0.04×**
+(4.3 / 118.4 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

@@ -286,6 +286,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_set_query": 50,
 	"cli_selectors.tree_set_filter": 50,
 	"cli_selectors.tree_copy_selected": 50,
+	"cli_selectors.tree_toggle_label_timestamps": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7153,6 +7154,35 @@ function runCliSelectorsTreeCopySelected() {
 	};
 }
 
+function treeToggleLabelTimestampsEncodedPi({ toggles = 0, filter = "default" } = {}) {
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(TREE_APPLY_FILTER_ENTRIES),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		"user-3",
+		filter,
+	);
+	const treeList = component.getTreeList();
+	for (let index = 0; index < toggles; index++) {
+		treeList.showLabelTimestamps = !treeList.showLabelTimestamps;
+	}
+	return `${treeList.showLabelTimestamps}|${treeStatusLabelsPi(filter, treeList.showLabelTimestamps)}`;
+}
+
+function runCliSelectorsTreeToggleLabelTimestamps() {
+	return {
+		ttlt_off: treeToggleLabelTimestampsEncodedPi({ toggles: 0 }),
+		ttlt_on: treeToggleLabelTimestampsEncodedPi({ toggles: 1 }),
+		ttlt_twice: treeToggleLabelTimestampsEncodedPi({ toggles: 2 }),
+		ttlt_notools: treeToggleLabelTimestampsEncodedPi({ toggles: 1, filter: "no-tools" }),
+		ttlt_labeled: treeToggleLabelTimestampsEncodedPi({ toggles: 1, filter: "labeled-only" }),
+		ttlt_thrice: treeToggleLabelTimestampsEncodedPi({ toggles: 3 }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7533,6 +7563,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeSetQueryResults = runCliSelectorsTreeSetQuery();
 	const treeSetFilterResults = runCliSelectorsTreeSetFilter();
 	const treeCopySelectedResults = runCliSelectorsTreeCopySelected();
+	const treeToggleLabelTimestampsResults = runCliSelectorsTreeToggleLabelTimestamps();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7772,6 +7803,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeSetQueryResults,
 		...treeSetFilterResults,
 		...treeCopySelectedResults,
+		...treeToggleLabelTimestampsResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7974,6 +8006,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_copy_selected: await collect("cli_selectors.tree_copy_selected", () => {
 			return () => runCliSelectorsTreeCopySelected();
+		}),
+		tree_toggle_label_timestamps: await collect("cli_selectors.tree_toggle_label_timestamps", () => {
+			return () => runCliSelectorsTreeToggleLabelTimestamps();
 		}),
 		observed,
 	};
@@ -9154,6 +9189,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList filterMode + applyFilter",
 			"cli_selectors.tree_copy_selected":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts copySelected",
+			"cli_selectors.tree_toggle_label_timestamps":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts showLabelTimestamps toggle",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

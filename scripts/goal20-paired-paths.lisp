@@ -362,6 +362,7 @@
     ("cli_selectors.tree_set_query" . 50)
     ("cli_selectors.tree_set_filter" . 50)
     ("cli_selectors.tree_copy_selected" . 50)
+    ("cli_selectors.tree_toggle_label_timestamps" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7499,6 +7500,30 @@
    (tree-copy-selected-encoded "label-1")
    (tree-copy-selected-encoded nil :empty-p t)))
 
+(defun tree-toggle-label-timestamps-encoded (&key toggles filter)
+  (let ((state
+          (cadr-cli::%make-tree-selector-state
+           :filter (tree-filter-keyword (or filter "default")))))
+    (dotimes (i toggles)
+      (cadr-cli::tree-selector-toggle-label-timestamps state))
+    (format nil "~a|~a"
+            (if (cadr-cli::tree-selector-state-show-label-timestamps-p
+                 state)
+                "true"
+                "false")
+            (cadr-cli::tree-selector-status-labels state))))
+
+(defun run-cli-selectors-tree-toggle-label-timestamps ()
+  (list
+   (tree-toggle-label-timestamps-encoded :toggles 0)
+   (tree-toggle-label-timestamps-encoded :toggles 1)
+   (tree-toggle-label-timestamps-encoded :toggles 2)
+   (tree-toggle-label-timestamps-encoded
+    :toggles 1 :filter "no-tools")
+   (tree-toggle-label-timestamps-encoded
+    :toggles 1 :filter "labeled-only")
+   (tree-toggle-label-timestamps-encoded :toggles 3)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7600,7 +7625,9 @@
         (tree-set-filter
           (run-cli-selectors-tree-set-filter))
         (tree-copy-selected
-          (run-cli-selectors-tree-copy-selected)))
+          (run-cli-selectors-tree-copy-selected))
+        (tree-toggle-label-timestamps
+          (run-cli-selectors-tree-toggle-label-timestamps)))
     (json-object
      "observed"
      (json-object
@@ -7969,7 +7996,13 @@
       "tcs_tool" (nth 2 tree-copy-selected)
       "tcs_empty" (nth 3 tree-copy-selected)
       "tcs_label" (nth 4 tree-copy-selected)
-      "tcs_none" (nth 5 tree-copy-selected))
+      "tcs_none" (nth 5 tree-copy-selected)
+      "ttlt_off" (nth 0 tree-toggle-label-timestamps)
+      "ttlt_on" (nth 1 tree-toggle-label-timestamps)
+      "ttlt_twice" (nth 2 tree-toggle-label-timestamps)
+      "ttlt_notools" (nth 3 tree-toggle-label-timestamps)
+      "ttlt_labeled" (nth 4 tree-toggle-label-timestamps)
+      "ttlt_thrice" (nth 5 tree-toggle-label-timestamps))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8289,7 +8322,12 @@
      (collect "cli_selectors.tree_copy_selected"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-copy-selected)))))))
+                  (run-cli-selectors-tree-copy-selected))))
+     "tree_toggle_label_timestamps"
+     (collect "cli_selectors.tree_toggle_label_timestamps"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-toggle-label-timestamps)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9432,6 +9470,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-set-filter"
       "cli_selectors.tree_copy_selected"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-copy-selected"
+      "cli_selectors.tree_toggle_label_timestamps"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-toggle-label-timestamps"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
