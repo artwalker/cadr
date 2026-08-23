@@ -2087,6 +2087,18 @@ Observed `tese_sparse` / `tese_label` / `tese_empty` / `tese_full` / `tese_text`
 are exact. First Friend-MachineD freeze **1.22×** (1.8 / 1.5 µs), ceiling 8.0.
 Same commit no optimize.
 
+### Pair 147 — `cli_selectors` (tree_settings_entry_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_settings_entry_p` | `tree-selector-settings-entry-p` | `isSettingsEntry` predicate (`tree-selector.ts`) |
+
+Per-entry settings/bookkeeping type check only: label, custom, model-change,
+thinking-level-change, session-info vs ordinary user message. Encoded as `t` or
+empty. Observed `tsep_label` / `tsep_user` / `tsep_custom` / `tsep_model` /
+`tsep_think` / `tsep_session` are exact. First Friend-MachineD freeze
+**0.65×** (0.3 / 0.5 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

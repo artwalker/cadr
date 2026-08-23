@@ -334,6 +334,7 @@
     ("cli_selectors.tree_entry_filtered" . 50)
     ("cli_selectors.tree_query_matches" . 50)
     ("cli_selectors.tree_entry_search_text" . 50)
+    ("cli_selectors.tree_settings_entry_p" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6524,6 +6525,22 @@
    (cadr-cli::tree-selector-entry-search-text
     '(:text "only"))))
 
+(defun tree-settings-entry-p-encoded (entry)
+  (if (cadr-cli::tree-selector-settings-entry-p entry)
+      "t"
+      ""))
+
+(defun run-cli-selectors-tree-settings-entry-p ()
+  (list
+   (tree-settings-entry-p-encoded '(:type :label :label "pin"))
+   (tree-settings-entry-p-encoded
+    '(:type :message :role :user :text "hello"))
+   (tree-settings-entry-p-encoded '(:type :custom :custom-type "x"))
+   (tree-settings-entry-p-encoded '(:type :model-change :model-id "m"))
+   (tree-settings-entry-p-encoded
+    '(:type :thinking-level-change :thinking-level "high"))
+   (tree-settings-entry-p-encoded '(:type :session-info))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6569,7 +6586,9 @@
         (tree-query-matches
           (run-cli-selectors-tree-query-matches))
         (tree-entry-search-text
-          (run-cli-selectors-tree-entry-search-text)))
+          (run-cli-selectors-tree-entry-search-text))
+        (tree-settings-entry-p
+          (run-cli-selectors-tree-settings-entry-p)))
     (json-object
      "observed"
      (json-object
@@ -6771,7 +6790,13 @@
       "tese_label" (nth 1 tree-entry-search-text)
       "tese_empty" (nth 2 tree-entry-search-text)
       "tese_full" (nth 3 tree-entry-search-text)
-      "tese_text" (nth 4 tree-entry-search-text))
+      "tese_text" (nth 4 tree-entry-search-text)
+      "tsep_label" (nth 0 tree-settings-entry-p)
+      "tsep_user" (nth 1 tree-settings-entry-p)
+      "tsep_custom" (nth 2 tree-settings-entry-p)
+      "tsep_model" (nth 3 tree-settings-entry-p)
+      "tsep_think" (nth 4 tree-settings-entry-p)
+      "tsep_session" (nth 5 tree-settings-entry-p))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6951,7 +6976,12 @@
      (collect "cli_selectors.tree_entry_search_text"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-entry-search-text)))))))
+                  (run-cli-selectors-tree-entry-search-text))))
+     "tree_settings_entry_p"
+     (collect "cli_selectors.tree_settings_entry_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-settings-entry-p)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8038,6 +8068,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-query-matches-p"
       "cli_selectors.tree_entry_search_text"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-search-text"
+      "cli_selectors.tree_settings_entry_p"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-settings-entry-p"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

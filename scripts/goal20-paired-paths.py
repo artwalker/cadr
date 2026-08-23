@@ -144,7 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type", "parse_auto_theme", "resolve_theme"),
-    "cli_selectors": ("session_search", "session_format_age", "session_record_label", "session_shorten_path", "session_quoted_search", "session_thread_records", "session_binding_label", "session_same_path", "session_quoted_p", "session_named_p", "settings_thinking_description", "settings_display_value", "settings_automatic_theme_setting", "settings_active_automatic_theme", "settings_cycle", "settings_apply_filter", "tree_entry_filtered", "tree_query_matches", "tree_entry_search_text", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
+    "cli_selectors": ("session_search", "session_format_age", "session_record_label", "session_shorten_path", "session_quoted_search", "session_thread_records", "session_binding_label", "session_same_path", "session_quoted_p", "session_named_p", "settings_thinking_description", "settings_display_value", "settings_automatic_theme_setting", "settings_active_automatic_theme", "settings_cycle", "settings_apply_filter", "tree_entry_filtered", "tree_query_matches", "tree_entry_search_text", "tree_settings_entry_p", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
@@ -759,10 +759,13 @@ RATIO_CEILINGS = {
     # First-freeze headroom for cli_selectors.tree_query_matches.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.tree_query_matches": 8.0,
-    # First-freeze headroom for cli_selectors.tree_entry_search_text.
-    # Ratchet down only after a non-quick Friend-MachineD freeze.
-    "cli_selectors.tree_entry_search_text": 8.0,
-    # Frozen from the first Friend-MachineD non-quick
+  # First-freeze headroom for cli_selectors.tree_entry_search_text.
+  # Ratchet down only after a non-quick Friend-MachineD freeze.
+  "cli_selectors.tree_entry_search_text": 8.0,
+  # First-freeze headroom for cli_selectors.tree_settings_entry_p.
+  # Ratchet down only after a non-quick Friend-MachineD freeze.
+  "cli_selectors.tree_settings_entry_p": 8.0,
+  # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
     # vs MockWebSocket. 800.0 is first-freeze headroom.
@@ -1739,6 +1742,12 @@ OBSERVED_EXACT = {
         "tese_empty",
         "tese_full",
         "tese_text",
+        "tsep_label",
+        "tsep_user",
+        "tsep_custom",
+        "tsep_model",
+        "tsep_think",
+        "tsep_session",
     ),
     "websocket_stream": (
         "ws_text",

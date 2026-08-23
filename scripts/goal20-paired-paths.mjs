@@ -258,6 +258,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_entry_filtered": 50,
 	"cli_selectors.tree_query_matches": 50,
 	"cli_selectors.tree_entry_search_text": 50,
+	"cli_selectors.tree_settings_entry_p": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5610,6 +5611,21 @@ function runCliSelectorsTreeQueryMatches() {
 	};
 }
 
+function treeSettingsEntryEncodedPi(type) {
+	return isTreeSettingsEntry(type) ? "t" : "";
+}
+
+function runCliSelectorsTreeSettingsEntryP() {
+	return {
+		tsep_label: treeSettingsEntryEncodedPi("label"),
+		tsep_user: treeSettingsEntryEncodedPi("message"),
+		tsep_custom: treeSettingsEntryEncodedPi("custom"),
+		tsep_model: treeSettingsEntryEncodedPi("model_change"),
+		tsep_think: treeSettingsEntryEncodedPi("thinking_level_change"),
+		tsep_session: treeSettingsEntryEncodedPi("session_info"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5962,6 +5978,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeEntryFilteredResults = runCliSelectorsTreeEntryFiltered();
 	const treeQueryMatchesResults = runCliSelectorsTreeQueryMatches();
 	const treeEntrySearchTextResults = runCliSelectorsTreeEntrySearchText();
+	const treeSettingsEntryPResults = runCliSelectorsTreeSettingsEntryP();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6144,6 +6161,12 @@ async function measureCliSelectorsSessionSearch() {
 		tese_empty: treeEntrySearchTextResults.tese_empty,
 		tese_full: treeEntrySearchTextResults.tese_full,
 		tese_text: treeEntrySearchTextResults.tese_text,
+		tsep_label: treeSettingsEntryPResults.tsep_label,
+		tsep_user: treeSettingsEntryPResults.tsep_user,
+		tsep_custom: treeSettingsEntryPResults.tsep_custom,
+		tsep_model: treeSettingsEntryPResults.tsep_model,
+		tsep_think: treeSettingsEntryPResults.tsep_think,
+		tsep_session: treeSettingsEntryPResults.tsep_session,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6262,6 +6285,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_entry_search_text: await collect("cli_selectors.tree_entry_search_text", () => {
 			return () => runCliSelectorsTreeEntrySearchText();
+		}),
+		tree_settings_entry_p: await collect("cli_selectors.tree_settings_entry_p", () => {
+			return () => runCliSelectorsTreeSettingsEntryP();
 		}),
 		observed,
 	};
@@ -7386,6 +7412,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts search token predicate",
 			"cli_selectors.tree_entry_search_text":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getSearchableText field join",
+			"cli_selectors.tree_settings_entry_p":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts isSettingsEntry predicate",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
