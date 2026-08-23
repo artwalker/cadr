@@ -294,6 +294,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_handle_event": 50,
 	"cli_selectors.tree_handle_label_event": 50,
 	"cli_selectors.tree_selected_entry": 50,
+	"cli_selectors.tree_select_id": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7724,6 +7725,64 @@ function runCliSelectorsTreeSelectedEntry() {
 	};
 }
 
+function treeSelectIdEncodedPi({ selectedId, targetId, filter = "default", foldedIds = [] } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId,
+		filter,
+	);
+	const treeList = component.getTreeList();
+	if (selectedId) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+	}
+	for (const id of foldedIds) {
+		treeList.foldedNodes.add(id);
+	}
+	if (foldedIds.length > 0) {
+		treeList.applyFilter();
+		const visibleIds = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = visibleIds.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+	}
+	const visibleIds = treeList.filteredNodes.map((node) => node.node.entry.id);
+	if (visibleIds.includes(targetId)) {
+		treeList.selectedIndex = visibleIds.indexOf(targetId);
+	}
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node.entry.id ?? "null";
+	return `${selected}|null`;
+}
+
+function runCliSelectorsTreeSelectId() {
+	return {
+		tsid_hit: treeSelectIdEncodedPi({ selectedId: "user-3", targetId: "user-1" }),
+		tsid_same: treeSelectIdEncodedPi({ selectedId: "user-3", targetId: "user-3" }),
+		tsid_miss: treeSelectIdEncodedPi({ selectedId: "user-3", targetId: "missing" }),
+		tsid_label: treeSelectIdEncodedPi({ selectedId: "user-1", targetId: "label-1" }),
+		tsid_filter_miss: treeSelectIdEncodedPi({
+			selectedId: "user-3",
+			targetId: "asst-1",
+			filter: "labeled-only",
+		}),
+		tsid_fold_miss: treeSelectIdEncodedPi({
+			selectedId: "user-1",
+			targetId: "user-3",
+			foldedIds: ["user-2"],
+		}),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8112,6 +8171,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeHandleEventResults = runCliSelectorsTreeHandleEvent();
 	const treeHandleLabelEventResults = runCliSelectorsTreeHandleLabelEvent();
 	const treeSelectedEntryResults = runCliSelectorsTreeSelectedEntry();
+	const treeSelectIdResults = runCliSelectorsTreeSelectId();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8359,6 +8419,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeHandleEventResults,
 		...treeHandleLabelEventResults,
 		...treeSelectedEntryResults,
+		...treeSelectIdResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8585,6 +8646,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_selected_entry: await collect("cli_selectors.tree_selected_entry", () => {
 			return () => runCliSelectorsTreeSelectedEntry();
+		}),
+		tree_select_id: await collect("cli_selectors.tree_select_id", () => {
+			return () => runCliSelectorsTreeSelectId();
 		}),
 		observed,
 	};
@@ -9781,6 +9845,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput.handleInput",
 			"cli_selectors.tree_selected_entry":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.getSelectedNode",
+			"cli_selectors.tree_select_id":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList filteredNodes index by id",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

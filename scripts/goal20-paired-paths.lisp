@@ -370,6 +370,7 @@
     ("cli_selectors.tree_handle_event" . 50)
     ("cli_selectors.tree_handle_label_event" . 50)
     ("cli_selectors.tree_selected_entry" . 50)
+    ("cli_selectors.tree_select_id" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7886,6 +7887,43 @@
    (tree-selected-entry-encoded "asst-empty")
    (tree-selected-entry-encoded nil :no-select-p t)))
 
+(defun tree-select-id-encoded (&key selected-id target-id filter folded-ids)
+  (let* ((entries *tree-apply-filter-entries*)
+         (current-leaf-id "user-3")
+         (state
+           (cadr-cli::make-tree-selector-state
+            :entries entries
+            :current-leaf-id current-leaf-id
+            :initial-selected-id selected-id
+            :filter (tree-filter-keyword (or filter "default")))))
+    (when folded-ids
+      (dolist (id folded-ids)
+        (setf (gethash id
+                       (cadr-cli::tree-selector-state-folded
+                        state))
+              t))
+      (cadr-cli::tree-selector-apply-filter state)
+      (cadr-cli::tree-selector-select-id state selected-id))
+    (cadr-cli::tree-selector-select-id state target-id)
+    (format nil "~a|~a"
+            (or (cadr-cli::tree-selector-state-selected-id state)
+                "null")
+            (or (cadr-cli::tree-selector-state-preserved-id state)
+                "null"))))
+
+(defun run-cli-selectors-tree-select-id ()
+  (list
+   (tree-select-id-encoded :selected-id "user-3" :target-id "user-1")
+   (tree-select-id-encoded :selected-id "user-3" :target-id "user-3")
+   (tree-select-id-encoded :selected-id "user-3" :target-id "missing")
+   (tree-select-id-encoded :selected-id "user-1" :target-id "label-1")
+   (tree-select-id-encoded
+    :selected-id "user-3" :target-id "asst-1"
+    :filter "labeled-only")
+   (tree-select-id-encoded
+    :selected-id "user-1" :target-id "user-3"
+    :folded-ids '("user-2"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8003,7 +8041,9 @@
         (tree-handle-label-event
           (run-cli-selectors-tree-handle-label-event))
         (tree-selected-entry
-          (run-cli-selectors-tree-selected-entry)))
+          (run-cli-selectors-tree-selected-entry))
+        (tree-select-id
+          (run-cli-selectors-tree-select-id)))
     (json-object
      "observed"
      (json-object
@@ -8419,7 +8459,13 @@
       "tse_assistant" (nth 2 tree-selected-entry)
       "tse_label" (nth 3 tree-selected-entry)
       "tse_empty" (nth 4 tree-selected-entry)
-      "tse_noselect" (nth 5 tree-selected-entry))
+      "tse_noselect" (nth 5 tree-selected-entry)
+      "tsid_hit" (nth 0 tree-select-id)
+      "tsid_same" (nth 1 tree-select-id)
+      "tsid_miss" (nth 2 tree-select-id)
+      "tsid_label" (nth 3 tree-select-id)
+      "tsid_filter_miss" (nth 4 tree-select-id)
+      "tsid_fold_miss" (nth 5 tree-select-id))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8779,7 +8825,12 @@
      (collect "cli_selectors.tree_selected_entry"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-selected-entry)))))))
+                  (run-cli-selectors-tree-selected-entry))))
+     "tree_select_id"
+     (collect "cli_selectors.tree_select_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-select-id)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9938,6 +9989,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-handle-label-event"
       "cli_selectors.tree_selected_entry"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-selected-entry"
+      "cli_selectors.tree_select_id"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-select-id"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

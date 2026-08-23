@@ -2507,6 +2507,17 @@ Observed `tse_pinned` / `tse_plain` / `tse_assistant` / `tse_label` / `tse_empty
 `tse_noselect` are exact. First Friend-MachineD freeze **5.14×**
 (199.5 / 38.8 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 183 — `cli_selectors` (tree_select_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_select_id` | `tree-selector-select-id` | `TreeList` visible-id selection (`tree-selector.ts`) |
+
+Select visible entry by id; noop when target hidden or missing.
+Observed `tsid_hit` / `tsid_same` / `tsid_miss` / `tsid_label` / `tsid_filter_miss` /
+`tsid_fold_miss` are exact. First Friend-MachineD freeze **4.64×**
+(217.0 / 46.7 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_select_id`
+  (visible-id selection fixtures; cadr `tree-selector-select-id`
+  vs pi `TreeList` index by id). Friend-MachineD n=5 **4.64×**
+  (217.0 / 46.7 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_selected_entry`
   (selected entry fixtures; cadr `tree-selector-selected-entry`
   vs pi `TreeList.getSelectedNode`). Friend-MachineD n=5 **5.14×**
