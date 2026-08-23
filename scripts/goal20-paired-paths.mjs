@@ -302,6 +302,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_selected_id": 50,
 	"cli_selectors.tree_select_id": 50,
 	"cli_selectors.tree_visible_ids": 50,
+	"cli_selectors.project_trust_options": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8075,6 +8076,59 @@ function runCliSelectorsTreeVisibleIds() {
 	};
 }
 
+function stageProjectTrustOptionsFixtures() {
+	const parent = path.join(scratch, "trust-pto-parent");
+	const child = path.join(scratch, "trust-pto-parent", "child");
+	const single = path.join(scratch, "trust-pto-single");
+	mkdirSync(parent, { recursive: true });
+	mkdirSync(child, { recursive: true });
+	mkdirSync(single, { recursive: true });
+	return { child, single };
+}
+
+function encodeTrustDecision(decision) {
+	if (decision === true) {
+		return "true";
+	}
+	if (decision === false) {
+		return "false";
+	}
+	return "null";
+}
+
+function encodeTrustPath(path) {
+	if (!path) {
+		return "null";
+	}
+	const normalized = path.replace(/[/\\]+$/, "");
+	const marker = "trust-pto-";
+	const idx = normalized.indexOf(marker);
+	return idx >= 0 ? normalized.slice(idx) : "scratch-root";
+}
+
+function encodeTrustUpdates(updates) {
+	return updates
+		.map((update) => `${encodeTrustPath(update.path)}=${encodeTrustDecision(update.decision)}`)
+		.join(",");
+}
+
+function encodeProjectTrustOption(option) {
+	const savedPath = option.savedPath ? encodeTrustPath(option.savedPath) : "null";
+	return `${option.trusted ? "true" : "false"}|${savedPath}|${encodeTrustUpdates(option.updates)}`;
+}
+
+function encodeProjectTrustOptions(options) {
+	return options.map(encodeProjectTrustOption).join(";");
+}
+
+function runCliSelectorsProjectTrustOptions() {
+	const { child, single } = stageProjectTrustOptionsFixtures();
+	return {
+		pto_child: encodeProjectTrustOptions(trustManagerModule.getProjectTrustOptions(child)),
+		pto_single: encodeProjectTrustOptions(trustManagerModule.getProjectTrustOptions(single)),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8471,6 +8525,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeSelectedIdResults = runCliSelectorsTreeSelectedId();
 	const treeSelectIdResults = runCliSelectorsTreeSelectId();
 	const treeVisibleIdsResults = runCliSelectorsTreeVisibleIds();
+	const projectTrustOptionsResults = runCliSelectorsProjectTrustOptions();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8726,6 +8781,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeSelectedIdResults,
 		...treeSelectIdResults,
 		...treeVisibleIdsResults,
+		...projectTrustOptionsResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8976,6 +9032,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_visible_ids: await collect("cli_selectors.tree_visible_ids", () => {
 			return () => runCliSelectorsTreeVisibleIds();
+		}),
+		project_trust_options: await collect("cli_selectors.project_trust_options", () => {
+			return () => runCliSelectorsProjectTrustOptions();
 		}),
 		observed,
 	};
@@ -10188,6 +10247,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList filteredNodes index by id",
 			"cli_selectors.tree_visible_ids":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.filteredNodes ids",
+			"cli_selectors.project_trust_options":
+				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

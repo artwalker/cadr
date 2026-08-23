@@ -378,6 +378,7 @@
     ("cli_selectors.tree_selected_id" . 50)
     ("cli_selectors.tree_select_id" . 50)
     ("cli_selectors.tree_visible_ids" . 50)
+    ("cli_selectors.project_trust_options" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8097,6 +8098,65 @@
     :filter "default" :folded-ids '("user-2"))
    (tree-visible-ids-encoded :filter "all")))
 
+(defun stage-project-trust-options-fixtures ()
+  (let ((parent
+          (merge-pathnames "trust-pto-parent/" *scratch-directory*))
+        (child
+          (merge-pathnames "trust-pto-parent/child/" *scratch-directory*))
+        (single
+          (merge-pathnames "trust-pto-single/" *scratch-directory*)))
+    (ensure-directories-exist parent)
+    (ensure-directories-exist child)
+    (ensure-directories-exist single)
+    (list :child child :single single)))
+
+(defun encode-trust-path (path)
+  (if path
+      (let* ((normalized
+               (string-right-trim '(#\/ #\\) path))
+             (marker-pos
+               (search "trust-pto-" normalized)))
+        (if marker-pos
+            (subseq normalized marker-pos)
+            "scratch-root"))
+    "null"))
+
+(defun encode-trust-decision (decision)
+  (cond
+    ((eq decision t) "true")
+    ((eq decision :remove) "null")
+    (t "false")))
+
+(defun encode-trust-updates (updates)
+  (format nil "~{~a~^,~}"
+          (mapcar
+           (lambda (update)
+             (format nil "~a=~a"
+                     (encode-trust-path (getf update :path))
+                     (encode-trust-decision
+                      (getf update :decision))))
+           updates)))
+
+(defun encode-project-trust-option (option)
+  (format nil "~a|~a|~a"
+          (if (getf option :trusted-p) "true" "false")
+          (encode-trust-path (getf option :saved-path))
+          (encode-trust-updates (getf option :updates))))
+
+(defun encode-project-trust-options (options)
+  (format nil "~{~a~^;~}"
+          (mapcar #'encode-project-trust-option options)))
+
+(defun run-cli-selectors-project-trust-options ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (list
+     (encode-project-trust-options
+      (cadr-cli::project-trust-options
+       (namestring (getf fixtures :child))))
+     (encode-project-trust-options
+      (cadr-cli::project-trust-options
+       (namestring (getf fixtures :single)))))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8230,7 +8290,9 @@
         (tree-select-id
           (run-cli-selectors-tree-select-id))
         (tree-visible-ids
-          (run-cli-selectors-tree-visible-ids)))
+          (run-cli-selectors-tree-visible-ids))
+        (project-trust-options
+          (run-cli-selectors-project-trust-options)))
     (json-object
      "observed"
      (json-object
@@ -8691,7 +8753,9 @@
       "tvi_no_tools" (nth 2 tree-visible-ids)
       "tvi_query" (nth 3 tree-visible-ids)
       "tvi_fold" (nth 4 tree-visible-ids)
-      "tvi_all" (nth 5 tree-visible-ids))
+      "tvi_all" (nth 5 tree-visible-ids)
+      "pto_child" (nth 0 project-trust-options)
+      "pto_single" (nth 1 project-trust-options))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9091,7 +9155,12 @@
      (collect "cli_selectors.tree_visible_ids"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-visible-ids)))))))
+                  (run-cli-selectors-tree-visible-ids))))
+     "project_trust_options"
+     (collect "cli_selectors.project_trust_options"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-project-trust-options)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10266,6 +10335,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-select-id"
       "cli_selectors.tree_visible_ids"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-visible-ids"
+      "cli_selectors.project_trust_options"
+      "src/cadr-cli/interactive/selectors/trust.lisp project-trust-options"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

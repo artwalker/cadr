@@ -2596,6 +2596,16 @@ Observed `tapk_copy_hit` / `tapk_copy_miss` / `tapk_up_hit` / `tapk_filter_hit` 
 `tapk_garbage` are exact. First Friend-MachineD freeze **0.63×**
 (74.8 / 119.1 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 191 — `cli_selectors` (project_trust_options)
+
+| metric | cadr | pi |
+|---|---|---|
+| `project_trust_options` | `project-trust-options` | `getProjectTrustOptions` (`trust-manager.ts`) |
+
+Trust selector option list; encoded as `trusted\|saved_path\|updates` per option (fixture-relative paths).
+Observed `pto_child` / `pto_single` are exact. First Friend-MachineD freeze **1.16×**
+(72.9 / 62.9 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

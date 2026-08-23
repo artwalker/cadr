@@ -197,6 +197,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_selected_id",
     "cli_selectors.tree_select_id",
     "cli_selectors.tree_visible_ids",
+    "cli_selectors.project_trust_options",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",
