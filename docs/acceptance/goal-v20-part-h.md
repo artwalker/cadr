@@ -2239,6 +2239,18 @@ children, multiple roots, single-child chain, deep branch. Observed `tvn_single`
 Friend-MachineD freeze **0.92×** (17.2 / 18.7 µs), ceiling 8.0. Same commit no
 optimize.
 
+### Pair 159 — `cli_selectors` (tree_horizontal_viewport)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_horizontal_viewport` | `tree-selector-horizontal-viewport` | `renderHorizontalViewport` (`tree-selector.ts`) |
+
+Horizontal pan + truncate: short rows (no scroll), selected long-body scroll,
+narrow width clip, no-selection no-scroll, ANSI body slice. Observed
+`thv_short` / `thv_scroll` / `thv_narrow` / `thv_noselect` / `thv_ansi` are
+exact. First Friend-MachineD freeze **0.89×** (66.2 / 74.5 µs), ceiling 8.0.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

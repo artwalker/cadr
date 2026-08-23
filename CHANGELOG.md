@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_horizontal_viewport`
+  (horizontal pan/truncate fixtures; cadr `tree-selector-horizontal-viewport`
+  vs pi `renderHorizontalViewport`). Friend-MachineD n=5 **0.89×**
+  (66.2 / 74.5 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not
+  Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_visual_nodes`
   (visible-tree indent/connector/gutter fixtures; cadr `tree-selector-visual-nodes`
   vs pi `recalculateVisualStructure` DFS). Friend-MachineD n=5 **0.92×**

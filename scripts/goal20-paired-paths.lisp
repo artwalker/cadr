@@ -346,6 +346,7 @@
     ("cli_selectors.tree_entry_display_text" . 50)
     ("cli_selectors.tree_prefix" . 50)
     ("cli_selectors.tree_visual_nodes" . 50)
+    ("cli_selectors.tree_horizontal_viewport" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6888,6 +6889,52 @@
     (tree-visual-state-with-children
      '((nil . ("r")) ("r" . ("p")) ("p" . ("a" "b")))))))
 
+(defun tree-horizontal-viewport-row
+    (&key gutter body anchor-column body-width selected-p)
+  (list :gutter gutter :body body :anchor-column anchor-column
+        :body-width body-width :selected-p selected-p))
+
+(defun tree-horizontal-viewport-encoded (rows width)
+  (format nil "~{~a~^|~}"
+          (cadr-cli::tree-selector-horizontal-viewport rows width)))
+
+(defun run-cli-selectors-tree-horizontal-viewport ()
+  (let ((long-body (make-string 50 :initial-element #\x))
+        (ansi-body
+          (concatenate 'string #.(format nil "~C[31m" #\Escape)
+                       "red text padding"
+                       #.(format nil "~C[0m" #\Escape)
+                       (make-string 30 :initial-element #\y))))
+    (list
+     (tree-horizontal-viewport-encoded
+      (list (tree-horizontal-viewport-row
+             :gutter "> " :body "hello" :anchor-column 2
+             :body-width 5 :selected-p nil)
+            (tree-horizontal-viewport-row
+             :gutter "  " :body "world" :anchor-column 2
+             :body-width 5 :selected-p t))
+      40)
+     (tree-horizontal-viewport-encoded
+      (list (tree-horizontal-viewport-row
+             :gutter "> " :body long-body :anchor-column 25
+             :body-width 50 :selected-p t))
+      30)
+     (tree-horizontal-viewport-encoded
+      (list (tree-horizontal-viewport-row
+             :gutter "> " :body "hello world text"
+             :anchor-column 2 :body-width 16 :selected-p t))
+      12)
+     (tree-horizontal-viewport-encoded
+      (list (tree-horizontal-viewport-row
+             :gutter "> " :body long-body :anchor-column 2
+             :body-width 50 :selected-p nil))
+      30)
+     (tree-horizontal-viewport-encoded
+      (list (tree-horizontal-viewport-row
+             :gutter "> " :body ansi-body :anchor-column 25
+             :body-width 50 :selected-p t))
+      30))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6957,7 +7004,9 @@
         (tree-prefix
           (run-cli-selectors-tree-prefix))
         (tree-visual-nodes
-          (run-cli-selectors-tree-visual-nodes)))
+          (run-cli-selectors-tree-visual-nodes))
+        (tree-horizontal-viewport
+          (run-cli-selectors-tree-horizontal-viewport)))
     (json-object
      "observed"
      (json-object
@@ -7234,7 +7283,12 @@
       "tvn_branch" (nth 1 tree-visual-nodes)
       "tvn_multi" (nth 2 tree-visual-nodes)
       "tvn_chain" (nth 3 tree-visual-nodes)
-      "tvn_deep" (nth 4 tree-visual-nodes))
+      "tvn_deep" (nth 4 tree-visual-nodes)
+      "thv_short" (nth 0 tree-horizontal-viewport)
+      "thv_scroll" (nth 1 tree-horizontal-viewport)
+      "thv_narrow" (nth 2 tree-horizontal-viewport)
+      "thv_noselect" (nth 3 tree-horizontal-viewport)
+      "thv_ansi" (nth 4 tree-horizontal-viewport))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7474,7 +7528,12 @@
      (collect "cli_selectors.tree_visual_nodes"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-visual-nodes)))))))
+                  (run-cli-selectors-tree-visual-nodes))))
+     "tree_horizontal_viewport"
+     (collect "cli_selectors.tree_horizontal_viewport"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-horizontal-viewport)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8585,6 +8644,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-prefix"
       "cli_selectors.tree_visual_nodes"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-visual-nodes"
+      "cli_selectors.tree_horizontal_viewport"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-horizontal-viewport"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

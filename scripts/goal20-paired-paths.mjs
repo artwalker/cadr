@@ -270,6 +270,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_entry_display_text": 50,
 	"cli_selectors.tree_prefix": 50,
 	"cli_selectors.tree_visual_nodes": 50,
+	"cli_selectors.tree_horizontal_viewport": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6219,6 +6220,123 @@ function runCliSelectorsTreeVisualNodes() {
 	};
 }
 
+const TREE_GUTTER_WIDTH = 2;
+const MIN_VISIBLE_ANCHOR_CONTENT_WIDTH = 4;
+const MAX_VISIBLE_ANCHOR_CONTENT_WIDTH = 20;
+const MIN_ANCHOR_CONTEXT_WIDTH = 2;
+const MAX_ANCHOR_CONTEXT_WIDTH = 12;
+
+function renderHorizontalViewportPi(rows, width) {
+	const viewportWidth = Math.max(0, width - TREE_GUTTER_WIDTH);
+	const maxBodyWidth = rows.reduce((max, row) => Math.max(max, row.bodyWidth), 0);
+	const maxHorizontalScroll = Math.max(0, maxBodyWidth - viewportWidth);
+	const selectedRow = rows.find((row) => row.isSelected);
+
+	let horizontalScroll = 0;
+	if (selectedRow && maxHorizontalScroll > 0) {
+		const minVisibleAnchorContentWidth = Math.min(
+			MAX_VISIBLE_ANCHOR_CONTENT_WIDTH,
+			Math.max(MIN_VISIBLE_ANCHOR_CONTENT_WIDTH, Math.floor(viewportWidth / 3)),
+		);
+		if (selectedRow.anchorCol > viewportWidth - minVisibleAnchorContentWidth) {
+			const anchorContextWidth = Math.min(
+				MAX_ANCHOR_CONTEXT_WIDTH,
+				Math.max(MIN_ANCHOR_CONTEXT_WIDTH, Math.floor(viewportWidth / 4)),
+			);
+			horizontalScroll = Math.min(
+				maxHorizontalScroll,
+				selectedRow.anchorCol - anchorContextWidth,
+			);
+		}
+	}
+
+	return rows.map((row) => {
+		const line =
+			horizontalScroll > 0
+				? `${row.gutter}${tuiUtilsModule.sliceByColumn(row.body, horizontalScroll, viewportWidth, true)}\x1b[0m`
+				: row.gutter + row.body;
+		return tuiUtilsModule.truncateToWidth(line, width, "");
+	});
+}
+
+function treeHorizontalViewportEncoded(rows, width) {
+	return renderHorizontalViewportPi(rows, width).join("|");
+}
+
+function runCliSelectorsTreeHorizontalViewport() {
+	const longBody = "x".repeat(50);
+	const ansiBody = `\x1b[31mred text padding\x1b[0m${"y".repeat(30)}`;
+	return {
+		thv_short: treeHorizontalViewportEncoded(
+			[
+				{
+					gutter: "> ",
+					body: "hello",
+					anchorCol: 2,
+					bodyWidth: 5,
+					isSelected: false,
+				},
+				{
+					gutter: "  ",
+					body: "world",
+					anchorCol: 2,
+					bodyWidth: 5,
+					isSelected: true,
+				},
+			],
+			40,
+		),
+		thv_scroll: treeHorizontalViewportEncoded(
+			[
+				{
+					gutter: "> ",
+					body: longBody,
+					anchorCol: 25,
+					bodyWidth: 50,
+					isSelected: true,
+				},
+			],
+			30,
+		),
+		thv_narrow: treeHorizontalViewportEncoded(
+			[
+				{
+					gutter: "> ",
+					body: "hello world text",
+					anchorCol: 2,
+					bodyWidth: 16,
+					isSelected: true,
+				},
+			],
+			12,
+		),
+		thv_noselect: treeHorizontalViewportEncoded(
+			[
+				{
+					gutter: "> ",
+					body: longBody,
+					anchorCol: 2,
+					bodyWidth: 50,
+					isSelected: false,
+				},
+			],
+			30,
+		),
+		thv_ansi: treeHorizontalViewportEncoded(
+			[
+				{
+					gutter: "> ",
+					body: ansiBody,
+					anchorCol: 25,
+					bodyWidth: 50,
+					isSelected: true,
+				},
+			],
+			30,
+		),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6583,6 +6701,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeEntryDisplayTextResults = runCliSelectorsTreeEntryDisplayText();
 	const treePrefixResults = runCliSelectorsTreePrefix();
 	const treeVisualNodesResults = runCliSelectorsTreeVisualNodes();
+	const treeHorizontalViewportResults = runCliSelectorsTreeHorizontalViewport();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6806,6 +6925,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeEntryDisplayTextResults,
 		...treePrefixResults,
 		...treeVisualNodesResults,
+		...treeHorizontalViewportResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6960,6 +7080,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_visual_nodes: await collect("cli_selectors.tree_visual_nodes", () => {
 			return () => runCliSelectorsTreeVisualNodes();
+		}),
+		tree_horizontal_viewport: await collect("cli_selectors.tree_horizontal_viewport", () => {
+			return () => runCliSelectorsTreeHorizontalViewport();
 		}),
 		observed,
 	};
@@ -8108,6 +8231,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts render prefix char loop",
 			"cli_selectors.tree_visual_nodes":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts recalculateVisualStructure DFS",
+			"cli_selectors.tree_horizontal_viewport":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts renderHorizontalViewport",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
