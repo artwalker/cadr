@@ -189,6 +189,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_handle_raw_input",
     "cli_selectors.tree_handle_event",
     "cli_selectors.tree_handle_label_event",
+    "cli_selectors.tree_selected_entry",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

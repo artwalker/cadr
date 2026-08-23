@@ -2496,6 +2496,17 @@ Observed `thle_text` / `thle_bs` / `thle_enter` / `thle_escape` / `thle_nop` are
 exact. First Friend-MachineD freeze **0.69×**
 (159.7 / 232.7 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 182 — `cli_selectors` (tree_selected_entry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_selected_entry` | `tree-selector-selected-entry` | `TreeList.getSelectedNode` (`tree-selector.ts`) |
+
+Selected entry lookup: id, type, role, label, text on apply-filter fixtures.
+Observed `tse_pinned` / `tse_plain` / `tse_assistant` / `tse_label` / `tse_empty` /
+`tse_noselect` are exact. First Friend-MachineD freeze **5.14×**
+(199.5 / 38.8 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

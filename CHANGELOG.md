@@ -21,6 +21,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_selected_entry`
+  (selected entry fixtures; cadr `tree-selector-selected-entry`
+  vs pi `TreeList.getSelectedNode`). Friend-MachineD n=5 **5.14×**
+  (199.5 / 38.8 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `cli_selectors.tree_handle_label_event`
+  (label-mode event fixtures; cadr `tree-selector-handle-label-event`
+  vs pi `LabelInput.handleInput`). Friend-MachineD n=5 **0.69×**
+  (159.7 / 232.7 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_handle_event`
   (structured event fixtures; cadr `tree-selector-handle-event`
   vs pi `TreeList.handleInput`). Friend-MachineD n=5 **0.73×**

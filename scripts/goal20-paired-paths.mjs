@@ -293,6 +293,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_handle_raw_input": 50,
 	"cli_selectors.tree_handle_event": 50,
 	"cli_selectors.tree_handle_label_event": 50,
+	"cli_selectors.tree_selected_entry": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7672,6 +7673,57 @@ function runCliSelectorsTreeHandleLabelEvent() {
 	};
 }
 
+function treeRoleEncodedPi(role) {
+	if (!role) {
+		return "null";
+	}
+	return role.replace(/([A-Z])/g, "-$1").toLowerCase();
+}
+
+function treeSelectedEntryEncodedPi(selectedId, { noSelect = false } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		"user-3",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		noSelect ? undefined : (selectedId ?? "user-3"),
+		"default",
+	);
+	const treeList = component.getTreeList();
+	if (!noSelect && selectedId) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+	}
+	if (noSelect) {
+		treeList.selectedIndex = -1;
+	}
+	const node = treeList.getSelectedNode();
+	if (!node) {
+		return "null|null|null|null|null";
+	}
+	const { entry } = node;
+	const label = node.label ?? "null";
+	const text = entry.text ?? "";
+	return `${entry.id}|${entry.type}|${treeRoleEncodedPi(entry.role)}|${label}|${text}`;
+}
+
+function runCliSelectorsTreeSelectedEntry() {
+	return {
+		tse_pinned: treeSelectedEntryEncodedPi("user-3"),
+		tse_plain: treeSelectedEntryEncodedPi("user-1"),
+		tse_assistant: treeSelectedEntryEncodedPi("asst-1"),
+		tse_label: treeSelectedEntryEncodedPi("label-1"),
+		tse_empty: treeSelectedEntryEncodedPi("asst-empty"),
+		tse_noselect: treeSelectedEntryEncodedPi(null, { noSelect: true }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8059,6 +8111,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeHandleRawInputResults = runCliSelectorsTreeHandleRawInput();
 	const treeHandleEventResults = runCliSelectorsTreeHandleEvent();
 	const treeHandleLabelEventResults = runCliSelectorsTreeHandleLabelEvent();
+	const treeSelectedEntryResults = runCliSelectorsTreeSelectedEntry();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8305,6 +8358,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeHandleRawInputResults,
 		...treeHandleEventResults,
 		...treeHandleLabelEventResults,
+		...treeSelectedEntryResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8528,6 +8582,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_handle_label_event: await collect("cli_selectors.tree_handle_label_event", () => {
 			return () => runCliSelectorsTreeHandleLabelEvent();
+		}),
+		tree_selected_entry: await collect("cli_selectors.tree_selected_entry", () => {
+			return () => runCliSelectorsTreeSelectedEntry();
 		}),
 		observed,
 	};
@@ -9722,6 +9779,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.handleInput (structured events)",
 			"cli_selectors.tree_handle_label_event":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput.handleInput",
+			"cli_selectors.tree_selected_entry":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.getSelectedNode",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

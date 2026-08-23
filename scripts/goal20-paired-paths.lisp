@@ -369,6 +369,7 @@
     ("cli_selectors.tree_handle_raw_input" . 50)
     ("cli_selectors.tree_handle_event" . 50)
     ("cli_selectors.tree_handle_label_event" . 50)
+    ("cli_selectors.tree_selected_entry" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7844,6 +7845,47 @@
                                     :initial-input "newtag")
    (tree-handle-label-event-encoded "user-3" :tab)))
 
+(defun tree-selected-entry-encoded (selected-id &key no-select-p)
+  (let* ((entries *tree-apply-filter-entries*)
+         (current-leaf-id "user-3")
+         (state
+           (cadr-cli::make-tree-selector-state
+            :entries entries
+            :current-leaf-id current-leaf-id
+            :initial-selected-id
+            (unless no-select-p selected-id))))
+    (when (and selected-id (not no-select-p))
+      (cadr-cli::tree-selector-select-id state selected-id))
+    (when no-select-p
+      (setf (cadr-cli::tree-selector-state-selected-id state)
+            nil))
+    (let ((entry (cadr-cli::tree-selector-selected-entry state)))
+      (if entry
+          (format nil "~a|~a|~a|~a|~a"
+                  (getf entry :id)
+                  (string-downcase
+                   (symbol-name (getf entry :type)))
+                  (if (getf entry :role)
+                      (string-downcase
+                       (symbol-name (getf entry :role)))
+                      "null")
+                  (if (getf entry :label)
+                      (getf entry :label)
+                      "null")
+                  (if (getf entry :text)
+                      (getf entry :text)
+                      ""))
+          "null|null|null|null|null"))))
+
+(defun run-cli-selectors-tree-selected-entry ()
+  (list
+   (tree-selected-entry-encoded "user-3")
+   (tree-selected-entry-encoded "user-1")
+   (tree-selected-entry-encoded "asst-1")
+   (tree-selected-entry-encoded "label-1")
+   (tree-selected-entry-encoded "asst-empty")
+   (tree-selected-entry-encoded nil :no-select-p t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7959,7 +8001,9 @@
         (tree-handle-event
           (run-cli-selectors-tree-handle-event))
         (tree-handle-label-event
-          (run-cli-selectors-tree-handle-label-event)))
+          (run-cli-selectors-tree-handle-label-event))
+        (tree-selected-entry
+          (run-cli-selectors-tree-selected-entry)))
     (json-object
      "observed"
      (json-object
@@ -8369,7 +8413,13 @@
       "thle_bs" (nth 1 tree-handle-label-event)
       "thle_enter" (nth 2 tree-handle-label-event)
       "thle_escape" (nth 3 tree-handle-label-event)
-      "thle_nop" (nth 4 tree-handle-label-event))
+      "thle_nop" (nth 4 tree-handle-label-event)
+      "tse_pinned" (nth 0 tree-selected-entry)
+      "tse_plain" (nth 1 tree-selected-entry)
+      "tse_assistant" (nth 2 tree-selected-entry)
+      "tse_label" (nth 3 tree-selected-entry)
+      "tse_empty" (nth 4 tree-selected-entry)
+      "tse_noselect" (nth 5 tree-selected-entry))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8724,7 +8774,12 @@
      (collect "cli_selectors.tree_handle_label_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-handle-label-event)))))))
+                  (run-cli-selectors-tree-handle-label-event))))
+     "tree_selected_entry"
+     (collect "cli_selectors.tree_selected_entry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-selected-entry)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9881,6 +9936,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-handle-event"
       "cli_selectors.tree_handle_label_event"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-handle-label-event"
+      "cli_selectors.tree_selected_entry"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-selected-entry"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
