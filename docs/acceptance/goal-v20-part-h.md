@@ -2439,12 +2439,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **295 files / 127,389 lines**
+Denominator: **295 files / 127,393 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 167 | 74,345 | 58.4% | `no worse than baseline` is falsifiable |
+| `paired` | 167 | 74,349 | 58.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
 | `needs-pair` | 76 | 28,149 | 22.1% | must get an H pair; not a file-level idle bench |
@@ -2565,7 +2565,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path`, `cli_selectors.session_quoted_p`, `cli_selectors.session_named_p` |
 | `src/cadr-cli/interactive/selectors/settings.lisp` | 893 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
-| `src/cadr-cli/interactive/selectors/tree.lisp` | 1,812 | `cli_selectors.tree_entry_filtered` |
+| `src/cadr-cli/interactive/selectors/tree.lisp` | 1,816 | `cli_selectors.tree_entry_filtered` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
