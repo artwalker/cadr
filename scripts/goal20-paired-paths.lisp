@@ -336,6 +336,7 @@
     ("cli_selectors.tree_entry_search_text" . 50)
     ("cli_selectors.tree_settings_entry_p" . 50)
     ("cli_selectors.tree_normalize_display_text" . 50)
+    ("cli_selectors.tree_status_labels" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6552,6 +6553,22 @@
    (cadr-cli::tree-selector-normalize-display-text
     (format nil "   ~C~C  " #\Tab #\Newline))))
 
+(defun run-cli-selectors-tree-status-labels ()
+  (flet ((status-labels (filter show-label-timestamps-p)
+           (cadr-cli::tree-selector-status-labels
+            (cadr-cli::%make-tree-selector-state
+             :filter filter
+             :show-label-timestamps-p
+             show-label-timestamps-p))))
+    (list
+     (status-labels :default nil)
+     (status-labels :no-tools nil)
+     (status-labels :user-only nil)
+     (status-labels :labeled-only nil)
+     (status-labels :all nil)
+     (status-labels :default t)
+     (status-labels :no-tools t))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6601,7 +6618,9 @@
         (tree-settings-entry-p
           (run-cli-selectors-tree-settings-entry-p))
         (tree-normalize-display-text
-          (run-cli-selectors-tree-normalize-display-text)))
+          (run-cli-selectors-tree-normalize-display-text))
+        (tree-status-labels
+          (run-cli-selectors-tree-status-labels)))
     (json-object
      "observed"
      (json-object
@@ -6814,7 +6833,14 @@
       "tnd_spaced" (nth 1 tree-normalize-display-text)
       "tnd_newline" (nth 2 tree-normalize-display-text)
       "tnd_empty" (nth 3 tree-normalize-display-text)
-      "tnd_ws" (nth 4 tree-normalize-display-text))
+      "tnd_ws" (nth 4 tree-normalize-display-text)
+      "tsl_empty" (nth 0 tree-status-labels)
+      "tsl_notools" (nth 1 tree-status-labels)
+      "tsl_user" (nth 2 tree-status-labels)
+      "tsl_labeled" (nth 3 tree-status-labels)
+      "tsl_all" (nth 4 tree-status-labels)
+      "tsl_time" (nth 5 tree-status-labels)
+      "tsl_both" (nth 6 tree-status-labels))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7004,7 +7030,12 @@
      (collect "cli_selectors.tree_normalize_display_text"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-normalize-display-text)))))))
+                  (run-cli-selectors-tree-normalize-display-text))))
+     "tree_status_labels"
+     (collect "cli_selectors.tree_status_labels"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-status-labels)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8095,6 +8126,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-settings-entry-p"
       "cli_selectors.tree_normalize_display_text"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-normalize-display-text"
+      "cli_selectors.tree_status_labels"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-status-labels"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

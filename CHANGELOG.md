@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_status_labels`
+  (tree status suffix fixtures; cadr `tree-selector-status-labels` vs pi
+  `getStatusLabels`). Friend-MachineD n=5 **8.92×** (4.1 / 0.5 µs), ceiling 8.0.
+  Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_normalize_display_text`
   (tree display normalize fixtures; cadr `tree-selector-normalize-display-text` vs
   pi `getEntryDisplayText` normalize). Friend-MachineD n=5 **2.88×**

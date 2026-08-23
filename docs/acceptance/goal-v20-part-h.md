@@ -2111,6 +2111,20 @@ Observed `tnd_hello` / `tnd_spaced` / `tnd_newline` / `tnd_empty` / `tnd_ws` are
 exact. First Friend-MachineD freeze **2.88×** (4.3 / 1.5 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 149 — `cli_selectors` (tree_status_labels)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_status_labels` | `tree-selector-status-labels` | `getStatusLabels` (`tree-selector.ts`) |
+
+Filter/timestamp status suffix only: bracketed filter label plus optional
+`[+label time]`. Bench uses `%make-tree-selector-state` with filter and
+show-label-timestamps-p only (no apply-filter rebuild). Fixtures cover default,
+no-tools, user-only, labeled-only, all, timestamps-only, combined. Observed
+`tsl_empty` / `tsl_notools` / `tsl_user` / `tsl_labeled` / `tsl_all` /
+`tsl_time` / `tsl_both` are exact. First Friend-MachineD freeze **8.92×**
+(4.1 / 0.5 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

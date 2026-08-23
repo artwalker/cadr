@@ -260,6 +260,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_entry_search_text": 50,
 	"cli_selectors.tree_settings_entry_p": 50,
 	"cli_selectors.tree_normalize_display_text": 50,
+	"cli_selectors.tree_status_labels": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5641,6 +5642,40 @@ function runCliSelectorsTreeNormalizeDisplayText() {
 	};
 }
 
+function treeStatusLabelsPi(filterMode, showLabelTimestamps) {
+	let labels = "";
+	switch (filterMode) {
+		case "no-tools":
+			labels += " [no-tools]";
+			break;
+		case "user-only":
+			labels += " [user]";
+			break;
+		case "labeled-only":
+			labels += " [labeled]";
+			break;
+		case "all":
+			labels += " [all]";
+			break;
+	}
+	if (showLabelTimestamps) {
+		labels += " [+label time]";
+	}
+	return labels;
+}
+
+function runCliSelectorsTreeStatusLabels() {
+	return {
+		tsl_empty: treeStatusLabelsPi("default", false),
+		tsl_notools: treeStatusLabelsPi("no-tools", false),
+		tsl_user: treeStatusLabelsPi("user-only", false),
+		tsl_labeled: treeStatusLabelsPi("labeled-only", false),
+		tsl_all: treeStatusLabelsPi("all", false),
+		tsl_time: treeStatusLabelsPi("default", true),
+		tsl_both: treeStatusLabelsPi("no-tools", true),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -5995,6 +6030,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeEntrySearchTextResults = runCliSelectorsTreeEntrySearchText();
 	const treeSettingsEntryPResults = runCliSelectorsTreeSettingsEntryP();
 	const treeNormalizeDisplayTextResults = runCliSelectorsTreeNormalizeDisplayText();
+	const treeStatusLabelsResults = runCliSelectorsTreeStatusLabels();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6188,6 +6224,13 @@ async function measureCliSelectorsSessionSearch() {
 		tnd_newline: treeNormalizeDisplayTextResults.tnd_newline,
 		tnd_empty: treeNormalizeDisplayTextResults.tnd_empty,
 		tnd_ws: treeNormalizeDisplayTextResults.tnd_ws,
+		tsl_empty: treeStatusLabelsResults.tsl_empty,
+		tsl_notools: treeStatusLabelsResults.tsl_notools,
+		tsl_user: treeStatusLabelsResults.tsl_user,
+		tsl_labeled: treeStatusLabelsResults.tsl_labeled,
+		tsl_all: treeStatusLabelsResults.tsl_all,
+		tsl_time: treeStatusLabelsResults.tsl_time,
+		tsl_both: treeStatusLabelsResults.tsl_both,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6312,6 +6355,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_normalize_display_text: await collect("cli_selectors.tree_normalize_display_text", () => {
 			return () => runCliSelectorsTreeNormalizeDisplayText();
+		}),
+		tree_status_labels: await collect("cli_selectors.tree_status_labels", () => {
+			return () => runCliSelectorsTreeStatusLabels();
 		}),
 		observed,
 	};
@@ -7440,6 +7486,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts isSettingsEntry predicate",
 			"cli_selectors.tree_normalize_display_text":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getEntryDisplayText normalize",
+			"cli_selectors.tree_status_labels":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getStatusLabels",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
