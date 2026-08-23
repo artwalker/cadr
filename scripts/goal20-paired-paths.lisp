@@ -354,6 +354,7 @@
     ("cli_selectors.tree_prioritize_active" . 50)
     ("cli_selectors.tree_rebuild_visible_maps" . 50)
     ("cli_selectors.tree_apply_filter" . 50)
+    ("cli_selectors.tree_render_lines" . 20)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7230,6 +7231,56 @@
    (tree-apply-filter-encoded
     :filter "user-only" :selected-id "tool-1")))
 
+(defun tree-render-state
+    (&key entries current-leaf-id selected-id
+          max-visible-lines filter folded-ids)
+  (let* ((leaf (or current-leaf-id "asst-4a"))
+         (state
+           (cadr-cli::make-tree-selector-state
+            :entries
+            (or entries *tree-active-path-branching-entries*)
+            :current-leaf-id leaf
+            :initial-selected-id
+            (or selected-id leaf)
+            :filter (tree-filter-keyword (or filter "default"))
+            :max-visible-lines (or max-visible-lines 8))))
+    (when folded-ids
+      (dolist (id folded-ids)
+        (setf (gethash id
+                       (cadr-cli::tree-selector-state-folded
+                        state))
+              t))
+      (cadr-cli::tree-selector-apply-filter state))
+    (when (and selected-id
+               (not (equal selected-id
+                           (or current-leaf-id "asst-4a"))))
+      (cadr-cli::tree-selector-select-id state selected-id))
+    state))
+
+(defun tree-render-lines-encoded (state width)
+  (format nil "~{~a~^|~}"
+          (cadr-cli::tree-selector-render-lines state width)))
+
+(defun run-cli-selectors-tree-render-lines ()
+  (list
+   (tree-render-lines-encoded
+    (tree-render-state) 80)
+   (tree-render-lines-encoded
+    (tree-render-state :selected-id "user-2") 60)
+   (tree-render-lines-encoded
+    (tree-render-state) 28)
+   (tree-render-lines-encoded
+    (tree-render-state :folded-ids '("asst-2")) 70)
+   (tree-render-lines-encoded
+    (tree-render-state
+     :entries '()
+     :current-leaf-id nil
+     :selected-id nil
+     :max-visible-lines 5)
+    40)
+   (tree-render-lines-encoded
+    (tree-render-state :max-visible-lines 5) 50)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7315,7 +7366,9 @@
         (tree-rebuild-visible-maps
           (run-cli-selectors-tree-rebuild-visible-maps))
         (tree-apply-filter
-          (run-cli-selectors-tree-apply-filter)))
+          (run-cli-selectors-tree-apply-filter))
+        (tree-render-lines
+          (run-cli-selectors-tree-render-lines)))
     (json-object
      "observed"
      (json-object
@@ -7635,7 +7688,13 @@
       "taf_no_tools" (nth 2 tree-apply-filter)
       "taf_query" (nth 3 tree-apply-filter)
       "taf_fold" (nth 4 tree-apply-filter)
-      "taf_reselect" (nth 5 tree-apply-filter))
+      "taf_reselect" (nth 5 tree-apply-filter)
+      "trl_wide" (nth 0 tree-render-lines)
+      "trl_mid" (nth 1 tree-render-lines)
+      "trl_narrow" (nth 2 tree-render-lines)
+      "trl_fold" (nth 3 tree-render-lines)
+      "trl_empty" (nth 4 tree-render-lines)
+      "trl_short" (nth 5 tree-render-lines))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7915,7 +7974,12 @@
      (collect "cli_selectors.tree_apply_filter"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-apply-filter)))))))
+                  (run-cli-selectors-tree-apply-filter))))
+     "tree_render_lines"
+     (collect "cli_selectors.tree_render_lines"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-render-lines)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9042,6 +9106,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-rebuild-visible-maps"
       "cli_selectors.tree_apply_filter"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-apply-filter"
+      "cli_selectors.tree_render_lines"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-render-lines"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

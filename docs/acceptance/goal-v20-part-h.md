@@ -2331,6 +2331,17 @@ nearest visible ancestor. Observed `taf_default` / `taf_user_only` / `taf_no_too
 `taf_query` / `taf_fold` / `taf_reselect` are exact. First Friend-MachineD freeze
 **3.60×** (71.6 / 19.9 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 167 — `cli_selectors` (tree_render_lines)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_render_lines` | `tree-selector-render-lines` | `TreeList.render` (`tree-selector.ts`) |
+
+Full tree list render on branching fixtures: wide/mid/narrow width, fold, empty,
+short viewport. Observed `trl_wide` / `trl_mid` / `trl_narrow` / `trl_fold` /
+`trl_empty` / `trl_short` are exact. First Friend-MachineD freeze **0.83×**
+(1,236.6 / 1,484.2 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

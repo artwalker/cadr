@@ -278,6 +278,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_prioritize_active": 50,
 	"cli_selectors.tree_rebuild_visible_maps": 50,
 	"cli_selectors.tree_apply_filter": 50,
+	"cli_selectors.tree_render_lines": 20,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -593,6 +594,9 @@ const themeModule = await import(
 const keysModule = await import(moduleUrl("packages/tui/src/keys.ts"));
 const dynamicBorderModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/components/dynamic-border.ts")
+);
+const treeSelectorModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/components/tree-selector.ts")
 );
 themeModule.initTheme("dark", false);
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
@@ -6748,6 +6752,93 @@ function runCliSelectorsTreeApplyFilter() {
 	};
 }
 
+function treeFlatEntryToSessionEntry(entry) {
+	const base = {
+		id: entry.id,
+		parentId: entry.parentId ?? null,
+		timestamp: "2026-01-01T00:00:00.000Z",
+	};
+	if (entry.type === "message") {
+		return {
+			...base,
+			type: "message",
+			message: {
+				role: entry.role,
+				content: entry.text ?? "",
+			},
+		};
+	}
+	return base;
+}
+
+function flatEntriesToSessionTree(flatEntries) {
+	const nodes = new Map();
+	for (const entry of flatEntries) {
+		nodes.set(entry.id, {
+			entry: treeFlatEntryToSessionEntry(entry),
+			children: [],
+			label: entry.label,
+		});
+	}
+	const roots = [];
+	for (const entry of flatEntries) {
+		const node = nodes.get(entry.id);
+		if (entry.parentId && nodes.has(entry.parentId)) {
+			nodes.get(entry.parentId).children.push(node);
+		} else {
+			roots.push(node);
+		}
+	}
+	return roots;
+}
+
+function treeRenderLinesPi({
+	entries = TREE_ACTIVE_PATH_BRANCHING_ENTRIES,
+	currentLeafId = "asst-4a",
+	width,
+	maxVisibleLines = 8,
+	initialSelectedId,
+	initialFilterMode = "default",
+	foldedIds = [],
+}) {
+	const tree = entries.length === 0 ? [] : flatEntriesToSessionTree(entries);
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		tree,
+		currentLeafId,
+		Math.max(10, maxVisibleLines * 2),
+		() => {},
+		() => {},
+		undefined,
+		initialSelectedId ?? currentLeafId,
+		initialFilterMode,
+	);
+	const treeList = component.getTreeList();
+	if (foldedIds.length > 0) {
+		for (const id of foldedIds) {
+			treeList.foldedNodes.add(id);
+		}
+		treeList.applyFilter();
+	}
+	return treeList.render(width).join("|");
+}
+
+function runCliSelectorsTreeRenderLines() {
+	return {
+		trl_wide: treeRenderLinesPi({ width: 80 }),
+		trl_mid: treeRenderLinesPi({ width: 60, initialSelectedId: "user-2" }),
+		trl_narrow: treeRenderLinesPi({ width: 28 }),
+		trl_fold: treeRenderLinesPi({ width: 70, foldedIds: ["asst-2"] }),
+		trl_empty: treeRenderLinesPi({
+			entries: [],
+			currentLeafId: null,
+			width: 40,
+			maxVisibleLines: 5,
+			initialSelectedId: undefined,
+		}),
+		trl_short: treeRenderLinesPi({ width: 50, maxVisibleLines: 5 }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7120,6 +7211,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treePrioritizeActiveResults = runCliSelectorsTreePrioritizeActive();
 	const treeRebuildVisibleMapsResults = runCliSelectorsTreeRebuildVisibleMaps();
 	const treeApplyFilterResults = runCliSelectorsTreeApplyFilter();
+	const treeRenderLinesResults = runCliSelectorsTreeRenderLines();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7351,6 +7443,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treePrioritizeActiveResults,
 		...treeRebuildVisibleMapsResults,
 		...treeApplyFilterResults,
+		...treeRenderLinesResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7529,6 +7622,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_apply_filter: await collect("cli_selectors.tree_apply_filter", () => {
 			return () => runCliSelectorsTreeApplyFilter();
+		}),
+		tree_render_lines: await collect("cli_selectors.tree_render_lines", () => {
+			return () => runCliSelectorsTreeRenderLines();
 		}),
 		observed,
 	};
@@ -8693,6 +8789,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts recalculateVisualStructure visible parent/children maps",
 			"cli_selectors.tree_apply_filter":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts applyFilter",
+			"cli_selectors.tree_render_lines":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.render",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

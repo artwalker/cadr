@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_render_lines`
+  (tree list render fixtures; cadr `tree-selector-render-lines`
+  vs pi `TreeList.render`). Friend-MachineD n=5 **0.83×**
+  (1,236.6 / 1,484.2 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_apply_filter`
   (filter/fold/query fixtures; cadr `tree-selector-apply-filter`
   vs pi `applyFilter`). Friend-MachineD n=5 **3.60×**
