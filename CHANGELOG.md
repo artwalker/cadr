@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_entry_search_text`
+  (tree search haystack fixtures; cadr `tree-selector-entry-search-text` vs pi
+  `getSearchableText` field join). Friend-MachineD n=5 **1.22×** (1.8 / 1.5 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_query_matches`
   (tree search token fixtures; cadr `tree-selector-query-matches-p` vs pi
   tree search predicate). Friend-MachineD n=5 **2.20×** (5.2 / 2.3 µs),

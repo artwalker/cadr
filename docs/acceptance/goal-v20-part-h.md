@@ -2074,6 +2074,19 @@ Observed `tqm_hit` / `tqm_miss` / `tqm_multi` / `tqm_partial` /
 `tqm_empty` are exact. First Friend-MachineD freeze **2.20×** (5.2 / 2.3 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 146 — `cli_selectors` (tree_entry_search_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_entry_search_text` | `tree-selector-entry-search-text` | `getSearchableText` field join (`tree-selector.ts`) |
+
+Per-entry searchable haystack only: join non-nil label/role/text/summary/name/
+model-id/thinking-level/custom-type with spaces. Not token matching or filter
+mode. Fixtures: sparse label+text, label-only, empty entry, all fields, text-only.
+Observed `tese_sparse` / `tese_label` / `tese_empty` / `tese_full` / `tese_text`
+are exact. First Friend-MachineD freeze **1.22×** (1.8 / 1.5 µs), ceiling 8.0.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

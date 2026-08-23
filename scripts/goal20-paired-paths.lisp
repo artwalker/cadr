@@ -333,6 +333,7 @@
     ("cli_selectors.settings_apply_filter" . 50)
     ("cli_selectors.tree_entry_filtered" . 50)
     ("cli_selectors.tree_query_matches" . 50)
+    ("cli_selectors.tree_entry_search_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6510,6 +6511,19 @@
      (tree-query-matches-encoded entry "hello beta")
      (tree-query-matches-encoded entry ""))))
 
+(defun run-cli-selectors-tree-entry-search-text ()
+  (list
+   (cadr-cli::tree-selector-entry-search-text
+    '(:label "alpha" :text "beta"))
+   (cadr-cli::tree-selector-entry-search-text
+    '(:label "solo"))
+   (cadr-cli::tree-selector-entry-search-text nil)
+   (cadr-cli::tree-selector-entry-search-text
+    '(:label "L" :text "T" :summary "S" :name "N"
+      :model-id "M" :thinking-level "H" :custom-type "C"))
+   (cadr-cli::tree-selector-entry-search-text
+    '(:text "only"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6553,7 +6567,9 @@
         (tree-entry-filtered
           (run-cli-selectors-tree-entry-filtered))
         (tree-query-matches
-          (run-cli-selectors-tree-query-matches)))
+          (run-cli-selectors-tree-query-matches))
+        (tree-entry-search-text
+          (run-cli-selectors-tree-entry-search-text)))
     (json-object
      "observed"
      (json-object
@@ -6750,7 +6766,12 @@
       "tqm_miss" (nth 1 tree-query-matches)
       "tqm_multi" (nth 2 tree-query-matches)
       "tqm_partial" (nth 3 tree-query-matches)
-      "tqm_empty" (nth 4 tree-query-matches))
+      "tqm_empty" (nth 4 tree-query-matches)
+      "tese_sparse" (nth 0 tree-entry-search-text)
+      "tese_label" (nth 1 tree-entry-search-text)
+      "tese_empty" (nth 2 tree-entry-search-text)
+      "tese_full" (nth 3 tree-entry-search-text)
+      "tese_text" (nth 4 tree-entry-search-text))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -6925,7 +6946,12 @@
      (collect "cli_selectors.tree_query_matches"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-query-matches)))))))
+                  (run-cli-selectors-tree-query-matches))))
+     "tree_entry_search_text"
+     (collect "cli_selectors.tree_entry_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-entry-search-text)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8010,6 +8036,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-filtered-p"
       "cli_selectors.tree_query_matches"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-query-matches-p"
+      "cli_selectors.tree_entry_search_text"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-entry-search-text"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
