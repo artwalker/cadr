@@ -277,6 +277,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_nearest_visible_id": 50,
 	"cli_selectors.tree_prioritize_active": 50,
 	"cli_selectors.tree_rebuild_visible_maps": 50,
+	"cli_selectors.tree_apply_filter": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6682,6 +6683,71 @@ function runCliSelectorsTreeRebuildVisibleMaps() {
 	};
 }
 
+const TREE_APPLY_FILTER_ENTRIES = [
+	{ id: "user-1", parentId: null, type: "message", role: "user", text: "root message" },
+	{ id: "label-1", parentId: "user-1", type: "label", label: "bookmark" },
+	{ id: "asst-1", parentId: "user-1", type: "message", role: "assistant", text: "response" },
+	{ id: "user-2", parentId: "asst-1", type: "message", role: "user", text: "branch query" },
+	{ id: "tool-1", parentId: "user-2", type: "message", role: "toolResult", text: "tool output" },
+	{ id: "user-3", parentId: "tool-1", type: "message", role: "user", text: "leaf text", label: "pinned" },
+	{ id: "asst-empty", parentId: "user-3", type: "message", role: "assistant", text: "" },
+];
+
+function treeApplyFilterPi({
+	filter = "default",
+	query = "",
+	foldedIds = [],
+	selectedId = null,
+	preservedId = null,
+}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const currentLeafId = "user-3";
+	const foldedSet = new Set(foldedIds);
+	const skipSet = new Set();
+	const visible = [];
+	for (const entry of entries) {
+		const { id, parentId } = entry;
+		if (parentId && (foldedSet.has(parentId) || skipSet.has(parentId))) {
+			skipSet.add(id);
+			continue;
+		}
+		if (
+			!skipSet.has(id) &&
+			treeEntryFilteredPi(entry, filter, currentLeafId) &&
+			treeQueryMatchesPi(entry, query)
+		) {
+			visible.push(entry);
+		}
+	}
+	const visibleIds = visible.map((entry) => entry.id);
+	const visibleSet = new Set(visibleIds);
+	const target = preservedId ?? selectedId ?? currentLeafId;
+	const nearest = treeNearestVisibleIdPi(entries, visibleIds, target);
+	const selected = nearest ?? null;
+	const preserved = nearest ? null : target;
+	return {
+		visibleIds,
+		selectedId: selected,
+		preservedId: preserved,
+	};
+}
+
+function treeApplyFilterEncodedPi(options) {
+	const result = treeApplyFilterPi(options);
+	return `${result.visibleIds.join(",")}|${result.selectedId ?? "null"}|${result.preservedId ?? "null"}`;
+}
+
+function runCliSelectorsTreeApplyFilter() {
+	return {
+		taf_default: treeApplyFilterEncodedPi({ filter: "default" }),
+		taf_user_only: treeApplyFilterEncodedPi({ filter: "user-only" }),
+		taf_no_tools: treeApplyFilterEncodedPi({ filter: "no-tools" }),
+		taf_query: treeApplyFilterEncodedPi({ filter: "default", query: "branch" }),
+		taf_fold: treeApplyFilterEncodedPi({ filter: "default", foldedIds: ["user-2"] }),
+		taf_reselect: treeApplyFilterEncodedPi({ filter: "user-only", selectedId: "tool-1" }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7053,6 +7119,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeNearestVisibleIdResults = runCliSelectorsTreeNearestVisibleId();
 	const treePrioritizeActiveResults = runCliSelectorsTreePrioritizeActive();
 	const treeRebuildVisibleMapsResults = runCliSelectorsTreeRebuildVisibleMaps();
+	const treeApplyFilterResults = runCliSelectorsTreeApplyFilter();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7283,6 +7350,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeNearestVisibleIdResults,
 		...treePrioritizeActiveResults,
 		...treeRebuildVisibleMapsResults,
+		...treeApplyFilterResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7458,6 +7526,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_rebuild_visible_maps: await collect("cli_selectors.tree_rebuild_visible_maps", () => {
 			return () => runCliSelectorsTreeRebuildVisibleMaps();
+		}),
+		tree_apply_filter: await collect("cli_selectors.tree_apply_filter", () => {
+			return () => runCliSelectorsTreeApplyFilter();
 		}),
 		observed,
 	};
@@ -8620,6 +8691,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts flattenTree active-branch ordering",
 			"cli_selectors.tree_rebuild_visible_maps":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts recalculateVisualStructure visible parent/children maps",
+			"cli_selectors.tree_apply_filter":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts applyFilter",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

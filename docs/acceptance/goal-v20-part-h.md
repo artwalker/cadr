@@ -2320,6 +2320,17 @@ sibling-skipping subsets. Observed `trvm_full` / `trvm_sparse` / `trvm_branch_b`
 `trvm_single` / `trvm_siblings` are exact. First Friend-MachineD freeze **1.49×**
 (41.3 / 27.7 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 166 — `cli_selectors` (tree_apply_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_apply_filter` | `tree-selector-apply-filter` | `applyFilter` (`tree-selector.ts`) |
+
+Filter/fold/query pass over mixed-type tree fixtures; preserves selection via
+nearest visible ancestor. Observed `taf_default` / `taf_user_only` / `taf_no_tools` /
+`taf_query` / `taf_fold` / `taf_reselect` are exact. First Friend-MachineD freeze
+**3.60×** (71.6 / 19.9 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

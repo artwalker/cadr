@@ -353,6 +353,7 @@
     ("cli_selectors.tree_nearest_visible_id" . 50)
     ("cli_selectors.tree_prioritize_active" . 50)
     ("cli_selectors.tree_rebuild_visible_maps" . 50)
+    ("cli_selectors.tree_apply_filter" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7155,6 +7156,80 @@
    (tree-rebuild-visible-maps-encoded
     '("user-1" "user-3a" "user-3b"))))
 
+(defparameter *tree-apply-filter-entries*
+  '((:id "user-1" :parent-id nil
+     :type :message :role :user
+     :text "root message")
+    (:id "label-1" :parent-id "user-1"
+     :type :label :label "bookmark")
+    (:id "asst-1" :parent-id "user-1"
+     :type :message :role :assistant
+     :text "response")
+    (:id "user-2" :parent-id "asst-1"
+     :type :message :role :user
+     :text "branch query")
+    (:id "tool-1" :parent-id "user-2"
+     :type :message :role :tool-result
+     :text "tool output")
+    (:id "user-3" :parent-id "tool-1"
+     :type :message :role :user
+     :text "leaf text" :label "pinned")
+    (:id "asst-empty" :parent-id "user-3"
+     :type :message :role :assistant
+     :text "")))
+
+(defun tree-apply-filter-encoded
+    (&key filter query folded-ids selected-id preserved-id)
+  (let* ((entries *tree-apply-filter-entries*)
+         (current-leaf-id "user-3")
+         (state
+           (cadr-cli::%make-tree-selector-state
+            :entries entries
+            :ordered-entries
+            (cadr-cli::tree-selector-order-entries
+             entries current-leaf-id)
+            :current-leaf-id current-leaf-id
+            :filter (tree-filter-keyword filter)
+            :selected-id
+            (or selected-id current-leaf-id))))
+    (setf (cadr-cli::tree-selector-state-query state)
+          (or query ""))
+    (when preserved-id
+      (setf (cadr-cli::tree-selector-state-selected-id state)
+            nil
+            (cadr-cli::tree-selector-state-preserved-id state)
+            preserved-id))
+    (when (and selected-id (not preserved-id))
+      (setf (cadr-cli::tree-selector-state-selected-id state)
+            selected-id
+            (cadr-cli::tree-selector-state-preserved-id state)
+            nil))
+    (dolist (id folded-ids)
+      (setf (gethash id
+                     (cadr-cli::tree-selector-state-folded
+                      state))
+            t))
+    (cadr-cli::tree-selector-apply-filter state)
+    (format nil "~a|~a|~a"
+            (format nil "~{~a~^,~}"
+                    (cadr-cli::tree-selector-state-visible-ids
+                     state))
+            (or (cadr-cli::tree-selector-state-selected-id state)
+                "null")
+            (or (cadr-cli::tree-selector-state-preserved-id state)
+                "null"))))
+
+(defun run-cli-selectors-tree-apply-filter ()
+  (list
+   (tree-apply-filter-encoded :filter "default")
+   (tree-apply-filter-encoded :filter "user-only")
+   (tree-apply-filter-encoded :filter "no-tools")
+   (tree-apply-filter-encoded :filter "default" :query "branch")
+   (tree-apply-filter-encoded
+    :filter "default" :folded-ids '("user-2"))
+   (tree-apply-filter-encoded
+    :filter "user-only" :selected-id "tool-1")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7238,7 +7313,9 @@
         (tree-prioritize-active
           (run-cli-selectors-tree-prioritize-active))
         (tree-rebuild-visible-maps
-          (run-cli-selectors-tree-rebuild-visible-maps)))
+          (run-cli-selectors-tree-rebuild-visible-maps))
+        (tree-apply-filter
+          (run-cli-selectors-tree-apply-filter)))
     (json-object
      "observed"
      (json-object
@@ -7552,7 +7629,13 @@
       "trvm_sparse" (nth 1 tree-rebuild-visible-maps)
       "trvm_branch_b" (nth 2 tree-rebuild-visible-maps)
       "trvm_single" (nth 3 tree-rebuild-visible-maps)
-      "trvm_siblings" (nth 4 tree-rebuild-visible-maps))
+      "trvm_siblings" (nth 4 tree-rebuild-visible-maps)
+      "taf_default" (nth 0 tree-apply-filter)
+      "taf_user_only" (nth 1 tree-apply-filter)
+      "taf_no_tools" (nth 2 tree-apply-filter)
+      "taf_query" (nth 3 tree-apply-filter)
+      "taf_fold" (nth 4 tree-apply-filter)
+      "taf_reselect" (nth 5 tree-apply-filter))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7827,7 +7910,12 @@
      (collect "cli_selectors.tree_rebuild_visible_maps"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-rebuild-visible-maps)))))))
+                  (run-cli-selectors-tree-rebuild-visible-maps))))
+     "tree_apply_filter"
+     (collect "cli_selectors.tree_apply_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-apply-filter)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8952,6 +9040,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-prioritize-active"
       "cli_selectors.tree_rebuild_visible_maps"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-rebuild-visible-maps"
+      "cli_selectors.tree_apply_filter"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-apply-filter"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

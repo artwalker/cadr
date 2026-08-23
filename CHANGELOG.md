@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_apply_filter`
+  (filter/fold/query fixtures; cadr `tree-selector-apply-filter`
+  vs pi `applyFilter`). Friend-MachineD n=5 **3.60×**
+  (71.6 / 19.9 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_rebuild_visible_maps`
   (visible parent/children map fixtures; cadr `tree-selector-rebuild-visible-maps`
   vs pi `recalculateVisualStructure`). Friend-MachineD n=5 **1.49×**
