@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_move`
+  (visible-id selection move fixtures; cadr `tree-selector-move`
+  vs pi `TreeList` index wrap). Friend-MachineD n=5 **1.74×**
+  (331.4 / 190.3 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_render_lines`
   (tree list render fixtures; cadr `tree-selector-render-lines`
   vs pi `TreeList.render`). Friend-MachineD n=5 **0.83×**

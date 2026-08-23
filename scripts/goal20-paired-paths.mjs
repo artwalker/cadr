@@ -279,6 +279,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_rebuild_visible_maps": 50,
 	"cli_selectors.tree_apply_filter": 50,
 	"cli_selectors.tree_render_lines": 20,
+	"cli_selectors.tree_move": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6839,6 +6840,42 @@ function runCliSelectorsTreeRenderLines() {
 	};
 }
 
+function treeMoveEncodedPi(selectedId, delta, { empty = false } = {}) {
+	if (empty) {
+		return "null";
+	}
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(TREE_ACTIVE_PATH_BRANCHING_ENTRIES),
+		"asst-4a",
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId ?? "asst-4a",
+		"default",
+	);
+	const treeList = component.getTreeList();
+	const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+	if (ids.length === 0) {
+		return "null";
+	}
+	const current = Math.max(0, ids.indexOf(selectedId));
+	const next = moveIndex(current, ids.length, delta);
+	return ids[next] ?? "null";
+}
+
+function runCliSelectorsTreeMove() {
+	return {
+		tm_down: treeMoveEncodedPi("user-1", 1),
+		tm_up: treeMoveEncodedPi("user-2", -1),
+		tm_wrap_up: treeMoveEncodedPi("user-1", -1),
+		tm_wrap_down: treeMoveEncodedPi("asst-4a", 1),
+		tm_page: treeMoveEncodedPi("user-2", 10),
+		tm_page_neg: treeMoveEncodedPi("user-2", -10),
+		tm_empty: treeMoveEncodedPi(null, 1, { empty: true }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7212,6 +7249,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeRebuildVisibleMapsResults = runCliSelectorsTreeRebuildVisibleMaps();
 	const treeApplyFilterResults = runCliSelectorsTreeApplyFilter();
 	const treeRenderLinesResults = runCliSelectorsTreeRenderLines();
+	const treeMoveResults = runCliSelectorsTreeMove();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7444,6 +7482,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeRebuildVisibleMapsResults,
 		...treeApplyFilterResults,
 		...treeRenderLinesResults,
+		...treeMoveResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7625,6 +7664,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_render_lines: await collect("cli_selectors.tree_render_lines", () => {
 			return () => runCliSelectorsTreeRenderLines();
+		}),
+		tree_move: await collect("cli_selectors.tree_move", () => {
+			return () => runCliSelectorsTreeMove();
 		}),
 		observed,
 	};
@@ -8791,6 +8833,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts applyFilter",
 			"cli_selectors.tree_render_lines":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.render",
+			"cli_selectors.tree_move":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList selection index wrap",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

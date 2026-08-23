@@ -175,6 +175,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_rebuild_visible_maps",
     "cli_selectors.tree_apply_filter",
     "cli_selectors.tree_render_lines",
+    "cli_selectors.tree_move",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

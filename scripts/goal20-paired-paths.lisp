@@ -355,6 +355,7 @@
     ("cli_selectors.tree_rebuild_visible_maps" . 50)
     ("cli_selectors.tree_apply_filter" . 50)
     ("cli_selectors.tree_render_lines" . 20)
+    ("cli_selectors.tree_move" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7281,6 +7282,28 @@
    (tree-render-lines-encoded
     (tree-render-state :max-visible-lines 5) 50)))
 
+(defun tree-move-encoded (selected-id delta &key empty-p)
+  (let ((state
+          (if empty-p
+              (cadr-cli::make-tree-selector-state
+               :entries '()
+               :current-leaf-id nil
+               :max-visible-lines 5)
+              (tree-render-state :selected-id selected-id))))
+    (cadr-cli::tree-selector-move state delta)
+    (or (cadr-cli::tree-selector-selected-id state)
+        "null")))
+
+(defun run-cli-selectors-tree-move ()
+  (list
+   (tree-move-encoded "user-1" 1)
+   (tree-move-encoded "user-2" -1)
+   (tree-move-encoded "user-1" -1)
+   (tree-move-encoded "asst-4a" 1)
+   (tree-move-encoded "user-2" 10)
+   (tree-move-encoded "user-2" -10)
+   (tree-move-encoded nil 1 :empty-p t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7368,7 +7391,9 @@
         (tree-apply-filter
           (run-cli-selectors-tree-apply-filter))
         (tree-render-lines
-          (run-cli-selectors-tree-render-lines)))
+          (run-cli-selectors-tree-render-lines))
+        (tree-move
+          (run-cli-selectors-tree-move)))
     (json-object
      "observed"
      (json-object
@@ -7694,7 +7719,14 @@
       "trl_narrow" (nth 2 tree-render-lines)
       "trl_fold" (nth 3 tree-render-lines)
       "trl_empty" (nth 4 tree-render-lines)
-      "trl_short" (nth 5 tree-render-lines))
+      "trl_short" (nth 5 tree-render-lines)
+      "tm_down" (nth 0 tree-move)
+      "tm_up" (nth 1 tree-move)
+      "tm_wrap_up" (nth 2 tree-move)
+      "tm_wrap_down" (nth 3 tree-move)
+      "tm_page" (nth 4 tree-move)
+      "tm_page_neg" (nth 5 tree-move)
+      "tm_empty" (nth 6 tree-move))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7979,7 +8011,12 @@
      (collect "cli_selectors.tree_render_lines"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-render-lines)))))))
+                  (run-cli-selectors-tree-render-lines))))
+     "tree_move"
+     (collect "cli_selectors.tree_move"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-move)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9108,6 +9145,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-apply-filter"
       "cli_selectors.tree_render_lines"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-render-lines"
+      "cli_selectors.tree_move"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-move"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

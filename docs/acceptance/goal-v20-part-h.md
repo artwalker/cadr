@@ -2342,6 +2342,17 @@ short viewport. Observed `trl_wide` / `trl_mid` / `trl_narrow` / `trl_fold` /
 `trl_empty` / `trl_short` are exact. First Friend-MachineD freeze **0.83×**
 (1,236.6 / 1,484.2 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 168 — `cli_selectors` (tree_move)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_move` | `tree-selector-move` | `TreeList` selection index wrap (`tree-selector.ts`) |
+
+Visible-id selection move on branching fixtures: step, wrap, page delta, empty.
+Observed `tm_down` / `tm_up` / `tm_wrap_up` / `tm_wrap_down` / `tm_page` /
+`tm_page_neg` / `tm_empty` are exact. First Friend-MachineD freeze **1.74×**
+(30.1 / 17.3 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
