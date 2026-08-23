@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_prioritize_active`
+  (active-path entry reorder fixtures; cadr `tree-selector-prioritize-active`
+  vs pi `flattenTree` active-branch ordering). Friend-MachineD n=5 **1.83×**
+  (16.3 / 8.9 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_nearest_visible_id`
   (visible-id ancestor walk fixtures; cadr `tree-selector-nearest-visible-id`
   vs pi `findNearestVisibleIndex` id walk). Friend-MachineD n=5 **2.34×**

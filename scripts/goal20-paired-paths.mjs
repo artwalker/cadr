@@ -275,6 +275,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_help_lines": 50,
 	"cli_selectors.tree_active_path": 50,
 	"cli_selectors.tree_nearest_visible_id": 50,
+	"cli_selectors.tree_prioritize_active": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -6559,6 +6560,38 @@ function runCliSelectorsTreeNearestVisibleId() {
 	};
 }
 
+function treeActivePathSetPi(entries, leafId) {
+	const byId = new Map(entries.map((entry) => [entry.id, entry]));
+	const active = new Set();
+	let current = leafId;
+	while (current) {
+		const entry = byId.get(current);
+		if (!entry) {
+			break;
+		}
+		active.add(current);
+		current = entry.parentId ?? null;
+	}
+	return active;
+}
+
+function treePrioritizeActiveEncodedPi(entries, leafId) {
+	const active = treeActivePathSetPi(entries, leafId);
+	const prioritized = entries.filter((entry) => active.has(entry.id));
+	const rest = entries.filter((entry) => !active.has(entry.id));
+	return [...prioritized, ...rest].map((entry) => entry.id).join(",");
+}
+
+function runCliSelectorsTreePrioritizeActive() {
+	const entries = TREE_ACTIVE_PATH_BRANCHING_ENTRIES;
+	return {
+		tpa_leaf_a: treePrioritizeActiveEncodedPi(entries, "asst-4a"),
+		tpa_leaf_b: treePrioritizeActiveEncodedPi(entries, "user-4b"),
+		tpa_root: treePrioritizeActiveEncodedPi(entries, "user-1"),
+		tpa_nil: treePrioritizeActiveEncodedPi(entries, null),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6928,6 +6961,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeHelpLinesResults = runCliSelectorsTreeHelpLines();
 	const treeActivePathResults = runCliSelectorsTreeActivePath();
 	const treeNearestVisibleIdResults = runCliSelectorsTreeNearestVisibleId();
+	const treePrioritizeActiveResults = runCliSelectorsTreePrioritizeActive();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7156,6 +7190,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeHelpLinesResults,
 		...treeActivePathResults,
 		...treeNearestVisibleIdResults,
+		...treePrioritizeActiveResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7325,6 +7360,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_nearest_visible_id: await collect("cli_selectors.tree_nearest_visible_id", () => {
 			return () => runCliSelectorsTreeNearestVisibleId();
+		}),
+		tree_prioritize_active: await collect("cli_selectors.tree_prioritize_active", () => {
+			return () => runCliSelectorsTreePrioritizeActive();
 		}),
 		observed,
 	};
@@ -8483,6 +8521,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts buildActivePath",
 			"cli_selectors.tree_nearest_visible_id":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts findNearestVisibleIndex id walk",
+			"cli_selectors.tree_prioritize_active":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts flattenTree active-branch ordering",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

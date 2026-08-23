@@ -145,5 +145,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.tree_help_lines` | 979.6 | 293.8 | 3.33× | 8.00× | measure-only pair (Pair 161); TreeHelp chunk wrap + muted theme | invent pause；地板优化另刀 |
 | `cli_selectors.tree_active_path` | 11.8 | 4.8 | 2.43× | 8.00× | measure-only pair (Pair 162); leaf-to-root ancestor walk | invent pause；地板优化另刀 |
 | `cli_selectors.tree_nearest_visible_id` | 14.9 | 6.4 | 2.34× | 8.00× | measure-only pair (Pair 163); visible ancestor walk + fallback | invent pause；地板优化另刀 |
+| `cli_selectors.tree_prioritize_active` | 16.3 | 8.9 | 1.83× | 8.00× | measure-only pair (Pair 164); active-path entry reorder | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

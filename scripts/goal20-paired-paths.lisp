@@ -351,6 +351,7 @@
     ("cli_selectors.tree_help_lines" . 50)
     ("cli_selectors.tree_active_path" . 50)
     ("cli_selectors.tree_nearest_visible_id" . 50)
+    ("cli_selectors.tree_prioritize_active" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7065,6 +7066,24 @@
    (tree-nearest-visible-id-encoded '("user-3b") "missing")
    (tree-nearest-visible-id-encoded '("user-3b") nil)))
 
+(defun tree-prioritize-active-encoded (entries leaf-id)
+  (format nil "~{~a~^,~}"
+          (mapcar
+           (lambda (entry)
+             (getf entry :id))
+           (cadr-cli::tree-selector-prioritize-active
+            entries
+            (cadr-cli::tree-selector-active-path
+             entries leaf-id)))))
+
+(defun run-cli-selectors-tree-prioritize-active ()
+  (let ((entries *tree-active-path-branching-entries*))
+    (list
+     (tree-prioritize-active-encoded entries "asst-4a")
+     (tree-prioritize-active-encoded entries "user-4b")
+     (tree-prioritize-active-encoded entries "user-1")
+     (tree-prioritize-active-encoded entries nil))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7144,7 +7163,9 @@
         (tree-active-path
           (run-cli-selectors-tree-active-path))
         (tree-nearest-visible-id
-          (run-cli-selectors-tree-nearest-visible-id)))
+          (run-cli-selectors-tree-nearest-visible-id))
+        (tree-prioritize-active
+          (run-cli-selectors-tree-prioritize-active)))
     (json-object
      "observed"
      (json-object
@@ -7449,7 +7470,11 @@
       "tnvi_branch" (nth 2 tree-nearest-visible-id)
       "tnvi_fallback" (nth 3 tree-nearest-visible-id)
       "tnvi_missing" (nth 4 tree-nearest-visible-id)
-      "tnvi_nil" (nth 5 tree-nearest-visible-id))
+      "tnvi_nil" (nth 5 tree-nearest-visible-id)
+      "tpa_leaf_a" (nth 0 tree-prioritize-active)
+      "tpa_leaf_b" (nth 1 tree-prioritize-active)
+      "tpa_root" (nth 2 tree-prioritize-active)
+      "tpa_nil" (nth 3 tree-prioritize-active))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7714,7 +7739,12 @@
      (collect "cli_selectors.tree_nearest_visible_id"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-nearest-visible-id)))))))
+                  (run-cli-selectors-tree-nearest-visible-id))))
+     "tree_prioritize_active"
+     (collect "cli_selectors.tree_prioritize_active"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-prioritize-active)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8835,6 +8865,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-active-path"
       "cli_selectors.tree_nearest_visible_id"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-nearest-visible-id"
+      "cli_selectors.tree_prioritize_active"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-prioritize-active"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

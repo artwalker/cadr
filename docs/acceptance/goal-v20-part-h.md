@@ -2299,6 +2299,16 @@ Observed `tnvi_hit` / `tnvi_ancestor` / `tnvi_branch` / `tnvi_fallback` / `tnvi_
 `tnvi_nil` are exact. First Friend-MachineD freeze **2.34×** (14.9 / 6.4 µs), ceiling 8.0.
 Same commit no optimize.
 
+### Pair 164 — `cli_selectors` (tree_prioritize_active)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_prioritize_active` | `tree-selector-prioritize-active` | `flattenTree` active-branch ordering (`tree-selector.ts`) |
+
+Reorder flat entries so active-path ids precede siblings on branching fixtures.
+Observed `tpa_leaf_a` / `tpa_leaf_b` / `tpa_root` / `tpa_nil` are exact. First
+Friend-MachineD freeze **1.83×** (16.3 / 8.9 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
