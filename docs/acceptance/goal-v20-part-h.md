@@ -2452,6 +2452,17 @@ Observed `tclf_set` / `tclf_rename` / `tclf_clear` / `tclf_trim` / `tclf_whitesp
 `tclf_nop` are exact. First Friend-MachineD freeze **4.37×**
 (260.2 / 59.5 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 178 — `cli_selectors` (tree_cancel_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_cancel_label` | `tree-selector-cancel-label` | `LabelInput` onCancel (`tree-selector.ts`) |
+
+Cancel label edit: mode/list, edit cleared, label unchanged on apply-filter fixtures.
+Observed `tclc_pinned` / `tclc_plain` / `tclc_assistant` / `tclc_bookmark` /
+`tclc_dirty` / `tclc_nop` are exact. First Friend-MachineD freeze **1.57×**
+(214.6 / 136.7 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

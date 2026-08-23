@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_cancel_label`
+  (label cancel fixtures; cadr `tree-selector-cancel-label`
+  vs pi `LabelInput` onCancel). Friend-MachineD n=5 **1.57×**
+  (214.6 / 136.7 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_confirm_label`
   (label confirm fixtures; cadr `tree-selector-confirm-label`
   vs pi `LabelInput` onSubmit). Friend-MachineD n=5 **4.37×**

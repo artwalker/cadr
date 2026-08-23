@@ -365,6 +365,7 @@
     ("cli_selectors.tree_toggle_label_timestamps" . 50)
     ("cli_selectors.tree_start_label_edit" . 50)
     ("cli_selectors.tree_confirm_label" . 50)
+    ("cli_selectors.tree_cancel_label" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7603,6 +7604,42 @@
    (tree-confirm-label-encoded "user-1" "   ")
    (tree-confirm-label-encoded "user-1" "" :nop t)))
 
+(defun tree-cancel-label-encoded (selected-id &key dirty-input nop)
+  (let* ((entries *tree-apply-filter-entries*)
+         (current-leaf-id "user-3")
+         (state
+           (cadr-cli::make-tree-selector-state
+            :entries entries
+            :current-leaf-id current-leaf-id
+            :initial-selected-id selected-id)))
+    (unless nop
+      (cadr-cli::tree-selector-select-id state selected-id)
+      (cadr-cli::tree-selector-start-label-edit state)
+      (when dirty-input
+        (setf (cadr-cli::tree-selector-state-label-input state)
+              dirty-input)))
+    (cadr-cli::tree-selector-cancel-label state)
+    (let ((entry
+            (find selected-id entries
+                  :key (lambda (candidate)
+                         (getf candidate :id))
+                  :test #'equal)))
+      (format nil "~a|~a|~a"
+              "list"
+              "null"
+              (if (and entry (getf entry :label))
+                  (getf entry :label)
+                  "null")))))
+
+(defun run-cli-selectors-tree-cancel-label ()
+  (list
+   (tree-cancel-label-encoded "user-3")
+   (tree-cancel-label-encoded "user-1")
+   (tree-cancel-label-encoded "asst-1")
+   (tree-cancel-label-encoded "label-1")
+   (tree-cancel-label-encoded "user-3" :dirty-input "newtag")
+   (tree-cancel-label-encoded "user-1" :nop t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7710,7 +7747,9 @@
         (tree-start-label-edit
           (run-cli-selectors-tree-start-label-edit))
         (tree-confirm-label
-          (run-cli-selectors-tree-confirm-label)))
+          (run-cli-selectors-tree-confirm-label))
+        (tree-cancel-label
+          (run-cli-selectors-tree-cancel-label)))
     (json-object
      "observed"
      (json-object
@@ -8097,7 +8136,13 @@
       "tclf_clear" (nth 2 tree-confirm-label)
       "tclf_trim" (nth 3 tree-confirm-label)
       "tclf_whitespace" (nth 4 tree-confirm-label)
-      "tclf_nop" (nth 5 tree-confirm-label))
+      "tclf_nop" (nth 5 tree-confirm-label)
+      "tclc_pinned" (nth 0 tree-cancel-label)
+      "tclc_plain" (nth 1 tree-cancel-label)
+      "tclc_assistant" (nth 2 tree-cancel-label)
+      "tclc_bookmark" (nth 3 tree-cancel-label)
+      "tclc_dirty" (nth 4 tree-cancel-label)
+      "tclc_nop" (nth 5 tree-cancel-label))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8432,7 +8477,12 @@
      (collect "cli_selectors.tree_confirm_label"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-confirm-label)))))))
+                  (run-cli-selectors-tree-confirm-label))))
+     "tree_cancel_label"
+     (collect "cli_selectors.tree_cancel_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-cancel-label)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9581,6 +9631,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-start-label-edit"
       "cli_selectors.tree_confirm_label"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-confirm-label"
+      "cli_selectors.tree_cancel_label"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-cancel-label"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

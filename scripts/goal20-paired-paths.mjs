@@ -289,6 +289,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_toggle_label_timestamps": 50,
 	"cli_selectors.tree_start_label_edit": 50,
 	"cli_selectors.tree_confirm_label": 50,
+	"cli_selectors.tree_cancel_label": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7285,6 +7286,60 @@ function runCliSelectorsTreeConfirmLabel() {
 	};
 }
 
+function treeCancelLabelEncodedPi(selectedId, { dirtyInput = null, nop = false } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const currentLeafId = "user-3";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		currentLeafId,
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId ?? currentLeafId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	if (!nop) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+		const selected = treeList.filteredNodes[treeList.selectedIndex]?.node;
+		if (selected) {
+			component.showLabelInput(selected.entry.id, selected.label);
+			if (dirtyInput !== null) {
+				component.labelInput.input.setValue(dirtyInput);
+			}
+			component.labelInput.onCancel?.();
+		}
+	} else {
+		component.hideLabelInput();
+	}
+	const mode = component.labelInput ? "label" : "list";
+	const editId = component.labelInput?.entryId ?? "null";
+	let label = "null";
+	for (const flatNode of treeList.flatNodes) {
+		if (flatNode.node.entry.id === selectedId) {
+			label = flatNode.node.label ?? "null";
+			break;
+		}
+	}
+	return `${mode}|${editId}|${label}`;
+}
+
+function runCliSelectorsTreeCancelLabel() {
+	return {
+		tclc_pinned: treeCancelLabelEncodedPi("user-3"),
+		tclc_plain: treeCancelLabelEncodedPi("user-1"),
+		tclc_assistant: treeCancelLabelEncodedPi("asst-1"),
+		tclc_bookmark: treeCancelLabelEncodedPi("label-1"),
+		tclc_dirty: treeCancelLabelEncodedPi("user-3", { dirtyInput: "newtag" }),
+		tclc_nop: treeCancelLabelEncodedPi("user-1", { nop: true }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7668,6 +7723,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeToggleLabelTimestampsResults = runCliSelectorsTreeToggleLabelTimestamps();
 	const treeStartLabelEditResults = runCliSelectorsTreeStartLabelEdit();
 	const treeConfirmLabelResults = runCliSelectorsTreeConfirmLabel();
+	const treeCancelLabelResults = runCliSelectorsTreeCancelLabel();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7910,6 +7966,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeToggleLabelTimestampsResults,
 		...treeStartLabelEditResults,
 		...treeConfirmLabelResults,
+		...treeCancelLabelResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8121,6 +8178,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_confirm_label: await collect("cli_selectors.tree_confirm_label", () => {
 			return () => runCliSelectorsTreeConfirmLabel();
+		}),
+		tree_cancel_label: await collect("cli_selectors.tree_cancel_label", () => {
+			return () => runCliSelectorsTreeCancelLabel();
 		}),
 		observed,
 	};
@@ -9307,6 +9367,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts showLabelInput",
 			"cli_selectors.tree_confirm_label":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput onSubmit",
+			"cli_selectors.tree_cancel_label":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput onCancel",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
