@@ -179,6 +179,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_fold_or_up",
     "cli_selectors.tree_unfold_or_down",
     "cli_selectors.tree_branch_segment_id",
+    "cli_selectors.tree_set_query",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

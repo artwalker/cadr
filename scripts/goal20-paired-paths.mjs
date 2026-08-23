@@ -283,6 +283,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_fold_or_up": 50,
 	"cli_selectors.tree_unfold_or_down": 50,
 	"cli_selectors.tree_branch_segment_id": 50,
+	"cli_selectors.tree_set_query": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7013,6 +7014,53 @@ function runCliSelectorsTreeBranchSegmentId() {
 	};
 }
 
+function treeSetQueryEncodedPi({ query = "", foldedIds = [], selectedId = null } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const currentLeafId = "user-3";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		currentLeafId,
+		16,
+		() => {},
+		() => {},
+		undefined,
+		selectedId ?? currentLeafId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	if (selectedId) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+	}
+	for (const id of foldedIds) {
+		treeList.foldedNodes.add(id);
+	}
+	if (foldedIds.length > 0) {
+		treeList.applyFilter();
+	}
+	treeList.searchQuery = query;
+	treeList.foldedNodes.clear();
+	treeList.applyFilter();
+	const visibleIds = treeList.filteredNodes.map((node) => node.node.entry.id);
+	const selected = treeList.filteredNodes[treeList.selectedIndex]?.node.entry.id ?? null;
+	const preserved = selected ? null : (selectedId ?? currentLeafId);
+	return `${visibleIds.join(",")}|${selected ?? "null"}|${preserved ?? "null"}`;
+}
+
+function runCliSelectorsTreeSetQuery() {
+	return {
+		tsq_empty: treeSetQueryEncodedPi({ query: "" }),
+		tsq_branch: treeSetQueryEncodedPi({ query: "branch" }),
+		tsq_fold_clear: treeSetQueryEncodedPi({ query: "branch", foldedIds: ["user-2"] }),
+		tsq_miss: treeSetQueryEncodedPi({ query: "zzzzz" }),
+		tsq_pinned: treeSetQueryEncodedPi({ query: "pinned" }),
+		tsq_multi: treeSetQueryEncodedPi({ query: "branch query" }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7390,6 +7438,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeFoldOrUpResults = runCliSelectorsTreeFoldOrUp();
 	const treeUnfoldOrDownResults = runCliSelectorsTreeUnfoldOrDown();
 	const treeBranchSegmentIdResults = runCliSelectorsTreeBranchSegmentId();
+	const treeSetQueryResults = runCliSelectorsTreeSetQuery();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7626,6 +7675,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeFoldOrUpResults,
 		...treeUnfoldOrDownResults,
 		...treeBranchSegmentIdResults,
+		...treeSetQueryResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -7819,6 +7869,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_branch_segment_id: await collect("cli_selectors.tree_branch_segment_id", () => {
 			return () => runCliSelectorsTreeBranchSegmentId();
+		}),
+		tree_set_query: await collect("cli_selectors.tree_set_query", () => {
+			return () => runCliSelectorsTreeSetQuery();
 		}),
 		observed,
 	};
@@ -8993,6 +9046,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts unfoldOrDown handleInput",
 			"cli_selectors.tree_branch_segment_id":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts findBranchSegmentStart",
+			"cli_selectors.tree_set_query":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList searchQuery + applyFilter",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

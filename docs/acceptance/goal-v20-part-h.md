@@ -2386,6 +2386,17 @@ Observed `tbs_down_branch` / `tbs_down_leaf` / `tbs_down_mid` / `tbs_up_mid` /
 `tbs_up_root` / `tbs_up_branch_b` are exact. First Friend-MachineD freeze **1.82×**
 (264.9 / 145.6 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 172 — `cli_selectors` (tree_set_query)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_set_query` | `tree-selector-set-query` | `TreeList` searchQuery + `applyFilter` (`tree-selector.ts`) |
+
+Search query update clears folded state and reapplies filter on apply-filter fixtures.
+Observed `tsq_empty` / `tsq_branch` / `tsq_fold_clear` / `tsq_miss` / `tsq_pinned` /
+`tsq_multi` are exact. First Friend-MachineD freeze **0.66×**
+(88.9 / 135.2 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

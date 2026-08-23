@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_set_query`
+  (search-query fixtures; cadr `tree-selector-set-query`
+  vs pi `TreeList` searchQuery + applyFilter). Friend-MachineD n=5 **0.66×**
+  (88.9 / 135.2 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_branch_segment_id`
   (branch-segment fixtures; cadr `tree-selector-branch-segment-id`
   vs pi `findBranchSegmentStart`). Friend-MachineD n=5 **1.82×**
