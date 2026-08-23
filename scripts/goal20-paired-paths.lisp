@@ -350,6 +350,7 @@
     ("cli_selectors.tree_horizontal_viewport" . 50)
     ("cli_selectors.tree_help_keys" . 50)
     ("cli_selectors.tree_help_key" . 50)
+    ("cli_selectors.tree_app_key_p" . 50)
     ("cli_selectors.tree_help_lines" . 50)
     ("cli_selectors.tree_active_path" . 50)
     ("cli_selectors.tree_nearest_visible_id" . 50)
@@ -7038,6 +7039,30 @@
      (tree-help-key-encoded custom "tui.select.up")
      (tree-help-key-encoded default "unknown.binding"))))
 
+(defun tree-app-key-p-encoded (state data name)
+  (if (cadr-cli::tree-selector-app-key-p state data name)
+      "true"
+    "false"))
+
+(defun run-cli-selectors-tree-app-key-p ()
+  (let ((state (tree-help-state)))
+    (list
+     (tree-app-key-p-encoded
+      state (tree-raw-input-key-data state "app.message.copy")
+      "app.message.copy")
+     (tree-app-key-p-encoded
+      state (tree-raw-input-key-data state "app.message.copy")
+      "app.tree.foldOrUp")
+     (tree-app-key-p-encoded
+      state (tree-raw-input-key-data state "tui.select.up")
+      "tui.select.up")
+     (tree-app-key-p-encoded
+      state (tree-raw-input-key-data state "app.tree.filter.all")
+      "app.tree.filter.all")
+     (tree-app-key-p-encoded
+      state (csi-modified-arrow 1 #\A) "tui.select.up")
+     (tree-app-key-p-encoded state "x" "app.message.copy"))))
+
 (defun tree-help-lines-encoded (state width)
   (format nil "~{~a~^|~}"
           (cadr-cli::tree-selector-help-lines state width)))
@@ -8150,6 +8175,8 @@
           (run-cli-selectors-tree-help-keys))
         (tree-help-key
           (run-cli-selectors-tree-help-key))
+        (tree-app-key-p
+          (run-cli-selectors-tree-app-key-p))
         (tree-help-lines
           (run-cli-selectors-tree-help-lines))
         (tree-active-path
@@ -8504,6 +8531,12 @@
       "thkey_left" (nth 3 tree-help-key)
       "thkey_custom_up" (nth 4 tree-help-key)
       "thkey_missing" (nth 5 tree-help-key)
+      "tapk_copy_hit" (nth 0 tree-app-key-p)
+      "tapk_copy_miss" (nth 1 tree-app-key-p)
+      "tapk_up_hit" (nth 2 tree-app-key-p)
+      "tapk_filter_hit" (nth 3 tree-app-key-p)
+      "tapk_csi_up" (nth 4 tree-app-key-p)
+      "tapk_garbage" (nth 5 tree-app-key-p)
       "thl_w80" (nth 0 tree-help-lines)
       "thl_w50" (nth 1 tree-help-lines)
       "thl_w30" (nth 2 tree-help-lines)
@@ -8919,6 +8952,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-tree-help-key))))
+     "tree_app_key_p"
+     (collect "cli_selectors.tree_app_key_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-app-key-p))))
      "tree_help_lines"
      (collect "cli_selectors.tree_help_lines"
               (lambda ()
@@ -10172,6 +10210,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-keys"
       "cli_selectors.tree_help_key"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-key"
+      "cli_selectors.tree_app_key_p"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-app-key-p"
       "cli_selectors.tree_help_lines"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-help-lines"
       "cli_selectors.tree_active_path"

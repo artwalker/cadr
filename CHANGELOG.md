@@ -21,6 +21,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_app_key_p`
+  (keybinding-match fixtures; cadr `tree-selector-app-key-p`
+  vs pi `selector-keybinding-matches-p`). Friend-MachineD n=5 **0.63×**
+  (74.8 / 119.1 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `cli_selectors.tree_help_key`
+  (help-key fixtures; cadr `tree-selector-help-key`
+  vs pi keybinding lookup with fallbacks). Friend-MachineD n=5 **1.70×**
+  (58.4 / 34.4 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_iso_timestamp`
   (ISO timestamp fixtures under `TZ=UTC`; cadr `tree-selector-iso-timestamp`
   vs pi local `YYYY-MM-DDTHH:MM:SS` formatter). Friend-MachineD n=5 **1.43×**

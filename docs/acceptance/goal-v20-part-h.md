@@ -2585,6 +2585,17 @@ Observed `thkey_up` / `thkey_fold` / `thkey_filter_all` / `thkey_left` / `thkey_
 `thkey_missing` are exact. First Friend-MachineD freeze **1.70×**
 (58.4 / 34.4 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 190 — `cli_selectors` (tree_app_key_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_app_key_p` | `tree-selector-app-key-p` | `selector-keybinding-matches-p` on tree keybindings (`common.lisp`) |
+
+Keybinding match predicate including modified CSI arrows; encoded `true`/`false`.
+Observed `tapk_copy_hit` / `tapk_copy_miss` / `tapk_up_hit` / `tapk_filter_hit` / `tapk_csi_up` /
+`tapk_garbage` are exact. First Friend-MachineD freeze **0.63×**
+(74.8 / 119.1 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

@@ -274,6 +274,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_horizontal_viewport": 50,
 	"cli_selectors.tree_help_keys": 50,
 	"cli_selectors.tree_help_key": 50,
+	"cli_selectors.tree_app_key_p": 50,
 	"cli_selectors.tree_help_lines": 50,
 	"cli_selectors.tree_active_path": 50,
 	"cli_selectors.tree_nearest_visible_id": 50,
@@ -6505,6 +6506,104 @@ function runCliSelectorsTreeHelpKey() {
 	};
 }
 
+function splitKeyIdPi(keyId) {
+	const parts = keyId.toLowerCase().split("+");
+	let key = parts[parts.length - 1];
+	if (key === "esc") {
+		key = "escape";
+	} else if (key === "return") {
+		key = "enter";
+	}
+	let mask = 0;
+	for (let index = 0; index < parts.length - 1; index += 1) {
+		switch (parts[index]) {
+			case "shift":
+				mask |= 1;
+				break;
+			case "alt":
+				mask |= 2;
+				break;
+			case "ctrl":
+				mask |= 4;
+				break;
+			case "super":
+				mask |= 8;
+				break;
+		}
+	}
+	return { key, mask };
+}
+
+function canonicalKeyIdPi(keyId) {
+	const { key, mask } = splitKeyIdPi(keyId);
+	return `${mask}:${key}`;
+}
+
+function selectorModifiedCursorKeyPi(data) {
+	const match = data.match(/^\x1b\[1;(\d+)([ABCD])$/);
+	if (!match) {
+		return undefined;
+	}
+	const mask = 1 - Number(match[1]);
+	const direction =
+		match[2] === "A"
+			? "up"
+			: match[2] === "B"
+				? "down"
+				: match[2] === "C"
+					? "right"
+					: match[2] === "D"
+						? "left"
+						: undefined;
+	if (!direction) {
+		return undefined;
+	}
+	const mods = [];
+	if (mask & 1) mods.push("shift");
+	if (mask & 4) mods.push("ctrl");
+	if (mask & 2) mods.push("alt");
+	if (mask & 8) mods.push("super");
+	mods.push(direction);
+	return mods.join("+");
+}
+
+function selectorKeybindingMatchesPi(manager, data, name) {
+	if (manager.matches(data, name)) {
+		return true;
+	}
+	const parsed = selectorModifiedCursorKeyPi(data);
+	if (!parsed) {
+		return false;
+	}
+	const parsedCanonical = canonicalKeyIdPi(parsed);
+	for (const key of manager.getKeys(name)) {
+		if (canonicalKeyIdPi(key) === parsedCanonical) {
+			return true;
+		}
+	}
+	return false;
+}
+
+function treeAppKeyPEncodedPi(data, name) {
+	const manager = makeTreeSelectorKeybindingsPi();
+	return selectorKeybindingMatchesPi(manager, data, name) ? "true" : "false";
+}
+
+function runCliSelectorsTreeAppKeyP() {
+	const manager = makeTreeSelectorKeybindingsPi();
+	const copyData = manager.getKeys("app.message.copy")[0];
+	const upData = manager.getKeys("tui.select.up")[0];
+	const filterData = manager.getKeys("app.tree.filter.all")[0];
+	return {
+		tapk_copy_hit: treeAppKeyPEncodedPi(copyData, "app.message.copy"),
+		tapk_copy_miss: treeAppKeyPEncodedPi(copyData, "app.tree.foldOrUp"),
+		tapk_up_hit: treeAppKeyPEncodedPi(upData, "tui.select.up"),
+		tapk_filter_hit: treeAppKeyPEncodedPi(filterData, "app.tree.filter.all"),
+		tapk_csi_up: treeAppKeyPEncodedPi("\x1b[1;1A", "tui.select.up"),
+		tapk_garbage: treeAppKeyPEncodedPi("x", "app.message.copy"),
+	};
+}
+
 const TREE_HELP_ITEMS_PI = [
 	{ keys: ["tui.select.up", "tui.select.down"], label: "move" },
 	{ keys: ["tui.editor.cursorLeft", "tui.editor.cursorRight"], label: "page" },
@@ -8344,6 +8443,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeHorizontalViewportResults = runCliSelectorsTreeHorizontalViewport();
 	const treeHelpKeysResults = runCliSelectorsTreeHelpKeys();
 	const treeHelpKeyResults = runCliSelectorsTreeHelpKey();
+	const treeAppKeyPResults = runCliSelectorsTreeAppKeyP();
 	const treeHelpLinesResults = runCliSelectorsTreeHelpLines();
 	const treeActivePathResults = runCliSelectorsTreeActivePath();
 	const treeNearestVisibleIdResults = runCliSelectorsTreeNearestVisibleId();
@@ -8598,6 +8698,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeHorizontalViewportResults,
 		...treeHelpKeysResults,
 		...treeHelpKeyResults,
+		...treeAppKeyPResults,
 		...treeHelpLinesResults,
 		...treeActivePathResults,
 		...treeNearestVisibleIdResults,
@@ -8791,6 +8892,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_help_key: await collect("cli_selectors.tree_help_key", () => {
 			return () => runCliSelectorsTreeHelpKey();
+		}),
+		tree_app_key_p: await collect("cli_selectors.tree_app_key_p", () => {
+			return () => runCliSelectorsTreeAppKeyP();
 		}),
 		tree_help_lines: await collect("cli_selectors.tree_help_lines", () => {
 			return () => runCliSelectorsTreeHelpLines();
@@ -10028,6 +10132,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatHelpKeys",
 			"cli_selectors.tree_help_key":
 				"packages/coding-agent/src/core/keybindings.ts KeybindingsManager.getKeys first-or-fallback",
+			"cli_selectors.tree_app_key_p":
+				"packages/tui/src/keybindings.ts KeybindingsManager.matches + CSI modified-arrow canonical compare (selector-keybinding-matches-p parity)",
 			"cli_selectors.tree_help_lines":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeHelp.render",
 			"cli_selectors.tree_active_path":
