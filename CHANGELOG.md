@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.trust_selector_selection`
+  (trust-selection fixtures; cadr `trust-selector-selection`
+  vs pi `getProjectTrustOptions` index). Friend-MachineD n=5 **3.78×**
+  (242.4 / 64.1 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.project_trust_options`
   (trust-option fixtures; cadr `project-trust-options`
   vs pi `getProjectTrustOptions`). Friend-MachineD n=5 **1.16×**

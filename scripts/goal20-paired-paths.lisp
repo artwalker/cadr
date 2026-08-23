@@ -379,6 +379,7 @@
     ("cli_selectors.tree_select_id" . 50)
     ("cli_selectors.tree_visible_ids" . 50)
     ("cli_selectors.project_trust_options" . 50)
+    ("cli_selectors.trust_selector_selection" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8157,6 +8158,39 @@
       (cadr-cli::project-trust-options
        (namestring (getf fixtures :single)))))))
 
+(defun make-trust-selector-state-with-selected (cwd selected)
+  (let ((state (cadr-cli::make-trust-selector-state :cwd cwd)))
+    (setf (cadr-cli::trust-selector-state-selected state) selected)
+    state))
+
+(defun encode-trust-selector-selection (selection)
+  (if selection
+      (format nil "~a|~a"
+              (if (getf selection :trusted-p) "true" "false")
+              (encode-trust-updates (getf selection :updates)))
+    "null"))
+
+(defun run-cli-selectors-trust-selector-selection ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let ((child (namestring (getf fixtures :child)))
+          (single (namestring (getf fixtures :single))))
+      (list
+       (encode-trust-selector-selection
+        (cadr-cli::trust-selector-selection
+         (make-trust-selector-state-with-selected child 0)))
+       (encode-trust-selector-selection
+        (cadr-cli::trust-selector-selection
+         (make-trust-selector-state-with-selected child 1)))
+       (encode-trust-selector-selection
+        (cadr-cli::trust-selector-selection
+         (make-trust-selector-state-with-selected child 2)))
+       (encode-trust-selector-selection
+        (cadr-cli::trust-selector-selection
+         (make-trust-selector-state-with-selected single 0)))
+       (encode-trust-selector-selection
+        (cadr-cli::trust-selector-selection
+         (make-trust-selector-state-with-selected single 2)))))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8292,7 +8326,9 @@
         (tree-visible-ids
           (run-cli-selectors-tree-visible-ids))
         (project-trust-options
-          (run-cli-selectors-project-trust-options)))
+          (run-cli-selectors-project-trust-options))
+        (trust-selector-selection
+          (run-cli-selectors-trust-selector-selection)))
     (json-object
      "observed"
      (json-object
@@ -8755,7 +8791,12 @@
       "tvi_fold" (nth 4 tree-visible-ids)
       "tvi_all" (nth 5 tree-visible-ids)
       "pto_child" (nth 0 project-trust-options)
-      "pto_single" (nth 1 project-trust-options))
+      "pto_single" (nth 1 project-trust-options)
+      "tss_child_trust" (nth 0 trust-selector-selection)
+      "tss_child_parent" (nth 1 trust-selector-selection)
+      "tss_child_distrust" (nth 2 trust-selector-selection)
+      "tss_single_trust" (nth 3 trust-selector-selection)
+      "tss_single_distrust" (nth 4 trust-selector-selection))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9160,7 +9201,12 @@
      (collect "cli_selectors.project_trust_options"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-project-trust-options)))))))
+                  (run-cli-selectors-project-trust-options))))
+     "trust_selector_selection"
+     (collect "cli_selectors.trust_selector_selection"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-selection)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10337,6 +10383,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-visible-ids"
       "cli_selectors.project_trust_options"
       "src/cadr-cli/interactive/selectors/trust.lisp project-trust-options"
+      "cli_selectors.trust_selector_selection"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-selection"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

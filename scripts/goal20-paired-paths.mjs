@@ -303,6 +303,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_select_id": 50,
 	"cli_selectors.tree_visible_ids": 50,
 	"cli_selectors.project_trust_options": 50,
+	"cli_selectors.trust_selector_selection": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8129,6 +8130,26 @@ function runCliSelectorsProjectTrustOptions() {
 	};
 }
 
+function encodeTrustSelectorSelection(option) {
+	if (!option) {
+		return "null";
+	}
+	return `${option.trusted ? "true" : "false"}|${encodeTrustUpdates(option.updates)}`;
+}
+
+function runCliSelectorsTrustSelectorSelection() {
+	const { child, single } = stageProjectTrustOptionsFixtures();
+	const childOptions = trustManagerModule.getProjectTrustOptions(child);
+	const singleOptions = trustManagerModule.getProjectTrustOptions(single);
+	return {
+		tss_child_trust: encodeTrustSelectorSelection(childOptions[0]),
+		tss_child_parent: encodeTrustSelectorSelection(childOptions[1]),
+		tss_child_distrust: encodeTrustSelectorSelection(childOptions[2]),
+		tss_single_trust: encodeTrustSelectorSelection(singleOptions[0]),
+		tss_single_distrust: encodeTrustSelectorSelection(singleOptions[2]),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8526,6 +8547,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeSelectIdResults = runCliSelectorsTreeSelectId();
 	const treeVisibleIdsResults = runCliSelectorsTreeVisibleIds();
 	const projectTrustOptionsResults = runCliSelectorsProjectTrustOptions();
+	const trustSelectorSelectionResults = runCliSelectorsTrustSelectorSelection();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8782,6 +8804,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeSelectIdResults,
 		...treeVisibleIdsResults,
 		...projectTrustOptionsResults,
+		...trustSelectorSelectionResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9035,6 +9058,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		project_trust_options: await collect("cli_selectors.project_trust_options", () => {
 			return () => runCliSelectorsProjectTrustOptions();
+		}),
+		trust_selector_selection: await collect("cli_selectors.trust_selector_selection", () => {
+			return () => runCliSelectorsTrustSelectorSelection();
 		}),
 		observed,
 	};
@@ -10249,6 +10275,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.filteredNodes ids",
 			"cli_selectors.project_trust_options":
 				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions",
+			"cli_selectors.trust_selector_selection":
+				"packages/coding-agent/src/core/trust-manager.ts getProjectTrustOptions index selection",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

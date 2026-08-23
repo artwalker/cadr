@@ -2606,6 +2606,17 @@ Trust selector option list; encoded as `trusted\|saved_path\|updates` per option
 Observed `pto_child` / `pto_single` are exact. First Friend-MachineD freeze **1.16×**
 (72.9 / 62.9 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 192 — `cli_selectors` (trust_selector_selection)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trust_selector_selection` | `trust-selector-selection` | `getProjectTrustOptions` index (`trust-manager.ts`) |
+
+Trust selector selection at a fixed index; encoded as `trusted|updates` or `null`.
+Observed `tss_child_trust` / `tss_child_parent` / `tss_child_distrust` /
+`tss_single_trust` / `tss_single_distrust` are exact. First Friend-MachineD freeze **3.78×**
+(242.4 / 64.1 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
