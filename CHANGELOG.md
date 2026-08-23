@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_option_status_label`
+  (status-label fixtures; cadr `oauth-option-status-label`
+  vs pi `formatStatusIndicator` plain label). Friend-MachineD n=5
+  **2.46×** (2.1 / 0.8 µs), ceiling 8.0. Same commit no optimize.
+  G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.trust_selector_ui_state`
   (structural UI digest fixtures; cadr `trust-selector-ui-encoded`
   vs pi trust selector UI state digest). Friend-MachineD n=5 **2.27×**

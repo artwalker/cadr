@@ -2677,6 +2677,19 @@ fixture-relative path encoding. Observed `rts_child_default` / `rts_child_saved`
 Friend-MachineD freeze **2.27×** (394.9 / 173.7 µs), ceiling 8.0. Same commit
 no optimize.
 
+### Pair 198 — `cli_selectors` (oauth_option_status_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_option_status_label` | `oauth-option-status-label` | `formatStatusIndicator` plain label |
+
+OAuth selector status text; unconfigured, type mismatch, configured,
+stored credential, env source, and custom source fixtures. Observed
+`oosl_none` / `oosl_api_mismatch` / `oosl_oauth_mismatch` /
+`oosl_oauth_configured` / `oosl_stored` / `oosl_env` / `oosl_custom`
+are exact. First Friend-MachineD freeze **2.46×** (2.1 / 0.8 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

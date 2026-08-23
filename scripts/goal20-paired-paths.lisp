@@ -385,6 +385,7 @@
     ("cli_selectors.trust_selector_handle_event" . 50)
     ("cli_selectors.trust_selector_handle_raw_input" . 50)
     ("cli_selectors.trust_selector_ui_state" . 50)
+    ("cli_selectors.oauth_option_status_label" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8382,6 +8383,38 @@
          :project-trusted-p nil))
        (trust-selector-ui-encoded (make-trust-render-state single))))))
 
+(defun make-oauth-option-status-fixture
+    (&key (id :anthropic) (name "Anthropic")
+          (auth-type :oauth) status)
+  (cadr-cli::make-oauth-selector-option
+   :id id :name name :auth-type auth-type :status status))
+
+(defun run-cli-selectors-oauth-option-status-label ()
+  (list
+   (cadr-cli::oauth-option-status-label
+    (make-oauth-option-status-fixture))
+   (cadr-cli::oauth-option-status-label
+    (make-oauth-option-status-fixture
+     :auth-type :api-key
+     :status (list :type :oauth :source "OAuth")))
+   (cadr-cli::oauth-option-status-label
+    (make-oauth-option-status-fixture
+     :status (list :type :api-key :source "stored credential")))
+   (cadr-cli::oauth-option-status-label
+    (make-oauth-option-status-fixture
+     :status (list :type :oauth :source "OAuth")))
+   (cadr-cli::oauth-option-status-label
+    (make-oauth-option-status-fixture
+     :status (list :type :oauth :source "stored credential")))
+   (cadr-cli::oauth-option-status-label
+    (make-oauth-option-status-fixture
+     :auth-type :api-key
+     :status (list :type :api-key :source "ANTHROPIC_API_KEY")))
+   (cadr-cli::oauth-option-status-label
+    (make-oauth-option-status-fixture
+     :auth-type :api-key
+     :status (list :type :api-key :source "runtime key")))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8529,7 +8562,9 @@
         (trust-selector-handle-raw-input
           (run-cli-selectors-trust-selector-handle-raw-input))
         (trust-selector-ui-state
-          (run-cli-selectors-trust-selector-ui-state)))
+          (run-cli-selectors-trust-selector-ui-state))
+        (oauth-option-status-label
+          (run-cli-selectors-oauth-option-status-label)))
     (json-object
      "observed"
      (json-object
@@ -9027,7 +9062,14 @@
       "rts_child_saved" (nth 1 trust-selector-ui-state)
       "rts_child_inherited" (nth 2 trust-selector-ui-state)
       "rts_child_distrust" (nth 3 trust-selector-ui-state)
-      "rts_single" (nth 4 trust-selector-ui-state))
+      "rts_single" (nth 4 trust-selector-ui-state)
+      "oosl_none" (nth 0 oauth-option-status-label)
+      "oosl_api_mismatch" (nth 1 oauth-option-status-label)
+      "oosl_oauth_mismatch" (nth 2 oauth-option-status-label)
+      "oosl_oauth_configured" (nth 3 oauth-option-status-label)
+      "oosl_stored" (nth 4 oauth-option-status-label)
+      "oosl_env" (nth 5 oauth-option-status-label)
+      "oosl_custom" (nth 6 oauth-option-status-label))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9462,7 +9504,12 @@
      (collect "cli_selectors.trust_selector_ui_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-trust-selector-ui-state)))))))
+                  (run-cli-selectors-trust-selector-ui-state))))
+     "oauth_option_status_label"
+     (collect "cli_selectors.oauth_option_status_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-option-status-label)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10651,6 +10698,8 @@
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-raw-input"
       "cli_selectors.trust_selector_ui_state"
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
+      "cli_selectors.oauth_option_status_label"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

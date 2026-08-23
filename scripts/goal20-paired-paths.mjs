@@ -309,6 +309,7 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_handle_event": 50,
 	"cli_selectors.trust_selector_handle_raw_input": 50,
 	"cli_selectors.trust_selector_ui_state": 50,
+	"cli_selectors.oauth_option_status_label": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8345,6 +8346,73 @@ function runCliSelectorsTrustSelectorUiState() {
 	};
 }
 
+function oauthOptionStatusLabel(provider) {
+	if (!provider.status) {
+		return "• unconfigured";
+	}
+	if (provider.status.type !== provider.authType) {
+		const label = provider.status.type === "oauth" ? "subscription" : "API key";
+		return `• ${label} configured`;
+	}
+	if (
+		!provider.status.source ||
+		provider.status.source === "OAuth" ||
+		provider.status.source === "stored credential"
+	) {
+		return "✓ configured";
+	}
+	if (/^[A-Z][A-Z0-9_]*(?:, [A-Z][A-Z0-9_]*)*$/.test(provider.status.source)) {
+		return `✓ env: ${provider.status.source}`;
+	}
+	return `✓ ${provider.status.source}`;
+}
+
+function runCliSelectorsOauthOptionStatusLabel() {
+	return {
+		oosl_none: oauthOptionStatusLabel({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+		}),
+		oosl_api_mismatch: oauthOptionStatusLabel({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "api_key",
+			status: { type: "oauth", source: "OAuth" },
+		}),
+		oosl_oauth_mismatch: oauthOptionStatusLabel({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+			status: { type: "api_key", source: "stored credential" },
+		}),
+		oosl_oauth_configured: oauthOptionStatusLabel({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+			status: { type: "oauth", source: "OAuth" },
+		}),
+		oosl_stored: oauthOptionStatusLabel({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+			status: { type: "oauth", source: "stored credential" },
+		}),
+		oosl_env: oauthOptionStatusLabel({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "api_key",
+			status: { type: "api_key", source: "ANTHROPIC_API_KEY" },
+		}),
+		oosl_custom: oauthOptionStatusLabel({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "api_key",
+			status: { type: "api_key", source: "runtime key" },
+		}),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8748,6 +8816,7 @@ async function measureCliSelectorsSessionSearch() {
 	const trustSelectorHandleEventResults = runCliSelectorsTrustSelectorHandleEvent();
 	const trustSelectorHandleRawInputResults = runCliSelectorsTrustSelectorHandleRawInput();
 	const trustSelectorRenderLinesResults = runCliSelectorsTrustSelectorUiState();
+	const oauthOptionStatusLabelResults = runCliSelectorsOauthOptionStatusLabel();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9010,6 +9079,7 @@ async function measureCliSelectorsSessionSearch() {
 		...trustSelectorHandleEventResults,
 		...trustSelectorHandleRawInputResults,
 		...trustSelectorRenderLinesResults,
+		...oauthOptionStatusLabelResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9281,6 +9351,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		trust_selector_ui_state: await collect("cli_selectors.trust_selector_ui_state", () => {
 			return () => runCliSelectorsTrustSelectorUiState();
+		}),
+		oauth_option_status_label: await collect("cli_selectors.oauth_option_status_label", () => {
+			return () => runCliSelectorsOauthOptionStatusLabel();
 		}),
 		observed,
 	};
@@ -10507,6 +10580,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-raw-input dispatch",
 			"cli_selectors.trust_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent UI state",
+			"cli_selectors.oauth_option_status_label":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator plain label",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
