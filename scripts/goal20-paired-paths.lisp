@@ -364,6 +364,7 @@
     ("cli_selectors.tree_copy_selected" . 50)
     ("cli_selectors.tree_toggle_label_timestamps" . 50)
     ("cli_selectors.tree_start_label_edit" . 50)
+    ("cli_selectors.tree_confirm_label" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7560,6 +7561,48 @@
    (tree-start-label-edit-encoded nil :empty-p t)
    (tree-start-label-edit-encoded nil :no-select-p t)))
 
+(defun tree-confirm-label-encoded (selected-id input &key nop)
+  (let* ((entries *tree-apply-filter-entries*)
+         (current-leaf-id "user-3")
+         (callback-id nil)
+         (callback-label nil)
+         (state
+           (cadr-cli::make-tree-selector-state
+            :entries entries
+            :current-leaf-id current-leaf-id
+            :initial-selected-id selected-id
+            :label-callback
+            (lambda (id label)
+              (setf callback-id id)
+              (setf callback-label label)))))
+    (unless nop
+      (cadr-cli::tree-selector-select-id state selected-id)
+      (cadr-cli::tree-selector-start-label-edit state)
+      (setf (cadr-cli::tree-selector-state-label-input state)
+            input))
+    (cadr-cli::tree-selector-confirm-label state)
+    (let ((entry
+            (find selected-id entries
+                  :key (lambda (candidate)
+                         (getf candidate :id))
+                  :test #'equal)))
+      (format nil "~a|~a|~a|~a"
+              "list"
+              (or callback-id "null")
+              (if callback-label callback-label "null")
+              (if (and entry (getf entry :label-timestamp))
+                  "true"
+                  "false")))))
+
+(defun run-cli-selectors-tree-confirm-label ()
+  (list
+   (tree-confirm-label-encoded "user-1" "newtag")
+   (tree-confirm-label-encoded "user-3" "renamed")
+   (tree-confirm-label-encoded "user-3" "")
+   (tree-confirm-label-encoded "user-1" "  spaced  ")
+   (tree-confirm-label-encoded "user-1" "   ")
+   (tree-confirm-label-encoded "user-1" "" :nop t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7665,7 +7708,9 @@
         (tree-toggle-label-timestamps
           (run-cli-selectors-tree-toggle-label-timestamps))
         (tree-start-label-edit
-          (run-cli-selectors-tree-start-label-edit)))
+          (run-cli-selectors-tree-start-label-edit))
+        (tree-confirm-label
+          (run-cli-selectors-tree-confirm-label)))
     (json-object
      "observed"
      (json-object
@@ -8046,7 +8091,13 @@
       "tsle_assistant" (nth 2 tree-start-label-edit)
       "tsle_bookmark" (nth 3 tree-start-label-edit)
       "tsle_empty" (nth 4 tree-start-label-edit)
-      "tsle_noselect" (nth 5 tree-start-label-edit))
+      "tsle_noselect" (nth 5 tree-start-label-edit)
+      "tclf_set" (nth 0 tree-confirm-label)
+      "tclf_rename" (nth 1 tree-confirm-label)
+      "tclf_clear" (nth 2 tree-confirm-label)
+      "tclf_trim" (nth 3 tree-confirm-label)
+      "tclf_whitespace" (nth 4 tree-confirm-label)
+      "tclf_nop" (nth 5 tree-confirm-label))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8376,7 +8427,12 @@
      (collect "cli_selectors.tree_start_label_edit"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-start-label-edit)))))))
+                  (run-cli-selectors-tree-start-label-edit))))
+     "tree_confirm_label"
+     (collect "cli_selectors.tree_confirm_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-confirm-label)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9523,6 +9579,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-toggle-label-timestamps"
       "cli_selectors.tree_start_label_edit"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-start-label-edit"
+      "cli_selectors.tree_confirm_label"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-confirm-label"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

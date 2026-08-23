@@ -2441,6 +2441,17 @@ Observed `tsle_pinned` / `tsle_plain` / `tsle_assistant` / `tsle_bookmark` /
 `tsle_empty` / `tsle_noselect` are exact. First Friend-MachineD freeze **2.40×**
 (150.8 / 62.9 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 177 — `cli_selectors` (tree_confirm_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_confirm_label` | `tree-selector-confirm-label` | `LabelInput` onSubmit (`tree-selector.ts`) |
+
+Confirm label edit: callback args, entry label, timestamp flag on apply-filter fixtures.
+Observed `tclf_set` / `tclf_rename` / `tclf_clear` / `tclf_trim` / `tclf_whitespace` /
+`tclf_nop` are exact. First Friend-MachineD freeze **4.37×**
+(260.2 / 59.5 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

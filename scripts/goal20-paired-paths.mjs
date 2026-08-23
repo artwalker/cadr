@@ -288,6 +288,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_copy_selected": 50,
 	"cli_selectors.tree_toggle_label_timestamps": 50,
 	"cli_selectors.tree_start_label_edit": 50,
+	"cli_selectors.tree_confirm_label": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7230,6 +7231,60 @@ function runCliSelectorsTreeStartLabelEdit() {
 	};
 }
 
+function treeConfirmLabelEncodedPi(selectedId, input, { nop = false } = {}) {
+	const entries = TREE_APPLY_FILTER_ENTRIES;
+	const currentLeafId = "user-3";
+	let callbackId = "null";
+	let callbackLabel = "null";
+	const component = new treeSelectorModule.TreeSelectorComponent(
+		flatEntriesToSessionTree(entries),
+		currentLeafId,
+		16,
+		() => {},
+		() => {},
+		(id, label) => {
+			callbackId = id;
+			callbackLabel = label ?? "null";
+		},
+		selectedId ?? currentLeafId,
+		"default",
+	);
+	const treeList = component.getTreeList();
+	if (!nop) {
+		const ids = treeList.filteredNodes.map((node) => node.node.entry.id);
+		const index = ids.indexOf(selectedId);
+		if (index >= 0) {
+			treeList.selectedIndex = index;
+		}
+		const selected = treeList.filteredNodes[treeList.selectedIndex]?.node;
+		if (selected) {
+			component.showLabelInput(selected.entry.id, selected.label);
+			component.labelInput.input.setValue(input);
+			const value = component.labelInput.input.getValue().trim();
+			component.labelInput.onSubmit?.(component.labelInput.entryId, value || undefined);
+		}
+	}
+	let timestampSet = "false";
+	for (const flatNode of treeList.flatNodes) {
+		if (flatNode.node.entry.id === selectedId) {
+			timestampSet = flatNode.node.labelTimestamp ? "true" : "false";
+			break;
+		}
+	}
+	return `list|${callbackId}|${callbackLabel}|${timestampSet}`;
+}
+
+function runCliSelectorsTreeConfirmLabel() {
+	return {
+		tclf_set: treeConfirmLabelEncodedPi("user-1", "newtag"),
+		tclf_rename: treeConfirmLabelEncodedPi("user-3", "renamed"),
+		tclf_clear: treeConfirmLabelEncodedPi("user-3", ""),
+		tclf_trim: treeConfirmLabelEncodedPi("user-1", "  spaced  "),
+		tclf_whitespace: treeConfirmLabelEncodedPi("user-1", "   "),
+		tclf_nop: treeConfirmLabelEncodedPi("user-1", "", { nop: true }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -7612,6 +7667,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeCopySelectedResults = runCliSelectorsTreeCopySelected();
 	const treeToggleLabelTimestampsResults = runCliSelectorsTreeToggleLabelTimestamps();
 	const treeStartLabelEditResults = runCliSelectorsTreeStartLabelEdit();
+	const treeConfirmLabelResults = runCliSelectorsTreeConfirmLabel();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -7853,6 +7909,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeCopySelectedResults,
 		...treeToggleLabelTimestampsResults,
 		...treeStartLabelEditResults,
+		...treeConfirmLabelResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8061,6 +8118,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_start_label_edit: await collect("cli_selectors.tree_start_label_edit", () => {
 			return () => runCliSelectorsTreeStartLabelEdit();
+		}),
+		tree_confirm_label: await collect("cli_selectors.tree_confirm_label", () => {
+			return () => runCliSelectorsTreeConfirmLabel();
 		}),
 		observed,
 	};
@@ -9245,6 +9305,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts showLabelTimestamps toggle",
 			"cli_selectors.tree_start_label_edit":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts showLabelInput",
+			"cli_selectors.tree_confirm_label":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts LabelInput onSubmit",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
