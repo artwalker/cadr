@@ -352,6 +352,7 @@
     ("cli_selectors.tree_active_path" . 50)
     ("cli_selectors.tree_nearest_visible_id" . 50)
     ("cli_selectors.tree_prioritize_active" . 50)
+    ("cli_selectors.tree_rebuild_visible_maps" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7084,6 +7085,76 @@
      (tree-prioritize-active-encoded entries "user-1")
      (tree-prioritize-active-encoded entries nil))))
 
+(defun tree-visible-entries-by-ids (ids)
+  (remove-if-not
+   (lambda (entry)
+     (member (getf entry :id) ids :test #'string=))
+   *tree-active-path-branching-entries*))
+
+(defun tree-parent-map-encoded (parent-map entry-ids)
+  (format nil "~{~a~^;~}"
+          (sort
+           (mapcar
+            (lambda (id)
+              (format nil "~a=~a" id
+                      (or (gethash id parent-map) "null")))
+            entry-ids)
+           #'string<)))
+
+(defun tree-children-key (parent-id)
+  (or parent-id "null"))
+
+(defun tree-children-map-encoded (children-map parent-keys entry-ids)
+  (declare (ignore entry-ids))
+  (format nil "~{~a~^;~}"
+          (sort
+           (mapcar
+            (lambda (parent-id)
+              (format nil "~a=~{~a~^,~}"
+                      (tree-children-key parent-id)
+                      (gethash parent-id children-map)))
+            parent-keys)
+           #'string<)))
+
+(defun tree-rebuild-visible-maps-encoded (visible-ids)
+  (let* ((visible-entries
+           (tree-visible-entries-by-ids visible-ids))
+         (state
+           (cadr-cli::%make-tree-selector-state
+            :entries *tree-active-path-branching-entries*)))
+    (cadr-cli::tree-selector-rebuild-visible-maps
+     state visible-entries)
+    (let* ((parent-map
+             (cadr-cli::tree-selector-state-visible-parent
+              state))
+           (children-map
+             (cadr-cli::tree-selector-state-visible-children
+              state))
+           (parent-keys nil))
+      (maphash
+       (lambda (parent children)
+         (declare (ignore children))
+         (push parent parent-keys))
+       children-map)
+      (format nil "~a|~a"
+              (tree-parent-map-encoded parent-map visible-ids)
+              (tree-children-map-encoded
+               children-map parent-keys visible-ids)))))
+
+(defun run-cli-selectors-tree-rebuild-visible-maps ()
+  (list
+   (tree-rebuild-visible-maps-encoded
+    '("user-1" "asst-1" "user-2" "asst-2" "user-3a"
+      "asst-3a" "user-4a" "asst-4a" "user-3b" "asst-3b"
+      "user-4b"))
+   (tree-rebuild-visible-maps-encoded
+    '("user-1" "user-3a" "asst-4a"))
+   (tree-rebuild-visible-maps-encoded
+    '("user-1" "user-2" "user-3b" "asst-3b" "user-4b"))
+   (tree-rebuild-visible-maps-encoded '("user-1"))
+   (tree-rebuild-visible-maps-encoded
+    '("user-1" "user-3a" "user-3b"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -7165,7 +7236,9 @@
         (tree-nearest-visible-id
           (run-cli-selectors-tree-nearest-visible-id))
         (tree-prioritize-active
-          (run-cli-selectors-tree-prioritize-active)))
+          (run-cli-selectors-tree-prioritize-active))
+        (tree-rebuild-visible-maps
+          (run-cli-selectors-tree-rebuild-visible-maps)))
     (json-object
      "observed"
      (json-object
@@ -7474,7 +7547,12 @@
       "tpa_leaf_a" (nth 0 tree-prioritize-active)
       "tpa_leaf_b" (nth 1 tree-prioritize-active)
       "tpa_root" (nth 2 tree-prioritize-active)
-      "tpa_nil" (nth 3 tree-prioritize-active))
+      "tpa_nil" (nth 3 tree-prioritize-active)
+      "trvm_full" (nth 0 tree-rebuild-visible-maps)
+      "trvm_sparse" (nth 1 tree-rebuild-visible-maps)
+      "trvm_branch_b" (nth 2 tree-rebuild-visible-maps)
+      "trvm_single" (nth 3 tree-rebuild-visible-maps)
+      "trvm_siblings" (nth 4 tree-rebuild-visible-maps))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7744,7 +7822,12 @@
      (collect "cli_selectors.tree_prioritize_active"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-prioritize-active)))))))
+                  (run-cli-selectors-tree-prioritize-active))))
+     "tree_rebuild_visible_maps"
+     (collect "cli_selectors.tree_rebuild_visible_maps"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-rebuild-visible-maps)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8867,6 +8950,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-nearest-visible-id"
       "cli_selectors.tree_prioritize_active"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-prioritize-active"
+      "cli_selectors.tree_rebuild_visible_maps"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-rebuild-visible-maps"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

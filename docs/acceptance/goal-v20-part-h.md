@@ -2309,6 +2309,17 @@ Reorder flat entries so active-path ids precede siblings on branching fixtures.
 Observed `tpa_leaf_a` / `tpa_leaf_b` / `tpa_root` / `tpa_nil` are exact. First
 Friend-MachineD freeze **1.83×** (16.3 / 8.9 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 165 — `cli_selectors` (tree_rebuild_visible_maps)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_rebuild_visible_maps` | `tree-selector-rebuild-visible-maps` | `recalculateVisualStructure` visible parent/children maps (`tree-selector.ts`) |
+
+Rebuild visible parent/children maps on branching fixtures with full, sparse, and
+sibling-skipping subsets. Observed `trvm_full` / `trvm_sparse` / `trvm_branch_b` /
+`trvm_single` / `trvm_siblings` are exact. First Friend-MachineD freeze **1.49×**
+(41.3 / 27.7 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
