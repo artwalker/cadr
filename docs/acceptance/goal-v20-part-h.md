@@ -2725,6 +2725,17 @@ OAuth selector selected provider; encoded as `id|auth_type`. Observed
 `oss_filter_miss` are exact. First Friend-MachineD freeze **3.80×**
 (103.4 / 27.2 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 202 — `cli_selectors` (oauth_selector_apply_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_selector_apply_filter` | `oauth-selector-apply-filter` | `filterProviders` |
+
+OAuth selector fuzzy filter; encoded as `filtered_count|selected` (selection
+resets to 0). Observed `osaf_all` / `osaf_open` / `osaf_miss` / `osaf_anth` /
+`osaf_google` are exact. First Friend-MachineD freeze **3.84×**
+(113.2 / 29.5 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

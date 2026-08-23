@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_selector_apply_filter`
+  (filter fixtures; cadr `oauth-selector-apply-filter`
+  vs pi `filterProviders`). Friend-MachineD n=5 **3.84×**
+  (113.2 / 29.5 µs), ceiling 8.0. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.oauth_selector_selection`
   (selection fixtures; cadr `oauth-selector-selection`
   vs pi `filteredProviders[selectedIndex]`). Friend-MachineD n=5

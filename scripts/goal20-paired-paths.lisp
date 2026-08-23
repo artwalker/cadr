@@ -389,6 +389,7 @@
     ("cli_selectors.credential_entry_auth_type" . 50)
     ("cli_selectors.oauth_environment_source_p" . 50)
     ("cli_selectors.oauth_selector_selection" . 50)
+    ("cli_selectors.oauth_selector_apply_filter" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8480,6 +8481,27 @@
      (oauth-selector-selection-encoded options 0 :query "open")
      (oauth-selector-selection-encoded options 0 :query "nope"))))
 
+(defun oauth-selector-apply-filter-encoded (options query)
+  (let ((state
+          (cadr-cli::make-oauth-selector-state
+           :options options :query "")))
+    (setf (cadr-cli::oauth-selector-state-selected state) 2)
+    (setf (cadr-cli::oauth-selector-state-query state) query)
+    (cadr-cli::oauth-selector-apply-filter state)
+    (format nil "~A|~A"
+            (length
+             (cadr-cli::oauth-selector-state-filtered-options state))
+            (cadr-cli::oauth-selector-state-selected state))))
+
+(defun run-cli-selectors-oauth-selector-apply-filter ()
+  (let ((options (make-oauth-selector-test-options)))
+    (list
+     (oauth-selector-apply-filter-encoded options "")
+     (oauth-selector-apply-filter-encoded options "open")
+     (oauth-selector-apply-filter-encoded options "nope")
+     (oauth-selector-apply-filter-encoded options "anth")
+     (oauth-selector-apply-filter-encoded options "oogle"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8635,7 +8657,9 @@
         (oauth-environment-source-p
           (run-cli-selectors-oauth-environment-source-p))
         (oauth-selector-selection
-          (run-cli-selectors-oauth-selector-selection)))
+          (run-cli-selectors-oauth-selector-selection))
+        (oauth-selector-apply-filter
+          (run-cli-selectors-oauth-selector-apply-filter)))
     (json-object
      "observed"
      (json-object
@@ -9159,7 +9183,12 @@
       "oss_second" (nth 1 oauth-selector-selection)
       "oss_third" (nth 2 oauth-selector-selection)
       "oss_filter_hit" (nth 3 oauth-selector-selection)
-      "oss_filter_miss" (nth 4 oauth-selector-selection))
+      "oss_filter_miss" (nth 4 oauth-selector-selection)
+      "osaf_all" (nth 0 oauth-selector-apply-filter)
+      "osaf_open" (nth 1 oauth-selector-apply-filter)
+      "osaf_miss" (nth 2 oauth-selector-apply-filter)
+      "osaf_anth" (nth 3 oauth-selector-apply-filter)
+      "osaf_google" (nth 4 oauth-selector-apply-filter))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9614,7 +9643,12 @@
      (collect "cli_selectors.oauth_selector_selection"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-oauth-selector-selection)))))))
+                  (run-cli-selectors-oauth-selector-selection))))
+     "oauth_selector_apply_filter"
+     (collect "cli_selectors.oauth_selector_apply_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-apply-filter)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10811,6 +10845,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-environment-source-p"
       "cli_selectors.oauth_selector_selection"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-selection"
+      "cli_selectors.oauth_selector_apply_filter"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

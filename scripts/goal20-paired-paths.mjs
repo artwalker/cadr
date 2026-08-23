@@ -313,6 +313,7 @@ const REPETITIONS = {
 	"cli_selectors.credential_entry_auth_type": 50,
 	"cli_selectors.oauth_environment_source_p": 50,
 	"cli_selectors.oauth_selector_selection": 50,
+	"cli_selectors.oauth_selector_apply_filter": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8499,6 +8500,33 @@ function runCliSelectorsOauthSelectorSelection() {
 	};
 }
 
+function oauthSelectorSearchText(provider) {
+	return `${provider.name} ${provider.id} ${provider.authType} ${provider.method?.name ?? ""}`;
+}
+
+function oauthSelectorApplyFilterEncoded(providers, query) {
+	const state = {
+		selectedIndex: 2,
+		query,
+	};
+	const filtered = query
+		? fuzzyModule.fuzzyFilter(providers, query, oauthSelectorSearchText)
+		: providers;
+	state.selectedIndex = 0;
+	return `${filtered.length}|${state.selectedIndex}`;
+}
+
+function runCliSelectorsOauthSelectorApplyFilter() {
+	const options = makeOauthSelectorTestOptions();
+	return {
+		osaf_all: oauthSelectorApplyFilterEncoded(options, ""),
+		osaf_open: oauthSelectorApplyFilterEncoded(options, "open"),
+		osaf_miss: oauthSelectorApplyFilterEncoded(options, "nope"),
+		osaf_anth: oauthSelectorApplyFilterEncoded(options, "anth"),
+		osaf_google: oauthSelectorApplyFilterEncoded(options, "oogle"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8906,6 +8934,7 @@ async function measureCliSelectorsSessionSearch() {
 	const credentialEntryAuthTypeResults = runCliSelectorsCredentialEntryAuthType();
 	const oauthEnvironmentSourcePResults = runCliSelectorsOauthEnvironmentSourceP();
 	const oauthSelectorSelectionResults = runCliSelectorsOauthSelectorSelection();
+	const oauthSelectorApplyFilterResults = runCliSelectorsOauthSelectorApplyFilter();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9172,6 +9201,7 @@ async function measureCliSelectorsSessionSearch() {
 		...credentialEntryAuthTypeResults,
 		...oauthEnvironmentSourcePResults,
 		...oauthSelectorSelectionResults,
+		...oauthSelectorApplyFilterResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9455,6 +9485,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_selector_selection: await collect("cli_selectors.oauth_selector_selection", () => {
 			return () => runCliSelectorsOauthSelectorSelection();
+		}),
+		oauth_selector_apply_filter: await collect("cli_selectors.oauth_selector_apply_filter", () => {
+			return () => runCliSelectorsOauthSelectorApplyFilter();
 		}),
 		observed,
 	};
@@ -10689,6 +10722,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator env source regex",
 			"cli_selectors.oauth_selector_selection":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filteredProviders[selectedIndex]",
+			"cli_selectors.oauth_selector_apply_filter":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
