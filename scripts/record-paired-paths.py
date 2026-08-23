@@ -157,6 +157,7 @@ METRIC_KEYS = (
     "cli_selectors.tree_settings_entry_p",
     "cli_selectors.tree_normalize_display_text",
     "cli_selectors.tree_status_labels",
+    "cli_selectors.tree_shorten_path",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

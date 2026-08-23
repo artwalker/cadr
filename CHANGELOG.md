@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.tree_shorten_path`
+  (tree path shorten fixtures; cadr `tree-selector-shorten-path` vs pi
+  `formatToolCall` shortenPath). Friend-MachineD n=5 **1.76×** (2.7 / 1.6 µs),
+  ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.tree_status_labels`
   (tree status suffix fixtures; cadr `tree-selector-status-labels` vs pi
   `getStatusLabels`). Friend-MachineD n=5 **8.92×** (4.1 / 0.5 µs), ceiling 8.0.

@@ -337,6 +337,7 @@
     ("cli_selectors.tree_settings_entry_p" . 50)
     ("cli_selectors.tree_normalize_display_text" . 50)
     ("cli_selectors.tree_status_labels" . 50)
+    ("cli_selectors.tree_shorten_path" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -6569,6 +6570,20 @@
      (status-labels :default t)
      (status-labels :no-tools t))))
 
+(defun run-cli-selectors-tree-shorten-path ()
+  (let ((home
+          (string-right-trim
+           "/" (or (uiop:getenv "HOME") ""))))
+    (list
+     (cadr-cli::tree-selector-shorten-path home)
+     (cadr-cli::tree-selector-shorten-path
+      (concatenate 'string home "/land/session.jsonl"))
+     (cadr-cli::tree-selector-shorten-path
+      "/tmp/session.jsonl")
+     (cadr-cli::tree-selector-shorten-path
+      (concatenate 'string home "/projects/pi-mono/README.md"))
+     (cadr-cli::tree-selector-shorten-path ""))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -6620,7 +6635,9 @@
         (tree-normalize-display-text
           (run-cli-selectors-tree-normalize-display-text))
         (tree-status-labels
-          (run-cli-selectors-tree-status-labels)))
+          (run-cli-selectors-tree-status-labels))
+        (tree-shorten-path
+          (run-cli-selectors-tree-shorten-path)))
     (json-object
      "observed"
      (json-object
@@ -6840,7 +6857,12 @@
       "tsl_labeled" (nth 3 tree-status-labels)
       "tsl_all" (nth 4 tree-status-labels)
       "tsl_time" (nth 5 tree-status-labels)
-      "tsl_both" (nth 6 tree-status-labels))
+      "tsl_both" (nth 6 tree-status-labels)
+      "tsp_home" (nth 0 tree-shorten-path)
+      "tsp_prefix" (nth 1 tree-shorten-path)
+      "tsp_abs" (nth 2 tree-shorten-path)
+      "tsp_proj" (nth 3 tree-shorten-path)
+      "tsp_empty" (nth 4 tree-shorten-path))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -7035,7 +7057,12 @@
      (collect "cli_selectors.tree_status_labels"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-status-labels)))))))
+                  (run-cli-selectors-tree-status-labels))))
+     "tree_shorten_path"
+     (collect "cli_selectors.tree_shorten_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-shorten-path)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -8128,6 +8155,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-normalize-display-text"
       "cli_selectors.tree_status_labels"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-status-labels"
+      "cli_selectors.tree_shorten_path"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-shorten-path"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

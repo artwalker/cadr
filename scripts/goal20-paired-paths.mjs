@@ -261,6 +261,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_settings_entry_p": 50,
 	"cli_selectors.tree_normalize_display_text": 50,
 	"cli_selectors.tree_status_labels": 50,
+	"cli_selectors.tree_shorten_path": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -5676,6 +5677,25 @@ function runCliSelectorsTreeStatusLabels() {
 	};
 }
 
+function treeShortenPathPi(path) {
+	const home = process.env.HOME || process.env.USERPROFILE || "";
+	if (home && path.startsWith(home)) {
+		return `~${path.slice(home.length)}`;
+	}
+	return path;
+}
+
+function runCliSelectorsTreeShortenPath() {
+	const home = (process.env.HOME || process.env.USERPROFILE || "").replace(/\/$/, "");
+	return {
+		tsp_home: treeShortenPathPi(home),
+		tsp_prefix: treeShortenPathPi(`${home}/land/session.jsonl`),
+		tsp_abs: treeShortenPathPi("/tmp/session.jsonl"),
+		tsp_proj: treeShortenPathPi(`${home}/projects/pi-mono/README.md`),
+		tsp_empty: treeShortenPathPi(""),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -6031,6 +6051,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeSettingsEntryPResults = runCliSelectorsTreeSettingsEntryP();
 	const treeNormalizeDisplayTextResults = runCliSelectorsTreeNormalizeDisplayText();
 	const treeStatusLabelsResults = runCliSelectorsTreeStatusLabels();
+	const treeShortenPathResults = runCliSelectorsTreeShortenPath();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -6231,6 +6252,11 @@ async function measureCliSelectorsSessionSearch() {
 		tsl_all: treeStatusLabelsResults.tsl_all,
 		tsl_time: treeStatusLabelsResults.tsl_time,
 		tsl_both: treeStatusLabelsResults.tsl_both,
+		tsp_home: treeShortenPathResults.tsp_home,
+		tsp_prefix: treeShortenPathResults.tsp_prefix,
+		tsp_abs: treeShortenPathResults.tsp_abs,
+		tsp_proj: treeShortenPathResults.tsp_proj,
+		tsp_empty: treeShortenPathResults.tsp_empty,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -6358,6 +6384,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_status_labels: await collect("cli_selectors.tree_status_labels", () => {
 			return () => runCliSelectorsTreeStatusLabels();
+		}),
+		tree_shorten_path: await collect("cli_selectors.tree_shorten_path", () => {
+			return () => runCliSelectorsTreeShortenPath();
 		}),
 		observed,
 	};
@@ -7488,6 +7517,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getEntryDisplayText normalize",
 			"cli_selectors.tree_status_labels":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts getStatusLabels",
+			"cli_selectors.tree_shorten_path":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts formatToolCall shortenPath",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

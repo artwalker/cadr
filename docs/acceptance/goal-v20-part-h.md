@@ -2125,6 +2125,18 @@ no-tools, user-only, labeled-only, all, timestamps-only, combined. Observed
 `tsl_time` / `tsl_both` are exact. First Friend-MachineD freeze **8.92×**
 (4.1 / 0.5 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 150 — `cli_selectors` (tree_shorten_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_shorten_path` | `tree-selector-shorten-path` | `formatToolCall` shortenPath (`tree-selector.ts`) |
+
+HOME-prefix path shortening only (`~` replacement). Not tool-arg formatting or
+theme. Fixtures mirror session shorten-path: home, under-home, absolute, project
+path, empty. Observed `tsp_home` / `tsp_prefix` / `tsp_abs` / `tsp_proj` /
+`tsp_empty` are exact. First Friend-MachineD freeze **1.76×** (2.7 / 1.6 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
