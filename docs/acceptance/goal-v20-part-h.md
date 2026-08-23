@@ -2518,6 +2518,18 @@ Observed `tsid_hit` / `tsid_same` / `tsid_miss` / `tsid_label` / `tsid_filter_mi
 `tsid_fold_miss` are exact. First Friend-MachineD freeze **4.64×**
 (217.0 / 46.7 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 184 — `cli_selectors` (tree_visible_ids)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tree_visible_ids` | `tree-selector-visible-ids` | `TreeList.filteredNodes` ids (`tree-selector.ts`) |
+
+Visible id list after filter/query/fold; comma-separated encoding reuses apply-filter
+first field.
+Observed `tvi_default` / `tvi_user_only` / `tvi_no_tools` / `tvi_query` / `tvi_fold` /
+`tvi_all` are exact. First Friend-MachineD freeze **5.78×**
+(82.1 / 14.2 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

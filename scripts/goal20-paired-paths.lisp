@@ -371,6 +371,7 @@
     ("cli_selectors.tree_handle_label_event" . 50)
     ("cli_selectors.tree_selected_entry" . 50)
     ("cli_selectors.tree_select_id" . 50)
+    ("cli_selectors.tree_visible_ids" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -7924,6 +7925,29 @@
     :selected-id "user-1" :target-id "user-3"
     :folded-ids '("user-2"))))
 
+(defun tree-visible-ids-part (encoded)
+  (let ((pos (position #\| encoded)))
+    (if pos
+        (subseq encoded 0 pos)
+        encoded)))
+
+(defun tree-visible-ids-encoded (&key filter query folded-ids)
+  (tree-visible-ids-part
+   (tree-apply-filter-encoded
+    :filter (or filter "default")
+    :query query
+    :folded-ids folded-ids)))
+
+(defun run-cli-selectors-tree-visible-ids ()
+  (list
+   (tree-visible-ids-encoded :filter "default")
+   (tree-visible-ids-encoded :filter "user-only")
+   (tree-visible-ids-encoded :filter "no-tools")
+   (tree-visible-ids-encoded :filter "default" :query "branch")
+   (tree-visible-ids-encoded
+    :filter "default" :folded-ids '("user-2"))
+   (tree-visible-ids-encoded :filter "all")))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8043,7 +8067,9 @@
         (tree-selected-entry
           (run-cli-selectors-tree-selected-entry))
         (tree-select-id
-          (run-cli-selectors-tree-select-id)))
+          (run-cli-selectors-tree-select-id))
+        (tree-visible-ids
+          (run-cli-selectors-tree-visible-ids)))
     (json-object
      "observed"
      (json-object
@@ -8465,7 +8491,13 @@
       "tsid_miss" (nth 2 tree-select-id)
       "tsid_label" (nth 3 tree-select-id)
       "tsid_filter_miss" (nth 4 tree-select-id)
-      "tsid_fold_miss" (nth 5 tree-select-id))
+      "tsid_fold_miss" (nth 5 tree-select-id)
+      "tvi_default" (nth 0 tree-visible-ids)
+      "tvi_user_only" (nth 1 tree-visible-ids)
+      "tvi_no_tools" (nth 2 tree-visible-ids)
+      "tvi_query" (nth 3 tree-visible-ids)
+      "tvi_fold" (nth 4 tree-visible-ids)
+      "tvi_all" (nth 5 tree-visible-ids))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -8830,7 +8862,12 @@
      (collect "cli_selectors.tree_select_id"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-tree-select-id)))))))
+                  (run-cli-selectors-tree-select-id))))
+     "tree_visible_ids"
+     (collect "cli_selectors.tree_visible_ids"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-tree-visible-ids)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -9991,6 +10028,8 @@
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-selected-entry"
       "cli_selectors.tree_select_id"
       "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-select-id"
+      "cli_selectors.tree_visible_ids"
+      "src/cadr-cli/interactive/selectors/tree.lisp tree-selector-visible-ids"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

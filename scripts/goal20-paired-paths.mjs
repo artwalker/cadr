@@ -295,6 +295,7 @@ const REPETITIONS = {
 	"cli_selectors.tree_handle_label_event": 50,
 	"cli_selectors.tree_selected_entry": 50,
 	"cli_selectors.tree_select_id": 50,
+	"cli_selectors.tree_visible_ids": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -7783,6 +7784,21 @@ function runCliSelectorsTreeSelectId() {
 	};
 }
 
+function treeVisibleIdsEncodedPi(options = {}) {
+	return treeApplyFilterEncodedPi(options).split("|")[0];
+}
+
+function runCliSelectorsTreeVisibleIds() {
+	return {
+		tvi_default: treeVisibleIdsEncodedPi({ filter: "default" }),
+		tvi_user_only: treeVisibleIdsEncodedPi({ filter: "user-only" }),
+		tvi_no_tools: treeVisibleIdsEncodedPi({ filter: "no-tools" }),
+		tvi_query: treeVisibleIdsEncodedPi({ filter: "default", query: "branch" }),
+		tvi_fold: treeVisibleIdsEncodedPi({ filter: "default", foldedIds: ["user-2"] }),
+		tvi_all: treeVisibleIdsEncodedPi({ filter: "all" }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8172,6 +8188,7 @@ async function measureCliSelectorsSessionSearch() {
 	const treeHandleLabelEventResults = runCliSelectorsTreeHandleLabelEvent();
 	const treeSelectedEntryResults = runCliSelectorsTreeSelectedEntry();
 	const treeSelectIdResults = runCliSelectorsTreeSelectId();
+	const treeVisibleIdsResults = runCliSelectorsTreeVisibleIds();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8420,6 +8437,7 @@ async function measureCliSelectorsSessionSearch() {
 		...treeHandleLabelEventResults,
 		...treeSelectedEntryResults,
 		...treeSelectIdResults,
+		...treeVisibleIdsResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -8649,6 +8667,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		tree_select_id: await collect("cli_selectors.tree_select_id", () => {
 			return () => runCliSelectorsTreeSelectId();
+		}),
+		tree_visible_ids: await collect("cli_selectors.tree_visible_ids", () => {
+			return () => runCliSelectorsTreeVisibleIds();
 		}),
 		observed,
 	};
@@ -9847,6 +9868,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.getSelectedNode",
 			"cli_selectors.tree_select_id":
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList filteredNodes index by id",
+			"cli_selectors.tree_visible_ids":
+				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts TreeList.filteredNodes ids",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
