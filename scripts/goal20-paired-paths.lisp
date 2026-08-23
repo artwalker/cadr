@@ -382,6 +382,7 @@
     ("cli_selectors.trust_selector_selection" . 50)
     ("cli_selectors.trust_decision_description" . 50)
     ("cli_selectors.trust_selector_move" . 50)
+    ("cli_selectors.trust_selector_handle_event" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8244,6 +8245,39 @@
        (trust-selector-move-encoded single 0 1)
        (trust-selector-move-encoded single 1 1)))))
 
+(defun encode-trust-handle-event-result (state action value)
+  (format nil "~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (if (and (eq action :select) value)
+              (encode-trust-selector-selection value)
+              "null")
+          (write-to-string
+           (cadr-cli::trust-selector-state-selected state))))
+
+(defun trust-handle-event-encoded (cwd selected event-kind &key text)
+  (let* ((state (make-trust-selector-state-with-selected cwd selected))
+         (event
+           (if text
+               (cadr-tui:make-input-event :kind event-kind :text text)
+               (cadr-tui:make-input-event :kind event-kind))))
+    (multiple-value-bind (action value)
+        (cadr-cli::trust-selector-handle-event state event)
+      (encode-trust-handle-event-result state action value))))
+
+(defun run-cli-selectors-trust-selector-handle-event ()
+  (let ((fixtures (stage-project-trust-options-fixtures)))
+    (let ((child (namestring (getf fixtures :child))))
+      (list
+       (trust-handle-event-encoded child 0 :down)
+       (trust-handle-event-encoded child 1 :up)
+       (trust-handle-event-encoded child 0 :enter)
+       (trust-handle-event-encoded child 1 :text :text "k")
+       (trust-handle-event-encoded child 0 :text :text "pin")
+       (trust-handle-event-encoded child 1 :escape)
+       (trust-handle-event-encoded child 0 :tab)))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8385,7 +8419,9 @@
         (trust-decision-description
           (run-cli-selectors-trust-decision-description))
         (trust-selector-move
-          (run-cli-selectors-trust-selector-move)))
+          (run-cli-selectors-trust-selector-move))
+        (trust-selector-handle-event
+          (run-cli-selectors-trust-selector-handle-event)))
     (json-object
      "observed"
      (json-object
@@ -8864,7 +8900,14 @@
       "tsm_child_wrap_down" (nth 3 trust-selector-move)
       "tsm_child_page" (nth 4 trust-selector-move)
       "tsm_single_down" (nth 5 trust-selector-move)
-      "tsm_single_wrap" (nth 6 trust-selector-move))
+      "tsm_single_wrap" (nth 6 trust-selector-move)
+      "tshe_child_down" (nth 0 trust-selector-handle-event)
+      "tshe_child_up" (nth 1 trust-selector-handle-event)
+      "tshe_child_enter" (nth 2 trust-selector-handle-event)
+      "tshe_child_k" (nth 3 trust-selector-handle-event)
+      "tshe_child_bad" (nth 4 trust-selector-handle-event)
+      "tshe_child_esc" (nth 5 trust-selector-handle-event)
+      "tshe_child_nop" (nth 6 trust-selector-handle-event))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9284,7 +9327,12 @@
      (collect "cli_selectors.trust_selector_move"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-trust-selector-move)))))))
+                  (run-cli-selectors-trust-selector-move))))
+     "trust_selector_handle_event"
+     (collect "cli_selectors.trust_selector_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-trust-selector-handle-event)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10467,6 +10515,8 @@
       "src/cadr-cli/interactive/selectors/trust.lisp trust-decision-description"
       "cli_selectors.trust_selector_move"
       "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-move"
+      "cli_selectors.trust_selector_handle_event"
+      "src/cadr-cli/interactive/selectors/trust.lisp trust-selector-handle-event"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

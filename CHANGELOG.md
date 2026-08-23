@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.trust_selector_handle_event`
+  (event fixtures; cadr `trust-selector-handle-event`
+  vs pi event dispatch). Friend-MachineD n=5 **2.35×**
+  (333.3 / 142.1 µs), ceiling 8.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.trust_selector_move`
   (wrap-move fixtures; cadr `trust-selector-move`
   vs pi wrap index on trust option count). Friend-MachineD n=5 **2.46×**

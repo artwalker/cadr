@@ -2640,6 +2640,18 @@ Observed `tsm_child_down` / `tsm_child_up` / `tsm_child_wrap_up` /
 are exact. First Friend-MachineD freeze **2.46×**
 (328.1 / 133.3 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 195 — `cli_selectors` (trust_selector_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `trust_selector_handle_event` | `trust-selector-handle-event` | event dispatch on trust selector state |
+
+Trust selector input events; encoded as `action|selection|null|selectedIndex`.
+Observed `tshe_child_down` / `tshe_child_up` / `tshe_child_enter` /
+`tshe_child_k` / `tshe_child_bad` / `tshe_child_esc` / `tshe_child_nop`
+are exact. First Friend-MachineD freeze **2.35×**
+(333.3 / 142.1 µs), ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

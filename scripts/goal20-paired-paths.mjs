@@ -306,6 +306,7 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_selection": 50,
 	"cli_selectors.trust_decision_description": 50,
 	"cli_selectors.trust_selector_move": 50,
+	"cli_selectors.trust_selector_handle_event": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8194,6 +8195,59 @@ function runCliSelectorsTrustSelectorMove() {
 	};
 }
 
+function trustHandleEventEncoded(cwd, selected, eventKind, { text = null } = {}) {
+	const options = trustManagerModule.getProjectTrustOptions(cwd);
+	let selectedIndex = selected;
+	let action = "null";
+	let value = "null";
+	switch (eventKind) {
+		case "up":
+			selectedIndex = moveIndex(selected, options.length, -1);
+			action = "changed";
+			break;
+		case "down":
+			selectedIndex = moveIndex(selected, options.length, 1);
+			action = "changed";
+			break;
+		case "enter":
+		case "submit": {
+			const option = options[selected];
+			action = "select";
+			value = encodeTrustSelectorSelection(option);
+			break;
+		}
+		case "escape":
+		case "cancel":
+			action = "cancel";
+			break;
+		case "text":
+			if (text === "k") {
+				selectedIndex = moveIndex(selected, options.length, -1);
+				action = "changed";
+			} else if (text === "j") {
+				selectedIndex = moveIndex(selected, options.length, 1);
+				action = "changed";
+			}
+			break;
+		default:
+			break;
+	}
+	return `${action}|${value}|${selectedIndex}`;
+}
+
+function runCliSelectorsTrustSelectorHandleEvent() {
+	const { child } = stageProjectTrustOptionsFixtures();
+	return {
+		tshe_child_down: trustHandleEventEncoded(child, 0, "down"),
+		tshe_child_up: trustHandleEventEncoded(child, 1, "up"),
+		tshe_child_enter: trustHandleEventEncoded(child, 0, "enter"),
+		tshe_child_k: trustHandleEventEncoded(child, 1, "text", { text: "k" }),
+		tshe_child_bad: trustHandleEventEncoded(child, 0, "text", { text: "pin" }),
+		tshe_child_esc: trustHandleEventEncoded(child, 1, "escape"),
+		tshe_child_nop: trustHandleEventEncoded(child, 0, "tab"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8594,6 +8648,7 @@ async function measureCliSelectorsSessionSearch() {
 	const trustSelectorSelectionResults = runCliSelectorsTrustSelectorSelection();
 	const trustDecisionDescriptionResults = runCliSelectorsTrustDecisionDescription();
 	const trustSelectorMoveResults = runCliSelectorsTrustSelectorMove();
+	const trustSelectorHandleEventResults = runCliSelectorsTrustSelectorHandleEvent();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -8853,6 +8908,7 @@ async function measureCliSelectorsSessionSearch() {
 		...trustSelectorSelectionResults,
 		...trustDecisionDescriptionResults,
 		...trustSelectorMoveResults,
+		...trustSelectorHandleEventResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9115,6 +9171,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		trust_selector_move: await collect("cli_selectors.trust_selector_move", () => {
 			return () => runCliSelectorsTrustSelectorMove();
+		}),
+		trust_selector_handle_event: await collect("cli_selectors.trust_selector_handle_event", () => {
+			return () => runCliSelectorsTrustSelectorHandleEvent();
 		}),
 		observed,
 	};
@@ -10335,6 +10394,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts formatDecision",
 			"cli_selectors.trust_selector_move":
 				"packages/tui/src/components/select-list.ts wrap selection index on getProjectTrustOptions count",
+			"cli_selectors.trust_selector_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts trust-selector-handle-event dispatch",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
