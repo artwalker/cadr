@@ -9692,13 +9692,13 @@
       (push "dirty:1" parts))
     (let ((item (cadr-cli::scoped-models-selector-selected-item state)))
       (when item
-        (let ((model (getf item :model)))
-          (push
-           (if model
-               (format nil "name:~a"
-                       (cadr-ai::model-name model))
-               "name:unavail")
-           parts))))
+        (let* ((model (getf item :model))
+               (name (when model (cadr-ai::model-name model))))
+          (cond
+            ((null model)
+             (push "name:unavail" parts))
+            ((and name (plusp (length name)))
+             (push (format nil "name:~a" name) parts))))))
     (when
         (cadr-cli::scoped-models-selector-state-refresh-status-message
          state)
