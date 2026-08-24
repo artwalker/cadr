@@ -176,6 +176,7 @@ const REPETITIONS = {
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
 	"cli_models_rest.auth_command": 50,
+	"cli_models_rest.login_selection": 50,
 	"image_runtime.dimensions": 50,
 	"image_runtime.mime_type": 50,
 	"image_runtime.lookup": 50,
@@ -4080,12 +4081,132 @@ function runCliModelsRestAuthCommand() {
 	};
 }
 
+
+function loginSelectionKindCode(kind) {
+	switch (kind) {
+		case "no_default_model":
+			return 1;
+		case "no_models_available":
+			return 2;
+		case "default_model_unavailable":
+			return 3;
+		case "select_failed":
+			return 4;
+		default:
+			return 0;
+	}
+}
+
+function hasDefaultModelProvider(providerId) {
+	return providerId in modelResolverModule.defaultModelPerProvider;
+}
+
+function classifyPostLoginModel(providerId, availableModels) {
+	const providerModels = availableModels.filter((model) => model.provider === providerId);
+	if (!hasDefaultModelProvider(providerId)) {
+		return { kind: "no_default_model" };
+	}
+	if (providerModels.length === 0) {
+		return { kind: "no_models_available" };
+	}
+	const defaultModelId = modelResolverModule.defaultModelPerProvider[providerId];
+	const model = providerModels.find((entry) => entry.id === defaultModelId);
+	if (!model) {
+		return { kind: "default_model_unavailable", extra: defaultModelId };
+	}
+	return { model, kind: null };
+}
+
+function postLoginSelectionError(actionLabel, displayName, providerId, kind, extra) {
+	switch (kind) {
+		case "no_default_model":
+			return `${actionLabel} ${displayName}, but no default model is configured for provider "${providerId}". Use /model to select a model.`;
+		case "no_models_available":
+			return `${actionLabel} ${displayName}, but no models are available for that provider. Use /model to select a model.`;
+		case "default_model_unavailable":
+			return `${actionLabel} ${displayName}, but its default model "${extra}". Use /model to select a model.`;
+		case "select_failed":
+			return `${actionLabel} ${displayName}, but selecting its default model failed: ${extra}. Use /model to select a model.`;
+		default:
+			return "";
+	}
+}
+
+function postLoginSelectionResult(providerId, availableModels, selectFunction) {
+	const classified = classifyPostLoginModel(providerId, availableModels);
+	if (classified.kind == null) {
+		try {
+			selectFunction(classified.model);
+			return classified.model.id;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			return { kind: "select_failed", extra: message };
+		}
+	}
+	return { kind: classified.kind, extra: classified.extra };
+}
+
+function makeLoginSelectionOpenAiModel(id) {
+	return {
+		id,
+		name: id,
+		provider: "openai",
+		api: "openai-completions",
+		baseUrl: "http://127.0.0.1:1/v1",
+		contextWindow: 128000,
+		maxTokens: 8192,
+	};
+}
+
+function runCliModelsRestLoginSelection() {
+	const xaiEmpty = classifyPostLoginModel("xai", []);
+	const nodef = classifyPostLoginModel("not-a-provider", []);
+	const wrongModel = makeLoginSelectionOpenAiModel("wrong-id");
+	const defunavail = classifyPostLoginModel("openai", [wrongModel]);
+	const goodModel = makeLoginSelectionOpenAiModel("gpt-5.5");
+	const okResult = postLoginSelectionResult("openai", [goodModel], () => {});
+	const failResult = postLoginSelectionResult("openai", [goodModel], () => {
+		throw new Error("goal20 login selection bench fail");
+	});
+	const nomodelsText = postLoginSelectionError(
+		"Logged in to",
+		"xAI",
+		"xai",
+		"no_models_available",
+		null,
+	);
+	const nodefText = postLoginSelectionError(
+		"Logged in to",
+		"Unknown",
+		"not-a-provider",
+		"no_default_model",
+		null,
+	);
+	return {
+		ls_xai: loginSelectionKindCode(xaiEmpty.kind),
+		ls_nodef: loginSelectionKindCode(nodef.kind),
+		ls_defun: loginSelectionKindCode(defunavail.kind),
+		ls_ok: okResult === "gpt-5.5" ? 1 : 0,
+		ls_fail:
+			typeof failResult === "object" &&
+			failResult !== null &&
+			failResult.kind === "select_failed"
+				? 1
+				: 0,
+		ls_nomodels_sub: nomodelsText.includes("no models are available for that provider")
+			? 1
+			: 0,
+		ls_nodef_sub: nodefText.includes("no default model is configured for provider") ? 1 : 0,
+	};
+}
+
 async function measureCliModelsRest() {
 	const runtime = await createModelRuntime();
 	const models = await runtime.getAvailable();
 	const observed = {
 		...cliModelsRestObserved(runCliModelsRest(models)),
 		...runCliModelsRestAuthCommand(),
+		...runCliModelsRestLoginSelection(),
 	};
 	return {
 		pattern_match: await collect("cli_models_rest.pattern_match", () => {
@@ -4093,6 +4214,9 @@ async function measureCliModelsRest() {
 		}),
 		auth_command: await collect("cli_models_rest.auth_command", () => {
 			return () => runCliModelsRestAuthCommand();
+		}),
+		login_selection: await collect("cli_models_rest.login_selection", () => {
+			return () => runCliModelsRestLoginSelection();
 		}),
 		observed,
 	};
@@ -13928,6 +14052,8 @@ const result = {
 				"packages/coding-agent/src/core/model-resolver.ts parseModelPattern",
 			"cli_models_rest.auth_command":
 				"packages/coding-agent/src/cli/auth-command.ts parseAuthCommand",
+			"cli_models_rest.login_selection":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts completeProviderAuthentication model selection",
 			"image_runtime.dimensions":
 				"packages/tui/src/terminal-image.ts getImageDimensions",
 			"image_runtime.mime_type":

@@ -122,7 +122,7 @@ METRICS = {
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
-    "cli_models_rest": ("pattern_match", "auth_command"),
+    "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
     "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats"),
     "tui_latex": ("render", "normalize_output"),
@@ -403,6 +403,11 @@ RATIO_CEILINGS = {
     # 0.47x (3.56 / 7.54 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "cli_models_rest.auth_command": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_models_rest.login_selection pair (samples=5): observed
+    # 1.78x (7.53 / 4.22 us). 8.0 is first-freeze headroom.
+    # Ratchet down only.
+    "cli_models_rest.login_selection": 8.0,
     # Frozen from the first Friend-MachineD non-quick image_runtime
     # pair (samples=5): observed 5.44x (7.8 / 1.4 us). 8.0 follows
     # the tool_read / journal_read headroom precedent. Ratchet down only.
@@ -1565,6 +1570,13 @@ OBSERVED_EXACT = {
         "ac_unknown",
         "ac_help",
         "ac_help2",
+        "ls_xai",
+        "ls_nodef",
+        "ls_defun",
+        "ls_ok",
+        "ls_fail",
+        "ls_nomodels_sub",
+        "ls_nodef_sub",
     ),
     "image_runtime": (
         "png_width",

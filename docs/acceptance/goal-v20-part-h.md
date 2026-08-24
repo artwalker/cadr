@@ -3463,14 +3463,14 @@ Denominator: **295 files / 127,795 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 169 | 75,006 | 58.7% | `no worse than baseline` is falsifiable |
+| `paired` | 170 | 75,081 | 58.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,424 | 13.6% | on a named paired thunk; no own bench |
-| `needs-pair` | 74 | 27,890 | 21.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 73 | 27,815 | 21.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 58.7% of lines (169 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 64.5% of lines.
+- **Falsifiable vs baseline:** 58.8% of lines (170 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 64.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3594,6 +3594,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/tool-rendering.lisp` | 1,015 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/media.lisp` | 1,277 | `image_runtime.mime_type` |
 | `src/cadr-cli/models/credential-print.lisp` | 623 | `cli_models_rest.auth_command` |
+| `src/cadr-cli/models/login-selection.lisp` | 75 | `cli_models_rest.login_selection` |
 | `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
@@ -3734,7 +3735,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `session_compact` | 1 | 185 |
 | `core_rest` | 3 | 161 |
 | `cli_support` | 5 | 123 |
-| `cli_models_rest` | 1 | 75 |
 | `agent_conditions` | 1 | 43 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |

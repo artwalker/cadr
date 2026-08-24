@@ -484,11 +484,11 @@ These must not be filed as callees.
 | `src/cadr-cli/migration.lisp` | 512 |
 | `src/cadr-cli/repl.lisp` | 112 |
 
-### `cli_models_rest` (additional) — `matching.lisp` paired `cli_models_rest.pattern_match`; `credential-print.lisp` paired `cli_models_rest.auth_command`
+### `cli_models_rest` (additional) — `matching.lisp` paired `cli_models_rest.pattern_match`; `credential-print.lisp` paired `cli_models_rest.auth_command`; `login-selection.lisp` paired `cli_models_rest.login_selection`
 
-- pi: `packages/coding-agent/src/core/model-resolver.ts parseModelPattern`
-- fixture: staged models.json + auth.json. Time pattern match, not list_models_render / credential-print.
-- Friend-MachineD n=5: pattern_match **1.65×** (31.9 / 19.4 µs), ceiling 3.0; auth_command **0.47×** (3.56 / 7.54 µs), ceiling 8.0. cadr leads on auth_command. Other files still `needs-pair`. No optimize in the booking commit.
+- pi: `packages/coding-agent/src/core/model-resolver.ts parseModelPattern`; `packages/coding-agent/src/modes/interactive/interactive-mode.ts completeProviderAuthentication` model selection
+- fixture: staged models.json + auth.json. Time pattern match, not list_models_render / credential-print. Login selection: synthetic provider/models fixtures, not live auth.
+- Friend-MachineD n=5: pattern_match **1.65×** (31.9 / 19.4 µs), ceiling 3.0; auth_command **0.47×** (3.56 / 7.54 µs), ceiling 8.0. cadr leads on auth_command; login_selection **1.78×** (7.53 / 4.22 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|

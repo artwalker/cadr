@@ -70,6 +70,7 @@ METRIC_KEYS = (
     "ai_crypto.hmac",
     "cli_models_rest.pattern_match",
     "cli_models_rest.auth_command",
+    "cli_models_rest.login_selection",
     "image_runtime.dimensions",
     "image_runtime.mime_type",
     "image_runtime.lookup",

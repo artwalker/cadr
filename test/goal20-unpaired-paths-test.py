@@ -175,6 +175,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(credential_print), 1)
         self.assertEqual(credential_print[0]["class"], "paired")
         self.assertIn("cli_models_rest.auth_command", credential_print[0]["metrics"])
+        login_selection = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/models/login-selection.lisp"
+        ]
+        self.assertEqual(len(login_selection), 1)
+        self.assertEqual(login_selection[0]["class"], "paired")
+        self.assertIn("cli_models_rest.login_selection", login_selection[0]["metrics"])
         terminal_image = [
             row
             for row in classified["rows"]

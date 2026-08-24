@@ -809,6 +809,12 @@ tag/Release step.
   vs pi `parseAuthCommand`). Friend-MachineD n=5 **0.47×**
   (3.56 / 7.54 µs), ceiling 8.0. cadr leads. Same commit no
   optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `cli_models_rest.login_selection`
+  (post-login model pick; cadr `classify-post-login-model` /
+  `post-login-selection-result` vs pi
+  `completeProviderAuthentication`). Friend-MachineD n=5
+  **1.78×** (7.53 / 4.22 µs), ceiling 8.0. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_support.parse_changelog`
   (`0.2.0` / malformed / `0.1.0` + missing empty; cadr
   `parse-changelog` vs pi `parseChangelog`). Friend-MachineD

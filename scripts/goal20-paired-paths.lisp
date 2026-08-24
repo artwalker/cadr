@@ -80,6 +80,7 @@
 ;;;;  65. cli_support cadr-user-agent vs getPiUserAgent
 ;;;;  66. cli_support parse-changelog vs parseChangelog
 ;;;;  67. cli_models_rest parse-auth-command vs parseAuthCommand
+;;;; 255. cli_models_rest classify-post-login-model vs completeProviderAuthentication
 ;;;;  68. cli_sdk detect-cache-miss vs detectCacheMiss
 ;;;;  69. cli_sdk compute-cache-waste vs computeCacheWaste
 ;;;;  70. cli_sdk valid-thinking-level-p vs isValidThinkingLevel
@@ -261,6 +262,7 @@
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
     ("cli_models_rest.auth_command" . 50)
+    ("cli_models_rest.login_selection" . 50)
     ("image_runtime.dimensions" . 50)
     ("image_runtime.mime_type" . 50)
     ("image_runtime.lookup" . 50)
@@ -4679,6 +4681,69 @@
          1
          0))))
 
+
+(defun login-selection-kind-code (kind)
+  (ecase kind
+    (:no-default-model 1)
+    (:no-models-available 2)
+    (:default-model-unavailable 3)
+    (:select-failed 4)
+    (otherwise 0)))
+
+(defun make-login-selection-openai-model (id)
+  (cadr-ai:make-model
+   :id id
+   :name id
+   :api :openai-completions
+   :provider :openai
+   :base-url "http://127.0.0.1:1/v1"
+   :context-window 128000
+   :max-tokens 8192))
+
+(defun run-cli-models-rest-login-selection ()
+  (let* ((xai-empty
+           (multiple-value-list
+             (cadr-cli:classify-post-login-model :xai '())))
+         (nodef
+           (multiple-value-list
+             (cadr-cli:classify-post-login-model :not-a-provider '())))
+         (wrong-model (make-login-selection-openai-model "wrong-id"))
+         (defunavail
+           (multiple-value-list
+             (cadr-cli:classify-post-login-model
+              :openai (list wrong-model))))
+         (good-model (make-login-selection-openai-model "gpt-5.5"))
+         (ok-result
+           (cadr-cli:post-login-selection-result
+            :openai (list good-model)
+            (lambda (model) (declare (ignore model)))))
+         (fail-result
+           (cadr-cli:post-login-selection-result
+            :openai (list good-model)
+            (lambda (model)
+              (declare (ignore model))
+              (error "goal20 login selection bench fail"))))
+         (nomodels-text
+           (cadr-cli:post-login-selection-error
+            "Logged in to" "xAI" :xai :no-models-available nil))
+         (nodef-text
+           (cadr-cli:post-login-selection-error
+            "Logged in to" "Unknown" :not-a-provider :no-default-model nil)))
+    (list
+     (login-selection-kind-code (second xai-empty))
+     (login-selection-kind-code (second nodef))
+     (login-selection-kind-code (second defunavail))
+     (if (string= ok-result "gpt-5.5") 1 0)
+     (if (and (listp fail-result) (eq (first fail-result) :select-failed))
+         1
+         0)
+     (if (search "no models are available for that provider" nomodels-text)
+         1
+         0)
+     (if (search "no default model is configured for provider" nodef-text)
+         1
+         0))))
+
 (defun measure-cli-models-rest ()
   (let* ((models
            (cadr-cli::model-registry-available-models
@@ -4689,7 +4754,8 @@
          (partial (third rows))
          (scoped (fourth rows))
          (missing (fifth rows))
-         (auth (run-cli-models-rest-auth-command)))
+         (auth (run-cli-models-rest-auth-command))
+         (login (run-cli-models-rest-login-selection)))
     (json-object
      "observed"
      (json-object
@@ -4713,7 +4779,14 @@
       "ac_min_api" (nth 10 auth)
       "ac_unknown" (nth 11 auth)
       "ac_help" (nth 12 auth)
-      "ac_help2" (nth 13 auth))
+      "ac_help2" (nth 13 auth)
+      "ls_xai" (nth 0 login)
+      "ls_nodef" (nth 1 login)
+      "ls_defun" (nth 2 login)
+      "ls_ok" (nth 3 login)
+      "ls_fail" (nth 4 login)
+      "ls_nomodels_sub" (nth 5 login)
+      "ls_nodef_sub" (nth 6 login))
      "pattern_match"
      (collect "cli_models_rest.pattern_match"
               (lambda ()
@@ -4723,7 +4796,12 @@
      (collect "cli_models_rest.auth_command"
               (lambda ()
                 (lambda ()
-                  (run-cli-models-rest-auth-command)))))))
+                  (run-cli-models-rest-auth-command))))
+     "login_selection"
+     (collect "cli_models_rest.login_selection"
+              (lambda ()
+                (lambda ()
+                  (run-cli-models-rest-login-selection)))))))
 
 (defparameter *png-1x1-b64*
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAIAAACQd1PeAAAADElEQVR4nGNgYGAAAAAEAAH2FzhVAAAAAElFTkSuQmCC")
@@ -13327,6 +13405,8 @@
       "src/cadr-cli/models/matching.lisp parse-scoped-model-pattern"
       "cli_models_rest.auth_command"
       "src/cadr-cli/models/credential-print.lisp parse-auth-command"
+      "cli_models_rest.login_selection"
+      "src/cadr-cli/models/login-selection.lisp classify-post-login-model"
       "image_runtime.dimensions"
       "src/cadr-tui/terminal-image.lisp image-dimensions"
       "image_runtime.mime_type"
