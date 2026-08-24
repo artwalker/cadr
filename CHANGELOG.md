@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_selector_handle_event`
+  (event fixtures; cadr `oauth-selector-handle-event`
+  vs pi `handleInput` dispatch). Friend-MachineD n=5 **1.22×**
+  (138.2 / 113.6 µs), ceiling 8.0. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.oauth_selector_apply_filter`
   (filter fixtures; cadr `oauth-selector-apply-filter`
   vs pi `filterProviders`). Friend-MachineD n=5 **3.84×**

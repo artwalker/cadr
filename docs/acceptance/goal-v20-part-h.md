@@ -2736,6 +2736,18 @@ resets to 0). Observed `osaf_all` / `osaf_open` / `osaf_miss` / `osaf_anth` /
 `osaf_google` are exact. First Friend-MachineD freeze **3.84×**
 (113.2 / 29.5 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 203 — `cli_selectors` (oauth_selector_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_selector_handle_event` | `oauth-selector-handle-event` | `handleInput` event dispatch |
+
+OAuth selector event dispatch; encoded as
+`action|value|selected|query`. Observed `oshe_down` / `oshe_up` /
+`oshe_enter` / `oshe_esc` / `oshe_text` / `oshe_backspace` are exact.
+First Friend-MachineD freeze **1.22×** (138.2 / 113.6 µs), ceiling 8.0.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

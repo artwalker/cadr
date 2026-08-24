@@ -314,6 +314,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_environment_source_p": 50,
 	"cli_selectors.oauth_selector_selection": 50,
 	"cli_selectors.oauth_selector_apply_filter": 50,
+	"cli_selectors.oauth_selector_handle_event": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8527,6 +8528,67 @@ function runCliSelectorsOauthSelectorApplyFilter() {
 	};
 }
 
+function oauthHandleEventEncoded(options, selected, eventKind, { query = "", text } = {}) {
+	const state = {
+		options,
+		query,
+		selected,
+		filtered: query
+			? fuzzyModule.fuzzyFilter(options, query, oauthSelectorSearchText)
+			: options,
+	};
+	let action = "null";
+	let value = "null";
+	switch (eventKind) {
+		case "down":
+			if (state.filtered.length > 0) {
+				state.selected = Math.min(state.filtered.length - 1, state.selected + 1);
+			}
+			action = "changed";
+			break;
+		case "up":
+			if (state.filtered.length > 0) {
+				state.selected = Math.max(0, state.selected - 1);
+			}
+			action = "changed";
+			break;
+		case "enter":
+			action = "select";
+			value = encodeOauthSelectorOption(state.filtered[state.selected]);
+			break;
+		case "escape":
+			action = "cancel";
+			break;
+		case "text":
+			state.query += text ?? "";
+			state.filtered = fuzzyModule.fuzzyFilter(options, state.query, oauthSelectorSearchText);
+			state.selected = 0;
+			action = "changed";
+			break;
+		case "backspace":
+			state.query = deleteQueryChar(state.query);
+			state.filtered = state.query
+				? fuzzyModule.fuzzyFilter(options, state.query, oauthSelectorSearchText)
+				: options;
+			state.selected = 0;
+			action = "changed";
+			break;
+	}
+	return `${action}|${action === "select" ? value : "null"}|${state.selected}|${state.query}`;
+}
+
+function runCliSelectorsOauthSelectorHandleEvent() {
+	const options = makeOauthSelectorTestOptions();
+	return {
+		oshe_down: oauthHandleEventEncoded(options, 0, "down"),
+		oshe_up: oauthHandleEventEncoded(options, 1, "up"),
+		oshe_enter: oauthHandleEventEncoded(options, 0, "enter"),
+		oshe_esc: oauthHandleEventEncoded(options, 0, "escape"),
+		oshe_text: oauthHandleEventEncoded(options, 0, "text", { text: "op" }),
+		oshe_backspace: oauthHandleEventEncoded(options, 0, "backspace", { query: "op" }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8935,6 +8997,7 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthEnvironmentSourcePResults = runCliSelectorsOauthEnvironmentSourceP();
 	const oauthSelectorSelectionResults = runCliSelectorsOauthSelectorSelection();
 	const oauthSelectorApplyFilterResults = runCliSelectorsOauthSelectorApplyFilter();
+	const oauthSelectorHandleEventResults = runCliSelectorsOauthSelectorHandleEvent();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9202,6 +9265,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthEnvironmentSourcePResults,
 		...oauthSelectorSelectionResults,
 		...oauthSelectorApplyFilterResults,
+		...oauthSelectorHandleEventResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9488,6 +9552,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_selector_apply_filter: await collect("cli_selectors.oauth_selector_apply_filter", () => {
 			return () => runCliSelectorsOauthSelectorApplyFilter();
+		}),
+		oauth_selector_handle_event: await collect("cli_selectors.oauth_selector_handle_event", () => {
+			return () => runCliSelectorsOauthSelectorHandleEvent();
 		}),
 		observed,
 	};
@@ -10724,6 +10791,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filteredProviders[selectedIndex]",
 			"cli_selectors.oauth_selector_apply_filter":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders",
+			"cli_selectors.oauth_selector_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput event dispatch",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

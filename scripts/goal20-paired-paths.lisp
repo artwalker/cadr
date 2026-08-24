@@ -390,6 +390,7 @@
     ("cli_selectors.oauth_environment_source_p" . 50)
     ("cli_selectors.oauth_selector_selection" . 50)
     ("cli_selectors.oauth_selector_apply_filter" . 50)
+    ("cli_selectors.oauth_selector_handle_event" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8502,6 +8503,42 @@
      (oauth-selector-apply-filter-encoded options "anth")
      (oauth-selector-apply-filter-encoded options "oogle"))))
 
+(defun encode-oauth-handle-event-result (state action value)
+  (format nil "~a|~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (if (and (eq action :select) value)
+              (encode-oauth-selector-option value)
+              "null")
+          (write-to-string
+           (cadr-cli::oauth-selector-state-selected state))
+          (cadr-cli::oauth-selector-state-query state)))
+
+(defun oauth-handle-event-encoded
+    (options selected event-kind &key query text)
+  (let* ((state
+           (cadr-cli::make-oauth-selector-state
+            :options options :query (or query "")))
+         (event
+           (if text
+               (cadr-tui:make-input-event :kind event-kind :text text)
+               (cadr-tui:make-input-event :kind event-kind))))
+    (setf (cadr-cli::oauth-selector-state-selected state) selected)
+    (multiple-value-bind (action value)
+        (cadr-cli::oauth-selector-handle-event state event)
+      (encode-oauth-handle-event-result state action value))))
+
+(defun run-cli-selectors-oauth-selector-handle-event ()
+  (let ((options (make-oauth-selector-test-options)))
+    (list
+     (oauth-handle-event-encoded options 0 :down)
+     (oauth-handle-event-encoded options 1 :up)
+     (oauth-handle-event-encoded options 0 :enter)
+     (oauth-handle-event-encoded options 0 :escape)
+     (oauth-handle-event-encoded options 0 :text :text "op")
+     (oauth-handle-event-encoded options 0 :backspace :query "op"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8659,7 +8696,9 @@
         (oauth-selector-selection
           (run-cli-selectors-oauth-selector-selection))
         (oauth-selector-apply-filter
-          (run-cli-selectors-oauth-selector-apply-filter)))
+          (run-cli-selectors-oauth-selector-apply-filter))
+        (oauth-selector-handle-event
+          (run-cli-selectors-oauth-selector-handle-event)))
     (json-object
      "observed"
      (json-object
@@ -9188,7 +9227,13 @@
       "osaf_open" (nth 1 oauth-selector-apply-filter)
       "osaf_miss" (nth 2 oauth-selector-apply-filter)
       "osaf_anth" (nth 3 oauth-selector-apply-filter)
-      "osaf_google" (nth 4 oauth-selector-apply-filter))
+      "osaf_google" (nth 4 oauth-selector-apply-filter)
+      "oshe_down" (nth 0 oauth-selector-handle-event)
+      "oshe_up" (nth 1 oauth-selector-handle-event)
+      "oshe_enter" (nth 2 oauth-selector-handle-event)
+      "oshe_esc" (nth 3 oauth-selector-handle-event)
+      "oshe_text" (nth 4 oauth-selector-handle-event)
+      "oshe_backspace" (nth 5 oauth-selector-handle-event))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9648,7 +9693,12 @@
      (collect "cli_selectors.oauth_selector_apply_filter"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-oauth-selector-apply-filter)))))))
+                  (run-cli-selectors-oauth-selector-apply-filter))))
+     "oauth_selector_handle_event"
+     (collect "cli_selectors.oauth_selector_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-handle-event)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10847,6 +10897,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-selection"
       "cli_selectors.oauth_selector_apply_filter"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter"
+      "cli_selectors.oauth_selector_handle_event"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-event"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
