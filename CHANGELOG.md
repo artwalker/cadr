@@ -26,6 +26,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `resource_loader.dedupe_by_name` (same collision
+  fixture as `reload`; time `dedupe-resources-by-name` only, not
+  `reload-resources`). Observed `dbn_skill_count` / `dbn_skill_collisions` /
+  `dbn_skill_project` / `dbn_prompt_count` / `dbn_prompt_collisions` /
+  `dbn_prompt_project` exact. Friend-MachineD n=5 **0.50×** (253.5 / 505.5 µs),
+  ceiling 8.0. Measure-only.
 - Goal 20 P.13: pair `session_compact.branch_summarize` (forked
   five-message tree; `collect-entries-for-branch-summary` +
   `generate-branch-summary` vs pi branch summarization). Observed

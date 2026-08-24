@@ -42,6 +42,7 @@ METRIC_KEYS = (
     "settings_load.stored_auth_secrets",
     "settings_load.config_paths",
     "resource_loader.reload",
+    "resource_loader.dedupe_by_name",
     "package_manager.resolve",
     "package_manager.manifest_parse",
     "package_manager.package_source",

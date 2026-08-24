@@ -3106,6 +3106,21 @@ Observed `manifest_p` / `manifest_extensions` / `manifest_skills` /
 freeze **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
+### Pair 256 — `resource_loader` (dedupe_by_name)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dedupe_by_name` | `dedupe-resources-by-name` (`src/cadr-cli/resource-loader.lisp`) | project-before-user first-wins dedupe (`skills.ts` `skillMap`) |
+
+Leftover sibling of the `resource_loader` hole. Same skill/prompt collision
+fixture as `reload`: global + project `shared` skill and `review` prompt.
+Load paths once outside the timed loop; time name dedupe only, not
+`reload-resources` or `load-skills-at-paths`. Observed `dbn_skill_count` /
+`dbn_skill_collisions` / `dbn_skill_project` / `dbn_prompt_count` /
+`dbn_prompt_collisions` / `dbn_prompt_project` are exact. First Friend-MachineD
+freeze **0.50×** (253.5 / 505.5 µs), ceiling 8.0. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 253 — `settings_load` (config_paths)
 
 | metric | cadr | pi |
@@ -3672,7 +3687,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve`, `package_manager.package_source` |
-| `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
+| `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload`, `resource_loader.dedupe_by_name` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |

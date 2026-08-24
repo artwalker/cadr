@@ -101,7 +101,7 @@ METRICS = {
     "cli_settings": ("create",),
     "agent_conditions": ("error_probe",),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
-    "resource_loader": ("reload",),
+    "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
     "session_discovery": ("header_probe", "session_list_probe"),
     "session_export_html": ("to_html",),
@@ -267,6 +267,9 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "resource_loader.reload": 1.5,
+    # resource_loader.dedupe_by_name pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "resource_loader.dedupe_by_name": 8.0,
     # Frozen from the first Friend-MachineD non-quick package_manager
     # pair (samples=5): observed 0.36x (200 / 551 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -2598,6 +2601,12 @@ OBSERVED_EXACT = {
         "prompt_from_project",
         "context_file_count",
         "system_prompt",
+        "dbn_skill_count",
+        "dbn_skill_collisions",
+        "dbn_skill_project",
+        "dbn_prompt_count",
+        "dbn_prompt_collisions",
+        "dbn_prompt_project",
     ),
     "session_pipeline": (
         "entry_count",

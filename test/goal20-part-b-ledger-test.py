@@ -352,11 +352,16 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("resource_loader.reload", RECORD.METRIC_KEYS)
+        self.assertIn("resource_loader.dedupe_by_name", RECORD.METRIC_KEYS)
         self.assertIn("reload", paired.METRICS["resource_loader"])
+        self.assertIn("dedupe_by_name", paired.METRICS["resource_loader"])
         self.assertIn("resource_loader.reload", paired.RATIO_CEILINGS)
+        self.assertIn("resource_loader.dedupe_by_name", paired.RATIO_CEILINGS)
         self.assertIn("skill_count", paired.OBSERVED_EXACT["resource_loader"])
         self.assertIn("prompt_count", paired.OBSERVED_EXACT["resource_loader"])
         self.assertIn("system_prompt", paired.OBSERVED_EXACT["resource_loader"])
+        self.assertIn("dbn_skill_count", paired.OBSERVED_EXACT["resource_loader"])
+        self.assertIn("dbn_prompt_project", paired.OBSERVED_EXACT["resource_loader"])
 
     def test_package_manager_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -2006,6 +2011,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`settings_load.stored_auth_secrets`", section)
             self.assertIn("`oauth_pkce_device.poll`", section)
             self.assertIn("`resource_loader.reload`", section)
+            self.assertIn("`resource_loader.dedupe_by_name`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)

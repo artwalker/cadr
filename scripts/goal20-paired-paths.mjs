@@ -147,6 +147,7 @@ const REPETITIONS = {
 	"settings_load.stored_auth_secrets": 50,
 	"settings_load.config_paths": 50,
 	"resource_loader.reload": 3,
+	"resource_loader.dedupe_by_name": 50,
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
 	"package_manager.package_source": 50,
@@ -653,6 +654,10 @@ const trustManagerModule = await import(
 	moduleUrl("packages/coding-agent/src/core/trust-manager.ts")
 );
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
+const skillsModule = await import(moduleUrl("packages/coding-agent/src/core/skills.ts"));
+const promptTemplatesModule = await import(
+	moduleUrl("packages/coding-agent/src/core/prompt-templates.ts")
+);
 const packageManagerModule = await import(moduleUrl("packages/coding-agent/src/core/package-manager.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
@@ -2011,11 +2016,68 @@ async function runResourceLoader() {
 	return loader;
 }
 
+function dedupeResourcesByName(global, project, nameFn) {
+	const table = new Map();
+	const collisions = [];
+	for (const resource of [...project, ...global]) {
+		const name = nameFn(resource);
+		if (table.has(name)) {
+			collisions.push(name);
+		} else {
+			table.set(name, resource);
+		}
+	}
+	return { resources: [...table.values()], collisions };
+}
+
+function runResourceLoaderDedupeByName() {
+	const loadSkills = (skillPath) =>
+		skillsModule.loadSkills({
+			cwd: resourceCwdDirectory,
+			agentDir: resourceAgentDirectory,
+			skillPaths: [skillPath],
+			includeDefaults: false,
+		}).skills;
+	const loadPrompts = (promptPath) =>
+		promptTemplatesModule.loadPromptTemplates({
+			cwd: resourceCwdDirectory,
+			agentDir: resourceAgentDirectory,
+			promptPaths: [promptPath],
+			includeDefaults: false,
+		});
+	const skillDedupe = dedupeResourcesByName(
+		loadSkills(resourceAgentSkill),
+		loadSkills(resourceProjectSkillPi),
+		(skill) => skill.name,
+	);
+	const promptDedupe = dedupeResourcesByName(
+		loadPrompts(resourceAgentPrompt),
+		loadPrompts(resourceProjectPromptPi),
+		(prompt) => prompt.name,
+	);
+	return {
+		dbn_skill_count: skillDedupe.resources.length,
+		dbn_skill_collisions: skillDedupe.collisions.length,
+		dbn_skill_project: skillDedupe.resources.some((skill) => skill.description.includes("project overlay"))
+			? 1
+			: 0,
+		dbn_prompt_count: promptDedupe.resources.length,
+		dbn_prompt_collisions: promptDedupe.collisions.length,
+		dbn_prompt_project: promptDedupe.resources.some((prompt) => prompt.content.includes("project review"))
+			? 1
+			: 0,
+	};
+}
+
 async function measureResourceLoader() {
 	const loader = await runResourceLoader();
 	const skills = loader.getSkills().skills;
 	const prompts = loader.getPrompts().prompts;
+	const dedupe = runResourceLoaderDedupeByName();
 	return {
+		dedupe_by_name: await collect("resource_loader.dedupe_by_name", () => {
+			return () => runResourceLoaderDedupeByName();
+		}),
 		reload: await collect("resource_loader.reload", () => {
 			return () => runResourceLoader();
 		}),
@@ -2028,6 +2090,7 @@ async function measureResourceLoader() {
 			prompt_from_project: prompts.some((prompt) => prompt.content.includes("project review")) ? 1 : 0,
 			context_file_count: loader.getAgentsFiles().agentsFiles.length,
 			system_prompt: loader.getSystemPrompt() ? 1 : 0,
+			...dedupe,
 		},
 	};
 }
@@ -14220,6 +14283,7 @@ const result = {
 			"settings_load.config_paths":
 				"packages/coding-agent/src/config.ts getSettingsPath + getAuthPath",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
+			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"package_manager.manifest_parse":
 				"packages/coding-agent/src/core/pi-manifest.ts readPiManifest",

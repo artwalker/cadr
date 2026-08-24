@@ -149,6 +149,7 @@
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
 ;;;; 256. package_manager parse-package-source vs DefaultPackageManager.parseSource
+;;;; 256. resource_loader dedupe-resources-by-name vs skills.ts skillMap
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;; 251. cli_extensions_install discover-extension-sources vs discoverAndLoadExtensions path discovery
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
@@ -237,6 +238,7 @@
     ("settings_load.stored_auth_secrets" . 50)
     ("settings_load.config_paths" . 50)
     ("resource_loader.reload" . 3)
+    ("resource_loader.dedupe_by_name" . 50)
     ("package_manager.resolve" . 5)
     ("package_manager.manifest_parse" . 50)
     ("package_manager.package_source" . 50)
@@ -3257,6 +3259,47 @@
                  (namestring agent-prompt)))))
     (cadr-cli::reload-resources loader)))
 
+(defun run-resource-loader-dedupe-by-name (agent-skill project-skill
+                                            agent-prompt project-prompt)
+  ;; Time dedupe-resources-by-name only, not load-skills-at-paths or reload.
+  (multiple-value-bind (global-skills _global-skill-warnings)
+      (cadr-cli::load-skills-at-paths (list agent-skill))
+    (multiple-value-bind (project-skills _project-skill-warnings)
+        (cadr-cli::load-skills-at-paths (list project-skill))
+      (multiple-value-bind (skills skill-collisions)
+          (cadr-cli::dedupe-resources-by-name
+           global-skills project-skills
+           #'cadr-agent:skill-name
+           #'cadr-agent:skill-file-path)
+        (multiple-value-bind (global-prompts _global-prompt-warnings)
+            (cadr-cli::load-prompts-at-paths (list agent-prompt))
+          (multiple-value-bind (project-prompts _project-prompt-warnings)
+              (cadr-cli::load-prompts-at-paths (list project-prompt))
+            (multiple-value-bind (prompts prompt-collisions)
+                (cadr-cli::dedupe-resources-by-name
+                 global-prompts project-prompts
+                 #'cadr-agent:prompt-template-name
+                 #'cadr-agent:prompt-template-file-path)
+              (list
+               (length skills)
+               (length skill-collisions)
+               (if (and skills
+                        (search "project overlay"
+                                (cadr-agent:skill-description
+                                 (first skills))))
+                   1
+                   0)
+               (length prompts)
+               (length prompt-collisions)
+               (if (some
+                    (lambda (prompt)
+                      (search "project review"
+                              (cadr-agent:prompt-template-content
+                               prompt)))
+                    prompts)
+                   1
+                   0)))))))))
+
 (defun stage-package-layout ()
   (let* ((agent
            (merge-pathnames "package-agent/" *scratch-directory*))
@@ -3461,7 +3504,10 @@
            (skills
              (cadr-cli::resource-snapshot-skills snapshot))
            (prompts
-             (cadr-cli::resource-snapshot-prompts snapshot)))
+             (cadr-cli::resource-snapshot-prompts snapshot))
+           (dedupe
+             (run-resource-loader-dedupe-by-name
+              agent-skill project-skill agent-prompt project-prompt)))
       (json-object
        "observed"
        (json-object
@@ -3499,7 +3545,20 @@
         "system_prompt"
         (if (cadr-cli::resource-snapshot-system-prompt-path snapshot)
             1
-            0))
+            0)
+        "dbn_skill_count" (nth 0 dedupe)
+        "dbn_skill_collisions" (nth 1 dedupe)
+        "dbn_skill_project" (nth 2 dedupe)
+        "dbn_prompt_count" (nth 3 dedupe)
+        "dbn_prompt_collisions" (nth 4 dedupe)
+        "dbn_prompt_project" (nth 5 dedupe))
+       "dedupe_by_name"
+       (collect "resource_loader.dedupe_by_name"
+                (lambda ()
+                  (lambda ()
+                    (run-resource-loader-dedupe-by-name
+                     agent-skill project-skill
+                     agent-prompt project-prompt))))
        "reload"
        (collect "resource_loader.reload"
                 (lambda ()
@@ -13606,6 +13665,8 @@
       "src/cadr-cli/config.lisp default-config-path + default-auth-path"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
+      "resource_loader.dedupe_by_name"
+      "src/cadr-cli/resource-loader.lisp dedupe-resources-by-name"
       "package_manager.resolve"
       "src/cadr-cli/packages/manifest.lisp package-resource-paths"
       "package_manager.manifest_parse"

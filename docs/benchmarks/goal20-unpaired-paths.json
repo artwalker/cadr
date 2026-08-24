@@ -144,6 +144,7 @@
   "settings_load.config_value",
   "settings_load.http_idle",
   "resource_loader.reload",
+  "resource_loader.dedupe_by_name",
   "session_pipeline.session_load",
   "session_pipeline.context_walk",
   "storage_journal.journal_read",
@@ -396,7 +397,8 @@
    "prefix": "src/cadr-cli/resource-loader.lisp",
    "class": "paired",
    "metrics": [
-    "resource_loader.reload"
+    "resource_loader.reload",
+    "resource_loader.dedupe_by_name"
    ]
   },
   {
