@@ -114,12 +114,36 @@ PY
 }
 
 emit_wake() {
-	local payload
-	payload="$(python3 -c 'import json,sys; print(json.dumps({"event":"operator_tick","head":sys.argv[1],"needs_pair_files":int(sys.argv[2]),"complete":sys.argv[3]=="true","prompt":sys.argv[4]}))' \
-		"$(git -C "$PROJECT_DIRECTORY" rev-parse HEAD)" \
-		"$(queue_py goal-status "$PROJECT_DIRECTORY" | python3 -c 'import json,sys; print(json.load(sys.stdin)["needs_pair_files"])')" \
-		"$(queue_py goal-status "$PROJECT_DIRECTORY" | python3 -c 'import json,sys; print(str(json.load(sys.stdin)["complete"]).lower())')" \
-		"Operate Goal 20 team: docs/acceptance/goal20-dev-executor.md. Run scripts/goal20-team-operator.sh once if not already done this tick. Keep tmux goal20-team healthy, director merge, refill queue, dispatch pair lanes with cursor-agent --model auto. needs-pair must reach 0. Do NOT declare Goal 20 complete or G.17 met until P.13 closes.")
+	local head payload
+	head="$(git -C "$PROJECT_DIRECTORY" rev-parse HEAD)"
+	payload="$(python3 - "$PROJECT_DIRECTORY" "$head" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+root = Path(sys.argv[1])
+head = sys.argv[2]
+inv = json.loads((root / "docs/benchmarks/goal20-unpaired-paths.json").read_text())
+needs = sum(1 for e in inv["fileRules"] if e.get("class") == "needs-pair")
+prompt = (
+    "Operate Goal 20 team per docs/acceptance/goal20-dev-executor.md: "
+    "run scripts/goal20-team-operator.sh once; keep tmux goal20-team; "
+    "director merge; dispatch pair lanes (cursor-agent --model auto); "
+    "refill queue until needs-pair=0. Do NOT declare Goal 20 complete or G.17 met."
+)
+print(
+    json.dumps(
+        {
+            "event": "operator_tick",
+            "head": head,
+            "needs_pair_files": needs,
+            "complete": needs == 0,
+            "prompt": prompt,
+        }
+    )
+)
+PY
+)"
 	echo "AGENT_LOOP_WAKE_goal20_team $payload"
 }
 
@@ -169,7 +193,15 @@ operator_once() {
 		fi
 	done
 
-	goal="$(queue_py goal-status "$PROJECT_DIRECTORY")"
+	goal="$(python3 - "$PROJECT_DIRECTORY" <<'PY'
+import json, sys
+from pathlib import Path
+root = Path(sys.argv[1])
+inv = json.loads((root / "docs/benchmarks/goal20-unpaired-paths.json").read_text())
+needs = sum(1 for e in inv["fileRules"] if e.get("class") == "needs-pair")
+print(f"needs-pair files={needs} paired_metrics={len(inv.get('pairedMetrics', []))}")
+PY
+)"
 	echo "goal20 operator: $goal"
 	emit_wake
 }
