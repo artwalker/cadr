@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.model_selector_toggle_scope` (model selector
+  scope toggle; cadr `model-selector-toggle-scope` vs pi tab scope toggle).
+  Friend-MachineD n=5 **5.45×** (141.1 / 25.9 µs), ceiling 8.0. Measure-only;
+  no optimize.
 - Goal 20 P.13: pair `cli_selectors.model_selector_selected_model` (model
   selector selected lookup; cadr `model-selector-selected-model` vs pi
   `filteredModels[selectedIndex]`). Friend-MachineD n=5 **7.90×** (160.3 /

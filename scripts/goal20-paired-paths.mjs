@@ -336,6 +336,7 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_set_query": 50,
 	"cli_selectors.model_selector_selected_model": 50,
 	"cli_selectors.model_selector_toggle_scope": 50,
+	"cli_selectors.model_selector_ui_state": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9503,6 +9504,160 @@ function runCliSelectorsModelSelectorToggleScope() {
 	};
 }
 
+function modelSelectorVisibleSlice(filteredModels, selectedIndex, maximum = 10) {
+	const total = filteredModels.length;
+	const startIndex = Math.max(
+		0,
+		Math.min(selectedIndex - Math.floor(maximum / 2), total - maximum),
+	);
+	const endIndex = Math.min(startIndex + maximum, total);
+	return {
+		visible: filteredModels.slice(startIndex, endIndex),
+		start: startIndex,
+		total,
+	};
+}
+
+function modelSelectorUiItemDigest(item, selected, current) {
+	return `${selected ? "sel" : "nosel"}:${item.id}:${item.provider}${current ? ":cur" : ""}`;
+}
+
+function modelSelectorUiFooter(state) {
+	const parts = [];
+	if (state.errorMessage) {
+		parts.push(`err:${state.errorMessage.split("\n")[0]}`);
+	} else if (state.filteredModels.length > 0) {
+		const selected = state.filteredModels[state.selectedIndex];
+		if (selected) {
+			parts.push(`name:${selected.model.name}`);
+		}
+	}
+	if (state.refreshStatusMessage) {
+		parts.push(`refresh:${state.refreshStatusMessage}`);
+	}
+	return parts.join("|");
+}
+
+function makeModelSelectorUiState({
+	allModels = makeModelSelectorTestModels(),
+	scopedModels = null,
+	selected = null,
+	query = "",
+	errorMessage = undefined,
+	refreshStatusMessage = undefined,
+} = {}) {
+	const currentModel = allModels[0].model;
+	const sortedAll = sortModelSelectorTestModels(allModels, currentModel);
+	const scope = scopedModels && scopedModels.length > 0 ? "scoped" : "all";
+	let activeModels =
+		scopedModels && scopedModels.length > 0 && scope === "scoped"
+			? scopedModels
+			: sortedAll;
+	let selectedIndex = modelSelectorSelectCurrent(activeModels, currentModel);
+	if (selected !== null) {
+		selectedIndex = selected;
+	}
+	let filteredModels = modelSelectorFilterActiveModels(activeModels, query);
+	return {
+		allModels: sortedAll,
+		scopedModels: scopedModels ?? [],
+		scope,
+		query,
+		currentModel,
+		selectedIndex,
+		filteredModels,
+		errorMessage,
+		refreshStatusMessage,
+	};
+}
+
+function modelSelectorUiEncoded(state, width) {
+	const scope =
+		state.scopedModels.length > 0 ? state.scope : "none";
+	const { visible, start, total } = modelSelectorVisibleSlice(
+		state.filteredModels,
+		state.selectedIndex,
+	);
+	const scroll =
+		total > visible.length
+			? `(${state.selectedIndex + 1}/${total})`
+			: "";
+	const empty = total === 0 ? "No matching models" : "";
+	for (let i = 0; i < visible.length; i += 1) {
+		const item = visible[i];
+		const index = start + i;
+		const isSelected = index === state.selectedIndex;
+		const isCurrent = modelSelectorModelsEqual(item.model, state.currentModel);
+		if (isSelected) {
+			themeModule.theme.fg("accent", "→ ") +
+				themeModule.theme.fg("accent", item.id) +
+				themeModule.theme.fg("muted", ` [${item.provider}]`) +
+				(isCurrent ? themeModule.theme.fg("success", " ✓") : "");
+		} else {
+			`  ${item.id} ` +
+				themeModule.theme.fg("muted", `[${item.provider}]`) +
+				(isCurrent ? themeModule.theme.fg("success", " ✓") : "");
+		}
+	}
+	if (state.errorMessage) {
+		themeModule.theme.fg("error", state.errorMessage.split("\n")[0]);
+	} else if (total === 0) {
+		themeModule.theme.fg("muted", "  No matching models");
+	} else {
+		const selected = state.filteredModels[state.selectedIndex];
+		if (selected) {
+			themeModule.theme.fg("muted", `  Model Name: ${selected.model.name}`);
+		}
+	}
+	if (state.refreshStatusMessage) {
+		themeModule.theme.fg("muted", `  ${state.refreshStatusMessage}`);
+	}
+	const items = visible
+		.map((item, offset) =>
+			modelSelectorUiItemDigest(
+				item,
+				start + offset === state.selectedIndex,
+				modelSelectorModelsEqual(item.model, state.currentModel),
+			),
+		)
+		.join(";");
+	return `${scope}|${width}|${state.selectedIndex}|${state.query}|${total}|${scroll}|${items}|${empty}|${modelSelectorUiFooter(state)}`;
+}
+
+function runCliSelectorsModelSelectorUiState() {
+	const models = makeModelSelectorTestModels();
+	const scoped = makeModelSelectorScopedTestModels();
+	return {
+		msui_default: modelSelectorUiEncoded(makeModelSelectorUiState(), 40),
+		msui_sel2: modelSelectorUiEncoded(
+			makeModelSelectorUiState({ selected: 2 }),
+			40,
+		),
+		msui_scoped: modelSelectorUiEncoded(
+			makeModelSelectorUiState({ scopedModels: scoped }),
+			40,
+		),
+		msui_filter: modelSelectorUiEncoded(
+			makeModelSelectorUiState({ query: "gpt" }),
+			50,
+		),
+		msui_miss: modelSelectorUiEncoded(
+			makeModelSelectorUiState({ query: "nope" }),
+			40,
+		),
+		msui_error: modelSelectorUiEncoded(
+			makeModelSelectorUiState({ errorMessage: "Catalog refresh failed" }),
+			40,
+		),
+		msui_refresh: modelSelectorUiEncoded(
+			makeModelSelectorUiState({
+				refreshStatusMessage: "Refreshing model catalogs…",
+			}),
+			40,
+		),
+	};
+}
+
 function modelSelectorApplyFilterEncoded(models, query) {
 	const selectedIndex = 2;
 	const filteredModels = query
@@ -10212,6 +10367,7 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsModelSelectorSelectedModel();
 	const modelSelectorToggleScopeResults =
 		runCliSelectorsModelSelectorToggleScope();
+	const modelSelectorUiStateResults = runCliSelectorsModelSelectorUiState();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10501,6 +10657,7 @@ async function measureCliSelectorsSessionSearch() {
 		...modelSelectorSetQueryResults,
 		...modelSelectorSelectedModelResults,
 		...modelSelectorToggleScopeResults,
+		...modelSelectorUiStateResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10869,6 +11026,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsModelSelectorToggleScope();
 			},
 		),
+		model_selector_ui_state: await collect("cli_selectors.model_selector_ui_state", () => {
+			return () => runCliSelectorsModelSelectorUiState();
+		}),
 		observed,
 	};
 }
@@ -12148,6 +12308,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filteredModels[selectedIndex]",
 			"cli_selectors.model_selector_toggle_scope":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput tab scope toggle",
+			"cli_selectors.model_selector_ui_state":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts updateList/render",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

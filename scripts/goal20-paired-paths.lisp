@@ -412,6 +412,7 @@
     ("cli_selectors.model_selector_set_query" . 50)
     ("cli_selectors.model_selector_selected_model" . 50)
     ("cli_selectors.model_selector_toggle_scope" . 50)
+    ("cli_selectors.model_selector_ui_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9377,6 +9378,122 @@
      (model-selector-toggle-scope-encoded models nil :toggles 1)
      (model-selector-toggle-scope-encoded models scoped :query "anth" :toggles 1))))
 
+(defun model-selector-ui-item-digest (model selected-p current-p)
+  (format nil "~a:~a:~a~a"
+          (if selected-p "sel" "nosel")
+          (cadr-ai:model-id model)
+          (string-downcase
+           (symbol-name
+            (cadr-ai:model-provider model)))
+          (if current-p ":cur" "")))
+
+(defun model-selector-ui-footer (state)
+  (let ((parts nil))
+    (when
+        (cadr-cli::model-selector-state-error-message state)
+      (push
+       (format nil "err:~a"
+               (first
+                (uiop:split-string
+                 (cadr-cli::model-selector-state-error-message state)
+                 :separator '(#\Newline))))
+       parts))
+    (when
+        (and (null (cadr-cli::model-selector-state-error-message state))
+             (plusp
+              (length
+               (cadr-cli::model-selector-visible-models state)))
+             (cadr-cli::model-selector-selected-model state))
+      (push
+       (format nil "name:~a"
+               (cadr-ai::model-name
+                (cadr-cli::model-selector-selected-model state)))
+       parts))
+    (when
+        (cadr-cli::model-selector-state-refresh-status-message state)
+      (push
+       (format nil "refresh:~a"
+               (cadr-cli::model-selector-state-refresh-status-message state))
+       parts))
+    (format nil "~{~a~^|~}" (nreverse parts))))
+
+(defun model-selector-ui-encoded (state width)
+  (multiple-value-bind (models start total)
+      (cadr-cli::model-selector-visible-slice state 10)
+    (let* ((selected (cadr-cli::model-selector-state-selected state))
+           (current (cadr-cli::model-selector-state-current-model state))
+           (scoped-p
+             (not (null
+                   (cadr-cli::model-selector-state-scoped-models state))))
+           (scope
+             (if scoped-p
+                 (string-downcase
+                  (symbol-name
+                   (cadr-cli::model-selector-state-scope state)))
+                 "none"))
+           (query (cadr-cli::model-selector-state-query state))
+           (scroll
+             (if (> total (length models))
+                 (format nil "(~D/~D)" (1+ selected) total)
+                 ""))
+           (empty
+             (if (zerop total) "No matching models" "")))
+      (cadr-cli::render-model-selector state width)
+      (format nil "~a|~a|~a|~a|~a|~a|~{~a~^;~}|~a|~a"
+              scope width selected query total scroll
+              (loop for model in models
+                    for index from start
+                    collect
+                    (model-selector-ui-item-digest
+                     model (= index selected)
+                     (cadr-ai:models-equal-p model current)))
+              empty
+              (model-selector-ui-footer state)))))
+
+(defun make-model-selector-ui-state
+    (&key (all-models (make-model-selector-test-models))
+       scoped-models selected query error-message
+       refresh-status-message (refresh-status-kind :muted))
+  (let* ((current (first all-models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models all-models
+            :scoped-models scoped-models
+            :current-model current
+            :refresh-status-message refresh-status-message
+            :refresh-status-kind refresh-status-kind)))
+    (when selected
+      (setf (cadr-cli::model-selector-state-selected state) selected))
+    (when query
+      (setf (cadr-cli::model-selector-state-query state) query)
+      (cadr-cli::model-selector-apply-filter state))
+    (when error-message
+      (setf (cadr-cli::model-selector-state-error-message state)
+            error-message))
+    state))
+
+(defun run-cli-selectors-model-selector-ui-state ()
+  (let ((models (make-model-selector-test-models))
+        (scoped (make-model-selector-scoped-test-models)))
+    (list
+     (model-selector-ui-encoded (make-model-selector-ui-state) 40)
+     (model-selector-ui-encoded
+      (make-model-selector-ui-state :selected 2) 40)
+     (model-selector-ui-encoded
+      (make-model-selector-ui-state :scoped-models scoped) 40)
+     (model-selector-ui-encoded
+      (make-model-selector-ui-state :query "gpt") 50)
+     (model-selector-ui-encoded
+      (make-model-selector-ui-state :query "nope") 40)
+     (model-selector-ui-encoded
+      (make-model-selector-ui-state
+       :error-message "Catalog refresh failed")
+      40)
+     (model-selector-ui-encoded
+      (make-model-selector-ui-state
+       :refresh-status-message "Refreshing model catalogs…")
+      40))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9603,7 +9720,9 @@
         (model-selector-selected-model
           (run-cli-selectors-model-selector-selected-model))
         (model-selector-toggle-scope
-          (run-cli-selectors-model-selector-toggle-scope)))
+          (run-cli-selectors-model-selector-toggle-scope))
+        (model-selector-ui-state
+          (run-cli-selectors-model-selector-ui-state)))
     (json-object
      "observed"
      (json-object
@@ -10254,7 +10373,14 @@
       "msts_scoped" (nth 1 model-selector-toggle-scope)
       "msts_gpt" (nth 2 model-selector-toggle-scope)
       "msts_none" (nth 3 model-selector-toggle-scope)
-      "msts_anth" (nth 4 model-selector-toggle-scope))
+      "msts_anth" (nth 4 model-selector-toggle-scope)
+      "msui_default" (nth 0 model-selector-ui-state)
+      "msui_sel2" (nth 1 model-selector-ui-state)
+      "msui_scoped" (nth 2 model-selector-ui-state)
+      "msui_filter" (nth 3 model-selector-ui-state)
+      "msui_miss" (nth 4 model-selector-ui-state)
+      "msui_error" (nth 5 model-selector-ui-state)
+      "msui_refresh" (nth 6 model-selector-ui-state))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10824,7 +10950,12 @@
      (collect "cli_selectors.model_selector_toggle_scope"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-model-selector-toggle-scope)))))))
+                  (run-cli-selectors-model-selector-toggle-scope))))
+     "model_selector_ui_state"
+     (collect "cli_selectors.model_selector_ui_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-ui-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12067,6 +12198,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-selected-model"
       "cli_selectors.model_selector_toggle_scope"
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-toggle-scope"
+      "cli_selectors.model_selector_ui_state"
+      "src/cadr-cli/interactive/selectors/models.lisp render-model-selector"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
