@@ -511,6 +511,17 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("lc_url", paired.OBSERVED_EXACT["cli_extensions_install"])
         self.assertIn("lc_sleep", paired.OBSERVED_EXACT["cli_extensions_install"])
         self.assertIn("lc_fb", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.extension_discovery", RECORD.METRIC_KEYS)
+        self.assertIn("extension_discovery", paired.METRICS["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.extension_discovery", paired.RATIO_CEILINGS)
+        self.assertIn("ed_n", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("ed_err", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("ed_coll", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("ed_cli", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("ed_proj", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("ed_glob", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("ed_probe", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("ed_miss", paired.OBSERVED_EXACT["cli_extensions_install"])
 
     def test_evals_harness_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

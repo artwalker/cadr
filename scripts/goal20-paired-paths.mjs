@@ -43,6 +43,7 @@ import {
 	readdirSync,
 	realpathSync,
 	rmSync,
+	statSync,
 	utimesSync,
 	writeFileSync,
 } from "node:fs";
@@ -163,6 +164,7 @@ const REPETITIONS = {
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
+	"cli_extensions_install.extension_discovery": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -627,6 +629,9 @@ const llamaHfModule = await import(
 const llamaProviderModule = await import(
 	moduleUrl("packages/coding-agent/src/extensions/llama/provider.ts")
 );
+const configModule = await import(moduleUrl("packages/coding-agent/src/config.ts"));
+const resolvePathModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
+const piManifestModule = await import(moduleUrl("packages/coding-agent/src/core/pi-manifest.ts"));
 const settingsModule = await import(moduleUrl("packages/coding-agent/src/core/settings-manager.ts"));
 const projectTrustModule = await import(
 	moduleUrl("packages/coding-agent/src/core/project-trust.ts")
@@ -3656,10 +3661,151 @@ function runCliExtensionsLlamaCatalog() {
 	};
 }
 
+function writeExtensionDiscoveryTs(filePath) {
+	mkdirSync(path.dirname(filePath), { recursive: true });
+	writeFileSync(filePath, "export default function factory() {}\n", "utf8");
+}
+
+function stageExtensionDiscoveryLayout() {
+	const root = path.join(scratch, "ext-discovery");
+	const cwd = path.join(root, "project");
+	const agentDir = path.join(root, "agent");
+	const projectExt = path.join(cwd, configModule.CONFIG_DIR_NAME, "extensions");
+	const globalExt = path.join(agentDir, "extensions");
+	const probeDir = path.join(root, "probe");
+	const explicit = path.join(root, "explicit", "cli.ts");
+	writeExtensionDiscoveryTs(path.join(projectExt, "flat.ts"));
+	writeExtensionDiscoveryTs(path.join(projectExt, "nested", "index.ts"));
+	writeExtensionDiscoveryTs(path.join(globalExt, "global-a.ts"));
+	writeExtensionDiscoveryTs(path.join(globalExt, "global-b", "index.ts"));
+	writeExtensionDiscoveryTs(explicit);
+	writeExtensionDiscoveryTs(path.join(probeDir, "probe-flat.ts"));
+	writeExtensionDiscoveryTs(path.join(probeDir, "probe-nested", "index.ts"));
+	return { cwd, agentDir, explicit, probeDir };
+}
+
+function isExtensionDiscoveryFile(name) {
+	return name.endsWith(".ts") || name.endsWith(".js");
+}
+
+function resolveExtensionDiscoveryEntries(dir) {
+	const packageJsonPath = path.join(dir, "package.json");
+	if (existsSync(packageJsonPath)) {
+		const manifest = piManifestModule.readPiManifest(packageJsonPath);
+		if (manifest?.extensions?.length) {
+			const entries = [];
+			for (const extPath of manifest.extensions) {
+				const resolvedExtPath = path.resolve(dir, extPath);
+				if (existsSync(resolvedExtPath)) {
+					entries.push(resolvedExtPath);
+				}
+			}
+			if (entries.length > 0) {
+				return entries;
+			}
+		}
+	}
+	const indexTs = path.join(dir, "index.ts");
+	const indexJs = path.join(dir, "index.js");
+	if (existsSync(indexTs)) {
+		return [indexTs];
+	}
+	if (existsSync(indexJs)) {
+		return [indexJs];
+	}
+	return null;
+}
+
+function discoverExtensionsInDirectory(dir) {
+	if (!existsSync(dir)) {
+		return [];
+	}
+	const discovered = [];
+	try {
+		for (const entry of readdirSync(dir, { withFileTypes: true })) {
+			const entryPath = path.join(dir, entry.name);
+			if ((entry.isFile() || entry.isSymbolicLink()) && isExtensionDiscoveryFile(entry.name)) {
+				discovered.push(entryPath);
+				continue;
+			}
+			if (entry.isDirectory() || entry.isSymbolicLink()) {
+				const entries = resolveExtensionDiscoveryEntries(entryPath);
+				if (entries) {
+					discovered.push(...entries);
+				}
+			}
+		}
+	} catch {
+		return [];
+	}
+	return discovered;
+}
+
+function discoverExtensionPaths(configuredPaths, cwd, agentDir) {
+	const resolvedCwd = resolvePathModule.resolvePath(cwd);
+	const resolvedAgentDir = resolvePathModule.resolvePath(agentDir);
+	const allPaths = [];
+	const seen = new Set();
+	const addPaths = (paths) => {
+		for (const entry of paths) {
+			const resolved = path.resolve(entry);
+			if (!seen.has(resolved)) {
+				seen.add(resolved);
+				allPaths.push(entry);
+			}
+		}
+	};
+	const localExtDir = path.join(resolvedCwd, configModule.CONFIG_DIR_NAME, "extensions");
+	addPaths(discoverExtensionsInDirectory(localExtDir));
+	const globalExtDir = path.join(resolvedAgentDir, "extensions");
+	addPaths(discoverExtensionsInDirectory(globalExtDir));
+	for (const configuredPath of configuredPaths) {
+		const resolved = resolvePathModule.resolvePath(configuredPath, resolvedCwd, {
+			normalizeUnicodeSpaces: true,
+		});
+		if (existsSync(resolved) && statSync(resolved).isDirectory()) {
+			const entries = resolveExtensionDiscoveryEntries(resolved);
+			if (entries) {
+				addPaths(entries);
+				continue;
+			}
+			addPaths(discoverExtensionsInDirectory(resolved));
+			continue;
+		}
+		addPaths([resolved]);
+	}
+	return allPaths;
+}
+
+function extensionDiscoveryScopeCount(paths, marker) {
+	return paths.filter((entry) => entry.includes(marker)).length;
+}
+
+function runCliExtensionsExtensionDiscovery() {
+	const { cwd, agentDir, explicit, probeDir } = stageExtensionDiscoveryLayout();
+	const paths = discoverExtensionPaths([explicit], cwd, agentDir);
+	const probe = discoverExtensionsInDirectory(probeDir);
+	const missing = discoverExtensionsInDirectory(path.join(scratch, "ext-discovery", "missing"));
+	return {
+		ed_n: paths.length,
+		ed_err: 0,
+		ed_coll: 0,
+		ed_cli: extensionDiscoveryScopeCount(paths, `${path.sep}explicit${path.sep}`),
+		ed_proj: extensionDiscoveryScopeCount(
+			paths,
+			`${path.sep}${configModule.CONFIG_DIR_NAME}${path.sep}extensions${path.sep}`,
+		),
+		ed_glob: extensionDiscoveryScopeCount(paths, `${path.sep}agent${path.sep}extensions${path.sep}`),
+		ed_probe: probe.length,
+		ed_miss: missing.length === 0 ? 1 : 0,
+	};
+}
+
 async function measureCliExtensionsInstall() {
 	const url = runCliExtensionsLlamaUrl();
 	const token = await runCliExtensionsHfToken();
 	const catalog = runCliExtensionsLlamaCatalog();
+	const discovery = runCliExtensionsExtensionDiscovery();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -3670,7 +3816,10 @@ async function measureCliExtensionsInstall() {
 		llama_catalog: await collect("cli_extensions_install.llama_catalog", () => {
 			return () => runCliExtensionsLlamaCatalog();
 		}),
-		observed: { ...url, ...token, ...catalog },
+		extension_discovery: await collect("cli_extensions_install.extension_discovery", () => {
+			return () => runCliExtensionsExtensionDiscovery();
+		}),
+		observed: { ...url, ...token, ...catalog, ...discovery },
 	};
 }
 
@@ -13593,6 +13742,8 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/huggingface.ts findHuggingFaceToken",
 			"cli_extensions_install.llama_catalog":
 				"packages/coding-agent/src/extensions/llama/provider.ts createLlamaProvider.setCatalog",
+			"cli_extensions_install.extension_discovery":
+				"packages/coding-agent/src/core/extensions/loader.ts discoverAndLoadExtensions path discovery",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

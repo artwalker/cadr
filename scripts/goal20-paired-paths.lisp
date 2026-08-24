@@ -142,6 +142,7 @@
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
+;;;; 251. cli_extensions_install discover-extension-sources vs discoverAndLoadExtensions path discovery
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;; 107. cli_interactive_controller tui-auth-type-label vs formatAuthSelectorProviderType
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
@@ -245,6 +246,7 @@
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
+    ("cli_extensions_install.extension_discovery" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -3947,6 +3949,75 @@
    :input-modalities modalities
    :context-window ctx))
 
+(defun write-extension-discovery-lisp (path)
+  (ensure-directories-exist path)
+  (with-open-file (stream path
+                          :direction :output
+                          :if-exists :supersede
+                          :if-does-not-exist :create
+                          :external-format :utf-8)
+    (write-string "(in-package #:cl-user)" stream)))
+
+(defun stage-extension-discovery-layout ()
+  (let* ((root
+           (merge-pathnames
+            "ext-discovery/"
+            *scratch-directory*))
+         (cwd (merge-pathnames "project/" root))
+         (global (merge-pathnames "global/" root))
+         (project-ext
+           (merge-pathnames ".cadr/extensions/" cwd))
+         (probe-dir (merge-pathnames "probe/" root))
+         (explicit (merge-pathnames "explicit/cli.lisp" root)))
+    (write-extension-discovery-lisp
+     (merge-pathnames "flat.lisp" project-ext))
+    (write-extension-discovery-lisp
+     (merge-pathnames "nested/extension.lisp" project-ext))
+    (write-extension-discovery-lisp
+     (merge-pathnames "global-a.lisp" global))
+    (write-extension-discovery-lisp
+     (merge-pathnames "global-b/extension.lisp" global))
+    (write-extension-discovery-lisp explicit)
+    (write-extension-discovery-lisp
+     (merge-pathnames "probe-flat.lisp" probe-dir))
+    (write-extension-discovery-lisp
+     (merge-pathnames "probe-nested/extension.lisp" probe-dir))
+    (values cwd global explicit probe-dir root)))
+
+(defun extension-discovery-scope-count (sources scope)
+  (count scope sources
+         :key #'cadr-cli::extension-source-record-scope))
+
+(defun run-cli-extensions-extension-discovery ()
+  ;; discover-extension-sources only: flat/subdir scan, project/global
+  ;; dirs, explicit -e paths. Unique ids so id-dedupe stays quiet.
+  (multiple-value-bind (cwd global explicit probe-dir root)
+      (stage-extension-discovery-layout)
+    (let* ((manager
+             (cadr-cli::make-cli-extension-manager
+              :cwd cwd
+              :global-directory global
+              :explicit-paths (list explicit)
+              :output (make-string-output-stream)))
+           (probe
+             (cadr-cli::discover-extensions-in-directory
+              probe-dir :project 1)))
+      (multiple-value-bind (sources errors collisions)
+          (cadr-cli::discover-extension-sources manager)
+        (list
+         (length sources)
+         (length errors)
+         (length collisions)
+         (extension-discovery-scope-count sources :cli)
+         (extension-discovery-scope-count sources :project)
+         (extension-discovery-scope-count sources :global)
+         (length probe)
+         (if (zerop (length (cadr-cli::discover-extensions-in-directory
+                              (merge-pathnames "missing/" root)
+                              :global 0)))
+             1
+             0))))))
+
 (defun run-cli-extensions-llama-catalog ()
   ;; Loaded only. Sleeping/unloaded stay out. Do not exact
   ;; n_ctx_train-only fallback vs cadr training-context-window
@@ -3998,7 +4069,8 @@
 (defun measure-cli-extensions-install ()
   (let ((url (run-cli-extensions-llama-url))
         (token (run-cli-extensions-hf-token))
-        (catalog (run-cli-extensions-llama-catalog)))
+        (catalog (run-cli-extensions-llama-catalog))
+        (discovery (run-cli-extensions-extension-discovery)))
     (json-object
      "observed"
      (json-object
@@ -4018,7 +4090,15 @@
       "lc_ctx" (nth 2 catalog)
       "lc_url" (nth 3 catalog)
       "lc_sleep" (nth 4 catalog)
-      "lc_fb" (nth 5 catalog))
+      "lc_fb" (nth 5 catalog)
+      "ed_n" (nth 0 discovery)
+      "ed_err" (nth 1 discovery)
+      "ed_coll" (nth 2 discovery)
+      "ed_cli" (nth 3 discovery)
+      "ed_proj" (nth 4 discovery)
+      "ed_glob" (nth 5 discovery)
+      "ed_probe" (nth 6 discovery)
+      "ed_miss" (nth 7 discovery))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -4033,7 +4113,12 @@
      (collect "cli_extensions_install.llama_catalog"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-llama-catalog)))))))
+                  (run-cli-extensions-llama-catalog))))
+     "extension_discovery"
+     (collect "cli_extensions_install.extension_discovery"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-extension-discovery)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -13040,6 +13125,8 @@
       "src/cadr-cli/extensions/llama/huggingface.lisp find-hugging-face-token"
       "cli_extensions_install.llama_catalog"
       "src/cadr-cli/extensions/llama/provider.lisp llama-provider-set-catalog"
+      "cli_extensions_install.extension_discovery"
+      "src/cadr-cli/extensions/discovery.lisp discover-extension-sources"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

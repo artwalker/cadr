@@ -21,6 +21,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_extensions_install.extension_discovery`
+  (flat/subdir scan, project/global dirs, explicit `-e` paths; cadr
+  `discover-extension-sources` vs pi `discoverAndLoadExtensions` path
+  discovery). Observed `ed_n`/`ed_cli`/`ed_proj`/`ed_glob`/`ed_probe`/`ed_miss`
+  exact. Friend-MachineD n=5 **1.98×** (1954.5 / 987.2 µs), ceiling 8.0.
+  Measure-only.
 - Goal 20 P.13: pair `settings_load.stored_auth_secrets` (stored auth.json
   key/access/refresh collection; cadr `stored-auth-secrets` vs pi auth.json
   scan). Friend-MachineD n=5 **4.19×** (426.6 / 101.8 µs), ceiling 8.0.

@@ -59,6 +59,7 @@ METRIC_KEYS = (
     "cli_extensions_install.llama_url",
     "cli_extensions_install.hf_token",
     "cli_extensions_install.llama_catalog",
+    "cli_extensions_install.extension_discovery",
     "evals_harness.summarize",
     "evals_harness.group_key",
     "evals_harness.artifact_persist",

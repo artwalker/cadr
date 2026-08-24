@@ -3054,6 +3054,7 @@ In-memory entry count on the written append journal (128 messages). Observed
 (0.22 / 2.4 µs), ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same
 commit no optimize.
 
+<<<<<<< HEAD
 ### Pair 249 — `settings_load` (stored_auth_secrets)
 
 | metric | cadr | pi |
@@ -3080,6 +3081,19 @@ Observed `manifest_p` / `manifest_extensions` / `manifest_skills` /
 `manifest_prompts` / `manifest_themes` are exact. First Friend-MachineD
 freeze **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
+
+### Pair 251 — `cli_extensions_install` (extension_discovery)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extension_discovery` | `discover-extension-sources` | `discoverAndLoadExtensions` path discovery (`packages/coding-agent/src/core/extensions/loader.ts`) |
+
+Leftover sibling of the `cli_extensions_install` hole. Flat `.lisp`/subdir
+`extension.lisp`, project `.cadr/extensions/`, global dir, explicit `-e`, plus
+missing-dir probe. Observed `ed_n`/`ed_cli`/`ed_proj`/`ed_glob`/`ed_probe`/`ed_miss`
+are exact. No load, no TUI. First Friend-MachineD freeze **1.98×**
+(1954.5 / 987.2 µs), ceiling 8.0. pi leads. Gate used `--only-enforce`. Same
+commit no optimize.
 
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 

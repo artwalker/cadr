@@ -118,7 +118,7 @@ METRICS = {
         "radius_gateway",
         "copilot_auth",
     ),
-    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog"),
+    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
@@ -350,6 +350,11 @@ RATIO_CEILINGS = {
     # 0.36x (4.78 / 13.41 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "cli_extensions_install.llama_catalog": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # cli_extensions_install.extension_discovery pair (samples=5): observed
+    # 1.98x (1954.5 / 987.2 us). pi leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "cli_extensions_install.extension_discovery": 8.0,
     # Frozen from the first Friend-MachineD non-quick evals_harness
     # pair (samples=5): observed 0.88x (8.0 / 9.0 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -1465,6 +1470,14 @@ OBSERVED_EXACT = {
         "lc_url",
         "lc_sleep",
         "lc_fb",
+        "ed_n",
+        "ed_err",
+        "ed_coll",
+        "ed_cli",
+        "ed_proj",
+        "ed_glob",
+        "ed_probe",
+        "ed_miss",
     ),
     "evals_harness": (
         "eval_sets",
