@@ -318,6 +318,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_handle_raw_input": 50,
 	"cli_selectors.oauth_selector_search_text": 50,
 	"cli_selectors.login_auth_type_route": 50,
+	"cli_selectors.login_provider_options": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8714,6 +8715,115 @@ function runCliSelectorsLoginAuthTypeRoute() {
 	};
 }
 
+function loginProviderFixtureDefinitions() {
+	return [
+		{
+			id: "anthropic",
+			name: "Anthropic",
+			authTypes: ["oauth", "api_key"],
+			oauth: { methodName: "Anthropic account" },
+			apiKey: { methodName: "Anthropic API key" },
+		},
+		{
+			id: "google-vertex",
+			name: "Google Vertex AI",
+			authTypes: ["api_key"],
+			apiKey: { methodName: "Google Vertex AI API key" },
+			structuredApiKey: true,
+		},
+	];
+}
+
+function encodeOauthSelectorStatusField(status) {
+	if (!status) {
+		return "";
+	}
+	const type = status.type === "oauth" ? "oauth" : "api_key";
+	return `${type}:${status.source}`;
+}
+
+function encodeLoginProviderOption(option) {
+	return [
+		option.id,
+		option.authType,
+		option.methodName,
+		option.loginLabel ?? "",
+		option.structuredLogin ? "1" : "0",
+		encodeOauthSelectorStatusField(option.status),
+	].join("|");
+}
+
+function encodeLoginProviderOptions(options) {
+	return options.map((option) => encodeLoginProviderOption(option)).join(",");
+}
+
+function loginProviderOptions(definitions, { authType, statusFor } = {}) {
+	const options = [];
+	for (const provider of definitions) {
+		const status = statusFor?.(provider.id);
+		const candidates = provider.authTypes ?? ["oauth", "api_key"];
+		for (const candidate of candidates) {
+			if (authType && authType !== candidate) {
+				continue;
+			}
+			if (candidate === "oauth" && provider.oauth) {
+				options.push({
+					id: provider.id,
+					name: provider.name,
+					authType: "oauth",
+					methodName: provider.oauth.methodName,
+					loginLabel: provider.oauth.loginLabel,
+					structuredLogin: false,
+					status,
+				});
+			}
+			if (candidate === "api_key" && provider.apiKey) {
+				options.push({
+					id: provider.id,
+					name: provider.name,
+					authType: "api_key",
+					methodName: provider.apiKey.methodName,
+					loginLabel: undefined,
+					structuredLogin: Boolean(provider.structuredApiKey),
+					status,
+				});
+			}
+		}
+	}
+	return options.sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function runCliSelectorsLoginProviderOptions() {
+	const definitions = loginProviderFixtureDefinitions();
+	const openrouter = [
+		{
+			id: "openrouter",
+			name: "OpenRouter",
+			authTypes: ["api_key", "oauth"],
+			oauth: {
+				methodName: "OpenRouter OAuth",
+				loginLabel: "Sign in with OpenRouter",
+			},
+			apiKey: { methodName: "OpenRouter API key" },
+		},
+	];
+	return {
+		lpo_all: encodeLoginProviderOptions(loginProviderOptions(definitions)),
+		lpo_oauth: encodeLoginProviderOptions(
+			loginProviderOptions(definitions, { authType: "oauth" }),
+		),
+		lpo_api: encodeLoginProviderOptions(
+			loginProviderOptions(definitions, { authType: "api_key" }),
+		),
+		lpo_labeled: encodeLoginProviderOptions(loginProviderOptions(openrouter)),
+		lpo_status: encodeLoginProviderOptions(
+			loginProviderOptions(definitions, {
+				statusFor: () => ({ type: "oauth", source: "OAuth" }),
+			}),
+		),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9126,6 +9236,7 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthSelectorHandleRawInputResults = runCliSelectorsOauthSelectorHandleRawInput();
 	const oauthSelectorSearchTextResults = runCliSelectorsOauthSelectorSearchText();
 	const loginAuthTypeRouteResults = runCliSelectorsLoginAuthTypeRoute();
+	const loginProviderOptionsResults = runCliSelectorsLoginProviderOptions();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9397,6 +9508,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthSelectorHandleRawInputResults,
 		...oauthSelectorSearchTextResults,
 		...loginAuthTypeRouteResults,
+		...loginProviderOptionsResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9695,6 +9807,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		login_auth_type_route: await collect("cli_selectors.login_auth_type_route", () => {
 			return () => runCliSelectorsLoginAuthTypeRoute();
+		}),
+		login_provider_options: await collect("cli_selectors.login_provider_options", () => {
+			return () => runCliSelectorsLoginProviderOptions();
 		}),
 		observed,
 	};
@@ -10939,6 +11054,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders search text",
 			"cli_selectors.login_auth_type_route":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts showLoginAuthTypeSelector routing",
+			"cli_selectors.login_provider_options":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

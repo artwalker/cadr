@@ -214,6 +214,7 @@ METRIC_KEYS = (
     "cli_selectors.oauth_selector_handle_raw_input",
     "cli_selectors.oauth_selector_search_text",
     "cli_selectors.login_auth_type_route",
+    "cli_selectors.login_provider_options",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

@@ -2784,6 +2784,18 @@ Login auth-type routing: `none|…`, `direct|id|auth_type`, or
 metric only (full-suite ceiling noise on unrelated oauth metrics). Same
 commit no optimize.
 
+### Pair 207 — `cli_selectors` (login_provider_options)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_provider_options` | `login-provider-options` | `getLoginProviderOptions` |
+
+Login provider projection from definitions: auth-type filter, oauth
+metadata labels, structured API-key flag, optional status. Observed
+`lpo_all` / `lpo_oauth` / `lpo_api` / `lpo_labeled` / `lpo_status` are
+exact. First Friend-MachineD freeze **0.87×** (14.8 / 17.1 µs), ceiling
+8.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

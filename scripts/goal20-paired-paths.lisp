@@ -394,6 +394,7 @@
     ("cli_selectors.oauth_selector_handle_raw_input" . 50)
     ("cli_selectors.oauth_selector_search_text" . 50)
     ("cli_selectors.login_auth_type_route" . 50)
+    ("cli_selectors.login_provider_options" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8656,6 +8657,73 @@
      (make-auth-route-api-option)))
    (encode-login-auth-type-route nil :generic-p t)))
 
+(defun login-provider-fixture-definitions ()
+  (list
+   (cadr-ai::make-provider-definition
+    :id :anthropic :name "Anthropic"
+    :protocol :anthropic-messages
+    :base-url "https://example.invalid"
+    :auth-types '(:oauth :api-key)
+    :default-model "claude")
+   (cadr-ai::make-provider-definition
+    :id :google-vertex :name "Google Vertex AI"
+    :protocol :google-vertex
+    :base-url "https://example.invalid"
+    :auth-types '(:api-key)
+    :default-model "gemini"
+    :api-key-auth-strategy :vertex)))
+
+(defun encode-oauth-selector-status-field (status)
+  (if (null status)
+      ""
+      (format nil "~A:~A"
+              (if (eq (getf status :type) :oauth)
+                  "oauth"
+                  "api_key")
+              (getf status :source))))
+
+(defun encode-login-provider-option (option)
+  (format nil "~A|~A|~A|~A|~A|~A"
+          (cadr-cli::provider-key
+           (cadr-cli::oauth-selector-option-id option))
+          (if (eq (cadr-cli::oauth-selector-option-auth-type option)
+                  :oauth)
+              "oauth"
+              "api_key")
+          (cadr-cli::oauth-selector-option-method-name option)
+          (or (cadr-cli::oauth-selector-option-login-label option) "")
+          (if (cadr-cli::oauth-selector-option-structured-login-p option)
+              "1"
+              "0")
+          (encode-oauth-selector-status-field
+           (cadr-cli::oauth-selector-option-status option))))
+
+(defun encode-login-provider-options (options)
+  (format nil "~{~A~^,~}"
+          (mapcar #'encode-login-provider-option options)))
+
+(defun run-cli-selectors-login-provider-options ()
+  (let ((definitions (login-provider-fixture-definitions)))
+    (list
+     (encode-login-provider-options
+      (cadr-cli::login-provider-options definitions))
+     (encode-login-provider-options
+      (cadr-cli::login-provider-options
+       definitions :auth-type :oauth))
+     (encode-login-provider-options
+      (cadr-cli::login-provider-options
+       definitions :auth-type :api-key))
+     (encode-login-provider-options
+      (cadr-cli::login-provider-options
+       (list (cadr-ai:find-provider-definition :openrouter))))
+     (encode-login-provider-options
+      (cadr-cli::login-provider-options
+       definitions
+       :status-function
+       (lambda (id)
+         (declare (ignore id))
+         (list :type :oauth :source "OAuth")))))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8821,7 +8889,9 @@
         (oauth-selector-search-text
           (run-cli-selectors-oauth-selector-search-text))
         (login-auth-type-route
-          (run-cli-selectors-login-auth-type-route)))
+          (run-cli-selectors-login-auth-type-route))
+        (login-provider-options
+          (run-cli-selectors-login-provider-options)))
     (json-object
      "observed"
      (json-object
@@ -9372,7 +9442,12 @@
       "latr_oauth" (nth 1 login-auth-type-route)
       "latr_api" (nth 2 login-auth-type-route)
       "latr_both" (nth 3 login-auth-type-route)
-      "latr_generic" (nth 4 login-auth-type-route))
+      "latr_generic" (nth 4 login-auth-type-route)
+      "lpo_all" (nth 0 login-provider-options)
+      "lpo_oauth" (nth 1 login-provider-options)
+      "lpo_api" (nth 2 login-provider-options)
+      "lpo_labeled" (nth 3 login-provider-options)
+      "lpo_status" (nth 4 login-provider-options))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9852,7 +9927,12 @@
      (collect "cli_selectors.login_auth_type_route"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-login-auth-type-route)))))))
+                  (run-cli-selectors-login-auth-type-route))))
+     "login_provider_options"
+     (collect "cli_selectors.login_provider_options"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-provider-options)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11059,6 +11139,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text"
       "cli_selectors.login_auth_type_route"
       "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route"
+      "cli_selectors.login_provider_options"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-provider-options"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
