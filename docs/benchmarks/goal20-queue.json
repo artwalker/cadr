@@ -129,7 +129,7 @@
   {
    "pair": 260,
    "lane": "a",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/execution-env.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
@@ -147,7 +147,7 @@
   {
    "pair": 262,
    "lane": "c",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/harness-events.lisp",
    "measure": "measure-cli-settings",
    "metric": null,
@@ -181,5 +181,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-258-branch-summarization",
+   "pair": 258
+  }
+ ]
 }
