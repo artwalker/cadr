@@ -138,7 +138,7 @@
   {
    "pair": 261,
    "lane": "b",
-   "status": "in_progress",
+   "status": "pending",
    "source": "src/cadr-agent/file-mutation-queue.lisp",
    "measure": "measure-resource-loader",
    "metric": null,
