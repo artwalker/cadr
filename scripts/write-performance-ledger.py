@@ -259,6 +259,7 @@ METRIC_KEYS = (
     "cli_sdk.session_services",
     "cli_sdk.model_runtime",
     "provider_registry_defs.lookup",
+    "provider_registry_defs.definition_ids",
     "skill_prompt_load.build_prompt",
     "cli_bootstrap_sessions.coding_tools",
     "ai_runtime_faux.blocks",

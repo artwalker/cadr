@@ -2987,21 +2987,18 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
-### Pair 242 — `evals_harness` (normalize_steps)
+### Pair 244 — `provider_registry_defs` (definition_ids)
 
 | metric | cadr | pi |
 |---|---|---|
-| `normalize_steps` | `normalize-eval-steps` | `runPiCodingAgent` input step normalization (`packages/evals/src/pi-harness.ts`) |
+| `definition_ids` | `list-provider-definition-ids` | `getBuiltinProviders` (`packages/ai/src/providers/all.ts`) |
 
-Leftover sibling of the `evals_harness` hole. Time step coercion
-only, not a live eval run. Empty sequence; string prompt; prompt+
-reload sequence; keyword-first reload step (`(:type :reload)` vs
-`[{ type: "reload" }]`); vector prompt; invalid `42` (cadr errors,
-pi non-iterable). Observed `ns_empty` / `ns_str_n` / `ns_str_pr` /
-`ns_seq_n` / `ns_seq_rel` / `ns_kw_n` / `ns_kw_rel` / `ns_vec_n` /
-`ns_bad` are exact (0 / 1 / 1 / 2 / 1 / 1 / 1 / 1 / 1). First
-Friend-MachineD freeze **0.11×** (1.30 / 12.15 µs), ceiling 8.0.
-cadr leads. Gate used `--only-enforce`. Same commit no optimize.
+Enumerate built-in provider ids with a generated model catalog (excludes
+radius). Observed `openai` / `anthropic` / `google` / `count` /
+`sorted_digest` are exact. `unknown` stays on the lookup metric only.
+First Friend-MachineD freeze **99.97×** (728.7 / 7.3 µs), ceiling 125.0
+(bumped from 8.0 on first freeze). Gate used `--only-enforce`. Same commit
+no optimize.
 
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
@@ -3447,7 +3444,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
 | `src/cadr-ai/providers/bedrock.lisp` | 934 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/codex.lisp` | 35 | `provider_codex.stream_roundtrip` |
-| `src/cadr-ai/providers/definitions.lisp` | 1,040 | `provider_registry_defs.lookup` |
+| `src/cadr-ai/providers/definitions.lisp` | 1,040 | `provider_registry_defs.lookup`, `provider_registry_defs.definition_ids` |
 | `src/cadr-ai/providers/google.lisp` | 442 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | `provider_mistral.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
@@ -3525,7 +3522,6 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
-| `src/cadr-evals/harness.lisp` | 156 | `evals_harness.normalize_steps` |
 | `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize`, `evals_harness.format` |
 | `src/cadr-protocol/cbor.lisp` | 492 | `protocol_cbor.roundtrip` |
 | `src/cadr-protocol/codec.lisp` | 121 | `protocol_codec.roundtrip` |
@@ -3618,7 +3614,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `agent_tool_loop` | 11 | 3,008 |
 | `cli_extensions_install` | 6 | 2,412 |
 | `package_manager` | 2 | 1,811 |
-| `evals_harness` | 5 | 1,677 |
+| `evals_harness` | 4 | 1,677 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |

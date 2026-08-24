@@ -1017,6 +1017,23 @@
    :key (lambda (definition)
           (symbol-name (provider-definition-id definition)))))
 
+(defun list-provider-definition-ids ()
+  ;; pi packages/ai/src/providers/all.ts getBuiltinProviders: Object.keys(MODELS).
+  (sort
+   (loop with seen = (make-hash-table :test #'equal)
+         for metadata being the hash-values of *model-catalog*
+         for name = (string-downcase (symbol-name (model-metadata-provider metadata)))
+         unless (gethash name seen)
+           do (setf (gethash name seen) t)
+           and collect name)
+   #'string<))
+
+(defun provider-definition-ids-sorted-digest ()
+  (octets-hex
+   (sha256-bytes
+    (utf8-octets
+     (format nil "~{~a~^~%~}" (list-provider-definition-ids))))))
+
 (defun register-built-in-providers ()
   (clrhash *provider-definitions*)
   (dolist (row *built-in-provider-definition-rows*)

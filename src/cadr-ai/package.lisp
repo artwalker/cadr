@@ -217,6 +217,8 @@
    #:find-provider-definition
    #:provider-oauth-subscription-p
    #:list-provider-definitions
+   #:list-provider-definition-ids
+   #:provider-definition-ids-sorted-digest
    #:instantiate-provider
    #:model-metadata
    #:make-model-metadata

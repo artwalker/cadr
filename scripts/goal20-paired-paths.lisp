@@ -441,6 +441,7 @@
     ("cli_sdk.session_services" . 5)
     ("cli_sdk.model_runtime" . 5)
     ("provider_registry_defs.lookup" . 50)
+    ("provider_registry_defs.definition_ids" . 125)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("ai_runtime_faux.blocks" . 50)
@@ -12575,20 +12576,37 @@
    (provider-definition-present-p :google)
    (provider-definition-present-p :no-such-provider)))
 
+(defun run-provider-definition-ids ()
+  (let ((ids (cadr-ai::list-provider-definition-ids)))
+    (list
+     (if (member "openai" ids :test #'string=) 1 0)
+     (if (member "anthropic" ids :test #'string=) 1 0)
+     (if (member "google" ids :test #'string=) 1 0)
+     (length ids)
+     (cadr-ai::provider-definition-ids-sorted-digest))))
+
 (defun measure-provider-registry-defs ()
-  (let ((observed (run-provider-registry-defs)))
+  (let* ((lookup-observed (run-provider-registry-defs))
+         (ids-observed (run-provider-definition-ids)))
     (json-object
      "observed"
      (json-object
-      "openai" (first observed)
-      "anthropic" (second observed)
-      "google" (third observed)
-      "unknown" (fourth observed))
+      "openai" (first lookup-observed)
+      "anthropic" (second lookup-observed)
+      "google" (third lookup-observed)
+      "unknown" (fourth lookup-observed)
+      "count" (fourth ids-observed)
+      "sorted_digest" (fifth ids-observed))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
                 (lambda ()
-                  (run-provider-registry-defs)))))))
+                  (run-provider-registry-defs))))
+     "definition_ids"
+     (collect "provider_registry_defs.definition_ids"
+              (lambda ()
+                (lambda ()
+                  (run-provider-definition-ids)))))))
 
 (defun run-skill-prompt-build ()
   (let* ((cwd "/tmp/proj")
@@ -13238,6 +13256,8 @@
       "src/cadr-cli/sdk/model-service.lisp sdk-model-runtime-providers + sdk-model-runtime-model"
       "provider_registry_defs.lookup"
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
+      "provider_registry_defs.definition_ids"
+      "src/cadr-ai/providers/definitions.lisp list-provider-definition-ids"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "cli_bootstrap_sessions.coding_tools"

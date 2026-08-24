@@ -952,6 +952,11 @@ tag/Release step.
   pi `buildSystemPrompt`). Friend-MachineD n=5
   **1170.57×** (2196 / 1.88 µs), ceiling 3000.0. Same
   commit no optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `provider_registry_defs.definition_ids`
+  (built-in catalog ids; cadr `list-provider-definition-ids` vs pi
+  `getBuiltinProviders`). Observed `count` / `sorted_digest` exact.
+  Friend-MachineD n=5 **99.97×** (728.7 / 7.3 µs), ceiling 125.0. Same
+  commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `provider_registry_defs.lookup`
   (openai/anthropic/google; cadr
   `find-provider-definition` vs pi `getBuiltinProviders`).

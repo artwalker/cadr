@@ -1767,9 +1767,14 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("provider_registry_defs.lookup", RECORD.METRIC_KEYS)
         self.assertIn("lookup", paired.METRICS["provider_registry_defs"])
         self.assertIn("provider_registry_defs.lookup", paired.RATIO_CEILINGS)
+        self.assertIn("provider_registry_defs.definition_ids", RECORD.METRIC_KEYS)
+        self.assertIn("definition_ids", paired.METRICS["provider_registry_defs"])
+        self.assertIn("provider_registry_defs.definition_ids", paired.RATIO_CEILINGS)
         self.assertIn("openai", paired.OBSERVED_EXACT["provider_registry_defs"])
         self.assertIn("google", paired.OBSERVED_EXACT["provider_registry_defs"])
         self.assertIn("unknown", paired.OBSERVED_EXACT["provider_registry_defs"])
+        self.assertIn("count", paired.OBSERVED_EXACT["provider_registry_defs"])
+        self.assertIn("sorted_digest", paired.OBSERVED_EXACT["provider_registry_defs"])
 
     def test_skill_prompt_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -1931,6 +1936,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_sdk.cache_waste`", section)
             self.assertIn("`cli_sdk.thinking_level`", section)
             self.assertIn("`provider_registry_defs.lookup`", section)
+            self.assertIn("`provider_registry_defs.definition_ids`", section)
             self.assertIn("`skill_prompt_load.build_prompt`", section)
             self.assertIn("`cli_bootstrap_sessions.coding_tools`", section)
             self.assertIn("`ai_runtime_faux.blocks`", section)

@@ -364,6 +364,7 @@ const REPETITIONS = {
 	"cli_sdk.session_services": 5,
 	"cli_sdk.model_runtime": 5,
 	"provider_registry_defs.lookup": 50,
+	"provider_registry_defs.definition_ids": 125,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"ai_runtime_faux.blocks": 50,
@@ -12814,13 +12815,36 @@ function runProviderRegistryDefs() {
 	};
 }
 
+function providerDefinitionIdsSortedDigest(ids) {
+	return createHash("sha256").update(ids.join("\n"), "utf8").digest("hex");
+}
+
+function runProviderDefinitionIds() {
+	const providers = [...builtinProvidersModule.getBuiltinProviders()].sort();
+	return {
+		openai: providers.includes("openai") ? 1 : 0,
+		anthropic: providers.includes("anthropic") ? 1 : 0,
+		google: providers.includes("google") ? 1 : 0,
+		count: providers.length,
+		sorted_digest: providerDefinitionIdsSortedDigest(providers),
+	};
+}
+
 async function measureProviderRegistryDefs() {
-	const observed = runProviderRegistryDefs();
+	const lookupObserved = runProviderRegistryDefs();
+	const idsObserved = runProviderDefinitionIds();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
 		}),
-		observed,
+		definition_ids: await collect("provider_registry_defs.definition_ids", () => {
+			return () => runProviderDefinitionIds();
+		}),
+		observed: {
+			...lookupObserved,
+			count: idsObserved.count,
+			sorted_digest: idsObserved.sorted_digest,
+		},
 	};
 }
 
@@ -13658,6 +13682,8 @@ const result = {
 			"cli_sdk.model_runtime":
 				"packages/coding-agent/src/core/model-runtime.ts ModelRuntime.getProviders + getModel",
 			"provider_registry_defs.lookup":
+				"packages/ai/src/providers/all.ts getBuiltinProviders",
+			"provider_registry_defs.definition_ids":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
