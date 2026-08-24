@@ -2945,8 +2945,19 @@ are exact. First Friend-MachineD freeze **18.60×** (102.3 / 5.5 µs), ceiling
 
 Model selector input events (action|model-id|selected digest). Observed
 `mshe_down` / `mshe_up` / `mshe_enter` / `mshe_esc` / `mshe_text` / `mshe_bs`
-are exact. First Friend-MachineD freeze **5.37×** (TBD µs), ceiling 8.0.
-Gate used `--only-enforce`. Same commit no optimize.
+are exact. First Friend-MachineD freeze **5.37×** (147.6 / 27.5 µs), ceiling
+8.0. Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 221 — `cli_selectors` (model_selector_handle_raw_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_handle_raw_input` | `model-selector-handle-raw-input` | `handleInput` raw keys |
+
+Model selector raw key dispatch (action|model-id|selected|consumed digest).
+Observed `mshri_down` / `mshri_j` / `mshri_esc` / `mshri_bad` / `mshri_o` /
+`mshri_confirm` / `mshri_up` are exact. First Friend-MachineD freeze **TBD×**
+(TBD µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
 ## 2. How to run
 

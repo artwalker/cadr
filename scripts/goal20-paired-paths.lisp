@@ -408,6 +408,7 @@
     ("cli_selectors.model_selector_apply_filter" . 50)
     ("cli_selectors.model_selector_move" . 50)
     ("cli_selectors.model_selector_handle_event" . 50)
+    ("cli_selectors.model_selector_handle_raw_input" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9222,6 +9223,60 @@
      (model-selector-handle-event-encoded
       models 0 :backspace :query "gpt"))))
 
+(defun encode-model-selector-handle-raw-input-result (state action value consumed)
+  (format nil "~a|~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (if (and (eq action :select) value)
+              (cadr-cli::qualified-model-id value)
+              "null")
+          (write-to-string
+           (cadr-cli::model-selector-state-selected state))
+          (if consumed "true" "false")))
+
+(defun model-selector-raw-input-key-data (state key-name)
+  (first (cadr-tui:keybinding-keys
+          (cadr-cli::model-selector-state-keybindings state)
+          key-name)))
+
+(defun model-selector-handle-raw-input-encoded (models selected data)
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (setf (cadr-cli::model-selector-state-selected state) selected)
+    (multiple-value-bind (action value consumed)
+        (cadr-cli::model-selector-handle-raw-input state data)
+      (encode-model-selector-handle-raw-input-result
+       state action value consumed))))
+
+(defun model-selector-handle-raw-input-encoded-key (models selected key-name)
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (model-selector-handle-raw-input-encoded
+     models selected
+     (model-selector-raw-input-key-data state key-name))))
+
+(defun run-cli-selectors-model-selector-handle-raw-input ()
+  (let ((models (make-model-selector-test-models)))
+    (list
+     (model-selector-handle-raw-input-encoded-key
+      models 0 "tui.select.down")
+     (model-selector-handle-raw-input-encoded models 1 "j")
+     (model-selector-handle-raw-input-encoded-key
+      models 1 "tui.select.cancel")
+     (model-selector-handle-raw-input-encoded models 0 "q")
+     (model-selector-handle-raw-input-encoded models 0 "o")
+     (model-selector-handle-raw-input-encoded-key
+      models 0 "tui.select.confirm")
+     (model-selector-handle-raw-input-encoded-key
+      models 2 "tui.select.up"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9440,7 +9495,9 @@
         (model-selector-move
           (run-cli-selectors-model-selector-move))
         (model-selector-handle-event
-          (run-cli-selectors-model-selector-handle-event)))
+          (run-cli-selectors-model-selector-handle-event))
+        (model-selector-handle-raw-input
+          (run-cli-selectors-model-selector-handle-raw-input)))
     (json-object
      "observed"
      (json-object
@@ -10067,7 +10124,14 @@
       "mshe_enter" (nth 2 model-selector-handle-event)
       "mshe_esc" (nth 3 model-selector-handle-event)
       "mshe_text" (nth 4 model-selector-handle-event)
-      "mshe_bs" (nth 5 model-selector-handle-event))
+      "mshe_bs" (nth 5 model-selector-handle-event)
+      "mshri_down" (nth 0 model-selector-handle-raw-input)
+      "mshri_j" (nth 1 model-selector-handle-raw-input)
+      "mshri_esc" (nth 2 model-selector-handle-raw-input)
+      "mshri_bad" (nth 3 model-selector-handle-raw-input)
+      "mshri_o" (nth 4 model-selector-handle-raw-input)
+      "mshri_confirm" (nth 5 model-selector-handle-raw-input)
+      "mshri_up" (nth 6 model-selector-handle-raw-input))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10617,7 +10681,12 @@
      (collect "cli_selectors.model_selector_handle_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-model-selector-handle-event)))))))
+                  (run-cli-selectors-model-selector-handle-event))))
+     "model_selector_handle_raw_input"
+     (collect "cli_selectors.model_selector_handle_raw_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-handle-raw-input)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11852,6 +11921,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-move"
       "cli_selectors.model_selector_handle_event"
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-handle-event"
+      "cli_selectors.model_selector_handle_raw_input"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-handle-raw-input"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

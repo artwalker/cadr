@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.model_selector_handle_event`
+  (model selector events; cadr `model-selector-handle-event` vs pi event
+  dispatch). Friend-MachineD n=5 **5.37×** (147.6 / 27.5 µs), ceiling 8.0.
+  Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.model_selector_move`
   (model selector wrap move; cadr `model-selector-move` vs pi
   `handleInput` up/down). Friend-MachineD n=5 **18.60×** (102.3 / 5.5 µs),
