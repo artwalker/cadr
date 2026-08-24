@@ -75,7 +75,7 @@
   {
    "pair": 254,
    "lane": "c",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-cli-settings",
    "metric": null,
