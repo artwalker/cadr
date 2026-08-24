@@ -3076,19 +3076,41 @@ async function runPairedBranchSummarize() {
 async function measureSessionCompact() {
 	const compactOnce = await runPairedCompact();
 	const compactSummary = compactOnce?.summary ?? "";
-	const branchOnce = await runPairedBranchSummarize();
-	const branchSummary = branchOnce?.summary ?? "";
 	return {
 		compact: await collect("session_compact.compact", () => {
 			return () => runPairedCompact();
-		}),
-		branch_summarize: await collect("session_compact.branch_summarize", () => {
-			return () => runPairedBranchSummarize();
 		}),
 		observed: {
 			compacted: compactOnce ? 1 : 0,
 			first_kept: compactOnce?.firstKeptEntryId ? 1 : 0,
 			summary_chars: compactSummary.length,
+		},
+	};
+}
+
+function sessionCompactObservedPlist(part) {
+	return Object.entries(part.observed ?? {});
+}
+
+function mergeSessionCompactGroups(compactPart, branchPart) {
+	return {
+		observed: Object.fromEntries([
+			...sessionCompactObservedPlist(compactPart),
+			...sessionCompactObservedPlist(branchPart),
+		]),
+		compact: compactPart.compact,
+		branch_summarize: branchPart.branch_summarize,
+	};
+}
+
+async function measureBranchSummarize() {
+	const branchOnce = await runPairedBranchSummarize();
+	const branchSummary = branchOnce?.summary ?? "";
+	return {
+		branch_summarize: await collect("session_compact.branch_summarize", () => {
+			return () => runPairedBranchSummarize();
+		}),
+		observed: {
 			summarized: branchOnce ? 1 : 0,
 			entry_count: branchOnce?.entryCount ?? 0,
 			branch_summary_chars: branchSummary.length,
@@ -14066,6 +14088,8 @@ process.stderr.write("goal20 pi paired paths: settings_load\n");
 const settingsLoad = await measureSettingsLoad();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
 const resourceLoader = await measureResourceLoader();
+process.stderr.write("goal20 pi paired paths: branch_summarize\n");
+const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: package_manager\n");
 const packageManager = await measurePackageManager();
 process.stderr.write("goal20 pi paired paths: session_discovery\n");
@@ -14702,7 +14726,7 @@ const result = {
 		tool_read: toolRead,
 		tool_grep: toolGrep,
 		agent_tool_loop: agentToolLoop,
-		session_compact: sessionCompact,
+		session_compact: mergeSessionCompactGroups(sessionCompact, branchSummarize),
 		provider_anthropic: providerAnthropic,
 		provider_google: providerGoogle,
 		provider_bedrock: providerBedrock,
