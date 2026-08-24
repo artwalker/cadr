@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.scoped_models_selector_set_query` (scoped
+  models query update; cadr `scoped-models-selector-set-query` vs pi refresh
+  clamp). Friend-MachineD n=5 **6.80×** (272.7 / 40.1 µs), ceiling 8.0.
+  Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.model_selector_ui_state` (model selector UI
   render; cadr `render-model-selector` vs pi `updateList`). Friend-MachineD n=5
   **21.70×** (648.3 / 29.9 µs), ceiling 35.0. Measure-only; no optimize.

@@ -233,6 +233,7 @@ METRIC_KEYS = (
     "cli_selectors.model_selector_toggle_scope",
     "cli_selectors.model_selector_ui_state",
     "cli_selectors.scoped_models_selector_set_query",
+    "cli_selectors.scoped_models_selector_move",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

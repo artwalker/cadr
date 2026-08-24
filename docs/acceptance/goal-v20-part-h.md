@@ -2958,6 +2958,7 @@ are exact. First Friend-MachineD freeze **5.37×** (147.6 / 27.5 µs), ceiling
 | `model_selector_toggle_scope` | `model-selector-toggle-scope` | `handleInput` tab scope toggle |
 | `model_selector_ui_state` | `render-model-selector` | `updateList` / render |
 | `scoped_models_selector_set_query` | `scoped-models-selector-set-query` | `refresh` query clamp |
+| `scoped_models_selector_move` | `scoped-models-selector-move` | `handleInput` up/down wrap |
 
 Model selector raw key dispatch (action|model-id|selected|consumed digest).
 Observed `mshri_down` / `mshri_j` / `mshri_esc` / `mshri_bad` / `mshri_o` /
@@ -2989,7 +2990,7 @@ Friend-MachineD freeze **21.70×** (648.3 / 29.9 µs), ceiling 35.0. Gate used
 
 Scoped models selector query update (count|selected digest). Observed `smssq_clear` /
 `smssq_gpt` / `smssq_same` / `smssq_reset` / `smssq_miss` are exact. First
-Friend-MachineD freeze **6.80×** (cadr/pi from ledger), ceiling 8.0. Gate used
+Friend-MachineD freeze **6.80×** (272.7 / 40.1 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
 ## 2. How to run
