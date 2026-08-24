@@ -193,5 +193,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.model_selector_apply_filter` | 130.9 | 23.7 | 5.53× | 8.00× | measure-only pair (Pair 218); model selector fuzzy filter | invent pause；地板优化另刀 |
 | `cli_selectors.model_selector_move` | 102.3 | 5.5 | 18.60× | 20.00× | measure-only pair (Pair 219); model selector wrap move | invent pause；地板优化另刀 |
 | `cli_selectors.model_selector_handle_event` | 147.6 | 27.5 | 5.37× | 8.00× | measure-only pair (Pair 220); model selector event dispatch | invent pause；地板优化另刀 |
+| `cli_selectors.model_selector_handle_raw_input` | 823.0 | 116.3 | 7.08× | 8.00× | measure-only pair (Pair 221); model selector raw key dispatch | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

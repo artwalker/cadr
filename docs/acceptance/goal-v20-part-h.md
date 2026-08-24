@@ -2953,11 +2953,18 @@ are exact. First Friend-MachineD freeze **5.37×** (147.6 / 27.5 µs), ceiling
 | metric | cadr | pi |
 |---|---|---|
 | `model_selector_handle_raw_input` | `model-selector-handle-raw-input` | `handleInput` raw keys |
+| `model_selector_set_query` | `model-selector-set-query` | `filterModels` query update |
 
 Model selector raw key dispatch (action|model-id|selected|consumed digest).
 Observed `mshri_down` / `mshri_j` / `mshri_esc` / `mshri_bad` / `mshri_o` /
-`mshri_confirm` / `mshri_up` are exact. First Friend-MachineD freeze **TBD×**
-(TBD µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+`mshri_confirm` / `mshri_up` are exact. First Friend-MachineD freeze **7.08×**
+(823.0 / 116.3 µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no
+optimize.
+
+Model selector query update (count|selected digest). Observed `mssq_clear` /
+`mssq_gpt` / `mssq_same` / `mssq_reset` / `mssq_miss` are exact. First
+Friend-MachineD freeze **3.85×** (148.5 / 38.6 µs), ceiling 8.0. Gate used
+`--only-enforce`. Same commit no optimize.
 
 ## 2. How to run
 

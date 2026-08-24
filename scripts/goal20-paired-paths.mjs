@@ -333,6 +333,7 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_move": 50,
 	"cli_selectors.model_selector_handle_event": 50,
 	"cli_selectors.model_selector_handle_raw_input": 50,
+	"cli_selectors.model_selector_set_query": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9630,6 +9631,25 @@ function runCliSelectorsModelSelectorHandleRawInput() {
 	};
 }
 
+function modelSelectorSetQueryEncoded(models, selected, initialQuery, newQuery) {
+	const state = makeModelSelectorBenchState(models, selected, initialQuery);
+	modelSelectorApplyFilterState(state);
+	state.selected = selected;
+	modelSelectorSetQuery(state, newQuery);
+	return `${state.filtered.length}|${state.selected}`;
+}
+
+function runCliSelectorsModelSelectorSetQuery() {
+	const models = makeModelSelectorTestModels();
+	return {
+		mssq_clear: modelSelectorSetQueryEncoded(models, 2, "", ""),
+		mssq_gpt: modelSelectorSetQueryEncoded(models, 2, "", "gpt"),
+		mssq_same: modelSelectorSetQueryEncoded(models, 0, "gpt", "gpt"),
+		mssq_reset: modelSelectorSetQueryEncoded(models, 0, "gpt", ""),
+		mssq_miss: modelSelectorSetQueryEncoded(models, 1, "anth", "nope"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -10060,6 +10080,7 @@ async function measureCliSelectorsSessionSearch() {
 	const modelSelectorMoveResults = runCliSelectorsModelSelectorMove();
 	const modelSelectorHandleEventResults = runCliSelectorsModelSelectorHandleEvent();
 	const modelSelectorHandleRawInputResults = runCliSelectorsModelSelectorHandleRawInput();
+	const modelSelectorSetQueryResults = runCliSelectorsModelSelectorSetQuery();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10346,6 +10367,7 @@ async function measureCliSelectorsSessionSearch() {
 		...modelSelectorMoveResults,
 		...modelSelectorHandleEventResults,
 		...modelSelectorHandleRawInputResults,
+		...modelSelectorSetQueryResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10698,6 +10720,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		model_selector_handle_raw_input: await collect("cli_selectors.model_selector_handle_raw_input", () => {
 			return () => runCliSelectorsModelSelectorHandleRawInput();
+		}),
+		model_selector_set_query: await collect("cli_selectors.model_selector_set_query", () => {
+			return () => runCliSelectorsModelSelectorSetQuery();
 		}),
 		observed,
 	};
@@ -11972,6 +11997,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput event dispatch",
 			"cli_selectors.model_selector_handle_raw_input":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput raw key dispatch",
+			"cli_selectors.model_selector_set_query":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filterModels query update",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

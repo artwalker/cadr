@@ -21,6 +21,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.model_selector_set_query` (model selector
+  query update; cadr `model-selector-set-query` vs pi `filterModels` query).
+  Friend-MachineD n=5 **3.85×** (148.5 / 38.6 µs), ceiling 8.0. Measure-only;
+  no optimize.
+- Goal 20 P.13: pair `cli_selectors.model_selector_handle_raw_input`
+  (model selector raw keys; cadr `model-selector-handle-raw-input` vs pi
+  `handleInput`). Friend-MachineD n=5 **7.08×** (823.0 / 116.3 µs), ceiling
+  8.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.model_selector_handle_event`
   (model selector events; cadr `model-selector-handle-event` vs pi event
   dispatch). Friend-MachineD n=5 **5.37×** (147.6 / 27.5 µs), ceiling 8.0.
