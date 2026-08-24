@@ -105,7 +105,7 @@
    "status": "done",
    "source": "src/cadr-agent/execution-env.lisp",
    "measure": "measure-cli-settings",
-   "metric": null,
+   "metric": "execution_env.exists_remove_temps",
    "branch": "pair-257-execution-env"
   },
   {
@@ -154,10 +154,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-257-execution-env",
-   "pair": 257
-  }
- ]
+ "mergeQueue": []
 }
