@@ -454,6 +454,7 @@
     ("agent_tool_loop.tool_path" . 50)
     ("agent_tool_loop.line_ending" . 50)
     ("session_compact.compact" . 3)
+    ("session_compact.branch_summarize" . 3)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
     ("render_slicing.slice_ansi_clip" . 200)
@@ -2478,24 +2479,109 @@
          :first-kept-entry-id
          (getf preparation :first-kept-entry-id))))))
 
+(defun paired-branch-summarize-tree-entries ()
+  ;; Forked five-message tree aligned with scripts/goal20-paired-paths.mjs
+  ;; pairedBranchSummarizeTreeEntries. Collect e4→e5 yields e3,e4.
+  (list
+   (paired-compact-entry
+    "e1" nil
+    (cadr-ai:make-user-message :content "root context"))
+   (paired-compact-entry
+    "e2" "e1"
+    (paired-compact-response "root answer"))
+   (paired-compact-entry
+    "e3" "e2"
+    (cadr-ai:make-user-message
+     :content
+     (concatenate
+      'string "abandoned context "
+      (make-string 40 :initial-element #\d))))
+   (paired-compact-entry
+    "e4" "e3"
+    (paired-compact-response
+     (concatenate
+      'string "abandoned answer "
+      (make-string 40 :initial-element #\e))))
+   (paired-compact-entry
+    "e5" "e2"
+    (cadr-ai:make-user-message :content "main branch request"))))
+
+(defun paired-branch-summarize-session ()
+  (let* ((entries (paired-branch-summarize-tree-entries))
+         (by-id (make-hash-table :test #'equal)))
+    (dolist (entry entries)
+      (setf (gethash (cadr-agent::session-entry-id entry) by-id) entry))
+    (cadr-agent::%make-session
+     :id "pair-branch"
+     :timestamp 1786665600000
+     :cwd "/tmp/pair-branch/"
+     :path #p"/tmp/pair-branch/session.jsonl"
+     :modified-timestamp 1786665600000
+     :%entries entries
+     :by-id by-id
+     :leaf-id "e4")))
+
+(defun run-paired-branch-summarize ()
+  ;; Inventory: collect-entries-for-branch-summary +
+  ;; generate-branch-summary on an in-memory SessionEntry[] tree.
+  (let* ((session (paired-branch-summarize-session))
+         (agent
+           (cadr-agent:make-agent
+            :provider :mock
+            :model (paired-compact-model)
+            :auto-compact-p nil
+            :stream-function
+            (paired-tool-loop-stream
+             (list
+              (paired-compact-response "BRANCH SUMMARY"))))))
+    (multiple-value-bind (entries ancestor)
+        (cadr-agent:collect-entries-for-branch-summary
+         session "e4" "e5")
+      (unless (and entries ancestor)
+        (return-from run-paired-branch-summarize nil))
+      (let ((result
+              (cadr-agent:generate-branch-summary agent entries)))
+        (when result
+          (list
+           :summary (cadr-agent:branch-summary-result-summary result)
+           :entry-count (length entries)
+           :common-ancestor ancestor))))))
+
 (defun measure-session-compact ()
-  (let ((result (run-paired-compact)))
+  (let ((compact-result (run-paired-compact))
+        (branch-result (run-paired-branch-summarize)))
     (json-object
      "observed"
      (json-object
-      "compacted" (if result 1 0)
+      "compacted" (if compact-result 1 0)
       "first_kept"
-      (if (and result (getf result :first-kept-entry-id)) 1 0)
+      (if (and compact-result
+               (getf compact-result :first-kept-entry-id))
+          1
+          0)
       "summary_chars"
-      (if result
+      (if compact-result
           (cadr-agent::utf16-code-unit-length
-           (or (getf result :summary) ""))
+           (or (getf compact-result :summary) ""))
+          0)
+      "summarized" (if branch-result 1 0)
+      "entry_count"
+      (if branch-result (getf branch-result :entry-count) 0)
+      "branch_summary_chars"
+      (if branch-result
+          (cadr-agent::utf16-code-unit-length
+           (or (getf branch-result :summary) ""))
           0))
      "compact"
      (collect "session_compact.compact"
               (lambda ()
                 (lambda ()
-                  (run-paired-compact)))))))
+                  (run-paired-compact))))
+     "branch_summarize"
+     (collect "session_compact.branch_summarize"
+              (lambda ()
+                (lambda ()
+                  (run-paired-branch-summarize)))))))
 
 (defparameter *settings-agent-directory*
   (merge-pathnames "settings-agent/" *scratch-directory*))
@@ -13123,6 +13209,8 @@
       "src/cadr-cli/tools/edit.lisp detect-line-ending"
       "session_compact.compact"
       "src/cadr-agent/compaction.lisp compact-from-preparation"
+      "session_compact.branch_summarize"
+      "src/cadr-agent/branch-summarization.lisp collect-entries-for-branch-summary + generate-branch-summary"
       "text_truncation.truncate_head"
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"

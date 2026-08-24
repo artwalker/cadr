@@ -273,6 +273,7 @@ METRIC_KEYS = (
     "agent_tool_loop.tool_path",
     "agent_tool_loop.line_ending",
     "session_compact.compact",
+    "session_compact.branch_summarize",
 )
 
 HISTORY_RATIO_KEYS = (

@@ -2987,18 +2987,19 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
-### Pair 243 — `tui_latex` (normalize_output)
+### Pair 241 — `session_compact` (branch_summarize)
 
 | metric | cadr | pi |
 |---|---|---|
-| `normalize_output` | `latex-normalize-output` | `normalizeOutput` (`packages/tui/src/latex.ts`) |
+| `branch_summarize` | `collect-entries-for-branch-summary` + `generate-branch-summary` (`src/cadr-agent/branch-summarization.lisp`) | `collectEntriesForBranchSummary` + `generateBranchSummary` (`packages/coding-agent/src/core/compaction/branch-summarization.ts`) |
 
-Intermediate LaTeX render strings: empty, Greek symbol, inline
-fraction, superscript, named-operator markers, orphan marker edge.
-Time marker/whitespace cleanup, not full `render-latex`. Observed
-`empty` / `alpha` / `frac` / `script` / `operator` / `marker_edge`
-are exact. First Friend-MachineD freeze **1.46×** (12.7 / 8.7 µs), ceiling
-20.0. Gate used `--only-enforce`. Same commit no optimize.
+Forked five-message tree (e1–e5, leaf e4, target e5). Collect e4→e5
+yields e3,e4. Faux summarizer returns `"BRANCH SUMMARY"`. Timed work is
+production collect + generate on an in-memory `SessionEntry[]` tree, not
+`session_load`. Observed `summarized` / `entry_count` /
+`branch_summary_chars` are exact. `session_compact.compact` stays on its own
+thunk. First Friend-MachineD freeze **0.85×** (53.2 / 62.8 µs), ceiling 20.0.
+Gate used `--only-enforce`. Same commit no optimize.
 
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
@@ -3398,6 +3399,7 @@ production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
+| `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize` |
 | `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
@@ -3546,7 +3548,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/keybindings.lisp` | 268 | `tui_keybindings.resolve_match` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/kill-ring.lisp` | 38 | `tui_kill_ring.push_peek` |
-| `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render`, `tui_latex.normalize_output` |
+| `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render` |
 | `src/cadr-tui/mermaid/index.lisp` | 109 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/source-box.lisp` | 93 | `tui_mermaid.source_box` |
 | `src/cadr-tui/mermaid/transform.lisp` | 428 | `tui_mermaid.transform` |

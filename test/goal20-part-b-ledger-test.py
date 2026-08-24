@@ -1798,11 +1798,17 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
+        self.assertIn("session_compact.branch_summarize", RECORD.METRIC_KEYS)
         self.assertIn("compact", paired.METRICS["session_compact"])
+        self.assertIn("branch_summarize", paired.METRICS["session_compact"])
         self.assertIn("session_compact.compact", paired.RATIO_CEILINGS)
+        self.assertIn("session_compact.branch_summarize", paired.RATIO_CEILINGS)
         self.assertIn("compacted", paired.OBSERVED_EXACT["session_compact"])
         self.assertIn("first_kept", paired.OBSERVED_EXACT["session_compact"])
         self.assertIn("summary_chars", paired.OBSERVED_EXACT["session_compact"])
+        self.assertIn("summarized", paired.OBSERVED_EXACT["session_compact"])
+        self.assertIn("entry_count", paired.OBSERVED_EXACT["session_compact"])
+        self.assertIn("branch_summary_chars", paired.OBSERVED_EXACT["session_compact"])
 
     def test_tool_grep_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -1852,6 +1858,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tool_grep.context_file`", section)
             self.assertIn("`agent_tool_loop.roundtrip`", section)
             self.assertIn("`session_compact.compact`", section)
+            self.assertIn("`session_compact.branch_summarize`", section)
             self.assertIn("`provider_anthropic.stream_roundtrip`", section)
             self.assertIn("`provider_google.stream_roundtrip`", section)
             self.assertIn("`provider_bedrock.stream_roundtrip`", section)

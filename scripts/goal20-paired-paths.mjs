@@ -378,6 +378,7 @@ const REPETITIONS = {
 	"agent_tool_loop.tool_path": 50,
 	"agent_tool_loop.line_ending": 50,
 	"session_compact.compact": 3,
+	"session_compact.branch_summarize": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
 	"render_slicing.slice_ansi_clip": 200,
@@ -753,6 +754,9 @@ const { Type } = baselineRequire("typebox");
 const { NodeHttpHandler, NodeHttp2Handler } = baselineRequire("@smithy/node-http-handler");
 const compactionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/compaction/compaction.ts")
+);
+const branchSummarizationModule = await import(
+	moduleUrl("packages/coding-agent/src/core/compaction/branch-summarization.ts")
 );
 
 const settingsAgentDirectory = path.join(scratch, "settings-agent");
@@ -2385,6 +2389,20 @@ function pairedCompactStream() {
 	};
 }
 
+function pairedBranchSummarizeStream() {
+	return () => {
+		const stream = new eventStreamModule.AssistantMessageEventStream();
+		queueMicrotask(() => {
+			stream.push({
+				type: "done",
+				reason: "stop",
+				message: pairedAssistantMessage([{ type: "text", text: "BRANCH SUMMARY" }], "stop"),
+			});
+		});
+		return stream;
+	};
+}
+
 async function runPairedCompact() {
 	const entries = pairedCompactEntries();
 	const preparation = compactionModule.prepareCompaction(entries, {
@@ -2417,17 +2435,92 @@ async function runPairedCompact() {
 	);
 }
 
+function pairedBranchSummarizeTreeEntries() {
+	const abandonedUser = `abandoned context ${"d".repeat(40)}`;
+	const abandonedAnswer = `abandoned answer ${"e".repeat(40)}`;
+	return [
+		pairedCompactMessageEntry("e1", null, pairedCompactUser("root context")),
+		pairedCompactMessageEntry("e2", "e1", pairedCompactAssistant("root answer")),
+		pairedCompactMessageEntry("e3", "e2", pairedCompactUser(abandonedUser)),
+		pairedCompactMessageEntry("e4", "e3", pairedCompactAssistant(abandonedAnswer)),
+		pairedCompactMessageEntry("e5", "e2", pairedCompactUser("main branch request")),
+	];
+}
+
+function pairedBranchSummarizeSession() {
+	const entries = pairedBranchSummarizeTreeEntries();
+	const byId = new Map(entries.map((entry) => [entry.id, entry]));
+	return {
+		getEntry(id) {
+			return byId.get(id);
+		},
+		getBranch(leafId) {
+			const path = [];
+			let current = leafId;
+			while (current) {
+				const entry = byId.get(current);
+				if (!entry) break;
+				path.unshift(entry);
+				current = entry.parentId;
+			}
+			return path;
+		},
+	};
+}
+
+async function runPairedBranchSummarize() {
+	const session = pairedBranchSummarizeSession();
+	const { entries, commonAncestorId } = branchSummarizationModule.collectEntriesForBranchSummary(
+		session,
+		"e4",
+		"e5",
+	);
+	if (!entries.length || !commonAncestorId) return null;
+	const model = {
+		id: "tiny",
+		name: "tiny",
+		api: "openai-responses",
+		provider: "openai",
+		baseUrl: "https://example.invalid",
+		reasoning: false,
+		input: ["text"],
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+		contextWindow: 100,
+		maxTokens: 32,
+	};
+	const result = await branchSummarizationModule.generateBranchSummary(entries, {
+		model,
+		reserveTokens: 16384,
+		signal: liveAbortSignal(),
+		streamFn: pairedBranchSummarizeStream(),
+	});
+	if (!result || result.aborted || result.error) return null;
+	return {
+		summary: result.summary,
+		entryCount: entries.length,
+		commonAncestor: commonAncestorId,
+	};
+}
+
 async function measureSessionCompact() {
-	const once = await runPairedCompact();
-	const summary = once?.summary ?? "";
+	const compactOnce = await runPairedCompact();
+	const compactSummary = compactOnce?.summary ?? "";
+	const branchOnce = await runPairedBranchSummarize();
+	const branchSummary = branchOnce?.summary ?? "";
 	return {
 		compact: await collect("session_compact.compact", () => {
 			return () => runPairedCompact();
 		}),
+		branch_summarize: await collect("session_compact.branch_summarize", () => {
+			return () => runPairedBranchSummarize();
+		}),
 		observed: {
-			compacted: once ? 1 : 0,
-			first_kept: once?.firstKeptEntryId ? 1 : 0,
-			summary_chars: summary.length,
+			compacted: compactOnce ? 1 : 0,
+			first_kept: compactOnce?.firstKeptEntryId ? 1 : 0,
+			summary_chars: compactSummary.length,
+			summarized: branchOnce ? 1 : 0,
+			entry_count: branchOnce?.entryCount ?? 0,
+			branch_summary_chars: branchSummary.length,
 		},
 	};
 }
@@ -13543,6 +13636,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/edit-diff.ts detectLineEnding",
 			"session_compact.compact":
 				"packages/coding-agent/src/core/compaction/compaction.ts prepareCompaction + compact",
+			"session_compact.branch_summarize":
+				"packages/coding-agent/src/core/compaction/branch-summarization.ts collectEntriesForBranchSummary + generateBranchSummary",
 			"text_truncation.truncate_head":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
