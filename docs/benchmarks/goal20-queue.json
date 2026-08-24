@@ -82,10 +82,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-255-login-selection",
-   "pair": 255
-  }
- ]
+ "mergeQueue": []
 }
