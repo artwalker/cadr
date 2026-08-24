@@ -3139,6 +3139,19 @@ and snapshot only — not `agent-prompt`, not a live loop. Fixtures: steer
 First Friend-MachineD freeze **6.30×** (7.8 / 1.2 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
+### Pair 255 — `session_compact` (branch_summarize)
+
+| metric | cadr | pi |
+|---|---|---|
+| `branch_summarize` | `collect-entries-for-branch-summary` + `generate-branch-summary` (`src/cadr-agent/branch-summarization.lisp`) | `collectEntriesForBranchSummary` + `generateBranchSummary` (`packages/coding-agent/src/core/compaction/branch-summarization.ts`) |
+
+Forked five-message tree (e1–e5, leaf e4, target e5). Collect e4→e5
+yields e3,e4. Faux summarizer returns `"BRANCH SUMMARY"`. Timed work is
+production collect + generate on an in-memory `SessionEntry[]` tree, not
+`session_load`. Observed `summarized` / `entry_count` /
+`branch_summary_chars` are exact. `session_compact.compact` stays on its own
+thunk. First Friend-MachineD freeze **1.15×** (37.3 / 32.5 µs), ceiling 20.0.
+
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
 | metric | cadr | pi |
@@ -3496,14 +3509,14 @@ Denominator: **295 files / 127,795 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 171 | 75,502 | 59.1% | `no worse than baseline` is falsifiable |
+| `paired` | 172 | 75,687 | 59.2% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,424 | 13.6% | on a named paired thunk; no own bench |
-| `needs-pair` | 72 | 27,394 | 21.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 71 | 27,209 | 21.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 59.1% of lines (171 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 64.9% of lines.
+- **Falsifiable vs baseline:** 59.2% of lines (172 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 65.0% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3537,6 +3550,7 @@ production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
+| `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize` |
 | `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
@@ -3766,7 +3780,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
-| `session_compact` | 1 | 185 |
+| `session_compact` | 0 | 0 |
 | `core_rest` | 3 | 161 |
 | `cli_support` | 5 | 123 |
 | `agent_conditions` | 1 | 43 |

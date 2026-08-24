@@ -26,6 +26,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `session_compact.branch_summarize` (forked
+  five-message tree; `collect-entries-for-branch-summary` +
+  `generate-branch-summary` vs pi branch summarization). Observed
+  `summarized` / `entry_count` / `branch_summary_chars` exact.
+  Friend-MachineD n=5 **1.15×** (37.3 / 32.5 µs), ceiling 20.0.
+  Measure-only.
 - Goal 20 P.13: pair `cli_extensions_install.extension_discovery`
   (flat/subdir scan, project/global dirs, explicit `-e` paths; cadr
   `discover-extension-sources` vs pi `discoverAndLoadExtensions` path

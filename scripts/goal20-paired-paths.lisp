@@ -96,6 +96,7 @@
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
+;;;; 253. session_compact collect-entries-for-branch-summary+generate-branch-summary vs collectEntriesForBranchSummary+generateBranchSummary
 ;;;; 253. agent_tool_loop agent-steer/drain/clear vs PendingMessageQueue
 ;;;; 111. cli_selectors selector-fuzzy-filter vs fuzzyFilter
 ;;;; 112. cli_selectors selector-delete-query-character vs Input backspace grapheme delete
@@ -2746,8 +2747,7 @@
            :common-ancestor ancestor))))))
 
 (defun measure-session-compact ()
-  (let ((compact-result (run-paired-compact))
-        (branch-result (run-paired-branch-summarize)))
+  (let ((compact-result (run-paired-compact)))
     (json-object
      "observed"
      (json-object
@@ -2761,25 +2761,12 @@
       (if compact-result
           (cadr-agent::utf16-code-unit-length
            (or (getf compact-result :summary) ""))
-          0)
-      "summarized" (if branch-result 1 0)
-      "entry_count"
-      (if branch-result (getf branch-result :entry-count) 0)
-      "branch_summary_chars"
-      (if branch-result
-          (cadr-agent::utf16-code-unit-length
-           (or (getf branch-result :summary) ""))
           0))
      "compact"
      (collect "session_compact.compact"
               (lambda ()
                 (lambda ()
-                  (run-paired-compact))))
-     "branch_summarize"
-     (collect "session_compact.branch_summarize"
-              (lambda ()
-                (lambda ()
-                  (run-paired-branch-summarize)))))))
+                  (run-paired-compact)))))))
 
 (defparameter *settings-agent-directory*
   (merge-pathnames "settings-agent/" *scratch-directory*))
@@ -3440,6 +3427,40 @@
                      project-prompt agent-prompt))))))))
 
 ;;; ---------------------------------------------------------------------
+
+(defun session-compact-observed-plist (part)
+  (let ((obs (cadr-ai::json-get part "observed")))
+    (loop for key being the hash-keys of obs
+          collect key
+          collect (gethash key obs))))
+
+(defun merge-session-compact-groups (compact-part branch-part)
+  (json-object
+   "observed"
+   (apply #'json-object
+          (append (session-compact-observed-plist compact-part)
+                  (session-compact-observed-plist branch-part)))
+   "compact" (cadr-ai::json-get compact-part "compact")
+   "branch_summarize" (cadr-ai::json-get branch-part "branch_summarize")))
+
+(defun measure-branch-summarize ()
+  (let ((branch-result (run-paired-branch-summarize)))
+    (json-object
+     "observed"
+     (json-object
+      "summarized" (if branch-result 1 0)
+      "entry_count"
+      (if branch-result (getf branch-result :entry-count) 0)
+      "branch_summary_chars"
+      (if branch-result
+          (cadr-agent::utf16-code-unit-length
+           (or (getf branch-result :summary) ""))
+          0))
+     "branch_summarize"
+     (collect "session_compact.branch_summarize"
+              (lambda ()
+                (lambda ()
+                  (run-paired-branch-summarize)))))))
 
 (defparameter *session-discovery-file-count* 32)
 
@@ -14068,6 +14089,8 @@
               (let ((settings-load (measure-settings-load)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
               (let ((resources (measure-resource-loader)))
+              (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
+              (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: package_manager~%")
               (let ((packages (measure-package-manager)))
               (format *error-output* "goal20 cadr paired paths: session_discovery~%")
@@ -14181,7 +14204,7 @@
               "tool_read" tool-read
               "tool_grep" tool-grep
               "agent_tool_loop" tool-loop
-              "session_compact" compact
+              "session_compact" (merge-session-compact-groups compact branch-summarize)
               "provider_anthropic" anthropic
               "provider_google" google
               "provider_bedrock" bedrock
@@ -14254,7 +14277,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

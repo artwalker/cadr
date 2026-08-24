@@ -157,6 +157,7 @@
   "agent_tool_loop.tool_result_digest",
   "agent_tool_loop.runtime",
   "session_compact.compact",
+  "session_compact.branch_summarize",
   "goal11.mouse_drag",
   "goal11.wheel",
   "goal11.continuous_alt_input",
@@ -735,8 +736,8 @@
   },
   {
    "prefix": "src/cadr-agent/branch-summarization.lisp",
-   "class": "needs-pair",
-   "hole": "session_compact"
+   "class": "paired",
+   "metrics": ["session_compact.branch_summarize"]
   },
   {
    "prefix": "src/cadr-agent/conditions.lisp",
