@@ -351,6 +351,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_clear_all": 50,
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
+	"cli_selectors.scoped_models_selector_provider_count": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10526,6 +10527,52 @@ function runCliSelectorsScopedModelsSelectorPersist() {
 	};
 }
 
+function sessionScopedModelsForProviderCount(allModels, enabledIds) {
+	if (enabledIds === null) {
+		return null;
+	}
+	const allIds = allModels.map(scopedModelsFullId);
+	const available = enabledIds
+		.map((id) => allModels.find((model) => scopedModelsFullId(model) === id))
+		.filter(Boolean);
+	const allEnabledP = allIds.every((id) => enabledIds.includes(id));
+	if (available.length > 0 && !allEnabledP) {
+		return available;
+	}
+	return null;
+}
+
+function scopedModelsSelectorProviderCount(allModels, enabledIds) {
+	const activeModels =
+		sessionScopedModelsForProviderCount(allModels, enabledIds) ?? allModels;
+	return new Set(activeModels.map((model) => model.provider)).size;
+}
+
+function scopedModelsSelectorProviderCountEncoded(allModels, enabledIds) {
+	return String(scopedModelsSelectorProviderCount(allModels, enabledIds));
+}
+
+function runCliSelectorsScopedModelsSelectorProviderCount() {
+	const models = makeModelSelectorTestModels();
+	const partialEnabled = ["openai/gpt-4o", "anthropic/claude-sonnet-4"];
+	const withUnavailable = ["stale/missing", "openai/gpt-4o"];
+	return {
+		smsprv_all: scopedModelsSelectorProviderCountEncoded(models, null),
+		smsprv_partial: scopedModelsSelectorProviderCountEncoded(
+			models,
+			partialEnabled,
+		),
+		smsprv_unavail: scopedModelsSelectorProviderCountEncoded(
+			models,
+			withUnavailable,
+		),
+		smsprv_empty: scopedModelsSelectorProviderCountEncoded(models, []),
+		smsprv_single: scopedModelsSelectorProviderCountEncoded(models, [
+			"google/gemini-2.5-pro",
+		]),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -11294,6 +11341,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorReorder();
 	const scopedModelsSelectorPersistResults =
 		runCliSelectorsScopedModelsSelectorPersist();
+	const scopedModelsSelectorProviderCountResults =
+		runCliSelectorsScopedModelsSelectorProviderCount();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11598,6 +11647,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorClearAllResults,
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
+		...scopedModelsSelectorProviderCountResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -12049,6 +12099,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_persist",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorPersist();
+			},
+		),
+		scoped_models_selector_provider_count: await collect(
+			"cli_selectors.scoped_models_selector_provider_count",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorProviderCount();
 			},
 		),
 		observed,
@@ -13348,6 +13404,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getSortedIds",
 			"cli_selectors.scoped_models_selector_toggle_selected":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
+			"cli_selectors.scoped_models_selector_provider_count":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

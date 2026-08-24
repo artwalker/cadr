@@ -2995,7 +2995,7 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 
 Scoped models active-provider count (string digest). Observed `smsprv_all` /
 `smsprv_partial` / `smsprv_unavail` / `smsprv_empty` / `smsprv_single` are exact.
-First Friend-MachineD freeze **46.51×** (182.6 / 3.9 µs), ceiling 50.0 (bumped from
+First Friend-MachineD freeze **40.39×** (157.5 / 3.9 µs), ceiling 50.0 (bumped from
 8.0 on first freeze 46.24×). Gate used `--only-enforce`. Same commit no optimize.
 
 ### Pair 239 — `cli_selectors` (scoped_models_selector_persist)

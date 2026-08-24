@@ -1664,6 +1664,18 @@ class TestPairedPathRecord(unittest.TestCase):
             "cli_selectors.scoped_models_selector_persist",
             paired.RATIO_CEILINGS,
         )
+        self.assertIn(
+            "cli_selectors.scoped_models_selector_provider_count",
+            RECORD.METRIC_KEYS,
+        )
+        self.assertIn(
+            "scoped_models_selector_provider_count",
+            paired.METRICS["cli_selectors"],
+        )
+        self.assertIn(
+            "cli_selectors.scoped_models_selector_provider_count",
+            paired.RATIO_CEILINGS,
+        )
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])

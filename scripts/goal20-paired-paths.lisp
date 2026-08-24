@@ -427,6 +427,7 @@
     ("cli_selectors.scoped_models_selector_clear_all" . 50)
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
+    ("cli_selectors.scoped_models_selector_provider_count" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -10047,6 +10048,58 @@
      (scoped-models-selector-persist-encoded
       models '("google/gemini-2.5-pro") :persist-callback t))))
 
+(defun scoped-models-selector-tail-observed-pairs
+    (reorder persist provider-count)
+  (append
+    (list
+     "smsror_down" (nth 0 reorder)
+     "smsror_up" (nth 1 reorder)
+     "smsror_noop" (nth 2 reorder)
+     "smsror_empty" (nth 3 reorder)
+     "smsror_filter" (nth 4 reorder)
+     "smsror_miss" (nth 5 reorder)
+     "smsper_all" (nth 0 persist)
+     "smsper_partial" (nth 1 persist)
+     "smsper_no_cb" (nth 2 persist)
+     "smsper_empty" (nth 3 persist)
+     "smsper_two" (nth 4 persist)
+     "smsper_single" (nth 5 persist))
+    (scoped-models-provider-count-observed-pairs provider-count)))
+
+(defun scoped-models-provider-count-observed-pairs (results)
+  (list
+   "smsprv_all" (nth 0 results)
+   "smsprv_partial" (nth 1 results)
+   "smsprv_unavail" (nth 2 results)
+   "smsprv_empty" (nth 3 results)
+   "smsprv_single" (nth 4 results)))
+
+(defun scoped-models-selector-provider-count-encoded (state)
+  (write-to-string
+   (cadr-cli::scoped-models-selector-provider-count state)))
+
+(defun run-cli-selectors-scoped-models-selector-provider-count ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("openai/gpt-4o" "anthropic/claude-sonnet-4"))
+        (with-unavail '("stale/missing" "openai/gpt-4o")))
+    (list
+     (scoped-models-selector-provider-count-encoded
+      (cadr-cli::make-scoped-models-selector-state
+       :all-models models :enabled-ids :all))
+     (scoped-models-selector-provider-count-encoded
+      (cadr-cli::make-scoped-models-selector-state
+       :all-models models :enabled-ids partial))
+     (scoped-models-selector-provider-count-encoded
+      (cadr-cli::make-scoped-models-selector-state
+       :all-models models :enabled-ids with-unavail))
+     (scoped-models-selector-provider-count-encoded
+      (cadr-cli::make-scoped-models-selector-state
+       :all-models models :enabled-ids nil))
+     (scoped-models-selector-provider-count-encoded
+      (cadr-cli::make-scoped-models-selector-state
+       :all-models models
+       :enabled-ids '("google/gemini-2.5-pro"))))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -10303,10 +10356,14 @@
         (scoped-models-selector-reorder
           (run-cli-selectors-scoped-models-selector-reorder))
         (scoped-models-selector-persist
-          (run-cli-selectors-scoped-models-selector-persist)))
+          (run-cli-selectors-scoped-models-selector-persist))
+        (provider-count-obs
+          (run-cli-selectors-scoped-models-selector-provider-count)))
     (json-object
      "observed"
-     (json-object
+     (apply #'json-object
+            (append
+             (list
       "ss_empty" (nth 0 observed)
       "ss_hit" (nth 1 observed)
       "ss_miss" (nth 2 observed)
@@ -11030,19 +11087,11 @@
       "smsca_empty" (nth 2 scoped-models-selector-clear-all)
       "smsca_two" (nth 3 scoped-models-selector-clear-all)
       "smsca_filter" (nth 4 scoped-models-selector-clear-all)
-      "smsca_miss" (nth 5 scoped-models-selector-clear-all)
-      "smsror_down" (nth 0 scoped-models-selector-reorder)
-      "smsror_up" (nth 1 scoped-models-selector-reorder)
-      "smsror_noop" (nth 2 scoped-models-selector-reorder)
-      "smsror_empty" (nth 3 scoped-models-selector-reorder)
-      "smsror_filter" (nth 4 scoped-models-selector-reorder)
-      "smsror_miss" (nth 5 scoped-models-selector-reorder)
-      "smsper_all" (nth 0 scoped-models-selector-persist)
-      "smsper_partial" (nth 1 scoped-models-selector-persist)
-      "smsper_no_cb" (nth 2 scoped-models-selector-persist)
-      "smsper_empty" (nth 3 scoped-models-selector-persist)
-      "smsper_two" (nth 4 scoped-models-selector-persist)
-      "smsper_single" (nth 5 scoped-models-selector-persist))
+      "smsca_miss" (nth 5 scoped-models-selector-clear-all))
+             (scoped-models-selector-tail-observed-pairs
+              scoped-models-selector-reorder
+              scoped-models-selector-persist
+              provider-count-obs)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11685,7 +11734,12 @@
      (collect "cli_selectors.scoped_models_selector_persist"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-persist)))))))
+                  (run-cli-selectors-scoped-models-selector-persist))))
+     "scoped_models_selector_provider_count"
+     (collect "cli_selectors.scoped_models_selector_provider_count"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
