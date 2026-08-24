@@ -141,6 +141,7 @@ const REPETITIONS = {
 	"provider_pi_messages.stream_roundtrip": 10,
 	"cli_settings.create": 5,
 	"agent_conditions.error_probe": 50,
+	"execution_env.exists_remove_temps": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -1759,6 +1760,67 @@ async function measureAgentConditions() {
 			return () => runAgentConditionsErrorProbe();
 		}),
 		observed: probe,
+	};
+}
+
+
+function unwrapExecutionEnvResult(result) {
+	if (!result.ok) {
+		throw new Error(JSON.stringify(result.error));
+	}
+	return result.value;
+}
+
+function stageExecutionEnvCwd() {
+	const root = path.join(scratch, "execution-env");
+	mkdirSync(root, { recursive: true });
+	return root;
+}
+
+async function runExecutionEnvExistsRemoveTemps(cwd) {
+	const env = new nodeEnvModule.NodeExecutionEnv({ cwd });
+	const truth = (value) => (value ? 1 : 0);
+	try {
+		const exMissing = truth(unwrapExecutionEnvResult(await env.exists("missing.txt")));
+		unwrapExecutionEnvResult(await env.writeFile("file.txt", "hello"));
+		const exPresent = truth(unwrapExecutionEnvResult(await env.exists("file.txt")));
+		unwrapExecutionEnvResult(await env.remove("file.txt"));
+		const exAfterRm = truth(unwrapExecutionEnvResult(await env.exists("file.txt")));
+		const tempDir = unwrapExecutionEnvResult(await env.createTempDir("env-test-"));
+		const tmpDir = truth(existsSync(tempDir));
+		const tempFile = unwrapExecutionEnvResult(
+			await env.createTempFile({ prefix: "prefix-", suffix: ".txt" }),
+		);
+		const tmpFile = truth(existsSync(tempFile));
+		const tmpSuffix = truth(tempFile.endsWith(".txt"));
+		unwrapExecutionEnvResult(await env.remove("still-missing", { force: true }));
+		const rmForce = 1;
+		unwrapExecutionEnvResult(await env.writeFile("dir/child/file.txt", "hello"));
+		unwrapExecutionEnvResult(await env.remove("dir", { recursive: true }));
+		const rmRecursive = truth(!unwrapExecutionEnvResult(await env.exists("dir")));
+		return {
+			ex_missing: exMissing,
+			ex_present: exPresent,
+			ex_after_rm: exAfterRm,
+			tmp_dir: tmpDir,
+			tmp_file: tmpFile,
+			tmp_suffix: tmpSuffix,
+			rm_force: rmForce,
+			rm_recursive: rmRecursive,
+		};
+	} finally {
+		await env.cleanup();
+	}
+}
+
+async function measureExecutionEnv() {
+	const cwd = stageExecutionEnvCwd();
+	const observed = await runExecutionEnvExistsRemoveTemps(cwd);
+	return {
+		exists_remove_temps: await collect("execution_env.exists_remove_temps", () => {
+			return () => runExecutionEnvExistsRemoveTemps(cwd);
+		}),
+		observed,
 	};
 }
 
@@ -14173,6 +14235,8 @@ process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
 process.stderr.write("goal20 pi paired paths: agent_conditions\n");
 const agentConditions = await measureAgentConditions();
+process.stderr.write("goal20 pi paired paths: execution_env\n");
+const executionEnv = await measureExecutionEnv();
 process.stderr.write("goal20 pi paired paths: settings_load\n");
 const settingsLoad = await measureSettingsLoad();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
@@ -14300,6 +14364,8 @@ const result = {
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
 			"agent_conditions.error_probe":
 				"packages/agent/src agent error slot/type probe (fixture-aligned harness)",
+			"execution_env.exists_remove_temps":
+				"packages/agent/src/harness/env/nodejs.ts exists/remove/createTempDir/createTempFile",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -14832,6 +14898,7 @@ const result = {
 		provider_pi_messages: providerPiMessages,
 		cli_settings: cliSettings,
 		agent_conditions: agentConditions,
+		execution_env: executionEnv,
 		settings_load: settingsLoad,
 		resource_loader: resourceLoader,
 		package_manager: packageManager,

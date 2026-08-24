@@ -94,6 +94,7 @@
 ;;;; 253. settings_load default-config-path/default-auth-path vs getSettingsPath/getAuthPath
 ;;;; 254. session_discovery list-sessions vs SessionManager.listAll
 ;;;; 254. agent_conditions error-slot probe vs agent error shapes
+;;;; 257. execution_env exists/remove/temps vs NodeExecutionEnv exists/remove/createTemp*
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -233,6 +234,7 @@
     ("provider_pi_messages.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
     ("agent_conditions.error_probe" . 50)
+    ("execution_env.exists_remove_temps" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -2878,6 +2880,106 @@
               (lambda ()
                 (lambda ()
                   (run-agent-conditions-error-probe)))))))
+
+(defun execution-env-truth (value)
+  (if value 1 0))
+
+(defun stage-execution-env-cwd ()
+  (let ((root (merge-pathnames "execution-env/" *scratch-directory*)))
+    (ensure-directories-exist root)
+    (namestring (uiop:ensure-directory-pathname root))))
+
+(defun run-execution-env-exists-remove-temps (cwd)
+  (let ((environment (cadr-agent:make-node-execution-env :cwd cwd)))
+    (unwind-protect
+         (flet ((truth (value) (execution-env-truth value)))
+           (let ((ex-missing 0)
+                 (ex-present 0)
+                 (ex-after-rm 0)
+                 (tmp-dir 0)
+                 (tmp-file 0)
+                 (tmp-suffix 0)
+                 (rm-force 0)
+                 (rm-recursive 0))
+             (multiple-value-bind (value error)
+                 (cadr-agent:execution-env-exists-p
+                  environment "missing.txt")
+               (setf ex-missing
+                     (truth (and (not error) value))))
+             (cadr-agent:execution-env-write-file
+              environment "file.txt" "hello")
+             (multiple-value-bind (value error)
+                 (cadr-agent:execution-env-exists-p
+                  environment "file.txt")
+               (setf ex-present
+                     (truth (and (not error) value))))
+             (cadr-agent:execution-env-remove environment "file.txt")
+             (multiple-value-bind (value error)
+                 (cadr-agent:execution-env-exists-p
+                  environment "file.txt")
+               (setf ex-after-rm
+                     (truth (and (not error) value))))
+             (multiple-value-bind (dir error)
+                 (cadr-agent:execution-env-create-temp-directory
+                  environment :prefix "env-test-")
+               (when (and (not error) dir)
+                 (setf tmp-dir
+                       (truth (uiop:directory-exists-p dir)))))
+             (multiple-value-bind (file error)
+                 (cadr-agent:execution-env-create-temp-file
+                  environment
+                  :prefix "prefix-"
+                  :suffix ".txt")
+               (when (and (not error) file)
+                 (setf tmp-file (truth (probe-file file)))
+                 (setf tmp-suffix
+                       (truth
+                        (and (>= (length file) 4)
+                             (string= ".txt"
+                                      (subseq file (- (length file) 4))))))))
+             (multiple-value-bind (value error)
+                 (cadr-agent:execution-env-remove
+                  environment "still-missing"
+                  :force-p t)
+               (declare (ignore value))
+               (setf rm-force (truth (null error))))
+             (cadr-agent:execution-env-write-file
+              environment "dir/child/file.txt" "hello")
+             (cadr-agent:execution-env-remove
+              environment "dir" :recursive-p t)
+             (multiple-value-bind (value error)
+                 (cadr-agent:execution-env-exists-p
+                  environment "dir")
+               (setf rm-recursive
+                     (truth (and (not error) (not value)))))
+             (list ex-missing ex-present ex-after-rm
+                   tmp-dir tmp-file tmp-suffix
+                   rm-force rm-recursive)))
+      (cadr-agent:execution-env-cleanup environment))))
+
+(defun measure-execution-env ()
+  (let ((cwd (stage-execution-env-cwd)))
+    (destructuring-bind
+          (ex-missing ex-present ex-after-rm tmp-dir tmp-file tmp-suffix
+           rm-force rm-recursive)
+        (run-execution-env-exists-remove-temps cwd)
+      (json-object
+       "observed"
+       (json-object
+        "ex_missing" ex-missing
+        "ex_present" ex-present
+        "ex_after_rm" ex-after-rm
+        "tmp_dir" tmp-dir
+        "tmp_file" tmp-file
+        "tmp_suffix" tmp-suffix
+        "rm_force" rm-force
+        "rm_recursive" rm-recursive)
+       "exists_remove_temps"
+       (collect "execution_env.exists_remove_temps"
+                (lambda ()
+                  (lambda ()
+                    (run-execution-env-exists-remove-temps cwd))))))))
+
 
 (defun measure-cli-settings ()
   (multiple-value-bind (global project)
@@ -13697,6 +13799,8 @@
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
       "agent_conditions.error_probe"
       "src/cadr-agent/conditions.lisp define-condition slot accessors + subtypep"
+      "execution_env.exists_remove_temps"
+      "src/cadr-agent/execution-env.lisp execution-env-exists-p/remove/create-temp-*"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -14278,6 +14382,8 @@
               (let ((settings (measure-cli-settings)))
               (format *error-output* "goal20 cadr paired paths: agent_conditions~%")
               (let ((agent-conditions (measure-agent-conditions)))
+              (format *error-output* "goal20 cadr paired paths: execution_env~%")
+              (let ((execution-env (measure-execution-env)))
               (format *error-output* "goal20 cadr paired paths: settings_load~%")
               (let ((settings-load (measure-settings-load)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
@@ -14411,6 +14517,7 @@
               "provider_pi_messages" pi-messages
               "cli_settings" settings
               "agent_conditions" agent-conditions
+              "execution_env" execution-env
               "settings_load" settings-load
               "resource_loader" resources
               "package_manager" packages
@@ -14473,7 +14580,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

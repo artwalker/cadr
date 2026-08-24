@@ -26,6 +26,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `execution_env.exists_remove_temps` (exists/remove/temp
+  helpers on `src/cadr-agent/execution-env.lisp` vs pi `NodeExecutionEnv`).
+  Observed `ex_missing` / `ex_present` / `ex_after_rm` / `tmp_dir` / `tmp_file` /
+  `tmp_suffix` / `rm_force` / `rm_recursive` exact. Measure-only.
 - Goal 20 P.13: pair `resource_loader.dedupe_by_name` (same collision
   fixture as `reload`; time `dedupe-resources-by-name` only, not
   `reload-resources`). Observed `dbn_skill_count` / `dbn_skill_collisions` /

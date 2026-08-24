@@ -316,6 +316,14 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ac_schema_tool", paired.OBSERVED_EXACT["agent_conditions"])
         self.assertIn("ac_catch_stale", paired.OBSERVED_EXACT["agent_conditions"])
 
+    def test_execution_env_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("execution_env.exists_remove_temps", RECORD.METRIC_KEYS)
+        self.assertIn("exists_remove_temps", paired.METRICS["execution_env"])
+        self.assertIn("execution_env.exists_remove_temps", paired.RATIO_CEILINGS)
+        self.assertIn("ex_missing", paired.OBSERVED_EXACT["execution_env"])
+        self.assertIn("rm_recursive", paired.OBSERVED_EXACT["execution_env"])
+
     def test_settings_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("settings_load.project_trust", RECORD.METRIC_KEYS)
@@ -2021,6 +2029,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`oauth_pkce_device.poll`", section)
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`resource_loader.dedupe_by_name`", section)
+            self.assertIn("`execution_env.exists_remove_temps`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)

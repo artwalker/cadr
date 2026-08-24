@@ -3106,6 +3106,22 @@ Observed `manifest_p` / `manifest_extensions` / `manifest_skills` /
 freeze **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
+
+### Pair 257 — `execution_env` (exists_remove_temps)
+
+| metric | cadr | pi |
+|---|---|---|
+| `exists_remove_temps` | `execution-env-exists-p` + `execution-env-remove` + temp helpers (`src/cadr-agent/execution-env.lisp`) | `NodeExecutionEnv.exists` / `remove` / `createTempDir` / `createTempFile` (`packages/agent/src/harness/env/nodejs.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole on `execution-env.lisp`.
+Timed work is exists on missing/present paths, remove, force-remove missing,
+recursive directory remove, and temp dir/file creation through
+`call-signaled-operation` — not `execution-env-exec`. Staged cwd under harness
+scratch only. Observed `ex_missing` / `ex_present` / `ex_after_rm` /
+`tmp_dir` / `tmp_file` / `tmp_suffix` / `rm_force` / `rm_recursive` are exact.
+First Friend-MachineD freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`.
+Same commit no optimize.
+
 ### Pair 256 — `resource_loader` (dedupe_by_name)
 
 | metric | cadr | pi |
@@ -3599,6 +3615,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
 | `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
+| `src/cadr-agent/execution-env.lisp` | 855 | `execution_env.exists_remove_temps` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |

@@ -755,8 +755,8 @@
   },
   {
    "prefix": "src/cadr-agent/execution-env.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": ["execution_env.exists_remove_temps"]
   },
   {
    "prefix": "src/cadr-agent/file-mutation-queue.lisp",
