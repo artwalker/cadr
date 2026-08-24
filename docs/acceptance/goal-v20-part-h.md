@@ -2893,6 +2893,17 @@ exercised). Observed `osui_default` / `osui_sel2` / `osui_filter` /
 **24.66×** (372.1 / 15.1 µs), ceiling 35.0. Gate used `--only-enforce`.
 Same commit no optimize.
 
+### Pair 216 — `cli_selectors` (model_selector_search_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_search_text` | `model-selector-search-text` | `getModelSelectorSearchText` |
+
+Model selector fuzzy-search text (provider-prefixed, no bare id lead).
+Observed `msst_openai` / `msst_anthropic` / `msst_codex` / `msst_openrouter` /
+`msst_google` are exact. First Friend-MachineD freeze **6.78×** (5.6 / 0.8 µs),
+ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

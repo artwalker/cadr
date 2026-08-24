@@ -327,6 +327,7 @@ const REPETITIONS = {
 	"cli_selectors.login_method_selector_ui_state": 50,
 	"cli_selectors.api_key_input_ui_state": 50,
 	"cli_selectors.oauth_selector_ui_state": 50,
+	"cli_selectors.model_selector_search_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -635,6 +636,9 @@ const sessionSelectorSearchModule = await import(
 );
 const keybindingHintsModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts")
+);
+const modelSearchModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/model-search.ts")
 );
 const themeModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/theme/theme.ts")
@@ -9293,6 +9297,35 @@ function runCliSelectorsOauthSelectorUiState() {
 	};
 }
 
+function runCliSelectorsModelSelectorSearchText() {
+	return {
+		msst_openai: modelSearchModule.getModelSelectorSearchText({
+			id: "gpt-4o",
+			provider: "openai",
+			name: "GPT-4o",
+		}),
+		msst_anthropic: modelSearchModule.getModelSelectorSearchText({
+			id: "claude-sonnet-4",
+			provider: "anthropic",
+			name: "Claude Sonnet 4",
+		}),
+		msst_codex: modelSearchModule.getModelSelectorSearchText({
+			id: "gpt-5",
+			provider: "openai-codex",
+		}),
+		msst_openrouter: modelSearchModule.getModelSelectorSearchText({
+			id: "openai/gpt-4o",
+			provider: "openrouter",
+			name: "GPT-4o",
+		}),
+		msst_google: modelSearchModule.getModelSelectorSearchText({
+			id: "gemini-2.5-pro",
+			provider: "google",
+			name: "",
+		}),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9717,6 +9750,7 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsLoginMethodSelectorUiState();
 	const apiKeyInputUiStateResults = runCliSelectorsApiKeyInputUiState();
 	const oauthSelectorUiStateResults = runCliSelectorsOauthSelectorUiState();
+	const modelSelectorSearchTextResults = runCliSelectorsModelSelectorSearchText();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9997,6 +10031,7 @@ async function measureCliSelectorsSessionSearch() {
 		...loginMethodSelectorUiStateResults,
 		...apiKeyInputUiStateResults,
 		...oauthSelectorUiStateResults,
+		...modelSelectorSearchTextResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10331,6 +10366,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_selector_ui_state: await collect("cli_selectors.oauth_selector_ui_state", () => {
 			return () => runCliSelectorsOauthSelectorUiState();
+		}),
+		model_selector_search_text: await collect("cli_selectors.model_selector_search_text", () => {
+			return () => runCliSelectorsModelSelectorSearchText();
 		}),
 		observed,
 	};
@@ -11593,6 +11631,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key UI state",
 			"cli_selectors.oauth_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent UI state",
+			"cli_selectors.model_selector_search_text":
+				"packages/coding-agent/src/modes/interactive/model-search.ts getModelSelectorSearchText",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

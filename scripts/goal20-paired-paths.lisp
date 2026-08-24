@@ -403,6 +403,7 @@
     ("cli_selectors.login_method_selector_ui_state" . 50)
     ("cli_selectors.api_key_input_ui_state" . 50)
     ("cli_selectors.oauth_selector_ui_state" . 50)
+    ("cli_selectors.model_selector_search_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9076,6 +9077,42 @@
    (oauth-selector-ui-encoded
     (make-oauth-selector-ui-state :mode :logout :options '()) 40)))
 
+(defun make-model-selector-search-fixture
+    (&key (id "gpt-4o") (provider :openai) (name "GPT-4o"))
+  (cadr-ai:make-model
+   :id id
+   :name name
+   :api :openai-completions
+   :provider provider
+   :base-url "http://127.0.0.1:1/v1"
+   :context-window 128000
+   :max-tokens 8192))
+
+(defun run-cli-selectors-model-selector-search-text ()
+  (list
+   (cadr-cli::model-selector-search-text
+    (make-model-selector-search-fixture))
+   (cadr-cli::model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "claude-sonnet-4"
+     :provider :anthropic
+     :name "Claude Sonnet 4"))
+   (cadr-cli::model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "gpt-5"
+     :provider :openai-codex
+     :name ""))
+   (cadr-cli::model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "openai/gpt-4o"
+     :provider :openrouter
+     :name "GPT-4o"))
+   (cadr-cli::model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "gemini-2.5-pro"
+     :provider :google
+     :name ""))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -9259,7 +9296,9 @@
         (api-key-input-ui-state
           (run-cli-selectors-api-key-input-ui-state))
         (oauth-selector-ui-state
-          (run-cli-selectors-oauth-selector-ui-state)))
+          (run-cli-selectors-oauth-selector-ui-state))
+        (model-selector-search-text
+          (run-cli-selectors-model-selector-search-text)))
     (json-object
      "observed"
      (json-object
@@ -9860,7 +9899,12 @@
       "osui_sel2" (nth 1 oauth-selector-ui-state)
       "osui_filter" (nth 2 oauth-selector-ui-state)
       "osui_miss" (nth 3 oauth-selector-ui-state)
-      "osui_logout_empty" (nth 4 oauth-selector-ui-state))
+      "osui_logout_empty" (nth 4 oauth-selector-ui-state)
+      "msst_openai" (nth 0 model-selector-search-text)
+      "msst_anthropic" (nth 1 model-selector-search-text)
+      "msst_codex" (nth 2 model-selector-search-text)
+      "msst_openrouter" (nth 3 model-selector-search-text)
+      "msst_google" (nth 4 model-selector-search-text))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10385,7 +10429,12 @@
      (collect "cli_selectors.oauth_selector_ui_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-oauth-selector-ui-state)))))))
+                  (run-cli-selectors-oauth-selector-ui-state))))
+     "model_selector_search_text"
+     (collect "cli_selectors.model_selector_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-search-text)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11610,6 +11659,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp render-api-key-input-state"
       "cli_selectors.oauth_selector_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-oauth-selector"
+      "cli_selectors.model_selector_search_text"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-search-text"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.model_selector_search_text`
+  (model selector search text; cadr `model-selector-search-text` vs pi
+  `getModelSelectorSearchText`). Friend-MachineD n=5 **6.78×**
+  (5.6 / 0.8 µs), ceiling 8.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.oauth_selector_ui_state`
   (oauth selector UI; cadr `render-oauth-selector` vs pi
   `OauthSelectorComponent`). Friend-MachineD n=5 **24.66×**
