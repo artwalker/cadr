@@ -386,6 +386,7 @@
     ("cli_selectors.trust_selector_handle_raw_input" . 50)
     ("cli_selectors.trust_selector_ui_state" . 50)
     ("cli_selectors.oauth_option_status_label" . 50)
+    ("cli_selectors.oauth_option_status_rendered" . 50)
     ("cli_selectors.credential_entry_auth_type" . 50)
     ("cli_selectors.oauth_environment_source_p" . 50)
     ("cli_selectors.oauth_selector_selection" . 50)
@@ -8427,6 +8428,32 @@
      :auth-type :api-key
      :status (list :type :api-key :source "runtime key")))))
 
+(defun run-cli-selectors-oauth-option-status-rendered ()
+  (list
+   (cadr-cli::oauth-option-status-rendered
+    (make-oauth-option-status-fixture))
+   (cadr-cli::oauth-option-status-rendered
+    (make-oauth-option-status-fixture
+     :auth-type :api-key
+     :status (list :type :oauth :source "OAuth")))
+   (cadr-cli::oauth-option-status-rendered
+    (make-oauth-option-status-fixture
+     :status (list :type :api-key :source "stored credential")))
+   (cadr-cli::oauth-option-status-rendered
+    (make-oauth-option-status-fixture
+     :status (list :type :oauth :source "OAuth")))
+   (cadr-cli::oauth-option-status-rendered
+    (make-oauth-option-status-fixture
+     :status (list :type :oauth :source "stored credential")))
+   (cadr-cli::oauth-option-status-rendered
+    (make-oauth-option-status-fixture
+     :auth-type :api-key
+     :status (list :type :api-key :source "ANTHROPIC_API_KEY")))
+   (cadr-cli::oauth-option-status-rendered
+    (make-oauth-option-status-fixture
+     :auth-type :api-key
+     :status (list :type :api-key :source "runtime key")))))
+
 (defun encode-credential-entry-auth-type (kind)
   (let ((auth-type (cadr-cli::credential-entry-auth-type kind)))
     (if (eq auth-type :oauth) "oauth" "api_key")))
@@ -8961,6 +8988,8 @@
           (run-cli-selectors-trust-selector-ui-state))
         (oauth-option-status-label
           (run-cli-selectors-oauth-option-status-label))
+        (oauth-option-status-rendered
+          (run-cli-selectors-oauth-option-status-rendered))
         (credential-entry-auth-type
           (run-cli-selectors-credential-entry-auth-type))
         (oauth-environment-source-p
@@ -9490,6 +9519,13 @@
       "oosl_stored" (nth 4 oauth-option-status-label)
       "oosl_env" (nth 5 oauth-option-status-label)
       "oosl_custom" (nth 6 oauth-option-status-label)
+      "oosr_none" (nth 0 oauth-option-status-rendered)
+      "oosr_api_mismatch" (nth 1 oauth-option-status-rendered)
+      "oosr_oauth_mismatch" (nth 2 oauth-option-status-rendered)
+      "oosr_oauth_configured" (nth 3 oauth-option-status-rendered)
+      "oosr_stored" (nth 4 oauth-option-status-rendered)
+      "oosr_env" (nth 5 oauth-option-status-rendered)
+      "oosr_custom" (nth 6 oauth-option-status-rendered)
       "ceat_oauth" (nth 0 credential-entry-auth-type)
       "ceat_api_key" (nth 1 credential-entry-auth-type)
       "ceat_api_key_hyphen" (nth 2 credential-entry-auth-type)
@@ -9997,6 +10033,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-oauth-option-status-label))))
+     "oauth_option_status_rendered"
+     (collect "cli_selectors.oauth_option_status_rendered"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-option-status-rendered))))
      "credential_entry_auth_type"
      (collect "cli_selectors.credential_entry_auth_type"
               (lambda ()
@@ -11247,6 +11288,8 @@
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
       "cli_selectors.oauth_option_status_label"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-label"
+      "cli_selectors.oauth_option_status_rendered"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-option-status-rendered"
       "cli_selectors.credential_entry_auth_type"
       "src/cadr-cli/interactive/selectors/auth.lisp credential-entry-auth-type"
       "cli_selectors.oauth_environment_source_p"

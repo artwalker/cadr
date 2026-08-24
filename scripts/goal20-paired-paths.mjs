@@ -310,6 +310,7 @@ const REPETITIONS = {
 	"cli_selectors.trust_selector_handle_raw_input": 50,
 	"cli_selectors.trust_selector_ui_state": 50,
 	"cli_selectors.oauth_option_status_label": 50,
+	"cli_selectors.oauth_option_status_rendered": 50,
 	"cli_selectors.credential_entry_auth_type": 50,
 	"cli_selectors.oauth_environment_source_p": 50,
 	"cli_selectors.oauth_selector_selection": 50,
@@ -8425,6 +8426,74 @@ function runCliSelectorsOauthOptionStatusLabel() {
 	};
 }
 
+function oauthOptionStatusRendered(provider) {
+	if (!provider.status) {
+		return themeModule.theme.fg("muted", " • unconfigured");
+	}
+	if (provider.status.type !== provider.authType) {
+		const label =
+			provider.status.type === "oauth" ? "subscription configured" : "API key configured";
+		return themeModule.theme.fg("muted", " • ") + themeModule.theme.fg("warning", label);
+	}
+	if (
+		!provider.status.source ||
+		provider.status.source === "OAuth" ||
+		provider.status.source === "stored credential"
+	) {
+		return themeModule.theme.fg("success", " ✓ configured");
+	}
+	const source = /^[A-Z][A-Z0-9_]*(?:, [A-Z][A-Z0-9_]*)*$/.test(provider.status.source)
+		? `env: ${provider.status.source}`
+		: provider.status.source;
+	return themeModule.theme.fg("success", ` ✓ ${source}`);
+}
+
+function runCliSelectorsOauthOptionStatusRendered() {
+	return {
+		oosr_none: oauthOptionStatusRendered({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+		}),
+		oosr_api_mismatch: oauthOptionStatusRendered({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "api_key",
+			status: { type: "oauth", source: "OAuth" },
+		}),
+		oosr_oauth_mismatch: oauthOptionStatusRendered({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+			status: { type: "api_key", source: "stored credential" },
+		}),
+		oosr_oauth_configured: oauthOptionStatusRendered({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+			status: { type: "oauth", source: "OAuth" },
+		}),
+		oosr_stored: oauthOptionStatusRendered({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+			status: { type: "oauth", source: "stored credential" },
+		}),
+		oosr_env: oauthOptionStatusRendered({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "api_key",
+			status: { type: "api_key", source: "ANTHROPIC_API_KEY" },
+		}),
+		oosr_custom: oauthOptionStatusRendered({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "api_key",
+			status: { type: "api_key", source: "runtime key" },
+		}),
+	};
+}
+
 function credentialEntryAuthType(kind) {
 	const normalized =
 		typeof kind === "string"
@@ -9366,6 +9435,7 @@ async function measureCliSelectorsSessionSearch() {
 	const trustSelectorHandleRawInputResults = runCliSelectorsTrustSelectorHandleRawInput();
 	const trustSelectorRenderLinesResults = runCliSelectorsTrustSelectorUiState();
 	const oauthOptionStatusLabelResults = runCliSelectorsOauthOptionStatusLabel();
+	const oauthOptionStatusRenderedResults = runCliSelectorsOauthOptionStatusRendered();
 	const credentialEntryAuthTypeResults = runCliSelectorsCredentialEntryAuthType();
 	const oauthEnvironmentSourcePResults = runCliSelectorsOauthEnvironmentSourceP();
 	const oauthSelectorSelectionResults = runCliSelectorsOauthSelectorSelection();
@@ -9642,6 +9712,7 @@ async function measureCliSelectorsSessionSearch() {
 		...trustSelectorHandleRawInputResults,
 		...trustSelectorRenderLinesResults,
 		...oauthOptionStatusLabelResults,
+		...oauthOptionStatusRenderedResults,
 		...credentialEntryAuthTypeResults,
 		...oauthEnvironmentSourcePResults,
 		...oauthSelectorSelectionResults,
@@ -9928,6 +9999,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_option_status_label: await collect("cli_selectors.oauth_option_status_label", () => {
 			return () => runCliSelectorsOauthOptionStatusLabel();
+		}),
+		oauth_option_status_rendered: await collect("cli_selectors.oauth_option_status_rendered", () => {
+			return () => runCliSelectorsOauthOptionStatusRendered();
 		}),
 		credential_entry_auth_type: await collect("cli_selectors.credential_entry_auth_type", () => {
 			return () => runCliSelectorsCredentialEntryAuthType();
@@ -11195,6 +11269,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent UI state",
 			"cli_selectors.oauth_option_status_label":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator plain label",
+			"cli_selectors.oauth_option_status_rendered":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts formatStatusIndicator themed output",
 			"cli_selectors.credential_entry_auth_type":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions authType",
 			"cli_selectors.oauth_environment_source_p":

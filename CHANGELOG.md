@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_option_status_rendered`
+  (themed status indicator; cadr `oauth-option-status-rendered` vs pi
+  `formatStatusIndicator`). Friend-MachineD n=5 **10.02×** (13.9 / 1.4 µs),
+  ceiling 15.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.oauth_selector_move`
   (move fixtures; cadr `oauth-selector-move` wrap index vs pi clamp at
   boundary). Friend-MachineD n=5 **27.34×** (83.8 / 3.1 µs), ceiling

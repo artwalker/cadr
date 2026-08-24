@@ -206,6 +206,7 @@ METRIC_KEYS = (
     "cli_selectors.trust_selector_handle_raw_input",
     "cli_selectors.trust_selector_ui_state",
     "cli_selectors.oauth_option_status_label",
+    "cli_selectors.oauth_option_status_rendered",
     "cli_selectors.credential_entry_auth_type",
     "cli_selectors.oauth_environment_source_p",
     "cli_selectors.oauth_selector_selection",
