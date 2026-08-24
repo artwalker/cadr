@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.api_key_input_state_handle_event`
+  (api key overlay dispatch; cadr `api-key-input-state-handle-event` vs pi
+  `LoginDialogComponent` prompt flow). Friend-MachineD n=5 **1.66×**
+  (7.0 / 4.2 µs), ceiling 8.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.oauth_option_status_rendered`
   (themed status indicator; cadr `oauth-option-status-rendered` vs pi
   `formatStatusIndicator`). Friend-MachineD n=5 **10.02×** (13.9 / 1.4 µs),

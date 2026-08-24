@@ -218,6 +218,7 @@ METRIC_KEYS = (
     "cli_selectors.logout_provider_options",
     "cli_selectors.login_method_selector_handle_event",
     "cli_selectors.oauth_selector_move",
+    "cli_selectors.api_key_input_state_handle_event",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

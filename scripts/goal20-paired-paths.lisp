@@ -399,6 +399,7 @@
     ("cli_selectors.logout_provider_options" . 50)
     ("cli_selectors.login_method_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_move" . 50)
+    ("cli_selectors.api_key_input_state_handle_event" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8838,6 +8839,61 @@
      (oauth-selector-move-encoded options 1 -1)
      (oauth-selector-move-encoded options 0 1 :query "open"))))
 
+(defun encode-api-key-input-handle-event-result (state action value)
+  (format nil "~a|~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (if (and (eq action :select) value)
+              (cadr-cli::provider-key
+               (cadr-cli::oauth-selector-option-id
+                (getf value :option)))
+              "null")
+          (if (and (eq action :select) value)
+              (if (eq (cadr-cli::oauth-selector-option-auth-type
+                       (getf value :option))
+                      :oauth)
+                  "oauth"
+                  "api_key")
+              "null")
+          (if (and (eq action :select) value)
+              (getf value :key)
+              (write-to-string
+               (length
+                (cadr-tui:single-line-input-value
+                 (cadr-cli::api-key-input-state-input state)))))))
+
+(defun make-api-key-input-state-for-fixture (&key (prefill ""))
+  (let ((state
+          (cadr-cli::make-api-key-input-state
+           (make-oauth-option-status-fixture
+            :id :anthropic :name "Anthropic" :auth-type :api-key))))
+    (when (plusp (length prefill))
+      (feed-single-line-text
+       (cadr-cli::api-key-input-state-input state)
+       prefill))
+    state))
+
+(defun api-key-input-handle-event-encoded (event-kind &key prefill text)
+  (let* ((state (make-api-key-input-state-for-fixture :prefill prefill))
+         (event
+           (if text
+               (cadr-tui:make-input-event :kind event-kind :text text)
+               (cadr-tui:make-input-event :kind event-kind))))
+    (multiple-value-bind (action value)
+        (cadr-cli::api-key-input-state-handle-event state event)
+      (encode-api-key-input-handle-event-result state action value))))
+
+(defun run-cli-selectors-api-key-input-state-handle-event ()
+  (list
+   (api-key-input-handle-event-encoded :escape)
+   (api-key-input-handle-event-encoded :clear)
+   (api-key-input-handle-event-encoded :text :text "sk-test")
+   (api-key-input-handle-event-encoded :backspace :prefill "ab")
+   (api-key-input-handle-event-encoded :enter)
+   (api-key-input-handle-event-encoded :enter :prefill "sk-test")
+   (api-key-input-handle-event-encoded :interrupt)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -9013,7 +9069,9 @@
         (login-method-selector-handle-event
           (run-cli-selectors-login-method-selector-handle-event))
         (oauth-selector-move
-          (run-cli-selectors-oauth-selector-move)))
+          (run-cli-selectors-oauth-selector-move))
+        (api-key-input-state-handle-event
+          (run-cli-selectors-api-key-input-state-handle-event)))
     (json-object
      "observed"
      (json-object
@@ -9592,7 +9650,14 @@
       "osmv_2_m1" (nth 1 oauth-selector-move)
       "osmv_1_1" (nth 2 oauth-selector-move)
       "osmv_1_m1" (nth 3 oauth-selector-move)
-      "osmv_filter" (nth 4 oauth-selector-move))
+      "osmv_filter" (nth 4 oauth-selector-move)
+      "akhe_esc" (nth 0 api-key-input-state-handle-event)
+      "akhe_clear" (nth 1 api-key-input-state-handle-event)
+      "akhe_text" (nth 2 api-key-input-state-handle-event)
+      "akhe_bs" (nth 3 api-key-input-state-handle-event)
+      "akhe_enter_empty" (nth 4 api-key-input-state-handle-event)
+      "akhe_enter_key" (nth 5 api-key-input-state-handle-event)
+      "akhe_interrupt" (nth 6 api-key-input-state-handle-event))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10097,7 +10162,12 @@
      (collect "cli_selectors.oauth_selector_move"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-oauth-selector-move)))))))
+                  (run-cli-selectors-oauth-selector-move))))
+     "api_key_input_state_handle_event"
+     (collect "cli_selectors.api_key_input_state_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-state-handle-event)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11314,6 +11384,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event"
       "cli_selectors.oauth_selector_move"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-move"
+      "cli_selectors.api_key_input_state_handle_event"
+      "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

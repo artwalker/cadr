@@ -323,6 +323,7 @@ const REPETITIONS = {
 	"cli_selectors.logout_provider_options": 50,
 	"cli_selectors.login_method_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_move": 50,
+	"cli_selectors.api_key_input_state_handle_event": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9031,6 +9032,84 @@ function runCliSelectorsOauthSelectorMove() {
 	};
 }
 
+const API_KEY_INPUT_FIXTURE_OPTION = {
+	id: "anthropic",
+	name: "Anthropic",
+	authType: "api_key",
+};
+
+function makeApiKeyInputState(prefill = "") {
+	return {
+		option: API_KEY_INPUT_FIXTURE_OPTION,
+		value: prefill,
+	};
+}
+
+function encodeApiKeyInputHandleEventResult(state, action, value) {
+	const inputLen = state.value.length;
+	if (action === "select" && value) {
+		return [
+			action,
+			value.optionId,
+			value.authType,
+			value.key,
+		].join("|");
+	}
+	return [
+		action ?? "null",
+		"null",
+		"null",
+		String(inputLen),
+	].join("|");
+}
+
+function apiKeyInputStateHandleEvent(state, eventKind, text) {
+	const cancelKinds = new Set(["escape", "cancel", "clear", "interrupt", "eof"]);
+	if (cancelKinds.has(eventKind)) {
+		return { action: "cancel", value: null };
+	}
+	if (eventKind === "text") {
+		state.value += text ?? "";
+		return { action: null, value: null };
+	}
+	if (eventKind === "backspace") {
+		state.value = deleteQueryChar(state.value);
+		return { action: null, value: null };
+	}
+	if (eventKind === "enter") {
+		if (state.value.length > 0) {
+			return {
+				action: "select",
+				value: {
+					optionId: state.option.id,
+					authType: state.option.authType,
+					key: state.value,
+				},
+			};
+		}
+		return { action: "changed", value: null };
+	}
+	return { action: null, value: null };
+}
+
+function apiKeyInputHandleEventEncoded(eventKind, { prefill = "", text } = {}) {
+	const state = makeApiKeyInputState(prefill);
+	const result = apiKeyInputStateHandleEvent(state, eventKind, text);
+	return encodeApiKeyInputHandleEventResult(state, result.action, result.value);
+}
+
+function runCliSelectorsApiKeyInputStateHandleEvent() {
+	return {
+		akhe_esc: apiKeyInputHandleEventEncoded("escape"),
+		akhe_clear: apiKeyInputHandleEventEncoded("clear"),
+		akhe_text: apiKeyInputHandleEventEncoded("text", { text: "sk-test" }),
+		akhe_bs: apiKeyInputHandleEventEncoded("backspace", { prefill: "ab" }),
+		akhe_enter_empty: apiKeyInputHandleEventEncoded("enter"),
+		akhe_enter_key: apiKeyInputHandleEventEncoded("enter", { prefill: "sk-test" }),
+		akhe_interrupt: apiKeyInputHandleEventEncoded("interrupt"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9449,6 +9528,8 @@ async function measureCliSelectorsSessionSearch() {
 	const loginMethodSelectorHandleEventResults =
 		runCliSelectorsLoginMethodSelectorHandleEvent();
 	const oauthSelectorMoveResults = runCliSelectorsOauthSelectorMove();
+	const apiKeyInputStateHandleEventResults =
+		runCliSelectorsApiKeyInputStateHandleEvent();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9725,6 +9806,7 @@ async function measureCliSelectorsSessionSearch() {
 		...logoutProviderOptionsResults,
 		...loginMethodSelectorHandleEventResults,
 		...oauthSelectorMoveResults,
+		...apiKeyInputStateHandleEventResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10042,6 +10124,12 @@ async function measureCliSelectorsSessionSearch() {
 		oauth_selector_move: await collect("cli_selectors.oauth_selector_move", () => {
 			return () => runCliSelectorsOauthSelectorMove();
 		}),
+		api_key_input_state_handle_event: await collect(
+			"cli_selectors.api_key_input_state_handle_event",
+			() => {
+				return () => runCliSelectorsApiKeyInputStateHandleEvent();
+			},
+		),
 		observed,
 	};
 }
@@ -11295,6 +11383,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts handleInput event dispatch (login method selector)",
 			"cli_selectors.oauth_selector_move":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput navigation (wrap index; fixtures avoid clamp boundary)",
+			"cli_selectors.api_key_input_state_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts handleInput api key prompt dispatch",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

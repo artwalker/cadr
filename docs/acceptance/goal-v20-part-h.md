@@ -2844,6 +2844,19 @@ OAuth option status themed indicator (muted/warning/success). Observed
 exact. First Friend-MachineD freeze **10.02×** (13.9 / 1.4 µs), ceiling
 15.0. Gate used `--only-enforce`. Same commit no optimize.
 
+### Pair 212 — `cli_selectors` (api_key_input_state_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `api_key_input_state_handle_event` | `api-key-input-state-handle-event` | `LoginDialogComponent` api key prompt dispatch |
+
+API key overlay event routing: cancel on escape/clear/interrupt, text
+entry, backspace, empty submit, key submit. Observed `akhe_esc` /
+`akhe_clear` / `akhe_text` / `akhe_bs` / `akhe_enter_empty` /
+`akhe_enter_key` / `akhe_interrupt` are exact. First Friend-MachineD freeze
+**1.66×** (7.0 / 4.2 µs), ceiling 8.0. Gate used `--only-enforce`. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash

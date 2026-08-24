@@ -144,7 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type", "parse_auto_theme", "resolve_theme"),
-    "cli_selectors": ("session_search", "session_format_age", "session_record_label", "session_shorten_path", "session_quoted_search", "session_thread_records", "session_binding_label", "session_same_path", "session_quoted_p", "session_named_p", "settings_thinking_description", "settings_display_value", "settings_automatic_theme_setting", "settings_active_automatic_theme", "settings_cycle", "settings_apply_filter", "tree_entry_filtered", "tree_query_matches", "tree_entry_search_text", "tree_settings_entry_p", "tree_normalize_display_text", "tree_status_labels", "tree_shorten_path", "tree_foldable_p", "tree_tool_argument", "tree_cycle_filter", "tree_format_label_timestamp", "tree_format_tool_call", "tree_entry_display_text", "tree_prefix", "tree_visual_nodes", "tree_horizontal_viewport", "tree_help_keys", "tree_help_key", "tree_app_key_p", "tree_help_lines", "tree_active_path", "tree_nearest_visible_id", "tree_prioritize_active", "tree_entry_map", "tree_order_entries", "tree_iso_timestamp", "tree_rebuild_visible_maps", "tree_apply_filter", "tree_render_lines", "tree_move", "tree_fold_or_up", "tree_unfold_or_down", "tree_branch_segment_id", "tree_set_query", "tree_set_filter", "tree_copy_selected", "tree_toggle_label_timestamps", "tree_start_label_edit", "tree_confirm_label", "tree_cancel_label", "tree_handle_raw_input", "tree_handle_event", "tree_handle_label_event", "tree_selected_entry", "tree_selected_id", "tree_select_id", "tree_visible_ids", "project_trust_options", "trust_selector_selection", "trust_decision_description", "trust_selector_move", "trust_selector_handle_event", "trust_selector_handle_raw_input", "trust_selector_ui_state", "oauth_option_status_label", "oauth_option_status_rendered", "credential_entry_auth_type", "oauth_environment_source_p", "oauth_selector_selection", "oauth_selector_apply_filter", "oauth_selector_handle_event", "oauth_selector_handle_raw_input", "oauth_selector_search_text", "login_auth_type_route", "login_provider_options", "logout_provider_options", "login_method_selector_handle_event", "oauth_selector_move", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
+    "cli_selectors": ("session_search", "session_format_age", "session_record_label", "session_shorten_path", "session_quoted_search", "session_thread_records", "session_binding_label", "session_same_path", "session_quoted_p", "session_named_p", "settings_thinking_description", "settings_display_value", "settings_automatic_theme_setting", "settings_active_automatic_theme", "settings_cycle", "settings_apply_filter", "tree_entry_filtered", "tree_query_matches", "tree_entry_search_text", "tree_settings_entry_p", "tree_normalize_display_text", "tree_status_labels", "tree_shorten_path", "tree_foldable_p", "tree_tool_argument", "tree_cycle_filter", "tree_format_label_timestamp", "tree_format_tool_call", "tree_entry_display_text", "tree_prefix", "tree_visual_nodes", "tree_horizontal_viewport", "tree_help_keys", "tree_help_key", "tree_app_key_p", "tree_help_lines", "tree_active_path", "tree_nearest_visible_id", "tree_prioritize_active", "tree_entry_map", "tree_order_entries", "tree_iso_timestamp", "tree_rebuild_visible_maps", "tree_apply_filter", "tree_render_lines", "tree_move", "tree_fold_or_up", "tree_unfold_or_down", "tree_branch_segment_id", "tree_set_query", "tree_set_filter", "tree_copy_selected", "tree_toggle_label_timestamps", "tree_start_label_edit", "tree_confirm_label", "tree_cancel_label", "tree_handle_raw_input", "tree_handle_event", "tree_handle_label_event", "tree_selected_entry", "tree_selected_id", "tree_select_id", "tree_visible_ids", "project_trust_options", "trust_selector_selection", "trust_decision_description", "trust_selector_move", "trust_selector_handle_event", "trust_selector_handle_raw_input", "trust_selector_ui_state", "oauth_option_status_label", "oauth_option_status_rendered", "credential_entry_auth_type", "oauth_environment_source_p", "oauth_selector_selection", "oauth_selector_apply_filter", "oauth_selector_handle_event", "oauth_selector_handle_raw_input", "oauth_selector_search_text", "login_auth_type_route", "login_provider_options", "logout_provider_options", "login_method_selector_handle_event", "oauth_selector_move", "api_key_input_state_handle_event", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
@@ -957,6 +957,9 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.oauth_selector_move.
   # Measure-only pair (Pair 210); ceiling not lowered.
   "cli_selectors.oauth_selector_move": 50.0,
+  # First-freeze headroom for cli_selectors.api_key_input_state_handle_event.
+  # Measure-only pair (Pair 212); first freeze 1.66× (7.0 / 4.2 µs).
+  "cli_selectors.api_key_input_state_handle_event": 8.0,
   # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
@@ -2129,6 +2132,13 @@ OBSERVED_EXACT = {
         "osmv_1_1",
         "osmv_1_m1",
         "osmv_filter",
+        "akhe_esc",
+        "akhe_clear",
+        "akhe_text",
+        "akhe_bs",
+        "akhe_enter_empty",
+        "akhe_enter_key",
+        "akhe_interrupt",
     ),
     "websocket_stream": (
         "ws_text",
