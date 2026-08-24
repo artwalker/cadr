@@ -350,6 +350,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_enable_all": 50,
 	"cli_selectors.scoped_models_selector_clear_all": 50,
 	"cli_selectors.scoped_models_selector_reorder": 50,
+	"cli_selectors.scoped_models_selector_persist": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10496,6 +10497,35 @@ function runCliSelectorsScopedModelsSelectorReorder() {
 	};
 }
 
+function scopedModelsSelectorPersistEncoded(allModels, enabledIds, withCallback = true) {
+	let calls = 0;
+	const state = makeScopedModelsBenchState(allModels, enabledIds, 0);
+	state.isDirty = true;
+	if (withCallback) {
+		const onPersist = (_payload) => {
+			calls += 1;
+		};
+		onPersist(state.enabledIds === null ? null : [...state.enabledIds]);
+	}
+	state.isDirty = false;
+	return `${encodeScopedModelsEnabledIds(state.enabledIds)}|${state.isDirty ? "true" : "false"}|${calls}`;
+}
+
+function runCliSelectorsScopedModelsSelectorPersist() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsper_all: scopedModelsSelectorPersistEncoded(models, null),
+		smsper_partial: scopedModelsSelectorPersistEncoded(models, ["openai/gpt-4o"]),
+		smsper_no_cb: scopedModelsSelectorPersistEncoded(models, null, false),
+		smsper_empty: scopedModelsSelectorPersistEncoded(models, []),
+		smsper_two: scopedModelsSelectorPersistEncoded(models, [
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+		smsper_single: scopedModelsSelectorPersistEncoded(models, ["google/gemini-2.5-pro"]),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -11262,6 +11292,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorClearAll();
 	const scopedModelsSelectorReorderResults =
 		runCliSelectorsScopedModelsSelectorReorder();
+	const scopedModelsSelectorPersistResults =
+		runCliSelectorsScopedModelsSelectorPersist();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11565,6 +11597,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorEnableAllResults,
 		...scopedModelsSelectorClearAllResults,
 		...scopedModelsSelectorReorderResults,
+		...scopedModelsSelectorPersistResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -12010,6 +12043,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_reorder",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorReorder();
+			},
+		),
+		scoped_models_selector_persist: await collect(
+			"cli_selectors.scoped_models_selector_persist",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorPersist();
 			},
 		),
 		observed,

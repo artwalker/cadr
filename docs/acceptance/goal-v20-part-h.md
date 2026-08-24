@@ -2987,6 +2987,29 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
+### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_provider_count` | `scoped-models-selector-provider-count` | provider-count helper |
+
+Scoped models active-provider count (string digest). Observed `smsprv_all` /
+`smsprv_partial` / `smsprv_unavail` / `smsprv_empty` / `smsprv_single` are exact.
+First Friend-MachineD freeze **46.51×** (182.6 / 3.9 µs), ceiling 50.0 (bumped from
+8.0 on first freeze 46.24×). Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 239 — `cli_selectors` (scoped_models_selector_persist)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_persist` | `scoped-models-selector-persist` | `onPersist` callback |
+
+Scoped models persist (enabled-ids|dirty|calls digest). Observed `smsper_all` /
+`smsper_partial` / `smsper_no_cb` / `smsper_empty` / `smsper_two` / `smsper_single`
+are exact. First Friend-MachineD freeze **13.58×** (208.1 / 15.3 µs), ceiling 25.0
+(bumped from 8.0 on first freeze 20.35×). Gate used `--only-enforce`. Same commit
+no optimize.
+
 ### Pair 238 — `cli_selectors` (scoped_models_selector_reorder)
 
 | metric | cadr | pi |

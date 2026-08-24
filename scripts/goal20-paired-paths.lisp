@@ -426,6 +426,7 @@
     ("cli_selectors.scoped_models_selector_toggle_provider" . 50)
     ("cli_selectors.scoped_models_selector_clear_all" . 50)
     ("cli_selectors.scoped_models_selector_reorder" . 50)
+    ("cli_selectors.scoped_models_selector_persist" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -10007,6 +10008,45 @@
      (scoped-models-selector-reorder-encoded
       models three 0 1 :query "nope"))))
 
+(defun scoped-models-selector-persist-encoded
+    (models enabled-ids &key persist-callback)
+  (let* ((calls (list 0))
+         (state
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models models
+            :enabled-ids enabled-ids
+            :persist-callback
+            (when persist-callback
+              (lambda (ids)
+                (declare (ignore ids))
+                (incf (car calls)))))))
+    (setf (cadr-cli::scoped-models-selector-state-dirty-p state) t)
+    (cadr-cli::scoped-models-selector-persist state)
+    (format nil "~a|~a|~D"
+            (encode-scoped-models-enabled-ids
+             (cadr-cli::scoped-models-selector-state-enabled-ids state))
+            (if (cadr-cli::scoped-models-selector-state-dirty-p state)
+                "true" "false")
+            (car calls))))
+
+(defun run-cli-selectors-scoped-models-selector-persist ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (scoped-models-selector-persist-encoded
+      models :all :persist-callback t)
+     (scoped-models-selector-persist-encoded
+      models '("openai/gpt-4o") :persist-callback t)
+     (scoped-models-selector-persist-encoded
+      models :all :persist-callback nil)
+     (scoped-models-selector-persist-encoded
+      models '() :persist-callback t)
+     (scoped-models-selector-persist-encoded
+      models
+      '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+      :persist-callback t)
+     (scoped-models-selector-persist-encoded
+      models '("google/gemini-2.5-pro") :persist-callback t))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -10261,7 +10301,9 @@
         (scoped-models-selector-clear-all
           (run-cli-selectors-scoped-models-selector-clear-all))
         (scoped-models-selector-reorder
-          (run-cli-selectors-scoped-models-selector-reorder)))
+          (run-cli-selectors-scoped-models-selector-reorder))
+        (scoped-models-selector-persist
+          (run-cli-selectors-scoped-models-selector-persist)))
     (json-object
      "observed"
      (json-object
@@ -10994,7 +11036,13 @@
       "smsror_noop" (nth 2 scoped-models-selector-reorder)
       "smsror_empty" (nth 3 scoped-models-selector-reorder)
       "smsror_filter" (nth 4 scoped-models-selector-reorder)
-      "smsror_miss" (nth 5 scoped-models-selector-reorder))
+      "smsror_miss" (nth 5 scoped-models-selector-reorder)
+      "smsper_all" (nth 0 scoped-models-selector-persist)
+      "smsper_partial" (nth 1 scoped-models-selector-persist)
+      "smsper_no_cb" (nth 2 scoped-models-selector-persist)
+      "smsper_empty" (nth 3 scoped-models-selector-persist)
+      "smsper_two" (nth 4 scoped-models-selector-persist)
+      "smsper_single" (nth 5 scoped-models-selector-persist))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11632,7 +11680,12 @@
      (collect "cli_selectors.scoped_models_selector_reorder"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-reorder)))))))
+                  (run-cli-selectors-scoped-models-selector-reorder))))
+     "scoped_models_selector_persist"
+     (collect "cli_selectors.scoped_models_selector_persist"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-persist)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12903,6 +12956,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-clear-all"
       "cli_selectors.scoped_models_selector_reorder"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
+      "cli_selectors.scoped_models_selector_persist"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
