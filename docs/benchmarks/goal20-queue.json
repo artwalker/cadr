@@ -102,11 +102,11 @@
   {
    "pair": 257,
    "lane": "c",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-agent/execution-env.lisp",
    "measure": "measure-cli-settings",
    "metric": null,
-   "branch": null
+   "branch": "pair-257-execution-env"
   },
   {
    "pair": 258,
@@ -154,5 +154,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-257-execution-env",
+   "pair": 257
+  }
+ ]
 }
