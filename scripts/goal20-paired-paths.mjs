@@ -374,6 +374,7 @@ const REPETITIONS = {
 	"session_pipeline.session_leaf_id": 50,
 	"storage_journal.journal_read": 5,
 	"storage_journal.journal_append": 3,
+	"storage_journal.journal_entry_count": 50,
 	"sqlite_session.open_walk": 3,
 	"tool_read.text_file": 5,
 	"tool_grep.context_file": 5,
@@ -1966,10 +1967,14 @@ async function measureStorageJournal() {
 		journal_append: await collect("storage_journal.journal_append", () => {
 			return () => appendJournalOnce();
 		}),
+		journal_entry_count: await collect("storage_journal.journal_entry_count", () => {
+			return () => written.getEntries().length;
+		}),
 		observed: {
 			read_file_entry_count: raw.length,
 			append_entry_count: JOURNAL_APPEND_ENTRY_COUNT,
 			journal_cwd: written.getCwd(),
+			session_entry_count: written.getEntries().length,
 			written_file_entry_count: writtenEntries,
 			written_bytes: writtenBytes,
 			written_body_bytes: writtenBytes - headerLength,
@@ -13867,6 +13872,8 @@ const result = {
 				"packages/coding-agent/src/core/session-manager.ts loadEntriesFromFile",
 			"storage_journal.journal_append":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.create + appendMessage",
+			"storage_journal.journal_entry_count":
+				"packages/coding-agent/src/core/session-manager.ts SessionManager.getEntries().length",
 			"sqlite_session.open_walk":
 				"packages/session-backends/sqlite-node SqliteSessionRepository.open + findEntries + findEntriesOnBranch",
 			"tool_read.text_file":

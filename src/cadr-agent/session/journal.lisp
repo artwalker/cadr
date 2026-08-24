@@ -28,6 +28,10 @@
 (defun session-entries (session)
   (copy-list (session-%entries session)))
 
+(defun session-entry-count (session)
+  ;; pi SessionManager.getEntries().length
+  (length (session-%entries session)))
+
 (defun put-session-details-and-usage (base entry)
   (when (session-entry-details entry)
     (cadr-ai::json-put

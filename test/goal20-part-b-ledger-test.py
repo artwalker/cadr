@@ -384,6 +384,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("leaf_id", paired.OBSERVED_EXACT["harness_storage"])
         self.assertIn("session_id", paired.OBSERVED_EXACT["harness_storage"])
 
+    def test_storage_journal_journal_entry_count_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("storage_journal.journal_entry_count", RECORD.METRIC_KEYS)
+        self.assertIn("journal_entry_count", paired.METRICS["storage_journal"])
+        self.assertIn(
+            "storage_journal.journal_entry_count", paired.RATIO_CEILINGS
+        )
+        self.assertIn("session_entry_count", paired.OBSERVED_EXACT["storage_journal"])
+
     def test_protocol_codec_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("protocol_codec.roundtrip", RECORD.METRIC_KEYS)
@@ -1812,6 +1821,22 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("http_port", paired.OBSERVED_EXACT["http_transport"])
         self.assertIn("http_path", paired.OBSERVED_EXACT["http_transport"])
 
+    def test_storage_journal_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("storage_journal.journal_read", RECORD.METRIC_KEYS)
+        self.assertIn("storage_journal.journal_append", RECORD.METRIC_KEYS)
+        self.assertIn("storage_journal.journal_entry_count", RECORD.METRIC_KEYS)
+        self.assertIn("journal_read", paired.METRICS["storage_journal"])
+        self.assertIn("journal_append", paired.METRICS["storage_journal"])
+        self.assertIn("journal_entry_count", paired.METRICS["storage_journal"])
+        self.assertIn("storage_journal.journal_read", paired.RATIO_CEILINGS)
+        self.assertIn("storage_journal.journal_append", paired.RATIO_CEILINGS)
+        self.assertIn("storage_journal.journal_entry_count", paired.RATIO_CEILINGS)
+        self.assertIn("read_file_entry_count", paired.OBSERVED_EXACT["storage_journal"])
+        self.assertIn("append_entry_count", paired.OBSERVED_EXACT["storage_journal"])
+        self.assertIn("session_entry_count", paired.OBSERVED_EXACT["storage_journal"])
+        self.assertIn("written_file_entry_count", paired.OBSERVED_EXACT["storage_journal"])
+
     def test_session_compact_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_compact.compact", RECORD.METRIC_KEYS)
@@ -1888,6 +1913,7 @@ class TestPairedPathRecord(unittest.TestCase):
             section = LEDGER.render_paired_section(history)
             self.assertIn("GOAL20_PAIRED_PATHS_START", section)
             self.assertIn("`storage_journal.journal_append`", section)
+            self.assertIn("`storage_journal.journal_entry_count`", section)
             self.assertIn("`sqlite_session.open_walk`", section)
             self.assertIn("`tool_read.text_file`", section)
             self.assertIn("`tool_grep.context_file`", section)

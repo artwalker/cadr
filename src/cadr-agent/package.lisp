@@ -281,6 +281,7 @@
    #:session-entry-name
    #:session-entry-retained-tail
    #:session-entries
+   #:session-entry-count
    #:default-session-directory
    #:create-session
    #:load-session

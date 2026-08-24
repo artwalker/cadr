@@ -269,6 +269,7 @@ METRIC_KEYS = (
     "session_pipeline.session_leaf_id",
     "storage_journal.journal_read",
     "storage_journal.journal_append",
+    "storage_journal.journal_entry_count",
     "sqlite_session.open_walk",
     "tool_read.text_file",
     "tool_grep.context_file",

@@ -84,6 +84,7 @@ model-change entries, and a label. Both loaders parse the whole file; pi's
 |---|---|---|
 | `journal_read` | `read-session-objects` (`src/cadr-agent/session/migration.lisp`) | `loadEntriesFromFile` (`packages/coding-agent/src/core/session-manager.ts`) |
 | `journal_append` | `create-session` + 128 × `session-append-message` (`src/cadr-agent/session/journal.lisp`) | `SessionManager.create` + 128 × `appendMessage` |
+| `journal_entry_count` | `session-entry-count` (`src/cadr-agent/session/journal.lisp`) | `SessionManager.getEntries().length` (`packages/coding-agent/src/core/session-manager.ts`) |
 
 The append input is the first 128 message entries of the same `session.jsonl`,
 replayed into a fresh journal, so both sides write the same logical entries in
@@ -3027,6 +3028,17 @@ First Friend-MachineD freeze **99.97×** (728.7 / 7.3 µs), ceiling 125.0
 (bumped from 8.0 on first freeze). Gate used `--only-enforce`. Same commit
 no optimize.
 
+### Pair 248 — `storage_journal` (journal_entry_count)
+
+| metric | cadr | pi |
+|---|---|---|
+| `journal_entry_count` | `session-entry-count` | `getEntries().length` |
+
+In-memory entry count on the written append journal (128 messages). Observed
+`session_entry_count` is exact. First Friend-MachineD freeze **0.09×**
+(0.22 / 2.4 µs), ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same
+commit no optimize.
+
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
 | metric | cadr | pi |
@@ -3437,7 +3449,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe` |
 | `src/cadr-agent/session/export-html.lisp` | 455 | `session_export_html.to_html` |
-| `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
+| `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append`, `storage_journal.journal_entry_count` |
 | `src/cadr-agent/session/migration.lisp` | 2,434 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
 | `src/cadr-agent/storage/harness.lisp` | 476 | `harness_storage.open_walk` |

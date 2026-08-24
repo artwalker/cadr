@@ -958,6 +958,11 @@ tag/Release step.
   pi `buildSystemPrompt`). Friend-MachineD n=5
   **1170.57×** (2196 / 1.88 µs), ceiling 3000.0. Same
   commit no optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `storage_journal.journal_entry_count`
+  (in-memory count on append journal; cadr `session-entry-count` vs pi
+  `SessionManager.getEntries().length`). Observed `session_entry_count`
+  exact (128). Friend-MachineD n=5 **0.09×** (0.22 / 2.4 µs), ceiling 8.0.
+  cadr leads. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `provider_registry_defs.definition_ids`
   (built-in catalog ids; cadr `list-provider-definition-ids` vs pi
   `getBuiltinProviders`). Observed `count` / `sorted_digest` exact.

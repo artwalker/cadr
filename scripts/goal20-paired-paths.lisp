@@ -453,6 +453,7 @@
     ("session_pipeline.session_leaf_id" . 50)
     ("storage_journal.journal_read" . 5)
     ("storage_journal.journal_append" . 3)
+    ("storage_journal.journal_entry_count" . 50)
     ("sqlite_session.open_walk" . 3)
     ("tool_read.text_file" . 5)
     ("tool_grep.context_file" . 5)
@@ -1940,11 +1941,17 @@
               (lambda ()
                 (lambda ()
                   (cadr-agent::read-session-objects path))))
+     "journal_entry_count"
+     (collect "storage_journal.journal_entry_count"
+              (lambda ()
+                (lambda ()
+                  (cadr-agent:session-entry-count written))))
      "observed"
      (json-object
       "append_entry_count" *journal-append-entry-count*
       "journal_cwd" (cadr-agent:session-cwd written)
       "read_file_entry_count" (length objects)
+      "session_entry_count" (cadr-agent:session-entry-count written)
       "written_body_bytes" (- (length written-octets) header-length)
       "written_bytes" (length written-octets)
       "written_file_entry_count" (length written-objects)))))
@@ -13307,6 +13314,8 @@
       "src/cadr-agent/session/migration.lisp read-session-objects"
       "storage_journal.journal_append"
       "src/cadr-agent/session/journal.lisp create-session + session-append-message"
+      "storage_journal.journal_entry_count"
+      "src/cadr-agent/session/journal.lisp session-entry-count"
       "sqlite_session.open_walk"
       "src/cadr-agent/sqlite-storage.lisp session-repository-open + harness-session-entries + harness-session-branch"
       "tool_read.text_file"

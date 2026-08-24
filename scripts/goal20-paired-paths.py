@@ -153,7 +153,7 @@ METRICS = {
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
     "session_pipeline": ("session_load", "context_walk", "session_leaf_id"),
-    "storage_journal": ("journal_read", "journal_append"),
+    "storage_journal": ("journal_read", "journal_append", "journal_entry_count"),
     "sqlite_session": ("open_walk",),
     "tool_read": ("text_file",),
     "tool_grep": ("context_file",),
@@ -1107,6 +1107,9 @@ RATIO_CEILINGS = {
     "session_pipeline.session_leaf_id": 8.0,
     "storage_journal.journal_read": 8.0,
     "storage_journal.journal_append": 12.0,
+    # storage_journal.journal_entry_count pair (samples=5): observed 0.06x
+    # (0.22 / 3.7 us). 8.0 is first-freeze headroom. Ratchet down only.
+    "storage_journal.journal_entry_count": 8.0,
     # Frozen from the first Friend-MachineD non-quick sqlite_session
     # pair (samples=5): observed 0.15x. cadr leads. 1.5 follows the
     # list_models_registry / render_slicing precedent (headroom above
@@ -2502,6 +2505,7 @@ OBSERVED_EXACT = {
     "storage_journal": (
         "read_file_entry_count",
         "append_entry_count",
+        "session_entry_count",
         "written_file_entry_count",
     ),
     "sqlite_session": (
