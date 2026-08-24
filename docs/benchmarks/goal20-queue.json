@@ -39,11 +39,11 @@
   {
    "pair": 254,
    "lane": "a",
-   "status": "pending",
+   "status": "done",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
-   "branch": null
+   "branch": "pair-254-session-list-probe"
   },
   {
    "pair": 255,
@@ -82,5 +82,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-254-session-list-probe",
+   "pair": 254
+  }
+ ]
 }
