@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "nextPairNum": 260,
+ "nextPairNum": 263,
  "lanes": {
   "a": {
    "role": "pairing",
@@ -123,6 +123,33 @@
    "status": "in_progress",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-resource-loader",
+   "metric": null,
+   "branch": null
+  },
+  {
+   "pair": 260,
+   "lane": "a",
+   "status": "pending",
+   "source": "src/cadr-agent/execution-env.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": null,
+   "branch": null
+  },
+  {
+   "pair": 261,
+   "lane": "b",
+   "status": "pending",
+   "source": "src/cadr-agent/file-mutation-queue.lisp",
+   "measure": "measure-resource-loader",
+   "metric": null,
+   "branch": null
+  },
+  {
+   "pair": 262,
+   "lane": "c",
+   "status": "pending",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-cli-settings",
    "metric": null,
    "branch": null
   }
