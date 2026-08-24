@@ -2987,6 +2987,17 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
+### Pair 235 — `cli_selectors` (scoped_models_selector_enable_all)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_enable_all` | `scoped-models-selector-enable-all` | `enableAll` |
+
+Scoped models enable-all (enabled-ids|dirty digest). Observed `smsea_all` /
+`smsea_partial` / `smsea_empty` / `smsea_two` / `smsea_filter` / `smsea_miss`
+are exact. First Friend-MachineD freeze **20.77×** (384.3 / 18.5 µs), ceiling
+25.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 234 — `cli_selectors` (scoped_models_selector_target_ids)
 
 | metric | cadr | pi |

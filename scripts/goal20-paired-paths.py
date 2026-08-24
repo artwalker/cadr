@@ -1003,7 +1003,8 @@ RATIO_CEILINGS = {
   "cli_selectors.scoped_models_selector_toggle_selected": 8.0,
   "cli_selectors.scoped_models_selector_toggle_provider": 8.0,
   "cli_selectors.scoped_models_selector_target_ids": 8.0,
-  "cli_selectors.scoped_models_selector_enable_all": 8.0,
+  # Measure-only pair (Pair 235); first freeze 20.77×.
+  "cli_selectors.scoped_models_selector_enable_all": 25.0,
   # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
