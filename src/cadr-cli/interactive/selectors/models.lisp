@@ -978,8 +978,11 @@ shows the terminal message with the given style."
             enabled index new-index))
           (scoped-models-selector-mark-changed
            state)
-          (scoped-models-selector-select-id
-           state id)))))
+          (setf
+           (scoped-models-selector-state-selected state)
+           (+ (scoped-models-selector-state-selected state)
+              delta))
+          (scoped-models-selector-clamp-selected state)))))
   state)
 
 (defun scoped-models-selector-persist (state)

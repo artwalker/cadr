@@ -425,6 +425,7 @@
     ("cli_selectors.scoped_models_selector_enable_all" . 50)
     ("cli_selectors.scoped_models_selector_toggle_provider" . 50)
     ("cli_selectors.scoped_models_selector_clear_all" . 50)
+    ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9973,6 +9974,39 @@
      (scoped-models-selector-clear-all-encoded
       models '("openai/gpt-4o") :query "nope"))))
 
+(defun scoped-models-selector-reorder-encoded
+    (models enabled-ids selected delta &key query)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids)))
+    (setf (cadr-cli::scoped-models-selector-state-query state) (or query ""))
+    (setf (cadr-cli::scoped-models-selector-state-selected state) selected)
+    (cadr-cli::scoped-models-selector-clamp-selected state)
+    (cadr-cli::scoped-models-selector-reorder state delta)
+    (format nil "~a|~a|~D"
+            (encode-scoped-models-enabled-ids
+             (cadr-cli::scoped-models-selector-state-enabled-ids state))
+            (if (cadr-cli::scoped-models-selector-state-dirty-p state)
+                "true" "false")
+            (cadr-cli::scoped-models-selector-state-selected state))))
+
+(defun run-cli-selectors-scoped-models-selector-reorder ()
+  (let ((models (make-scoped-models-test-models))
+        (three
+          '("openai/gpt-4o"
+            "anthropic/claude-sonnet-4"
+            "google/gemini-2.5-pro")))
+    (list
+     (scoped-models-selector-reorder-encoded models three 0 1)
+     (scoped-models-selector-reorder-encoded models three 1 -1)
+     (scoped-models-selector-reorder-encoded models three 0 -1)
+     (scoped-models-selector-reorder-encoded models '() 0 1)
+     (scoped-models-selector-reorder-encoded
+      models three 0 1 :query "gpt")
+     (scoped-models-selector-reorder-encoded
+      models three 0 1 :query "nope"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -10225,7 +10259,9 @@
         (scoped-models-selector-toggle-provider
           (run-cli-selectors-scoped-models-selector-toggle-provider))
         (scoped-models-selector-clear-all
-          (run-cli-selectors-scoped-models-selector-clear-all)))
+          (run-cli-selectors-scoped-models-selector-clear-all))
+        (scoped-models-selector-reorder
+          (run-cli-selectors-scoped-models-selector-reorder)))
     (json-object
      "observed"
      (json-object
@@ -10952,7 +10988,13 @@
       "smsca_empty" (nth 2 scoped-models-selector-clear-all)
       "smsca_two" (nth 3 scoped-models-selector-clear-all)
       "smsca_filter" (nth 4 scoped-models-selector-clear-all)
-      "smsca_miss" (nth 5 scoped-models-selector-clear-all))
+      "smsca_miss" (nth 5 scoped-models-selector-clear-all)
+      "smsror_down" (nth 0 scoped-models-selector-reorder)
+      "smsror_up" (nth 1 scoped-models-selector-reorder)
+      "smsror_noop" (nth 2 scoped-models-selector-reorder)
+      "smsror_empty" (nth 3 scoped-models-selector-reorder)
+      "smsror_filter" (nth 4 scoped-models-selector-reorder)
+      "smsror_miss" (nth 5 scoped-models-selector-reorder))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11585,7 +11627,12 @@
      (collect "cli_selectors.scoped_models_selector_clear_all"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-clear-all)))))))
+                  (run-cli-selectors-scoped-models-selector-clear-all))))
+     "scoped_models_selector_reorder"
+     (collect "cli_selectors.scoped_models_selector_reorder"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-reorder)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12854,6 +12901,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-toggle-provider"
       "cli_selectors.scoped_models_selector_clear_all"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-clear-all"
+      "cli_selectors.scoped_models_selector_reorder"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

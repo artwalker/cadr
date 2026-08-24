@@ -349,6 +349,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_target_ids": 50,
 	"cli_selectors.scoped_models_selector_enable_all": 50,
 	"cli_selectors.scoped_models_selector_clear_all": 50,
+	"cli_selectors.scoped_models_selector_reorder": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10416,6 +10417,85 @@ function runCliSelectorsScopedModelsSelectorClearAll() {
 	};
 }
 
+function scopedModelsMoveEnabled(enabledIds, id, delta) {
+	if (enabledIds === null) {
+		return enabledIds;
+	}
+	const list = [...enabledIds];
+	const index = list.indexOf(id);
+	if (index < 0) {
+		return list;
+	}
+	const newIndex = index + delta;
+	if (newIndex < 0 || newIndex >= list.length) {
+		return list;
+	}
+	const result = [...list];
+	[result[index], result[newIndex]] = [result[newIndex], result[index]];
+	return result;
+}
+
+function scopedModelsSelectorReorderEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	delta,
+	query = "",
+) {
+	const state = makeScopedModelsBenchState(allModels, enabledIds, selected, query);
+	state.isDirty = false;
+	scopedModelsSelectorClampSelected(state);
+	const item = state.filteredItems[state.selected];
+	if (
+		item &&
+		Array.isArray(state.enabledIds) &&
+		scopedModelsIsEnabled(state.enabledIds, item.fullId)
+	) {
+		const currentIndex = state.enabledIds.indexOf(item.fullId);
+		const newIndex = currentIndex + delta;
+		if (newIndex >= 0 && newIndex < state.enabledIds.length) {
+			state.enabledIds = scopedModelsMoveEnabled(
+				state.enabledIds,
+				item.fullId,
+				delta,
+			);
+			state.isDirty = true;
+			state.selected += delta;
+			scopedModelsSelectorClampSelected(state);
+		}
+	}
+	return `${encodeScopedModelsEnabledIds(state.enabledIds)}|${state.isDirty ? "true" : "false"}|${state.selected}`;
+}
+
+function runCliSelectorsScopedModelsSelectorReorder() {
+	const models = makeModelSelectorTestModels();
+	const three = [
+		"openai/gpt-4o",
+		"anthropic/claude-sonnet-4",
+		"google/gemini-2.5-pro",
+	];
+	return {
+		smsror_down: scopedModelsSelectorReorderEncoded(models, three, 0, 1),
+		smsror_up: scopedModelsSelectorReorderEncoded(models, three, 1, -1),
+		smsror_noop: scopedModelsSelectorReorderEncoded(models, three, 0, -1),
+		smsror_empty: scopedModelsSelectorReorderEncoded(models, [], 0, 1),
+		smsror_filter: scopedModelsSelectorReorderEncoded(
+			models,
+			three,
+			0,
+			1,
+			"gpt",
+		),
+		smsror_miss: scopedModelsSelectorReorderEncoded(
+			models,
+			three,
+			0,
+			1,
+			"nope",
+		),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -11180,6 +11260,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorEnableAll();
 	const scopedModelsSelectorClearAllResults =
 		runCliSelectorsScopedModelsSelectorClearAll();
+	const scopedModelsSelectorReorderResults =
+		runCliSelectorsScopedModelsSelectorReorder();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11482,6 +11564,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorTargetIdsResults,
 		...scopedModelsSelectorEnableAllResults,
 		...scopedModelsSelectorClearAllResults,
+		...scopedModelsSelectorReorderResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11921,6 +12004,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_clear_all",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorClearAll();
+			},
+		),
+		scoped_models_selector_reorder: await collect(
+			"cli_selectors.scoped_models_selector_reorder",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorReorder();
 			},
 		),
 		observed,

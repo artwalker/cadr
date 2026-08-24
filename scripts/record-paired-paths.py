@@ -245,6 +245,7 @@ METRIC_KEYS = (
     "cli_selectors.scoped_models_selector_enable_all",
     "cli_selectors.scoped_models_selector_toggle_provider",
     "cli_selectors.scoped_models_selector_clear_all",
+    "cli_selectors.scoped_models_selector_reorder",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

@@ -2987,6 +2987,17 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
+### Pair 238 — `cli_selectors` (scoped_models_selector_reorder)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_reorder` | `scoped-models-selector-reorder` | reorder up/down |
+
+Scoped models enabled-list reorder (enabled-ids|dirty|selected digest). Observed
+`smsror_down` / `smsror_up` / `smsror_noop` / `smsror_empty` / `smsror_filter` /
+`smsror_miss` are exact. First Friend-MachineD freeze **3.42×** (287.2 / 84.0 µs),
+ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 237 — `cli_selectors` (scoped_models_selector_clear_all)
 
 | metric | cadr | pi |
