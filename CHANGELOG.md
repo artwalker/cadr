@@ -980,6 +980,12 @@ tag/Release step.
   `SessionManager.getEntries().length`). Observed `session_entry_count`
   exact (128). Friend-MachineD n=5 **0.09×** (0.22 / 2.4 µs), ceiling 8.0.
   cadr leads. Same commit no optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `cli_bootstrap_sessions.bootstrap_auth`
+  (built-in login option projection; cadr `model-registry-login-options` vs
+  pi `getLoginProviderOptions`). Observed `option_count` / `auth_pairs_digest`
+  / `vertex_structured` / `bedrock_structured` exact. Friend-MachineD n=5
+  **0.64×** (3928.6 / 6134.0 µs), ceiling 8.0. cadr leads. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `provider_registry_defs.definition_ids`
   (built-in catalog ids; cadr `list-provider-definition-ids` vs pi
   `getBuiltinProviders`). Observed `count` / `sorted_digest` exact.

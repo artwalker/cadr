@@ -3094,6 +3094,18 @@ are exact. No load, no TUI. First Friend-MachineD freeze **1.98×**
 (1954.5 / 987.2 µs), ceiling 8.0. pi leads. Gate used `--only-enforce`. Same
 commit no optimize.
 
+### Pair 250 — `cli_bootstrap_sessions` (bootstrap_auth)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bootstrap_auth` | `model-registry-login-options` | `getLoginProviderOptions` |
+
+Built-in provider login options from a fresh model registry (no extension-only
+native providers). Observed `option_count` / `auth_pairs_digest` /
+`vertex_structured` / `bedrock_structured` are exact. First Friend-MachineD
+freeze **0.64×** (3928.6 / 6134.0 µs), ceiling 8.0. cadr leads. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
 | metric | cadr | pi |
