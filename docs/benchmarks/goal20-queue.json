@@ -127,10 +127,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-255-branch-summarization",
-   "pair": 255
-  }
- ]
+ "mergeQueue": []
 }
