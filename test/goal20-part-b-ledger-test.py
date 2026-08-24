@@ -375,11 +375,18 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_session_discovery_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("session_discovery.header_probe", RECORD.METRIC_KEYS)
+        self.assertIn("session_discovery.session_list_probe", RECORD.METRIC_KEYS)
         self.assertIn("header_probe", paired.METRICS["session_discovery"])
+        self.assertIn("session_list_probe", paired.METRICS["session_discovery"])
         self.assertIn("session_discovery.header_probe", paired.RATIO_CEILINGS)
+        self.assertIn("session_discovery.session_list_probe", paired.RATIO_CEILINGS)
         self.assertIn("file_count", paired.OBSERVED_EXACT["session_discovery"])
         self.assertIn("session_id", paired.OBSERVED_EXACT["session_discovery"])
         self.assertIn("most_recent_name", paired.OBSERVED_EXACT["session_discovery"])
+        self.assertIn("list_count", paired.OBSERVED_EXACT["session_discovery"])
+        self.assertIn("list_id", paired.OBSERVED_EXACT["session_discovery"])
+        self.assertIn("list_most_recent_name", paired.OBSERVED_EXACT["session_discovery"])
+        self.assertIn("empty_count", paired.OBSERVED_EXACT["session_discovery"])
 
     def test_session_export_html_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

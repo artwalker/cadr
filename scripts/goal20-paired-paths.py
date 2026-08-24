@@ -102,7 +102,7 @@ METRICS = {
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets"),
     "resource_loader": ("reload",),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
-    "session_discovery": ("header_probe",),
+    "session_discovery": ("header_probe", "session_list_probe"),
     "session_export_html": ("to_html",),
     "protocol_cbor": ("roundtrip",),
     "agent_schema": ("validate_ok_fail",),
@@ -275,6 +275,7 @@ RATIO_CEILINGS = {
     # pair (samples=5): observed 2.05x (1450 / 709 us). 8.0 follows
     # the journal_read / tool_read headroom precedent. Ratchet down only.
     "session_discovery.header_probe": 8.0,
+    "session_discovery.session_list_probe": 8.0,
     # Frozen from the first Friend-MachineD non-quick session_export_html
     # pair (samples=5): observed 3.55x (29218 / 8240 us). 20.0 follows
     # the session_compact headroom precedent. Ratchet down only.
@@ -1400,6 +1401,10 @@ OBSERVED_EXACT = {
         "found",
         "session_id",
         "most_recent_name",
+        "list_count",
+        "list_id",
+        "list_most_recent_name",
+        "empty_count",
     ),
     "session_export_html": (
         "has_accent",

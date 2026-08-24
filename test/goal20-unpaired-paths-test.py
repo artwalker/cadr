@@ -69,6 +69,7 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(discovery), 1)
         self.assertEqual(discovery[0]["class"], "paired")
         self.assertIn("session_discovery.header_probe", discovery[0]["metrics"])
+        self.assertIn("session_discovery.session_list_probe", discovery[0]["metrics"])
         export_html = [
             row
             for row in classified["rows"]

@@ -44,6 +44,7 @@ METRIC_KEYS = (
     "package_manager.manifest_parse",
     "package_manager.package_source",
     "session_discovery.header_probe",
+    "session_discovery.session_list_probe",
     "session_export_html.to_html",
     "protocol_cbor.roundtrip",
     "agent_schema.validate_ok_fail",

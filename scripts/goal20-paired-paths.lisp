@@ -90,6 +90,7 @@
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
+;;;; 254. session_discovery list-sessions vs SessionManager.listAll
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -233,6 +234,7 @@
     ("package_manager.manifest_parse" . 50)
     ("package_manager.package_source" . 50)
     ("session_discovery.header_probe" . 20)
+    ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
     ("protocol_cbor.roundtrip" . 50)
     ("agent_schema.validate_ok_fail" . 50)
@@ -3325,25 +3327,66 @@
                     (or (cadr-ai::json-get header "id") "")))))))
     (values best-path file-count header-count session-id)))
 
+(defparameter *session-discovery-fixture-id*
+  "019f0000-0000-7000-8000-00000000cadr")
+
+(defun session-discovery-empty-directory ()
+  (uiop:ensure-directory-pathname
+   (merge-pathnames "discovery-empty/" *scratch-directory*)))
+
+(defun session-discovery-list-probe (directory)
+  (cadr-agent::list-sessions :directory directory))
+
+(defun run-session-discovery-list-probe (directory empty-directory)
+  (let ((sessions (session-discovery-list-probe directory))
+        (empty (session-discovery-list-probe empty-directory)))
+    (list
+     (length sessions)
+     (if (find *session-discovery-fixture-id*
+               sessions
+               :key #'cadr-agent:session-id
+               :test #'string=)
+         1
+         0)
+     (if sessions
+         (file-namestring
+          (cadr-agent:session-path (first sessions)))
+         "")
+     (if empty (length empty) 0))))
+
 (defun measure-session-discovery ()
-  (let ((directory (stage-session-discovery)))
+  (let* ((directory (stage-session-discovery))
+         (empty-directory (session-discovery-empty-directory)))
+    (ensure-directories-exist empty-directory)
     (multiple-value-bind
           (best-path file-count header-count session-id)
         (session-discovery-probe directory)
-      (json-object
-       "observed"
-       (json-object
-        "file_count" file-count
-        "header_count" header-count
-        "found" (if best-path 1 0)
-        "session_id" session-id
-        "most_recent_name"
-        (if best-path (file-namestring best-path) ""))
-       "header_probe"
-       (collect "session_discovery.header_probe"
-                (lambda ()
+      (destructuring-bind
+            (list-count list-id list-most-recent-name empty-count)
+          (run-session-discovery-list-probe directory empty-directory)
+        (json-object
+         "observed"
+         (json-object
+          "file_count" file-count
+          "header_count" header-count
+          "found" (if best-path 1 0)
+          "session_id" session-id
+          "most_recent_name"
+          (if best-path (file-namestring best-path) "")
+          "list_count" list-count
+          "list_id" list-id
+          "list_most_recent_name" list-most-recent-name
+          "empty_count" empty-count)
+         "header_probe"
+         (collect "session_discovery.header_probe"
                   (lambda ()
-                    (session-discovery-probe directory))))))))
+                    (lambda ()
+                      (session-discovery-probe directory))))
+         "session_list_probe"
+         (collect "session_discovery.session_list_probe"
+                  (lambda ()
+                    (lambda ()
+                      (session-discovery-list-probe directory)))))))))
 
 (defun session-export-html-path ()
   (merge-pathnames "export/session.html" *scratch-directory*))
@@ -13230,6 +13273,8 @@
       "src/cadr-cli/packages/source.lisp parse-package-source + package-source-identity + dedupe-package-sources"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
+      "session_discovery.session_list_probe"
+      "src/cadr-agent/session/discovery.lisp list-sessions"
       "session_export_html.to_html"
       "src/cadr-agent/session/export-html.lisp export-session-html"
       "protocol_cbor.roundtrip"

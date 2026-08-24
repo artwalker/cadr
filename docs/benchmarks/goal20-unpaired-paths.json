@@ -22,6 +22,7 @@
   "package_manager.resolve",
   "package_manager.package_source",
   "session_discovery.header_probe",
+  "session_discovery.session_list_probe",
   "session_export_html.to_html",
   "protocol_cbor.roundtrip",
   "agent_schema.validate_ok_fail",
@@ -782,7 +783,7 @@
   {
    "prefix": "src/cadr-agent/session/discovery.lisp",
    "class": "paired",
-   "metrics": ["session_discovery.header_probe"]
+   "metrics": ["session_discovery.header_probe", "session_discovery.session_list_probe"]
   },
   {
    "prefix": "src/cadr-agent/session/export-html.lisp",

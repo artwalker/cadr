@@ -149,6 +149,7 @@ const REPETITIONS = {
 	"package_manager.manifest_parse": 50,
 	"package_manager.package_source": 50,
 	"session_discovery.header_probe": 20,
+	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
 	"protocol_cbor.roundtrip": 50,
 	"agent_schema.validate_ok_fail": 50,
@@ -2899,6 +2900,7 @@ async function measureSessionCompact() {
 }
 
 const SESSION_DISCOVERY_FILE_COUNT = 32;
+const SESSION_DISCOVERY_FIXTURE_ID = "019f0000-0000-7000-8000-00000000cadr";
 
 function stageSessionDiscovery() {
 	const dir = path.join(scratch, "discovery-sessions");
@@ -2914,6 +2916,25 @@ function stageSessionDiscovery() {
 
 function sessionDiscoveryProbe(dir) {
 	return sessionModule.findMostRecentSession(dir);
+}
+
+function sessionDiscoveryEmptyDirectory() {
+	return path.join(scratch, "discovery-empty");
+}
+
+async function sessionDiscoveryListProbe(dir) {
+	return sessionModule.SessionManager.listAll(dir);
+}
+
+async function runSessionDiscoveryListProbe(directory, emptyDirectory) {
+	const sessions = await sessionDiscoveryListProbe(directory);
+	const empty = await sessionDiscoveryListProbe(emptyDirectory);
+	return {
+		list_count: sessions.length,
+		list_id: sessions.some((session) => session.id === SESSION_DISCOVERY_FIXTURE_ID) ? 1 : 0,
+		list_most_recent_name: sessions[0] ? path.basename(sessions[0].path) : "",
+		empty_count: empty.length,
+	};
 }
 
 const CBOR_ROUNDTRIP_HEX = [
@@ -13622,6 +13643,8 @@ async function measureSessionExportHtml() {
 
 async function measureSessionDiscovery() {
 	const dir = stageSessionDiscovery();
+	const emptyDir = sessionDiscoveryEmptyDirectory();
+	mkdirSync(emptyDir, { recursive: true });
 	const found = sessionDiscoveryProbe(dir);
 	const files = readdirSync(dir).filter((name) => name.endsWith(".jsonl"));
 	let sessionId = "";
@@ -13629,9 +13652,13 @@ async function measureSessionDiscovery() {
 		const firstLine = readFileSync(found, "utf8").split("\n", 1)[0];
 		sessionId = JSON.parse(firstLine).id;
 	}
+	const listObserved = await runSessionDiscoveryListProbe(dir, emptyDir);
 	return {
 		header_probe: await collect("session_discovery.header_probe", () => {
 			return () => sessionDiscoveryProbe(dir);
+		}),
+		session_list_probe: await collect("session_discovery.session_list_probe", () => {
+			return () => sessionDiscoveryListProbe(dir);
 		}),
 		observed: {
 			file_count: files.length,
@@ -13639,6 +13666,7 @@ async function measureSessionDiscovery() {
 			found: found ? 1 : 0,
 			session_id: sessionId,
 			most_recent_name: found ? path.basename(found) : "",
+			...listObserved,
 		},
 	};
 }
@@ -13849,6 +13877,8 @@ const result = {
 				"packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.parseSource + getPackageIdentity + dedupePackages",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
+			"session_discovery.session_list_probe":
+				"packages/coding-agent/src/core/session-manager.ts SessionManager.listAll",
 			"session_export_html.to_html":
 				"packages/coding-agent/src/core/export-html/index.ts exportSessionToHtml",
 			"protocol_cbor.roundtrip": "packages/protocol/src/cbor encodeCbor + decodeCbor",
