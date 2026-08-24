@@ -127,10 +127,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-253-runtime",
-   "pair": 253
-  }
- ]
+ "mergeQueue": []
 }
