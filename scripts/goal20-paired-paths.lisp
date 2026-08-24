@@ -396,6 +396,7 @@
     ("cli_selectors.login_auth_type_route" . 50)
     ("cli_selectors.login_provider_options" . 50)
     ("cli_selectors.logout_provider_options" . 50)
+    ("cli_selectors.login_method_selector_handle_event" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8746,6 +8747,51 @@
          ("anthropic" . "api_key")
          ("google-vertex" . "oauth")))))))
 
+(defun make-login-method-selector-state-with-selected (selected)
+  (let ((state (cadr-cli::make-login-method-selector-state)))
+    (setf (cadr-tui::select-list-selected
+           (cadr-cli::login-method-selector-state-select-list state))
+          selected)
+    state))
+
+(defun encode-login-method-selector-value (value)
+  (cond
+    ((eq value :oauth) "oauth")
+    ((eq value :api-key) "api_key")
+    ((typep value 'cadr-cli::oauth-selector-option)
+     (encode-oauth-selector-option value))
+    (t (write-to-string value))))
+
+(defun encode-login-method-handle-event-result (state action value)
+  (format nil "~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (if (and (eq action :select) value)
+              (encode-login-method-selector-value value)
+              "null")
+          (write-to-string
+           (cadr-tui::select-list-selected
+            (cadr-cli::login-method-selector-state-select-list
+             state)))))
+
+(defun login-method-handle-event-encoded (selected event-kind)
+  (let* ((state (make-login-method-selector-state-with-selected selected))
+         (event (cadr-tui:make-input-event :kind event-kind)))
+    (multiple-value-bind (action value)
+        (cadr-cli::login-method-selector-handle-event state event)
+      (encode-login-method-handle-event-result state action value))))
+
+(defun run-cli-selectors-login-method-selector-handle-event ()
+  (list
+   (login-method-handle-event-encoded 0 :down)
+   (login-method-handle-event-encoded 1 :up)
+   (login-method-handle-event-encoded 0 :enter)
+   (login-method-handle-event-encoded 1 :enter)
+   (login-method-handle-event-encoded 0 :escape)
+   (login-method-handle-event-encoded 1 :clear)
+   (login-method-handle-event-encoded 0 :interrupt)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8915,7 +8961,9 @@
         (login-provider-options
           (run-cli-selectors-login-provider-options))
         (logout-provider-options
-          (run-cli-selectors-logout-provider-options)))
+          (run-cli-selectors-logout-provider-options))
+        (login-method-selector-handle-event
+          (run-cli-selectors-login-method-selector-handle-event)))
     (json-object
      "observed"
      (json-object
@@ -9475,7 +9523,14 @@
       "lgo_empty" (nth 0 logout-provider-options)
       "lgo_mixed" (nth 1 logout-provider-options)
       "lgo_unknown" (nth 2 logout-provider-options)
-      "lgo_sorted" (nth 3 logout-provider-options))
+      "lgo_sorted" (nth 3 logout-provider-options)
+      "lmhe_down" (nth 0 login-method-selector-handle-event)
+      "lmhe_up" (nth 1 login-method-selector-handle-event)
+      "lmhe_enter_oauth" (nth 2 login-method-selector-handle-event)
+      "lmhe_enter_api" (nth 3 login-method-selector-handle-event)
+      "lmhe_esc" (nth 4 login-method-selector-handle-event)
+      "lmhe_clear" (nth 5 login-method-selector-handle-event)
+      "lmhe_interrupt" (nth 6 login-method-selector-handle-event))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9965,7 +10020,12 @@
      (collect "cli_selectors.logout_provider_options"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-logout-provider-options)))))))
+                  (run-cli-selectors-logout-provider-options))))
+     "login_method_selector_handle_event"
+     (collect "cli_selectors.login_method_selector_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-handle-event)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11176,6 +11236,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp login-provider-options"
       "cli_selectors.logout_provider_options"
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options"
+      "cli_selectors.login_method_selector_handle_event"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

@@ -1469,6 +1469,13 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_selectors.logout_provider_options", RECORD.METRIC_KEYS)
         self.assertIn("logout_provider_options", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.logout_provider_options", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.login_method_selector_handle_event", RECORD.METRIC_KEYS)
+        self.assertIn(
+            "login_method_selector_handle_event", paired.METRICS["cli_selectors"]
+        )
+        self.assertIn(
+            "cli_selectors.login_method_selector_handle_event", paired.RATIO_CEILINGS
+        )
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])

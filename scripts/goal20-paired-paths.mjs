@@ -320,6 +320,7 @@ const REPETITIONS = {
 	"cli_selectors.login_auth_type_route": 50,
 	"cli_selectors.login_provider_options": 50,
 	"cli_selectors.logout_provider_options": 50,
+	"cli_selectors.login_method_selector_handle_event": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8874,6 +8875,74 @@ function runCliSelectorsLogoutProviderOptions() {
 	};
 }
 
+function makeLoginMethodSelectorState(selected = 0) {
+	return {
+		items: [
+			{ label: "Sign in with an account", value: "oauth" },
+			{ label: "Sign in with an API key", value: "api_key" },
+		],
+		selected,
+	};
+}
+
+function encodeLoginMethodHandleEventResult(state, action, value) {
+	return [
+		action ?? "null",
+		action === "select" && value ? value : "null",
+		String(state.selected),
+	].join("|");
+}
+
+function loginMethodSelectorHandleEvent(state, eventKind) {
+	if (eventKind === "clear" || eventKind === "interrupt") {
+		return { action: "cancel", value: null, selected: state.selected };
+	}
+	switch (eventKind) {
+		case "down":
+			state.selected =
+				state.items.length === 0
+					? 0
+					: (state.selected + 1) % state.items.length;
+			return { action: null, value: null, selected: state.selected };
+		case "up":
+			state.selected =
+				state.items.length === 0
+					? 0
+					: (state.selected - 1 + state.items.length) % state.items.length;
+			return { action: null, value: null, selected: state.selected };
+		case "enter": {
+			const item = state.items[state.selected];
+			return {
+				action: item ? "select" : null,
+				value: item?.value ?? null,
+				selected: state.selected,
+			};
+		}
+		case "escape":
+			return { action: "cancel", value: null, selected: state.selected };
+		default:
+			return { action: null, value: null, selected: state.selected };
+	}
+}
+
+function loginMethodHandleEventEncoded(selected, eventKind) {
+	const state = makeLoginMethodSelectorState(selected);
+	const result = loginMethodSelectorHandleEvent(state, eventKind);
+	return encodeLoginMethodHandleEventResult(state, result.action, result.value);
+}
+
+function runCliSelectorsLoginMethodSelectorHandleEvent() {
+	return {
+		lmhe_down: loginMethodHandleEventEncoded(0, "down"),
+		lmhe_up: loginMethodHandleEventEncoded(1, "up"),
+		lmhe_enter_oauth: loginMethodHandleEventEncoded(0, "enter"),
+		lmhe_enter_api: loginMethodHandleEventEncoded(1, "enter"),
+		lmhe_esc: loginMethodHandleEventEncoded(0, "escape"),
+		lmhe_clear: loginMethodHandleEventEncoded(1, "clear"),
+		lmhe_interrupt: loginMethodHandleEventEncoded(0, "interrupt"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9288,6 +9357,8 @@ async function measureCliSelectorsSessionSearch() {
 	const loginAuthTypeRouteResults = runCliSelectorsLoginAuthTypeRoute();
 	const loginProviderOptionsResults = runCliSelectorsLoginProviderOptions();
 	const logoutProviderOptionsResults = runCliSelectorsLogoutProviderOptions();
+	const loginMethodSelectorHandleEventResults =
+		runCliSelectorsLoginMethodSelectorHandleEvent();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9561,6 +9632,7 @@ async function measureCliSelectorsSessionSearch() {
 		...loginAuthTypeRouteResults,
 		...loginProviderOptionsResults,
 		...logoutProviderOptionsResults,
+		...loginMethodSelectorHandleEventResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9866,6 +9938,12 @@ async function measureCliSelectorsSessionSearch() {
 		logout_provider_options: await collect("cli_selectors.logout_provider_options", () => {
 			return () => runCliSelectorsLogoutProviderOptions();
 		}),
+		login_method_selector_handle_event: await collect(
+			"cli_selectors.login_method_selector_handle_event",
+			() => {
+				return () => runCliSelectorsLoginMethodSelectorHandleEvent();
+			},
+		),
 		observed,
 	};
 }
@@ -11113,6 +11191,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
 			"cli_selectors.logout_provider_options":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions",
+			"cli_selectors.login_method_selector_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts handleInput event dispatch (login method selector)",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
