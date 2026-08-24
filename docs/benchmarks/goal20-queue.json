@@ -84,7 +84,7 @@
   {
    "pair": 255,
    "lane": "a",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/branch-summarization.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
@@ -127,10 +127,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-253-runtime",
-   "pair": 253
-  }
- ]
+ "mergeQueue": []
 }
