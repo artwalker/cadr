@@ -2987,6 +2987,18 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
+### Pair 237 — `cli_selectors` (scoped_models_selector_clear_all)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_clear_all` | `scoped-models-selector-clear-all` | `clearAll` |
+
+Scoped models clear-all (enabled-ids|dirty digest). Observed `smsca_all` /
+`smsca_partial` / `smsca_empty` / `smsca_two` / `smsca_filter` / `smsca_miss`
+are exact. First Friend-MachineD freeze **21.18×** (287.2 / 13.6 µs), ceiling
+25.0 (bumped from 8.0 on first freeze 19.56×). Gate used `--only-enforce`. Same
+commit no optimize.
+
 ### Pair 236 — `cli_selectors` (scoped_models_selector_toggle_provider)
 
 | metric | cadr | pi |
