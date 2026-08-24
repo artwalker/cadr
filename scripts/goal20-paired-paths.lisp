@@ -402,6 +402,7 @@
     ("cli_selectors.api_key_input_state_handle_event" . 50)
     ("cli_selectors.login_method_selector_ui_state" . 50)
     ("cli_selectors.api_key_input_ui_state" . 50)
+    ("cli_selectors.oauth_selector_ui_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8995,6 +8996,86 @@
     (make-api-key-input-ui-state :prefill "sk-ant-oat-xxxxxxxx")
     48)))
 
+(defun oauth-selector-ui-item-digest (option selected-p show-auth-type-labels-p)
+  (format nil "~a:~a:~a:~a~a"
+          (if selected-p "sel" "nosel")
+          (cadr-cli::oauth-selector-option-name option)
+          (if (eq (cadr-cli::oauth-selector-option-auth-type option) :oauth)
+              "oauth"
+              "api_key")
+          (cadr-cli::oauth-option-status-label option)
+          (if show-auth-type-labels-p
+              (format nil " [~A]"
+                      (if (eq (cadr-cli::oauth-selector-option-auth-type option)
+                              :oauth)
+                          "subscription"
+                          "API key"))
+              "")))
+
+(defun oauth-selector-ui-encoded (state width)
+  (let* ((options
+           (cadr-cli::oauth-selector-state-filtered-options state))
+         (selected (cadr-cli::oauth-selector-state-selected state))
+         (mode (cadr-cli::oauth-selector-state-mode state))
+         (title
+           (if (eq mode :logout)
+               "Select provider to logout:"
+               "Select provider to configure:"))
+         (show-auth-type-labels-p
+           (> (length
+               (remove-duplicates
+                (mapcar #'cadr-cli::oauth-selector-option-auth-type
+                        (cadr-cli::oauth-selector-state-options state))))
+              1))
+         (empty-msg
+           (cond
+             ((plusp (length options)) "")
+             ((plusp
+               (length (cadr-cli::oauth-selector-state-options state)))
+              "No matching providers")
+             ((eq mode :logout)
+              "No providers logged in. Use /login first.")
+             (t "No providers available"))))
+    (cadr-cli::render-oauth-selector state width)
+    (format nil "~a|~a|~a|~a|~a|~{~a~^;~}|~a"
+            (if (eq mode :logout) "logout" "login")
+            title
+            width
+            selected
+            (cadr-cli::oauth-selector-state-query state)
+            (loop for option in options
+                  for index from 0
+                  collect
+                  (oauth-selector-ui-item-digest
+                   option (= index selected) show-auth-type-labels-p))
+            empty-msg)))
+
+(defun make-oauth-selector-ui-state
+    (&key (mode :login) (options :default) selected query)
+  (let ((state
+          (cadr-cli::make-oauth-selector-state
+           :mode mode
+           :options
+           (if (eq options :default)
+               (make-oauth-selector-test-options)
+               options)
+           :query (or query ""))))
+    (when selected
+      (setf (cadr-cli::oauth-selector-state-selected state) selected))
+    state))
+
+(defun run-cli-selectors-oauth-selector-ui-state ()
+  (list
+   (oauth-selector-ui-encoded (make-oauth-selector-ui-state) 40)
+   (oauth-selector-ui-encoded
+    (make-oauth-selector-ui-state :selected 2) 40)
+   (oauth-selector-ui-encoded
+    (make-oauth-selector-ui-state :query "open" :selected 0) 50)
+   (oauth-selector-ui-encoded
+    (make-oauth-selector-ui-state :query "nope") 40)
+   (oauth-selector-ui-encoded
+    (make-oauth-selector-ui-state :mode :logout :options '()) 40)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -9176,7 +9257,9 @@
         (login-method-selector-ui-state
           (run-cli-selectors-login-method-selector-ui-state))
         (api-key-input-ui-state
-          (run-cli-selectors-api-key-input-ui-state)))
+          (run-cli-selectors-api-key-input-ui-state))
+        (oauth-selector-ui-state
+          (run-cli-selectors-oauth-selector-ui-state)))
     (json-object
      "observed"
      (json-object
@@ -9772,7 +9855,12 @@
       "akiui_key" (nth 1 api-key-input-ui-state)
       "akiui_openai" (nth 2 api-key-input-ui-state)
       "akiui_narrow" (nth 3 api-key-input-ui-state)
-      "akiui_long" (nth 4 api-key-input-ui-state))
+      "akiui_long" (nth 4 api-key-input-ui-state)
+      "osui_default" (nth 0 oauth-selector-ui-state)
+      "osui_sel2" (nth 1 oauth-selector-ui-state)
+      "osui_filter" (nth 2 oauth-selector-ui-state)
+      "osui_miss" (nth 3 oauth-selector-ui-state)
+      "osui_logout_empty" (nth 4 oauth-selector-ui-state))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10292,7 +10380,12 @@
      (collect "cli_selectors.api_key_input_ui_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-api-key-input-ui-state)))))))
+                  (run-cli-selectors-api-key-input-ui-state))))
+     "oauth_selector_ui_state"
+     (collect "cli_selectors.oauth_selector_ui_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-ui-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11515,6 +11608,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector"
       "cli_selectors.api_key_input_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-api-key-input-state"
+      "cli_selectors.oauth_selector_ui_state"
+      "src/cadr-cli/interactive/selectors/auth.lisp render-oauth-selector"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

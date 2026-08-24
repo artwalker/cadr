@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_selector_ui_state`
+  (oauth selector UI; cadr `render-oauth-selector` vs pi
+  `OauthSelectorComponent`). Friend-MachineD n=5 **24.66×**
+  (372.1 / 15.1 µs), ceiling 35.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.api_key_input_ui_state`
   (api key overlay UI; cadr `render-api-key-input-state` vs pi
   `LoginDialogComponent` showPrompt). Friend-MachineD n=5 **4.86×**

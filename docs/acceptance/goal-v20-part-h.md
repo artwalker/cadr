@@ -2881,6 +2881,18 @@ exercised). Observed `akiui_empty` / `akiui_key` / `akiui_openai` /
 **4.86×** (263.5 / 54.2 µs), ceiling 8.0. Gate used `--only-enforce`.
 Same commit no optimize.
 
+### Pair 215 — `cli_selectors` (oauth_selector_ui_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_selector_ui_state` | `render-oauth-selector` | `OauthSelectorComponent` UI state |
+
+OAuth selector UI digest (mode/title/selection/query/items/empty; render
+exercised). Observed `osui_default` / `osui_sel2` / `osui_filter` /
+`osui_miss` / `osui_logout_empty` are exact. First Friend-MachineD freeze
+**24.66×** (372.1 / 15.1 µs), ceiling 35.0. Gate used `--only-enforce`.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

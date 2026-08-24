@@ -326,6 +326,7 @@ const REPETITIONS = {
 	"cli_selectors.api_key_input_state_handle_event": 50,
 	"cli_selectors.login_method_selector_ui_state": 50,
 	"cli_selectors.api_key_input_ui_state": 50,
+	"cli_selectors.oauth_selector_ui_state": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9204,6 +9205,94 @@ function runCliSelectorsApiKeyInputUiState() {
 	};
 }
 
+function oauthSelectorUiItemDigest(option, selected, showAuthTypeLabels) {
+	const auth = option.authType === "oauth" ? "oauth" : "api_key";
+	const status = oauthOptionStatusLabel(option);
+	const authLabel = showAuthTypeLabels
+		? ` [${option.authType === "oauth" ? "subscription" : "API key"}]`
+		: "";
+	return `${selected ? "sel" : "nosel"}:${option.name}:${auth}:${status}${authLabel}`;
+}
+
+function makeOauthSelectorUiState({
+	mode = "login",
+	options = makeOauthSelectorTestOptions(),
+	selected = 0,
+	query = "",
+} = {}) {
+	const filtered = query
+		? fuzzyModule.fuzzyFilter(options, query, oauthSelectorSearchText)
+		: options;
+	return {
+		mode,
+		options,
+		filtered,
+		selected: filtered.length === 0 ? 0 : Math.min(selected, filtered.length - 1),
+		query,
+	};
+}
+
+function oauthSelectorUiEncoded(state, width) {
+	const title =
+		state.mode === "logout"
+			? "Select provider to logout:"
+			: "Select provider to configure:";
+	const showAuthTypeLabels =
+		new Set(state.options.map((option) => option.authType)).size > 1;
+	// Exercise OauthSelectorComponent.updateList-style theming.
+	for (let i = 0; i < state.filtered.length; i++) {
+		const option = state.filtered[i];
+		const isSelected = i === state.selected;
+		const statusIndicator = (() => {
+			if (!option.status) return themeModule.theme.fg("muted", " • unconfigured");
+			return themeModule.theme.fg("success", " ✓ configured");
+		})();
+		const authTypeLabel = showAuthTypeLabels
+			? themeModule.theme.fg(
+					"muted",
+					` [${option.authType === "oauth" ? "subscription" : "API key"}]`,
+				)
+			: "";
+		if (isSelected) {
+			themeModule.theme.fg("accent", "→ ") +
+				themeModule.theme.fg("accent", option.name) +
+				authTypeLabel +
+				statusIndicator;
+		} else {
+			`  ${themeModule.theme.fg("text", option.name)}` + authTypeLabel + statusIndicator;
+		}
+	}
+	let emptyMsg = "";
+	if (state.filtered.length === 0) {
+		if (state.options.length > 0) emptyMsg = "No matching providers";
+		else if (state.mode === "logout") emptyMsg = "No providers logged in. Use /login first.";
+		else emptyMsg = "No providers available";
+		themeModule.theme.fg("muted", `  ${emptyMsg}`);
+	}
+	const items = state.filtered
+		.map((option, index) =>
+			oauthSelectorUiItemDigest(option, index === state.selected, showAuthTypeLabels),
+		)
+		.join(";");
+	return `${state.mode}|${title}|${width}|${state.selected}|${state.query}|${items}|${emptyMsg}`;
+}
+
+function runCliSelectorsOauthSelectorUiState() {
+	return {
+		osui_default: oauthSelectorUiEncoded(makeOauthSelectorUiState(), 40),
+		osui_sel2: oauthSelectorUiEncoded(makeOauthSelectorUiState({ selected: 2 }), 40),
+		osui_filter: oauthSelectorUiEncoded(
+			makeOauthSelectorUiState({ query: "open", selected: 0 }),
+			50,
+		),
+		osui_miss: oauthSelectorUiEncoded(makeOauthSelectorUiState({ query: "nope" }), 40),
+		osui_logout_empty: oauthSelectorUiEncoded(
+			makeOauthSelectorUiState({ mode: "logout", options: [] }),
+			40,
+		),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9627,6 +9716,7 @@ async function measureCliSelectorsSessionSearch() {
 	const loginMethodSelectorUiStateResults =
 		runCliSelectorsLoginMethodSelectorUiState();
 	const apiKeyInputUiStateResults = runCliSelectorsApiKeyInputUiState();
+	const oauthSelectorUiStateResults = runCliSelectorsOauthSelectorUiState();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9906,6 +9996,7 @@ async function measureCliSelectorsSessionSearch() {
 		...apiKeyInputStateHandleEventResults,
 		...loginMethodSelectorUiStateResults,
 		...apiKeyInputUiStateResults,
+		...oauthSelectorUiStateResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10237,6 +10328,9 @@ async function measureCliSelectorsSessionSearch() {
 		),
 		api_key_input_ui_state: await collect("cli_selectors.api_key_input_ui_state", () => {
 			return () => runCliSelectorsApiKeyInputUiState();
+		}),
+		oauth_selector_ui_state: await collect("cli_selectors.oauth_selector_ui_state", () => {
+			return () => runCliSelectorsOauthSelectorUiState();
 		}),
 		observed,
 	};
@@ -11497,6 +11591,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent UI state",
 			"cli_selectors.api_key_input_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key UI state",
+			"cli_selectors.oauth_selector_ui_state":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent UI state",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
