@@ -321,6 +321,7 @@ const REPETITIONS = {
 	"cli_selectors.login_provider_options": 50,
 	"cli_selectors.logout_provider_options": 50,
 	"cli_selectors.login_method_selector_handle_event": 50,
+	"cli_selectors.oauth_selector_move": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8943,6 +8944,24 @@ function runCliSelectorsLoginMethodSelectorHandleEvent() {
 	};
 }
 
+function oauthSelectorMoveEncoded(options, selected, delta, query = "") {
+	const filtered = query
+		? fuzzyModule.fuzzyFilter(options, query, oauthSelectorSearchText)
+		: options;
+	return String(moveIndex(selected, filtered.length, delta));
+}
+
+function runCliSelectorsOauthSelectorMove() {
+	const options = makeOauthSelectorTestOptions();
+	return {
+		osmv_0_1: oauthSelectorMoveEncoded(options, 0, 1),
+		osmv_2_m1: oauthSelectorMoveEncoded(options, 2, -1),
+		osmv_1_1: oauthSelectorMoveEncoded(options, 1, 1),
+		osmv_1_m1: oauthSelectorMoveEncoded(options, 1, -1),
+		osmv_filter: oauthSelectorMoveEncoded(options, 0, 1, "open"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9359,6 +9378,7 @@ async function measureCliSelectorsSessionSearch() {
 	const logoutProviderOptionsResults = runCliSelectorsLogoutProviderOptions();
 	const loginMethodSelectorHandleEventResults =
 		runCliSelectorsLoginMethodSelectorHandleEvent();
+	const oauthSelectorMoveResults = runCliSelectorsOauthSelectorMove();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9633,6 +9653,7 @@ async function measureCliSelectorsSessionSearch() {
 		...loginProviderOptionsResults,
 		...logoutProviderOptionsResults,
 		...loginMethodSelectorHandleEventResults,
+		...oauthSelectorMoveResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9944,6 +9965,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsLoginMethodSelectorHandleEvent();
 			},
 		),
+		oauth_selector_move: await collect("cli_selectors.oauth_selector_move", () => {
+			return () => runCliSelectorsOauthSelectorMove();
+		}),
 		observed,
 	};
 }
@@ -11193,6 +11217,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions",
 			"cli_selectors.login_method_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts handleInput event dispatch (login method selector)",
+			"cli_selectors.oauth_selector_move":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput navigation (wrap index; fixtures avoid clamp boundary)",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

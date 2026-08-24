@@ -397,6 +397,7 @@
     ("cli_selectors.login_provider_options" . 50)
     ("cli_selectors.logout_provider_options" . 50)
     ("cli_selectors.login_method_selector_handle_event" . 50)
+    ("cli_selectors.oauth_selector_move" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8792,6 +8793,24 @@
    (login-method-handle-event-encoded 1 :clear)
    (login-method-handle-event-encoded 0 :interrupt)))
 
+(defun oauth-selector-move-encoded (options selected delta &key query)
+  (let* ((state
+           (cadr-cli::make-oauth-selector-state
+            :options options :query (or query ""))))
+    (cadr-cli::oauth-selector-apply-filter state)
+    (setf (cadr-cli::oauth-selector-state-selected state) selected)
+    (cadr-cli::oauth-selector-move state delta)
+    (write-to-string (cadr-cli::oauth-selector-state-selected state))))
+
+(defun run-cli-selectors-oauth-selector-move ()
+  (let ((options (make-oauth-selector-test-options)))
+    (list
+     (oauth-selector-move-encoded options 0 1)
+     (oauth-selector-move-encoded options 2 -1)
+     (oauth-selector-move-encoded options 1 1)
+     (oauth-selector-move-encoded options 1 -1)
+     (oauth-selector-move-encoded options 0 1 :query "open"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8963,7 +8982,9 @@
         (logout-provider-options
           (run-cli-selectors-logout-provider-options))
         (login-method-selector-handle-event
-          (run-cli-selectors-login-method-selector-handle-event)))
+          (run-cli-selectors-login-method-selector-handle-event))
+        (oauth-selector-move
+          (run-cli-selectors-oauth-selector-move)))
     (json-object
      "observed"
      (json-object
@@ -9530,7 +9551,12 @@
       "lmhe_enter_api" (nth 3 login-method-selector-handle-event)
       "lmhe_esc" (nth 4 login-method-selector-handle-event)
       "lmhe_clear" (nth 5 login-method-selector-handle-event)
-      "lmhe_interrupt" (nth 6 login-method-selector-handle-event))
+      "lmhe_interrupt" (nth 6 login-method-selector-handle-event)
+      "osmv_0_1" (nth 0 oauth-selector-move)
+      "osmv_2_m1" (nth 1 oauth-selector-move)
+      "osmv_1_1" (nth 2 oauth-selector-move)
+      "osmv_1_m1" (nth 3 oauth-selector-move)
+      "osmv_filter" (nth 4 oauth-selector-move))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10025,7 +10051,12 @@
      (collect "cli_selectors.login_method_selector_handle_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-login-method-selector-handle-event)))))))
+                  (run-cli-selectors-login-method-selector-handle-event))))
+     "oauth_selector_move"
+     (collect "cli_selectors.oauth_selector_move"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-move)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11238,6 +11269,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options"
       "cli_selectors.login_method_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp login-method-selector-handle-event"
+      "cli_selectors.oauth_selector_move"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-move"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

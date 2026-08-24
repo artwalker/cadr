@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_selector_move`
+  (move fixtures; cadr `oauth-selector-move` wrap index vs pi clamp at
+  boundary). Friend-MachineD n=5 **27.34×** (83.8 / 3.1 µs), ceiling
+  50.0. Same commit no optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.login_method_selector_handle_event`
   (event fixtures; cadr `login-method-selector-handle-event`
   vs pi `ExtensionSelectorComponent` dispatch). Friend-MachineD n=5
