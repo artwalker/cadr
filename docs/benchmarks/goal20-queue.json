@@ -181,10 +181,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-258-branch-summarization",
-   "pair": 258
-  }
- ]
+ "mergeQueue": []
 }
