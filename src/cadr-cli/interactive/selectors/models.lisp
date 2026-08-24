@@ -202,7 +202,7 @@
            :refresh-status-kind refresh-status-kind
            :scope
            (if scoped-models :scoped :all)
-           :keybindings keybindings)))
+           :keybindings (or keybindings *default-models-selector-keybindings*))))
     (model-selector-rebuild-search-text-table state)
     (model-selector-apply-filter state)
     (model-selector-select-current state)))
