@@ -44,6 +44,29 @@
                  (plusp (length name))
                  name))))
 
+(defparameter *model-selector-provider-badge-cache*
+  (make-hash-table :test #'eq))
+
+(defun model-selector-provider-badge (provider)
+  (or (gethash provider *model-selector-provider-badge-cache*)
+      (setf (gethash provider *model-selector-provider-badge-cache*)
+            (format nil "[~(~A~)]" (provider-key provider)))))
+
+(defun model-selector-rebuild-search-text-table (state)
+  (let ((table (make-hash-table :test #'eq)))
+    (dolist (model (model-selector-state-all-models state))
+      (setf (gethash model table)
+            (model-selector-search-text model)))
+    (dolist (model (model-selector-state-scoped-models state))
+      (unless (gethash model table)
+        (setf (gethash model table)
+              (model-selector-search-text model))))
+    (setf (model-selector-state-search-text-table state) table)))
+
+(defun model-selector-filter-search-text (state model)
+  (or (gethash model (model-selector-state-search-text-table state))
+      (model-selector-search-text model)))
+
 (defun scoped-model-selector-search-text
     (model)
   (format nil "~A ~(~A~) ~A ~(~A~) ~A~@[ ~A~]"
@@ -355,9 +378,61 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
     (declare (ignore end))
     (values visible start total)))
 
-                       :muted
-                       (format nil "[~(~A~)]"
-                               (cadr-ai:model-provider model)))
+(defun render-model-selector (state width)
+  (multiple-value-bind (models start total)
+      (model-selector-visible-slice state 10)
+    (let* ((selected
+             (model-selector-state-selected state))
+           (current
+             (model-selector-state-current-model state))
+           (selected-model
+             (and models
+                  (nth selected
+                       (model-selector-visible-models state))))
+           (visible-count (length models))
+           (scoped-p
+             (not (null
+                   (model-selector-state-scoped-models state))))
+           (scope-line
+             (if scoped-p
+                 (let ((showing-scoped-p
+                         (eq :scoped
+                             (model-selector-state-scope state))))
+                   (concatenate
+                    'string
+                    (cadr-tui:theme-foreground :muted "Scope: ")
+                    (cadr-tui:theme-foreground
+                     (if showing-scoped-p :muted :accent) "all")
+                    (cadr-tui:theme-foreground :muted " | ")
+                    (cadr-tui:theme-foreground
+                     (if showing-scoped-p :accent :muted) "scoped")))
+                 (cadr-tui:theme-foreground
+                  :warning
+                  "Only showing models from configured providers. Use /login to add providers.")))
+           (body-lines
+             (append
+              (if models
+                  (loop
+                    for model in models
+                    for index from start
+                    for selected-p = (= index selected)
+                    for current-p = (model-equal-p model current)
+                    for provider-badge =
+                      (model-selector-provider-badge
+                       (cadr-ai:model-provider model))
+                    collect
+                    (selector-component-text-line
+                     (concatenate
+                      'string
+                      (if selected-p
+                          (cadr-tui:theme-foreground :accent "→ ")
+                          "  ")
+                      (if selected-p
+                          (cadr-tui:theme-foreground
+                           :accent (cadr-ai:model-id model))
+                          (cadr-ai:model-id model))
+                      " "
+                      (cadr-tui:theme-foreground :muted provider-badge)
                       (if current-p
                           (cadr-tui:theme-foreground :success " ✓")
                           ""))
@@ -367,7 +442,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
                     (cadr-tui:theme-foreground
                      :muted "  No matching models")
                     width :padding-x 0)))
-              (when (> total (length models))
+              (when (> total visible-count)
                 (list
                  (selector-component-text-line
                   (cadr-tui:theme-foreground
@@ -384,16 +459,14 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
                  (uiop:split-string
                   (model-selector-state-error-message state)
                   :separator '(#\Newline))))
-               ((and models
-                     (model-selector-selected-model state))
+               (selected-model
                 (list
                  ""
                  (selector-component-text-line
                   (cadr-tui:theme-foreground
                    :muted
                    (format nil "  Model Name: ~A"
-                           (cadr-ai::model-name
-                            (model-selector-selected-model state))))
+                           (cadr-ai::model-name selected-model)))
                   width :padding-x 0))))
               (when
                   (model-selector-state-refresh-status-message state)
@@ -425,7 +498,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
                          (concatenate
                           'string
                           (selector-keybinding-hint
-                           (model-selector-state-keybindings state)
+                           (model-selector-keybindings state)
                            "tui.input.tab" "scope")
                           (cadr-tui:theme-foreground
                            :muted " (all/scoped)"))
@@ -436,56 +509,6 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
               (list :lines body-lines)
               :blank :border))
        width))))
-(defstruct (scoped-models-selector-state
-            (:constructor
-                %make-scoped-models-selector-state))
-  (all-models nil :type list)
-  (all-ids nil :type list)
-  (enabled-ids :all)
-  (query "" :type string)
-  (models-by-id nil)
-  (items nil :type list)
-  (visible-items nil :type list)
-  (filter-query nil :type (or null string))
-  (visible-count 0 :type (integer 0 *))
-  (selected 0 :type (integer 0 *))
-  (dirty-p nil :type boolean)
-  refresh-status-message
-  (refresh-status-kind :muted)
-  change-callback
-  persist-callback
-  cancel-callback
-  keybindings)
-
-(defun scoped-models-copy-enabled (enabled)
-  (if (eq enabled :all)
-      :all
-      (copy-list enabled)))
-
-(defun scoped-models-enabled-set (enabled)
-  (let ((set (make-hash-table :test #'equal)))
-    (dolist (id enabled)
-      (setf (gethash id set) t))
-    set))
-
-(defun scoped-models-selector-rebuild-models-by-id
-    (state)
-  (let ((table (make-hash-table :test #'equal)))
-    (dolist (model
-              (scoped-models-selector-state-all-models state))
-      (setf (gethash (qualified-model-id model) table)
-            model))
-    (setf
-     (scoped-models-selector-state-models-by-id state)
-     table)))
-
-(defun scoped-models-model-by-id
-    (state id)
-  (gethash
-   id
-   (scoped-models-selector-state-models-by-id state)))
-
-(defun scoped-model-id-enabled-p
 (defstruct (scoped-models-selector-state
             (:constructor
                 %make-scoped-models-selector-state))
