@@ -51,7 +51,7 @@
    "status": "done",
    "source": "src/cadr-cli/resource-loader/",
    "measure": "measure-resource-loader",
-   "metric": "session_compact.branch_summarize**",
+   "metric": "session_compact.branch_summarize",
    "branch": "pair-255-branch-summarization"
   },
   {
@@ -84,7 +84,7 @@
   {
    "pair": 255,
    "lane": "a",
-   "status": "in_progress",
+   "status": "pending",
    "source": "src/cadr-agent/branch-summarization.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
@@ -127,10 +127,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-255-branch-summarization",
-   "pair": 255
-  }
- ]
+ "mergeQueue": []
 }
