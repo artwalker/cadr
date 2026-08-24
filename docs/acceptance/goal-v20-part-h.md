@@ -2987,19 +2987,21 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
-### Pair 241 — `session_compact` (branch_summarize)
+### Pair 242 — `evals_harness` (normalize_steps)
 
 | metric | cadr | pi |
 |---|---|---|
-| `branch_summarize` | `collect-entries-for-branch-summary` + `generate-branch-summary` (`src/cadr-agent/branch-summarization.lisp`) | `collectEntriesForBranchSummary` + `generateBranchSummary` (`packages/coding-agent/src/core/compaction/branch-summarization.ts`) |
+| `normalize_steps` | `normalize-eval-steps` | `runPiCodingAgent` input step normalization (`packages/evals/src/pi-harness.ts`) |
 
-Forked five-message tree (e1–e5, leaf e4, target e5). Collect e4→e5
-yields e3,e4. Faux summarizer returns `"BRANCH SUMMARY"`. Timed work is
-production collect + generate on an in-memory `SessionEntry[]` tree, not
-`session_load`. Observed `summarized` / `entry_count` /
-`branch_summary_chars` are exact. `session_compact.compact` stays on its own
-thunk. First Friend-MachineD freeze **0.85×** (53.2 / 62.8 µs), ceiling 20.0.
-Gate used `--only-enforce`. Same commit no optimize.
+Leftover sibling of the `evals_harness` hole. Time step coercion
+only, not a live eval run. Empty sequence; string prompt; prompt+
+reload sequence; keyword-first reload step (`(:type :reload)` vs
+`[{ type: "reload" }]`); vector prompt; invalid `42` (cadr errors,
+pi non-iterable). Observed `ns_empty` / `ns_str_n` / `ns_str_pr` /
+`ns_seq_n` / `ns_seq_rel` / `ns_kw_n` / `ns_kw_rel` / `ns_vec_n` /
+`ns_bad` are exact (0 / 1 / 1 / 2 / 1 / 1 / 1 / 1 / 1). First
+Friend-MachineD freeze **0.11×** (1.30 / 12.15 µs), ceiling 8.0.
+cadr leads. Gate used `--only-enforce`. Same commit no optimize.
 
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
@@ -3399,7 +3401,6 @@ production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize` |
 | `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
@@ -3524,6 +3525,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
+| `src/cadr-evals/harness.lisp` | 156 | `evals_harness.normalize_steps` |
 | `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize`, `evals_harness.format` |
 | `src/cadr-protocol/cbor.lisp` | 492 | `protocol_cbor.roundtrip` |
 | `src/cadr-protocol/codec.lisp` | 121 | `protocol_codec.roundtrip` |
@@ -3616,7 +3618,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `agent_tool_loop` | 11 | 3,008 |
 | `cli_extensions_install` | 6 | 2,412 |
 | `package_manager` | 2 | 1,811 |
-| `evals_harness` | 4 | 1,677 |
+| `evals_harness` | 5 | 1,677 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |

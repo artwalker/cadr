@@ -512,6 +512,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("fmt_hdr", paired.OBSERVED_EXACT["evals_harness"])
         self.assertIn("fmt_base", paired.OBSERVED_EXACT["evals_harness"])
         self.assertIn("fmt_pass", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("evals_harness.normalize_steps", RECORD.METRIC_KEYS)
+        self.assertIn("normalize_steps", paired.METRICS["evals_harness"])
+        self.assertIn("evals_harness.normalize_steps", paired.RATIO_CEILINGS)
+        self.assertIn("ns_empty", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ns_str_n", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ns_str_pr", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ns_seq_n", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ns_seq_rel", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ns_kw_n", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ns_kw_rel", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ns_vec_n", paired.OBSERVED_EXACT["evals_harness"])
+        self.assertIn("ns_bad", paired.OBSERVED_EXACT["evals_harness"])
 
     def test_ai_crypto_model_data_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

@@ -135,6 +135,7 @@
 ;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
+;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;; 107. cli_interactive_controller tui-auth-type-label vs formatAuthSelectorProviderType
@@ -241,6 +242,7 @@
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
     ("evals_harness.format" . 20)
+    ("evals_harness.normalize_steps" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -4037,6 +4039,46 @@
    (evals-format-flags
     (cadr-evals:format-harness-comparison-report report))))
 
+(defun eval-normalize-step-type-p (step expected)
+  (eq expected
+      (cadr-evals::normalize-step-type
+       (cadr-evals::step-value step :type))))
+
+(defun eval-normalize-steps-error-p (input)
+  (handler-case
+      (progn
+        (cadr-evals::normalize-eval-steps input)
+        0)
+    (error () 1)))
+
+(defun run-evals-harness-normalize-steps ()
+  (let* ((from-str
+           (cadr-evals::normalize-eval-steps "hello"))
+         (from-seq
+           (cadr-evals::normalize-eval-steps
+            (list
+             (cadr-evals:make-eval-prompt-step "a")
+             (cadr-evals:make-eval-reload-step))))
+         (from-kw
+           (cadr-evals::normalize-eval-steps
+            '(:type :reload)))
+         (from-vec
+           (cadr-evals::normalize-eval-steps
+            (vector
+             (cadr-evals:make-eval-prompt-step "v"))))
+         (from-empty
+           (cadr-evals::normalize-eval-steps nil)))
+    (list
+     (length from-empty)
+     (length from-str)
+     (if (eval-normalize-step-type-p (first from-str) :prompt) 1 0)
+     (length from-seq)
+     (if (eval-normalize-step-type-p (second from-seq) :reload) 1 0)
+     (length from-kw)
+     (if (eval-normalize-step-type-p (first from-kw) :reload) 1 0)
+     (length from-vec)
+     (eval-normalize-steps-error-p 42))))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -4046,7 +4088,8 @@
          (report
            (cadr-evals:summarize-harness-comparisons
             (evals-harness-observations)))
-         (fmt (run-evals-harness-format empty-report report)))
+         (fmt (run-evals-harness-format empty-report report))
+         (normalize (run-evals-harness-normalize-steps)))
     (json-object
      "observed"
      (json-object
@@ -4069,7 +4112,16 @@
       "fmt_empty_hdr" (nth 1 fmt)
       "fmt_hdr" (nth 5 fmt)
       "fmt_base" (nth 6 fmt)
-      "fmt_pass" (nth 7 fmt))
+      "fmt_pass" (nth 7 fmt)
+      "ns_empty" (nth 0 normalize)
+      "ns_str_n" (nth 1 normalize)
+      "ns_str_pr" (nth 2 normalize)
+      "ns_seq_n" (nth 3 normalize)
+      "ns_seq_rel" (nth 4 normalize)
+      "ns_kw_n" (nth 5 normalize)
+      "ns_kw_rel" (nth 6 normalize)
+      "ns_vec_n" (nth 7 normalize)
+      "ns_bad" (nth 8 normalize))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -4090,7 +4142,12 @@
               (lambda ()
                 (lambda ()
                   (cadr-evals:format-harness-comparison-report
-                   report)))))))
+                   report))))
+     "normalize_steps"
+     (collect "evals_harness.normalize_steps"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-normalize-steps)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -12785,6 +12842,8 @@
       "src/cadr-evals/artifacts.lisp persist-eval-artifact-references"
       "evals_harness.format"
       "src/cadr-evals/summary.lisp format-harness-comparison-report"
+      "evals_harness.normalize_steps"
+      "src/cadr-evals/harness.lisp normalize-eval-steps"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

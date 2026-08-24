@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.normalize_steps` (step input
+  coercion; cadr `normalize-eval-steps` vs pi `pi-harness.ts` string/
+  sequence normalization). Friend-MachineD freeze 0.11× (1.30 / 12.15 µs),
+  ceiling 8.0. Measure-only.
 - Goal 20 P.13: pair `cli_selectors.scoped_models_selector_counts` (scoped
   models footer counts; cadr `scoped-models-selector-counts` vs pi `getFooterText`
   count logic). Friend-MachineD n=5 **43.32×** (158.5 / 3.7 µs), ceiling 55.0.

@@ -165,6 +165,7 @@ const REPETITIONS = {
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
 	"evals_harness.format": 20,
+	"evals_harness.normalize_steps": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -2954,6 +2955,52 @@ function runEvalsHarnessFormat(emptyReport, report) {
 	};
 }
 
+// packages/evals/src/pi-harness.ts runPiCodingAgent step normalization
+function normalizeEvalSteps(input) {
+	if (typeof input === "string") {
+		return [{ type: "prompt", content: input }];
+	}
+	return input;
+}
+
+function evalNormalizeStepType(step) {
+	return step?.type;
+}
+
+function evalNormalizeStepsError(input) {
+	try {
+		const steps = normalizeEvalSteps(input);
+		for (const _step of steps) {
+			break;
+		}
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runEvalsHarnessNormalizeSteps() {
+	const fromEmpty = normalizeEvalSteps([]);
+	const fromStr = normalizeEvalSteps("hello");
+	const fromSeq = normalizeEvalSteps([
+		{ type: "prompt", content: "a" },
+		{ type: "reload" },
+	]);
+	const fromKw = normalizeEvalSteps([{ type: "reload" }]);
+	const fromVec = normalizeEvalSteps([{ type: "prompt", content: "v" }]);
+	return {
+		ns_empty: fromEmpty.length,
+		ns_str_n: fromStr.length,
+		ns_str_pr: evalNormalizeStepType(fromStr[0]) === "prompt" ? 1 : 0,
+		ns_seq_n: fromSeq.length,
+		ns_seq_rel: evalNormalizeStepType(fromSeq[1]) === "reload" ? 1 : 0,
+		ns_kw_n: fromKw.length,
+		ns_kw_rel: evalNormalizeStepType(fromKw[0]) === "reload" ? 1 : 0,
+		ns_vec_n: fromVec.length,
+		ns_bad: evalNormalizeStepsError(42),
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -2964,6 +3011,7 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessGroupKey(),
 		...(await runEvalsHarnessArtifactPersist()),
 		...runEvalsHarnessFormat(emptyReport, report),
+		...runEvalsHarnessNormalizeSteps(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -2977,6 +3025,9 @@ async function measureEvalsHarness() {
 		}),
 		format: await collect("evals_harness.format", () => {
 			return () => evalsSummaryModule.formatHarnessComparisonReport(report);
+		}),
+		normalize_steps: await collect("evals_harness.normalize_steps", () => {
+			return () => runEvalsHarnessNormalizeSteps();
 		}),
 		observed,
 	};
@@ -13231,6 +13282,8 @@ const result = {
 				"packages/evals/src/vitest-evals/artifacts.ts persistEvalArtifactReferences",
 			"evals_harness.format":
 				"packages/evals/src/vitest-evals/summary.ts formatHarnessComparisonReport",
+			"evals_harness.normalize_steps":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent input step normalization",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
