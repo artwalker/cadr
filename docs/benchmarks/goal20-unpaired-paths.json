@@ -26,6 +26,7 @@
   "session_export_html.to_html",
   "protocol_cbor.roundtrip",
   "agent_schema.validate_ok_fail",
+  "agent_conditions.error_probe",
   "harness_storage.open_walk",
   "protocol_codec.roundtrip",
   "agent_proxy.stream_roundtrip",
