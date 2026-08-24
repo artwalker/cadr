@@ -404,6 +404,7 @@
     ("cli_selectors.api_key_input_ui_state" . 50)
     ("cli_selectors.oauth_selector_ui_state" . 50)
     ("cli_selectors.model_selector_search_text" . 50)
+    ("cli_selectors.qualified_model_id" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9113,6 +9114,31 @@
      :provider :google
      :name ""))))
 
+(defun run-cli-selectors-qualified-model-id ()
+  (list
+   (cadr-cli::qualified-model-id
+    (make-model-selector-search-fixture))
+   (cadr-cli::qualified-model-id
+    (make-model-selector-search-fixture
+     :id "claude-sonnet-4"
+     :provider :anthropic
+     :name "Claude Sonnet 4"))
+   (cadr-cli::qualified-model-id
+    (make-model-selector-search-fixture
+     :id "gpt-5"
+     :provider :openai-codex
+     :name ""))
+   (cadr-cli::qualified-model-id
+    (make-model-selector-search-fixture
+     :id "openai/gpt-4o"
+     :provider :openrouter
+     :name "GPT-4o"))
+   (cadr-cli::qualified-model-id
+    (make-model-selector-search-fixture
+     :id "gemini-2.5-pro"
+     :provider :google
+     :name ""))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -9298,7 +9324,9 @@
         (oauth-selector-ui-state
           (run-cli-selectors-oauth-selector-ui-state))
         (model-selector-search-text
-          (run-cli-selectors-model-selector-search-text)))
+          (run-cli-selectors-model-selector-search-text))
+        (qualified-model-id
+          (run-cli-selectors-qualified-model-id)))
     (json-object
      "observed"
      (json-object
@@ -9904,7 +9932,12 @@
       "msst_anthropic" (nth 1 model-selector-search-text)
       "msst_codex" (nth 2 model-selector-search-text)
       "msst_openrouter" (nth 3 model-selector-search-text)
-      "msst_google" (nth 4 model-selector-search-text))
+      "msst_google" (nth 4 model-selector-search-text)
+      "qmid_openai" (nth 0 qualified-model-id)
+      "qmid_anthropic" (nth 1 qualified-model-id)
+      "qmid_codex" (nth 2 qualified-model-id)
+      "qmid_openrouter" (nth 3 qualified-model-id)
+      "qmid_google" (nth 4 qualified-model-id))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10434,7 +10467,12 @@
      (collect "cli_selectors.model_selector_search_text"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-model-selector-search-text)))))))
+                  (run-cli-selectors-model-selector-search-text))))
+     "qualified_model_id"
+     (collect "cli_selectors.qualified_model_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-qualified-model-id)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11661,6 +11699,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp render-oauth-selector"
       "cli_selectors.model_selector_search_text"
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-search-text"
+      "cli_selectors.qualified_model_id"
+      "src/cadr-cli/interactive/selectors/models.lisp qualified-model-id"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

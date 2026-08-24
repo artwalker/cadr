@@ -328,6 +328,7 @@ const REPETITIONS = {
 	"cli_selectors.api_key_input_ui_state": 50,
 	"cli_selectors.oauth_selector_ui_state": 50,
 	"cli_selectors.model_selector_search_text": 50,
+	"cli_selectors.qualified_model_id": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9326,6 +9327,35 @@ function runCliSelectorsModelSelectorSearchText() {
 	};
 }
 
+function qualifiedModelId(item) {
+	return `${item.provider}/${item.id}`;
+}
+
+function runCliSelectorsQualifiedModelId() {
+	return {
+		qmid_openai: qualifiedModelId({
+			id: "gpt-4o",
+			provider: "openai",
+		}),
+		qmid_anthropic: qualifiedModelId({
+			id: "claude-sonnet-4",
+			provider: "anthropic",
+		}),
+		qmid_codex: qualifiedModelId({
+			id: "gpt-5",
+			provider: "openai-codex",
+		}),
+		qmid_openrouter: qualifiedModelId({
+			id: "openai/gpt-4o",
+			provider: "openrouter",
+		}),
+		qmid_google: qualifiedModelId({
+			id: "gemini-2.5-pro",
+			provider: "google",
+		}),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9751,6 +9781,7 @@ async function measureCliSelectorsSessionSearch() {
 	const apiKeyInputUiStateResults = runCliSelectorsApiKeyInputUiState();
 	const oauthSelectorUiStateResults = runCliSelectorsOauthSelectorUiState();
 	const modelSelectorSearchTextResults = runCliSelectorsModelSelectorSearchText();
+	const qualifiedModelIdResults = runCliSelectorsQualifiedModelId();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10032,6 +10063,7 @@ async function measureCliSelectorsSessionSearch() {
 		...apiKeyInputUiStateResults,
 		...oauthSelectorUiStateResults,
 		...modelSelectorSearchTextResults,
+		...qualifiedModelIdResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10369,6 +10401,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		model_selector_search_text: await collect("cli_selectors.model_selector_search_text", () => {
 			return () => runCliSelectorsModelSelectorSearchText();
+		}),
+		qualified_model_id: await collect("cli_selectors.qualified_model_id", () => {
+			return () => runCliSelectorsQualifiedModelId();
 		}),
 		observed,
 	};
@@ -11633,6 +11668,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent UI state",
 			"cli_selectors.model_selector_search_text":
 				"packages/coding-agent/src/modes/interactive/model-search.ts getModelSelectorSearchText",
+			"cli_selectors.qualified_model_id":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts provider/id label",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

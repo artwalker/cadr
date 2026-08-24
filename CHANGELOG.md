@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.qualified_model_id`
+  (provider/id label; cadr `qualified-model-id` vs pi
+  `` `${provider}/${id}` ``). Friend-MachineD n=5 **7.65×**
+  (2.1 / 0.3 µs), ceiling 8.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.model_selector_search_text`
   (model selector search text; cadr `model-selector-search-text` vs pi
   `getModelSelectorSearchText`). Friend-MachineD n=5 **6.78×**

@@ -2904,6 +2904,17 @@ Observed `msst_openai` / `msst_anthropic` / `msst_codex` / `msst_openrouter` /
 `msst_google` are exact. First Friend-MachineD freeze **6.78×** (5.6 / 0.8 µs),
 ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
+### Pair 217 — `cli_selectors` (qualified_model_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `qualified_model_id` | `qualified-model-id` | `provider/id` label |
+
+Provider-qualified model id string (`provider/id`, lowercase provider).
+Observed `qmid_openai` / `qmid_anthropic` / `qmid_codex` / `qmid_openrouter` /
+`qmid_google` are exact. First Friend-MachineD freeze **7.65×** (2.1 / 0.3 µs),
+ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
