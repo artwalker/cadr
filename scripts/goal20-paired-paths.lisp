@@ -419,6 +419,7 @@
     ("cli_selectors.scoped_models_selector_handle_raw_input" . 50)
     ("cli_selectors.scoped_models_selector_ui_state" . 50)
     ("cli_selectors.scoped_models_selector_sorted_ids" . 50)
+    ("cli_selectors.scoped_models_selector_counts" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9574,6 +9575,25 @@
         "openrouter/openai/gpt-4o"
         "anthropic/claude-sonnet-4")))))
 
+(defun scoped-models-selector-counts-encoded (state)
+  (multiple-value-bind (enabled unavailable all-p)
+      (cadr-cli::scoped-models-selector-counts state)
+    (format nil "~a|~D|~D|~D"
+            (if all-p "all" "partial")
+            enabled unavailable
+            (length (cadr-cli::scoped-models-selector-state-all-ids state)))))
+
+(defun run-cli-selectors-scoped-models-selector-counts ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("openai/gpt-4o" "anthropic/claude-sonnet-4"))
+        (with-unavail '("stale/missing" "openai/gpt-4o")))
+    (list
+     (scoped-models-selector-counts-encoded (cadr-cli::make-scoped-models-selector-state :all-models models :enabled-ids :all))
+     (scoped-models-selector-counts-encoded (cadr-cli::make-scoped-models-selector-state :all-models models :enabled-ids partial))
+     (scoped-models-selector-counts-encoded (cadr-cli::make-scoped-models-selector-state :all-models models :enabled-ids with-unavail))
+     (scoped-models-selector-counts-encoded (cadr-cli::make-scoped-models-selector-state :all-models models :enabled-ids nil))
+     (scoped-models-selector-counts-encoded (cadr-cli::make-scoped-models-selector-state :all-models models :enabled-ids '("google/gemini-2.5-pro"))))))
+
 (defun encode-scoped-models-selector-handle-event-result (state action)
   (format nil "~a|null|~a"
           (if action
@@ -10044,7 +10064,9 @@
         (scoped-models-selector-ui-state
           (run-cli-selectors-scoped-models-selector-ui-state))
         (scoped-models-selector-sorted-ids
-          (run-cli-selectors-scoped-models-selector-sorted-ids)))
+          (run-cli-selectors-scoped-models-selector-sorted-ids))
+        (scoped-models-selector-counts
+          (run-cli-selectors-scoped-models-selector-counts)))
     (json-object
      "observed"
      (json-object
@@ -10737,7 +10759,12 @@
       "smssi_partial" (nth 1 scoped-models-selector-sorted-ids)
       "smssi_single" (nth 2 scoped-models-selector-sorted-ids)
       "smssi_empty" (nth 3 scoped-models-selector-sorted-ids)
-      "smssi_reorder" (nth 4 scoped-models-selector-sorted-ids))
+      "smssi_reorder" (nth 4 scoped-models-selector-sorted-ids)
+      "smsc_all" (nth 0 scoped-models-selector-counts)
+      "smsc_partial" (nth 1 scoped-models-selector-counts)
+      "smsc_unavail" (nth 2 scoped-models-selector-counts)
+      "smsc_empty" (nth 3 scoped-models-selector-counts)
+      "smsc_single" (nth 4 scoped-models-selector-counts))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11342,7 +11369,10 @@
      (collect "cli_selectors.scoped_models_selector_sorted_ids"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-sorted-ids)))))))
+                  (run-cli-selectors-scoped-models-selector-sorted-ids))))
+     "scoped_models_selector_counts"
+     (collect "cli_selectors.scoped_models_selector_counts"
+              (lambda () (lambda () (run-cli-selectors-scoped-models-selector-counts)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12599,6 +12629,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp render-scoped-models-selector"
       "cli_selectors.scoped_models_selector_sorted_ids"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-sorted-ids"
+      "cli_selectors.scoped_models_selector_counts"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-counts"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
