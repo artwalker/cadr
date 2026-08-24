@@ -30,7 +30,7 @@
   {
    "pair": 253,
    "lane": "a",
-   "status": "in_progress",
+   "status": "pending",
    "source": "src/cadr-agent/runtime.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
@@ -48,7 +48,7 @@
   {
    "pair": 255,
    "lane": "b",
-   "status": "in_progress",
+   "status": "pending",
    "source": "src/cadr-cli/resource-loader/",
    "measure": "measure-resource-loader",
    "metric": null,
@@ -57,7 +57,7 @@
   {
    "pair": 256,
    "lane": "c",
-   "status": "in_progress",
+   "status": "pending",
    "source": "src/cadr-cli/settings/",
    "measure": "measure-cli-settings",
    "metric": null,
