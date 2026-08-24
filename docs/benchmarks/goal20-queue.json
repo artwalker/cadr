@@ -57,11 +57,11 @@
   {
    "pair": 256,
    "lane": "c",
-   "status": "pending",
+   "status": "done",
    "source": "src/cadr-cli/settings/",
    "measure": "measure-cli-settings",
    "metric": null,
-   "branch": null
+   "branch": "pair-256-package-source"
   },
   {
    "pair": 253,
@@ -82,5 +82,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-256-package-source",
+   "pair": 256
+  }
+ ]
 }
