@@ -120,11 +120,11 @@
   {
    "pair": 259,
    "lane": "b",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-resource-loader",
-   "metric": null,
-   "branch": null
+   "metric": "agent_conditions.error_probe",
+   "branch": "pair-259-conditions"
   },
   {
    "pair": 260,
