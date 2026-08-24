@@ -2796,6 +2796,18 @@ metadata labels, structured API-key flag, optional status. Observed
 exact. First Friend-MachineD freeze **0.87×** (14.8 / 17.1 µs), ceiling
 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
+### Pair 208 — `cli_selectors` (logout_provider_options)
+
+| metric | cadr | pi |
+|---|---|---|
+| `logout_provider_options` | `logout-provider-options` | `getLogoutProviderOptions` |
+
+Logout provider projection from stored credentials: definition name
+lookup, unknown-provider fallback, sorted options with stored-credential
+status. Observed `lgo_empty` / `lgo_mixed` / `lgo_unknown` / `lgo_sorted`
+are exact. First Friend-MachineD freeze **2.71×** (10.4 / 3.8 µs), ceiling
+8.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

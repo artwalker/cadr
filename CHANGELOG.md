@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.logout_provider_options`
+  (credential fixtures; cadr `logout-provider-options`
+  vs pi `getLogoutProviderOptions`). Friend-MachineD n=5 **2.71×**
+  (10.4 / 3.8 µs), ceiling 8.0. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.login_provider_options`
   (provider-option fixtures; cadr `login-provider-options`
   vs pi `getLoginProviderOptions`). Friend-MachineD n=5 **0.87×**

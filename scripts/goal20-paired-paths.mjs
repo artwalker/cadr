@@ -319,6 +319,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_search_text": 50,
 	"cli_selectors.login_auth_type_route": 50,
 	"cli_selectors.login_provider_options": 50,
+	"cli_selectors.logout_provider_options": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8824,6 +8825,55 @@ function runCliSelectorsLoginProviderOptions() {
 	};
 }
 
+function logoutProviderNameLookup() {
+	return {
+		anthropic: "Anthropic",
+		"google-vertex": "Google Vertex AI",
+	};
+}
+
+function logoutProviderOptions(nameLookup, credentialEntries) {
+	return credentialEntries
+		.map(({ providerId, type }) => {
+			const name = nameLookup[providerId] ?? providerId;
+			return {
+				id: providerId,
+				name,
+				authType: type,
+				methodName: `${name} ${type === "oauth" ? "account" : "API key"}`,
+				loginLabel: "",
+				structuredLogin: false,
+				status: { type, source: "stored credential" },
+			};
+		})
+		.sort((left, right) => left.name.localeCompare(right.name));
+}
+
+function runCliSelectorsLogoutProviderOptions() {
+	const nameLookup = logoutProviderNameLookup();
+	return {
+		lgo_empty: encodeLoginProviderOptions(logoutProviderOptions(nameLookup, [])),
+		lgo_mixed: encodeLoginProviderOptions(
+			logoutProviderOptions(nameLookup, [
+				{ providerId: "anthropic", type: "oauth" },
+				{ providerId: "google-vertex", type: "api_key" },
+			]),
+		),
+		lgo_unknown: encodeLoginProviderOptions(
+			logoutProviderOptions(nameLookup, [
+				{ providerId: "unknown-provider", type: "api_key" },
+			]),
+		),
+		lgo_sorted: encodeLoginProviderOptions(
+			logoutProviderOptions(nameLookup, [
+				{ providerId: "openai", type: "oauth" },
+				{ providerId: "anthropic", type: "api_key" },
+				{ providerId: "google-vertex", type: "oauth" },
+			]),
+		),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9237,6 +9287,7 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthSelectorSearchTextResults = runCliSelectorsOauthSelectorSearchText();
 	const loginAuthTypeRouteResults = runCliSelectorsLoginAuthTypeRoute();
 	const loginProviderOptionsResults = runCliSelectorsLoginProviderOptions();
+	const logoutProviderOptionsResults = runCliSelectorsLogoutProviderOptions();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9509,6 +9560,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthSelectorSearchTextResults,
 		...loginAuthTypeRouteResults,
 		...loginProviderOptionsResults,
+		...logoutProviderOptionsResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9810,6 +9862,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		login_provider_options: await collect("cli_selectors.login_provider_options", () => {
 			return () => runCliSelectorsLoginProviderOptions();
+		}),
+		logout_provider_options: await collect("cli_selectors.logout_provider_options", () => {
+			return () => runCliSelectorsLogoutProviderOptions();
 		}),
 		observed,
 	};
@@ -11056,6 +11111,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts showLoginAuthTypeSelector routing",
 			"cli_selectors.login_provider_options":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
+			"cli_selectors.logout_provider_options":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLogoutProviderOptions",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

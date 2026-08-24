@@ -395,6 +395,7 @@
     ("cli_selectors.oauth_selector_search_text" . 50)
     ("cli_selectors.login_auth_type_route" . 50)
     ("cli_selectors.login_provider_options" . 50)
+    ("cli_selectors.logout_provider_options" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8724,6 +8725,27 @@
          (declare (ignore id))
          (list :type :oauth :source "OAuth")))))))
 
+(defun run-cli-selectors-logout-provider-options ()
+  (let ((definitions (login-provider-fixture-definitions)))
+    (list
+     (encode-login-provider-options
+      (cadr-cli::logout-provider-options definitions nil))
+     (encode-login-provider-options
+      (cadr-cli::logout-provider-options
+       definitions
+       '(("anthropic" . "oauth")
+         ("google-vertex" . "api_key"))))
+     (encode-login-provider-options
+      (cadr-cli::logout-provider-options
+       definitions
+       '(("unknown-provider" . "api_key"))))
+     (encode-login-provider-options
+      (cadr-cli::logout-provider-options
+       definitions
+       '(("openai" . "oauth")
+         ("anthropic" . "api_key")
+         ("google-vertex" . "oauth")))))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8891,7 +8913,9 @@
         (login-auth-type-route
           (run-cli-selectors-login-auth-type-route))
         (login-provider-options
-          (run-cli-selectors-login-provider-options)))
+          (run-cli-selectors-login-provider-options))
+        (logout-provider-options
+          (run-cli-selectors-logout-provider-options)))
     (json-object
      "observed"
      (json-object
@@ -9447,7 +9471,11 @@
       "lpo_oauth" (nth 1 login-provider-options)
       "lpo_api" (nth 2 login-provider-options)
       "lpo_labeled" (nth 3 login-provider-options)
-      "lpo_status" (nth 4 login-provider-options))
+      "lpo_status" (nth 4 login-provider-options)
+      "lgo_empty" (nth 0 logout-provider-options)
+      "lgo_mixed" (nth 1 logout-provider-options)
+      "lgo_unknown" (nth 2 logout-provider-options)
+      "lgo_sorted" (nth 3 logout-provider-options))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9932,7 +9960,12 @@
      (collect "cli_selectors.login_provider_options"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-login-provider-options)))))))
+                  (run-cli-selectors-login-provider-options))))
+     "logout_provider_options"
+     (collect "cli_selectors.logout_provider_options"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-logout-provider-options)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11141,6 +11174,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route"
       "cli_selectors.login_provider_options"
       "src/cadr-cli/interactive/selectors/auth.lisp login-provider-options"
+      "cli_selectors.logout_provider_options"
+      "src/cadr-cli/interactive/selectors/auth.lisp logout-provider-options"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
