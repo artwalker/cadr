@@ -148,22 +148,9 @@ director-once)
 		# shellcheck disable=SC2086
 		"$PROJECT_DIRECTORY/scripts/goal20-director-merge.sh" "$BRANCH" "$@"
 	elif true; then
-		PAIR_BRANCH=""
-		for candidate in $(git branch --list 'pair-*' | sed 's/^[*+ ]*//'); do
-			git merge-base --is-ancestor "$candidate" HEAD 2>/dev/null && continue
-			pair_num="$(printf '%s' "$candidate" | sed -n 's/^pair-\([0-9][0-9]*\).*/\1/p')"
-			[ -n "$pair_num" ] || continue
-			git log --oneline HEAD | rg -q "\(${pair_num}\)" && continue
-			PAIR_BRANCH="$candidate"
-			break
-		done
-		if [ -n "$PAIR_BRANCH" ]; then
-			echo "goal20 director: orphan branch $PAIR_BRANCH"
-			# shellcheck disable=SC2086
-			"$PROJECT_DIRECTORY/scripts/goal20-director-merge.sh" "$PAIR_BRANCH" "$@"
-		else
-			echo "goal20 director: nothing to merge"
-		fi
+		# Only auto-merge branches explicitly queued by pairing agents.
+		# Do not scan orphan pair-* branches (stale worktrees caused pair-229 conflicts).
+		echo "goal20 director: nothing in merge queue"
 	fi
 	"$0" cleanup-worktrees
 	;;
