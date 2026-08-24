@@ -157,7 +157,7 @@ METRICS = {
     "sqlite_session": ("open_walk",),
     "tool_read": ("text_file",),
     "tool_grep": ("context_file",),
-    "agent_tool_loop": ("roundtrip", "tool_path", "line_ending"),
+    "agent_tool_loop": ("roundtrip", "tool_path", "line_ending", "tool_result_digest"),
     "session_compact": ("compact", "branch_summarize"),
     "text_truncation": ("truncate_head", "truncate_tail", "truncate_middle"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
@@ -1136,6 +1136,12 @@ RATIO_CEILINGS = {
     # First-freeze headroom for agent_tool_loop.line_ending. Observed
     # numbers filled after Friend-MachineD n=5. Ratchet down only.
     "agent_tool_loop.line_ending": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # agent_tool_loop.tool_result_digest pair (samples=5): observed
+    # 107.57x (289.4 / 2.7 us). 125.0 follows the
+    # provider_registry_defs.definition_ids headroom precedent.
+    # Ratchet down only.
+    "agent_tool_loop.tool_result_digest": 125.0,
     # Frozen from the first Friend-MachineD non-quick session_compact
     # pair (samples=5): observed 11.33x (965 / 85 µs). 20.0 follows
     # the truncate_head headroom precedent. Ratchet down only.
@@ -2539,6 +2545,12 @@ OBSERVED_EXACT = {
         "le_crlf",
         "le_none",
         "le_empty",
+        "trd_short",
+        "trd_exact",
+        "trd_over",
+        "trd_over_one",
+        "trd_utf16",
+        "trd_empty",
     ),
     "session_compact": (
         "compacted",

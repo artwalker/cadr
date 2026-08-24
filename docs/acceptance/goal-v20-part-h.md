@@ -3028,6 +3028,20 @@ First Friend-MachineD freeze **99.97×** (728.7 / 7.3 µs), ceiling 125.0
 (bumped from 8.0 on first freeze). Gate used `--only-enforce`. Same commit
 no optimize.
 
+### Pair 245 — `agent_tool_loop` (tool_result_digest)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tool_result_digest` | `truncate-summary-tool-result` | `truncateForSummary` (`packages/coding-agent/src/core/compaction/utils.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole. Time tool-result summary
+truncation only, not `serializeConversation` or a live compact. Short /
+exact-2000 / 2001-char / UTF-16 astral+suffix / empty fixtures. Do not
+exact full truncated text. Observed `trd_short` / `trd_exact` / `trd_over` /
+`trd_over_one` / `trd_utf16` / `trd_empty` are exact. First Friend-MachineD
+freeze **107.57×** (289.4 / 2.7 µs), ceiling 125.0 (bumped from 50.0 on first
+freeze). Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 248 — `storage_journal` (journal_entry_count)
 
 | metric | cadr | pi |
@@ -3437,7 +3451,7 @@ production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
+| `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact`, `agent_tool_loop.tool_result_digest` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |

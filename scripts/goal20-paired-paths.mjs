@@ -381,6 +381,7 @@ const REPETITIONS = {
 	"agent_tool_loop.roundtrip": 3,
 	"agent_tool_loop.tool_path": 50,
 	"agent_tool_loop.line_ending": 50,
+	"agent_tool_loop.tool_result_digest": 125,
 	"session_compact.compact": 3,
 	"session_compact.branch_summarize": 3,
 	"text_truncation.truncate_head": 50,
@@ -2470,6 +2471,39 @@ function runAgentToolLoopLineEnding() {
 	};
 }
 
+const TOOL_RESULT_DIGEST_MAX_CHARS = 2000;
+
+function truncateToolResultDigest(text) {
+	if (text.length <= TOOL_RESULT_DIGEST_MAX_CHARS) return text;
+	const truncatedChars = text.length - TOOL_RESULT_DIGEST_MAX_CHARS;
+	return `${text.slice(0, TOOL_RESULT_DIGEST_MAX_CHARS)}\n\n[... ${truncatedChars} more characters truncated]`;
+}
+
+function toolResultDigestTruncated(text) {
+	return text.includes("[... ") ? 1 : 0;
+}
+
+function runAgentToolLoopToolResultDigest() {
+	const short = "hello";
+	const exact = "a".repeat(2000);
+	const over = "x".repeat(2001);
+	const emoji = "\u{1F642}";
+	const utf16 = emoji.repeat(1000) + "x";
+	const shortOut = truncateToolResultDigest(short);
+	const exactOut = truncateToolResultDigest(exact);
+	const overOut = truncateToolResultDigest(over);
+	const utf16Out = truncateToolResultDigest(utf16);
+	const emptyOut = truncateToolResultDigest("");
+	return {
+		trd_short: shortOut === short ? 1 : 0,
+		trd_exact: exactOut === exact ? 1 : 0,
+		trd_over: toolResultDigestTruncated(overOut),
+		trd_over_one: overOut.includes("1 more characters truncated") ? 1 : 0,
+		trd_utf16: toolResultDigestTruncated(utf16Out),
+		trd_empty: emptyOut === "" ? 1 : 0,
+	};
+}
+
 async function measureAgentToolLoop() {
 	const once = await runPairedToolLoop();
 	const messages = once.agent.state.messages;
@@ -2477,6 +2511,7 @@ async function measureAgentToolLoop() {
 	const result = messages[2];
 	const paths = runAgentToolLoopToolPath();
 	const endings = runAgentToolLoopLineEnding();
+	const digests = runAgentToolLoopToolResultDigest();
 	return {
 		roundtrip: await collect("agent_tool_loop.roundtrip", () => {
 			return () => runPairedToolLoop();
@@ -2487,6 +2522,9 @@ async function measureAgentToolLoop() {
 		line_ending: await collect("agent_tool_loop.line_ending", () => {
 			return () => runAgentToolLoopLineEnding();
 		}),
+		tool_result_digest: await collect("agent_tool_loop.tool_result_digest", () => {
+			return () => runAgentToolLoopToolResultDigest();
+		}),
 		observed: {
 			final_text: last.content[0].text,
 			message_count: messages.length,
@@ -2494,6 +2532,7 @@ async function measureAgentToolLoop() {
 			tool_value: once.executed.value,
 			...paths,
 			...endings,
+			...digests,
 		},
 	};
 }
@@ -13886,6 +13925,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/path-utils.ts resolveToCwd",
 			"agent_tool_loop.line_ending":
 				"packages/coding-agent/src/core/tools/edit-diff.ts detectLineEnding",
+			"agent_tool_loop.tool_result_digest":
+				"packages/coding-agent/src/core/compaction/utils.ts truncateForSummary",
 			"session_compact.compact":
 				"packages/coding-agent/src/core/compaction/compaction.ts prepareCompaction + compact",
 			"session_compact.branch_summarize":

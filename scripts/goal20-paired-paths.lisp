@@ -90,6 +90,7 @@
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
+;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
 ;;;; 111. cli_selectors selector-fuzzy-filter vs fuzzyFilter
 ;;;; 112. cli_selectors selector-delete-query-character vs Input backspace grapheme delete
 ;;;; 113. cli_selectors selector-frame-visible-slice vs selector viewport slice
@@ -460,6 +461,7 @@
     ("agent_tool_loop.roundtrip" . 3)
     ("agent_tool_loop.tool_path" . 50)
     ("agent_tool_loop.line_ending" . 50)
+    ("agent_tool_loop.tool_result_digest" . 125)
     ("session_compact.compact" . 3)
     ("session_compact.branch_summarize" . 3)
     ("text_truncation.truncate_head" . 50)
@@ -2372,6 +2374,35 @@
    (line-ending-flag "ab" :lf)
    (line-ending-flag "" :lf)))
 
+(defun tool-result-digest-truncated-p (text)
+  (if (search "[... " text) 1 0))
+
+(defun run-agent-tool-loop-tool-result-digest ()
+  ;; Time truncate-summary-tool-result only, not serializeConversation
+  ;; or a live compact. UTF-16 code units match pi String.length/slice.
+  (let* ((short "hello")
+         (exact (make-string 2000 :initial-element #\a))
+         (over (make-string 2001 :initial-element #\x))
+         (emoji (string (code-char #x1f642)))
+         (utf16
+           (concatenate
+            'string
+            (apply #'concatenate 'string
+                   (make-list 1000 :initial-element emoji))
+            "x"))
+         (short-out (cadr-agent::truncate-summary-tool-result short))
+         (exact-out (cadr-agent::truncate-summary-tool-result exact))
+         (over-out (cadr-agent::truncate-summary-tool-result over))
+         (utf16-out (cadr-agent::truncate-summary-tool-result utf16))
+         (empty-out (cadr-agent::truncate-summary-tool-result "")))
+    (list
+     (if (string= short-out short) 1 0)
+     (if (string= exact-out exact) 1 0)
+     (tool-result-digest-truncated-p over-out)
+     (if (search "1 more characters truncated" over-out) 1 0)
+     (tool-result-digest-truncated-p utf16-out)
+     (if (string= empty-out "") 1 0))))
+
 (defun measure-agent-tool-loop ()
   (multiple-value-bind (agent executed)
       (run-paired-tool-loop)
@@ -2379,7 +2410,8 @@
            (last (car (last messages)))
            (result (third messages))
            (paths (run-agent-tool-loop-tool-path))
-           (endings (run-agent-tool-loop-line-ending)))
+           (endings (run-agent-tool-loop-line-ending))
+           (digests (run-agent-tool-loop-tool-result-digest)))
       (json-object
        "observed"
        (json-object
@@ -2401,7 +2433,13 @@
         "le_lf" (nth 0 endings)
         "le_crlf" (nth 1 endings)
         "le_none" (nth 2 endings)
-        "le_empty" (nth 3 endings))
+        "le_empty" (nth 3 endings)
+        "trd_short" (nth 0 digests)
+        "trd_exact" (nth 1 digests)
+        "trd_over" (nth 2 digests)
+        "trd_over_one" (nth 3 digests)
+        "trd_utf16" (nth 4 digests)
+        "trd_empty" (nth 5 digests))
        "roundtrip"
        (collect "agent_tool_loop.roundtrip"
                 (lambda ()
@@ -2416,7 +2454,12 @@
        (collect "agent_tool_loop.line_ending"
                 (lambda ()
                   (lambda ()
-                    (run-agent-tool-loop-line-ending))))))))
+                    (run-agent-tool-loop-line-ending))))
+       "tool_result_digest"
+       (collect "agent_tool_loop.tool_result_digest"
+                (lambda ()
+                  (lambda ()
+                    (run-agent-tool-loop-tool-result-digest))))))))
 
 (defun paired-compact-model ()
   (cadr-ai:make-model
@@ -13328,6 +13371,8 @@
       "src/cadr-cli/tools/path.lisp resolve-tool-path"
       "agent_tool_loop.line_ending"
       "src/cadr-cli/tools/edit.lisp detect-line-ending"
+      "agent_tool_loop.tool_result_digest"
+      "src/cadr-agent/compaction.lisp truncate-summary-tool-result"
       "session_compact.compact"
       "src/cadr-agent/compaction.lisp compact-from-preparation"
       "session_compact.branch_summarize"

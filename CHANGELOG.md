@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `agent_tool_loop.tool_result_digest` (tool-result
+  summary truncation; cadr `truncate-summary-tool-result` vs pi
+  `truncateForSummary`). Friend-MachineD n=5 **107.57×** (289.4 / 2.7 µs),
+  ceiling 125.0. Measure-only.
 - Goal 20 P.13: pair `session_pipeline.session_leaf_id` (leaf-id accessor on
   an open session; cadr `session-leaf-id` vs pi `SessionManager.getLeafId`).
   Friend-MachineD freeze 0.74× (0.04 / 0.05 µs), ceiling 8.0. Measure-only.
