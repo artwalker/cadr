@@ -2748,6 +2748,18 @@ OAuth selector event dispatch; encoded as
 First Friend-MachineD freeze **1.22×** (138.2 / 113.6 µs), ceiling 8.0.
 Same commit no optimize.
 
+### Pair 204 — `cli_selectors` (oauth_selector_handle_raw_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_selector_handle_raw_input` | `oauth-selector-handle-raw-input` | `handleInput` raw key dispatch |
+
+OAuth selector raw key input; encoded as
+`action|value|selectedIndex|consumed`. Observed `oshri_down` / `oshri_j` /
+`oshri_enter` / `oshri_esc` / `oshri_bad` / `oshri_o` / `oshri_confirm`
+are exact. First Friend-MachineD freeze **5.02×** (691.4 / 137.7 µs),
+ceiling 8.0. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

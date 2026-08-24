@@ -391,6 +391,7 @@
     ("cli_selectors.oauth_selector_selection" . 50)
     ("cli_selectors.oauth_selector_apply_filter" . 50)
     ("cli_selectors.oauth_selector_handle_event" . 50)
+    ("cli_selectors.oauth_selector_handle_raw_input" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8539,6 +8540,46 @@
      (oauth-handle-event-encoded options 0 :text :text "op")
      (oauth-handle-event-encoded options 0 :backspace :query "op"))))
 
+(defun encode-oauth-handle-raw-input-result (state action value consumed)
+  (format nil "~a|~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (if (and (eq action :select) value)
+              (encode-oauth-selector-option value)
+              "null")
+          (write-to-string
+           (cadr-cli::oauth-selector-state-selected state))
+          (if consumed "true" "false")))
+
+(defun oauth-raw-input-key-data (state key-name)
+  (first (cadr-tui:keybinding-keys
+          (cadr-cli::oauth-selector-state-keybindings state)
+          key-name)))
+
+(defun oauth-handle-raw-input-encoded (options selected data)
+  (let* ((state (cadr-cli::make-oauth-selector-state :options options)))
+    (setf (cadr-cli::oauth-selector-state-selected state) selected)
+    (multiple-value-bind (action value consumed)
+        (cadr-cli::oauth-selector-handle-raw-input state data)
+      (encode-oauth-handle-raw-input-result state action value consumed))))
+
+(defun oauth-handle-raw-input-encoded-key (options selected key-name)
+  (let ((state (cadr-cli::make-oauth-selector-state :options options)))
+    (oauth-handle-raw-input-encoded
+     options selected (oauth-raw-input-key-data state key-name))))
+
+(defun run-cli-selectors-oauth-selector-handle-raw-input ()
+  (let ((options (make-oauth-selector-test-options)))
+    (list
+     (oauth-handle-raw-input-encoded-key options 0 "tui.select.down")
+     (oauth-handle-raw-input-encoded options 1 "j")
+     (oauth-handle-raw-input-encoded options 0 (string #\Newline))
+     (oauth-handle-raw-input-encoded-key options 1 "tui.select.cancel")
+     (oauth-handle-raw-input-encoded options 0 "q")
+     (oauth-handle-raw-input-encoded options 0 "o")
+     (oauth-handle-raw-input-encoded-key options 0 "tui.select.confirm"))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8698,7 +8739,9 @@
         (oauth-selector-apply-filter
           (run-cli-selectors-oauth-selector-apply-filter))
         (oauth-selector-handle-event
-          (run-cli-selectors-oauth-selector-handle-event)))
+          (run-cli-selectors-oauth-selector-handle-event))
+        (oauth-selector-handle-raw-input
+          (run-cli-selectors-oauth-selector-handle-raw-input)))
     (json-object
      "observed"
      (json-object
@@ -9233,7 +9276,14 @@
       "oshe_enter" (nth 2 oauth-selector-handle-event)
       "oshe_esc" (nth 3 oauth-selector-handle-event)
       "oshe_text" (nth 4 oauth-selector-handle-event)
-      "oshe_backspace" (nth 5 oauth-selector-handle-event))
+      "oshe_backspace" (nth 5 oauth-selector-handle-event)
+      "oshri_down" (nth 0 oauth-selector-handle-raw-input)
+      "oshri_j" (nth 1 oauth-selector-handle-raw-input)
+      "oshri_enter" (nth 2 oauth-selector-handle-raw-input)
+      "oshri_esc" (nth 3 oauth-selector-handle-raw-input)
+      "oshri_bad" (nth 4 oauth-selector-handle-raw-input)
+      "oshri_o" (nth 5 oauth-selector-handle-raw-input)
+      "oshri_confirm" (nth 6 oauth-selector-handle-raw-input))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9698,7 +9748,12 @@
      (collect "cli_selectors.oauth_selector_handle_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-oauth-selector-handle-event)))))))
+                  (run-cli-selectors-oauth-selector-handle-event))))
+     "oauth_selector_handle_raw_input"
+     (collect "cli_selectors.oauth_selector_handle_raw_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-handle-raw-input)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10899,6 +10954,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-apply-filter"
       "cli_selectors.oauth_selector_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-event"
+      "cli_selectors.oauth_selector_handle_raw_input"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-raw-input"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

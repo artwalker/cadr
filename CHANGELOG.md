@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_selector_handle_raw_input`
+  (raw-input fixtures; cadr `oauth-selector-handle-raw-input`
+  vs pi `handleInput` raw dispatch). Friend-MachineD n=5 **5.02×**
+  (691.4 / 137.7 µs), ceiling 8.0. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.oauth_selector_handle_event`
   (event fixtures; cadr `oauth-selector-handle-event`
   vs pi `handleInput` dispatch). Friend-MachineD n=5 **1.22×**

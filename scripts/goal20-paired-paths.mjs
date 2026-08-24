@@ -315,6 +315,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_selection": 50,
 	"cli_selectors.oauth_selector_apply_filter": 50,
 	"cli_selectors.oauth_selector_handle_event": 50,
+	"cli_selectors.oauth_selector_handle_raw_input": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8589,6 +8590,61 @@ function runCliSelectorsOauthSelectorHandleEvent() {
 	};
 }
 
+function oauthHandleRawInputEncoded(options, selected, data) {
+	const manager = new keybindingsModule.KeybindingsManager(keybindingsModule.TUI_KEYBINDINGS);
+	const state = {
+		options,
+		query: "",
+		selected,
+		filtered: options,
+	};
+	let action = "null";
+	let value = "null";
+	let consumed = "false";
+
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.up")) {
+		if (state.filtered.length > 0) {
+			state.selected = Math.max(0, state.selected - 1);
+		}
+		action = "changed";
+		consumed = "true";
+	} else if (selectorKeybindingMatchesPi(manager, data, "tui.select.down")) {
+		if (state.filtered.length > 0) {
+			state.selected = Math.min(state.filtered.length - 1, state.selected + 1);
+		}
+		action = "changed";
+		consumed = "true";
+	} else if (data === "\n" || selectorKeybindingMatchesPi(manager, data, "tui.select.confirm")) {
+		action = "select";
+		value = encodeOauthSelectorOption(state.filtered[state.selected]);
+		consumed = "true";
+	} else if (selectorKeybindingMatchesPi(manager, data, "tui.select.cancel")) {
+		action = "cancel";
+		consumed = "true";
+	} else if (data.length === 1 && data >= " " && data !== "\x7f") {
+		state.query += data;
+		state.filtered = fuzzyModule.fuzzyFilter(options, state.query, oauthSelectorSearchText);
+		state.selected = 0;
+		action = "changed";
+		consumed = "true";
+	}
+
+	return `${action}|${value}|${state.selected}|${consumed}`;
+}
+
+function runCliSelectorsOauthSelectorHandleRawInput() {
+	const options = makeOauthSelectorTestOptions();
+	return {
+		oshri_down: oauthHandleRawInputEncoded(options, 0, trustRawInputKeyDataPi("tui.select.down")),
+		oshri_j: oauthHandleRawInputEncoded(options, 1, "j"),
+		oshri_enter: oauthHandleRawInputEncoded(options, 0, "\n"),
+		oshri_esc: oauthHandleRawInputEncoded(options, 1, trustRawInputKeyDataPi("tui.select.cancel")),
+		oshri_bad: oauthHandleRawInputEncoded(options, 0, "q"),
+		oshri_o: oauthHandleRawInputEncoded(options, 0, "o"),
+		oshri_confirm: oauthHandleRawInputEncoded(options, 0, trustRawInputKeyDataPi("tui.select.confirm")),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -8998,6 +9054,7 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthSelectorSelectionResults = runCliSelectorsOauthSelectorSelection();
 	const oauthSelectorApplyFilterResults = runCliSelectorsOauthSelectorApplyFilter();
 	const oauthSelectorHandleEventResults = runCliSelectorsOauthSelectorHandleEvent();
+	const oauthSelectorHandleRawInputResults = runCliSelectorsOauthSelectorHandleRawInput();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9266,6 +9323,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthSelectorSelectionResults,
 		...oauthSelectorApplyFilterResults,
 		...oauthSelectorHandleEventResults,
+		...oauthSelectorHandleRawInputResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9555,6 +9613,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_selector_handle_event: await collect("cli_selectors.oauth_selector_handle_event", () => {
 			return () => runCliSelectorsOauthSelectorHandleEvent();
+		}),
+		oauth_selector_handle_raw_input: await collect("cli_selectors.oauth_selector_handle_raw_input", () => {
+			return () => runCliSelectorsOauthSelectorHandleRawInput();
 		}),
 		observed,
 	};
@@ -10793,6 +10854,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders",
 			"cli_selectors.oauth_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput event dispatch",
+			"cli_selectors.oauth_selector_handle_raw_input":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput raw key dispatch",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
