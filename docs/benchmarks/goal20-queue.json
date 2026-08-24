@@ -30,11 +30,11 @@
   {
    "pair": 253,
    "lane": "a",
-   "status": "pending",
+   "status": "done",
    "source": "src/cadr-agent/runtime.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
-   "branch": null
+   "branch": "pair-253-config-paths"
   },
   {
    "pair": 254,
@@ -51,8 +51,8 @@
    "status": "done",
    "source": "src/cadr-cli/resource-loader/",
    "measure": "measure-resource-loader",
-   "metric": null,
-   "branch": "pair-255-login-selection"
+   "metric": "resource_loader.dedupe_by_name",
+   "branch": "pair-255-"
   },
   {
    "pair": 256,
@@ -109,5 +109,14 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-255-",
+   "pair": 255
+  },
+  {
+   "branch": "pair-253-config-paths",
+   "pair": 253
+  }
+ ]
 }
