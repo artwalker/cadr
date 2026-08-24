@@ -3604,7 +3604,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
-| `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
+| `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve`, `package_manager.package_source` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |

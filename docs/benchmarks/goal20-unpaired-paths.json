@@ -20,6 +20,7 @@
   "provider_codex.stream_roundtrip",
   "provider_pi_messages.stream_roundtrip",
   "package_manager.resolve",
+  "package_manager.package_source",
   "session_discovery.header_probe",
   "session_export_html.to_html",
   "protocol_cbor.roundtrip",
