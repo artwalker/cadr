@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.model_selector_selected_model` (model
+  selector selected lookup; cadr `model-selector-selected-model` vs pi
+  `filteredModels[selectedIndex]`). Friend-MachineD n=5 **7.90×** (160.3 /
+  20.3 µs), ceiling 12.0 (bumped from 8.0). Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.model_selector_set_query` (model selector
   query update; cadr `model-selector-set-query` vs pi `filterModels` query).
   Friend-MachineD n=5 **3.85×** (148.5 / 38.6 µs), ceiling 8.0. Measure-only;

@@ -411,6 +411,7 @@
     ("cli_selectors.model_selector_handle_raw_input" . 50)
     ("cli_selectors.model_selector_set_query" . 50)
     ("cli_selectors.model_selector_selected_model" . 50)
+    ("cli_selectors.model_selector_toggle_scope" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9329,6 +9330,53 @@
      (model-selector-selected-model-encoded models 0 "nope")
      (model-selector-selected-model-encoded models 9 ""))))
 
+(defun make-model-selector-scoped-test-models ()
+  (list
+   (make-model-selector-search-fixture)
+   (make-model-selector-search-fixture
+    :id "claude-sonnet-4"
+    :provider :anthropic
+    :name "Claude Sonnet 4")
+   (make-model-selector-search-fixture
+    :id "gpt-5"
+    :provider :openai-codex
+    :name "")))
+
+(defun encode-model-selector-toggle-scope-result (state)
+  (format nil "~a|~d|~d"
+          (string-downcase
+           (symbol-name
+            (cadr-cli::model-selector-state-scope state)))
+          (length
+           (cadr-cli::model-selector-visible-models state))
+          (cadr-cli::model-selector-state-selected state)))
+
+(defun model-selector-toggle-scope-encoded
+    (all-models scoped-models &key query toggles)
+  (let* ((current (first all-models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models all-models
+            :scoped-models scoped-models
+            :current-model current)))
+    (when query
+      (setf (cadr-cli::model-selector-state-query state) query)
+      (cadr-cli::model-selector-apply-filter state))
+    (dotimes (i toggles)
+      (declare (ignore i))
+      (cadr-cli::model-selector-toggle-scope state))
+    (encode-model-selector-toggle-scope-result state)))
+
+(defun run-cli-selectors-model-selector-toggle-scope ()
+  (let* ((models (make-model-selector-test-models))
+         (scoped (make-model-selector-scoped-test-models)))
+    (list
+     (model-selector-toggle-scope-encoded models scoped :toggles 1)
+     (model-selector-toggle-scope-encoded models scoped :toggles 2)
+     (model-selector-toggle-scope-encoded models scoped :query "gpt" :toggles 1)
+     (model-selector-toggle-scope-encoded models nil :toggles 1)
+     (model-selector-toggle-scope-encoded models scoped :query "anth" :toggles 1))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9553,7 +9601,9 @@
         (model-selector-set-query
           (run-cli-selectors-model-selector-set-query))
         (model-selector-selected-model
-          (run-cli-selectors-model-selector-selected-model)))
+          (run-cli-selectors-model-selector-selected-model))
+        (model-selector-toggle-scope
+          (run-cli-selectors-model-selector-toggle-scope)))
     (json-object
      "observed"
      (json-object
@@ -10199,7 +10249,12 @@
       "mssm_gpt0" (nth 3 model-selector-selected-model)
       "mssm_gpt2" (nth 4 model-selector-selected-model)
       "mssm_miss" (nth 5 model-selector-selected-model)
-      "mssm_oob" (nth 6 model-selector-selected-model))
+      "mssm_oob" (nth 6 model-selector-selected-model)
+      "msts_all" (nth 0 model-selector-toggle-scope)
+      "msts_scoped" (nth 1 model-selector-toggle-scope)
+      "msts_gpt" (nth 2 model-selector-toggle-scope)
+      "msts_none" (nth 3 model-selector-toggle-scope)
+      "msts_anth" (nth 4 model-selector-toggle-scope))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10764,7 +10819,12 @@
      (collect "cli_selectors.model_selector_selected_model"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-model-selector-selected-model)))))))
+                  (run-cli-selectors-model-selector-selected-model))))
+     "model_selector_toggle_scope"
+     (collect "cli_selectors.model_selector_toggle_scope"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-toggle-scope)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12005,6 +12065,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-set-query"
       "cli_selectors.model_selector_selected_model"
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-selected-model"
+      "cli_selectors.model_selector_toggle_scope"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-toggle-scope"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

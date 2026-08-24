@@ -335,6 +335,7 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_handle_raw_input": 50,
 	"cli_selectors.model_selector_set_query": 50,
 	"cli_selectors.model_selector_selected_model": 50,
+	"cli_selectors.model_selector_toggle_scope": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9413,15 +9414,93 @@ function sortModelSelectorTestModels(models, currentModel) {
 function modelSelectorFilteredModels(models, query) {
 	const current = models[0].model;
 	const sorted = sortModelSelectorTestModels(models, current);
+	return modelSelectorFilterActiveModels(sorted, query);
+}
+
+function modelSelectorFilterActiveModels(activeModels, query) {
 	return query
-		? fuzzyModule.fuzzyFilter(sorted, query, ({ id, provider, model }) =>
+		? fuzzyModule.fuzzyFilter(activeModels, query, ({ id, provider, model }) =>
 				modelSearchModule.getModelSelectorSearchText({
 					id,
 					provider,
 					name: model.name,
 				}),
 			)
-		: sorted;
+		: activeModels;
+}
+
+function modelSelectorModelsEqual(left, right) {
+	return left.id === right.id && left.provider === right.provider;
+}
+
+function modelSelectorSelectCurrent(activeModels, currentModel) {
+	const index = activeModels.findIndex((item) =>
+		modelSelectorModelsEqual(item.model, currentModel),
+	);
+	return index >= 0 ? index : 0;
+}
+
+function makeModelSelectorScopedTestModels() {
+	return [
+		goal20ModelItem({ id: "gpt-4o", provider: "openai", name: "GPT-4o" }),
+		goal20ModelItem({
+			id: "claude-sonnet-4",
+			provider: "anthropic",
+			name: "Claude Sonnet 4",
+		}),
+		goal20ModelItem({ id: "gpt-5", provider: "openai-codex", name: "" }),
+	];
+}
+
+function encodeModelSelectorToggleScopeResult(scope, filteredModels, selectedIndex) {
+	return `${scope}|${filteredModels.length}|${selectedIndex}`;
+}
+
+function modelSelectorToggleScopeEncoded(allModels, scopedModels, { query = "", toggles = 0 } = {}) {
+	const currentModel = allModels[0].model;
+	let scope = scopedModels.length > 0 ? "scoped" : "all";
+	const sortedAll = sortModelSelectorTestModels(allModels, currentModel);
+	let activeModels = scope === "scoped" ? scopedModels : sortedAll;
+	let selectedIndex = modelSelectorSelectCurrent(activeModels, currentModel);
+	let filteredModels = modelSelectorFilterActiveModels(activeModels, query);
+
+	for (let i = 0; i < toggles; i += 1) {
+		if (scopedModels.length === 0) {
+			continue;
+		}
+		scope = scope === "all" ? "scoped" : "all";
+		activeModels = scope === "scoped" ? scopedModels : sortedAll;
+		filteredModels = modelSelectorFilterActiveModels(activeModels, query);
+		selectedIndex = modelSelectorSelectCurrent(filteredModels, currentModel);
+		if (query) {
+			selectedIndex = 0;
+		} else {
+			selectedIndex = Math.min(
+				selectedIndex,
+				Math.max(0, filteredModels.length - 1),
+			);
+		}
+	}
+
+	return encodeModelSelectorToggleScopeResult(scope, filteredModels, selectedIndex);
+}
+
+function runCliSelectorsModelSelectorToggleScope() {
+	const models = makeModelSelectorTestModels();
+	const scoped = makeModelSelectorScopedTestModels();
+	return {
+		msts_all: modelSelectorToggleScopeEncoded(models, scoped, { toggles: 1 }),
+		msts_scoped: modelSelectorToggleScopeEncoded(models, scoped, { toggles: 2 }),
+		msts_gpt: modelSelectorToggleScopeEncoded(models, scoped, {
+			query: "gpt",
+			toggles: 1,
+		}),
+		msts_none: modelSelectorToggleScopeEncoded(models, [], { toggles: 1 }),
+		msts_anth: modelSelectorToggleScopeEncoded(models, scoped, {
+			query: "anth",
+			toggles: 1,
+		}),
+	};
 }
 
 function modelSelectorApplyFilterEncoded(models, query) {
@@ -10131,6 +10210,8 @@ async function measureCliSelectorsSessionSearch() {
 	const modelSelectorSetQueryResults = runCliSelectorsModelSelectorSetQuery();
 	const modelSelectorSelectedModelResults =
 		runCliSelectorsModelSelectorSelectedModel();
+	const modelSelectorToggleScopeResults =
+		runCliSelectorsModelSelectorToggleScope();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10419,6 +10500,7 @@ async function measureCliSelectorsSessionSearch() {
 		...modelSelectorHandleRawInputResults,
 		...modelSelectorSetQueryResults,
 		...modelSelectorSelectedModelResults,
+		...modelSelectorToggleScopeResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10779,6 +10861,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.model_selector_selected_model",
 			() => {
 				return () => runCliSelectorsModelSelectorSelectedModel();
+			},
+		),
+		model_selector_toggle_scope: await collect(
+			"cli_selectors.model_selector_toggle_scope",
+			() => {
+				return () => runCliSelectorsModelSelectorToggleScope();
 			},
 		),
 		observed,
@@ -12058,6 +12146,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filterModels query update",
 			"cli_selectors.model_selector_selected_model":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filteredModels[selectedIndex]",
+			"cli_selectors.model_selector_toggle_scope":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput tab scope toggle",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
