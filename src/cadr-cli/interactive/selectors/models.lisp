@@ -466,6 +466,10 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
   (all-ids nil :type list)
   (enabled-ids :all)
   (query "" :type string)
+  (models-by-id nil)
+  (items nil :type list)
+  (visible-items nil :type list)
+  (filter-query nil :type (or null string))
   (selected 0 :type (integer 0 *))
   (dirty-p nil :type boolean)
   refresh-status-message
@@ -480,13 +484,28 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
       :all
       (copy-list enabled)))
 
+(defun scoped-models-enabled-set (enabled)
+  (let ((set (make-hash-table :test #'equal)))
+    (dolist (id enabled)
+      (setf (gethash id set) t))
+    set))
+
+(defun scoped-models-selector-rebuild-models-by-id
+    (state)
+  (let ((table (make-hash-table :test #'equal)))
+    (dolist (model
+              (scoped-models-selector-state-all-models state))
+      (setf (gethash (qualified-model-id model) table)
+            model))
+    (setf
+     (scoped-models-selector-state-models-by-id state)
+     table)))
+
 (defun scoped-models-model-by-id
     (state id)
-  (find
+  (gethash
    id
-   (scoped-models-selector-state-all-models state)
-   :key #'qualified-model-id
-   :test #'string=))
+   (scoped-models-selector-state-models-by-id state)))
 
 (defun scoped-model-id-enabled-p
     (state id)
@@ -516,38 +535,82 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
             (member id enabled :test #'string=))
           all)))))
 
+(defun scoped-models-selector-rebuild-items (state)
+  (scoped-models-selector-rebuild-models-by-id state)
+  (let* ((enabled
+           (scoped-models-selector-state-enabled-ids
+            state))
+         (all-enabled-p (eq enabled :all))
+         (enabled-set
+           (unless all-enabled-p
+             (scoped-models-enabled-set enabled)))
+         (models-by-id
+           (scoped-models-selector-state-models-by-id
+            state)))
+    (setf
+     (scoped-models-selector-state-items state)
+     (loop
+       for id in (scoped-models-sorted-ids state)
+       for model = (gethash id models-by-id)
+       collect
+       (list
+        :id id
+        :model model
+        :enabled-p
+        (or all-enabled-p (gethash id enabled-set))
+        :search-text
+        (if model
+            (scoped-model-selector-search-text model)
+            id))))))
+
+(defun scoped-models-selector-apply-filter (state)
+  (let* ((items
+           (scoped-models-selector-state-items state))
+         (query
+           (scoped-models-selector-state-query
+            state)))
+    (setf
+     (scoped-models-selector-state-visible-items state)
+     (if (zerop (length query))
+         items
+         (selector-fuzzy-filter
+          items query
+          #'scoped-model-item-search-text))
+     (scoped-models-selector-state-filter-query state)
+     query))
+  state)
+
+(defun scoped-models-selector-refresh-items (state)
+  (scoped-models-selector-rebuild-items state)
+  (scoped-models-selector-apply-filter state))
+
 (defun scoped-models-selector-items (state)
-  (loop
-    for id in (scoped-models-sorted-ids state)
-    collect
-    (list
-     :id id
-     :model
-     (scoped-models-model-by-id state id)
-     :enabled-p
-     (not
-      (null
-       (scoped-model-id-enabled-p state id))))))
+  (scoped-models-selector-state-items state))
 
 (defun scoped-model-item-search-text (item)
-  (let ((model (getf item :model)))
-    (if model
-        (scoped-model-selector-search-text
-         model)
-        (getf item :id))))
+  (or
+   (getf item :search-text)
+   (let ((model (getf item :model)))
+     (if model
+         (scoped-model-selector-search-text model)
+         (getf item :id)))))
 
 (defun scoped-models-selector-visible-items
     (state)
-  (let ((items
-          (scoped-models-selector-items state))
-        (query
-          (scoped-models-selector-state-query
-           state)))
-    (if (zerop (length query))
-        items
-        (selector-fuzzy-filter
-         items query
-         #'scoped-model-item-search-text))))
+  (unless
+      (and
+       (scoped-models-selector-state-items state)
+       (string=
+        (or
+         (scoped-models-selector-state-filter-query
+          state)
+         "")
+        (scoped-models-selector-state-query state)))
+    (unless
+        (scoped-models-selector-state-items state)
+      (scoped-models-selector-rebuild-items state))
+    (scoped-models-selector-apply-filter state))
+  (scoped-models-selector-state-visible-items state))
 
 (defun scoped-models-selector-clamp-selected
     (state)
@@ -574,20 +637,22 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
        persist-callback
        cancel-callback
        keybindings)
-  (%make-scoped-models-selector-state
-   :all-models (copy-list all-models)
-   :all-ids
-   (mapcar #'qualified-model-id all-models)
-   :enabled-ids
-   (scoped-models-copy-enabled enabled-ids)
-   :refresh-status-message refresh-status-message
-   :refresh-status-kind refresh-status-kind
-   :change-callback change-callback
-   :persist-callback persist-callback
-   :cancel-callback cancel-callback
-   :keybindings
-   (or keybindings
-       (make-models-selector-keybindings))))
+  (let ((state
+          (%make-scoped-models-selector-state
+           :all-models (copy-list all-models)
+           :all-ids
+           (mapcar #'qualified-model-id all-models)
+           :enabled-ids
+           (scoped-models-copy-enabled enabled-ids)
+           :refresh-status-message refresh-status-message
+           :refresh-status-kind refresh-status-kind
+           :change-callback change-callback
+           :persist-callback persist-callback
+           :cancel-callback cancel-callback
+           :keybindings
+           (or keybindings
+               (make-models-selector-keybindings)))))
+    (scoped-models-selector-refresh-items state)))
 
 (defun scoped-models-selector-finish-refresh
     (state models &key (enabled-ids nil enabled-ids-p)
@@ -615,6 +680,7 @@ shows the terminal message with the given style."
      status-message
      (scoped-models-selector-state-refresh-status-kind state)
      (or status-kind :muted))
+    (scoped-models-selector-refresh-items state)
     (when selected-id
       (scoped-models-selector-select-id state selected-id))
     (scoped-models-selector-clamp-selected state))
@@ -660,6 +726,7 @@ shows the terminal message with the given style."
   (setf
    (scoped-models-selector-state-dirty-p state)
    t)
+  (scoped-models-selector-refresh-items state)
   (scoped-models-selector-clamp-selected state)
   (scoped-models-selector-notify-change state))
 
@@ -923,12 +990,8 @@ shows the terminal message with the given style."
              (scoped-models-selector-state-query
               state)))
            (progn
-             (setf
-              (scoped-models-selector-state-query
-               state)
-              "")
-             (scoped-models-selector-clamp-selected
-              state)
+             (scoped-models-selector-set-query
+              state "")
              (values :changed nil t))
            (values :cancel nil t)))
       ((scoped-models-selector-key-p
@@ -975,6 +1038,7 @@ shows the terminal message with the given style."
   (setf
    (scoped-models-selector-state-query state)
    (or query ""))
+  (scoped-models-selector-apply-filter state)
   (scoped-models-selector-clamp-selected state))
 
 (defun scoped-models-selector-cancel (state)

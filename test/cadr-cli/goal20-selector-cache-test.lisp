@@ -79,3 +79,41 @@
         filtered
         (cadr-cli::model-selector-visible-models
          state))))))
+
+(test goal20-scoped-models-selector-caches-items-and-filter
+  (let* ((models
+           (list
+            (goal20-selector-test-model "alpha-1")
+            (goal20-selector-test-model "beta-1")))
+         (state
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models models))
+         (items-first
+           (cadr-cli::scoped-models-selector-visible-items
+            state))
+         (items-second
+           (cadr-cli::scoped-models-selector-visible-items
+            state)))
+    (is (eq items-first items-second))
+    (is (= 2 (length items-first)))
+    (cadr-cli::scoped-models-selector-set-query state "beta")
+    (let ((filtered
+            (cadr-cli::scoped-models-selector-visible-items
+             state)))
+      (is (= 1 (length filtered)))
+      (is (string= "beta-1" (getf (first filtered) :id)))
+      (is
+       (eq
+        filtered
+        (cadr-cli::scoped-models-selector-visible-items
+         state))))
+    (cadr-cli::scoped-models-selector-toggle-selected state)
+    (let ((rebuilt
+            (cadr-cli::scoped-models-selector-visible-items
+             state)))
+      (is (= 2 (length rebuilt)))
+      (is
+       (eq
+        rebuilt
+        (cadr-cli::scoped-models-selector-visible-items
+         state))))))
