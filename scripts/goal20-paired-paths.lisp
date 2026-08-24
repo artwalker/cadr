@@ -88,6 +88,7 @@
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
+;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -223,6 +224,7 @@
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
+    ("settings_load.stored_auth_secrets" . 50)
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
     ("package_manager.manifest_parse" . 50)
@@ -2829,53 +2831,125 @@
    (http-idle-label-flag 300000 "5 min")
    (http-idle-label-flag 0 "disabled")))
 
+(defparameter +stored-auth-oauth-fixture+
+  "{\"openai\":{\"type\":\"api_key\",\"key\":\"sk-test\"},\"anthropic\":{\"type\":\"oauth\",\"access\":\"acc\",\"refresh\":\"ref\",\"expires\":9999999999}}")
+
+(defun stage-settings-load-stored-auth ()
+  (let* ((missing-root
+           (merge-pathnames "stored-auth-missing/" *scratch-directory*))
+         (oauth-root
+           (merge-pathnames "stored-auth-oauth/" *scratch-directory*))
+         (oauth-path
+           (merge-pathnames "auth.json" oauth-root))
+         (bad-path
+           (merge-pathnames "bad.json" oauth-root))
+         (fixture-path
+           (merge-pathnames "auth.json" *agent-directory*)))
+    (ensure-directories-exist missing-root)
+    (ensure-directories-exist oauth-root)
+    (with-open-file (out oauth-path
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string +stored-auth-oauth-fixture+ out))
+    (with-open-file (out bad-path
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string "[" out))
+    (list
+     (namestring (merge-pathnames "missing.json" missing-root))
+     (namestring fixture-path)
+     (namestring oauth-path)
+     (namestring bad-path))))
+
+(defun stored-auth-secret-count (path)
+  (length (cadr-cli::stored-auth-secrets path)))
+
+(defun stored-auth-secret-member-p (path secret)
+  (if (member secret (cadr-cli::stored-auth-secrets path) :test #'string=)
+      1
+      0))
+
+(defun run-settings-load-stored-auth-secrets
+    (missing-path fixture-path oauth-path bad-path)
+  (list
+   (stored-auth-secret-count missing-path)
+   (stored-auth-secret-count fixture-path)
+   (stored-auth-secret-count oauth-path)
+   (stored-auth-secret-count bad-path)
+   (stored-auth-secret-member-p
+    fixture-path "goal20-paired-paths-not-a-real-key")
+   (stored-auth-secret-member-p oauth-path "acc")
+   (stored-auth-secret-member-p oauth-path "ref")))
+
 (defun measure-settings-load ()
   (destructuring-bind (empty project store-path)
       (stage-settings-load-trust)
-    (let ((observed
-            (run-settings-load-project-trust empty project store-path))
-          (config (run-settings-load-config-value))
-          (idle (run-settings-load-http-idle)))
-      (json-object
-       "observed"
-       (json-object
-        "tr_empty" (nth 0 observed)
-        "tr_proj" (nth 1 observed)
-        "rs_empty" (nth 2 observed)
-        "rs_ask" (nth 3 observed)
-        "rs_always" (nth 4 observed)
-        "rs_never" (nth 5 observed)
-        "rs_ov_yes" (nth 6 observed)
-        "rs_ov_no" (nth 7 observed)
-        "cv_lit" (nth 0 config)
-        "cv_dol" (nth 1 config)
-        "cv_brace" (nth 2 config)
-        "cv_esc" (nth 3 config)
-        "cv_bang" (nth 4 config)
-        "cv_miss" (nth 5 config)
-        "cv_mix" (nth 6 config)
-        "cv_cmd" (nth 7 config)
-        "ht_30" (nth 0 idle)
-        "ht_1m" (nth 1 idle)
-        "ht_2m" (nth 2 idle)
-        "ht_5m" (nth 3 idle)
-        "ht_off" (nth 4 idle))
-       "project_trust"
-       (collect "settings_load.project_trust"
-                (lambda ()
+    (destructuring-bind (missing-path fixture-path oauth-path bad-path)
+        (stage-settings-load-stored-auth)
+      (let ((observed
+              (run-settings-load-project-trust empty project store-path))
+            (config (run-settings-load-config-value))
+            (idle (run-settings-load-http-idle))
+            (stored-auth
+              (run-settings-load-stored-auth-secrets
+               missing-path fixture-path oauth-path bad-path)))
+        (json-object
+         "observed"
+         (json-object
+          "tr_empty" (nth 0 observed)
+          "tr_proj" (nth 1 observed)
+          "rs_empty" (nth 2 observed)
+          "rs_ask" (nth 3 observed)
+          "rs_always" (nth 4 observed)
+          "rs_never" (nth 5 observed)
+          "rs_ov_yes" (nth 6 observed)
+          "rs_ov_no" (nth 7 observed)
+          "cv_lit" (nth 0 config)
+          "cv_dol" (nth 1 config)
+          "cv_brace" (nth 2 config)
+          "cv_esc" (nth 3 config)
+          "cv_bang" (nth 4 config)
+          "cv_miss" (nth 5 config)
+          "cv_mix" (nth 6 config)
+          "cv_cmd" (nth 7 config)
+          "ht_30" (nth 0 idle)
+          "ht_1m" (nth 1 idle)
+          "ht_2m" (nth 2 idle)
+          "ht_5m" (nth 3 idle)
+          "ht_off" (nth 4 idle)
+          "sas_missing" (nth 0 stored-auth)
+          "sas_fixture" (nth 1 stored-auth)
+          "sas_oauth" (nth 2 stored-auth)
+          "sas_bad" (nth 3 stored-auth)
+          "sas_fixture_key" (nth 4 stored-auth)
+          "sas_oauth_access" (nth 5 stored-auth)
+          "sas_oauth_refresh" (nth 6 stored-auth))
+         "project_trust"
+         (collect "settings_load.project_trust"
                   (lambda ()
-                    (run-settings-load-project-trust
-                     empty project store-path))))
-       "config_value"
-       (collect "settings_load.config_value"
-                (lambda ()
+                    (lambda ()
+                      (run-settings-load-project-trust
+                       empty project store-path))))
+         "config_value"
+         (collect "settings_load.config_value"
                   (lambda ()
-                    (run-settings-load-config-value))))
-       "http_idle"
-       (collect "settings_load.http_idle"
-                (lambda ()
+                    (lambda ()
+                      (run-settings-load-config-value))))
+         "http_idle"
+         (collect "settings_load.http_idle"
                   (lambda ()
-                    (run-settings-load-http-idle))))))))
+                    (lambda ()
+                      (run-settings-load-http-idle))))
+         "stored_auth_secrets"
+         (collect "settings_load.stored_auth_secrets"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-stored-auth-secrets
+                       missing-path fixture-path oauth-path bad-path)))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -12924,6 +12998,8 @@
       "src/cadr-cli/settings/config-values.lisp resolve-config-value"
       "settings_load.http_idle"
       "src/cadr-cli/bootstrap/settings.lisp http-idle-timeout-label"
+      "settings_load.stored_auth_secrets"
+      "src/cadr-cli/config.lisp stored-auth-secrets"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "package_manager.resolve"

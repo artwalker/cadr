@@ -3054,6 +3054,19 @@ In-memory entry count on the written append journal (128 messages). Observed
 (0.22 / 2.4 µs), ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same
 commit no optimize.
 
+### Pair 249 — `settings_load` (stored_auth_secrets)
+
+| metric | cadr | pi |
+|---|---|---|
+| `stored_auth_secrets` | `stored-auth-secrets` | auth.json key/access/refresh scan |
+
+Fixture auth.json, staged oauth auth.json, missing file, and bad JSON. Collect
+stored key/access/refresh strings only; no env vars or provider config merge.
+Observed `sas_missing` / `sas_fixture` / `sas_oauth` / `sas_bad` /
+`sas_fixture_key` / `sas_oauth_access` / `sas_oauth_refresh` are exact. First
+Friend-MachineD freeze **4.19×** (426.6 / 101.8 µs), ceiling 8.0. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 252 — `package_manager` (manifest_parse)
 
 | metric | cadr | pi |

@@ -38,6 +38,7 @@ METRIC_KEYS = (
     "settings_load.project_trust",
     "settings_load.config_value",
     "settings_load.http_idle",
+    "settings_load.stored_auth_secrets",
     "resource_loader.reload",
     "package_manager.resolve",
     "package_manager.manifest_parse",

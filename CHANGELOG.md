@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `settings_load.stored_auth_secrets` (stored auth.json
+  key/access/refresh collection; cadr `stored-auth-secrets` vs pi auth.json
+  scan). Friend-MachineD n=5 **4.19×** (426.6 / 101.8 µs), ceiling 8.0.
+  Measure-only.
 - Goal 20 P.13: pair `package_manager.manifest_parse` (package.json `pi`
   manifest read; cadr `read-package-pi-manifest` vs pi `readPiManifest`).
   Friend-MachineD n=5 **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Measure-only.

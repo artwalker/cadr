@@ -142,6 +142,7 @@ const REPETITIONS = {
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
+	"settings_load.stored_auth_secrets": 50,
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
@@ -1779,11 +1780,72 @@ function runSettingsLoadHttpIdle() {
 	};
 }
 
+const STORED_AUTH_OAUTH_FIXTURE =
+	'{"openai":{"type":"api_key","key":"sk-test"},"anthropic":{"type":"oauth","access":"acc","refresh":"ref","expires":9999999999}}';
+
+function storedAuthSecrets(authPath) {
+	if (!existsSync(authPath)) return [];
+	try {
+		const secrets = [];
+		const data = JSON.parse(readFileSync(authPath, "utf8"));
+		for (const object of Object.values(data)) {
+			if (!object || typeof object !== "object") continue;
+			for (const field of ["key", "access", "refresh"]) {
+				const value = object[field];
+				if (typeof value === "string" && value.length > 0) secrets.push(value);
+			}
+		}
+		return secrets;
+	} catch {
+		return [];
+	}
+}
+
+function stageSettingsLoadStoredAuth() {
+	const missingRoot = path.join(scratch, "stored-auth-missing");
+	const oauthRoot = path.join(scratch, "stored-auth-oauth");
+	const oauthPath = path.join(oauthRoot, "auth.json");
+	const badPath = path.join(oauthRoot, "bad.json");
+	const fixturePath = path.join(agentDirectory, "auth.json");
+	mkdirSync(missingRoot, { recursive: true });
+	mkdirSync(oauthRoot, { recursive: true });
+	writeFileSync(oauthPath, STORED_AUTH_OAUTH_FIXTURE, "utf8");
+	writeFileSync(badPath, "[", "utf8");
+	return {
+		missingPath: path.join(missingRoot, "missing.json"),
+		fixturePath,
+		oauthPath,
+		badPath,
+	};
+}
+
+function storedAuthSecretCount(authPath) {
+	return storedAuthSecrets(authPath).length;
+}
+
+function storedAuthSecretMember(authPath, secret) {
+	return storedAuthSecrets(authPath).includes(secret) ? 1 : 0;
+}
+
+function runSettingsLoadStoredAuthSecrets(missingPath, fixturePath, oauthPath, badPath) {
+	return {
+		sas_missing: storedAuthSecretCount(missingPath),
+		sas_fixture: storedAuthSecretCount(fixturePath),
+		sas_oauth: storedAuthSecretCount(oauthPath),
+		sas_bad: storedAuthSecretCount(badPath),
+		sas_fixture_key: storedAuthSecretMember(fixturePath, "goal20-paired-paths-not-a-real-key"),
+		sas_oauth_access: storedAuthSecretMember(oauthPath, "acc"),
+		sas_oauth_refresh: storedAuthSecretMember(oauthPath, "ref"),
+	};
+}
+
 async function measureSettingsLoad() {
 	const { empty, project, agent } = stageSettingsLoadTrust();
+	const { missingPath, fixturePath, oauthPath, badPath } = stageSettingsLoadStoredAuth();
 	const trust = await runSettingsLoadProjectTrust(empty, project, agent);
 	const config = runSettingsLoadConfigValue();
 	const idle = runSettingsLoadHttpIdle();
+	const storedAuth = runSettingsLoadStoredAuthSecrets(missingPath, fixturePath, oauthPath, badPath);
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -1794,7 +1856,10 @@ async function measureSettingsLoad() {
 		http_idle: await collect("settings_load.http_idle", () => {
 			return () => runSettingsLoadHttpIdle();
 		}),
-		observed: { ...trust, ...config, ...idle },
+		stored_auth_secrets: await collect("settings_load.stored_auth_secrets", () => {
+			return () => runSettingsLoadStoredAuthSecrets(missingPath, fixturePath, oauthPath, badPath);
+		}),
+		observed: { ...trust, ...config, ...idle, ...storedAuth },
 	};
 }
 
@@ -13490,6 +13555,8 @@ const result = {
 				"packages/coding-agent/src/core/resolve-config-value.ts resolveConfigValue",
 			"settings_load.http_idle":
 				"packages/coding-agent/src/core/http-dispatcher.ts formatHttpIdleTimeoutMs",
+			"settings_load.stored_auth_secrets":
+				"packages/coding-agent/src/config.ts getAuthPath (auth.json key/access/refresh scan)",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"package_manager.manifest_parse":

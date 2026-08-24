@@ -326,6 +326,13 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("settings_load.http_idle", paired.RATIO_CEILINGS)
         self.assertIn("ht_30", paired.OBSERVED_EXACT["settings_load"])
         self.assertIn("ht_off", paired.OBSERVED_EXACT["settings_load"])
+        self.assertIn("settings_load.stored_auth_secrets", RECORD.METRIC_KEYS)
+        self.assertIn("stored_auth_secrets", paired.METRICS["settings_load"])
+        self.assertIn(
+            "settings_load.stored_auth_secrets", paired.RATIO_CEILINGS
+        )
+        self.assertIn("sas_fixture", paired.OBSERVED_EXACT["settings_load"])
+        self.assertIn("sas_oauth_access", paired.OBSERVED_EXACT["settings_load"])
 
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -1938,6 +1945,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`provider_bedrock.stream_roundtrip`", section)
             self.assertIn("`cli_settings.create`", section)
             self.assertIn("`settings_load.project_trust`", section)
+            self.assertIn("`settings_load.stored_auth_secrets`", section)
             self.assertIn("`oauth_pkce_device.poll`", section)
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
