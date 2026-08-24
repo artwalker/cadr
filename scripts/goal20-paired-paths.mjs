@@ -330,6 +330,7 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_search_text": 50,
 	"cli_selectors.qualified_model_id": 50,
 	"cli_selectors.model_selector_apply_filter": 50,
+	"cli_selectors.model_selector_move": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9416,6 +9417,30 @@ function runCliSelectorsModelSelectorApplyFilter() {
 	};
 }
 
+function modelSelectorMoveEncoded(models, selected, delta, query = "") {
+	const filteredModels = query
+		? fuzzyModule.fuzzyFilter(models, query, ({ id, provider, model }) =>
+				modelSearchModule.getModelSelectorSearchText({
+					id,
+					provider,
+					name: model.name,
+				}),
+			)
+		: models;
+	return String(moveIndex(selected, filteredModels.length, delta));
+}
+
+function runCliSelectorsModelSelectorMove() {
+	const models = makeModelSelectorTestModels();
+	return {
+		msmv_0_1: modelSelectorMoveEncoded(models, 0, 1),
+		msmv_2_m1: modelSelectorMoveEncoded(models, 2, -1),
+		msmv_1_1: modelSelectorMoveEncoded(models, 1, 1),
+		msmv_1_m1: modelSelectorMoveEncoded(models, 1, -1),
+		msmv_filter: modelSelectorMoveEncoded(models, 0, 1, "gpt"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9843,6 +9868,7 @@ async function measureCliSelectorsSessionSearch() {
 	const modelSelectorSearchTextResults = runCliSelectorsModelSelectorSearchText();
 	const qualifiedModelIdResults = runCliSelectorsQualifiedModelId();
 	const modelSelectorApplyFilterResults = runCliSelectorsModelSelectorApplyFilter();
+	const modelSelectorMoveResults = runCliSelectorsModelSelectorMove();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10126,6 +10152,7 @@ async function measureCliSelectorsSessionSearch() {
 		...modelSelectorSearchTextResults,
 		...qualifiedModelIdResults,
 		...modelSelectorApplyFilterResults,
+		...modelSelectorMoveResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10469,6 +10496,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		model_selector_apply_filter: await collect("cli_selectors.model_selector_apply_filter", () => {
 			return () => runCliSelectorsModelSelectorApplyFilter();
+		}),
+		model_selector_move: await collect("cli_selectors.model_selector_move", () => {
+			return () => runCliSelectorsModelSelectorMove();
 		}),
 		observed,
 	};
@@ -11737,6 +11767,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts provider/id label",
 			"cli_selectors.model_selector_apply_filter":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filterModels",
+			"cli_selectors.model_selector_move":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput up/down wrap",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

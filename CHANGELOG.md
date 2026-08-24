@@ -21,6 +21,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.model_selector_move`
+  (model selector wrap move; cadr `model-selector-move` vs pi
+  `handleInput` up/down). Friend-MachineD n=5 **18.60×** (102.3 / 5.5 µs),
+  ceiling 20.0. Measure-only; no optimize.
+- Goal 20 P.13: pair `cli_selectors.model_selector_apply_filter`
+  (model selector fuzzy filter; cadr `model-selector-apply-filter` vs pi
+  `filterModels`). Friend-MachineD n=5 **5.53×** (130.9 / 23.7 µs), ceiling
+  8.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.qualified_model_id`
   (provider/id label; cadr `qualified-model-id` vs pi model-selector
   label). Friend-MachineD n=5 **7.65×** (2.1 / 0.3 µs), ceiling 8.0.

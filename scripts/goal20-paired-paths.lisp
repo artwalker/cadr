@@ -406,6 +406,7 @@
     ("cli_selectors.model_selector_search_text" . 50)
     ("cli_selectors.qualified_model_id" . 50)
     ("cli_selectors.model_selector_apply_filter" . 50)
+    ("cli_selectors.model_selector_move" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9158,6 +9159,27 @@
      (model-selector-apply-filter-encoded models "anth")
      (model-selector-apply-filter-encoded models "oogle"))))
 
+(defun model-selector-move-encoded (models selected delta &key query)
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (setf (cadr-cli::model-selector-state-query state) (or query ""))
+    (cadr-cli::model-selector-apply-filter state)
+    (setf (cadr-cli::model-selector-state-selected state) selected)
+    (cadr-cli::model-selector-move state delta)
+    (write-to-string (cadr-cli::model-selector-state-selected state))))
+
+(defun run-cli-selectors-model-selector-move ()
+  (let ((models (make-model-selector-test-models)))
+    (list
+     (model-selector-move-encoded models 0 1)
+     (model-selector-move-encoded models 2 -1)
+     (model-selector-move-encoded models 1 1)
+     (model-selector-move-encoded models 1 -1)
+     (model-selector-move-encoded models 0 1 :query "gpt"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9372,7 +9394,9 @@
         (qualified-model-id
           (run-cli-selectors-qualified-model-id))
         (model-selector-apply-filter
-          (run-cli-selectors-model-selector-apply-filter)))
+          (run-cli-selectors-model-selector-apply-filter))
+        (model-selector-move
+          (run-cli-selectors-model-selector-move)))
     (json-object
      "observed"
      (json-object
@@ -9988,7 +10012,12 @@
       "msaf_gpt" (nth 1 model-selector-apply-filter)
       "msaf_miss" (nth 2 model-selector-apply-filter)
       "msaf_anth" (nth 3 model-selector-apply-filter)
-      "msaf_google" (nth 4 model-selector-apply-filter))
+      "msaf_google" (nth 4 model-selector-apply-filter)
+      "msmv_0_1" (nth 0 model-selector-move)
+      "msmv_2_m1" (nth 1 model-selector-move)
+      "msmv_1_1" (nth 2 model-selector-move)
+      "msmv_1_m1" (nth 3 model-selector-move)
+      "msmv_filter" (nth 4 model-selector-move))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10528,7 +10557,12 @@
      (collect "cli_selectors.model_selector_apply_filter"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-model-selector-apply-filter)))))))
+                  (run-cli-selectors-model-selector-apply-filter))))
+     "model_selector_move"
+     (collect "cli_selectors.model_selector_move"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-move)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11759,6 +11793,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp qualified-model-id"
       "cli_selectors.model_selector_apply_filter"
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-apply-filter"
+      "cli_selectors.model_selector_move"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-move"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

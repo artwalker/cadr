@@ -2923,8 +2923,19 @@ ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
 Model selector fuzzy filter over active catalog (count|selected digest).
 Observed `msaf_all` / `msaf_gpt` / `msaf_miss` / `msaf_anth` / `msaf_google`
-are exact. First Friend-MachineD freeze **5.53×** (TBD from ledger), ceiling
+are exact. First Friend-MachineD freeze **5.53×** (130.9 / 23.7 µs), ceiling
 8.0. Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 219 — `cli_selectors` (model_selector_move)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_move` | `model-selector-move` | `handleInput` up/down wrap |
+
+Model selector list wrap move over filtered catalog (selected index digest).
+Observed `msmv_0_1` / `msmv_2_m1` / `msmv_1_1` / `msmv_1_m1` / `msmv_filter`
+are exact. First Friend-MachineD freeze **18.60×** (102.3 / 5.5 µs), ceiling
+20.0. Gate used `--only-enforce`. Same commit no optimize.
 
 ## 2. How to run
 
