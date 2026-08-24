@@ -60,7 +60,7 @@
    "status": "done",
    "source": "src/cadr-cli/settings/",
    "measure": "measure-cli-settings",
-   "metric": null,
+   "metric": "package_manager.package_source",
    "branch": "pair-256-package-source"
   },
   {
@@ -82,10 +82,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-256-package-source",
-   "pair": 256
-  }
- ]
+ "mergeQueue": []
 }
