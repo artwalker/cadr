@@ -48,11 +48,11 @@
   {
    "pair": 255,
    "lane": "b",
-   "status": "pending",
+   "status": "done",
    "source": "src/cadr-cli/resource-loader/",
    "measure": "measure-resource-loader",
    "metric": null,
-   "branch": null
+   "branch": "pair-255-login-selection"
   },
   {
    "pair": 256,
@@ -82,5 +82,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-255-login-selection",
+   "pair": 255
+  }
+ ]
 }
