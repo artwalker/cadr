@@ -317,6 +317,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_handle_raw_input": 50,
 	"cli_selectors.oauth_selector_search_text": 50,
+	"cli_selectors.login_auth_type_route": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8673,6 +8674,46 @@ function runCliSelectorsOauthSelectorSearchText() {
 	};
 }
 
+function loginAuthTypeRoute(providerOptions, { generic = false } = {}) {
+	if (generic) {
+		return "select|Select authentication method:|Sign in with an account|Sign in with an API key";
+	}
+	const oauth = providerOptions?.find((provider) => provider.authType === "oauth");
+	const apiKey = providerOptions?.find((provider) => provider.authType === "api_key");
+	const options = [oauth, apiKey].filter(Boolean);
+	if (options.length === 0) {
+		return "none|No login methods available.";
+	}
+	if (options.length === 1) {
+		const provider = options[0];
+		return `direct|${provider.id}|${provider.authType}`;
+	}
+	const oauthLabel = oauth?.method?.loginLabel ?? "Sign in with an account";
+	return `select|Select authentication method for ${providerOptions[0].name}:|${oauthLabel}|Sign in with an API key`;
+}
+
+function runCliSelectorsLoginAuthTypeRoute() {
+	return {
+		latr_none: loginAuthTypeRoute(null),
+		latr_oauth: loginAuthTypeRoute([
+			{ id: "anthropic", name: "Anthropic", authType: "oauth" },
+		]),
+		latr_api: loginAuthTypeRoute([
+			{ id: "anthropic", name: "Anthropic", authType: "api_key" },
+		]),
+		latr_both: loginAuthTypeRoute([
+			{
+				id: "anthropic",
+				name: "Anthropic",
+				authType: "oauth",
+				method: { loginLabel: "Sign in with Claude" },
+			},
+			{ id: "anthropic", name: "Anthropic", authType: "api_key" },
+		]),
+		latr_generic: loginAuthTypeRoute(null, { generic: true }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9084,6 +9125,7 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthSelectorHandleEventResults = runCliSelectorsOauthSelectorHandleEvent();
 	const oauthSelectorHandleRawInputResults = runCliSelectorsOauthSelectorHandleRawInput();
 	const oauthSelectorSearchTextResults = runCliSelectorsOauthSelectorSearchText();
+	const loginAuthTypeRouteResults = runCliSelectorsLoginAuthTypeRoute();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9354,6 +9396,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthSelectorHandleEventResults,
 		...oauthSelectorHandleRawInputResults,
 		...oauthSelectorSearchTextResults,
+		...loginAuthTypeRouteResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9649,6 +9692,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_selector_search_text: await collect("cli_selectors.oauth_selector_search_text", () => {
 			return () => runCliSelectorsOauthSelectorSearchText();
+		}),
+		login_auth_type_route: await collect("cli_selectors.login_auth_type_route", () => {
+			return () => runCliSelectorsLoginAuthTypeRoute();
 		}),
 		observed,
 	};
@@ -10891,6 +10937,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput raw key dispatch",
 			"cli_selectors.oauth_selector_search_text":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders search text",
+			"cli_selectors.login_auth_type_route":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts showLoginAuthTypeSelector routing",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

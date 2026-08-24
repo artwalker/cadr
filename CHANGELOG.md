@@ -21,6 +21,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.login_auth_type_route`
+  (routing fixtures; cadr `login-auth-type-route`
+  vs pi `showLoginAuthTypeSelector`). Friend-MachineD n=5 **3.44×**
+  (3.8 / 1.1 µs), ceiling 8.0. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
+- Goal 20: add `--only-enforce` to `goal20-paired-paths.sh` so new-pair
+  freezes can gate on the new metric only when full-suite ceiling noise
+  blocks unrelated metrics.
 - Goal 20 P.13: pair `cli_selectors.oauth_selector_search_text`
   (search-text fixtures; cadr `oauth-selector-search-text`
   vs pi `filterProviders` search text). Friend-MachineD n=5 **1.52×**

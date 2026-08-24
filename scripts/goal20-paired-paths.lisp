@@ -393,6 +393,7 @@
     ("cli_selectors.oauth_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_handle_raw_input" . 50)
     ("cli_selectors.oauth_selector_search_text" . 50)
+    ("cli_selectors.login_auth_type_route" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8609,6 +8610,52 @@
     (cadr-cli::make-oauth-selector-option
      :id :mistral :name "Mistral" :auth-type :api-key))))
 
+(defun make-auth-route-oauth-option (&key (id :anthropic) (name "Anthropic")
+                                          (login-label nil))
+  (cadr-cli::make-oauth-selector-option
+   :id id :name name :auth-type :oauth :login-label login-label))
+
+(defun make-auth-route-api-option (&key (id :anthropic) (name "Anthropic"))
+  (cadr-cli::make-oauth-selector-option
+   :id id :name name :auth-type :api-key))
+
+(defun encode-login-auth-type-route (&rest args)
+  (multiple-value-bind (route payload)
+      (apply #'cadr-cli::login-auth-type-route args)
+    (ecase route
+      (:none
+       (format nil "none|~A" payload))
+      (:direct
+       (format nil "direct|~A|~A"
+               (cadr-cli::provider-key
+                (cadr-cli::oauth-selector-option-id payload))
+               (if (eq (cadr-cli::oauth-selector-option-auth-type payload)
+                       :oauth)
+                   "oauth"
+                   "api_key")))
+      (:select
+       (let ((state payload))
+         (format nil "select|~A|~{~A~^|~}"
+                 (cadr-cli::login-method-selector-state-title state)
+                 (mapcar #'cadr-tui:select-item-label
+                         (cadr-tui::select-list-items
+                          (cadr-cli::login-method-selector-state-select-list
+                           state)))))))))
+
+(defun run-cli-selectors-login-auth-type-route ()
+  (list
+   (encode-login-auth-type-route nil)
+   (encode-login-auth-type-route
+    (list (make-auth-route-oauth-option)))
+   (encode-login-auth-type-route
+    (list (make-auth-route-api-option)))
+   (encode-login-auth-type-route
+    (list
+     (make-auth-route-oauth-option
+      :login-label "Sign in with Claude")
+     (make-auth-route-api-option)))
+   (encode-login-auth-type-route nil :generic-p t)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8772,7 +8819,9 @@
         (oauth-selector-handle-raw-input
           (run-cli-selectors-oauth-selector-handle-raw-input))
         (oauth-selector-search-text
-          (run-cli-selectors-oauth-selector-search-text)))
+          (run-cli-selectors-oauth-selector-search-text))
+        (login-auth-type-route
+          (run-cli-selectors-login-auth-type-route)))
     (json-object
      "observed"
      (json-object
@@ -9318,7 +9367,12 @@
       "osst_oauth" (nth 0 oauth-selector-search-text)
       "osst_api" (nth 1 oauth-selector-search-text)
       "osst_no_method" (nth 2 oauth-selector-search-text)
-      "osst_api_plain" (nth 3 oauth-selector-search-text))
+      "osst_api_plain" (nth 3 oauth-selector-search-text)
+      "latr_none" (nth 0 login-auth-type-route)
+      "latr_oauth" (nth 1 login-auth-type-route)
+      "latr_api" (nth 2 login-auth-type-route)
+      "latr_both" (nth 3 login-auth-type-route)
+      "latr_generic" (nth 4 login-auth-type-route))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9793,7 +9847,12 @@
      (collect "cli_selectors.oauth_selector_search_text"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-oauth-selector-search-text)))))))
+                  (run-cli-selectors-oauth-selector-search-text))))
+     "login_auth_type_route"
+     (collect "cli_selectors.login_auth_type_route"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-auth-type-route)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10998,6 +11057,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-raw-input"
       "cli_selectors.oauth_selector_search_text"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text"
+      "cli_selectors.login_auth_type_route"
+      "src/cadr-cli/interactive/selectors/auth.lisp login-auth-type-route"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

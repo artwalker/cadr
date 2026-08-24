@@ -144,7 +144,7 @@ METRICS = {
     "ai_capabilities": ("short_hash", "deferred_tools", "event_stream", "http_proxy", "session_resources"),
     "cli_support": ("strip_ansi", "normalize_path", "timings", "event_bus", "attribution_headers", "shell_config", "sanitize_output", "git_source", "user_agent", "parse_changelog", "experimental"),
     "cli_interactive_controller": ("decode_entity", "wayland", "cwd_footer", "auth_type", "parse_auto_theme", "resolve_theme"),
-    "cli_selectors": ("session_search", "session_format_age", "session_record_label", "session_shorten_path", "session_quoted_search", "session_thread_records", "session_binding_label", "session_same_path", "session_quoted_p", "session_named_p", "settings_thinking_description", "settings_display_value", "settings_automatic_theme_setting", "settings_active_automatic_theme", "settings_cycle", "settings_apply_filter", "tree_entry_filtered", "tree_query_matches", "tree_entry_search_text", "tree_settings_entry_p", "tree_normalize_display_text", "tree_status_labels", "tree_shorten_path", "tree_foldable_p", "tree_tool_argument", "tree_cycle_filter", "tree_format_label_timestamp", "tree_format_tool_call", "tree_entry_display_text", "tree_prefix", "tree_visual_nodes", "tree_horizontal_viewport", "tree_help_keys", "tree_help_key", "tree_app_key_p", "tree_help_lines", "tree_active_path", "tree_nearest_visible_id", "tree_prioritize_active", "tree_entry_map", "tree_order_entries", "tree_iso_timestamp", "tree_rebuild_visible_maps", "tree_apply_filter", "tree_render_lines", "tree_move", "tree_fold_or_up", "tree_unfold_or_down", "tree_branch_segment_id", "tree_set_query", "tree_set_filter", "tree_copy_selected", "tree_toggle_label_timestamps", "tree_start_label_edit", "tree_confirm_label", "tree_cancel_label", "tree_handle_raw_input", "tree_handle_event", "tree_handle_label_event", "tree_selected_entry", "tree_selected_id", "tree_select_id", "tree_visible_ids", "project_trust_options", "trust_selector_selection", "trust_decision_description", "trust_selector_move", "trust_selector_handle_event", "trust_selector_handle_raw_input", "trust_selector_ui_state", "oauth_option_status_label", "credential_entry_auth_type", "oauth_environment_source_p", "oauth_selector_selection", "oauth_selector_apply_filter", "oauth_selector_handle_event", "oauth_selector_handle_raw_input", "oauth_selector_search_text", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
+    "cli_selectors": ("session_search", "session_format_age", "session_record_label", "session_shorten_path", "session_quoted_search", "session_thread_records", "session_binding_label", "session_same_path", "session_quoted_p", "session_named_p", "settings_thinking_description", "settings_display_value", "settings_automatic_theme_setting", "settings_active_automatic_theme", "settings_cycle", "settings_apply_filter", "tree_entry_filtered", "tree_query_matches", "tree_entry_search_text", "tree_settings_entry_p", "tree_normalize_display_text", "tree_status_labels", "tree_shorten_path", "tree_foldable_p", "tree_tool_argument", "tree_cycle_filter", "tree_format_label_timestamp", "tree_format_tool_call", "tree_entry_display_text", "tree_prefix", "tree_visual_nodes", "tree_horizontal_viewport", "tree_help_keys", "tree_help_key", "tree_app_key_p", "tree_help_lines", "tree_active_path", "tree_nearest_visible_id", "tree_prioritize_active", "tree_entry_map", "tree_order_entries", "tree_iso_timestamp", "tree_rebuild_visible_maps", "tree_apply_filter", "tree_render_lines", "tree_move", "tree_fold_or_up", "tree_unfold_or_down", "tree_branch_segment_id", "tree_set_query", "tree_set_filter", "tree_copy_selected", "tree_toggle_label_timestamps", "tree_start_label_edit", "tree_confirm_label", "tree_cancel_label", "tree_handle_raw_input", "tree_handle_event", "tree_handle_label_event", "tree_selected_entry", "tree_selected_id", "tree_select_id", "tree_visible_ids", "project_trust_options", "trust_selector_selection", "trust_decision_description", "trust_selector_move", "trust_selector_handle_event", "trust_selector_handle_raw_input", "trust_selector_ui_state", "oauth_option_status_label", "credential_entry_auth_type", "oauth_environment_source_p", "oauth_selector_selection", "oauth_selector_apply_filter", "oauth_selector_handle_event", "oauth_selector_handle_raw_input", "oauth_selector_search_text", "login_auth_type_route", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup",),
@@ -939,6 +939,9 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.oauth_selector_search_text.
   # Measure-only pair (Pair 205); ceiling not lowered.
   "cli_selectors.oauth_selector_search_text": 8.0,
+  # First-freeze headroom for cli_selectors.login_auth_type_route.
+  # Measure-only pair (Pair 206); ceiling not lowered.
+  "cli_selectors.login_auth_type_route": 8.0,
   # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
@@ -2078,6 +2081,11 @@ OBSERVED_EXACT = {
         "osst_api",
         "osst_no_method",
         "osst_api_plain",
+        "latr_none",
+        "latr_oauth",
+        "latr_api",
+        "latr_both",
+        "latr_generic",
     ),
     "websocket_stream": (
         "ws_text",
@@ -2530,7 +2538,28 @@ def check_journals(pi_path: str, cadr_path: str, failures: list[str]) -> list[st
     return [f"journal_key_divergences={len(differing)}"]
 
 
-def check_ratios(cadr: dict, pi: dict, enforced: bool, failures: list[str]) -> list[str]:
+def parse_only_enforce(values: list[str]) -> frozenset[str] | None:
+    if not values:
+        return None
+    keys: set[str] = set()
+    for value in values:
+        for key in value.split(","):
+            key = key.strip()
+            if key:
+                keys.add(key)
+    unknown = sorted(keys - set(RATIO_CEILINGS))
+    if unknown:
+        raise ValueError(f"--only-enforce unknown metrics: {unknown}")
+    return frozenset(keys)
+
+
+def check_ratios(
+    cadr: dict,
+    pi: dict,
+    enforced: bool,
+    failures: list[str],
+    only_enforce: frozenset[str] | None = None,
+) -> list[str]:
     summary: list[str] = []
     for group, names in METRICS.items():
         for name in names:
@@ -2542,7 +2571,7 @@ def check_ratios(cadr: dict, pi: dict, enforced: bool, failures: list[str]) -> l
             limit = paired_limit_us(
                 pi_metric["median_us"], pi_metric["mad_us"], cadr_metric["mad_us"], ceiling
             )
-            if enforced:
+            if enforced and (only_enforce is None or key in only_enforce):
                 check(
                     cadr_metric["median_us"] <= limit,
                     f"{key} exceeds its recorded ceiling: cadr={cadr_metric['median_us']:.2f}us, "
@@ -2564,11 +2593,19 @@ def main() -> int:
     parser.add_argument("--cadr-journal", help="journal written by --keep-journal (cadr side)")
     parser.add_argument("--pi-journal", help="journal written by --keep-journal (pi side)")
     parser.add_argument("--summary-json", help="write the machine-readable summary here")
+    parser.add_argument(
+        "--only-enforce",
+        action="append",
+        default=[],
+        metavar="GROUP.NAME",
+        help="enforce ratio ceilings only for these metrics (repeatable; comma-separated ok)",
+    )
     arguments = parser.parse_args()
 
     failures: list[str] = []
     notes: list[str] = []
     try:
+        only_enforce = parse_only_enforce(arguments.only_enforce)
         goal11 = load_goal11_gate()
         cadr = load_json(arguments.cadr)
         pi = load_json(arguments.pi)
@@ -2579,7 +2616,7 @@ def main() -> int:
         host_match = goal11.same_machine(cadr, pi)
         quick = bool(cadr["parameters"]["quick"] or pi["parameters"]["quick"])
         enforced = host_match and not quick
-        ratios = check_ratios(cadr, pi, enforced, failures)
+        ratios = check_ratios(cadr, pi, enforced, failures, only_enforce)
 
         if bool(arguments.cadr_journal) != bool(arguments.pi_journal):
             raise ValueError("--cadr-journal and --pi-journal must be given together")
@@ -2590,9 +2627,13 @@ def main() -> int:
         return 2
 
     status = (
-        "enforced"
-        if enforced
-        else ("informational-quick-run" if quick else "informational-host-mismatch")
+        f"enforced-only:{','.join(sorted(only_enforce))}"
+        if enforced and only_enforce
+        else (
+            "enforced"
+            if enforced
+            else ("informational-quick-run" if quick else "informational-host-mismatch")
+        )
     )
     summary = [
         f"same_machine={'yes' if host_match else 'no'}",
@@ -2608,6 +2649,7 @@ def main() -> int:
                 {
                     "same_machine": host_match,
                     "ratio_gate": status,
+                    "only_enforce": sorted(only_enforce) if only_enforce else None,
                     "failures": failures,
                     "ratios": {
                         f"{group}.{name}": (

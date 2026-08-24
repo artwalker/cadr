@@ -5,6 +5,7 @@
 # a cross-host pair for the ratio gate.
 #
 # usage: scripts/goal20-paired-paths.sh [--quick] [--samples N] [--warmups N]
+#                                       [--only-enforce GROUP.NAME]
 #                                       [--baseline DIR] [--out DIR]
 set -eu
 
@@ -17,6 +18,7 @@ BASELINE_SHORT="$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE" | cut -c1-9)"
 BASELINE_DIRECTORY="${GOAL20_PI_BASELINE:-/tmp/cadr-render-diff-pi-$BASELINE_SHORT}"
 OUTPUT_DIRECTORY="${TMPDIR:-/tmp}/goal20-paired-paths"
 BENCH_ARGUMENTS=""
+GATE_ARGUMENTS=""
 
 while [ "$#" -gt 0 ]; do
   case "$1" in
@@ -26,6 +28,10 @@ while [ "$#" -gt 0 ]; do
       ;;
     --samples | --warmups)
       BENCH_ARGUMENTS="$BENCH_ARGUMENTS $1 $2"
+      shift 2
+      ;;
+    --only-enforce)
+      GATE_ARGUMENTS="$GATE_ARGUMENTS --only-enforce $2"
       shift 2
       ;;
     --baseline)
@@ -91,7 +97,8 @@ python3 "$PROJECT_DIRECTORY/scripts/goal20-paired-paths.py" \
   --pi "$PI_REPORT" \
   --cadr-journal "$CADR_JOURNAL" \
   --pi-journal "$PI_JOURNAL" \
-  --summary-json "$OUTPUT_DIRECTORY/summary.json"
+  --summary-json "$OUTPUT_DIRECTORY/summary.json" \
+  $GATE_ARGUMENTS
 python3 "$PROJECT_DIRECTORY/scripts/record-paired-paths.py" \
   --summary "$OUTPUT_DIRECTORY/summary.json" \
   --cadr-report "$CADR_REPORT" \

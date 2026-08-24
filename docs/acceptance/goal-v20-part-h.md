@@ -2771,6 +2771,19 @@ OAuth selector fuzzy-filter search text; `name id authType method`. Observed
 First Friend-MachineD freeze **1.52×** (9.5 / 6.2 µs), ceiling 8.0. Same
 commit no optimize.
 
+### Pair 206 — `cli_selectors` (login_auth_type_route)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_auth_type_route` | `login-auth-type-route` | `showLoginAuthTypeSelector` routing |
+
+Login auth-type routing: `none|…`, `direct|id|auth_type`, or
+`select|title|labels…`. Observed `latr_none` / `latr_oauth` / `latr_api` /
+`latr_both` / `latr_generic` are exact. First Friend-MachineD freeze
+**3.44×** (3.8 / 1.1 µs), ceiling 8.0. Gate used `--only-enforce` for this
+metric only (full-suite ceiling noise on unrelated oauth metrics). Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash
