@@ -60,8 +60,8 @@
    "status": "done",
    "source": "src/cadr-cli/settings/",
    "measure": "measure-cli-settings",
-   "metric": "package_manager.package_source",
-   "branch": "pair-256-package-source"
+   "metric": "resource_loader.dedupe_by_name",
+   "branch": "pair-256-conditions"
   },
   {
    "pair": 253,
@@ -127,5 +127,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-256-conditions",
+   "pair": 256
+  }
+ ]
 }
