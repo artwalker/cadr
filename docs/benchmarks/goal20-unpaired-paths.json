@@ -133,6 +133,7 @@
   "provider_registry_defs.lookup",
   "skill_prompt_load.build_prompt",
   "cli_bootstrap_sessions.coding_tools",
+  "cli_bootstrap_sessions.bootstrap_auth",
   "ai_runtime_faux.blocks",
   "http_transport.parse_url",
   "cli_settings.create",
@@ -1041,8 +1042,8 @@
   },
   {
    "prefix": "src/cadr-cli/bootstrap/auth.lisp",
-   "class": "needs-pair",
-   "hole": "cli_bootstrap_sessions"
+   "class": "paired",
+   "metrics": ["cli_bootstrap_sessions.bootstrap_auth"]
   },
   {
    "prefix": "src/cadr-cli/bootstrap/commands.lisp",

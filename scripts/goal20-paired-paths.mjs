@@ -371,6 +371,7 @@ const REPETITIONS = {
 	"provider_registry_defs.definition_ids": 125,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
+	"cli_bootstrap_sessions.bootstrap_auth": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -13337,13 +13338,73 @@ function runCliBootstrapCodingTools() {
 	};
 }
 
+function bootstrapAuthPairsDigest(options) {
+	const pairs = options
+		.map((option) => `${option.id}|${option.authType}`)
+		.sort((left, right) => left.localeCompare(right));
+	return createHash("sha256").update(pairs.join("\n"), "utf8").digest("hex");
+}
+
+function bootstrapAuthStructuredFlag(options, providerId) {
+	const option = options.find((entry) => entry.id === providerId && entry.authType === "api_key");
+	return option?.structuredLogin ? 1 : 0;
+}
+
+function bootstrapAuthProviderOptions(runtime) {
+	const options = [];
+	for (const provider of runtime.getProviders()) {
+		for (const authType of ["oauth", "api_key"]) {
+			if (authType === "oauth" && provider.auth.oauth) {
+				options.push({
+					id: provider.id,
+					name: provider.name,
+					authType: "oauth",
+					structuredLogin: false,
+				});
+			}
+			if (authType === "api_key" && provider.auth.apiKey) {
+				options.push({
+					id: provider.id,
+					name: provider.name,
+					authType: "api_key",
+					structuredLogin:
+						provider.id === "amazon-bedrock" || provider.id === "google-vertex",
+				});
+			}
+		}
+	}
+	return options.sort((left, right) => left.name.localeCompare(right.name));
+}
+
+async function runCliBootstrapAuth() {
+	const { agentDir } = stageCliSdkAgentSession();
+	const runtime = await modelRuntimeModule.ModelRuntime.create({
+		authPath: path.join(agentDir, "auth.json"),
+		modelsPath: path.join(agentDir, "models.json"),
+	});
+	const options = bootstrapAuthProviderOptions(runtime);
+	return {
+		option_count: options.length,
+		auth_pairs_digest: bootstrapAuthPairsDigest(options),
+		vertex_structured: bootstrapAuthStructuredFlag(options, "google-vertex"),
+		bedrock_structured: bootstrapAuthStructuredFlag(options, "amazon-bedrock"),
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
-	const observed = runCliBootstrapCodingTools();
+	const codingObserved = runCliBootstrapCodingTools();
+	const authObserved = await runCliBootstrapAuth();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
 		}),
-		observed,
+		bootstrap_auth: await collect("cli_bootstrap_sessions.bootstrap_auth", () => {
+			return () => runCliBootstrapAuth();
+		}),
+		observed: {
+			...codingObserved,
+			...authObserved,
+		},
 	};
 }
 
@@ -14134,6 +14195,8 @@ const result = {
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"cli_bootstrap_sessions.coding_tools":
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
+			"cli_bootstrap_sessions.bootstrap_auth":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

@@ -149,7 +149,7 @@ METRICS = {
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
     "provider_registry_defs": ("lookup", "definition_ids"),
     "skill_prompt_load": ("build_prompt",),
-    "cli_bootstrap_sessions": ("coding_tools",),
+    "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
     "session_pipeline": ("session_load", "context_walk", "session_leaf_id"),
@@ -1099,6 +1099,9 @@ RATIO_CEILINGS = {
     # (11.1 / 4.6 us). 8.0 is first-freeze headroom.
     # Ratchet down only.
     "cli_bootstrap_sessions.coding_tools": 8.0,
+    # cli_bootstrap_sessions.bootstrap_auth pair (samples=5): observed 0.64x
+    # (3928.6 / 6134.0 us). 8.0 is first-freeze headroom. Ratchet down only.
+    "cli_bootstrap_sessions.bootstrap_auth": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_runtime_faux pair (samples=5): observed 1.76x
     # (0.27 / 0.15 us). 8.0 is first-freeze headroom
@@ -2503,6 +2506,10 @@ OBSERVED_EXACT = {
         "baseline",
         "snippet_count",
         "read_first",
+        "option_count",
+        "auth_pairs_digest",
+        "vertex_structured",
+        "bedrock_structured",
     ),
     "ai_runtime_faux": (
         "text_len",

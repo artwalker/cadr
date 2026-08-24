@@ -266,6 +266,7 @@ METRIC_KEYS = (
     "provider_registry_defs.definition_ids",
     "skill_prompt_load.build_prompt",
     "cli_bootstrap_sessions.coding_tools",
+    "cli_bootstrap_sessions.bootstrap_auth",
     "ai_runtime_faux.blocks",
     "http_transport.parse_url",
     "session_pipeline.session_load",

@@ -54,6 +54,7 @@
 ;;;;  40. provider_registry_defs list/find vs getBuiltinProviders
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
+;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
 ;;;;  45. cli_support normalize-path-input vs normalizePath
@@ -453,6 +454,7 @@
     ("provider_registry_defs.definition_ids" . 125)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
+    ("cli_bootstrap_sessions.bootstrap_auth" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -12936,20 +12938,78 @@
      (length snippets)
      (if (equal (car (first snippets)) "read") 1 0))))
 
+(defun bootstrap-auth-pairs-digest (options)
+  (cadr-ai::octets-hex
+   (cadr-ai::sha256-bytes
+    (cadr-ai::utf8-octets
+     (format nil "~{~A~^~%~}"
+             (sort
+              (mapcar
+               (lambda (option)
+                 (format nil "~A|~A"
+                         (cadr-cli::provider-key
+                          (cadr-cli::oauth-selector-option-id option))
+                         (if (eq (cadr-cli::oauth-selector-option-auth-type
+                                  option)
+                                 :oauth)
+                             "oauth"
+                             "api_key")))
+               options)
+              #'string<))))))
+
+(defun bootstrap-auth-structured-flag (options provider-id)
+  (let ((option
+         (find provider-id options
+               :key #'cadr-cli::oauth-selector-option-id
+               :test #'eq)))
+    (if (and option
+             (eq (cadr-cli::oauth-selector-option-auth-type option)
+                 :api-key)
+             (cadr-cli::oauth-selector-option-structured-login-p option))
+        1
+        0)))
+
+(defun run-cli-bootstrap-auth ()
+  (let* ((registry (list-models-registry))
+         (options
+           (remove-if-not
+            (lambda (option)
+              (find
+               (cadr-cli::oauth-selector-option-id option)
+               (cadr-ai:list-provider-definitions)
+               :key #'cadr-ai:provider-definition-id
+               :test #'eq))
+            (cadr-cli::model-registry-login-options registry nil))))
+    (list
+     (length options)
+     (bootstrap-auth-pairs-digest options)
+     (bootstrap-auth-structured-flag options :google-vertex)
+     (bootstrap-auth-structured-flag options :amazon-bedrock))))
+
 (defun measure-cli-bootstrap-coding-tools ()
-  (let ((observed (run-cli-bootstrap-coding-tools)))
+  (let* ((coding-observed (run-cli-bootstrap-coding-tools))
+         (auth-observed (run-cli-bootstrap-auth)))
     (json-object
      "observed"
      (json-object
-      "count" (first observed)
-      "baseline" (second observed)
-      "snippet_count" (third observed)
-      "read_first" (fourth observed))
+      "count" (first coding-observed)
+      "baseline" (second coding-observed)
+      "snippet_count" (third coding-observed)
+      "read_first" (fourth coding-observed)
+      "option_count" (first auth-observed)
+      "auth_pairs_digest" (second auth-observed)
+      "vertex_structured" (third auth-observed)
+      "bedrock_structured" (fourth auth-observed))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-coding-tools)))))))
+                  (run-cli-bootstrap-coding-tools))))
+     "bootstrap_auth"
+     (collect "cli_bootstrap_sessions.bootstrap_auth"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-auth)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -13537,6 +13597,8 @@
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "cli_bootstrap_sessions.coding_tools"
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
+      "cli_bootstrap_sessions.bootstrap_auth"
+      "src/cadr-cli/bootstrap/auth.lisp model-registry-login-options"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

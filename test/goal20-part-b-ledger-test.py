@@ -1828,11 +1828,18 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_cli_bootstrap_sessions_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("cli_bootstrap_sessions.coding_tools", RECORD.METRIC_KEYS)
+        self.assertIn("cli_bootstrap_sessions.bootstrap_auth", RECORD.METRIC_KEYS)
         self.assertIn("coding_tools", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("bootstrap_auth", paired.METRICS["cli_bootstrap_sessions"])
         self.assertIn("cli_bootstrap_sessions.coding_tools", paired.RATIO_CEILINGS)
+        self.assertIn("cli_bootstrap_sessions.bootstrap_auth", paired.RATIO_CEILINGS)
         self.assertIn("count", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("baseline", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("read_first", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("option_count", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("auth_pairs_digest", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("vertex_structured", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("bedrock_structured", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
 
     def test_ai_runtime_faux_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -2015,6 +2022,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`provider_registry_defs.definition_ids`", section)
             self.assertIn("`skill_prompt_load.build_prompt`", section)
             self.assertIn("`cli_bootstrap_sessions.coding_tools`", section)
+            self.assertIn("`cli_bootstrap_sessions.bootstrap_auth`", section)
             self.assertIn("`ai_runtime_faux.blocks`", section)
             self.assertIn("`http_transport.parse_url`", section)
             self.assertIn("1.50×", section)

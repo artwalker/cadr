@@ -578,6 +578,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(edit_file), 1)
         self.assertEqual(edit_file[0]["class"], "paired")
         self.assertIn("agent_tool_loop.line_ending", edit_file[0]["metrics"])
+        bootstrap_auth = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/bootstrap/auth.lisp"
+        ]
+        self.assertEqual(len(bootstrap_auth), 1)
+        self.assertEqual(bootstrap_auth[0]["class"], "paired")
+        self.assertIn("cli_bootstrap_sessions.bootstrap_auth", bootstrap_auth[0]["metrics"])
         bootstrap_tools = [
             row
             for row in classified["rows"]
