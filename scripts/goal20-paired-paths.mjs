@@ -343,6 +343,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_handle_raw_input": 50,
 	"cli_selectors.scoped_models_selector_ui_state": 50,
 	"cli_selectors.scoped_models_selector_sorted_ids": 50,
+	"cli_selectors.scoped_models_selector_counts": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10145,6 +10146,30 @@ function scopedModelsSelectorUiEncoded(state, width) {
 	return `${scope}|${width}|${state.selectedIndex}|${state.query}|${total}|${scroll}|${items}|${empty}|${scopedModelsUiFooter(state)}`;
 }
 
+
+function scopedModelsSelectorCounts(allModels, enabledIds) {
+	const allIds = allModels.map(scopedModelsFullId);
+	const allEnabled = enabledIds === null;
+	const enabledCount = enabledIds?.filter((id) => allModels.some((c) => scopedModelsFullId(c) === id)).length ?? allIds.length;
+	const unavailableCount = enabledIds?.filter((id) => !allModels.some((c) => scopedModelsFullId(c) === id)).length ?? 0;
+	return { allEnabled, enabledCount, unavailableCount, total: allIds.length };
+}
+function scopedModelsSelectorCountsEncoded(allModels, enabledIds) {
+	const { allEnabled, enabledCount, unavailableCount, total } = scopedModelsSelectorCounts(allModels, enabledIds);
+	return `${allEnabled ? "all" : "partial"}|${enabledCount}|${unavailableCount}|${total}`;
+}
+function runCliSelectorsScopedModelsSelectorCounts() {
+	const models = makeModelSelectorTestModels();
+	const partialEnabled = ["openai/gpt-4o", "anthropic/claude-sonnet-4"];
+	const withUnavailable = ["stale/missing", "openai/gpt-4o"];
+	return {
+		smsc_all: scopedModelsSelectorCountsEncoded(models, null),
+		smsc_partial: scopedModelsSelectorCountsEncoded(models, partialEnabled),
+		smsc_unavail: scopedModelsSelectorCountsEncoded(models, withUnavailable),
+		smsc_empty: scopedModelsSelectorCountsEncoded(models, []),
+		smsc_single: scopedModelsSelectorCountsEncoded(models, ["google/gemini-2.5-pro"]),
+	};
+}
 function runCliSelectorsScopedModelsSelectorUiState() {
 	const models = makeModelSelectorTestModels();
 	const partialEnabled = ["openai/gpt-4o", "anthropic/claude-sonnet-4"];
@@ -10899,6 +10924,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorHandleRawInput();
 	const scopedModelsSelectorUiStateResults =
 		runCliSelectorsScopedModelsSelectorUiState();
+	const scopedModelsSelectorCountsResults =
+		runCliSelectorsScopedModelsSelectorCounts();
 	const scopedModelsSelectorSortedIdsResults =
 		runCliSelectorsScopedModelsSelectorSortedIds();
 	const observed = {
@@ -11196,6 +11223,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorHandleEventResults,
 		...scopedModelsSelectorHandleRawInputResults,
 		...scopedModelsSelectorUiStateResults,
+		...scopedModelsSelectorCountsResults,
 		...scopedModelsSelectorSortedIdsResults,
 	};
 	return {
@@ -11597,6 +11625,10 @@ async function measureCliSelectorsSessionSearch() {
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorUiState();
 			},
+		),
+		scoped_models_selector_counts: await collect(
+			"cli_selectors.scoped_models_selector_counts",
+			() => { return () => runCliSelectorsScopedModelsSelectorCounts(); },
 		),
 		scoped_models_selector_sorted_ids: await collect(
 			"cli_selectors.scoped_models_selector_sorted_ids",
@@ -12895,6 +12927,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput raw key dispatch",
 			"cli_selectors.scoped_models_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts updateList/render",
+			"cli_selectors.scoped_models_selector_counts":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getFooterText count logic",
 			"cli_selectors.scoped_models_selector_sorted_ids":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getSortedIds",
 			"cli_selectors.key_text":

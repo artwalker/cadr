@@ -2961,7 +2961,19 @@ are exact. First Friend-MachineD freeze **5.37×** (147.6 / 27.5 µs), ceiling
 | `scoped_models_selector_move` | `scoped-models-selector-move` | `handleInput` up/down wrap |
 | `scoped_models_selector_handle_raw_input` | `scoped-models-selector-handle-raw-input` | `handleInput` raw key dispatch |
 | `scoped_models_selector_ui_state` | `render-scoped-models-selector` | `updateList` / render |
+| `scoped_models_selector_counts` | `scoped-models-selector-counts` | `getFooterText` count logic |
 | `scoped_models_selector_sorted_ids` | `scoped-models-sorted-ids` | `getSortedIds` |
+
+### Pair 232 — `cli_selectors` (scoped_models_selector_counts)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_counts` | `scoped-models-selector-counts` | `getFooterText` count logic |
+
+Scoped models footer counts (scope|enabled|unavailable|total digest). Observed
+`smsc_all` / `smsc_partial` / `smsc_unavail` / `smsc_empty` / `smsc_single` are
+exact. First Friend-MachineD freeze **43.32×** (158.5 / 3.7 µs), ceiling 55.0.
+Gate used `--only-enforce`. Same commit no optimize.
 
 ### Pair 233 — `cli_selectors` (scoped_models_selector_sorted_ids)
 

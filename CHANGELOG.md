@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.scoped_models_selector_counts` (scoped
+  models footer counts; cadr `scoped-models-selector-counts` vs pi `getFooterText`
+  count logic). Friend-MachineD n=5 **43.32×** (158.5 / 3.7 µs), ceiling 55.0.
+  Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.scoped_models_selector_sorted_ids` (scoped
   models enabled-first sort; cadr `scoped-models-sorted-ids` vs pi `getSortedIds`).
   Friend-MachineD n=5 **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Measure-only; no

@@ -998,6 +998,8 @@ RATIO_CEILINGS = {
   # First-freeze headroom for cli_selectors.scoped_models_selector_sorted_ids.
   # Measure-only pair (Pair 233); first freeze 37.36×.
   "cli_selectors.scoped_models_selector_sorted_ids": 50.0,
+  # Measure-only pair (Pair 232); first freeze 43.32x.
+  "cli_selectors.scoped_models_selector_counts": 55.0,
   # Frozen from the first Friend-MachineD non-quick
     # websocket_stream.stream_roundtrip pair (samples=5):
     # observed 507.72x (44298 / 87.25 us). TCP loopback
