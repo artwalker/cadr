@@ -41,6 +41,7 @@ METRIC_KEYS = (
     "resource_loader.reload",
     "package_manager.resolve",
     "package_manager.manifest_parse",
+    "package_manager.package_source",
     "session_discovery.header_probe",
     "session_export_html.to_html",
     "protocol_cbor.roundtrip",

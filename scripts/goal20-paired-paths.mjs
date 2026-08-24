@@ -147,6 +147,7 @@ const REPETITIONS = {
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
+	"package_manager.package_source": 50,
 	"session_discovery.header_probe": 20,
 	"session_export_html.to_html": 3,
 	"protocol_cbor.roundtrip": 50,
@@ -1930,18 +1931,91 @@ function runPackageManagerManifestParse() {
 	};
 }
 
+
+function packageSourceFixtureInputs() {
+	return [
+		"npm:@scope/pkg@1.2.3",
+		"npm:@scope/pkg@^1.2.3",
+		"https://github.com/user/repo",
+		"ssh://git@github.com/user/repo",
+		"git:git@github.com:user/repo",
+		"git:github.com/user/repo",
+		"https://github.com/user/repo.git",
+		"git:git@github.com:user/repo@v1.0.0",
+		"./relative/package",
+		"../relative/package",
+		"git@github.com:user/repo",
+		"github.com/user/repo",
+	];
+}
+
+function runPackageManagerPackageSource() {
+	const manager = makePackageManager();
+	const internals = manager;
+	let npmPinned = 0;
+	let npmRange = 0;
+	let git = 0;
+	let gitPinned = 0;
+	let local = 0;
+	let gitIdOk = 1;
+	let refOk = 0;
+	for (const input of packageSourceFixtureInputs()) {
+		const parsed = internals.parseSource(input);
+		if (parsed.type === "npm") {
+			if (parsed.pinned) {
+				npmPinned += 1;
+			} else {
+				npmRange += 1;
+			}
+		} else if (parsed.type === "git") {
+			if (parsed.pinned) {
+				gitPinned += 1;
+				if (parsed.ref === "v1.0.0") {
+					refOk = 1;
+				}
+			} else {
+				git += 1;
+				if (internals.getPackageIdentity(input) !== "git:github.com/user/repo") {
+					gitIdOk = 0;
+				}
+			}
+		} else {
+			local += 1;
+		}
+	}
+	const deduped = internals.dedupePackages([
+		{ pkg: "https://github.com/user/repo", scope: "user" },
+		{ pkg: "ssh://git@github.com/user/repo@main", scope: "project" },
+	]);
+	return {
+		ps_npm_pin: npmPinned,
+		ps_npm_rng: npmRange,
+		ps_git: git,
+		ps_git_pin: gitPinned,
+		ps_local: local,
+		ps_ref_ok: refOk,
+		ps_git_id: gitIdOk,
+		ps_ded_n: deduped.length,
+		ps_ded_proj: deduped.length > 0 && deduped[0]?.scope === "project" ? 1 : 0,
+	};
+}
+
 async function measurePackageManager() {
 	const manager = makePackageManager();
 	const resolved = await manager.resolve();
 	const fromPackage = (entries) =>
 		entries.filter((entry) => entry.enabled && entry.metadata?.origin === "package").length;
 	const manifestParse = runPackageManagerManifestParse();
+	const packageSource = runPackageManagerPackageSource();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
 		}),
 		manifest_parse: await collect("package_manager.manifest_parse", () => {
 			return () => runPackageManagerManifestParse();
+		}),
+		package_source: await collect("package_manager.package_source", () => {
+			return () => runPackageManagerPackageSource();
 		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
@@ -1950,6 +2024,7 @@ async function measurePackageManager() {
 			theme_count: fromPackage(resolved.themes),
 			extension_count: fromPackage(resolved.extensions),
 			...manifestParse,
+			...packageSource,
 		},
 	};
 }
@@ -13770,6 +13845,8 @@ const result = {
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"package_manager.manifest_parse":
 				"packages/coding-agent/src/core/pi-manifest.ts readPiManifest",
+			"package_manager.package_source":
+				"packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.parseSource + getPackageIdentity + dedupePackages",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_export_html.to_html":

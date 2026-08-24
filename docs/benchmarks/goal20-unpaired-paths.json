@@ -411,7 +411,8 @@
    "prefix": "src/cadr-cli/packages/source.lisp",
    "class": "paired",
    "metrics": [
-    "package_manager.resolve"
+    "package_manager.resolve",
+    "package_manager.package_source"
    ]
   },
   {

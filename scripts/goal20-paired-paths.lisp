@@ -142,6 +142,7 @@
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
+;;;; 256. package_manager parse-package-source vs DefaultPackageManager.parseSource
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;; 251. cli_extensions_install discover-extension-sources vs discoverAndLoadExtensions path discovery
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
@@ -230,6 +231,7 @@
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
     ("package_manager.manifest_parse" . 50)
+    ("package_manager.package_source" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_export_html.to_html" . 3)
     ("protocol_cbor.roundtrip" . 50)
@@ -3102,6 +3104,64 @@
      (package-manifest-field-count manifest manifest-p :prompts)
      (package-manifest-field-count manifest manifest-p :themes))))
 
+
+(defun package-source-fixture-inputs ()
+  '("npm:@scope/pkg@1.2.3"
+    "npm:@scope/pkg@^1.2.3"
+    "https://github.com/user/repo"
+    "ssh://git@github.com/user/repo"
+    "git:git@github.com:user/repo"
+    "git:github.com/user/repo"
+    "https://github.com/user/repo.git"
+    "git:git@github.com:user/repo@v1.0.0"
+    "./relative/package"
+    "../relative/package"
+    "git@github.com:user/repo"
+    "github.com/user/repo"))
+
+(defun run-package-manager-package-source (base)
+  ;; parse-package-source + package-source-identity + dedupe-package-sources
+  ;; only; not settings persist or install argv.
+  (let ((npm-pinned 0)
+        (npm-range 0)
+        (git 0)
+        (git-pinned 0)
+        (local 0)
+        (git-id-ok 1)
+        (ref-ok 0))
+    (dolist (input (package-source-fixture-inputs))
+      (let ((parsed (cadr-cli::parse-package-source input)))
+        (ecase (cadr-cli::package-source-type parsed)
+          (:npm
+           (if (cadr-cli::package-source-pinned-p parsed)
+               (incf npm-pinned)
+               (incf npm-range)))
+          (:git
+           (if (cadr-cli::package-source-pinned-p parsed)
+               (progn
+                 (incf git-pinned)
+                 (when (string= "v1.0.0"
+                                (cadr-cli::package-source-ref parsed))
+                   (setf ref-ok 1)))
+               (progn
+                 (incf git)
+                 (unless (string=
+                           "git:github.com/user/repo"
+                           (cadr-cli::package-source-identity parsed))
+                   (setf git-id-ok 0)))))
+          (:local (incf local)))))
+    (let ((deduped
+           (cadr-cli::dedupe-package-sources
+            '("https://github.com/user/repo")
+            '("ssh://git@github.com/user/repo@main")
+            :user-base base
+            :project-base base)))
+      (list npm-pinned npm-range git git-pinned local ref-ok git-id-ok
+            (length deduped)
+            (if (and deduped (eq :project (caar deduped)))
+                1
+                0)))))
+
 (defun measure-package-manager ()
   (multiple-value-bind (cwd agent project-config)
       (stage-package-layout)
@@ -3120,7 +3180,8 @@
               :project-base project-config))
            (paths
              (run-package-manager manager agent project-config))
-           (manifest-parse (run-package-manager-manifest-parse agent)))
+           (manifest-parse (run-package-manager-manifest-parse agent))
+           (package-source (run-package-manager-package-source agent)))
       (json-object
        "observed"
        (json-object
@@ -3133,7 +3194,16 @@
         "manifest_extensions" (nth 1 manifest-parse)
         "manifest_skills" (nth 2 manifest-parse)
         "manifest_prompts" (nth 3 manifest-parse)
-        "manifest_themes" (nth 4 manifest-parse))
+        "manifest_themes" (nth 4 manifest-parse)
+        "ps_npm_pin" (nth 0 package-source)
+        "ps_npm_rng" (nth 1 package-source)
+        "ps_git" (nth 2 package-source)
+        "ps_git_pin" (nth 3 package-source)
+        "ps_local" (nth 4 package-source)
+        "ps_ref_ok" (nth 5 package-source)
+        "ps_git_id" (nth 6 package-source)
+        "ps_ded_n" (nth 7 package-source)
+        "ps_ded_proj" (nth 8 package-source))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -3144,7 +3214,12 @@
        (collect "package_manager.manifest_parse"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-manifest-parse agent))))))))
+                    (run-package-manager-manifest-parse agent))))
+       "package_source"
+       (collect "package_manager.package_source"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-package-source agent))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -13151,6 +13226,8 @@
       "src/cadr-cli/packages/manifest.lisp package-resource-paths"
       "package_manager.manifest_parse"
       "src/cadr-cli/packages/manifest.lisp read-package-pi-manifest"
+      "package_manager.package_source"
+      "src/cadr-cli/packages/source.lisp parse-package-source + package-source-identity + dedupe-package-sources"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_export_html.to_html"

@@ -101,7 +101,7 @@ METRICS = {
     "cli_settings": ("create",),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets"),
     "resource_loader": ("reload",),
-    "package_manager": ("resolve", "manifest_parse"),
+    "package_manager": ("resolve", "manifest_parse", "package_source"),
     "session_discovery": ("header_probe",),
     "session_export_html": ("to_html",),
     "protocol_cbor": ("roundtrip",),
@@ -268,6 +268,9 @@ RATIO_CEILINGS = {
     # package_manager.manifest_parse pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "package_manager.manifest_parse": 8.0,
+    # package_manager.package_source pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "package_manager.package_source": 8.0,
     # Frozen from the first Friend-MachineD non-quick session_discovery
     # pair (samples=5): observed 2.05x (1450 / 709 us). 8.0 follows
     # the journal_read / tool_read headroom precedent. Ratchet down only.
@@ -1381,6 +1384,15 @@ OBSERVED_EXACT = {
         "manifest_skills",
         "manifest_prompts",
         "manifest_themes",
+        "ps_npm_pin",
+        "ps_npm_rng",
+        "ps_git",
+        "ps_git_pin",
+        "ps_local",
+        "ps_ref_ok",
+        "ps_git_id",
+        "ps_ded_n",
+        "ps_ded_proj",
     ),
     "session_discovery": (
         "file_count",

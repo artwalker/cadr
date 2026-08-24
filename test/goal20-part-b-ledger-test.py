@@ -359,6 +359,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("manifest_skills", paired.OBSERVED_EXACT["package_manager"])
         self.assertIn("manifest_prompts", paired.OBSERVED_EXACT["package_manager"])
         self.assertIn("manifest_themes", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("package_manager.package_source", RECORD.METRIC_KEYS)
+        self.assertIn("package_source", paired.METRICS["package_manager"])
+        self.assertIn("package_manager.package_source", paired.RATIO_CEILINGS)
+        self.assertIn("ps_npm_pin", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("ps_npm_rng", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("ps_git", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("ps_git_pin", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("ps_local", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("ps_ref_ok", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("ps_git_id", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("ps_ded_n", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("ps_ded_proj", paired.OBSERVED_EXACT["package_manager"])
 
     def test_session_discovery_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
