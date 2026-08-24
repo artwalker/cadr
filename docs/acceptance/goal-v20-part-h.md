@@ -2960,6 +2960,13 @@ are exact. First Friend-MachineD freeze **5.37×** (147.6 / 27.5 µs), ceiling
 | `scoped_models_selector_set_query` | `scoped-models-selector-set-query` | `refresh` query clamp |
 | `scoped_models_selector_move` | `scoped-models-selector-move` | `handleInput` up/down wrap |
 | `scoped_models_selector_handle_raw_input` | `scoped-models-selector-handle-raw-input` | `handleInput` raw key dispatch |
+| `scoped_models_selector_ui_state` | `render-scoped-models-selector` | `updateList` / render |
+
+### Pair 230 — `cli_selectors` (scoped_models_selector_ui_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_ui_state` | `render-scoped-models-selector` | `updateList` / render |
 
 Model selector raw key dispatch (action|model-id|selected|consumed digest).
 Observed `mshri_down` / `mshri_j` / `mshri_esc` / `mshri_bad` / `mshri_o` /
@@ -3010,6 +3017,11 @@ Observed `smsri_down` / `smsri_j` / `smsri_esc` / `smsri_bad` / `smsri_o` /
 `smsri_confirm` / `smsri_up` are exact. First Friend-MachineD freeze **9.03×**
 (1638.3 / 181.4 µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no
 optimize.
+Scoped models selector UI render (scope|width|selected|query|total|scroll|items|
+empty|footer digest). Observed `smsui_default` / `smsui_sel2` / `smsui_partial` /
+`smsui_filter` / `smsui_miss` / `smsui_refresh` / `smsui_dirty` are exact. First
+Friend-MachineD freeze **33.04×** (1,636.7 / 49.5 µs), ceiling 35.0. Gate used
+`--only-enforce`. Same commit no optimize.
 
 ## 2. How to run
 

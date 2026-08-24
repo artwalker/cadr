@@ -341,6 +341,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_move": 50,
 	"cli_selectors.scoped_models_selector_handle_event": 50,
 	"cli_selectors.scoped_models_selector_handle_raw_input": 50,
+	"cli_selectors.scoped_models_selector_ui_state": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9976,6 +9977,184 @@ function runCliSelectorsScopedModelsSelectorHandleRawInput() {
 	};
 }
 
+function scopedModelsVisibleSlice(filteredItems, selectedIndex, maximum = 8) {
+	const total = filteredItems.length;
+	const startIndex = Math.max(
+		0,
+		Math.min(selectedIndex - Math.floor(maximum / 2), total - maximum),
+	);
+	const endIndex = Math.min(startIndex + maximum, total);
+	return {
+		visible: filteredItems.slice(startIndex, endIndex),
+		start: startIndex,
+		total,
+	};
+}
+
+function scopedModelsUiItemDigest(item, selected, allEnabled) {
+	const id = item.model?.id ?? item.fullId;
+	const provider = item.model?.provider ?? "unavailable";
+	let status = "";
+	if (!item.model) {
+		status = ":unavail";
+	} else if (!allEnabled) {
+		status = item.enabled ? ":en" : ":dis";
+	}
+	return `${selected ? "sel" : "nosel"}:${id}:${provider}${status}`;
+}
+
+function scopedModelsUiFooter(state) {
+	const parts = [];
+	const allEnabled = state.enabledIds === null;
+	const enabledCount =
+		state.enabledIds?.filter((id) =>
+			state.allModels.some((candidate) => scopedModelsFullId(candidate) === id),
+		).length ?? state.allModels.length;
+	const unavailableCount =
+		state.enabledIds?.filter(
+			(id) => !state.allModels.some((candidate) => scopedModelsFullId(candidate) === id),
+		).length ?? 0;
+	parts.push(
+		allEnabled
+			? "count:all"
+			: `count:${enabledCount}/${state.allModels.length}${unavailableCount ? `:${unavailableCount}unavail` : ""}`,
+	);
+	if (state.dirty) {
+		parts.push("dirty:1");
+	}
+	if (state.filteredItems.length > 0) {
+		const selected = state.filteredItems[state.selectedIndex];
+		if (selected?.model?.name) {
+			parts.push(`name:${selected.model.name}`);
+		} else if (selected && !selected.model) {
+			parts.push("name:unavail");
+		}
+	}
+	if (state.refreshStatusMessage) {
+		parts.push(`refresh:${state.refreshStatusMessage}`);
+	}
+	return parts.join("|");
+}
+
+function makeScopedModelsUiState({
+	allModels = makeModelSelectorTestModels(),
+	enabledIds = null,
+	selected = null,
+	query = "",
+	dirty = false,
+	refreshStatusMessage = undefined,
+} = {}) {
+	let selectedIndex = 0;
+	if (selected !== null) {
+		selectedIndex = selected;
+	}
+	const filteredItems = scopedModelsFilterItems(allModels, enabledIds, query);
+	selectedIndex = Math.min(selectedIndex, Math.max(0, filteredItems.length - 1));
+	return {
+		allModels,
+		enabledIds,
+		query,
+		selectedIndex,
+		filteredItems,
+		dirty,
+		refreshStatusMessage,
+	};
+}
+
+function scopedModelsSelectorUiEncoded(state, width) {
+	const scope = state.enabledIds === null ? "all" : "partial";
+	const { visible, start, total } = scopedModelsVisibleSlice(
+		state.filteredItems,
+		state.selectedIndex,
+	);
+	const scroll =
+		total > visible.length ? `(${state.selectedIndex + 1}/${total})` : "";
+	const empty = total === 0 ? "No matching models" : "";
+	const allEnabled = state.enabledIds === null;
+	for (let i = 0; i < visible.length; i += 1) {
+		const item = visible[i];
+		const index = start + i;
+		const isSelected = index === state.selectedIndex;
+		const id = item.model?.id ?? item.fullId;
+		const providerBadge = item.model
+			? themeModule.theme.fg("muted", ` [${item.model.provider}]`)
+			: themeModule.theme.fg("muted", " [unavailable]");
+		const status = item.model
+			? allEnabled
+				? ""
+				: item.enabled
+					? themeModule.theme.fg("success", " ✓")
+					: themeModule.theme.fg("dim", " ✗")
+			: themeModule.theme.fg("dim", " ✗");
+		if (isSelected) {
+			themeModule.theme.fg("accent", "→ ") +
+				themeModule.theme.fg("accent", id) +
+				providerBadge +
+				status;
+		} else {
+			`  ${id}` + providerBadge + status;
+		}
+	}
+	if (total === 0) {
+		themeModule.theme.fg("muted", "  No matching models");
+	} else {
+		const selected = state.filteredItems[state.selectedIndex];
+		if (selected) {
+			themeModule.theme.fg(
+				"muted",
+				`  ${selected.model ? `Model Name: ${selected.model.name}` : "Model unavailable"}`,
+			);
+		}
+	}
+	if (state.refreshStatusMessage) {
+		themeModule.theme.fg("muted", `  ${state.refreshStatusMessage}`);
+	}
+	const items = visible
+		.map((item, offset) =>
+			scopedModelsUiItemDigest(
+				item,
+				start + offset === state.selectedIndex,
+				allEnabled,
+			),
+		)
+		.join(";");
+	return `${scope}|${width}|${state.selectedIndex}|${state.query}|${total}|${scroll}|${items}|${empty}|${scopedModelsUiFooter(state)}`;
+}
+
+function runCliSelectorsScopedModelsSelectorUiState() {
+	const models = makeModelSelectorTestModels();
+	const partialEnabled = ["openai/gpt-4o", "anthropic/claude-sonnet-4"];
+	return {
+		smsui_default: scopedModelsSelectorUiEncoded(makeScopedModelsUiState(), 40),
+		smsui_sel2: scopedModelsSelectorUiEncoded(
+			makeScopedModelsUiState({ selected: 2 }),
+			40,
+		),
+		smsui_partial: scopedModelsSelectorUiEncoded(
+			makeScopedModelsUiState({ enabledIds: partialEnabled }),
+			40,
+		),
+		smsui_filter: scopedModelsSelectorUiEncoded(
+			makeScopedModelsUiState({ query: "gpt" }),
+			50,
+		),
+		smsui_miss: scopedModelsSelectorUiEncoded(
+			makeScopedModelsUiState({ query: "nope" }),
+			40,
+		),
+		smsui_refresh: scopedModelsSelectorUiEncoded(
+			makeScopedModelsUiState({
+				refreshStatusMessage: "Refreshing model catalogs…",
+			}),
+			40,
+		),
+		smsui_dirty: scopedModelsSelectorUiEncoded(
+			makeScopedModelsUiState({ dirty: true }),
+			40,
+		),
+	};
+}
+
 function modelSelectorApplyFilterEncoded(models, query) {
 	const selectedIndex = 2;
 	const filteredModels = query
@@ -10694,6 +10873,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorHandleEvent();
 	const scopedModelsSelectorHandleRawInputResults =
 		runCliSelectorsScopedModelsSelectorHandleRawInput();
+	const scopedModelsSelectorUiStateResults =
+		runCliSelectorsScopedModelsSelectorUiState();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10988,6 +11169,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorMoveResults,
 		...scopedModelsSelectorHandleEventResults,
 		...scopedModelsSelectorHandleRawInputResults,
+		...scopedModelsSelectorUiStateResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11381,6 +11563,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_handle_raw_input",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorHandleRawInput();
+			},
+		),
+		scoped_models_selector_ui_state: await collect(
+			"cli_selectors.scoped_models_selector_ui_state",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorUiState();
 			},
 		),
 		observed,
@@ -12672,6 +12860,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput event dispatch",
 			"cli_selectors.scoped_models_selector_handle_raw_input":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput raw key dispatch",
+			"cli_selectors.scoped_models_selector_ui_state":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts updateList/render",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

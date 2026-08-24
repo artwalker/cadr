@@ -417,6 +417,7 @@
     ("cli_selectors.scoped_models_selector_move" . 50)
     ("cli_selectors.scoped_models_selector_handle_event" . 50)
     ("cli_selectors.scoped_models_selector_handle_raw_input" . 50)
+    ("cli_selectors.scoped_models_selector_ui_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9642,6 +9643,141 @@
      (scoped-models-selector-handle-raw-input-encoded-key
       models :all 2 "tui.select.up"))))
 
+(defun scoped-models-ui-item-digest (item selected-p all-p)
+  (let* ((model (getf item :model))
+         (id (if model (cadr-ai:model-id model) (getf item :id)))
+         (provider
+           (if model
+               (string-downcase
+                (symbol-name
+                 (cadr-ai:model-provider model)))
+               "unavailable"))
+         (status
+           (cond
+             ((null model) ":unavail")
+             (all-p "")
+             ((getf item :enabled-p) ":en")
+             (t ":dis"))))
+    (format nil "~a:~a:~a~a"
+            (if selected-p "sel" "nosel")
+            id provider status)))
+
+(defun scoped-models-ui-footer (state)
+  (let* ((parts nil)
+         (enabled
+           (cadr-cli::scoped-models-selector-state-enabled-ids
+            state))
+         (all-p (eq enabled :all)))
+    (push
+     (if all-p
+         "count:all"
+         (multiple-value-bind (enabled-count unavailable all-enabled-p)
+             (cadr-cli::scoped-models-selector-counts state)
+           (declare (ignore all-enabled-p))
+           (if (plusp unavailable)
+               (format nil "count:~D/~D:~Dunavail"
+                       enabled-count
+                       (length
+                        (cadr-cli::scoped-models-selector-state-all-ids
+                         state))
+                       unavailable)
+               (format nil "count:~D/~D"
+                       enabled-count
+                       (length
+                        (cadr-cli::scoped-models-selector-state-all-ids
+                         state))))))
+     parts)
+    (when
+        (cadr-cli::scoped-models-selector-state-dirty-p state)
+      (push "dirty:1" parts))
+    (let ((item (cadr-cli::scoped-models-selector-selected-item state)))
+      (when item
+        (let ((model (getf item :model)))
+          (push
+           (if model
+               (format nil "name:~a"
+                       (cadr-ai::model-name model))
+               "name:unavail")
+           parts))))
+    (when
+        (cadr-cli::scoped-models-selector-state-refresh-status-message
+         state)
+      (push
+       (format nil "refresh:~a"
+               (cadr-cli::scoped-models-selector-state-refresh-status-message
+                state))
+       parts))
+    (format nil "~{~a~^|~}" (nreverse parts))))
+
+(defun scoped-models-ui-encoded (state width)
+  (let* ((items
+           (cadr-cli::scoped-models-selector-visible-items state))
+         (selected
+           (cadr-cli::scoped-models-selector-state-selected state))
+         (enabled
+           (cadr-cli::scoped-models-selector-state-enabled-ids state))
+         (scope (if (eq enabled :all) "all" "partial"))
+         (query
+           (cadr-cli::scoped-models-selector-state-query state))
+         (all-p (eq enabled :all)))
+    (multiple-value-bind (visible start end total)
+        (cadr-cli::selector-frame-visible-slice items selected 8)
+      (declare (ignore end))
+      (cadr-cli::render-scoped-models-selector state width)
+      (format nil "~a|~a|~a|~a|~a|~a|~{~a~^;~}|~a|~a"
+              scope width selected query total
+              (if (> total (length visible))
+                  (format nil "(~D/~D)" (1+ selected) total)
+                  "")
+              (loop for item in visible
+                    for index from start
+                    collect
+                    (scoped-models-ui-item-digest
+                     item (= index selected) all-p))
+              (if (zerop total) "No matching models" "")
+              (scoped-models-ui-footer state)))))
+
+(defun make-scoped-models-ui-state
+    (&key (all-models (make-scoped-models-test-models))
+       (enabled-ids :all)
+       selected query dirty refresh-status-message
+       (refresh-status-kind :muted))
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models all-models
+           :enabled-ids enabled-ids
+           :refresh-status-message refresh-status-message
+           :refresh-status-kind refresh-status-kind)))
+    (when selected
+      (setf (cadr-cli::scoped-models-selector-state-selected state)
+            selected))
+    (when query
+      (setf (cadr-cli::scoped-models-selector-state-query state) query))
+    (when dirty
+      (setf (cadr-cli::scoped-models-selector-state-dirty-p state) t))
+    (cadr-cli::scoped-models-selector-clamp-selected state)
+    state))
+
+(defun run-cli-selectors-scoped-models-selector-ui-state ()
+  (let ((models (make-scoped-models-test-models))
+        (partial-enabled '("openai/gpt-4o" "anthropic/claude-sonnet-4")))
+    (list
+     (scoped-models-ui-encoded (make-scoped-models-ui-state) 40)
+     (scoped-models-ui-encoded
+      (make-scoped-models-ui-state :selected 2) 40)
+     (scoped-models-ui-encoded
+      (make-scoped-models-ui-state :enabled-ids partial-enabled) 40)
+     (scoped-models-ui-encoded
+      (make-scoped-models-ui-state :query "gpt") 50)
+     (scoped-models-ui-encoded
+      (make-scoped-models-ui-state :query "nope") 40)
+     (scoped-models-ui-encoded
+      (make-scoped-models-ui-state
+       :refresh-status-message "Refreshing model catalogs…")
+      40)
+     (scoped-models-ui-encoded
+      (make-scoped-models-ui-state :dirty t) 40))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9878,7 +10014,9 @@
         (scoped-models-selector-handle-event
           (run-cli-selectors-scoped-models-selector-handle-event))
         (scoped-models-selector-handle-raw-input
-          (run-cli-selectors-scoped-models-selector-handle-raw-input)))
+          (run-cli-selectors-scoped-models-selector-handle-raw-input))
+        (scoped-models-selector-ui-state
+          (run-cli-selectors-scoped-models-selector-ui-state)))
     (json-object
      "observed"
      (json-object
@@ -10559,7 +10697,14 @@
       "smsri_bad" (nth 3 scoped-models-selector-handle-raw-input)
       "smsri_o" (nth 4 scoped-models-selector-handle-raw-input)
       "smsri_confirm" (nth 5 scoped-models-selector-handle-raw-input)
-      "smsri_up" (nth 6 scoped-models-selector-handle-raw-input))
+      "smsri_up" (nth 6 scoped-models-selector-handle-raw-input)
+      "smsui_default" (nth 0 scoped-models-selector-ui-state)
+      "smsui_sel2" (nth 1 scoped-models-selector-ui-state)
+      "smsui_partial" (nth 2 scoped-models-selector-ui-state)
+      "smsui_filter" (nth 3 scoped-models-selector-ui-state)
+      "smsui_miss" (nth 4 scoped-models-selector-ui-state)
+      "smsui_refresh" (nth 5 scoped-models-selector-ui-state)
+      "smsui_dirty" (nth 6 scoped-models-selector-ui-state))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11154,7 +11299,12 @@
      (collect "cli_selectors.scoped_models_selector_handle_raw_input"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-handle-raw-input)))))))
+                  (run-cli-selectors-scoped-models-selector-handle-raw-input))))
+     "scoped_models_selector_ui_state"
+     (collect "cli_selectors.scoped_models_selector_ui_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-ui-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12407,6 +12557,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-handle-event"
       "cli_selectors.scoped_models_selector_handle_raw_input"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-handle-raw-input"
+      "cli_selectors.scoped_models_selector_ui_state"
+      "src/cadr-cli/interactive/selectors/models.lisp render-scoped-models-selector"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
