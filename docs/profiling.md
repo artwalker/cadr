@@ -36,6 +36,7 @@ sample interval, after a warmup call and a full GC:
 - `storage_journal.journal_read`
 - `storage_journal.journal_append`
 - `session_pipeline.context_walk`
+- `session_pipeline.session_leaf_id`
 - `cli_dispatch.argv_parse`
 - `cli_dispatch.help_render`
 

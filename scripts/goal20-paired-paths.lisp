@@ -136,6 +136,7 @@
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
+;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;; 107. cli_interactive_controller tui-auth-type-label vs formatAuthSelectorProviderType
@@ -448,6 +449,7 @@
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
+    ("session_pipeline.session_leaf_id" . 50)
     ("storage_journal.journal_read" . 5)
     ("storage_journal.journal_append" . 3)
     ("sqlite_session.open_walk" . 3)
@@ -1843,7 +1845,12 @@
      (collect "session_pipeline.session_load"
               (lambda ()
                 (lambda ()
-                  (cadr-agent:load-session path)))))))
+                  (cadr-agent:load-session path))))
+     "session_leaf_id"
+     (collect "session_pipeline.session_leaf_id"
+              (lambda ()
+                (lambda ()
+                  (cadr-agent:session-leaf-id session)))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Pair 4: storage read/write
@@ -13270,6 +13277,10 @@
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
       "src/cadr-agent/session/journal.lisp session-messages"
+      "session_pipeline.session_leaf_id"
+      "src/cadr-agent/session/codec.lisp session-leaf-id"
+      "session_pipeline.session_leaf_id"
+      "src/cadr-agent/session/codec.lisp session-leaf-id"
       "storage_journal.journal_read"
       "src/cadr-agent/session/migration.lisp read-session-objects"
       "storage_journal.journal_append"

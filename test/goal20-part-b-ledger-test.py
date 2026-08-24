@@ -1827,6 +1827,13 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("entry_count", paired.OBSERVED_EXACT["session_compact"])
         self.assertIn("branch_summary_chars", paired.OBSERVED_EXACT["session_compact"])
 
+    def test_session_pipeline_session_leaf_id_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("session_pipeline.session_leaf_id", RECORD.METRIC_KEYS)
+        self.assertIn("session_leaf_id", paired.METRICS["session_pipeline"])
+        self.assertIn("session_pipeline.session_leaf_id", paired.RATIO_CEILINGS)
+        self.assertIn("leaf_id", paired.OBSERVED_EXACT["session_pipeline"])
+
     def test_tool_grep_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("tool_grep.context_file", RECORD.METRIC_KEYS)

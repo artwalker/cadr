@@ -152,7 +152,7 @@ METRICS = {
     "cli_bootstrap_sessions": ("coding_tools",),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
-    "session_pipeline": ("session_load", "context_walk"),
+    "session_pipeline": ("session_load", "context_walk", "session_leaf_id"),
     "storage_journal": ("journal_read", "journal_append"),
     "sqlite_session": ("open_walk",),
     "tool_read": ("text_file",),
@@ -1100,6 +1100,11 @@ RATIO_CEILINGS = {
     "http_transport.parse_url": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # session_pipeline.session_leaf_id pair (samples=5): observed
+    # 0.74x (0.04 / 0.05 us). 8.0 is first-freeze headroom
+    # (microsecond-floor / variance). Ratchet down only.
+    "session_pipeline.session_leaf_id": 8.0,
     "storage_journal.journal_read": 8.0,
     "storage_journal.journal_append": 12.0,
     # Frozen from the first Friend-MachineD non-quick sqlite_session

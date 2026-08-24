@@ -266,6 +266,7 @@ METRIC_KEYS = (
     "http_transport.parse_url",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
+    "session_pipeline.session_leaf_id",
     "storage_journal.journal_read",
     "storage_journal.journal_append",
     "sqlite_session.open_walk",

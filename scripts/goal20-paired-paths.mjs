@@ -371,6 +371,7 @@ const REPETITIONS = {
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
+	"session_pipeline.session_leaf_id": 50,
 	"storage_journal.journal_read": 5,
 	"storage_journal.journal_append": 3,
 	"sqlite_session.open_walk": 3,
@@ -1883,6 +1884,9 @@ async function measureSessionPipeline() {
 		}),
 		context_walk: await collect("session_pipeline.context_walk", () => {
 			return () => sessionModule.buildSessionContext(entries, leafId);
+		}),
+		session_leaf_id: await collect("session_pipeline.session_leaf_id", () => {
+			return () => manager.getLeafId();
 		}),
 		observed: {
 			entry_count: entries.length,
@@ -13697,6 +13701,8 @@ const result = {
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
 				"packages/coding-agent/src/core/session-manager.ts buildSessionContext",
+			"session_pipeline.session_leaf_id":
+				"packages/coding-agent/src/core/session-manager.ts SessionManager.getLeafId",
 			"storage_journal.journal_read":
 				"packages/coding-agent/src/core/session-manager.ts loadEntriesFromFile",
 			"storage_journal.journal_append":

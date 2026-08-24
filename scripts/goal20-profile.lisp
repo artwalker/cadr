@@ -260,6 +260,13 @@
               "context_walk"
               (lambda ()
                 (cadr-agent:session-messages session))))
+       sections)
+      (push
+       (list "session_pipeline.session_leaf_id"
+             (profile-thunk
+              "session_leaf_id"
+              (lambda ()
+                (cadr-agent:session-leaf-id session))))
        sections))
     (let ((parse-argv (argv-fixture "parse")))
       (push

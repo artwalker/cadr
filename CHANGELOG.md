@@ -21,6 +21,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `session_pipeline.session_leaf_id` (leaf-id accessor on
+  an open session; cadr `session-leaf-id` vs pi `SessionManager.getLeafId`).
+  Friend-MachineD freeze 0.74× (0.04 / 0.05 µs), ceiling 8.0. Measure-only.
 - Goal 20 P.13: pair `evals_harness.normalize_steps` (step input
   coercion; cadr `normalize-eval-steps` vs pi `pi-harness.ts` string/
   sequence normalization). Friend-MachineD freeze 0.11× (1.30 / 12.15 µs),

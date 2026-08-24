@@ -70,6 +70,7 @@ reduction, and final-message assembly stay on the production path.
 |---|---|---|
 | `session_load` | `load-session` (`src/cadr-agent/session/migration.lisp`) | `SessionManager.open` (`packages/coding-agent/src/core/session-manager.ts`) |
 | `context_walk` | `session-messages` (`src/cadr-agent/session/journal.lisp`) | `buildSessionContext` (same file) |
+| `session_leaf_id` | `session-leaf-id` (`src/cadr-agent/session/codec.lisp`) | `SessionManager.getLeafId` (same file) |
 
 Input: `session.jsonl`, 209 KiB / 515 entries (514 plus header), including a
 compaction entry with a retained tail, custom entries, thinking-level and
@@ -2986,6 +2987,18 @@ Scoped models sorted id list (comma-joined qualified ids). Observed `smssi_all` 
 First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate used
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
+
+### Pair 246 — `session_pipeline` (session_leaf_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_leaf_id` | `session-leaf-id` (`src/cadr-agent/session/codec.lisp`) | `SessionManager.getLeafId` (`packages/coding-agent/src/core/session-manager.ts`) |
+
+Shared `session.jsonl` fixture loaded once outside the timed loop. Timed work
+is the production leaf-id accessor on the open session, not `session_load`.
+Observed `leaf_id` stays exact. First Friend-MachineD freeze **0.74×**
+(0.04 / 0.05 µs), ceiling 8.0 (microsecond-floor / variance). Gate used
+`--only-enforce`. Same commit no optimize.
 
 ### Pair 244 — `provider_registry_defs` (definition_ids)
 
