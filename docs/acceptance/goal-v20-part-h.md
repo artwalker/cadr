@@ -2959,6 +2959,7 @@ are exact. First Friend-MachineD freeze **5.37×** (147.6 / 27.5 µs), ceiling
 | `model_selector_ui_state` | `render-model-selector` | `updateList` / render |
 | `scoped_models_selector_set_query` | `scoped-models-selector-set-query` | `refresh` query clamp |
 | `scoped_models_selector_move` | `scoped-models-selector-move` | `handleInput` up/down wrap |
+| `scoped_models_selector_handle_raw_input` | `scoped-models-selector-handle-raw-input` | `handleInput` raw key dispatch |
 
 Model selector raw key dispatch (action|model-id|selected|consumed digest).
 Observed `mshri_down` / `mshri_j` / `mshri_esc` / `mshri_bad` / `mshri_o` /
@@ -3004,6 +3005,11 @@ Scoped models selector input events (action\|null\|selected digest). Observed
 are exact. First Friend-MachineD freeze **6.76×** (246.1 / 36.4 µs), ceiling 12.0
 (bumped from 8.0 on first freeze 10.40×). Gate used `--only-enforce`. Same commit
 no optimize.
+Scoped models selector raw key dispatch (action|value|selected|consumed digest).
+Observed `smsri_down` / `smsri_j` / `smsri_esc` / `smsri_bad` / `smsri_o` /
+`smsri_confirm` / `smsri_up` are exact. First Friend-MachineD freeze **9.03×**
+(1638.3 / 181.4 µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no
+optimize.
 
 ## 2. How to run
 

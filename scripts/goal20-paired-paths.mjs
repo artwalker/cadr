@@ -340,6 +340,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_set_query": 50,
 	"cli_selectors.scoped_models_selector_move": 50,
 	"cli_selectors.scoped_models_selector_handle_event": 50,
+	"cli_selectors.scoped_models_selector_handle_raw_input": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9896,6 +9897,85 @@ function runCliSelectorsScopedModelsSelectorHandleEvent() {
 	};
 }
 
+function scopedModelsSelectorRawInputKeyDataPi(keyName) {
+	const manager = new keybindingsModule.KeybindingsManager(appKeybindingsModule.KEYBINDINGS);
+	return manager.getKeys(keyName)[0];
+}
+
+function scopedModelsSelectorHandleRawInputEncoded(allModels, enabledIds, selected, data, query = "") {
+	const manager = new keybindingsModule.KeybindingsManager(appKeybindingsModule.KEYBINDINGS);
+	const state = makeScopedModelsBenchState(allModels, enabledIds, selected, query);
+	let action = "null";
+	const value = "null";
+	let consumed = "false";
+
+	const refreshFiltered = () => {
+		state.filteredItems = scopedModelsFilterItems(allModels, state.enabledIds, state.query);
+		state.selected = Math.min(state.selected, Math.max(0, state.filteredItems.length - 1));
+	};
+
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.up")) {
+		if (state.filteredItems.length > 0) {
+			state.selected = moveIndex(state.selected, state.filteredItems.length, -1);
+		}
+		action = "changed";
+		consumed = "true";
+	} else if (selectorKeybindingMatchesPi(manager, data, "tui.select.down")) {
+		if (state.filteredItems.length > 0) {
+			state.selected = moveIndex(state.selected, state.filteredItems.length, 1);
+		}
+		action = "changed";
+		consumed = "true";
+	} else if (selectorKeybindingMatchesPi(manager, data, "tui.select.confirm")) {
+		const item = state.filteredItems[state.selected];
+		if (item) {
+			state.enabledIds = scopedModelsToggleId(state.enabledIds, item.fullId);
+			refreshFiltered();
+		}
+		action = "changed";
+		consumed = "true";
+	} else if (selectorKeybindingMatchesPi(manager, data, "tui.select.cancel")) {
+		action = "cancel";
+		consumed = "true";
+	}
+
+	return `${action}|${value}|${state.selected}|${consumed}`;
+}
+
+function runCliSelectorsScopedModelsSelectorHandleRawInput() {
+	const models = makeModelSelectorTestModels();
+	const enabledIds = null;
+	return {
+		smsri_down: scopedModelsSelectorHandleRawInputEncoded(
+			models,
+			enabledIds,
+			0,
+			scopedModelsSelectorRawInputKeyDataPi("tui.select.down"),
+		),
+		smsri_j: scopedModelsSelectorHandleRawInputEncoded(models, enabledIds, 1, "j"),
+		smsri_esc: scopedModelsSelectorHandleRawInputEncoded(
+			models,
+			enabledIds,
+			1,
+			scopedModelsSelectorRawInputKeyDataPi("tui.select.cancel"),
+		),
+		smsri_bad: scopedModelsSelectorHandleRawInputEncoded(models, enabledIds, 0, "q"),
+		smsri_o: scopedModelsSelectorHandleRawInputEncoded(models, enabledIds, 0, "o"),
+		smsri_confirm: scopedModelsSelectorHandleRawInputEncoded(
+			models,
+			enabledIds,
+			0,
+			scopedModelsSelectorRawInputKeyDataPi("tui.select.confirm"),
+		),
+		smsri_up: scopedModelsSelectorHandleRawInputEncoded(
+			models,
+			enabledIds,
+			2,
+			scopedModelsSelectorRawInputKeyDataPi("tui.select.up"),
+		),
+	};
+}
+
 function modelSelectorApplyFilterEncoded(models, query) {
 	const selectedIndex = 2;
 	const filteredModels = query
@@ -10612,6 +10692,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorMove();
 	const scopedModelsSelectorHandleEventResults =
 		runCliSelectorsScopedModelsSelectorHandleEvent();
+	const scopedModelsSelectorHandleRawInputResults =
+		runCliSelectorsScopedModelsSelectorHandleRawInput();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10905,6 +10987,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorSetQueryResults,
 		...scopedModelsSelectorMoveResults,
 		...scopedModelsSelectorHandleEventResults,
+		...scopedModelsSelectorHandleRawInputResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11292,6 +11375,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_handle_event",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorHandleEvent();
+			},
+		),
+		scoped_models_selector_handle_raw_input: await collect(
+			"cli_selectors.scoped_models_selector_handle_raw_input",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorHandleRawInput();
 			},
 		),
 		observed,
@@ -12581,6 +12670,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput up/down wrap",
 			"cli_selectors.scoped_models_selector_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput event dispatch",
+			"cli_selectors.scoped_models_selector_handle_raw_input":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput raw key dispatch",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

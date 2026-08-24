@@ -416,6 +416,7 @@
     ("cli_selectors.scoped_models_selector_set_query" . 50)
     ("cli_selectors.scoped_models_selector_move" . 50)
     ("cli_selectors.scoped_models_selector_handle_event" . 50)
+    ("cli_selectors.scoped_models_selector_handle_raw_input" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9585,6 +9586,62 @@
      (scoped-models-selector-handle-event-encoded
       models :all 0 :backspace :query "gpt"))))
 
+(defun encode-scoped-models-selector-handle-raw-input-result
+    (state action value consumed)
+  (declare (ignore value))
+  (format nil "~a|~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          "null"
+          (write-to-string
+           (cadr-cli::scoped-models-selector-state-selected state))
+          (if consumed "true" "false")))
+
+(defun scoped-models-selector-raw-input-key-data (state key-name)
+  (first (cadr-tui:keybinding-keys
+          (cadr-cli::scoped-models-selector-state-keybindings state)
+          key-name)))
+
+(defun scoped-models-selector-handle-raw-input-encoded
+    (models enabled-ids selected data &key query)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids)))
+    (setf (cadr-cli::scoped-models-selector-state-query state) (or query ""))
+    (setf (cadr-cli::scoped-models-selector-state-selected state) selected)
+    (cadr-cli::scoped-models-selector-clamp-selected state)
+    (multiple-value-bind (action value consumed)
+        (cadr-cli::scoped-models-selector-handle-raw-input state data)
+      (encode-scoped-models-selector-handle-raw-input-result
+       state action value consumed))))
+
+(defun scoped-models-selector-handle-raw-input-encoded-key
+    (models enabled-ids selected key-name)
+  (let* ((state
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models models
+            :enabled-ids enabled-ids)))
+    (scoped-models-selector-handle-raw-input-encoded
+     models enabled-ids selected
+     (scoped-models-selector-raw-input-key-data state key-name))))
+
+(defun run-cli-selectors-scoped-models-selector-handle-raw-input ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (scoped-models-selector-handle-raw-input-encoded-key
+      models :all 0 "tui.select.down")
+     (scoped-models-selector-handle-raw-input-encoded models :all 1 "j")
+     (scoped-models-selector-handle-raw-input-encoded-key
+      models :all 1 "tui.select.cancel")
+     (scoped-models-selector-handle-raw-input-encoded models :all 0 "q")
+     (scoped-models-selector-handle-raw-input-encoded models :all 0 "o")
+     (scoped-models-selector-handle-raw-input-encoded-key
+      models :all 0 "tui.select.confirm")
+     (scoped-models-selector-handle-raw-input-encoded-key
+      models :all 2 "tui.select.up"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9819,7 +9876,9 @@
         (scoped-models-selector-move
           (run-cli-selectors-scoped-models-selector-move))
         (scoped-models-selector-handle-event
-          (run-cli-selectors-scoped-models-selector-handle-event)))
+          (run-cli-selectors-scoped-models-selector-handle-event))
+        (scoped-models-selector-handle-raw-input
+          (run-cli-selectors-scoped-models-selector-handle-raw-input)))
     (json-object
      "observed"
      (json-object
@@ -10493,7 +10552,14 @@
       "smshe_enter" (nth 2 scoped-models-selector-handle-event)
       "smshe_esc" (nth 3 scoped-models-selector-handle-event)
       "smshe_text" (nth 4 scoped-models-selector-handle-event)
-      "smshe_bs" (nth 5 scoped-models-selector-handle-event))
+      "smshe_bs" (nth 5 scoped-models-selector-handle-event)
+      "smsri_down" (nth 0 scoped-models-selector-handle-raw-input)
+      "smsri_j" (nth 1 scoped-models-selector-handle-raw-input)
+      "smsri_esc" (nth 2 scoped-models-selector-handle-raw-input)
+      "smsri_bad" (nth 3 scoped-models-selector-handle-raw-input)
+      "smsri_o" (nth 4 scoped-models-selector-handle-raw-input)
+      "smsri_confirm" (nth 5 scoped-models-selector-handle-raw-input)
+      "smsri_up" (nth 6 scoped-models-selector-handle-raw-input))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11083,7 +11149,12 @@
      (collect "cli_selectors.scoped_models_selector_handle_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-handle-event)))))))
+                  (run-cli-selectors-scoped-models-selector-handle-event))))
+     "scoped_models_selector_handle_raw_input"
+     (collect "cli_selectors.scoped_models_selector_handle_raw_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-handle-raw-input)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12334,6 +12405,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-move"
       "cli_selectors.scoped_models_selector_handle_event"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-handle-event"
+      "cli_selectors.scoped_models_selector_handle_raw_input"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-handle-raw-input"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
