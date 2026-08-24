@@ -93,7 +93,7 @@
   {
    "pair": 256,
    "lane": "b",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-resource-loader",
    "metric": null,
