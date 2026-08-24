@@ -347,6 +347,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_toggle_selected": 50,
 	"cli_selectors.scoped_models_selector_toggle_provider": 50,
 	"cli_selectors.scoped_models_selector_target_ids": 50,
+	"cli_selectors.scoped_models_selector_enable_all": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10350,6 +10351,38 @@ function scopedModelsSelectorToggleProviderEncoded(
 	return `${encodeScopedModelsEnabledIds(state.enabledIds)}|${state.isDirty ? "true" : "false"}|${state.selected}`;
 }
 
+function scopedModelsSelectorEnableAllEncoded(allModels, enabledIds, query = "") {
+	const allIds = allModels.map(scopedModelsFullId);
+	const targetIds = query
+		? scopedModelsFilterItems(allModels, enabledIds, query).map((item) => item.fullId)
+		: undefined;
+	const nextEnabledIds = scopedModelsEnableIds(enabledIds, allIds, targetIds);
+	return `${encodeScopedModelsEnabledIds(nextEnabledIds)}|true`;
+}
+
+function runCliSelectorsScopedModelsSelectorEnableAll() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsea_all: scopedModelsSelectorEnableAllEncoded(models, null),
+		smsea_partial: scopedModelsSelectorEnableAllEncoded(models, ["openai/gpt-4o"]),
+		smsea_empty: scopedModelsSelectorEnableAllEncoded(models, []),
+		smsea_two: scopedModelsSelectorEnableAllEncoded(models, [
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+		smsea_filter: scopedModelsSelectorEnableAllEncoded(
+			models,
+			["openai/gpt-4o"],
+			"gpt",
+		),
+		smsea_miss: scopedModelsSelectorEnableAllEncoded(
+			models,
+			["openai/gpt-4o"],
+			"nope",
+		),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -11110,6 +11143,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorToggleProvider();
 	const scopedModelsSelectorTargetIdsResults =
 		runCliSelectorsScopedModelsSelectorTargetIds();
+	const scopedModelsSelectorEnableAllResults =
+		runCliSelectorsScopedModelsSelectorEnableAll();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11410,6 +11445,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorToggleSelectedResults,
 		...scopedModelsSelectorToggleProviderResults,
 		...scopedModelsSelectorTargetIdsResults,
+		...scopedModelsSelectorEnableAllResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11831,6 +11867,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_target_ids",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorTargetIds();
+			},
+		),
+		scoped_models_selector_enable_all: await collect(
+			"cli_selectors.scoped_models_selector_enable_all",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorEnableAll();
 			},
 		),
 		observed,
