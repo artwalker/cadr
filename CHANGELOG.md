@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Fixed
 
+- Goal 20 P.13: pair `agent_tool_loop.runtime` (steering/follow-up queue
+  enqueue/drain/clear; cadr `agent-steer`/`drain-agent-queue` vs pi
+  `PendingMessageQueue`). Friend-MachineD n=5 **6.30×**, ceiling 8.0.
+  Measure-only.
+
 - Bash FORMAT + `(` quoting report classified **not-product**: model
   fed Lisp `(format t "gethash equal 6-char (hit): …")` to `bash -c`.
   Wrapper still passes `command` as `bash -lc "$2"` argv

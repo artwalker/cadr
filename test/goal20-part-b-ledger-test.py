@@ -200,6 +200,11 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("agent_tool_loop.tool_result_digest", paired.RATIO_CEILINGS)
         self.assertIn("trd_short", paired.OBSERVED_EXACT["agent_tool_loop"])
         self.assertIn("trd_utf16", paired.OBSERVED_EXACT["agent_tool_loop"])
+        self.assertIn("agent_tool_loop.runtime", RECORD.METRIC_KEYS)
+        self.assertIn("runtime", paired.METRICS["agent_tool_loop"])
+        self.assertIn("agent_tool_loop.runtime", paired.RATIO_CEILINGS)
+        self.assertIn("rt_steer_len", paired.OBSERVED_EXACT["agent_tool_loop"])
+        self.assertIn("rt_snap_follow_empty", paired.OBSERVED_EXACT["agent_tool_loop"])
 
     def test_provider_anthropic_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

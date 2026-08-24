@@ -96,6 +96,7 @@
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
+;;;; 253. agent_tool_loop agent-steer/drain/clear vs PendingMessageQueue
 ;;;; 111. cli_selectors selector-fuzzy-filter vs fuzzyFilter
 ;;;; 112. cli_selectors selector-delete-query-character vs Input backspace grapheme delete
 ;;;; 113. cli_selectors selector-frame-visible-slice vs selector viewport slice
@@ -478,6 +479,7 @@
     ("agent_tool_loop.tool_path" . 50)
     ("agent_tool_loop.line_ending" . 50)
     ("agent_tool_loop.tool_result_digest" . 125)
+    ("agent_tool_loop.runtime" . 50)
     ("session_compact.compact" . 3)
     ("session_compact.branch_summarize" . 3)
     ("text_truncation.truncate_head" . 50)
@@ -2419,6 +2421,82 @@
      (tool-result-digest-truncated-p utf16-out)
      (if (string= empty-out "") 1 0))))
 
+
+(defun paired-runtime-agent ()
+  (cadr-agent:make-agent
+   :provider :mock
+   :model
+   (cadr-ai:make-model
+    :id "mock"
+    :provider :openai
+    :api :openai-responses
+    :base-url "https://example.invalid"
+    :max-tokens 2048)
+   :stream-function
+   (lambda (&rest _)
+     (error "paired agent_tool_loop.runtime: stream not called"))
+   :auto-compact-p nil))
+
+(defun runtime-queue-text-flag (messages expected)
+  (if (and (= (length messages) 1)
+           (string=
+            (let ((content
+                    (cadr-ai:user-message-content (first messages))))
+              (if (stringp content)
+                  content
+                  (cadr-ai:text-content-text (first content))))
+            expected))
+      1
+      0))
+
+(defun run-agent-tool-loop-runtime ()
+  (let ((agent (paired-runtime-agent)))
+    (setf (cadr-agent:agent-steering-mode agent) :one-at-a-time)
+    (setf (cadr-agent:agent-follow-up-mode agent) :one-at-a-time)
+    (cadr-agent:agent-steer agent "a")
+    (cadr-agent:agent-steer agent "b")
+    (cadr-agent:agent-follow-up agent "c")
+    (cadr-agent:agent-follow-up agent "d")
+    (let* ((steer-len (length (cadr-agent::agent-queue-messages agent :steering)))
+           (follow-len (length (cadr-agent::agent-queue-messages agent :follow-up)))
+           (steer-d1 (cadr-agent::drain-agent-queue agent :steering))
+           (steer-r1 (length (cadr-agent::agent-queue-messages agent :steering)))
+           (steer-d2 (cadr-agent::drain-agent-queue agent :steering))
+           (steer-r2 (length (cadr-agent::agent-queue-messages agent :steering))))
+      (setf (cadr-agent:agent-steering-mode agent) :all)
+      (cadr-agent:agent-steer agent "x")
+      (cadr-agent:agent-steer agent "y")
+      (let* ((steer-all (cadr-agent::drain-agent-queue agent :steering))
+             (follow-d1 (cadr-agent::drain-agent-queue agent :follow-up))
+             (follow-r1 (length (cadr-agent::agent-queue-messages agent :follow-up)))
+             (follow-d2 (cadr-agent::drain-agent-queue agent :follow-up))
+             (follow-r2 (length (cadr-agent::agent-queue-messages agent :follow-up))))
+        (cadr-agent:agent-steer agent "clear-me")
+        (cadr-agent:agent-follow-up agent "clear-fu")
+        (multiple-value-bind (cleared-steer cleared-follow)
+            (cadr-agent::clear-live-agent-queues agent)
+          (cadr-agent::clear-all-agent-queues agent)
+          (multiple-value-bind (snap-steer snap-follow snap-next)
+              (cadr-agent::agent-queue-snapshot agent)
+            (declare (ignore snap-next))
+            (list
+             (if (= steer-len 2) 1 0)
+             (if (= follow-len 2) 1 0)
+             (runtime-queue-text-flag steer-d1 "a")
+             (length steer-d1)
+             (if (= steer-r1 1) 1 0)
+             (runtime-queue-text-flag steer-d2 "b")
+             (if (= steer-r2 0) 1 0)
+             (length steer-all)
+             (runtime-queue-text-flag follow-d1 "c")
+             (if (= follow-r1 1) 1 0)
+             (runtime-queue-text-flag follow-d2 "d")
+             (if (= follow-r2 0) 1 0)
+             (length cleared-steer)
+             (length cleared-follow)
+             (length snap-steer)
+             (length snap-follow))))))))
+
 (defun measure-agent-tool-loop ()
   (multiple-value-bind (agent executed)
       (run-paired-tool-loop)
@@ -2427,7 +2505,8 @@
            (result (third messages))
            (paths (run-agent-tool-loop-tool-path))
            (endings (run-agent-tool-loop-line-ending))
-           (digests (run-agent-tool-loop-tool-result-digest)))
+           (digests (run-agent-tool-loop-tool-result-digest))
+           (runtime (run-agent-tool-loop-runtime)))
       (json-object
        "observed"
        (json-object
@@ -2455,7 +2534,23 @@
         "trd_over" (nth 2 digests)
         "trd_over_one" (nth 3 digests)
         "trd_utf16" (nth 4 digests)
-        "trd_empty" (nth 5 digests))
+        "trd_empty" (nth 5 digests)
+        "rt_steer_len" (nth 0 runtime)
+        "rt_follow_len" (nth 1 runtime)
+        "rt_drain_steer_a" (nth 2 runtime)
+        "rt_drain_steer1_n" (nth 3 runtime)
+        "rt_steer_remain1" (nth 4 runtime)
+        "rt_drain_steer_b" (nth 5 runtime)
+        "rt_steer_empty" (nth 6 runtime)
+        "rt_drain_steer_all_n" (nth 7 runtime)
+        "rt_drain_follow_c" (nth 8 runtime)
+        "rt_follow_remain1" (nth 9 runtime)
+        "rt_drain_follow_d" (nth 10 runtime)
+        "rt_follow_empty" (nth 11 runtime)
+        "rt_clear_steer_n" (nth 12 runtime)
+        "rt_clear_follow_n" (nth 13 runtime)
+        "rt_snap_steer_empty" (nth 14 runtime)
+        "rt_snap_follow_empty" (nth 15 runtime))
        "roundtrip"
        (collect "agent_tool_loop.roundtrip"
                 (lambda ()
@@ -2475,7 +2570,12 @@
        (collect "agent_tool_loop.tool_result_digest"
                 (lambda ()
                   (lambda ()
-                    (run-agent-tool-loop-tool-result-digest))))))))
+                    (run-agent-tool-loop-tool-result-digest))))
+       "runtime"
+       (collect "agent_tool_loop.runtime"
+                (lambda ()
+                  (lambda ()
+                    (run-agent-tool-loop-runtime))))))))
 
 (defun paired-compact-model ()
   (cadr-ai:make-model
@@ -13891,6 +13991,8 @@
       "src/cadr-cli/tools/edit.lisp detect-line-ending"
       "agent_tool_loop.tool_result_digest"
       "src/cadr-agent/compaction.lisp truncate-summary-tool-result"
+      "agent_tool_loop.runtime"
+      "src/cadr-agent/runtime.lisp agent-steer + drain-agent-queue + clear-live-agent-queues"
       "session_compact.compact"
       "src/cadr-agent/compaction.lisp compact-from-preparation"
       "session_compact.branch_summarize"

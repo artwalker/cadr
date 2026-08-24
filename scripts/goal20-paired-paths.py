@@ -157,7 +157,7 @@ METRICS = {
     "sqlite_session": ("open_walk",),
     "tool_read": ("text_file",),
     "tool_grep": ("context_file",),
-    "agent_tool_loop": ("roundtrip", "tool_path", "line_ending", "tool_result_digest"),
+    "agent_tool_loop": ("roundtrip", "tool_path", "line_ending", "tool_result_digest", "runtime"),
     "session_compact": ("compact", "branch_summarize"),
     "text_truncation": ("truncate_head", "truncate_tail", "truncate_middle"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
@@ -1168,6 +1168,7 @@ RATIO_CEILINGS = {
     # provider_registry_defs.definition_ids headroom precedent.
     # Ratchet down only.
     "agent_tool_loop.tool_result_digest": 125.0,
+    "agent_tool_loop.runtime": 8.0,
     # Frozen from the first Friend-MachineD non-quick session_compact
     # pair (samples=5): observed 11.33x (965 / 85 µs). 20.0 follows
     # the truncate_head headroom precedent. Ratchet down only.
@@ -2626,6 +2627,10 @@ OBSERVED_EXACT = {
         "trd_over_one",
         "trd_utf16",
         "trd_empty",
+        "rt_steer_len", "rt_follow_len", "rt_drain_steer_a", "rt_drain_steer1_n",
+        "rt_steer_remain1", "rt_drain_steer_b", "rt_steer_empty", "rt_drain_steer_all_n",
+        "rt_drain_follow_c", "rt_follow_remain1", "rt_drain_follow_d", "rt_follow_empty",
+        "rt_clear_steer_n", "rt_clear_follow_n", "rt_snap_steer_empty", "rt_snap_follow_empty",
     ),
     "session_compact": (
         "compacted",

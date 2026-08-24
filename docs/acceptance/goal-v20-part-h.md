@@ -3120,6 +3120,25 @@ no file reads. cadr resolves `config.json` + `auth.json`; pi resolves
 are exact. First Friend-MachineD freeze **RATIO_PLACEHOLDER**. Gate used
 `--only-enforce`. Same commit no optimize.
 
+### Pair 253 — `agent_tool_loop` (runtime)
+
+| metric | cadr | pi |
+|---|---|---|
+| `runtime` | `agent-steer` + `drain-agent-queue` + `clear-live-agent-queues` (`src/cadr-agent/runtime.lisp`) | `PendingMessageQueue` (`packages/agent/src/agent.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole for `runtime.lisp`. Time
+steering/follow-up queue enqueue, one-at-a-time vs `:all` drain, clear-live,
+and snapshot only — not `agent-prompt`, not a live loop. Fixtures: steer
+`a`/`b`, follow-up `c`/`d`, all-mode steer `x`/`y`, clear-live
+`clear-me`/`clear-fu`. Do not exact `next-turn` queue (cadr-only). Observed
+`rt_steer_len` / `rt_follow_len` / `rt_drain_steer_a` / `rt_drain_steer1_n` /
+`rt_steer_remain1` / `rt_drain_steer_b` / `rt_steer_empty` /
+`rt_drain_steer_all_n` / `rt_drain_follow_c` / `rt_follow_remain1` /
+`rt_drain_follow_d` / `rt_follow_empty` / `rt_clear_steer_n` /
+`rt_clear_follow_n` / `rt_snap_steer_empty` / `rt_snap_follow_empty` are exact.
+First Friend-MachineD freeze **6.30×** (7.8 / 1.2 µs), ceiling 8.0. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
 | metric | cadr | pi |
@@ -3526,6 +3545,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
 | `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
+| `src/cadr-agent/runtime.lisp` | 421 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe` |

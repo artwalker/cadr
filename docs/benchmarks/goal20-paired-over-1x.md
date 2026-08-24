@@ -81,6 +81,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.auth_type` | 0.21 | 0.15 | 1.44× | 8.00× | measure-only pair `39ff7f5c4`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 
 | `agent_tool_loop.tool_path` | 12.74 | 5.23 | 2.44× | 8.00× | measure-only pair `9b37f5914`; resolve only | invent pause；地板优化另刀 |
+| `agent_tool_loop.runtime` | 7.8 | 1.2 | 6.30× | 8.00× | measure-only pair 253; steering/follow-up queue enqueue/drain/clear | invent pause；地板优化另刀 |
 
 | `agent_tool_loop.line_ending` | 0.75 | 0.38 | 1.99× | 8.00× | measure-only pair `7c9e733a6`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 

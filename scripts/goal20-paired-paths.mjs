@@ -391,6 +391,7 @@ const REPETITIONS = {
 	"agent_tool_loop.tool_path": 50,
 	"agent_tool_loop.line_ending": 50,
 	"agent_tool_loop.tool_result_digest": 125,
+	"agent_tool_loop.runtime": 50,
 	"session_compact.compact": 3,
 	"session_compact.branch_summarize": 3,
 	"text_truncation.truncate_head": 50,
@@ -2700,6 +2701,75 @@ function runAgentToolLoopToolResultDigest() {
 	};
 }
 
+
+class PendingMessageQueue {
+	constructor(mode) { this.mode = mode; this.messages = []; }
+	enqueue(message) { this.messages.push(message); }
+	drain() {
+		if (this.mode === "all") { const d = this.messages.slice(); this.messages = []; return d; }
+		const first = this.messages[0]; if (!first) return [];
+		this.messages = this.messages.slice(1); return [first];
+	}
+	clear() { this.messages = []; }
+	queueLength() { return this.messages.length; }
+}
+function pairedRuntimeUserMessage(text) { return { role: "user", content: text, timestamp: 1 }; }
+function runtimeQueueTextFlag(messages, expected) {
+	if (messages.length !== 1) return 0;
+	const message = messages[0];
+	const text = typeof message.content === "string" ? message.content : (message.content?.[0]?.text ?? "");
+	return text === expected ? 1 : 0;
+}
+function clearLiveRuntimeQueues(steeringQueue, followUpQueue) {
+	const steering = steeringQueue.messages.slice();
+	const followUp = followUpQueue.messages.slice();
+	steeringQueue.clear(); followUpQueue.clear();
+	return { steering, followUp };
+}
+function runAgentToolLoopRuntime() {
+	const steeringQueue = new PendingMessageQueue("one-at-a-time");
+	const followUpQueue = new PendingMessageQueue("one-at-a-time");
+	steeringQueue.enqueue(pairedRuntimeUserMessage("a"));
+	steeringQueue.enqueue(pairedRuntimeUserMessage("b"));
+	followUpQueue.enqueue(pairedRuntimeUserMessage("c"));
+	followUpQueue.enqueue(pairedRuntimeUserMessage("d"));
+	const steerLen = steeringQueue.queueLength();
+	const followLen = followUpQueue.queueLength();
+	const steerD1 = steeringQueue.drain();
+	const steerR1 = steeringQueue.queueLength();
+	const steerD2 = steeringQueue.drain();
+	const steerR2 = steeringQueue.queueLength();
+	steeringQueue.mode = "all";
+	steeringQueue.enqueue(pairedRuntimeUserMessage("x"));
+	steeringQueue.enqueue(pairedRuntimeUserMessage("y"));
+	const steerAll = steeringQueue.drain();
+	const followD1 = followUpQueue.drain();
+	const followR1 = followUpQueue.queueLength();
+	const followD2 = followUpQueue.drain();
+	const followR2 = followUpQueue.queueLength();
+	steeringQueue.enqueue(pairedRuntimeUserMessage("clear-me"));
+	followUpQueue.enqueue(pairedRuntimeUserMessage("clear-fu"));
+	const { steering: clearedSteer, followUp: clearedFollow } = clearLiveRuntimeQueues(steeringQueue, followUpQueue);
+	steeringQueue.clear(); followUpQueue.clear();
+	return {
+		rt_steer_len: steerLen === 2 ? 1 : 0,
+		rt_follow_len: followLen === 2 ? 1 : 0,
+		rt_drain_steer_a: runtimeQueueTextFlag(steerD1, "a"),
+		rt_drain_steer1_n: steerD1.length,
+		rt_steer_remain1: steerR1 === 1 ? 1 : 0,
+		rt_drain_steer_b: runtimeQueueTextFlag(steerD2, "b"),
+		rt_steer_empty: steerR2 === 0 ? 1 : 0,
+		rt_drain_steer_all_n: steerAll.length,
+		rt_drain_follow_c: runtimeQueueTextFlag(followD1, "c"),
+		rt_follow_remain1: followR1 === 1 ? 1 : 0,
+		rt_drain_follow_d: runtimeQueueTextFlag(followD2, "d"),
+		rt_follow_empty: followR2 === 0 ? 1 : 0,
+		rt_clear_steer_n: clearedSteer.length,
+		rt_clear_follow_n: clearedFollow.length,
+		rt_snap_steer_empty: steeringQueue.queueLength(),
+		rt_snap_follow_empty: followUpQueue.queueLength(),
+	};
+}
 async function measureAgentToolLoop() {
 	const once = await runPairedToolLoop();
 	const messages = once.agent.state.messages;
@@ -2708,6 +2778,7 @@ async function measureAgentToolLoop() {
 	const paths = runAgentToolLoopToolPath();
 	const endings = runAgentToolLoopLineEnding();
 	const digests = runAgentToolLoopToolResultDigest();
+	const runtime = runAgentToolLoopRuntime();
 	return {
 		roundtrip: await collect("agent_tool_loop.roundtrip", () => {
 			return () => runPairedToolLoop();
@@ -2721,6 +2792,9 @@ async function measureAgentToolLoop() {
 		tool_result_digest: await collect("agent_tool_loop.tool_result_digest", () => {
 			return () => runAgentToolLoopToolResultDigest();
 		}),
+		runtime: await collect("agent_tool_loop.runtime", () => {
+			return () => runAgentToolLoopRuntime();
+		}),
 		observed: {
 			final_text: last.content[0].text,
 			message_count: messages.length,
@@ -2729,6 +2803,7 @@ async function measureAgentToolLoop() {
 			...paths,
 			...endings,
 			...digests,
+			...runtime,
 		},
 	};
 }
@@ -14493,6 +14568,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/edit-diff.ts detectLineEnding",
 			"agent_tool_loop.tool_result_digest":
 				"packages/coding-agent/src/core/compaction/utils.ts truncateForSummary",
+			"agent_tool_loop.runtime":
+				"packages/agent/src/agent.ts PendingMessageQueue enqueue/drain/clear",
 			"session_compact.compact":
 				"packages/coding-agent/src/core/compaction/compaction.ts prepareCompaction + compact",
 			"session_compact.branch_summarize":

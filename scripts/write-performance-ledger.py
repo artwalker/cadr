@@ -285,6 +285,7 @@ METRIC_KEYS = (
     "agent_tool_loop.tool_path",
     "agent_tool_loop.line_ending",
     "agent_tool_loop.tool_result_digest",
+    "agent_tool_loop.runtime",
     "session_compact.compact",
     "session_compact.branch_summarize",
     "text_truncation.truncate_middle",
