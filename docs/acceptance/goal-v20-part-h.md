@@ -2821,6 +2821,17 @@ select-list navigation and selection. Observed `lmhe_down` / `lmhe_up` /
 (4.2 / 4.3 µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no
 optimize.
 
+### Pair 210 — `cli_selectors` (oauth_selector_move)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_selector_move` | `oauth-selector-move` | `selector-frame-move-index` wrap (fixtures avoid pi clamp boundary) |
+
+OAuth selector filtered-list index move (wrap). Observed `osmv_0_1` /
+`osmv_2_m1` / `osmv_1_1` / `osmv_1_m1` / `osmv_filter` are exact. First
+Friend-MachineD freeze **27.34×** (83.8 / 3.1 µs), ceiling 50.0. Gate
+used `--only-enforce`. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
