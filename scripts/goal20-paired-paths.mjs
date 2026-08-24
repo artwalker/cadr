@@ -342,6 +342,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_handle_event": 50,
 	"cli_selectors.scoped_models_selector_handle_raw_input": 50,
 	"cli_selectors.scoped_models_selector_ui_state": 50,
+	"cli_selectors.scoped_models_selector_sorted_ids": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9675,6 +9676,29 @@ function scopedModelsGetSortedIds(enabledIds, allIds) {
 	return [...enabledIds, ...allIds.filter((id) => !enabledSet.has(id))];
 }
 
+function scopedModelsSortedIdsEncoded(allModels, enabledIds) {
+	const allIds = allModels.map(scopedModelsFullId);
+	return scopedModelsGetSortedIds(enabledIds, allIds).join(",");
+}
+
+function runCliSelectorsScopedModelsSelectorSortedIds() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smssi_all: scopedModelsSortedIdsEncoded(models, null),
+		smssi_partial: scopedModelsSortedIdsEncoded(models, [
+			"google/gemini-2.5-pro",
+			"openai/gpt-4o",
+		]),
+		smssi_single: scopedModelsSortedIdsEncoded(models, ["anthropic/claude-sonnet-4"]),
+		smssi_empty: scopedModelsSortedIdsEncoded(models, []),
+		smssi_reorder: scopedModelsSortedIdsEncoded(models, [
+			"openai-codex/gpt-5",
+			"openrouter/openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+	};
+}
+
 function scopedModelsBuildItems(allModels, enabledIds) {
 	const allIds = allModels.map(scopedModelsFullId);
 	return scopedModelsGetSortedIds(enabledIds, allIds).map((fullId) => {
@@ -10875,6 +10899,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorHandleRawInput();
 	const scopedModelsSelectorUiStateResults =
 		runCliSelectorsScopedModelsSelectorUiState();
+	const scopedModelsSelectorSortedIdsResults =
+		runCliSelectorsScopedModelsSelectorSortedIds();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11170,6 +11196,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorHandleEventResults,
 		...scopedModelsSelectorHandleRawInputResults,
 		...scopedModelsSelectorUiStateResults,
+		...scopedModelsSelectorSortedIdsResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11569,6 +11596,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_ui_state",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorUiState();
+			},
+		),
+		scoped_models_selector_sorted_ids: await collect(
+			"cli_selectors.scoped_models_selector_sorted_ids",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorSortedIds();
 			},
 		),
 		observed,
@@ -12862,6 +12895,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput raw key dispatch",
 			"cli_selectors.scoped_models_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts updateList/render",
+			"cli_selectors.scoped_models_selector_sorted_ids":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getSortedIds",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

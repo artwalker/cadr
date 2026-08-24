@@ -418,6 +418,7 @@
     ("cli_selectors.scoped_models_selector_handle_event" . 50)
     ("cli_selectors.scoped_models_selector_handle_raw_input" . 50)
     ("cli_selectors.scoped_models_selector_ui_state" . 50)
+    ("cli_selectors.scoped_models_selector_sorted_ids" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9548,6 +9549,31 @@
      (scoped-models-selector-move-encoded models :all 1 -1)
      (scoped-models-selector-move-encoded models :all 0 1 :query "gpt"))))
 
+(defun scoped-models-sorted-ids-encoded (models enabled-ids)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids)))
+    (format nil "~{~a~^,~}"
+            (cadr-cli::scoped-models-sorted-ids state))))
+
+(defun run-cli-selectors-scoped-models-selector-sorted-ids ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (scoped-models-sorted-ids-encoded models :all)
+     (scoped-models-sorted-ids-encoded
+      models
+      '("google/gemini-2.5-pro" "openai/gpt-4o"))
+     (scoped-models-sorted-ids-encoded
+      models
+      '("anthropic/claude-sonnet-4"))
+     (scoped-models-sorted-ids-encoded models '())
+     (scoped-models-sorted-ids-encoded
+      models
+      '("openai-codex/gpt-5"
+        "openrouter/openai/gpt-4o"
+        "anthropic/claude-sonnet-4")))))
+
 (defun encode-scoped-models-selector-handle-event-result (state action)
   (format nil "~a|null|~a"
           (if action
@@ -10016,7 +10042,9 @@
         (scoped-models-selector-handle-raw-input
           (run-cli-selectors-scoped-models-selector-handle-raw-input))
         (scoped-models-selector-ui-state
-          (run-cli-selectors-scoped-models-selector-ui-state)))
+          (run-cli-selectors-scoped-models-selector-ui-state))
+        (scoped-models-selector-sorted-ids
+          (run-cli-selectors-scoped-models-selector-sorted-ids)))
     (json-object
      "observed"
      (json-object
@@ -10704,7 +10732,12 @@
       "smsui_filter" (nth 3 scoped-models-selector-ui-state)
       "smsui_miss" (nth 4 scoped-models-selector-ui-state)
       "smsui_refresh" (nth 5 scoped-models-selector-ui-state)
-      "smsui_dirty" (nth 6 scoped-models-selector-ui-state))
+      "smsui_dirty" (nth 6 scoped-models-selector-ui-state)
+      "smssi_all" (nth 0 scoped-models-selector-sorted-ids)
+      "smssi_partial" (nth 1 scoped-models-selector-sorted-ids)
+      "smssi_single" (nth 2 scoped-models-selector-sorted-ids)
+      "smssi_empty" (nth 3 scoped-models-selector-sorted-ids)
+      "smssi_reorder" (nth 4 scoped-models-selector-sorted-ids))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11304,7 +11337,12 @@
      (collect "cli_selectors.scoped_models_selector_ui_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-ui-state)))))))
+                  (run-cli-selectors-scoped-models-selector-ui-state))))
+     "scoped_models_selector_sorted_ids"
+     (collect "cli_selectors.scoped_models_selector_sorted_ids"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-sorted-ids)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12559,6 +12597,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-handle-raw-input"
       "cli_selectors.scoped_models_selector_ui_state"
       "src/cadr-cli/interactive/selectors/models.lisp render-scoped-models-selector"
+      "cli_selectors.scoped_models_selector_sorted_ids"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-sorted-ids"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
