@@ -324,6 +324,7 @@ const REPETITIONS = {
 	"cli_selectors.login_method_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_move": 50,
 	"cli_selectors.api_key_input_state_handle_event": 50,
+	"cli_selectors.login_method_selector_ui_state": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9110,6 +9111,58 @@ function runCliSelectorsApiKeyInputStateHandleEvent() {
 	};
 }
 
+function loginMethodSelectorUiEncoded(state, width) {
+	const manager = new keybindingsModule.KeybindingsManager(keybindingsModule.TUI_KEYBINDINGS);
+	const selected =
+		state.items.length === 0
+			? 0
+			: Math.min(state.selected, state.items.length - 1);
+	// Exercise ExtensionSelectorComponent.updateList-style theming.
+	for (let i = 0; i < state.items.length; i++) {
+		const isSelected = i === selected;
+		if (isSelected) {
+			themeModule.theme.fg("accent", "→ ") +
+				themeModule.theme.fg("accent", state.items[i].label);
+		} else {
+			`  ${themeModule.theme.fg("text", state.items[i].label)}`;
+		}
+	}
+	const hints =
+		keybindingHintsModule.rawKeyHint("↑↓", "navigate") +
+		"  " +
+		selectorKeybindingHintPi(manager, "tui.select.confirm", "select") +
+		"  " +
+		selectorKeybindingHintPi(manager, "tui.select.cancel", "cancel");
+	const items = state.items
+		.map((item, index) => `${index === selected ? "sel" : "nosel"}:${item.label}`)
+		.join(";");
+	return `${state.title}|${width}|${selected}|${items}|${ansiModule.stripAnsi(hints)}`;
+}
+
+function makeLoginMethodUiState(selected = 0, title = "Select authentication method:") {
+	return {
+		title,
+		items: [
+			{ label: "Sign in with an account", value: "oauth" },
+			{ label: "Sign in with an API key", value: "api_key" },
+		],
+		selected,
+	};
+}
+
+function runCliSelectorsLoginMethodSelectorUiState() {
+	return {
+		lmsui_default: loginMethodSelectorUiEncoded(makeLoginMethodUiState(0), 40),
+		lmsui_sel1: loginMethodSelectorUiEncoded(makeLoginMethodUiState(1), 40),
+		lmsui_title: loginMethodSelectorUiEncoded(
+			makeLoginMethodUiState(0, "Select authentication method for Anthropic:"),
+			60,
+		),
+		lmsui_narrow: loginMethodSelectorUiEncoded(makeLoginMethodUiState(0), 20),
+		lmsui_mid: loginMethodSelectorUiEncoded(makeLoginMethodUiState(1), 28),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9530,6 +9583,8 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthSelectorMoveResults = runCliSelectorsOauthSelectorMove();
 	const apiKeyInputStateHandleEventResults =
 		runCliSelectorsApiKeyInputStateHandleEvent();
+	const loginMethodSelectorUiStateResults =
+		runCliSelectorsLoginMethodSelectorUiState();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9807,6 +9862,7 @@ async function measureCliSelectorsSessionSearch() {
 		...loginMethodSelectorHandleEventResults,
 		...oauthSelectorMoveResults,
 		...apiKeyInputStateHandleEventResults,
+		...loginMethodSelectorUiStateResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10128,6 +10184,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.api_key_input_state_handle_event",
 			() => {
 				return () => runCliSelectorsApiKeyInputStateHandleEvent();
+			},
+		),
+		login_method_selector_ui_state: await collect(
+			"cli_selectors.login_method_selector_ui_state",
+			() => {
+				return () => runCliSelectorsLoginMethodSelectorUiState();
 			},
 		),
 		observed,
@@ -11385,6 +11447,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput navigation (wrap index; fixtures avoid clamp boundary)",
 			"cli_selectors.api_key_input_state_handle_event":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts handleInput api key prompt dispatch",
+			"cli_selectors.login_method_selector_ui_state":
+				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent UI state",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

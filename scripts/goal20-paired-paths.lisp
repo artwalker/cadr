@@ -400,6 +400,7 @@
     ("cli_selectors.login_method_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_move" . 50)
     ("cli_selectors.api_key_input_state_handle_event" . 50)
+    ("cli_selectors.login_method_selector_ui_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8894,6 +8895,54 @@
    (api-key-input-handle-event-encoded :enter :prefill "sk-test")
    (api-key-input-handle-event-encoded :interrupt)))
 
+(defun login-method-selector-ui-encoded (state width)
+  (let* ((select-list
+           (cadr-cli::login-method-selector-state-select-list state))
+         (items
+           (cadr-tui::select-list-filtered-items select-list))
+         (selected
+           (if items
+               (min (cadr-tui::select-list-selected select-list)
+                    (1- (length items)))
+               0))
+         (keybindings (cadr-tui:get-keybindings))
+         (hints
+           (concatenate
+            'string
+            (cadr-cli::raw-key-hint "↑↓" "navigate") "  "
+            (cadr-cli::selector-keybinding-hint
+             keybindings "tui.select.confirm" "select") "  "
+            (cadr-cli::selector-keybinding-hint
+             keybindings "tui.select.cancel" "cancel"))))
+    ;; Exercise the render path; observed digest is structural.
+    (cadr-cli::render-login-method-selector state width)
+    (format nil "~a|~a|~a|~{~a~^;~}|~a"
+            (cadr-cli::login-method-selector-state-title state)
+            width
+            selected
+            (loop for item in items
+                  for index from 0
+                  collect
+                  (format nil "~a:~a"
+                          (if (= index selected) "sel" "nosel")
+                          (cadr-tui:select-item-label item)))
+            (cadr-cli::strip-ansi hints))))
+
+(defun run-cli-selectors-login-method-selector-ui-state ()
+  (list
+   (login-method-selector-ui-encoded
+    (cadr-cli::make-login-method-selector-state) 40)
+   (login-method-selector-ui-encoded
+    (make-login-method-selector-state-with-selected 1) 40)
+   (login-method-selector-ui-encoded
+    (cadr-cli::make-login-method-selector-state
+     :title "Select authentication method for Anthropic:")
+    60)
+   (login-method-selector-ui-encoded
+    (make-login-method-selector-state-with-selected 0) 20)
+   (login-method-selector-ui-encoded
+    (make-login-method-selector-state-with-selected 1) 28)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -9071,7 +9120,9 @@
         (oauth-selector-move
           (run-cli-selectors-oauth-selector-move))
         (api-key-input-state-handle-event
-          (run-cli-selectors-api-key-input-state-handle-event)))
+          (run-cli-selectors-api-key-input-state-handle-event))
+        (login-method-selector-ui-state
+          (run-cli-selectors-login-method-selector-ui-state)))
     (json-object
      "observed"
      (json-object
@@ -9657,7 +9708,12 @@
       "akhe_bs" (nth 3 api-key-input-state-handle-event)
       "akhe_enter_empty" (nth 4 api-key-input-state-handle-event)
       "akhe_enter_key" (nth 5 api-key-input-state-handle-event)
-      "akhe_interrupt" (nth 6 api-key-input-state-handle-event))
+      "akhe_interrupt" (nth 6 api-key-input-state-handle-event)
+      "lmsui_default" (nth 0 login-method-selector-ui-state)
+      "lmsui_sel1" (nth 1 login-method-selector-ui-state)
+      "lmsui_title" (nth 2 login-method-selector-ui-state)
+      "lmsui_narrow" (nth 3 login-method-selector-ui-state)
+      "lmsui_mid" (nth 4 login-method-selector-ui-state))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10167,7 +10223,12 @@
      (collect "cli_selectors.api_key_input_state_handle_event"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-api-key-input-state-handle-event)))))))
+                  (run-cli-selectors-api-key-input-state-handle-event))))
+     "login_method_selector_ui_state"
+     (collect "cli_selectors.login_method_selector_ui_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-method-selector-ui-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11386,6 +11447,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-move"
       "cli_selectors.api_key_input_state_handle_event"
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event"
+      "cli_selectors.login_method_selector_ui_state"
+      "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

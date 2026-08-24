@@ -2857,6 +2857,18 @@ entry, backspace, empty submit, key submit. Observed `akhe_esc` /
 **1.66×** (7.0 / 4.2 µs), ceiling 8.0. Gate used `--only-enforce`. Same
 commit no optimize.
 
+### Pair 213 — `cli_selectors` (login_method_selector_ui_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_method_selector_ui_state` | `render-login-method-selector` | `ExtensionSelectorComponent` UI state |
+
+Login method selector UI digest (title/selection/items/hints; render
+exercised). Observed `lmsui_default` / `lmsui_sel1` / `lmsui_title` /
+`lmsui_narrow` / `lmsui_mid` are exact. First Friend-MachineD freeze
+**10.07×** (622.6 / 61.8 µs), ceiling 12.0. Gate used `--only-enforce`.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.login_method_selector_ui_state`
+  (login method selector UI; cadr `render-login-method-selector` vs pi
+  `ExtensionSelectorComponent`). Friend-MachineD n=5 **10.07×**
+  (622.6 / 61.8 µs), ceiling 12.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.api_key_input_state_handle_event`
   (api key overlay dispatch; cadr `api-key-input-state-handle-event` vs pi
   `LoginDialogComponent` prompt flow). Friend-MachineD n=5 **1.66×**
