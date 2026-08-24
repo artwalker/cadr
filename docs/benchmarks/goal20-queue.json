@@ -33,7 +33,7 @@
    "status": "done",
    "source": "src/cadr-agent/runtime.lisp",
    "measure": "measure-agent-tool-loop",
-   "metric": null,
+   "metric": "settings_load.config_paths",
    "branch": "pair-253-config-paths"
   },
   {
@@ -66,11 +66,11 @@
   {
    "pair": 253,
    "lane": "b",
-   "status": "pending",
+   "status": "done",
    "source": "src/cadr-agent/branch-summarization.lisp",
    "measure": "measure-resource-loader",
-   "metric": null,
-   "branch": null
+   "metric": "settings_load.config_paths",
+   "branch": "pair-253-config-paths"
   },
   {
    "pair": 254,
@@ -109,10 +109,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-253-config-paths",
-   "pair": 253
-  }
- ]
+ "mergeQueue": []
 }
