@@ -331,6 +331,7 @@ const REPETITIONS = {
 	"cli_selectors.qualified_model_id": 50,
 	"cli_selectors.model_selector_apply_filter": 50,
 	"cli_selectors.model_selector_move": 50,
+	"cli_selectors.model_selector_handle_event": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9441,6 +9442,115 @@ function runCliSelectorsModelSelectorMove() {
 	};
 }
 
+function modelSelectorSearchText(item) {
+	return modelSearchModule.getModelSelectorSearchText({
+		id: item.id,
+		provider: item.provider,
+		name: item.model.name,
+	});
+}
+
+function makeModelSelectorBenchState(models, selected, query = "") {
+	const filteredModels = query
+		? fuzzyModule.fuzzyFilter(models, query, modelSelectorSearchText)
+		: models;
+	return {
+		allModels: models,
+		query,
+		filtered: filteredModels,
+		selected,
+	};
+}
+
+function modelSelectorApplyFilterState(state) {
+	state.filtered = state.query
+		? fuzzyModule.fuzzyFilter(state.allModels, state.query, modelSelectorSearchText)
+		: state.allModels;
+}
+
+function modelSelectorSetQuery(state, query) {
+	state.query = query ?? "";
+	modelSelectorApplyFilterState(state);
+	if (state.query.length > 0) {
+		state.selected = 0;
+	} else {
+		state.selected = Math.min(
+			state.selected,
+			Math.max(0, state.filtered.length - 1),
+		);
+	}
+}
+
+function modelSelectorMoveState(state, delta) {
+	state.selected = moveIndex(state.selected, state.filtered.length, delta);
+}
+
+function encodeModelSelectorHandleEventResult(state, action, value) {
+	const actionText = action ? String(action) : "null";
+	const valueText =
+		action === "select" && value
+			? qualifiedModelId({ id: value.id, provider: value.provider })
+			: "null";
+	return `${actionText}|${valueText}|${state.selected}`;
+}
+
+function modelSelectorHandleEvent(state, eventKind, { text } = {}) {
+	switch (eventKind) {
+		case "down":
+			modelSelectorMoveState(state, 1);
+			return { action: "changed", value: null };
+		case "up":
+			modelSelectorMoveState(state, -1);
+			return { action: "changed", value: null };
+		case "page-down":
+			modelSelectorMoveState(state, 10);
+			return { action: "changed", value: null };
+		case "page-up":
+			modelSelectorMoveState(state, -10);
+			return { action: "changed", value: null };
+		case "enter": {
+			const item = state.filtered[state.selected];
+			if (item) {
+				return { action: "select", value: item.model };
+			}
+			return { action: null, value: null };
+		}
+		case "escape":
+		case "interrupt":
+			return { action: "cancel", value: null };
+		case "backspace":
+			modelSelectorSetQuery(state, deleteQueryChar(state.query));
+			return { action: "changed", value: null };
+		case "text":
+			modelSelectorSetQuery(state, state.query + (text ?? ""));
+			return { action: "changed", value: null };
+		default:
+			return { action: null, value: null };
+	}
+}
+
+function modelSelectorHandleEventEncoded(models, selected, eventKind, { text, query } = {}) {
+	const state = makeModelSelectorBenchState(models, selected, query ?? "");
+	if (query) {
+		modelSelectorApplyFilterState(state);
+	}
+	state.selected = selected;
+	const result = modelSelectorHandleEvent(state, eventKind, { text });
+	return encodeModelSelectorHandleEventResult(state, result.action, result.value);
+}
+
+function runCliSelectorsModelSelectorHandleEvent() {
+	const models = makeModelSelectorTestModels();
+	return {
+		mshe_down: modelSelectorHandleEventEncoded(models, 0, "down"),
+		mshe_up: modelSelectorHandleEventEncoded(models, 1, "up"),
+		mshe_enter: modelSelectorHandleEventEncoded(models, 0, "enter"),
+		mshe_esc: modelSelectorHandleEventEncoded(models, 0, "escape"),
+		mshe_text: modelSelectorHandleEventEncoded(models, 0, "text", { text: "gpt" }),
+		mshe_bs: modelSelectorHandleEventEncoded(models, 0, "backspace", { query: "gpt" }),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9869,6 +9979,7 @@ async function measureCliSelectorsSessionSearch() {
 	const qualifiedModelIdResults = runCliSelectorsQualifiedModelId();
 	const modelSelectorApplyFilterResults = runCliSelectorsModelSelectorApplyFilter();
 	const modelSelectorMoveResults = runCliSelectorsModelSelectorMove();
+	const modelSelectorHandleEventResults = runCliSelectorsModelSelectorHandleEvent();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10153,6 +10264,7 @@ async function measureCliSelectorsSessionSearch() {
 		...qualifiedModelIdResults,
 		...modelSelectorApplyFilterResults,
 		...modelSelectorMoveResults,
+		...modelSelectorHandleEventResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10499,6 +10611,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		model_selector_move: await collect("cli_selectors.model_selector_move", () => {
 			return () => runCliSelectorsModelSelectorMove();
+		}),
+		model_selector_handle_event: await collect("cli_selectors.model_selector_handle_event", () => {
+			return () => runCliSelectorsModelSelectorHandleEvent();
 		}),
 		observed,
 	};
@@ -11769,6 +11884,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filterModels",
 			"cli_selectors.model_selector_move":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput up/down wrap",
+			"cli_selectors.model_selector_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput event dispatch",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

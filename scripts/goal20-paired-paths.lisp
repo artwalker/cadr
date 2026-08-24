@@ -407,6 +407,7 @@
     ("cli_selectors.qualified_model_id" . 50)
     ("cli_selectors.model_selector_apply_filter" . 50)
     ("cli_selectors.model_selector_move" . 50)
+    ("cli_selectors.model_selector_handle_event" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9180,6 +9181,47 @@
      (model-selector-move-encoded models 1 -1)
      (model-selector-move-encoded models 0 1 :query "gpt"))))
 
+(defun encode-model-selector-handle-event-result (state action value)
+  (format nil "~a|~a|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (if (and (eq action :select) value)
+              (cadr-cli::qualified-model-id value)
+              "null")
+          (write-to-string
+           (cadr-cli::model-selector-state-selected state))))
+
+(defun model-selector-handle-event-encoded
+    (models selected event-kind &key text query)
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (when query
+      (setf (cadr-cli::model-selector-state-query state) query)
+      (cadr-cli::model-selector-apply-filter state))
+    (setf (cadr-cli::model-selector-state-selected state) selected)
+    (let ((event
+            (if text
+                (cadr-tui:make-input-event :kind event-kind :text text)
+                (cadr-tui:make-input-event :kind event-kind))))
+      (multiple-value-bind (action value)
+          (cadr-cli::model-selector-handle-event state event)
+        (encode-model-selector-handle-event-result state action value)))))
+
+(defun run-cli-selectors-model-selector-handle-event ()
+  (let ((models (make-model-selector-test-models)))
+    (list
+     (model-selector-handle-event-encoded models 0 :down)
+     (model-selector-handle-event-encoded models 1 :up)
+     (model-selector-handle-event-encoded models 0 :enter)
+     (model-selector-handle-event-encoded models 0 :escape)
+     (model-selector-handle-event-encoded models 0 :text :text "gpt")
+     (model-selector-handle-event-encoded
+      models 0 :backspace :query "gpt"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9396,7 +9438,9 @@
         (model-selector-apply-filter
           (run-cli-selectors-model-selector-apply-filter))
         (model-selector-move
-          (run-cli-selectors-model-selector-move)))
+          (run-cli-selectors-model-selector-move))
+        (model-selector-handle-event
+          (run-cli-selectors-model-selector-handle-event)))
     (json-object
      "observed"
      (json-object
@@ -10017,7 +10061,13 @@
       "msmv_2_m1" (nth 1 model-selector-move)
       "msmv_1_1" (nth 2 model-selector-move)
       "msmv_1_m1" (nth 3 model-selector-move)
-      "msmv_filter" (nth 4 model-selector-move))
+      "msmv_filter" (nth 4 model-selector-move)
+      "mshe_down" (nth 0 model-selector-handle-event)
+      "mshe_up" (nth 1 model-selector-handle-event)
+      "mshe_enter" (nth 2 model-selector-handle-event)
+      "mshe_esc" (nth 3 model-selector-handle-event)
+      "mshe_text" (nth 4 model-selector-handle-event)
+      "mshe_bs" (nth 5 model-selector-handle-event))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10562,7 +10612,12 @@
      (collect "cli_selectors.model_selector_move"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-model-selector-move)))))))
+                  (run-cli-selectors-model-selector-move))))
+     "model_selector_handle_event"
+     (collect "cli_selectors.model_selector_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-handle-event)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11795,6 +11850,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-apply-filter"
       "cli_selectors.model_selector_move"
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-move"
+      "cli_selectors.model_selector_handle_event"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-handle-event"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

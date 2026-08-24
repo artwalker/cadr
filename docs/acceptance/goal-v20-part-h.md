@@ -2937,6 +2937,17 @@ Observed `msmv_0_1` / `msmv_2_m1` / `msmv_1_1` / `msmv_1_m1` / `msmv_filter`
 are exact. First Friend-MachineD freeze **18.60×** (102.3 / 5.5 µs), ceiling
 20.0. Gate used `--only-enforce`. Same commit no optimize.
 
+### Pair 220 — `cli_selectors` (model_selector_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_handle_event` | `model-selector-handle-event` | event dispatch |
+
+Model selector input events (action|model-id|selected digest). Observed
+`mshe_down` / `mshe_up` / `mshe_enter` / `mshe_esc` / `mshe_text` / `mshe_bs`
+are exact. First Friend-MachineD freeze **5.37×** (TBD µs), ceiling 8.0.
+Gate used `--only-enforce`. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash
