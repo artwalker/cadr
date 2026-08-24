@@ -144,6 +144,7 @@ const REPETITIONS = {
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
 	"settings_load.stored_auth_secrets": 50,
+	"settings_load.config_paths": 50,
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
@@ -1847,13 +1848,40 @@ function runSettingsLoadStoredAuthSecrets(missingPath, fixturePath, oauthPath, b
 	};
 }
 
+function stageSettingsLoadConfigPaths() {
+	const agent = path.join(scratch, "config-paths-agent");
+	mkdirSync(agent, { recursive: true });
+	return realpathSync(agent);
+}
+
+function runSettingsLoadConfigPaths(agentDir) {
+	const previous = process.env[configModule.ENV_AGENT_DIR];
+	process.env[configModule.ENV_AGENT_DIR] = agentDir;
+	try {
+		const authPath = configModule.getAuthPath();
+		const settingsPath = configModule.getSettingsPath();
+		return {
+			cp_auth_eq: authPath === path.join(agentDir, "auth.json") ? 1 : 0,
+			cp_cfg_eq: settingsPath === path.join(agentDir, "settings.json") ? 1 : 0,
+			cp_same_p: path.dirname(authPath) === path.dirname(settingsPath) ? 1 : 0,
+			cp_auth_leaf: path.basename(authPath) === "auth.json" ? 1 : 0,
+			cp_cfg_leaf: path.basename(settingsPath) === "settings.json" ? 1 : 0,
+		};
+	} finally {
+		if (previous === undefined) delete process.env[configModule.ENV_AGENT_DIR];
+		else process.env[configModule.ENV_AGENT_DIR] = previous;
+	}
+}
+
 async function measureSettingsLoad() {
+	const configPathsAgent = stageSettingsLoadConfigPaths();
 	const { empty, project, agent } = stageSettingsLoadTrust();
 	const { missingPath, fixturePath, oauthPath, badPath } = stageSettingsLoadStoredAuth();
 	const trust = await runSettingsLoadProjectTrust(empty, project, agent);
 	const config = runSettingsLoadConfigValue();
 	const idle = runSettingsLoadHttpIdle();
 	const storedAuth = runSettingsLoadStoredAuthSecrets(missingPath, fixturePath, oauthPath, badPath);
+	const configPaths = runSettingsLoadConfigPaths(configPathsAgent);
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -1867,7 +1895,10 @@ async function measureSettingsLoad() {
 		stored_auth_secrets: await collect("settings_load.stored_auth_secrets", () => {
 			return () => runSettingsLoadStoredAuthSecrets(missingPath, fixturePath, oauthPath, badPath);
 		}),
-		observed: { ...trust, ...config, ...idle, ...storedAuth },
+		config_paths: await collect("settings_load.config_paths", () => {
+			return () => runSettingsLoadConfigPaths(configPathsAgent);
+		}),
+		observed: { ...trust, ...config, ...idle, ...storedAuth, ...configPaths },
 	};
 }
 
@@ -13993,6 +14024,8 @@ const result = {
 				"packages/coding-agent/src/core/http-dispatcher.ts formatHttpIdleTimeoutMs",
 			"settings_load.stored_auth_secrets":
 				"packages/coding-agent/src/config.ts getAuthPath (auth.json key/access/refresh scan)",
+			"settings_load.config_paths":
+				"packages/coding-agent/src/config.ts getSettingsPath + getAuthPath",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"package_manager.manifest_parse":

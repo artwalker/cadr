@@ -333,6 +333,11 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertIn("sas_fixture", paired.OBSERVED_EXACT["settings_load"])
         self.assertIn("sas_oauth_access", paired.OBSERVED_EXACT["settings_load"])
+        self.assertIn("settings_load.config_paths", RECORD.METRIC_KEYS)
+        self.assertIn("config_paths", paired.METRICS["settings_load"])
+        self.assertIn("settings_load.config_paths", paired.RATIO_CEILINGS)
+        self.assertIn("cp_auth_eq", paired.OBSERVED_EXACT["settings_load"])
+        self.assertIn("cp_cfg_leaf", paired.OBSERVED_EXACT["settings_load"])
 
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

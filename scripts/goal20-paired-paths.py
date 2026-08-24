@@ -99,7 +99,7 @@ METRICS = {
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
     "cli_settings": ("create",),
-    "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets"),
+    "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload",),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
     "session_discovery": ("header_probe", "session_list_probe"),
@@ -255,6 +255,9 @@ RATIO_CEILINGS = {
     # settings_load.stored_auth_secrets pair (samples=5): observed 4.19x
     # (426.6 / 101.8 us). 8.0 is first-freeze headroom. Ratchet down only.
     "settings_load.stored_auth_secrets": 8.0,
+    # settings_load.config_paths pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "settings_load.config_paths": 8.0,
     # Frozen from the first Friend-MachineD non-quick resource_loader
     # pair (samples=5): observed 0.29x (568 / 1978 µs). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent
@@ -1378,6 +1381,11 @@ OBSERVED_EXACT = {
         "sas_fixture_key",
         "sas_oauth_access",
         "sas_oauth_refresh",
+        "cp_auth_eq",
+        "cp_cfg_eq",
+        "cp_same_p",
+        "cp_auth_leaf",
+        "cp_cfg_leaf",
     ),
     "package_manager": (
         "package_count",

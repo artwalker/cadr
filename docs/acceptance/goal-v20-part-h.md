@@ -3106,6 +3106,20 @@ Observed `manifest_p` / `manifest_extensions` / `manifest_skills` /
 freeze **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
+### Pair 253 — `settings_load` (config_paths)
+
+| metric | cadr | pi |
+|---|---|---|
+| `config_paths` | `default-config-path` + `default-auth-path` | `getSettingsPath` + `getAuthPath` (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of the `settings_load` hole on `src/cadr-cli/config.lisp`.
+Staged `CADR_CODING_AGENT_DIR` / `PI_CODING_AGENT_DIR` agent directory only;
+no file reads. cadr resolves `config.json` + `auth.json`; pi resolves
+`settings.json` + `auth.json` under the same agent dir. Observed
+`cp_auth_eq` / `cp_cfg_eq` / `cp_same_p` / `cp_auth_leaf` / `cp_cfg_leaf`
+are exact. First Friend-MachineD freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
 | metric | cadr | pi |

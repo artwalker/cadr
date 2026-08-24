@@ -91,6 +91,7 @@
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
+;;;; 253. settings_load default-config-path/default-auth-path vs getSettingsPath/getAuthPath
 ;;;; 254. session_discovery list-sessions vs SessionManager.listAll
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
@@ -230,6 +231,7 @@
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
     ("settings_load.stored_auth_secrets" . 50)
+    ("settings_load.config_paths" . 50)
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
     ("package_manager.manifest_parse" . 50)
@@ -2895,18 +2897,61 @@
    (stored-auth-secret-member-p oauth-path "acc")
    (stored-auth-secret-member-p oauth-path "ref")))
 
+(defun stage-settings-load-config-paths ()
+  (let ((agent
+          (merge-pathnames "config-paths-agent/" *scratch-directory*)))
+    (ensure-directories-exist agent)
+    (namestring (uiop:ensure-directory-pathname agent))))
+
+(defun settings-load-path-leaf-p (path leaf-name)
+  (if (string= (pathname-name path) leaf-name) 1 0))
+
+(defun settings-load-pathname= (left right)
+  (string= (namestring left) (namestring right)))
+
+(defun run-settings-load-config-paths (agent-dir)
+  (let* ((previous (uiop:getenv "CADR_CODING_AGENT_DIR"))
+         (agent (uiop:ensure-directory-pathname agent-dir)))
+    (unwind-protect
+         (progn
+           (sb-posix:setenv "CADR_CODING_AGENT_DIR" agent-dir 1)
+           (let* ((auth-path (cadr-cli:default-auth-path))
+                  (config-path (cadr-cli:default-config-path)))
+             (list
+              (if (settings-load-pathname=
+                   auth-path (merge-pathnames "auth.json" agent))
+                  1
+                  0)
+              (if (settings-load-pathname=
+                   config-path (merge-pathnames "config.json" agent))
+                  1
+                  0)
+              (if (settings-load-pathname=
+                   (uiop:pathname-directory-pathname auth-path)
+                   (uiop:pathname-directory-pathname config-path))
+                  1
+                  0)
+              (settings-load-path-leaf-p auth-path "auth")
+              (settings-load-path-leaf-p config-path "config"))))
+      (if previous
+          (sb-posix:setenv "CADR_CODING_AGENT_DIR" previous 1)
+          (sb-posix:unsetenv "CADR_CODING_AGENT_DIR")))))
+
 (defun measure-settings-load ()
-  (destructuring-bind (empty project store-path)
-      (stage-settings-load-trust)
-    (destructuring-bind (missing-path fixture-path oauth-path bad-path)
-        (stage-settings-load-stored-auth)
-      (let ((observed
-              (run-settings-load-project-trust empty project store-path))
-            (config (run-settings-load-config-value))
-            (idle (run-settings-load-http-idle))
-            (stored-auth
-              (run-settings-load-stored-auth-secrets
-               missing-path fixture-path oauth-path bad-path)))
+  (let ((config-paths-agent (stage-settings-load-config-paths)))
+    (destructuring-bind (empty project store-path)
+        (stage-settings-load-trust)
+      (destructuring-bind (missing-path fixture-path oauth-path bad-path)
+          (stage-settings-load-stored-auth)
+        (let ((observed
+                (run-settings-load-project-trust empty project store-path))
+              (config (run-settings-load-config-value))
+              (idle (run-settings-load-http-idle))
+              (stored-auth
+                (run-settings-load-stored-auth-secrets
+                 missing-path fixture-path oauth-path bad-path))
+              (config-paths
+                (run-settings-load-config-paths config-paths-agent)))
         (json-object
          "observed"
          (json-object
@@ -2937,7 +2982,12 @@
           "sas_bad" (nth 3 stored-auth)
           "sas_fixture_key" (nth 4 stored-auth)
           "sas_oauth_access" (nth 5 stored-auth)
-          "sas_oauth_refresh" (nth 6 stored-auth))
+          "sas_oauth_refresh" (nth 6 stored-auth)
+          "cp_auth_eq" (nth 0 config-paths)
+          "cp_cfg_eq" (nth 1 config-paths)
+          "cp_same_p" (nth 2 config-paths)
+          "cp_auth_leaf" (nth 3 config-paths)
+          "cp_cfg_leaf" (nth 4 config-paths))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -2959,7 +3009,13 @@
                   (lambda ()
                     (lambda ()
                       (run-settings-load-stored-auth-secrets
-                       missing-path fixture-path oauth-path bad-path)))))))))
+                       missing-path fixture-path oauth-path bad-path))))
+         "config_paths"
+         (collect "settings_load.config_paths"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-config-paths
+                       config-paths-agent))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -13341,6 +13397,8 @@
       "src/cadr-cli/bootstrap/settings.lisp http-idle-timeout-label"
       "settings_load.stored_auth_secrets"
       "src/cadr-cli/config.lisp stored-auth-secrets"
+      "settings_load.config_paths"
+      "src/cadr-cli/config.lisp default-config-path + default-auth-path"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "package_manager.resolve"
