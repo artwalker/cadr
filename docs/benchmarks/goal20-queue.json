@@ -51,8 +51,8 @@
    "status": "done",
    "source": "src/cadr-cli/resource-loader/",
    "measure": "measure-resource-loader",
-   "metric": "resource_loader.dedupe_by_name",
-   "branch": "pair-255-"
+   "metric": "session_compact.branch_summarize",
+   "branch": "pair-255-branch-summarization"
   },
   {
    "pair": 256,
@@ -127,5 +127,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-255-branch-summarization",
+   "pair": 255
+  }
+ ]
 }
