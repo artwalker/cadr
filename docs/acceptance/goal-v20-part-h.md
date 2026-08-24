@@ -3458,19 +3458,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **295 files / 127,515 lines**
+Denominator: **295 files / 127,795 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 167 | 74,349 | 58.3% | `no worse than baseline` is falsifiable |
-| `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
-| `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 76 | 28,271 | 22.2% | must get an H pair; not a file-level idle bench |
+| `paired` | 169 | 75,006 | 58.7% | `no worse than baseline` is falsifiable |
+| `unpairable` | 24 | 7,475 | 5.8% | single reference vs previous cadr |
+| `covered-as-callee` | 28 | 17,424 | 13.6% | on a named paired thunk; no own bench |
+| `needs-pair` | 74 | 27,890 | 21.8% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 58.3% of lines (167 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 64.2% of lines.
+- **Falsifiable vs baseline:** 58.7% of lines (169 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 64.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3504,7 +3504,7 @@ production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact`, `agent_tool_loop.tool_result_digest` |
+| `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
@@ -3516,7 +3516,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe` |
 | `src/cadr-agent/session/export-html.lisp` | 455 | `session_export_html.to_html` |
-| `src/cadr-agent/session/journal.lisp` | 679 | `session_pipeline.context_walk`, `storage_journal.journal_append`, `storage_journal.journal_entry_count` |
+| `src/cadr-agent/session/journal.lisp` | 683 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,434 | `session_pipeline.session_load`, `storage_journal.journal_read` |
 | `src/cadr-agent/sqlite-storage.lisp` | 839 | `sqlite_session.open_walk` |
 | `src/cadr-agent/storage/harness.lisp` | 476 | `harness_storage.open_walk` |
@@ -3525,7 +3525,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/storage/protocol.lisp` | 142 | `harness_storage.open_walk` |
 | `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail`, `text_truncation.truncate_middle` |
+| `src/cadr-agent/truncate.lisp` | 806 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
 | `src/cadr-ai/auth.lisp` | 207 | `oauth_pkce_device.auth_json` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/device-code.lisp` | 239 | `oauth_pkce_device.poll` |
@@ -3550,7 +3550,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/azure-openai.lisp` | 223 | `provider_azure_openai.stream_roundtrip` |
 | `src/cadr-ai/providers/bedrock.lisp` | 934 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/codex.lisp` | 35 | `provider_codex.stream_roundtrip` |
-| `src/cadr-ai/providers/definitions.lisp` | 1,040 | `provider_registry_defs.lookup`, `provider_registry_defs.definition_ids` |
+| `src/cadr-ai/providers/definitions.lisp` | 1,057 | `provider_registry_defs.lookup` |
 | `src/cadr-ai/providers/google.lisp` | 442 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | `provider_mistral.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
@@ -3568,9 +3568,11 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/transport/http.lisp` | 858 | `http_transport.parse_url` |
 | `src/cadr-ai/websocket.lisp` | 628 | `websocket_stream.stream_roundtrip` |
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
+| `src/cadr-cli/bootstrap/auth.lisp` | 172 | `cli_bootstrap_sessions.bootstrap_auth` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
 | `src/cadr-cli/bootstrap/settings.lisp` | 828 | `settings_load.http_idle` |
 | `src/cadr-cli/bootstrap/tools.lisp` | 89 | `cli_bootstrap_sessions.coding_tools` |
+| `src/cadr-cli/extensions/discovery.lisp` | 212 | `cli_extensions_install.extension_discovery` |
 | `src/cadr-cli/extensions/llama/client.lisp` | 472 | `cli_extensions_install.llama_url` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 315 | `cli_extensions_install.llama_catalog` |
@@ -3600,7 +3602,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | `cli_print_rpc.session_stats` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
-| `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve`, `package_manager.manifest_parse` |
+| `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |
@@ -3678,11 +3680,11 @@ On a named paired thunk. No own bench (G.12).
 
 | file | lines | parent metrics |
 |---|---:|---|
-| `src/cadr-agent/package.lisp` | 456 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
+| `src/cadr-agent/package.lisp` | 458 | `session_pipeline.session_load`, `session_pipeline.context_walk`, `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-ai/conditions.lisp` | 44 | `provider_stream.stream_roundtrip`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.generated.lisp` | 8,711 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/models.lisp` | 288 | `cli_dispatch.list_models_registry` |
-| `src/cadr-ai/package.lisp` | 480 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
+| `src/cadr-ai/package.lisp` | 482 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/runtime/models.lisp` | 809 | `cli_dispatch.list_models_registry` |
 | `src/cadr-ai/support/retry.lisp` | 178 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/types.lisp` | 207 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
@@ -3715,10 +3717,10 @@ Grouped by hole. Do not invent a file-level idle bench.
 | hole | files | lines |
 |---|---:|---:|
 | `cli_interactive_controller` | 6 | 5,424 |
-| `cli_bootstrap_sessions` | 5 | 5,339 |
-| `cli_selectors` | 9 | 3,373 |
+| `cli_bootstrap_sessions` | 4 | 5,167 |
+| `cli_selectors` | 9 | 3,376 |
 | `agent_tool_loop` | 11 | 3,008 |
-| `cli_extensions_install` | 6 | 2,412 |
+| `cli_extensions_install` | 5 | 2,200 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
 | `oauth_pkce_device` | 7 | 1,174 |

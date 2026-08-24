@@ -174,6 +174,28 @@ perf(cadr-cli): <what changed> for <group>.<metric> (goal 20)
 
 ---
 
-## 顾问联络
+## 编排器（自动化开队）
+
+```bash
+# 看队列状态
+scripts/goal20-orchestrator.sh status
+
+# 清 stale worktree
+scripts/goal20-cleanup-worktrees.sh
+
+# 单次总监 merge
+scripts/goal20-orchestrator.sh director-once
+
+# 单次派发（cursor-agent --model auto）
+scripts/goal20-orchestrator.sh dispatch a
+
+# 一键 tmux 四 pane（director + lane-a + lane-b + opt）
+scripts/goal20-team-tmux.sh
+tmux attach -t goal20-team
+```
+
+队列文件：`docs/benchmarks/goal20-queue.json`（pair 号、lane、子系统、merge 队列）。
+
+---
 
 开发实例每完成 pairing commit，顾问 monitor（`scripts/cadr-advisor-monitor.sh`）在 digest 批次审阅。也可主动贴 SHA。
