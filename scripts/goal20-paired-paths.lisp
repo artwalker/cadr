@@ -401,6 +401,7 @@
     ("cli_selectors.oauth_selector_move" . 50)
     ("cli_selectors.api_key_input_state_handle_event" . 50)
     ("cli_selectors.login_method_selector_ui_state" . 50)
+    ("cli_selectors.api_key_input_ui_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8943,6 +8944,57 @@
    (login-method-selector-ui-encoded
     (make-login-method-selector-state-with-selected 1) 28)))
 
+(defun make-api-key-input-ui-state
+    (&key (id :anthropic) (name "Anthropic") (prefill ""))
+  (let ((state
+          (cadr-cli::make-api-key-input-state
+           (make-oauth-option-status-fixture
+            :id id :name name :auth-type :api-key))))
+    (when (plusp (length prefill))
+      (feed-single-line-text
+       (cadr-cli::api-key-input-state-input state)
+       prefill))
+    state))
+
+(defun api-key-input-ui-encoded (state width)
+  (let* ((option (cadr-cli::api-key-input-state-option state))
+         (input (cadr-cli::api-key-input-state-input state))
+         (key-len
+           (length (cadr-tui:single-line-input-value input)))
+         (title
+           (format nil "Login to ~A"
+                   (cadr-cli::oauth-selector-option-name option)))
+         (keybindings (cadr-tui:get-keybindings))
+         (hints
+           (format
+            nil "(~A ~A)"
+            (cadr-cli::selector-keybinding-hint
+             keybindings "tui.select.cancel" "to cancel,")
+            (cadr-cli::selector-keybinding-hint
+             keybindings "tui.select.confirm" "to submit"))))
+    (cadr-cli::render-api-key-input-state state width)
+    (format nil "~a|~a|~a|~a|~a"
+            title
+            width
+            key-len
+            "Enter API key"
+            (cadr-cli::strip-ansi hints))))
+
+(defun run-cli-selectors-api-key-input-ui-state ()
+  (list
+   (api-key-input-ui-encoded (make-api-key-input-ui-state) 40)
+   (api-key-input-ui-encoded
+    (make-api-key-input-ui-state :prefill "sk-test") 40)
+   (api-key-input-ui-encoded
+    (make-api-key-input-ui-state
+     :id :openai :name "OpenAI" :prefill "sk-proj-abc")
+    60)
+   (api-key-input-ui-encoded
+    (make-api-key-input-ui-state :prefill "ab") 20)
+   (api-key-input-ui-encoded
+    (make-api-key-input-ui-state :prefill "sk-ant-oat-xxxxxxxx")
+    48)))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -9122,7 +9174,9 @@
         (api-key-input-state-handle-event
           (run-cli-selectors-api-key-input-state-handle-event))
         (login-method-selector-ui-state
-          (run-cli-selectors-login-method-selector-ui-state)))
+          (run-cli-selectors-login-method-selector-ui-state))
+        (api-key-input-ui-state
+          (run-cli-selectors-api-key-input-ui-state)))
     (json-object
      "observed"
      (json-object
@@ -9713,7 +9767,12 @@
       "lmsui_sel1" (nth 1 login-method-selector-ui-state)
       "lmsui_title" (nth 2 login-method-selector-ui-state)
       "lmsui_narrow" (nth 3 login-method-selector-ui-state)
-      "lmsui_mid" (nth 4 login-method-selector-ui-state))
+      "lmsui_mid" (nth 4 login-method-selector-ui-state)
+      "akiui_empty" (nth 0 api-key-input-ui-state)
+      "akiui_key" (nth 1 api-key-input-ui-state)
+      "akiui_openai" (nth 2 api-key-input-ui-state)
+      "akiui_narrow" (nth 3 api-key-input-ui-state)
+      "akiui_long" (nth 4 api-key-input-ui-state))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10228,7 +10287,12 @@
      (collect "cli_selectors.login_method_selector_ui_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-login-method-selector-ui-state)))))))
+                  (run-cli-selectors-login-method-selector-ui-state))))
+     "api_key_input_ui_state"
+     (collect "cli_selectors.api_key_input_ui_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-api-key-input-ui-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11449,6 +11513,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp api-key-input-state-handle-event"
       "cli_selectors.login_method_selector_ui_state"
       "src/cadr-cli/interactive/selectors/auth.lisp render-login-method-selector"
+      "cli_selectors.api_key_input_ui_state"
+      "src/cadr-cli/interactive/selectors/auth.lisp render-api-key-input-state"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

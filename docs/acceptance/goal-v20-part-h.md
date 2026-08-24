@@ -2869,6 +2869,18 @@ exercised). Observed `lmsui_default` / `lmsui_sel1` / `lmsui_title` /
 **10.07×** (622.6 / 61.8 µs), ceiling 12.0. Gate used `--only-enforce`.
 Same commit no optimize.
 
+### Pair 214 — `cli_selectors` (api_key_input_ui_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `api_key_input_ui_state` | `render-api-key-input-state` | `LoginDialogComponent` showPrompt UI state |
+
+API key overlay UI digest (title/masked length/prompt/hints; render
+exercised). Observed `akiui_empty` / `akiui_key` / `akiui_openai` /
+`akiui_narrow` / `akiui_long` are exact. First Friend-MachineD freeze
+**4.86×** (263.5 / 54.2 µs), ceiling 8.0. Gate used `--only-enforce`.
+Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

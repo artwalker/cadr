@@ -325,6 +325,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_move": 50,
 	"cli_selectors.api_key_input_state_handle_event": 50,
 	"cli_selectors.login_method_selector_ui_state": 50,
+	"cli_selectors.api_key_input_ui_state": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9163,6 +9164,46 @@ function runCliSelectorsLoginMethodSelectorUiState() {
 	};
 }
 
+function makeApiKeyInputUiState({
+	id = "anthropic",
+	name = "Anthropic",
+	prefill = "",
+} = {}) {
+	return {
+		option: { id, name, authType: "api_key" },
+		value: prefill,
+	};
+}
+
+function apiKeyInputUiEncoded(state, width) {
+	const manager = new keybindingsModule.KeybindingsManager(keybindingsModule.TUI_KEYBINDINGS);
+	const title = `Login to ${state.option.name}`;
+	const keyLen = state.value.length;
+	// Exercise LoginDialogComponent showPrompt-style theming + masked length.
+	themeModule.theme.fg("accent", themeModule.theme.bold(title));
+	themeModule.theme.fg("text", "Enter API key");
+	const masked = "*".repeat(keyLen);
+	themeModule.theme.fg("text", `> ${masked}`);
+	const hints = `(${selectorKeybindingHintPi(manager, "tui.select.cancel", "to cancel,")} ${selectorKeybindingHintPi(manager, "tui.select.confirm", "to submit")})`;
+	return `${title}|${width}|${keyLen}|Enter API key|${ansiModule.stripAnsi(hints)}`;
+}
+
+function runCliSelectorsApiKeyInputUiState() {
+	return {
+		akiui_empty: apiKeyInputUiEncoded(makeApiKeyInputUiState(), 40),
+		akiui_key: apiKeyInputUiEncoded(makeApiKeyInputUiState({ prefill: "sk-test" }), 40),
+		akiui_openai: apiKeyInputUiEncoded(
+			makeApiKeyInputUiState({ id: "openai", name: "OpenAI", prefill: "sk-proj-abc" }),
+			60,
+		),
+		akiui_narrow: apiKeyInputUiEncoded(makeApiKeyInputUiState({ prefill: "ab" }), 20),
+		akiui_long: apiKeyInputUiEncoded(
+			makeApiKeyInputUiState({ prefill: "sk-ant-oat-xxxxxxxx" }),
+			48,
+		),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9585,6 +9626,7 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsApiKeyInputStateHandleEvent();
 	const loginMethodSelectorUiStateResults =
 		runCliSelectorsLoginMethodSelectorUiState();
+	const apiKeyInputUiStateResults = runCliSelectorsApiKeyInputUiState();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9863,6 +9905,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthSelectorMoveResults,
 		...apiKeyInputStateHandleEventResults,
 		...loginMethodSelectorUiStateResults,
+		...apiKeyInputUiStateResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10192,6 +10235,9 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsLoginMethodSelectorUiState();
 			},
 		),
+		api_key_input_ui_state: await collect("cli_selectors.api_key_input_ui_state", () => {
+			return () => runCliSelectorsApiKeyInputUiState();
+		}),
 		observed,
 	};
 }
@@ -11449,6 +11495,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts handleInput api key prompt dispatch",
 			"cli_selectors.login_method_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent UI state",
+			"cli_selectors.api_key_input_ui_state":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key UI state",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

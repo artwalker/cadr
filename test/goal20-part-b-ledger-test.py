@@ -1498,6 +1498,9 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn(
             "cli_selectors.login_method_selector_ui_state", paired.RATIO_CEILINGS
         )
+        self.assertIn("cli_selectors.api_key_input_ui_state", RECORD.METRIC_KEYS)
+        self.assertIn("api_key_input_ui_state", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.api_key_input_ui_state", paired.RATIO_CEILINGS)
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])
