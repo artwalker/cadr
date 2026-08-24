@@ -337,6 +337,7 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_selected_model": 50,
 	"cli_selectors.model_selector_toggle_scope": 50,
 	"cli_selectors.model_selector_ui_state": 50,
+	"cli_selectors.scoped_models_selector_set_query": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9658,6 +9659,105 @@ function runCliSelectorsModelSelectorUiState() {
 	};
 }
 
+function scopedModelsFullId(item) {
+	return `${item.provider}/${item.id}`;
+}
+
+function scopedModelsGetSortedIds(enabledIds, allIds) {
+	if (enabledIds === null) {
+		return allIds;
+	}
+	const enabledSet = new Set(enabledIds);
+	return [...enabledIds, ...allIds.filter((id) => !enabledSet.has(id))];
+}
+
+function scopedModelsBuildItems(allModels, enabledIds) {
+	const allIds = allModels.map(scopedModelsFullId);
+	return scopedModelsGetSortedIds(enabledIds, allIds).map((fullId) => {
+		const item = allModels.find((candidate) => scopedModelsFullId(candidate) === fullId);
+		return {
+			fullId,
+			model: item?.model,
+			enabled: enabledIds === null || enabledIds.includes(fullId),
+		};
+	});
+}
+
+function scopedModelItemSearchText(item) {
+	if (!item.model) {
+		return item.fullId;
+	}
+	return modelSearchModule.getModelSearchText({
+		id: item.model.id,
+		provider: item.model.provider,
+		name: item.model.name,
+	});
+}
+
+function scopedModelsFilterItems(allModels, enabledIds, query) {
+	const items = scopedModelsBuildItems(allModels, enabledIds);
+	return query
+		? fuzzyModule.fuzzyFilter(items, query, scopedModelItemSearchText)
+		: items;
+}
+
+function scopedModelsSelectorSetQueryEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	initialQuery,
+	newQuery,
+) {
+	let selectedIndex = selected;
+	let filteredItems = scopedModelsFilterItems(allModels, enabledIds, initialQuery);
+	selectedIndex = Math.min(selectedIndex, Math.max(0, filteredItems.length - 1));
+	filteredItems = scopedModelsFilterItems(allModels, enabledIds, newQuery);
+	selectedIndex = Math.min(selectedIndex, Math.max(0, filteredItems.length - 1));
+	return `${filteredItems.length}|${selectedIndex}`;
+}
+
+function runCliSelectorsScopedModelsSelectorSetQuery() {
+	const models = makeModelSelectorTestModels();
+	const enabledIds = null;
+	return {
+		smssq_clear: scopedModelsSelectorSetQueryEncoded(
+			models,
+			enabledIds,
+			2,
+			"",
+			"",
+		),
+		smssq_gpt: scopedModelsSelectorSetQueryEncoded(
+			models,
+			enabledIds,
+			2,
+			"",
+			"gpt",
+		),
+		smssq_same: scopedModelsSelectorSetQueryEncoded(
+			models,
+			enabledIds,
+			0,
+			"gpt",
+			"gpt",
+		),
+		smssq_reset: scopedModelsSelectorSetQueryEncoded(
+			models,
+			enabledIds,
+			0,
+			"gpt",
+			"",
+		),
+		smssq_miss: scopedModelsSelectorSetQueryEncoded(
+			models,
+			enabledIds,
+			1,
+			"anth",
+			"nope",
+		),
+	};
+}
+
 function modelSelectorApplyFilterEncoded(models, query) {
 	const selectedIndex = 2;
 	const filteredModels = query
@@ -10368,6 +10468,8 @@ async function measureCliSelectorsSessionSearch() {
 	const modelSelectorToggleScopeResults =
 		runCliSelectorsModelSelectorToggleScope();
 	const modelSelectorUiStateResults = runCliSelectorsModelSelectorUiState();
+	const scopedModelsSelectorSetQueryResults =
+		runCliSelectorsScopedModelsSelectorSetQuery();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10658,6 +10760,7 @@ async function measureCliSelectorsSessionSearch() {
 		...modelSelectorSelectedModelResults,
 		...modelSelectorToggleScopeResults,
 		...modelSelectorUiStateResults,
+		...scopedModelsSelectorSetQueryResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11029,6 +11132,12 @@ async function measureCliSelectorsSessionSearch() {
 		model_selector_ui_state: await collect("cli_selectors.model_selector_ui_state", () => {
 			return () => runCliSelectorsModelSelectorUiState();
 		}),
+		scoped_models_selector_set_query: await collect(
+			"cli_selectors.scoped_models_selector_set_query",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorSetQuery();
+			},
+		),
 		observed,
 	};
 }
@@ -12310,6 +12419,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput tab scope toggle",
 			"cli_selectors.model_selector_ui_state":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts updateList/render",
+			"cli_selectors.scoped_models_selector_set_query":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts refresh query clamp",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

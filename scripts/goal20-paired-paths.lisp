@@ -413,6 +413,7 @@
     ("cli_selectors.model_selector_selected_model" . 50)
     ("cli_selectors.model_selector_toggle_scope" . 50)
     ("cli_selectors.model_selector_ui_state" . 50)
+    ("cli_selectors.scoped_models_selector_set_query" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9494,6 +9495,33 @@
        :refresh-status-message "Refreshing model catalogs…")
       40))))
 
+(defun make-scoped-models-test-models ()
+  (make-model-selector-test-models))
+
+(defun scoped-models-selector-set-query-encoded
+    (models enabled-ids selected initial-query new-query)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids)))
+    (setf (cadr-cli::scoped-models-selector-state-selected state) selected)
+    (setf (cadr-cli::scoped-models-selector-state-query state) initial-query)
+    (cadr-cli::scoped-models-selector-clamp-selected state)
+    (cadr-cli::scoped-models-selector-set-query state new-query)
+    (format nil "~D|~D"
+            (length
+             (cadr-cli::scoped-models-selector-visible-items state))
+            (cadr-cli::scoped-models-selector-state-selected state))))
+
+(defun run-cli-selectors-scoped-models-selector-set-query ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (scoped-models-selector-set-query-encoded models :all 2 "" "")
+     (scoped-models-selector-set-query-encoded models :all 2 "" "gpt")
+     (scoped-models-selector-set-query-encoded models :all 0 "gpt" "gpt")
+     (scoped-models-selector-set-query-encoded models :all 0 "gpt" "")
+     (scoped-models-selector-set-query-encoded models :all 1 "anth" "nope"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9722,7 +9750,9 @@
         (model-selector-toggle-scope
           (run-cli-selectors-model-selector-toggle-scope))
         (model-selector-ui-state
-          (run-cli-selectors-model-selector-ui-state)))
+          (run-cli-selectors-model-selector-ui-state))
+        (scoped-models-selector-set-query
+          (run-cli-selectors-scoped-models-selector-set-query)))
     (json-object
      "observed"
      (json-object
@@ -10380,7 +10410,12 @@
       "msui_filter" (nth 3 model-selector-ui-state)
       "msui_miss" (nth 4 model-selector-ui-state)
       "msui_error" (nth 5 model-selector-ui-state)
-      "msui_refresh" (nth 6 model-selector-ui-state))
+      "msui_refresh" (nth 6 model-selector-ui-state)
+      "smssq_clear" (nth 0 scoped-models-selector-set-query)
+      "smssq_gpt" (nth 1 scoped-models-selector-set-query)
+      "smssq_same" (nth 2 scoped-models-selector-set-query)
+      "smssq_reset" (nth 3 scoped-models-selector-set-query)
+      "smssq_miss" (nth 4 scoped-models-selector-set-query))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10955,7 +10990,12 @@
      (collect "cli_selectors.model_selector_ui_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-model-selector-ui-state)))))))
+                  (run-cli-selectors-model-selector-ui-state))))
+     "scoped_models_selector_set_query"
+     (collect "cli_selectors.scoped_models_selector_set_query"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-set-query)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12200,6 +12240,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-toggle-scope"
       "cli_selectors.model_selector_ui_state"
       "src/cadr-cli/interactive/selectors/models.lisp render-model-selector"
+      "cli_selectors.scoped_models_selector_set_query"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-set-query"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
