@@ -10190,7 +10190,9 @@
         (scoped-models-selector-toggle-selected
           (run-cli-selectors-scoped-models-selector-toggle-selected))
         (scoped-models-selector-target-ids
-          (run-cli-selectors-scoped-models-selector-target-ids)))
+          (run-cli-selectors-scoped-models-selector-target-ids))
+        (scoped-models-selector-enable-all
+          (run-cli-selectors-scoped-models-selector-enable-all)))
     (json-object
      "observed"
      (json-object
@@ -10899,7 +10901,13 @@
       "smsti_gpt" (nth 1 scoped-models-selector-target-ids)
       "smsti_nope" (nth 2 scoped-models-selector-target-ids)
       "smsti_claude" (nth 3 scoped-models-selector-target-ids)
-      "smsti_partial" (nth 4 scoped-models-selector-target-ids))
+      "smsti_partial" (nth 4 scoped-models-selector-target-ids)
+      "smsea_all" (nth 0 scoped-models-selector-enable-all)
+      "smsea_partial" (nth 1 scoped-models-selector-enable-all)
+      "smsea_empty" (nth 2 scoped-models-selector-enable-all)
+      "smsea_two" (nth 3 scoped-models-selector-enable-all)
+      "smsea_filter" (nth 4 scoped-models-selector-enable-all)
+      "smsea_miss" (nth 5 scoped-models-selector-enable-all))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11517,7 +11525,12 @@
      (collect "cli_selectors.scoped_models_selector_target_ids"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-target-ids)))))))
+                  (run-cli-selectors-scoped-models-selector-target-ids))))
+     "scoped_models_selector_enable_all"
+     (collect "cli_selectors.scoped_models_selector_enable_all"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-enable-all)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12780,6 +12793,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-toggle-selected"
       "cli_selectors.scoped_models_selector_target_ids"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-target-ids"
+      "cli_selectors.scoped_models_selector_enable_all"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-enable-all"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
