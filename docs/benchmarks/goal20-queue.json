@@ -111,10 +111,6 @@
  ],
  "mergeQueue": [
   {
-   "branch": "pair-255-",
-   "pair": 255
-  },
-  {
    "branch": "pair-253-config-paths",
    "pair": 253
   }
