@@ -84,7 +84,7 @@
   {
    "pair": 255,
    "lane": "a",
-   "status": "in_progress",
+   "status": "pending",
    "source": "src/cadr-agent/branch-summarization.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
