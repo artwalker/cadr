@@ -139,6 +139,7 @@
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
+;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;; 107. cli_interactive_controller tui-auth-type-label vs formatAuthSelectorProviderType
@@ -224,6 +225,7 @@
     ("settings_load.http_idle" . 50)
     ("resource_loader.reload" . 3)
     ("package_manager.resolve" . 5)
+    ("package_manager.manifest_parse" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_export_html.to_html" . 3)
     ("protocol_cbor.roundtrip" . 50)
@@ -3004,6 +3006,24 @@
     (merge-pathnames "packages/" agent)
     (merge-pathnames "packages/" project-config))))
 
+(defun package-manifest-field-count (manifest manifest-p field)
+  (if manifest-p
+      (length (or (getf manifest field) '()))
+      0))
+
+(defun run-package-manager-manifest-parse (agent)
+  ;; Time read-package-pi-manifest only, not configured-package-records
+  ;; or package-resource-paths.
+  (multiple-value-bind (manifest manifest-p)
+      (cadr-cli::read-package-pi-manifest
+       (merge-pathnames "pkg/" agent))
+    (list
+     (if manifest-p 1 0)
+     (package-manifest-field-count manifest manifest-p :extensions)
+     (package-manifest-field-count manifest manifest-p :skills)
+     (package-manifest-field-count manifest manifest-p :prompts)
+     (package-manifest-field-count manifest manifest-p :themes))))
+
 (defun measure-package-manager ()
   (multiple-value-bind (cwd agent project-config)
       (stage-package-layout)
@@ -3021,7 +3041,8 @@
               :global-base agent
               :project-base project-config))
            (paths
-             (run-package-manager manager agent project-config)))
+             (run-package-manager manager agent project-config))
+           (manifest-parse (run-package-manager-manifest-parse agent)))
       (json-object
        "observed"
        (json-object
@@ -3029,13 +3050,23 @@
         "skill_count" (length (getf paths :skills))
         "prompt_count" (length (getf paths :prompts))
         "theme_count" (length (getf paths :themes))
-        "extension_count" (length (getf paths :extensions)))
+        "extension_count" (length (getf paths :extensions))
+        "manifest_p" (nth 0 manifest-parse)
+        "manifest_extensions" (nth 1 manifest-parse)
+        "manifest_skills" (nth 2 manifest-parse)
+        "manifest_prompts" (nth 3 manifest-parse)
+        "manifest_themes" (nth 4 manifest-parse))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
                   (lambda ()
                     (run-package-manager
-                     manager agent project-config))))))))
+                     manager agent project-config))))
+       "manifest_parse"
+       (collect "package_manager.manifest_parse"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-manifest-parse agent))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -12897,6 +12928,8 @@
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "package_manager.resolve"
       "src/cadr-cli/packages/manifest.lisp package-resource-paths"
+      "package_manager.manifest_parse"
+      "src/cadr-cli/packages/manifest.lisp read-package-pi-manifest"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_export_html.to_html"

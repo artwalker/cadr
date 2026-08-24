@@ -101,7 +101,7 @@ METRICS = {
     "cli_settings": ("create",),
     "settings_load": ("project_trust", "config_value", "http_idle"),
     "resource_loader": ("reload",),
-    "package_manager": ("resolve",),
+    "package_manager": ("resolve", "manifest_parse"),
     "session_discovery": ("header_probe",),
     "session_export_html": ("to_html",),
     "protocol_cbor": ("roundtrip",),
@@ -262,6 +262,9 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent.
     # Ratchet down only.
     "package_manager.resolve": 1.5,
+    # package_manager.manifest_parse pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "package_manager.manifest_parse": 8.0,
     # Frozen from the first Friend-MachineD non-quick session_discovery
     # pair (samples=5): observed 2.05x (1450 / 709 us). 8.0 follows
     # the journal_read / tool_read headroom precedent. Ratchet down only.
@@ -1355,6 +1358,11 @@ OBSERVED_EXACT = {
         "prompt_count",
         "theme_count",
         "extension_count",
+        "manifest_p",
+        "manifest_extensions",
+        "manifest_skills",
+        "manifest_prompts",
+        "manifest_themes",
     ),
     "session_discovery": (
         "file_count",

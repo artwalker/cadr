@@ -339,11 +339,19 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_package_manager_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("package_manager.resolve", RECORD.METRIC_KEYS)
+        self.assertIn("package_manager.manifest_parse", RECORD.METRIC_KEYS)
         self.assertIn("resolve", paired.METRICS["package_manager"])
+        self.assertIn("manifest_parse", paired.METRICS["package_manager"])
         self.assertIn("package_manager.resolve", paired.RATIO_CEILINGS)
+        self.assertIn("package_manager.manifest_parse", paired.RATIO_CEILINGS)
         self.assertIn("package_count", paired.OBSERVED_EXACT["package_manager"])
         self.assertIn("skill_count", paired.OBSERVED_EXACT["package_manager"])
         self.assertIn("extension_count", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("manifest_p", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("manifest_extensions", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("manifest_skills", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("manifest_prompts", paired.OBSERVED_EXACT["package_manager"])
+        self.assertIn("manifest_themes", paired.OBSERVED_EXACT["package_manager"])
 
     def test_session_discovery_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

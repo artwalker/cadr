@@ -315,6 +315,7 @@ Ceiling 1.5 not lowered.
 | metric | cadr | pi |
 |---|---|---|
 | `resolve` | `configured-package-records` + `materialize-package-records` + `package-resource-paths` | `DefaultPackageManager.resolve` (`packages/coding-agent/src/core/package-manager.ts`) |
+| `manifest_parse` | `read-package-pi-manifest` (`src/cadr-cli/packages/manifest.lisp`) | `readPiManifest` (`packages/coding-agent/src/core/pi-manifest.ts`) |
 
 Fixture local package path (`./pkg` in agent settings) + `package.json`
 `pi` manifest listing one skill, prompt, theme, and extension file.
@@ -3053,6 +3054,20 @@ In-memory entry count on the written append journal (128 messages). Observed
 (0.22 / 2.4 µs), ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same
 commit no optimize.
 
+### Pair 252 — `package_manager` (manifest_parse)
+
+| metric | cadr | pi |
+|---|---|---|
+| `manifest_parse` | `read-package-pi-manifest` | `readPiManifest` (`packages/coding-agent/src/core/pi-manifest.ts`) |
+
+Leftover sibling of the `package_manager` hole. Time `package.json` `pi`
+manifest read only, not `configured-package-records` or
+`package-resource-paths`. Same local package fixture as `resolve`.
+Observed `manifest_p` / `manifest_extensions` / `manifest_skills` /
+`manifest_prompts` / `manifest_themes` are exact. First Friend-MachineD
+freeze **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
 | metric | cadr | pi |
@@ -3547,7 +3562,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | `cli_print_rpc.session_stats` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
-| `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
+| `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve`, `package_manager.manifest_parse` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve` |
 | `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload` |

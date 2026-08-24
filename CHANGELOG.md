@@ -21,6 +21,9 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `package_manager.manifest_parse` (package.json `pi`
+  manifest read; cadr `read-package-pi-manifest` vs pi `readPiManifest`).
+  Friend-MachineD n=5 **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Measure-only.
 - Goal 20 P.13: pair `agent_tool_loop.tool_result_digest` (tool-result
   summary truncation; cadr `truncate-summary-tool-result` vs pi
   `truncateForSummary`). Friend-MachineD n=5 **107.57×** (289.4 / 2.7 µs),

@@ -40,6 +40,7 @@ METRIC_KEYS = (
     "settings_load.http_idle",
     "resource_loader.reload",
     "package_manager.resolve",
+    "package_manager.manifest_parse",
     "session_discovery.header_probe",
     "session_export_html.to_html",
     "protocol_cbor.roundtrip",

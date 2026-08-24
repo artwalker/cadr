@@ -144,6 +144,7 @@ const REPETITIONS = {
 	"settings_load.http_idle": 50,
 	"resource_loader.reload": 3,
 	"package_manager.resolve": 5,
+	"package_manager.manifest_parse": 50,
 	"session_discovery.header_probe": 20,
 	"session_export_html.to_html": 3,
 	"protocol_cbor.roundtrip": 50,
@@ -640,6 +641,7 @@ const trustManagerModule = await import(
 );
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
 const packageManagerModule = await import(moduleUrl("packages/coding-agent/src/core/package-manager.ts"));
+const piManifestModule = await import(moduleUrl("packages/coding-agent/src/core/pi-manifest.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
@@ -1847,14 +1849,29 @@ function makePackageManager() {
 	});
 }
 
+function runPackageManagerManifestParse() {
+	const manifest = piManifestModule.readPiManifest(path.join(packageRoot, "package.json"));
+	return {
+		manifest_p: manifest ? 1 : 0,
+		manifest_extensions: manifest?.extensions?.length ?? 0,
+		manifest_skills: manifest?.skills?.length ?? 0,
+		manifest_prompts: manifest?.prompts?.length ?? 0,
+		manifest_themes: manifest?.themes?.length ?? 0,
+	};
+}
+
 async function measurePackageManager() {
 	const manager = makePackageManager();
 	const resolved = await manager.resolve();
 	const fromPackage = (entries) =>
 		entries.filter((entry) => entry.enabled && entry.metadata?.origin === "package").length;
+	const manifestParse = runPackageManagerManifestParse();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
+		}),
+		manifest_parse: await collect("package_manager.manifest_parse", () => {
+			return () => runPackageManagerManifestParse();
 		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
@@ -1862,6 +1879,7 @@ async function measurePackageManager() {
 			prompt_count: fromPackage(resolved.prompts),
 			theme_count: fromPackage(resolved.themes),
 			extension_count: fromPackage(resolved.extensions),
+			...manifestParse,
 		},
 	};
 }
@@ -13474,6 +13492,8 @@ const result = {
 				"packages/coding-agent/src/core/http-dispatcher.ts formatHttpIdleTimeoutMs",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
+			"package_manager.manifest_parse":
+				"packages/coding-agent/src/core/pi-manifest.ts readPiManifest",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_export_html.to_html":
