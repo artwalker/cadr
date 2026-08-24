@@ -179,6 +179,7 @@ const REPETITIONS = {
 	"cli_print_rpc.clamp_thinking": 50,
 	"cli_print_rpc.session_stats": 20,
 	"tui_latex.render": 20,
+	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
 	"tui_mermaid.source_box": 20,
 	"tui_mermaid.transform": 20,
@@ -3714,13 +3715,64 @@ function runTuiLatex() {
 	};
 }
 
+const LATEX_OPERATOR_START = "\u{f004}";
+const LATEX_OPERATOR_END = "\u{f005}";
+const LATEX_LAYOUT_MARKER_START = "\u{f0000}";
+const LATEX_LAYOUT_MARKER_END = "\u{f0001}";
+const LATEX_NAMED_OPERATOR_LEFT_SPACING_PATTERN = new RegExp(
+	`(?<=[\\p{L}\\p{N})\\]}${LATEX_LAYOUT_MARKER_END}])${LATEX_OPERATOR_START}`,
+	"gu",
+);
+const LATEX_NAMED_OPERATOR_RIGHT_SPACING_PATTERN = new RegExp(
+	`${LATEX_OPERATOR_END}(?=[\\p{L}\\p{N}√${LATEX_LAYOUT_MARKER_START}])`,
+	"gu",
+);
+
+function latexNormalizeOutputPi(value) {
+	return value
+		.replace(LATEX_NAMED_OPERATOR_LEFT_SPACING_PATTERN, " ")
+		.replaceAll(LATEX_OPERATOR_START, "")
+		.replace(LATEX_NAMED_OPERATOR_RIGHT_SPACING_PATTERN, " ")
+		.replaceAll(LATEX_OPERATOR_END, "")
+		.split("\n")
+		.map((line) => line.replace(/[ \t]+/g, " ").trim())
+		.filter(
+			(line, index, lines) =>
+				line.length > 0 || (index > 0 && index < lines.length - 1),
+		)
+		.join("\n")
+		.trim();
+}
+
+function runTuiLatexNormalizeOutput() {
+	return {
+		empty: latexNormalizeOutputPi(""),
+		alpha: latexNormalizeOutputPi("α"),
+		frac: latexNormalizeOutputPi("1/2"),
+		script: latexNormalizeOutputPi("x²"),
+		operator: latexNormalizeOutputPi(
+			`${LATEX_OPERATOR_START}sin${LATEX_OPERATOR_END}`,
+		),
+		marker_edge: latexNormalizeOutputPi(
+			`x${LATEX_OPERATOR_START}${LATEX_OPERATOR_END}`,
+		),
+	};
+}
+
 async function measureTuiLatex() {
-	const observed = runTuiLatex();
+	const renderObserved = runTuiLatex();
+	const normalizeObserved = runTuiLatexNormalizeOutput();
 	return {
 		render: await collect("tui_latex.render", () => {
 			return () => runTuiLatex();
 		}),
-		observed,
+		normalize_output: await collect("tui_latex.normalize_output", () => {
+			return () => runTuiLatexNormalizeOutput();
+		}),
+		observed: {
+			...renderObserved,
+			...normalizeObserved,
+		},
 	};
 }
 
@@ -13112,6 +13164,8 @@ const result = {
 			"cli_print_rpc.session_stats":
 				"packages/coding-agent/src/core/agent-session.ts AgentSession.getSessionStats",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
+			"tui_latex.normalize_output":
+				"packages/tui/src/latex.ts normalizeOutput",
 			"tui_mermaid.render": "grok-mermaid render (dist/index.js)",
 			"tui_mermaid.source_box": "grok-mermaid sourceBox (dist/source-box.js)",
 			"tui_mermaid.transform":

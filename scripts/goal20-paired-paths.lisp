@@ -255,6 +255,7 @@
     ("cli_print_rpc.clamp_thinking" . 50)
     ("cli_print_rpc.session_stats" . 20)
     ("tui_latex.render" . 20)
+    ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
     ("tui_mermaid.source_box" . 20)
     ("tui_mermaid.transform" . 20)
@@ -4596,21 +4597,45 @@
    (count #\Newline (latex-text "\\frac{1}{2}" t))
    (if (string= (latex-text "\\unknowncmd{x}" nil) "") 1 0)))
 
+(defun run-tui-latex-normalize-output ()
+  (list
+   (cadr-tui::latex-normalize-output "")
+   (cadr-tui::latex-normalize-output "α")
+   (cadr-tui::latex-normalize-output "1/2")
+   (cadr-tui::latex-normalize-output "x²")
+   (cadr-tui::latex-normalize-output
+    (format nil "~A~A~A"
+            (code-char #xf004) "sin" (code-char #xf005)))
+   (cadr-tui::latex-normalize-output
+    (format nil "x~A~A" (code-char #xf004) (code-char #xf005)))))
+
 (defun measure-tui-latex ()
-  (let ((observed (run-tui-latex)))
+  (let ((render-obs (run-tui-latex))
+        (norm-obs (run-tui-latex-normalize-output)))
     (json-object
      "observed"
      (json-object
-      "e_mc2" (first observed)
-      "frac_inline" (second observed)
-      "greek" (third observed)
-      "frac_display_newlines" (fourth observed)
-      "unknown_miss" (fifth observed))
+      "e_mc2" (first render-obs)
+      "frac_inline" (second render-obs)
+      "greek" (third render-obs)
+      "frac_display_newlines" (fourth render-obs)
+      "unknown_miss" (fifth render-obs)
+      "empty" (first norm-obs)
+      "alpha" (second norm-obs)
+      "frac" (third norm-obs)
+      "script" (fourth norm-obs)
+      "operator" (fifth norm-obs)
+      "marker_edge" (sixth norm-obs))
      "render"
      (collect "tui_latex.render"
               (lambda ()
                 (lambda ()
-                  (run-tui-latex)))))))
+                  (run-tui-latex))))
+     "normalize_output"
+     (collect "tui_latex.normalize_output"
+              (lambda ()
+                (lambda ()
+                  (run-tui-latex-normalize-output)))))))
 
 (defun fuzzy-hit (query text)
   (multiple-value-bind (matched-p score)
@@ -12702,6 +12727,8 @@
       "src/cadr-cli/modes/rpc/sessions.lisp rpc-session-stats"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
+      "tui_latex.normalize_output"
+      "src/cadr-tui/latex.lisp latex-normalize-output"
       "tui_mermaid.render"
       "src/cadr-tui/mermaid/index.lisp gm-render"
       "tui_mermaid.source_box"

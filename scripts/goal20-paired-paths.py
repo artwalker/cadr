@@ -125,7 +125,7 @@ METRICS = {
     "cli_models_rest": ("pattern_match", "auth_command"),
     "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats"),
-    "tui_latex": ("render",),
+    "tui_latex": ("render", "normalize_output"),
     "tui_mermaid": ("render", "source_box", "transform"),
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
@@ -432,6 +432,11 @@ RATIO_CEILINGS = {
     # (samples=5): observed 2.49x (64.4 / 25.8 us). 3.0 follows the
     # argv_parse / tool_grep headroom precedent. Ratchet down only.
     "tui_latex.render": 3.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_latex.normalize_output pair (samples=5): observed
+    # 1.46x (12.66 / 8.68 us). 20.0 is first-freeze headroom.
+    # Ratchet down only.
+    "tui_latex.normalize_output": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # tui_mermaid.render pair (samples=5): observed
     # 0.30x (75.31 / 255.24 us). cadr leads. 8.0 is
@@ -1516,6 +1521,12 @@ OBSERVED_EXACT = {
         "greek",
         "frac_display_newlines",
         "unknown_miss",
+        "empty",
+        "alpha",
+        "frac",
+        "script",
+        "operator",
+        "marker_edge",
     ),
     "tui_mermaid": (
         "mm_lr_w",

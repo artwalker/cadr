@@ -2987,6 +2987,19 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
+### Pair 243 — `tui_latex` (normalize_output)
+
+| metric | cadr | pi |
+|---|---|---|
+| `normalize_output` | `latex-normalize-output` | `normalizeOutput` (`packages/tui/src/latex.ts`) |
+
+Intermediate LaTeX render strings: empty, Greek symbol, inline
+fraction, superscript, named-operator markers, orphan marker edge.
+Time marker/whitespace cleanup, not full `render-latex`. Observed
+`empty` / `alpha` / `frac` / `script` / `operator` / `marker_edge`
+are exact. First Friend-MachineD freeze **1.46×** (12.7 / 8.7 µs), ceiling
+20.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
 | metric | cadr | pi |
@@ -3533,7 +3546,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/keybindings.lisp` | 268 | `tui_keybindings.resolve_match` |
 | `src/cadr-tui/keys.lisp` | 606 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/kill-ring.lisp` | 38 | `tui_kill_ring.push_peek` |
-| `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render` |
+| `src/cadr-tui/latex.lisp` | 1,950 | `tui_latex.render`, `tui_latex.normalize_output` |
 | `src/cadr-tui/mermaid/index.lisp` | 109 | `tui_mermaid.render` |
 | `src/cadr-tui/mermaid/source-box.lisp` | 93 | `tui_mermaid.source_box` |
 | `src/cadr-tui/mermaid/transform.lisp` | 428 | `tui_mermaid.transform` |

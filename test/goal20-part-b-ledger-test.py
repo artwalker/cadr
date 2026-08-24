@@ -639,11 +639,20 @@ class TestPairedPathRecord(unittest.TestCase):
     def test_tui_latex_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("tui_latex.render", RECORD.METRIC_KEYS)
+        self.assertIn("tui_latex.normalize_output", RECORD.METRIC_KEYS)
         self.assertIn("render", paired.METRICS["tui_latex"])
+        self.assertIn("normalize_output", paired.METRICS["tui_latex"])
         self.assertIn("tui_latex.render", paired.RATIO_CEILINGS)
+        self.assertIn("tui_latex.normalize_output", paired.RATIO_CEILINGS)
         self.assertIn("e_mc2", paired.OBSERVED_EXACT["tui_latex"])
         self.assertIn("frac_inline", paired.OBSERVED_EXACT["tui_latex"])
         self.assertIn("unknown_miss", paired.OBSERVED_EXACT["tui_latex"])
+        self.assertIn("empty", paired.OBSERVED_EXACT["tui_latex"])
+        self.assertIn("alpha", paired.OBSERVED_EXACT["tui_latex"])
+        self.assertIn("frac", paired.OBSERVED_EXACT["tui_latex"])
+        self.assertIn("script", paired.OBSERVED_EXACT["tui_latex"])
+        self.assertIn("operator", paired.OBSERVED_EXACT["tui_latex"])
+        self.assertIn("marker_edge", paired.OBSERVED_EXACT["tui_latex"])
 
     def test_tui_editor_helpers_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -1862,6 +1871,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_print_rpc.jsonl_line`", section)
             self.assertIn("`cli_print_rpc.jsonl_read`", section)
             self.assertIn("`tui_latex.render`", section)
+            self.assertIn("`tui_latex.normalize_output`", section)
             self.assertIn("`tui_editor_helpers.fuzzy_match`", section)
             self.assertIn("`tui_theme_overlay.osc11_bg`", section)
             self.assertIn("`ai_support.estimate_text`", section)

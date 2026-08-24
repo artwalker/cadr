@@ -1049,6 +1049,11 @@ tag/Release step.
   (`gpt-4o` queries; cadr `fuzzy-match` vs pi `fuzzyMatch`).
   Friend-MachineD n=5 **0.45×** (1.8 / 4.0 µs), ceiling 8.0.
   Same commit no optimize. G.17 missing. Not Goal 20 complete.
+- Goal 20 P.13: pair `tui_latex.normalize_output` (marker/whitespace
+  cleanup fixtures; cadr `latex-normalize-output` vs pi
+  `normalizeOutput`). Friend-MachineD n=5 **1.46×** (12.7 / 8.7 µs),
+  ceiling 20.0. Gate used `--only-enforce`. Same commit no
+  optimize. G.17 missing. Not Goal 20 complete.
 - Goal 20 P.13: pair `tui_latex.render` (reference snippets;
   cadr `render-latex` vs pi `renderLatex`). Friend-MachineD
   n=5 **2.49×** (64.4 / 25.8 µs), ceiling 3.0. Same commit

@@ -75,6 +75,7 @@ METRIC_KEYS = (
     "cli_print_rpc.clamp_thinking",
     "cli_print_rpc.session_stats",
     "tui_latex.render",
+    "tui_latex.normalize_output",
     "tui_mermaid.render",
     "tui_mermaid.source_box",
     "tui_mermaid.transform",
