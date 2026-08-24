@@ -2808,6 +2808,19 @@ status. Observed `lgo_empty` / `lgo_mixed` / `lgo_unknown` / `lgo_sorted`
 are exact. First Friend-MachineD freeze **2.71×** (10.4 / 3.8 µs), ceiling
 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
+### Pair 209 — `cli_selectors` (login_method_selector_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_method_selector_handle_event` | `login-method-selector-handle-event` | `ExtensionSelectorComponent` event dispatch |
+
+Login method selector event routing: wrap/cancel on clear/interrupt,
+select-list navigation and selection. Observed `lmhe_down` / `lmhe_up` /
+`lmhe_enter_oauth` / `lmhe_enter_api` / `lmhe_esc` / `lmhe_clear` /
+`lmhe_interrupt` are exact. First Friend-MachineD freeze **0.97×**
+(4.2 / 4.3 µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no
+optimize.
+
 ## 2. How to run
 
 ```bash
