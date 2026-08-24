@@ -11875,6 +11875,12 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsScopedModelsSelectorEnableAll();
 			},
 		),
+		scoped_models_selector_toggle_provider: await collect(
+			"cli_selectors.scoped_models_selector_toggle_provider",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorToggleProvider();
+			},
+		),
 		observed,
 	};
 }

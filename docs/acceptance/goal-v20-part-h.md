@@ -2987,6 +2987,17 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
+### Pair 236 — `cli_selectors` (scoped_models_selector_toggle_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_toggle_provider` | `scoped-models-selector-toggle-provider` | `toggleProvider` |
+
+Scoped models toggle-provider (enabled-ids|dirty|selected digest). Observed
+`smstgp_all_0` / `smstgp_partial_off` / `smstgp_partial_on` / `smstgp_retoggle` /
+`smstgp_filter` / `smstgp_miss` are exact. First Friend-MachineD freeze **4.55×**
+(303.9 / 66.8 µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 235 — `cli_selectors` (scoped_models_selector_enable_all)
 
 | metric | cadr | pi |
@@ -3282,18 +3293,18 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **295 files / 127,393 lines**
+Denominator: **295 files / 127,515 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 167 | 74,349 | 58.4% | `no worse than baseline` is falsifiable |
+| `paired` | 167 | 74,349 | 58.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.9% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,420 | 13.7% | on a named paired thunk; no own bench |
-| `needs-pair` | 76 | 28,149 | 22.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 76 | 28,271 | 22.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 58.4% of lines (167 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 58.3% of lines (167 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 64.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -3540,7 +3551,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 |---|---:|---:|
 | `cli_interactive_controller` | 6 | 5,424 |
 | `cli_bootstrap_sessions` | 5 | 5,339 |
-| `cli_selectors` | 9 | 3,251 |
+| `cli_selectors` | 9 | 3,373 |
 | `agent_tool_loop` | 11 | 3,008 |
 | `cli_extensions_install` | 6 | 2,412 |
 | `package_manager` | 2 | 1,811 |
