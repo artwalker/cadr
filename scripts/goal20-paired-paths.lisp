@@ -421,6 +421,7 @@
     ("cli_selectors.scoped_models_selector_sorted_ids" . 50)
     ("cli_selectors.scoped_models_selector_counts" . 50)
     ("cli_selectors.scoped_models_selector_toggle_selected" . 50)
+    ("cli_selectors.scoped_models_selector_enable_all" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9861,6 +9862,34 @@
      (scoped-models-selector-toggle-selected-encoded
       models :all 0 :query "nope"))))
 
+(defun scoped-models-selector-enable-all-encoded
+    (models enabled-ids &key query)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids)))
+    (setf (cadr-cli::scoped-models-selector-state-query state) (or query ""))
+    (cadr-cli::scoped-models-selector-enable-all state)
+    (format nil "~a|~a"
+            (encode-scoped-models-enabled-ids
+             (cadr-cli::scoped-models-selector-state-enabled-ids state))
+            (if (cadr-cli::scoped-models-selector-state-dirty-p state)
+                "true" "false"))))
+
+(defun run-cli-selectors-scoped-models-selector-enable-all ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (scoped-models-selector-enable-all-encoded models :all)
+     (scoped-models-selector-enable-all-encoded
+      models '("openai/gpt-4o"))
+     (scoped-models-selector-enable-all-encoded models '())
+     (scoped-models-selector-enable-all-encoded
+      models '("openai/gpt-4o" "anthropic/claude-sonnet-4"))
+     (scoped-models-selector-enable-all-encoded
+      models '("openai/gpt-4o") :query "gpt")
+     (scoped-models-selector-enable-all-encoded
+      models '("openai/gpt-4o") :query "nope"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -10105,7 +10134,9 @@
         (scoped-models-selector-counts
           (run-cli-selectors-scoped-models-selector-counts))
         (scoped-models-selector-toggle-selected
-          (run-cli-selectors-scoped-models-selector-toggle-selected)))
+          (run-cli-selectors-scoped-models-selector-toggle-selected))
+        (scoped-models-selector-enable-all
+          (run-cli-selectors-scoped-models-selector-enable-all)))
     (json-object
      "observed"
      (json-object
@@ -10809,7 +10840,13 @@
       "smstg_partial_on" (nth 2 scoped-models-selector-toggle-selected)
       "smstg_retoggle" (nth 3 scoped-models-selector-toggle-selected)
       "smstg_filter" (nth 4 scoped-models-selector-toggle-selected)
-      "smstg_miss" (nth 5 scoped-models-selector-toggle-selected))
+      "smstg_miss" (nth 5 scoped-models-selector-toggle-selected)
+      "smsea_all" (nth 0 scoped-models-selector-enable-all)
+      "smsea_partial" (nth 1 scoped-models-selector-enable-all)
+      "smsea_empty" (nth 2 scoped-models-selector-enable-all)
+      "smsea_two" (nth 3 scoped-models-selector-enable-all)
+      "smsea_filter" (nth 4 scoped-models-selector-enable-all)
+      "smsea_miss" (nth 5 scoped-models-selector-enable-all))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11422,7 +11459,12 @@
      (collect "cli_selectors.scoped_models_selector_toggle_selected"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-toggle-selected)))))))
+                  (run-cli-selectors-scoped-models-selector-toggle-selected))))
+     "scoped_models_selector_enable_all"
+     (collect "cli_selectors.scoped_models_selector_enable_all"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-enable-all)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12683,6 +12725,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-counts"
       "cli_selectors.scoped_models_selector_toggle_selected"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-toggle-selected"
+      "cli_selectors.scoped_models_selector_enable_all"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-enable-all"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

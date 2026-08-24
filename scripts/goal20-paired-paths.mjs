@@ -345,6 +345,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_sorted_ids": 50,
 	"cli_selectors.scoped_models_selector_counts": 50,
 	"cli_selectors.scoped_models_selector_toggle_selected": 50,
+	"cli_selectors.scoped_models_selector_enable_all": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10261,6 +10262,54 @@ function runCliSelectorsScopedModelsSelectorToggleSelected() {
 	};
 }
 
+function scopedModelsEnableIds(enabledIds, allIds, targetIds) {
+	if (enabledIds === null) {
+		return null;
+	}
+	const targets = targetIds ?? allIds;
+	const result = [...enabledIds];
+	for (const id of targets) {
+		if (!result.includes(id)) {
+			result.push(id);
+		}
+	}
+	return result.length === allIds.length && result.every((id) => allIds.includes(id))
+		? null
+		: result;
+}
+
+function scopedModelsSelectorEnableAllEncoded(allModels, enabledIds, query = "") {
+	const allIds = allModels.map(scopedModelsFullId);
+	const targetIds = query
+		? scopedModelsFilterItems(allModels, enabledIds, query).map((item) => item.fullId)
+		: undefined;
+	const nextEnabledIds = scopedModelsEnableIds(enabledIds, allIds, targetIds);
+	return `${encodeScopedModelsEnabledIds(nextEnabledIds)}|true`;
+}
+
+function runCliSelectorsScopedModelsSelectorEnableAll() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsea_all: scopedModelsSelectorEnableAllEncoded(models, null),
+		smsea_partial: scopedModelsSelectorEnableAllEncoded(models, ["openai/gpt-4o"]),
+		smsea_empty: scopedModelsSelectorEnableAllEncoded(models, []),
+		smsea_two: scopedModelsSelectorEnableAllEncoded(models, [
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+		smsea_filter: scopedModelsSelectorEnableAllEncoded(
+			models,
+			["openai/gpt-4o"],
+			"gpt",
+		),
+		smsea_miss: scopedModelsSelectorEnableAllEncoded(
+			models,
+			["openai/gpt-4o"],
+			"nope",
+		),
+	};
+}
+
 function modelSelectorApplyFilterEncoded(models, query) {
 	const selectedIndex = 2;
 	const filteredModels = query
@@ -10987,6 +11036,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorSortedIds();
 	const scopedModelsSelectorToggleSelectedResults =
 		runCliSelectorsScopedModelsSelectorToggleSelected();
+	const scopedModelsSelectorEnableAllResults =
+		runCliSelectorsScopedModelsSelectorEnableAll();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11285,6 +11336,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorCountsResults,
 		...scopedModelsSelectorSortedIdsResults,
 		...scopedModelsSelectorToggleSelectedResults,
+		...scopedModelsSelectorEnableAllResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11700,6 +11752,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_toggle_selected",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorToggleSelected();
+			},
+		),
+		scoped_models_selector_enable_all: await collect(
+			"cli_selectors.scoped_models_selector_enable_all",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorEnableAll();
 			},
 		),
 		observed,
@@ -12999,6 +13057,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getSortedIds",
 			"cli_selectors.scoped_models_selector_toggle_selected":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
+			"cli_selectors.scoped_models_selector_enable_all":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts enableAll on ctrl+a",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
