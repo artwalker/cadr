@@ -82,10 +82,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-254-session-list-probe",
-   "pair": 254
-  }
- ]
+ "mergeQueue": []
 }
