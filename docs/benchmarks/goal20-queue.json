@@ -1,68 +1,68 @@
 {
-  "schemaVersion": 1,
-  "nextPairNum": 253,
-  "lanes": {
-    "a": {
-      "role": "pairing",
-      "measure": "measure-agent-tool-loop",
-      "subsystem": "src/cadr-agent/"
-    },
-    "b": {
-      "role": "pairing",
-      "measure": "measure-resource-loader",
-      "subsystem": "src/cadr-cli/resource-loader/"
-    },
-    "c": {
-      "role": "pairing",
-      "measure": "measure-cli-settings",
-      "subsystem": "src/cadr-cli/settings/"
-    },
-    "opt": {
-      "role": "optimization",
-      "targets": [
-        "cli_selectors.scoped_models_selector_sorted_ids",
-        "cli_selectors.scoped_models_selector_enable_all",
-        "cli_selectors.oauth_selector_ui_state"
-      ]
-    }
+ "schemaVersion": 1,
+ "nextPairNum": 253,
+ "lanes": {
+  "a": {
+   "role": "pairing",
+   "measure": "measure-agent-tool-loop",
+   "subsystem": "src/cadr-agent/"
   },
-  "tasks": [
-    {
-      "pair": 253,
-      "lane": "a",
-      "status": "pending",
-      "source": "src/cadr-agent/runtime.lisp",
-      "measure": "measure-agent-tool-loop",
-      "metric": null,
-      "branch": null
-    },
-    {
-      "pair": 254,
-      "lane": "a",
-      "status": "pending",
-      "source": "src/cadr-agent/conditions.lisp",
-      "measure": "measure-agent-tool-loop",
-      "metric": null,
-      "branch": null
-    },
-    {
-      "pair": 255,
-      "lane": "b",
-      "status": "pending",
-      "source": "src/cadr-cli/resource-loader/",
-      "measure": "measure-resource-loader",
-      "metric": null,
-      "branch": null
-    },
-    {
-      "pair": 256,
-      "lane": "c",
-      "status": "pending",
-      "source": "src/cadr-cli/settings/",
-      "measure": "measure-cli-settings",
-      "metric": null,
-      "branch": null
-    }
-  ],
-  "mergeQueue": []
+  "b": {
+   "role": "pairing",
+   "measure": "measure-resource-loader",
+   "subsystem": "src/cadr-cli/resource-loader/"
+  },
+  "c": {
+   "role": "pairing",
+   "measure": "measure-cli-settings",
+   "subsystem": "src/cadr-cli/settings/"
+  },
+  "opt": {
+   "role": "optimization",
+   "targets": [
+    "cli_selectors.scoped_models_selector_sorted_ids",
+    "cli_selectors.scoped_models_selector_enable_all",
+    "cli_selectors.oauth_selector_ui_state"
+   ]
+  }
+ },
+ "tasks": [
+  {
+   "pair": 253,
+   "lane": "a",
+   "status": "pending",
+   "source": "src/cadr-agent/runtime.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": null,
+   "branch": null
+  },
+  {
+   "pair": 254,
+   "lane": "a",
+   "status": "pending",
+   "source": "src/cadr-agent/conditions.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": null,
+   "branch": null
+  },
+  {
+   "pair": 255,
+   "lane": "b",
+   "status": "pending",
+   "source": "src/cadr-cli/resource-loader/",
+   "measure": "measure-resource-loader",
+   "metric": null,
+   "branch": null
+  },
+  {
+   "pair": 256,
+   "lane": "c",
+   "status": "pending",
+   "source": "src/cadr-cli/settings/",
+   "measure": "measure-cli-settings",
+   "metric": null,
+   "branch": null
+  }
+ ],
+ "mergeQueue": []
 }
