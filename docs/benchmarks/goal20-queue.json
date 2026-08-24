@@ -111,11 +111,11 @@
   {
    "pair": 258,
    "lane": "a",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-agent/branch-summarization.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
-   "branch": null
+   "branch": "pair-258-branch-summarization"
   },
   {
    "pair": 259,
@@ -154,5 +154,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-258-branch-summarization",
+   "pair": 258
+  }
+ ]
 }
