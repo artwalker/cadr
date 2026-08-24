@@ -240,7 +240,7 @@ METRIC_KEYS = (
     "cli_selectors.scoped_models_selector_sorted_ids",
     "cli_selectors.scoped_models_selector_counts",
     "cli_selectors.scoped_models_selector_toggle_selected",
-    "cli_selectors.scoped_models_selector_enable_all",
+    "cli_selectors.scoped_models_selector_target_ids",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

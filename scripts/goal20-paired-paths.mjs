@@ -345,7 +345,8 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_sorted_ids": 50,
 	"cli_selectors.scoped_models_selector_counts": 50,
 	"cli_selectors.scoped_models_selector_toggle_selected": 50,
-	"cli_selectors.scoped_models_selector_enable_all": 50,
+	"cli_selectors.scoped_models_selector_toggle_provider": 50,
+	"cli_selectors.scoped_models_selector_target_ids": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10262,6 +10263,38 @@ function runCliSelectorsScopedModelsSelectorToggleSelected() {
 	};
 }
 
+
+function scopedModelsSelectorTargetIds(allModels, enabledIds, query = "") {
+	if (query) {
+		return scopedModelsFilterItems(allModels, enabledIds, query).map((item) => item.fullId);
+	}
+	return allModels.map(scopedModelsFullId);
+}
+
+function scopedModelsSelectorTargetIdsEncoded(allModels, enabledIds, query = "") {
+	return scopedModelsSelectorTargetIds(allModels, enabledIds, query).join(",");
+}
+
+function runCliSelectorsScopedModelsSelectorTargetIds() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsti_all: scopedModelsSelectorTargetIdsEncoded(models, null),
+		smsti_gpt: scopedModelsSelectorTargetIdsEncoded(models, null, "gpt"),
+		smsti_nope: scopedModelsSelectorTargetIdsEncoded(models, null, "nope"),
+		smsti_claude: scopedModelsSelectorTargetIdsEncoded(models, null, "claude"),
+		smsti_partial: scopedModelsSelectorTargetIdsEncoded(
+			models,
+			["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+			"gpt",
+		),
+	};
+}
+
+
+function scopedModelsIsEnabled(enabledIds, id) {
+	return enabledIds === null || enabledIds.includes(id);
+}
+
 function scopedModelsEnableIds(enabledIds, allIds, targetIds) {
 	if (enabledIds === null) {
 		return null;
@@ -10278,33 +10311,70 @@ function scopedModelsEnableIds(enabledIds, allIds, targetIds) {
 		: result;
 }
 
-function scopedModelsSelectorEnableAllEncoded(allModels, enabledIds, query = "") {
-	const allIds = allModels.map(scopedModelsFullId);
-	const targetIds = query
-		? scopedModelsFilterItems(allModels, enabledIds, query).map((item) => item.fullId)
-		: undefined;
-	const nextEnabledIds = scopedModelsEnableIds(enabledIds, allIds, targetIds);
-	return `${encodeScopedModelsEnabledIds(nextEnabledIds)}|true`;
+function scopedModelsClearIds(enabledIds, allIds, targetIds) {
+	if (enabledIds === null) {
+		return targetIds ? allIds.filter((id) => !targetIds.includes(id)) : [];
+	}
+	const targets = new Set(targetIds ?? enabledIds);
+	return enabledIds.filter((id) => !targets.has(id));
 }
 
-function runCliSelectorsScopedModelsSelectorEnableAll() {
+function scopedModelsSelectorToggleProviderEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	query = "",
+) {
+	const state = makeScopedModelsBenchState(allModels, enabledIds, selected, query);
+	state.isDirty = false;
+	scopedModelsSelectorClampSelected(state);
+	const item = state.filteredItems[state.selected];
+	if (item?.model) {
+		const allIds = allModels.map(scopedModelsFullId);
+		const modelsById = new Map(
+			allModels.map((candidate) => [scopedModelsFullId(candidate), candidate]),
+		);
+		const provider = item.model.provider;
+		const providerIds = allIds.filter(
+			(id) => modelsById.get(id).provider === provider,
+		);
+		const allEnabled = providerIds.every((id) =>
+			scopedModelsIsEnabled(state.enabledIds, id),
+		);
+		state.enabledIds = allEnabled
+			? scopedModelsClearIds(state.enabledIds, allIds, providerIds)
+			: scopedModelsEnableIds(state.enabledIds, allIds, providerIds);
+		state.isDirty = true;
+		scopedModelsSelectorClampSelected(state);
+	}
+	return `${encodeScopedModelsEnabledIds(state.enabledIds)}|${state.isDirty ? "true" : "false"}|${state.selected}`;
+}
+
+function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
-		smsea_all: scopedModelsSelectorEnableAllEncoded(models, null),
-		smsea_partial: scopedModelsSelectorEnableAllEncoded(models, ["openai/gpt-4o"]),
-		smsea_empty: scopedModelsSelectorEnableAllEncoded(models, []),
-		smsea_two: scopedModelsSelectorEnableAllEncoded(models, [
-			"openai/gpt-4o",
-			"anthropic/claude-sonnet-4",
-		]),
-		smsea_filter: scopedModelsSelectorEnableAllEncoded(
+		smstgp_all_0: scopedModelsSelectorToggleProviderEncoded(models, null, 0),
+		smstgp_partial_off: scopedModelsSelectorToggleProviderEncoded(
 			models,
 			["openai/gpt-4o"],
+			0,
+		),
+		smstgp_partial_on: scopedModelsSelectorToggleProviderEncoded(models, [], 2),
+		smstgp_retoggle: scopedModelsSelectorToggleProviderEncoded(
+			models,
+			["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+			1,
+		),
+		smstgp_filter: scopedModelsSelectorToggleProviderEncoded(
+			models,
+			null,
+			0,
 			"gpt",
 		),
-		smsea_miss: scopedModelsSelectorEnableAllEncoded(
+		smstgp_miss: scopedModelsSelectorToggleProviderEncoded(
 			models,
-			["openai/gpt-4o"],
+			null,
+			0,
 			"nope",
 		),
 	};
@@ -11036,8 +11106,10 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorSortedIds();
 	const scopedModelsSelectorToggleSelectedResults =
 		runCliSelectorsScopedModelsSelectorToggleSelected();
-	const scopedModelsSelectorEnableAllResults =
-		runCliSelectorsScopedModelsSelectorEnableAll();
+	const scopedModelsSelectorToggleProviderResults =
+		runCliSelectorsScopedModelsSelectorToggleProvider();
+	const scopedModelsSelectorTargetIdsResults =
+		runCliSelectorsScopedModelsSelectorTargetIds();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11336,7 +11408,8 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorCountsResults,
 		...scopedModelsSelectorSortedIdsResults,
 		...scopedModelsSelectorToggleSelectedResults,
-		...scopedModelsSelectorEnableAllResults,
+		...scopedModelsSelectorToggleProviderResults,
+		...scopedModelsSelectorTargetIdsResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11754,10 +11827,10 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsScopedModelsSelectorToggleSelected();
 			},
 		),
-		scoped_models_selector_enable_all: await collect(
-			"cli_selectors.scoped_models_selector_enable_all",
+		scoped_models_selector_target_ids: await collect(
+			"cli_selectors.scoped_models_selector_target_ids",
 			() => {
-				return () => runCliSelectorsScopedModelsSelectorEnableAll();
+				return () => runCliSelectorsScopedModelsSelectorTargetIds();
 			},
 		),
 		observed,
@@ -13057,8 +13130,6 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getSortedIds",
 			"cli_selectors.scoped_models_selector_toggle_selected":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
-			"cli_selectors.scoped_models_selector_enable_all":
-				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts enableAll on ctrl+a",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

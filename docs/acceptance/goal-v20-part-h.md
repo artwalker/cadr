@@ -2987,6 +2987,17 @@ First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate u
 `--only-enforce`. Same commit no optimize.
 | `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
 
+### Pair 234 — `cli_selectors` (scoped_models_selector_target_ids)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_target_ids` | `scoped-models-selector-target-ids` | `enableAll`/`clearAll` targetIds |
+
+Scoped models enableAll/clearAll target id list (comma-joined qualified ids).
+Observed `smsti_all` / `smsti_gpt` / `smsti_nope` / `smsti_claude` / `smsti_partial`
+are exact. First Friend-MachineD freeze **5.27×** (240.6 / 45.7 µs), ceiling 8.0.
+Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 231 — `cli_selectors` (scoped_models_selector_toggle_selected)
 
 | metric | cadr | pi |

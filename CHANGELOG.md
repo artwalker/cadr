@@ -29,6 +29,10 @@ tag/Release step.
   models enabled-first sort; cadr `scoped-models-sorted-ids` vs pi `getSortedIds`).
   Friend-MachineD n=5 **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Measure-only; no
   optimize.
+- Goal 20 P.13: pair `cli_selectors.scoped_models_selector_target_ids` (scoped
+  models enableAll/clearAll target set; cadr `scoped-models-selector-target-ids`
+  vs pi `enableAll`/`clearAll` targetIds). Friend-MachineD n=5 **5.27×**
+  (240.6 / 45.7 µs), ceiling 8.0. Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.scoped_models_selector_toggle_selected`
   (scoped models confirm toggle; cadr `scoped-models-selector-toggle-selected`
   vs pi `handleInput` confirm). Friend-MachineD n=5 **2.95×** (247.0 / 83.7 µs),

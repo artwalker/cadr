@@ -421,7 +421,8 @@
     ("cli_selectors.scoped_models_selector_sorted_ids" . 50)
     ("cli_selectors.scoped_models_selector_counts" . 50)
     ("cli_selectors.scoped_models_selector_toggle_selected" . 50)
-    ("cli_selectors.scoped_models_selector_enable_all" . 50)
+    ("cli_selectors.scoped_models_selector_toggle_provider" . 50)
+    ("cli_selectors.scoped_models_selector_target_ids" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9862,33 +9863,58 @@
      (scoped-models-selector-toggle-selected-encoded
       models :all 0 :query "nope"))))
 
-(defun scoped-models-selector-enable-all-encoded
+
+(defun scoped-models-selector-target-ids-encoded
     (models enabled-ids &key query)
   (let ((state
           (cadr-cli::make-scoped-models-selector-state
            :all-models models
            :enabled-ids enabled-ids)))
     (setf (cadr-cli::scoped-models-selector-state-query state) (or query ""))
-    (cadr-cli::scoped-models-selector-enable-all state)
-    (format nil "~a|~a"
+    (format nil "~{~a~^,~}"
+            (cadr-cli::scoped-models-selector-target-ids state))))
+
+(defun run-cli-selectors-scoped-models-selector-target-ids ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("openai/gpt-4o" "anthropic/claude-sonnet-4")))
+    (list
+     (scoped-models-selector-target-ids-encoded models :all)
+     (scoped-models-selector-target-ids-encoded models :all :query "gpt")
+     (scoped-models-selector-target-ids-encoded models :all :query "nope")
+     (scoped-models-selector-target-ids-encoded models :all :query "claude")
+     (scoped-models-selector-target-ids-encoded models partial :query "gpt"))))
+
+
+(defun scoped-models-selector-toggle-provider-encoded
+    (models enabled-ids selected &key query)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids)))
+    (setf (cadr-cli::scoped-models-selector-state-query state) (or query ""))
+    (setf (cadr-cli::scoped-models-selector-state-selected state) selected)
+    (cadr-cli::scoped-models-selector-clamp-selected state)
+    (cadr-cli::scoped-models-selector-toggle-provider state)
+    (format nil "~a|~a|~D"
             (encode-scoped-models-enabled-ids
              (cadr-cli::scoped-models-selector-state-enabled-ids state))
             (if (cadr-cli::scoped-models-selector-state-dirty-p state)
-                "true" "false"))))
+                "true" "false")
+            (cadr-cli::scoped-models-selector-state-selected state))))
 
-(defun run-cli-selectors-scoped-models-selector-enable-all ()
+(defun run-cli-selectors-scoped-models-selector-toggle-provider ()
   (let ((models (make-scoped-models-test-models)))
     (list
-     (scoped-models-selector-enable-all-encoded models :all)
-     (scoped-models-selector-enable-all-encoded
-      models '("openai/gpt-4o"))
-     (scoped-models-selector-enable-all-encoded models '())
-     (scoped-models-selector-enable-all-encoded
-      models '("openai/gpt-4o" "anthropic/claude-sonnet-4"))
-     (scoped-models-selector-enable-all-encoded
-      models '("openai/gpt-4o") :query "gpt")
-     (scoped-models-selector-enable-all-encoded
-      models '("openai/gpt-4o") :query "nope"))))
+     (scoped-models-selector-toggle-provider-encoded models :all 0)
+     (scoped-models-selector-toggle-provider-encoded
+      models '("openai/gpt-4o") 0)
+     (scoped-models-selector-toggle-provider-encoded models '() 2)
+     (scoped-models-selector-toggle-provider-encoded
+      models '("openai/gpt-4o" "anthropic/claude-sonnet-4") 1)
+     (scoped-models-selector-toggle-provider-encoded
+      models :all 0 :query "gpt")
+     (scoped-models-selector-toggle-provider-encoded
+      models :all 0 :query "nope"))))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list
@@ -10135,8 +10161,8 @@
           (run-cli-selectors-scoped-models-selector-counts))
         (scoped-models-selector-toggle-selected
           (run-cli-selectors-scoped-models-selector-toggle-selected))
-        (scoped-models-selector-enable-all
-          (run-cli-selectors-scoped-models-selector-enable-all)))
+        (scoped-models-selector-target-ids
+          (run-cli-selectors-scoped-models-selector-target-ids)))
     (json-object
      "observed"
      (json-object
@@ -10841,12 +10867,11 @@
       "smstg_retoggle" (nth 3 scoped-models-selector-toggle-selected)
       "smstg_filter" (nth 4 scoped-models-selector-toggle-selected)
       "smstg_miss" (nth 5 scoped-models-selector-toggle-selected)
-      "smsea_all" (nth 0 scoped-models-selector-enable-all)
-      "smsea_partial" (nth 1 scoped-models-selector-enable-all)
-      "smsea_empty" (nth 2 scoped-models-selector-enable-all)
-      "smsea_two" (nth 3 scoped-models-selector-enable-all)
-      "smsea_filter" (nth 4 scoped-models-selector-enable-all)
-      "smsea_miss" (nth 5 scoped-models-selector-enable-all))
+      "smsti_all" (nth 0 scoped-models-selector-target-ids)
+      "smsti_gpt" (nth 1 scoped-models-selector-target-ids)
+      "smsti_nope" (nth 2 scoped-models-selector-target-ids)
+      "smsti_claude" (nth 3 scoped-models-selector-target-ids)
+      "smsti_partial" (nth 4 scoped-models-selector-target-ids))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11460,11 +11485,11 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-scoped-models-selector-toggle-selected))))
-     "scoped_models_selector_enable_all"
-     (collect "cli_selectors.scoped_models_selector_enable_all"
+     "scoped_models_selector_target_ids"
+     (collect "cli_selectors.scoped_models_selector_target_ids"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-enable-all)))))))
+                  (run-cli-selectors-scoped-models-selector-target-ids)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12723,10 +12748,10 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-sorted-ids"
       "cli_selectors.scoped_models_selector_counts"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-counts"
-      "cli_selectors.scoped_models_selector_toggle_selected"
+            "cli_selectors.scoped_models_selector_toggle_selected"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-toggle-selected"
-      "cli_selectors.scoped_models_selector_enable_all"
-      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-enable-all"
+      "cli_selectors.scoped_models_selector_target_ids"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-target-ids"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
