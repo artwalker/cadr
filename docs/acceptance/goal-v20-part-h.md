@@ -2760,6 +2760,17 @@ OAuth selector raw key input; encoded as
 are exact. First Friend-MachineD freeze **5.02×** (691.4 / 137.7 µs),
 ceiling 8.0. Same commit no optimize.
 
+### Pair 205 — `cli_selectors` (oauth_selector_search_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `oauth_selector_search_text` | `oauth-selector-search-text` | `filterProviders` search text |
+
+OAuth selector fuzzy-filter search text; `name id authType method`. Observed
+`osst_oauth` / `osst_api` / `osst_no_method` / `osst_api_plain` are exact.
+First Friend-MachineD freeze **1.52×** (9.5 / 6.2 µs), ceiling 8.0. Same
+commit no optimize.
+
 ## 2. How to run
 
 ```bash

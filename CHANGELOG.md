@@ -21,6 +21,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.oauth_selector_search_text`
+  (search-text fixtures; cadr `oauth-selector-search-text`
+  vs pi `filterProviders` search text). Friend-MachineD n=5 **1.52×**
+  (9.5 / 6.2 µs), ceiling 8.0. Same commit no optimize. G.17 missing.
+  Not Goal 20 complete.
 - Goal 20 P.13: pair `cli_selectors.oauth_selector_handle_raw_input`
   (raw-input fixtures; cadr `oauth-selector-handle-raw-input`
   vs pi `handleInput` raw dispatch). Friend-MachineD n=5 **5.02×**

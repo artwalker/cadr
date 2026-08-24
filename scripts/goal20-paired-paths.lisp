@@ -392,6 +392,7 @@
     ("cli_selectors.oauth_selector_apply_filter" . 50)
     ("cli_selectors.oauth_selector_handle_event" . 50)
     ("cli_selectors.oauth_selector_handle_raw_input" . 50)
+    ("cli_selectors.oauth_selector_search_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -8580,6 +8581,34 @@
      (oauth-handle-raw-input-encoded options 0 "o")
      (oauth-handle-raw-input-encoded-key options 0 "tui.select.confirm"))))
 
+(defun encode-oauth-selector-search-text (option)
+  (format nil "~A ~A ~A ~A"
+          (cadr-cli::oauth-selector-option-name option)
+          (cadr-cli::provider-key
+           (cadr-cli::oauth-selector-option-id option))
+          (if (eq (cadr-cli::oauth-selector-option-auth-type option)
+                  :oauth)
+              "oauth"
+              "api_key")
+          (or (cadr-cli::oauth-selector-option-method-name option) "")))
+
+(defun run-cli-selectors-oauth-selector-search-text ()
+  (list
+   (encode-oauth-selector-search-text
+    (cadr-cli::make-oauth-selector-option
+     :id :anthropic :name "Anthropic" :auth-type :oauth
+     :method-name "Anthropic account"))
+   (encode-oauth-selector-search-text
+    (cadr-cli::make-oauth-selector-option
+     :id :openai :name "OpenAI" :auth-type :api-key
+     :method-name "OpenAI API key"))
+   (encode-oauth-selector-search-text
+    (cadr-cli::make-oauth-selector-option
+     :id :google :name "Google" :auth-type :oauth))
+   (encode-oauth-selector-search-text
+    (cadr-cli::make-oauth-selector-option
+     :id :mistral :name "Mistral" :auth-type :api-key))))
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -8741,7 +8770,9 @@
         (oauth-selector-handle-event
           (run-cli-selectors-oauth-selector-handle-event))
         (oauth-selector-handle-raw-input
-          (run-cli-selectors-oauth-selector-handle-raw-input)))
+          (run-cli-selectors-oauth-selector-handle-raw-input))
+        (oauth-selector-search-text
+          (run-cli-selectors-oauth-selector-search-text)))
     (json-object
      "observed"
      (json-object
@@ -9283,7 +9314,11 @@
       "oshri_esc" (nth 3 oauth-selector-handle-raw-input)
       "oshri_bad" (nth 4 oauth-selector-handle-raw-input)
       "oshri_o" (nth 5 oauth-selector-handle-raw-input)
-      "oshri_confirm" (nth 6 oauth-selector-handle-raw-input))
+      "oshri_confirm" (nth 6 oauth-selector-handle-raw-input)
+      "osst_oauth" (nth 0 oauth-selector-search-text)
+      "osst_api" (nth 1 oauth-selector-search-text)
+      "osst_no_method" (nth 2 oauth-selector-search-text)
+      "osst_api_plain" (nth 3 oauth-selector-search-text))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -9753,7 +9788,12 @@
      (collect "cli_selectors.oauth_selector_handle_raw_input"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-oauth-selector-handle-raw-input)))))))
+                  (run-cli-selectors-oauth-selector-handle-raw-input))))
+     "oauth_selector_search_text"
+     (collect "cli_selectors.oauth_selector_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-oauth-selector-search-text)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -10956,6 +10996,8 @@
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-event"
       "cli_selectors.oauth_selector_handle_raw_input"
       "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-handle-raw-input"
+      "cli_selectors.oauth_selector_search_text"
+      "src/cadr-cli/interactive/selectors/auth.lisp oauth-selector-search-text"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

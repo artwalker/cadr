@@ -316,6 +316,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_apply_filter": 50,
 	"cli_selectors.oauth_selector_handle_event": 50,
 	"cli_selectors.oauth_selector_handle_raw_input": 50,
+	"cli_selectors.oauth_selector_search_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -8645,6 +8646,33 @@ function runCliSelectorsOauthSelectorHandleRawInput() {
 	};
 }
 
+function runCliSelectorsOauthSelectorSearchText() {
+	return {
+		osst_oauth: oauthSelectorSearchText({
+			id: "anthropic",
+			name: "Anthropic",
+			authType: "oauth",
+			method: { name: "Anthropic account" },
+		}),
+		osst_api: oauthSelectorSearchText({
+			id: "openai",
+			name: "OpenAI",
+			authType: "api_key",
+			method: { name: "OpenAI API key" },
+		}),
+		osst_no_method: oauthSelectorSearchText({
+			id: "google",
+			name: "Google",
+			authType: "oauth",
+		}),
+		osst_api_plain: oauthSelectorSearchText({
+			id: "mistral",
+			name: "Mistral",
+			authType: "api_key",
+		}),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9055,6 +9083,7 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthSelectorApplyFilterResults = runCliSelectorsOauthSelectorApplyFilter();
 	const oauthSelectorHandleEventResults = runCliSelectorsOauthSelectorHandleEvent();
 	const oauthSelectorHandleRawInputResults = runCliSelectorsOauthSelectorHandleRawInput();
+	const oauthSelectorSearchTextResults = runCliSelectorsOauthSelectorSearchText();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -9324,6 +9353,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthSelectorApplyFilterResults,
 		...oauthSelectorHandleEventResults,
 		...oauthSelectorHandleRawInputResults,
+		...oauthSelectorSearchTextResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -9616,6 +9646,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		oauth_selector_handle_raw_input: await collect("cli_selectors.oauth_selector_handle_raw_input", () => {
 			return () => runCliSelectorsOauthSelectorHandleRawInput();
+		}),
+		oauth_selector_search_text: await collect("cli_selectors.oauth_selector_search_text", () => {
+			return () => runCliSelectorsOauthSelectorSearchText();
 		}),
 		observed,
 	};
@@ -10856,6 +10889,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput event dispatch",
 			"cli_selectors.oauth_selector_handle_raw_input":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts handleInput raw key dispatch",
+			"cli_selectors.oauth_selector_search_text":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts filterProviders search text",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
