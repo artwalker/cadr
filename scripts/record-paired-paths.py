@@ -225,6 +225,7 @@ METRIC_KEYS = (
     "cli_selectors.oauth_selector_ui_state",
     "cli_selectors.model_selector_search_text",
     "cli_selectors.qualified_model_id",
+    "cli_selectors.model_selector_apply_filter",
     "websocket_stream.stream_roundtrip",
     "cli_sdk.version_newer",
     "cli_sdk.cache_miss",

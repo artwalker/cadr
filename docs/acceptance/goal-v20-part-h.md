@@ -2915,6 +2915,17 @@ Observed `qmid_openai` / `qmid_anthropic` / `qmid_codex` / `qmid_openrouter` /
 `qmid_google` are exact. First Friend-MachineD freeze **7.65×** (2.1 / 0.3 µs),
 ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
+### Pair 218 — `cli_selectors` (model_selector_apply_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_apply_filter` | `model-selector-apply-filter` | `filterModels` fuzzy slice |
+
+Model selector fuzzy filter over active catalog (count|selected digest).
+Observed `msaf_all` / `msaf_gpt` / `msaf_miss` / `msaf_anth` / `msaf_google`
+are exact. First Friend-MachineD freeze **5.53×** (TBD from ledger), ceiling
+8.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ## 2. How to run
 
 ```bash

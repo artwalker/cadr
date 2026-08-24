@@ -405,6 +405,7 @@
     ("cli_selectors.oauth_selector_ui_state" . 50)
     ("cli_selectors.model_selector_search_text" . 50)
     ("cli_selectors.qualified_model_id" . 50)
+    ("cli_selectors.model_selector_apply_filter" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9114,6 +9115,49 @@
      :provider :google
      :name ""))))
 
+(defun make-model-selector-test-models ()
+  (list
+   (make-model-selector-search-fixture)
+   (make-model-selector-search-fixture
+    :id "claude-sonnet-4"
+    :provider :anthropic
+    :name "Claude Sonnet 4")
+   (make-model-selector-search-fixture
+    :id "gpt-5"
+    :provider :openai-codex
+    :name "")
+   (make-model-selector-search-fixture
+    :id "openai/gpt-4o"
+    :provider :openrouter
+    :name "GPT-4o")
+   (make-model-selector-search-fixture
+    :id "gemini-2.5-pro"
+    :provider :google
+    :name "")))
+
+(defun model-selector-apply-filter-encoded (models query)
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (setf (cadr-cli::model-selector-state-selected state) 2)
+    (setf (cadr-cli::model-selector-state-query state) query)
+    (cadr-cli::model-selector-apply-filter state)
+    (format nil "~D|~D"
+            (length
+             (cadr-cli::model-selector-visible-models state))
+            (cadr-cli::model-selector-state-selected state))))
+
+(defun run-cli-selectors-model-selector-apply-filter ()
+  (let ((models (make-model-selector-test-models)))
+    (list
+     (model-selector-apply-filter-encoded models "")
+     (model-selector-apply-filter-encoded models "gpt")
+     (model-selector-apply-filter-encoded models "nope")
+     (model-selector-apply-filter-encoded models "anth")
+     (model-selector-apply-filter-encoded models "oogle"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9326,7 +9370,9 @@
         (model-selector-search-text
           (run-cli-selectors-model-selector-search-text))
         (qualified-model-id
-          (run-cli-selectors-qualified-model-id)))
+          (run-cli-selectors-qualified-model-id))
+        (model-selector-apply-filter
+          (run-cli-selectors-model-selector-apply-filter)))
     (json-object
      "observed"
      (json-object
@@ -9937,7 +9983,12 @@
       "qmid_anthropic" (nth 1 qualified-model-id)
       "qmid_codex" (nth 2 qualified-model-id)
       "qmid_openrouter" (nth 3 qualified-model-id)
-      "qmid_google" (nth 4 qualified-model-id))
+      "qmid_google" (nth 4 qualified-model-id)
+      "msaf_all" (nth 0 model-selector-apply-filter)
+      "msaf_gpt" (nth 1 model-selector-apply-filter)
+      "msaf_miss" (nth 2 model-selector-apply-filter)
+      "msaf_anth" (nth 3 model-selector-apply-filter)
+      "msaf_google" (nth 4 model-selector-apply-filter))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10472,7 +10523,12 @@
      (collect "cli_selectors.qualified_model_id"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-qualified-model-id)))))))
+                  (run-cli-selectors-qualified-model-id))))
+     "model_selector_apply_filter"
+     (collect "cli_selectors.model_selector_apply_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-apply-filter)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11701,6 +11757,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-search-text"
       "cli_selectors.qualified_model_id"
       "src/cadr-cli/interactive/selectors/models.lisp qualified-model-id"
+      "cli_selectors.model_selector_apply_filter"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-apply-filter"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

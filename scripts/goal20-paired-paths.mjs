@@ -329,6 +329,7 @@ const REPETITIONS = {
 	"cli_selectors.oauth_selector_ui_state": 50,
 	"cli_selectors.model_selector_search_text": 50,
 	"cli_selectors.qualified_model_id": 50,
+	"cli_selectors.model_selector_apply_filter": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9356,6 +9357,65 @@ function runCliSelectorsQualifiedModelId() {
 	};
 }
 
+function goal20ModelItem({ id, provider, name = "" }) {
+	const model = {
+		id,
+		name,
+		api: "openai-completions",
+		provider,
+		baseUrl: "http://127.0.0.1:1/v1",
+		reasoning: false,
+		input: ["text"],
+		cost: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+		contextWindow: 128000,
+		maxTokens: 8192,
+	};
+	return { id, provider, model };
+}
+
+function makeModelSelectorTestModels() {
+	return [
+		goal20ModelItem({ id: "gpt-4o", provider: "openai", name: "GPT-4o" }),
+		goal20ModelItem({
+			id: "claude-sonnet-4",
+			provider: "anthropic",
+			name: "Claude Sonnet 4",
+		}),
+		goal20ModelItem({ id: "gpt-5", provider: "openai-codex", name: "" }),
+		goal20ModelItem({
+			id: "openai/gpt-4o",
+			provider: "openrouter",
+			name: "GPT-4o",
+		}),
+		goal20ModelItem({ id: "gemini-2.5-pro", provider: "google", name: "" }),
+	];
+}
+
+function modelSelectorApplyFilterEncoded(models, query) {
+	const selectedIndex = 2;
+	const filteredModels = query
+		? fuzzyModule.fuzzyFilter(models, query, ({ id, provider, model }) =>
+				modelSearchModule.getModelSelectorSearchText({
+					id,
+					provider,
+					name: model.name,
+				}),
+			)
+		: models;
+	return `${filteredModels.length}|${selectedIndex}`;
+}
+
+function runCliSelectorsModelSelectorApplyFilter() {
+	const models = makeModelSelectorTestModels();
+	return {
+		msaf_all: modelSelectorApplyFilterEncoded(models, ""),
+		msaf_gpt: modelSelectorApplyFilterEncoded(models, "gpt"),
+		msaf_miss: modelSelectorApplyFilterEncoded(models, "nope"),
+		msaf_anth: modelSelectorApplyFilterEncoded(models, "anth"),
+		msaf_google: modelSelectorApplyFilterEncoded(models, "oogle"),
+	};
+}
+
 function runCliSelectorsSessionSearch() {
 	return {
 		ss_empty: sessionSearchCount(""),
@@ -9782,6 +9842,7 @@ async function measureCliSelectorsSessionSearch() {
 	const oauthSelectorUiStateResults = runCliSelectorsOauthSelectorUiState();
 	const modelSelectorSearchTextResults = runCliSelectorsModelSelectorSearchText();
 	const qualifiedModelIdResults = runCliSelectorsQualifiedModelId();
+	const modelSelectorApplyFilterResults = runCliSelectorsModelSelectorApplyFilter();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10064,6 +10125,7 @@ async function measureCliSelectorsSessionSearch() {
 		...oauthSelectorUiStateResults,
 		...modelSelectorSearchTextResults,
 		...qualifiedModelIdResults,
+		...modelSelectorApplyFilterResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10404,6 +10466,9 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		qualified_model_id: await collect("cli_selectors.qualified_model_id", () => {
 			return () => runCliSelectorsQualifiedModelId();
+		}),
+		model_selector_apply_filter: await collect("cli_selectors.model_selector_apply_filter", () => {
+			return () => runCliSelectorsModelSelectorApplyFilter();
 		}),
 		observed,
 	};
@@ -11670,6 +11735,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/model-search.ts getModelSelectorSearchText",
 			"cli_selectors.qualified_model_id":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts provider/id label",
+			"cli_selectors.model_selector_apply_filter":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filterModels",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
