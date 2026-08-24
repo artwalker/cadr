@@ -647,7 +647,6 @@ const trustManagerModule = await import(
 );
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
 const packageManagerModule = await import(moduleUrl("packages/coding-agent/src/core/package-manager.ts"));
-const piManifestModule = await import(moduleUrl("packages/coding-agent/src/core/pi-manifest.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
