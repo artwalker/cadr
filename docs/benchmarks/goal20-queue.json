@@ -102,7 +102,7 @@
   {
    "pair": 257,
    "lane": "c",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/execution-env.lisp",
    "measure": "measure-cli-settings",
    "metric": null,
@@ -111,7 +111,7 @@
   {
    "pair": 258,
    "lane": "a",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/branch-summarization.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
@@ -120,7 +120,7 @@
   {
    "pair": 259,
    "lane": "b",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-resource-loader",
    "metric": null,
