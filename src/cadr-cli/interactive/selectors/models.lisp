@@ -470,6 +470,7 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
   (items nil :type list)
   (visible-items nil :type list)
   (filter-query nil :type (or null string))
+  (visible-count 0 :type (integer 0 *))
   (selected 0 :type (integer 0 *))
   (dirty-p nil :type boolean)
   refresh-status-message
@@ -528,12 +529,14 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
            state)))
     (if (eq enabled :all)
         (copy-list all)
-        (append
-         (copy-list enabled)
-         (remove-if
-          (lambda (id)
-            (member id enabled :test #'string=))
-          all)))))
+        (let ((enabled-set
+                (scoped-models-enabled-set enabled)))
+          (append
+           (copy-list enabled)
+           (loop
+             for id in all
+             unless (gethash id enabled-set)
+               collect id))))))
 
 (defun scoped-models-selector-rebuild-items (state)
   (scoped-models-selector-rebuild-models-by-id state)
@@ -568,16 +571,20 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
            (scoped-models-selector-state-items state))
          (query
            (scoped-models-selector-state-query
-            state)))
+            state))
+         (visible
+           (if (zerop (length query))
+               items
+               (selector-fuzzy-filter
+                items query
+                #'scoped-model-item-search-text))))
     (setf
      (scoped-models-selector-state-visible-items state)
-     (if (zerop (length query))
-         items
-         (selector-fuzzy-filter
-          items query
-          #'scoped-model-item-search-text))
+     visible
      (scoped-models-selector-state-filter-query state)
-     query))
+     query
+     (scoped-models-selector-state-visible-count state)
+     (length visible)))
   state)
 
 (defun scoped-models-selector-refresh-items (state)
@@ -948,84 +955,85 @@ shows the terminal message with the given style."
 
 (defun scoped-models-selector-handle-raw-input
     (state data)
-  (labels
-      ((changed (function)
-         (funcall function state)
-         (values :changed nil t)))
-    (cond
-      ((scoped-models-selector-key-p
-        state data "app.models.reorderUp")
-       (changed
-        (lambda (state)
-          (scoped-models-selector-reorder
-           state -1))))
-      ((scoped-models-selector-key-p
-        state data "app.models.reorderDown")
-       (changed
-        (lambda (state)
-          (scoped-models-selector-reorder
-           state 1))))
-      ((scoped-models-selector-key-p
-        state data "app.models.enableAll")
-       (changed
-        #'scoped-models-selector-enable-all))
-      ((scoped-models-selector-key-p
-        state data "app.models.clearAll")
-       (changed
-        #'scoped-models-selector-clear-all))
-      ((scoped-models-selector-key-p
-        state data "app.models.toggleProvider")
-       (changed
-        #'scoped-models-selector-toggle-provider))
-      ((scoped-models-selector-key-p
-        state data "app.models.save")
-       (changed
-        #'scoped-models-selector-persist))
-      ((scoped-models-selector-key-p
-        state data
-        "app.models.clearSearchOrCancel")
-       (if
-           (plusp
-            (length
-             (scoped-models-selector-state-query
-              state)))
-           (progn
-             (scoped-models-selector-set-query
-              state "")
-             (values :changed nil t))
-           (values :cancel nil t)))
-      ((scoped-models-selector-key-p
-        state data "tui.select.up")
-       (scoped-models-selector-move state -1)
-       (values :changed nil t))
-      ((scoped-models-selector-key-p
-        state data "tui.select.down")
-       (scoped-models-selector-move state 1)
-       (values :changed nil t))
-      ((scoped-models-selector-key-p
-        state data "tui.select.pageUp")
-       (scoped-models-selector-move state -8)
-       (values :changed nil t))
-      ((scoped-models-selector-key-p
-        state data "tui.select.pageDown")
-       (scoped-models-selector-move state 8)
-       (values :changed nil t))
-      ((scoped-models-selector-key-p
-        state data "tui.select.confirm")
-       (changed
-        #'scoped-models-selector-toggle-selected))
-      ((scoped-models-selector-key-p
-        state data "tui.select.cancel")
-       (values :cancel nil t))
-      (t
-       (values nil nil nil)))))
+  (let ((keybindings
+          (scoped-models-selector-state-keybindings state)))
+    (labels
+        ((key-p (name)
+           (selector-keybinding-matches-p
+            keybindings data name))
+         (changed (function)
+           (funcall function state)
+           (values :changed nil t)))
+      (cond
+        ((key-p "tui.select.up")
+         (scoped-models-selector-move state -1)
+         (values :changed nil t))
+        ((key-p "tui.select.down")
+         (scoped-models-selector-move state 1)
+         (values :changed nil t))
+        ((key-p "tui.select.pageUp")
+         (scoped-models-selector-move state -8)
+         (values :changed nil t))
+        ((key-p "tui.select.pageDown")
+         (scoped-models-selector-move state 8)
+         (values :changed nil t))
+        ((key-p "app.models.reorderUp")
+         (changed
+          (lambda (state)
+            (scoped-models-selector-reorder
+             state -1))))
+        ((key-p "app.models.reorderDown")
+         (changed
+          (lambda (state)
+            (scoped-models-selector-reorder
+             state 1))))
+        ((key-p "tui.select.confirm")
+         (changed
+          #'scoped-models-selector-toggle-selected))
+        ((key-p "app.models.enableAll")
+         (changed
+          #'scoped-models-selector-enable-all))
+        ((key-p "app.models.clearAll")
+         (changed
+          #'scoped-models-selector-clear-all))
+        ((key-p "app.models.toggleProvider")
+         (changed
+          #'scoped-models-selector-toggle-provider))
+        ((key-p "app.models.save")
+         (changed
+          #'scoped-models-selector-persist))
+        ((key-p "app.models.clearSearchOrCancel")
+         (if
+             (plusp
+              (length
+               (scoped-models-selector-state-query
+                state)))
+             (progn
+               (scoped-models-selector-set-query
+                state "")
+               (values :changed nil t))
+             (values :cancel nil t)))
+        ((key-p "tui.select.cancel")
+         (values :cancel nil t))
+        (t
+         (values nil nil nil))))))
 
 (defun scoped-models-selector-move
     (state delta)
   (let ((count
-          (length
-           (scoped-models-selector-visible-items
-            state))))
+          (if
+              (string=
+               (or
+                (scoped-models-selector-state-filter-query
+                 state)
+                "")
+               (scoped-models-selector-state-query
+                state))
+              (scoped-models-selector-state-visible-count
+               state)
+              (length
+               (scoped-models-selector-visible-items
+                state)))))
     (setf
      (scoped-models-selector-state-selected state)
      (selector-frame-move-index
