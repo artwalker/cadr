@@ -384,6 +384,7 @@ const REPETITIONS = {
 	"session_compact.branch_summarize": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
+	"text_truncation.truncate_middle": 50,
 	"render_slicing.slice_ansi_clip": 200,
 	"render_slicing.slice_plain_clip": 200,
 };
@@ -2098,12 +2099,16 @@ async function measureTextTruncation() {
 	const content = `${lines.join("\n")}\n`;
 	const head = truncateModule.truncateHead(content);
 	const tail = truncateModule.truncateTail(content);
+	const middle = truncateMiddle(content);
 	return {
 		truncate_head: await collect("text_truncation.truncate_head", () => {
 			return () => truncateModule.truncateHead(content);
 		}),
 		truncate_tail: await collect("text_truncation.truncate_tail", () => {
 			return () => truncateModule.truncateTail(content);
+		}),
+		truncate_middle: await collect("text_truncation.truncate_middle", () => {
+			return () => truncateMiddle(content);
 		}),
 		observed: {
 			content_bytes: Buffer.byteLength(content, "utf8"),
@@ -2115,7 +2120,162 @@ async function measureTextTruncation() {
 			tail_output_bytes: tail.outputBytes,
 			tail_truncated_by: tail.truncatedBy ?? "null",
 			tail_last_line_partial: tail.lastLinePartial ? 1 : 0,
+			middle_output_lines: middle.outputLines,
+			middle_output_bytes: middle.outputBytes,
+			middle_truncated_by: middle.truncatedBy ?? "null",
+			middle_omitted_lines: middle.totalLines - (middle.outputLines - 1),
+			middle_first_line_exceeds: middle.firstLineExceedsLimit ? 1 : 0,
 		},
+	};
+}
+
+// packages/coding-agent/src/core/tools/truncate.ts truncateMiddle
+function truncationOmissionLine(omittedLines) {
+	return `... [${omittedLines} lines omitted] ...`;
+}
+
+function truncateMiddle(content, options = {}) {
+	const maxLines = options.maxLines ?? truncateModule.DEFAULT_MAX_LINES;
+	const maxBytes = options.maxBytes ?? truncateModule.DEFAULT_MAX_BYTES;
+	const totalBytes = Buffer.byteLength(content, "utf8");
+	const lines = content.length === 0 ? [] : content.split("\n");
+	if (content.endsWith("\n")) {
+		lines.pop();
+	}
+	const totalLines = lines.length;
+	if (totalLines <= maxLines && totalBytes <= maxBytes) {
+		return {
+			content,
+			truncated: false,
+			truncatedBy: null,
+			totalLines,
+			totalBytes,
+			outputLines: totalLines,
+			outputBytes: totalBytes,
+			lastLinePartial: false,
+			firstLineExceedsLimit: false,
+			maxLines,
+			maxBytes,
+		};
+	}
+	if (totalLines === 0) {
+		return {
+			content: "",
+			truncated: false,
+			truncatedBy: null,
+			totalLines: 0,
+			totalBytes: 0,
+			outputLines: 0,
+			outputBytes: 0,
+			lastLinePartial: false,
+			firstLineExceedsLimit: false,
+			maxLines,
+			maxBytes,
+		};
+	}
+	const firstLineBytes = Buffer.byteLength(lines[0], "utf8");
+	if (firstLineBytes > maxBytes) {
+		return {
+			content: "",
+			truncated: true,
+			truncatedBy: "bytes",
+			totalLines,
+			totalBytes,
+			outputLines: 0,
+			outputBytes: 0,
+			lastLinePartial: false,
+			firstLineExceedsLimit: true,
+			maxLines,
+			maxBytes,
+		};
+	}
+	const segmentBytes = (from, to) => {
+		let bytes = 0;
+		for (let index = from; index < to; index += 1) {
+			bytes += Buffer.byteLength(lines[index], "utf8");
+			if (index > from) {
+				bytes += 1;
+			}
+		}
+		return bytes;
+	};
+	const selectionBytes = (headCount, tailCount, omittedLines) => {
+		const omission = truncationOmissionLine(omittedLines);
+		const omissionBytes = Buffer.byteLength(omission, "utf8");
+		const headBytes = headCount > 0 ? segmentBytes(0, headCount) : 0;
+		const tailBytes =
+			tailCount > 0 ? segmentBytes(totalLines - tailCount, totalLines) : 0;
+		let joinBytes = headBytes + tailBytes + omissionBytes;
+		if (headCount > 0 && (tailCount > 0 || omittedLines > 0)) {
+			joinBytes += 1;
+		}
+		if (tailCount > 0 && (headCount > 0 || omittedLines > 0)) {
+			joinBytes += 1;
+		}
+		return joinBytes;
+	};
+	const selectionFits = (headCount, tailCount) => {
+		if (headCount + tailCount > totalLines) {
+			return false;
+		}
+		const omitted = totalLines - headCount - tailCount;
+		if (omitted <= 0) {
+			return false;
+		}
+		const outputLines = headCount + 1 + tailCount;
+		return outputLines <= maxLines && selectionBytes(headCount, tailCount, omitted) <= maxBytes;
+	};
+	let headCount = 0;
+	let tailCount = 0;
+	let truncatedBy = "lines";
+	while (true) {
+		let improved = false;
+		if (headCount + tailCount < totalLines && selectionFits(headCount + 1, tailCount)) {
+			headCount += 1;
+			improved = true;
+		}
+		if (headCount + tailCount < totalLines && selectionFits(headCount, tailCount + 1)) {
+			tailCount += 1;
+			improved = true;
+		}
+		if (!improved) {
+			break;
+		}
+	}
+	const omitted = totalLines - headCount - tailCount;
+	const omission = truncationOmissionLine(omitted);
+	const headText = headCount > 0 ? lines.slice(0, headCount).join("\n") : "";
+	const tailText = tailCount > 0 ? lines.slice(totalLines - tailCount).join("\n") : "";
+	let output;
+	if (headCount > 0 && tailCount > 0) {
+		output = `${headText}\n${omission}\n${tailText}`;
+	} else if (headCount > 0) {
+		output = `${headText}\n${omission}`;
+	} else if (tailCount > 0) {
+		output = `${omission}\n${tailText}`;
+	} else {
+		output = omission;
+	}
+	const outputLines = headCount + 1 + tailCount;
+	const outputBytes = selectionBytes(headCount, tailCount, omitted);
+	if (outputLines >= maxLines) {
+		truncatedBy = "lines";
+	}
+	if (outputBytes > maxBytes) {
+		truncatedBy = "bytes";
+	}
+	return {
+		content: output,
+		truncated: true,
+		truncatedBy,
+		totalLines,
+		totalBytes,
+		outputLines,
+		outputBytes,
+		lastLinePartial: false,
+		firstLineExceedsLimit: false,
+		maxLines,
+		maxBytes,
 	};
 }
 
@@ -13727,6 +13887,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateTail",
+			"text_truncation.truncate_middle":
+				"packages/coding-agent/src/core/tools/truncate.ts truncateMiddle",
 			"render_slicing.slice_ansi_clip": "packages/tui/src/utils.ts sliceWithWidth",
 			"render_slicing.slice_plain_clip": "packages/tui/src/utils.ts sliceWithWidth",
 		},

@@ -336,6 +336,7 @@
    #:harness-truncation-result-first-line-exceeds-limit-p
    #:truncate-harness-head
    #:truncate-harness-tail
+   #:truncate-harness-middle
    #:truncate-harness-line
    #:harness-operation-error
    #:make-harness-operation-error

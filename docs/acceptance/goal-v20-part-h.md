@@ -3000,6 +3000,20 @@ Observed `leaf_id` stays exact. First Friend-MachineD freeze **0.74×**
 (0.04 / 0.05 µs), ceiling 8.0 (microsecond-floor / variance). Gate used
 `--only-enforce`. Same commit no optimize.
 
+### Pair 247 — `text_truncation` (truncate_middle)
+
+| metric | cadr | pi |
+|---|---|---|
+| `truncate_middle` | `truncate-harness-middle` | `truncateMiddle` (`packages/coding-agent/src/core/tools/truncate.ts`) |
+
+4000-line pairing fixture. Keep head and tail lines with one
+`... [N lines omitted] ...` marker between them under the same 2000-line /
+50KB limits as head/tail. Observed `middle_output_lines` (410) /
+`middle_output_bytes` (51057) / `middle_truncated_by` (lines) /
+`middle_omitted_lines` (3591) / `middle_first_line_exceeds` (0) are exact.
+First Friend-MachineD freeze **0.12×** (1777.8 / 14420.3 µs), ceiling 8.0.
+cadr leads. Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 244 — `provider_registry_defs` (definition_ids)
 
 | metric | cadr | pi |
@@ -3432,7 +3446,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/storage/protocol.lisp` | 142 | `harness_storage.open_walk` |
 | `src/cadr-agent/summarization.lisp` | 86 | `session_compact.compact` |
 | `src/cadr-agent/tool.lisp` | 319 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail` |
+| `src/cadr-agent/truncate.lisp` | 554 | `text_truncation.truncate_head`, `text_truncation.truncate_tail`, `text_truncation.truncate_middle` |
 | `src/cadr-ai/auth.lisp` | 207 | `oauth_pkce_device.auth_json` |
 | `src/cadr-ai/auth/bedrock.lisp` | 220 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/auth/device-code.lisp` | 239 | `oauth_pkce_device.poll` |

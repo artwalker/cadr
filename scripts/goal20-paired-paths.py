@@ -159,7 +159,7 @@ METRICS = {
     "tool_grep": ("context_file",),
     "agent_tool_loop": ("roundtrip", "tool_path", "line_ending"),
     "session_compact": ("compact", "branch_summarize"),
-    "text_truncation": ("truncate_head", "truncate_tail"),
+    "text_truncation": ("truncate_head", "truncate_tail", "truncate_middle"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
 }
 
@@ -1147,6 +1147,10 @@ RATIO_CEILINGS = {
     # Ratchet down only.
     "text_truncation.truncate_head": 20.0,
     "text_truncation.truncate_tail": 18.0,
+    # text_truncation.truncate_middle pair (samples=5): observed 0.12x
+    # (1777.8 / 14420.3 us). cadr leads. 8.0 follows the normalize_steps
+    # headroom precedent. Ratchet down only.
+    "text_truncation.truncate_middle": 8.0,
     # cadr currently WINS here (2026-08-15 quick run: 0.26x / 0.21x) after
     # the 12F-2 span-iteration rewrite; pi still pays the quadratic
     # pendingAnsi concat.  1.5 follows the list_models_registry precedent:
@@ -1183,6 +1187,11 @@ OBSERVED_EXACT = {
         "tail_output_bytes",
         "tail_truncated_by",
         "tail_last_line_partial",
+        "middle_output_lines",
+        "middle_output_bytes",
+        "middle_truncated_by",
+        "middle_omitted_lines",
+        "middle_first_line_exceeds",
     ),
     "cli_dispatch": (
         "parsed_provider",

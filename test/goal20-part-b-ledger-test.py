@@ -1834,6 +1834,17 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("session_pipeline.session_leaf_id", paired.RATIO_CEILINGS)
         self.assertIn("leaf_id", paired.OBSERVED_EXACT["session_pipeline"])
 
+    def test_text_truncation_middle_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("text_truncation.truncate_middle", RECORD.METRIC_KEYS)
+        self.assertIn("truncate_middle", paired.METRICS["text_truncation"])
+        self.assertIn("text_truncation.truncate_middle", paired.RATIO_CEILINGS)
+        self.assertIn("middle_output_lines", paired.OBSERVED_EXACT["text_truncation"])
+        self.assertIn("middle_output_bytes", paired.OBSERVED_EXACT["text_truncation"])
+        self.assertIn("middle_truncated_by", paired.OBSERVED_EXACT["text_truncation"])
+        self.assertIn("middle_omitted_lines", paired.OBSERVED_EXACT["text_truncation"])
+        self.assertIn("middle_first_line_exceeds", paired.OBSERVED_EXACT["text_truncation"])
+
     def test_tool_grep_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("tool_grep.context_file", RECORD.METRIC_KEYS)

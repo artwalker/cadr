@@ -155,6 +155,7 @@
   "goal11.continuous_alt_input",
   "text_truncation.truncate_head",
   "text_truncation.truncate_tail",
+  "text_truncation.truncate_middle",
   "render_slicing.slice_ansi_clip",
   "render_slicing.slice_plain_clip"
  ],

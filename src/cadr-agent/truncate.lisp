@@ -500,6 +500,251 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
              :max-lines max-lines
              :max-bytes max-bytes)))))))
 
+(defun harness-truncation-omission-line (omitted-lines)
+  (format nil "... [~D lines omitted] ..." omitted-lines))
+
+(defun harness-join-line-range (text starts start-line end-line)
+  (declare (type simple-string text)
+           (type (simple-array fixnum (*)) starts)
+           (type fixnum start-line end-line))
+  (let ((line-count (length starts)))
+    (cond
+      ((or (>= start-line line-count) (<= end-line start-line))
+       "")
+      (t
+       (let* ((from (aref starts start-line))
+              (to (if (>= end-line line-count)
+                      (length text)
+                      (1- (aref starts end-line)))))
+         (if (< from to)
+             (subseq text from to)
+             ""))))))
+
+(defun truncate-harness-middle
+    (content &key
+               (max-lines
+                 +harness-default-max-lines+)
+               (max-bytes
+                 +harness-default-max-bytes+))
+  ;; Keep head and tail lines with one omission marker between them.
+  ;; pi packages/coding-agent/src/core/tools/truncate.ts truncateMiddle.
+  (let* ((text
+           (if (simple-string-p content)
+               content
+               (coerce content 'simple-string)))
+         (length (length text)))
+    (declare (type simple-string text)
+             (type fixnum length)
+             (optimize (speed 3) (safety 1)))
+    (when (zerop length)
+      (return-from truncate-harness-middle
+        (make-complete-harness-truncation
+         content 0 0 max-lines max-bytes)))
+    (let* ((hint
+             (max 64 (min 8192 (1+ (truncate length 20)))))
+           (starts (make-array hint :element-type 'fixnum))
+           (widths (make-array hint :element-type 'fixnum))
+           (cap hint)
+           (slot 0)
+           (total-bytes 0)
+           (line-start 0)
+           (line-utf8 0))
+      (declare (type fixnum hint cap slot total-bytes line-start line-utf8)
+               (type (simple-array fixnum (*)) starts widths)
+               (optimize (speed 3) (safety 1)))
+      (flet ((push-line (start width)
+               (declare (type fixnum start width))
+               (when (>= slot cap)
+                 (setf cap (the fixnum (* cap 2)))
+                 (let ((next-starts
+                         (make-array cap :element-type 'fixnum))
+                       (next-widths
+                         (make-array cap :element-type 'fixnum)))
+                   (replace next-starts starts)
+                   (replace next-widths widths)
+                   (setf starts next-starts
+                         widths next-widths)))
+               (setf (aref starts slot) start
+                     (aref widths slot) width)
+               (incf slot)))
+        (loop with index of-type fixnum = 0
+              while (< index length)
+              do
+              (let ((code (char-code (schar text index))))
+                (declare (type fixnum code))
+                (cond
+                  ((= code 10)
+                   (incf total-bytes)
+                   (push-line line-start line-utf8)
+                   (setf line-start (the fixnum (1+ index))
+                         line-utf8 0)
+                   (incf index))
+                  ((< code #x80)
+                   (let ((run-start index))
+                     (declare (type fixnum run-start))
+                     (incf index)
+                     (loop while (< index length)
+                           for next of-type fixnum
+                             = (char-code (schar text index))
+                           while (and (< next #x80) (/= next 10))
+                           do (incf index))
+                     (let ((run (the fixnum (- index run-start))))
+                       (incf total-bytes run)
+                       (incf line-utf8 run))))
+                  (t
+                   (let ((nbytes
+                           (utf8-char-length (schar text index))))
+                     (declare (type fixnum nbytes))
+                     (incf total-bytes nbytes)
+                     (incf line-utf8 nbytes)
+                     (incf index))))))
+        (unless (= line-start length)
+          (push-line line-start line-utf8)))
+      (when (< slot cap)
+        (let ((exact-starts (make-array slot :element-type 'fixnum))
+              (exact-widths (make-array slot :element-type 'fixnum)))
+          (replace exact-starts starts)
+          (replace exact-widths widths)
+          (setf starts exact-starts
+                widths exact-widths)))
+      (let ((total-lines slot))
+        (declare (type fixnum total-lines))
+        (when (and (<= total-lines max-lines)
+                   (<= total-bytes max-bytes))
+          (return-from truncate-harness-middle
+            (make-complete-harness-truncation
+             content total-lines total-bytes max-lines max-bytes)))
+        (let ((first-line-bytes (aref widths 0)))
+          (when (> first-line-bytes max-bytes)
+            (return-from truncate-harness-middle
+              (make-harness-truncation-result
+               :truncated-p t
+               :truncated-by :bytes
+               :total-lines total-lines
+               :total-bytes total-bytes
+               :first-line-exceeds-limit-p t
+               :max-lines max-lines
+               :max-bytes max-bytes))))
+        (labels ((segment-bytes (from to)
+                   (declare (type fixnum from to))
+                   (let ((bytes 0))
+                     (loop for index from from below to
+                           do (incf bytes (aref widths index)))
+                     (when (< from to)
+                       (incf bytes (1- (- to from))))
+                     bytes))
+                 (selection-bytes (head-count tail-count omitted-lines)
+                   (declare (type fixnum head-count tail-count omitted-lines))
+                   (let* ((omission
+                            (harness-truncation-omission-line
+                             omitted-lines))
+                          (omission-bytes
+                            (harness-utf8-length omission))
+                          (head-bytes
+                            (if (zerop head-count)
+                                0
+                                (segment-bytes 0 head-count)))
+                          (tail-bytes
+                            (if (zerop tail-count)
+                                0
+                                (segment-bytes
+                                 (- total-lines tail-count)
+                                 total-lines)))
+                          (join-bytes
+                            (+ head-bytes
+                               tail-bytes
+                               omission-bytes
+                               (cond
+                                 ((and (plusp head-count)
+                                       (or (plusp tail-count)
+                                           (plusp omitted-lines)))
+                                  1)
+                                 ((and (zerop head-count)
+                                       (plusp tail-count)
+                                       (plusp omitted-lines))
+                                  1)
+                                 (t 0))
+                               (if (and (plusp tail-count)
+                                        (or (plusp head-count)
+                                            (plusp omitted-lines)))
+                                   1
+                                   0))))
+                     join-bytes))
+                 (selection-fits-p (head-count tail-count)
+                   (declare (type fixnum head-count tail-count))
+                   (when (> (+ head-count tail-count) total-lines)
+                     (return-from selection-fits-p nil))
+                   (let ((omitted (- total-lines head-count tail-count)))
+                     (when (<= omitted 0)
+                       (return-from selection-fits-p nil))
+                     (let ((output-lines (+ head-count 1 tail-count)))
+                       (and (<= output-lines max-lines)
+                            (<= (selection-bytes
+                                 head-count tail-count omitted)
+                                max-bytes))))))
+          (let ((head-count 0)
+                (tail-count 0)
+                (reason :lines))
+            (declare (type fixnum head-count tail-count))
+            (loop
+              (let ((improved nil))
+                (when (< (+ head-count tail-count) total-lines)
+                  (let ((next-head (1+ head-count)))
+                    (when (selection-fits-p next-head tail-count)
+                      (setf head-count next-head
+                            improved t))))
+                (when (< (+ head-count tail-count) total-lines)
+                  (let ((next-tail (1+ tail-count)))
+                    (when (selection-fits-p head-count next-tail)
+                      (setf tail-count next-tail
+                            improved t))))
+                (unless improved
+                  (return))))
+            (let ((omitted (- total-lines head-count tail-count)))
+              (when (<= omitted 0)
+                (error "truncate-harness-middle: empty selection on ~D lines"
+                       total-lines))
+              (let* ((omission
+                       (harness-truncation-omission-line omitted))
+                     (head-text
+                       (if (zerop head-count)
+                           ""
+                           (harness-join-line-range
+                            text starts 0 head-count)))
+                     (tail-text
+                       (if (zerop tail-count)
+                           ""
+                           (harness-join-line-range
+                            text starts (- total-lines tail-count)
+                            total-lines)))
+                     (output
+                       (cond
+                         ((and (plusp head-count) (plusp tail-count))
+                          (format nil "~A~%~A~%~A"
+                                  head-text omission tail-text))
+                         ((plusp head-count)
+                          (format nil "~A~%~A" head-text omission))
+                         ((plusp tail-count)
+                          (format nil "~A~%~A" omission tail-text))
+                         (t omission)))
+                     (output-lines (+ head-count 1 tail-count))
+                     (output-bytes
+                       (selection-bytes head-count tail-count omitted)))
+                (when (>= output-lines max-lines)
+                  (setf reason :lines))
+                (when (> output-bytes max-bytes)
+                  (setf reason :bytes))
+                (make-harness-truncation-result
+                 :content output
+                 :truncated-p t
+                 :truncated-by reason
+                 :total-lines total-lines
+                 :total-bytes total-bytes
+                 :output-lines output-lines
+                 :output-bytes output-bytes
+                 :max-lines max-lines
+                 :max-bytes max-bytes)))))))))
+
 (defun truncate-harness-line
     (line &optional (max-characters 500))
   (if (<= (length line) max-characters)
@@ -521,6 +766,13 @@ encode-the-whole-string implementation (goal 20, 12F-1)."
                (max-lines +default-max-lines+)
                (max-bytes +default-max-bytes+))
   (truncate-harness-tail
+   content :max-lines max-lines :max-bytes max-bytes))
+
+(defun truncate-middle
+    (content &key
+               (max-lines +default-max-lines+)
+               (max-bytes +default-max-bytes+))
+  (truncate-harness-middle
    content :max-lines max-lines :max-bytes max-bytes))
 
 (defun format-size (bytes)

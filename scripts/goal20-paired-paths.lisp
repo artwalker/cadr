@@ -137,6 +137,7 @@
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
+;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;; 107. cli_interactive_controller tui-auth-type-label vs formatAuthSelectorProviderType
@@ -462,6 +463,7 @@
     ("session_compact.branch_summarize" . 3)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
+    ("text_truncation.truncate_middle" . 50)
     ("render_slicing.slice_ansi_clip" . 200)
     ("render_slicing.slice_plain_clip" . 200)))
 
@@ -2081,7 +2083,8 @@
 (defun measure-text-truncation ()
   (let* ((content (truncation-fixture-content))
          (head (cadr-agent::truncate-harness-head content))
-         (tail (cadr-agent::truncate-harness-tail content)))
+         (tail (cadr-agent::truncate-harness-tail content))
+         (middle (cadr-agent::truncate-harness-middle content)))
     (json-object
      "observed"
      (json-object
@@ -2105,6 +2108,20 @@
         (if reason (string-downcase (symbol-name reason)) "null"))
       "tail_last_line_partial"
       (if (cadr-agent::harness-truncation-result-last-line-partial-p tail)
+          1 0)
+      "middle_output_lines"
+      (cadr-agent::harness-truncation-result-output-lines middle)
+      "middle_output_bytes"
+      (cadr-agent::harness-truncation-result-output-bytes middle)
+      "middle_truncated_by"
+      (let ((reason (cadr-agent::harness-truncation-result-truncated-by middle)))
+        (if reason (string-downcase (symbol-name reason)) "null"))
+      "middle_omitted_lines"
+      (- (cadr-agent::harness-truncation-result-total-lines middle)
+         (- (cadr-agent::harness-truncation-result-output-lines middle) 1))
+      "middle_first_line_exceeds"
+      (if (cadr-agent::harness-truncation-result-first-line-exceeds-limit-p
+           middle)
           1 0))
      "truncate_head"
      (collect "text_truncation.truncate_head"
@@ -2115,7 +2132,12 @@
      (collect "text_truncation.truncate_tail"
               (lambda ()
                 (lambda ()
-                  (cadr-agent::truncate-harness-tail content)))))))
+                  (cadr-agent::truncate-harness-tail content))))
+     "truncate_middle"
+     (collect "text_truncation.truncate_middle"
+              (lambda ()
+                (lambda ()
+                  (cadr-agent::truncate-harness-middle content)))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Pair: coding-agent read tool (split lines + truncateHead)
@@ -13305,6 +13327,8 @@
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"
       "src/cadr-agent/truncate.lisp truncate-harness-tail"
+      "text_truncation.truncate_middle"
+      "src/cadr-agent/truncate.lisp truncate-harness-middle"
       "render_slicing.slice_ansi_clip"
       "src/cadr-tui/unicode.lisp slice-with-width"
       "render_slicing.slice_plain_clip"
