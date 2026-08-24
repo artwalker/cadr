@@ -3054,7 +3054,6 @@ In-memory entry count on the written append journal (128 messages). Observed
 (0.22 / 2.4 µs), ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same
 commit no optimize.
 
-<<<<<<< HEAD
 ### Pair 249 — `settings_load` (stored_auth_secrets)
 
 | metric | cadr | pi |
