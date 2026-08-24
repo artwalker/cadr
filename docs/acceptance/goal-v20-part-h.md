@@ -3541,14 +3541,14 @@ Denominator: **295 files / 127,795 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 172 | 75,687 | 59.2% | `no worse than baseline` is falsifiable |
+| `paired` | 173 | 75,730 | 59.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,424 | 13.6% | on a named paired thunk; no own bench |
-| `needs-pair` | 71 | 27,209 | 21.3% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 70 | 27,166 | 21.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 59.2% of lines (172 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.0% of lines.
+- **Falsifiable vs baseline:** 59.3% of lines (173 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 65.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3584,6 +3584,7 @@ production work, not merely as a transitive callee.
 |---|---:|---|
 | `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize` |
 | `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
+| `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
@@ -3593,7 +3594,6 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
 | `src/cadr-agent/runtime.lisp` | 421 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
-| `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
 | `src/cadr-agent/session/export-html.lisp` | 455 | `session_export_html.to_html` |
@@ -3813,10 +3813,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
-| `session_compact` | 0 | 0 |
 | `core_rest` | 3 | 161 |
 | `cli_support` | 5 | 123 |
-| `agent_conditions` | 1 | 43 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |
 
