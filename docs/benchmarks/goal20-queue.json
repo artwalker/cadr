@@ -42,8 +42,8 @@
    "status": "done",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-agent-tool-loop",
-   "metric": null,
-   "branch": "pair-254-session-list-probe"
+   "metric": "agent_conditions.error_probe",
+   "branch": "pair-254-conditions"
   },
   {
    "pair": 255,
@@ -127,5 +127,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-254-conditions",
+   "pair": 254
+  }
+ ]
 }
