@@ -310,6 +310,11 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("theme", paired.OBSERVED_EXACT["cli_settings"])
         self.assertIn("compaction_reserve_tokens", paired.OBSERVED_EXACT["cli_settings"])
         self.assertIn("project_trusted", paired.OBSERVED_EXACT["cli_settings"])
+        self.assertIn("agent_conditions.error_probe", RECORD.METRIC_KEYS)
+        self.assertIn("error_probe", paired.METRICS["agent_conditions"])
+        self.assertIn("agent_conditions.error_probe", paired.RATIO_CEILINGS)
+        self.assertIn("ac_schema_tool", paired.OBSERVED_EXACT["agent_conditions"])
+        self.assertIn("ac_catch_stale", paired.OBSERVED_EXACT["agent_conditions"])
 
     def test_settings_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

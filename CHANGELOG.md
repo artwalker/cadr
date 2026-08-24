@@ -32,6 +32,9 @@ tag/Release step.
   `summarized` / `entry_count` / `branch_summary_chars` exact.
   Friend-MachineD n=5 **1.15×** (37.3 / 32.5 µs), ceiling 20.0.
   Measure-only.
+- Goal 20 P.13: pair `agent_conditions.error_probe` (condition slot reads +
+  subtype/catch probe on `src/cadr-agent/conditions.lisp`; fixture-aligned
+  pi harness). Measure-only.
 - Goal 20 P.13: pair `cli_extensions_install.extension_discovery`
   (flat/subdir scan, project/global dirs, explicit `-e` paths; cadr
   `discover-extension-sources` vs pi `discoverAndLoadExtensions` path

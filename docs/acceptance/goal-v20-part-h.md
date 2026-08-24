@@ -3152,6 +3152,23 @@ production collect + generate on an in-memory `SessionEntry[]` tree, not
 `branch_summary_chars` are exact. `session_compact.compact` stays on its own
 thunk. First Friend-MachineD freeze **1.15×** (37.3 / 32.5 µs), ceiling 20.0.
 
+### Pair 254 — `agent_conditions` (error_probe)
+
+| metric | cadr | pi |
+|---|---|---|
+| `error_probe` | `define-condition` slot accessors + `subtypep` (`src/cadr-agent/conditions.lisp`) | fixture-aligned agent error slot/type probe |
+
+Leftover sibling of the `agent_conditions` hole. Time condition construction,
+slot reads, hierarchy checks, and `handler-case`/`catch` only — not tool-loop
+execution or settings I/O. Fixture slots: schema `edit`/`/edits`/`required`,
+tool `bash`/`call-1`, session `/tmp/s.jsonl` line 12. Observed `ac_schema_tool`
+/ `ac_schema_ptr` / `ac_schema_reason` / `ac_tool_name` / `ac_tool_id` /
+`ac_sess_path` / `ac_sess_line` / `ac_sub_schema` / `ac_sub_tool` /
+`ac_sub_ext_reg` / `ac_sub_ext_exec` / `ac_sub_stale` / `ac_sub_session` /
+`ac_catch_busy` / `ac_catch_shutdown` / `ac_catch_turn` / `ac_catch_ext_reg` /
+`ac_catch_ext_exec` / `ac_catch_stale` are exact. Gate used `--only-enforce`.
+Same commit no optimize.
+
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
 
 | metric | cadr | pi |
@@ -3561,6 +3578,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
 | `src/cadr-agent/runtime.lisp` | 421 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
+| `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
 | `src/cadr-agent/session/export-html.lisp` | 455 | `session_export_html.to_html` |

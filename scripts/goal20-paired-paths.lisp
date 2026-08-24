@@ -93,6 +93,7 @@
 ;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
 ;;;; 253. settings_load default-config-path/default-auth-path vs getSettingsPath/getAuthPath
 ;;;; 254. session_discovery list-sessions vs SessionManager.listAll
+;;;; 254. agent_conditions error-slot probe vs agent error shapes
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -229,6 +230,7 @@
     ("provider_codex.stream_roundtrip" . 10)
     ("provider_pi_messages.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
+    ("agent_conditions.error_probe" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -2792,6 +2794,86 @@
    :global-path global
    :project-path project
    :project-trusted-p t))
+
+
+(defun agent-conditions-bool (value)
+  (if value 1 0))
+
+(defun run-agent-conditions-error-probe ()
+  (flet ((bool (value) (agent-conditions-bool value)))
+    (let* ((schema
+             (make-condition 'cadr-agent:schema-validation-error
+                             :tool "edit"
+                             :json-pointer "/edits"
+                             :reason "required"))
+           (tool-exec
+             (make-condition 'cadr-agent:tool-execution-error
+                             :tool "bash"
+                             :tool-call-id "call-1"))
+           (session
+             (make-condition 'cadr-agent:session-error
+                             :path "/tmp/s.jsonl"
+                             :line 12)))
+      (list
+       (bool (string= "edit" (cadr-agent:schema-validation-error-tool schema)))
+       (bool (string= "/edits" (cadr-agent:schema-validation-error-json-pointer schema)))
+       (bool (string= "required" (cadr-agent:schema-validation-error-reason schema)))
+       (bool (string= "bash" (cadr-agent:tool-execution-error-tool tool-exec)))
+       (bool (string= "call-1" (cadr-agent:tool-execution-error-tool-call-id tool-exec)))
+       (bool (string= "/tmp/s.jsonl" (cadr-agent:session-error-path session)))
+       (if (= 12 (or (cadr-agent:session-error-line session) 0)) 1 0)
+       (bool (subtypep (type-of schema) 'cadr-ai:cadr-error))
+       (bool (subtypep (type-of tool-exec) 'cadr-ai:cadr-error))
+       (bool (subtypep 'cadr-agent:extension-registration-error 'cadr-ai:configuration-error))
+       (bool (subtypep 'cadr-agent:extension-execution-error 'cadr-ai:cadr-error))
+       (bool (subtypep 'cadr-agent:stale-extension-context 'cadr-ai:cadr-error))
+       (bool (subtypep 'cadr-agent:session-error 'cadr-ai:cadr-error))
+       (bool (handler-case (progn (error 'cadr-agent::agent-busy-error) nil)
+                            (cadr-agent::agent-busy-error () t)))
+       (bool (handler-case (progn (error 'cadr-agent::agent-shutdown-error) nil)
+                            (cadr-agent::agent-shutdown-error () t)))
+       (bool (handler-case (progn (error 'cadr-agent::agent-turn-limit-error) nil)
+                            (cadr-agent::agent-turn-limit-error () t)))
+       (bool (handler-case (progn (error 'cadr-agent:extension-registration-error) nil)
+                            (cadr-agent:extension-registration-error () t)))
+       (bool (handler-case (progn (error 'cadr-agent:extension-execution-error) nil)
+                            (cadr-agent:extension-execution-error () t)))
+       (bool (handler-case (progn (error 'cadr-agent:stale-extension-context) nil)
+                            (cadr-agent:stale-extension-context () t)))))))
+
+(defun measure-agent-conditions ()
+  (destructuring-bind
+        (schema-tool schema-ptr schema-reason tool-name tool-id sess-path sess-line
+         sub-schema sub-tool sub-ext-reg sub-ext-exec sub-stale sub-session
+         catch-busy catch-shutdown catch-turn catch-ext-reg catch-ext-exec catch-stale)
+      (run-agent-conditions-error-probe)
+    (json-object
+     "observed"
+     (json-object
+      "ac_schema_tool" schema-tool
+      "ac_schema_ptr" schema-ptr
+      "ac_schema_reason" schema-reason
+      "ac_tool_name" tool-name
+      "ac_tool_id" tool-id
+      "ac_sess_path" sess-path
+      "ac_sess_line" sess-line
+      "ac_sub_schema" sub-schema
+      "ac_sub_tool" sub-tool
+      "ac_sub_ext_reg" sub-ext-reg
+      "ac_sub_ext_exec" sub-ext-exec
+      "ac_sub_stale" sub-stale
+      "ac_sub_session" sub-session
+      "ac_catch_busy" catch-busy
+      "ac_catch_shutdown" catch-shutdown
+      "ac_catch_turn" catch-turn
+      "ac_catch_ext_reg" catch-ext-reg
+      "ac_catch_ext_exec" catch-ext-exec
+      "ac_catch_stale" catch-stale)
+     "error_probe"
+     (collect "agent_conditions.error_probe"
+              (lambda ()
+                (lambda ()
+                  (run-agent-conditions-error-probe)))))))
 
 (defun measure-cli-settings ()
   (multiple-value-bind (global project)
@@ -13510,6 +13592,8 @@
       "src/cadr-ai/providers/pi-messages.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
+      "agent_conditions.error_probe"
+      "src/cadr-agent/conditions.lisp define-condition slot accessors + subtypep"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -14085,6 +14169,8 @@
               (let ((pi-messages (measure-provider-pi-messages)))
               (format *error-output* "goal20 cadr paired paths: cli_settings~%")
               (let ((settings (measure-cli-settings)))
+              (format *error-output* "goal20 cadr paired paths: agent_conditions~%")
+              (let ((agent-conditions (measure-agent-conditions)))
               (format *error-output* "goal20 cadr paired paths: settings_load~%")
               (let ((settings-load (measure-settings-load)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
@@ -14215,6 +14301,7 @@
               "provider_codex" codex
               "provider_pi_messages" pi-messages
               "cli_settings" settings
+              "agent_conditions" agent-conditions
               "settings_load" settings-load
               "resource_loader" resources
               "package_manager" packages

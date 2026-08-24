@@ -741,8 +741,8 @@
   },
   {
    "prefix": "src/cadr-agent/conditions.lisp",
-   "class": "needs-pair",
-   "hole": "agent_conditions"
+   "class": "paired",
+   "metrics": ["agent_conditions.error_probe"]
   },
   {
    "prefix": "src/cadr-agent/execution-env.lisp",

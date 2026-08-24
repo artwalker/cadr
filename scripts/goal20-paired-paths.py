@@ -99,6 +99,7 @@ METRICS = {
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
     "cli_settings": ("create",),
+    "agent_conditions": ("error_probe",),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload",),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -237,6 +238,9 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "cli_settings.create": 1.5,
+    # agent_conditions.error_probe pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "agent_conditions.error_probe": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1352,6 +1356,27 @@ OBSERVED_EXACT = {
         "default_project_trust",
         "http_idle_timeout_ms",
         "project_trusted",
+    ),
+    "agent_conditions": (
+        "ac_schema_tool",
+        "ac_schema_ptr",
+        "ac_schema_reason",
+        "ac_tool_name",
+        "ac_tool_id",
+        "ac_sess_path",
+        "ac_sess_line",
+        "ac_sub_schema",
+        "ac_sub_tool",
+        "ac_sub_ext_reg",
+        "ac_sub_ext_exec",
+        "ac_sub_stale",
+        "ac_sub_session",
+        "ac_catch_busy",
+        "ac_catch_shutdown",
+        "ac_catch_turn",
+        "ac_catch_ext_reg",
+        "ac_catch_ext_exec",
+        "ac_catch_stale",
     ),
     "settings_load": (
         "tr_empty",

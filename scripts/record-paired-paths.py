@@ -35,6 +35,7 @@ METRIC_KEYS = (
     "provider_codex.stream_roundtrip",
     "provider_pi_messages.stream_roundtrip",
     "cli_settings.create",
+    "agent_conditions.error_probe",
     "settings_load.project_trust",
     "settings_load.config_value",
     "settings_load.http_idle",

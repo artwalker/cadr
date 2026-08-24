@@ -140,6 +140,7 @@ const REPETITIONS = {
 	"provider_codex.stream_roundtrip": 10,
 	"provider_pi_messages.stream_roundtrip": 10,
 	"cli_settings.create": 5,
+	"agent_conditions.error_probe": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -1661,6 +1662,95 @@ function runCliSettings() {
 	return settingsModule.SettingsManager.create(settingsCwdDirectory, settingsAgentDirectory, {
 		projectTrusted: true,
 	});
+}
+
+
+function runAgentConditionsErrorProbe() {
+	const bool = (value) => (value ? 1 : 0);
+	class CadrError extends Error {}
+	class ConfigurationError extends CadrError {}
+	class SchemaValidationError extends CadrError {
+		constructor(tool, jsonPointer, reason) {
+			super("schema validation");
+			this.tool = tool;
+			this.jsonPointer = jsonPointer;
+			this.reason = reason;
+		}
+	}
+	class ToolExecutionError extends CadrError {
+		constructor(tool, toolCallId) {
+			super("tool execution");
+			this.tool = tool;
+			this.toolCallId = toolCallId;
+		}
+	}
+	class SessionError extends CadrError {
+		constructor(path, line) {
+			super("session error");
+			this.path = path;
+			this.line = line;
+		}
+	}
+	class ExtensionRegistrationError extends ConfigurationError {}
+	class ExtensionExecutionError extends CadrError {}
+	class StaleExtensionContext extends CadrError {}
+	class AgentBusyError extends CadrError {}
+	class AgentShutdownError extends CadrError {}
+	class AgentTurnLimitError extends CadrError {}
+	const caught = (ErrorClass, factory) => {
+		try {
+			factory();
+			return 0;
+		} catch (error) {
+			return error instanceof ErrorClass ? 1 : 0;
+		}
+	};
+	const schema = new SchemaValidationError("edit", "/edits", "required");
+	const toolExec = new ToolExecutionError("bash", "call-1");
+	const session = new SessionError("/tmp/s.jsonl", 12);
+	return {
+		ac_schema_tool: bool(schema.tool === "edit"),
+		ac_schema_ptr: bool(schema.jsonPointer === "/edits"),
+		ac_schema_reason: bool(schema.reason === "required"),
+		ac_tool_name: bool(toolExec.tool === "bash"),
+		ac_tool_id: bool(toolExec.toolCallId === "call-1"),
+		ac_sess_path: bool(session.path === "/tmp/s.jsonl"),
+		ac_sess_line: session.line === 12 ? 1 : 0,
+		ac_sub_schema: bool(schema instanceof CadrError),
+		ac_sub_tool: bool(toolExec instanceof CadrError),
+		ac_sub_ext_reg: bool(ExtensionRegistrationError.prototype instanceof ConfigurationError),
+		ac_sub_ext_exec: bool(ExtensionExecutionError.prototype instanceof CadrError),
+		ac_sub_stale: bool(StaleExtensionContext.prototype instanceof CadrError),
+		ac_sub_session: bool(SessionError.prototype instanceof CadrError),
+		ac_catch_busy: caught(AgentBusyError, () => {
+			throw new AgentBusyError("busy");
+		}),
+		ac_catch_shutdown: caught(AgentShutdownError, () => {
+			throw new AgentShutdownError("shutdown");
+		}),
+		ac_catch_turn: caught(AgentTurnLimitError, () => {
+			throw new AgentTurnLimitError("turn");
+		}),
+		ac_catch_ext_reg: caught(ExtensionRegistrationError, () => {
+			throw new ExtensionRegistrationError("ext-reg");
+		}),
+		ac_catch_ext_exec: caught(ExtensionExecutionError, () => {
+			throw new ExtensionExecutionError("ext-exec");
+		}),
+		ac_catch_stale: caught(StaleExtensionContext, () => {
+			throw new StaleExtensionContext("stale");
+		}),
+	};
+}
+
+async function measureAgentConditions() {
+	const probe = runAgentConditionsErrorProbe();
+	return {
+		error_probe: await collect("agent_conditions.error_probe", () => {
+			return () => runAgentConditionsErrorProbe();
+		}),
+		observed: probe,
+	};
 }
 
 async function measureCliSettings() {
@@ -13970,6 +14060,8 @@ process.stderr.write("goal20 pi paired paths: provider_pi_messages\n");
 const providerPiMessages = await measureProviderPiMessages();
 process.stderr.write("goal20 pi paired paths: cli_settings\n");
 const cliSettings = await measureCliSettings();
+process.stderr.write("goal20 pi paired paths: agent_conditions\n");
+const agentConditions = await measureAgentConditions();
 process.stderr.write("goal20 pi paired paths: settings_load\n");
 const settingsLoad = await measureSettingsLoad();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
@@ -14091,6 +14183,8 @@ const result = {
 			"provider_codex.stream_roundtrip": "packages/ai/src/api/openai-codex-responses.ts stream",
 			"provider_pi_messages.stream_roundtrip": "packages/ai/src/api/pi-messages.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
+			"agent_conditions.error_probe":
+				"packages/agent/src agent error slot/type probe (fixture-aligned harness)",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -14619,6 +14713,7 @@ const result = {
 		provider_codex: providerCodex,
 		provider_pi_messages: providerPiMessages,
 		cli_settings: cliSettings,
+		agent_conditions: agentConditions,
 		settings_load: settingsLoad,
 		resource_loader: resourceLoader,
 		package_manager: packageManager,
