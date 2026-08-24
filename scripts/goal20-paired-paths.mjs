@@ -348,6 +348,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_toggle_provider": 50,
 	"cli_selectors.scoped_models_selector_target_ids": 50,
 	"cli_selectors.scoped_models_selector_enable_all": 50,
+	"cli_selectors.scoped_models_selector_clear_all": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10383,6 +10384,38 @@ function runCliSelectorsScopedModelsSelectorEnableAll() {
 	};
 }
 
+function scopedModelsSelectorClearAllEncoded(allModels, enabledIds, query = "") {
+	const allIds = allModels.map(scopedModelsFullId);
+	const targetIds = query
+		? scopedModelsFilterItems(allModels, enabledIds, query).map((item) => item.fullId)
+		: undefined;
+	const nextEnabledIds = scopedModelsClearIds(enabledIds, allIds, targetIds);
+	return `${encodeScopedModelsEnabledIds(nextEnabledIds)}|true`;
+}
+
+function runCliSelectorsScopedModelsSelectorClearAll() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsca_all: scopedModelsSelectorClearAllEncoded(models, null),
+		smsca_partial: scopedModelsSelectorClearAllEncoded(models, ["openai/gpt-4o"]),
+		smsca_empty: scopedModelsSelectorClearAllEncoded(models, []),
+		smsca_two: scopedModelsSelectorClearAllEncoded(models, [
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+		smsca_filter: scopedModelsSelectorClearAllEncoded(
+			models,
+			["openai/gpt-4o"],
+			"gpt",
+		),
+		smsca_miss: scopedModelsSelectorClearAllEncoded(
+			models,
+			["openai/gpt-4o"],
+			"nope",
+		),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -11145,6 +11178,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorTargetIds();
 	const scopedModelsSelectorEnableAllResults =
 		runCliSelectorsScopedModelsSelectorEnableAll();
+	const scopedModelsSelectorClearAllResults =
+		runCliSelectorsScopedModelsSelectorClearAll();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11446,6 +11481,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorToggleProviderResults,
 		...scopedModelsSelectorTargetIdsResults,
 		...scopedModelsSelectorEnableAllResults,
+		...scopedModelsSelectorClearAllResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11879,6 +11915,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_toggle_provider",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorToggleProvider();
+			},
+		),
+		scoped_models_selector_clear_all: await collect(
+			"cli_selectors.scoped_models_selector_clear_all",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorClearAll();
 			},
 		),
 		observed,
