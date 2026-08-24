@@ -66,11 +66,13 @@
             state)))
     (is (eq first second))
     (is (= 2 (length first)))
+    (is (= 2 (cadr-cli::model-selector-state-filtered-count state)))
     (cadr-cli::model-selector-set-query state "beta")
     (let ((filtered
             (cadr-cli::model-selector-visible-models
              state)))
       (is (= 1 (length filtered)))
+      (is (= 1 (cadr-cli::model-selector-state-filtered-count state)))
       (is (string=
            "beta-1"
            (cadr-ai:model-id (first filtered))))
@@ -79,6 +81,34 @@
         filtered
         (cadr-cli::model-selector-visible-models
          state))))))
+
+(test goal20-model-selector-search-text-is-cached
+  (let* ((alpha (goal20-selector-test-model "alpha-1"))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models (list alpha)
+            :current-model alpha)))
+    (cadr-cli::model-selector-set-query state "alpha")
+    (let ((table
+            (cadr-cli::model-selector-state-search-text-table state)))
+      (is (hash-table-p table))
+      (is (string=
+           (gethash alpha table)
+           (cadr-cli::model-selector-search-text alpha))))))
+
+(test goal20-model-selector-filter-is-skipped-when-unchanged
+  (let* ((alpha (goal20-selector-test-model "alpha-1"))
+         (beta (goal20-selector-test-model "beta-1"))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models (list alpha beta)
+            :current-model alpha))
+         (first (cadr-cli::model-selector-state-filtered-models state)))
+    (cadr-cli::model-selector-apply-filter state)
+    (is (eq first (cadr-cli::model-selector-state-filtered-models state)))
+    (cadr-cli::model-selector-move state 1)
+    (is (= 1 (cadr-cli::model-selector-state-selected state)))
+    (is (eq first (cadr-cli::model-selector-state-filtered-models state)))))
 
 (test goal20-scoped-models-selector-caches-items-and-filter
   (let* ((models

@@ -20,6 +20,13 @@
    +models-selector-keybinding-definitions+
    :user-bindings user-bindings))
 
+(defparameter *default-models-selector-keybindings*
+  (make-models-selector-keybindings))
+
+(defun model-selector-keybindings (state)
+  (or (model-selector-state-keybindings state)
+      *default-models-selector-keybindings*))
+
 (defun qualified-model-id (model)
   (format nil "~(~A~)/~A"
           (cadr-ai:model-provider model)
@@ -82,6 +89,10 @@
   (scope :all)
   (query "" :type string)
   (filtered-models nil :type list)
+  (filter-query nil :type (or null string))
+  (filter-scope nil)
+  (filtered-count 0 :type (integer 0 *))
+  (search-text-table nil)
   (selected 0 :type (integer 0 *))
   refresh-status-message
   (refresh-status-kind :muted)
@@ -95,26 +106,39 @@
       (model-selector-state-all-models state)))
 
 (defun model-selector-apply-filter (state)
-  (let ((models
-          (model-selector-active-models state))
-        (query
-          (model-selector-state-query state)))
-    (setf
-     (model-selector-state-filtered-models state)
-     (if (zerop (length query))
-         (copy-list models)
-         (selector-fuzzy-filter
-          models query
-          #'model-selector-search-text))))
+  (let* ((scope (model-selector-state-scope state))
+         (query (model-selector-state-query state))
+         (last-query (model-selector-state-filter-query state))
+         (last-scope (model-selector-state-filter-scope state)))
+    (unless (and (string= query (or last-query ""))
+                 (eq scope last-scope))
+      (let* ((models (model-selector-active-models state))
+             (filtered
+               (if (zerop (length query))
+                   models
+                   (progn
+                     (unless (model-selector-state-search-text-table state)
+                       (model-selector-rebuild-search-text-table state))
+                     (selector-fuzzy-filter
+                      models query
+                      (lambda (model)
+                        (model-selector-filter-search-text state model)))))))
+        (setf
+         (model-selector-state-filtered-models state)
+         filtered
+         (model-selector-state-filter-query state)
+         query
+         (model-selector-state-filter-scope state)
+         scope
+         (model-selector-state-filtered-count state)
+         (length filtered)))))
   state)
 
 (defun model-selector-visible-models (state)
   (model-selector-state-filtered-models state))
 
 (defun model-selector-clamp-selected (state)
-  (let ((count
-          (length
-           (model-selector-visible-models state))))
+  (let ((count (model-selector-state-filtered-count state)))
     (setf
      (model-selector-state-selected state)
      (if (zerop count)
@@ -155,9 +179,8 @@
            :refresh-status-kind refresh-status-kind
            :scope
            (if scoped-models :scoped :all)
-           :keybindings
-           (or keybindings
-               (make-models-selector-keybindings)))))
+           :keybindings keybindings)))
+    (model-selector-rebuild-search-text-table state)
     (model-selector-apply-filter state)
     (model-selector-select-current state)))
 
@@ -174,12 +197,15 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
    (sort-model-selector-models
     models
     (model-selector-state-current-model state))
+   (model-selector-state-search-text-table state)
+   nil
    (model-selector-state-refresh-status-message state)
    status-message
    (model-selector-state-refresh-status-kind state)
    (or status-kind :muted)
    (model-selector-state-error-message state)
    error-message)
+  (model-selector-rebuild-search-text-table state)
   (model-selector-apply-filter state)
   (model-selector-select-current state)
   (model-selector-clamp-selected state)
@@ -224,20 +250,18 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
   state)
 
 (defun model-selector-move (state delta)
-  (let ((count
-          (length
-           (model-selector-visible-models state))))
-    (setf
-     (model-selector-state-selected state)
-     (selector-frame-move-index
-      (model-selector-state-selected state)
-      count delta)))
+  (setf
+   (model-selector-state-selected state)
+   (selector-frame-move-index
+    (model-selector-state-selected state)
+    (model-selector-state-filtered-count state)
+    delta))
   state)
 
 (defun model-selector-key-p
     (state data name)
   (selector-keybinding-matches-p
-   (model-selector-state-keybindings state)
+   (model-selector-keybindings state)
    data name))
 
 (defun model-selector-handle-raw-input
@@ -331,53 +355,6 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
     (declare (ignore end))
     (values visible start total)))
 
-(defun render-model-selector (state width)
-  (multiple-value-bind (models start total)
-      (model-selector-visible-slice state 10)
-    (let* ((selected
-             (model-selector-state-selected state))
-           (current
-             (model-selector-state-current-model state))
-           (scoped-p
-             (not (null
-                   (model-selector-state-scoped-models state))))
-           (scope-line
-             (if scoped-p
-                 (let ((showing-scoped-p
-                         (eq :scoped
-                             (model-selector-state-scope state))))
-                   (concatenate
-                    'string
-                    (cadr-tui:theme-foreground :muted "Scope: ")
-                    (cadr-tui:theme-foreground
-                     (if showing-scoped-p :muted :accent) "all")
-                    (cadr-tui:theme-foreground :muted " | ")
-                    (cadr-tui:theme-foreground
-                     (if showing-scoped-p :accent :muted) "scoped")))
-                 (cadr-tui:theme-foreground
-                  :warning
-                  "Only showing models from configured providers. Use /login to add providers.")))
-           (body-lines
-             (append
-              (if models
-                  (loop
-                    for model in models
-                    for index from start
-                    for selected-p = (= index selected)
-                    for current-p = (model-equal-p model current)
-                    collect
-                    (selector-component-text-line
-                     (concatenate
-                      'string
-                      (if selected-p
-                          (cadr-tui:theme-foreground :accent "→ ")
-                          "  ")
-                      (if selected-p
-                          (cadr-tui:theme-foreground
-                           :accent (cadr-ai:model-id model))
-                          (cadr-ai:model-id model))
-                      " "
-                      (cadr-tui:theme-foreground
                        :muted
                        (format nil "[~(~A~)]"
                                (cadr-ai:model-provider model)))
@@ -459,6 +436,56 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
               (list :lines body-lines)
               :blank :border))
        width))))
+(defstruct (scoped-models-selector-state
+            (:constructor
+                %make-scoped-models-selector-state))
+  (all-models nil :type list)
+  (all-ids nil :type list)
+  (enabled-ids :all)
+  (query "" :type string)
+  (models-by-id nil)
+  (items nil :type list)
+  (visible-items nil :type list)
+  (filter-query nil :type (or null string))
+  (visible-count 0 :type (integer 0 *))
+  (selected 0 :type (integer 0 *))
+  (dirty-p nil :type boolean)
+  refresh-status-message
+  (refresh-status-kind :muted)
+  change-callback
+  persist-callback
+  cancel-callback
+  keybindings)
+
+(defun scoped-models-copy-enabled (enabled)
+  (if (eq enabled :all)
+      :all
+      (copy-list enabled)))
+
+(defun scoped-models-enabled-set (enabled)
+  (let ((set (make-hash-table :test #'equal)))
+    (dolist (id enabled)
+      (setf (gethash id set) t))
+    set))
+
+(defun scoped-models-selector-rebuild-models-by-id
+    (state)
+  (let ((table (make-hash-table :test #'equal)))
+    (dolist (model
+              (scoped-models-selector-state-all-models state))
+      (setf (gethash (qualified-model-id model) table)
+            model))
+    (setf
+     (scoped-models-selector-state-models-by-id state)
+     table)))
+
+(defun scoped-models-model-by-id
+    (state id)
+  (gethash
+   id
+   (scoped-models-selector-state-models-by-id state)))
+
+(defun scoped-model-id-enabled-p
 (defstruct (scoped-models-selector-state
             (:constructor
                 %make-scoped-models-selector-state))
