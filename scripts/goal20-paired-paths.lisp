@@ -421,8 +421,9 @@
     ("cli_selectors.scoped_models_selector_sorted_ids" . 50)
     ("cli_selectors.scoped_models_selector_counts" . 50)
     ("cli_selectors.scoped_models_selector_toggle_selected" . 50)
-    ("cli_selectors.scoped_models_selector_toggle_provider" . 50)
     ("cli_selectors.scoped_models_selector_target_ids" . 50)
+    ("cli_selectors.scoped_models_selector_enable_all" . 50)
+    ("cli_selectors.scoped_models_selector_toggle_provider" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9884,6 +9885,33 @@
      (scoped-models-selector-target-ids-encoded models :all :query "claude")
      (scoped-models-selector-target-ids-encoded models partial :query "gpt"))))
 
+(defun scoped-models-selector-enable-all-encoded
+    (models enabled-ids &key query)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids)))
+    (setf (cadr-cli::scoped-models-selector-state-query state) (or query ""))
+    (cadr-cli::scoped-models-selector-enable-all state)
+    (format nil "~a|~a"
+            (encode-scoped-models-enabled-ids
+             (cadr-cli::scoped-models-selector-state-enabled-ids state))
+            (if (cadr-cli::scoped-models-selector-state-dirty-p state)
+                "true" "false"))))
+
+(defun run-cli-selectors-scoped-models-selector-enable-all ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (scoped-models-selector-enable-all-encoded models :all)
+     (scoped-models-selector-enable-all-encoded
+      models '("openai/gpt-4o"))
+     (scoped-models-selector-enable-all-encoded models '())
+     (scoped-models-selector-enable-all-encoded
+      models '("openai/gpt-4o" "anthropic/claude-sonnet-4"))
+     (scoped-models-selector-enable-all-encoded
+      models '("openai/gpt-4o") :query "gpt")
+     (scoped-models-selector-enable-all-encoded
+      models '("openai/gpt-4o") :query "nope"))))
 
 (defun scoped-models-selector-toggle-provider-encoded
     (models enabled-ids selected &key query)
