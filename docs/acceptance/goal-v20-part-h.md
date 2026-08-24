@@ -2985,6 +2985,19 @@ Scoped models sorted id list (comma-joined qualified ids). Observed `smssi_all` 
 `smssi_partial` / `smssi_single` / `smssi_empty` / `smssi_reorder` are exact.
 First Friend-MachineD freeze **37.36×** (145.0 / 3.9 µs), ceiling 50.0. Gate used
 `--only-enforce`. Same commit no optimize.
+| `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
+
+### Pair 231 — `cli_selectors` (scoped_models_selector_toggle_selected)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_toggle_selected` | `scoped-models-selector-toggle-selected` | `handleInput` confirm toggle |
+
+Scoped models confirm toggle (enabled-ids|dirty|selected digest). Observed
+`smstg_all_0` / `smstg_partial_off` / `smstg_partial_on` / `smstg_retoggle` /
+`smstg_filter` / `smstg_miss` are exact. First Friend-MachineD freeze **2.95×**
+(247.0 / 83.7 µs), ceiling 8.0. Gate used `--only-enforce`. Same commit no
+optimize.
 
 ### Pair 230 — `cli_selectors` (scoped_models_selector_ui_state)
 

@@ -344,6 +344,7 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_ui_state": 50,
 	"cli_selectors.scoped_models_selector_sorted_ids": 50,
 	"cli_selectors.scoped_models_selector_counts": 50,
+	"cli_selectors.scoped_models_selector_toggle_selected": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -10204,6 +10205,62 @@ function runCliSelectorsScopedModelsSelectorUiState() {
 	};
 }
 
+function encodeScopedModelsEnabledIds(enabledIds) {
+	if (enabledIds === null) {
+		return "all";
+	}
+	return enabledIds.join(",");
+}
+
+function scopedModelsSelectorToggleSelectedEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	query = "",
+) {
+	const state = makeScopedModelsBenchState(allModels, enabledIds, selected, query);
+	state.selected = selected;
+	state.isDirty = false;
+	scopedModelsSelectorClampSelected(state);
+	const item = state.filteredItems[state.selected];
+	if (item) {
+		state.enabledIds = scopedModelsToggleId(state.enabledIds, item.fullId);
+		state.isDirty = true;
+		scopedModelsSelectorClampSelected(state);
+	}
+	return `${encodeScopedModelsEnabledIds(state.enabledIds)}|${state.isDirty ? "true" : "false"}|${state.selected}`;
+}
+
+function runCliSelectorsScopedModelsSelectorToggleSelected() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smstg_all_0: scopedModelsSelectorToggleSelectedEncoded(models, null, 0),
+		smstg_partial_off: scopedModelsSelectorToggleSelectedEncoded(
+			models,
+			["openai/gpt-4o"],
+			0,
+		),
+		smstg_partial_on: scopedModelsSelectorToggleSelectedEncoded(models, [], 2),
+		smstg_retoggle: scopedModelsSelectorToggleSelectedEncoded(
+			models,
+			["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+			1,
+		),
+		smstg_filter: scopedModelsSelectorToggleSelectedEncoded(
+			models,
+			null,
+			0,
+			"gpt",
+		),
+		smstg_miss: scopedModelsSelectorToggleSelectedEncoded(
+			models,
+			null,
+			0,
+			"nope",
+		),
+	};
+}
+
 function modelSelectorApplyFilterEncoded(models, query) {
 	const selectedIndex = 2;
 	const filteredModels = query
@@ -10928,6 +10985,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorCounts();
 	const scopedModelsSelectorSortedIdsResults =
 		runCliSelectorsScopedModelsSelectorSortedIds();
+	const scopedModelsSelectorToggleSelectedResults =
+		runCliSelectorsScopedModelsSelectorToggleSelected();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -11225,6 +11284,7 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorUiStateResults,
 		...scopedModelsSelectorCountsResults,
 		...scopedModelsSelectorSortedIdsResults,
+		...scopedModelsSelectorToggleSelectedResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11634,6 +11694,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_sorted_ids",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorSortedIds();
+			},
+		),
+		scoped_models_selector_toggle_selected: await collect(
+			"cli_selectors.scoped_models_selector_toggle_selected",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorToggleSelected();
 			},
 		),
 		observed,
@@ -12931,6 +12997,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getFooterText count logic",
 			"cli_selectors.scoped_models_selector_sorted_ids":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getSortedIds",
+			"cli_selectors.scoped_models_selector_toggle_selected":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
