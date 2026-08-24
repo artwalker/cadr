@@ -21,6 +21,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `cli_selectors.scoped_models_selector_handle_event` (scoped
+  models event dispatch; cadr `scoped-models-selector-handle-event` vs pi
+  handleInput). Friend-MachineD n=5 **6.76×** (246.1 / 36.4 µs), ceiling 12.0
+  (bumped from 8.0 on first freeze 10.40×). Measure-only; no optimize.
 - Goal 20 P.13: pair `cli_selectors.scoped_models_selector_set_query` (scoped
   models query update; cadr `scoped-models-selector-set-query` vs pi refresh
   clamp). Friend-MachineD n=5 **6.80×** (272.7 / 40.1 µs), ceiling 8.0.

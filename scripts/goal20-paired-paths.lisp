@@ -415,6 +415,7 @@
     ("cli_selectors.model_selector_ui_state" . 50)
     ("cli_selectors.scoped_models_selector_set_query" . 50)
     ("cli_selectors.scoped_models_selector_move" . 50)
+    ("cli_selectors.scoped_models_selector_handle_event" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9545,6 +9546,45 @@
      (scoped-models-selector-move-encoded models :all 1 -1)
      (scoped-models-selector-move-encoded models :all 0 1 :query "gpt"))))
 
+(defun encode-scoped-models-selector-handle-event-result (state action)
+  (format nil "~a|null|~a"
+          (if action
+              (string-downcase (symbol-name action))
+              "null")
+          (write-to-string
+           (cadr-cli::scoped-models-selector-state-selected state))))
+
+(defun scoped-models-selector-handle-event-encoded
+    (models enabled-ids selected event-kind &key text query)
+  (let ((state
+          (cadr-cli::make-scoped-models-selector-state
+           :all-models models
+           :enabled-ids enabled-ids)))
+    (setf (cadr-cli::scoped-models-selector-state-query state)
+          (or query ""))
+    (setf (cadr-cli::scoped-models-selector-state-selected state) selected)
+    (cadr-cli::scoped-models-selector-clamp-selected state)
+    (let ((event
+            (if text
+                (cadr-tui:make-input-event :kind event-kind :text text)
+                (cadr-tui:make-input-event :kind event-kind))))
+      (multiple-value-bind (action value)
+          (cadr-cli::scoped-models-selector-handle-event state event)
+        (declare (ignore value))
+        (encode-scoped-models-selector-handle-event-result state action)))))
+
+(defun run-cli-selectors-scoped-models-selector-handle-event ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (scoped-models-selector-handle-event-encoded models :all 0 :down)
+     (scoped-models-selector-handle-event-encoded models :all 1 :up)
+     (scoped-models-selector-handle-event-encoded models :all 0 :enter)
+     (scoped-models-selector-handle-event-encoded models :all 0 :escape)
+     (scoped-models-selector-handle-event-encoded
+      models :all 0 :text :text "gpt")
+     (scoped-models-selector-handle-event-encoded
+      models :all 0 :backspace :query "gpt"))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9777,7 +9817,9 @@
         (scoped-models-selector-set-query
           (run-cli-selectors-scoped-models-selector-set-query))
         (scoped-models-selector-move
-          (run-cli-selectors-scoped-models-selector-move)))
+          (run-cli-selectors-scoped-models-selector-move))
+        (scoped-models-selector-handle-event
+          (run-cli-selectors-scoped-models-selector-handle-event)))
     (json-object
      "observed"
      (json-object
@@ -10445,7 +10487,13 @@
       "smsmv_2_m1" (nth 1 scoped-models-selector-move)
       "smsmv_1_1" (nth 2 scoped-models-selector-move)
       "smsmv_1_m1" (nth 3 scoped-models-selector-move)
-      "smsmv_filter" (nth 4 scoped-models-selector-move))
+      "smsmv_filter" (nth 4 scoped-models-selector-move)
+      "smshe_down" (nth 0 scoped-models-selector-handle-event)
+      "smshe_up" (nth 1 scoped-models-selector-handle-event)
+      "smshe_enter" (nth 2 scoped-models-selector-handle-event)
+      "smshe_esc" (nth 3 scoped-models-selector-handle-event)
+      "smshe_text" (nth 4 scoped-models-selector-handle-event)
+      "smshe_bs" (nth 5 scoped-models-selector-handle-event))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -11030,7 +11078,12 @@
      (collect "cli_selectors.scoped_models_selector_move"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-move)))))))
+                  (run-cli-selectors-scoped-models-selector-move))))
+     "scoped_models_selector_handle_event"
+     (collect "cli_selectors.scoped_models_selector_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-handle-event)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -12279,6 +12332,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-set-query"
       "cli_selectors.scoped_models_selector_move"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-move"
+      "cli_selectors.scoped_models_selector_handle_event"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-handle-event"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

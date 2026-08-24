@@ -339,6 +339,7 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_ui_state": 50,
 	"cli_selectors.scoped_models_selector_set_query": 50,
 	"cli_selectors.scoped_models_selector_move": 50,
+	"cli_selectors.scoped_models_selector_handle_event": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9776,6 +9777,125 @@ function runCliSelectorsScopedModelsSelectorMove() {
 	};
 }
 
+function scopedModelsToggleId(enabledIds, id) {
+	if (enabledIds === null) {
+		return [id];
+	}
+	const index = enabledIds.indexOf(id);
+	if (index >= 0) {
+		return [...enabledIds.slice(0, index), ...enabledIds.slice(index + 1)];
+	}
+	return [...enabledIds, id];
+}
+
+function makeScopedModelsBenchState(allModels, enabledIds, selected, query = "") {
+	const filteredItems = scopedModelsFilterItems(allModels, enabledIds, query);
+	return {
+		allModels,
+		enabledIds,
+		query,
+		selected: Math.min(selected, Math.max(0, filteredItems.length - 1)),
+		filteredItems,
+	};
+}
+
+function scopedModelsSelectorClampSelected(state) {
+	state.filteredItems = scopedModelsFilterItems(
+		state.allModels,
+		state.enabledIds,
+		state.query,
+	);
+	state.selected = Math.min(
+		state.selected,
+		Math.max(0, state.filteredItems.length - 1),
+	);
+}
+
+function scopedModelsSelectorSetQueryState(state, query) {
+	state.query = query ?? "";
+	scopedModelsSelectorClampSelected(state);
+}
+
+function scopedModelsSelectorMoveState(state, delta) {
+	state.selected = moveIndex(state.selected, state.filteredItems.length, delta);
+}
+
+function encodeScopedModelsSelectorHandleEventResult(state, action) {
+	const actionText = action ? String(action) : "null";
+	return `${actionText}|null|${state.selected}`;
+}
+
+function scopedModelsSelectorHandleEvent(state, eventKind, { text } = {}) {
+	switch (eventKind) {
+		case "down":
+			scopedModelsSelectorMoveState(state, 1);
+			return { action: "changed" };
+		case "up":
+			scopedModelsSelectorMoveState(state, -1);
+			return { action: "changed" };
+		case "page-down":
+			scopedModelsSelectorMoveState(state, 8);
+			return { action: "changed" };
+		case "page-up":
+			scopedModelsSelectorMoveState(state, -8);
+			return { action: "changed" };
+		case "enter": {
+			const item = state.filteredItems[state.selected];
+			if (item) {
+				state.enabledIds = scopedModelsToggleId(state.enabledIds, item.fullId);
+				scopedModelsSelectorClampSelected(state);
+			}
+			return { action: "changed" };
+		}
+		case "escape":
+			return { action: "cancel" };
+		case "interrupt":
+			if (state.query.length > 0) {
+				scopedModelsSelectorSetQueryState(state, "");
+				return { action: "changed" };
+			}
+			return { action: "cancel" };
+		case "backspace":
+			scopedModelsSelectorSetQueryState(state, deleteQueryChar(state.query));
+			return { action: "changed" };
+		case "text":
+			scopedModelsSelectorSetQueryState(state, state.query + (text ?? ""));
+			return { action: "changed" };
+		default:
+			return { action: null };
+	}
+}
+
+function scopedModelsSelectorHandleEventEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	eventKind,
+	{ text, query } = {},
+) {
+	const state = makeScopedModelsBenchState(allModels, enabledIds, selected, query ?? "");
+	state.selected = selected;
+	const result = scopedModelsSelectorHandleEvent(state, eventKind, { text });
+	return encodeScopedModelsSelectorHandleEventResult(state, result.action);
+}
+
+function runCliSelectorsScopedModelsSelectorHandleEvent() {
+	const models = makeModelSelectorTestModels();
+	const enabledIds = null;
+	return {
+		smshe_down: scopedModelsSelectorHandleEventEncoded(models, enabledIds, 0, "down"),
+		smshe_up: scopedModelsSelectorHandleEventEncoded(models, enabledIds, 1, "up"),
+		smshe_enter: scopedModelsSelectorHandleEventEncoded(models, enabledIds, 0, "enter"),
+		smshe_esc: scopedModelsSelectorHandleEventEncoded(models, enabledIds, 0, "escape"),
+		smshe_text: scopedModelsSelectorHandleEventEncoded(models, enabledIds, 0, "text", {
+			text: "gpt",
+		}),
+		smshe_bs: scopedModelsSelectorHandleEventEncoded(models, enabledIds, 0, "backspace", {
+			query: "gpt",
+		}),
+	};
+}
+
 function modelSelectorApplyFilterEncoded(models, query) {
 	const selectedIndex = 2;
 	const filteredModels = query
@@ -10490,6 +10610,8 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorSetQuery();
 	const scopedModelsSelectorMoveResults =
 		runCliSelectorsScopedModelsSelectorMove();
+	const scopedModelsSelectorHandleEventResults =
+		runCliSelectorsScopedModelsSelectorHandleEvent();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10782,6 +10904,7 @@ async function measureCliSelectorsSessionSearch() {
 		...modelSelectorUiStateResults,
 		...scopedModelsSelectorSetQueryResults,
 		...scopedModelsSelectorMoveResults,
+		...scopedModelsSelectorHandleEventResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -11163,6 +11286,12 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_move",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorMove();
+			},
+		),
+		scoped_models_selector_handle_event: await collect(
+			"cli_selectors.scoped_models_selector_handle_event",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorHandleEvent();
 			},
 		),
 		observed,
@@ -12450,6 +12579,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts refresh query clamp",
 			"cli_selectors.scoped_models_selector_move":
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput up/down wrap",
+			"cli_selectors.scoped_models_selector_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts handleInput event dispatch",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

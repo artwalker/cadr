@@ -2993,6 +2993,18 @@ Scoped models selector query update (count|selected digest). Observed `smssq_cle
 Friend-MachineD freeze **6.80×** (272.7 / 40.1 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
+### Pair 228 — `cli_selectors` (scoped_models_selector_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_handle_event` | `scoped-models-selector-handle-event` | event dispatch |
+
+Scoped models selector input events (action\|null\|selected digest). Observed
+`smshe_down` / `smshe_up` / `smshe_enter` / `smshe_esc` / `smshe_text` / `smshe_bs`
+are exact. First Friend-MachineD freeze **6.76×** (246.1 / 36.4 µs), ceiling 12.0
+(bumped from 8.0 on first freeze 10.40×). Gate used `--only-enforce`. Same commit
+no optimize.
+
 ## 2. How to run
 
 ```bash
