@@ -82,5 +82,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-256-package-source",
+   "pair": 256
+  }
+ ]
 }
