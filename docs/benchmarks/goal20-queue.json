@@ -75,29 +75,29 @@
   {
    "pair": 254,
    "lane": "c",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-cli-settings",
-   "metric": null,
-   "branch": null
+   "metric": "agent_conditions.error_probe",
+   "branch": "pair-254-conditions"
   },
   {
    "pair": 255,
    "lane": "a",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-agent/branch-summarization.lisp",
    "measure": "measure-agent-tool-loop",
-   "metric": null,
-   "branch": null
+   "metric": "session_compact.branch_summarize",
+   "branch": "pair-255-branch-summarization"
   },
   {
    "pair": 256,
    "lane": "b",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-agent/conditions.lisp",
    "measure": "measure-resource-loader",
-   "metric": null,
-   "branch": null
+   "metric": "resource_loader.dedupe_by_name",
+   "branch": "pair-256-conditions"
   },
   {
    "pair": 257,
