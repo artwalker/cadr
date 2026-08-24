@@ -127,10 +127,5 @@
    "branch": null
   }
  ],
- "mergeQueue": [
-  {
-   "branch": "pair-256-conditions",
-   "pair": 256
-  }
- ]
+ "mergeQueue": []
 }
