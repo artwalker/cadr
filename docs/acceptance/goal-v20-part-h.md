@@ -3496,14 +3496,14 @@ Denominator: **295 files / 127,795 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 170 | 75,081 | 58.8% | `no worse than baseline` is falsifiable |
+| `paired` | 171 | 75,502 | 59.1% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,475 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,424 | 13.6% | on a named paired thunk; no own bench |
-| `needs-pair` | 73 | 27,815 | 21.8% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 72 | 27,394 | 21.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 58.8% of lines (170 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 64.6% of lines.
+- **Falsifiable vs baseline:** 59.1% of lines (171 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 64.9% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3548,7 +3548,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/runtime.lisp` | 421 | `agent_tool_loop.runtime` |
 | `src/cadr-agent/schema.lisp` | 850 | `agent_schema.validate_ok_fail` |
 | `src/cadr-agent/session/codec.lisp` | 1,152 | `storage_journal.journal_read`, `storage_journal.journal_append` |
-| `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe` |
+| `src/cadr-agent/session/discovery.lisp` | 154 | `session_discovery.header_probe`, `session_discovery.session_list_probe` |
 | `src/cadr-agent/session/export-html.lisp` | 455 | `session_export_html.to_html` |
 | `src/cadr-agent/session/journal.lisp` | 683 | `session_pipeline.context_walk`, `storage_journal.journal_append` |
 | `src/cadr-agent/session/migration.lisp` | 2,434 | `session_pipeline.session_load`, `storage_journal.journal_read` |
@@ -3754,7 +3754,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_interactive_controller` | 6 | 5,424 |
 | `cli_bootstrap_sessions` | 4 | 5,167 |
 | `cli_selectors` | 9 | 3,376 |
-| `agent_tool_loop` | 11 | 3,008 |
+| `agent_tool_loop` | 10 | 2,587 |
 | `cli_extensions_install` | 5 | 2,200 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
