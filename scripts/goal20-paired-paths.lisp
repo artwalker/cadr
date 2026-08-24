@@ -410,6 +410,7 @@
     ("cli_selectors.model_selector_handle_event" . 50)
     ("cli_selectors.model_selector_handle_raw_input" . 50)
     ("cli_selectors.model_selector_set_query" . 50)
+    ("cli_selectors.model_selector_selected_model" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -9303,6 +9304,31 @@
      (model-selector-set-query-encoded models 0 "gpt" "")
      (model-selector-set-query-encoded models 1 "anth" "nope"))))
 
+(defun model-selector-selected-model-encoded (models selected query)
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (setf (cadr-cli::model-selector-state-query state) (or query ""))
+    (cadr-cli::model-selector-apply-filter state)
+    (setf (cadr-cli::model-selector-state-selected state) selected)
+    (let ((model (cadr-cli::model-selector-selected-model state)))
+      (if model
+          (cadr-cli::qualified-model-id model)
+          "null"))))
+
+(defun run-cli-selectors-model-selector-selected-model ()
+  (let ((models (make-model-selector-test-models)))
+    (list
+     (model-selector-selected-model-encoded models 0 "")
+     (model-selector-selected-model-encoded models 1 "")
+     (model-selector-selected-model-encoded models 3 "")
+     (model-selector-selected-model-encoded models 0 "gpt")
+     (model-selector-selected-model-encoded models 2 "gpt")
+     (model-selector-selected-model-encoded models 0 "nope")
+     (model-selector-selected-model-encoded models 9 ""))))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -9525,7 +9551,9 @@
         (model-selector-handle-raw-input
           (run-cli-selectors-model-selector-handle-raw-input))
         (model-selector-set-query
-          (run-cli-selectors-model-selector-set-query)))
+          (run-cli-selectors-model-selector-set-query))
+        (model-selector-selected-model
+          (run-cli-selectors-model-selector-selected-model)))
     (json-object
      "observed"
      (json-object
@@ -10164,7 +10192,14 @@
       "mssq_gpt" (nth 1 model-selector-set-query)
       "mssq_same" (nth 2 model-selector-set-query)
       "mssq_reset" (nth 3 model-selector-set-query)
-      "mssq_miss" (nth 4 model-selector-set-query))
+      "mssq_miss" (nth 4 model-selector-set-query)
+      "mssm_0" (nth 0 model-selector-selected-model)
+      "mssm_1" (nth 1 model-selector-selected-model)
+      "mssm_3" (nth 2 model-selector-selected-model)
+      "mssm_gpt0" (nth 3 model-selector-selected-model)
+      "mssm_gpt2" (nth 4 model-selector-selected-model)
+      "mssm_miss" (nth 5 model-selector-selected-model)
+      "mssm_oob" (nth 6 model-selector-selected-model))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -10724,7 +10759,12 @@
      (collect "cli_selectors.model_selector_set_query"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-model-selector-set-query)))))))
+                  (run-cli-selectors-model-selector-set-query))))
+     "model_selector_selected_model"
+     (collect "cli_selectors.model_selector_selected_model"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-selected-model)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -11963,6 +12003,8 @@
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-handle-raw-input"
       "cli_selectors.model_selector_set_query"
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-set-query"
+      "cli_selectors.model_selector_selected_model"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-selected-model"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

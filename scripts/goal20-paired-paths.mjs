@@ -334,6 +334,7 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_handle_event": 50,
 	"cli_selectors.model_selector_handle_raw_input": 50,
 	"cli_selectors.model_selector_set_query": 50,
+	"cli_selectors.model_selector_selected_model": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -9395,6 +9396,34 @@ function makeModelSelectorTestModels() {
 	];
 }
 
+function sortModelSelectorTestModels(models, currentModel) {
+	const sorted = [...models];
+	sorted.sort((a, b) => {
+		const aIsCurrent =
+			a.id === currentModel.id && a.provider === currentModel.provider;
+		const bIsCurrent =
+			b.id === currentModel.id && b.provider === currentModel.provider;
+		if (aIsCurrent && !bIsCurrent) return -1;
+		if (!aIsCurrent && bIsCurrent) return 1;
+		return a.provider.localeCompare(b.provider);
+	});
+	return sorted;
+}
+
+function modelSelectorFilteredModels(models, query) {
+	const current = models[0].model;
+	const sorted = sortModelSelectorTestModels(models, current);
+	return query
+		? fuzzyModule.fuzzyFilter(sorted, query, ({ id, provider, model }) =>
+				modelSearchModule.getModelSelectorSearchText({
+					id,
+					provider,
+					name: model.name,
+				}),
+			)
+		: sorted;
+}
+
 function modelSelectorApplyFilterEncoded(models, query) {
 	const selectedIndex = 2;
 	const filteredModels = query
@@ -9647,6 +9676,25 @@ function runCliSelectorsModelSelectorSetQuery() {
 		mssq_same: modelSelectorSetQueryEncoded(models, 0, "gpt", "gpt"),
 		mssq_reset: modelSelectorSetQueryEncoded(models, 0, "gpt", ""),
 		mssq_miss: modelSelectorSetQueryEncoded(models, 1, "anth", "nope"),
+	};
+}
+
+function modelSelectorSelectedModelEncoded(models, selected, query = "") {
+	const filteredModels = modelSelectorFilteredModels(models, query);
+	const item = filteredModels[selected];
+	return item ? qualifiedModelId(item) : "null";
+}
+
+function runCliSelectorsModelSelectorSelectedModel() {
+	const models = makeModelSelectorTestModels();
+	return {
+		mssm_0: modelSelectorSelectedModelEncoded(models, 0),
+		mssm_1: modelSelectorSelectedModelEncoded(models, 1),
+		mssm_3: modelSelectorSelectedModelEncoded(models, 3),
+		mssm_gpt0: modelSelectorSelectedModelEncoded(models, 0, "gpt"),
+		mssm_gpt2: modelSelectorSelectedModelEncoded(models, 2, "gpt"),
+		mssm_miss: modelSelectorSelectedModelEncoded(models, 0, "nope"),
+		mssm_oob: modelSelectorSelectedModelEncoded(models, 9),
 	};
 }
 
@@ -10081,6 +10129,8 @@ async function measureCliSelectorsSessionSearch() {
 	const modelSelectorHandleEventResults = runCliSelectorsModelSelectorHandleEvent();
 	const modelSelectorHandleRawInputResults = runCliSelectorsModelSelectorHandleRawInput();
 	const modelSelectorSetQueryResults = runCliSelectorsModelSelectorSetQuery();
+	const modelSelectorSelectedModelResults =
+		runCliSelectorsModelSelectorSelectedModel();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -10368,6 +10418,7 @@ async function measureCliSelectorsSessionSearch() {
 		...modelSelectorHandleEventResults,
 		...modelSelectorHandleRawInputResults,
 		...modelSelectorSetQueryResults,
+		...modelSelectorSelectedModelResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -10724,6 +10775,12 @@ async function measureCliSelectorsSessionSearch() {
 		model_selector_set_query: await collect("cli_selectors.model_selector_set_query", () => {
 			return () => runCliSelectorsModelSelectorSetQuery();
 		}),
+		model_selector_selected_model: await collect(
+			"cli_selectors.model_selector_selected_model",
+			() => {
+				return () => runCliSelectorsModelSelectorSelectedModel();
+			},
+		),
 		observed,
 	};
 }
@@ -11999,6 +12056,8 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts handleInput raw key dispatch",
 			"cli_selectors.model_selector_set_query":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filterModels query update",
+			"cli_selectors.model_selector_selected_model":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filteredModels[selectedIndex]",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
