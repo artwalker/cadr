@@ -3067,18 +3067,16 @@ Observed `sas_missing` / `sas_fixture` / `sas_oauth` / `sas_bad` /
 Friend-MachineD freeze **4.19×** (426.6 / 101.8 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
-### Pair 252 — `package_manager` (manifest_parse)
+### Pair 250 — `cli_bootstrap_sessions` (bootstrap_auth)
 
 | metric | cadr | pi |
 |---|---|---|
-| `manifest_parse` | `read-package-pi-manifest` | `readPiManifest` (`packages/coding-agent/src/core/pi-manifest.ts`) |
+| `bootstrap_auth` | `model-registry-login-options` | `getLoginProviderOptions` |
 
-Leftover sibling of the `package_manager` hole. Time `package.json` `pi`
-manifest read only, not `configured-package-records` or
-`package-resource-paths`. Same local package fixture as `resolve`.
-Observed `manifest_p` / `manifest_extensions` / `manifest_skills` /
-`manifest_prompts` / `manifest_themes` are exact. First Friend-MachineD
-freeze **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Gate used
+Built-in provider login options from a fresh model registry (no extension-only
+native providers). Observed `option_count` / `auth_pairs_digest` /
+`vertex_structured` / `bedrock_structured` are exact. First Friend-MachineD
+freeze **0.64×** (3928.6 / 6134.0 µs), ceiling 8.0. cadr leads. Gate used
 `--only-enforce`. Same commit no optimize.
 
 ### Pair 251 — `cli_extensions_install` (extension_discovery)
@@ -3094,16 +3092,18 @@ are exact. No load, no TUI. First Friend-MachineD freeze **1.98×**
 (1954.5 / 987.2 µs), ceiling 8.0. pi leads. Gate used `--only-enforce`. Same
 commit no optimize.
 
-### Pair 250 — `cli_bootstrap_sessions` (bootstrap_auth)
+### Pair 252 — `package_manager` (manifest_parse)
 
 | metric | cadr | pi |
 |---|---|---|
-| `bootstrap_auth` | `model-registry-login-options` | `getLoginProviderOptions` |
+| `manifest_parse` | `read-package-pi-manifest` | `readPiManifest` (`packages/coding-agent/src/core/pi-manifest.ts`) |
 
-Built-in provider login options from a fresh model registry (no extension-only
-native providers). Observed `option_count` / `auth_pairs_digest` /
-`vertex_structured` / `bedrock_structured` are exact. First Friend-MachineD
-freeze **0.64×** (3928.6 / 6134.0 µs), ceiling 8.0. cadr leads. Gate used
+Leftover sibling of the `package_manager` hole. Time `package.json` `pi`
+manifest read only, not `configured-package-records` or
+`package-resource-paths`. Same local package fixture as `resolve`.
+Observed `manifest_p` / `manifest_extensions` / `manifest_skills` /
+`manifest_prompts` / `manifest_themes` are exact. First Friend-MachineD
+freeze **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
 ### Pair 240 — `cli_selectors` (scoped_models_selector_provider_count)
