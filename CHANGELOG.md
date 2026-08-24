@@ -32,6 +32,7 @@ tag/Release step.
   `dbn_skill_project` / `dbn_prompt_count` / `dbn_prompt_collisions` /
   `dbn_prompt_project` exact. Friend-MachineD n=5 **0.50×** (253.5 / 505.5 µs),
   ceiling 8.0. Measure-only.
+- Goal 20 P.13: pair `session_compact.prepare_branch_entries` (collect e4→e5 then `prepare-branch-entries` only; same token-budget encoding as `generate-branch-summary`, no model call). Observed `prepared` / `message_count` / `total_tokens` / `read_file_count` / `modified_file_count` exact. Friend-MachineD n=5 **RATIO_PLACEHOLDER**. Measure-only.
 - Goal 20 P.13: pair `session_compact.branch_summarize` (forked
   five-message tree; `collect-entries-for-branch-summary` +
   `generate-branch-summary` vs pi branch summarization). Observed

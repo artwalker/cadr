@@ -396,6 +396,7 @@ const REPETITIONS = {
 	"agent_tool_loop.runtime": 50,
 	"session_compact.compact": 3,
 	"session_compact.branch_summarize": 3,
+	"session_compact.prepare_branch_entries": 3,
 	"text_truncation.truncate_head": 50,
 	"text_truncation.truncate_tail": 50,
 	"text_truncation.truncate_middle": 50,
@@ -782,6 +783,9 @@ const compactionModule = await import(
 );
 const branchSummarizationModule = await import(
 	moduleUrl("packages/coding-agent/src/core/compaction/branch-summarization.ts")
+);
+const compactionUtilsModule = await import(
+	moduleUrl("packages/coding-agent/src/core/compaction/utils.ts")
 );
 
 const settingsAgentDirectory = path.join(scratch, "settings-agent");
@@ -3155,14 +3159,36 @@ function sessionCompactObservedPlist(part) {
 	return Object.entries(part.observed ?? {});
 }
 
-function mergeSessionCompactGroups(compactPart, branchPart) {
+function pairedPrepareBranchTokenBudget() {
+	const contextWindow = 100;
+	const reserveTokens = 16384;
+	return Math.max(0, contextWindow - reserveTokens);
+}
+
+function runPairedPrepareBranchEntries() {
+	const session = pairedBranchSummarizeSession();
+	const tokenBudget = pairedPrepareBranchTokenBudget();
+	const { entries, commonAncestorId } = branchSummarizationModule.collectEntriesForBranchSummary(session, "e4", "e5");
+	if (!entries.length || !commonAncestorId) return null;
+	const preparation = branchSummarizationModule.prepareBranchEntries(entries, tokenBudget);
+	const { readFiles, modifiedFiles } = compactionUtilsModule.computeFileLists(preparation.fileOps);
+	return { messageCount: preparation.messages.length, totalTokens: preparation.totalTokens, readFileCount: readFiles.length, modifiedFileCount: modifiedFiles.length };
+}
+
+async function measurePrepareBranchEntries() {
+	const prepareOnce = runPairedPrepareBranchEntries();
 	return {
-		observed: Object.fromEntries([
-			...sessionCompactObservedPlist(compactPart),
-			...sessionCompactObservedPlist(branchPart),
-		]),
+		prepare_branch_entries: await collect("session_compact.prepare_branch_entries", () => () => runPairedPrepareBranchEntries()),
+		observed: { prepared: prepareOnce ? 1 : 0, message_count: prepareOnce?.messageCount ?? 0, total_tokens: prepareOnce?.totalTokens ?? 0, read_file_count: prepareOnce?.readFileCount ?? 0, modified_file_count: prepareOnce?.modifiedFileCount ?? 0 },
+	};
+}
+
+function mergeSessionCompactGroups(compactPart, branchPart, preparePart) {
+	return {
+		observed: Object.fromEntries([...sessionCompactObservedPlist(compactPart), ...sessionCompactObservedPlist(branchPart), ...(preparePart ? sessionCompactObservedPlist(preparePart) : [])]),
 		compact: compactPart.compact,
 		branch_summarize: branchPart.branch_summarize,
+		prepare_branch_entries: preparePart?.prepare_branch_entries,
 	};
 }
 
@@ -14153,6 +14179,8 @@ process.stderr.write("goal20 pi paired paths: resource_loader\n");
 const resourceLoader = await measureResourceLoader();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
+process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
+const prepareBranchEntries = await measurePrepareBranchEntries();
 process.stderr.write("goal20 pi paired paths: package_manager\n");
 const packageManager = await measurePackageManager();
 process.stderr.write("goal20 pi paired paths: session_discovery\n");
@@ -14756,6 +14784,8 @@ const result = {
 				"packages/coding-agent/src/core/compaction/compaction.ts prepareCompaction + compact",
 			"session_compact.branch_summarize":
 				"packages/coding-agent/src/core/compaction/branch-summarization.ts collectEntriesForBranchSummary + generateBranchSummary",
+			"session_compact.prepare_branch_entries":
+				"packages/coding-agent/src/core/compaction/branch-summarization.ts prepareBranchEntries",
 			"text_truncation.truncate_head":
 				"packages/coding-agent/src/core/tools/truncate.ts truncateHead",
 			"text_truncation.truncate_tail":
@@ -14790,7 +14820,7 @@ const result = {
 		tool_read: toolRead,
 		tool_grep: toolGrep,
 		agent_tool_loop: agentToolLoop,
-		session_compact: mergeSessionCompactGroups(sessionCompact, branchSummarize),
+		session_compact: mergeSessionCompactGroups(sessionCompact, branchSummarize, prepareBranchEntries),
 		provider_anthropic: providerAnthropic,
 		provider_google: providerGoogle,
 		provider_bedrock: providerBedrock,

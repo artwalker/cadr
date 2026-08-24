@@ -98,6 +98,7 @@
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
 ;;;; 253. session_compact collect-entries-for-branch-summary+generate-branch-summary vs collectEntriesForBranchSummary+generateBranchSummary
+;;;; 258. session_compact prepare-branch-entries vs prepareBranchEntries
 ;;;; 253. agent_tool_loop agent-steer/drain/clear vs PendingMessageQueue
 ;;;; 111. cli_selectors selector-fuzzy-filter vs fuzzyFilter
 ;;;; 112. cli_selectors selector-delete-query-character vs Input backspace grapheme delete
@@ -487,6 +488,7 @@
     ("agent_tool_loop.runtime" . 50)
     ("session_compact.compact" . 3)
     ("session_compact.branch_summarize" . 3)
+    ("session_compact.prepare_branch_entries" . 3)
     ("text_truncation.truncate_head" . 50)
     ("text_truncation.truncate_tail" . 50)
     ("text_truncation.truncate_middle" . 50)
@@ -3575,14 +3577,56 @@
           collect key
           collect (gethash key obs))))
 
-(defun merge-session-compact-groups (compact-part branch-part)
+(defun merge-session-compact-groups (compact-part branch-part &optional prepare-part)
   (json-object
    "observed"
    (apply #'json-object
           (append (session-compact-observed-plist compact-part)
-                  (session-compact-observed-plist branch-part)))
+                  (session-compact-observed-plist branch-part)
+                  (when prepare-part
+                    (session-compact-observed-plist prepare-part))))
    "compact" (cadr-ai::json-get compact-part "compact")
-   "branch_summarize" (cadr-ai::json-get branch-part "branch_summarize")))
+   "branch_summarize" (cadr-ai::json-get branch-part "branch_summarize")
+   "prepare_branch_entries"
+   (when prepare-part
+     (cadr-ai::json-get prepare-part "prepare_branch_entries"))))
+
+(defun paired-prepare-branch-token-budget ()
+  (let* ((model (paired-compact-model))
+         (context-window (or (cadr-ai:model-context-window model) 128000))
+         (reserve 16384))
+    (max 0 (- context-window reserve))))
+
+(defun run-paired-prepare-branch-entries ()
+  (let* ((session (paired-branch-summarize-session))
+         (token-budget (paired-prepare-branch-token-budget)))
+    (multiple-value-bind (entries ancestor)
+        (cadr-agent:collect-entries-for-branch-summary session "e4" "e5")
+      (unless (and entries ancestor)
+        (return-from run-paired-prepare-branch-entries nil))
+      (let* ((preparation
+               (cadr-agent:prepare-branch-entries entries token-budget))
+             (ops (cadr-agent:branch-summary-preparation-file-operations preparation)))
+        (multiple-value-bind (read-files modified-files)
+            (cadr-agent:compute-file-operation-lists ops)
+          (list :message-count (length (cadr-agent:branch-summary-preparation-messages preparation))
+                :total-tokens (cadr-agent:branch-summary-preparation-total-tokens preparation)
+                :read-file-count (length read-files)
+                :modified-file-count (length modified-files)))))))
+
+(defun measure-prepare-branch-entries ()
+  (let ((result (run-paired-prepare-branch-entries)))
+    (json-object
+     "observed"
+     (json-object
+      "prepared" (if result 1 0)
+      "message_count" (if result (getf result :message-count) 0)
+      "total_tokens" (if result (getf result :total-tokens) 0)
+      "read_file_count" (if result (getf result :read-file-count) 0)
+      "modified_file_count" (if result (getf result :modified-file-count) 0))
+     "prepare_branch_entries"
+     (collect "session_compact.prepare_branch_entries"
+              (lambda () (lambda () (run-paired-prepare-branch-entries)))))))
 
 (defun measure-branch-summarize ()
   (let ((branch-result (run-paired-branch-summarize)))
@@ -14163,6 +14207,8 @@
       "src/cadr-agent/compaction.lisp compact-from-preparation"
       "session_compact.branch_summarize"
       "src/cadr-agent/branch-summarization.lisp collect-entries-for-branch-summary + generate-branch-summary"
+      "session_compact.prepare_branch_entries"
+      "src/cadr-agent/branch-summarization.lisp prepare-branch-entries"
       "text_truncation.truncate_head"
       "src/cadr-agent/truncate.lisp truncate-harness-head"
       "text_truncation.truncate_tail"
@@ -14238,6 +14284,8 @@
               (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
+              (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
+              (let ((prepare-branch (measure-prepare-branch-entries)))
               (format *error-output* "goal20 cadr paired paths: package_manager~%")
               (let ((packages (measure-package-manager)))
               (format *error-output* "goal20 cadr paired paths: session_discovery~%")
@@ -14351,7 +14399,7 @@
               "tool_read" tool-read
               "tool_grep" tool-grep
               "agent_tool_loop" tool-loop
-              "session_compact" (merge-session-compact-groups compact branch-summarize)
+              "session_compact" (merge-session-compact-groups compact branch-summarize prepare-branch)
               "provider_anthropic" anthropic
               "provider_google" google
               "provider_bedrock" bedrock

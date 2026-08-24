@@ -3167,6 +3167,20 @@ production collect + generate on an in-memory `SessionEntry[]` tree, not
 `branch_summary_chars` are exact. `session_compact.compact` stays on its own
 thunk. First Friend-MachineD freeze **1.15×** (37.3 / 32.5 µs), ceiling 20.0.
 
+### Pair 258 — `session_compact` (prepare_branch_entries)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prepare_branch_entries` | `prepare-branch-entries` (`src/cadr-agent/branch-summarization.lisp`) | `prepareBranchEntries` (`packages/coding-agent/src/core/compaction/branch-summarization.ts`) |
+
+Leftover sibling of the `branch_summarize` pair on the same forked tree.
+After `collect-entries-for-branch-summary` (e4→e5), time
+`prepare-branch-entries` only with the same context-window/reserve token
+budget encoding as `generate-branch-summary` — no summarization model call.
+Observed `prepared` / `message_count` / `total_tokens` / `read_file_count` /
+`modified_file_count` are exact. Gate used `--only-enforce`. Same commit no
+optimize.
+
 ### Pair 254 — `agent_conditions` (error_probe)
 
 | metric | cadr | pi |
@@ -3582,7 +3596,7 @@ production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize` |
+| `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
 | `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |

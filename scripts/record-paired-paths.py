@@ -291,6 +291,7 @@ METRIC_KEYS = (
     "agent_tool_loop.runtime",
     "session_compact.compact",
     "session_compact.branch_summarize",
+    "session_compact.prepare_branch_entries",
     "text_truncation.truncate_middle",
 )
 

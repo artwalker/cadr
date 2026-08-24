@@ -159,7 +159,7 @@ METRICS = {
     "tool_read": ("text_file",),
     "tool_grep": ("context_file",),
     "agent_tool_loop": ("roundtrip", "tool_path", "line_ending", "tool_result_digest", "runtime"),
-    "session_compact": ("compact", "branch_summarize"),
+    "session_compact": ("compact", "branch_summarize", "prepare_branch_entries"),
     "text_truncation": ("truncate_head", "truncate_tail", "truncate_middle"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip"),
 }
@@ -1183,6 +1183,7 @@ RATIO_CEILINGS = {
     # First-freeze headroom for session_compact.branch_summarize. Observed
     # numbers filled after Friend-MachineD n=5. Ratchet down only.
     "session_compact.branch_summarize": 20.0,
+    "session_compact.prepare_branch_entries": 20.0,
     # Initial values frozen from the first full measurement (2026-08-15,
     # Friend-MachineD, samples=5): head 16.71x, tail 15.27x.  These record
     # that cadr currently LOSES to pi on truncation (whole-content encode +
@@ -2673,6 +2674,11 @@ OBSERVED_EXACT = {
         "summarized",
         "entry_count",
         "branch_summary_chars",
+        "prepared",
+        "message_count",
+        "total_tokens",
+        "read_file_count",
+        "modified_file_count",
     ),
 }
 

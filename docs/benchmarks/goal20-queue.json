@@ -114,7 +114,7 @@
    "status": "done",
    "source": "src/cadr-agent/branch-summarization.lisp",
    "measure": "measure-agent-tool-loop",
-   "metric": null,
+   "metric": "session_compact.prepare_branch_entries",
    "branch": "pair-258-branch-summarization"
   },
   {

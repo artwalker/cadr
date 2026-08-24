@@ -167,7 +167,8 @@
   "text_truncation.truncate_tail",
   "text_truncation.truncate_middle",
   "render_slicing.slice_ansi_clip",
-  "render_slicing.slice_plain_clip"
+  "render_slicing.slice_plain_clip",
+  "session_compact.prepare_branch_entries"
  ],
  "unpairablePaths": [
   {
@@ -740,12 +741,17 @@
   {
    "prefix": "src/cadr-agent/branch-summarization.lisp",
    "class": "paired",
-   "metrics": ["session_compact.branch_summarize"]
+   "metrics": [
+    "session_compact.branch_summarize",
+    "session_compact.prepare_branch_entries"
+   ]
   },
   {
    "prefix": "src/cadr-agent/conditions.lisp",
    "class": "paired",
-   "metrics": ["agent_conditions.error_probe"]
+   "metrics": [
+    "agent_conditions.error_probe"
+   ]
   },
   {
    "prefix": "src/cadr-agent/execution-env.lisp",
@@ -775,97 +781,136 @@
   {
    "prefix": "src/cadr-agent/proxy.lisp",
    "class": "paired",
-   "metrics": ["agent_proxy.stream_roundtrip"]
+   "metrics": [
+    "agent_proxy.stream_roundtrip"
+   ]
   },
   {
    "prefix": "src/cadr-agent/runtime.lisp",
    "class": "paired",
-   "metrics": ["agent_tool_loop.runtime"]
+   "metrics": [
+    "agent_tool_loop.runtime"
+   ]
   },
   {
    "prefix": "src/cadr-agent/schema.lisp",
    "class": "paired",
-   "metrics": ["agent_schema.validate_ok_fail"]
+   "metrics": [
+    "agent_schema.validate_ok_fail"
+   ]
   },
   {
    "prefix": "src/cadr-agent/session/discovery.lisp",
    "class": "paired",
-   "metrics": ["session_discovery.header_probe", "session_discovery.session_list_probe"]
+   "metrics": [
+    "session_discovery.header_probe",
+    "session_discovery.session_list_probe"
+   ]
   },
   {
    "prefix": "src/cadr-agent/session/export-html.lisp",
    "class": "paired",
-   "metrics": ["session_export_html.to_html"]
+   "metrics": [
+    "session_export_html.to_html"
+   ]
   },
   {
    "prefix": "src/cadr-agent/storage/harness.lisp",
    "class": "paired",
-   "metrics": ["harness_storage.open_walk"]
+   "metrics": [
+    "harness_storage.open_walk"
+   ]
   },
   {
    "prefix": "src/cadr-agent/storage/jsonl.lisp",
    "class": "paired",
-   "metrics": ["harness_storage.open_walk"]
+   "metrics": [
+    "harness_storage.open_walk"
+   ]
   },
   {
    "prefix": "src/cadr-agent/storage/memory.lisp",
    "class": "paired",
-   "metrics": ["harness_storage.open_walk"]
+   "metrics": [
+    "harness_storage.open_walk"
+   ]
   },
   {
    "prefix": "src/cadr-agent/storage/protocol.lisp",
    "class": "paired",
-   "metrics": ["harness_storage.open_walk"]
+   "metrics": [
+    "harness_storage.open_walk"
+   ]
   },
   {
    "prefix": "src/cadr-ai/auth/device-code.lisp",
    "class": "paired",
-   "metrics": ["oauth_pkce_device.poll"]
+   "metrics": [
+    "oauth_pkce_device.poll"
+   ]
   },
   {
    "prefix": "src/cadr-ai/auth/github-copilot.lisp",
    "class": "paired",
-   "metrics": ["oauth_pkce_device.copilot_url"]
+   "metrics": [
+    "oauth_pkce_device.copilot_url"
+   ]
   },
   {
    "prefix": "src/cadr-ai/auth/radius-cloudflare.lisp",
    "class": "paired",
-   "metrics": ["oauth_pkce_device.cloudflare_url"]
+   "metrics": [
+    "oauth_pkce_device.cloudflare_url"
+   ]
   },
   {
    "prefix": "src/cadr-ai/auth.lisp",
    "class": "paired",
-   "metrics": ["oauth_pkce_device.auth_json"]
+   "metrics": [
+    "oauth_pkce_device.auth_json"
+   ]
   },
   {
    "prefix": "src/cadr-ai/capabilities/event-stream.lisp",
    "class": "paired",
-   "metrics": ["ai_capabilities.event_stream"]
+   "metrics": [
+    "ai_capabilities.event_stream"
+   ]
   },
   {
    "prefix": "src/cadr-ai/capabilities/grammar-tools.lisp",
    "class": "paired",
-   "metrics": ["ai_capabilities.deferred_tools"]
+   "metrics": [
+    "ai_capabilities.deferred_tools"
+   ]
   },
   {
    "prefix": "src/cadr-ai/capabilities/image-runtime.lisp",
    "class": "paired",
-   "metrics": ["image_runtime.api_provider"]
+   "metrics": [
+    "image_runtime.api_provider"
+   ]
   },
   {
    "prefix": "src/cadr-ai/capabilities/proxy-config.lisp",
    "class": "paired",
-   "metrics": ["ai_capabilities.http_proxy"]
+   "metrics": [
+    "ai_capabilities.http_proxy"
+   ]
   },
   {
    "prefix": "src/cadr-ai/capabilities/session-resources.lisp",
    "class": "paired",
-   "metrics": ["ai_capabilities.session_resources"]
+   "metrics": [
+    "ai_capabilities.session_resources"
+   ]
   },
   {
    "prefix": "src/cadr-ai/capabilities/streaming-json.lisp",
    "class": "paired",
-   "metrics": ["ai_capabilities.short_hash"]
+   "metrics": [
+    "ai_capabilities.short_hash"
+   ]
   },
   {
    "prefix": "src/cadr-ai/conditions.lisp",
@@ -878,12 +923,16 @@
   {
    "prefix": "src/cadr-ai/crypto.lisp",
    "class": "paired",
-   "metrics": ["ai_crypto.hmac"]
+   "metrics": [
+    "ai_crypto.hmac"
+   ]
   },
   {
    "prefix": "src/cadr-ai/image-models.generated.lisp",
    "class": "paired",
-   "metrics": ["image_runtime.lookup"]
+   "metrics": [
+    "image_runtime.lookup"
+   ]
   },
   {
    "prefix": "src/cadr-ai/images.lisp",
@@ -893,7 +942,9 @@
   {
    "prefix": "src/cadr-ai/model-data.lisp",
    "class": "paired",
-   "metrics": ["ai_crypto_model_data.manifest"]
+   "metrics": [
+    "ai_crypto_model_data.manifest"
+   ]
   },
   {
    "prefix": "src/cadr-ai/models.generated.lisp",
@@ -922,7 +973,9 @@
   {
    "prefix": "src/cadr-ai/oauth/pkce.lisp",
    "class": "paired",
-   "metrics": ["oauth_pkce.challenge_urls"]
+   "metrics": [
+    "oauth_pkce.challenge_urls"
+   ]
   },
   {
    "prefix": "src/cadr-ai/oauth/providers/anthropic.lisp",
@@ -932,7 +985,9 @@
   {
    "prefix": "src/cadr-ai/oauth/providers/github-copilot.lisp",
    "class": "paired",
-   "metrics": ["oauth_pkce_device.copilot_auth"]
+   "metrics": [
+    "oauth_pkce_device.copilot_auth"
+   ]
   },
   {
    "prefix": "src/cadr-ai/oauth/providers/kimi.lisp",
@@ -952,7 +1007,9 @@
   {
    "prefix": "src/cadr-ai/oauth/providers/radius.lisp",
    "class": "paired",
-   "metrics": ["oauth_pkce_device.radius_gateway"]
+   "metrics": [
+    "oauth_pkce_device.radius_gateway"
+   ]
   },
   {
    "prefix": "src/cadr-ai/oauth/providers/xai.lisp",
@@ -971,7 +1028,9 @@
   {
    "prefix": "src/cadr-ai/providers/definitions.lisp",
    "class": "paired",
-   "metrics": ["provider_registry_defs.lookup"]
+   "metrics": [
+    "provider_registry_defs.lookup"
+   ]
   },
   {
    "prefix": "src/cadr-ai/providers/registry.lisp",
@@ -986,7 +1045,9 @@
   {
    "prefix": "src/cadr-ai/runtime/faux-provider.lisp",
    "class": "paired",
-   "metrics": ["ai_runtime_faux.blocks"]
+   "metrics": [
+    "ai_runtime_faux.blocks"
+   ]
   },
   {
    "prefix": "src/cadr-ai/runtime/models.lisp",
@@ -998,17 +1059,23 @@
   {
    "prefix": "src/cadr-ai/support/grammar-coercion.lisp",
    "class": "paired",
-   "metrics": ["ai_support.grammar_delta"]
+   "metrics": [
+    "ai_support.grammar_delta"
+   ]
   },
   {
    "prefix": "src/cadr-ai/support/overflow.lisp",
    "class": "paired",
-   "metrics": ["ai_support.context_overflow"]
+   "metrics": [
+    "ai_support.context_overflow"
+   ]
   },
   {
    "prefix": "src/cadr-ai/support/release.lisp",
    "class": "paired",
-   "metrics": ["ai_support.auth_guidance"]
+   "metrics": [
+    "ai_support.auth_guidance"
+   ]
   },
   {
    "prefix": "src/cadr-ai/support/retry.lisp",
@@ -1025,17 +1092,23 @@
   {
    "prefix": "src/cadr-ai/support/token-estimation.lisp",
    "class": "paired",
-   "metrics": ["ai_support.estimate_text"]
+   "metrics": [
+    "ai_support.estimate_text"
+   ]
   },
   {
    "prefix": "src/cadr-ai/support/uuid.lisp",
    "class": "paired",
-   "metrics": ["ai_support.uuid_v7"]
+   "metrics": [
+    "ai_support.uuid_v7"
+   ]
   },
   {
    "prefix": "src/cadr-ai/transport/http.lisp",
    "class": "paired",
-   "metrics": ["http_transport.parse_url"]
+   "metrics": [
+    "http_transport.parse_url"
+   ]
   },
   {
    "prefix": "src/cadr-ai/types.lisp",
@@ -1048,12 +1121,16 @@
   {
    "prefix": "src/cadr-ai/websocket.lisp",
    "class": "paired",
-   "metrics": ["websocket_stream.stream_roundtrip"]
+   "metrics": [
+    "websocket_stream.stream_roundtrip"
+   ]
   },
   {
    "prefix": "src/cadr-cli/bootstrap/auth.lisp",
    "class": "paired",
-   "metrics": ["cli_bootstrap_sessions.bootstrap_auth"]
+   "metrics": [
+    "cli_bootstrap_sessions.bootstrap_auth"
+   ]
   },
   {
    "prefix": "src/cadr-cli/bootstrap/commands.lisp",
@@ -1068,12 +1145,16 @@
   {
    "prefix": "src/cadr-cli/bootstrap/settings.lisp",
    "class": "paired",
-   "metrics": ["settings_load.http_idle"]
+   "metrics": [
+    "settings_load.http_idle"
+   ]
   },
   {
    "prefix": "src/cadr-cli/bootstrap/tools.lisp",
    "class": "paired",
-   "metrics": ["cli_bootstrap_sessions.coding_tools"]
+   "metrics": [
+    "cli_bootstrap_sessions.coding_tools"
+   ]
   },
   {
    "prefix": "src/cadr-cli/config.lisp",
@@ -1088,7 +1169,9 @@
   {
    "prefix": "src/cadr-cli/extensions/discovery.lisp",
    "class": "paired",
-   "metrics": ["cli_extensions_install.extension_discovery"]
+   "metrics": [
+    "cli_extensions_install.extension_discovery"
+   ]
   },
   {
    "prefix": "src/cadr-cli/extensions/installer.lisp",
@@ -1098,7 +1181,9 @@
   {
    "prefix": "src/cadr-cli/extensions/llama/client.lisp",
    "class": "paired",
-   "metrics": ["cli_extensions_install.llama_url"]
+   "metrics": [
+    "cli_extensions_install.llama_url"
+   ]
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/extension.lisp",
@@ -1108,12 +1193,16 @@
   {
    "prefix": "src/cadr-cli/extensions/llama/huggingface.lisp",
    "class": "paired",
-   "metrics": ["cli_extensions_install.hf_token"]
+   "metrics": [
+    "cli_extensions_install.hf_token"
+   ]
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/provider.lisp",
    "class": "paired",
-   "metrics": ["cli_extensions_install.llama_catalog"]
+   "metrics": [
+    "cli_extensions_install.llama_catalog"
+   ]
   },
   {
    "prefix": "src/cadr-cli/extensions/llama/ui.lisp",
@@ -1128,12 +1217,16 @@
   {
    "prefix": "src/cadr-cli/interactive/autocomplete.lisp",
    "class": "paired",
-   "metrics": ["cli_interactive_controller.auth_type"]
+   "metrics": [
+    "cli_interactive_controller.auth_type"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/clipboard.lisp",
    "class": "paired",
-   "metrics": ["cli_interactive_controller.wayland"]
+   "metrics": [
+    "cli_interactive_controller.wayland"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/components/announcement.lisp",
@@ -1158,7 +1251,9 @@
   {
    "prefix": "src/cadr-cli/interactive/components/loaders.lisp",
    "class": "paired",
-   "metrics": ["cli_selectors.key_text"]
+   "metrics": [
+    "cli_selectors.key_text"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/controller.lisp",
@@ -1173,12 +1268,16 @@
   {
    "prefix": "src/cadr-cli/interactive/footer.lisp",
    "class": "paired",
-   "metrics": ["cli_interactive_controller.cwd_footer"]
+   "metrics": [
+    "cli_interactive_controller.cwd_footer"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/images.lisp",
    "class": "paired",
-   "metrics": ["image_runtime.dimension_note"]
+   "metrics": [
+    "image_runtime.dimension_note"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/pending-messages.lisp",
@@ -1197,7 +1296,12 @@
   {
    "prefix": "src/cadr-cli/interactive/selectors/common.lisp",
    "class": "paired",
-   "metrics": ["cli_selectors.fuzzy_filter", "cli_selectors.delete_query", "cli_selectors.visible_slice", "cli_selectors.move_index"]
+   "metrics": [
+    "cli_selectors.fuzzy_filter",
+    "cli_selectors.delete_query",
+    "cli_selectors.visible_slice",
+    "cli_selectors.move_index"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/selectors/fork.lisp",
@@ -1257,7 +1361,9 @@
   {
    "prefix": "src/cadr-cli/interactive/syntax.lisp",
    "class": "paired",
-   "metrics": ["cli_interactive_controller.decode_entity"]
+   "metrics": [
+    "cli_interactive_controller.decode_entity"
+   ]
   },
   {
    "prefix": "src/cadr-cli/interactive/theme.lisp",
@@ -1290,7 +1396,9 @@
   {
    "prefix": "src/cadr-cli/media.lisp",
    "class": "paired",
-   "metrics": ["image_runtime.mime_type"]
+   "metrics": [
+    "image_runtime.mime_type"
+   ]
   },
   {
    "prefix": "src/cadr-cli/migration.lisp",
@@ -1307,22 +1415,30 @@
   {
    "prefix": "src/cadr-cli/models/credential-print.lisp",
    "class": "paired",
-   "metrics": ["cli_models_rest.auth_command"]
+   "metrics": [
+    "cli_models_rest.auth_command"
+   ]
   },
   {
    "prefix": "src/cadr-cli/models/login-selection.lisp",
    "class": "paired",
-   "metrics": ["cli_models_rest.login_selection"]
+   "metrics": [
+    "cli_models_rest.login_selection"
+   ]
   },
   {
    "prefix": "src/cadr-cli/models/matching.lisp",
    "class": "paired",
-   "metrics": ["cli_models_rest.pattern_match"]
+   "metrics": [
+    "cli_models_rest.pattern_match"
+   ]
   },
   {
    "prefix": "src/cadr-cli/modes/print.lisp",
    "class": "paired",
-   "metrics": ["cli_print_rpc.jsonl_line"]
+   "metrics": [
+    "cli_print_rpc.jsonl_line"
+   ]
   },
   {
    "prefix": "src/cadr-cli/modes/rpc/commands.lisp",
@@ -1332,7 +1448,9 @@
   {
    "prefix": "src/cadr-cli/modes/rpc/jsonl.lisp",
    "class": "paired",
-   "metrics": ["cli_print_rpc.jsonl_read"]
+   "metrics": [
+    "cli_print_rpc.jsonl_read"
+   ]
   },
   {
    "prefix": "src/cadr-cli/modes/rpc/mode.lisp",
@@ -1342,7 +1460,9 @@
   {
    "prefix": "src/cadr-cli/modes/rpc/models.lisp",
    "class": "paired",
-   "metrics": ["cli_print_rpc.clamp_thinking"]
+   "metrics": [
+    "cli_print_rpc.clamp_thinking"
+   ]
   },
   {
    "prefix": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
@@ -1352,7 +1472,9 @@
   {
    "prefix": "src/cadr-cli/modes/rpc/sessions.lisp",
    "class": "paired",
-   "metrics": ["cli_print_rpc.session_stats"]
+   "metrics": [
+    "cli_print_rpc.session_stats"
+   ]
   },
   {
    "prefix": "src/cadr-cli/modes/rpc/ui.lisp",
@@ -1395,17 +1517,26 @@
   {
    "prefix": "src/cadr-cli/sdk/agent-session.lisp",
    "class": "paired",
-   "metrics": ["cli_sdk.agent_session"]
+   "metrics": [
+    "cli_sdk.agent_session"
+   ]
   },
   {
    "prefix": "src/cadr-cli/sdk/cache-version.lisp",
    "class": "paired",
-   "metrics": ["cli_sdk.version_newer", "cli_sdk.cache_miss", "cli_sdk.cache_waste", "cli_sdk.thinking_level"]
+   "metrics": [
+    "cli_sdk.version_newer",
+    "cli_sdk.cache_miss",
+    "cli_sdk.cache_waste",
+    "cli_sdk.thinking_level"
+   ]
   },
   {
    "prefix": "src/cadr-cli/sdk/model-service.lisp",
    "class": "paired",
-   "metrics": ["cli_sdk.model_runtime"]
+   "metrics": [
+    "cli_sdk.model_runtime"
+   ]
   },
   {
    "prefix": "src/cadr-cli/sdk/resource-service.lisp",
@@ -1415,12 +1546,16 @@
   {
    "prefix": "src/cadr-cli/sdk/session-manager.lisp",
    "class": "paired",
-   "metrics": ["cli_sdk.session_list"]
+   "metrics": [
+    "cli_sdk.session_list"
+   ]
   },
   {
    "prefix": "src/cadr-cli/sdk/session-runtime.lisp",
    "class": "paired",
-   "metrics": ["cli_sdk.session_services"]
+   "metrics": [
+    "cli_sdk.session_services"
+   ]
   },
   {
    "prefix": "src/cadr-cli/sdk/settings-service.lisp",
@@ -1430,12 +1565,16 @@
   {
    "prefix": "src/cadr-cli/sdk/system-prompt.lisp",
    "class": "paired",
-   "metrics": ["skill_prompt_load.build_prompt"]
+   "metrics": [
+    "skill_prompt_load.build_prompt"
+   ]
   },
   {
    "prefix": "src/cadr-cli/settings/trust.lisp",
    "class": "paired",
-   "metrics": ["settings_load.project_trust"]
+   "metrics": [
+    "settings_load.project_trust"
+   ]
   },
   {
    "prefix": "src/cadr-cli/support/atomic-write.lisp",
@@ -1445,12 +1584,17 @@
   {
    "prefix": "src/cadr-cli/support/changelog-share.lisp",
    "class": "paired",
-   "metrics": ["cli_support.strip_ansi", "cli_support.parse_changelog"]
+   "metrics": [
+    "cli_support.strip_ansi",
+    "cli_support.parse_changelog"
+   ]
   },
   {
    "prefix": "src/cadr-cli/support/event-bus.lisp",
    "class": "paired",
-   "metrics": ["cli_support.event_bus"]
+   "metrics": [
+    "cli_support.event_bus"
+   ]
   },
   {
    "prefix": "src/cadr-cli/support/external-editor.lisp",
@@ -1465,12 +1609,16 @@
   {
    "prefix": "src/cadr-cli/support/headers.lisp",
    "class": "paired",
-   "metrics": ["cli_support.attribution_headers"]
+   "metrics": [
+    "cli_support.attribution_headers"
+   ]
   },
   {
    "prefix": "src/cadr-cli/support/html.lisp",
    "class": "paired",
-   "metrics": ["cli_support.experimental"]
+   "metrics": [
+    "cli_support.experimental"
+   ]
   },
   {
    "prefix": "src/cadr-cli/support/model-help.lisp",
@@ -1480,17 +1628,25 @@
   {
    "prefix": "src/cadr-cli/support/paths.lisp",
    "class": "paired",
-   "metrics": ["cli_support.normalize_path"]
+   "metrics": [
+    "cli_support.normalize_path"
+   ]
   },
   {
    "prefix": "src/cadr-cli/support/resume-version-git.lisp",
    "class": "paired",
-   "metrics": ["cli_support.git_source", "cli_support.user_agent"]
+   "metrics": [
+    "cli_support.git_source",
+    "cli_support.user_agent"
+   ]
   },
   {
    "prefix": "src/cadr-cli/support/shell-process.lisp",
    "class": "paired",
-   "metrics": ["cli_support.shell_config", "cli_support.sanitize_output"]
+   "metrics": [
+    "cli_support.shell_config",
+    "cli_support.sanitize_output"
+   ]
   },
   {
    "prefix": "src/cadr-cli/support/threads.lisp",
@@ -1500,7 +1656,9 @@
   {
    "prefix": "src/cadr-cli/support/timings.lisp",
    "class": "paired",
-   "metrics": ["cli_support.timings"]
+   "metrics": [
+    "cli_support.timings"
+   ]
   },
   {
    "prefix": "src/cadr-cli/system-prompt.lisp",
@@ -1520,7 +1678,9 @@
   {
    "prefix": "src/cadr-cli/tools/edit.lisp",
    "class": "paired",
-   "metrics": ["agent_tool_loop.line_ending"]
+   "metrics": [
+    "agent_tool_loop.line_ending"
+   ]
   },
   {
    "prefix": "src/cadr-cli/tools/find.lisp",
@@ -1540,7 +1700,9 @@
   {
    "prefix": "src/cadr-cli/tools/path.lisp",
    "class": "paired",
-   "metrics": ["agent_tool_loop.tool_path"]
+   "metrics": [
+    "agent_tool_loop.tool_path"
+   ]
   },
   {
    "prefix": "src/cadr-cli/tools/write.lisp",
@@ -1550,7 +1712,9 @@
   {
    "prefix": "src/cadr-core/atomic-file.lisp",
    "class": "covered-as-callee",
-   "metrics": ["evals_harness.artifact_persist"]
+   "metrics": [
+    "evals_harness.artifact_persist"
+   ]
   },
   {
    "prefix": "src/cadr-core/cancellation.lisp",
@@ -1593,12 +1757,16 @@
   {
    "prefix": "src/cadr-evals/artifacts.lisp",
    "class": "paired",
-   "metrics": ["evals_harness.artifact_persist"]
+   "metrics": [
+    "evals_harness.artifact_persist"
+   ]
   },
   {
    "prefix": "src/cadr-evals/harness-table.lisp",
    "class": "paired",
-   "metrics": ["evals_harness.group_key"]
+   "metrics": [
+    "evals_harness.group_key"
+   ]
   },
   {
    "prefix": "src/cadr-evals/harness.lisp",
@@ -1613,7 +1781,9 @@
   {
    "prefix": "src/cadr-evals/package.lisp",
    "class": "covered-as-callee",
-   "metrics": ["evals_harness.summarize"]
+   "metrics": [
+    "evals_harness.summarize"
+   ]
   },
   {
    "prefix": "src/cadr-evals/reporter.lisp",
@@ -1628,42 +1798,60 @@
   {
    "prefix": "src/cadr-evals/summary.lisp",
    "class": "paired",
-   "metrics": ["evals_harness.summarize", "evals_harness.format"]
+   "metrics": [
+    "evals_harness.summarize",
+    "evals_harness.format"
+   ]
   },
   {
    "prefix": "src/cadr-protocol/cbor.lisp",
    "class": "paired",
-   "metrics": ["protocol_cbor.roundtrip"]
+   "metrics": [
+    "protocol_cbor.roundtrip"
+   ]
   },
   {
    "prefix": "src/cadr-protocol/codec.lisp",
    "class": "paired",
-   "metrics": ["protocol_codec.roundtrip"]
+   "metrics": [
+    "protocol_codec.roundtrip"
+   ]
   },
   {
    "prefix": "src/cadr-protocol/framing.lisp",
    "class": "paired",
-   "metrics": ["protocol_codec.roundtrip"]
+   "metrics": [
+    "protocol_codec.roundtrip"
+   ]
   },
   {
    "prefix": "src/cadr-protocol/package.lisp",
    "class": "covered-as-callee",
-   "metrics": ["protocol_cbor.roundtrip", "protocol_codec.roundtrip"]
+   "metrics": [
+    "protocol_cbor.roundtrip",
+    "protocol_codec.roundtrip"
+   ]
   },
   {
    "prefix": "src/cadr-protocol/schema.lisp",
    "class": "paired",
-   "metrics": ["protocol_codec.roundtrip"]
+   "metrics": [
+    "protocol_codec.roundtrip"
+   ]
   },
   {
    "prefix": "src/cadr-tui/autocomplete.lisp",
    "class": "paired",
-   "metrics": ["tui_autocomplete.suggest_apply"]
+   "metrics": [
+    "tui_autocomplete.suggest_apply"
+   ]
   },
   {
    "prefix": "src/cadr-tui/components/select-list.lisp",
    "class": "paired",
-   "metrics": ["tui_select_settings_loaders.filter"]
+   "metrics": [
+    "tui_select_settings_loaders.filter"
+   ]
   },
   {
    "prefix": "src/cadr-tui/components/status.lisp",
@@ -1682,32 +1870,44 @@
   {
    "prefix": "src/cadr-tui/composition/settings-list.lisp",
    "class": "paired",
-   "metrics": ["tui_settings_list.apply_filter"]
+   "metrics": [
+    "tui_settings_list.apply_filter"
+   ]
   },
   {
    "prefix": "src/cadr-tui/fuzzy.lisp",
    "class": "paired",
-   "metrics": ["tui_editor_helpers.fuzzy_match"]
+   "metrics": [
+    "tui_editor_helpers.fuzzy_match"
+   ]
   },
   {
    "prefix": "src/cadr-tui/input-component.lisp",
    "class": "paired",
-   "metrics": ["tui_input_component.edit"]
+   "metrics": [
+    "tui_input_component.edit"
+   ]
   },
   {
    "prefix": "src/cadr-tui/keybindings.lisp",
    "class": "paired",
-   "metrics": ["tui_keybindings.resolve_match"]
+   "metrics": [
+    "tui_keybindings.resolve_match"
+   ]
   },
   {
    "prefix": "src/cadr-tui/kill-ring.lisp",
    "class": "paired",
-   "metrics": ["tui_kill_ring.push_peek"]
+   "metrics": [
+    "tui_kill_ring.push_peek"
+   ]
   },
   {
    "prefix": "src/cadr-tui/latex.lisp",
    "class": "paired",
-   "metrics": ["tui_latex.render"]
+   "metrics": [
+    "tui_latex.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/ansi.lisp",
@@ -1717,67 +1917,93 @@
   {
    "prefix": "src/cadr-tui/mermaid/canvas.lisp",
    "class": "covered-as-callee",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/graph.lisp",
    "class": "covered-as-callee",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/index.lisp",
    "class": "paired",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/labels.lisp",
    "class": "covered-as-callee",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/layout-seq.lisp",
    "class": "covered-as-callee",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/layout.lisp",
    "class": "covered-as-callee",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/parse.lisp",
    "class": "covered-as-callee",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/source-box.lisp",
    "class": "paired",
-   "metrics": ["tui_mermaid.source_box"]
+   "metrics": [
+    "tui_mermaid.source_box"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/transform.lisp",
    "class": "paired",
-   "metrics": ["tui_mermaid.transform"]
+   "metrics": [
+    "tui_mermaid.transform"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/width-data.lisp",
    "class": "covered-as-callee",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/mermaid/width.lisp",
    "class": "covered-as-callee",
-   "metrics": ["tui_mermaid.render"]
+   "metrics": [
+    "tui_mermaid.render"
+   ]
   },
   {
    "prefix": "src/cadr-tui/native-modifiers.lisp",
    "class": "paired",
-   "metrics": ["tui_native_modifiers.pressed"]
+   "metrics": [
+    "tui_native_modifiers.pressed"
+   ]
   },
   {
    "prefix": "src/cadr-tui/overlay.lisp",
    "class": "paired",
-   "metrics": ["tui_overlay.composite_line"]
+   "metrics": [
+    "tui_overlay.composite_line"
+   ]
   },
   {
    "prefix": "src/cadr-tui/package.lisp",
@@ -1793,17 +2019,23 @@
   {
    "prefix": "src/cadr-tui/stdin-buffer.lisp",
    "class": "paired",
-   "metrics": ["tui_stdin_buffer.process"]
+   "metrics": [
+    "tui_stdin_buffer.process"
+   ]
   },
   {
    "prefix": "src/cadr-tui/terminal-colors.lisp",
    "class": "paired",
-   "metrics": ["tui_theme_overlay.osc11_bg"]
+   "metrics": [
+    "tui_theme_overlay.osc11_bg"
+   ]
   },
   {
    "prefix": "src/cadr-tui/terminal-image.lisp",
    "class": "paired",
-   "metrics": ["image_runtime.dimensions"]
+   "metrics": [
+    "image_runtime.dimensions"
+   ]
   },
   {
    "prefix": "src/cadr-tui/theme.lisp",
@@ -1822,12 +2054,16 @@
   {
    "prefix": "src/cadr-tui/undo-stack.lisp",
    "class": "paired",
-   "metrics": ["tui_undo_stack.push_pop"]
+   "metrics": [
+    "tui_undo_stack.push_pop"
+   ]
   },
   {
    "prefix": "src/cadr-tui/word-navigation.lisp",
    "class": "paired",
-   "metrics": ["tui_word_navigation.step"]
+   "metrics": [
+    "tui_word_navigation.step"
+   ]
   }
  ]
 }
