@@ -79,7 +79,7 @@
                       (cadr-cli::load-project-context-files project))))
         ;; Baseline order is rootward-first; ancestors above the temp tree
         ;; (for example /tmp/AGENTS.md) may also be present.
-        (is (equal expected (subseq actual (- (length actual) 2)))))))
+        (is (equal expected (subseq actual (- (length actual) 2))))))))
 
 (test goal18-startup-skill-conflicts-block-matches-the-baseline-shape
   (let* ((snapshot (goal18-resource-snapshot))
