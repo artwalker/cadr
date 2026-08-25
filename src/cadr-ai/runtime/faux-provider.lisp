@@ -291,7 +291,7 @@
       (json-object
        "name" (tool-name tool)
        "description" (tool-description tool)
-       "parameters" (tool-parameters tool)))))
+       "parameters" (tool-parameters tool))))
 
 (defun common-prefix-length (left right)
   (loop for index from 0
