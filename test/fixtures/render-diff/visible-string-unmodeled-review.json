@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baselineCommit": "914cf1472e715297caa30db4b9535d534a9eb718",
+  "baselineCommit": "4e58f324fae8ebfa98a3d45181fb248072a2afac",
   "entries": [
     {
       "site": "packages/coding-agent/src/cli/project-trust.ts:39",
@@ -75,7 +75,7 @@
     {
       "site": "packages/tui/src/tui-alt-screen.ts:438",
       "verdict": "accepted-gap",
-      "reason": "New in v0.84.2 (alt-screen search overlay). The showOverlay call's only fixed text is the geometry option literals ('top-right', '40%'); the overlay's presentation strings (' Find transcript', the match-count status) are runtime-composed inside AltScreenSearchComponent.render in alt-screen-search.ts, a shape the extractor does not traverse. cadr prints the identical overlay literals (test/cadr-tui/alt-screen-test.lisp:779)."
+      "reason": "New in v0.84.3 (alt-screen search overlay). The showOverlay call's only fixed text is the geometry option literals ('top-right', '40%'); the overlay's presentation strings (' Find transcript', the match-count status) are runtime-composed inside AltScreenSearchComponent.render in alt-screen-search.ts, a shape the extractor does not traverse. cadr prints the identical overlay literals (test/cadr-tui/alt-screen-test.lisp:779)."
     }
   ]
 }

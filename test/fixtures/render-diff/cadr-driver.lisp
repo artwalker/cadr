@@ -96,7 +96,7 @@
     (namestring (truename path))))
 
 (defun example-command-records (manager)
-  "Public getCommands shape: extension + prompt, no builtins (pi@914cf1472)."
+  "Public getCommands shape: extension + prompt, no builtins (pi@4e58f324f)."
   (let* ((host (cadr-cli::cli-extension-manager-host manager))
          (snapshot (cadr-agent::extension-host-current-snapshot host)))
     (append
@@ -1489,7 +1489,7 @@ render loopback login received
               (lambda (event)
                 (when event-consumer
                   (funcall event-consumer event))))))
-      ;; pi@914cf1472 sdk.ts:362-374 records model/thinking only for a new
+      ;; pi@4e58f324f sdk.ts:362-374 records model/thinking only for a new
       ;; session.  Existing sessions restore their graph and append thinking
       ;; only when the active branch has no thinking-level entry.
       (if (cadr-agent:agent-messages agent)

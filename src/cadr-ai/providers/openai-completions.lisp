@@ -280,7 +280,7 @@
            (string-downcase (symbol-name reasoning)))))
 
 (defun resolve-chat-template-args (model reasoning values)
-  ;; pi@914cf1472 api/openai-completions.ts:892-940 — each entry
+  ;; pi@4e58f324f api/openai-completions.ts:892-940 — each entry
   ;; resolves a scalar verbatim or a $var reference to the current
   ;; thinking state; omitWhenOff drops the entry with no reasoning
   ;; active; an empty result omits the request field entirely.
@@ -394,7 +394,7 @@
          (when (stringp value)
            (json-put payload "thinking" value))))
       (:baseten
-       ;; pi@914cf1472 api/openai-completions.ts:779-793 — chat
+       ;; pi@4e58f324f api/openai-completions.ts:779-793 — chat
        ;; template args carry the thinking toggle, and reasoning_effort
        ;; follows only when the model supports it.
        (let ((args
@@ -490,7 +490,7 @@
     (when tool-choice
       (json-put payload "tool_choice" tool-choice))
     (add-completions-reasoning payload model reasoning)
-    ;; pi@914cf1472 api/openai-completions.ts:847-866 — vLLM caps
+    ;; pi@4e58f324f api/openai-completions.ts:847-866 — vLLM caps
     ;; reasoning with a top-level thinking_token_budget, independent of
     ;; thinkingFormat; reasoning and the answer share max_tokens, so an
     ;; uncapped reasoning phase can consume the whole response.  The

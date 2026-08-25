@@ -236,7 +236,7 @@
            state arguments)))
 
 (test goal9-b3-every-base-screen-sha-has-a-baseline-derived-semantic-oracle
-  ;; These invariants are transcribed from pi@914cf1472, not inferred from
+  ;; These invariants are transcribed from pi@4e58f324f, not inferred from
   ;; Cadr's hashes: root child order and natural height come from
   ;; interactive-mode.ts:734-746 and tui.ts:235-244; assistant spacing from
   ;; assistant-message.ts:89-169; tool framing/preview from
@@ -301,7 +301,7 @@
             '("Give one concise answer." "One concise answer."
               "────────────────" "/tmp/project" "mock-model")))
           ((string= name "viewport-overflow")
-           ;; pi@914cf1472 root composition retains the complete natural
+           ;; pi@4e58f324f root composition retains the complete natural
            ;; document; TuiMainScreen owns the bottom viewport.  These two
            ;; assertions deliberately prove both halves independently.
            (is (= 23 (length natural)))

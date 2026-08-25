@@ -224,7 +224,7 @@
              (gethash "thinkingXhigh" colors)
              variables))
            overrides))
-       ;; pi@914cf1472 theme.ts:326-332 — optional scrollbarThumb
+       ;; pi@4e58f324f theme.ts:326-332 — optional scrollbarThumb
        ;; falls back to selectedBg.
        (unless
            (nth-value 1
@@ -237,7 +237,7 @@
             (gethash "selectedBg" colors)
             variables))
           overrides))
-       ;; v0.84.2: the search-match colors fall back to selectedBg/text.
+       ;; v0.84.3: the search-match colors fall back to selectedBg/text.
        (unless
            (nth-value 1
                       (gethash "searchMatchBg"

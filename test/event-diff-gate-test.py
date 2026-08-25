@@ -88,7 +88,7 @@ class EventDiffGateTest(unittest.TestCase):
             "actual_sha256": hashlib.sha256(b'"cadr"').hexdigest(),
         }
         valid = {
-            "baselineCommit": "914cf1472e715297caa30db4b9535d534a9eb718",
+            "baselineCommit": "4e58f324fae8ebfa98a3d45181fb248072a2afac",
             "entries": [
                 {
                     **difference,
@@ -99,7 +99,7 @@ class EventDiffGateTest(unittest.TestCase):
         }
 
         result = self.event_diff.apply_dispositions(
-            [difference], valid, "914cf1472e715297caa30db4b9535d534a9eb718"
+            [difference], valid, "4e58f324fae8ebfa98a3d45181fb248072a2afac"
         )
         self.assertEqual(result["unresolved"], [])
         self.assertEqual(len(result["resolved"]), 1)
@@ -109,13 +109,13 @@ class EventDiffGateTest(unittest.TestCase):
         wildcard["entries"][0]["pointer"] = "*"
         with self.assertRaisesRegex(ValueError, "wildcard"):
             self.event_diff.apply_dispositions(
-                [difference], wildcard, "914cf1472e715297caa30db4b9535d534a9eb718"
+                [difference], wildcard, "4e58f324fae8ebfa98a3d45181fb248072a2afac"
             )
 
         stale = json.loads(json.dumps(valid))
         stale["entries"][0]["actual_sha256"] = "0" * 64
         stale_result = self.event_diff.apply_dispositions(
-            [difference], stale, "914cf1472e715297caa30db4b9535d534a9eb718"
+            [difference], stale, "4e58f324fae8ebfa98a3d45181fb248072a2afac"
         )
         self.assertEqual(stale_result["resolved"], [])
         self.assertEqual(stale_result["unresolved"], [difference])
@@ -123,7 +123,7 @@ class EventDiffGateTest(unittest.TestCase):
         known_bug = json.loads(json.dumps(valid))
         known_bug["entries"][0]["disposition"] = "cadr-bug"
         bug_result = self.event_diff.apply_dispositions(
-            [difference], known_bug, "914cf1472e715297caa30db4b9535d534a9eb718"
+            [difference], known_bug, "4e58f324fae8ebfa98a3d45181fb248072a2afac"
         )
         self.assertEqual(len(bug_result["blocking"]), 1)
 

@@ -150,6 +150,12 @@ PY
 operator_once() {
 	cd "$PROJECT_DIRECTORY"
 
+	PAUSED="$(python3 -c "import json; d=json.load(open('$QUEUE_PATH')); print('yes' if d.get('paused') else 'no')")"
+	if [ "$PAUSED" = "yes" ]; then
+		echo "goal20 operator: paused ($(python3 -c "import json; print(json.load(open('$QUEUE_PATH')).get('pauseReason',''))"))"
+		exit 0
+	fi
+
 	# Queue claim writes are operational state — keep main mergeable.
 	if git diff --quiet docs/benchmarks/goal20-queue.json 2>/dev/null; then
 		:

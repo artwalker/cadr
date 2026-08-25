@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "baselineCommit": "914cf1472e715297caa30db4b9535d534a9eb718",
+  "baselineCommit": "4e58f324fae8ebfa98a3d45181fb248072a2afac",
   "slashCommands": [
     "settings", "model", "scoped-models", "export", "import", "share",
     "copy", "name", "session", "changelog", "hotkeys", "fork", "clone",

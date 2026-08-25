@@ -201,8 +201,8 @@ def validate_unmodeled_site_review(
         raise HarnessFailure(
             "stale unmodeled-sink review entries: " + ", ".join(stale)
         )
-PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.84.2"
-PI_AI_MODEL_DATA_SHA256 = "0262785a76b0eb2eec596cd8a7ab2ee23eef89d2ef1bb1211c4f0a1944dacf41"
+PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.84.3"
+PI_AI_MODEL_DATA_SHA256 = "371f9c4c6cd12fd4a17c86d6a31f35abb2b62f8cde0ce098334807ba17e87d49"
 KEYS = {
     "enter": b"\r",
     "escape": b"\x1b",

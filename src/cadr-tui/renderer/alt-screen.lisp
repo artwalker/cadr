@@ -84,7 +84,7 @@
             do (return nil))))
 
 (defun alt-scrollbar-visible-p (renderer content-height height)
-  ;; pi@914cf1472 components/scroll-view.ts:62-70 — "always" whenever a
+  ;; pi@4e58f324f components/scroll-view.ts:62-70 — "always" whenever a
   ;; viewport exists, "hidden" never, "auto" only while overflowing and
   ;; within the one-second hide delay after scroll activity.
   (and (plusp height)
@@ -105,7 +105,7 @@
                          1.0d0))))))))
 
 (defun style-alt-scrollbar-cell (line column width)
-  ;; pi@914cf1472 layout.ts:242-267 — the last-column cell keeps its
+  ;; pi@4e58f324f layout.ts:242-267 — the last-column cell keeps its
   ;; text and leading SGR; the thumb background wraps only that cell.
   (if (image-line-p line)
       line
@@ -142,7 +142,7 @@
          after))))
 
 (defun apply-alt-scrollbar (renderer lines width height)
-  ;; pi@914cf1472 layout.ts:268-303 — thumb height is the
+  ;; pi@4e58f324f layout.ts:268-303 — thumb height is the
   ;; track-proportional share clamped to [min(2, track), track], the
   ;; offset maps scrollTop onto the remaining track.
   (let ((content-height
@@ -444,7 +444,7 @@
                (alt-viewport-lines
                 renderer document height))))
            (selected
-             ;; pi@914cf1472 tui-alt-screen.ts:969-981
+             ;; pi@4e58f324f tui-alt-screen.ts:969-981
              ;; compositeFlashes: surviving flash lines overlay the
              ;; top rows, right-aligned.
              (let ((flash-lines

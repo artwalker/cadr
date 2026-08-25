@@ -998,7 +998,7 @@
              :message (format nil "Unknown provider: ~A" id))))
 
 (defun provider-oauth-subscription-p (id)
-  ;; pi@914cf1472 core/model-runtime.ts:462-464 isUsingSubscription:
+  ;; pi@4e58f324f core/model-runtime.ts:462-464 isUsingSubscription:
   ;; true when the provider's OAuth registration is subscription-backed.
   (let ((definition (gethash id *provider-definitions*)))
     (and definition

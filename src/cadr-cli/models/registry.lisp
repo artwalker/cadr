@@ -22,7 +22,7 @@
 
 (defun model-registry-sort-predicate (left right)
   ;; One owner for /model and --list-models order
-  ;; (pi@914cf1472 model registry provider then id).
+  ;; (pi@4e58f324f model registry provider then id).
   (let ((left-provider
           (provider-key (cadr-ai:model-provider left)))
         (right-provider

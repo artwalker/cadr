@@ -96,7 +96,7 @@
            (let ((selection
                    (and on-change
                         (funcall on-change provider :login))))
-             ;; pi@914cf1472 interactive-mode.ts:5548,5662 — when the
+             ;; pi@4e58f324f interactive-mode.ts:5548,5662 — when the
              ;; credential saved but the local model/auth snapshot could
              ;; not be synchronized, the synchronization error replaces
              ;; the success status.

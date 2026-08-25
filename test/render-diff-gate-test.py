@@ -815,7 +815,7 @@ class RenderDiffGateTest(unittest.TestCase):
         # stack gray. The 39m closer lands mid-path and would leave the
         # driver line number in the I04 screen.
         colored = (
-            b"    at Timeout.<anonymous> \x1b[90m(/tmp/cadr-render-diff-pi-914cf1472/"
+            b"    at Timeout.<anonymous> \x1b[90m(/tmp/cadr-render-diff-pi-4e58f324f/"
             b"packages/coding-agent/\x1b[39mtest/goal15-render-driver.ts:1068:12"
             b"\x1b[90m)\x1b[39m\n"
             b"\x1b[90m    at listOnTimeout (node:internal/timers:588:17)\x1b[39m"
@@ -855,7 +855,7 @@ class RenderDiffGateTest(unittest.TestCase):
             b"ome/.cadr/agent/crash/cadr-crash-3994918403-1601836-0.\nlog"
         )
         pi = (
-            b"    at Object.crash (/tmp/cadr-render-diff-pi-914cf1472/"
+            b"    at Object.crash (/tmp/cadr-render-diff-pi-4e58f324f/"
             b"packages/coding-agent/test/goal15-rend\n"
             b"er-driver.ts:756:11)"
         )
@@ -1059,7 +1059,7 @@ class RenderDiffGateTest(unittest.TestCase):
         # Goal 18 I7 widened the extractor: chalk color wrappers stay
         # transparent to the literals inside them, and addLoadedSection,
         # addDiagnostic, and LoginDialogComponent's titleOverride became
-        # contracted sinks.  v0.84.2: 507 sites (three merged into
+        # contracted sinks.  v0.84.3: 507 sites (three merged into
         # neighboring sites by the upstream search/settings edits),
         # 1134 branches, 1071 printable-visible, 63 terminal-protocol,
         # 248 source-inventory entries.

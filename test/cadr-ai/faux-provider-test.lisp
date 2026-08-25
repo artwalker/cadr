@@ -355,7 +355,7 @@
               (cadr-ai:assistant-message-usage second))))))))
 
 (test faux-provider-usage-counts-the-complete-tool-contract
-  ;; pi@914cf1472 providers/faux.ts:197-212 serializes each complete tool
+  ;; pi@4e58f324f providers/faux.ts:197-212 serializes each complete tool
   ;; object.  Counting names alone materially under-reports footer context.
   (let* ((parameters
            (cadr-ai::json-object

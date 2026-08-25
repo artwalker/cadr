@@ -259,7 +259,7 @@
                          (char text position) output)
                         (incf position)))))))))
 
-;;; pi@914cf1472 components/markdown.ts:25-122 — inline and block
+;;; pi@4e58f324f components/markdown.ts:25-122 — inline and block
 ;;; LaTeX tokenization with the baseline delimiter and guard rules,
 ;;; rendered through the latex.ts port.
 
@@ -1261,7 +1261,7 @@
                 ((and
                   (not in-code-p)
                   (markdown-latex-block-opening line))
-                 ;; pi@914cf1472 components/markdown.ts:102-119,505-514
+                 ;; pi@4e58f324f components/markdown.ts:102-119,505-514
                  ;; — display-mode latex blocks, raw trim fallback.
                  (setf list-prefix-width nil)
                  (let* ((kind

@@ -234,7 +234,7 @@ The original text is `goal14.md` Part D item 5.
 - **Build-it-ourselves principle**: TLS via cl+ssl is the sole cryptography exception; new third-party dependencies require prior review, and a blocked report escalates to the user for adjudication.
 - **New mechanisms require adjudication**: any idea that is "an addition relative to the original" goes into `docs/open-questions.md` for user adjudication; it is not implemented by default.
 - **Definition of done**: committed and booked, and the announcement must carry evidence that can be verified by hand (source location, test name, gate output). Declaring completion yourself is void.
-- **Baseline pinning**: pin the upstream release tag (currently `v0.84.2 (+0, 914cf1472)`); do not chase a moving development branch.
+- **Baseline pinning**: pin the upstream release tag (currently `v0.84.3 (+0, 4e58f324f)`); do not chase a moving development branch.
 
 ---
 
