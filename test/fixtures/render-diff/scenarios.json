@@ -4613,7 +4613,7 @@
           "pauseMs": 100
         },
         {
-          "sendText": "Thinking"
+          "sendText": "Default thinking"
         },
         {
           "send": "enter"
