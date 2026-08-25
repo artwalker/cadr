@@ -6014,7 +6014,7 @@
       "path": "scripts/render-diff.py",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_SHA256",
-      "line": "PI_AI_MODEL_DATA_SHA256 = \"371f9c4c6cd12fd4a17c86d6a31f35abb2b62f8cde0ce098334807ba17e87d49\"",
+      "line": "PI_AI_MODEL_DATA_SHA256 = \"9c40af2f43950f8e94e7bbcd0c1b3548f000972da00c4fb9c0d0529d4d7d5431\"",
       "occurrences": 1,
       "reason": "Render-diff gate names the baseline product when comparing captured terminals; not user-visible product identity."
     },
