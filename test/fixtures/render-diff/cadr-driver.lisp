@@ -1775,6 +1775,46 @@ render loopback login received
                       "Refreshing model catalogs…")))
                (cadr-cli::model-selector-set-query
                 state (or query ""))))
+           :thinking-selector-function
+           (lambda (&optional query)
+             (let ((selector
+                     (cadr-cli::make-thinking-selector-state
+                      :levels
+                      (cadr-ai:supported-thinking-levels
+                       (cadr-agent:agent-model agent))
+                      :current-level
+                      (cadr-agent::agent-thinking-level agent)
+                      :default-level
+                      (or
+                       (cadr-cli::settings-default-thinking-level
+                        settings-manager)
+                       cadr-cli::+default-thinking-level+)
+                      :keybindings
+                      (cadr-cli::make-thinking-selector-keybindings
+                       (cadr-cli::settings-keybindings
+                        settings-manager)))))
+               (when query
+                 (cadr-cli::thinking-selector-set-query
+                  selector query))
+               selector))
+           :on-thinking-selected
+           (lambda (level &key (persist nil))
+             (cadr-cli::set-cli-thinking-level
+              agent settings-manager level :persist persist)
+             (when status-consumer
+               (funcall
+                status-consumer
+                (if persist
+                    (format nil "Default thinking level: ~A"
+                            (string-downcase
+                             (symbol-name level)))
+                    (format
+                     nil "Thinking level: ~A"
+                     (string-downcase
+                      (symbol-name
+                       (cadr-agent::agent-thinking-level
+                        agent)))))))
+             (cadr-agent::agent-thinking-level agent))
            :scoped-models-selector-function
            (lambda ()
              (cadr-cli::make-scoped-models-selector-state
