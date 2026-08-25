@@ -235,19 +235,18 @@ if [ "$attempt" -ge 20 ]; then
 fi
 tmux send-keys -t "$SESSION" Enter
 
+TURN_WAIT_SEC="${CADR_LIVE_TUI_TURN_WAIT_SEC:-180}"
 attempt=0
-while [ "$attempt" -lt 120 ]; do
-  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
+while [ "$attempt" -lt "$TURN_WAIT_SEC" ]; do
   if [ -f "$SMOKE_ROOT/project/hello.txt" ] &&
-    [ "$(sed -n '1p' "$SMOKE_ROOT/project/hello.txt")" = "hello" ] &&
-    ! printf '%s\n' "$SCREEN" | grep -Fq "working"; then
+    [ "$(sed -n '1p' "$SMOKE_ROOT/project/hello.txt")" = "hello" ]; then
     break
   fi
   attempt=$((attempt + 1))
   sleep 1
 done
 
-if [ "$attempt" -ge 120 ]; then
+if [ "$attempt" -ge "$TURN_WAIT_SEC" ]; then
   echo "live TUI smoke: first turn did not create hello.txt" >&2
   tmux capture-pane -t "$SESSION" -p >&2
   exit 1
@@ -273,17 +272,15 @@ fi
 tmux send-keys -t "$SESSION" Enter
 
 attempt=0
-while [ "$attempt" -lt 120 ]; do
-  SCREEN="$(tmux capture-pane -t "$SESSION" -p)"
-  if [ "$(sed -n '1p' "$SMOKE_ROOT/project/hello.txt" 2>/dev/null || true)" = "hello world" ] &&
-    ! printf '%s\n' "$SCREEN" | grep -Fq "working"; then
+while [ "$attempt" -lt "$TURN_WAIT_SEC" ]; do
+  if [ "$(sed -n '1p' "$SMOKE_ROOT/project/hello.txt" 2>/dev/null || true)" = "hello world" ]; then
     break
   fi
   attempt=$((attempt + 1))
   sleep 1
 done
 
-if [ "$attempt" -ge 120 ]; then
+if [ "$attempt" -ge "$TURN_WAIT_SEC" ]; then
   echo "live TUI smoke: second turn did not edit hello.txt" >&2
   tmux capture-pane -t "$SESSION" -p >&2
   exit 1

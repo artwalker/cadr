@@ -1,0 +1,424 @@
+#!/usr/bin/env bash
+# Goal 21 team orchestrator: queue, director merge, cursor-agent dispatch.
+#
+# usage:
+#   scripts/goal21-orchestrator.sh status
+#   scripts/goal21-orchestrator.sh cleanup-worktrees [--dry-run]
+#   scripts/goal21-orchestrator.sh director-once
+#   scripts/goal21-orchestrator.sh director-loop [seconds]
+#   scripts/goal21-orchestrator.sh dispatch <lane>   # anchor|parity|a|b|c|gate
+#   scripts/goal21-orchestrator.sh dispatch-loop <lane> [seconds]
+#
+# Queue: docs/benchmarks/goal21-queue.json
+# Brief: docs/acceptance/goal21-dev-executor.md
+set -eu
+
+PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"
+QUEUE_PATH="$PROJECT_DIRECTORY/docs/benchmarks/goal21-queue.json"
+BRIEF="$PROJECT_DIRECTORY/docs/acceptance/goal21-dev-executor.md"
+SPEC="$PROJECT_DIRECTORY/docs/acceptance/goal21-pi-0843-alignment.md"
+AGENT_BIN="${CURSOR_AGENT_BIN:-cursor-agent}"
+AGENT_MODEL="${CURSOR_AGENT_MODEL:-auto}"
+
+queue_py() {
+	python3 - "$QUEUE_PATH" "$@" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+command = sys.argv[2]
+GOAL_ID = "21"
+UNIFIED = path.parent / "cadr-team-queues.json"
+data = json.loads(path.read_text(encoding="utf-8"))
+
+
+def save() -> None:
+    path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
+    root = (
+        json.loads(UNIFIED.read_text(encoding="utf-8"))
+        if UNIFIED.is_file()
+        else {"schemaVersion": 1, "goals": {}}
+    )
+    root.setdefault("goals", {})[GOAL_ID] = data
+    UNIFIED.write_text(json.dumps(root, indent=1) + "\n", encoding="utf-8")
+
+
+def next_task(lane: str):
+    for task in data["tasks"]:
+        if task.get("lane") == lane and task.get("status") == "pending":
+            return task
+    return None
+
+
+if command == "status":
+    pending = sum(1 for t in data["tasks"] if t.get("status") == "pending")
+    inprog = sum(1 for t in data["tasks"] if t.get("status") == "in_progress")
+    done = sum(1 for t in data["tasks"] if t.get("status") == "done")
+    paused = data.get("goal20Paused", False)
+    print(
+        f"goal21 queue: pending={pending} in_progress={inprog} done={done} "
+        f"mergeQueue={len(data.get('mergeQueue', []))} goal20Paused={paused}"
+    )
+    for task in data["tasks"]:
+        if task.get("status") != "done":
+            print(
+                f"  task {task['id']:>2} lane={task['lane']:6} "
+                f"{task['status']:12} {task.get('slug', '')}"
+            )
+    for item in data.get("mergeQueue", []):
+        print(f"  merge: {item['branch']}")
+
+elif command == "claim":
+    lane = sys.argv[3]
+    task = next_task(lane)
+    if task is None:
+        print("", end="")
+        sys.exit(2)
+    task["status"] = "in_progress"
+    save()
+    print(json.dumps(task))
+
+elif command == "complete":
+    task_id = int(sys.argv[3])
+    branch = sys.argv[4]
+    for task in data["tasks"]:
+        if task.get("id") == task_id:
+            task["status"] = "done"
+            task["branch"] = branch
+            break
+    # Anchor/gate land on main — nothing to cherry-pick.
+    if branch != "main":
+        data.setdefault("mergeQueue", []).append({"branch": branch, "task": task_id})
+    save()
+
+elif command == "reconcile-in-progress":
+    for task in data["tasks"]:
+        if task.get("status") != "in_progress":
+            continue
+        if task.get("lane") in ("anchor", "gate"):
+            continue
+        slug = task.get("slug", "")
+        branch = f"g21-{task['id']}-{slug}"
+        proc = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--verify", branch],
+            capture_output=True,
+            text=True,
+        )
+        if proc.returncode != 0:
+            continue
+        head = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "HEAD"],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        tip = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", branch],
+            check=True,
+            capture_output=True,
+            text=True,
+        ).stdout.strip()
+        if tip != head:
+            task["status"] = "done"
+            task["branch"] = branch
+            data.setdefault("mergeQueue", []).append(
+                {"branch": branch, "task": task["id"]}
+            )
+    save()
+    print("ok")
+
+elif command == "pop-merge":
+    queue = data.get("mergeQueue", [])
+    if not queue:
+        sys.exit(2)
+    item = queue.pop(0)
+    save()
+    print(json.dumps(item))
+
+elif command == "peek-merge":
+    queue = data.get("mergeQueue", [])
+    if not queue:
+        sys.exit(2)
+    print(json.dumps(queue[0]))
+
+elif command == "unshift-merge":
+    branch = sys.argv[3]
+    task_id = int(sys.argv[4])
+    data.setdefault("mergeQueue", []).insert(0, {"branch": branch, "task": task_id})
+    save()
+
+else:
+    raise SystemExit(f"unknown queue command: {command}")
+PY
+}
+
+require_clean_main() {
+	local path
+	local blocking=0
+	while IFS= read -r path; do
+		[ -n "$path" ] || continue
+		if "$PROJECT_DIRECTORY/scripts/goal21-anchor-guard.sh" is-excluded-path "$path" 2>/dev/null; then
+			continue
+		fi
+		blocking=1
+		echo "  $path" >&2
+	done < <(
+		git diff --name-only
+		git diff --cached --name-only
+	)
+	if [ "$blocking" -ne 0 ]; then
+		echo "goal21 orchestrator: main worktree dirty (non-operational files)" >&2
+		exit 1
+	fi
+}
+
+cmd="${1:-status}"
+shift || true
+
+case "$cmd" in
+status)
+	queue_py status
+	git -C "$PROJECT_DIRECTORY" log -1 --oneline
+	cat "$PROJECT_DIRECTORY/BASELINE"
+	;;
+cleanup-worktrees)
+	for wt in /tmp/g21-*-wt; do
+		[ -d "$wt" ] || continue
+		if [ "${1:-}" = "--dry-run" ]; then
+			echo "would remove worktree $wt"
+		else
+			git -C "$PROJECT_DIRECTORY" worktree remove --force "$wt" 2>/dev/null || true
+		fi
+	done
+	;;
+reconcile-in-progress)
+	queue_py reconcile-in-progress
+	;;
+director-once)
+	cd "$PROJECT_DIRECTORY"
+	"$PROJECT_DIRECTORY/scripts/goal21-anchor-guard.sh" ensure
+	require_clean_main
+	if MERGE_JSON="$(queue_py peek-merge 2>/dev/null || true)" && [ -n "$MERGE_JSON" ]; then
+		BRANCH="$(printf '%s' "$MERGE_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["branch"])')"
+		TASK="$(printf '%s' "$MERGE_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["task"])')"
+		echo "goal21 director: merge $BRANCH (task $TASK)"
+		if "$PROJECT_DIRECTORY/scripts/goal21-director-merge.sh" "$BRANCH"; then
+			queue_py pop-merge >/dev/null
+		else
+			echo "goal21 director: merge failed — leaving $BRANCH in queue" >&2
+		fi
+	else
+		echo "goal21 director: nothing in merge queue"
+	fi
+	"$0" cleanup-worktrees
+	;;
+director-loop)
+	INTERVAL="${1:-120}"
+	while true; do
+		"$0" director-once || true
+		sleep "$INTERVAL"
+	done
+	;;
+dispatch)
+	LANE="${1:?lane required (anchor|parity|a|b|c|gate)}"
+	shift || true
+	cd "$PROJECT_DIRECTORY"
+	TASK_JSON="$(queue_py claim "$LANE")" || {
+		echo "goal21 dispatch: no pending task for lane $LANE"
+		exit 0
+	}
+	TASK_ID="$(printf '%s' "$TASK_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["id"])')"
+	SLUG="$(printf '%s' "$TASK_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["slug"])')"
+	TITLE="$(printf '%s' "$TASK_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["title"])')"
+	BRANCH="g21-${TASK_ID}-${SLUG}"
+	WORKTREE="/tmp/g21-${TASK_ID}-wt"
+	AGENT_WORKSPACE="$PROJECT_DIRECTORY"
+
+	if [ "$LANE" != "anchor" ] && [ "$LANE" != "gate" ]; then
+		if ! WORKTREE=$("$PROJECT_DIRECTORY/scripts/cadr-team-worktree.sh" ensure "$WORKTREE" "$BRANCH" cadr-migration | tail -1); then
+			echo "goal21 dispatch: worktree ensure failed for $BRANCH" >&2
+			python3 - "$QUEUE_PATH" "$TASK_ID" <<'PY'
+import json, sys
+from pathlib import Path
+data = json.loads(Path(sys.argv[1]).read_text())
+tid = int(sys.argv[2])
+for t in data["tasks"]:
+    if t.get("id") == tid:
+        t["status"] = "pending"
+        t["branch"] = None
+        break
+Path(sys.argv[1]).write_text(json.dumps(data, indent=1) + "\n")
+PY
+			exit 1
+		fi
+		AGENT_WORKSPACE="$WORKTREE"
+	fi
+
+	PROMPT="Read $BRIEF and $SPEC. You are Goal 21 lane ${LANE}.
+Worktree: ${AGENT_WORKSPACE} branch ${BRANCH}. cd there first.
+Task ${TASK_ID}: ${TITLE}
+Steps:
+1. Implement in worktree only; add tests per goal21 spec
+2. python3 scripts/baseline-anchor.py check if touching anchors
+3. git commit -m \"feat(cadr-cli): g21 task ${TASK_ID} ${SLUG}\"
+4. Print: GOAL21_COMPLETE task=${TASK_ID} branch=${BRANCH}
+Never edit src/ on main checkout."
+
+	if [ "$LANE" = "anchor" ]; then
+		ANCHOR_COMMIT="$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE")"
+		PROMPT="Read $BRIEF and $SPEC. You are Goal 21 Anchor lane.
+Task ${TASK_ID}: ${TITLE}
+On main checkout (allowed for this task only):
+1. scripts/set-baseline.sh ${ANCHOR_COMMIT}
+2. Update scripts/render-diff.py PI_AI_MODEL_DATA_* to match the new baseline package metadata
+3. rm -rf /tmp/cadr-render-diff-pi-* (old baseline caches)
+4. python3 scripts/baseline-anchor.py check
+5. git add BASELINE scripts/render-diff.py and any rewritten refs; commit -m \"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\"
+6. Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
+	fi
+
+	# Gate: script runs verify/test-cl; short-lived agent only fixes failures.
+	# Avoids multi-hour cursor-agent sessions that hang on HTTP/2 stream drops.
+	if [ "$LANE" = "gate" ]; then
+		FAIL_LOG="${GOAL21_GATE_FAIL_LOG:-/tmp/goal21-gate-fail.txt}"
+		MAX_ROUNDS="${GOAL21_GATE_MAX_ROUNDS:-6}"
+		FIX_TIMEOUT="${CADR_GATE_FIX_TIMEOUT_SEC:-1800}"
+		round=0
+		while [ "$round" -lt "$MAX_ROUNDS" ]; do
+			round=$((round + 1))
+			echo "goal21 gate: round ${round}/${MAX_ROUNDS} running scripts/goal21-gate-run.sh"
+			if "$PROJECT_DIRECTORY/scripts/goal21-gate-run.sh" --fail-log "$FAIL_LOG"; then
+				if ! rg -q 'pi v0\.84\.3|Goal 21:' "$PROJECT_DIRECTORY/CHANGELOG.md"; then
+					echo "goal21 gate: PASS but CHANGELOG missing 0843 note — dispatching short docs agent"
+					PROMPT="On main checkout for Goal 21 gate docs only.
+Add under CHANGELOG.md ## [Unreleased] ### Changed a short Goal 21 / pi v0.84.3 alignment note if missing.
+Commit: chore(cadr-cli): bump baseline to pi v0.84.3 (g21)
+Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
+					OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
+						--workspace "$PROJECT_DIRECTORY" \
+						--goal gate \
+						--task-key "gate-docs-${TASK_ID}" \
+						--timeout "$FIX_TIMEOUT" \
+						-- "$PROMPT" 2>&1)" || true
+					printf '%s\n' "$OUT"
+				fi
+				queue_py complete "$TASK_ID" "main"
+				echo "goal21 dispatch: gate task $TASK_ID complete"
+				exit 0
+			fi
+			echo "goal21 gate: verification failed — dispatching fix agent (timeout ${FIX_TIMEOUT}s)"
+			DISPATCH_STATUS=0
+			PROMPT="Read $BRIEF and $SPEC. You are Goal 21 Gate FIX lane (short session).
+Task ${TASK_ID} round ${round}: verification failed. Do NOT re-run full verify.sh or test-cl.sh yourself.
+Failure excerpt: $FAIL_LOG
+Full run log (optional): /tmp/goal21-gate-run.log
+Steps:
+1. Read the failure excerpt; fix the smallest set of src/ or test/ files on main.
+2. Prefer targeted test reproduction over full suite.
+3. If you changed anything under src/, run scripts/cadr-compile-check.sh before commit (required).
+4. git commit -m \"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\"
+5. Print: GOAL21_FIX_DONE task=${TASK_ID} round=${round}
+Keep the session short; the orchestrator re-runs the full gate after you finish."
+			OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
+				--workspace "$PROJECT_DIRECTORY" \
+				--goal gate \
+				--task-key "gate-fix-${TASK_ID}-r${round}" \
+				--timeout "$FIX_TIMEOUT" \
+				-- "$PROMPT" 2>&1)" || DISPATCH_STATUS=$?
+			DISPATCH_STATUS="${DISPATCH_STATUS:-0}"
+			printf '%s\n' "$OUT"
+			if [ "$DISPATCH_STATUS" -eq 124 ]; then
+				echo "goal21 gate: fix agent timeout on round ${round}" >&2
+			elif ! printf '%s' "$OUT" | rg -q "GOAL21_FIX_DONE task=${TASK_ID}"; then
+				echo "goal21 gate: fix agent finished without GOAL21_FIX_DONE on round ${round}" >&2
+			fi
+		done
+		echo "goal21 gate: exhausted ${MAX_ROUNDS} rounds — reset task ${TASK_ID} to pending" >&2
+		python3 - "$QUEUE_PATH" "$TASK_ID" <<'PY'
+import json, sys
+from pathlib import Path
+data = json.loads(Path(sys.argv[1]).read_text())
+tid = int(sys.argv[2])
+for t in data["tasks"]:
+    if t.get("id") == tid:
+        t["status"] = "pending"
+        t["branch"] = None
+        break
+Path(sys.argv[1]).write_text(json.dumps(data, indent=1) + "\n")
+PY
+		exit 0
+	fi
+
+	DISPATCH_GOAL="21"
+	if [ "$LANE" = "anchor" ]; then
+		DISPATCH_GOAL="anchor"
+	fi
+
+	OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
+		--workspace "$AGENT_WORKSPACE" \
+		--goal "$DISPATCH_GOAL" \
+		--task-key "${LANE}-${TASK_ID}" \
+		--timeout "${CADR_AGENT_TIMEOUT_SEC:-5400}" \
+		-- "$PROMPT" 2>&1)" || DISPATCH_STATUS=$?
+	DISPATCH_STATUS="${DISPATCH_STATUS:-0}"
+	if [ "$DISPATCH_STATUS" -eq 124 ]; then
+		echo "goal21 dispatch: timeout — reset task ${TASK_ID} to pending" >&2
+		python3 - "$QUEUE_PATH" "$TASK_ID" <<'PY'
+import json, sys
+from pathlib import Path
+data = json.loads(Path(sys.argv[1]).read_text())
+tid = int(sys.argv[2])
+for t in data["tasks"]:
+    if t.get("id") == tid:
+        t["status"] = "pending"
+        t["branch"] = None
+        break
+Path(sys.argv[1]).write_text(json.dumps(data, indent=1) + "\n")
+PY
+		exit 0
+	fi
+	printf '%s\n' "$OUT"
+	if printf '%s' "$OUT" | rg -q "GOAL21_COMPLETE task=${TASK_ID}"; then
+		if [ "$LANE" = "anchor" ]; then
+			if [ "$("$PROJECT_DIRECTORY/scripts/goal21-anchor-guard.sh" status)" != "committed" ]; then
+				echo "goal21 dispatch: anchor incomplete — not marking task ${TASK_ID} done" >&2
+				python3 - "$QUEUE_PATH" "$TASK_ID" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+path = Path(sys.argv[1])
+task_id = int(sys.argv[2])
+data = json.loads(path.read_text(encoding="utf-8"))
+for task in data["tasks"]:
+    if task.get("id") == task_id:
+        task["status"] = "pending"
+        task["branch"] = None
+        break
+path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
+PY
+				exit 0
+			fi
+		fi
+		if [ "$LANE" = "anchor" ]; then
+			queue_py complete "$TASK_ID" "main"
+		else
+			queue_py complete "$TASK_ID" "$BRANCH"
+		fi
+		echo "goal21 dispatch: queued merge for task $TASK_ID"
+	fi
+	;;
+dispatch-loop)
+	LANE="${1:?lane}"
+	INTERVAL="${2:-300}"
+	while true; do
+		"$0" dispatch "$LANE" || true
+		sleep "$INTERVAL"
+	done
+	;;
+*)
+	echo "usage: $0 status|cleanup-worktrees|reconcile-in-progress|director-once|director-loop|dispatch|dispatch-loop" >&2
+	exit 2
+	;;
+esac

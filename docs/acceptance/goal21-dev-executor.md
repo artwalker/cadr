@@ -1,0 +1,61 @@
+# Goal 21 开发执行 brief（顾问维护）
+
+**平台哲学：** [`team-dev-platform.md`](team-dev-platform.md) · `scripts/cadr-team.sh status`
+
+**读者：** 开发 Cursor 实例。**规格：** [`goal21-pi-0843-alignment.md`](goal21-pi-0843-alignment.md)。
+
+**禁止：** 在 G21 完成前新开 Goal 20 pair/perf；宣布 G21 完成前须 `verify.sh` + `test-cl.sh` 全绿。
+
+---
+
+## 目标
+
+`914cf1472` · v0.84.2 → `4e58f324f` · v0.84.3（机械枚举已确认：+`/thinking`、`modelThinkingLevels`、`session_compact_failed`、`powershell.ts` 等）。
+
+## 三队 + 总监
+
+| 角色 | Lane | 职责 |
+|---|---|---|
+| **Anchor** | `anchor` | `set-baseline.sh`、model-data pin、删 render-diff 缓存、`baseline-anchor.py check` |
+| **Parity** | `parity` | `enumerate-baseline-diff` + `check-source-parity-drift` → disposition TSV → `docs/source-parity.md` |
+| **Impl A** | `a` | `/thinking` selector、`modelThinkingLevels`、session 级 model/thinking（Ctrl+S 全局） |
+| **Impl B** | `b` | `session_compact_failed`、compaction summary 不入库（#7048） |
+| **Impl C** | `c` | `GoogleApiThinkingLevel` 重命名、provider 表增量 |
+| **Gate** | `gate` | 脚本 `goal21-gate-run.sh` 跑 `verify.sh`+`test-cl.sh`；失败才短会话 fix agent（勿让单 agent 扛全量长跑） |
+| **总监** | director | worktree 分支 cherry-pick 串行合入；每 merge 后 `baseline-anchor.py check` |
+
+## Worktree 纪律
+
+1. `scripts/goal21-pair-worktree.sh <task-id> <slug>` 创建分支 `g21-<id>-<slug>`
+2. **永不**在主 checkout 上改 `src/`（operator 除外做 anchor 机械步）
+3. 完成打印：`GOAL21_COMPLETE task=<id> branch=g21-<id>-<slug>`
+4. 总监：`scripts/goal21-director-merge.sh <branch>`
+
+## 机械枚举（0.84.2→0.84.3）
+
+已跑 `enumerate-baseline-diff`（29 added / 1 removed file）。优先落地：
+
+- `slashCommands.thinking`
+- `settingsKeys.modelThinkingLevels`
+- `extensionEvents.session_compact_failed`
+- `toolFiles.powershell.ts`（非 Windows 可书面 defer，须在 ledger 裁决）
+- `GoogleThinkingLevel` → `GoogleApiThinkingLevel`
+
+## 验收
+
+见 `goal21-pi-0843-alignment.md` 验收清单。全绿后恢复 Goal 20 pairing。
+
+## Operator 自愈（anchor guard）
+
+每 tick / director merge 前，`scripts/goal21-anchor-guard.sh ensure`：
+
+- `BASELINE` 已指向目标 commit 但未 commit → 自动 `chore: bump baseline to pi v0.84.3 (g21)`（排除 queue/acceptance 运维文件）
+- 无法安全提交 → 将 task 1  reopen 为 `pending`，重 dispatch anchor lane
+- anchor agent 未 commit 就打印 `GOAL21_COMPLETE` → dispatch 拒绝标 done
+- impl 分支已有 commit 但 agent 未打完成行 → `reconcile-in-progress` 入 mergeQueue
+
+## Gate 防卡死
+
+- **拆分：** `scripts/goal21-gate-run.sh` 跑验收；agent 只读 `/tmp/goal21-gate-fail.txt` 修失败（`GOAL21_FIX_DONE`），会话上限 `CADR_GATE_FIX_TIMEOUT_SEC`（默认 1800s）。
+- **进度 stale：** `scripts/cadr-team-stale-agents.sh` — 闲置 ≥`CADR_STALE_IDLE_SEC`（默认 1200s）且无 verify/test-cl/新 commit → kill 僵尸并 reset gate pending。
+- **编译门禁：** gate 前先 `scripts/ensure-root-binary.sh`（stale 则 `rebuild-root-binary.sh`）；fix agent 改 `src/` 后须 `scripts/cadr-compile-check.sh`；本地可选 `scripts/install-git-hooks.sh` 装 pre-commit。
