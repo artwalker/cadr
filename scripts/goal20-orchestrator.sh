@@ -200,7 +200,7 @@ Only src/. perf commit. --quick on affected metrics."
 		exit 0
 	fi
 
-	if ! WORKTREE=$("$PROJECT_DIRECTORY/scripts/cadr-team-worktree.sh" ensure "$WORKTREE" "$BRANCH" cadr-migration); then
+	if ! WORKTREE=$("$PROJECT_DIRECTORY/scripts/cadr-team-worktree.sh" ensure "$WORKTREE" "$BRANCH" cadr-migration | tail -1); then
 		echo "goal20 dispatch: worktree ensure failed for $BRANCH" >&2
 		python3 - "$QUEUE_PATH" "$PAIR" <<'PY'
 import json, sys
