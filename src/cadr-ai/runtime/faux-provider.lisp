@@ -275,7 +275,7 @@
         (stringify-json
          (list-json-array
           (mapcar #'faux-tool-json-object
-                  (context-tools context)))))))))
+                  (context-tools context))))))))))
 
 (defun faux-tool-json-object (tool)
   ;; pi packages/ai/src/types.ts Tool + faux.ts serializeContext:
