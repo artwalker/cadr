@@ -274,17 +274,24 @@
         nil "tools:~A"
         (stringify-json
          (list-json-array
-          (mapcar
-           (lambda (tool)
-             ;; Fixed-baseline faux serializes the public Tool object.  The
-             ;; executable callback is not JSON data, while every built-in
-             ;; tool defaults its label to its name.
-             (json-object
-              "name" (tool-name tool)
-              "label" (tool-name tool)
-              "description" (tool-description tool)
-              "parameters" (tool-parameters tool)))
-           (context-tools context))))))))))
+          (mapcar #'faux-tool-json-object
+                  (context-tools context)))))))))
+
+(defun faux-tool-json-object (tool)
+  ;; pi packages/ai/src/types.ts Tool + faux.ts serializeContext:
+  ;; JSON.stringify(context.tools) exposes name/description/parameters and
+  ;; constrainedSampling only — not execution metadata or label.
+  (if (tool-constrained-sampling tool)
+      (json-object
+       "name" (tool-name tool)
+       "description" (tool-description tool)
+       "parameters" (tool-parameters tool)
+       "constrainedSampling"
+       (tool-constrained-sampling tool))
+      (json-object
+       "name" (tool-name tool)
+       "description" (tool-description tool)
+       "parameters" (tool-parameters tool)))))
 
 (defun common-prefix-length (left right)
   (loop for index from 0
