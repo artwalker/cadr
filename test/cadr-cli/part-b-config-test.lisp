@@ -116,7 +116,7 @@
         (is (not
              (null
               (cadr-cli::resource-snapshot-system-prompt-path
-               snapshot)))))))))
+               snapshot))))))))
 
 (defun write-json (path object)
   (write-text path
