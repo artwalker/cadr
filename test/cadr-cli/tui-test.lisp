@@ -4721,10 +4721,11 @@
             :provider-selector-title (third spec))))))
 
 (defparameter +goal13-baseline-built-in-slash-working-contract+
-  '(("settings" nil) ("model" nil) ("scoped-models" nil)
+  '(("settings" nil) ("model" nil) ("tree" nil) ("thinking" nil)
+    ("scoped-models" nil)
     ("export" nil) ("import" nil) ("share" nil) ("copy" nil)
     ("name" nil) ("session" nil) ("changelog" nil) ("hotkeys" nil)
-    ("fork" nil) ("clone" nil) ("tree" nil) ("trust" nil)
+    ("fork" nil) ("clone" nil) ("trust" nil)
     ("login" nil) ("logout" nil) ("new" nil) ("compact" nil)
     ("resume" nil) ("reload" nil) ("quit" nil)))
 

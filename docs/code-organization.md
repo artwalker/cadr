@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4e58f324fae8ebfa98a3d45181fb248072a2afac files=295 lines=127082 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=148 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4e58f324fae8ebfa98a3d45181fb248072a2afac files=297 lines=128860 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=149 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs
@@ -272,6 +272,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/system-prompt.lisp` | 53 | 4 | Resolve the default, replacement, and appended system prompt. | pass | no-rewrite | most TS-like is L37 sniffing "Permission denied" in the printed condition, correct here because portable CL exposes no errno slot on stream-open failure and the emitted text must be Node's literal "EACCES: permission denied, open '...'" (baseline resource-loader.ts:62 byte contract), so message-matching is the only portable route. | 20 |
 | `src/cadr-cli/tool-manager.lisp` | 286 | 25 | Locate, download, extract, and quarantine optional host tools. | pass | no-rewrite | Most TS-like: arch detection by string-sniffing machine-type (:39-45); correct because CL exposes no portable arch keyword (mirrors process.arch mapping), and the ecase asset tables (:53-67) already buy machine-checked exhaustiveness — a Lisp benefit actually used | 20 |
 | `src/cadr-cli/tools/bash.lisp` | 591 | 23 | Execute bash with live output, process-group abort/timeout, truncation, and tool wrapping. | pass · large | no-rewrite | Most TS-like: abort detected by string-matching condition messages ("Command aborted", :144-146); correct because abort crosses the extension/operations boundary where message text is the only stable contract (baseline discriminates identically, bash.ts:441/443) — the in-house path already uses the typed user-bash-aborted condition (:14-28, :399-416) | 20 |
+| `src/cadr-cli/tools/powershell.lisp` | 115 | 8 | Execute PowerShell with UTF-8 output prefixing, truncation, and Windows-only availability. | pass | done | +powershell-args+ and get-powershell-config gate. I0: one non-Windows fail-closed owner. | 21 |
 | `src/cadr-cli/tools/edit.lisp` | 753 | 32 | Match replacements and produce/apply exact edit diffs. | pass · large | done | edit-no-changes-error. I0: one no-change message. | 20 |
 | `src/cadr-cli/tools/find.lisp` | 101 | 3 | Implement the bounded find tool. | pass | no-rewrite | optional-integer now owns null→default; the or-wrapper is gone. Remaining file is sort/truncate over baseline-locked notice bytes. | 20 |
 | `src/cadr-cli/tools/glob.lisp` | 218 | 13 | Implement recursive globbing with parseable gitignore rules. | pass | no-rewrite | Most TS-like: manual cursor loop with lookahead incf in glob-regex-source (:9-34); correct because glob→regex needs variable-width consumption ("**/" = 3 chars), which `loop across` cannot express (12F-4 base==cwd reuse at :179-184 assessed as landed) | 20 |
