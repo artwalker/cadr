@@ -118,6 +118,9 @@
     (unwind-protect
          (funcall function)
       (progn
+        (let ((session (agent-session agent)))
+          (when session
+            (close-session-journal-stream session)))
         (run-agent-lifecycle agent :agent-settled)
         (emit-agent-event agent :agent-settled)
         (sb-thread:with-mutex
