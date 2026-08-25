@@ -98,6 +98,30 @@
    {
      "path": "src/cadr-tui/mermaid/width-data.lisp",
      "reason": "Generated code-point width table owned by scripts/gen-mermaid-width-data.py; manual splitting would corrupt regeneration ownership."
+   },
+   {
+     "path": "src/cadr-agent/session/codec.lisp",
+     "reason": "Single session-file codec owner whose header validation, entry encode/decode, and metadata projection share one on-disk format contract."
+   },
+   {
+     "path": "src/cadr-agent/session/migration.lisp",
+     "reason": "Single session-log migration owner whose v1/v2/v3 validators, atomic rewrite paths, and repair diagnostics share one storage invariant."
+   },
+   {
+     "path": "src/cadr-ai/json.lisp",
+     "reason": "Single bounded JSON engine whose parse/serialize fast paths, content helpers, and data-URL utilities share one wire-format contract."
+   },
+   {
+     "path": "src/cadr-cli/arguments.lisp",
+     "reason": "Single CLI argv contract owner whose option tables, validation, resolution, and usage rendering share one dispatch surface."
+   },
+   {
+     "path": "src/cadr-cli/interactive/selectors/settings.lisp",
+     "reason": "One settings-selector state machine whose theme, warnings, model-thinking, and capability submenus share selector-frame navigation invariants."
+   },
+   {
+     "path": "src/cadr-cli/interactive/tool-rendering.lisp",
+     "reason": "Single tool-call/result projection owner whose event reducers, frame layout, and truncation policy share one TUI transcript contract."
    }
  ]
 }
