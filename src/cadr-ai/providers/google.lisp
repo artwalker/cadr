@@ -157,27 +157,56 @@
     (or (search "gemma-4" id)
         (search "gemma4" id))))
 
-(defun google-thinking-level (model reasoning)
-  (let ((effort (or reasoning :high)))
-    (cond
-      ((google-gemini-3-pro-p model)
-       (if (member effort '(:minimal :low)) "LOW" "HIGH"))
-      ((google-gemma-4-p model)
-       (if (member effort '(:minimal :low)) "MINIMAL" "HIGH"))
-      (t
-       (ecase effort
-         (:minimal "MINIMAL")
-         (:low "LOW")
-         (:medium "MEDIUM")
-         ((:high :xhigh :max) "HIGH"))))))
+(defparameter +google-resolved-thinking-levels+
+  '(:minimal :low :medium :high))
+
+(defun google-parse-resolved-thinking-level (value)
+  (when (stringp value)
+    (let ((keyword (find-symbol (string-upcase value) :keyword)))
+      (when (member keyword +google-resolved-thinking-levels+)
+        keyword))))
+
+(defun resolve-google-thinking-level (model level)
+  ;; Baseline google-shared.ts resolveGoogleThinkingLevel.
+  (let* ((mapped
+           (unless (eq level :off)
+             (model-thinking-level-value model level)))
+         (resolved
+           (if (eq level :off)
+               :high
+               (or (google-parse-resolved-thinking-level mapped)
+                   level))))
+    (if (member resolved +google-resolved-thinking-levels+)
+        resolved
+        (error "Unsupported Google thinking level mapping for ~A/~A: ~A -> ~A"
+               (model-provider model)
+               (model-id model)
+               level
+               mapped))))
+
+(defun google-api-thinking-level (resolved-level model)
+  ;; Baseline google-generative-ai.ts getThinkingLevel (GoogleApiThinkingLevel).
+  (cond
+    ((google-gemini-3-pro-p model)
+     (if (member resolved-level '(:minimal :low)) "LOW" "HIGH"))
+    ((google-gemma-4-p model)
+     (if (member resolved-level '(:minimal :low)) "MINIMAL" "HIGH"))
+    (t
+     (ecase resolved-level
+       (:minimal "MINIMAL")
+       (:low "LOW")
+       (:medium "MEDIUM")
+       (:high "HIGH")))))
 
 (defun google-thinking-config (model reasoning)
   (when (model-reasoning-p model)
     (if reasoning
-        (json-object
-         "includeThoughts" t
-         "thinkingLevel"
-         (google-thinking-level model reasoning))
+        (let* ((clamped (clamp-thinking-level model reasoning))
+               (resolved (resolve-google-thinking-level model clamped)))
+          (json-object
+           "includeThoughts" t
+           "thinkingLevel"
+           (google-api-thinking-level resolved model)))
         (cond
           ((google-gemini-3-pro-p model)
            (json-object "thinkingLevel" "LOW"))
