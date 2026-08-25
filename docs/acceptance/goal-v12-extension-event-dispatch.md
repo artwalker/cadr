@@ -1,6 +1,6 @@
 # Goal 12 extension event dispatch audit
 
-The public event set contains 34 events. Declaration and result validation do
+The public event set contains 35 events. Declaration and result validation do
 not count as implementation: every row below names the production dispatch
 site and a test that installs a handler, drives that production path, and
 asserts that the handler was called.
@@ -17,7 +17,8 @@ asserts that the handler was called.
 | `:session-before-switch` | `src/cadr-cli/main.lisp:972` | `NAME-SESSION-NEW-AND-FORK-COMMANDS-MATCH-INTERACTIVE-SEMANTICS`, `test/cadr-cli/session-command-test.lisp:282` |
 | `:session-before-fork` | `src/cadr-cli/main.lisp:882` | `NAME-SESSION-NEW-AND-FORK-COMMANDS-MATCH-INTERACTIVE-SEMANTICS`, `test/cadr-cli/session-command-test.lisp:282` |
 | `:session-before-compact` | `src/cadr-agent/compaction.lisp:384` | `SESSION-COMPACTION-LIFECYCLE-DISPATCHES-THROUGH-PRODUCTION-PATH`, `test/cadr-agent/extensions-wave2-test.lisp:76` |
-| `:session-compact` | `src/cadr-agent/compaction.lisp:437` | `SESSION-COMPACTION-LIFECYCLE-DISPATCHES-THROUGH-PRODUCTION-PATH`, `test/cadr-agent/extensions-wave2-test.lisp:76` |
+| `:session-compact` | `src/cadr-agent/compaction.lisp:851` | `SESSION-COMPACTION-LIFECYCLE-DISPATCHES-THROUGH-PRODUCTION-PATH`, `test/cadr-agent/extensions-wave2-test.lisp:76` |
+| `:session-compact-failed` | `src/cadr-agent/compaction.lisp:613` | `G21-SESSION-COMPACT-FAILED-NOTIFIES-EXTENSIONS-ON-AUTO-COMPACTION-FAILURE`, `test/cadr-agent/compaction-test.lisp:355` |
 | `:session-shutdown` | `src/cadr-cli/main.lisp:906` | `NAME-SESSION-NEW-AND-FORK-COMMANDS-MATCH-INTERACTIVE-SEMANTICS`, `test/cadr-cli/session-command-test.lisp:282` |
 | `:session-before-tree` | `src/cadr-agent/loop.lisp:1111` | `TREE-NAVIGATION-LIFECYCLE-AND-BUSY-GUARD-USE-THE-PRODUCTION-PATH`, `test/cadr-agent/extensions-wave2-test.lisp:1146` |
 | `:session-tree` | `src/cadr-agent/loop.lisp:1176` | `TREE-NAVIGATION-LIFECYCLE-AND-BUSY-GUARD-USE-THE-PRODUCTION-PATH`, `test/cadr-agent/extensions-wave2-test.lisp:1146` |

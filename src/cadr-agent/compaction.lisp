@@ -340,6 +340,19 @@ Use this EXACT format:
 
 Keep each section concise. Preserve exact file paths, function names, and error messages.")
 
+(defun summarization-failure-message (response label)
+  (when response
+    (case (cadr-ai:assistant-message-stop-reason response)
+      (:error
+       (format nil "~A failed: ~A" label
+               (or (cadr-ai:assistant-message-error-message response)
+                   "Unknown error")))
+      (:length
+       (format nil
+               "~A failed: generation hit the token cap and the summary is incomplete"
+               label))
+      (otherwise nil))))
+
 (defun generate-compaction-summary
     (agent messages max-output-tokens
      &optional custom-instructions (reason :manual)
@@ -387,17 +400,15 @@ Keep each section concise. Preserve exact file paths, function names, and error 
            (if response
                (assistant-message-text response)
                "")))
-    (when
-        (and
-         response
-         (eq
-          :error
-          (cadr-ai:assistant-message-stop-reason response)))
-      (error
-       "Summarization failed: ~A"
-       (or
-        (cadr-ai:assistant-message-error-message response)
-        "Unknown error")))
+    (let ((failure (summarization-failure-message response "Summarization")))
+      (when failure (error failure))
+      (when
+          (and response
+               (some
+                (lambda (block)
+                  (typep block 'cadr-ai:tool-call))
+                (cadr-ai:assistant-message-content response)))
+        (error "Summarization attempted to call a tool")))
     (values
      summary
      (and response
@@ -445,16 +456,17 @@ Be concise. Focus on what's needed to understand the kept suffix.")
            (if response
                (assistant-message-text response)
                "")))
-    (when
-        (and
-         response
-         (eq :error
-             (cadr-ai:assistant-message-stop-reason response)))
-      (error
-       "Turn prefix summarization failed: ~A"
-       (or
-        (cadr-ai:assistant-message-error-message response)
-        "Unknown error")))
+    (let ((failure
+            (summarization-failure-message
+             response "Turn prefix summarization")))
+      (when failure (error failure))
+      (when
+          (and response
+               (some
+                (lambda (block)
+                  (typep block 'cadr-ai:tool-call))
+                (cadr-ai:assistant-message-content response)))
+        (error "Turn prefix summarization attempted to call a tool")))
     (values
      summary
      (and response
@@ -591,6 +603,25 @@ Be concise. Focus on what's needed to understand the kept suffix.")
          (run-extension-lifecycle-hooks
           host event :payload payload))))
 
+(defun extension-lifecycle-handlers-p (agent event)
+  (let ((host (agent-extension-host agent)))
+    (and host
+         (let ((snapshot (extension-host-current-snapshot host)))
+           (and snapshot
+                (gethash event (extension-snapshot-hooks snapshot)))))))
+
+(defun emit-session-compact-failed
+    (agent &key reason error-message aborted will-retry-p from-extension-p)
+  (when (extension-lifecycle-handlers-p agent :session-compact-failed)
+    (run-compaction-lifecycle
+     agent :session-compact-failed
+     (list
+      :reason reason
+      :error-message error-message
+      :aborted aborted
+      :will-retry-p will-retry-p
+      :from-extension-p from-extension-p))))
+
 (defun compact-from-preparation
     (agent preparation &key custom-instructions (reason :manual))
   ;; Lisp encoding of compaction.ts compact(): in-memory summary from a
@@ -661,17 +692,25 @@ Be concise. Focus on what's needed to understand the kept suffix.")
     ;; wrapper carries "Compaction failed: <NoApiKeyFound text>".
     (when (and (null model)
                (or force-p (eq reason :manual)))
-      (emit-agent-event agent :compaction-start :reason reason)
-      (emit-agent-event
-       agent :compaction-end
-       :reason reason
-       :result nil
-       :aborted nil
-       :will-retry nil
-       :error-message
-       (format nil "Compaction failed: ~A"
-               (cadr-ai::no-api-key-found-message "unknown")))
-      (return-from %compact-agent nil))
+      (let ((error-message
+              (format nil "Compaction failed: ~A"
+                      (cadr-ai::no-api-key-found-message "unknown"))))
+        (emit-agent-event agent :compaction-start :reason reason)
+        (emit-agent-event
+         agent :compaction-end
+         :reason reason
+         :result nil
+         :aborted nil
+         :will-retry nil
+         :error-message error-message)
+        (emit-session-compact-failed
+         agent
+         :reason reason
+         :error-message error-message
+         :aborted nil
+         :will-retry-p nil
+         :from-extension-p nil)
+        (return-from %compact-agent nil)))
     (unless (and session
                  context-window
                  (plusp context-window))
@@ -718,34 +757,41 @@ Be concise. Focus on what's needed to understand the kept suffix.")
           (emit-agent-event
            agent :compaction-start
            :reason reason)
-          (handler-case
-              (let* ((before
-                       (run-compaction-lifecycle
-                        agent :session-before-compact
-                        (list
-                         :preparation preparation
-                         :branch-entries (copy-list entries)
-                         :custom-instructions custom-instructions
-                         :reason reason
-                         :will-retry-p (not (null will-retry-p))
-                         :signal signal)))
-                     (extension-compaction
-                       (and before
-                            (getf before :compaction))))
-                (when (or (getf before :cancel-p)
-                          (extension-cancellation-aborted-p signal))
-                  (emit-agent-event
-                   agent :compaction-end
-                   :reason reason
-                   :result nil
-                   :aborted t
-                   :will-retry nil)
-                  (return-from %compact-agent nil))
-                (unless (usable-extension-compaction-p
-                         extension-compaction)
-                  (setf extension-compaction nil))
-                (let* ((from-extension-p
-                         (not (null extension-compaction)))
+          (let ((from-extension-p nil))
+            (handler-case
+                (let* ((before
+                         (run-compaction-lifecycle
+                          agent :session-before-compact
+                          (list
+                           :preparation preparation
+                           :branch-entries (copy-list entries)
+                           :custom-instructions custom-instructions
+                           :reason reason
+                           :will-retry-p (not (null will-retry-p))
+                           :signal signal)))
+                       (extension-compaction
+                         (and before
+                              (getf before :compaction))))
+                  (when (or (getf before :cancel-p)
+                            (extension-cancellation-aborted-p signal))
+                    (emit-agent-event
+                     agent :compaction-end
+                     :reason reason
+                     :result nil
+                     :aborted t
+                     :will-retry nil)
+                    (emit-session-compact-failed
+                     agent
+                     :reason reason
+                     :aborted t
+                     :will-retry-p nil
+                     :from-extension-p nil)
+                    (return-from %compact-agent nil))
+                  (unless (usable-extension-compaction-p
+                           extension-compaction)
+                    (setf extension-compaction nil))
+                  (setf from-extension-p (not (null extension-compaction)))
+                  (let* (
                        (generated
                          (unless from-extension-p
                            (multiple-value-list
@@ -775,15 +821,21 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                           from-extension-p extension-compaction
                           :details
                           (getf preparation :file-ops))))
-                (when
-                    (extension-cancellation-aborted-p signal)
-                  (emit-agent-event
-                   agent :compaction-end
-                   :reason reason
-                   :result nil
-                   :aborted t
-                   :will-retry nil)
-                  (return-from %compact-agent nil))
+                    (when
+                        (extension-cancellation-aborted-p signal)
+                      (emit-agent-event
+                       agent :compaction-end
+                       :reason reason
+                       :result nil
+                       :aborted t
+                       :will-retry nil)
+                      (emit-session-compact-failed
+                       agent
+                       :reason reason
+                       :aborted t
+                       :will-retry-p nil
+                       :from-extension-p from-extension-p)
+                      (return-from %compact-agent nil))
                 (assert-agent-not-shutdown agent)
                 (let* ((entry-id
                          (session-append-compaction
@@ -823,24 +875,32 @@ Be concise. Focus on what's needed to understand the kept suffix.")
                    :will-retry (not (null will-retry-p)))
                   result)))
             (error (condition)
-              (emit-agent-event
-               agent :compaction-end
-               :reason reason
-               :result nil
-               :aborted nil
-               :will-retry nil
-               :error-message
-               (format
-                nil
-                (case reason
-                  (:overflow
-                   "Context overflow recovery failed: ~A")
-                  (:threshold
-                   "Auto-compaction failed: ~A")
-                  (otherwise
-                   "Compaction failed: ~A"))
-                (princ-to-string condition)))
-              nil)))))))
+                (let ((error-message
+                        (format
+                         nil
+                         (case reason
+                           (:overflow
+                            "Context overflow recovery failed: ~A")
+                           (:threshold
+                            "Auto-compaction failed: ~A")
+                           (otherwise
+                            "Compaction failed: ~A"))
+                         (princ-to-string condition))))
+                  (emit-agent-event
+                   agent :compaction-end
+                   :reason reason
+                   :result nil
+                   :aborted nil
+                   :will-retry nil
+                   :error-message error-message)
+                  (emit-session-compact-failed
+                   agent
+                   :reason reason
+                   :error-message error-message
+                   :aborted nil
+                   :will-retry-p nil
+                   :from-extension-p from-extension-p)
+                  nil)))))))))
 
 (defun compact-agent
     (agent &key force-p custom-instructions

@@ -963,7 +963,7 @@
     ;; quote-or-bs-mask + ctrl-mask + find-quote-or-backslash.
     ;; +1 Goal 20 walker 4-byte load: %octet-u32-le (inline
     ;; SeqOneByteString word; not empty SWAR).
-    (is (= 308 definition-count)
+    (is (= 309 definition-count)
         "B8 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative '("src/cadr-agent/session.lisp"
@@ -1173,9 +1173,9 @@
           "B9 changed the frozen extension export text")
       (is (and events
                (string=
-                "12f79b21e0e25495cb023baaf21b26f6cf9a891881b26602f6553f80af54887a"
+                "47299ec9ea88222a91482ef44a767112c797a04b58b93a589f146062bd24109d"
                 (goal14-sha256 events)))
-          "B9 changed the frozen 34-event source block"))))
+          "B9 changed the frozen 35-event source block"))))
 
 (test goal14-b9-asdf-loads-extension-host-in-dependency-order
   (let* ((root (asdf:system-source-directory "cadr-agent"))

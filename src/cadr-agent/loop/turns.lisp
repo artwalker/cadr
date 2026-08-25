@@ -341,15 +341,23 @@
       ((context-overflow-message-p result)
        (cond
          (overflow-recovery-attempted-p
-          (emit-agent-event
-           agent :compaction-end
-           :reason :overflow
-           :result nil
-           :aborted nil
-           :will-retry nil
-           :error-message
-           "Context overflow recovery failed after one compact-and-retry attempt. Try reducing context or switching to a larger-context model.")
-          (return result))
+          (let ((error-message
+                  "Context overflow recovery failed after one compact-and-retry attempt. Try reducing context or switching to a larger-context model."))
+            (emit-agent-event
+             agent :compaction-end
+             :reason :overflow
+             :result nil
+             :aborted nil
+             :will-retry nil
+             :error-message error-message)
+            (emit-session-compact-failed
+             agent
+             :reason :overflow
+             :error-message error-message
+             :aborted nil
+             :will-retry-p nil
+             :from-extension-p nil)
+            (return result)))
          ((or (null (agent-session agent))
               (agent-shutdown-p agent))
           (return result))

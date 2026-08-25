@@ -76,7 +76,6 @@
       (case
        (list
         (list :stop "complete")
-        (list :length "length-limited")
         (list :tool-use "tool-use text")
         (list :aborted "partial before abort")
         (list :stop "")
@@ -122,15 +121,18 @@
   (dolist
       (case
        (list
-        (list "provider failed"
+        (list :error "provider failed" nil
               "Summarization failed: provider failed")
-        (list nil
-              "Summarization failed: Unknown error")))
-    (destructuring-bind (provider-error expected) case
+        (list :error nil nil
+              "Summarization failed: Unknown error")
+        (list :length "partial summary" nil
+              "Summarization failed: generation hit the token cap and the summary is incomplete")))
+    (destructuring-bind (kind provider-error summary-text expected) case
       (let* ((*responses*
                (list
-                (compaction-test-response
-                 nil :error provider-error)))
+                (if (eq kind :length)
+                    (compaction-test-response summary-text :length)
+                    (compaction-test-response nil :error provider-error))))
              (*contexts* nil)
              (agent
                (cadr-agent:make-agent
@@ -308,6 +310,107 @@
          :compaction
          (cadr-agent:session-entries session)
          :key #'cadr-agent:session-entry-type))))))
+
+
+(test g21-length-limited-compaction-summary-is-not-persisted
+  ;; pi#7048 / 97fa14e: length-stopped summaries must fail before appendCompaction.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "length-limited-compaction"))
+           (_old-user
+             (cadr-agent:session-append-message
+              session
+              (cadr-ai:make-user-message
+               :content
+               (format nil "old context ~120@{x~}"))))
+           (_old-assistant
+             (cadr-agent:session-append-message
+              session
+              (compaction-test-response "old answer" :stop)))
+           (agent nil))
+      (declare (ignore _old-user _old-assistant))
+      (setf
+       agent
+       (cadr-agent:make-agent
+        :provider :mock
+        :model (compaction-test-model)
+        :session session
+        :compaction-keep-recent-tokens 4
+        :stream-function
+        (lambda (provider model context on-event
+                 &key max-tokens abort-p cache-retention session-id)
+          (declare
+           (ignore provider model context on-event
+                   max-tokens abort-p cache-retention session-id))
+          (compaction-test-response "partial summar" :length))))
+      (is-false
+       (cadr-agent:compact-agent agent :force-p t))
+      (is
+       (zerop
+        (count
+         :compaction
+         (cadr-agent:session-entries session)
+         :key #'cadr-agent:session-entry-type))))))
+
+(test g21-session-compact-failed-notifies-extensions-on-auto-compaction-failure
+  ;; pi@4e58f324f agent-session-compaction.test.ts notifies extensions when
+  ;; auto-compaction fails.
+  (with-session-directories (sessions cwd other-cwd)
+    (values other-cwd)
+    (let* ((failed-payload nil)
+           (bundle
+             (make-test-extension-bundle
+              "session-compact-failed"
+              (lambda ()
+                (cadr-agent:define-event-hook
+                 :session-compact-failed
+                 :handler
+                 (lambda (event context)
+                   (declare (ignore context))
+                   (setf failed-payload
+                         (cadr-agent:extension-event-payload event))
+                   nil)))))
+           (host (make-test-extension-host (list bundle)))
+           (session
+             (cadr-agent:create-session
+              :directory sessions :cwd cwd
+              :id "auto-compaction-failure")))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message
+        :content (make-string 80 :initial-element #\a)))
+      (cadr-agent:session-append-message
+       session
+       (compaction-test-response
+        (make-string 80 :initial-element #\b) :stop))
+      (cadr-agent:session-append-message
+       session
+       (cadr-ai:make-user-message :content "keep"))
+      (let ((agent
+              (cadr-agent:make-agent
+               :provider :mock
+               :model (compaction-test-model)
+               :session session
+               :extension-host host
+               :compaction-keep-recent-tokens 1
+               :stream-function
+               (lambda (&rest arguments)
+                 (declare (ignore arguments))
+                 (error "summary generator blew up")))))
+        (is-false
+         (cadr-agent:compact-agent
+          agent :force-p t :reason :threshold))
+        (is (equal :threshold (getf failed-payload :reason)))
+        (is-false (getf failed-payload :aborted))
+        (is-false (getf failed-payload :will-retry-p))
+        (is-false (getf failed-payload :from-extension-p))
+        (is
+         (string=
+          "Auto-compaction failed: summary generator blew up"
+          (getf failed-payload :error-message)))))))
 
 (test failed-overflow-compaction-leaves-session-usable
   (with-session-directories (sessions cwd other-cwd)

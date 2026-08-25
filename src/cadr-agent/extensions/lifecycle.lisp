@@ -218,6 +218,7 @@
   '(:session-start
     :session-info-changed
     :session-compact
+    :session-compact-failed
     :session-shutdown
     :session-tree
     :agent-start

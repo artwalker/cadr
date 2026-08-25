@@ -9,14 +9,17 @@
     :after-provider-response
     :user-bash))
 
-(test goal10-extension-event-set-is-refrozen-at-thirty-four
-  (is (= 34
+(test goal10-extension-event-set-is-refrozen-at-thirty-five
+  (is (= 35
          (length
           cadr-agent::+extension-hook-events+)))
-  (is (= 34
+  (is (= 35
          (length
           (remove-duplicates
            cadr-agent::+extension-hook-events+))))
+  (is (member
+       :session-compact-failed
+       cadr-agent::+extension-hook-events+))
   (is (member
        :tool-call-error
        cadr-agent::+extension-hook-events+))

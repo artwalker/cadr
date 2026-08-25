@@ -162,10 +162,9 @@
       (when (or (null response)
                 (eq :aborted (cadr-ai:assistant-message-stop-reason response)))
         (return-from generate-branch-summary nil))
-      (when (eq :error (cadr-ai:assistant-message-stop-reason response))
-        (error "~A"
-               (or (cadr-ai:assistant-message-error-message response)
-                   "Summarization failed")))
+      (let ((failure
+              (summarization-failure-message response "Branch summarization")))
+        (when failure (error failure)))
       (multiple-value-bind (read-files modified-files)
           (compute-file-operation-lists
            (branch-summary-preparation-file-operations preparation))

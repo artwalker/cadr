@@ -8,6 +8,7 @@
     :session-before-fork
     :session-before-compact
     :session-compact
+    :session-compact-failed
     :session-shutdown
     :session-before-tree
     :session-tree

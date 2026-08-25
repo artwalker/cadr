@@ -97,12 +97,12 @@
         (:gap
          (is (consp (getf row :gaps))))))))
 
-(test goal12-all-34-extension-events-have-production-dispatch-evidence
+(test goal12-all-35-extension-events-have-production-dispatch-evidence
   (let* ((audit
            (goal12-read-project-file
             "docs/acceptance/goal-v12-extension-event-dispatch.md"))
          (events cadr-agent::+extension-hook-events+))
-    (is (= 34 (length events)))
+    (is (= 35 (length events)))
     (dolist (event events)
       (let* ((prefix (format nil "| `:~(~A~)` |" (symbol-name event)))
              (start (search prefix audit))
@@ -150,7 +150,8 @@
               (lambda (name)
                 (substitute #\- #\_ name))
               baseline))
-            '("tool-call-before" "tool-call-after" "tool-call-error"))
+            '("tool-call-before" "tool-call-after" "tool-call-error"
+              "session-compact-failed"))
            #'string<))
          (actual
           (sort
