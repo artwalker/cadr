@@ -30,7 +30,7 @@
     {
       "site": "packages/coding-agent/src/main.ts:605",
       "verdict": "accepted-duplicate-of-modeled-text",
-      "reason": "The CLI-argument diagnostics printer emits the same 'Error: '/'Warning: ' prefixes as the modeled reportDiagnostics site at main.ts:105; the byte parity of both is locked by the cli-error-sweep scenario."
+      "reason": "The CLI-argument diagnostics printer emits the same 'Error: '/'Warning: ' prefixes as the modeled reportDiagnostics site at main.ts:96; the byte parity of both is locked by the cli-error-sweep scenario."
     },
     {
       "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2734",
