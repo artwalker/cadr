@@ -1946,11 +1946,12 @@ interactive-mode.ts:5956-5960).")
                           (subseq trimmed 10)))))
                   (if
                       (and query (plusp (length query))
-                           on-thinking-selected)
+                           on-thinking-selected
+                           thinking-selector-function)
                       (let* ((levels
-                               (cadr-ai:supported-thinking-levels
-                                (cadr-agent:agent-model
-                                 (tui-state-agent state))))
+                               (thinking-selector-state-levels
+                                (funcall
+                                 thinking-selector-function)))
                              (level
                                (find
                                 (string-downcase query)

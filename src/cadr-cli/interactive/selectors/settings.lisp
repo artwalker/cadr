@@ -185,18 +185,19 @@
   (stable-sort
    (copy-list models)
    (lambda (left right)
-     (flet ((key (model)
-              (model-setting-key
-               (cadr-ai:model-provider model)
-               (cadr-ai:model-id model)))
-            (default-p (model)
-              (and default-provider default-model
-                   (string=
-                    (key model)
-                    (model-setting-key default-provider default-model))))
-            (current-p (model)
-              (and current-model
-                   (cadr-ai:models-equal-p model current-model))))
+     ;; labels: default-p calls key (flet bindings are not mutually visible).
+     (labels ((key (model)
+                (model-setting-key
+                 (cadr-ai:model-provider model)
+                 (cadr-ai:model-id model)))
+              (default-p (model)
+                (and default-provider default-model
+                     (string=
+                      (key model)
+                      (model-setting-key default-provider default-model))))
+              (current-p (model)
+                (and current-model
+                     (cadr-ai:models-equal-p model current-model))))
        (cond
          ((current-p left) (not (current-p right)))
          ((current-p right) nil)
@@ -506,8 +507,8 @@
                             (remove model-key overrides
                                     :key #'car :test #'string=)
                             (list (cons model-key level)))))
-                 (setf (settings-option-value main)
-                       (plist-put value :overrides overrides))))
+                 (setf (getf value :overrides) overrides
+                       (settings-option-value main) value))))
              (setf (settings-selector-state-mode state) :model-thinking
                    (settings-selector-state-submenu-selected state) 0)))
           (:theme-single
