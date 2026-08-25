@@ -216,6 +216,7 @@ KEYS = {
     "ctrl+t": b"\x14",
     "ctrl+u": b"\x15",
     "ctrl+x": b"\x18",
+    "ctrl+q": b"\x11",
     "ctrl+z": b"\x1a",
     "shift+tab": b"\x1b[Z",
     "alt+enter": b"\x1b\r",
