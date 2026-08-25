@@ -60,6 +60,7 @@ if ! "$PROJECT_DIRECTORY/scripts/cadr-team-worktree.sh" ensure "$MERGE_WT" "$PAI
 	echo "goal20 director merge: rebase failed — resolve in $MERGE_WT" >&2
 	exit 1
 fi
+"$PROJECT_DIRECTORY/scripts/cadr-team-premerge.sh" goal20 "$PAIR_BRANCH" "$MERGE_WT" "$@"
 if ! git merge --ff-only "$PAIR_BRANCH"; then
 	echo "goal20 director merge: ff-merge failed for $PAIR_BRANCH" >&2
 	exit 1

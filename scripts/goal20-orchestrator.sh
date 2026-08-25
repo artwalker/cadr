@@ -28,11 +28,20 @@ from pathlib import Path
 
 path = Path(sys.argv[1])
 command = sys.argv[2]
+GOAL_ID = "20"
+UNIFIED = path.parent / "cadr-team-queues.json"
 data = json.loads(path.read_text(encoding="utf-8"))
 
 
 def save() -> None:
     path.write_text(json.dumps(data, indent=1) + "\n", encoding="utf-8")
+    root = (
+        json.loads(UNIFIED.read_text(encoding="utf-8"))
+        if UNIFIED.is_file()
+        else {"schemaVersion": 1, "goals": {}}
+    )
+    root.setdefault("goals", {})[GOAL_ID] = data
+    UNIFIED.write_text(json.dumps(root, indent=1) + "\n", encoding="utf-8")
 
 
 def next_task(lane: str):
@@ -220,9 +229,29 @@ Steps:
 6. Print: GOAL20_COMPLETE pair=${PAIR} branch=${BRANCH} metric=<group>.<metric>
 Never edit harness on main checkout. Never optimize in pair commit."
 
-	OUT="$("$AGENT_BIN" --print --force --trust --model "$AGENT_MODEL" \
+	OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
 		--workspace "$WORKTREE" \
-		-p "$PROMPT" 2>&1)" || true
+		--goal "20" \
+		--task-key "pair-${PAIR}" \
+		--timeout "${CADR_AGENT_TIMEOUT_SEC:-5400}" \
+		-- "$PROMPT" 2>&1)" || DISPATCH_STATUS=$?
+	DISPATCH_STATUS="${DISPATCH_STATUS:-0}"
+	if [ "$DISPATCH_STATUS" -eq 124 ]; then
+		echo "goal20 dispatch: timeout — reset pair ${PAIR} to pending" >&2
+		python3 - "$QUEUE_PATH" "$PAIR" <<'PY'
+import json, sys
+from pathlib import Path
+data = json.loads(Path(sys.argv[1]).read_text())
+pair = int(sys.argv[2])
+for t in data["tasks"]:
+    if t.get("pair") == pair:
+        t["status"] = "pending"
+        t["branch"] = None
+        break
+Path(sys.argv[1]).write_text(json.dumps(data, indent=1) + "\n")
+PY
+		exit 0
+	fi
 	printf '%s\n' "$OUT"
 	if printf '%s' "$OUT" | rg -q 'GOAL20_COMPLETE pair='"${PAIR}"; then
 		METRIC="$(printf '%s' "$OUT" | sed -n 's/.*metric=\([^[:space:]]*\).*/\1/p' | tail -1)"
