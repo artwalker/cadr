@@ -279,19 +279,11 @@
 
 (defun faux-tool-json-object (tool)
   ;; pi packages/ai/src/types.ts Tool + faux.ts serializeContext:
-  ;; JSON.stringify(context.tools) exposes name/description/parameters and
-  ;; constrainedSampling only — not execution metadata or label.
-  (if (tool-constrained-sampling tool)
-      (json-object
-       "name" (tool-name tool)
-       "description" (tool-description tool)
-       "parameters" (tool-parameters tool)
-       "constrainedSampling"
-       (tool-constrained-sampling tool))
-      (json-object
-       "name" (tool-name tool)
-       "description" (tool-description tool)
-       "parameters" (tool-parameters tool))))
+  ;; JSON.stringify(context.tools) exposes name/description/parameters only.
+  (json-object
+   "name" (tool-name tool)
+   "description" (tool-description tool)
+   "parameters" (tool-parameters tool)))
 
 (defun common-prefix-length (left right)
   (loop for index from 0
