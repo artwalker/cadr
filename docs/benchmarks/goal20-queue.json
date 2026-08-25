@@ -192,10 +192,6 @@
  ],
  "mergeQueue": [
   {
-   "branch": "pair-262-harness-events",
-   "pair": 262
-  },
-  {
    "branch": "pair-263-file-mutation-queue",
    "pair": 263
   }
