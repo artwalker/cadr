@@ -399,15 +399,10 @@ fi
 export QUICKLISP_SETUP
 
 DETERMINISTIC_READY=1
-if [ -x "$PROJECT_DIRECTORY/cadr" ]; then
-  run_deterministic "root cadr binary freshness" \
-    "$PROJECT_DIRECTORY/scripts/check-root-binary.sh" ||
-    DETERMINISTIC_READY=0
-else
-  record_deterministic \
-    "root cadr binary freshness" \
-    "N/A (root binary absent; isolated build follows)"
-fi
+run_deterministic "root cadr binary freshness" \
+  "$PROJECT_DIRECTORY/scripts/ensure-root-binary.sh" \
+  --project-directory "$PROJECT_DIRECTORY" ||
+  DETERMINISTIC_READY=0
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "code organization gate" \

@@ -156,3 +156,35 @@
     (is (eq :low
             (cadr-cli::sdk-settings-effective-thinking-level
              manager model :low)))))
+
+;; Regression: settings-model-thinking-sort-models must use LABELS so
+;; DEFAULT-P can call KEY (FLET bindings are not mutually visible; the
+;; g21 gate fail excerpt flagged KEY as an undefined function).
+(test settings-model-thinking-sort-models-orders-current-then-default
+  (let* ((alpha
+           (cadr-ai::make-model
+            :provider :anthropic
+            :id "claude"
+            :context-window 200000
+            :reasoning-p t))
+         (beta
+           (cadr-ai::make-model
+            :provider :openai
+            :id "gpt-5.5"
+            :context-window 200000
+            :reasoning-p t))
+         (gamma
+           (cadr-ai::make-model
+            :provider :openai
+            :id "o3"
+            :context-window 200000
+            :reasoning-p t))
+         (sorted
+           (cadr-cli::settings-model-thinking-sort-models
+            (list alpha gamma beta)
+            gamma
+            :openai
+            "gpt-5.5")))
+    (is (eq gamma (first sorted)))
+    (is (eq beta (second sorted)))
+    (is (eq alpha (third sorted)))))
