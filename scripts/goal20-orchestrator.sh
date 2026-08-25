@@ -176,31 +176,52 @@ dispatch)
 	BRANCH="pair-${PAIR}-${SLUG}"
 	WORKTREE="/tmp/pair${PAIR}-wt"
 
-	PROMPT="Read $BRIEF. You are Goal 20 Pairing lane ${LANE}.
-Task: pair needs-pair code in ${SOURCE} (Pair ${PAIR}).
-Harness region: ${MEASURE} — do not collide with other lanes.
-Steps:
-1. scripts/goal20-pair-worktree.sh ${PAIR} ${SLUG}
-2. Wire goal20-paired-paths.{lisp,mjs,py}, record, write, ledger test, Part H
-3. scripts/goal20-paired-paths.sh --quick --only-enforce <new.metric>
-4. scripts/goal20-paired-paths.sh --only-enforce <new.metric>
-5. python3 test/goal20-part-b-ledger-test.py
-6. git commit -m \"feat(cadr-cli): pair <group>.<metric> (${PAIR})\"
-7. Print: GOAL20_COMPLETE pair=${PAIR} branch=${BRANCH} metric=<group>.<metric>
-Never edit harness on main checkout. Never optimize in pair commit."
-
 	if [ "$LANE" = "opt" ]; then
+		OPT_SLUG="scoped-models-item-cache"
+		OPT_WT="/tmp/opt-${OPT_SLUG}-wt"
+		OPT_BRANCH="opt-${OPT_SLUG}"
+		"$PROJECT_DIRECTORY/scripts/cadr-team-worktree.sh" ensure "$OPT_WT" "$OPT_BRANCH" cadr-migration >/dev/null 2>&1 || true
 		PROMPT="Read $BRIEF and docs/benchmarks/goal20-paired-over-1x.md. You are Optimization team.
+Worktree: $OPT_WT (already created). cd there first.
 Pick the hottest over-1x metric not yet optimized this session (sorted_ids, enable_all, oauth_selector_ui_state).
-Use scripts/goal20-opt-worktree.sh. Only src/. perf commit. --quick on affected metrics."
+Only src/. perf commit. --quick on affected metrics."
 		"$AGENT_BIN" --print --force --trust --model "$AGENT_MODEL" \
-			--workspace "$PROJECT_DIRECTORY" \
+			--workspace "$OPT_WT" \
 			-p "$PROMPT"
 		exit 0
 	fi
 
+	if ! WORKTREE=$("$PROJECT_DIRECTORY/scripts/cadr-team-worktree.sh" ensure "$WORKTREE" "$BRANCH" cadr-migration); then
+		echo "goal20 dispatch: worktree ensure failed for $BRANCH" >&2
+		python3 - "$QUEUE_PATH" "$PAIR" <<'PY'
+import json, sys
+from pathlib import Path
+data = json.loads(Path(sys.argv[1]).read_text())
+pair = int(sys.argv[2])
+for t in data["tasks"]:
+    if t.get("pair") == pair:
+        t["status"] = "pending"
+        break
+Path(sys.argv[1]).write_text(json.dumps(data, indent=1) + "\n")
+PY
+		exit 1
+	fi
+
+	PROMPT="Read $BRIEF. You are Goal 20 Pairing lane ${LANE}.
+Worktree: ${WORKTREE} (ALREADY created on branch ${BRANCH}). cd there first — do NOT run goal20-pair-worktree.sh.
+Task: pair needs-pair code in ${SOURCE} (Pair ${PAIR}).
+Harness region: ${MEASURE} — do not collide with other lanes.
+Steps:
+1. Wire goal20-paired-paths.{lisp,mjs,py}, record, write, ledger test, Part H
+2. scripts/goal20-paired-paths.sh --quick --only-enforce <new.metric>
+3. scripts/goal20-paired-paths.sh --only-enforce <new.metric>
+4. python3 test/goal20-part-b-ledger-test.py
+5. git commit -m \"feat(cadr-cli): pair <group>.<metric> (${PAIR})\"
+6. Print: GOAL20_COMPLETE pair=${PAIR} branch=${BRANCH} metric=<group>.<metric>
+Never edit harness on main checkout. Never optimize in pair commit."
+
 	OUT="$("$AGENT_BIN" --print --force --trust --model "$AGENT_MODEL" \
-		--workspace "$PROJECT_DIRECTORY" \
+		--workspace "$WORKTREE" \
 		-p "$PROMPT" 2>&1)" || true
 	printf '%s\n' "$OUT"
 	if printf '%s' "$OUT" | rg -q 'GOAL20_COMPLETE pair='"${PAIR}"; then
