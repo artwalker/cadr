@@ -3580,19 +3580,19 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **295 files / 127,795 lines**
+Denominator: **297 files / 128,860 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 173 | 75,730 | 59.3% | `no worse than baseline` is falsifiable |
-| `unpairable` | 24 | 7,475 | 5.8% | single reference vs previous cadr |
-| `covered-as-callee` | 28 | 17,424 | 13.6% | on a named paired thunk; no own bench |
-| `needs-pair` | 70 | 27,166 | 21.3% | must get an H pair; not a file-level idle bench |
+| `paired` | 174 | 77,052 | 59.8% | `no worse than baseline` is falsifiable |
+| `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
+| `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
+| `needs-pair` | 71 | 26,904 | 20.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 59.3% of lines (173 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.1% of lines.
+- **Falsifiable vs baseline:** 59.8% of lines (174 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 65.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3626,15 +3626,14 @@ production work, not merely as a transitive callee.
 
 | file | lines | metrics |
 |---|---:|---|
-| `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
-| `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
+| `src/cadr-agent/branch-summarization.lisp` | 184 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
+| `src/cadr-agent/compaction.lisp` | 943 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
-| `src/cadr-agent/file-mutation-queue.lisp` | 92 | `file_mutation_queue.with_queue` |
 | `src/cadr-agent/execution-env.lisp` | 855 | `execution_env.exists_remove_temps` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
-| `src/cadr-agent/loop/turns.lisp` | 393 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/turns.lisp` | 401 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/messages.lisp` | 253 | `session_compact.compact` |
 | `src/cadr-agent/proxy.lisp` | 251 | `agent_proxy.stream_roundtrip` |
 | `src/cadr-agent/resources.lisp` | 739 | `resource_loader.reload` |
@@ -3678,7 +3677,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/bedrock.lisp` | 934 | `provider_bedrock.stream_roundtrip` |
 | `src/cadr-ai/providers/codex.lisp` | 35 | `provider_codex.stream_roundtrip` |
 | `src/cadr-ai/providers/definitions.lisp` | 1,057 | `provider_registry_defs.lookup` |
-| `src/cadr-ai/providers/google.lisp` | 442 | `provider_google.stream_roundtrip` |
+| `src/cadr-ai/providers/google.lisp` | 471 | `provider_google.stream_roundtrip` |
 | `src/cadr-ai/providers/mistral.lisp` | 97 | `provider_mistral.stream_roundtrip` |
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai.lisp` | 828 | `provider_openai_responses.stream_roundtrip` |
@@ -3697,28 +3696,28 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/arguments.lisp` | 1,036 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render` |
 | `src/cadr-cli/bootstrap/auth.lisp` | 172 | `cli_bootstrap_sessions.bootstrap_auth` |
 | `src/cadr-cli/bootstrap/main.lisp` | 409 | `cli_dispatch.list_models_render` |
-| `src/cadr-cli/bootstrap/settings.lisp` | 828 | `settings_load.http_idle` |
-| `src/cadr-cli/bootstrap/tools.lisp` | 89 | `cli_bootstrap_sessions.coding_tools` |
+| `src/cadr-cli/bootstrap/settings.lisp` | 914 | `settings_load.http_idle` |
+| `src/cadr-cli/bootstrap/tools.lisp` | 91 | `cli_bootstrap_sessions.coding_tools` |
 | `src/cadr-cli/extensions/discovery.lisp` | 212 | `cli_extensions_install.extension_discovery` |
 | `src/cadr-cli/extensions/llama/client.lisp` | 472 | `cli_extensions_install.llama_url` |
 | `src/cadr-cli/extensions/llama/huggingface.lisp` | 290 | `cli_extensions_install.hf_token` |
 | `src/cadr-cli/extensions/llama/provider.lisp` | 315 | `cli_extensions_install.llama_catalog` |
-| `src/cadr-cli/interactive/autocomplete.lisp` | 331 | `cli_interactive_controller.auth_type` |
+| `src/cadr-cli/interactive/autocomplete.lisp` | 332 | `cli_interactive_controller.auth_type` |
 | `src/cadr-cli/interactive/clipboard.lisp` | 449 | `cli_interactive_controller.wayland` |
 | `src/cadr-cli/interactive/components/loaders.lisp` | 155 | `cli_selectors.key_text` |
 | `src/cadr-cli/interactive/entries.lisp` | 918 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/footer.lisp` | 536 | `cli_interactive_controller.cwd_footer` |
-| `src/cadr-cli/interactive/frame.lisp` | 232 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/frame.lisp` | 234 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path`, `cli_selectors.session_quoted_p`, `cli_selectors.session_named_p` |
-| `src/cadr-cli/interactive/selectors/settings.lisp` | 893 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
+| `src/cadr-cli/interactive/selectors/settings.lisp` | 1,042 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
 | `src/cadr-cli/interactive/selectors/tree.lisp` | 1,816 | `cli_selectors.tree_entry_filtered` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/syntax.lisp` | 1,089 | `cli_interactive_controller.decode_entity` |
 | `src/cadr-cli/interactive/theme.lisp` | 215 | `cli_interactive_controller.parse_auto_theme`, `cli_interactive_controller.resolve_theme` |
-| `src/cadr-cli/interactive/tool-rendering.lisp` | 1,015 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/interactive/tool-rendering.lisp` | 1,027 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/media.lisp` | 1,277 | `image_runtime.mime_type` |
 | `src/cadr-cli/models/credential-print.lisp` | 623 | `cli_models_rest.auth_command` |
 | `src/cadr-cli/models/login-selection.lisp` | 75 | `cli_models_rest.login_selection` |
@@ -3741,7 +3740,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
-| `src/cadr-cli/settings/manager.lisp` | 512 | `cli_settings.create` |
+| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
@@ -3749,7 +3748,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/html.lisp` | 63 | `cli_support.experimental` |
 | `src/cadr-cli/support/paths.lisp` | 119 | `cli_support.normalize_path` |
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
-| `src/cadr-cli/support/shell-process.lisp` | 132 | `cli_support.shell_config`, `cli_support.sanitize_output` |
+| `src/cadr-cli/support/shell-process.lisp` | 147 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
@@ -3818,7 +3817,7 @@ On a named paired thunk. No own bench (G.12).
 | `src/cadr-ai/types.lisp` | 207 | `provider_stream.stream_roundtrip`, `session_pipeline.session_load` |
 | `src/cadr-cli/interactive/pending-messages.lisp` | 63 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/models/auth-storage.lisp` | 376 | `cli_dispatch.list_models_registry` |
-| `src/cadr-cli/package.lisp` | 289 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-cli/package.lisp` | 292 | `cli_dispatch.argv_parse`, `cli_dispatch.help_render`, `cli_dispatch.list_models_registry`, `cli_dispatch.list_models_render`, `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-core/atomic-file.lisp` | 106 | `evals_harness.artifact_persist` |
 | `src/cadr-core/package.lisp` | 43 | `session_pipeline.session_load`, `cli_dispatch.list_models_registry` |
 | `src/cadr-core/paths.lisp` | 95 | `cli_dispatch.list_models_registry` |
@@ -3844,17 +3843,17 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_interactive_controller` | 6 | 5,424 |
-| `cli_bootstrap_sessions` | 4 | 5,167 |
-| `cli_selectors` | 9 | 3,376 |
-| `agent_tool_loop` | 10 | 2,587 |
+| `cli_interactive_controller` | 6 | 5,489 |
+| `cli_bootstrap_sessions` | 4 | 5,226 |
+| `cli_selectors` | 10 | 3,706 |
 | `cli_extensions_install` | 5 | 2,200 |
+| `agent_tool_loop` | 10 | 1,847 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |
-| `settings_load` | 2 | 455 |
+| `settings_load` | 2 | 479 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |

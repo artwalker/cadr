@@ -1348,6 +1348,11 @@
    ]
   },
   {
+   "prefix": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "class": "needs-pair",
+   "hole": "cli_selectors"
+  },
+  {
    "prefix": "src/cadr-cli/interactive/selectors/tree.lisp",
    "class": "paired",
    "metrics": [
@@ -1673,6 +1678,11 @@
   },
   {
    "prefix": "src/cadr-cli/tools/bash.lisp",
+   "class": "needs-pair",
+   "hole": "agent_tool_loop"
+  },
+  {
+   "prefix": "src/cadr-cli/tools/powershell.lisp",
    "class": "needs-pair",
    "hole": "agent_tool_loop"
   },

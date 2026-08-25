@@ -209,7 +209,7 @@
            (make-string width :initial-element #\─))
          (options
            (cadr-cli::settings-selector-state-options state)))
-    (is (= 29 (length options)))
+    (is (= 30 (length options)))
     (is
      (equal
       '("autocompact" "auto-resize-images" "block-images"
@@ -219,8 +219,8 @@
         "http-idle-timeout" "hide-thinking" "mermaid-rendering"
         "cache-miss-notices" "collapse-changelog" "quiet-startup"
         "install-telemetry" "default-project-trust" "double-escape-action"
-        "tree-filter-mode" "warnings" "thinking" "tui-mode"
-        "fullscreen-exit-output" "fullscreen-scrollbar" "theme")
+        "tree-filter-mode" "warnings" "thinking" "model-thinking"
+        "tui-mode" "fullscreen-exit-output" "fullscreen-scrollbar" "theme")
       (mapcar #'cadr-cli::settings-option-id options)))
     (is
      (uiop:string-prefix-p
@@ -235,17 +235,17 @@
        border
        (goal9-b3-full-width-input-line "" width)
        ""
-       "→ Auto-compact            true"
-       "  Auto-resize images      true"
-       "  Block images            false"
-       "  Skill commands          true"
-       "  Show hardware cursor    false"
-       "  Editor padding          0"
-       "  Output padding          1"
-       "  Autocomplete max items  5"
-       "  Clear on shrink         false"
-       "  Terminal progress       false"
-       "  (1/29)"
+       "→ Auto-compact                    true"
+       "  Auto-resize images              true"
+       "  Block images                    false"
+       "  Skill commands                  true"
+       "  Show hardware cursor            false"
+       "  Editor padding                  0"
+       "  Output padding                  1"
+       "  Autocomplete max items          5"
+       "  Clear on shrink                 false"
+       "  Terminal progress               false"
+       "  (1/30)"
        ""
        "  Automatically compact context when it gets too large"
        ""
@@ -384,7 +384,7 @@
            (cadr-cli::make-cli-settings-selector-state
             manager agent (cadr-cli::make-resource-snapshot)
             :supports-images-p t)))
-    (is (= 31
+    (is (= 32
            (length
             (cadr-cli::settings-selector-state-options with-images))))
     (is
