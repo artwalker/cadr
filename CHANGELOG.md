@@ -7,6 +7,15 @@ tag/Release step.
 
 ## [Unreleased]
 
+### Changed
+
+- Goal 21: re-anchored the fixed pi baseline to v0.84.3.
+  cadr 0.2.0 · aligned with pi v0.84.3 (+0, 4e58f324f). `/thinking`
+  selector, session-level model/thinking defaults, `modelThinkingLevels`,
+  `session_compact_failed`, compaction summary not persisted (#7048),
+  `GoogleApiThinkingLevel` rename, PowerShell tool (Windows), and
+  v0.84.3 source-parity disposition updates.
+
 ### Fixed
 
 - Goal 20 P.13: pair `agent_tool_loop.runtime` (steering/follow-up queue

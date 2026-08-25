@@ -104,7 +104,13 @@
                (length
                 (remove-if-not
                  (lambda (path)
-                   (uiop:subpathnamep root path))
+                   (let ((root-name
+                          (namestring
+                           (uiop:ensure-directory-pathname root)))
+                         (path-name (namestring path)))
+                     (and (>= (length path-name) (length root-name))
+                          (string= root-name
+                                   (subseq path-name 0 (length root-name)))))
                  (cadr-cli::resource-snapshot-context-files
                   snapshot)))))
         (is (not
