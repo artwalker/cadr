@@ -10,12 +10,11 @@
 (test g21-powershell-tool-rejects-non-windows-execution
   (unless (uiop:os-windows-p)
     (with-test-directory (directory)
-      (let ((powershell-tool (make-powershell-tool directory))
-            (condition
+      (let ((condition
               (handler-case
                   (progn
                     (invoke-tool
-                     powershell-tool
+                     (make-powershell-tool directory)
                      (args "command" "Write-Output test"))
                     nil)
                 (error (condition) condition))))
