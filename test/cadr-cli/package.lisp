@@ -5,6 +5,7 @@
                 #:make-edit-tool
                 #:make-glob-tool
                 #:make-grep-tool
+                #:make-powershell-tool
                 #:make-read-tool
                 #:make-write-tool
                 #:run-repl)

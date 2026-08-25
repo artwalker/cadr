@@ -10,7 +10,7 @@
 (test g21-powershell-tool-rejects-non-windows-execution
   (unless (uiop:os-windows-p)
     (with-test-directory (directory)
-      (let ((tool (cadr-cli:make-powershell-tool directory))
+      (let ((tool (make-powershell-tool directory))
             (condition
               (handler-case
                   (progn
