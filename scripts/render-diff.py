@@ -2299,7 +2299,19 @@ def install_fake_github_cli(home: Path) -> Path:
 
 def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> dict[str, str]:
     env = os.environ.copy()
-    for key in ("TMUX", "TMUX_PANE", "WT_SESSION", "KITTY_WINDOW_ID", "SSH_TTY"):
+    for key in (
+        "TMUX",
+        "TMUX_PANE",
+        "WT_SESSION",
+        "KITTY_WINDOW_ID",
+        "SSH_TTY",
+        # pi v0.84.3 switches follow-up/dequeue/paste bindings under WSL
+        # (ctrl+q etc.). The fixed-baseline scenarios and cadr still drive
+        # the non-WSL bindings (alt+enter). Isolate the host so both sides
+        # see a plain Linux key table.
+        "WSL_DISTRO_NAME",
+        "WSL_INTEROP",
+    ):
         env.pop(key, None)
     for key in tuple(env):
         if credential_environment_variable_p(key):
