@@ -26,6 +26,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.with_queue` (`with-file-mutation-queue` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs pi `withFileMutationQueue`). Observed
+  `fmq_alias_key` / `fmq_missing_key` / `fmq_other_key` / `fmq_fifo_sum` /
+  `fmq_other_run` / `fmq_clean` exact. Friend-MachineD n=5 **0.55×**.
+  Measure-only.
 - Goal 20 P.13: pair `execution_env.exists_remove_temps` (exists/remove/temp
   helpers on `src/cadr-agent/execution-env.lisp` vs pi `NodeExecutionEnv`).
   Observed `ex_missing` / `ex_present` / `ex_after_rm` / `tmp_dir` / `tmp_file` /

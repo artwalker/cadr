@@ -95,6 +95,7 @@
 ;;;; 254. session_discovery list-sessions vs SessionManager.listAll
 ;;;; 254. agent_conditions error-slot probe vs agent error shapes
 ;;;; 257. execution_env exists/remove/temps vs NodeExecutionEnv exists/remove/createTemp*
+;;;; 261. file_mutation_queue withFileMutationQueue vs with-file-mutation-queue
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -235,6 +236,7 @@
     ("cli_settings.create" . 5)
     ("agent_conditions.error_probe" . 50)
     ("execution_env.exists_remove_temps" . 50)
+    ("file_mutation_queue.with_queue" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -3670,6 +3672,82 @@
                     (run-resource-loader
                      cwd agent project-skill agent-skill
                      project-prompt agent-prompt))))))))
+
+(defun fmq-truth (value)
+  (if value 1 0))
+
+(defun stage-file-mutation-queue-layout ()
+  (let ((root (merge-pathnames "file-mutation-queue/" *scratch-directory*)))
+    (ensure-directories-exist root)
+    (values root
+            (merge-pathnames "target.txt" root)
+            (merge-pathnames "alias.txt" root)
+            (merge-pathnames "other.txt" root)
+            (merge-pathnames "missing.txt" root))))
+
+(defun fmq-setup-alias (target alias)
+  (when (probe-file alias) (delete-file alias))
+  (sb-posix:symlink (namestring target) (namestring alias)))
+
+(defun run-file-mutation-queue-with-queue ()
+  ;; Baseline withFileMutationQueue only; not write/edit tools.
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (fmq-setup-alias target alias)
+    (let* ((alias-key-ok
+             (fmq-truth
+              (string=
+               (cadr-agent::file-mutation-queue-key target)
+               (cadr-agent::file-mutation-queue-key alias))))
+           (missing-key-ok
+             (fmq-truth
+              (string=
+               (cadr-agent::file-mutation-queue-key missing)
+               (namestring (uiop:ensure-absolute-pathname missing)))))
+           (other-key-ok
+             (fmq-truth
+              (not (string=
+                    (cadr-agent::file-mutation-queue-key target)
+                    (cadr-agent::file-mutation-queue-key other)))))
+           (fifo-sum 0)
+           (other-run 0)
+           (clean 0))
+      (cadr-agent:with-file-mutation-queue (target)
+        (incf fifo-sum 1))
+      (cadr-agent:with-file-mutation-queue (target)
+        (incf fifo-sum 2))
+      (cadr-agent:with-file-mutation-queue (target)
+        (incf fifo-sum 3))
+      (cadr-agent:with-file-mutation-queue (target)
+        (setf other-run
+              (cadr-agent:with-file-mutation-queue (other)
+                7)))
+      (cadr-agent:with-file-mutation-queue (other)
+        (setf clean 1))
+      (list alias-key-ok missing-key-ok other-key-ok fifo-sum other-run clean))))
+
+(defun measure-file-mutation-queue ()
+  (destructuring-bind (alias-key missing-key other-key fifo-sum other-run clean)
+      (run-file-mutation-queue-with-queue)
+    (json-object
+     "observed"
+     (json-object
+      "fmq_alias_key" alias-key
+      "fmq_missing_key" missing-key
+      "fmq_other_key" other-key
+      "fmq_fifo_sum" fifo-sum
+      "fmq_other_run" other-run
+      "fmq_clean" clean)
+     "with_queue"
+     (collect "file_mutation_queue.with_queue"
+              (lambda ()
+                (lambda ()
+                  (run-file-mutation-queue-with-queue)))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -13801,6 +13879,8 @@
       "src/cadr-agent/conditions.lisp define-condition slot accessors + subtypep"
       "execution_env.exists_remove_temps"
       "src/cadr-agent/execution-env.lisp execution-env-exists-p/remove/create-temp-*"
+      "file_mutation_queue.with_queue"
+      "src/cadr-agent/file-mutation-queue.lisp with-file-mutation-queue"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -14388,6 +14468,8 @@
               (let ((settings-load (measure-settings-load)))
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
               (let ((resources (measure-resource-loader)))
+              (format *error-output* "goal20 cadr paired paths: file_mutation_queue~%")
+              (let ((file-mutation-queue (measure-file-mutation-queue)))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -14520,6 +14602,7 @@
               "execution_env" execution-env
               "settings_load" settings-load
               "resource_loader" resources
+              "file_mutation_queue" file-mutation-queue
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html
@@ -14580,7 +14663,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

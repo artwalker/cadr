@@ -3107,6 +3107,20 @@ freeze **5.09×** (52.9 / 10.4 µs), ceiling 8.0. Gate used
 `--only-enforce`. Same commit no optimize.
 
 
+### Pair 261 — `file_mutation_queue` (with_queue)
+
+| metric | cadr | pi |
+|---|---|---|
+| `with_queue` | `with-file-mutation-queue` (`src/cadr-agent/file-mutation-queue.lisp`) | `withFileMutationQueue` (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole on `file-mutation-queue.lisp`.
+Timed work is canonical key resolution (existing path, missing path, alias) and
+FIFO ticket acquire/release through `with-file-mutation-queue` — not write/edit
+tools. Staged scratch dir with `target.txt` symlink alias, separate `other.txt`,
+and missing path. Observed `fmq_alias_key` / `fmq_missing_key` / `fmq_other_key`
+/ `fmq_fifo_sum` / `fmq_other_run` / `fmq_clean` are exact. First Friend-MachineD
+freeze **0.55×**, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 257 — `execution_env` (exists_remove_temps)
 
 | metric | cadr | pi |
@@ -3615,6 +3629,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/branch-summarization.lisp` | 185 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
 | `src/cadr-agent/compaction.lisp` | 883 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
+| `src/cadr-agent/file-mutation-queue.lisp` | 92 | `file_mutation_queue.with_queue` |
 | `src/cadr-agent/execution-env.lisp` | 855 | `execution_env.exists_remove_temps` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |

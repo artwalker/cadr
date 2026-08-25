@@ -46,7 +46,10 @@ import {
 	statSync,
 	utimesSync,
 	writeFileSync,
+	symlinkSync,
+	unlinkSync,
 } from "node:fs";
+import { realpath } from "node:fs/promises";
 import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
@@ -142,6 +145,7 @@ const REPETITIONS = {
 	"cli_settings.create": 5,
 	"agent_conditions.error_probe": 50,
 	"execution_env.exists_remove_temps": 50,
+	"file_mutation_queue.with_queue": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -665,6 +669,9 @@ const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/to
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
+const fileMutationQueueModule = await import(
+	moduleUrl("packages/coding-agent/src/core/tools/file-mutation-queue.ts"),
+);
 const editDiffModule = await import(moduleUrl("packages/coding-agent/src/core/tools/edit-diff.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
 const terminalImageModule = await import(moduleUrl("packages/tui/src/terminal-image.ts"));
@@ -2158,6 +2165,90 @@ async function measureResourceLoader() {
 			system_prompt: loader.getSystemPrompt() ? 1 : 0,
 			...dedupe,
 		},
+	};
+}
+
+function isMissingPathError(error) {
+	return (
+		typeof error === "object" &&
+		error !== null &&
+		"code" in error &&
+		(error.code === "ENOENT" || error.code === "ENOTDIR")
+	);
+}
+
+async function getMutationQueueKey(filePath) {
+	const resolvedPath = path.resolve(filePath);
+	try {
+		return await realpath(resolvedPath);
+	} catch (error) {
+		if (isMissingPathError(error)) {
+			return resolvedPath;
+		}
+		throw error;
+	}
+}
+
+function stageFileMutationQueueLayout() {
+	const dir = path.join(scratch, "file-mutation-queue");
+	mkdirSync(dir, { recursive: true });
+	return {
+		target: path.join(dir, "target.txt"),
+		alias: path.join(dir, "alias.txt"),
+		other: path.join(dir, "other.txt"),
+		missing: path.join(dir, "missing.txt"),
+	};
+}
+
+async function runFileMutationQueueWithQueue() {
+	const { withFileMutationQueue } = fileMutationQueueModule;
+	const { target, alias, other, missing } = stageFileMutationQueueLayout();
+	writeFileSync(target, "seed", "utf8");
+	if (existsSync(alias)) {
+		unlinkSync(alias);
+	}
+	symlinkSync(target, alias);
+	const aliasKeyOk =
+		(await getMutationQueueKey(target)) === (await getMutationQueueKey(alias)) ? 1 : 0;
+	const missingKeyOk =
+		(await getMutationQueueKey(missing)) === path.resolve(missing) ? 1 : 0;
+	const otherKeyOk =
+		(await getMutationQueueKey(target)) !== (await getMutationQueueKey(other)) ? 1 : 0;
+	let fifoSum = 0;
+	await withFileMutationQueue(target, async () => {
+		fifoSum += 1;
+	});
+	await withFileMutationQueue(target, async () => {
+		fifoSum += 2;
+	});
+	await withFileMutationQueue(target, async () => {
+		fifoSum += 3;
+	});
+	let otherRun = 0;
+	await withFileMutationQueue(target, async () => {
+		otherRun = await withFileMutationQueue(other, async () => 7);
+	});
+	let clean = 0;
+	await withFileMutationQueue(other, async () => {
+		clean = 1;
+	});
+	return {
+		fmq_alias_key: aliasKeyOk,
+		fmq_missing_key: missingKeyOk,
+		fmq_other_key: otherKeyOk,
+		fmq_fifo_sum: fifoSum,
+		fmq_other_run: otherRun,
+		fmq_clean: clean,
+	};
+}
+
+async function measureFileMutationQueue() {
+	const observed = await runFileMutationQueueWithQueue();
+	return {
+		with_queue: await collect("file_mutation_queue.with_queue", () => {
+			return () => runFileMutationQueueWithQueue();
+		}),
+		observed,
 	};
 }
 
@@ -14241,6 +14332,8 @@ process.stderr.write("goal20 pi paired paths: settings_load\n");
 const settingsLoad = await measureSettingsLoad();
 process.stderr.write("goal20 pi paired paths: resource_loader\n");
 const resourceLoader = await measureResourceLoader();
+process.stderr.write("goal20 pi paired paths: file_mutation_queue\n");
+const fileMutationQueue = await measureFileMutationQueue();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -14366,6 +14459,8 @@ const result = {
 				"packages/agent/src agent error slot/type probe (fixture-aligned harness)",
 			"execution_env.exists_remove_temps":
 				"packages/agent/src/harness/env/nodejs.ts exists/remove/createTempDir/createTempFile",
+			"file_mutation_queue.with_queue":
+				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -14901,6 +14996,7 @@ const result = {
 		execution_env: executionEnv,
 		settings_load: settingsLoad,
 		resource_loader: resourceLoader,
+		file_mutation_queue: fileMutationQueue,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

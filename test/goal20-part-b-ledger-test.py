@@ -324,6 +324,14 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ex_missing", paired.OBSERVED_EXACT["execution_env"])
         self.assertIn("rm_recursive", paired.OBSERVED_EXACT["execution_env"])
 
+    def test_file_mutation_queue_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("file_mutation_queue.with_queue", RECORD.METRIC_KEYS)
+        self.assertIn("with_queue", paired.METRICS["file_mutation_queue"])
+        self.assertIn("file_mutation_queue.with_queue", paired.RATIO_CEILINGS)
+        self.assertIn("fmq_alias_key", paired.OBSERVED_EXACT["file_mutation_queue"])
+        self.assertIn("fmq_clean", paired.OBSERVED_EXACT["file_mutation_queue"])
+
     def test_settings_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("settings_load.project_trust", RECORD.METRIC_KEYS)
@@ -2030,6 +2038,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`resource_loader.dedupe_by_name`", section)
             self.assertIn("`execution_env.exists_remove_temps`", section)
+            self.assertIn("`file_mutation_queue.with_queue`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)
