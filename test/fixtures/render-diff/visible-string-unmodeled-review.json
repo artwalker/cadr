@@ -18,57 +18,57 @@
       "reason": "The 'Startup Timings: ' title prefix is produced by a call-argument template flowing into a void helper, a shape the extractor does not traverse. The remaining timings lines are modeled and captured; cadr prints the identical title (src/cadr-cli/support/timings.lisp:37)."
     },
     {
-      "site": "packages/coding-agent/src/extensions/llama/index.ts:190",
+      "site": "packages/coding-agent/src/extensions/llama/index.ts:192",
       "verdict": "covered-by-nested-site",
       "reason": "showLlamaUi's callback body holds the presentation strings; those sites are modeled under extensions/llama and exercised by the llama UI construction drives."
     },
     {
-      "site": "packages/coding-agent/src/main.ts:559",
+      "site": "packages/coding-agent/src/main.ts:550",
       "verdict": "covered-by-producer",
       "reason": "The prompt text is produced by formatMissingSessionCwdPrompt in core/session-cwd.ts, which is modeled; this call site contributes no fixed text of its own beyond the selector options constructed inline and covered at their own lines."
     },
     {
-      "site": "packages/coding-agent/src/main.ts:613",
+      "site": "packages/coding-agent/src/main.ts:605",
       "verdict": "accepted-duplicate-of-modeled-text",
       "reason": "The CLI-argument diagnostics printer emits the same 'Error: '/'Warning: ' prefixes as the modeled reportDiagnostics site at main.ts:105; the byte parity of both is locked by the cli-error-sweep scenario."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2673",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2734",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showExtensionNotify; the matched quotes are the 'info'|'warning'|'error' type literals."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2989",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:3056",
       "verdict": "control-token-not-presentation",
       "reason": "The 'logout' literal is a mode token selecting the selector variant; the presented strings live inside showOAuthSelector's modeled construction."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5333",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5513",
       "verdict": "covered-by-nested-site",
       "reason": "showSelector callback; the presentation strings are the nested selector/component constructions on following lines, which are modeled."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5358",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5538",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showLoginProviderSelector; matched quotes belong to the parameter type annotation."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5371",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5551",
       "verdict": "covered-by-nested-site",
       "reason": "showSelector callback; the presentation strings are the nested selector/component constructions on following lines, which are modeled."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5401",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5581",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showOAuthSelector; matched quotes belong to the mode parameter type annotation."
     },
     {
-      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5609",
+      "site": "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5792",
       "verdict": "declaration-not-a-call",
       "reason": "Method declaration of showAuthSelect; no presentation literal on the declaration line."
     },
     {
-      "site": "packages/coding-agent/src/package-manager-cli.ts:461",
+      "site": "packages/coding-agent/src/package-manager-cli.ts:647",
       "verdict": "accepted-geometry-fragment",
       "reason": "The only fixed text is the newline joining the Update note's rendered markdown lines; the block is captured by the Update note construction drive."
     },
