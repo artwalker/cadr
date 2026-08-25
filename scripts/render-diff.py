@@ -2306,7 +2306,7 @@ def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> 
         "WT_SESSION",
         "KITTY_WINDOW_ID",
         "SSH_TTY",
-        # pi v0.84.3 switches follow-up/dequeue/paste bindings under WSL
+        # baseline v0.84.3 switches follow-up/dequeue/paste bindings under WSL
         # (ctrl+q etc.). The fixed-baseline scenarios and cadr still drive
         # the non-WSL bindings (alt+enter). Isolate the host so both sides
         # see a plain Linux key table.

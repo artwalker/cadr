@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1179,
+  "expected_findings": 1182,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -5934,7 +5934,7 @@
       "path": "scripts/goal21-orchestrator.sh",
       "kind": "pi-token",
       "token": "pi",
-      "line": "4. Update CHANGELOG.md with cadr aligned pi v0.84.3",
+      "line": "5. git add BASELINE scripts/render-diff.py and any rewritten refs; commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
       "occurrences": 1,
       "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
     },
@@ -5942,7 +5942,31 @@
       "path": "scripts/goal21-orchestrator.sh",
       "kind": "pi-token",
       "token": "pi",
-      "line": "5. git add BASELINE scripts/render-diff.py and any rewritten refs; commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
+      "line": "3. git commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
+      "occurrences": 1,
+      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\t\tif ! rg -q 'pi v0\\.84\\.3|Goal 21:' \"$PROJECT_DIRECTORY/CHANGELOG.md\"; then",
+      "occurrences": 1,
+      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "Add under CHANGELOG.md ## [Unreleased] ### Changed a short Goal 21 / pi v0.84.3 alignment note if missing.",
+      "occurrences": 1,
+      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "Commit: chore(cadr-cli): bump baseline to pi v0.84.3 (g21)",
       "occurrences": 1,
       "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
     },
