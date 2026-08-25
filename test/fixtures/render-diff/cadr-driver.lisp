@@ -1042,6 +1042,8 @@
     (t (error "Missing render-diff tool contract: ~A" name))))
 
 (defun render-tools (cwd)
+  ;; pi-driver.ts lists read/bash/edit/write/grep/find/ls only; powershell is
+  ;; Windows-only and omitted from the render harness tool contract.
   (mapcar
    (lambda (tool)
      (multiple-value-bind (description parameters)
@@ -1054,7 +1056,12 @@
         :execution-mode
         (cadr-ai::tool-execution-mode tool)
         :executor (cadr-ai::tool-executor tool))))
-   (cadr-cli::make-all-coding-tools cwd)))
+   (append
+    (cadr-cli::make-baseline-coding-tools cwd)
+    (list
+     (cadr-cli::make-grep-tool cwd)
+     (cadr-cli::make-find-tool cwd)
+     (cadr-cli::make-ls-tool cwd)))))
 
 (defun render-baseline-cwd (cwd)
   ;; Faux usage must see byte-identical fixture context on both sides.  The
