@@ -138,11 +138,11 @@
   {
    "pair": 261,
    "lane": "b",
-   "status": "pending",
+   "status": "done",
    "source": "src/cadr-agent/file-mutation-queue.lisp",
    "measure": "measure-resource-loader",
-   "metric": null,
-   "branch": null
+   "metric": "file_mutation_queue.with_queue",
+   "branch": "pair-261-file-mutation-queue"
   },
   {
    "pair": 262,
@@ -181,5 +181,10 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-261-file-mutation-queue",
+   "pair": 261
+  }
+ ]
 }
