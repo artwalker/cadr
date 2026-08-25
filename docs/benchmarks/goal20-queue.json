@@ -1,6 +1,6 @@
 {
  "schemaVersion": 1,
- "nextPairNum": 267,
+ "nextPairNum": 269,
  "lanes": {
   "a": {
    "role": "pairing",
@@ -129,7 +129,7 @@
   {
    "pair": 260,
    "lane": "a",
-   "status": "in_progress",
+   "status": "pending",
    "source": "src/cadr-agent/execution-env.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
@@ -165,16 +165,16 @@
   {
    "pair": 264,
    "lane": "b",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-agent/harness-events.lisp",
    "measure": "measure-resource-loader",
-   "metric": null,
-   "branch": null
+   "metric": "agent_tool_loop.harness_events",
+   "branch": "pair-264-harness-events"
   },
   {
    "pair": 265,
    "lane": "c",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-ai/images.lisp",
    "measure": "measure-cli-settings",
    "metric": null,
@@ -188,12 +188,34 @@
    "measure": "measure-resource-loader",
    "metric": null,
    "branch": null
+  },
+  {
+   "pair": 267,
+   "lane": "a",
+   "status": "pending",
+   "source": "src/cadr-agent/file-mutation-queue.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": null,
+   "branch": null
+  },
+  {
+   "pair": 268,
+   "lane": "c",
+   "status": "pending",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-cli-settings",
+   "metric": null,
+   "branch": null
   }
  ],
  "mergeQueue": [
   {
    "branch": "pair-263-file-mutation-queue",
    "pair": 263
+  },
+  {
+   "branch": "pair-264-harness-events",
+   "pair": 264
   }
  ]
 }
