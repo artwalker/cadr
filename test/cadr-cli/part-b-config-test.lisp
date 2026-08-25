@@ -112,7 +112,7 @@
                           (string= root-name
                                    (subseq path-name 0 (length root-name)))))
                  (cadr-cli::resource-snapshot-context-files
-                  snapshot)))))
+                  snapshot))))
         (is (not
              (null
               (cadr-cli::resource-snapshot-system-prompt-path
