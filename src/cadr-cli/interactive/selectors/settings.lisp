@@ -508,7 +508,7 @@
                                     :key #'car :test #'string=)
                             (list (cons model-key level)))))
                  (setf (getf value :overrides) overrides
-                       (settings-option-value main) value))))
+                       (settings-option-value main) value)))
              (setf (settings-selector-state-mode state) :model-thinking
                    (settings-selector-state-submenu-selected state) 0)))
           (:theme-single
