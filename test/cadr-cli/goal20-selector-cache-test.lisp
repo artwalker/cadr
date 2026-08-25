@@ -131,7 +131,7 @@
             (cadr-cli::scoped-models-selector-visible-items
              state)))
       (is (= 1 (length filtered)))
-      (is (string= "beta-1" (getf (first filtered) :id)))
+      (is (string= "faux/beta-1" (getf (first filtered) :id)))
       (is
        (eq
         filtered

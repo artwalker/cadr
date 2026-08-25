@@ -150,8 +150,7 @@
               (lambda (name)
                 (substitute #\- #\_ name))
               baseline))
-            '("tool-call-before" "tool-call-after" "tool-call-error"
-              "session-compact-failed"))
+            '("tool-call-before" "tool-call-after" "tool-call-error"))
            #'string<))
          (actual
           (sort
@@ -160,7 +159,7 @@
               (string-downcase (symbol-name event)))
             cadr-agent::+extension-hook-events+)
            #'string<)))
-    (is (= 33 (length baseline)))
+    (is (= 34 (length baseline)))
     (is (equal expected actual)
         "cadr extension events drifted from the derived baseline set")))
 

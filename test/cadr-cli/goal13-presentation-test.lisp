@@ -1263,7 +1263,7 @@
            '(("cadr-core" 7)
              ("cadr-ai" 61)
              ("cadr-agent" 37)
-             ("cadr-cli" 115)
+             ("cadr-cli" 116)
              ("cadr-tui" 50)
              ("cadr-storage" 2)
              ("cadr-server" 11)
