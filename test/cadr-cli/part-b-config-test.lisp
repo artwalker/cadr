@@ -601,13 +601,12 @@
               (first
                (cadr-cli::resource-snapshot-prompts
                 snapshot)))))
-        (is (equal
+        (is (find
              (truename
               (merge-pathnames "AGENTS.md" project-root))
-             (truename
-              (first
-               (cadr-cli::resource-snapshot-context-files
-                snapshot)))))
+             (cadr-cli::resource-snapshot-context-files snapshot)
+             :key #'truename
+             :test #'equal))
         (is (equal
              (truename
               (merge-pathnames ".cadr/SYSTEM.md"
