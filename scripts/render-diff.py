@@ -339,6 +339,7 @@ REQUIRED_COVERAGE = {
     "overlay-model",
     "overlay-model-scope-and-empty-filter",
     "overlay-model-scroll",
+    "overlay-thinking",
     "overlay-scoped-models",
     "overlay-scoped-models-dirty-disabled-and-empty-filter",
     "overlay-scoped-models-unavailable-and-scroll",

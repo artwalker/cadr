@@ -8,7 +8,7 @@ looks idiomatic in isolation; it is whether a different Lisp construct would
 eliminate a demonstrated bug class, remove a manual invariant, enable an
 otherwise unavailable capability, or materially reduce code.
 
-<!-- GOAL13_LISP_IDIOM_AUDIT files=296 systems=9 axes=6 rewrite=1 keep=8 -->
+<!-- GOAL13_LISP_IDIOM_AUDIT files=297 systems=9 axes=6 rewrite=1 keep=8 -->
 
 The audited tree contains 295 Lisp files and 122,613 physical lines.  The form
 inventory below is syntactic evidence, not a quality score:

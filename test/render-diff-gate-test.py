@@ -450,7 +450,7 @@ class RenderDiffGateTest(unittest.TestCase):
             ROOT,
             manifest["baselineCommit"],
         )
-        self.assertEqual(len(inventory["slashCommands"]), 22)
+        self.assertEqual(len(inventory["slashCommands"]), 23)
         self.assertEqual(
             [entry["name"] for entry in registry["slashCommands"]],
             inventory["slashCommands"],

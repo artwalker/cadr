@@ -1550,6 +1550,8 @@
    (equal
     '(("settings" "Open settings menu" nil)
       ("model" "Select model (opens selector UI)" "<provider/model>")
+      ("tree" "Navigate session tree (switch branches)" nil)
+      ("thinking" "Set thinking level" "<level>")
       ("scoped-models" "Enable/disable models for Ctrl+P cycling" nil)
       ("export" "Export session (HTML default, or specify path: .html/.jsonl)" nil)
       ("import" "Import and resume a session from a JSONL file" nil)
@@ -1561,7 +1563,6 @@
       ("hotkeys" "Show all keyboard shortcuts" nil)
       ("fork" "Create a new fork from a previous user message" nil)
       ("clone" "Duplicate the current session at the current position" nil)
-      ("tree" "Navigate session tree (switch branches)" nil)
       ("trust" "Save project trust decision for future sessions" nil)
       ("login" "Configure provider authentication" "<provider>")
       ("logout" "Remove provider authentication" nil)

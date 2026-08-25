@@ -117,8 +117,7 @@ baseline byte content."
            '("read" "bash" "edit" "write")
            (mapcar #'cadr-ai:tool-name default-tools)))
       (is (equal
-           '("read" "bash" "edit" "write"
-             "grep" "find" "ls")
+           '("read" "bash" "edit" "write" "powershell" "grep" "find" "ls")
            (mapcar #'cadr-ai:tool-name all-tools)))
       ;; Part K: every one of the seven tools, not just the default
       ;; four — description, parameter schema, and prompt snippet all

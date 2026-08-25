@@ -1351,7 +1351,7 @@
               ;; assistant-message-end-turn, make-strict-json-schema,
               ;; get-json-schema-tool-parameters,
               ;; unsupported-strict-json-schema-error.
-              "d098e719c558f86f9d66db13bc6a5b59dbfb0d81df4ce8a6354ad9f0b65ec950"
+              "03bf68bd1b6ad5699dd5f7a96a5b2e81fea72677376bc175126704c62564273d"
               (goal14-sha256 package-source)))
         "B10 changed the frozen cadr-ai public package text")
     (dolist (source sources)
