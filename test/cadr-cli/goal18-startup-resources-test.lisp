@@ -75,7 +75,7 @@
            (list (namestring (merge-pathnames "AGENTS.md" outer))
                  (namestring (merge-pathnames "AGENTS.md" project)))
            (mapcar #'namestring
-                   (cadr-cli::load-project-context-files project))))))
+                   (cadr-cli::load-project-context-files project)))))))
 
 (test goal18-startup-skill-conflicts-block-matches-the-baseline-shape
   (let* ((snapshot (goal18-resource-snapshot))
