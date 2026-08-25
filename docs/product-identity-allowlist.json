@@ -6430,7 +6430,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.84.2\",",
+      "line": "            b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.84.3\",",
       "occurrences": 1,
       "reason": "Render-diff gate names the baseline product when comparing captured terminals; not user-visible product identity."
     },
@@ -6438,7 +6438,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            b\"pi\\x1b[38;2;102;102;102m v0.84.2\",",
+      "line": "            b\"pi\\x1b[38;2;102;102;102m v0.84.3\",",
       "occurrences": 1,
       "reason": "Render-diff gate names the baseline product when comparing captured terminals; not user-visible product identity."
     },
@@ -6446,7 +6446,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "            b\"pi\\x1b[39m\\x1b[22m\\x1b[38;2;102;102;102m v0.84.2\",",
+      "line": "            b\"pi\\x1b[39m\\x1b[22m\\x1b[38;2;102;102;102m v0.84.3\",",
       "occurrences": 1,
       "reason": "Render-diff gate names the baseline product when comparing captured terminals; not user-visible product identity."
     },
@@ -6598,7 +6598,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        (b\"pi v0.84.2\", b\"<PRODUCT> v<VERSION>\"),",
+      "line": "        (b\"pi v0.84.3\", b\"<PRODUCT> v<VERSION>\"),",
       "occurrences": 1,
       "reason": "Render-diff gate names the baseline product when comparing captured terminals; not user-visible product identity."
     },
@@ -6742,7 +6742,7 @@
       "path": "scripts/render-diff.py",
       "kind": "pi-token",
       "token": "pi",
-      "line": "        pi_header = b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.84.2\"",
+      "line": "        pi_header = b\"pi\\x1b[0m\\x1b[38;2;102;102;102m v0.84.3\"",
       "occurrences": 2,
       "reason": "Render-diff gate names the baseline product when comparing captured terminals; not user-visible product identity."
     },
