@@ -314,7 +314,7 @@
       "kind": "secondary-selector",
       "baselineEvidence": {
         "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts",
-        "token": "\"Thinking Level\""
+        "token": "Per-Model Thinking Level"
       },
       "capture": {
         "scenario": "overlays-secondary",

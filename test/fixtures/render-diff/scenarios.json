@@ -3418,6 +3418,24 @@
           "checkpoint": "overlay-model"
         },
         {
+          "send": "down"
+        },
+        {
+          "pauseMs": 50
+        },
+        {
+          "send": "tab"
+        },
+        {
+          "pauseMs": 50
+        },
+        {
+          "sendText": "no-model-matches-this-query"
+        },
+        {
+          "waitFor": "No matching models"
+        },
+        {
           "send": "escape"
         },
         {
@@ -4589,7 +4607,7 @@
           "send": "enter"
         },
         {
-          "waitFor": "Thinking Level"
+          "waitFor": "Per-Model Thinking Level"
         },
         {
           "checkpoint": "settings-thinking"
