@@ -71,11 +71,15 @@
       (ensure-directories-exist project)
       (write-text (merge-pathnames "AGENTS.md" outer) "outer")
       (write-text (merge-pathnames "AGENTS.md" project) "project")
-      (is (equal
-           (list (namestring (merge-pathnames "AGENTS.md" outer))
-                 (namestring (merge-pathnames "AGENTS.md" project)))
-           (mapcar #'namestring
-                   (cadr-cli::load-project-context-files project)))))))
+      (let* ((expected
+              (list (namestring (merge-pathnames "AGENTS.md" outer))
+                    (namestring (merge-pathnames "AGENTS.md" project))))
+             (actual
+              (mapcar #'namestring
+                      (cadr-cli::load-project-context-files project))))
+        ;; Baseline order is rootward-first; ancestors above the temp tree
+        ;; (for example /tmp/AGENTS.md) may also be present.
+        (is (equal expected (subseq actual (- (length actual) 2)))))))
 
 (test goal18-startup-skill-conflicts-block-matches-the-baseline-shape
   (let* ((snapshot (goal18-resource-snapshot))
