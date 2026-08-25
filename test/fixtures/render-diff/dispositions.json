@@ -724,15 +724,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984",
-          "cadr": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984"
+          "cadr": "0ef27fbc4bfa71eba5e528a443718d8376f2b54a7ffe732aee4c5a67ff6ef8fc"
         }
       },
-      "note": "At conversation-content/markdown-code-thinking [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/markdown-code-thinking [narrow] the transcript body matches pi; the footer token counters read cadr ↑2.4k W2.4k CH1.5% 1.9%/128k vs pi ↑2.5k W2.5k CH1.4% 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -747,10 +748,10 @@
       "screenSha256": {
         "wide": {
           "pi": "35f2244ba30f571ed40d9398df442fccf902cb6e5be2e523c06711c297b50841",
-          "cadr": "1b82732a093957054a8af637f50c800092ae88c090bd4bc5218fe4fd9ab17d98"
+          "cadr": "6be48f22b7b9a9ef48df5e9eb680ef15a62ff0dcd1b3deb7c975502ccf93c052"
         }
       },
-      "note": "At conversation-content/markdown-code-thinking [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/markdown-code-thinking [wide] the transcript body matches pi; the footer token counters read cadr ↑2.4k W2.4k CH1.5% 1.9%/128k vs pi ↑2.5k W2.5k CH1.4% 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
