@@ -785,19 +785,20 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
           "pi": "d1c740a5e312dcda1c5db074f31c5efb8cf5f375452c8ae2fae25b04200ea11b",
-          "cadr": "d1c740a5e312dcda1c5db074f31c5efb8cf5f375452c8ae2fae25b04200ea11b"
+          "cadr": "ed8e0fe8f8e5f096f5e46537fc082378a6bc94db9e5a74b689b90d8fa167d4c4"
         },
         "narrow": {
           "pi": "a0f72ef98f48d4d14c16466a601ac095e5d81133e24cc8cfbf55d59cba6a14a3",
-          "cadr": "a0f72ef98f48d4d14c16466a601ac095e5d81133e24cc8cfbf55d59cba6a14a3"
+          "cadr": "11020464f5d3bf7e3db7b84015938aee0851c07ec6c3b6ea14f39e6f976b97d1"
         }
       },
-      "note": "At conversation-content/process-exit [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/process-exit [wide+narrow] the transcript body matches pi; the footer context counters read cadr ↑3.6k W3.6k CH2.0% 1.9%/128k vs pi ↑3.7k W3.7k CH2.0% 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (same ~0.1k gap as conversation-content/plain from render-contract tool JSON compression vs live pi tool objects) (I04); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "extension-surfaces",
