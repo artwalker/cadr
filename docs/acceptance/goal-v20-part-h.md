@@ -3580,12 +3580,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 128,860 lines**
+Denominator: **297 files / 128,863 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,051 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 174 | 77,054 | 59.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
 | `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
@@ -3630,7 +3630,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/compaction.lisp` | 943 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
 | `src/cadr-agent/execution-env.lisp` | 855 | `execution_env.exists_remove_temps` |
-| `src/cadr-agent/loop/agent-loop.lisp` | 442 | `agent_tool_loop.roundtrip` |
+| `src/cadr-agent/loop/agent-loop.lisp` | 445 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/turns.lisp` | 401 | `agent_tool_loop.roundtrip` |
