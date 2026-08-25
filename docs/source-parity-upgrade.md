@@ -129,6 +129,51 @@ The 81 modified non-test files are governed by the existing behavioral and
 source re-audit; their deltas are ported into the Lisp tree under the goal 20
 baseline-upgrade ruling before the fixed ledger moves to v0.84.2.
 
+### v0.84.3 enumeration result (914cf1472 → v0.84.3, generated 2026-08-25)
+
+| Class | Delta |
+|---|---|
+| CLI flags | none |
+| slash commands | +`thinking` |
+| settings keys | +`modelThinkingLevels` |
+| extension events | +`session_compact_failed` |
+| exported components | none |
+| keybinding actions | none |
+| providers | none |
+| environment variables | +`PI_INSTALLER_API_BASE`, +`PI_MANAGED_INSTALL_ROOT` |
+| theme tokens | none |
+| error classes | none |
+| tool files | +`powershell.ts` |
+| extension type fields | none |
+| public API exports | 34 → 34 |
+| RPC methods / exit codes / session format | none |
+| files | +29/−1 .ts under `packages/`; of these **+9/−1 non-test** |
+
+v0.84.3 file dispositions (four-column TSV, gate run green 2026-08-25):
+
+```text
+status	old_path	new_path	decision
+A	-	packages/ai/src/utils/sleep.ts	intentional difference: abortable Promise delay; cadr-ai retry uses CL:SLEEP via *retry-sleep-function* instead of a Node AbortSignal-aware helper
+A	-	packages/coding-agent/src/core/session-export.ts	implement: JSONL branch export with optional trailing entries; map to cadr-agent session codec/journal and bootstrap export path
+A	-	packages/coding-agent/src/core/settings-diagnostics.ts	implement: drain invalid-settings warnings into agent runtime diagnostics; wire settings-drain-errors through interactive startup
+A	-	packages/coding-agent/src/core/tools/powershell.ts	implement: Windows PowerShell tool (goal 21 task 6); defer on non-Windows hosts with ledger evidence
+A	-	packages/coding-agent/src/modes/interactive/components/settings-submenu.ts	implement: searchable select submenu for /thinking and settings flows (goal 21 task 3)
+A	-	packages/coding-agent/src/modes/interactive/session-share.ts	implement: Radius session-share export/upload flow or document intentional deferral with evidence
+A	-	packages/coding-agent/src/utils/highlight-js.d.ts	intentional difference: highlight.js type patch renamed; native Lisp highlighter in syntax.lisp replaces both .d.ts shims
+A	-	packages/coding-agent/src/utils/text.ts	implement: UTF-8 BOM split/strip helpers; map to strip-utf8-bom in edit tool path
+A	-	packages/tui/src/native-module-path.ts	intentional difference: Node SEA/native-module candidate resolution; cadr ships a Lisp image, not a bundled Node binary
+D	packages/coding-agent/src/utils/highlight-js-lib-index.d.ts	-	remove ledger row; superseded by packages/coding-agent/src/utils/highlight-js.d.ts with the same native-highlighter mapping
+```
+
+The committed fixture copy lives at
+`test/fixtures/source-parity/g21-0843-dispositions.tsv`; named-set deltas are
+locked in `test/fixtures/source-parity/g21-0843-enumeration.json` and exercised
+by `test/goal21-source-parity-test.py`.
+
+The modified non-test files between v0.84.2 and v0.84.3 are governed by the
+existing behavioral and source re-audit; their deltas land in the goal 21
+implementation lanes before the fixed ledger advances to v0.84.3.
+
 This mode enters only the six-column package tables headed by `Baseline file`,
 ignores prose and summary tables, accepts exactly the three ledger verdicts,
 and fails on malformed separators/rows, duplicates, a row count different from

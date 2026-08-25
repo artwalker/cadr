@@ -1,0 +1,53 @@
+{
+ "slashCommands": {
+  "added": [
+   "thinking"
+  ],
+  "removed": []
+ },
+ "settingsKeys": {
+  "added": [
+   "modelThinkingLevels"
+  ],
+  "removed": []
+ },
+ "extensionEvents": {
+  "added": [
+   "session_compact_failed"
+  ],
+  "removed": []
+ },
+ "environmentVariables": {
+  "added": [
+   "PI_INSTALLER_API_BASE",
+   "PI_MANAGED_INSTALL_ROOT"
+  ],
+  "removed": []
+ },
+ "toolFiles": {
+  "added": [
+   "powershell.ts"
+  ],
+  "removed": []
+ },
+ "publicApiExportCount": {
+  "from": 34,
+  "to": 34
+ },
+ "files": {
+  "addedNonTest": [
+   "packages/ai/src/utils/sleep.ts",
+   "packages/coding-agent/src/core/session-export.ts",
+   "packages/coding-agent/src/core/settings-diagnostics.ts",
+   "packages/coding-agent/src/core/tools/powershell.ts",
+   "packages/coding-agent/src/modes/interactive/components/settings-submenu.ts",
+   "packages/coding-agent/src/modes/interactive/session-share.ts",
+   "packages/coding-agent/src/utils/highlight-js.d.ts",
+   "packages/coding-agent/src/utils/text.ts",
+   "packages/tui/src/native-module-path.ts"
+  ],
+  "removedNonTest": [
+   "packages/coding-agent/src/utils/highlight-js-lib-index.d.ts"
+  ]
+ }
+}

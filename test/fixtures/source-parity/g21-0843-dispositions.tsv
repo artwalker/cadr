@@ -1,0 +1,11 @@
+status	old_path	new_path	decision
+A	-	packages/ai/src/utils/sleep.ts	intentional difference: abortable Promise delay; cadr-ai retry uses CL:SLEEP via *retry-sleep-function* instead of a Node AbortSignal-aware helper
+A	-	packages/coding-agent/src/core/session-export.ts	implement: JSONL branch export with optional trailing entries; map to cadr-agent session codec/journal and bootstrap export path
+A	-	packages/coding-agent/src/core/settings-diagnostics.ts	implement: drain invalid-settings warnings into agent runtime diagnostics; wire settings-drain-errors through interactive startup
+A	-	packages/coding-agent/src/core/tools/powershell.ts	implement: Windows PowerShell tool (goal 21 task 6); defer on non-Windows hosts with ledger evidence
+A	-	packages/coding-agent/src/modes/interactive/components/settings-submenu.ts	implement: searchable select submenu for /thinking and settings flows (goal 21 task 3)
+A	-	packages/coding-agent/src/modes/interactive/session-share.ts	implement: Radius session-share export/upload flow or document intentional deferral with evidence
+A	-	packages/coding-agent/src/utils/highlight-js.d.ts	intentional difference: highlight.js type patch renamed; native Lisp highlighter in syntax.lisp replaces both .d.ts shims
+A	-	packages/coding-agent/src/utils/text.ts	implement: UTF-8 BOM split/strip helpers; map to strip-utf8-bom in edit tool path
+A	-	packages/tui/src/native-module-path.ts	intentional difference: Node SEA/native-module candidate resolution; cadr ships a Lisp image, not a bundled Node binary
+D	packages/coding-agent/src/utils/highlight-js-lib-index.d.ts	-	remove ledger row; superseded by packages/coding-agent/src/utils/highlight-js.d.ts with the same native-highlighter mapping

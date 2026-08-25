@@ -242,6 +242,10 @@ run_goal11_gate() {
   )
 }
 
+run_goal21_source_parity_gate() {
+  python3 "$PROJECT_DIRECTORY/test/goal21-source-parity-test.py"
+}
+
 run_source_parity_ledger_gate() {
   local ledger="$PROJECT_DIRECTORY/docs/source-parity.md"
   "$PROJECT_DIRECTORY/scripts/check-source-parity-drift.sh" \
@@ -450,10 +454,18 @@ else
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
+  run_deterministic "goal 21 source parity enumeration" \
+    run_goal21_source_parity_gate || DETERMINISTIC_READY=0
+else
+  skip_deterministic \
+    "goal 21 source parity enumeration" "cadr-ai compile WARNING failed"
+fi
+
+if [ "$DETERMINISTIC_READY" -eq 1 ]; then
   run_deterministic "real source parity ledger" \
     run_source_parity_ledger_gate || DETERMINISTIC_READY=0
 else
-  skip_deterministic "real source parity ledger" "cadr-ai compile WARNING failed"
+  skip_deterministic "real source parity ledger" "goal 21 source parity enumeration failed"
 fi
 
 if [ "$DETERMINISTIC_READY" -eq 1 ]; then
