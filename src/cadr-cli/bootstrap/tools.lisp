@@ -4,7 +4,7 @@
   '("read" "bash" "edit" "write"))
 
 (defparameter +builtin-coding-tool-names+
-  '("read" "bash" "edit" "write" "grep" "find" "ls"))
+  '("read" "bash" "powershell" "edit" "write" "grep" "find" "ls"))
 
 (defun make-baseline-coding-tools (cwd &key context)
   (list (make-read-tool cwd :context context)
@@ -19,6 +19,7 @@
   (append
    (make-baseline-coding-tools cwd :context context)
    (list
+    (make-powershell-tool cwd :context context)
     (make-grep-tool cwd)
     (make-find-tool cwd)
     (make-ls-tool cwd))))
@@ -51,6 +52,7 @@
           '(("read" . "Read file contents")
             ("bash"
              . "Execute bash commands (ls, grep, find, etc.)")
+            ("powershell" . "Execute PowerShell commands")
             ("edit"
              . "Make precise file edits with exact text replacement, including multiple disjoint edits in one call")
             ("write" . "Create or overwrite files")

@@ -265,21 +265,32 @@
            " (ctrl+o to expand)" :token :dim)))
         (let ((summary-segments
                 (tool-summary-segments call cwd)))
-          (if (string-equal name "bash")
-              (let ((command-segment (first summary-segments)))
-                (cons
-                 (tool-header-segment
-                  (format nil "$ ~A"
-                          (or (getf command-segment :text) ""))
-                  :token (getf command-segment :token)
-                  :bold-p (getf command-segment :bold-p))
-                 (rest summary-segments)))
-              (append
-               (list
+          (cond
+            ((string-equal name "bash")
+             (let ((command-segment (first summary-segments)))
+               (cons
                 (tool-header-segment
-                 name :token :tool-title :bold-p t)
-                (tool-header-segment " "))
-               summary-segments))))))
+                 (format nil "$ ~A"
+                         (or (getf command-segment :text) ""))
+                 :token (getf command-segment :token)
+                 :bold-p (getf command-segment :bold-p))
+                (rest summary-segments))))
+            ((string-equal name "powershell")
+             (let ((command-segment (first summary-segments)))
+               (cons
+                (tool-header-segment
+                 (format nil "PS> ~A"
+                         (or (getf command-segment :text) ""))
+                 :token (getf command-segment :token)
+                 :bold-p (getf command-segment :bold-p))
+                (rest summary-segments))))
+            (t
+             (append
+              (list
+               (tool-header-segment
+                name :token :tool-title :bold-p t)
+               (tool-header-segment " "))
+              summary-segments)))))))
 
 (defparameter +tool-source-language-map+
   '(("ts" . "typescript") ("tsx" . "typescript")
@@ -469,7 +480,8 @@
            (detail :truncation)))
       (let ((warning
               (cond
-                ((string-equal name "bash")
+                ((or (string-equal name "bash")
+                     (string-equal name "powershell"))
                  (let ((full-output-path
                          (detail :full-output-path)))
                    (when (and (detail :truncated)

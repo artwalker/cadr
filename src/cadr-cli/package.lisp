@@ -5,6 +5,7 @@
    #:make-write-tool
    #:make-edit-tool
    #:make-bash-tool
+   #:make-powershell-tool
    #:make-glob-tool
    #:make-grep-tool
    #:make-find-tool
@@ -155,6 +156,8 @@
    #:shell-config-arguments
    #:shell-config-command-transport
    #:get-shell-config
+   #:get-powershell-config
+   #:+powershell-args+
    #:get-shell-env
    #:sanitize-binary-output
    #:track-detached-child-pid

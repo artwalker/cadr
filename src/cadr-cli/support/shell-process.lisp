@@ -29,6 +29,21 @@
                    ((and windows-candidate (probe-file windows-candidate))
                     (return (namestring windows-candidate))))))))
 
+(defparameter +powershell-args+
+  '("-NoProfile" "-NonInteractive" "-ExecutionPolicy" "Bypass" "-Command"))
+
+(defun get-powershell-config ()
+  (unless (uiop:os-windows-p)
+    (error "The powershell tool is only available on Windows."))
+  (let ((shell (or (executable-on-path "pwsh.exe")
+                   (executable-on-path "powershell.exe"))))
+    (unless shell
+      (error
+       "No PowerShell executable found. Install PowerShell or add powershell.exe/pwsh.exe to PATH."))
+    (make-shell-config
+     :shell shell
+     :arguments (copy-list +powershell-args+))))
+
 (defun get-shell-config (&optional custom-shell-path)
   (cond
     (custom-shell-path
