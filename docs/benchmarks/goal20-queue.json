@@ -165,7 +165,7 @@
   {
    "pair": 264,
    "lane": "b",
-   "status": "in_progress",
+   "status": "pending",
    "source": "src/cadr-agent/harness-events.lisp",
    "measure": "measure-resource-loader",
    "metric": null,
