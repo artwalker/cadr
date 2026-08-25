@@ -703,19 +703,20 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
           "pi": "e914a8c115ea407b4a9acc7e728300a9f165860937c0068e6664b0c26f5949b0",
-          "cadr": "e914a8c115ea407b4a9acc7e728300a9f165860937c0068e6664b0c26f5949b0"
+          "cadr": "94ccd43e587ae67165ff7c65315c30612f90df302701d8a1b5b383f67944517e"
         },
         "narrow": {
           "pi": "90a04a3f55bfb14b4c0c866926227f937df8cd286faa1f5cc716cdba887e148e",
-          "cadr": "90a04a3f55bfb14b4c0c866926227f937df8cd286faa1f5cc716cdba887e148e"
+          "cadr": "7fc60ba1f6fe3ec53bf6fccc88166539bc3a972661d038f2c27c3149fb402e31"
         }
       },
-      "note": "At conversation-content/cjk-emoji [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/cjk-emoji [wide+narrow] the transcript body matches pi; the footer token counters read cadr ↑3.6k W3.6k 1.9%/128k vs pi ↑3.7k W3.7k 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
