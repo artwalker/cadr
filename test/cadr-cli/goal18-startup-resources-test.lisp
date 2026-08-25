@@ -64,6 +64,19 @@
       (is (find "  acme" texts :test #'string=))
       (is (find "  AGENTS.md" texts :test #'string=)))))
 
+(test goal18-context-files-follow-baseline-ancestor-order
+  (with-test-directory (root)
+    (let* ((outer (merge-pathnames "outer/" root))
+           (project (merge-pathnames "outer/project/" root)))
+      (ensure-directories-exist project)
+      (write-text (merge-pathnames "AGENTS.md" outer) "outer")
+      (write-text (merge-pathnames "AGENTS.md" project) "project")
+      (is (equal
+           (list (namestring (merge-pathnames "AGENTS.md" outer))
+                 (namestring (merge-pathnames "AGENTS.md" project)))
+           (mapcar #'namestring
+                   (cadr-cli::load-project-context-files project))))))
+
 (test goal18-startup-skill-conflicts-block-matches-the-baseline-shape
   (let* ((snapshot (goal18-resource-snapshot))
          (diagnostic
