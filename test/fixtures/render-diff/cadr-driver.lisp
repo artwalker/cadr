@@ -953,6 +953,15 @@
         "timeout" (render-number-property
                    "Timeout in seconds (optional, no default timeout)"))
        '("command"))))
+    ((string= name "powershell")
+     (values
+      "Execute a PowerShell command in the current working directory. Returns stdout and stderr. Output is truncated to last 2000 lines or 50KB (whichever is hit first). If truncated, full output is saved to a temp file. Optionally provide a timeout in seconds."
+      (render-object-schema
+       (cadr-ai::json-object
+        "command" (render-string-property "PowerShell command to execute")
+        "timeout" (render-number-property
+                   "Timeout in seconds (optional, no default timeout)"))
+       '("command"))))
     ((string= name "edit")
      (values
       "Edit a single file using exact text replacement. Every edits[].oldText must match a unique, non-overlapping region of the original file. If two changes affect the same block or nearby lines, merge them into one edit instead of emitting overlapping edits. Do not include large unchanged regions just to connect distant changes."
