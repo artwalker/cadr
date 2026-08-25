@@ -492,7 +492,7 @@ class RenderDiffGateTest(unittest.TestCase):
                 ROOT,
             )
         self.assertEqual(len(registry["slashCommands"]), 23)
-        self.assertEqual(len(registry["interfaces"]), 28)
+        self.assertEqual(len(registry["interfaces"]), 29)
 
     def test_reachable_interface_registry_fails_closed_for_new_commands_and_missing_captures(self) -> None:
         manifest = RENDER_DIFF.load_manifest(

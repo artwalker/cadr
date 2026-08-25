@@ -227,7 +227,7 @@
                (cadr-cli::sdk-resource-loader-prompts loader)
                :key #'cadr-agent:prompt-template-name
                :test #'string=))
-        (is (= 2
+        (is (= 3
                (length
                 (cadr-cli::sdk-resource-loader-context-files
                  loader))))

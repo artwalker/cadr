@@ -141,7 +141,7 @@
     (let ((rebuilt
             (cadr-cli::scoped-models-selector-visible-items
              state)))
-      (is (= 2 (length rebuilt)))
+      (is (= 1 (length rebuilt)))
       (is
        (eq
         rebuilt

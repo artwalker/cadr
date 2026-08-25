@@ -1,6 +1,6 @@
 # Code organization ledger
 
-<!-- GOAL20_LISPIFICATION_LEDGER baseline=4e58f324fae8ebfa98a3d45181fb248072a2afac files=297 lines=128860 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=150 -->
+<!-- GOAL20_LISPIFICATION_LEDGER baseline=4e58f324fae8ebfa98a3d45181fb248072a2afac files=297 lines=128849 assets=5 unevaluated=0 needs-rewrite=0 no-rewrite=147 in-progress=0 done=150 -->
 
 This ledger answers a different question from the four parity ledgers: not
 whether Cadr matches pi, but whether a maintainer can predict where code belongs

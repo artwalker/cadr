@@ -110,7 +110,7 @@
                          (path-name (namestring path)))
                      (and (>= (length path-name) (length root-name))
                           (string= root-name
-                                   (subseq path-name 0 (length root-name)))))
+                                   (subseq path-name 0 (length root-name))))))
                  (cadr-cli::resource-snapshot-context-files
                   snapshot)))))
         (is (not

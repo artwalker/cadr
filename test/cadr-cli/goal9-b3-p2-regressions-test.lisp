@@ -474,7 +474,7 @@
        (goal9-b3-full-width-line
         "Select a model to configure" width)
        ""
-       "→ No models available"
+       "→ No models available  Log in to a provider or configure an API key first"
        ""
        (goal9-b3-full-width-line
         "  Enter to select · Esc to go back" width)
