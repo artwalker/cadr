@@ -7093,14 +7093,14 @@
       "screenSha256": {
         "wide": {
           "pi": "872098f11fe3507f01b5aadd70f23f76300cd32036e79bb1f69cf548975f40d5",
-          "cadr": "aea8009e09e275666d4548b01a876a2073b299ed1a50865da4270800da85b22f"
+          "cadr": "8f21aea5081a71786af60beea30ec7ad407ccf5808f079b0ea6041951ba234a5"
         },
         "narrow": {
           "pi": "53ada06d2129b0e98b65e1d3779e53dbfddb0ce458043c219caccead5e58e86b",
-          "cadr": "b0557dede851e60a8bc3153e6e1497067de723f7ab0f80370a744565321c5f31"
+          "cadr": "8a9b2bf190fed572b4faef86aaa111ecbab9e73c1589d814bec2ef8cfa71a3df"
         }
       },
-      "note": "At conversation-mermaid/mermaid-absent the visible text/geometry matches pi; remaining bytes are I01 ANSI segmentation plus Goal 16 identity wrapping of the startup banner."
+      "note": "At conversation-mermaid/mermaid-absent [wide+narrow] the transcript body matches pi; the footer token counters read cadr ↑1.2k W1.2k 1.9%/128k vs pi ↑1.3k W1.3k 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); remaining bytes are I01 ANSI segmentation plus Goal 16 identity wrapping of the startup banner."
     },
     {
       "scenario": "conversation-mermaid",
