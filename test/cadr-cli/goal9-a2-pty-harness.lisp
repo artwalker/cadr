@@ -162,10 +162,10 @@
       "────────────────────────────────────────"
       "→ settings"
       "  model"
+      "  tree"
+      "  thinking"
       "  scoped-models"
-      "  export"
-      "  import"
-      "  (1/22)"))
+      "  (1/23)"))
    (padded-contract-snapshot
     40 10
     '("────────────────────────────────────────"
