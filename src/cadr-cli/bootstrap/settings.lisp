@@ -155,8 +155,32 @@
     ((string= value "never") "Never trust")
     (t "Ask")))
 
+(defun cli-thinking-level-for-model-switch
+    (agent settings-manager model
+     &optional explicit-level)
+  (if explicit-level
+      explicit-level
+      (or (and model
+               (settings-model-thinking-level
+                settings-manager
+                (cadr-ai:model-provider model)
+                (cadr-ai:model-id model)))
+          (settings-default-thinking-level settings-manager)
+          (cadr-agent::agent-thinking-level agent)
+          +default-thinking-level+)))
+
+(defun model-thinking-overrides-summary (settings-manager)
+  (let ((count
+          (length
+           (settings-all-model-thinking-levels
+            settings-manager))))
+    (if (zerop count)
+        "none"
+        (format nil "~D configured" count))))
+
 (defun set-cli-thinking-level
-    (agent settings-manager level)
+    (agent settings-manager level
+     &key (persist nil))
   (let* ((previous
            (cadr-agent::agent-thinking-level agent))
          (effective
@@ -172,23 +196,13 @@
          (cadr-agent:agent-session agent)
          (string-downcase
           (symbol-name effective))))
-      (when
-          (or
-           (and
-            (cadr-agent:agent-model agent)
-            (cadr-ai:model-reasoning-p
-             (cadr-agent:agent-model agent)))
-           (not (eq effective :off)))
-        (settings-set
-         settings-manager
-         "defaultThinkingLevel"
-         (string-downcase
-          (symbol-name effective))
-         :scope :global))
       (run-session-lifecycle
        agent :thinking-level-select
        :level effective
        :previous-level previous))
+    (when persist
+      (settings-set-default-thinking-level
+       settings-manager level))
     effective))
 
 (defun sync-agent-settings-from-manager
@@ -262,7 +276,7 @@
 
 (defun make-cli-settings-selector-state
     (settings-manager agent resources
-     &key keybindings
+     &key keybindings available-models
        (supports-images-p
          (not
           (null
@@ -600,6 +614,43 @@
             (cadr-ai:supported-thinking-levels
              (cadr-agent:agent-model agent))
             :submenu :thinking)
+            (make-settings-option
+             :id "model-thinking"
+             :label "Default thinking level per model"
+             :description
+             (format
+              nil
+              "Override the default thinking level for specific models. ~A cycles in-session."
+              (format-key-text
+               (or
+                (and keybindings
+                     (first
+                      (cadr-tui:keybinding-keys
+                       keybindings "app.thinking.cycle")))
+                "ctrl+t")
+               :capitalize-p t))
+             :value
+             (list
+              :overrides
+              (settings-all-model-thinking-levels
+               settings-manager)
+              :current-model
+              (cadr-agent:agent-model agent)
+              :default-provider
+              (settings-default-provider settings-manager)
+              :default-model
+              (settings-default-model settings-manager)
+              :global-default
+              (or
+               (settings-default-thinking-level
+                settings-manager)
+               +default-thinking-level+))
+             :format-function
+             (lambda (value)
+               (declare (ignore value))
+               (model-thinking-overrides-summary
+                settings-manager))
+             :submenu :model-thinking)
            ;; pi@4e58f324f settings-selector.ts:634-646
            (make-settings-option
             :id "tui-mode"
@@ -675,6 +726,8 @@
      (theme-detection-theme
       (detect-background-from-environment))
      :keybindings keybindings
+     :available-models
+     (copy-list (or available-models nil))
      :change-callback
      (lambda (id value)
        (cond
@@ -763,9 +816,42 @@
            (string-downcase
             (symbol-name value))
            :scope :global))
-         ((string= id "thinking")
-          (set-cli-thinking-level
-           agent settings-manager value))
+         ((string= id "model-thinking-level")
+          (let* ((model-key (getf value :model-key))
+                 (model
+                   (find model-key available-models
+                         :key
+                         (lambda (candidate)
+                           (model-setting-key
+                            (cadr-ai:model-provider candidate)
+                            (cadr-ai:model-id candidate)))
+                         :test #'string=))
+                 (level (getf value :level)))
+            (when model
+              (if (eq level :clear)
+                  (settings-remove-model-thinking-level
+                   settings-manager
+                   (cadr-ai:model-provider model)
+                   (cadr-ai:model-id model))
+                  (settings-set-model-thinking-level
+                   settings-manager
+                   (cadr-ai:model-provider model)
+                   (cadr-ai:model-id model)
+                   level))
+              (when
+                  (and
+                   (cadr-agent:agent-model agent)
+                   (cadr-ai:models-equal-p
+                    model
+                    (cadr-agent:agent-model agent)))
+                (set-cli-thinking-level
+                 agent settings-manager
+                 (if (eq level :clear)
+                     (or
+                      (settings-default-thinking-level
+                       settings-manager)
+                      +default-thinking-level+)
+                     level))))))
          (t
           (let ((key
                   (cdr

@@ -19,6 +19,8 @@
   (mode :main :type symbol)
   (submenu-selected 0 :type (integer 0 *))
   (theme-names nil :type list)
+  (available-models nil :type list)
+  (model-thinking-key nil :type (or null string))
   (single-theme "dark" :type string)
   (light-theme "dark" :type string)
   (dark-theme "dark" :type string)
@@ -30,7 +32,8 @@
 (defun make-settings-selector-state
     (&key options change-callback keybindings
        theme-names (current-theme "dark")
-       (terminal-theme :dark))
+       (terminal-theme :dark)
+       (available-models nil))
   (let* ((themes
            (or (copy-list theme-names)
                (let ((theme-option
@@ -78,7 +81,9 @@
             :change-callback change-callback
             :keybindings
             (or keybindings
-                (cadr-tui:make-keybindings-manager)))))
+                (cadr-tui:make-keybindings-manager))
+            :available-models
+            (copy-list available-models))))
     state))
 
 (defun settings-display-value (value)
@@ -164,6 +169,118 @@
           (settings-selector-notify-change
            state (settings-option-id option) next))))))
 
+
+(defun settings-model-thinking-main-option (state)
+  (find "model-thinking"
+        (settings-selector-state-options state)
+        :key #'settings-option-id
+        :test #'string=))
+
+(defun settings-model-thinking-item-label (model)
+  (format nil "~A [~(~A~)]"
+          (cadr-ai:model-id model)
+          (cadr-ai:model-provider model)))
+
+(defun settings-model-thinking-sort-models (models current-model default-provider default-model)
+  (stable-sort
+   (copy-list models)
+   (lambda (left right)
+     (flet ((key (model)
+              (model-setting-key
+               (cadr-ai:model-provider model)
+               (cadr-ai:model-id model)))
+            (default-p (model)
+              (and default-provider default-model
+                   (string=
+                    (key model)
+                    (model-setting-key default-provider default-model))))
+            (current-p (model)
+              (and current-model
+                   (cadr-ai:models-equal-p model current-model))))
+       (cond
+         ((current-p left) (not (current-p right)))
+         ((current-p right) nil)
+         ((default-p left) (not (default-p right)))
+         ((default-p right) nil)
+         (t
+          (string<
+           (provider-key (cadr-ai:model-provider left))
+           (provider-key (cadr-ai:model-provider right)))))))))
+
+(defun settings-model-thinking-model-options (state)
+  (let* ((main (settings-model-thinking-main-option state))
+         (value (and main (settings-option-value main)))
+         (models
+           (settings-model-thinking-sort-models
+            (settings-selector-state-available-models state)
+            (getf value :current-model)
+            (getf value :default-provider)
+            (getf value :default-model)))
+         (overrides (getf value :overrides)))
+    (if models
+        (loop for model in models
+              for model-key =
+                (model-setting-key
+                 (cadr-ai:model-provider model)
+                 (cadr-ai:model-id model))
+              for override = (cdr (assoc model-key overrides :test #'string=))
+              collect
+              (make-settings-option
+               :id model-key
+               :label (settings-model-thinking-item-label model)
+               :description
+               (and override (settings-display-value override))
+               :value model-key))
+        (list
+         (make-settings-option
+          :id "__none__"
+          :label "No models available"
+          :description
+          "Log in to a provider or configure an API key first"
+          :value "__none__")))))
+
+(defun settings-model-thinking-level-options (state)
+  (let* ((model-key (settings-selector-state-model-thinking-key state))
+         (model
+           (find model-key
+                 (settings-selector-state-available-models state)
+                 :key
+                 (lambda (candidate)
+                   (model-setting-key
+                    (cadr-ai:model-provider candidate)
+                    (cadr-ai:model-id candidate)))
+                 :test #'string=))
+         (main (settings-model-thinking-main-option state))
+         (value (and main (settings-option-value main)))
+         (overrides (getf value :overrides))
+         (global-default (getf value :global-default)))
+    (when model
+      (let* ((levels
+               (if (cadr-ai:model-reasoning-p model)
+                   (cadr-ai:supported-thinking-levels model)
+                   '(:off)))
+             (items
+               (loop for level in levels
+                     collect
+                     (make-settings-option
+                      :id (string-downcase (symbol-name level))
+                      :label (string-downcase (symbol-name level))
+                      :description (settings-thinking-description level)
+                      :value level))))
+        (when (assoc model-key overrides :test #'string=)
+          (setf items
+                (append items
+                        (list
+                         (make-settings-option
+                          :id "clear-override"
+                          :label "(clear override)"
+                          :description
+                          (format nil "Revert to global default (~A)"
+                                    (settings-display-value
+                                     (or global-default :medium)))
+                          :value :clear)))))
+        items))))
+
 (defun settings-thinking-description (value)
   (cdr
    (assoc value
@@ -180,13 +297,8 @@
   (case (settings-option-submenu option)
     (:warnings
      (setf (settings-selector-state-mode state) :warnings))
-    (:thinking
-     (setf (settings-selector-state-mode state) :thinking
-           (settings-selector-state-submenu-selected state)
-           (or (position (settings-option-value option)
-                         (settings-option-values option)
-                         :test #'equal)
-               0)))
+    (:model-thinking
+     (setf (settings-selector-state-mode state) :model-thinking))
     (:theme
      (let* ((setting (settings-option-value option))
             (automatic
@@ -279,19 +391,10 @@
                           :anthropic-extra-usage t)
                     t)
          :values (list t nil)))))
-    (:thinking
-     (let ((main
-             (find "thinking"
-                   (settings-selector-state-options state)
-                   :key #'settings-option-id :test #'string=)))
-       (loop for value in (and main
-                               (settings-option-values main))
-             collect
-             (make-settings-option
-              :id (string-downcase (symbol-name value))
-              :label (string-downcase (symbol-name value))
-              :description (settings-thinking-description value)
-              :value value))))
+    (:model-thinking
+     (settings-model-thinking-model-options state))
+    (:model-thinking-level
+     (settings-model-thinking-level-options state))
     (:theme-single
      (cons
       (make-settings-option
@@ -374,12 +477,39 @@
              (when (settings-selector-state-change-callback state)
                (funcall (settings-selector-state-change-callback state)
                         "anthropic-extra-usage" next))))
-          (:thinking
-           (setf change
-                 (settings-selector-notify-change
-                  state "thinking"
-                  (settings-option-value option)))
-           (settings-selector-close-submenu state))
+          (:model-thinking
+           (unless (string= (settings-option-id option) "__none__")
+             (setf (settings-selector-state-model-thinking-key state)
+                   (settings-option-value option)
+                   (settings-selector-state-mode state)
+                   :model-thinking-level
+                   (settings-selector-state-submenu-selected state)
+                   0)))
+          (:model-thinking-level
+           (let* ((model-key
+                    (settings-selector-state-model-thinking-key state))
+                  (level (settings-option-value option))
+                  (main (settings-model-thinking-main-option state)))
+             (setf change
+                   (settings-selector-notify-change
+                    state "model-thinking-level"
+                    (list :model-key model-key :level level)))
+             (when main
+               (let* ((value (copy-list (settings-option-value main)))
+                      (overrides (copy-list (getf value :overrides))))
+                 (if (eq level :clear)
+                     (setf overrides
+                           (remove model-key overrides
+                                   :key #'car :test #'string=))
+                     (setf overrides
+                           (append
+                            (remove model-key overrides
+                                    :key #'car :test #'string=)
+                            (list (cons model-key level)))))
+                 (setf (settings-option-value main)
+                       (plist-put value :overrides overrides))))
+             (setf (settings-selector-state-mode state) :model-thinking
+                   (settings-selector-state-submenu-selected state) 0)))
           (:theme-single
            (if (string= (settings-option-value option) "/")
                (progn
@@ -860,10 +990,29 @@
           (settings-selector-submenu-options state)
           (settings-selector-state-submenu-selected state)
           width 1))
-        (:thinking
+        (:model-thinking
          (render-settings-select-submenu
-          state width "Thinking Level"
-          "Select reasoning depth for thinking-capable models"))
+          state width "Per-Model Thinking Level"
+          "Select a model to configure"))
+        (:model-thinking-level
+         (let* ((model-key
+                  (settings-selector-state-model-thinking-key state))
+                (model
+                  (find model-key
+                        (settings-selector-state-available-models state)
+                        :key
+                        (lambda (candidate)
+                          (model-setting-key
+                           (cadr-ai:model-provider candidate)
+                           (cadr-ai:model-id candidate)))
+                        :test #'string=)))
+           (render-settings-select-submenu
+            state width
+            (if model
+                (format nil "Thinking Level for ~A"
+                        (settings-model-thinking-item-label model))
+                "Thinking Level")
+            "Select default thinking level for this model")))
         (:theme-single
          (render-settings-select-submenu
           state width "Theme"

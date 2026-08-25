@@ -104,6 +104,30 @@
         (intern (string-upcase value) :keyword)
         +default-thinking-level+)))
 
+(defun sdk-settings-model-thinking-level
+    (manager provider model-id)
+  (let ((value
+          (cadr-ai::json-get
+           (sdk-settings-value
+            manager "modelThinkingLevels"
+            (empty-json-object))
+           (model-setting-key provider model-id))))
+    (when (and (stringp value)
+               (valid-thinking-level-p value))
+      (intern (string-upcase value) :keyword))))
+
+(defun sdk-settings-effective-thinking-level
+    (manager model &optional explicit-level restored-level)
+  (if explicit-level
+      explicit-level
+      (or (and model
+               (sdk-settings-model-thinking-level
+                manager
+                (cadr-ai:model-provider model)
+                (cadr-ai:model-id model)))
+          restored-level
+          (sdk-settings-default-thinking-level manager))))
+
 (defun sdk-settings-boolean
     (manager key default &optional nested-key)
   (let ((value (sdk-settings-value manager key :missing)))

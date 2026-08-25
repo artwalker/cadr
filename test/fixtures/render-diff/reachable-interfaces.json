@@ -106,6 +106,7 @@
     "login-provider": ["login-provider-selector"],
     "logout-provider": ["logout-provider-selector"],
     "model": ["model-selector"],
+    "thinking": ["settings-thinking"],
     "scoped-models": ["scoped-models-selector"],
     "session": ["session-selector", "session-rename", "session-delete-confirmation"],
     "settings": ["settings-selector", "settings-warnings", "settings-thinking", "settings-theme", "settings-theme-automatic", "settings-theme-light", "settings-theme-dark"],

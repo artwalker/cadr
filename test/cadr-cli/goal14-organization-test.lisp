@@ -428,7 +428,9 @@
     ;; unsigned-decimal-length, list-models-token-scale,
     ;; write-list-models-token-count, list-models-token-count-length,
     ;; write-ascii-downcase.
-    (is (= 134 definition-count)
+    ;; +2 Goal 21 task 3: cli-thinking-level-for-model-switch and
+    ;; model-thinking-overrides-summary (bootstrap/settings.lisp).
+    (is (= 136 definition-count)
         "B5 moved a different top-level definition set: ~D"
         definition-count)
     (dolist (relative legacy)

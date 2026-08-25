@@ -318,6 +318,20 @@ error row replaces the model-name row when ERROR-MESSAGE is set)."
         (and model :select)
         model t)))
     ((model-selector-key-p
+      state data "app.models.save")
+     (let ((model
+             (model-selector-selected-model state)))
+       (values
+        (and model :persist)
+        model t)))
+    ((model-selector-key-p
+      state data "app.models.save")
+     (let ((model
+             (model-selector-selected-model state)))
+       (values
+        (and model :persist)
+        model t)))
+    ((model-selector-key-p
       state data "tui.select.cancel")
      (values :cancel nil t))
     (t

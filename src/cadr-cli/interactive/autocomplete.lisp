@@ -19,6 +19,8 @@
   '(("settings" "Open settings menu" nil)
     ("model" "Select model (opens selector UI)"
      "<provider/model>")
+    ("thinking" "Select thinking level (opens selector UI)"
+     "<level>")
     ("scoped-models"
      "Enable/disable models for Ctrl+P cycling" nil)
     ("export"

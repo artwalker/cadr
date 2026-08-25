@@ -229,6 +229,7 @@ kept. Report: `docs/acceptance/goal-v20-part-k6.md`.
 | `src/cadr-cli/interactive/selectors/settings.lisp` | 893 | 28 | Edit settings and theme submenus through the shared selector frame. | pass · large | done | unwrap flet; automatic-theme chrome. I0: one return-from. | 20 |
 | `src/cadr-cli/interactive/selectors/auth.lisp` | 624 | 25 | Select authentication methods/providers and collect API keys. | pass · large | no-rewrite | Most TS-like: string-typed status :source matched via string= at auth.lisp:423-425 where keywords look natural, but the field is produced as strings across cadr-ai provider/oauth metadata (runtime-projection.lisp:125, github-copilot.lisp:138) and env-var sources are intrinsically strings, so this consumer cannot keywordize without forking a cross-package representation. | 20 |
 | `src/cadr-cli/interactive/selectors/models.lisp` | 1,310 | 62 | Search, choose, scope, enable, and order models. | pass · large | done | :component input. I0: frame computes cursor. | 20 |
+| `src/cadr-cli/interactive/selectors/thinking.lisp` | 316 | 18 | Search, choose, and render thinking-level overlays with session vs default persistence. | pass | done | thinking-selector-state + fuzzy filter; Ctrl+S :persist path. I0: one frame owner. | 21 |
 | `src/cadr-cli/interactive/selectors/trust.lisp` | 293 | 10 | Choose and persist project trust decisions. | pass | no-rewrite | Most TS-like: hardcoded "k"/"j" string literals checked alongside the keybinding manager in both input layers (trust.lisp:145-150, 160-171), but the baseline hardcodes the same non-configurable aliases (trust-selector.ts:122) and cadr must reproduce that observable behavior on both the parsed-event and raw-byte paths, while each or-form still honors user-configured keybindings first. | 20 |
 | `src/cadr-cli/interactive/selectors/fork.lisp` | 147 | 7 | Choose the user-message boundary for a forked session. | pass | no-rewrite | Most TS-like: nth index access into the items list at fork.lisp:43-45, but selection state is an index because the baseline select list is index-based, the shared frame DSL is list-based end to end, and the O(n) nth is dominated by the O(n) per-keystroke render it feeds — vectorizing would ripple through the shared abstraction for no behavioral or asymptotic gain. | 20 |
 | `src/cadr-cli/media.lisp` | 1,277 | 56 | Decode, orient, resample, and encode PNG/JPEG image bytes under model limits. | pass · large | no-rewrite | Most TS-like: the hand-rolled byte-cursor JPEG repair walker with backtracking (decf position at 574, body 561-621) and the twin EXIF walker at 681-714; correct in Lisp because JPEG/EXIF are sequential byte formats whose acceptance set must mirror the baseline/Photon behavior exactly (comment 558-560), an index cursor over octet vectors is the native CL idiom, and a binary-parser dependency would need review under the dep policy — the file already uses Gray streams (3-84), defstruct (363), ecase on keywords (417), and multiple values (855-859). | 20 |
@@ -435,14 +436,14 @@ unified requirements 7–9.
 |---|---:|---:|---:|---:|---:|
 | `cadr-agent` | 28 | 13 | 0 | 0 | 41 |
 | `cadr-ai` | 46 | 15 | 0 | 0 | 61 |
-| `cadr-cli` | 87 | 27 | 0 | 0 | 114 |
+| `cadr-cli` | 88 | 27 | 0 | 0 | 115 |
 | `cadr-core` | 7 | 0 | 0 | 0 | 7 |
 | `cadr-evals` | 3 | 5 | 0 | 0 | 8 |
 | `cadr-protocol` | 3 | 2 | 0 | 0 | 5 |
 | `cadr-server` | 7 | 4 | 0 | 0 | 11 |
 | `cadr-storage` | 2 | 0 | 0 | 0 | 2 |
 | `cadr-tui` | 30 | 19 | 0 | 0 | 49 |
-| **Total** | **213** | **85** | **0** | **0** | **298** |
+| **Total** | **214** | **85** | **0** | **0** | **299** |
 
 No production file remains in `should split` or `should merge`. B11 completed the remaining
 25 named AI owners after establishing the fixed-baseline provider matrix. This

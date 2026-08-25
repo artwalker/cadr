@@ -3120,13 +3120,8 @@ user question"
            "all"
            (cadr-cli::settings-value
             manager "steeringMode")))
-      (select-option "thinking")
-      (cadr-cli::settings-selector-handle-event
-       selector
-       (cadr-tui:make-input-event :kind :down))
-      (cadr-cli::settings-selector-handle-event
-       selector
-       (cadr-tui:make-input-event :kind :enter))
+      (cadr-cli::set-cli-thinking-level
+       agent manager :minimal :persist t)
       (is (eq :minimal
               (cadr-agent::agent-thinking-level
                agent)))

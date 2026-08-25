@@ -267,6 +267,7 @@ interactive-mode.ts:5956-5960).")
        model-items-function
        login-options-function
        model-selector-function
+       thinking-selector-function
        scoped-models-selector-function
        model-catalog-refresh-function
        apply-model-catalog-refresh-function
@@ -282,6 +283,7 @@ interactive-mode.ts:5956-5960).")
        auth-status-function
        logout-options-function
        on-model-selected
+       on-thinking-selected
        on-logout-selected
        resolve-model-reference-function
        on-trust-selected
@@ -1642,6 +1644,15 @@ interactive-mode.ts:5956-5960).")
                     (funcall
                      model-items-function)
                     nil))))
+         (open-thinking-selector (&optional query)
+           (when thinking-selector-function
+             (setf
+              overlay-kind :thinking
+              overlay
+              (if query
+                  (funcall thinking-selector-function query)
+                  (funcall thinking-selector-function)))
+             (request-render)))
          (open-scoped-models-selector ()
            (setf
             overlay-kind :scoped-models
@@ -1924,6 +1935,48 @@ interactive-mode.ts:5956-5960).")
                            t)))
                       nil
                       (open-model-selector query))))
+               ((or
+                 (string= trimmed "/thinking")
+                 (uiop:string-prefix-p "/thinking " trimmed))
+                (let ((query
+                        (and
+                         (> (length trimmed) 10)
+                         (string-trim
+                          '(#\Space #\Tab)
+                          (subseq trimmed 10)))))
+                  (if
+                      (and query (plusp (length query))
+                           on-thinking-selected)
+                      (let* ((levels
+                               (cadr-ai:supported-thinking-levels
+                                (cadr-agent:agent-model
+                                 (tui-state-agent state))))
+                             (level
+                               (find
+                                (string-downcase query)
+                                levels
+                                :key
+                                (lambda (candidate)
+                                  (string-downcase
+                                   (symbol-name candidate)))
+                                :test #'string=)))
+                        (if level
+                            (progn
+                              (funcall
+                               on-thinking-selected level)
+                              (refresh-footer-state)
+                              (request-render))
+                            (show-error
+                             (format
+                              nil
+                              "Unknown thinking level \"~A\". Available levels: ~{~A~^, ~}."
+                              query
+                              (mapcar
+                               (lambda (candidate)
+                                 (string-downcase
+                                  (symbol-name candidate)))
+                               levels)))))
+                      (open-thinking-selector query))))
                ((string= trimmed
                          "/scoped-models")
                 (open-scoped-models-selector))
@@ -2097,7 +2150,7 @@ interactive-mode.ts:5956-5960).")
                (error (condition)
                  (show-error (princ-to-string condition)))))
            (refresh-footer-state))
-         (accept-selection (value)
+         (accept-selection (value &key persist)
            (let ((kind overlay-kind))
              (setf overlay nil
                    overlay-kind nil)
@@ -2108,11 +2161,18 @@ interactive-mode.ts:5956-5960).")
                       (setf
                        (tui-state-model state)
                        (or
-                        (funcall
+                        (apply
                          on-model-selected
-                         value)
-                         (tui-state-model
+                         (list value)
+                         (when persist '(:persist t)))
+                        (tui-state-model
                          state)))))
+                   (:thinking
+                    (when on-thinking-selected
+                      (funcall
+                       on-thinking-selected value
+                       :persist persist)
+                      (refresh-footer-state)))
                    (:login-method
                     (if (typep value 'oauth-selector-option)
                         (start-login-option value)
@@ -2349,6 +2409,8 @@ interactive-mode.ts:5956-5960).")
                     (finish-custom-ui value)
                     (request-render))
                   (accept-selection value)))
+             (:persist
+              (accept-selection value :persist t))
              (:cancel
               (let ((cancelled-kind overlay-kind)
                      (return-to-login-method-p
@@ -2777,6 +2839,9 @@ interactive-mode.ts:5956-5960).")
                                   overlay input))
                                 ((model-selector-state-p overlay)
                                  (model-selector-handle-raw-input
+                                  overlay input))
+                                ((thinking-selector-state-p overlay)
+                                 (thinking-selector-handle-raw-input
                                   overlay input))
                                 ((scoped-models-selector-state-p overlay)
                                  (scoped-models-selector-handle-raw-input

@@ -1484,6 +1484,7 @@
                        current-enabled-model-ids)))))))
          (select-model
              (model &key (source :interactive)
+                         (persist nil)
                          (thinking-level nil thinking-level-p))
            (let ((updated
                    (apply
@@ -1510,7 +1511,8 @@
                         (provider-key
                          (cli-arguments-provider command)))
                        (cli-arguments-base-url command))
-                      :source source)
+                      :source source
+                      :persist persist)
                      (when thinking-level-p
                        (list :thinking-level thinking-level))))))
              (setf config updated)
@@ -1672,11 +1674,59 @@
          (settings-selector ()
            (make-cli-settings-selector-state
             settings-manager agent resources
+            :available-models available-models
             :keybindings
             (cadr-tui:make-keybindings-manager
              :user-bindings
              (resolve-user-keybindings
               settings-manager agent-directory))))
+         (select-thinking-level
+             (level &key (persist nil))
+           (set-cli-thinking-level
+            agent settings-manager level :persist persist)
+           (let ((effective
+                   (cadr-agent::agent-thinking-level agent)))
+             (when status-consumer
+               (funcall
+                status-consumer
+                (if persist
+                    (format nil "Default thinking level: ~A"
+                            (string-downcase
+                             (symbol-name level)))
+                    (format nil "Thinking level: ~A"
+                            (string-downcase
+                             (symbol-name effective))))))
+             (when model-consumer
+               (let ((model (cadr-agent:agent-model agent)))
+                 (when model
+                   (funcall
+                    model-consumer
+                    (cadr-ai:model-id model)
+                    (provider-config-name config)
+                    (cadr-ai:model-context-window model)
+                    effective
+                    (if (config-subscription-p) t :not-subscription)))))
+             effective))
+         (thinking-selector (&optional query)
+           (let ((selector
+                   (make-thinking-selector-state
+                    :levels
+                    (cadr-ai:supported-thinking-levels
+                     (cadr-agent:agent-model agent))
+                    :current-level
+                    (cadr-agent::agent-thinking-level agent)
+                    :default-level
+                    (or
+                     (settings-default-thinking-level
+                      settings-manager)
+                     +default-thinking-level+)
+                    :keybindings
+                    (make-thinking-selector-keybindings
+                     (resolve-user-keybindings
+                      settings-manager agent-directory)))))
+             (when query
+               (thinking-selector-set-query selector query))
+             selector))
          (select-trust (selection)
            (project-trust-set-many
             trust-store
@@ -2299,6 +2349,8 @@
            :login-options-function #'current-login-options
            :model-selector-function
            #'model-selector
+           :thinking-selector-function
+           #'thinking-selector
            :scoped-models-selector-function
            #'scoped-models-selector
            :model-catalog-refresh-function
@@ -2350,7 +2402,11 @@
               (model-registry-error model-registry)))
            :auth-status-function #'authentication-status
            :logout-options-function #'stored-logout-options
-           :on-model-selected #'select-model
+           :on-model-selected
+           (lambda (model &key persist)
+             (select-model model :persist persist))
+           :on-thinking-selected
+           #'select-thinking-level
            :on-logout-selected #'select-logout-provider
            :resolve-model-reference-function
            #'resolve-model-reference

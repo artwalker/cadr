@@ -10,6 +10,8 @@
      (render-user-message-selector overlay width))
     ((model-selector-state-p overlay)
      (render-model-selector overlay width))
+    ((thinking-selector-state-p overlay)
+     (render-thinking-selector overlay width))
     ((scoped-models-selector-state-p overlay)
      (render-scoped-models-selector overlay width))
     ((trust-selector-state-p overlay)

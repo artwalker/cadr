@@ -711,7 +711,8 @@
                  :config-path config-path
                  :auth-path auth-path
                  :source :cycle
-                 :thinking-level :max))
+                 :thinking-level :max
+                 :persist t))
           (is (cadr-ai:models-equal-p
                openai
                (cadr-agent:agent-model agent)))

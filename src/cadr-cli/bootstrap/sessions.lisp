@@ -856,6 +856,7 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
        (config-path (default-config-path))
        (auth-path (default-auth-path))
        (source :interactive)
+       (persist nil)
        (thinking-level nil thinking-level-p))
   (let* ((previous-model
            (cadr-agent:agent-model agent))
@@ -879,7 +880,8 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
             selected
             (if thinking-level-p
                 thinking-level
-                previous-thinking)))
+                (cli-thinking-level-for-model-switch
+                 agent settings-manager selected))))
          (host
            (cadr-agent::agent-extension-host
             agent))
@@ -909,11 +911,12 @@ the legacy separate summary values stay NIL to prevent a duplicate entry."
          session
          (string-downcase
           (symbol-name thinking)))))
-    (settings-set-default-model-and-provider
-     settings-manager
-     (provider-key
-      (cadr-ai:model-provider selected))
-     (cadr-ai:model-id selected))
+    (when persist
+      (settings-set-default-model-and-provider
+       settings-manager
+       (provider-key
+        (cadr-ai:model-provider selected))
+       (cadr-ai:model-id selected)))
     (unless
         (cadr-ai:models-equal-p
          previous-model selected)

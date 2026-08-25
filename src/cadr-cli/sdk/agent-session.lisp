@@ -392,11 +392,11 @@
      (if selected-model
          (cadr-ai:clamp-thinking-level
           selected-model
-          (or thinking-level
-              (sdk-session-restored-thinking
-               persistent)
-              (sdk-settings-default-thinking-level
-               settings)))
+          (sdk-settings-effective-thinking-level
+           settings selected-model
+           thinking-level
+           (sdk-session-restored-thinking
+            persistent)))
          :off))
     (when (and selected-model
                (null stream-function))

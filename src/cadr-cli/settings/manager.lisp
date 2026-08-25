@@ -371,6 +371,110 @@
    :scope :global)
   model-id)
 
+(defun model-setting-key (provider model-id)
+  (format nil "~(~A~)/~A"
+          (if (symbolp provider)
+              (symbol-name provider)
+              provider)
+          model-id))
+
+(defun settings-default-thinking-level (manager)
+  (let ((value
+          (settings-value manager "defaultThinkingLevel")))
+    (when (and (stringp value)
+               (valid-thinking-level-p value))
+      (intern (string-upcase value) :keyword))))
+
+(defun settings-set-default-thinking-level (manager level)
+  (settings-set
+   manager "defaultThinkingLevel"
+   (string-downcase (symbol-name level))
+   :scope :global)
+  level)
+
+(defun settings-model-thinking-level
+    (manager provider model-id)
+  (let ((value
+          (settings-nested-value
+           manager "modelThinkingLevels"
+           (model-setting-key provider model-id))))
+    (when (and (stringp value)
+               (valid-thinking-level-p value))
+      (intern (string-upcase value) :keyword))))
+
+(defun settings-all-model-thinking-levels (manager)
+  (let ((object
+          (settings-value
+           manager "modelThinkingLevels"
+           (empty-json-object)))
+        (result nil))
+    (when (hash-table-p object)
+      (maphash
+       (lambda (key value)
+         (when (and (stringp value)
+                    (valid-thinking-level-p value))
+           (push
+            (cons key
+                  (intern (string-upcase value) :keyword))
+            result)))
+       object))
+    (nreverse result)))
+
+(defun settings-set-model-thinking-level
+    (manager provider model-id level)
+  (settings-set-nested
+   manager "modelThinkingLevels"
+   (model-setting-key provider model-id)
+   (string-downcase (symbol-name level))
+   :scope :global)
+  level)
+
+(defun settings-remove-model-thinking-level
+    (manager provider model-id)
+  (sb-thread:with-mutex
+      ((settings-manager-lock manager))
+    (let* ((path
+             (settings-manager-global-path manager))
+           (current
+             (settings-manager-global manager))
+           (base current))
+      (when path
+        (multiple-value-bind (disk error)
+            (read-settings-object path)
+          (when error
+            (settings-record-error manager :global error)
+            (error error))
+          (setf base disk)))
+      (let* ((next (copy-json-object base))
+             (nested
+               (cadr-ai::json-get
+                next "modelThinkingLevels"
+                (empty-json-object)))
+             (next-nested
+               (if (hash-table-p nested)
+                   (copy-json-object nested)
+                   (empty-json-object))))
+        (remhash
+         (model-setting-key provider model-id)
+         next-nested)
+        (if (zerop (hash-table-count next-nested))
+            (remhash "modelThinkingLevels" next)
+            (cadr-ai::json-put
+             next "modelThinkingLevels" next-nested))
+        (when path
+          (write-settings-object path next))
+        (setf (settings-manager-global manager) next)
+        (let ((overrides
+                (cadr-ai::json-get
+                 (settings-manager-global-overrides manager)
+                 "modelThinkingLevels"
+                 (empty-json-object))))
+          (when (hash-table-p overrides)
+            (remhash
+             (model-setting-key provider model-id)
+             overrides))))))
+  nil)
+
 (defparameter *legacy-keybinding-names*
   ;; Baseline core/keybindings.ts:209-268 KEYBINDING_NAME_MIGRATIONS,
   ;; in baseline declaration order.
