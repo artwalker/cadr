@@ -5942,7 +5942,7 @@
       "path": "scripts/goal21-orchestrator.sh",
       "kind": "pi-token",
       "token": "pi",
-      "line": "3. git commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
+      "line": "4. git commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
       "occurrences": 1,
       "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
     },
@@ -8054,7 +8054,7 @@
       "path": "src/cadr-cli/resource-loader.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@4e58f324f core/resource-loader.ts:70-88: the first existing",
+      "line": "  ;; pi@4e58f324f core/resource-loader.ts:119-156: walk cwd→root and",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
