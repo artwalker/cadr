@@ -209,7 +209,7 @@
            (make-string width :initial-element #\─))
          (options
            (cadr-cli::settings-selector-state-options state)))
-    (is (= 30 (length options)))
+    (is (= 29 (length options)))
     (is
      (equal
       '("autocompact" "auto-resize-images" "block-images"
@@ -219,7 +219,7 @@
         "http-idle-timeout" "hide-thinking" "mermaid-rendering"
         "cache-miss-notices" "collapse-changelog" "quiet-startup"
         "install-telemetry" "default-project-trust" "double-escape-action"
-        "tree-filter-mode" "warnings" "thinking" "model-thinking"
+        "tree-filter-mode" "warnings" "model-thinking"
         "tui-mode" "fullscreen-exit-output" "fullscreen-scrollbar" "theme")
       (mapcar #'cadr-cli::settings-option-id options)))
     (is
@@ -245,7 +245,7 @@
        "  Autocomplete max items          5"
        "  Clear on shrink                 false"
        "  Terminal progress               false"
-       "  (1/30)"
+       "  (1/29)"
        ""
        "  Automatically compact context when it gets too large"
        ""
@@ -384,7 +384,7 @@
            (cadr-cli::make-cli-settings-selector-state
             manager agent (cadr-cli::make-resource-snapshot)
             :supports-images-p t)))
-    (is (= 32
+    (is (= 31
            (length
             (cadr-cli::settings-selector-state-options with-images))))
     (is
@@ -430,11 +430,12 @@
                 "configure")
               :submenu :warnings)
              (cadr-cli::make-settings-option
-              :id "thinking" :label "Thinking level"
+              :id "model-thinking"
+              :label "Default thinking level per model"
               :description
-              "Reasoning depth for thinking-capable models"
-              :value :low :values '(:off :low :high)
-              :submenu :thinking)
+              "Override the default thinking level for specific models."
+              :value (list :overrides nil :global-default :low)
+              :submenu :model-thinking)
              (cadr-cli::make-settings-option
               :id "theme" :label "Theme"
               :description "Color theme for the interface"
@@ -469,13 +470,11 @@
     (is
      (equal
       (list
-       border (goal9-b3-full-width-line "Thinking Level" width) ""
+       border (goal9-b3-full-width-line "Per-Model Thinking Level" width) ""
        (goal9-b3-full-width-line
-        "Select reasoning depth for thinking-capable models" width)
+        "Select a model to configure" width)
        ""
-       "  off         No reasoning"
-       "→ low         Light reasoning (~2k tokens)"
-       "  high        Deep reasoning (~16k tokens)"
+       "→ No models available"
        ""
        (goal9-b3-full-width-line
         "  Enter to select · Esc to go back" width)
@@ -487,7 +486,7 @@
     (is (= 0 (cadr-cli::settings-selector-state-submenu-selected state)))
     (cadr-cli::settings-selector-handle-event
      state (cadr-tui:make-input-event :kind :up))
-    (is (= 2 (cadr-cli::settings-selector-state-submenu-selected state)))
+    (is (= 0 (cadr-cli::settings-selector-state-submenu-selected state)))
     (cadr-cli::settings-selector-handle-event
      state (cadr-tui:make-input-event :kind :escape))
     (cadr-cli::settings-selector-handle-event
@@ -546,14 +545,14 @@
              :value '(:anthropic-extra-usage t)
              :submenu :warnings)
             (cadr-cli::make-settings-option
-             :id "thinking" :label "Thinking"
-             :value :low :values '(:off :low :high)
-             :submenu :thinking)
+             :id "model-thinking" :label "Model thinking"
+             :value (list :overrides nil :global-default :low)
+             :submenu :model-thinking)
             (cadr-cli::make-settings-option
              :id "theme" :label "Theme"
              :value "dark" :values '("dark" "light")
              :submenu :theme)))))
-    (dolist (mode '(:warnings :thinking :theme-single
+    (dolist (mode '(:warnings :model-thinking :theme-single
                     :theme-automatic :theme-light :theme-dark))
       (setf (cadr-cli::settings-selector-state-mode state) mode
             (cadr-cli::settings-selector-state-submenu-selected state) 0)

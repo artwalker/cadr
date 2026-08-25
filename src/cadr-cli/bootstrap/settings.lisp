@@ -604,17 +604,6 @@
                "configure")
              :submenu :warnings)
             (make-settings-option
-             :id "thinking"
-             :label "Thinking level"
-             :description
-             "Reasoning depth for thinking-capable models"
-             :value
-             (cadr-agent::agent-thinking-level agent)
-            :values
-            (cadr-ai:supported-thinking-levels
-             (cadr-agent:agent-model agent))
-            :submenu :thinking)
-            (make-settings-option
              :id "model-thinking"
              :label "Default thinking level per model"
              :description
