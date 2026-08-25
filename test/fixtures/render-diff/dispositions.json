@@ -766,14 +766,14 @@
       "screenSha256": {
         "wide": {
           "pi": "86da90e267d3eca5fe92f0af1ac4d7378768bb04a767d68f35d49b43005522c5",
-          "cadr": "734e7dce94e46553c2535ada1f59be081d8d3e478b9e3df3ee2b1564d268b594"
+          "cadr": "63df3552fedfec1b5e3105ee0a74da8762b21ea962069201ac43f0c7c22a1058"
         },
         "narrow": {
           "pi": "5a49dd49d3ea1d96c4442f16fbba1fe68d44a2270de060fbcbbdd8bec54ee675",
-          "cadr": "8b3be733e671c5bdcb3809151b7843281f0bb3f7230e0970b89cb3100382d9f2"
+          "cadr": "bad192a247bc0eddd63645de47650ab7cc1523749ec81de878604f4eecef320a"
         }
       },
-      "note": "At conversation-content/plain [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/plain [wide+narrow] the transcript body matches pi; the footer context counters read cadr 1.2k/1.2k vs pi 1.3k/1.3k because the render harness now mirrors pi-driver.ts seven-tool scope (no powershell) and faux usage serializes the public Tool shape without label (pi packages/ai Tool + faux.ts JSON.stringify). Residual ~0.1k gap is render-contract tool JSON compression vs live pi tool objects (I04); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
