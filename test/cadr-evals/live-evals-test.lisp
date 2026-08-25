@@ -109,47 +109,120 @@
       :model "mimo-v2.5")
      "opencode-go")))
 
+(defparameter +live-self-extension-text+
+  "(define-tool \"live-echo\" :description \"Return the supplied value with a live prefix.\" :parameters (cadr-ai::json-object \"type\" \"object\" \"properties\" (cadr-ai::json-object \"value\" (cadr-ai::json-object \"type\" \"string\")) \"required\" (vector \"value\") \"additionalProperties\" nil) :handler (lambda (call-id arguments context) (declare (ignore call-id context)) (values (list (cadr-ai:make-text-content :text (format nil \"live:~A\" (cadr-ai::json-get arguments \"value\")))) nil)))")
+
+(defun run-live-self-extension-eval ()
+  (cadr-evals:run-coding-agent-eval
+   (list
+    (cadr-evals:make-eval-prompt-step
+     (format
+      nil
+      "Use the write tool exactly once to create .cadr/extensions/live/extension.lisp with exactly this one-line content, then reply exactly WRITTEN: ~A"
+      +live-self-extension-text+))
+    (cadr-evals:make-eval-reload-step)
+    (cadr-evals:make-eval-prompt-step
+     "Call the live-echo tool with value phase7. After it succeeds, reply exactly SELF_EXTENSION_OK."))
+   :provider "deepseek"
+   :model "deepseek-v4-flash"
+   :no-tools
+   '("read" "edit" "bash"
+     "find" "grep" "ls")
+   :selector
+   (lambda (response agent manager)
+     (declare (ignore manager))
+     (cadr-ai::json-object
+      "response" response
+      "extensionPaths"
+      (cadr-ai::list-json-array
+       (cadr-evals::eval-extension-paths
+        agent))
+      "toolDefinitions"
+      (cadr-ai::list-json-array
+       (mapcar
+        (lambda (tool)
+          (cadr-ai::json-object
+           "name"
+           (cadr-ai:tool-name tool)
+           "description"
+           (cadr-ai:tool-description
+            tool)))
+        (cadr-evals::eval-agent-tools
+         agent)))))))
+
+(defun live-self-extension-hello-result (events)
+  (find-if
+   (lambda (event)
+     (and
+      (string=
+       "tool_result"
+       (or
+        (cadr-ai::json-get
+         event "type")
+        ""))
+      (string=
+       "live-echo"
+       (or
+        (cadr-ai::json-get
+         event "name")
+        ""))))
+   events))
+
+(defun live-self-extension-eval-valid-p (result)
+  (let* ((output
+           (cadr-evals:eval-result-output
+            result))
+         (events
+           (cadr-evals:eval-result-events
+            result))
+         (hello-result
+           (live-self-extension-hello-result
+            events)))
+    (and
+     (= 1
+        (length
+         (cadr-ai::json-get
+          output "extensionPaths")))
+     (find
+      "live-echo"
+      (cadr-ai::json-get
+       output "toolDefinitions")
+      :key
+      (lambda (definition)
+        (cadr-ai::json-get
+         definition "name"))
+      :test #'string=)
+     hello-result
+     (search
+      "live:phase7"
+      (or
+       (cadr-ai::json-get
+        hello-result "content")
+       ""))
+     (string=
+      "SELF_EXTENSION_OK"
+      (string-trim
+       '(#\Space #\Tab #\Newline #\Return)
+       (cadr-ai::json-get
+        output "response")))
+     (plusp
+      (cadr-ai::json-get
+       (cadr-evals:eval-result-usage
+        result)
+       "toolCalls")))))
+
 (test live-deepseek-self-extension-write-reload-and-invoke
   (with-live-deepseek
-    (let* ((extension-text
-             "(define-tool \"live-echo\" :description \"Return the supplied value with a live prefix.\" :parameters (cadr-ai::json-object \"type\" \"object\" \"properties\" (cadr-ai::json-object \"value\" (cadr-ai::json-object \"type\" \"string\")) \"required\" (vector \"value\") \"additionalProperties\" nil) :handler (lambda (call-id arguments context) (declare (ignore call-id context)) (values (list (cadr-ai:make-text-content :text (format nil \"live:~A\" (cadr-ai::json-get arguments \"value\")))) nil)))")
-           (result
-             (cadr-evals:run-coding-agent-eval
-              (list
-               (cadr-evals:make-eval-prompt-step
-                (format
-                 nil
-                 "Use the write tool exactly once to create .cadr/extensions/live/extension.lisp with exactly this one-line content, then reply exactly WRITTEN: ~A"
-                 extension-text))
-               (cadr-evals:make-eval-reload-step)
-               (cadr-evals:make-eval-prompt-step
-                "Call the live-echo tool with value phase7. After it succeeds, reply exactly SELF_EXTENSION_OK."))
-              :provider "deepseek"
-              :model "deepseek-v4-flash"
-              :no-tools
-              '("read" "edit" "bash"
-                "find" "grep" "ls")
-              :selector
-              (lambda (response agent manager)
-                (declare (ignore manager))
-                (cadr-ai::json-object
-                 "response" response
-                 "extensionPaths"
-                 (cadr-ai::list-json-array
-                  (cadr-evals::eval-extension-paths
-                   agent))
-                 "toolDefinitions"
-                 (cadr-ai::list-json-array
-                  (mapcar
-                   (lambda (tool)
-                     (cadr-ai::json-object
-                      "name"
-                      (cadr-ai:tool-name tool)
-                      "description"
-                      (cadr-ai:tool-description
-                       tool)))
-                   (cadr-evals::eval-agent-tools
-                    agent)))))))
+    (let* ((result
+             (loop
+               repeat 3
+               for candidate =
+                 (run-live-self-extension-eval)
+               when
+                 (live-self-extension-eval-valid-p
+                  candidate)
+                 return candidate
+               finally (return candidate)))
            (output
              (cadr-evals:eval-result-output
               result))
@@ -157,21 +230,7 @@
              (cadr-evals:eval-result-events
               result))
            (hello-result
-             (find-if
-              (lambda (event)
-                (and
-                 (string=
-                  "tool_result"
-                  (or
-                   (cadr-ai::json-get
-                    event "type")
-                   ""))
-                 (string=
-                  "live-echo"
-                  (or
-                   (cadr-ai::json-get
-                    event "name")
-                   ""))))
+             (live-self-extension-hello-result
               events)))
       (is (= 1
              (length

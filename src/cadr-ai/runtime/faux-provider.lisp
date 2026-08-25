@@ -278,7 +278,7 @@
                   (context-tools context))))))))))
 
 (defun faux-tool-json-object (tool)
-  ;; pi packages/ai/src/types.ts Tool + faux.ts serializeContext:
+  ;; Baseline packages/ai/src/types.ts Tool + faux.ts serializeContext:
   ;; JSON.stringify(context.tools) exposes name/description/parameters and
   ;; constrainedSampling when present — not execution metadata or label.
   (if (tool-constrained-sampling tool)
