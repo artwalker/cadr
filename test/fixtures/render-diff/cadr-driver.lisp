@@ -1053,8 +1053,6 @@
         :name (cadr-ai:tool-name tool)
         :description description
         :parameters parameters
-        :constrained-sampling
-        (cadr-ai:tool-constrained-sampling tool)
         :execution-mode
         (cadr-ai::tool-execution-mode tool)
         :executor (cadr-ai::tool-executor tool))))
