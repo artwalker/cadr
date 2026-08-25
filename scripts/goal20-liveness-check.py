@@ -22,7 +22,10 @@ import statistics
 import subprocess
 import sys
 import tempfile
+import time
 from pathlib import Path
+
+CAPTURE_ATTEMPTS = 3
 
 # Must be a git checkout. render-diff capture verifies the baseline
 # cache with git -C <ROOT>; a tar copy without .git dies immediately
@@ -106,16 +109,20 @@ def capture_timing(
     ]
     if manifest == LIVENESS_MANIFEST:
         command.append("--allow-partial-coverage")
-    result = subprocess.run(command, capture_output=True, text=True)
-    if result.returncode != 0:
+    last_error = ""
+    for attempt in range(1, CAPTURE_ATTEMPTS + 1):
+        result = subprocess.run(command, capture_output=True, text=True)
+        timing = output / f"{scenario}.{dimension}.cadr.timing.json"
+        if result.returncode == 0 and timing.is_file():
+            return timing
         tail = (result.stdout or "")[-400:] + (result.stderr or "")[-400:]
-        raise RuntimeError(
-            f"capture failed {scenario}/{dimension}: {tail}"
+        last_error = (
+            f"capture failed {scenario}/{dimension} "
+            f"(attempt {attempt}/{CAPTURE_ATTEMPTS}): {tail}"
         )
-    timing = output / f"{scenario}.{dimension}.cadr.timing.json"
-    if not timing.is_file():
-        raise RuntimeError(f"capture wrote no timing sidecar: {timing}")
-    return timing
+        if attempt < CAPTURE_ATTEMPTS:
+            time.sleep(2 * attempt)
+    raise RuntimeError(last_error)
 
 
 def evaluate_run(gaps: list[float], threshold_ms: int) -> dict:

@@ -204,12 +204,16 @@ run_statistical_liveness() {
   (
     cd "$PROJECT_DIRECTORY"
     python3 test/goal20-liveness-check-test.py
-    python3 scripts/goal20-liveness-check.py --captures 3
+    # Isolated build can leave the host busy; allow extra startup time and
+    # rely on capture retries inside goal20-liveness-check.py.
+    python3 scripts/goal20-liveness-check.py --captures 3 --timeout 90
   )
 }
 
 run_goal11_gate() {
+  local gate_rc=0
   (
+    set -e
     cd "$ISOLATED_PROJECT"
     ./scripts/bench.sh \
       --label verify-isolated \
@@ -220,7 +224,9 @@ run_goal11_gate() {
     python3 scripts/goal11-performance-gate.py \
       --bench "$VERIFY_ROOT/goal11-performance.json" \
       --stability "$VERIFY_ROOT/goal11-stability.json"
-    if [ "$RECORD_LEDGER" -eq 1 ]; then
+  ) || gate_rc=$?
+
+  if [ "$RECORD_LEDGER" -eq 1 ]; then
       native_image_args=()
       if [ -x "$ISOLATED_PROJECT/cadr" ]; then
         native_image_args=(--native-image "$ISOLATED_PROJECT/cadr")
@@ -239,7 +245,8 @@ run_goal11_gate() {
         --paired "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json" \
         --ledger "$PROJECT_DIRECTORY/docs/performance.md"
     fi
-  )
+
+  return "$gate_rc"
 }
 
 run_goal21_source_parity_gate() {
