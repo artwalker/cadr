@@ -151,8 +151,10 @@ Returns the deduped list and a list of collision records
                  (getf entry :name)))))
 
 (defun load-project-context-files (cwd)
-  ;; pi@4e58f324f core/resource-loader.ts:70-88: the first existing
-  ;; candidate wins per ancestor directory.
+  ;; pi@4e58f324f core/resource-loader.ts:119-156: walk cwd→root and
+  ;; unshift each hit so the list is rootward-first (outer ancestors
+  ;; before the project file). The first existing candidate wins per
+  ;; directory.
   (let ((files nil))
     (dolist (directory
              (ancestor-directories cwd))
@@ -166,7 +168,7 @@ Returns the deduped list and a list of collision records
                     (return path))))))
         (when match
           (push match files))))
-    (nreverse files)))
+    files))
 
 (defun nearest-config-file (configs name)
   (loop for directory in configs
