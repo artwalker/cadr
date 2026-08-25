@@ -129,7 +129,7 @@
   {
    "pair": 260,
    "lane": "a",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/execution-env.lisp",
    "measure": "measure-agent-tool-loop",
    "metric": null,
