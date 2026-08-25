@@ -180,7 +180,7 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
            (and (probe-file path)
                 (uiop:read-file-string path)))
          (script-paths
-           '("scripts/check-root-binary.sh"
+           '("scripts/ensure-root-binary.sh"
              "scripts/check-code-organization.py"
              "test/code-organization-gate-test.py"
              "scripts/check-source-parity-drift.sh"

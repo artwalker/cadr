@@ -3580,15 +3580,15 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 128,849 lines**
+Denominator: **297 files / 128,853 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,041 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 174 | 77,044 | 59.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 71 | 26,904 | 20.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 59.8% of lines (174 files). This is the share whose `no worse than baseline` claim is a measured pair.
@@ -3711,7 +3711,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/interactive/images.lisp` | 290 | `image_runtime.dimension_note` |
 | `src/cadr-cli/interactive/selectors/common.lisp` | 394 | `cli_selectors.fuzzy_filter`, `cli_selectors.delete_query`, `cli_selectors.visible_slice`, `cli_selectors.move_index` |
 | `src/cadr-cli/interactive/selectors/sessions.lisp` | 1,477 | `cli_selectors.session_search`, `cli_selectors.session_format_age`, `cli_selectors.session_record_label`, `cli_selectors.session_shorten_path`, `cli_selectors.session_quoted_search`, `cli_selectors.session_thread_records`, `cli_selectors.session_binding_label`, `cli_selectors.session_same_path`, `cli_selectors.session_quoted_p`, `cli_selectors.session_named_p` |
-| `src/cadr-cli/interactive/selectors/settings.lisp` | 1,042 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
+| `src/cadr-cli/interactive/selectors/settings.lisp` | 1,043 | `cli_selectors.settings_thinking_description`, `cli_selectors.settings_display_value`, `cli_selectors.settings_automatic_theme_setting`, `cli_selectors.settings_active_automatic_theme`, `cli_selectors.settings_cycle`, `cli_selectors.settings_apply_filter` |
 | `src/cadr-cli/interactive/selectors/tree.lisp` | 1,816 | `cli_selectors.tree_entry_filtered` |
 | `src/cadr-cli/interactive/state.lisp` | 303 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-cli/interactive/status.lisp` | 445 | `goal11.continuous_alt_input` |
@@ -3732,7 +3732,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve`, `package_manager.package_source` |
-| `src/cadr-cli/resource-loader.lisp` | 353 | `resource_loader.reload`, `resource_loader.dedupe_by_name` |
+| `src/cadr-cli/resource-loader.lisp` | 355 | `resource_loader.reload`, `resource_loader.dedupe_by_name` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |
@@ -3843,7 +3843,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_interactive_controller` | 6 | 5,489 |
+| `cli_interactive_controller` | 6 | 5,490 |
 | `cli_bootstrap_sessions` | 4 | 5,226 |
 | `cli_selectors` | 10 | 3,706 |
 | `cli_extensions_install` | 5 | 2,200 |
