@@ -102,8 +102,11 @@
                (cadr-cli::resource-snapshot-prompts snapshot)))))
         (is (= 1
                (length
-                (cadr-cli::resource-snapshot-context-files
-                 snapshot))))
+                (remove-if-not
+                 (lambda (path)
+                   (uiop:subpathnamep root path))
+                 (cadr-cli::resource-snapshot-context-files
+                  snapshot)))))
         (is (not
              (null
               (cadr-cli::resource-snapshot-system-prompt-path

@@ -479,7 +479,7 @@
                          nil))))
           :no-builtin-p t
           :builtin-names
-          '("read" "write" "edit" "bash" "find" "grep" "ls"))))))))
+          '("read" "write" "edit" "bash" "powershell" "find" "grep" "ls"))))))))
 
 (test tool-selection-policy-applies-after-extension-reloads
   (let* ((base

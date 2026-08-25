@@ -146,6 +146,7 @@
   "settings_load.http_idle",
   "resource_loader.reload",
   "resource_loader.dedupe_by_name",
+  "execution_env.exists_remove_temps",
   "session_pipeline.session_load",
   "session_pipeline.context_walk",
   "storage_journal.journal_read",

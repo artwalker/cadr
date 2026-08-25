@@ -5,7 +5,7 @@
   (is (equal
        '("-NoProfile" "-NonInteractive" "-ExecutionPolicy"
          "Bypass" "-Command")
-       +powershell-args+)))
+       cadr-cli::+powershell-args+)))
 
 (test g21-powershell-tool-rejects-non-windows-execution
   (unless (uiop:os-windows-p)
