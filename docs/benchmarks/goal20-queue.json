@@ -147,25 +147,25 @@
   {
    "pair": 262,
    "lane": "c",
-   "status": "pending",
+   "status": "done",
    "source": "src/cadr-agent/harness-events.lisp",
    "measure": "measure-cli-settings",
-   "metric": null,
-   "branch": null
+   "metric": "agent_tool_loop.harness_events",
+   "branch": "pair-262-harness-events"
   },
   {
    "pair": 263,
    "lane": "a",
-   "status": "pending",
+   "status": "done",
    "source": "src/cadr-agent/file-mutation-queue.lisp",
    "measure": "measure-agent-tool-loop",
-   "metric": null,
-   "branch": null
+   "metric": "file_mutation_queue.with_queue",
+   "branch": "pair-263-file-mutation-queue"
   },
   {
    "pair": 264,
    "lane": "b",
-   "status": "pending",
+   "status": "in_progress",
    "source": "src/cadr-agent/harness-events.lisp",
    "measure": "measure-resource-loader",
    "metric": null,
@@ -190,5 +190,18 @@
    "branch": null
   }
  ],
- "mergeQueue": []
+ "mergeQueue": [
+  {
+   "branch": "pair-262-harness-events",
+   "pair": 262
+  },
+  {
+   "branch": "pair-261-file-mutation-queue",
+   "pair": 261
+  },
+  {
+   "branch": "pair-263-file-mutation-queue",
+   "pair": 263
+  }
+ ]
 }
