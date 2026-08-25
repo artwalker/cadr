@@ -19,8 +19,8 @@
   '(("settings" "Open settings menu" nil)
     ("model" "Select model (opens selector UI)"
      "<provider/model>")
-    ("thinking" "Select thinking level (opens selector UI)"
-     "<level>")
+    ("tree" "Navigate session tree (switch branches)" nil)
+    ("thinking" "Set thinking level" "<level>")
     ("scoped-models"
      "Enable/disable models for Ctrl+P cycling" nil)
     ("export"
@@ -38,7 +38,6 @@
      "Create a new fork from a previous user message" nil)
     ("clone"
      "Duplicate the current session at the current position" nil)
-    ("tree" "Navigate session tree (switch branches)" nil)
     ("trust"
      "Save project trust decision for future sessions" nil)
     ("login" "Configure provider authentication" "<provider>")

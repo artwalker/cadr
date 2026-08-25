@@ -2,116 +2,715 @@
   "schemaVersion": 1,
   "baselineCommit": "4e58f324fae8ebfa98a3d45181fb248072a2afac",
   "slashCommands": [
-    { "name": "settings", "capture": { "scenario": "overlays-core", "checkpoint": "overlay-settings" } },
-    { "name": "model", "capture": { "scenario": "overlays-core", "checkpoint": "overlay-model" } },
-    { "name": "scoped-models", "capture": { "scenario": "overlays-core", "checkpoint": "overlay-scoped-models" } },
-    { "name": "export", "capture": { "scenario": "commands-and-exit", "checkpoint": "slash-export" } },
-    { "name": "import", "capture": { "scenario": "overlays-secondary", "checkpoint": "import-confirmation" } },
-    { "name": "share", "capture": { "scenario": "commands-informational", "checkpoint": "slash-share" } },
-    { "name": "copy", "capture": { "scenario": "commands-empty-lifecycle", "checkpoint": "slash-copy" } },
-    { "name": "name", "capture": { "scenario": "commands-informational", "checkpoint": "slash-name" } },
-    { "name": "session", "capture": { "scenario": "commands-informational", "checkpoint": "slash-session" } },
-    { "name": "changelog", "capture": { "scenario": "commands-informational", "checkpoint": "slash-changelog" } },
-    { "name": "hotkeys", "capture": { "scenario": "commands-informational", "checkpoint": "slash-hotkeys" } },
-    { "name": "fork", "capture": { "scenario": "overlays-core", "checkpoint": "overlay-fork" } },
-    { "name": "clone", "capture": { "scenario": "commands-informational", "checkpoint": "slash-clone" } },
-    { "name": "tree", "capture": { "scenario": "overlays-core", "checkpoint": "overlay-tree" } },
-    { "name": "trust", "capture": { "scenario": "overlays-core", "checkpoint": "overlay-trust" } },
-    { "name": "login", "capture": { "scenario": "overlays-auth", "checkpoint": "auth-method-generic" } },
-    { "name": "logout", "capture": { "scenario": "overlays-logout", "checkpoint": "logout-provider" } },
-    { "name": "new", "capture": { "scenario": "commands-empty-lifecycle", "checkpoint": "slash-new" } },
-    { "name": "compact", "capture": { "scenario": "commands-empty-lifecycle", "checkpoint": "slash-compact" } },
-    { "name": "resume", "capture": { "scenario": "overlays-core", "checkpoint": "overlay-session" } },
-    { "name": "reload", "capture": { "scenario": "commands-and-exit", "checkpoint": "slash-reload" } },
-    { "name": "quit", "capture": { "scenario": "commands-empty-lifecycle", "checkpoint": "process-exit" } }
+    {
+      "name": "settings",
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-settings"
+      }
+    },
+    {
+      "name": "model",
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-model"
+      }
+    },
+    {
+      "name": "tree",
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-tree"
+      }
+    },
+    {
+      "name": "thinking",
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-thinking"
+      }
+    },
+    {
+      "name": "scoped-models",
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-scoped-models"
+      }
+    },
+    {
+      "name": "export",
+      "capture": {
+        "scenario": "commands-and-exit",
+        "checkpoint": "slash-export"
+      }
+    },
+    {
+      "name": "import",
+      "capture": {
+        "scenario": "overlays-secondary",
+        "checkpoint": "import-confirmation"
+      }
+    },
+    {
+      "name": "share",
+      "capture": {
+        "scenario": "commands-informational",
+        "checkpoint": "slash-share"
+      }
+    },
+    {
+      "name": "copy",
+      "capture": {
+        "scenario": "commands-empty-lifecycle",
+        "checkpoint": "slash-copy"
+      }
+    },
+    {
+      "name": "name",
+      "capture": {
+        "scenario": "commands-informational",
+        "checkpoint": "slash-name"
+      }
+    },
+    {
+      "name": "session",
+      "capture": {
+        "scenario": "commands-informational",
+        "checkpoint": "slash-session"
+      }
+    },
+    {
+      "name": "changelog",
+      "capture": {
+        "scenario": "commands-informational",
+        "checkpoint": "slash-changelog"
+      }
+    },
+    {
+      "name": "hotkeys",
+      "capture": {
+        "scenario": "commands-informational",
+        "checkpoint": "slash-hotkeys"
+      }
+    },
+    {
+      "name": "fork",
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-fork"
+      }
+    },
+    {
+      "name": "clone",
+      "capture": {
+        "scenario": "commands-informational",
+        "checkpoint": "slash-clone"
+      }
+    },
+    {
+      "name": "trust",
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-trust"
+      }
+    },
+    {
+      "name": "login",
+      "capture": {
+        "scenario": "overlays-auth",
+        "checkpoint": "auth-method-generic"
+      }
+    },
+    {
+      "name": "logout",
+      "capture": {
+        "scenario": "overlays-logout",
+        "checkpoint": "logout-provider"
+      }
+    },
+    {
+      "name": "new",
+      "capture": {
+        "scenario": "commands-empty-lifecycle",
+        "checkpoint": "slash-new"
+      }
+    },
+    {
+      "name": "compact",
+      "capture": {
+        "scenario": "commands-empty-lifecycle",
+        "checkpoint": "slash-compact"
+      }
+    },
+    {
+      "name": "resume",
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-session"
+      }
+    },
+    {
+      "name": "reload",
+      "capture": {
+        "scenario": "commands-and-exit",
+        "checkpoint": "slash-reload"
+      }
+    },
+    {
+      "name": "quit",
+      "capture": {
+        "scenario": "commands-empty-lifecycle",
+        "checkpoint": "process-exit"
+      }
+    }
   ],
   "interfaces": [
-    { "id": "model-selector", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new ModelSelectorComponent(" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-model" } },
-    { "id": "scoped-models-selector", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new ScopedModelsSelectorComponent(" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-scoped-models" } },
-    { "id": "session-selector", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new SessionSelectorComponent(" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-session" } },
-    { "id": "session-rename", "kind": "secondary-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/session-selector.ts", "token": "theme.bold(\"Rename Session\")" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-session-rename" } },
-    { "id": "session-delete-confirmation", "kind": "secondary-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/session-selector.ts", "token": "Delete session?" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-session-delete" } },
-    { "id": "fork-selector", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new UserMessageSelectorComponent(" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-fork" } },
-    { "id": "tree-selector", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new TreeSelectorComponent(" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-tree" } },
-    { "id": "tree-label-input", "kind": "secondary-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/tree-selector.ts", "token": "class LabelInput" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-tree-label" } },
-    { "id": "trust-selector", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new TrustSelectorComponent(" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-trust" } },
-    { "id": "settings-selector", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new SettingsSelectorComponent(" }, "capture": { "scenario": "overlays-core", "checkpoint": "overlay-settings" } },
-    { "id": "settings-warnings", "kind": "secondary-selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts", "token": "new WarningSettingsSubmenu(" }, "capture": { "scenario": "overlays-secondary", "checkpoint": "settings-warnings" } },
-    { "id": "settings-thinking", "kind": "secondary-selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts", "token": "\"Thinking Level\"" }, "capture": { "scenario": "overlays-secondary", "checkpoint": "settings-thinking" } },
-    { "id": "settings-theme", "kind": "secondary-selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts", "token": "new ThemeSubmenu(" }, "capture": { "scenario": "overlays-secondary", "checkpoint": "settings-theme" } },
-    { "id": "settings-theme-automatic", "kind": "tertiary-selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts", "token": "\"Automatic Theme\"" }, "capture": { "scenario": "overlays-secondary", "checkpoint": "settings-theme-automatic" } },
-    { "id": "settings-theme-light", "kind": "tertiary-selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts", "token": "\"Light Theme\"" }, "capture": { "scenario": "overlays-secondary", "checkpoint": "settings-theme-light" } },
-    { "id": "settings-theme-dark", "kind": "tertiary-selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts", "token": "\"Dark Theme\"" }, "capture": { "scenario": "overlays-secondary", "checkpoint": "settings-theme-dark" } },
-    { "id": "import-confirmation", "kind": "secondary-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "showExtensionConfirm(\"Import session\"" }, "capture": { "scenario": "overlays-secondary", "checkpoint": "import-confirmation" } },
-    { "id": "login-auth-type-generic", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "showLoginAuthTypeSelector(providerOptions?:" }, "capture": { "scenario": "overlays-auth", "checkpoint": "auth-method-generic" } },
-    { "id": "login-provider-selector", "kind": "secondary-selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new OAuthSelectorComponent(" }, "capture": { "scenario": "overlays-auth", "checkpoint": "login-provider" } },
-    { "id": "login-auth-type-provider", "kind": "secondary-selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "Select authentication method for ${providerOptions[0].name}:" }, "capture": { "scenario": "overlays-auth-oauth", "checkpoint": "auth-method-provider" } },
-    { "id": "login-dialog", "kind": "tertiary-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "new LoginDialogComponent(this.ui" }, "capture": { "scenario": "overlays-auth-oauth", "checkpoint": "login-dialog" } },
-    { "id": "api-key-input", "kind": "tertiary-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "showApiKeyLoginDialog" }, "capture": { "scenario": "overlays-auth-api-key", "checkpoint": "api-key-input" } },
-    { "id": "logout-provider-selector", "kind": "selector", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "showOAuthSelector(mode: \"login\" | \"logout\")" }, "capture": { "scenario": "overlays-logout", "checkpoint": "logout-provider" } },
-    { "id": "extension-selector", "kind": "extension-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "showExtensionSelector(" }, "capture": { "scenario": "extension-surfaces", "checkpoint": "extension-select" } },
-    { "id": "extension-input", "kind": "extension-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "showExtensionInput(" }, "capture": { "scenario": "extension-surfaces", "checkpoint": "extension-input" } },
-    { "id": "extension-editor", "kind": "extension-dialog", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "showExtensionEditor(" }, "capture": { "scenario": "extension-surfaces", "checkpoint": "extension-editor" } },
-    { "id": "autocomplete-slash", "kind": "autocomplete", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "setupAutocompleteProvider()" }, "capture": { "scenario": "autocomplete-surfaces", "checkpoint": "autocomplete-slash" } },
-    { "id": "autocomplete-path", "kind": "autocomplete", "baselineEvidence": { "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts", "token": "this.setupAutocompleteProvider();" }, "capture": { "scenario": "autocomplete-surfaces", "checkpoint": "autocomplete-path" } }
+    {
+      "id": "model-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new ModelSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-model"
+      }
+    },
+    {
+      "id": "thinking-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new ThinkingSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-thinking"
+      }
+    },
+    {
+      "id": "scoped-models-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new ScopedModelsSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-scoped-models"
+      }
+    },
+    {
+      "id": "session-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new SessionSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-session"
+      }
+    },
+    {
+      "id": "session-rename",
+      "kind": "secondary-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/session-selector.ts",
+        "token": "theme.bold(\"Rename Session\")"
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-session-rename"
+      }
+    },
+    {
+      "id": "session-delete-confirmation",
+      "kind": "secondary-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/session-selector.ts",
+        "token": "Delete session?"
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-session-delete"
+      }
+    },
+    {
+      "id": "fork-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new UserMessageSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-fork"
+      }
+    },
+    {
+      "id": "tree-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new TreeSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-tree"
+      }
+    },
+    {
+      "id": "tree-label-input",
+      "kind": "secondary-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/tree-selector.ts",
+        "token": "class LabelInput"
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-tree-label"
+      }
+    },
+    {
+      "id": "trust-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new TrustSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-trust"
+      }
+    },
+    {
+      "id": "settings-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new SettingsSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-core",
+        "checkpoint": "overlay-settings"
+      }
+    },
+    {
+      "id": "settings-warnings",
+      "kind": "secondary-selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts",
+        "token": "new WarningSettingsSubmenu("
+      },
+      "capture": {
+        "scenario": "overlays-secondary",
+        "checkpoint": "settings-warnings"
+      }
+    },
+    {
+      "id": "settings-thinking",
+      "kind": "secondary-selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts",
+        "token": "\"Thinking Level\""
+      },
+      "capture": {
+        "scenario": "overlays-secondary",
+        "checkpoint": "settings-thinking"
+      }
+    },
+    {
+      "id": "settings-theme",
+      "kind": "secondary-selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts",
+        "token": "new ThemeSubmenu("
+      },
+      "capture": {
+        "scenario": "overlays-secondary",
+        "checkpoint": "settings-theme"
+      }
+    },
+    {
+      "id": "settings-theme-automatic",
+      "kind": "tertiary-selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts",
+        "token": "\"Automatic Theme\""
+      },
+      "capture": {
+        "scenario": "overlays-secondary",
+        "checkpoint": "settings-theme-automatic"
+      }
+    },
+    {
+      "id": "settings-theme-light",
+      "kind": "tertiary-selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts",
+        "token": "\"Light Theme\""
+      },
+      "capture": {
+        "scenario": "overlays-secondary",
+        "checkpoint": "settings-theme-light"
+      }
+    },
+    {
+      "id": "settings-theme-dark",
+      "kind": "tertiary-selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/components/settings-selector.ts",
+        "token": "\"Dark Theme\""
+      },
+      "capture": {
+        "scenario": "overlays-secondary",
+        "checkpoint": "settings-theme-dark"
+      }
+    },
+    {
+      "id": "import-confirmation",
+      "kind": "secondary-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "showExtensionConfirm(\"Import session\""
+      },
+      "capture": {
+        "scenario": "overlays-secondary",
+        "checkpoint": "import-confirmation"
+      }
+    },
+    {
+      "id": "login-auth-type-generic",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "showLoginAuthTypeSelector(providerOptions?:"
+      },
+      "capture": {
+        "scenario": "overlays-auth",
+        "checkpoint": "auth-method-generic"
+      }
+    },
+    {
+      "id": "login-provider-selector",
+      "kind": "secondary-selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new OAuthSelectorComponent("
+      },
+      "capture": {
+        "scenario": "overlays-auth",
+        "checkpoint": "login-provider"
+      }
+    },
+    {
+      "id": "login-auth-type-provider",
+      "kind": "secondary-selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "Select authentication method for ${providerOptions[0].name}:"
+      },
+      "capture": {
+        "scenario": "overlays-auth-oauth",
+        "checkpoint": "auth-method-provider"
+      }
+    },
+    {
+      "id": "login-dialog",
+      "kind": "tertiary-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "new LoginDialogComponent(this.ui"
+      },
+      "capture": {
+        "scenario": "overlays-auth-oauth",
+        "checkpoint": "login-dialog"
+      }
+    },
+    {
+      "id": "api-key-input",
+      "kind": "tertiary-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "showApiKeyLoginDialog"
+      },
+      "capture": {
+        "scenario": "overlays-auth-api-key",
+        "checkpoint": "api-key-input"
+      }
+    },
+    {
+      "id": "logout-provider-selector",
+      "kind": "selector",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "showOAuthSelector(mode: \"login\" | \"logout\")"
+      },
+      "capture": {
+        "scenario": "overlays-logout",
+        "checkpoint": "logout-provider"
+      }
+    },
+    {
+      "id": "extension-selector",
+      "kind": "extension-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "showExtensionSelector("
+      },
+      "capture": {
+        "scenario": "extension-surfaces",
+        "checkpoint": "extension-select"
+      }
+    },
+    {
+      "id": "extension-input",
+      "kind": "extension-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "showExtensionInput("
+      },
+      "capture": {
+        "scenario": "extension-surfaces",
+        "checkpoint": "extension-input"
+      }
+    },
+    {
+      "id": "extension-editor",
+      "kind": "extension-dialog",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "showExtensionEditor("
+      },
+      "capture": {
+        "scenario": "extension-surfaces",
+        "checkpoint": "extension-editor"
+      }
+    },
+    {
+      "id": "autocomplete-slash",
+      "kind": "autocomplete",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "setupAutocompleteProvider()"
+      },
+      "capture": {
+        "scenario": "autocomplete-surfaces",
+        "checkpoint": "autocomplete-slash"
+      }
+    },
+    {
+      "id": "autocomplete-path",
+      "kind": "autocomplete",
+      "baselineEvidence": {
+        "path": "packages/coding-agent/src/modes/interactive/interactive-mode.ts",
+        "token": "this.setupAutocompleteProvider();"
+      },
+      "capture": {
+        "scenario": "autocomplete-surfaces",
+        "checkpoint": "autocomplete-path"
+      }
+    }
   ],
   "baselineConstructors": {
-    "ExtensionEditorComponent": ["extension-editor"],
-    "ExtensionInputComponent": ["extension-input"],
-    "ExtensionSelectorComponent": ["extension-selector", "import-confirmation", "login-auth-type-generic", "login-auth-type-provider"],
-    "LoginDialogComponent": ["login-dialog", "api-key-input"],
-    "ModelSelectorComponent": ["model-selector"],
-    "OAuthSelectorComponent": ["login-provider-selector", "logout-provider-selector"],
-    "ScopedModelsSelectorComponent": ["scoped-models-selector"],
-    "SelectSubmenu": ["settings-thinking", "settings-theme", "settings-theme-light", "settings-theme-dark"],
-    "SessionSelectorComponent": ["session-selector", "session-rename", "session-delete-confirmation"],
-    "SettingsSelectorComponent": ["settings-selector"],
-    "ThemeSubmenu": ["settings-theme", "settings-theme-automatic", "settings-theme-light", "settings-theme-dark"],
-    "TreeSelectorComponent": ["tree-selector", "tree-label-input"],
-    "TrustSelectorComponent": ["trust-selector"],
-    "UserMessageSelectorComponent": ["fork-selector"],
-    "WarningSettingsSubmenu": ["settings-warnings"]
+    "ExtensionEditorComponent": [
+      "extension-editor"
+    ],
+    "ExtensionInputComponent": [
+      "extension-input"
+    ],
+    "ExtensionSelectorComponent": [
+      "extension-selector",
+      "import-confirmation",
+      "login-auth-type-generic",
+      "login-auth-type-provider"
+    ],
+    "LoginDialogComponent": [
+      "login-dialog",
+      "api-key-input"
+    ],
+    "ModelSelectorComponent": [
+      "model-selector"
+    ],
+    "ThinkingSelectorComponent": [
+      "thinking-selector"
+    ],
+    "OAuthSelectorComponent": [
+      "login-provider-selector",
+      "logout-provider-selector"
+    ],
+    "ScopedModelsSelectorComponent": [
+      "scoped-models-selector"
+    ],
+    "SelectSubmenu": [
+      "settings-thinking",
+      "settings-theme",
+      "settings-theme-light",
+      "settings-theme-dark"
+    ],
+    "SessionSelectorComponent": [
+      "session-selector",
+      "session-rename",
+      "session-delete-confirmation"
+    ],
+    "SettingsSelectorComponent": [
+      "settings-selector"
+    ],
+    "ThemeSubmenu": [
+      "settings-theme",
+      "settings-theme-automatic",
+      "settings-theme-light",
+      "settings-theme-dark"
+    ],
+    "TreeSelectorComponent": [
+      "tree-selector",
+      "tree-label-input"
+    ],
+    "TrustSelectorComponent": [
+      "trust-selector"
+    ],
+    "UserMessageSelectorComponent": [
+      "fork-selector"
+    ],
+    "WarningSettingsSubmenu": [
+      "settings-warnings"
+    ]
   },
   "baselineConstructorSites": {
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:332:SelectSubmenu": ["settings-theme"],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:448:SelectSubmenu": ["settings-theme-light", "settings-theme-dark"],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:604:WarningSettingsSubmenu": ["settings-warnings"],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:619:SelectSubmenu": ["settings-thinking"],
-    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:662:ThemeSubmenu": ["settings-theme", "settings-theme-automatic", "settings-theme-light", "settings-theme-dark"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2443:ExtensionSelectorComponent": ["extension-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2519:ExtensionInputComponent": ["extension-input"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2560:ExtensionEditorComponent": ["extension-editor"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4423:SettingsSelectorComponent": ["settings-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4762:TrustSelectorComponent": ["trust-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4784:ModelSelectorComponent": ["model-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4863:ScopedModelsSelectorComponent": ["scoped-models-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4947:UserMessageSelectorComponent": ["fork-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5006:TreeSelectorComponent": ["tree-selector", "tree-label-input"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5138:SessionSelectorComponent": ["session-selector", "session-rename", "session-delete-confirmation"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5334:ExtensionSelectorComponent": ["login-auth-type-generic", "login-auth-type-provider"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5372:OAuthSelectorComponent": ["login-provider-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5422:OAuthSelectorComponent": ["logout-provider-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5541:LoginDialogComponent": ["login-dialog"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5563:LoginDialogComponent": ["api-key-input"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5621:ExtensionSelectorComponent": ["extension-selector"],
-    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5693:LoginDialogComponent": ["login-dialog"]
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:283:SelectSubmenu": [
+      "settings-theme"
+    ],
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:399:SelectSubmenu": [
+      "settings-theme"
+    ],
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:562:WarningSettingsSubmenu": [
+      "settings-warnings"
+    ],
+    "packages/coding-agent/src/modes/interactive/components/settings-selector.ts:698:ThemeSubmenu": [
+      "settings-theme",
+      "settings-theme-automatic",
+      "settings-theme-light",
+      "settings-theme-dark"
+    ],
+    "packages/coding-agent/src/modes/interactive/components/settings-submenu.ts:211:SelectSubmenu": [
+      "settings-theme"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2504:ExtensionSelectorComponent": [
+      "extension-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2580:ExtensionInputComponent": [
+      "extension-input"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:2621:ExtensionEditorComponent": [
+      "extension-editor"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4530:SettingsSelectorComponent": [
+      "settings-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4794:ThinkingSelectorComponent": [
+      "thinking-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4938:TrustSelectorComponent": [
+      "trust-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:4976:ModelSelectorComponent": [
+      "model-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5043:ScopedModelsSelectorComponent": [
+      "scoped-models-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5127:UserMessageSelectorComponent": [
+      "fork-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5186:TreeSelectorComponent": [
+      "tree-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5318:SessionSelectorComponent": [
+      "session-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5514:ExtensionSelectorComponent": [
+      "extension-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5552:OAuthSelectorComponent": [
+      "login-provider-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5602:OAuthSelectorComponent": [
+      "login-provider-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5724:LoginDialogComponent": [
+      "login-dialog"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5746:LoginDialogComponent": [
+      "login-dialog"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5804:ExtensionSelectorComponent": [
+      "extension-selector"
+    ],
+    "packages/coding-agent/src/modes/interactive/interactive-mode.ts:5876:LoginDialogComponent": [
+      "login-dialog"
+    ]
   },
   "cadrOverlayKinds": {
-    "api-key-input": ["api-key-input"],
-    "extension-custom": ["extension-selector", "extension-input", "extension-editor"],
-    "fork": ["fork-selector"],
-    "import-confirmation": ["import-confirmation"],
-    "login-method": ["login-auth-type-generic", "login-auth-type-provider"],
-    "login-dialog": ["login-dialog"],
-    "login-provider": ["login-provider-selector"],
-    "logout-provider": ["logout-provider-selector"],
-    "model": ["model-selector"],
-    "thinking": ["settings-thinking"],
-    "scoped-models": ["scoped-models-selector"],
-    "session": ["session-selector", "session-rename", "session-delete-confirmation"],
-    "settings": ["settings-selector", "settings-warnings", "settings-thinking", "settings-theme", "settings-theme-automatic", "settings-theme-light", "settings-theme-dark"],
-    "tree": ["tree-selector", "tree-label-input"],
-    "trust": ["trust-selector"]
+    "api-key-input": [
+      "api-key-input"
+    ],
+    "extension-custom": [
+      "extension-selector",
+      "extension-input",
+      "extension-editor"
+    ],
+    "fork": [
+      "fork-selector"
+    ],
+    "import-confirmation": [
+      "import-confirmation"
+    ],
+    "login-method": [
+      "login-auth-type-generic",
+      "login-auth-type-provider"
+    ],
+    "login-dialog": [
+      "login-dialog"
+    ],
+    "login-provider": [
+      "login-provider-selector"
+    ],
+    "logout-provider": [
+      "logout-provider-selector"
+    ],
+    "model": [
+      "model-selector"
+    ],
+    "thinking": [
+      "thinking-selector",
+      "settings-thinking"
+    ],
+    "scoped-models": [
+      "scoped-models-selector"
+    ],
+    "session": [
+      "session-selector",
+      "session-rename",
+      "session-delete-confirmation"
+    ],
+    "settings": [
+      "settings-selector",
+      "settings-warnings",
+      "settings-thinking",
+      "settings-theme",
+      "settings-theme-automatic",
+      "settings-theme-light",
+      "settings-theme-dark"
+    ],
+    "tree": [
+      "tree-selector",
+      "tree-label-input"
+    ],
+    "trust": [
+      "trust-selector"
+    ]
   },
   "significantStateDomains": {
     "bash-output": [
@@ -144,7 +743,10 @@
         "token": "outputLinesArr.length >= maxLines"
       },
       "trigger": "A bash command emits 2,001 newline-terminated lines, exceeding the 2,000-line tail limit without exceeding 50KB.",
-      "capture": { "scenario": "tools-significant-states", "checkpoint": "bash-line-limit" }
+      "capture": {
+        "scenario": "tools-significant-states",
+        "checkpoint": "bash-line-limit"
+      }
     },
     {
       "id": "bash-output-byte-limit",
@@ -153,7 +755,10 @@
         "token": "outputBytesCount + lineBytes > maxBytes"
       },
       "trigger": "A bash command emits 400 complete 200-character lines, exceeding 50KB before 2,000 lines.",
-      "capture": { "scenario": "tools-significant-states", "checkpoint": "bash-byte-limit" }
+      "capture": {
+        "scenario": "tools-significant-states",
+        "checkpoint": "bash-byte-limit"
+      }
     },
     {
       "id": "bash-output-overlong-line",
@@ -162,7 +767,10 @@
         "token": "lastLinePartial = true"
       },
       "trigger": "A bash command emits one 60KB line, forcing tail truncation inside that line.",
-      "capture": { "scenario": "tools-significant-states", "checkpoint": "bash-overlong-line" }
+      "capture": {
+        "scenario": "tools-significant-states",
+        "checkpoint": "bash-overlong-line"
+      }
     },
     {
       "id": "bash-output-empty",
@@ -171,7 +779,10 @@
         "token": "emptyText = \"(no output)\""
       },
       "trigger": "The true command exits successfully without writing stdout or stderr.",
-      "capture": { "scenario": "tools-significant-states", "checkpoint": "bash-empty" }
+      "capture": {
+        "scenario": "tools-significant-states",
+        "checkpoint": "bash-empty"
+      }
     },
     {
       "id": "bash-nonzero-exit",
@@ -180,7 +791,10 @@
         "token": "Command exited with code ${exitCode}"
       },
       "trigger": "A bash command prints one line and exits with status 7.",
-      "capture": { "scenario": "tools-failure", "checkpoint": "bash-nonzero" }
+      "capture": {
+        "scenario": "tools-failure",
+        "checkpoint": "bash-nonzero"
+      }
     },
     {
       "id": "bash-timeout",
@@ -189,7 +803,10 @@
         "token": "Command timed out after ${timeoutSecs} seconds"
       },
       "trigger": "A two-second command is run with a one-second timeout.",
-      "capture": { "scenario": "tools-failure", "checkpoint": "bash-timeout" }
+      "capture": {
+        "scenario": "tools-failure",
+        "checkpoint": "bash-timeout"
+      }
     },
     {
       "id": "parallel-tool-calls",
@@ -198,7 +815,10 @@
         "token": "await Promise.all"
       },
       "trigger": "One assistant response returns two independent read calls in the same tool batch.",
-      "capture": { "scenario": "tools-significant-states", "checkpoint": "parallel-tool-calls" }
+      "capture": {
+        "scenario": "tools-significant-states",
+        "checkpoint": "parallel-tool-calls"
+      }
     },
     {
       "id": "tool-invalid-arguments",
@@ -207,7 +827,10 @@
         "token": "Validation failed for tool"
       },
       "trigger": "A read tool call supplies a numeric path, violating the declared string schema before execution.",
-      "capture": { "scenario": "tools-significant-states", "checkpoint": "tool-invalid-arguments" }
+      "capture": {
+        "scenario": "tools-significant-states",
+        "checkpoint": "tool-invalid-arguments"
+      }
     },
     {
       "id": "compaction-manual",
@@ -216,7 +839,10 @@
         "token": "reason === \"manual\""
       },
       "trigger": "The deterministic event fault injector sends compaction_start with reason manual through the production interactive event consumer.",
-      "capture": { "scenario": "compaction-status-manual", "checkpoint": "compaction-manual" }
+      "capture": {
+        "scenario": "compaction-status-manual",
+        "checkpoint": "compaction-manual"
+      }
     },
     {
       "id": "compaction-threshold",
@@ -225,7 +851,10 @@
         "token": "CompactionStatusReason"
       },
       "trigger": "The deterministic event fault injector sends compaction_start with reason threshold through the production interactive event consumer.",
-      "capture": { "scenario": "compaction-status-threshold", "checkpoint": "compaction-threshold" }
+      "capture": {
+        "scenario": "compaction-status-threshold",
+        "checkpoint": "compaction-threshold"
+      }
     },
     {
       "id": "compaction-overflow",
@@ -234,7 +863,10 @@
         "token": "Context overflow detected, "
       },
       "trigger": "The deterministic event fault injector sends compaction_start with reason overflow through the production interactive event consumer.",
-      "capture": { "scenario": "compaction-status-overflow", "checkpoint": "compaction-overflow" }
+      "capture": {
+        "scenario": "compaction-status-overflow",
+        "checkpoint": "compaction-overflow"
+      }
     }
   ]
 }

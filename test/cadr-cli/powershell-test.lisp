@@ -10,7 +10,7 @@
 (test g21-powershell-tool-rejects-non-windows-execution
   (unless (uiop:os-windows-p)
     (with-test-directory (directory)
-      (let ((tool (make-powershell-tool directory))
+      (let ((tool (cadr-cli:make-powershell-tool directory))
             (condition
               (handler-case
                   (progn
@@ -28,7 +28,7 @@
     (is (member
          "powershell"
          (mapcar #'cadr-ai:tool-name
-                 (make-all-coding-tools directory))
+                 (cadr-cli::make-all-coding-tools directory))
          :test #'string=))))
 
 (test g21-powershell-default-tools-can-select-powershell-instead-of-bash
