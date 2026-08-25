@@ -3360,6 +3360,7 @@
       "coverage": [
         "overlay-model",
         "overlay-model-scope-and-empty-filter",
+        "overlay-thinking",
         "overlay-scoped-models",
         "overlay-scoped-models-dirty-disabled-and-empty-filter",
         "overlay-session",
@@ -3417,22 +3418,40 @@
           "checkpoint": "overlay-model"
         },
         {
-          "send": "down"
+          "send": "escape"
         },
         {
-          "pauseMs": 50
+          "pauseMs": 80
         },
         {
-          "send": "tab"
+          "sendText": "/tree"
         },
         {
-          "pauseMs": 50
+          "send": "enter"
         },
         {
-          "sendText": "no-model-matches-this-query"
+          "waitFor": "Session Tree"
         },
         {
-          "waitFor": "No matching models"
+          "checkpoint": "overlay-tree"
+        },
+        {
+          "send": "escape"
+        },
+        {
+          "pauseMs": 80
+        },
+        {
+          "sendText": "/thinking"
+        },
+        {
+          "send": "enter"
+        },
+        {
+          "waitFor": "Thinking Level"
+        },
+        {
+          "checkpoint": "overlay-thinking"
         },
         {
           "send": "escape"
