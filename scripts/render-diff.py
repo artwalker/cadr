@@ -202,7 +202,7 @@ def validate_unmodeled_site_review(
             "stale unmodeled-sink review entries: " + ", ".join(stale)
         )
 PI_AI_MODEL_DATA_PACKAGE = "@earendil-works/pi-ai@0.84.3"
-PI_AI_MODEL_DATA_SHA256 = "371f9c4c6cd12fd4a17c86d6a31f35abb2b62f8cde0ce098334807ba17e87d49"
+PI_AI_MODEL_DATA_SHA256 = "9c40af2f43950f8e94e7bbcd0c1b3548f000972da00c4fb9c0d0529d4d7d5431"
 KEYS = {
     "enter": b"\r",
     "escape": b"\x1b",
