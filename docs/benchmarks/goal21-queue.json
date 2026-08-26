@@ -1,0 +1,175 @@
+{
+ "schemaVersion": 1,
+ "paused": false,
+ "goal20Paused": true,
+ "nextTaskId": 18,
+ "lanes": {
+  "anchor": {
+   "role": "mechanical",
+   "scope": "BASELINE + render-diff pin"
+  },
+  "parity": {
+   "role": "enumeration",
+   "scope": "source-parity disposition"
+  },
+  "a": {
+   "role": "impl",
+   "scope": "thinking selector + session defaults"
+  },
+  "b": {
+   "role": "impl",
+   "scope": "compaction + session_compact_failed"
+  },
+  "c": {
+   "role": "impl",
+   "scope": "GoogleApiThinkingLevel + providers"
+  },
+  "infra": {
+   "role": "mechanical",
+   "scope": "gate structural improvements"
+  },
+  "gate": {
+   "role": "verification",
+   "scope": "verify.sh + test-cl.sh"
+  }
+ },
+ "tasks": [
+  {
+   "id": 1,
+   "lane": "anchor",
+   "status": "done",
+   "slug": "set-baseline",
+   "title": "Mechanical anchor",
+   "branch": "main"
+  },
+  {
+   "id": 2,
+   "lane": "parity",
+   "status": "done",
+   "slug": "source-parity",
+   "title": "source parity",
+   "branch": "g21-2-source-parity"
+  },
+  {
+   "id": 3,
+   "lane": "a",
+   "status": "done",
+   "slug": "thinking-selector",
+   "title": "thinking",
+   "branch": "g21-3-thinking-selector"
+  },
+  {
+   "id": 4,
+   "lane": "b",
+   "status": "done",
+   "slug": "compaction",
+   "title": "compaction",
+   "branch": "g21-4-compaction"
+  },
+  {
+   "id": 5,
+   "lane": "c",
+   "status": "done",
+   "slug": "google-api-thinking",
+   "title": "google",
+   "branch": "g21-5-google-api-thinking"
+  },
+  {
+   "id": 6,
+   "lane": "a",
+   "status": "done",
+   "slug": "powershell-tool",
+   "title": "powershell",
+   "branch": "g21-6-powershell-tool"
+  },
+  {
+   "id": 8,
+   "lane": "infra",
+   "status": "done",
+   "slug": "disposition-audit",
+   "title": "render-diff disposition audit script + validate-only gate",
+   "branch": "main"
+  },
+  {
+   "id": 9,
+   "lane": "infra",
+   "status": "done",
+   "slug": "anchor-disposition-guard",
+   "title": "exclude dispositions.json from anchor-guard chore commits",
+   "branch": "main"
+  },
+  {
+   "id": 10,
+   "lane": "infra",
+   "status": "done",
+   "slug": "fast-gate",
+   "title": "GOAL21_GATE_MODE=fast tier",
+   "branch": "main"
+  },
+  {
+   "id": 11,
+   "lane": "infra",
+   "status": "done",
+   "slug": "capture-cache",
+   "title": "baseline-keyed render-diff capture cache",
+   "branch": "main"
+  },
+  {
+   "id": 12,
+   "lane": "infra",
+   "status": "done",
+   "slug": "team-integration",
+   "title": "infra lane operator dispatch + docs",
+   "branch": "main"
+  },
+  {
+   "id": 7,
+   "lane": "gate",
+   "status": "in_progress",
+   "slug": "full-gate",
+   "title": "verify.sh + test-cl.sh + CHANGELOG 0843",
+   "branch": null
+  },
+  {
+   "id": 13,
+   "lane": "infra",
+   "status": "pending",
+   "slug": "p1-merge-fast-gate",
+   "title": "verify fast gate on director-merge + premerge",
+   "branch": null
+  },
+  {
+   "id": 14,
+   "lane": "infra",
+   "status": "pending",
+   "slug": "p1-ci-capture-cache",
+   "title": "verify CI render-diff capture cache workflow",
+   "branch": null
+  },
+  {
+   "id": 15,
+   "lane": "infra",
+   "status": "pending",
+   "slug": "p2-class-rules",
+   "title": "verify disposition-class-rules.json + render-diff analyze",
+   "branch": null
+  },
+  {
+   "id": 16,
+   "lane": "infra",
+   "status": "pending",
+   "slug": "p2-test-cl-shard",
+   "title": "verify CADR_TEST_CL_SHARD fiveam|goal20",
+   "branch": null
+  },
+  {
+   "id": 17,
+   "lane": "infra",
+   "status": "pending",
+   "slug": "p2-manifest-skeletons",
+   "title": "verify ensure-skeletons + on-manifest-change hook",
+   "branch": null
+  }
+ ],
+ "mergeQueue": []
+}

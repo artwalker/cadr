@@ -6,7 +6,7 @@
 #   scripts/goal21-orchestrator.sh cleanup-worktrees [--dry-run]
 #   scripts/goal21-orchestrator.sh director-once
 #   scripts/goal21-orchestrator.sh director-loop [seconds]
-#   scripts/goal21-orchestrator.sh dispatch <lane>   # anchor|parity|a|b|c|gate
+#   scripts/goal21-orchestrator.sh dispatch <lane>   # anchor|parity|a|b|c|infra|gate
 #   scripts/goal21-orchestrator.sh dispatch-loop <lane> [seconds]
 #
 # Queue: docs/benchmarks/goal21-queue.json
@@ -79,6 +79,11 @@ elif command == "claim":
     save()
     print(json.dumps(task))
 
+elif command == "infra-pending":
+    pending = sum(1 for t in data["tasks"] if t.get("lane") == "infra" and t.get("status") == "pending")
+    inprog = sum(1 for t in data["tasks"] if t.get("lane") == "infra" and t.get("status") == "in_progress")
+    print(f"{pending} {inprog}")
+
 elif command == "complete":
     task_id = int(sys.argv[3])
     branch = sys.argv[4]
@@ -96,7 +101,7 @@ elif command == "reconcile-in-progress":
     for task in data["tasks"]:
         if task.get("status") != "in_progress":
             continue
-        if task.get("lane") in ("anchor", "gate"):
+        if task.get("lane") in ("anchor", "gate", "infra"):
             continue
         slug = task.get("slug", "")
         branch = f"g21-{task['id']}-{slug}"
@@ -221,7 +226,7 @@ director-loop)
 	done
 	;;
 dispatch)
-	LANE="${1:?lane required (anchor|parity|a|b|c|gate)}"
+	LANE="${1:?lane required (anchor|parity|a|b|c|infra|gate)}"
 	shift || true
 	cd "$PROJECT_DIRECTORY"
 	TASK_JSON="$(queue_py claim "$LANE")" || {
@@ -235,7 +240,7 @@ dispatch)
 	WORKTREE="/tmp/g21-${TASK_ID}-wt"
 	AGENT_WORKSPACE="$PROJECT_DIRECTORY"
 
-	if [ "$LANE" != "anchor" ] && [ "$LANE" != "gate" ]; then
+	if [ "$LANE" != "anchor" ] && [ "$LANE" != "gate" ] && [ "$LANE" != "infra" ]; then
 		if ! WORKTREE=$("$PROJECT_DIRECTORY/scripts/cadr-team-worktree.sh" ensure "$WORKTREE" "$BRANCH" cadr-migration | tail -1); then
 			echo "goal21 dispatch: worktree ensure failed for $BRANCH" >&2
 			python3 - "$QUEUE_PATH" "$TASK_ID" <<'PY'
@@ -265,6 +270,39 @@ Steps:
 4. Print: GOAL21_COMPLETE task=${TASK_ID} branch=${BRANCH}
 Never edit src/ on main checkout."
 
+	if [ "$LANE" = "infra" ]; then
+		PROMPT="Read $BRIEF and $SPEC. You are Goal 21 Infra lane (mechanical, main checkout).
+Task ${TASK_ID}: ${TITLE}
+Work on main checkout only. chmod +x new scripts/goal21-* before commit.
+Commit: feat(cadr-cli): g21 infra task ${TASK_ID} ${SLUG}
+Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
+		case "$SLUG" in
+		disposition-audit)
+			PROMPT="${PROMPT}
+Verify scripts/goal21-render-diff-audit-dispositions.py; run: python3 scripts/goal21-render-diff-audit-dispositions.py --validate-only
+git add scripts/goal21-render-diff-audit-dispositions.py docs/acceptance/goal21-dev-executor.md"
+			;;
+		anchor-disposition-guard)
+			PROMPT="${PROMPT}
+Verify dispositions.json is excluded: scripts/goal21-anchor-guard.sh is-excluded-path test/fixtures/render-diff/dispositions.json
+git add scripts/goal21-anchor-guard.sh"
+			;;
+		fast-gate)
+			PROMPT="${PROMPT}
+Verify scripts/goal21-gate-fast.sh; run: GOAL21_GATE_MODE=fast scripts/goal21-gate-run.sh (skip if verify/test-cl running)
+git add scripts/goal21-gate-fast.sh scripts/goal21-gate-run.sh docs/acceptance/goal21-dev-executor.md"
+			;;
+		capture-cache)
+			PROMPT="${PROMPT}
+Verify scripts/goal21-render-diff-capture-cache.sh status; git add scripts/goal21-render-diff-capture-cache.sh scripts/goal21-gate-run.sh scripts/goal21-gate-proactive-render-diff.sh"
+			;;
+		team-integration)
+			PROMPT="${PROMPT}
+Verify infra lane in goal21-team-operator.sh and goal21-dev-executor.md; git add docs/acceptance/goal21-dev-executor.md scripts/goal21-team-operator.sh scripts/goal21-orchestrator.sh docs/benchmarks/goal21-queue.json"
+			;;
+		esac
+	fi
+
 	if [ "$LANE" = "anchor" ]; then
 		ANCHOR_COMMIT="$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE")"
 		PROMPT="Read $BRIEF and $SPEC. You are Goal 21 Anchor lane.
@@ -290,6 +328,14 @@ On main checkout (allowed for this task only):
 		full_round=0
 		while [ "$full_round" -lt "$MAX_ROUNDS" ]; do
 			full_round=$((full_round + 1))
+			if [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-proactive-render-diff.sh" ]; then
+				echo "goal21 gate: proactive render-diff heal before round ${full_round}"
+				if "$PROJECT_DIRECTORY/scripts/goal21-gate-proactive-render-diff.sh"; then
+					echo "goal21 gate: proactive heal PASS — proceeding to full gate"
+				else
+					echo "goal21 gate: proactive heal incomplete (agent may be needed after failure)" >&2
+				fi
+			fi
 			echo "goal21 gate: full round ${full_round}/${MAX_ROUNDS} running scripts/goal21-gate-run.sh"
 			if "$PROJECT_DIRECTORY/scripts/goal21-gate-run.sh" --fail-log "$FAIL_LOG"; then
 				if ! rg -q 'pi v0\.84\.3|Goal 21:' "$PROJECT_DIRECTORY/CHANGELOG.md"; then
@@ -328,9 +374,10 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 				FIX_TARGET="Fix docs/source-parity.md line citations and/or mapping drift."
 				FIX_VALIDATE="Optional: sbcl --script scripts/derive-source-parity-mappings.lisp --check"
 				;;
-			fiveam)
-				FIX_TARGET="Fix the failing FiveAM test cited in the excerpt."
-				FIX_VALIDATE="Optional: scripts/cadr-compile-check.sh"
+			goal20-ledger)
+				FIX_TARGET="Refresh docs/benchmarks/goal20-unpaired-paths.json denominator via goal20-unpaired-paths.py --write."
+				FIX_VALIDATE="Do NOT run test-cl.sh — orchestrator runs postfix."
+				FIX_TIMEOUT="${CADR_GATE_LEDGER_FIX_TIMEOUT_SEC:-300}"
 				;;
 			*)
 				FIX_TARGET="Fix the smallest set of files cited in the failure excerpt."
@@ -362,8 +409,38 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 					postfix_passed=1
 				fi
 			fi
+			# Skip fix agent when only stale/missing keys remain but brief is empty (re-analyze first).
+			if [ "$FAILURE_KIND" = "render-diff" ] && [ "$postfix_passed" -ne 1 ] \
+				&& [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-proactive-render-diff.sh" ]; then
+				BRIEF="${GOAL21_RENDER_DIFF_BRIEF:-/tmp/goal21-render-diff-brief.txt}"
+				if [ ! -s "$BRIEF" ] || ! rg -q 'missing dispositions|stale dispositions|non-aligned' "$BRIEF" 2>/dev/null; then
+					echo "goal21 gate: empty/stale brief — retry proactive heal before fix agent"
+					if "$PROJECT_DIRECTORY/scripts/goal21-gate-proactive-render-diff.sh"; then
+						postfix_passed=1
+					fi
+					"$PROJECT_DIRECTORY/scripts/goal21-gate-render-diff-brief.sh" \
+						"${GOAL21_RENDER_DIFF_ANALYSIS:-/tmp/goal21-render-diff-analysis}" \
+						"$FAIL_LOG" >/dev/null 2>&1 || true
+				fi
+			fi
 			if [ "$postfix_passed" -eq 1 ]; then
 				continue
+			fi
+			# Skip fix agent when targeted postfix already passes (e.g. misclassified stale fail log).
+			if GOAL21_GATE_FAILURE_TYPE="$FAILURE_KIND" \
+				"$PROJECT_DIRECTORY/scripts/goal21-gate-postfix-check.sh" "$FAILURE_KIND"; then
+				echo "goal21 gate: postfix PASS (${FAILURE_KIND}) before fix agent — next full gate round"
+				continue
+			fi
+			if [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-mechanical-fix.sh" ]; then
+				echo "goal21 gate: mechanical fix for ${FAILURE_KIND}"
+				if "$PROJECT_DIRECTORY/scripts/goal21-gate-mechanical-fix.sh" "$FAILURE_KIND"; then
+					if GOAL21_GATE_FAILURE_TYPE="$FAILURE_KIND" \
+						"$PROJECT_DIRECTORY/scripts/goal21-gate-postfix-check.sh" "$FAILURE_KIND"; then
+						echo "goal21 gate: postfix PASS after mechanical fix — next full gate round"
+						continue
+					fi
+				fi
 			fi
 			postfix_try=0
 			while [ "$postfix_try" -lt "$MAX_POSTFIX_TRIES" ]; do
@@ -371,7 +448,15 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 				echo "goal21 gate: fix attempt ${postfix_try}/${MAX_POSTFIX_TRIES} (timeout ${FIX_TIMEOUT}s, kind=${FAILURE_KIND})"
 				DISPATCH_STATUS=0
 				HEAD_BEFORE="$(git -C "$PROJECT_DIRECTORY" rev-parse HEAD)"
-				PROMPT="Read $BRIEF and $SPEC. You are Goal 21 Gate FIX lane (short session).
+				if [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-fix-dispatch.sh" ]; then
+					OUT="$("$PROJECT_DIRECTORY/scripts/goal21-gate-fix-dispatch.sh" \
+						--kind "$FAILURE_KIND" \
+						--task-id "$TASK_ID" \
+						--round "$full_round" \
+						--attempt "$postfix_try" \
+						--fail-log "$FAIL_LOG" 2>&1)" || DISPATCH_STATUS=$?
+				else
+					PROMPT="Read $BRIEF and $SPEC. You are Goal 21 Gate FIX lane (short session).
 Task ${TASK_ID} full round ${full_round} fix ${postfix_try}/${MAX_POSTFIX_TRIES}: failed (${FAILURE_KIND}).
 ${FIX_VALIDATE}
 Target: ${FIX_TARGET}
@@ -383,12 +468,13 @@ Steps:
 3. git commit -m \"fix(g21-gate): <stage-slug> (r${full_round})\"
 4. Print: GOAL21_FIX_DONE task=${TASK_ID} round=${full_round}
 Keep under 10 minutes; orchestrator runs postfix before the next full gate."
-				OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
-					--workspace "$PROJECT_DIRECTORY" \
-					--goal gate \
-					--task-key "gate-fix-${TASK_ID}-r${full_round}-p${postfix_try}" \
-					--timeout "$FIX_TIMEOUT" \
-					-- "$PROMPT" 2>&1)" || DISPATCH_STATUS=$?
+					OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
+						--workspace "$PROJECT_DIRECTORY" \
+						--goal gate \
+						--task-key "gate-fix-${TASK_ID}-r${full_round}-p${postfix_try}" \
+						--timeout "$FIX_TIMEOUT" \
+						-- "$PROMPT" 2>&1)" || DISPATCH_STATUS=$?
+				fi
 				DISPATCH_STATUS="${DISPATCH_STATUS:-0}"
 				printf '%s\n' "$OUT"
 				if [ "$DISPATCH_STATUS" -eq 124 ]; then
@@ -450,6 +536,9 @@ PY
 	if [ "$LANE" = "anchor" ]; then
 		DISPATCH_GOAL="anchor"
 	fi
+	if [ "$LANE" = "infra" ]; then
+		DISPATCH_GOAL="infra"
+	fi
 
 	OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
 		--workspace "$AGENT_WORKSPACE" \
@@ -497,7 +586,7 @@ PY
 				exit 0
 			fi
 		fi
-		if [ "$LANE" = "anchor" ]; then
+		if [ "$LANE" = "anchor" ] || [ "$LANE" = "infra" ]; then
 			queue_py complete "$TASK_ID" "main"
 		else
 			queue_py complete "$TASK_ID" "$BRANCH"
