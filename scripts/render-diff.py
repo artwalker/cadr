@@ -3482,27 +3482,56 @@ def adjudication_from_class_rule(
     }
 
 
+def matching_class_rule(
+    result: dict[str, Any], rules: list[dict[str, Any]]
+) -> dict[str, Any] | None:
+    for rule in rules:
+        if result_matches_class_rule(result, rule):
+            return rule
+    return None
+
+
+def resolve_result_adjudications(
+    results: list[dict[str, Any]],
+    ledger_dispositions: dict[str, dict[str, Any]],
+    class_catalog: dict[str, Any],
+    rules_path: Path,
+) -> tuple[int, int]:
+    """Attach ledger or class-rule adjudications. Returns (ledger, classRule) counts."""
+    rules = load_disposition_class_rules(rules_path)
+    ledger_count = 0
+    rule_count = 0
+    for result in results:
+        if result.get("automaticDisposition") == "aligned":
+            continue
+        key = result["key"]
+        if key in ledger_dispositions:
+            result["adjudication"] = ledger_dispositions[key]
+            result["adjudicationSource"] = "ledger"
+            ledger_count += 1
+            continue
+        rule = matching_class_rule(result, rules)
+        if rule is None:
+            continue
+        result["adjudication"] = adjudication_from_class_rule(
+            result, rule, class_catalog
+        )
+        result["adjudicationSource"] = "class-rule"
+        result["classRuleId"] = rule.get("id", "class-rule")
+        rule_count += 1
+    return ledger_count, rule_count
+
+
 def apply_disposition_class_rules(
     results: list[dict[str, Any]],
     dispositions: dict[str, dict[str, Any]],
     class_catalog: dict[str, Any],
     rules_path: Path,
 ) -> int:
-    rules = load_disposition_class_rules(rules_path)
-    applied = 0
-    for result in results:
-        key = result["key"]
-        if key in dispositions or result.get("automaticDisposition") == "aligned":
-            continue
-        for rule in rules:
-            if not result_matches_class_rule(result, rule):
-                continue
-            adjudication = adjudication_from_class_rule(result, rule, class_catalog)
-            dispositions[key] = adjudication
-            result["adjudication"] = adjudication
-            applied += 1
-            break
-    return applied
+    _, rule_count = resolve_result_adjudications(
+        results, dispositions, class_catalog, rules_path
+    )
+    return rule_count
 
 
 def dump_exact_pair_screens(
