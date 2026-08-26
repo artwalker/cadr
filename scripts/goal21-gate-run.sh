@@ -15,6 +15,23 @@ PROGRESS="${GOAL21_GATE_PROGRESS:-/tmp/goal21-gate-progress}"
 RUN_LOG="${GOAL21_GATE_RUN_LOG:-/tmp/goal21-gate-run.log}"
 FAILURE_TYPE_FILE="${GOAL21_GATE_FAILURE_TYPE_FILE:-/tmp/goal21-gate-failure-type}"
 TAIL_LINES="${GOAL21_GATE_FAIL_TAIL:-160}"
+RENDER_DIFF_OUTPUT="${GOAL21_RENDER_DIFF_OUTPUT:-/tmp/goal21-render-diff-output}"
+
+render_diff_has_cached_captures() {
+	[ -d "$RENDER_DIFF_OUTPUT" ] || return 1
+	local count
+	count="$(ls -1 "$RENDER_DIFF_OUTPUT"/*.pi.normalized.raw 2>/dev/null | wc -l)"
+	[ "${count:-0}" -gt 0 ]
+}
+
+maybe_restore_render_diff_captures() {
+	if render_diff_has_cached_captures; then
+		return 0
+	fi
+	if [ -x "$PROJECT_DIRECTORY/scripts/goal21-render-diff-capture-cache.sh" ]; then
+		"$PROJECT_DIRECTORY/scripts/goal21-render-diff-capture-cache.sh" restore >>"$RUN_LOG" 2>&1 || true
+	fi
+}
 
 while [ "$#" -gt 0 ]; do
 	case "$1" in
@@ -39,6 +56,8 @@ GATE_MODE="${GOAL21_GATE_MODE:-full}"
 cd "$PROJECT_DIRECTORY"
 : >"$RUN_LOG"
 heartbeat "start"
+
+maybe_restore_render_diff_captures
 
 if [ "$GATE_MODE" = "fast" ]; then
 	heartbeat "mode=fast"
