@@ -5897,8 +5897,7 @@
       "scenario": "selector-state-sweep",
       "checkpoint": "model-first-screen",
       "dimensions": [
-        "narrow",
-        "wide"
+        "narrow"
       ],
       "classes": [
         "I01",
@@ -5906,15 +5905,29 @@
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "8d9409140fb9499e0a504d8e5bb008f3c32d2bea6d41d9d3ddbb532785b9518f",
+          "pi": "f7679db9389c9cc29fb26a8b4c658b1b69e154acf47863a5c878a35b8b58228f",
           "cadr": "dbcb1beb5293f3deae4428e5e089b8c9cf15620195305c45487a484ce666514e"
-        },
+        }
+      },
+      "note": "At selector-state-sweep/model-first-screen [narrow] the /model selector open on the scoped tab (faux-1, other-1; details 'Model Name: Faux Model'; 'Model catalogs refreshed.') matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines, which also shifts the wrap of the '<PRODUCT_TITLE> can explain...' hint (cadr is two cells longer than pi) (I04); the raw ANSI update segmentation differs (I01)."
+    },
+    {
+      "scenario": "selector-state-sweep",
+      "checkpoint": "model-first-screen",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
         "wide": {
-          "pi": "0c1baf10a2afb951e1be16ad57d9f87b11404b8fc2195a8f0c13b63e70adad92",
+          "pi": "f84c1053a655f557d6e1f92d388f831206e00d22ae2a7e5c3ed4cd02b80d80b9",
           "cadr": "c08e2131228560780b31fda12a2631c89c8da90533233c10af03f67ada564cc7"
         }
       },
-      "note": "At selector-state-sweep/model-first-screen [narrow+wide] the /model selector open on the scoped tab (faux-1, other-1; details 'Model Name: Faux Model'; 'Model catalogs refreshed.') matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines, which in narrow also shifts the wrap of the '<PRODUCT_TITLE> can explain...' hint (cadr is two cells longer than pi) (I04); the raw ANSI update segmentation differs (I01)."
+      "note": "At selector-state-sweep/model-first-screen [wide] the /model selector open on the scoped tab (faux-1, other-1; details 'Model Name: Faux Model'; 'Model catalogs refreshed.') matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
