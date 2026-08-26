@@ -6759,8 +6759,8 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a90813a618ee3056f828622d2b8b6c32f6a7f3dc5273e73cce0d3b1008167022",
-          "cadr": "19d61b84bbb0745d85407e8ec4b063e65d04d6762a12e83b3c80abf54b3e5348"
+          "pi": "f3496d6c36ac1341c013823a4697385e29cd937d94685bc2d8e748fb7f1920e6",
+          "cadr": "229c234df1c89a3ba8d5d6ad4647cd59db9310d67936a21a65f89c5cf8e3ddad"
         }
       },
       "note": "At selector-state-sweep/settings-image-width-row [wide] the /settings selector with the image-capability rows (Show images, Image width, auto-resize) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
