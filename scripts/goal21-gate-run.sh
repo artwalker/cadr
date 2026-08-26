@@ -34,9 +34,25 @@ heartbeat() {
 	echo "goal21-gate-run: $*"
 }
 
+GATE_MODE="${GOAL21_GATE_MODE:-full}"
+
 cd "$PROJECT_DIRECTORY"
 : >"$RUN_LOG"
 heartbeat "start"
+
+if [ "$GATE_MODE" = "fast" ]; then
+	heartbeat "mode=fast"
+	if "$PROJECT_DIRECTORY/scripts/goal21-gate-fast.sh" --fail-log "$FAIL_LOG" >>"$RUN_LOG" 2>&1; then
+		heartbeat "pass"
+		rm -f "$FAIL_LOG"
+		echo "goal21-gate-run: PASS (fast mode)"
+		exit 0
+	fi
+	heartbeat "fail fast-mode"
+	tail -n "$TAIL_LINES" "$RUN_LOG" >"$FAIL_LOG"
+	echo "goal21-gate-run: FAILED fast mode (log $FAIL_LOG)" >&2
+	exit 1
+fi
 
 set +e
 heartbeat "ensure-root-binary"

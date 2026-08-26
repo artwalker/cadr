@@ -78,7 +78,7 @@
 |---|---|---|
 | Disposition audit | `goal21-render-diff-audit-dispositions.py` | manifest 校验、stale 检测、`--prune-stale`；proactive heal 每轮 audit |
 | Anchor 隔离 | `goal21-anchor-guard.sh` ANCHOR_EXCLUDE | `dispositions.json` 不再被 baseline chore commit 打包 |
-| Fast gate | `GOAL21_GATE_MODE=fast` + `goal21-gate-fast.sh` | 开发迭代 ~2–5 min（preflight + cached analyze + compile）；**验收仍用 full** |
+| Fast gate | `GOAL21_GATE_MODE=fast` + `goal21-gate-fast.sh` | 开发迭代 ~2–5 min（preflight + cached analyze + compile）；**验收仍用 full**；`goal21-gate-run.sh` 在 `GOAL21_GATE_MODE=fast` 时委托 fast 脚本 |
 | Capture cache | `goal21-render-diff-capture-cache.sh` | 按 BASELINE commit 存/取 capture，gate-run 无本地缓存时自动 restore |
 
 **调度：** operator 在 impl 完成后、gate 之前 dispatch `infra` lane（tasks 8–12）；infra 全 done 后才 dispatch gate task 7。
