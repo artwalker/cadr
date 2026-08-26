@@ -157,7 +157,7 @@
   {
    "id": 16,
    "lane": "infra",
-   "status": "pending",
+   "status": "in_progress",
    "slug": "p2-test-cl-shard",
    "title": "verify CADR_TEST_CL_SHARD fiveam|goal20",
    "branch": null
