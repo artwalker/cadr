@@ -8446,7 +8446,7 @@
       "path": "src/cadr-cli/resource-loader.lisp",
       "kind": "pi-token",
       "token": "pi",
-      "line": "  ;; pi@4e58f324f core/resource-loader.ts:119-156: walk cwd\u2192root and",
+      "line": "  ;; pi@4e58f324f core/resource-loader.ts:118-155: global agent-dir",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
     },
