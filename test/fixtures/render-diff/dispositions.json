@@ -7106,16 +7106,15 @@
         "wide"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "wide": {
           "pi": "f948107e86003847f1cdb86f3dd65cc11363f935d96e5d78db338d635f8c6a86",
-          "cadr": "31784971d904f552eb751e6fce4691c83dea5be73d7233a84860ae9e0b4c5c24"
+          "cadr": "29475d1965245eb740bb9ce057c4f82a053d1b56ffc10c03f74c468878e81ac0"
         }
       },
-      "note": "At conversation-mermaid/wide/mermaid-rendered the flowchart art (A/B boxes and edge) matches pi; the footer token counters read cadr ↑2.4k W2.4k 1.9%/128k vs pi ↑2.5k W2.5k 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); remaining visible wrapping is Goal 16 identity plus I01 ANSI segmentation."
+      "note": "At conversation-mermaid/wide/mermaid-rendered the flowchart art (A/B boxes and edge) and footer token counters (↑2.5k W2.5k 2.0%/128k) match pi; the residual semantic screen pair differs only by I01 ANSI update segmentation/teardown."
     },
     {
       "scenario": "conversation-mermaid",
@@ -7124,16 +7123,15 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "4de03ae7995c1fb3e11305da6e055b8605a7fe742117730e32235ec8b837cf01",
-          "cadr": "428415d06c66698f1ba11a570525e19bd4818cee7e0e6e00382b22ba4ef916b1"
+          "cadr": "4de03ae7995c1fb3e11305da6e055b8605a7fe742117730e32235ec8b837cf01"
         }
       },
-      "note": "At conversation-mermaid/narrow/mermaid-rendered the flowchart art matches pi; the footer token counters read cadr ↑2.4k W2.4k 1.9%/128k vs pi ↑2.5k W2.5k 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); remaining bytes are I01 ANSI update segmentation/teardown only."
+      "note": "At conversation-mermaid/narrow/mermaid-rendered the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-mermaid",
