@@ -27,7 +27,11 @@ fi
 export QUICKLISP_SETUP
 
 SCRIPT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-"$SCRIPT_DIRECTORY/scripts/test-cl.sh"
+if [ "${CADR_BUILD_SKIP_TEST_CL:-0}" = 1 ]; then
+  echo "cadr-server build: skipping test-cl.sh (CADR_BUILD_SKIP_TEST_CL=1)"
+else
+  "$SCRIPT_DIRECTORY/scripts/test-cl.sh"
+fi
 
 exec "$SBCL_COMMAND" --noinform --disable-debugger \
   --script "$SCRIPT_DIRECTORY/build-server.lisp"

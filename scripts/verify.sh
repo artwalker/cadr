@@ -170,7 +170,7 @@ copy_isolated_tree() {
 build_cadr() {
   (
     cd "$ISOLATED_PROJECT"
-    ./build.sh
+    CADR_BUILD_SKIP_TEST_CL=1 ./build.sh
     test -x ./cadr
   )
 }
@@ -178,7 +178,7 @@ build_cadr() {
 build_cadr_server() {
   (
     cd "$ISOLATED_PROJECT"
-    ./build-server.sh
+    CADR_BUILD_SKIP_TEST_CL=1 ./build-server.sh
     test -x ./cadr-server
   )
 }

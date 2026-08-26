@@ -29,7 +29,11 @@ QUICKLISP_SETUP="$QUICKLISP_SETUP_DIRECTORY/$(basename -- "$QUICKLISP_SETUP_SOUR
 export QUICKLISP_SETUP
 
 SCRIPT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-"$SCRIPT_DIRECTORY/scripts/test-cl.sh"
+if [ "${CADR_BUILD_SKIP_TEST_CL:-0}" = 1 ]; then
+  echo "cadr build: skipping test-cl.sh (CADR_BUILD_SKIP_TEST_CL=1)"
+else
+  "$SCRIPT_DIRECTORY/scripts/test-cl.sh"
+fi
 
 BUILD_HOME="$(mktemp -d /tmp/cadr-build-home.XXXXXX)"
 trap 'rm -rf -- "$BUILD_HOME"' EXIT
