@@ -62,6 +62,20 @@ if [ "$RC" -ne 0 ]; then
 	exit "$RC"
 fi
 
+if [ "${GOAL21_SKIP_PREFLIGHT:-0}" != 1 ]; then
+	set +e
+	heartbeat "preflight"
+	"$PROJECT_DIRECTORY/scripts/goal21-gate-preflight.sh" --fail-log "$FAIL_LOG" >>"$RUN_LOG" 2>&1
+	RC=$?
+	set -e
+	if [ "$RC" -ne 0 ]; then
+		heartbeat "fail preflight rc=$RC"
+		tail -n "$TAIL_LINES" "$RUN_LOG" >"$FAIL_LOG"
+		echo "goal21-gate-run: FAILED preflight (log $FAIL_LOG)" >&2
+		exit "$RC"
+	fi
+fi
+
 set +e
 heartbeat "verify.sh"
 ./scripts/verify.sh >>"$RUN_LOG" 2>&1
