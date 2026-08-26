@@ -4798,23 +4798,36 @@
       "scenario": "tools-success",
       "checkpoint": "tree-rich-tools",
       "dimensions": [
-        "wide",
         "narrow"
       ],
       "classes": [
         "I01"
       ],
       "screenSha256": {
+        "narrow": {
+          "pi": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d",
+          "cadr": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d"
+        }
+      },
+      "note": "At tools-success/tree-rich-tools [narrow] the session-tree visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+    },
+    {
+      "scenario": "tools-success",
+      "checkpoint": "tree-rich-tools",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
         "wide": {
           "pi": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8",
           "cadr": "c6a97fdcf1b7e7253ce528f94443df4a51483b6ba94392c3c68e00a0dade36a4"
-        },
-        "narrow": {
-          "pi": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d",
-          "cadr": "5f4257ceea28d25a3840f1de581decb0cd6c88ba9c552cc5bc721414070eaa1f"
         }
       },
-      "note": "At tools-success/tree-rich-tools [wide+narrow] the session-tree visible text matches pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At tools-success/tree-rich-tools [wide] the session-tree content and footer token counters match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
     },
     {
       "scenario": "tools-success",

@@ -1198,6 +1198,12 @@
          'string "~" (subseq path (length home)))
         path)))
 
+(defun tree-selector-default-path (arguments)
+  "Return the tool path argument, defaulting empty/missing to \".\" like pi."
+  (tree-selector-shorten-path
+   (let ((path (tree-selector-tool-argument arguments "path")))
+     (if (plusp (length path)) path "."))))
+
 (defun tree-selector-tool-argument
     (arguments name &optional fallback)
   (labels ((resolved (key)
@@ -1278,11 +1284,7 @@
        (tree-selector-tool-argument
         arguments "pattern")
        "")
-      (tree-selector-shorten-path
-       (or
-        (tree-selector-tool-argument
-         arguments "path")
-        "."))))
+      (tree-selector-default-path arguments)))
     ((string= name "find")
      (format
       nil "[find: ~A in ~A]"
@@ -1290,19 +1292,11 @@
        (tree-selector-tool-argument
         arguments "pattern")
        "")
-      (tree-selector-shorten-path
-       (or
-        (tree-selector-tool-argument
-         arguments "path")
-        "."))))
+      (tree-selector-default-path arguments)))
     ((string= name "ls")
      (format
       nil "[ls: ~A]"
-      (tree-selector-shorten-path
-       (or
-        (tree-selector-tool-argument
-         arguments "path")
-        "."))))
+      (tree-selector-default-path arguments)))
     (t
      (let* ((json
               (cadr-ai::stringify-json
