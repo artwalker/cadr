@@ -278,18 +278,19 @@
                   (context-tools context))))))))))
 
 (defun faux-tool-json-object (tool)
-  ;; Baseline packages/ai/src/types.ts Tool + faux.ts serializeContext:
-  ;; JSON.stringify(context.tools) exposes name/description/parameters and
-  ;; constrainedSampling when present — not execution metadata or label.
+  ;; packages/agent AgentTool extends packages/ai Tool with label; faux.ts
+  ;; JSON.stringify(context.tools) serializes the runtime AgentTool objects.
   (if (tool-constrained-sampling tool)
       (json-object
        "name" (tool-name tool)
+       "label" (tool-name tool)
        "description" (tool-description tool)
        "parameters" (tool-parameters tool)
        "constrainedSampling"
        (tool-constrained-sampling tool))
       (json-object
        "name" (tool-name tool)
+       "label" (tool-name tool)
        "description" (tool-description tool)
        "parameters" (tool-parameters tool))))
 
