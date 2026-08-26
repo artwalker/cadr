@@ -80,5 +80,6 @@
 | Anchor 隔离 | `goal21-anchor-guard.sh` ANCHOR_EXCLUDE | `dispositions.json` 不再被 baseline chore commit 打包 |
 | Fast gate | `GOAL21_GATE_MODE=fast` + `goal21-gate-fast.sh` | 开发迭代 ~2–5 min（preflight + cached analyze + compile）；**验收仍用 full**；`goal21-gate-run.sh` 在 `GOAL21_GATE_MODE=fast` 时委托 fast 脚本 |
 | Capture cache | `goal21-render-diff-capture-cache.sh` | 按 BASELINE commit 存/取 capture，gate-run 无本地缓存时自动 restore |
+| CI capture cache | `.github/workflows/ci.yml` + `verify.sh` | Actions `cache/restore`+`save` keyed on `BASELINE`；`verify.sh` 读 `GOAL21_RENDER_DIFF_*`，有 capture 时用 `analyze` 而非全量 `gate` |
 
 **调度：** `scripts/goal21-team-operator.sh once` 在 impl 完成后、gate 之前 dispatch `infra` lane（tasks 8–12）；core infra batch 全 `done` 后才 dispatch gate task 7。tasks 13+ 为 gate 后 follow-up，不阻塞 gate。

@@ -300,6 +300,16 @@ Verify scripts/goal21-render-diff-capture-cache.sh status; git add scripts/goal2
 			PROMPT="${PROMPT}
 Verify infra lane in goal21-team-operator.sh and goal21-dev-executor.md; git add docs/acceptance/goal21-dev-executor.md scripts/goal21-team-operator.sh scripts/goal21-orchestrator.sh docs/benchmarks/goal21-queue.json"
 			;;
+		p1-merge-fast-gate)
+			PROMPT="${PROMPT}
+Verify GOAL21_GATE_MODE=fast in cadr-team-premerge.sh and goal21-director-merge.sh
+git add scripts/cadr-team-premerge.sh scripts/cadr-team-worktree.sh scripts/goal21-director-merge.sh"
+			;;
+		p1-ci-capture-cache)
+			PROMPT="${PROMPT}
+Verify .github/workflows/ci.yml cache steps; verify.sh honors GOAL21_RENDER_DIFF_*; run scripts/goal21-ci-capture-cache-verify.sh
+git add .github/workflows/ci.yml scripts/verify.sh scripts/goal21-ci-capture-cache-verify.sh docs/acceptance/goal21-dev-executor.md"
+			;;
 		esac
 	fi
 
