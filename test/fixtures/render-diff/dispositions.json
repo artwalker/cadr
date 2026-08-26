@@ -8601,6 +8601,42 @@
         }
       },
       "note": "At example-trigger-compact/process-exit the overlay/command is gone. Residual deltas are startup chrome / I04 wrapping and I01 ANSI teardown."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-thinking",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "61ef91fe7cc5b0f8c344b16ba480f331f19b3756bc0db67ef5dc3469ba443b6e",
+          "cadr": "6fca8fd0963c254a0bb133d10cd88b8f86026aea0ec04cf040dee6079ea0112d"
+        }
+      },
+      "note": "At overlays-core/overlay-thinking [narrow] the /thinking selector and footer token counters match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-thinking",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "fe3dc8d586916d079d20f6ba737a69f06d1d3b4b1370b5885a2a7d34d066ce0d",
+          "cadr": "1e798c2f1cae9a6e9d24d819c3912a58b1baa0d7433aaeda60f1e2b1b767b8fd"
+        }
+      },
+      "note": "At overlays-core/overlay-thinking [wide] the /thinking selector and footer token counters match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
     }
   ]
 }
