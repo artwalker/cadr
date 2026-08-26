@@ -125,7 +125,7 @@
   {
    "id": 7,
    "lane": "gate",
-   "status": "pending",
+   "status": "in_progress",
    "slug": "full-gate",
    "title": "verify.sh + test-cl.sh + CHANGELOG 0843",
    "branch": null
