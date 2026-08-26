@@ -87,15 +87,15 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "6885c7881d8bbc0dba045fa803bd349bc6a71cc6540410a1bdc4592dff652218",
-          "cadr": "c677da41e319b6eef103929b704698cb3320fd59a18222ba9f83b48e8d7b91dc"
+          "pi": "83bd80b3b8751448295e4df1b2d4c9a69c50a2b260eb5c64efff66eafe7ef032",
+          "cadr": "84e77b345c2147dc1b891c7052d4acc58d800c37b4e677256c7654bd3cc7b30a"
         },
         "narrow": {
-          "pi": "eb6b2dd040532c96938ba31ba2ab4571da7d66e06637bc6edb83222de2a11c4d",
-          "cadr": "113090d6cb233c08dafbddae453dc95465bcdd481a3c7903880c3bf68a462beb"
+          "pi": "fa29e2cd9d273b22cbee9001172a546998aaeed5e32943e0e7baf8748dde31ba",
+          "cadr": "1b9463fd7b13312bd1d1f25c3a32e8f7b0ca527d02e3983484d96a2bb328f3f6"
         }
       },
-      "note": "At autocomplete-surfaces/autocomplete-slash [wide+narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At autocomplete-surfaces/autocomplete-slash [wide+narrow] the visible text matches pi under identity substitution; remaining differences are adjudicated I04 substitutions and terminal protocol (I01)."
     },
     {
       "scenario": "autocomplete-surfaces",
@@ -6549,7 +6549,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "a6a568ad00d9167f41006434a126454e7b3af1a3f462785810c397ab380c8dd1",
+          "pi": "6de69eaef4f0f3c662dec8d8d08f3b22dfaf9c0974a30dbf3a10a7e91892816f",
           "cadr": "4793f221c6a8d976c6f413220e22743d14875beff34f1da8dab8107d6467bf1d"
         }
       },
