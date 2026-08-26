@@ -30,7 +30,7 @@
 1. `scripts/goal21-pair-worktree.sh <task-id> <slug>` 创建分支 `g21-<id>-<slug>`
 2. **永不**在主 checkout 上改 `src/`（operator 除外做 anchor 机械步）
 3. 完成打印：`GOAL21_COMPLETE task=<id> branch=g21-<id>-<slug>`
-4. 总监：`scripts/goal21-director-merge.sh <branch>`
+4. 总监：`scripts/goal21-director-merge.sh <branch>`（premerge + post-merge 均 `GOAL21_GATE_MODE=fast`）
 
 ## 机械枚举（0.84.2→0.84.3）
 

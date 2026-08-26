@@ -1,0 +1,412 @@
+{
+ "schemaVersion": 1,
+ "goals": {
+  "20": {
+   "schemaVersion": 1,
+   "paused": true,
+   "pauseReason": "goal21-pi-0843-alignment",
+   "nextPairNum": 270,
+   "lanes": {
+    "a": {
+     "role": "pairing",
+     "measure": "measure-agent-tool-loop",
+     "subsystem": "src/cadr-agent/"
+    },
+    "b": {
+     "role": "pairing",
+     "measure": "measure-resource-loader",
+     "subsystem": "src/cadr-cli/resource-loader/"
+    },
+    "c": {
+     "role": "pairing",
+     "measure": "measure-cli-settings",
+     "subsystem": "src/cadr-cli/settings/"
+    },
+    "opt": {
+     "role": "optimization",
+     "targets": [
+      "cli_selectors.scoped_models_selector_sorted_ids",
+      "cli_selectors.scoped_models_selector_enable_all",
+      "cli_selectors.oauth_selector_ui_state"
+     ]
+    }
+   },
+   "tasks": [
+    {
+     "pair": 253,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/runtime.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "agent_tool_loop.runtime",
+     "branch": "pair-253-runtime"
+    },
+    {
+     "pair": 254,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/conditions.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "agent_conditions.error_probe",
+     "branch": "pair-254-conditions"
+    },
+    {
+     "pair": 255,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/resource-loader/",
+     "measure": "measure-resource-loader",
+     "metric": "session_compact.branch_summarize",
+     "branch": "pair-255-branch-summarization"
+    },
+    {
+     "pair": 256,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-cli/settings/",
+     "measure": "measure-cli-settings",
+     "metric": "resource_loader.dedupe_by_name",
+     "branch": "pair-256-conditions"
+    },
+    {
+     "pair": 253,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-agent/branch-summarization.lisp",
+     "measure": "measure-resource-loader",
+     "metric": "settings_load.config_paths",
+     "branch": "pair-253-config-paths"
+    },
+    {
+     "pair": 254,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-agent/conditions.lisp",
+     "measure": "measure-cli-settings",
+     "metric": "agent_conditions.error_probe",
+     "branch": "pair-254-conditions"
+    },
+    {
+     "pair": 255,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/branch-summarization.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "session_compact.branch_summarize",
+     "branch": "pair-255-branch-summarization"
+    },
+    {
+     "pair": 256,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-agent/conditions.lisp",
+     "measure": "measure-resource-loader",
+     "metric": "resource_loader.dedupe_by_name",
+     "branch": "pair-256-conditions"
+    },
+    {
+     "pair": 257,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-agent/execution-env.lisp",
+     "measure": "measure-cli-settings",
+     "metric": "execution_env.exists_remove_temps",
+     "branch": "pair-257-execution-env"
+    },
+    {
+     "pair": 258,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/branch-summarization.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "session_compact.prepare_branch_entries",
+     "branch": "pair-258-branch-summarization"
+    },
+    {
+     "pair": 259,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-agent/conditions.lisp",
+     "measure": "measure-resource-loader",
+     "metric": "agent_conditions.error_probe",
+     "branch": "pair-259-conditions"
+    },
+    {
+     "pair": 260,
+     "lane": "a",
+     "status": "pending",
+     "source": "src/cadr-agent/execution-env.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": null,
+     "branch": null
+    },
+    {
+     "pair": 261,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-resource-loader",
+     "metric": "file_mutation_queue.with_queue",
+     "branch": "pair-261-file-mutation-queue"
+    },
+    {
+     "pair": 262,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-agent/harness-events.lisp",
+     "measure": "measure-cli-settings",
+     "metric": "agent_tool_loop.harness_events",
+     "branch": "pair-262-harness-events"
+    },
+    {
+     "pair": 263,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.with_queue",
+     "branch": "pair-263-file-mutation-queue"
+    },
+    {
+     "pair": 264,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-agent/harness-events.lisp",
+     "measure": "measure-resource-loader",
+     "metric": "agent_tool_loop.harness_events",
+     "branch": "pair-264-harness-events"
+    },
+    {
+     "pair": 265,
+     "lane": "c",
+     "status": "pending",
+     "source": "src/cadr-ai/images.lisp",
+     "measure": "measure-cli-settings",
+     "metric": null,
+     "branch": null
+    },
+    {
+     "pair": 266,
+     "lane": "b",
+     "status": "in_progress",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-resource-loader",
+     "metric": null,
+     "branch": null
+    },
+    {
+     "pair": 267,
+     "lane": "a",
+     "status": "pending",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": null,
+     "branch": null
+    },
+    {
+     "pair": 268,
+     "lane": "c",
+     "status": "pending",
+     "source": "src/cadr-agent/harness-events.lisp",
+     "measure": "measure-cli-settings",
+     "metric": null,
+     "branch": null
+    },
+    {
+     "pair": 269,
+     "lane": "b",
+     "status": "pending",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-resource-loader",
+     "metric": null,
+     "branch": null
+    }
+   ],
+   "mergeQueue": [
+    {
+     "branch": "pair-263-file-mutation-queue",
+     "pair": 263
+    },
+    {
+     "branch": "pair-264-harness-events",
+     "pair": 264
+    }
+   ]
+  },
+  "21": {
+   "schemaVersion": 1,
+   "paused": false,
+   "goal20Paused": true,
+   "nextTaskId": 18,
+   "lanes": {
+    "anchor": {
+     "role": "mechanical",
+     "scope": "BASELINE + render-diff pin"
+    },
+    "parity": {
+     "role": "enumeration",
+     "scope": "source-parity disposition"
+    },
+    "a": {
+     "role": "impl",
+     "scope": "thinking selector + session defaults"
+    },
+    "b": {
+     "role": "impl",
+     "scope": "compaction + session_compact_failed"
+    },
+    "c": {
+     "role": "impl",
+     "scope": "GoogleApiThinkingLevel + providers"
+    },
+    "infra": {
+     "role": "mechanical",
+     "scope": "gate structural improvements"
+    },
+    "gate": {
+     "role": "verification",
+     "scope": "verify.sh + test-cl.sh"
+    }
+   },
+   "tasks": [
+    {
+     "id": 1,
+     "lane": "anchor",
+     "status": "done",
+     "slug": "set-baseline",
+     "title": "Mechanical anchor",
+     "branch": "main"
+    },
+    {
+     "id": 2,
+     "lane": "parity",
+     "status": "done",
+     "slug": "source-parity",
+     "title": "source parity",
+     "branch": "g21-2-source-parity"
+    },
+    {
+     "id": 3,
+     "lane": "a",
+     "status": "done",
+     "slug": "thinking-selector",
+     "title": "thinking",
+     "branch": "g21-3-thinking-selector"
+    },
+    {
+     "id": 4,
+     "lane": "b",
+     "status": "done",
+     "slug": "compaction",
+     "title": "compaction",
+     "branch": "g21-4-compaction"
+    },
+    {
+     "id": 5,
+     "lane": "c",
+     "status": "done",
+     "slug": "google-api-thinking",
+     "title": "google",
+     "branch": "g21-5-google-api-thinking"
+    },
+    {
+     "id": 6,
+     "lane": "a",
+     "status": "done",
+     "slug": "powershell-tool",
+     "title": "powershell",
+     "branch": "g21-6-powershell-tool"
+    },
+    {
+     "id": 8,
+     "lane": "infra",
+     "status": "done",
+     "slug": "disposition-audit",
+     "title": "render-diff disposition audit script + validate-only gate",
+     "branch": "main"
+    },
+    {
+     "id": 9,
+     "lane": "infra",
+     "status": "done",
+     "slug": "anchor-disposition-guard",
+     "title": "exclude dispositions.json from anchor-guard chore commits",
+     "branch": "main"
+    },
+    {
+     "id": 10,
+     "lane": "infra",
+     "status": "done",
+     "slug": "fast-gate",
+     "title": "GOAL21_GATE_MODE=fast tier",
+     "branch": "main"
+    },
+    {
+     "id": 11,
+     "lane": "infra",
+     "status": "done",
+     "slug": "capture-cache",
+     "title": "baseline-keyed render-diff capture cache",
+     "branch": "main"
+    },
+    {
+     "id": 12,
+     "lane": "infra",
+     "status": "done",
+     "slug": "team-integration",
+     "title": "infra lane operator dispatch + docs",
+     "branch": "main"
+    },
+    {
+     "id": 7,
+     "lane": "gate",
+     "status": "pending",
+     "slug": "full-gate",
+     "title": "verify.sh + test-cl.sh + CHANGELOG 0843",
+     "branch": null
+    },
+    {
+     "id": 13,
+     "lane": "infra",
+     "status": "done",
+     "slug": "p1-merge-fast-gate",
+     "title": "verify fast gate on director-merge + premerge",
+     "branch": "main"
+    },
+    {
+     "id": 14,
+     "lane": "infra",
+     "status": "pending",
+     "slug": "p1-ci-capture-cache",
+     "title": "verify CI render-diff capture cache workflow",
+     "branch": null
+    },
+    {
+     "id": 15,
+     "lane": "infra",
+     "status": "pending",
+     "slug": "p2-class-rules",
+     "title": "verify disposition-class-rules.json + render-diff analyze",
+     "branch": null
+    },
+    {
+     "id": 16,
+     "lane": "infra",
+     "status": "pending",
+     "slug": "p2-test-cl-shard",
+     "title": "verify CADR_TEST_CL_SHARD fiveam|goal20",
+     "branch": null
+    },
+    {
+     "id": 17,
+     "lane": "infra",
+     "status": "pending",
+     "slug": "p2-manifest-skeletons",
+     "title": "verify ensure-skeletons + on-manifest-change hook",
+     "branch": null
+    }
+   ],
+   "mergeQueue": []
+  }
+ }
+}

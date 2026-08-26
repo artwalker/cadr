@@ -33,6 +33,7 @@ ANCHOR_EXCLUDE=(
 	scripts/goal21-gate-run.sh
 	scripts/goal21-render-diff-audit-dispositions.py
 	scripts/goal21-render-diff-capture-cache.sh
+	scripts/cadr-team-premerge.sh
 	scripts/goal21-orchestrator.sh
 	scripts/goal21-team-operator.sh
 	scripts/goal21-director-merge.sh
