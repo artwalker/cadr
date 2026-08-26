@@ -7148,14 +7148,14 @@
       "screenSha256": {
         "wide": {
           "pi": "a38e5065449a9637514c095f4a4b23135ef5bf9f5aa3f544a2b78737c9cdd5be",
-          "cadr": "55809bcb5c587a62152fa4ec6c2025ddb2ddecee6bf8cdcb9184aac5f7800492"
+          "cadr": "4374a4308a8a2b31a08bf308c373aaa360baa3a98cb7eeb98f4ed4879d3fe02a"
         },
         "narrow": {
           "pi": "4f1a6f26d339009173aef90b21c74ff12cd004e2a15757569c52c1ce834536d3",
-          "cadr": "322fb5061aebfbfbcb6001fc4ae67a140113608cfc1fe8f22fbfde83eb0afa13"
+          "cadr": "44c59ac0a894f9278d31995b1279f36fa7514b54c4f1a57136522207754d707f"
         }
       },
-      "note": "At conversation-mermaid/mermaid-fallback [wide+narrow] both sides silently keep the mermaid source fence (no warning line); the footer token counters read cadr ↑3.6k W3.6k 1.9%/128k vs pi ↑3.7k W3.7k 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04). Remaining visible deltas are startup-help scrolling, Goal 16 identity wrapping, and I01 ANSI segmentation."
+      "note": "At conversation-mermaid/mermaid-fallback [wide+narrow] both sides silently keep the mermaid source fence (no warning line); pi syntax-highlights the invalid mermaid body (yellow not a diagram) while cadr leaves it unstyled (I04). Wide also differs by Goal 16 identity wrapping of the startup help line plus I01 ANSI segmentation on banner padding."
     },
     {
       "scenario": "conversation-mermaid",
