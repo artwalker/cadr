@@ -22,6 +22,7 @@
 | **Impl B** | `b` | `session_compact_failed`、compaction summary 不入库（#7048） |
 | **Impl C** | `c` | `GoogleApiThinkingLevel` 重命名、provider 表增量 |
 | **Gate** | `gate` | 脚本 `goal21-gate-run.sh` 跑 `verify.sh`+`test-cl.sh`；失败才短会话 fix agent（勿让单 agent 扛全量长跑） |
+| **Infra** | `infra` | 验证/提交 gate 结构性改进（disposition audit、fast gate、capture cache、anchor-guard 隔离） |
 | **总监** | director | worktree 分支 cherry-pick 串行合入；每 merge 后 `baseline-anchor.py check` |
 
 ## Worktree 纪律
@@ -67,3 +68,17 @@
 - **编译门禁：** gate 前先 `scripts/ensure-root-binary.sh`（stale 则 `rebuild-root-binary.sh`）；fix agent 改 `src/` 后须 `scripts/cadr-compile-check.sh` + `derive-source-parity-mappings.lisp --check`；本地可选 `scripts/install-git-hooks.sh` 装 pre-commit。
 - **Fix commit：** `fix(g21-gate): <stage-slug> (rN)`，勿再用泛化 chore 信息。
 - **Fix agent 纪律：** 短会话只改代码 + commit；长跑（render-diff core、verify）一律交给 orchestrator 脚本，避免 30 min 超时后仍烧全量 gate 轮次。
+- **Specialist dispatch：** `goal21-gate-fix-dispatch.sh` 按 failure kind 派 specialist（`task-key=gate-specialist-<kind>-<task>-rN-pM`，`--goal gate-<kind>`），不再用万能 `gate-fix-*`。机械修复先跑 `goal21-gate-mechanical-fix.sh`（render-diff auto-sync、goal20-ledger `--write`、product-identity 已 PASS 则跳过）。
+
+## Gate 结构性改进（infra lane）
+
+**问题：** 实现 lane 快、验收慢；`dispositions.json` 难维护主因是 hash 过期与 anchor-guard 覆盖 disposition commit，而非文件体积。
+
+| 改进 | 脚本 | 作用 |
+|---|---|---|
+| Disposition audit | `goal21-render-diff-audit-dispositions.py` | manifest 校验、stale 检测、`--prune-stale`；proactive heal 每轮 audit |
+| Anchor 隔离 | `goal21-anchor-guard.sh` ANCHOR_EXCLUDE | `dispositions.json` 不再被 baseline chore commit 打包 |
+| Fast gate | `GOAL21_GATE_MODE=fast` + `goal21-gate-fast.sh` | 开发迭代 ~2–5 min（preflight + cached analyze + compile）；**验收仍用 full** |
+| Capture cache | `goal21-render-diff-capture-cache.sh` | 按 BASELINE commit 存/取 capture，gate-run 无本地缓存时自动 restore |
+
+**调度：** operator 在 impl 完成后、gate 之前 dispatch `infra` lane（tasks 8–12）；infra 全 done 后才 dispatch gate task 7。
