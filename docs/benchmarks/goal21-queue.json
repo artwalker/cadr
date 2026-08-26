@@ -165,7 +165,7 @@
   {
    "id": 17,
    "lane": "infra",
-   "status": "pending",
+   "status": "in_progress",
    "slug": "p2-manifest-skeletons",
    "title": "verify ensure-skeletons + on-manifest-change hook",
    "branch": null
