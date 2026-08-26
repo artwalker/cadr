@@ -4839,8 +4839,7 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
@@ -4848,7 +4847,7 @@
           "cadr": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d"
         }
       },
-      "note": "At tools-success/tree-rich-tools [narrow] the session-tree content matches pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
+      "note": "At tools-success/tree-rich-tools [narrow] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
