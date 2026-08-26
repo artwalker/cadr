@@ -297,17 +297,49 @@ run_compile_warning_gate() {
     --root "$PROJECT_DIRECTORY" --system cadr-ai
 }
 
+render_diff_output_dir() {
+  printf '%s\n' "${GOAL21_RENDER_DIFF_OUTPUT:-$VERIFY_ROOT/render-diff}"
+}
+
+render_diff_analysis_dir() {
+  printf '%s\n' "${GOAL21_RENDER_DIFF_ANALYSIS:-$VERIFY_ROOT/render-diff-analysis}"
+}
+
+render_diff_has_cached_captures() {
+  local dir="$1"
+  [ -d "$dir" ] || return 1
+  local count
+  count="$(ls -1 "$dir"/*.pi.normalized.raw 2>/dev/null | wc -l)"
+  [ "${count:-0}" -gt 0 ]
+}
+
 run_render_diff_gate() {
+  local rd_output rd_analysis
+  rd_output="$(render_diff_output_dir)"
+  rd_analysis="$(render_diff_analysis_dir)"
+  mkdir -p "$rd_output" "$rd_analysis"
   python3 -u "$PROJECT_DIRECTORY/test/render-diff-gate-test.py" &&
-    python3 -u "$PROJECT_DIRECTORY/scripts/render-diff.py" gate \
-      --pi-repo "$PROJECT_DIRECTORY" \
-      --manifest "$PROJECT_DIRECTORY/test/fixtures/render-diff/scenarios.json" \
-      --dispositions "$PROJECT_DIRECTORY/test/fixtures/render-diff/dispositions.json" \
-      --tier core \
-      --baseline-cache "$PI_BASELINE_CACHE" \
-      --timeout 60 \
-      --output "$VERIFY_ROOT/render-diff" \
-      --analysis-output "$VERIFY_ROOT/render-diff-analysis"
+    if render_diff_has_cached_captures "$rd_output"; then
+      python3 -u "$PROJECT_DIRECTORY/scripts/render-diff.py" analyze \
+        --pi-repo "$PROJECT_DIRECTORY" \
+        --manifest "$PROJECT_DIRECTORY/test/fixtures/render-diff/scenarios.json" \
+        --dispositions "$PROJECT_DIRECTORY/test/fixtures/render-diff/dispositions.json" \
+        --tier core \
+        --baseline-cache "$PI_BASELINE_CACHE" \
+        --timeout 60 \
+        --output "$rd_output" \
+        --analysis-output "$rd_analysis"
+    else
+      python3 -u "$PROJECT_DIRECTORY/scripts/render-diff.py" gate \
+        --pi-repo "$PROJECT_DIRECTORY" \
+        --manifest "$PROJECT_DIRECTORY/test/fixtures/render-diff/scenarios.json" \
+        --dispositions "$PROJECT_DIRECTORY/test/fixtures/render-diff/dispositions.json" \
+        --tier core \
+        --baseline-cache "$PI_BASELINE_CACHE" \
+        --timeout 60 \
+        --output "$rd_output" \
+        --analysis-output "$rd_analysis"
+    fi
 }
 
 run_tool_result_diff_gate() {
