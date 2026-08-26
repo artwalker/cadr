@@ -149,7 +149,7 @@
   {
    "id": 15,
    "lane": "infra",
-   "status": "pending",
+   "status": "in_progress",
    "slug": "p2-class-rules",
    "title": "verify disposition-class-rules.json + render-diff analyze",
    "branch": null
