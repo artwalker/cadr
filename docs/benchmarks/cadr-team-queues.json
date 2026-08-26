@@ -376,10 +376,10 @@
     {
      "id": 14,
      "lane": "infra",
-     "status": "in_progress",
+     "status": "done",
      "slug": "p1-ci-capture-cache",
      "title": "verify CI render-diff capture cache workflow",
-     "branch": null
+     "branch": "main"
     },
     {
      "id": 15,
