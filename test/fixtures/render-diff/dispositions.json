@@ -7106,7 +7106,8 @@
         "wide"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "wide": {
@@ -7114,7 +7115,7 @@
           "cadr": "29475d1965245eb740bb9ce057c4f82a053d1b56ffc10c03f74c468878e81ac0"
         }
       },
-      "note": "At conversation-mermaid/wide/mermaid-rendered the flowchart art (A/B boxes and edge) and footer token counters (↑2.5k W2.5k 2.0%/128k) match pi; the residual semantic screen pair differs only by I01 ANSI update segmentation/teardown."
+      "note": "At conversation-mermaid/wide/mermaid-rendered the flowchart art (A/B boxes and edge) and footer token counters (↑2.5k W2.5k 2.0%/128k) match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
     },
     {
       "scenario": "conversation-mermaid",
