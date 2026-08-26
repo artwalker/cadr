@@ -4801,15 +4801,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d",
-          "cadr": "1fa02a6673a69b93f1f6ff0a94fdd982b94ad1e0ede80c3296747ced8e65678d"
+          "cadr": "5f4257ceea28d25a3840f1de581decb0cd6c88ba9c552cc5bc721414070eaa1f"
         }
       },
-      "note": "At tools-success/tree-rich-tools [narrow] the session-tree visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At tools-success/tree-rich-tools [narrow] the session-tree content matches pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
     },
     {
       "scenario": "tools-success",
@@ -4818,16 +4819,15 @@
         "wide"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "wide": {
           "pi": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8",
-          "cadr": "c6a97fdcf1b7e7253ce528f94443df4a51483b6ba94392c3c68e00a0dade36a4"
+          "cadr": "d52752046505ef50433c1c7142d7649287e3bf4187b2c80af8abcb8cae47b4d8"
         }
       },
-      "note": "At tools-success/tree-rich-tools [wide] the session-tree content and footer token counters match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
+      "note": "At tools-success/tree-rich-tools [wide] the session-tree visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "tools-success",
@@ -5941,7 +5941,7 @@
       ],
       "screenSha256": {
         "wide": {
-          "pi": "df6722c59b488b693c41da7d2501edea22fc0e71bd7632958b4a04cf71fe623b",
+          "pi": "53a94230ec395bd580c203203bd5b745d003c220bf23905acad1dc54bfa5bf19",
           "cadr": "434bba7c792a77f048fb3b0c87939631de9396ce83fc978d7b177215201992d5"
         }
       },
