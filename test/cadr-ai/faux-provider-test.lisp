@@ -383,6 +383,7 @@
               (list
                (cadr-ai::json-object
                 "name" "read"
+                "label" "read"
                 "description" "Read file"
                 "parameters" parameters))))))
          (handle (cadr-ai:make-faux-provider)))
