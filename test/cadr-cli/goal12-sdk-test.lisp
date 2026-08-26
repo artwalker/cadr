@@ -168,6 +168,9 @@
        (merge-pathnames "APPEND_SYSTEM.md" project-config)
        "base append")
       (write-text
+       (merge-pathnames "AGENTS.md" agent-directory)
+       "agent context")
+      (write-text
        (merge-pathnames "AGENTS.md" temporary)
        "base context")
       (let* ((custom-skill

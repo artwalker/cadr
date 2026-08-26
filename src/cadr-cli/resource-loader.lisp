@@ -150,25 +150,42 @@ Returns the deduped list and a list of collision records
           :key (lambda (entry)
                  (getf entry :name)))))
 
-(defun load-project-context-files (cwd)
-  ;; pi@4e58f324f core/resource-loader.ts:119-156: walk cwd→root and
-  ;; unshift each hit so the list is rootward-first (outer ancestors
-  ;; before the project file). The first existing candidate wins per
-  ;; directory.
-  (let ((files nil))
-    (dolist (directory
-             (ancestor-directories cwd))
-      (let ((match
-              (dolist (name '("AGENTS.override.md" "AGENTS.md"
-                              "AGENTS.MD" "CLAUDE.md" "CLAUDE.MD"))
-                (let ((path
-                        (existing-file
-                         (merge-pathnames name directory))))
-                  (when path
-                    (return path))))))
-        (when match
-          (push match files))))
-    files))
+(defun load-context-file-from-dir (directory)
+  (dolist (name '("AGENTS.override.md" "AGENTS.md"
+                  "AGENTS.MD" "CLAUDE.md" "CLAUDE.MD"))
+    (let ((path
+            (existing-file
+             (merge-pathnames name directory))))
+      (when path
+        (return path)))))
+
+(defun load-project-context-files (&key cwd agent-directory)
+  ;; pi@4e58f324f core/resource-loader.ts:118-155: global agent-dir
+  ;; context first, then cwd→root ancestors rootward-first. First
+  ;; existing candidate wins per directory; paths are deduped.
+  (let ((ancestors nil)
+        (seen (make-hash-table :test #'equal)))
+    (labels ((remember (path)
+               (let ((key (namestring (truename path))))
+                 (unless (gethash key seen)
+                   (setf (gethash key seen) t)
+                   (push path ancestors)))))
+      (loop for directory in (ancestor-directories cwd)
+            for match = (load-context-file-from-dir directory)
+            when match do (remember match))
+      (let ((global
+              (when agent-directory
+                (load-context-file-from-dir
+                 (uiop:ensure-directory-pathname
+                  agent-directory)))))
+        (append
+         (if (and global
+                  (not (gethash
+                        (namestring (truename global))
+                        seen)))
+             (list global)
+             nil)
+         (nreverse ancestors))))))
 
 (defun nearest-config-file (configs name)
   (loop for directory in configs
@@ -322,7 +339,11 @@ Returns the deduped list and a list of collision records
                          (default-resource-loader-no-context-files-p
                           loader)
                        (load-project-context-files
+                        :cwd
                         (default-resource-loader-cwd
+                         loader)
+                        :agent-directory
+                        (default-resource-loader-agent-directory
                          loader)))
                      :system-prompt-path
                      (nearest-config-file

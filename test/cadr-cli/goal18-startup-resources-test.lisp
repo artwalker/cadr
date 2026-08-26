@@ -76,7 +76,8 @@
                     (namestring (merge-pathnames "AGENTS.md" project))))
              (actual
               (mapcar #'namestring
-                      (cadr-cli::load-project-context-files project))))
+                      (cadr-cli::load-project-context-files
+                       :cwd project))))
         ;; Baseline order is rootward-first; ancestors above the temp tree
         ;; (for example /tmp/AGENTS.md) may also be present.
         (is (equal expected (subseq actual (- (length actual) 2))))))))
