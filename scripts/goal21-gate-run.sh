@@ -68,7 +68,7 @@ if [ "${GOAL21_SKIP_PREFLIGHT:-0}" != 1 ]; then
 		&& [ -f "$FAILURE_TYPE_FILE" ] \
 		&& [ "$(cat "$FAILURE_TYPE_FILE")" = "render-diff" ]; then
 		export GOAL21_PREFLIGHT_RENDER_DIFF=1
-		heartbeat "preflight (auto render-diff core — last failure was render-diff)"
+		heartbeat "preflight auto render-diff core after render-diff failure"
 	fi
 	set +e
 	heartbeat "preflight"
