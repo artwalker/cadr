@@ -82,5 +82,6 @@
 | Capture cache | `goal21-render-diff-capture-cache.sh` | 按 BASELINE commit 存/取 capture，gate-run 无本地缓存时自动 restore |
 | CI capture cache | `.github/workflows/ci.yml` + `verify.sh` | Actions `cache/restore`+`save` keyed on `BASELINE`；`verify.sh` 读 `GOAL21_RENDER_DIFF_*`，有 capture 时用 `analyze` 而非全量 `gate` |
 | Class rules | `disposition-class-rules.json` + `goal21-render-diff-prune-class-rules.py` | 常见 I01/I04 模式由 class rule 裁决；ledger 可 `--apply`  prune；`goal21-class-rules-verify.sh` 跑 cached analyze |
+| Test-cl shard | `CADR_TEST_CL_SHARD` + `test-cl-fiveam.sh` / `test-cl-goal20.sh` | gate 可拆跑 FiveAM 与 goal20 ledger；`goal21-test-cl-shard-verify.sh` 校验 `fiveam\|goal20` 别名与委托 |
 
 **调度：** `scripts/goal21-team-operator.sh once` 在 impl 完成后、gate 之前 dispatch `infra` lane（tasks 8–12）；core infra batch 全 `done` 后才 dispatch gate task 7。tasks 13+ 为 gate 后 follow-up，不阻塞 gate。
