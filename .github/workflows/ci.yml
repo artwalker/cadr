@@ -84,12 +84,33 @@ jobs:
             --load "$QUICKLISP_SETUP" \
             --eval '(ql:quickload (list "cl+ssl" "cl-ppcre" "sqlite" "cl-jpeg" "png-read" "fiveam" "babel" "bordeaux-threads" "flexi-streams" "usocket" "trivial-gray-streams" "slynk"))'
 
+      - name: Restore render-diff capture cache
+        uses: actions/cache/restore@5a3ec84eff668545956fd18022155e47b93eb775
+        with:
+          path: .cache/render-diff-captures
+          key: render-diff-captures-${{ hashFiles('BASELINE') }}
+          restore-keys: |
+            render-diff-captures-
+
       - name: Run the complete credential-free gate
         shell: bash
         run: |
           set -euo pipefail
+          if [ -x ./scripts/goal21-render-diff-capture-cache.sh ]; then
+            ./scripts/goal21-render-diff-capture-cache.sh restore || true
+          fi
           log="$RUNNER_TEMP/cadr-verify.log"
           ./scripts/verify.sh 2>&1 | tee "$log"
           grep -Fx 'Items: 9, run: 0, pass: 0, skip: 9, fail: 0' "$log"
           grep -Fx 'Checks: 9, pass: 0, skip: 9, fail: 0' "$log"
           grep -Fx 'OpenCode Go live TUI                             SKIP (OpenCode Go API key is not configured)' "$log"
+          if [ -x ./scripts/goal21-render-diff-capture-cache.sh ]; then
+            ./scripts/goal21-render-diff-capture-cache.sh save || true
+          fi
+
+      - name: Save render-diff capture cache
+        uses: actions/cache/save@5a3ec84eff668545956fd18022155e47b93eb775
+        if: always()
+        with:
+          path: .cache/render-diff-captures
+          key: render-diff-captures-${{ hashFiles('BASELINE') }}

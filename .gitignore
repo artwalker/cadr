@@ -14,6 +14,7 @@ out.html
 
 # Local render-diff scratch (845 MB of untracked replay/analysis output)
 /.tmp/
+/.cache/render-diff-captures/
 
 # Local agent, test-home, and editor state
 /.codex
