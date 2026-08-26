@@ -316,9 +316,9 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 			FIX_TIMEOUT="${CADR_GATE_FIX_TIMEOUT_SEC:-1800}"
 			case "$FAILURE_KIND" in
 			render-diff)
-				FIX_TARGET="Read ${RENDER_DIFF_BRIEF} and update test/fixtures/render-diff/dispositions.json."
+				FIX_TARGET="Review /tmp/goal21-disposition-draft.json needsReview entries; auto-sync already applied safe updates."
 				FIX_VALIDATE="Do NOT run render-diff.py, verify.sh, or test-cl.sh — orchestrator runs postfix."
-				FIX_TIMEOUT="${CADR_GATE_RENDER_DIFF_FIX_TIMEOUT_SEC:-900}"
+				FIX_TIMEOUT="${CADR_GATE_RENDER_DIFF_FIX_TIMEOUT_SEC:-600}"
 				;;
 			product-identity)
 				FIX_TARGET="Fix docs/product-identity-allowlist.json for unapproved pi tokens."
@@ -342,8 +342,28 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 					"${GOAL21_RENDER_DIFF_ANALYSIS:-/tmp/goal21-render-diff-analysis}" \
 					"$FAIL_LOG" >/dev/null 2>&1 || true
 			fi
-			postfix_try=0
 			postfix_passed=0
+			if [ "$FAILURE_KIND" = "render-diff" ] \
+				&& [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-auto-fix-render-diff.sh" ]; then
+				echo "goal21 gate: auto-sync render-diff dispositions"
+				if "$PROJECT_DIRECTORY/scripts/goal21-gate-auto-fix-render-diff.sh"; then
+					echo "goal21 gate: auto-sync applied safe disposition updates"
+				else
+					echo "goal21 gate: auto-sync incomplete — agent may need to review draft" >&2
+				fi
+				"$PROJECT_DIRECTORY/scripts/goal21-gate-render-diff-brief.sh" \
+					"${GOAL21_RENDER_DIFF_ANALYSIS:-/tmp/goal21-render-diff-analysis}" \
+					"$FAIL_LOG" >/dev/null 2>&1 || true
+				if GOAL21_GATE_FAILURE_TYPE="$FAILURE_KIND" \
+					"$PROJECT_DIRECTORY/scripts/goal21-gate-postfix-check.sh" "$FAILURE_KIND"; then
+					echo "goal21 gate: postfix PASS after auto-sync — next full gate round"
+					postfix_passed=1
+				fi
+			fi
+			if [ "$postfix_passed" -eq 1 ]; then
+				continue
+			fi
+			postfix_try=0
 			while [ "$postfix_try" -lt "$MAX_POSTFIX_TRIES" ]; do
 				postfix_try=$((postfix_try + 1))
 				echo "goal21 gate: fix attempt ${postfix_try}/${MAX_POSTFIX_TRIES} (timeout ${FIX_TIMEOUT}s, kind=${FAILURE_KIND})"

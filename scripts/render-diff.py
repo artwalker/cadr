@@ -3710,6 +3710,20 @@ def analyze(args: argparse.Namespace) -> int:
     }
     missing = sorted(required_keys - dispositions.keys())
     stale = sorted(dispositions.keys() - required_keys)
+    summary_path = analysis_root / "summary.json"
+    summary_path.write_text(
+        json.dumps(results, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
+    )
+    pending_path = analysis_root / "pending-dispositions.json"
+    pending_path.write_text(
+        json.dumps(
+            {"missing": missing, "stale": stale},
+            indent=2,
+            ensure_ascii=False,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     if missing:
         raise HarnessFailure(
             "render-diff differences lack dispositions: " + ", ".join(missing)
@@ -3718,10 +3732,6 @@ def analyze(args: argparse.Namespace) -> int:
         raise HarnessFailure(
             "render-diff dispositions no longer describe a difference: " + ", ".join(stale)
         )
-    summary_path = analysis_root / "summary.json"
-    summary_path.write_text(
-        json.dumps(results, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
-    )
     counts: dict[str, int] = {}
     for result in results:
         disposition = result["automaticDisposition"]

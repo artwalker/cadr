@@ -35,29 +35,58 @@ BRIEF="${GOAL21_RENDER_DIFF_BRIEF:-/tmp/goal21-render-diff-brief.txt}"
 		python3 - "$ANALYSIS/summary.json" <<'PY'
 import json
 import sys
-from collections import Counter
 from pathlib import Path
 
 results = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
-counts = Counter(r.get("automaticDisposition", "?") for r in results)
+counts: dict[str, int] = {}
+for row in results:
+    counts[row.get("automaticDisposition", "?")] = counts.get(row.get("automaticDisposition", "?"), 0) + 1
 print("disposition counts:", " ".join(f"{k}={v}" for k, v in sorted(counts.items())))
 non_aligned = [r for r in results if r.get("automaticDisposition") != "aligned"]
 print(f"non-aligned: {len(non_aligned)}")
 for row in non_aligned[:40]:
-    key = row.get("key", "?")
-    disp = row.get("automaticDisposition", "?")
-    scenario = row.get("scenarioId", row.get("scenario", ""))
-    dimension = row.get("dimensionId", row.get("dimension", ""))
-    checkpoint = row.get("checkpointId", row.get("checkpoint", ""))
-    print(f"  {key}\t{disp}\t{scenario}/{dimension}/{checkpoint}")
+    print(f"  {row.get('key')}\t{row.get('automaticDisposition')}\tgeometryEqual={row.get('textGeometryEqual')}")
 if len(non_aligned) > 40:
-    print(f"  ... and {len(non_aligned) - 40} more (see {sys.argv[1]})")
+    print(f"  ... and {len(non_aligned) - 40} more")
 PY
-	else
-		echo "(no summary.json — capture may still be running or failed early)"
-		if [ -d "$ANALYSIS" ]; then
-			ls -1 "$ANALYSIS" 2>/dev/null | head -10 || true
-		fi
+	fi
+
+	if [ -f "${GOAL21_DISPOSITION_SYNC_REPORT:-/tmp/goal21-disposition-sync-report.json}" ]; then
+		echo ""
+		echo "=== disposition sync report ==="
+		python3 - "${GOAL21_DISPOSITION_SYNC_REPORT:-/tmp/goal21-disposition-sync-report.json}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+report = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+print(
+    f"missing={len(report.get('missing', []))} stale={len(report.get('stale', []))} "
+    f"autoApply={report.get('autoApplyCount', 0)} needsReview={report.get('needsReviewCount', 0)} "
+    f"applied={report.get('applied', False)}"
+)
+for key in report.get("addedKeys", [])[:20]:
+    print(f"  added {key}")
+for key in report.get("removedStale", [])[:20]:
+    print(f"  removed stale {key}")
+PY
+	fi
+
+	if [ -f "${GOAL21_DISPOSITION_DRAFT:-/tmp/goal21-disposition-draft.json}" ]; then
+		echo ""
+		echo "=== disposition draft (needs review) ==="
+		python3 - "${GOAL21_DISPOSITION_DRAFT:-/tmp/goal21-disposition-draft.json}" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+draft = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+for entry in draft.get("needsReview", [])[:10]:
+    print(
+        f"  {entry.get('scenario')}/{entry.get('checkpoint')} "
+        f"dims={entry.get('dimensions')} kind={entry.get('syncKind')}"
+    )
+PY
 	fi
 
 	echo ""
