@@ -297,7 +297,7 @@
   (let* ((root (asdf:system-source-directory "cadr-cli"))
          (test-script
            (uiop:read-file-string
-            (merge-pathnames "scripts/test-cl.sh" root)))
+            (merge-pathnames "scripts/test-cl-fiveam.sh" root)))
          (build-script
            (uiop:read-file-string
             (merge-pathnames "build.sh" root))))

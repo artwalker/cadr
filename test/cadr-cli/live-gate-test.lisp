@@ -554,7 +554,6 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "pull_request_target"
                   "push:"
                   "pull_request:"
-                  "actions/cache"
                   "actions/upload-artifact"
                   "actions/download-artifact"
                   "sudo sh install.sh"
@@ -563,4 +562,12 @@ usage or upgrade your plan: https://www.kimi.com/code/#pricing")
                   "QUICKLISP_SETUP: ${{ runner.temp"
                   "secrets."))
         (is (not (search forbidden source :test #'char-equal))
-            "Forbidden CI mechanism: ~A" forbidden)))))
+            "Forbidden CI mechanism: ~A" forbidden))
+      (dolist (required
+                '("actions/cache/restore"
+                  "actions/cache/save"
+                  "render-diff-captures-${{ hashFiles('BASELINE') }}"
+                  "goal21-render-diff-capture-cache.sh restore"
+                  "goal21-render-diff-capture-cache.sh save"))
+        (is (search required source :test #'char-equal)
+            "Missing G21 render-diff capture cache wiring: ~A" required)))))

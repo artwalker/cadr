@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1217,
+  "expected_findings": 1239,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -5915,6 +5915,374 @@
       "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
     },
     {
+      "path": "scripts/goal21-ci-capture-cache-verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tcount=\"$(ls -1 \"$tmp_out\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-class-rules-verify.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-class-rules-verify.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-class-rules-verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-class-rules-verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-fast.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "\t\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-fast.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-fast.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-fast.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-fast.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "if [ -d \"$RENDER_DIFF_OUTPUT\" ] && [ \"$(ls -1 \"$RENDER_DIFF_OUTPUT\"/*.pi.normalized.raw 2>/dev/null | wc -l)\" -gt 0 ]; then",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-fix-dispatch.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "SPEC=\"$PROJECT_DIRECTORY/docs/acceptance/goal21-pi-0843-alignment.md\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "\t\t\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 2,
+      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 2,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tcount=\"$(ls -1 \"$RENDER_DIFF_OUTPUT\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "\t\t\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 2,
+      "reason": "Goal 21 gate preflight optional render-diff stage uses the same fixed-baseline cache variable as verify.sh; not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate preflight optional render-diff stage uses the same fixed-baseline cache path as verify.sh; not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 2,
+      "reason": "Goal 21 gate preflight optional render-diff stage passes the repository through the fixed-baseline differential --pi-repo contract."
+    },
+    {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\tcount=\"$(ls -1 \"$RENDER_DIFF_OUTPUT\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate preflight detects cached upstream baseline captures by filename suffix; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate preflight names the upstream baseline checkout cache directory used by render-diff; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-proactive-render-diff.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-proactive-render-diff.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-proactive-render-diff.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-proactive-render-diff.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tcount=\"$(ls -1 \"$RENDER_DIFF_OUTPUT\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-proactive-render-diff.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            \"pi\": row.get(\"piScreenSha256\"),",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if actual[\"pi\"] != actual[\"cadr\"]:",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if actual[\"pi\"] is None or actual[\"cadr\"] is None or actual == expected:",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if current.get(\"pi\") == pi_hash and current.get(\"cadr\") == cadr_hash:",
+      "occurrences": 2,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if match is None or match.group(4) != \"pi\":",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if pi_hash != cadr_hash:",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        pi_hash = sha256_file(path)",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        screen[dimension] = {\"pi\": pi_hash, \"cadr\": cadr_hash}",
+      "occurrences": 2,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "CAPTURE_RE = re.compile(r\"^(.+)\\.([^.]+)\\.([^.]+)\\.(pi|cadr)\\.screen$\")",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-gate-run.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tcount=\"$(ls -1 \"$RENDER_DIFF_OUTPUT\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "legacy-env",
+      "token": "PI_AI_MODEL_DATA_",
+      "line": "2. Update scripts/render-diff.py PI_AI_MODEL_DATA_* to match the new baseline package metadata",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\t\tFIX_TARGET=\"Fix docs/product-identity-allowlist.json for unapproved pi tokens.\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\t\tif ! rg -q 'pi v0\\.84\\.3|Goal 21:' \"$PROJECT_DIRECTORY/CHANGELOG.md\"; then",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "3. rm -rf /tmp/cadr-render-diff-pi-* (old baseline caches)",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "5. git add BASELINE scripts/render-diff.py and any rewritten refs; commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "Add under CHANGELOG.md ## [Unreleased] ### Changed a short Goal 21 / pi v0.84.3 alignment note if missing.",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "Commit: chore(cadr-cli): bump baseline to pi v0.84.3 (g21)",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "SPEC=\"$PROJECT_DIRECTORY/docs/acceptance/goal21-pi-0843-alignment.md\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-render-diff-capture-cache.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\tls -1 \"$dir\"/*.pi.normalized.raw 2>/dev/null | wc -l",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-render-diff-ensure-skeletons.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            \"pi\": row[\"piScreenSha256\"],",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
       "path": "scripts/goal21-render-diff-sync-dispositions.py",
       "kind": "pi-token",
       "token": "pi",
@@ -5937,6 +6305,46 @@
       "line": "            + \"] the visible text matches pi under identity substitution; remaining differences are adjudicated I04 substitutions and terminal protocol (I01).\"",
       "occurrences": 1,
       "reason": "Goal 21 render-diff disposition sync generates baseline-pairing adjudication notes; not shipped runtime identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "            return VERIFY_PI_REPO_REASON",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "PI",
+      "line": "VERIFY_PI_REPO_REASON = (",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "        if \"pi-repo\" in line:",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    \"Fixed-baseline differential harness must name upstream pi artifacts, \"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-sync-product-identity-allowlist.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "    \"through its --pi-repo contract.\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
     },
     {
       "path": "scripts/record-paired-paths.py",
@@ -6321,6 +6729,14 @@
       "line": "            \"pi\": result.get(\"piScreenSha256\"),",
       "occurrences": 1,
       "reason": "Fixed-baseline differential harness must name upstream pi artifacts, identity strings, paths, CLI, and side keys exactly; none define Cadr identity."
+    },
+    {
+      "path": "scripts/render-diff.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            \"pi\": result[\"piScreenSha256\"],",
+      "occurrences": 1,
+      "reason": "Goal 15 differential deliberately names, launches, and normalizes the immutable pi side; this is reference input, not Cadr identity."
     },
     {
       "path": "scripts/render-diff.py",
@@ -7110,15 +7526,15 @@
       "path": "scripts/verify.sh",
       "kind": "legacy-env",
       "token": "PI_BASELINE_CACHE",
-      "line": "      --baseline \"$PI_BASELINE_CACHE\" \\",
-      "occurrences": 1,
+      "line": "        --baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 2,
       "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
     },
     {
       "path": "scripts/verify.sh",
       "kind": "legacy-env",
       "token": "PI_BASELINE_CACHE",
-      "line": "      --baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "line": "      --baseline \"$PI_BASELINE_CACHE\" \\",
       "occurrences": 1,
       "reason": "Internal fixed-baseline harness name or normalization marker; it is not a Cadr runtime environment variable."
     },
@@ -7142,8 +7558,8 @@
       "path": "scripts/verify.sh",
       "kind": "pi-token",
       "token": "pi",
-      "line": "      --pi-repo \"$PROJECT_DIRECTORY\" \\",
-      "occurrences": 1,
+      "line": "        --pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 2,
       "reason": "Verification passes the repository to the fixed-baseline differential through its --pi-repo contract."
     },
     {
@@ -7153,6 +7569,14 @@
       "line": "    --exclude=./.pi-cl \\",
       "occurrences": 1,
       "reason": "Migration smoke isolation excludes the retired on-disk namespace so user state cannot enter verification."
+    },
+    {
+      "path": "scripts/verify.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  count=\"$(ls -1 \"$dir\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
+      "occurrences": 1,
+      "reason": "Verification passes the repository to the fixed-baseline differential through its --pi-repo contract."
     },
     {
       "path": "scripts/verify.sh",
@@ -8689,270 +9113,6 @@
       "line": "single CJK characters, and word runs (pi@4e58f324f",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
-    },
-    {
-      "path": "scripts/goal21-gate-fix-dispatch.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "SPEC=\"$PROJECT_DIRECTORY/docs/acceptance/goal21-pi-0843-alignment.md\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-postfix-check.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "\t\t\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
-      "occurrences": 2,
-      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-postfix-check.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-postfix-check.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\t\t\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
-      "occurrences": 2,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-postfix-check.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\tcount=\"$(ls -1 \"$RENDER_DIFF_OUTPUT\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-postfix-check.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-preflight.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "\t\t\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
-      "occurrences": 2,
-      "reason": "Goal 21 gate preflight optional render-diff stage uses the same fixed-baseline cache variable as verify.sh; not a Cadr runtime environment variable."
-    },
-    {
-      "path": "scripts/goal21-gate-preflight.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate preflight optional render-diff stage uses the same fixed-baseline cache path as verify.sh; not a Cadr runtime environment variable."
-    },
-    {
-      "path": "scripts/goal21-gate-preflight.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\t\t\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
-      "occurrences": 2,
-      "reason": "Goal 21 gate preflight optional render-diff stage passes the repository through the fixed-baseline differential --pi-repo contract."
-    },
-    {
-      "path": "scripts/goal21-gate-preflight.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\t\tcount=\"$(ls -1 \"$RENDER_DIFF_OUTPUT\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate preflight detects cached upstream baseline captures by filename suffix; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-preflight.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate preflight names the upstream baseline checkout cache directory used by render-diff; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-proactive-render-diff.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-proactive-render-diff.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-proactive-render-diff.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-proactive-render-diff.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\tcount=\"$(ls -1 \"$RENDER_DIFF_OUTPUT\"/*.pi.normalized.raw 2>/dev/null | wc -l)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-proactive-render-diff.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "            \"pi\": row.get(\"piScreenSha256\"),",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        if actual[\"pi\"] != actual[\"cadr\"]:",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        if actual[\"pi\"] is None or actual[\"cadr\"] is None or actual == expected:",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        if current.get(\"pi\") == pi_hash and current.get(\"cadr\") == cadr_hash:",
-      "occurrences": 2,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        if match is None or match.group(4) != \"pi\":",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        if pi_hash != cadr_hash:",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        pi_hash = sha256_file(path)",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "        screen[dimension] = {\"pi\": pi_hash, \"cadr\": cadr_hash}",
-      "occurrences": 2,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-refresh-disposition-hashes.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "CAPTURE_RE = re.compile(r\"^(.+)\\.([^.]+)\\.([^.]+)\\.(pi|cadr)\\.screen$\")",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "legacy-env",
-      "token": "PI_AI_MODEL_DATA_",
-      "line": "2. Update scripts/render-diff.py PI_AI_MODEL_DATA_* to match the new baseline package metadata",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\t\t\t\tFIX_TARGET=\"Fix docs/product-identity-allowlist.json for unapproved pi tokens.\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "\t\t\t\tif ! rg -q 'pi v0\\.84\\.3|Goal 21:' \"$PROJECT_DIRECTORY/CHANGELOG.md\"; then",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "3. rm -rf /tmp/cadr-render-diff-pi-* (old baseline caches)",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "5. git add BASELINE scripts/render-diff.py and any rewritten refs; commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "Add under CHANGELOG.md ## [Unreleased] ### Changed a short Goal 21 / pi v0.84.3 alignment note if missing.",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "Commit: chore(cadr-cli): bump baseline to pi v0.84.3 (g21)",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "SPEC=\"$PROJECT_DIRECTORY/docs/acceptance/goal21-pi-0843-alignment.md\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
     }
   ],
   "opaque_files": [

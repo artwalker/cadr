@@ -725,7 +725,7 @@
 
 (test deterministic-test-entrypoint-accounts-for-all-nine-suites
   (let* ((root (asdf:system-source-directory "cadr-cli"))
-         (script (merge-pathnames "scripts/test-cl.sh" root))
+         (script (merge-pathnames "scripts/test-cl-fiveam.sh" root))
          (source (uiop:read-file-string script)))
     (dolist (system '("cadr-core" "cadr-ai" "cadr-agent" "cadr-tui" "cadr-cli"
                       "cadr-storage" "cadr-server" "cadr-evals"
@@ -786,7 +786,7 @@
                 (run-test-cl nil dirty)
               (declare (ignore output))
               (is (not (zerop status))
-                  "read-only test-cl.sh must fail on a drifted ledger: ~A"
+                  "read-only test-cl-fiveam.sh must fail on a drifted ledger: ~A"
                   errors)))
           ;; --record remains the explicit write path.
           (destructuring-bind (output errors status)
