@@ -3602,7 +3602,7 @@
           "send": "enter"
         },
         {
-          "waitFor": "Session Tree"
+          "waitForNext": "Session Tree"
         },
         {
           "checkpoint": "overlay-tree"

@@ -358,6 +358,7 @@ REQUIRED_COVERAGE = {
     "overlay-settings-thinking",
     "overlay-settings-warnings",
     "overlay-tree",
+    "overlay-tree-initial",
     "overlay-tree-label",
     "overlay-tree-rich-tools",
     "overlay-trust",
