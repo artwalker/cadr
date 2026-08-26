@@ -703,20 +703,19 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "wide": {
           "pi": "e914a8c115ea407b4a9acc7e728300a9f165860937c0068e6664b0c26f5949b0",
-          "cadr": "94ccd43e587ae67165ff7c65315c30612f90df302701d8a1b5b383f67944517e"
+          "cadr": "e914a8c115ea407b4a9acc7e728300a9f165860937c0068e6664b0c26f5949b0"
         },
         "narrow": {
           "pi": "90a04a3f55bfb14b4c0c866926227f937df8cd286faa1f5cc716cdba887e148e",
-          "cadr": "7fc60ba1f6fe3ec53bf6fccc88166539bc3a972661d038f2c27c3149fb402e31"
+          "cadr": "90a04a3f55bfb14b4c0c866926227f937df8cd286faa1f5cc716cdba887e148e"
         }
       },
-      "note": "At conversation-content/cjk-emoji [wide+narrow] the transcript body matches pi; the footer token counters read cadr ↑3.6k W3.6k 1.9%/128k vs pi ↑3.7k W3.7k 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/cjk-emoji [wide+narrow] semantic screens match pi; raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -725,16 +724,15 @@
         "narrow"
       ],
       "classes": [
-        "I01",
-        "I04"
+        "I01"
       ],
       "screenSha256": {
         "narrow": {
           "pi": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984",
-          "cadr": "0ef27fbc4bfa71eba5e528a443718d8376f2b54a7ffe732aee4c5a67ff6ef8fc"
+          "cadr": "ae92588d0d9f90c0e9bf386e9d3b871760b52bcbd0831a8370f893d7bb088984"
         }
       },
-      "note": "At conversation-content/markdown-code-thinking [narrow] the transcript body matches pi; the footer token counters read cadr ↑2.4k W2.4k CH1.5% 1.9%/128k vs pi ↑2.5k W2.5k CH1.4% 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/markdown-code-thinking [narrow] semantic screens match pi; raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -749,10 +747,10 @@
       "screenSha256": {
         "wide": {
           "pi": "35f2244ba30f571ed40d9398df442fccf902cb6e5be2e523c06711c297b50841",
-          "cadr": "6be48f22b7b9a9ef48df5e9eb680ef15a62ff0dcd1b3deb7c975502ccf93c052"
+          "cadr": "1b82732a093957054a8af637f50c800092ae88c090bd4bc5218fe4fd9ab17d98"
         }
       },
-      "note": "At conversation-content/markdown-code-thinking [wide] the transcript body matches pi; the footer token counters read cadr ↑2.4k W2.4k CH1.5% 1.9%/128k vs pi ↑2.5k W2.5k CH1.4% 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/markdown-code-thinking [wide] the transcript body matches pi; footer token counters read ↑2.5k W2.5k 2.0%/128k on both sides; cadr startup-banner lines retain shorter trailing padding than pi because render-diff substitutes fixed <PRODUCT>/<PRODUCT_TITLE> placeholders whose visible width differs from live pi/Cadr names (I04 product identity artifact); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -768,14 +766,14 @@
       "screenSha256": {
         "wide": {
           "pi": "86da90e267d3eca5fe92f0af1ac4d7378768bb04a767d68f35d49b43005522c5",
-          "cadr": "63df3552fedfec1b5e3105ee0a74da8762b21ea962069201ac43f0c7c22a1058"
+          "cadr": "734e7dce94e46553c2535ada1f59be081d8d3e478b9e3df3ee2b1564d268b594"
         },
         "narrow": {
           "pi": "5a49dd49d3ea1d96c4442f16fbba1fe68d44a2270de060fbcbbdd8bec54ee675",
-          "cadr": "bad192a247bc0eddd63645de47650ab7cc1523749ec81de878604f4eecef320a"
+          "cadr": "8b3be733e671c5bdcb3809151b7843281f0bb3f7230e0970b89cb3100382d9f2"
         }
       },
-      "note": "At conversation-content/plain [wide+narrow] the transcript body matches pi; the footer context counters read cadr 1.2k/1.2k vs pi 1.3k/1.3k because the render harness now mirrors pi-driver.ts seven-tool scope (no powershell) and faux usage serializes the public Tool shape without label (pi packages/ai Tool + faux.ts JSON.stringify). Residual ~0.1k gap is render-contract tool JSON compression vs live pi tool objects (I04); raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/plain [wide+narrow] the transcript body matches pi; footer token counters read ↑1.3k W1.3k 2.0%/128k on both sides; cadr startup-banner lines retain shorter trailing padding than pi because render-diff substitutes fixed <PRODUCT>/<PRODUCT_TITLE> placeholders whose visible width differs from live pi/Cadr names (I04 product identity artifact); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
