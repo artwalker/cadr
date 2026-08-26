@@ -320,6 +320,11 @@ git add test/fixtures/render-diff/disposition-class-rules.json scripts/goal21-re
 Verify scripts/test-cl.sh CADR_TEST_CL_SHARD; run scripts/goal21-test-cl-shard-verify.sh
 git add scripts/test-cl-fiveam.sh scripts/test-cl-goal20.sh scripts/goal21-test-cl-shard-verify.sh docs/acceptance/goal21-dev-executor.md"
 			;;
+		p2-manifest-skeletons)
+			PROMPT="${PROMPT}
+Verify goal21-render-diff-ensure-skeletons.py + goal21-render-diff-on-manifest-change.sh; run scripts/goal21-manifest-skeletons-verify.sh
+git add scripts/goal21-render-diff-on-manifest-change.sh scripts/goal21-manifest-skeletons-verify.sh docs/acceptance/goal21-dev-executor.md"
+			;;
 		esac
 	fi
 
