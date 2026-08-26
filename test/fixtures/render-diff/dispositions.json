@@ -349,7 +349,7 @@
           "cadr": "feba35d6b2d083a509ae688247286aece75030a66acd5c25d823354a16ea1240"
         }
       },
-      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '\u2713 Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '✓ Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "slash-debug",
@@ -647,7 +647,7 @@
           "cadr": "172d8b24bde7bcc53cb49edb7ad082dee2e75344343681ddc63336549ff5519c"
         }
       },
-      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (\u280b vs \u2819, I01 timing); text and layout identical."
+      "note": "The braille spinner shows a different frame of the same animation at the deterministic capture instant (⠋ vs ⠙, I01 timing); text and layout identical."
     },
     {
       "scenario": "compaction-status-threshold",
@@ -750,7 +750,7 @@
           "cadr": "1b82732a093957054a8af637f50c800092ae88c090bd4bc5218fe4fd9ab17d98"
         }
       },
-      "note": "At conversation-content/markdown-code-thinking [wide] the transcript body matches pi; footer token counters read \u21912.5k W2.5k 2.0%/128k on both sides; cadr startup-banner lines retain shorter trailing padding than pi because render-diff substitutes fixed <PRODUCT>/<PRODUCT_TITLE> placeholders whose visible width differs from live pi/Cadr names (I04 product identity artifact); raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/markdown-code-thinking [wide] the transcript body matches pi; footer token counters read ↑2.5k W2.5k 2.0%/128k on both sides; cadr startup-banner lines retain shorter trailing padding than pi because render-diff substitutes fixed <PRODUCT>/<PRODUCT_TITLE> placeholders whose visible width differs from live pi/Cadr names (I04 product identity artifact); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -773,7 +773,7 @@
           "cadr": "8b3be733e671c5bdcb3809151b7843281f0bb3f7230e0970b89cb3100382d9f2"
         }
       },
-      "note": "At conversation-content/plain [wide+narrow] the transcript body matches pi; footer token counters read \u21911.3k W1.3k 2.0%/128k on both sides; cadr startup-banner lines retain shorter trailing padding than pi because render-diff substitutes fixed <PRODUCT>/<PRODUCT_TITLE> placeholders whose visible width differs from live pi/Cadr names (I04 product identity artifact); raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At conversation-content/plain [wide+narrow] the transcript body matches pi; footer token counters read ↑1.3k W1.3k 2.0%/128k on both sides; cadr startup-banner lines retain shorter trailing padding than pi because render-diff substitutes fixed <PRODUCT>/<PRODUCT_TITLE> placeholders whose visible width differs from live pi/Cadr names (I04 product identity artifact); raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "conversation-content",
@@ -5954,15 +5954,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "40f9d693e83a082bb0229e5ed3dc3a0223c43e396e00d6f8c05d32d6cac75474",
+          "pi": "c446ae23d755f8277367a8d6619bb4c08bcef9801fe5fd60d72e1e400b25fd1b",
           "cadr": "40f9d693e83a082bb0229e5ed3dc3a0223c43e396e00d6f8c05d32d6cac75474"
         }
       },
-      "note": "At selector-state-sweep/model-row-01 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-01 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -5989,15 +5990,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "0587476c59503d9e73df670429b6d0f8ab6b2a3c1cb6568ce7d0567de2e6e762",
+          "pi": "c98426dd34d4adc5d6fc5d8ae28dfb0280f42a9e0e0712ad592e73ec43f11abf",
           "cadr": "0587476c59503d9e73df670429b6d0f8ab6b2a3c1cb6568ce7d0567de2e6e762"
         }
       },
-      "note": "At selector-state-sweep/model-row-02 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-02 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6024,15 +6026,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "fbfc5806e51727d66190ac2bbeab7e94406ce2196fffac6bf08020ad33e7110f",
+          "pi": "31eea5e6ab39d397e2a3c09c11224b0e28dca52074ac214e7ce1cb85fdce2cd9",
           "cadr": "fbfc5806e51727d66190ac2bbeab7e94406ce2196fffac6bf08020ad33e7110f"
         }
       },
-      "note": "At selector-state-sweep/model-row-03 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-03 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6059,15 +6062,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "684b8632485087c94f1baa90b535da396de54738c94191ae5aef163cbdf66b71",
+          "pi": "b419653aa0a69dc4cc622b899d2a0c0ba444bc4d5bbff10f62d9cb9200ff0533",
           "cadr": "684b8632485087c94f1baa90b535da396de54738c94191ae5aef163cbdf66b71"
         }
       },
-      "note": "At selector-state-sweep/model-row-04 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-04 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6094,15 +6098,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "aa072c931e2fdbc3d26f1e2d8b16349360bc2943e1b38c27313bf4335580e169",
+          "pi": "ea4e2ab68eac74604040c22bbb0dc28aa52f69567b4bfefe47312715e71e86a6",
           "cadr": "aa072c931e2fdbc3d26f1e2d8b16349360bc2943e1b38c27313bf4335580e169"
         }
       },
-      "note": "At selector-state-sweep/model-row-05 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-05 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6129,15 +6134,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "d7312d64c00870b3c1bd1023b29fdb5879171c4d7674210c0386d9f7cf03d831",
+          "pi": "bedb50f6ae9d71821b8a9777a78fc06214ca0320d9b76188c254d6fcd0118160",
           "cadr": "d7312d64c00870b3c1bd1023b29fdb5879171c4d7674210c0386d9f7cf03d831"
         }
       },
-      "note": "At selector-state-sweep/model-row-06 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-06 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6164,15 +6170,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "a15962990e8380f4acb439da9d1ef96b73c4cea400f44b8f91c852bd00c1f255",
+          "pi": "b2f45eb28778bbc70effdb47d7c0093f1a99aaa66785342a862a06d4420dba01",
           "cadr": "a15962990e8380f4acb439da9d1ef96b73c4cea400f44b8f91c852bd00c1f255"
         }
       },
-      "note": "At selector-state-sweep/model-row-07 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-07 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6199,15 +6206,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "9abde698c1d5147bda540a240f74c3917fd0528ac15f64377e5b9f36b20c7d1a",
+          "pi": "5b5caaf97200519128d2442a767e48988d5d92efc43d809a71275dd34875fe65",
           "cadr": "9abde698c1d5147bda540a240f74c3917fd0528ac15f64377e5b9f36b20c7d1a"
         }
       },
-      "note": "At selector-state-sweep/model-row-08 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-08 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6234,15 +6242,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "4a770597f01a2c8bf46ec4c74730fcbbcee808153518e8c8288f7b8efa1e9b78",
+          "pi": "9fdca9e86d629e7df8e410f8c554a8523a2cc5ed2884b2cef5b5848743f106ab",
           "cadr": "4a770597f01a2c8bf46ec4c74730fcbbcee808153518e8c8288f7b8efa1e9b78"
         }
       },
-      "note": "At selector-state-sweep/model-row-09 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-09 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6269,15 +6278,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "f7ced70f41c83dd64e6c1fed75d6a843b8c3ef8e7c14894b5b0b5204e59500f0",
+          "pi": "fce86f8f0bceda1bc868044a8f43f665d93023f77e159500704a8b5d235a4b88",
           "cadr": "f7ced70f41c83dd64e6c1fed75d6a843b8c3ef8e7c14894b5b0b5204e59500f0"
         }
       },
-      "note": "At selector-state-sweep/model-row-10 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-10 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6304,15 +6314,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "abc0a74f90d330857d6b684dc570b3ab8053971e2e7c4c32f256ccefc160e782",
+          "pi": "06e943b55881e6d8f431d4374e8451b112f5a626b7517c4911f1230691b2717b",
           "cadr": "abc0a74f90d330857d6b684dc570b3ab8053971e2e7c4c32f256ccefc160e782"
         }
       },
-      "note": "At selector-state-sweep/model-row-11 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-11 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6339,15 +6350,16 @@
         "narrow"
       ],
       "classes": [
-        "I01"
+        "I01",
+        "I04"
       ],
       "screenSha256": {
         "narrow": {
-          "pi": "0611257e5fa1cd342c26c40829ef9eae692da3c837d0d3a94fe1c40076607b70",
+          "pi": "42a39982c94ffb3ca6b5b61693a2a88d3f2736cad2cc54baf8e0fdeca1b7cede",
           "cadr": "0611257e5fa1cd342c26c40829ef9eae692da3c837d0d3a94fe1c40076607b70"
         }
       },
-      "note": "At selector-state-sweep/model-row-12 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the visible screen is identical to pi and only the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At selector-state-sweep/model-row-12 [narrow] the /model selector on the all tab after tab (13 models, scrolling selection, (N/13) count, details pane) matches pi row-for-row; the only visible difference is product-identity padding beside <PRODUCT>/<PRODUCT_TITLE> on the startup banner/hint lines (cadr is two cells longer than pi, so the equal-width padding compensates) (I04); the raw ANSI update segmentation differs (I01)."
     },
     {
       "scenario": "selector-state-sweep",
@@ -6896,7 +6908,7 @@
           "cadr": "c8f4169779c35dc967bbd88b8172cb4104659d8514277338417b102c6f33c284"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ \u2192 bin/' and 'Migrated Global commands/ \u2192 prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.3 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.3 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
     },
     {
       "scenario": "cli-error-sweep",
@@ -7123,7 +7135,7 @@
           "cadr": "b0557dede851e60a8bc3153e6e1497067de723f7ab0f80370a744565321c5f31"
         }
       },
-      "note": "At conversation-mermaid/mermaid-absent [wide+narrow] the transcript body and footer token counters (\u21911.3k W1.3k 2.0%/128k) match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
+      "note": "At conversation-mermaid/mermaid-absent [wide+narrow] the transcript body and footer token counters (↑1.3k W1.3k 2.0%/128k) match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
     },
     {
       "scenario": "conversation-mermaid",
@@ -7141,7 +7153,7 @@
           "cadr": "29475d1965245eb740bb9ce057c4f82a053d1b56ffc10c03f74c468878e81ac0"
         }
       },
-      "note": "At conversation-mermaid/wide/mermaid-rendered the flowchart art (A/B boxes and edge) and footer token counters (\u21912.5k W2.5k 2.0%/128k) match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
+      "note": "At conversation-mermaid/wide/mermaid-rendered the flowchart art (A/B boxes and edge) and footer token counters (↑2.5k W2.5k 2.0%/128k) match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
     },
     {
       "scenario": "conversation-mermaid",
@@ -7204,7 +7216,7 @@
           "cadr": "8e4620afc0d77bd335b5204aa4cb8566fe37a80d76b778286f33e6ff83c971c2"
         }
       },
-      "note": "At conversation-mermaid/process-exit [wide+narrow] after alt-screen teardown the flowchart art and footer token counters (\u21913.7k \u219322 R84 W3.7k CH1.9% 2.0%/128k) match pi; pi syntax-highlights the invalid mermaid fence body (yellow not a diagram) while cadr leaves it unstyled (I04); wide also differs by Goal 16 identity wrapping of the startup help line plus I01 ANSI segmentation on banner padding."
+      "note": "At conversation-mermaid/process-exit [wide+narrow] after alt-screen teardown the flowchart art and footer token counters (↑3.7k ↓22 R84 W3.7k CH1.9% 2.0%/128k) match pi; pi syntax-highlights the invalid mermaid fence body (yellow not a diagram) while cadr leaves it unstyled (I04); wide also differs by Goal 16 identity wrapping of the startup help line plus I01 ANSI segmentation on banner padding."
     },
     {
       "scenario": "example-snake",
@@ -8019,7 +8031,7 @@
           "cadr": "f386742c7c85cafeccc4bfe37198ee54c259f54c57c1767c20a084a6be514cdb"
         }
       },
-      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries \u2022 Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries • Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
     },
     {
       "scenario": "example-dynamic-tools",
