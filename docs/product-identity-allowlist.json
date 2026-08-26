@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1182,
+  "expected_findings": 1185,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -5915,6 +5915,38 @@
       "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
     },
     {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "\t\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate preflight optional render-diff stage uses the same fixed-baseline cache variable as verify.sh; not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate preflight optional render-diff stage uses the same fixed-baseline cache path as verify.sh; not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate preflight optional render-diff stage passes the repository through the fixed-baseline differential --pi-repo contract."
+    },
+    {
+      "path": "scripts/goal21-gate-preflight.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate preflight names the upstream baseline checkout cache directory used by render-diff; not shipped Cadr identity."
+    },
+    {
       "path": "scripts/goal21-orchestrator.sh",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_",
@@ -5935,14 +5967,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "5. git add BASELINE scripts/render-diff.py and any rewritten refs; commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/goal21-orchestrator.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "4. git commit -m \\\"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\\\"",
       "occurrences": 1,
       "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
     },
