@@ -1657,6 +1657,42 @@
     },
     {
       "scenario": "overlays-core",
+      "checkpoint": "overlay-tree-initial",
+      "dimensions": [
+        "narrow"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "narrow": {
+          "pi": "64b13122eb6d6e1874d43ccf83a035206fbb189004c77894c9d479c8b1c29b9a",
+          "cadr": "3be18c976d9716d809c274a98dd181c03b03e09a6a0dc642cd809c6b19f6cbb4"
+        }
+      },
+      "note": "At overlays-core/overlay-tree-initial [narrow] the first /tree overlay matches pi row-for-row; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
+    },
+    {
+      "scenario": "overlays-core",
+      "checkpoint": "overlay-tree-initial",
+      "dimensions": [
+        "wide"
+      ],
+      "classes": [
+        "I01",
+        "I04"
+      ],
+      "screenSha256": {
+        "wide": {
+          "pi": "4baad7b4436f9a069bf2d66b8669ddde93e98a923d8ac96903a256c659375a5a",
+          "cadr": "c0d2ac921b317b3dbb9139ab8048c89569c70b1d54ca5e919849e52e43371ead"
+        }
+      },
+      "note": "At overlays-core/overlay-tree-initial [wide] the first /tree overlay matches pi row-for-row; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
+    },
+    {
+      "scenario": "overlays-core",
       "checkpoint": "overlay-tree",
       "dimensions": [
         "narrow"

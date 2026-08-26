@@ -3368,6 +3368,7 @@
         "overlay-session-rename",
         "overlay-session-delete",
         "overlay-fork",
+        "overlay-tree-initial",
         "overlay-tree",
         "overlay-tree-label",
         "overlay-settings",
@@ -3451,7 +3452,7 @@
           "waitFor": "Session Tree"
         },
         {
-          "checkpoint": "overlay-tree"
+          "checkpoint": "overlay-tree-initial"
         },
         {
           "send": "escape"
