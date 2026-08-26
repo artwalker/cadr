@@ -3580,12 +3580,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 128,858 lines**
+Denominator: **297 files / 128,879 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,049 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 174 | 77,070 | 59.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
 | `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
@@ -3732,7 +3732,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
 | `src/cadr-cli/packages/source.lisp` | 338 | `package_manager.resolve`, `package_manager.package_source` |
-| `src/cadr-cli/resource-loader.lisp` | 355 | `resource_loader.reload`, `resource_loader.dedupe_by_name` |
+| `src/cadr-cli/resource-loader.lisp` | 376 | `resource_loader.reload`, `resource_loader.dedupe_by_name` |
 | `src/cadr-cli/sdk/agent-session.lisp` | 481 | `cli_sdk.agent_session` |
 | `src/cadr-cli/sdk/cache-version.lisp` | 498 | `cli_sdk.version_newer`, `cli_sdk.cache_miss`, `cli_sdk.cache_waste`, `cli_sdk.thinking_level` |
 | `src/cadr-cli/sdk/model-service.lisp` | 349 | `cli_sdk.model_runtime` |
