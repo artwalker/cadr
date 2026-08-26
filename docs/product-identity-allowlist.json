@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1185,
+  "expected_findings": 1194,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -5947,6 +5947,38 @@
       "reason": "Goal 21 gate preflight names the upstream baseline checkout cache directory used by render-diff; not shipped Cadr identity."
     },
     {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "\t\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate postfix render-diff stage uses the same fixed-baseline cache variable as verify.sh; not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "legacy-env",
+      "token": "PI_BASELINE_CACHE",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate postfix render-diff stage uses the same fixed-baseline cache path as verify.sh; not a Cadr runtime environment variable."
+    },
+    {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t--pi-repo \"$PROJECT_DIRECTORY\" \\",
+      "occurrences": 1,
+      "reason": "Goal 21 gate postfix render-diff stage passes the repository through the fixed-baseline differential --pi-repo contract."
+    },
+    {
+      "path": "scripts/goal21-gate-postfix-check.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
+      "occurrences": 1,
+      "reason": "Goal 21 gate postfix names the upstream baseline checkout cache directory used by render-diff; not shipped Cadr identity."
+    },
+    {
       "path": "scripts/goal21-orchestrator.sh",
       "kind": "legacy-env",
       "token": "PI_AI_MODEL_DATA_",
@@ -6001,6 +6033,38 @@
       "line": "SPEC=\"$PROJECT_DIRECTORY/docs/acceptance/goal21-pi-0843-alignment.md\"",
       "occurrences": 1,
       "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
+    },
+    {
+      "path": "scripts/goal21-orchestrator.sh",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "\t\t\t\tFIX_TARGET=\"Fix docs/product-identity-allowlist.json for unapproved pi tokens.\"",
+      "occurrences": 1,
+      "reason": "Goal 21 operator harness names the baseline product in gate-fix dispatch prose; not shipped runtime identity."
+    },
+    {
+      "path": "scripts/goal21-render-diff-sync-dispositions.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            \"pi\": row[\"piScreenSha256\"],",
+      "occurrences": 1,
+      "reason": "Goal 21 render-diff disposition sync records baseline screen SHA keys from analysis artifacts; not shipped Cadr identity."
+    },
+    {
+      "path": "scripts/goal21-render-diff-sync-dispositions.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            + \"] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01).\"",
+      "occurrences": 1,
+      "reason": "Goal 21 render-diff disposition sync generates baseline-pairing adjudication notes; not shipped runtime identity."
+    },
+    {
+      "path": "scripts/goal21-render-diff-sync-dispositions.py",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "            + \"] the visible text matches pi under identity substitution; remaining differences are adjudicated I04 substitutions and terminal protocol (I01).\"",
+      "occurrences": 1,
+      "reason": "Goal 21 render-diff disposition sync generates baseline-pairing adjudication notes; not shipped runtime identity."
     },
     {
       "path": "scripts/record-paired-paths.py",
@@ -7881,6 +7945,14 @@
       "line": "  ;; pi@4e58f324f session-selector.ts:140-143 — incremental load",
       "occurrences": 1,
       "reason": "Source comment pins the fixed v0.84.3 baseline file and lines whose contract is implemented here."
+    },
+    {
+      "path": "src/cadr-cli/interactive/selectors/tree.lisp",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "  \"Return the tool path argument, defaulting empty/missing to \\\".\\\" like pi.\"",
+      "occurrences": 1,
+      "reason": "Docstring cites the fixed baseline default-path contract implemented by tree-selector-default-path."
     },
     {
       "path": "src/cadr-cli/interactive/state.lisp",
