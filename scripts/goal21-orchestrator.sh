@@ -310,6 +310,11 @@ git add scripts/cadr-team-premerge.sh scripts/cadr-team-worktree.sh scripts/goal
 Verify .github/workflows/ci.yml cache steps; verify.sh honors GOAL21_RENDER_DIFF_*; run scripts/goal21-ci-capture-cache-verify.sh
 git add .github/workflows/ci.yml scripts/verify.sh scripts/goal21-ci-capture-cache-verify.sh docs/acceptance/goal21-dev-executor.md"
 			;;
+		p2-class-rules)
+			PROMPT="${PROMPT}
+Verify test/fixtures/render-diff/disposition-class-rules.json; run scripts/goal21-class-rules-verify.sh
+git add test/fixtures/render-diff/disposition-class-rules.json scripts/goal21-render-diff-prune-class-rules.py scripts/goal21-class-rules-verify.sh docs/acceptance/goal21-dev-executor.md"
+			;;
 		esac
 	fi
 

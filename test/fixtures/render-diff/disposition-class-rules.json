@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "rules": [
+    {
+      "id": "I01-terminal-protocol",
+      "classes": ["I01"],
+      "match": {
+        "automaticDisposition": "intentional-terminal-protocol"
+      },
+      "noteTemplate": "At {scenario}/{checkpoint} [{dimensions}] the visible text is identical to pi; raw ANSI update segmentation/teardown differs (class rule I01-terminal-protocol)."
+    },
+    {
+      "id": "I01-I04-text-geometry-equal",
+      "classes": ["I01", "I04"],
+      "match": {
+        "automaticDisposition": "requires-disposition",
+        "textGeometryEqual": true
+      },
+      "noteTemplate": "At {scenario}/{checkpoint} [{dimensions}] visible text matches pi under identity substitution; remaining differences are I04 product-identity padding and I01 terminal protocol (class rule I01-I04-text-geometry-equal)."
+    }
+  ]
+}
