@@ -3580,12 +3580,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 128,863 lines**
+Denominator: **297 files / 128,864 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,054 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 174 | 77,055 | 59.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
 | `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
@@ -3683,7 +3683,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/openai.lisp` | 828 | `provider_openai_responses.stream_roundtrip` |
 | `src/cadr-ai/providers/pi-messages.lisp` | 255 | `provider_pi_messages.stream_roundtrip` |
 | `src/cadr-ai/providers/vertex.lisp` | 134 | `provider_vertex.stream_roundtrip` |
-| `src/cadr-ai/runtime/faux-provider.lisp` | 608 | `ai_runtime_faux.blocks` |
+| `src/cadr-ai/runtime/faux-provider.lisp` | 609 | `ai_runtime_faux.blocks` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/support/grammar-coercion.lisp` | 279 | `ai_support.grammar_delta` |
 | `src/cadr-ai/support/overflow.lisp` | 78 | `ai_support.context_overflow` |
