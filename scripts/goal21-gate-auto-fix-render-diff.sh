@@ -58,6 +58,16 @@ SYNC_RC=$?
 set -e
 printf '%s\n' "$SYNC_OUT"
 
+if [ -x "$PROJECT_DIRECTORY/scripts/goal21-render-diff-ensure-skeletons.py" ] && [ "$DRY_RUN" -eq 0 ]; then
+	python3 "$PROJECT_DIRECTORY/scripts/goal21-render-diff-ensure-skeletons.py" \
+		--analysis "$ANALYSIS" --apply || true
+fi
+
+if [ -x "$PROJECT_DIRECTORY/scripts/goal21-render-diff-prune-class-rules.py" ] && [ "$DRY_RUN" -eq 0 ]; then
+	python3 "$PROJECT_DIRECTORY/scripts/goal21-render-diff-prune-class-rules.py" \
+		--analysis "$ANALYSIS" --apply || true
+fi
+
 if [ "$DRY_RUN" -eq 1 ]; then
 	exit "$SYNC_RC"
 fi
