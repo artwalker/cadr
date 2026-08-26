@@ -1685,7 +1685,7 @@
       "screenSha256": {
         "wide": {
           "pi": "960ae31ede812d960659c753a7a38b246e77784f8157939fd9416678678c4c7e",
-          "cadr": "8d62c77775cbf8946f8c3269242cca6729111bed964e9da2fc03fdde4f7a38e6"
+          "cadr": "ebbef53bfd16a2a0fa79eee4e1bb8708ce5b61f2a013a08b50475ef35ef30aba"
         }
       },
       "note": "At overlays-core/overlay-tree [wide] the visible text is identical to pi; the raw ANSI update segmentation/teardown differs (I01)."
