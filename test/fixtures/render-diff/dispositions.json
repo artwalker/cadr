@@ -4591,10 +4591,10 @@
       "screenSha256": {
         "wide": {
           "pi": "0f83405ed0da74aecbccd2c5e72fec28a0ff0f191a16feb9302445808e29cfb0",
-          "cadr": "47951e64243bc1a3c05d4f3b2ef25f160754987ef4a566b5617ae4d315c70b31"
+          "cadr": "f8707ea8392c22ef9620a1969512b80517634f0fb1cc109b2e02195ade13f80d"
         }
       },
-      "note": "At tools-success/bash-multiline [wide] the semantic screen differs only in footer context-token counts and trailing header padding; raw ANSI update segmentation/teardown also differs (I01)."
+      "note": "At tools-success/bash-multiline [wide] the bash transcript and footer token counters match pi; the residual semantic screen pair differs only by Goal 16 identity wrapping of the startup banner and help line (I04) plus I01 ANSI segmentation on the banner row padding."
     },
     {
       "scenario": "tools-success",
