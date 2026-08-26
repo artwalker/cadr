@@ -63,21 +63,43 @@ if ! "$SBCL_COMMAND" --script scripts/derive-source-parity-mappings.lisp --check
 fi
 
 if [ "${GOAL21_PREFLIGHT_RENDER_DIFF:-0}" = 1 ]; then
-	stage "render-diff gate (core)"
+	stage "render-diff preflight (core)"
 	mkdir -p "$RENDER_DIFF_ANALYSIS" "$RENDER_DIFF_OUTPUT"
 	if ! python3 -u test/render-diff-gate-test.py >>"$LOG" 2>&1; then
 		fail "render-diff-gate-test"
 	fi
-	if ! python3 -u scripts/render-diff.py gate \
-		--pi-repo "$PROJECT_DIRECTORY" \
-		--manifest test/fixtures/render-diff/scenarios.json \
-		--dispositions test/fixtures/render-diff/dispositions.json \
-		--tier core \
-		--baseline-cache "$PI_BASELINE_CACHE" \
-		--timeout 60 \
-		--output "$RENDER_DIFF_OUTPUT" \
-		--analysis-output "$RENDER_DIFF_ANALYSIS" >>"$LOG" 2>&1; then
-		fail "render-diff gate (core)"
+	render_diff_has_cached_captures() {
+		[ -d "$RENDER_DIFF_OUTPUT" ] || return 1
+		local count
+		count="$(ls -1 "$RENDER_DIFF_OUTPUT"/*.pi.normalized.raw 2>/dev/null | wc -l)"
+		[ "${count:-0}" -gt 0 ]
+	}
+	if render_diff_has_cached_captures; then
+		stage "render-diff analyze (core, cached captures)"
+		if ! python3 -u scripts/render-diff.py analyze \
+			--pi-repo "$PROJECT_DIRECTORY" \
+			--manifest test/fixtures/render-diff/scenarios.json \
+			--dispositions test/fixtures/render-diff/dispositions.json \
+			--tier core \
+			--baseline-cache "$PI_BASELINE_CACHE" \
+			--timeout 60 \
+			--output "$RENDER_DIFF_OUTPUT" \
+			--analysis-output "$RENDER_DIFF_ANALYSIS" >>"$LOG" 2>&1; then
+			fail "render-diff analyze (core)"
+		fi
+	else
+		stage "render-diff gate (core, no cached captures)"
+		if ! python3 -u scripts/render-diff.py gate \
+			--pi-repo "$PROJECT_DIRECTORY" \
+			--manifest test/fixtures/render-diff/scenarios.json \
+			--dispositions test/fixtures/render-diff/dispositions.json \
+			--tier core \
+			--baseline-cache "$PI_BASELINE_CACHE" \
+			--timeout 60 \
+			--output "$RENDER_DIFF_OUTPUT" \
+			--analysis-output "$RENDER_DIFF_ANALYSIS" >>"$LOG" 2>&1; then
+			fail "render-diff gate (core)"
+		fi
 	fi
 fi
 

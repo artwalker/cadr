@@ -110,11 +110,18 @@ product-identity)
 		exit 1
 	fi
 	;;
-fiveam)
+fiveam | goal20-ledger)
 	stage "cadr compile check"
 	if ! "$PROJECT_DIRECTORY/scripts/cadr-compile-check.sh" >>"$LOG" 2>&1; then
 		echo "goal21-gate-postfix: FAILED cadr-compile-check" >&2
 		exit 1
+	fi
+	if [ "$FAILURE_TYPE" = "goal20-ledger" ]; then
+		stage "goal20 unpaired-paths ledger"
+		if ! python3 scripts/goal20-unpaired-paths.py --check >>"$LOG" 2>&1; then
+			echo "goal21-gate-postfix: FAILED goal20-unpaired-paths --check" >&2
+			exit 1
+		fi
 	fi
 	;;
 unknown | *)
