@@ -360,7 +360,7 @@
     {
      "id": 7,
      "lane": "gate",
-     "status": "in_progress",
+     "status": "pending",
      "slug": "full-gate",
      "title": "verify.sh + test-cl.sh + CHANGELOG 0843",
      "branch": null
@@ -384,7 +384,7 @@
     {
      "id": 15,
      "lane": "infra",
-     "status": "pending",
+     "status": "in_progress",
      "slug": "p2-class-rules",
      "title": "verify disposition-class-rules.json + render-diff analyze",
      "branch": null
