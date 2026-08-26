@@ -56,6 +56,13 @@
 
 ## Gate 防卡死
 
-- **拆分：** `scripts/goal21-gate-run.sh` 跑验收；agent 只读 `/tmp/goal21-gate-fail.txt` 修失败（`GOAL21_FIX_DONE`），会话上限 `CADR_GATE_FIX_TIMEOUT_SEC`（默认 1800s）。
+- **Preflight：** `scripts/goal21-gate-preflight.sh` 在 `verify.sh` 前直接跑 `derive-source-parity-mappings.lisp --check`（默认 ~1 min）；设 `GOAL21_PREFLIGHT_RENDER_DIFF=1` 可再加 render-diff core；**上一轮失败为 render-diff 时 gate-run 自动启用**；跳过设 `GOAL21_SKIP_PREFLIGHT=1`。
+- **Postfix（fix 后、全量 gate 前）：** orchestrator 在每次 fix 后自动跑 `scripts/goal21-gate-postfix-check.sh`。**postfix 未通过则继续 fix，不启动全量 verify**；postfix 5 次仍失败则 reset pending，不再盲烧 gate 轮次。
+- **Render-diff brief：** 失败时 `scripts/goal21-gate-render-diff-brief.sh` 写入 `/tmp/goal21-render-diff-brief.txt`（含缺失 disposition key）；fix agent **禁止**自跑 render-diff。
+- **Fix 超时：** render-diff 类 `CADR_GATE_RENDER_DIFF_FIX_TIMEOUT_SEC`（默认 900s）；其它 `CADR_GATE_FIX_TIMEOUT_SEC`（1800s）。
+- **拆分：** `scripts/goal21-gate-run.sh` 跑验收；agent 只读 `/tmp/goal21-gate-fail.txt` 修失败（`GOAL21_FIX_DONE`），**禁止 agent 跑 verify.sh/test-cl.sh**；定向验证由脚本承担。
 - **进度 stale：** `scripts/cadr-team-stale-agents.sh` — 闲置 ≥`CADR_STALE_IDLE_SEC`（默认 1200s）且无 verify/test-cl/新 commit → kill 僵尸并 reset gate pending。
-- **编译门禁：** gate 前先 `scripts/ensure-root-binary.sh`（stale 则 `rebuild-root-binary.sh`）；fix agent 改 `src/` 后须 `scripts/cadr-compile-check.sh`；本地可选 `scripts/install-git-hooks.sh` 装 pre-commit。
+- **6 轮用尽：** orchestrator reset task `pending` 后自动 tick `goal21-team-operator.sh once` 重调度。
+- **编译门禁：** gate 前先 `scripts/ensure-root-binary.sh`（stale 则 `rebuild-root-binary.sh`）；fix agent 改 `src/` 后须 `scripts/cadr-compile-check.sh` + `derive-source-parity-mappings.lisp --check`；本地可选 `scripts/install-git-hooks.sh` 装 pre-commit。
+- **Fix commit：** `fix(g21-gate): <stage-slug> (rN)`，勿再用泛化 chore 信息。
+- **Fix agent 纪律：** 短会话只改代码 + commit；长跑（render-diff core、verify）一律交给 orchestrator 脚本，避免 30 min 超时后仍烧全量 gate 轮次。

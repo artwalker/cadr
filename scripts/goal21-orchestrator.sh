@@ -282,12 +282,15 @@ On main checkout (allowed for this task only):
 	# Avoids multi-hour cursor-agent sessions that hang on HTTP/2 stream drops.
 	if [ "$LANE" = "gate" ]; then
 		FAIL_LOG="${GOAL21_GATE_FAIL_LOG:-/tmp/goal21-gate-fail.txt}"
+		FAILURE_TYPE_FILE="${GOAL21_GATE_FAILURE_TYPE_FILE:-/tmp/goal21-gate-failure-type}"
 		MAX_ROUNDS="${GOAL21_GATE_MAX_ROUNDS:-6}"
+		MAX_POSTFIX_TRIES="${GOAL21_GATE_MAX_POSTFIX_TRIES:-5}"
 		FIX_TIMEOUT="${CADR_GATE_FIX_TIMEOUT_SEC:-1800}"
-		round=0
-		while [ "$round" -lt "$MAX_ROUNDS" ]; do
-			round=$((round + 1))
-			echo "goal21 gate: round ${round}/${MAX_ROUNDS} running scripts/goal21-gate-run.sh"
+		RENDER_DIFF_BRIEF="/tmp/goal21-render-diff-brief.txt"
+		full_round=0
+		while [ "$full_round" -lt "$MAX_ROUNDS" ]; do
+			full_round=$((full_round + 1))
+			echo "goal21 gate: full round ${full_round}/${MAX_ROUNDS} running scripts/goal21-gate-run.sh"
 			if "$PROJECT_DIRECTORY/scripts/goal21-gate-run.sh" --fail-log "$FAIL_LOG"; then
 				if ! rg -q 'pi v0\.84\.3|Goal 21:' "$PROJECT_DIRECTORY/CHANGELOG.md"; then
 					echo "goal21 gate: PASS but CHANGELOG missing 0843 note — dispatching short docs agent"
@@ -307,31 +310,98 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 				echo "goal21 dispatch: gate task $TASK_ID complete"
 				exit 0
 			fi
-			echo "goal21 gate: verification failed — dispatching fix agent (timeout ${FIX_TIMEOUT}s)"
-			DISPATCH_STATUS=0
-			PROMPT="Read $BRIEF and $SPEC. You are Goal 21 Gate FIX lane (short session).
-Task ${TASK_ID} round ${round}: verification failed. Do NOT re-run full verify.sh or test-cl.sh yourself.
+			FAILURE_KIND="$("$PROJECT_DIRECTORY/scripts/goal21-gate-classify-failure.sh" "$FAIL_LOG")"
+			printf '%s\n' "$FAILURE_KIND" >"$FAILURE_TYPE_FILE"
+			echo "goal21 gate: failure classified as ${FAILURE_KIND} (saved $FAILURE_TYPE_FILE)"
+			FIX_TIMEOUT="${CADR_GATE_FIX_TIMEOUT_SEC:-1800}"
+			case "$FAILURE_KIND" in
+			render-diff)
+				FIX_TARGET="Read ${RENDER_DIFF_BRIEF} and update test/fixtures/render-diff/dispositions.json."
+				FIX_VALIDATE="Do NOT run render-diff.py, verify.sh, or test-cl.sh — orchestrator runs postfix."
+				FIX_TIMEOUT="${CADR_GATE_RENDER_DIFF_FIX_TIMEOUT_SEC:-900}"
+				;;
+			product-identity)
+				FIX_TARGET="Fix docs/product-identity-allowlist.json for unapproved pi tokens."
+				FIX_VALIDATE="Do NOT run verify.sh — optional: python3 test/product-identity-gate-test.py"
+				;;
+			source-parity)
+				FIX_TARGET="Fix docs/source-parity.md line citations and/or mapping drift."
+				FIX_VALIDATE="Optional: sbcl --script scripts/derive-source-parity-mappings.lisp --check"
+				;;
+			fiveam)
+				FIX_TARGET="Fix the failing FiveAM test cited in the excerpt."
+				FIX_VALIDATE="Optional: scripts/cadr-compile-check.sh"
+				;;
+			*)
+				FIX_TARGET="Fix the smallest set of files cited in the failure excerpt."
+				FIX_VALIDATE=""
+				;;
+			esac
+			if [ "$FAILURE_KIND" = "render-diff" ] && [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-render-diff-brief.sh" ]; then
+				"$PROJECT_DIRECTORY/scripts/goal21-gate-render-diff-brief.sh" \
+					"${GOAL21_RENDER_DIFF_ANALYSIS:-/tmp/goal21-render-diff-analysis}" \
+					"$FAIL_LOG" >/dev/null 2>&1 || true
+			fi
+			postfix_try=0
+			postfix_passed=0
+			while [ "$postfix_try" -lt "$MAX_POSTFIX_TRIES" ]; do
+				postfix_try=$((postfix_try + 1))
+				echo "goal21 gate: fix attempt ${postfix_try}/${MAX_POSTFIX_TRIES} (timeout ${FIX_TIMEOUT}s, kind=${FAILURE_KIND})"
+				DISPATCH_STATUS=0
+				HEAD_BEFORE="$(git -C "$PROJECT_DIRECTORY" rev-parse HEAD)"
+				PROMPT="Read $BRIEF and $SPEC. You are Goal 21 Gate FIX lane (short session).
+Task ${TASK_ID} full round ${full_round} fix ${postfix_try}/${MAX_POSTFIX_TRIES}: failed (${FAILURE_KIND}).
+${FIX_VALIDATE}
+Target: ${FIX_TARGET}
 Failure excerpt: $FAIL_LOG
-Full run log (optional): /tmp/goal21-gate-run.log
+Render-diff brief (if applicable): ${RENDER_DIFF_BRIEF}
 Steps:
-1. Read the failure excerpt; fix the smallest set of src/ or test/ files on main.
-2. Prefer targeted test reproduction over full suite.
-3. If you changed anything under src/, run scripts/cadr-compile-check.sh before commit (required).
-4. git commit -m \"chore(cadr-cli): bump baseline to pi v0.84.3 (g21)\"
-5. Print: GOAL21_FIX_DONE task=${TASK_ID} round=${round}
-Keep the session short; the orchestrator re-runs the full gate after you finish."
-			OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
-				--workspace "$PROJECT_DIRECTORY" \
-				--goal gate \
-				--task-key "gate-fix-${TASK_ID}-r${round}" \
-				--timeout "$FIX_TIMEOUT" \
-				-- "$PROMPT" 2>&1)" || DISPATCH_STATUS=$?
-			DISPATCH_STATUS="${DISPATCH_STATUS:-0}"
-			printf '%s\n' "$OUT"
-			if [ "$DISPATCH_STATUS" -eq 124 ]; then
-				echo "goal21 gate: fix agent timeout on round ${round}" >&2
-			elif ! printf '%s' "$OUT" | rg -q "GOAL21_FIX_DONE task=${TASK_ID}"; then
-				echo "goal21 gate: fix agent finished without GOAL21_FIX_DONE on round ${round}" >&2
+1. Read the brief/excerpt; apply the smallest fix on main.
+2. If you changed src/: scripts/cadr-compile-check.sh before commit.
+3. git commit -m \"fix(g21-gate): <stage-slug> (r${full_round})\"
+4. Print: GOAL21_FIX_DONE task=${TASK_ID} round=${full_round}
+Keep under 10 minutes; orchestrator runs postfix before the next full gate."
+				OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
+					--workspace "$PROJECT_DIRECTORY" \
+					--goal gate \
+					--task-key "gate-fix-${TASK_ID}-r${full_round}-p${postfix_try}" \
+					--timeout "$FIX_TIMEOUT" \
+					-- "$PROMPT" 2>&1)" || DISPATCH_STATUS=$?
+				DISPATCH_STATUS="${DISPATCH_STATUS:-0}"
+				printf '%s\n' "$OUT"
+				if [ "$DISPATCH_STATUS" -eq 124 ]; then
+					echo "goal21 gate: fix agent timeout on full round ${full_round} fix ${postfix_try}" >&2
+				elif ! printf '%s' "$OUT" | rg -q "GOAL21_FIX_DONE task=${TASK_ID}"; then
+					echo "goal21 gate: fix agent finished without GOAL21_FIX_DONE on full round ${full_round} fix ${postfix_try}" >&2
+				fi
+				HEAD_AFTER="$(git -C "$PROJECT_DIRECTORY" rev-parse HEAD)"
+				if [ "$HEAD_AFTER" != "$HEAD_BEFORE" ]; then
+					echo "goal21 gate: fix agent produced commit ${HEAD_AFTER} on full round ${full_round} fix ${postfix_try}" >&2
+				fi
+				if GOAL21_GATE_FAILURE_TYPE="$FAILURE_KIND" \
+					"$PROJECT_DIRECTORY/scripts/goal21-gate-postfix-check.sh" "$FAILURE_KIND"; then
+					echo "goal21 gate: postfix check PASS (${FAILURE_KIND}) — next iteration runs full gate"
+					postfix_passed=1
+					break
+				fi
+				echo "goal21 gate: postfix check FAILED (${FAILURE_KIND}) — retry fix" >&2
+			done
+			if [ "$postfix_passed" -ne 1 ]; then
+				echo "goal21 gate: postfix did not pass after ${MAX_POSTFIX_TRIES} tries — reset task ${TASK_ID} to pending (no more blind full gates)" >&2
+				python3 - "$QUEUE_PATH" "$TASK_ID" <<'PY'
+import json, sys
+from pathlib import Path
+data = json.loads(Path(sys.argv[1]).read_text())
+tid = int(sys.argv[2])
+for t in data["tasks"]:
+    if t.get("id") == tid:
+        t["status"] = "pending"
+        t["branch"] = None
+        break
+Path(sys.argv[1]).write_text(json.dumps(data, indent=1) + "\n")
+PY
+				"$PROJECT_DIRECTORY/scripts/goal21-team-operator.sh" once 2>&1 || true
+				exit 0
 			fi
 		done
 		echo "goal21 gate: exhausted ${MAX_ROUNDS} rounds — reset task ${TASK_ID} to pending" >&2
@@ -347,6 +417,7 @@ for t in data["tasks"]:
         break
 Path(sys.argv[1]).write_text(json.dumps(data, indent=1) + "\n")
 PY
+		"$PROJECT_DIRECTORY/scripts/goal21-team-operator.sh" once 2>&1 || true
 		exit 0
 	fi
 
