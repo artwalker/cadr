@@ -360,7 +360,7 @@
     {
      "id": 7,
      "lane": "gate",
-     "status": "pending",
+     "status": "in_progress",
      "slug": "full-gate",
      "title": "verify.sh + test-cl.sh + CHANGELOG 0843",
      "branch": null
@@ -400,7 +400,7 @@
     {
      "id": 17,
      "lane": "infra",
-     "status": "pending",
+     "status": "in_progress",
      "slug": "p2-manifest-skeletons",
      "title": "verify ensure-skeletons + on-manifest-change hook",
      "branch": null
