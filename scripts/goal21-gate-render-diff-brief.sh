@@ -22,12 +22,49 @@ BRIEF="${GOAL21_RENDER_DIFF_BRIEF:-/tmp/goal21-render-diff-brief.txt}"
 		if rg -q 'render-diff dispositions no longer describe a difference:' "$FAIL_LOG" 2>/dev/null; then
 			rg -o 'render-diff dispositions no longer describe a difference:.*' "$FAIL_LOG" | head -1
 		fi
+		if rg -q 'semantic screen pair drifted' "$FAIL_LOG" 2>/dev/null; then
+			echo "validation errors:"
+			rg -o 'semantic screen pair drifted[^[:space:]]* [^[:space:]]+' "$FAIL_LOG" | tail -5
+		fi
+		if rg -q 'terminal-protocol-only disposition cannot admit' "$FAIL_LOG" 2>/dev/null; then
+			rg -o 'terminal-protocol-only disposition cannot admit[^[:space:]]* [^[:space:]]+' "$FAIL_LOG" | tail -5
+		fi
+		if rg -q 'render-diff: semantic screen pair drifted' "$FAIL_LOG" 2>/dev/null; then
+			rg 'render-diff: semantic screen pair drifted' "$FAIL_LOG" | tail -5
+		fi
+		if rg -q 'render-diff: terminal-protocol-only' "$FAIL_LOG" 2>/dev/null; then
+			rg 'render-diff: terminal-protocol-only' "$FAIL_LOG" | tail -5
+		fi
 		if rg -q 'HarnessFailure:' "$FAIL_LOG" 2>/dev/null; then
 			rg 'HarnessFailure:' "$FAIL_LOG" | tail -5
 		fi
 		if rg -q 'render-diff analysis:' "$FAIL_LOG" 2>/dev/null; then
 			rg 'render-diff analysis:' "$FAIL_LOG" | tail -1
 		fi
+		echo ""
+	fi
+
+	if [ -f "$ANALYSIS/pending-dispositions.json" ]; then
+		python3 - "$ANALYSIS/pending-dispositions.json" <<'PY'
+import json
+import sys
+from pathlib import Path
+
+pending = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+error = pending.get("validationError")
+if error:
+    print("validationError:", error)
+missing = pending.get("missing") or []
+stale = pending.get("stale") or []
+if missing:
+    print(f"missing dispositions ({len(missing)}):")
+    for key in missing[:20]:
+        print(f"  {key}")
+if stale:
+    print(f"stale dispositions ({len(stale)}):")
+    for key in stale[:20]:
+        print(f"  {key}")
+PY
 		echo ""
 	fi
 

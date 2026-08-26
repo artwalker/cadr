@@ -316,7 +316,7 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 			FIX_TIMEOUT="${CADR_GATE_FIX_TIMEOUT_SEC:-1800}"
 			case "$FAILURE_KIND" in
 			render-diff)
-				FIX_TARGET="Review /tmp/goal21-disposition-draft.json needsReview entries; auto-sync already applied safe updates."
+				FIX_TARGET="Review /tmp/goal21-render-diff-brief.txt for failing keys; check /tmp/goal21-disposition-draft.json needsReview entries; auto-sync already applied safe updates."
 				FIX_VALIDATE="Do NOT run render-diff.py, verify.sh, or test-cl.sh — orchestrator runs postfix."
 				FIX_TIMEOUT="${CADR_GATE_RENDER_DIFF_FIX_TIMEOUT_SEC:-600}"
 				;;
@@ -346,7 +346,9 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 			if [ "$FAILURE_KIND" = "render-diff" ] \
 				&& [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-auto-fix-render-diff.sh" ]; then
 				echo "goal21 gate: auto-sync render-diff dispositions"
-				if "$PROJECT_DIRECTORY/scripts/goal21-gate-auto-fix-render-diff.sh"; then
+				AUTO_FIX_RC=0
+				"$PROJECT_DIRECTORY/scripts/goal21-gate-auto-fix-render-diff.sh" || AUTO_FIX_RC=$?
+				if [ "$AUTO_FIX_RC" -eq 0 ]; then
 					echo "goal21 gate: auto-sync applied safe disposition updates"
 				else
 					echo "goal21 gate: auto-sync incomplete — agent may need to review draft" >&2
@@ -397,6 +399,9 @@ Keep under 10 minutes; orchestrator runs postfix before the next full gate."
 				HEAD_AFTER="$(git -C "$PROJECT_DIRECTORY" rev-parse HEAD)"
 				if [ "$HEAD_AFTER" != "$HEAD_BEFORE" ]; then
 					echo "goal21 gate: fix agent produced commit ${HEAD_AFTER} on full round ${full_round} fix ${postfix_try}" >&2
+				else
+					echo "goal21 gate: skip postfix (no commit from fix ${postfix_try}/${MAX_POSTFIX_TRIES})" >&2
+					continue
 				fi
 				if GOAL21_GATE_FAILURE_TYPE="$FAILURE_KIND" \
 					"$PROJECT_DIRECTORY/scripts/goal21-gate-postfix-check.sh" "$FAILURE_KIND"; then

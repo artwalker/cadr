@@ -3699,11 +3699,6 @@ def analyze(args: argparse.Namespace) -> int:
                     }
                 )
                 previous = offsets
-    validate_result_adjudications(
-        results,
-        text_covering_disposition_classes(disposition_data),
-        analysis_root=analysis_root,
-    )
     required_keys = {
         result["key"]
         for result in results
@@ -3716,15 +3711,24 @@ def analyze(args: argparse.Namespace) -> int:
         json.dumps(results, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
     )
     pending_path = analysis_root / "pending-dispositions.json"
+    pending_payload: dict[str, Any] = {"missing": missing, "stale": stale}
     pending_path.write_text(
-        json.dumps(
-            {"missing": missing, "stale": stale},
-            indent=2,
-            ensure_ascii=False,
-        )
-        + "\n",
+        json.dumps(pending_payload, indent=2, ensure_ascii=False) + "\n",
         encoding="utf-8",
     )
+    try:
+        validate_result_adjudications(
+            results,
+            text_covering_disposition_classes(disposition_data),
+            analysis_root=analysis_root,
+        )
+    except HarnessFailure as exc:
+        pending_payload["validationError"] = str(exc)
+        pending_path.write_text(
+            json.dumps(pending_payload, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        raise
     if missing:
         raise HarnessFailure(
             "render-diff differences lack dispositions: " + ", ".join(missing)

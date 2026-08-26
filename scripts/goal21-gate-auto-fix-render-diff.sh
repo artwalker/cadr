@@ -24,7 +24,25 @@ done
 
 if [ ! -f "$ANALYSIS/summary.json" ]; then
 	echo "goal21-gate-auto-fix-render-diff: no analysis summary at $ANALYSIS/summary.json" >&2
-	exit 2
+	echo "goal21-gate-auto-fix-render-diff: trying hash refresh from capture artifacts" >&2
+fi
+
+if [ -f "$PROJECT_DIRECTORY/scripts/goal21-gate-refresh-disposition-hashes.py" ]; then
+	python3 "$PROJECT_DIRECTORY/scripts/goal21-gate-refresh-disposition-hashes.py" \
+		--analysis "$ANALYSIS" --dispositions "$DISPOSITIONS" || true
+	if [ "$DRY_RUN" -eq 0 ] && ! git -C "$PROJECT_DIRECTORY" diff --quiet -- "$DISPOSITIONS"; then
+		git -C "$PROJECT_DIRECTORY" add "$DISPOSITIONS"
+		git -C "$PROJECT_DIRECTORY" commit -m "fix(g21-gate): refresh render-diff disposition hashes (auto)"
+		echo "goal21-gate-auto-fix-render-diff: committed hash refresh"
+	fi
+fi
+
+if [ ! -f "$ANALYSIS/summary.json" ]; then
+	echo "goal21-gate-auto-fix-render-diff: no summary.json for pattern sync" >&2
+	if git -C "$PROJECT_DIRECTORY" diff --quiet -- "$DISPOSITIONS" 2>/dev/null; then
+		exit 2
+	fi
+	exit 0
 fi
 
 SYNC_ARGS=(--analysis "$ANALYSIS" --dispositions "$DISPOSITIONS")

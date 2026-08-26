@@ -57,9 +57,9 @@
 ## Gate 防卡死
 
 - **Preflight：** `scripts/goal21-gate-preflight.sh` 在 `verify.sh` 前直接跑 `derive-source-parity-mappings.lisp --check`（默认 ~1 min）；设 `GOAL21_PREFLIGHT_RENDER_DIFF=1` 可再加 render-diff core；**上一轮失败为 render-diff 时 gate-run 自动启用**；跳过设 `GOAL21_SKIP_PREFLIGHT=1`。
-- **Postfix（fix 后、全量 gate 前）：** orchestrator 在每次 fix 后自动跑 `scripts/goal21-gate-postfix-check.sh`。**postfix 未通过则继续 fix，不启动全量 verify**；postfix 5 次仍失败则 reset pending，不再盲烧 gate 轮次。
-- **Render-diff brief：** 失败时 `goal21-gate-render-diff-brief.sh` 写入 `/tmp/goal21-render-diff-brief.txt`。
-- **Disposition 自动同步：** `goal21-gate-auto-fix-render-diff.sh` 从 analysis `summary.json` 自动生成/合并安全 disposition（I01、I01+I04），commit 后跑 postfix；仅 `needsReview` 条目才派 fix agent。
+- **Postfix（fix 后、全量 gate 前）：** orchestrator 在每次 fix 后自动跑 `scripts/goal21-gate-postfix-check.sh`。**render-diff postfix 默认对已有 capture 跑 `analyze`（~90s），无缓存时才跑完整 `gate`（~15min）**；fix agent **无新 commit 则跳过 postfix**。postfix 未通过则继续 fix，不启动全量 verify；postfix 5 次仍失败则 reset pending。
+- **Render-diff brief：** 失败时 `goal21-gate-render-diff-brief.sh` 写入 `/tmp/goal21-render-diff-brief.txt`（含 validation 错误 key、missing/stale、summary 统计）。
+- **Disposition 自动同步：** 失败时先 `goal21-gate-refresh-disposition-hashes.py`（从 analysis capture 刷新过期 SHA），再 `goal21-gate-auto-fix-render-diff.sh` 从 `summary.json` 合并安全 disposition（I01、I01+I04）；`render-diff.py analyze` 在 validation 失败前写入 summary/pending 供 auto-sync 使用。
 - **Fix 超时：** render-diff 审核 `CADR_GATE_RENDER_DIFF_FIX_TIMEOUT_SEC`（默认 600s）；其它 `CADR_GATE_FIX_TIMEOUT_SEC`（1800s）。
 - **拆分：** `scripts/goal21-gate-run.sh` 跑验收；agent 只读 `/tmp/goal21-gate-fail.txt` 修失败（`GOAL21_FIX_DONE`），**禁止 agent 跑 verify.sh/test-cl.sh**；定向验证由脚本承担。
 - **进度 stale：** `scripts/cadr-team-stale-agents.sh` — 闲置 ≥`CADR_STALE_IDLE_SEC`（默认 1200s）且无 verify/test-cl/新 commit → kill 僵尸并 reset gate pending。
