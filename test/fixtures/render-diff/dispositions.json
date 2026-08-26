@@ -7171,14 +7171,14 @@
       "screenSha256": {
         "wide": {
           "pi": "6469f0e57bfdd656d00548e44613a2594aaca7d56d790048226670fc9db57437",
-          "cadr": "bba416879921e5165f98669ff16c0747b49b09e03dd6d5df54b381c3fa076b3a"
+          "cadr": "13d0b96bb34fb3a5101b2c8d0ae73e1f9988f958806e5a395eb22140ecd5354c"
         },
         "narrow": {
           "pi": "9465a51c5a5414f00a13f1070aecb6024a9ef532072117ac505bd78c92c2ac05",
-          "cadr": "7a2259e102ff92a59a3a84615adddcfcf76a3c1d55a71a3c639aa938ce087864"
+          "cadr": "8e4620afc0d77bd335b5204aa4cb8566fe37a80d76b778286f33e6ff83c971c2"
         }
       },
-      "note": "At conversation-mermaid/process-exit [wide+narrow] after alt-screen teardown the resume/help residue differs by Goal 16 identity and I01 ANSI segmentation; the footer token counters on the final frame read cadr ↑3.6k W3.6k 1.9%/128k vs pi ↑3.7k W3.7k 2.0%/128k because the render harness usage totals differ from live pi session accounting for this checkpoint (I04); no mermaid-specific defect."
+      "note": "At conversation-mermaid/process-exit [wide+narrow] after alt-screen teardown the flowchart art and footer token counters (↑3.7k ↓22 R84 W3.7k CH1.9% 2.0%/128k) match pi; pi syntax-highlights the invalid mermaid fence body (yellow not a diagram) while cadr leaves it unstyled (I04); wide also differs by Goal 16 identity wrapping of the startup help line plus I01 ANSI segmentation on banner padding."
     },
     {
       "scenario": "example-snake",
