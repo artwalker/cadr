@@ -178,14 +178,14 @@ Returns the deduped list and a list of collision records
                 (load-context-file-from-dir
                  (uiop:ensure-directory-pathname
                   agent-directory)))))
-        (append
-         (if (and global
-                  (not (gethash
-                        (namestring (truename global))
-                        seen)))
-             (list global)
-             nil)
-         (nreverse ancestors))))))
+         (append
+          (if (and global
+                   (not (gethash
+                         (namestring (truename global))
+                         seen)))
+              (list global)
+              nil)
+          ancestors)))))
 
 (defun nearest-config-file (configs name)
   (loop for directory in configs
