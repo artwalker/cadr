@@ -43,6 +43,7 @@ DEFAULT_BASELINE_INVENTORY = ROOT / "test/fixtures/render-diff/baseline-interfac
 DEFAULT_VISIBLE_STRING_INVENTORY = ROOT / "test/fixtures/render-diff/baseline-visible-strings.json"
 DEFAULT_VISIBLE_STRING_EXEMPTIONS = ROOT / "test/fixtures/render-diff/visible-string-exemptions.json"
 DEFAULT_DISPOSITIONS = ROOT / "test/fixtures/render-diff/dispositions.json"
+DEFAULT_CLASS_RULES = ROOT / "test/fixtures/render-diff/disposition-class-rules.json"
 PI_DRIVER = ROOT / "test/fixtures/render-diff/pi-driver.ts"
 CADR_DRIVER = ROOT / "test/fixtures/render-diff/cadr-driver.lisp"
 VISIBLE_STRING_EXTRACTOR = ROOT / "test/fixtures/render-diff/baseline-visible-strings.ts"
@@ -3434,6 +3435,76 @@ BOILERPLATE_DISPOSITION_NOTES = frozenset(
 )
 
 
+def load_disposition_class_rules(path: Path) -> list[dict[str, Any]]:
+    if not path.is_file():
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    rules = payload.get("rules", [])
+    if not isinstance(rules, list):
+        raise HarnessFailure(f"invalid disposition class rules: {path}")
+    return rules
+
+
+def result_matches_class_rule(result: dict[str, Any], rule: dict[str, Any]) -> bool:
+    specification = rule.get("match", {})
+    if not isinstance(specification, dict):
+        return False
+    for key, expected in specification.items():
+        if result.get(key) != expected:
+            return False
+    return True
+
+
+def adjudication_from_class_rule(
+    result: dict[str, Any],
+    rule: dict[str, Any],
+    class_catalog: dict[str, Any],
+) -> dict[str, Any]:
+    classes = list(rule["classes"])
+    dimensions = result["dimension"]
+    note_template = rule.get("noteTemplate", "")
+    note = note_template.format(
+        scenario=result["scenario"],
+        checkpoint=result["checkpoint"],
+        dimension=dimensions,
+        dimensions=dimensions,
+        key=result["key"],
+        ruleId=rule.get("id", "class-rule"),
+    )
+    return {
+        "classes": classes,
+        "kinds": sorted({class_catalog[class_id]["kind"] for class_id in classes}),
+        "note": note,
+        "screenSha256": {
+            "pi": result["piScreenSha256"],
+            "cadr": result["cadrScreenSha256"],
+        },
+    }
+
+
+def apply_disposition_class_rules(
+    results: list[dict[str, Any]],
+    dispositions: dict[str, dict[str, Any]],
+    class_catalog: dict[str, Any],
+    rules_path: Path,
+) -> int:
+    rules = load_disposition_class_rules(rules_path)
+    applied = 0
+    for result in results:
+        key = result["key"]
+        if key in dispositions or result.get("automaticDisposition") == "aligned":
+            continue
+        for rule in rules:
+            if not result_matches_class_rule(result, rule):
+                continue
+            adjudication = adjudication_from_class_rule(result, rule, class_catalog)
+            dispositions[key] = adjudication
+            result["adjudication"] = adjudication
+            applied += 1
+            break
+    return applied
+
+
 def dump_exact_pair_screens(
     result: dict[str, Any], analysis_root: Path | None
 ) -> None:
@@ -3699,6 +3770,19 @@ def analyze(args: argparse.Namespace) -> int:
                     }
                 )
                 previous = offsets
+    class_rules_path = getattr(args, "class_rules", DEFAULT_CLASS_RULES)
+    if isinstance(class_rules_path, Path):
+        class_rules_path = class_rules_path.resolve()
+    rule_applied = apply_disposition_class_rules(
+        results,
+        dispositions,
+        disposition_data["classes"],
+        class_rules_path,
+    )
+    for result in results:
+        key = result["key"]
+        if result.get("adjudication") is None and key in dispositions:
+            result["adjudication"] = dispositions[key]
     required_keys = {
         result["key"]
         for result in results
@@ -3745,6 +3829,7 @@ def analyze(args: argparse.Namespace) -> int:
         "render-diff analysis: "
         + " ".join(f"{name}={count}" for name, count in sorted(counts.items()))
         + f" adjudicated={len(dispositions)}"
+        + f" classRules={rule_applied}"
         + f" summary={summary_path}"
     )
     if args.tier == "full":
@@ -4204,6 +4289,12 @@ def parser() -> argparse.ArgumentParser:
                 "--dispositions",
                 type=Path,
                 default=DEFAULT_DISPOSITIONS,
+            )
+            command.add_argument(
+                "--class-rules",
+                type=Path,
+                default=DEFAULT_CLASS_RULES,
+                help="optional class-rule adjudication for common I01/I04 patterns",
             )
             command.add_argument(
                 "--analysis-output",
