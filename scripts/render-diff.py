@@ -3802,22 +3802,21 @@ def analyze(args: argparse.Namespace) -> int:
     class_rules_path = getattr(args, "class_rules", DEFAULT_CLASS_RULES)
     if isinstance(class_rules_path, Path):
         class_rules_path = class_rules_path.resolve()
-    rule_applied = apply_disposition_class_rules(
+    ledger_count, rule_applied = resolve_result_adjudications(
         results,
         dispositions,
         disposition_data["classes"],
         class_rules_path,
     )
-    for result in results:
-        key = result["key"]
-        if result.get("adjudication") is None and key in dispositions:
-            result["adjudication"] = dispositions[key]
     required_keys = {
         result["key"]
         for result in results
         if result["automaticDisposition"] != "aligned"
     }
-    missing = sorted(required_keys - dispositions.keys())
+    adjudicated_keys = {
+        result["key"] for result in results if result.get("adjudication")
+    }
+    missing = sorted(required_keys - adjudicated_keys)
     stale = sorted(dispositions.keys() - required_keys)
     summary_path = analysis_root / "summary.json"
     summary_path.write_text(
@@ -3857,8 +3856,8 @@ def analyze(args: argparse.Namespace) -> int:
     print(
         "render-diff analysis: "
         + " ".join(f"{name}={count}" for name, count in sorted(counts.items()))
-        + f" adjudicated={len(dispositions)}"
-        + f" classRules={rule_applied}"
+        + f" adjudicated={len(adjudicated_keys)}"
+        + f" ledger={ledger_count} classRules={rule_applied}"
         + f" summary={summary_path}"
     )
     if args.tier == "full":
