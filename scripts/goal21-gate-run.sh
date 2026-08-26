@@ -91,6 +91,7 @@ set -e
 if [ "$RC" -ne 0 ]; then
 	heartbeat "fail verify.sh rc=$RC"
 	tail -n "$TAIL_LINES" "$RUN_LOG" >"$FAIL_LOG"
+	"$PROJECT_DIRECTORY/scripts/goal21-gate-classify-failure.sh" "$FAIL_LOG" >"$FAILURE_TYPE_FILE" 2>/dev/null || true
 	echo "goal21-gate-run: FAILED verify.sh (log $FAIL_LOG)" >&2
 	exit "$RC"
 fi
