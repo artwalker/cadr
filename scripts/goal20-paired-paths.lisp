@@ -3179,7 +3179,7 @@
              (collect "cli_settings.block_images"
                       (lambda ()
                         (lambda ()
-                          (run-cli-settings-block-images manager))))))))))))
+                          (run-cli-settings-block-images manager)))))))))))
 
 (defun stage-settings-load-trust ()
   (let* ((empty
