@@ -2019,6 +2019,9 @@ render loopback login received
       (cadr-agent:agent-shutdown agent))))
 
 (defun main ()
+  ;; Baseline pi-driver.ts sets PI_OFFLINE=1 before constructing the
+  ;; session. Cadr's ensure-tool / version check read CADR_OFFLINE only.
+  (sb-posix:setenv "CADR_OFFLINE" "1" 1)
   (destructuring-bind
       (project quicklisp manifest-path scenario-id cwd-path agent-dir-path
        session-directory-path)
