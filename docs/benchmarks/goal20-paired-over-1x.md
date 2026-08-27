@@ -232,6 +232,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.transcript` | 3.80 | 2.18 | 1.743× | 8.00× | measure-only pair 326; `messages-to-transcript` vs `toTranscriptEvents` | invent pause；地板优化另刀 |
 | `evals_harness.last_assistant` | 0.579 | 0.560 | 1.034× | 8.00× | measure-only pair 327; `last-assistant-since` vs promptAgent slice; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `provider_registry_defs.runtime_models` | 17.89 | 4.794 | 3.73× | 8.00× | measure-only pair 296; leftover `provider-runtime-models` vs `getBuiltinModels` | invent pause；地板优化另刀 |
+| `core_rest.redacted_secrets` | 2.750 | 1.105 | 2.49× | 8.00× | measure-only pair 323; leftover `redact-secrets` vs String.split/join | invent pause；地板优化另刀 |
 | `powershell_tool.utf8_prefix` | 0.647 | 0.171 | 3.79× | 8.00× | measure-only pair 301; `+powershell-utf8-output-prefix+` vs `UTF8_OUTPUT_PREFIX` (not execute/spawn); sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `powershell_tool.prefix_command` | 0.468 | 0.336 | 1.39× | 8.00× | measure-only pair 302; UTF-8 prefix + command concatenate (not exec/spawn) | invent pause；地板优化另刀 |
 | `powershell_tool.make_tool` | 1.936 | 1.448 | 1.34× | 8.00× | measure-only pair 303; `make-powershell-tool` vs `createPowerShellToolDefinition` | invent pause；地板优化另刀 |

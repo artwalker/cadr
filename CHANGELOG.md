@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `core_rest.cancellation_abort` (`abort-cancellation` /
+  `cancellation-aborted-p` on `src/cadr-core/cancellation.lisp` vs
+  `AbortController.abort` / `AbortSignal.aborted`). Observed `ca_live` /
+  `ca_abort` / `ca_clear` / `ca_pred` exact. n=5 **0.0712×** (0.579 / 8.130 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric. Pairs 322–324.
+- Goal 20 P.13: pair `core_rest.redacted_secrets` (`redact-secrets` on
+  `src/cadr-core/redacted-print.lisp` vs String.split/join `[REDACTED]`).
+  Observed `rd_keep` / `rd_secret` / `rd_token` / `rd_mark` exact. n=5 **2.488×**
+  (2.750 / 1.105 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `core_rest.threads_cleanup` (`stop-thread-for-cleanup` on
+  `src/cadr-core/threads.lisp` vs `worker_threads` Worker eval-exit). Observed
+  `th_absent` / `th_current` / `th_joined` exact. n=5 **0.00799×** (181.6 /
+  22730 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
   `transcript` / `last_assistant` (`src/cadr-evals/harness.lisp` vs baseline
   `resolveModelSelection` / `toTranscriptEvents` / `promptAgent` assistant

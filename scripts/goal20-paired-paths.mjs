@@ -432,6 +432,9 @@ const REPETITIONS = {
 	"provider_registry_defs.merge_environment": 50,
 	"provider_registry_defs.runtime_models": 50,
 	"provider_registry_defs.structured_api_key_login": 50,
+	"core_rest.cancellation_abort": 50,
+	"core_rest.redacted_secrets": 50,
+	"core_rest.threads_cleanup": 5,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
@@ -16149,6 +16152,78 @@ async function measureHttpTransportParseUrl() {
 	};
 }
 
+function runCoreRestCancellation() {
+	const live = new AbortController();
+	const liveOk = live.signal.aborted ? 0 : 1;
+	live.abort();
+	const abortedOk = live.signal.aborted ? 1 : 0;
+	const cleared = new AbortController();
+	const clearedOk = cleared.signal.aborted ? 0 : 1;
+	const predOk = live.signal.aborted ? 1 : 0;
+	return {
+		ca_live: liveOk,
+		ca_abort: abortedOk,
+		ca_clear: clearedOk,
+		ca_pred: predOk,
+	};
+}
+
+function redactSecretsPi(text, secrets) {
+	return secrets.reduce((result, secret) => {
+		if (typeof secret === "string" && secret.length > 0) {
+			return result.split(secret).join("[REDACTED]");
+		}
+		return result;
+	}, text);
+}
+
+function runCoreRestRedacted() {
+	const text = "keep-visible token=sk-live-abc extra=hunter2 done";
+	const out = redactSecretsPi(text, ["sk-live-abc", "hunter2"]);
+	return {
+		rd_keep: out.includes("keep-visible") ? 1 : 0,
+		rd_secret: out.includes("sk-live-abc") ? 0 : 1,
+		rd_token: out.includes("hunter2") ? 0 : 1,
+		rd_mark: out.includes("[REDACTED]") ? 1 : 0,
+	};
+}
+
+async function runCoreRestThreads() {
+	const { Worker, isMainThread } = await import("node:worker_threads");
+	const joined = await new Promise((resolve) => {
+		const worker = new Worker("setImmediate(() => {})", { eval: true });
+		worker.on("exit", () => resolve(1));
+		worker.on("error", () => resolve(0));
+	});
+	return {
+		th_absent: 1,
+		th_current: isMainThread ? 1 : 0,
+		th_joined: joined,
+	};
+}
+
+async function measureCoreRest() {
+	const cancellation = runCoreRestCancellation();
+	const redacted = runCoreRestRedacted();
+	const threads = await runCoreRestThreads();
+	return {
+		cancellation_abort: await collect("core_rest.cancellation_abort", () => {
+			return () => runCoreRestCancellation();
+		}),
+		redacted_secrets: await collect("core_rest.redacted_secrets", () => {
+			return () => runCoreRestRedacted();
+		}),
+		threads_cleanup: await collect("core_rest.threads_cleanup", () => {
+			return () => runCoreRestThreads();
+		}),
+		observed: {
+			...cancellation,
+			...redacted,
+			...threads,
+		},
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -16453,6 +16528,8 @@ process.stderr.write("goal20 pi paired paths: ai_runtime_faux\n");
 const aiRuntimeFaux = await measureAiRuntimeFauxBlocks();
 process.stderr.write("goal20 pi paired paths: http_transport\n");
 const httpTransport = await measureHttpTransportParseUrl();
+process.stderr.write("goal20 pi paired paths: core_rest\n");
+const coreRest = await measureCoreRest();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 process.stderr.write("goal20 pi paired paths: websocket_stream\n");
@@ -17045,6 +17122,12 @@ const result = {
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
 				"WHATWG URL (https://example.com/foo + http://localhost:8080/bar)",
+			"core_rest.cancellation_abort":
+				"AbortController.abort + AbortSignal.aborted",
+			"core_rest.redacted_secrets":
+				"String.split/join [REDACTED] (cadr-core redact-secrets counterpart; baseline has no secret-replace helper)",
+			"core_rest.threads_cleanup":
+				"worker_threads Worker eval-exit (stop-thread-for-cleanup counterpart)",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -17179,6 +17262,7 @@ const result = {
 		cli_bootstrap_sessions: cliBootstrap,
 		ai_runtime_faux: aiRuntimeFaux,
 		http_transport: httpTransport,
+		core_rest: coreRest,
 		render_slicing: renderSlicing,
 		websocket_stream: websocketStream,
 	},

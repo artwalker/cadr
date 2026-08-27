@@ -575,6 +575,9 @@
     ("provider_registry_defs.merge_environment" . 50)
     ("provider_registry_defs.runtime_models" . 50)
     ("provider_registry_defs.structured_api_key_login" . 50)
+    ("core_rest.cancellation_abort" . 50)
+    ("core_rest.redacted_secrets" . 50)
+    ("core_rest.threads_cleanup" . 5)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
@@ -15997,6 +16000,80 @@
                 (lambda ()
                   (run-http-transport-parse-url)))))))
 
+(defun run-core-rest-cancellation ()
+  (let ((state (cadr-core:make-cancellation-state)))
+    (let ((live (if (cadr-core:cancellation-aborted-p state) 0 1)))
+      (cadr-core:abort-cancellation state)
+      (let ((aborted (if (cadr-core:cancellation-aborted-p state) 1 0)))
+        (cadr-core:set-cancellation-aborted-p state nil)
+        (list
+         live
+         aborted
+         (if (cadr-core:cancellation-aborted-p state) 0 1)
+         (if (cadr-core:cancellation-predicate-aborted-p (lambda () t))
+             1
+             0))))))
+
+(defun run-core-rest-redacted ()
+  (let* ((text "keep-visible token=sk-live-abc extra=hunter2 done")
+         (out (cadr-core:redact-secrets text '("sk-live-abc" "hunter2"))))
+    (list
+     (if (search "keep-visible" out) 1 0)
+     (if (search "sk-live-abc" out) 0 1)
+     (if (search "hunter2" out) 0 1)
+     (if (search "[REDACTED]" out) 1 0))))
+
+(defun run-core-rest-threads ()
+  (let ((absent (cadr-core:stop-thread-for-cleanup nil))
+        (current
+          (cadr-core:stop-thread-for-cleanup sb-thread:*current-thread*)))
+    (let* ((done
+             (sb-thread:make-thread
+              (lambda () :done)
+              :name "cadr-core-rest-join"))
+           (joined
+             (progn
+               (sb-thread:join-thread done)
+               (cadr-core:stop-thread-for-cleanup done))))
+      (list
+       (if (eq absent :absent) 1 0)
+       (if (eq current :current) 1 0)
+       (if (eq joined :joined) 1 0)))))
+
+(defun measure-core-rest ()
+  (let ((cancellation (run-core-rest-cancellation))
+        (redacted (run-core-rest-redacted))
+        (threads (run-core-rest-threads)))
+    (json-object
+     "observed"
+     (json-object
+      "ca_live" (first cancellation)
+      "ca_abort" (second cancellation)
+      "ca_clear" (third cancellation)
+      "ca_pred" (fourth cancellation)
+      "rd_keep" (first redacted)
+      "rd_secret" (second redacted)
+      "rd_token" (third redacted)
+      "rd_mark" (fourth redacted)
+      "th_absent" (first threads)
+      "th_current" (second threads)
+      "th_joined" (third threads))
+     "cancellation_abort"
+     (collect "core_rest.cancellation_abort"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-cancellation))))
+     "redacted_secrets"
+     (collect "core_rest.redacted_secrets"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-redacted))))
+     "threads_cleanup"
+     (collect "core_rest.threads_cleanup"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-threads)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -16655,6 +16732,12 @@
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
       "src/cadr-ai/transport/http.lisp parse-http-url"
+      "core_rest.cancellation_abort"
+      "src/cadr-core/cancellation.lisp abort-cancellation + cancellation-aborted-p"
+      "core_rest.redacted_secrets"
+      "src/cadr-core/redacted-print.lisp redact-secrets"
+      "core_rest.threads_cleanup"
+      "src/cadr-core/threads.lisp stop-thread-for-cleanup"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -16773,7 +16856,8 @@
                     (find-tool nil)
                     (ls-tool nil)
                     (tool-manager nil)
-                    (powershell-tool nil))
+                    (powershell-tool nil)
+                    (core-rest nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
@@ -16880,6 +16964,8 @@
               (let ((http-transport (measure-http-transport-parse-url)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
+              (format *error-output* "goal20 cadr paired paths: core_rest~%")
+              (setf core-rest (measure-core-rest))
               (format *error-output* "goal20 cadr paired paths: websocket_stream~%")
               (let ((websocket (measure-websocket-stream)))
             (json-object
@@ -16971,6 +17057,7 @@
               "cli_bootstrap_sessions" bootstrap
               "ai_runtime_faux" faux
               "http_transport" http-transport
+              "core_rest" core-rest
               "render_slicing" slicing
               "websocket_stream" websocket)
              "parameters"

@@ -171,6 +171,7 @@ METRICS = {
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
+    "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup"),
     "session_pipeline": ("session_load", "context_walk", "session_leaf_id"),
     "storage_journal": ("journal_read", "journal_append", "journal_entry_count"),
     "sqlite_session": ("open_walk",),
@@ -1249,6 +1250,17 @@ RATIO_CEILINGS = {
     # (0.176 / 211.2 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "provider_registry_defs.structured_api_key_login": 8.0,
+    # core_rest.cancellation_abort pair (samples=5): observed 0.0712x
+    # (0.579 / 8.130 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.cancellation_abort": 8.0,
+    # core_rest.redacted_secrets pair (samples=5): observed 2.488x
+    # (2.750 / 1.105 us). 8.0 is first-freeze headroom. Ratchet down only.
+    "core_rest.redacted_secrets": 8.0,
+    # core_rest.threads_cleanup pair (samples=5): observed 0.00799x
+    # (181.6 / 22730 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.threads_cleanup": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # skill_prompt_load pair (samples=5): observed 1170.57x
     # (2196 / 1.88 us). Keyword initforms still hit ASDF
@@ -3007,6 +3019,19 @@ OBSERVED_EXACT = {
         "http_host",
         "http_port",
         "http_path",
+    ),
+    "core_rest": (
+        "ca_live",
+        "ca_abort",
+        "ca_clear",
+        "ca_pred",
+        "rd_keep",
+        "rd_secret",
+        "rd_token",
+        "rd_mark",
+        "th_absent",
+        "th_current",
+        "th_joined",
     ),
     "resource_loader": (
         "skill_count",
