@@ -387,6 +387,9 @@ const REPETITIONS = {
 	"cli_sdk.model_runtime": 5,
 	"provider_registry_defs.lookup": 50,
 	"provider_registry_defs.definition_ids": 125,
+	"provider_registry_defs.runtime_models": 50,
+	"provider_registry_defs.builtin_providers": 5,
+	"provider_registry_defs.builtin_models": 5,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
@@ -14284,9 +14287,56 @@ function runProviderDefinitionIds() {
 	};
 }
 
+function runProviderRuntimeModels() {
+	const openai = builtinProvidersModule.getBuiltinModels("openai");
+	const anthropic = builtinProvidersModule.getBuiltinModels("anthropic");
+	const google = builtinProvidersModule.getBuiltinModels("google");
+	const unknown = builtinProvidersModule.getBuiltinModels("no-such-provider");
+	return {
+		rm_openai: openai.length > 0 ? 1 : 0,
+		rm_anthropic: anthropic.length > 0 ? 1 : 0,
+		rm_google: google.length > 0 ? 1 : 0,
+		rm_unknown: unknown.length === 0 ? 1 : 0,
+	};
+}
+
+function runProviderBuiltinProviders() {
+	const providers = builtinProvidersModule.builtinProviders();
+	const byId = new Map(providers.map((provider) => [provider.id, provider]));
+	const openai = byId.get("openai");
+	const anthropic = byId.get("anthropic");
+	const google = byId.get("google");
+	return {
+		bp_openai: openai ? 1 : 0,
+		bp_anthropic: anthropic ? 1 : 0,
+		bp_google: google ? 1 : 0,
+		bp_oa_key: openai?.auth?.apiKey ? 1 : 0,
+		bp_an_oauth: anthropic?.auth?.oauth ? 1 : 0,
+		bp_oa_oauth: openai?.auth?.oauth ? 1 : 0,
+	};
+}
+
+function runProviderBuiltinModels() {
+	const models = builtinProvidersModule.builtinModels();
+	const openai = models.getProvider("openai");
+	const anthropic = models.getProvider("anthropic");
+	const google = models.getProvider("google");
+	const unknown = models.getProvider("no-such-provider");
+	return {
+		bm_openai: openai ? 1 : 0,
+		bm_anthropic: anthropic ? 1 : 0,
+		bm_google: google ? 1 : 0,
+		bm_unknown: unknown ? 0 : 1,
+		bm_oa_name: openai?.name === "OpenAI" ? 1 : 0,
+	};
+}
+
 async function measureProviderRegistryDefs() {
 	const lookupObserved = runProviderRegistryDefs();
 	const idsObserved = runProviderDefinitionIds();
+	const modelsObserved = runProviderRuntimeModels();
+	const providersObserved = runProviderBuiltinProviders();
+	const runtimeObserved = runProviderBuiltinModels();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -14294,10 +14344,22 @@ async function measureProviderRegistryDefs() {
 		definition_ids: await collect("provider_registry_defs.definition_ids", () => {
 			return () => runProviderDefinitionIds();
 		}),
+		runtime_models: await collect("provider_registry_defs.runtime_models", () => {
+			return () => runProviderRuntimeModels();
+		}),
+		builtin_providers: await collect("provider_registry_defs.builtin_providers", () => {
+			return () => runProviderBuiltinProviders();
+		}),
+		builtin_models: await collect("provider_registry_defs.builtin_models", () => {
+			return () => runProviderBuiltinModels();
+		}),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
 			sorted_digest: idsObserved.sorted_digest,
+			...modelsObserved,
+			...providersObserved,
+			...runtimeObserved,
 		},
 	};
 }
@@ -15253,6 +15315,12 @@ const result = {
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"provider_registry_defs.definition_ids":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
+			"provider_registry_defs.runtime_models":
+				"packages/ai/src/providers/all.ts getBuiltinModels",
+			"provider_registry_defs.builtin_providers":
+				"packages/ai/src/providers/all.ts builtinProviders",
+			"provider_registry_defs.builtin_models":
+				"packages/ai/src/providers/all.ts builtinModels",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"cli_bootstrap_sessions.coding_tools":

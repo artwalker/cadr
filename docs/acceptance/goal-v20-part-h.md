@@ -3220,6 +3220,30 @@ start, not write/edit tools. Observed `he_direct` / `he_watch` / `he_start`
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
 this metric did not fail). Same commit no optimize.
 
+### Pair 295 — `provider_registry_defs` (runtime_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `runtime_models` | `provider-runtime-models` (`src/cadr-ai/providers/runtime-projection.lisp`) | `getBuiltinModels` (`packages/ai/src/providers/all.ts`) |
+
+Leftover sibling of Pair lookup/definition_ids on the same `provider_registry_defs` hole. Timed work is catalog model lists for openai/anthropic/google plus an unknown id — not `getBuiltinProviders`, not stream. Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 296 — `provider_registry_defs` (builtin_providers)
+
+| metric | cadr | pi |
+|---|---|---|
+| `builtin_providers` | `make-built-in-runtime-provider` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinProviders` (`packages/ai/src/providers/all.ts`) |
+
+Leftover sibling on the same `provider_registry_defs` hole. Timed work is constructing every built-in runtime provider from definitions (no socket, no login). Observed `bp_openai` / `bp_anthropic` / `bp_google` / `bp_oa_key` / `bp_an_oauth` / `bp_oa_oauth` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 297 — `provider_registry_defs` (builtin_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `builtin_models` | `make-built-in-models-runtime` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinModels` (`packages/ai/src/providers/all.ts`) |
+
+Leftover sibling on the same `provider_registry_defs` hole. Timed work is registering every built-in provider into a models runtime and probing openai/anthropic/google/unknown — not stream. Observed `bm_openai` / `bm_anthropic` / `bm_google` / `bm_unknown` / `bm_oa_name` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -3701,14 +3725,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,092 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 175 | 77,389 | 60.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 70 | 26,608 | 20.6% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 59.8% of lines (174 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.6% of lines.
+- **Falsifiable vs baseline:** 60.0% of lines (175 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 65.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3798,6 +3822,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai.lisp` | 828 | `provider_openai_responses.stream_roundtrip` |
 | `src/cadr-ai/providers/pi-messages.lisp` | 255 | `provider_pi_messages.stream_roundtrip` |
+| `src/cadr-ai/providers/runtime-projection.lisp` | 297 | `provider_registry_defs.runtime_models`, `provider_registry_defs.builtin_providers`, `provider_registry_defs.builtin_models` |
 | `src/cadr-ai/providers/vertex.lisp` | 134 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 609 | `ai_runtime_faux.blocks` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
@@ -3970,11 +3995,11 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |
 | `settings_load` | 2 | 479 |
-| `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
 | `core_rest` | 3 | 161 |
+| `provider_registry_defs` | 1 | 157 |
 | `cli_support` | 5 | 123 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |

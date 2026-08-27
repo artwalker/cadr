@@ -485,6 +485,9 @@
     ("cli_sdk.model_runtime" . 5)
     ("provider_registry_defs.lookup" . 50)
     ("provider_registry_defs.definition_ids" . 125)
+    ("provider_registry_defs.runtime_models" . 50)
+    ("provider_registry_defs.builtin_providers" . 5)
+    ("provider_registry_defs.builtin_models" . 5)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
@@ -13982,9 +13985,66 @@
      (length ids)
      (cadr-ai::provider-definition-ids-sorted-digest))))
 
+(defun run-provider-runtime-models ()
+  (flet ((model-count (id)
+           (length (cadr-ai::provider-runtime-models id))))
+    (list
+     (if (plusp (model-count :openai)) 1 0)
+     (if (plusp (model-count :anthropic)) 1 0)
+     (if (plusp (model-count :google)) 1 0)
+     (if (zerop (model-count :no-such-provider)) 1 0))))
+
+(defun run-provider-builtin-providers ()
+  (let ((by-id (make-hash-table)))
+    (dolist (definition (cadr-ai:list-provider-definitions))
+      (let ((provider
+              (cadr-ai::make-built-in-runtime-provider definition nil)))
+        (setf (gethash (cadr-ai:runtime-provider-id provider) by-id)
+              provider)))
+    (flet ((present (id)
+             (if (gethash id by-id) 1 0))
+           (api-key-p (id)
+             (let ((provider (gethash id by-id)))
+               (if (and provider
+                        (cadr-ai::runtime-provider-api-key-auth-p provider))
+                   1
+                   0)))
+           (oauth-p (id)
+             (let ((provider (gethash id by-id)))
+               (if (and provider
+                        (cadr-ai::runtime-provider-oauth-auth-p provider))
+                   1
+                   0))))
+      (list
+       (present :openai)
+       (present :anthropic)
+       (present :google)
+       (api-key-p :openai)
+       (oauth-p :anthropic)
+       (oauth-p :openai)))))
+
+(defun run-provider-builtin-models ()
+  (let* ((runtime (cadr-ai:make-built-in-models-runtime :environment nil))
+         (openai (cadr-ai:models-runtime-provider runtime :openai))
+         (anthropic (cadr-ai:models-runtime-provider runtime :anthropic))
+         (google (cadr-ai:models-runtime-provider runtime :google))
+         (unknown (cadr-ai:models-runtime-provider runtime :no-such-provider)))
+    (list
+     (if openai 1 0)
+     (if anthropic 1 0)
+     (if google 1 0)
+     (if unknown 0 1)
+     (if (and openai
+              (string= (cadr-ai::runtime-provider-name openai) "OpenAI"))
+         1
+         0))))
+
 (defun measure-provider-registry-defs ()
   (let* ((lookup-observed (run-provider-registry-defs))
-         (ids-observed (run-provider-definition-ids)))
+         (ids-observed (run-provider-definition-ids))
+         (models-observed (run-provider-runtime-models))
+         (providers-observed (run-provider-builtin-providers))
+         (runtime-observed (run-provider-builtin-models)))
     (json-object
      "observed"
      (json-object
@@ -13993,7 +14053,22 @@
       "google" (third lookup-observed)
       "unknown" (fourth lookup-observed)
       "count" (fourth ids-observed)
-      "sorted_digest" (fifth ids-observed))
+      "sorted_digest" (fifth ids-observed)
+      "rm_openai" (first models-observed)
+      "rm_anthropic" (second models-observed)
+      "rm_google" (third models-observed)
+      "rm_unknown" (fourth models-observed)
+      "bp_openai" (first providers-observed)
+      "bp_anthropic" (second providers-observed)
+      "bp_google" (third providers-observed)
+      "bp_oa_key" (fourth providers-observed)
+      "bp_an_oauth" (fifth providers-observed)
+      "bp_oa_oauth" (sixth providers-observed)
+      "bm_openai" (first runtime-observed)
+      "bm_anthropic" (second runtime-observed)
+      "bm_google" (third runtime-observed)
+      "bm_unknown" (fourth runtime-observed)
+      "bm_oa_name" (fifth runtime-observed))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
@@ -14003,7 +14078,22 @@
      (collect "provider_registry_defs.definition_ids"
               (lambda ()
                 (lambda ()
-                  (run-provider-definition-ids)))))))
+                  (run-provider-definition-ids))))
+     "runtime_models"
+     (collect "provider_registry_defs.runtime_models"
+              (lambda ()
+                (lambda ()
+                  (run-provider-runtime-models))))
+     "builtin_providers"
+     (collect "provider_registry_defs.builtin_providers"
+              (lambda ()
+                (lambda ()
+                  (run-provider-builtin-providers))))
+     "builtin_models"
+     (collect "provider_registry_defs.builtin_models"
+              (lambda ()
+                (lambda ()
+                  (run-provider-builtin-models)))))))
 
 (defun run-skill-prompt-build ()
   (let* ((cwd "/tmp/proj")
@@ -14749,6 +14839,12 @@
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "provider_registry_defs.definition_ids"
       "src/cadr-ai/providers/definitions.lisp list-provider-definition-ids"
+      "provider_registry_defs.runtime_models"
+      "src/cadr-ai/providers/runtime-projection.lisp provider-runtime-models"
+      "provider_registry_defs.builtin_providers"
+      "src/cadr-ai/providers/runtime-projection.lisp make-built-in-runtime-provider"
+      "provider_registry_defs.builtin_models"
+      "src/cadr-ai/providers/runtime-projection.lisp make-built-in-models-runtime"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "cli_bootstrap_sessions.coding_tools"

@@ -9,6 +9,18 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `provider_registry_defs.runtime_models` (`provider-runtime-models` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getBuiltinModels`).
+  Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` exact.
+  n=5 **RATIO_PLACEHOLDER**, ceiling 8.0. Measure-only.
+- Goal 20 P.13: pair `provider_registry_defs.builtin_providers` (`make-built-in-runtime-provider` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `builtinProviders`).
+  Observed `bp_openai` / `bp_anthropic` / `bp_google` / `bp_oa_key` / `bp_an_oauth` /
+  `bp_oa_oauth` exact. n=5 **RATIO_PLACEHOLDER**, ceiling 8.0. Measure-only.
+- Goal 20 P.13: pair `provider_registry_defs.builtin_models` (`make-built-in-models-runtime` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `builtinModels`).
+  Observed `bm_openai` / `bm_anthropic` / `bm_google` / `bm_unknown` / `bm_oa_name` exact.
+  n=5 **RATIO_PLACEHOLDER**, ceiling 8.0. Measure-only.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`

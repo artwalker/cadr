@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 283,
+   "nextPairNum": 301,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -288,6 +288,33 @@
      "measure": "measure-agent-tool-loop",
      "metric": "harness_events.emit",
      "branch": "cursor/pair-276-harness-events-emit-8cfd"
+    },
+    {
+     "pair": 295,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/providers/runtime-projection.lisp",
+     "measure": "measure-provider-registry-defs",
+     "metric": "provider_registry_defs.runtime_models",
+     "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+    },
+    {
+     "pair": 296,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/providers/runtime-projection.lisp",
+     "measure": "measure-provider-registry-defs",
+     "metric": "provider_registry_defs.builtin_providers",
+     "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+    },
+    {
+     "pair": 297,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/providers/runtime-projection.lisp",
+     "measure": "measure-provider-registry-defs",
+     "metric": "provider_registry_defs.builtin_models",
+     "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
     }
    ],
    "mergeQueue": []

@@ -135,6 +135,9 @@
   "cli_sdk.session_services",
   "cli_sdk.model_runtime",
   "provider_registry_defs.lookup",
+  "provider_registry_defs.runtime_models",
+  "provider_registry_defs.builtin_providers",
+  "provider_registry_defs.builtin_models",
   "skill_prompt_load.build_prompt",
   "cli_bootstrap_sessions.coding_tools",
   "cli_bootstrap_sessions.bootstrap_auth",
@@ -1040,8 +1043,12 @@
   },
   {
    "prefix": "src/cadr-ai/providers/runtime-projection.lisp",
-   "class": "needs-pair",
-   "hole": "provider_registry_defs"
+   "class": "paired",
+   "metrics": [
+    "provider_registry_defs.runtime_models",
+    "provider_registry_defs.builtin_providers",
+    "provider_registry_defs.builtin_models"
+   ]
   },
   {
    "prefix": "src/cadr-ai/runtime/faux-provider.lisp",
