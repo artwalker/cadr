@@ -103,6 +103,9 @@
 ;;;; 274. file_mutation_queue ticket release vs release-file-mutation-turn
 ;;;; 275. file_mutation_queue registry get-or-create vs ensure-file-mutation-queue-state
 ;;;; 276. harness_events emit vs HarnessEventBus.emit
+;;;; 277. bash_tool strip Process-exited footer vs bash-strip-exit-footer
+;;;; 278. bash_tool appendStatus vs append-bash-status
+;;;; 279. bash_tool formatOutput truncation notice vs bash-truncation-notice
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -251,6 +254,9 @@
     ("file_mutation_queue.release_turn" . 50)
     ("file_mutation_queue.ensure_state" . 50)
     ("harness_events.emit" . 50)
+    ("bash_tool.strip_exit_footer" . 50)
+    ("bash_tool.append_status" . 50)
+    ("bash_tool.truncation_notice" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -485,9 +491,9 @@
     ("cli_sdk.model_runtime" . 5)
     ("provider_registry_defs.lookup" . 50)
     ("provider_registry_defs.definition_ids" . 125)
+    ("provider_registry_defs.merge_environment" . 50)
     ("provider_registry_defs.runtime_models" . 50)
-    ("provider_registry_defs.builtin_providers" . 5)
-    ("provider_registry_defs.builtin_models" . 5)
+    ("provider_registry_defs.structured_api_key_login" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
@@ -4139,6 +4145,146 @@
               (lambda ()
                 (lambda ()
                   (run-harness-events-emit)))))))
+(defun bash-tool-truth (value)
+  (if value 1 0))
+
+(defun run-bash-strip-exit-footer ()
+  ;; Inverse of the "Process exited with code N" footer that
+  ;; run-bash-command injects; pi's tool path never adds that footer, so
+  ;; the JS half uses the same suffix strip. Not execute/spawn.
+  (let* ((exact
+           (cadr-cli::bash-strip-exit-footer
+            "Process exited with code 0" 0))
+         (nl
+           (cadr-cli::bash-strip-exit-footer
+            (format nil "hello~%Process exited with code 1") 1))
+         (no-nl
+           (cadr-cli::bash-strip-exit-footer
+            "helloProcess exited with code 2" 2))
+         (plain
+           (cadr-cli::bash-strip-exit-footer "plain output" 3))
+         (empty
+           (cadr-cli::bash-strip-exit-footer "" 4)))
+    (list
+     (bash-tool-truth (string= exact ""))
+     (bash-tool-truth (string= nl "hello"))
+     (bash-tool-truth (string= no-nl "hello"))
+     (bash-tool-truth (string= plain "plain output"))
+     (bash-tool-truth (string= empty ""))
+     5)))
+
+(defun run-bash-append-status ()
+  ;; Baseline appendStatus in bash.ts formatOutput catch path.
+  (let* ((empty
+           (cadr-cli::append-bash-status "" "Command aborted"))
+         (abort
+           (cadr-cli::append-bash-status "out" "Command aborted"))
+         (exit
+           (cadr-cli::append-bash-status
+            "out" "Command exited with code 1"))
+         (timeout
+           (cadr-cli::append-bash-status
+            "out" "Command timed out after 5 seconds")))
+    (list
+     (bash-tool-truth (string= empty "Command aborted"))
+     (bash-tool-truth
+      (string= abort (format nil "out~%~%Command aborted")))
+     (bash-tool-truth
+      (string= exit (format nil "out~%~%Command exited with code 1")))
+     (bash-tool-truth
+      (string=
+       timeout
+       (format nil "out~%~%Command timed out after 5 seconds")))
+     4)))
+
+(defparameter *bash-notice-path* "/tmp/pi-bash-notice.log")
+(defparameter *bash-notice-full-output* (format nil "keep~%LASTLINE"))
+
+(defun run-bash-truncation-notice ()
+  ;; Baseline formatOutput truncation notice body (the [Showing ...]
+  ;; bracket), not execute/spawn and not truncate-tail.
+  (let* ((none
+           (or (cadr-cli::bash-truncation-notice
+                '(:truncated nil)
+                *bash-notice-path*
+                *bash-notice-full-output*)
+               ""))
+         (partial
+           (or (cadr-cli::bash-truncation-notice
+                '(:truncated t
+                  :last-line-partial t
+                  :total-lines 2
+                  :output-lines 1
+                  :output-bytes 8)
+                *bash-notice-path*
+                *bash-notice-full-output*)
+               ""))
+         (lines
+           (or (cadr-cli::bash-truncation-notice
+                '(:truncated t
+                  :truncated-by :lines
+                  :total-lines 10
+                  :output-lines 3)
+                *bash-notice-path*
+                *bash-notice-full-output*)
+               ""))
+         (bytes
+           (or (cadr-cli::bash-truncation-notice
+                '(:truncated t
+                  :truncated-by :bytes
+                  :total-lines 10
+                  :output-lines 3)
+                *bash-notice-path*
+                *bash-notice-full-output*)
+               "")))
+    (list
+     (bash-tool-truth (string= none ""))
+     (length partial)
+     (length lines)
+     (length bytes)
+     4)))
+
+(defun measure-bash-tool ()
+  (destructuring-bind (sef-exact sef-nl sef-no-nl sef-plain sef-empty sef-n)
+      (run-bash-strip-exit-footer)
+    (destructuring-bind (abs-empty abs-abort abs-exit abs-timeout abs-n)
+        (run-bash-append-status)
+      (destructuring-bind (btn-none btn-partial btn-lines btn-bytes btn-n)
+          (run-bash-truncation-notice)
+        (json-object
+         "observed"
+         (json-object
+          "sef_exact" sef-exact
+          "sef_nl" sef-nl
+          "sef_no_nl" sef-no-nl
+          "sef_plain" sef-plain
+          "sef_empty" sef-empty
+          "sef_n" sef-n
+          "abs_empty" abs-empty
+          "abs_abort" abs-abort
+          "abs_exit" abs-exit
+          "abs_timeout" abs-timeout
+          "abs_n" abs-n
+          "btn_none" btn-none
+          "btn_partial" btn-partial
+          "btn_lines" btn-lines
+          "btn_bytes" btn-bytes
+          "btn_n" btn-n)
+         "strip_exit_footer"
+         (collect "bash_tool.strip_exit_footer"
+                  (lambda ()
+                    (lambda ()
+                      (run-bash-strip-exit-footer))))
+         "append_status"
+         (collect "bash_tool.append_status"
+                  (lambda ()
+                    (lambda ()
+                      (run-bash-append-status))))
+         "truncation_notice"
+         (collect "bash_tool.truncation_notice"
+                  (lambda ()
+                    (lambda ()
+                      (run-bash-truncation-notice)))))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -13994,57 +14140,44 @@
      (if (plusp (model-count :google)) 1 0)
      (if (zerop (model-count :no-such-provider)) 1 0))))
 
-(defun run-provider-builtin-providers ()
-  (let ((by-id (make-hash-table)))
-    (dolist (definition (cadr-ai:list-provider-definitions))
-      (let ((provider
-              (cadr-ai::make-built-in-runtime-provider definition nil)))
-        (setf (gethash (cadr-ai:runtime-provider-id provider) by-id)
-              provider)))
-    (flet ((present (id)
-             (if (gethash id by-id) 1 0))
-           (api-key-p (id)
-             (let ((provider (gethash id by-id)))
-               (if (and provider
-                        (cadr-ai::runtime-provider-api-key-auth-p provider))
-                   1
-                   0)))
-           (oauth-p (id)
-             (let ((provider (gethash id by-id)))
-               (if (and provider
-                        (cadr-ai::runtime-provider-oauth-auth-p provider))
-                   1
-                   0))))
-      (list
-       (present :openai)
-       (present :anthropic)
-       (present :google)
-       (api-key-p :openai)
-       (oauth-p :anthropic)
-       (oauth-p :openai)))))
-
-(defun run-provider-builtin-models ()
-  (let* ((runtime (cadr-ai:make-built-in-models-runtime :environment nil))
-         (openai (cadr-ai:models-runtime-provider runtime :openai))
-         (anthropic (cadr-ai:models-runtime-provider runtime :anthropic))
-         (google (cadr-ai:models-runtime-provider runtime :google))
-         (unknown (cadr-ai:models-runtime-provider runtime :no-such-provider)))
+(defun run-provider-merge-environment ()
+  (let ((merged
+          (cadr-ai::merge-provider-environment
+           '(("OPENAI_API_KEY" . "sk-explicit")
+             ("AZURE_OPENAI_BASE_URL" . "https://explicit.example"))
+           '(("OPENAI_API_KEY" . "sk-ambient")
+             ("GEMINI_API_KEY" . "sk-gemini-ambient")))))
     (list
-     (if openai 1 0)
-     (if anthropic 1 0)
-     (if google 1 0)
-     (if unknown 0 1)
-     (if (and openai
-              (string= (cadr-ai::runtime-provider-name openai) "OpenAI"))
-         1
-         0))))
+     (if (equal (cdr (assoc "OPENAI_API_KEY" merged :test #'string=))
+                "sk-explicit")
+         1 0)
+     (if (equal (cdr (assoc "GEMINI_API_KEY" merged :test #'string=))
+                "sk-gemini-ambient")
+         1 0)
+     (if (equal (cdr (assoc "AZURE_OPENAI_BASE_URL" merged :test #'string=))
+                "https://explicit.example")
+         1 0)
+     (if (assoc "MISSING_KEY" merged :test #'string=) 0 1))))
+
+(defun run-provider-structured-api-key-login ()
+  (flet ((flag (id)
+           (if (cadr-ai:provider-definition-structured-api-key-login-p
+                (cadr-ai::find-provider-definition id))
+               1
+               0)))
+    (list
+     (flag :openai)
+     (flag :anthropic)
+     (flag :google)
+     (flag :amazon-bedrock)
+     (flag :google-vertex))))
 
 (defun measure-provider-registry-defs ()
   (let* ((lookup-observed (run-provider-registry-defs))
          (ids-observed (run-provider-definition-ids))
+         (merge-observed (run-provider-merge-environment))
          (models-observed (run-provider-runtime-models))
-         (providers-observed (run-provider-builtin-providers))
-         (runtime-observed (run-provider-builtin-models)))
+         (structured-observed (run-provider-structured-api-key-login)))
     (json-object
      "observed"
      (json-object
@@ -14054,21 +14187,19 @@
       "unknown" (fourth lookup-observed)
       "count" (fourth ids-observed)
       "sorted_digest" (fifth ids-observed)
+      "me_oa" (first merge-observed)
+      "me_gemini" (second merge-observed)
+      "me_azure" (third merge-observed)
+      "me_miss" (fourth merge-observed)
       "rm_openai" (first models-observed)
       "rm_anthropic" (second models-observed)
       "rm_google" (third models-observed)
       "rm_unknown" (fourth models-observed)
-      "bp_openai" (first providers-observed)
-      "bp_anthropic" (second providers-observed)
-      "bp_google" (third providers-observed)
-      "bp_oa_key" (fourth providers-observed)
-      "bp_an_oauth" (fifth providers-observed)
-      "bp_oa_oauth" (sixth providers-observed)
-      "bm_openai" (first runtime-observed)
-      "bm_anthropic" (second runtime-observed)
-      "bm_google" (third runtime-observed)
-      "bm_unknown" (fourth runtime-observed)
-      "bm_oa_name" (fifth runtime-observed))
+      "sl_openai" (first structured-observed)
+      "sl_anthropic" (second structured-observed)
+      "sl_google" (third structured-observed)
+      "sl_bedrock" (fourth structured-observed)
+      "sl_vertex" (fifth structured-observed))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
@@ -14079,21 +14210,21 @@
               (lambda ()
                 (lambda ()
                   (run-provider-definition-ids))))
+     "merge_environment"
+     (collect "provider_registry_defs.merge_environment"
+              (lambda ()
+                (lambda ()
+                  (run-provider-merge-environment))))
      "runtime_models"
      (collect "provider_registry_defs.runtime_models"
               (lambda ()
                 (lambda ()
                   (run-provider-runtime-models))))
-     "builtin_providers"
-     (collect "provider_registry_defs.builtin_providers"
+     "structured_api_key_login"
+     (collect "provider_registry_defs.structured_api_key_login"
               (lambda ()
                 (lambda ()
-                  (run-provider-builtin-providers))))
-     "builtin_models"
-     (collect "provider_registry_defs.builtin_models"
-              (lambda ()
-                (lambda ()
-                  (run-provider-builtin-models)))))))
+                  (run-provider-structured-api-key-login)))))))
 
 (defun run-skill-prompt-build ()
   (let* ((cwd "/tmp/proj")
@@ -14373,6 +14504,12 @@
       "src/cadr-agent/file-mutation-queue.lisp ensure-file-mutation-queue-state"
       "harness_events.emit"
       "src/cadr-agent/harness-events.lisp harness-event-bus-emit"
+      "bash_tool.strip_exit_footer"
+      "src/cadr-cli/tools/bash.lisp bash-strip-exit-footer"
+      "bash_tool.append_status"
+      "src/cadr-cli/tools/bash.lisp append-bash-status"
+      "bash_tool.truncation_notice"
+      "src/cadr-cli/tools/bash.lisp bash-truncation-notice"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -14839,12 +14976,12 @@
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "provider_registry_defs.definition_ids"
       "src/cadr-ai/providers/definitions.lisp list-provider-definition-ids"
+      "provider_registry_defs.merge_environment"
+      "src/cadr-ai/providers/runtime-projection.lisp merge-provider-environment"
       "provider_registry_defs.runtime_models"
       "src/cadr-ai/providers/runtime-projection.lisp provider-runtime-models"
-      "provider_registry_defs.builtin_providers"
-      "src/cadr-ai/providers/runtime-projection.lisp make-built-in-runtime-provider"
-      "provider_registry_defs.builtin_models"
-      "src/cadr-ai/providers/runtime-projection.lisp make-built-in-models-runtime"
+      "provider_registry_defs.structured_api_key_login"
+      "src/cadr-ai/providers/runtime-projection.lisp provider-definition-structured-api-key-login-p"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "cli_bootstrap_sessions.coding_tools"
@@ -14968,9 +15105,12 @@
               (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: file_mutation_queue~%")
               (let ((file-mutation-queue (measure-file-mutation-queue))
-                    (harness-events nil))
+                    (harness-events nil)
+                    (bash-tool nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
+              (format *error-output* "goal20 cadr paired paths: bash_tool~%")
+              (setf bash-tool (measure-bash-tool))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -15105,6 +15245,7 @@
               "resource_loader" resources
               "file_mutation_queue" file-mutation-queue
               "harness_events" harness-events
+              "bash_tool" bash-tool
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html
@@ -15165,7 +15306,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

@@ -103,6 +103,7 @@ METRICS = {
     "execution_env": ("exists_remove_temps",),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state"),
     "harness_events": ("emit",),
+    "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -154,9 +155,9 @@ METRICS = {
     "provider_registry_defs": (
         "lookup",
         "definition_ids",
+        "merge_environment",
         "runtime_models",
-        "builtin_providers",
-        "builtin_models",
+        "structured_api_key_login",
     ),
     "skill_prompt_load": ("build_prompt",),
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
@@ -275,6 +276,11 @@ RATIO_CEILINGS = {
     # harness_events.emit pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.emit": 8.0,
+    # bash_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "bash_tool.strip_exit_footer": 8.0,
+    "bash_tool.append_status": 8.0,
+    "bash_tool.truncation_notice": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1141,15 +1147,15 @@ RATIO_CEILINGS = {
     # provider_registry_defs.definition_ids pair (samples=5): observed 99.97x
     # (728.7 / 7.3 us). 125.0 is first-freeze headroom. Ratchet down only.
     "provider_registry_defs.definition_ids": 125.0,
-    # provider_registry_defs.runtime_models pair (samples=5): observed 3.54x
-    # (17.85 / 5.05 us). 8.0 is first-freeze headroom. Ratchet down only.
+    # provider_registry_defs.merge_environment pair: first-freeze
+    # headroom 8.0. Ratchet down only.
+    "provider_registry_defs.merge_environment": 8.0,
+    # provider_registry_defs.runtime_models pair: first-freeze
+    # headroom 8.0. Ratchet down only.
     "provider_registry_defs.runtime_models": 8.0,
-    # provider_registry_defs.builtin_providers pair (samples=5): observed 1.16x
-    # (292.9 / 251.5 us). 8.0 is first-freeze headroom. Ratchet down only.
-    "provider_registry_defs.builtin_providers": 8.0,
-    # provider_registry_defs.builtin_models pair (samples=5): observed 1.28x
-    # (302.9 / 236.2 us). 8.0 is first-freeze headroom. Ratchet down only.
-    "provider_registry_defs.builtin_models": 8.0,
+    # provider_registry_defs.structured_api_key_login pair: first-freeze
+    # headroom 8.0. Ratchet down only.
+    "provider_registry_defs.structured_api_key_login": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # skill_prompt_load pair (samples=5): observed 1170.57x
     # (2196 / 1.88 us). Keyword initforms still hit ASDF
@@ -1478,6 +1484,24 @@ OBSERVED_EXACT = {
         "he_start",
         "he_end",
         "he_second",
+    ),
+    "bash_tool": (
+        "sef_exact",
+        "sef_nl",
+        "sef_no_nl",
+        "sef_plain",
+        "sef_empty",
+        "sef_n",
+        "abs_empty",
+        "abs_abort",
+        "abs_exit",
+        "abs_timeout",
+        "abs_n",
+        "btn_none",
+        "btn_partial",
+        "btn_lines",
+        "btn_bytes",
+        "btn_n",
     ),
     "settings_load": (
         "tr_empty",
@@ -2656,21 +2680,19 @@ OBSERVED_EXACT = {
         "unknown",
         "count",
         "sorted_digest",
+        "me_oa",
+        "me_gemini",
+        "me_azure",
+        "me_miss",
         "rm_openai",
         "rm_anthropic",
         "rm_google",
         "rm_unknown",
-        "bp_openai",
-        "bp_anthropic",
-        "bp_google",
-        "bp_oa_key",
-        "bp_an_oauth",
-        "bp_oa_oauth",
-        "bm_openai",
-        "bm_anthropic",
-        "bm_google",
-        "bm_unknown",
-        "bm_oa_name",
+        "sl_openai",
+        "sl_anthropic",
+        "sl_google",
+        "sl_bedrock",
+        "sl_vertex",
     ),
     "skill_prompt_load": (
         "custom_len",

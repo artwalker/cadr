@@ -287,12 +287,39 @@
    "branch": "cursor/pair-276-harness-events-emit-8cfd"
   },
   {
+   "pair": 277,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "bash_tool.strip_exit_footer",
+   "branch": "cursor/pair-277-279-bash-leftovers-4440"
+  },
+  {
+   "pair": 278,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "bash_tool.append_status",
+   "branch": "cursor/pair-277-279-bash-leftovers-4440"
+  },
+  {
+   "pair": 279,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "bash_tool.truncation_notice",
+   "branch": "cursor/pair-277-279-bash-leftovers-4440"
+  },
+  {
    "pair": 295,
    "lane": "a",
    "status": "done",
    "source": "src/cadr-ai/providers/runtime-projection.lisp",
    "measure": "measure-provider-registry-defs",
-   "metric": "provider_registry_defs.runtime_models",
+   "metric": "provider_registry_defs.merge_environment",
    "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
   },
   {
@@ -301,7 +328,7 @@
    "status": "done",
    "source": "src/cadr-ai/providers/runtime-projection.lisp",
    "measure": "measure-provider-registry-defs",
-   "metric": "provider_registry_defs.builtin_providers",
+   "metric": "provider_registry_defs.runtime_models",
    "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
   },
   {
@@ -310,7 +337,7 @@
    "status": "done",
    "source": "src/cadr-ai/providers/runtime-projection.lisp",
    "measure": "measure-provider-registry-defs",
-   "metric": "provider_registry_defs.builtin_models",
+   "metric": "provider_registry_defs.structured_api_key_login",
    "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
   }
  ],

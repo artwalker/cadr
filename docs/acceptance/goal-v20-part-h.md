@@ -3220,29 +3220,82 @@ start, not write/edit tools. Observed `he_direct` / `he_watch` / `he_start`
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
 this metric did not fail). Same commit no optimize.
 
-### Pair 295 — `provider_registry_defs` (runtime_models)
+### Pair 277 — `bash_tool` (strip_exit_footer)
+
+| metric | cadr | pi |
+|---|---|---|
+| `strip_exit_footer` | `bash-strip-exit-footer` (`src/cadr-cli/tools/bash.lisp`) | Process-exited suffix strip (cadr injects then strips; pi's tool path never adds the footer; same encoding as `packages/coding-agent/src/core/tools/bash.ts` result text) |
+
+Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/bash.lisp`.
+Timed work is stripping `Process exited with code N` (exact footer, newline
+footer, glued footer, unchanged body, empty) — not execute/spawn. Observed
+`sef_exact` / `sef_nl` / `sef_no_nl` / `sef_plain` / `sef_empty` / `sef_n`
+are exact. First n=5 freeze **1.599×** (0.989 / 0.619 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 278 — `bash_tool` (append_status)
+
+| metric | cadr | pi |
+|---|---|---|
+| `append_status` | `append-bash-status` (`src/cadr-cli/tools/bash.lisp`) | `appendStatus` (`packages/coding-agent/src/core/tools/bash.ts`) |
+
+Leftover sibling of Pair 277 `strip_exit_footer` on the same `agent_tool_loop`
+hole. Timed work is abort/exit/timeout status join (empty body vs non-empty)
+— not execute/spawn. Observed `abs_empty` / `abs_abort` / `abs_exit` /
+`abs_timeout` / `abs_n` are exact. First n=5 freeze **2.911×** (1.109 /
+0.381 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
+
+### Pair 279 — `bash_tool` (truncation_notice)
+
+| metric | cadr | pi |
+|---|---|---|
+| `truncation_notice` | `bash-truncation-notice` (`src/cadr-cli/tools/bash.lisp`) | `formatOutput` truncation notice (`packages/coding-agent/src/core/tools/bash.ts`) |
+
+Leftover sibling of Pair 277 `strip_exit_footer` and Pair 278 `append_status`
+on the same `agent_tool_loop` hole. Timed work is the `[Showing ...]` notice
+body (not truncated, last-line-partial, lines, bytes limit) — not
+truncate-tail and not execute/spawn. Observed `btn_none` / `btn_partial` /
+`btn_lines` / `btn_bytes` / `btn_n` are exact. First n=5 freeze
+**3.363×** (2.798 / 0.832 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 295 — `provider_registry_defs` (merge_environment)
+
+| metric | cadr | pi |
+|---|---|---|
+| `merge_environment` | `merge-provider-environment` (`src/cadr-ai/providers/runtime-projection.lisp`) | `getProviderEnvValue` (`packages/ai/src/utils/provider-env.ts`) |
+
+Leftover sibling of lookup/definition_ids on the same `provider_registry_defs`
+hole. Timed work is explicit-over-ambient env merge (OPENAI wins, ambient GEMINI
+kept, explicit Azure URL present, missing key absent) — not lookup, not stream.
+Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` are exact. Freeze pending.
+
+### Pair 296 — `provider_registry_defs` (runtime_models)
 
 | metric | cadr | pi |
 |---|---|---|
 | `runtime_models` | `provider-runtime-models` (`src/cadr-ai/providers/runtime-projection.lisp`) | `getBuiltinModels` (`packages/ai/src/providers/all.ts`) |
 
-Leftover sibling of Pair lookup/definition_ids on the same `provider_registry_defs` hole. Timed work is catalog model lists for openai/anthropic/google plus an unknown id — not `getBuiltinProviders`, not stream. Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` are exact. First n=5 freeze **3.537×** (17.85 / 5.05 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+Leftover sibling on the same `provider_registry_defs` hole. Timed work is catalog
+model lists for openai/anthropic/google plus an unknown id — not
+`getBuiltinProviders`, not stream. Observed `rm_openai` / `rm_anthropic` /
+`rm_google` / `rm_unknown` are exact. Freeze pending.
 
-### Pair 296 — `provider_registry_defs` (builtin_providers)
-
-| metric | cadr | pi |
-|---|---|---|
-| `builtin_providers` | `make-built-in-runtime-provider` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinProviders` (`packages/ai/src/providers/all.ts`) |
-
-Leftover sibling on the same `provider_registry_defs` hole. Timed work is constructing every built-in runtime provider from definitions (no socket, no login). Observed `bp_openai` / `bp_anthropic` / `bp_google` / `bp_oa_key` / `bp_an_oauth` / `bp_oa_oauth` are exact. First n=5 freeze **1.165×** (292.9 / 251.5 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
-
-### Pair 297 — `provider_registry_defs` (builtin_models)
+### Pair 297 — `provider_registry_defs` (structured_api_key_login)
 
 | metric | cadr | pi |
 |---|---|---|
-| `builtin_models` | `make-built-in-models-runtime` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinModels` (`packages/ai/src/providers/all.ts`) |
+| `structured_api_key_login` | `provider-definition-structured-api-key-login-p` (`src/cadr-ai/providers/runtime-projection.lisp`) | Bedrock/Vertex `ApiKeyAuth.login` select flow (`packages/ai/src/providers/amazon-bedrock.ts`, `packages/ai/src/providers/google-vertex.ts`) |
 
-Leftover sibling on the same `provider_registry_defs` hole. Timed work is registering every built-in provider into a models runtime and probing openai/anthropic/google/unknown — not stream. Observed `bm_openai` / `bm_anthropic` / `bm_google` / `bm_unknown` / `bm_oa_name` are exact. First n=5 freeze **1.282×** (302.9 / 236.2 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+Leftover sibling on the same `provider_registry_defs` hole. Timed work is the
+structured-login predicate for openai/anthropic/google/bedrock/vertex — not
+stream, not login interaction. Observed `sl_openai` / `sl_anthropic` /
+`sl_google` / `sl_bedrock` / `sl_vertex` are exact. Freeze pending.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
@@ -3725,14 +3778,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 175 | 77,389 | 60.0% | `no worse than baseline` is falsifiable |
+| `paired` | 174 | 77,092 | 59.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 70 | 26,608 | 20.6% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 60.0% of lines (175 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.8% of lines.
+- **Falsifiable vs baseline:** 59.8% of lines (174 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 65.6% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3822,7 +3875,6 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/providers/openai-completions.lisp` | 880 | `provider_stream.stream_roundtrip` |
 | `src/cadr-ai/providers/openai.lisp` | 828 | `provider_openai_responses.stream_roundtrip` |
 | `src/cadr-ai/providers/pi-messages.lisp` | 255 | `provider_pi_messages.stream_roundtrip` |
-| `src/cadr-ai/providers/runtime-projection.lisp` | 297 | `provider_registry_defs.runtime_models`, `provider_registry_defs.builtin_providers`, `provider_registry_defs.builtin_models` |
 | `src/cadr-ai/providers/vertex.lisp` | 134 | `provider_vertex.stream_roundtrip` |
 | `src/cadr-ai/runtime/faux-provider.lisp` | 609 | `ai_runtime_faux.blocks` |
 | `src/cadr-ai/sse.lisp` | 267 | `provider_stream.stream_roundtrip` |
@@ -3995,11 +4047,11 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |
 | `settings_load` | 2 | 479 |
+| `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
 | `core_rest` | 3 | 161 |
-| `provider_registry_defs` | 1 | 157 |
 | `cli_support` | 5 | 123 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |

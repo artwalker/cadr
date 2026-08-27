@@ -153,6 +153,9 @@ const REPETITIONS = {
 	"file_mutation_queue.release_turn": 50,
 	"file_mutation_queue.ensure_state": 50,
 	"harness_events.emit": 50,
+	"bash_tool.strip_exit_footer": 50,
+	"bash_tool.append_status": 50,
+	"bash_tool.truncation_notice": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -387,9 +390,9 @@ const REPETITIONS = {
 	"cli_sdk.model_runtime": 5,
 	"provider_registry_defs.lookup": 50,
 	"provider_registry_defs.definition_ids": 125,
+	"provider_registry_defs.merge_environment": 50,
 	"provider_registry_defs.runtime_models": 50,
-	"provider_registry_defs.builtin_providers": 5,
-	"provider_registry_defs.builtin_models": 5,
+	"provider_registry_defs.structured_api_key_login": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
@@ -789,6 +792,7 @@ const cacheStatsModule = await import(
 	moduleUrl("packages/coding-agent/src/core/cache-stats.ts")
 );
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
+const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
 const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
@@ -2586,6 +2590,140 @@ async function measureHarnessEvents() {
 			return () => runHarnessEventsEmit();
 		}),
 		observed,
+	};
+}
+
+const BASH_NOTICE_PATH = "/tmp/pi-bash-notice.log";
+const BASH_NOTICE_FULL_OUTPUT = "keep\nLASTLINE";
+
+function stripExitFooter(text, exitCode) {
+	const footer = `Process exited with code ${exitCode}`;
+	if (text === footer) return "";
+	if (text.length > footer.length && text.endsWith(footer)) {
+		const end = text.length - footer.length;
+		if (end > 0 && text[end - 1] === "\n") return text.slice(0, end - 1);
+		return text.slice(0, end);
+	}
+	return text;
+}
+
+function appendStatus(text, status) {
+	return `${text ? `${text}\n\n` : ""}${status}`;
+}
+
+function bashTruncationNotice(details, outputPath, fullOutput) {
+	if (!details.truncated) return "";
+	const totalLines = details.totalLines;
+	const outputLines = details.outputLines;
+	const startLine = totalLines - outputLines + 1;
+	const endLine = totalLines;
+	if (details.lastLinePartial) {
+		let lines = fullOutput.length === 0 ? [] : fullOutput.split("\n");
+		if (lines.length && fullOutput.endsWith("\n")) lines = lines.slice(0, -1);
+		const lastLine = lines.length ? lines[lines.length - 1] : "";
+		return `[Showing last ${truncateModule.formatSize(details.outputBytes)} of line ${endLine} (line is ${truncateModule.formatSize(Buffer.byteLength(lastLine, "utf8"))}). Full output: ${outputPath}]`;
+	}
+	if (details.truncatedBy === "lines") {
+		return `[Showing lines ${startLine}-${endLine} of ${totalLines}. Full output: ${outputPath}]`;
+	}
+	return `[Showing lines ${startLine}-${endLine} of ${totalLines} (${truncateModule.formatSize(truncateModule.DEFAULT_MAX_BYTES)} limit). Full output: ${outputPath}]`;
+}
+
+function runBashStripExitFooter() {
+	const exact = stripExitFooter("Process exited with code 0", 0);
+	const nl = stripExitFooter("hello\nProcess exited with code 1", 1);
+	const noNl = stripExitFooter("helloProcess exited with code 2", 2);
+	const plain = stripExitFooter("plain output", 3);
+	const empty = stripExitFooter("", 4);
+	return {
+		sef_exact: exact === "" ? 1 : 0,
+		sef_nl: nl === "hello" ? 1 : 0,
+		sef_no_nl: noNl === "hello" ? 1 : 0,
+		sef_plain: plain === "plain output" ? 1 : 0,
+		sef_empty: empty === "" ? 1 : 0,
+		sef_n: 5,
+	};
+}
+
+function runBashAppendStatus() {
+	const empty = appendStatus("", "Command aborted");
+	const abort = appendStatus("out", "Command aborted");
+	const exit = appendStatus("out", "Command exited with code 1");
+	const timeout = appendStatus("out", "Command timed out after 5 seconds");
+	return {
+		abs_empty: empty === "Command aborted" ? 1 : 0,
+		abs_abort: abort === "out\n\nCommand aborted" ? 1 : 0,
+		abs_exit: exit === "out\n\nCommand exited with code 1" ? 1 : 0,
+		abs_timeout: timeout === "out\n\nCommand timed out after 5 seconds" ? 1 : 0,
+		abs_n: 4,
+	};
+}
+
+function runBashTruncationNotice() {
+	const none = bashTruncationNotice(
+		{ truncated: false },
+		BASH_NOTICE_PATH,
+		BASH_NOTICE_FULL_OUTPUT,
+	);
+	const partial = bashTruncationNotice(
+		{
+			truncated: true,
+			lastLinePartial: true,
+			totalLines: 2,
+			outputLines: 1,
+			outputBytes: 8,
+		},
+		BASH_NOTICE_PATH,
+		BASH_NOTICE_FULL_OUTPUT,
+	);
+	const lines = bashTruncationNotice(
+		{
+			truncated: true,
+			truncatedBy: "lines",
+			totalLines: 10,
+			outputLines: 3,
+		},
+		BASH_NOTICE_PATH,
+		BASH_NOTICE_FULL_OUTPUT,
+	);
+	const bytes = bashTruncationNotice(
+		{
+			truncated: true,
+			truncatedBy: "bytes",
+			totalLines: 10,
+			outputLines: 3,
+		},
+		BASH_NOTICE_PATH,
+		BASH_NOTICE_FULL_OUTPUT,
+	);
+	return {
+		btn_none: none === "" ? 1 : 0,
+		btn_partial: partial.length,
+		btn_lines: lines.length,
+		btn_bytes: bytes.length,
+		btn_n: 4,
+	};
+}
+
+async function measureBashTool() {
+	const stripObserved = runBashStripExitFooter();
+	const appendObserved = runBashAppendStatus();
+	const noticeObserved = runBashTruncationNotice();
+	return {
+		strip_exit_footer: await collect("bash_tool.strip_exit_footer", () => {
+			return () => runBashStripExitFooter();
+		}),
+		append_status: await collect("bash_tool.append_status", () => {
+			return () => runBashAppendStatus();
+		}),
+		truncation_notice: await collect("bash_tool.truncation_notice", () => {
+			return () => runBashTruncationNotice();
+		}),
+		observed: {
+			...stripObserved,
+			...appendObserved,
+			...noticeObserved,
+		},
 	};
 }
 
@@ -14300,43 +14438,85 @@ function runProviderRuntimeModels() {
 	};
 }
 
-function runProviderBuiltinProviders() {
-	const providers = builtinProvidersModule.builtinProviders();
-	const byId = new Map(providers.map((provider) => [provider.id, provider]));
-	const openai = byId.get("openai");
-	const anthropic = byId.get("anthropic");
-	const google = byId.get("google");
-	return {
-		bp_openai: openai ? 1 : 0,
-		bp_anthropic: anthropic ? 1 : 0,
-		bp_google: google ? 1 : 0,
-		bp_oa_key: openai?.auth?.apiKey ? 1 : 0,
-		bp_an_oauth: anthropic?.auth?.oauth ? 1 : 0,
-		bp_oa_oauth: openai?.auth?.oauth ? 1 : 0,
+function runProviderMergeEnvironment() {
+	const explicit = {
+		OPENAI_API_KEY: "sk-explicit",
+		AZURE_OPENAI_BASE_URL: "https://explicit.example",
 	};
+	const previousOpenAi = process.env.OPENAI_API_KEY;
+	const previousGemini = process.env.GEMINI_API_KEY;
+	const previousAzure = process.env.AZURE_OPENAI_BASE_URL;
+	process.env.OPENAI_API_KEY = "sk-ambient";
+	process.env.GEMINI_API_KEY = "sk-gemini-ambient";
+	delete process.env.AZURE_OPENAI_BASE_URL;
+	try {
+		return {
+			me_oa:
+				providerEnvModule.getProviderEnvValue("OPENAI_API_KEY", explicit) ===
+				"sk-explicit"
+					? 1
+					: 0,
+			me_gemini:
+				providerEnvModule.getProviderEnvValue("GEMINI_API_KEY", explicit) ===
+				"sk-gemini-ambient"
+					? 1
+					: 0,
+			me_azure:
+				providerEnvModule.getProviderEnvValue("AZURE_OPENAI_BASE_URL", explicit) ===
+				"https://explicit.example"
+					? 1
+					: 0,
+			me_miss:
+				providerEnvModule.getProviderEnvValue("MISSING_KEY", explicit) == null
+					? 1
+					: 0,
+		};
+	} finally {
+		if (previousOpenAi === undefined) {
+			delete process.env.OPENAI_API_KEY;
+		} else {
+			process.env.OPENAI_API_KEY = previousOpenAi;
+		}
+		if (previousGemini === undefined) {
+			delete process.env.GEMINI_API_KEY;
+		} else {
+			process.env.GEMINI_API_KEY = previousGemini;
+		}
+		if (previousAzure === undefined) {
+			delete process.env.AZURE_OPENAI_BASE_URL;
+		} else {
+			process.env.AZURE_OPENAI_BASE_URL = previousAzure;
+		}
+	}
 }
 
-function runProviderBuiltinModels() {
-	const models = builtinProvidersModule.builtinModels();
-	const openai = models.getProvider("openai");
-	const anthropic = models.getProvider("anthropic");
-	const google = models.getProvider("google");
-	const unknown = models.getProvider("no-such-provider");
+function structuredApiKeyLoginFlag(providersById, providerId) {
+	const login = providersById.get(providerId)?.auth?.apiKey?.login;
+	if (typeof login !== "function") {
+		return 0;
+	}
+	return Function.prototype.toString.call(login).includes("select") ? 1 : 0;
+}
+
+function runProviderStructuredApiKeyLogin() {
+	const providersById = new Map(
+		builtinProvidersModule.builtinProviders().map((provider) => [provider.id, provider]),
+	);
 	return {
-		bm_openai: openai ? 1 : 0,
-		bm_anthropic: anthropic ? 1 : 0,
-		bm_google: google ? 1 : 0,
-		bm_unknown: unknown ? 0 : 1,
-		bm_oa_name: openai?.name === "OpenAI" ? 1 : 0,
+		sl_openai: structuredApiKeyLoginFlag(providersById, "openai"),
+		sl_anthropic: structuredApiKeyLoginFlag(providersById, "anthropic"),
+		sl_google: structuredApiKeyLoginFlag(providersById, "google"),
+		sl_bedrock: structuredApiKeyLoginFlag(providersById, "amazon-bedrock"),
+		sl_vertex: structuredApiKeyLoginFlag(providersById, "google-vertex"),
 	};
 }
 
 async function measureProviderRegistryDefs() {
 	const lookupObserved = runProviderRegistryDefs();
 	const idsObserved = runProviderDefinitionIds();
+	const mergeObserved = runProviderMergeEnvironment();
 	const modelsObserved = runProviderRuntimeModels();
-	const providersObserved = runProviderBuiltinProviders();
-	const runtimeObserved = runProviderBuiltinModels();
+	const structuredObserved = runProviderStructuredApiKeyLogin();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -14344,22 +14524,25 @@ async function measureProviderRegistryDefs() {
 		definition_ids: await collect("provider_registry_defs.definition_ids", () => {
 			return () => runProviderDefinitionIds();
 		}),
+		merge_environment: await collect("provider_registry_defs.merge_environment", () => {
+			return () => runProviderMergeEnvironment();
+		}),
 		runtime_models: await collect("provider_registry_defs.runtime_models", () => {
 			return () => runProviderRuntimeModels();
 		}),
-		builtin_providers: await collect("provider_registry_defs.builtin_providers", () => {
-			return () => runProviderBuiltinProviders();
-		}),
-		builtin_models: await collect("provider_registry_defs.builtin_models", () => {
-			return () => runProviderBuiltinModels();
-		}),
+		structured_api_key_login: await collect(
+			"provider_registry_defs.structured_api_key_login",
+			() => {
+				return () => runProviderStructuredApiKeyLogin();
+			},
+		),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
 			sorted_digest: idsObserved.sorted_digest,
+			...mergeObserved,
 			...modelsObserved,
-			...providersObserved,
-			...runtimeObserved,
+			...structuredObserved,
 		},
 	};
 }
@@ -14732,6 +14915,8 @@ process.stderr.write("goal20 pi paired paths: file_mutation_queue\n");
 const fileMutationQueue = await measureFileMutationQueue();
 process.stderr.write("goal20 pi paired paths: harness_events\n");
 const harnessEvents = await measureHarnessEvents();
+process.stderr.write("goal20 pi paired paths: bash_tool\n");
+const bashTool = await measureBashTool();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -14873,6 +15058,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts fileMutationQueues.get-or-create given a canonical key",
 			"harness_events.emit":
 				"packages/agent/src/harness/events.ts HarnessEventBus.emit",
+			"bash_tool.strip_exit_footer":
+				"packages/coding-agent/src/core/tools/bash.ts strip Process-exited footer (cadr injects then strips; pi tool path never adds it)",
+			"bash_tool.append_status":
+				"packages/coding-agent/src/core/tools/bash.ts appendStatus",
+			"bash_tool.truncation_notice":
+				"packages/coding-agent/src/core/tools/bash.ts formatOutput truncation notice [Showing ...]",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15315,12 +15506,12 @@ const result = {
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"provider_registry_defs.definition_ids":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
+			"provider_registry_defs.merge_environment":
+				"packages/ai/src/utils/provider-env.ts getProviderEnvValue",
 			"provider_registry_defs.runtime_models":
 				"packages/ai/src/providers/all.ts getBuiltinModels",
-			"provider_registry_defs.builtin_providers":
-				"packages/ai/src/providers/all.ts builtinProviders",
-			"provider_registry_defs.builtin_models":
-				"packages/ai/src/providers/all.ts builtinModels",
+			"provider_registry_defs.structured_api_key_login":
+				"packages/ai/src/providers/amazon-bedrock.ts + google-vertex.ts ApiKeyAuth.login select flow",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"cli_bootstrap_sessions.coding_tools":
@@ -15416,6 +15607,7 @@ const result = {
 		resource_loader: resourceLoader,
 		file_mutation_queue: fileMutationQueue,
 		harness_events: harnessEvents,
+		bash_tool: bashTool,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

@@ -9,27 +9,44 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `provider_registry_defs.merge_environment` (`merge-provider-environment` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getProviderEnvValue`).
+  Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` exact. Measure-only leftover
+  sibling; freeze numbers in the recording commit.
 - Goal 20 P.13: pair `provider_registry_defs.runtime_models` (`provider-runtime-models` on
   `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getBuiltinModels`).
-  Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` exact.
-  n=5 **3.537×** (17.85 / 5.05 µs) on host `cursor`, ceiling 8.0. Measure-only.
-  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
-- Goal 20 P.13: pair `provider_registry_defs.builtin_providers` (`make-built-in-runtime-provider` on
-  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `builtinProviders`).
-  Observed `bp_openai` / `bp_anthropic` / `bp_google` / `bp_oa_key` / `bp_an_oauth` /
-  `bp_oa_oauth` exact. n=5 **1.165×** (292.9 / 251.5 µs) on host `cursor`, ceiling 8.0. Measure-only.
-  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
-- Goal 20 P.13: pair `provider_registry_defs.builtin_models` (`make-built-in-models-runtime` on
-  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `builtinModels`).
-  Observed `bm_openai` / `bm_anthropic` / `bm_google` / `bm_unknown` / `bm_oa_name` exact.
-  n=5 **1.282×** (302.9 / 236.2 µs) on host `cursor`, ceiling 8.0. Measure-only.
-  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` exact. Measure-only leftover
+  sibling; freeze numbers in the recording commit.
+- Goal 20 P.13: pair `provider_registry_defs.structured_api_key_login`
+  (`provider-definition-structured-api-key-login-p` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline Bedrock/Vertex
+  `ApiKeyAuth.login` select flow). Observed `sl_openai` / `sl_anthropic` / `sl_google` /
+  `sl_bedrock` / `sl_vertex` exact. Measure-only leftover sibling; freeze numbers in the
+  recording commit.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`
   exact. n=5 **0.306×** (0.75 / 2.45 µs) on host `cursor`, ceiling 8.0.
   Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
   help text), not this metric.
+- Goal 20 P.13: pair `bash_tool.strip_exit_footer` (`bash-strip-exit-footer` on
+  `src/cadr-cli/tools/bash.lisp` vs the same Process-exited suffix strip; pi's
+  tool path never injects that footer). Observed `sef_exact` / `sef_nl` /
+  `sef_no_nl` / `sef_plain` / `sef_empty` / `sef_n` exact.
+  n=5 **1.599×** (0.989 / 0.619 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `bash_tool.append_status` (`append-bash-status` on
+  `src/cadr-cli/tools/bash.lisp` vs baseline `appendStatus` in
+  `packages/coding-agent/src/core/tools/bash.ts`). Observed `abs_empty` /
+  `abs_abort` / `abs_exit` / `abs_timeout` / `abs_n` exact.
+  n=5 **2.911×** (1.109 / 0.381 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `bash_tool.truncation_notice` (`bash-truncation-notice` on
+  `src/cadr-cli/tools/bash.lisp` vs baseline `formatOutput` truncation notice
+  in `packages/coding-agent/src/core/tools/bash.ts`). Observed `btn_none` /
+  `btn_partial` / `btn_lines` / `btn_bytes` / `btn_n` exact.
+  n=5 **3.363×** (2.798 / 0.832 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.ensure_state` (`ensure-file-mutation-queue-state` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `fileMutationQueues.get(key) ?? set`
   given a canonical key). Observed `fmqs_alias` / `fmqs_other` / `fmqs_missing` /
