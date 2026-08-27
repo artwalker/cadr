@@ -3855,8 +3855,11 @@ leads. Same commit no optimize.
 Leftover sibling of Pairs 310–312 on the same `oauth_pkce_device` hole
 in `src/cadr-ai/oauth/callback.lisp`. Timed work is the display-name map
 (`Anthropic` / `Radius` / other) — not loopback HTTP. Observed `pk_anth` /
-`pk_rad` / `pk_other` / `pk_n` are exact. Measure-only; freeze numbers
-follow. Same commit no optimize.
+`pk_rad` / `pk_other` / `pk_n` are exact. First n=5 freeze **0.498×**
+(0.139 / 0.279 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). cadr leads. Same
+commit no optimize.
 
 ### Pair 335 — `oauth_pkce_device` (http_status_text)
 
@@ -3868,8 +3871,11 @@ Leftover sibling of Pair 334 `provider_key` on the same hole. Timed work
 is the four recorded HTTP reason phrases — not `write-oauth-http-response`
 and not the loopback listener. Do not exact the otherwise `Error` branch
 (Node `STATUS_CODES` is undefined). Observed `st_ok` / `st_bad` /
-`st_miss` / `st_err` / `st_n` are exact. Measure-only; freeze numbers
-follow. Same commit no optimize.
+`st_miss` / `st_err` / `st_n` are exact. First n=5 freeze **0.528×**
+(0.137 / 0.260 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). cadr leads. Same
+commit no optimize.
 
 ### Pair 336 — `oauth_pkce_device` (parse_callback_request)
 
@@ -3882,8 +3888,10 @@ loopback request-line routing (success / state mismatch / 404 / missing
 code) — not the socket, not HTML. Do not exact Anthropic/Radius error
 copy or invalid percent escapes (Lisp 500; `URLSearchParams` is
 lenient). Observed `pcr_ok` / `pcr_state` / `pcr_path` / `pcr_code` /
-`pcr_n` are exact. Measure-only; freeze numbers follow. Same commit no
-optimize.
+`pcr_n` are exact. First n=5 freeze **3.699×** (12.588 / 3.403 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
