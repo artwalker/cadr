@@ -102,6 +102,7 @@
 ;;;; 273. file_mutation_queue ticket wait vs wait-for-file-mutation-turn
 ;;;; 274. file_mutation_queue ticket release vs release-file-mutation-turn
 ;;;; 275. file_mutation_queue registry get-or-create vs ensure-file-mutation-queue-state
+;;;; 276. harness_events emit vs HarnessEventBus.emit
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -249,6 +250,7 @@
     ("file_mutation_queue.wait_turn" . 50)
     ("file_mutation_queue.release_turn" . 50)
     ("file_mutation_queue.ensure_state" . 50)
+    ("harness_events.emit" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4076,6 +4078,64 @@
                       (lambda ()
                         (lambda ()
                           (run-file-mutation-queue-ensure-state)))))))))))))
+
+(defun he-truth (value)
+  (if value 1 0))
+
+(defun run-harness-events-emit ()
+  ;; Baseline HarnessEventBus.emit only; not watch buffering until start,
+  ;; not write/edit tools. Same delivery contract as
+  ;; test/cadr-agent/harness-events-test.lisp direct+watch path.
+  (let ((bus (cadr-agent:make-harness-event-bus))
+        (direct '())
+        (watched '()))
+    (let ((off
+            (cadr-agent:harness-event-bus-on
+             bus :run-start
+             (lambda (event) (push event direct)))))
+      (multiple-value-bind (snapshot start unsubscribe)
+          (cadr-agent:harness-event-bus-watch bus (lambda () nil))
+        (declare (ignore snapshot))
+        (funcall start (lambda (event) (push event watched)))
+        (let ((run-start (cadr-agent:make-run-start-event "main" "run-1"))
+              (run-end
+                (cadr-agent:make-run-end-event
+                 "main" "run-1" :completed "entry-1")))
+          (cadr-agent:harness-event-bus-emit bus run-start)
+          (cadr-agent:harness-event-bus-emit bus run-end)
+          (funcall off)
+          (cadr-agent:harness-event-bus-emit bus run-start)
+          (funcall unsubscribe)
+          (let ((watched-rev (reverse watched)))
+            (list
+             (he-truth (= (length direct) 1))
+             (he-truth (= (length watched) 3))
+             (he-truth
+              (eq (cadr-agent:harness-event-type (first watched-rev))
+                  :run-start))
+             (he-truth
+              (eq (cadr-agent:harness-event-type (second watched-rev))
+                  :run-end))
+             (he-truth
+              (eq (cadr-agent:harness-event-type (third watched-rev))
+                  :run-start)))))))))
+
+(defun measure-harness-events ()
+  (destructuring-bind (he-direct he-watch he-start he-end he-second)
+      (run-harness-events-emit)
+    (json-object
+     "observed"
+     (json-object
+      "he_direct" he-direct
+      "he_watch" he-watch
+      "he_start" he-start
+      "he_end" he-end
+      "he_second" he-second)
+     "emit"
+     (collect "harness_events.emit"
+              (lambda ()
+                (lambda ()
+                  (run-harness-events-emit)))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -14221,6 +14281,8 @@
       "src/cadr-agent/file-mutation-queue.lisp release-file-mutation-turn"
       "file_mutation_queue.ensure_state"
       "src/cadr-agent/file-mutation-queue.lisp ensure-file-mutation-queue-state"
+      "harness_events.emit"
+      "src/cadr-agent/harness-events.lisp harness-event-bus-emit"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -14809,7 +14871,10 @@
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
               (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: file_mutation_queue~%")
-              (let ((file-mutation-queue (measure-file-mutation-queue)))
+              (let ((file-mutation-queue (measure-file-mutation-queue))
+                    (harness-events nil))
+              (format *error-output* "goal20 cadr paired paths: harness_events~%")
+              (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -14943,6 +15008,7 @@
               "settings_load" settings-load
               "resource_loader" resources
               "file_mutation_queue" file-mutation-queue
+              "harness_events" harness-events
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html

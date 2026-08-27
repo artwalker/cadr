@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 276,
+   "nextPairNum": 283,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -279,6 +279,15 @@
      "measure": "measure-agent-tool-loop",
      "metric": "file_mutation_queue.ensure_state",
      "branch": "cursor/pair-275-fmq-ensure-state-b990"
+    },
+    {
+     "pair": 276,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/harness-events.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "harness_events.emit",
+     "branch": "cursor/pair-276-harness-events-emit-8cfd"
     }
    ],
    "mergeQueue": []
