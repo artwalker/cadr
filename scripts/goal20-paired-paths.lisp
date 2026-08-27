@@ -4850,8 +4850,14 @@
            (funcall function))
       (sb-posix:setenv "PATH" previous 1))))
 
+(defun tm-local-binary-p (result name)
+  (and result
+       (plusp (length result))
+       (char= (char result 0) #\/)
+       (string= (file-namestring result) name)))
+
 (defun run-tool-manager-get-tool-path ()
-  (let* ((bin (merge-pathnames "tool-manager-local-bin/" *scratch-directory*))
+  (let* ((bin (cadr-core:agent-bin-directory))
          (fd (progn
                (ensure-directories-exist bin)
                (tm-write-stub bin "fd")))
@@ -4869,8 +4875,8 @@
              (lambda ()
                (cadr-cli:get-tool-path :rg :bin-directory bin)))))
       (list
-       (tm-truth (and local-fd (string= (file-namestring local-fd) "fd")))
-       (tm-truth (and local-rg (string= (file-namestring local-rg) "rg")))
+       (tm-truth (tm-local-binary-p local-fd "fd"))
+       (tm-truth (tm-local-binary-p local-rg "rg"))
        (tm-truth (null miss-fd))
        (tm-truth (null miss-rg))
        4))))
@@ -4895,7 +4901,7 @@
             (sb-posix:unsetenv "CADR_OFFLINE")
             (sb-posix:setenv "CADR_OFFLINE" previous-offline 1)))
       (list
-       (tm-truth (and local (string= (file-namestring local) "fd")))
+       (tm-truth (tm-local-binary-p local "fd"))
        (tm-truth (null offline))
        2))))
 

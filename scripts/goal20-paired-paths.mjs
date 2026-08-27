@@ -566,6 +566,9 @@ mkdirSync(agentDirectory, { recursive: true });
 for (const name of ["models.json", "auth.json"]) {
 	copyFileSync(path.join(fixtureDirectory, name), path.join(agentDirectory, name));
 }
+// Pin before any coding-agent import so tools-manager.ts TOOLS_DIR is the
+// staged agent bin, not ~/.pi/agent/bin (a host fd binary lives there).
+process.env.PI_CODING_AGENT_DIR = agentDirectory;
 const stagedDigests = {
 	"models.json": createHash("sha256")
 		.update(readFileSync(path.join(agentDirectory, "models.json")))
@@ -3190,8 +3193,20 @@ async function loadToolsManager() {
 	return toolsManagerModulePromise;
 }
 
+function tmAgentBin() {
+	return path.join(agentDirectory, "bin");
+}
+
+function tmIsLocalBinary(result, name) {
+	return Boolean(
+		result &&
+			path.isAbsolute(result) &&
+			path.basename(result) === name,
+	);
+}
+
 function runToolManagerGetToolPath(toolsManager) {
-	const toolsDir = configModule.getBinDir();
+	const toolsDir = tmAgentBin();
 	mkdirSync(toolsDir, { recursive: true });
 	const fd = tmWriteStub(toolsDir, "fd");
 	const rg = tmWriteStub(toolsDir, "rg");
@@ -3202,8 +3217,8 @@ function runToolManagerGetToolPath(toolsManager) {
 	const missFd = tmWithEmptyPath(() => toolsManager.getToolPath("fd"));
 	const missRg = tmWithEmptyPath(() => toolsManager.getToolPath("rg"));
 	return {
-		gtp_local_fd: tmTruth(localFd && path.basename(localFd) === "fd"),
-		gtp_local_rg: tmTruth(localRg && path.basename(localRg) === "rg"),
+		gtp_local_fd: tmTruth(tmIsLocalBinary(localFd, "fd")),
+		gtp_local_rg: tmTruth(tmIsLocalBinary(localRg, "rg")),
 		gtp_miss_fd: tmTruth(missFd == null),
 		gtp_miss_rg: tmTruth(missRg == null),
 		gtp_n: 4,
@@ -3211,7 +3226,7 @@ function runToolManagerGetToolPath(toolsManager) {
 }
 
 async function runToolManagerEnsureTool(toolsManager) {
-	const toolsDir = configModule.getBinDir();
+	const toolsDir = tmAgentBin();
 	mkdirSync(toolsDir, { recursive: true });
 	const fd = tmWriteStub(toolsDir, "fd");
 	const local = await toolsManager.ensureTool("fd");
@@ -3230,7 +3245,7 @@ async function runToolManagerEnsureTool(toolsManager) {
 		else process.env.PI_OFFLINE = previousOffline;
 	}
 	return {
-		et_local_fd: tmTruth(local && path.basename(local) === "fd"),
+		et_local_fd: tmTruth(tmIsLocalBinary(local, "fd")),
 		et_offline_miss: tmTruth(offline == null),
 		et_n: 2,
 	};
