@@ -3757,6 +3757,46 @@ Same staged scratch layout as `with_queue`. Observed `fmqv_zero` /
 n=5 freeze **0.985×** (139.5 / 141.7 µs) on host `cursor`, ceiling 8.0.
 Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
 `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+### Pair 307 — `cli_settings` (reload)
+
+| metric | cadr | pi |
+|---|---|---|
+| `reload` | `settings-reload` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.reload` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 13 `cli_settings.create` on the same
+`cli_settings` hole. Timed work is re-read of staged
+`settings-global.json` / `settings-project.json` — not create, not
+TUI. Observed `rl_theme_light` / `rl_model` / `rl_idle` / `rl_n` are
+exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`
+(script rc from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 308 — `cli_settings` (enabled_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `enabled_models` | `settings-enabled-models` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getEnabledModels` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 307 `reload` on the same `cli_settings` hole.
+Timed work is missing-key `:all` / `undefined` plus one in-memory
+explicit pattern — not persist, not selector UI. Observed `em_all` /
+`em_one` / `em_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce` (script rc from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 309 — `cli_settings` (block_images)
+
+| metric | cadr | pi |
+|---|---|---|
+| `block_images` | `settings-block-images-p` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getBlockImages` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 307–308 on the same `cli_settings` hole.
+Timed work is default false plus in-memory `images.blockImages=true`
+— not decode/resize, not TUI. Observed `bi_default` / `bi_blocked` /
+`bi_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce` (script rc from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
@@ -4396,7 +4436,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
-| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create` |
+| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
@@ -4408,7 +4448,6 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
-| `src/cadr-cli/tools/find.lisp` | 101 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
@@ -4505,9 +4544,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_bootstrap_sessions` | 4 | 5,226 |
 | `cli_selectors` | 10 | 3,706 |
 | `cli_extensions_install` | 5 | 2,200 |
-| `agent_tool_loop` | 10 | 1,847 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
+| `agent_tool_loop` | 8 | 1,362 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |

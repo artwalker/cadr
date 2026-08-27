@@ -136,6 +136,9 @@
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
+;;;; 307. cli_settings settings-reload vs SettingsManager.reload
+;;;; 308. cli_settings settings-enabled-models vs SettingsManager.getEnabledModels
+;;;; 309. cli_settings settings-block-images-p vs SettingsManager.getBlockImages
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -277,6 +280,9 @@
     ("provider_codex.stream_roundtrip" . 10)
     ("provider_pi_messages.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
+    ("cli_settings.reload" . 50)
+    ("cli_settings.enabled_models" . 50)
+    ("cli_settings.block_images" . 50)
     ("agent_conditions.error_probe" . 50)
     ("execution_env.exists_remove_temps" . 50)
     ("file_mutation_queue.with_queue" . 50)
@@ -2889,6 +2895,51 @@
    :project-path project
    :project-trusted-p t))
 
+(defun cs-truth (value)
+  (if value 1 0))
+
+(defun run-cli-settings-reload (manager)
+  (cadr-cli::settings-reload manager)
+  (list
+   (cs-truth
+    (string= "light"
+             (or (cadr-cli::settings-value manager "theme") "")))
+   (cs-truth
+    (string= "claude-sonnet-4-5"
+             (or (cadr-cli::settings-value manager "defaultModel") "")))
+   (cs-truth
+    (= 42 (cadr-cli::settings-http-idle-timeout-ms manager)))
+   3))
+
+(defun run-cli-settings-enabled-models (manager)
+  (let* ((missing (cadr-cli::settings-enabled-models manager))
+         (initial (cadr-ai::json-object)))
+    (cadr-ai::json-put
+     initial "enabledModels"
+     (cadr-ai::json-array "anthropic/claude-sonnet-4-5"))
+    (let ((explicit
+            (cadr-cli::settings-enabled-models
+             (cadr-cli::make-memory-settings-manager initial))))
+      (list
+       (cs-truth (eq missing :all))
+       (cs-truth
+        (equal explicit '("anthropic/claude-sonnet-4-5")))
+       2))))
+
+(defun run-cli-settings-block-images (manager)
+  (let ((default (cadr-cli::settings-block-images-p manager))
+        (initial (cadr-ai::json-object))
+        (images (cadr-ai::json-object)))
+    (cadr-ai::json-put images "blockImages" t)
+    (cadr-ai::json-put initial "images" images)
+    (let ((blocked
+            (cadr-cli::settings-block-images-p
+             (cadr-cli::make-memory-settings-manager initial))))
+      (list
+       (cs-truth (not default))
+       (cs-truth blocked)
+       2))))
+
 
 (defun agent-conditions-bool (value)
   (if value 1 0))
@@ -3073,31 +3124,62 @@
   (multiple-value-bind (global project)
       (stage-settings-layout)
     (let ((manager (run-cli-settings global project)))
-      (json-object
-       "observed"
-       (json-object
-        "theme"
-        (or (cadr-cli::settings-value manager "theme") "")
-        "default_model"
-        (or (cadr-cli::settings-value manager "defaultModel") "")
-        "default_provider"
-        (or (cadr-cli::settings-value manager "defaultProvider") "")
-        "compaction_reserve_tokens"
-        (or (cadr-cli::settings-nested-value
-             manager "compaction" "reserveTokens")
-            0)
-        "default_project_trust"
-        (or (cadr-cli::settings-value manager "defaultProjectTrust")
-            "")
-        "http_idle_timeout_ms"
-        (cadr-cli::settings-http-idle-timeout-ms manager)
-        "project_trusted"
-        (and (cadr-cli::settings-manager-project-trusted-p manager) t))
-       "create"
-       (collect "cli_settings.create"
-                (lambda ()
-                  (lambda ()
-                    (run-cli-settings global project))))))))
+      (destructuring-bind (rl-theme-light rl-model rl-idle rl-n)
+          (run-cli-settings-reload manager)
+        (destructuring-bind (em-all em-one em-n)
+            (run-cli-settings-enabled-models manager)
+          (destructuring-bind (bi-default bi-blocked bi-n)
+              (run-cli-settings-block-images manager)
+            (json-object
+             "observed"
+             (json-object
+              "theme"
+              (or (cadr-cli::settings-value manager "theme") "")
+              "default_model"
+              (or (cadr-cli::settings-value manager "defaultModel") "")
+              "default_provider"
+              (or (cadr-cli::settings-value manager "defaultProvider") "")
+              "compaction_reserve_tokens"
+              (or (cadr-cli::settings-nested-value
+                   manager "compaction" "reserveTokens")
+                  0)
+              "default_project_trust"
+              (or (cadr-cli::settings-value manager "defaultProjectTrust")
+                  "")
+              "http_idle_timeout_ms"
+              (cadr-cli::settings-http-idle-timeout-ms manager)
+              "project_trusted"
+              (and (cadr-cli::settings-manager-project-trusted-p manager) t)
+              "rl_theme_light" rl-theme-light
+              "rl_model" rl-model
+              "rl_idle" rl-idle
+              "rl_n" rl-n
+              "em_all" em-all
+              "em_one" em-one
+              "em_n" em-n
+              "bi_default" bi-default
+              "bi_blocked" bi-blocked
+              "bi_n" bi-n)
+             "create"
+             (collect "cli_settings.create"
+                      (lambda ()
+                        (lambda ()
+                          (run-cli-settings global project))))
+             "reload"
+             (collect "cli_settings.reload"
+                      (lambda ()
+                        (lambda ()
+                          (run-cli-settings-reload manager))))
+             "enabled_models"
+             (collect "cli_settings.enabled_models"
+                      (lambda ()
+                        (lambda ()
+                          (run-cli-settings-enabled-models manager))))
+             "block_images"
+             (collect "cli_settings.block_images"
+                      (lambda ()
+                        (lambda ()
+                          (run-cli-settings-block-images manager))))))))))))
 
 (defun stage-settings-load-trust ()
   (let* ((empty
@@ -15731,6 +15813,12 @@
       "src/cadr-ai/providers/pi-messages.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
+      "cli_settings.reload"
+      "src/cadr-cli/settings/manager.lisp settings-reload"
+      "cli_settings.enabled_models"
+      "src/cadr-cli/settings/manager.lisp settings-enabled-models"
+      "cli_settings.block_images"
+      "src/cadr-cli/settings/manager.lisp settings-block-images-p"
       "agent_conditions.error_probe"
       "src/cadr-agent/conditions.lisp define-condition slot accessors + subtypep"
       "execution_env.exists_remove_temps"
