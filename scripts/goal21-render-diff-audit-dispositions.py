@@ -89,6 +89,12 @@ def main() -> int:
     booked = set(expanded.keys())
     manifest_missing = sorted(required - booked)
     manifest_extra = sorted(booked - required)
+    process_exit_missing = sorted(
+        key for key in manifest_missing if key.endswith("/process-exit")
+    )
+    actionable_manifest_missing = sorted(
+        key for key in manifest_missing if not key.endswith("/process-exit")
+    )
     stale = stale_entries(data, manifest, rd)
 
     analysis_missing: list[str] = []
@@ -105,6 +111,8 @@ def main() -> int:
         "expandedKeyCount": len(expanded),
         "manifestPossibleKeys": len(required),
         "manifestMissingKeys": manifest_missing,
+        "manifestMissingProcessExitOnly": process_exit_missing,
+        "manifestMissingActionable": actionable_manifest_missing,
         "manifestExtraKeys": manifest_extra,
         "staleEntries": stale,
         "analysisMissingKeys": analysis_missing,

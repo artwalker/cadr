@@ -23,7 +23,28 @@
 | **Impl C** | `c` | `GoogleApiThinkingLevel` 重命名、provider 表增量 |
 | **Gate** | `gate` | 脚本 `goal21-gate-run.sh` 跑 `verify.sh`+`test-cl.sh`；失败才短会话 fix agent（勿让单 agent 扛全量长跑） |
 | **Infra** | `infra` | 验证/提交 gate 结构性改进（disposition audit、fast gate、capture cache、anchor-guard 隔离） |
-| **总监** | director | worktree 分支 cherry-pick 串行合入；每 merge 后 `baseline-anchor.py check` |
+| **总监** | director | **机械合入**（`goal21-director-merge.sh`：rebase+ff+fast gate）；**冲突时**才派 Director agent（`goal21-director-conflict-dispatch.sh`） |
+
+## Lane 记忆（模块负责人）
+
+Impl lane（`a`/`b`/`c`/`parity`）不是每次失忆：
+
+| 机制 | 路径 / 脚本 |
+|---|---|
+| **Session resume** | `cadr-team-dispatch.sh` + `cursor-agent --resume`；chatId 存 `docs/benchmarks/cadr-team-agent-sessions.json`（key: `goal21-lane-<lane>`） |
+| **Handoff 文件** | `docs/goal21-handoff/lane-<lane>.md`（每轮结束打印 `GOAL21_HANDOFF`） |
+| **代码记忆** | worktree 分支 + git commit（不变） |
+
+**仍无状态（故意）：** gate fix specialist、`anchor`、`infra`（`CADR_AGENT_RESUME=0`）。
+
+## 总监：脚本 vs agent
+
+| 步骤 | 谁做 | 原因 |
+|---|---|---|
+| rebase + ff-merge + fast gate | **脚本** | 确定性、可审计、不能「凭感觉 merge」 |
+| merge 冲突 / rebase 失败 | **Director agent** | 需要读冲突、做判断；脚本只负责重试 `director-once` |
+
+平时 99% 合入是空分支 ff-merge，不需要 agent。agent 总监只在机械路径失败时介入（像真实团队里总监处理冲突，CM 不做日常 merge bot）。
 
 ## Worktree 纪律
 

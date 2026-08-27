@@ -208,10 +208,19 @@ director-once)
 		BRANCH="$(printf '%s' "$MERGE_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["branch"])')"
 		TASK="$(printf '%s' "$MERGE_JSON" | python3 -c 'import json,sys; print(json.load(sys.stdin)["task"])')"
 		echo "goal21 director: merge $BRANCH (task $TASK)"
-		if "$PROJECT_DIRECTORY/scripts/goal21-director-merge.sh" "$BRANCH"; then
+		DIRECTOR_FAIL_LOG="/tmp/goal21-director-merge-fail.txt"
+		if "$PROJECT_DIRECTORY/scripts/goal21-director-merge.sh" "$BRANCH" 2>"$DIRECTOR_FAIL_LOG"; then
 			queue_py pop-merge >/dev/null
 		else
 			echo "goal21 director: merge failed — leaving $BRANCH in queue" >&2
+			if [ -x "$PROJECT_DIRECTORY/scripts/goal21-director-conflict-dispatch.sh" ] \
+				&& ! pgrep -af 'cursor-agent.*Director|director-conflict-' >/dev/null 2>&1; then
+				echo "goal21 director: dispatching conflict resolver agent"
+				"$PROJECT_DIRECTORY/scripts/goal21-director-conflict-dispatch.sh" \
+					--branch "$BRANCH" --task "$TASK" \
+					--fail-log "$DIRECTOR_FAIL_LOG" \
+					>>/tmp/goal21-director-dispatch.log 2>&1 &
+			fi
 		fi
 	else
 		echo "goal21 director: nothing in merge queue"
@@ -260,14 +269,15 @@ PY
 		AGENT_WORKSPACE="$WORKTREE"
 	fi
 
-	PROMPT="Read $BRIEF and $SPEC. You are Goal 21 lane ${LANE}.
+	PROMPT="Read $BRIEF and $SPEC. You are Goal 21 lane ${LANE} (module owner — this session continues prior lane work when resumed).
 Worktree: ${AGENT_WORKSPACE} branch ${BRANCH}. cd there first.
 Task ${TASK_ID}: ${TITLE}
 Steps:
-1. Implement in worktree only; add tests per goal21 spec
-2. python3 scripts/baseline-anchor.py check if touching anchors
-3. git commit -m \"feat(cadr-cli): g21 task ${TASK_ID} ${SLUG}\"
-4. Print: GOAL21_COMPLETE task=${TASK_ID} branch=${BRANCH}
+1. Read lane handoff if present; continue module work (do not restart from scratch)
+2. Implement in worktree only; add tests per goal21 spec
+3. python3 scripts/baseline-anchor.py check if touching anchors
+4. git commit -m \"feat(cadr-cli): g21 task ${TASK_ID} ${SLUG}\"
+5. Print: GOAL21_COMPLETE task=${TASK_ID} branch=${BRANCH}
 Never edit src/ on main checkout."
 
 	if [ "$LANE" = "infra" ]; then
@@ -404,6 +414,18 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 				FIX_VALIDATE="Do NOT run test-cl.sh — orchestrator runs postfix."
 				FIX_TIMEOUT="${CADR_GATE_LEDGER_FIX_TIMEOUT_SEC:-300}"
 				;;
+			liveness)
+				FIX_TARGET="Fix PTY capture timeout or harness failure in render-diff capture path (not dispositions.json)."
+				FIX_VALIDATE="Do NOT run verify.sh or render-diff.py capture — orchestrator runs postfix."
+				;;
+			goal11)
+				FIX_TARGET="Fix Goal 11 sustained mixed-interaction pause regression cited in the fail excerpt."
+				FIX_VALIDATE="Do NOT run verify.sh — orchestrator runs postfix."
+				;;
+			event-diff)
+				FIX_TARGET="Resolve event-diff gate failures: fix cadr event emission/normalization or add exact dispositions in test/fixtures/event-diff/dispositions.json."
+				FIX_VALIDATE="Do NOT run verify.sh — orchestrator runs postfix."
+				;;
 			*)
 				FIX_TARGET="Fix the smallest set of files cited in the failure excerpt."
 				FIX_VALIDATE=""
@@ -415,6 +437,12 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 					"$FAIL_LOG" >/dev/null 2>&1 || true
 			fi
 			postfix_passed=0
+			needs_agent=0
+			if [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-failure-needs-agent.sh" ] \
+				&& "$PROJECT_DIRECTORY/scripts/goal21-gate-failure-needs-agent.sh" "$FAIL_LOG"; then
+				needs_agent=1
+				echo "goal21 gate: failure requires specialist agent (${FAILURE_KIND})" >&2
+			fi
 			if [ "$FAILURE_KIND" = "render-diff" ] \
 				&& [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-auto-fix-render-diff.sh" ]; then
 				echo "goal21 gate: auto-sync render-diff dispositions"
@@ -431,17 +459,28 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 				if GOAL21_GATE_FAILURE_TYPE="$FAILURE_KIND" \
 					"$PROJECT_DIRECTORY/scripts/goal21-gate-postfix-check.sh" "$FAILURE_KIND"; then
 					echo "goal21 gate: postfix PASS after auto-sync — next full gate round"
-					postfix_passed=1
+					if [ "$needs_agent" -eq 0 ] \
+						&& ! "$PROJECT_DIRECTORY/scripts/goal21-gate-failure-needs-agent.sh" "$FAIL_LOG"; then
+						postfix_passed=1
+					else
+						echo "goal21 gate: postfix PASS after auto-sync but specialist still required" >&2
+					fi
 				fi
 			fi
 			# Skip fix agent when only stale/missing keys remain but brief is empty (re-analyze first).
 			if [ "$FAILURE_KIND" = "render-diff" ] && [ "$postfix_passed" -ne 1 ] \
 				&& [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-proactive-render-diff.sh" ]; then
 				BRIEF="${GOAL21_RENDER_DIFF_BRIEF:-/tmp/goal21-render-diff-brief.txt}"
-				if [ ! -s "$BRIEF" ] || ! rg -q 'missing dispositions|stale dispositions|non-aligned' "$BRIEF" 2>/dev/null; then
+				if [ "$needs_agent" -eq 0 ] \
+					&& { [ ! -s "$BRIEF" ] || ! rg -q 'pending missing|pending stale|hash drift|validationError' "$BRIEF" 2>/dev/null; }; then
 					echo "goal21 gate: empty/stale brief — retry proactive heal before fix agent"
 					if "$PROJECT_DIRECTORY/scripts/goal21-gate-proactive-render-diff.sh"; then
-						postfix_passed=1
+						if [ "$needs_agent" -eq 0 ] \
+							&& ! "$PROJECT_DIRECTORY/scripts/goal21-gate-failure-needs-agent.sh" "$FAIL_LOG"; then
+							postfix_passed=1
+						else
+							echo "goal21 gate: proactive heal PASS but specialist still required" >&2
+						fi
 					fi
 					"$PROJECT_DIRECTORY/scripts/goal21-gate-render-diff-brief.sh" \
 						"${GOAL21_RENDER_DIFF_ANALYSIS:-/tmp/goal21-render-diff-analysis}" \
@@ -452,7 +491,8 @@ Print: GOAL21_COMPLETE task=${TASK_ID} branch=main"
 				continue
 			fi
 			# Skip fix agent when targeted postfix already passes (e.g. misclassified stale fail log).
-			if GOAL21_GATE_FAILURE_TYPE="$FAILURE_KIND" \
+			if [ "$needs_agent" -eq 0 ] \
+				&& GOAL21_GATE_FAILURE_TYPE="$FAILURE_KIND" \
 				"$PROJECT_DIRECTORY/scripts/goal21-gate-postfix-check.sh" "$FAILURE_KIND"; then
 				echo "goal21 gate: postfix PASS (${FAILURE_KIND}) before fix agent — next full gate round"
 				continue
@@ -565,12 +605,29 @@ PY
 		DISPATCH_GOAL="infra"
 	fi
 
-	OUT="$("$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
-		--workspace "$AGENT_WORKSPACE" \
-		--goal "$DISPATCH_GOAL" \
-		--task-key "${LANE}-${TASK_ID}" \
-		--timeout "${CADR_AGENT_TIMEOUT_SEC:-5400}" \
-		-- "$PROMPT" 2>&1)" || DISPATCH_STATUS=$?
+	DISPATCH_RESUME=0
+	DISPATCH_SESSION_KEY="${LANE}-${TASK_ID}"
+	DISPATCH_HANDOFF=""
+	case "$LANE" in
+	a | b | c | parity)
+		DISPATCH_RESUME=1
+		DISPATCH_SESSION_KEY="goal21-lane-${LANE}"
+		DISPATCH_HANDOFF="$("$PROJECT_DIRECTORY/scripts/goal21-lane-handoff.sh" path "$LANE" 2>/dev/null || true)"
+		;;
+	esac
+
+	OUT="$(
+		CADR_AGENT_RESUME="$DISPATCH_RESUME" \
+			CADR_AGENT_SESSION_KEY="$DISPATCH_SESSION_KEY" \
+			CADR_AGENT_LANE="$LANE" \
+			GOAL21_LANE_HANDOFF_FILE="$DISPATCH_HANDOFF" \
+			"$PROJECT_DIRECTORY/scripts/cadr-team-dispatch.sh" \
+			--workspace "$AGENT_WORKSPACE" \
+			--goal "$DISPATCH_GOAL" \
+			--task-key "${LANE}-${TASK_ID}" \
+			--timeout "${CADR_AGENT_TIMEOUT_SEC:-5400}" \
+			-- "$PROMPT" 2>&1
+	)" || DISPATCH_STATUS=$?
 	DISPATCH_STATUS="${DISPATCH_STATUS:-0}"
 	if [ "$DISPATCH_STATUS" -eq 124 ]; then
 		echo "goal21 dispatch: timeout — reset task ${TASK_ID} to pending" >&2

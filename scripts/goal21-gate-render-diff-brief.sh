@@ -69,22 +69,79 @@ PY
 	fi
 
 	if [ -f "$ANALYSIS/summary.json" ]; then
-		python3 - "$ANALYSIS/summary.json" <<'PY'
+		python3 - "$ANALYSIS/summary.json" "$ANALYSIS/pending-dispositions.json" <<'PY'
 import json
 import sys
 from pathlib import Path
 
 results = json.loads(Path(sys.argv[1]).read_text(encoding="utf-8"))
+pending_path = Path(sys.argv[2])
+pending = (
+    json.loads(pending_path.read_text(encoding="utf-8"))
+    if pending_path.is_file()
+    else {}
+)
+
 counts: dict[str, int] = {}
 for row in results:
     counts[row.get("automaticDisposition", "?")] = counts.get(row.get("automaticDisposition", "?"), 0) + 1
 print("disposition counts:", " ".join(f"{k}={v}" for k, v in sorted(counts.items())))
-non_aligned = [r for r in results if r.get("automaticDisposition") != "aligned"]
-print(f"non-aligned: {len(non_aligned)}")
-for row in non_aligned[:40]:
-    print(f"  {row.get('key')}\t{row.get('automaticDisposition')}\tgeometryEqual={row.get('textGeometryEqual')}")
-if len(non_aligned) > 40:
-    print(f"  ... and {len(non_aligned) - 40} more")
+
+sources: dict[str, int] = {}
+for row in results:
+    if row.get("automaticDisposition") == "aligned":
+        continue
+    source = row.get("adjudicationSource") or "unadjudicated"
+    sources[source] = sources.get(source, 0) + 1
+if sources:
+    print(
+        "adjudication:",
+        " ".join(f"{k}={v}" for k, v in sorted(sources.items())),
+    )
+
+missing = pending.get("missing") or []
+stale = pending.get("stale") or []
+validation_error = pending.get("validationError")
+if validation_error:
+    print("validationError:", validation_error)
+if missing:
+    print(f"pending missing ({len(missing)}):")
+    for key in missing[:40]:
+        row = next((r for r in results if r.get("key") == key), {})
+        print(
+            f"  {key}\t{row.get('automaticDisposition', '?')}"
+            f"\tgeometryEqual={row.get('textGeometryEqual')}"
+        )
+    if len(missing) > 40:
+        print(f"  ... and {len(missing) - 40} more")
+if stale:
+    print(f"pending stale ({len(stale)}):")
+    for key in stale[:20]:
+        print(f"  {key}")
+    if len(stale) > 20:
+        print(f"  ... and {len(stale) - 20} more")
+
+drift = []
+for row in results:
+    adjudication = row.get("adjudication") or {}
+    expected = adjudication.get("screenSha256")
+    if not isinstance(expected, dict):
+        continue
+    actual = {
+        "pi": row.get("piScreenSha256"),
+        "cadr": row.get("cadrScreenSha256"),
+    }
+    if actual != expected:
+        drift.append(row.get("key"))
+if drift:
+    print(f"hash drift vs ledger/class-rule ({len(drift)}):")
+    for key in drift[:20]:
+        print(f"  {key}")
+    if len(drift) > 20:
+        print(f"  ... and {len(drift) - 20} more")
+
+if not missing and not stale and not validation_error and not drift:
+    print("analyze gate: no pending disposition work (class rules may cover in-memory only)")
 PY
 	fi
 

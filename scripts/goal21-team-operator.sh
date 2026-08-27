@@ -26,6 +26,10 @@ operator_once() {
 	python3 "$PROJECT_DIRECTORY/scripts/cadr-team-queue.py" migrate >/dev/null 2>&1 || true
 	"$ORCH" reconcile-in-progress >/dev/null 2>&1 || true
 
+	if [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-queue-sync.sh" ]; then
+		"$PROJECT_DIRECTORY/scripts/goal21-gate-queue-sync.sh" 2>&1 || true
+	fi
+
 	# Progress-based stale kill (idle agent with no verify/test-cl/commit).
 	"$PROJECT_DIRECTORY/scripts/cadr-team-stale-agents.sh" once 2>&1 || true
 
@@ -143,8 +147,16 @@ print('yes' if impl_ok and infra_ok and any(t['status']=='pending' for t in gate
 		gate_busy=1
 	fi
 	if [ "$all_impl_done" = "yes" ] && [ "$gate_busy" -eq 0 ]; then
-		echo "goal21 operator: dispatch lane gate"
-		"$ORCH" dispatch gate >>"/tmp/goal21-dispatch-gate.log" 2>&1 &
+		gate_pending="$(python3 -c "import json; d=json.load(open('$QUEUE_PATH')); print(sum(1 for t in d['tasks'] if t['lane']=='gate' and t['status']=='pending'))")"
+		if [ "$gate_pending" -gt 0 ]; then
+			echo "goal21 operator: dispatch lane gate"
+			"$ORCH" dispatch gate >>"/tmp/goal21-dispatch-gate.log" 2>&1 &
+		elif [ -f /tmp/goal21-gate-fail.txt ] \
+			&& [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-dispatch-fix.sh" ] \
+			&& "$PROJECT_DIRECTORY/scripts/goal21-gate-failure-needs-agent.sh" /tmp/goal21-gate-fail.txt; then
+			echo "goal21 operator: dispatch gate fix specialist"
+			"$PROJECT_DIRECTORY/scripts/goal21-gate-dispatch-fix.sh" >>"/tmp/goal21-dispatch-gate.log" 2>&1 &
+		fi
 	fi
 
 	"$ORCH" status

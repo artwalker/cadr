@@ -14,14 +14,56 @@ FAIL_LOG="${GOAL21_GATE_FAIL_LOG:-/tmp/goal21-gate-fail.txt}"
 PROGRESS="${GOAL21_GATE_PROGRESS:-/tmp/goal21-gate-progress}"
 RUN_LOG="${GOAL21_GATE_RUN_LOG:-/tmp/goal21-gate-run.log}"
 FAILURE_TYPE_FILE="${GOAL21_GATE_FAILURE_TYPE_FILE:-/tmp/goal21-gate-failure-type}"
+LOCK_FILE="${GOAL21_GATE_LOCK:-/tmp/goal21-gate-run.lock}"
 TAIL_LINES="${GOAL21_GATE_FAIL_TAIL:-160}"
 RENDER_DIFF_OUTPUT="${GOAL21_RENDER_DIFF_OUTPUT:-/tmp/goal21-render-diff-output}"
+RENDER_DIFF_ANALYSIS="${GOAL21_RENDER_DIFF_ANALYSIS:-/tmp/goal21-render-diff-analysis}"
+PI_BASELINE_CACHE="/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE" | cut -c1-9)"
 
 render_diff_has_cached_captures() {
 	[ -d "$RENDER_DIFF_OUTPUT" ] || return 1
 	local count
 	count="$(ls -1 "$RENDER_DIFF_OUTPUT"/*.pi.normalized.raw 2>/dev/null | wc -l)"
 	[ "${count:-0}" -gt 0 ]
+}
+
+export_render_diff_env() {
+	export GOAL21_RENDER_DIFF_OUTPUT="$RENDER_DIFF_OUTPUT"
+	export GOAL21_RENDER_DIFF_ANALYSIS="$RENDER_DIFF_ANALYSIS"
+	mkdir -p "$RENDER_DIFF_OUTPUT" "$RENDER_DIFF_ANALYSIS"
+}
+
+log_render_diff_verify_mode() {
+	if render_diff_has_cached_captures; then
+		local count
+		count="$(ls -1 "$RENDER_DIFF_OUTPUT"/*.pi.normalized.raw 2>/dev/null | wc -l)"
+		heartbeat "render-diff: verify will analyze ${count} cached captures"
+	else
+		heartbeat "render-diff: verify will run full capture gate (no cache)"
+	fi
+}
+
+maybe_warm_render_diff_analysis() {
+	if ! render_diff_has_cached_captures; then
+		return 0
+	fi
+	heartbeat "render-diff: warm analyze before verify"
+	if ! python3 -u scripts/render-diff.py analyze \
+		--pi-repo "$PROJECT_DIRECTORY" \
+		--manifest test/fixtures/render-diff/scenarios.json \
+		--dispositions test/fixtures/render-diff/dispositions.json \
+		--tier core \
+		--baseline-cache "$PI_BASELINE_CACHE" \
+		--timeout 60 \
+		--output "$RENDER_DIFF_OUTPUT" \
+		--analysis-output "$RENDER_DIFF_ANALYSIS" >>"$RUN_LOG" 2>&1; then
+		echo "goal21-gate-run: render-diff warm analyze failed (verify may still capture)" >&2
+		return 1
+	fi
+	if [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-auto-fix-render-diff.sh" ]; then
+		"$PROJECT_DIRECTORY/scripts/goal21-gate-auto-fix-render-diff.sh" >>"$RUN_LOG" 2>&1 || true
+	fi
+	return 0
 }
 
 maybe_restore_render_diff_captures() {
@@ -46,6 +88,12 @@ while [ "$#" -gt 0 ]; do
 	esac
 done
 
+sync_gate_queue() {
+	if [ -x "$PROJECT_DIRECTORY/scripts/goal21-gate-queue-sync.sh" ]; then
+		"$PROJECT_DIRECTORY/scripts/goal21-gate-queue-sync.sh" >/dev/null 2>&1 || true
+	fi
+}
+
 heartbeat() {
 	printf '%s\t%s\n' "$(date -Iseconds)" "$*" >"$PROGRESS"
 	echo "goal21-gate-run: $*"
@@ -54,10 +102,23 @@ heartbeat() {
 GATE_MODE="${GOAL21_GATE_MODE:-full}"
 
 cd "$PROJECT_DIRECTORY"
+
+exec 9>"$LOCK_FILE"
+if ! flock -n 9; then
+	echo "goal21-gate-run: already running (lock $LOCK_FILE)" >&2
+	exit 75
+fi
+release_gate_lock() {
+	flock -u 9 2>/dev/null || true
+}
+trap 'sync_gate_queue; release_gate_lock' EXIT
+
 : >"$RUN_LOG"
 heartbeat "start"
+sync_gate_queue
 
 maybe_restore_render_diff_captures
+export_render_diff_env
 
 if [ "$GATE_MODE" = "fast" ]; then
 	heartbeat "mode=fast"
@@ -118,10 +179,26 @@ if [ "${GOAL21_SKIP_PREFLIGHT:-0}" != 1 ]; then
 	fi
 fi
 
+log_render_diff_verify_mode
+maybe_warm_render_diff_analysis || true
+
 set +e
 heartbeat "verify.sh"
-./scripts/verify.sh >>"$RUN_LOG" 2>&1
+./scripts/verify.sh >>"$RUN_LOG" 2>&1 &
+verify_pid=$!
+(
+	while kill -0 "$verify_pid" 2>/dev/null; do
+		sleep 120
+		if kill -0 "$verify_pid" 2>/dev/null; then
+			heartbeat "verify.sh (running)"
+		fi
+	done
+) &
+verify_hb_pid=$!
+wait "$verify_pid"
 RC=$?
+kill "$verify_hb_pid" 2>/dev/null || true
+wait "$verify_hb_pid" 2>/dev/null || true
 set -e
 if [ "$RC" -ne 0 ]; then
 	heartbeat "fail verify.sh rc=$RC"
@@ -145,5 +222,9 @@ fi
 
 heartbeat "pass"
 rm -f "$FAIL_LOG"
+if [ -x "$PROJECT_DIRECTORY/scripts/goal21-render-diff-capture-cache.sh" ] \
+	&& render_diff_has_cached_captures; then
+	"$PROJECT_DIRECTORY/scripts/goal21-render-diff-capture-cache.sh" save >>"$RUN_LOG" 2>&1 || true
+fi
 echo "goal21-gate-run: PASS"
 exit 0

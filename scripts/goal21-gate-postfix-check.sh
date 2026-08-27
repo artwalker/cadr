@@ -16,6 +16,7 @@ FAILURE_TYPE="${GOAL21_GATE_FAILURE_TYPE:-}"
 PI_BASELINE_CACHE="/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 "$PROJECT_DIRECTORY/BASELINE" | cut -c1-9)"
 RENDER_DIFF_ANALYSIS="${GOAL21_RENDER_DIFF_ANALYSIS:-/tmp/goal21-render-diff-analysis}"
 RENDER_DIFF_OUTPUT="${GOAL21_RENDER_DIFF_OUTPUT:-/tmp/goal21-render-diff-output}"
+EVENT_DIFF_OUTPUT="${GOAL21_EVENT_DIFF_OUTPUT:-/tmp/goal21-event-diff-output}"
 LOG="${GOAL21_GATE_POSTFIX_LOG:-/tmp/goal21-gate-postfix.log}"
 
 cd "$PROJECT_DIRECTORY"
@@ -96,6 +97,21 @@ render-diff)
 		fi
 	fi
 	;;
+event-diff)
+	stage "event-diff gate-test"
+	if ! python3 -u test/event-diff-gate-test.py >>"$LOG" 2>&1; then
+		echo "goal21-gate-postfix: FAILED event-diff-gate-test" >&2
+		exit 1
+	fi
+	mkdir -p "$EVENT_DIFF_OUTPUT"
+	stage "event-diff gate"
+	if ! python3 -u scripts/event-diff.py \
+		--baseline-repo "$PI_BASELINE_CACHE" \
+		--artifacts "$EVENT_DIFF_OUTPUT" >>"$LOG" 2>&1; then
+		echo "goal21-gate-postfix: FAILED event-diff gate (see $EVENT_DIFF_OUTPUT/report.json)" >&2
+		exit 1
+	fi
+	;;
 source-parity)
 	stage "image-derived mapping freshness"
 	if ! "${SBCL:-sbcl}" --script scripts/derive-source-parity-mappings.lisp --check >>"$LOG" 2>&1; then
@@ -122,6 +138,13 @@ fiveam | goal20-ledger)
 			echo "goal21-gate-postfix: FAILED goal20-unpaired-paths --check" >&2
 			exit 1
 		fi
+	fi
+	;;
+baseline-anchor)
+	stage "baseline anchor consistency"
+	if ! python3 -u scripts/baseline-anchor.py check >>"$LOG" 2>&1; then
+		echo "goal21-gate-postfix: FAILED baseline-anchor" >&2
+		exit 1
 	fi
 	;;
 unknown | *)
