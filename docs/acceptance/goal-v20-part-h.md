@@ -3457,9 +3457,10 @@ enqueue (shared symlink key, distinct sibling, missing path) — not
 `make-file-mutation-queue-state` zeros, not `with-file-mutation-queue`,
 not write/edit tools. Same staged scratch layout as `with_queue`.
 Observed `fmqp_shared` / `fmqp_other` / `fmqp_missing` / `fmqp_alias` /
-`fmqp_n` are exact. First n=5 freeze **pending bench**. Gate used
-`--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+`fmqp_n` are exact. First n=5 freeze **1.435×** (194.6 / 135.5 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
 
 ### Pair 305 — `file_mutation_queue` (next_ticket)
 
@@ -3472,9 +3473,10 @@ hole. Timed work is reading `nextTicket` after enqueue (shared symlink
 key, distinct sibling, missing path) — not constructor zeros, not
 write/edit tools. Same staged scratch layout as `with_queue`. Observed
 `fmqi_shared` / `fmqi_other` / `fmqi_missing` / `fmqi_alias` / `fmqi_n`
-are exact. First n=5 freeze **pending bench**. Gate used `--only-enforce`
-(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
-this metric did not fail). Same commit no optimize.
+are exact. First n=5 freeze **1.147×** (157.9 / 137.6 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
 
 ### Pair 306 — `file_mutation_queue` (serving_ticket)
 
@@ -3487,9 +3489,9 @@ the same `agent_tool_loop` hole. Timed work is reading `serving` after
 enqueue (still 0 until release) — not wait/release, not write/edit tools.
 Same staged scratch layout as `with_queue`. Observed `fmqv_zero` /
 `fmqv_other` / `fmqv_missing` / `fmqv_alias` / `fmqv_n` are exact. First
-n=5 freeze **pending bench**. Gate used `--only-enforce` (script rc=1 only
-from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
-fail). Same commit no optimize.
+n=5 freeze **0.985×** (139.5 / 141.7 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

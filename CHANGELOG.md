@@ -12,19 +12,19 @@ tag/Release step.
 - Goal 20 P.13: pair `file_mutation_queue.pending_count` (`file-mutation-queue-state-pending-count` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.pending` after enqueue).
   Observed `fmqp_shared` / `fmqp_other` / `fmqp_missing` / `fmqp_alias` /
-  `fmqp_n` exact. n=5 freeze numbers recorded after `--only-enforce`.
+  `fmqp_n` exact. n=5 **1.435×** (194.6 / 135.5 µs) on host `cursor`, ceiling 8.0.
   Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
   help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.next_ticket` (`file-mutation-queue-state-next-ticket` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.nextTicket` after enqueue).
   Observed `fmqi_shared` / `fmqi_other` / `fmqi_missing` / `fmqi_alias` /
-  `fmqi_n` exact. n=5 freeze numbers recorded after `--only-enforce`.
+  `fmqi_n` exact. n=5 **1.147×** (157.9 / 137.6 µs) on host `cursor`, ceiling 8.0.
   Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
   help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.serving_ticket` (`file-mutation-queue-state-serving-ticket` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.serving` after enqueue).
   Observed `fmqv_zero` / `fmqv_other` / `fmqv_missing` / `fmqv_alias` /
-  `fmqv_n` exact. n=5 freeze numbers recorded after `--only-enforce`.
+  `fmqv_n` exact. n=5 **0.985×** (139.5 / 141.7 µs) on host `cursor`, ceiling 8.0.
   Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
   help text), not this metric.
 
