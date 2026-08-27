@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `harness_events.make_end` (`make-run-end-event` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `RunEndEvent` object).
+  Observed `hee_type` / `hee_lane` / `hee_run` / `hee_outcome` /
+  `hee_abort` exact. n=5 freeze pending freeze run, ceiling 8.0.
+  Measure-only. Gate rc from known old holes (`lc_n` / `lc_sleep` /
+  help text) is noise, not this metric.
+- Goal 20 P.13: pair `harness_events.event_type` (`harness-event-type` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `event.type`).
+  Observed `het_start` / `het_end` / `het_fail` exact.
+  n=5 freeze pending freeze run, ceiling 8.0.
+  Measure-only. Gate rc from known old holes (`lc_n` / `lc_sleep` /
+  help text) is noise, not this metric.
+- Goal 20 P.13: pair `harness_events.make_bus` (`make-harness-event-bus` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `new HarnessEventBus()`).
+  Observed `heb_distinct` / `heb_a` / `heb_b` exact.
+  n=5 freeze pending freeze run, ceiling 8.0.
+  Measure-only. Gate rc from known old holes (`lc_n` / `lc_sleep` /
+  help text) is noise, not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.call_with` (`call-with-file-mutation-queue` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue` as a
   function). Observed `fmqf_alias` / `fmqf_other` / `fmqf_fifo` / `fmqf_run` /
