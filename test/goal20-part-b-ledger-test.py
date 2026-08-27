@@ -427,6 +427,21 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("oa_fin_fffd", paired.OBSERVED_EXACT["output_accumulator"])
         self.assertIn("oa_fin_n", paired.OBSERVED_EXACT["output_accumulator"])
 
+    def test_find_tool_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("find_tool.pattern_match", RECORD.METRIC_KEYS)
+        self.assertIn("find_tool.find_files", RECORD.METRIC_KEYS)
+        self.assertIn("find_tool.make_tool", RECORD.METRIC_KEYS)
+        self.assertIn("pattern_match", paired.METRICS["find_tool"])
+        self.assertIn("find_files", paired.METRICS["find_tool"])
+        self.assertIn("make_tool", paired.METRICS["find_tool"])
+        self.assertIn("find_tool.pattern_match", paired.RATIO_CEILINGS)
+        self.assertIn("find_tool.find_files", paired.RATIO_CEILINGS)
+        self.assertIn("find_tool.make_tool", paired.RATIO_CEILINGS)
+        self.assertIn("fpm_star_a", paired.OBSERVED_EXACT["find_tool"])
+        self.assertIn("ff_empty", paired.OBSERVED_EXACT["find_tool"])
+        self.assertIn("fmt_n", paired.OBSERVED_EXACT["find_tool"])
+
     def test_settings_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("settings_load.project_trust", RECORD.METRIC_KEYS)
@@ -2153,6 +2168,9 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`harness_events.on`", section)
             self.assertIn("`harness_events.watch`", section)
             self.assertIn("`harness_events.make_start`", section)
+            self.assertIn("`find_tool.pattern_match`", section)
+            self.assertIn("`find_tool.find_files`", section)
+            self.assertIn("`find_tool.make_tool`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)

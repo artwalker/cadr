@@ -45,6 +45,24 @@ tag/Release step.
   n=5 **1.18×** (0.14 / 0.12 µs) on host `cursor`, ceiling 8.0.
   Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
   help text), not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13: pair `find_tool.pattern_match` (`find-pattern-match-p` on
+  `src/cadr-cli/tools/find.lisp` vs baseline basename vs path-containing glob
+  match in `packages/coding-agent/src/core/tools/find.ts`). Observed
+  `fpm_star_a` / `fpm_star_src` / `fpm_star_txt` / `fpm_path_src` /
+  `fpm_path_root` / `fpm_src_star` / `fpm_n` exact.
+  n=5 **7.16×** (30.5 / 4.26 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `find_tool.find_files` (`find-files` on
+  `src/cadr-cli/tools/find.lisp` vs baseline find execute output assembly +
+  `relativizeFindResultPath`). Observed `ff_empty` / `ff_lisp` / `ff_path` /
+  `ff_src_star` / `ff_n` exact.
+  n=5 **3.44×** (633.4 / 184.1 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `find_tool.make_tool` (`make-find-tool` on
+  `src/cadr-cli/tools/find.lisp` vs baseline `createFindToolDefinition`).
+  Observed `fmt_name` / `fmt_desc` / `fmt_req` / `fmt_n` exact.
+  n=5 **1.41×** (131.9 / 93.3 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`

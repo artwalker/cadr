@@ -105,6 +105,7 @@ METRICS = {
     "harness_events": ("emit", "on", "watch", "make_start"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
+    "find_tool": ("pattern_match", "find_files", "make_tool"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -297,6 +298,11 @@ RATIO_CEILINGS = {
     # harness_events.make_start pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.make_start": 8.0,
+    # find_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "find_tool.pattern_match": 8.0,
+    "find_tool.find_files": 8.0,
+    "find_tool.make_tool": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1551,6 +1557,24 @@ OBSERVED_EXACT = {
         "oa_fin_last",
         "oa_fin_trunc",
         "oa_fin_n",
+    ),
+    "find_tool": (
+        "fpm_star_a",
+        "fpm_star_src",
+        "fpm_star_txt",
+        "fpm_path_src",
+        "fpm_path_root",
+        "fpm_src_star",
+        "fpm_n",
+        "ff_empty",
+        "ff_lisp",
+        "ff_path",
+        "ff_src_star",
+        "ff_n",
+        "fmt_name",
+        "fmt_desc",
+        "fmt_req",
+        "fmt_n",
     ),
     "settings_load": (
         "tr_empty",

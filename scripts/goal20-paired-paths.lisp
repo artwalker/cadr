@@ -115,6 +115,9 @@
 ;;;; 286. file_mutation_queue call-with-file-mutation-queue vs withFileMutationQueue (function)
 ;;;; 287. file_mutation_queue make-file-mutation-queue-state vs queue-state object
 ;;;; 288. file_mutation_queue file-mutation-queue-state-key vs state.key
+;;;; 289. find_tool pattern match vs find-pattern-match-p
+;;;; 290. find_tool find-files vs find.ts execute output assembly
+;;;; 291. find_tool make-find-tool vs createFindToolDefinition
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -275,6 +278,9 @@
     ("harness_events.on" . 50)
     ("harness_events.watch" . 50)
     ("harness_events.make_start" . 50)
+    ("find_tool.pattern_match" . 50)
+    ("find_tool.find_files" . 50)
+    ("find_tool.make_tool" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4556,6 +4562,139 @@
                   (lambda ()
                     (lambda ()
                       (run-bash-truncation-notice)))))))))
+
+(defun find-tool-truth (value)
+  (if value 1 0))
+
+(defparameter *find-tool-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-find-tool-cwd")))
+
+(defun ensure-find-tool-fixture ()
+  (let ((root (uiop:ensure-directory-pathname *find-tool-cwd*)))
+    (ensure-directories-exist
+     (merge-pathnames "src/nested/" root))
+    (dolist (relative '("a.lisp" "b.txt" "src/c.lisp" "src/nested/d.lisp"))
+      (with-open-file
+          (out (merge-pathnames relative root)
+               :direction :output
+               :if-exists :supersede
+               :if-does-not-exist :create
+               :external-format :utf-8)
+        (write-string "x" out)))
+    *find-tool-cwd*))
+
+(defun run-find-pattern-match ()
+  ;; Basename glob vs path-containing glob; not fd spawn.
+  (let ((star-a
+          (cadr-cli::find-pattern-match-p "*.lisp" "a.lisp"))
+        (star-src
+          (cadr-cli::find-pattern-match-p "*.lisp" "src/c.lisp"))
+        (star-txt
+          (cadr-cli::find-pattern-match-p "*.lisp" "b.txt"))
+        (path-src
+          (cadr-cli::find-pattern-match-p "src/**/*.lisp" "src/c.lisp"))
+        (path-root
+          (cadr-cli::find-pattern-match-p "src/**/*.lisp" "a.lisp"))
+        (src-star-nested
+          (cadr-cli::find-pattern-match-p "src/*.lisp" "src/nested/d.lisp")))
+    (list
+     (find-tool-truth star-a)
+     (find-tool-truth star-src)
+     (find-tool-truth (not star-txt))
+     (find-tool-truth path-src)
+     (find-tool-truth (not path-root))
+     (find-tool-truth (not src-star-nested))
+     6)))
+
+(defun find-tool-output-text (cwd pattern)
+  (multiple-value-bind (content details)
+      (cadr-cli::find-files
+       cwd (cadr-ai::json-object "pattern" pattern))
+    (declare (ignore details))
+    (cadr-ai::text-content-text (first content))))
+
+(defun find-tool-line-count (text)
+  (if (string= text "No files found matching pattern")
+      0
+      (1+ (count #\Newline text))))
+
+(defun run-find-files ()
+  (let* ((cwd (ensure-find-tool-fixture))
+         (empty (find-tool-output-text cwd "*.nomatch"))
+         (lisp (find-tool-output-text cwd "*.lisp"))
+         (path (find-tool-output-text cwd "src/**/*.lisp"))
+         (src-star (find-tool-output-text cwd "src/*.lisp")))
+    (list
+     (find-tool-truth (string= empty "No files found matching pattern"))
+     (find-tool-line-count lisp)
+     (find-tool-line-count path)
+     (find-tool-line-count src-star)
+     4)))
+
+(defun run-find-make-tool ()
+  (let* ((cwd (ensure-find-tool-fixture))
+         (tool (cadr-cli::make-find-tool cwd))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list))))
+    (list
+     (find-tool-truth (string= (cadr-ai:tool-name tool) "find"))
+     (find-tool-truth
+      (and (search "Search for files by glob pattern"
+                   (cadr-ai:tool-description tool))
+           (search "Respects .gitignore"
+                   (cadr-ai:tool-description tool))))
+     (find-tool-truth
+      (and required-list
+           (find "pattern" required-list :test #'string=)))
+     3)))
+
+(defun measure-find-tool ()
+  (ensure-find-tool-fixture)
+  (destructuring-bind
+      (fpm-star-a fpm-star-src fpm-star-txt fpm-path-src fpm-path-root
+       fpm-src-star fpm-n)
+      (run-find-pattern-match)
+    (destructuring-bind (ff-empty ff-lisp ff-path ff-src-star ff-n)
+        (run-find-files)
+      (destructuring-bind (fmt-name fmt-desc fmt-req fmt-n)
+          (run-find-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "fpm_star_a" fpm-star-a
+          "fpm_star_src" fpm-star-src
+          "fpm_star_txt" fpm-star-txt
+          "fpm_path_src" fpm-path-src
+          "fpm_path_root" fpm-path-root
+          "fpm_src_star" fpm-src-star
+          "fpm_n" fpm-n
+          "ff_empty" ff-empty
+          "ff_lisp" ff-lisp
+          "ff_path" ff-path
+          "ff_src_star" ff-src-star
+          "ff_n" ff-n
+          "fmt_name" fmt-name
+          "fmt_desc" fmt-desc
+          "fmt_req" fmt-req
+          "fmt_n" fmt-n)
+         "pattern_match"
+         (collect "find_tool.pattern_match"
+                  (lambda ()
+                    (lambda ()
+                      (run-find-pattern-match))))
+         "find_files"
+         (collect "find_tool.find_files"
+                  (lambda ()
+                    (lambda ()
+                      (run-find-files))))
+         "make_tool"
+         (collect "find_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-find-make-tool)))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -14844,6 +14983,12 @@
       "src/cadr-agent/harness-events.lisp harness-event-bus-watch"
       "harness_events.make_start"
       "src/cadr-agent/harness-events.lisp make-run-start-event"
+      "find_tool.pattern_match"
+      "src/cadr-cli/tools/find.lisp find-pattern-match-p"
+      "find_tool.find_files"
+      "src/cadr-cli/tools/find.lisp find-files"
+      "find_tool.make_tool"
+      "src/cadr-cli/tools/find.lisp make-find-tool"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -15434,13 +15579,16 @@
               (format *error-output* "goal20 cadr paired paths: file_mutation_queue~%")
               (let ((file-mutation-queue (measure-file-mutation-queue))
                     (harness-events nil)
-                    (bash-tool nil))
+                    (bash-tool nil)
+                    (find-tool nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
               (setf bash-tool (measure-bash-tool))
               (format *error-output* "goal20 cadr paired paths: output_accumulator~%")
               (let ((output-accumulator (measure-output-accumulator)))
+              (format *error-output* "goal20 cadr paired paths: find_tool~%")
+              (setf find-tool (measure-find-tool))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -15577,6 +15725,7 @@
               "harness_events" harness-events
               "bash_tool" bash-tool
               "output_accumulator" output-accumulator
+              "find_tool" find-tool
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html
