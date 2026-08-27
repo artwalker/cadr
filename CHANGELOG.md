@@ -11,16 +11,22 @@ tag/Release step.
 
 - Goal 20 P.13: pair `harness_events.on` (`harness-event-bus-on` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.on`).
-  Observed `heon_off` / `heon_keep` / `heon_type` exact. Measure-only;
-  freeze numbers in the follow-up record commit.
+  Observed `heon_off` / `heon_keep` / `heon_type` exact.
+  n=5 **0.325×** (0.58 / 1.79 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
 - Goal 20 P.13: pair `harness_events.watch` (`harness-event-bus-watch` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.watch`).
   Observed `hew_snap` / `hew_count` / `hew_start` / `hew_end` exact.
-  Measure-only; freeze numbers in the follow-up record commit.
+  n=5 **0.250×** (0.57 / 2.27 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
 - Goal 20 P.13: pair `harness_events.make_start` (`make-run-start-event` on
   `src/cadr-agent/harness-events.lisp` vs baseline `RunStartEvent` object).
-  Observed `hes_type` / `hes_lane` / `hes_run` exact. Measure-only;
-  freeze numbers in the follow-up record commit.
+  Observed `hes_type` / `hes_lane` / `hes_run` exact.
+  n=5 **1.18×** (0.14 / 0.12 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`

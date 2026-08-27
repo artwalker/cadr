@@ -3318,8 +3318,10 @@ Leftover sibling of Pair 276 `emit` on the same `harness-events.lisp`
 `agent_tool_loop` hole. Timed work is typed subscribe plus unsubscribe of
 `run_start` while a `run_end` listener stays — not emit delivery of a live
 subscription, not watch buffering. Observed `heon_off` / `heon_keep` /
-`heon_type` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`heon_type` are exact. First n=5 freeze **0.325×** (0.58 / 1.79 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
 
 ### Pair 284 — `harness_events` (watch)
 
@@ -3332,8 +3334,10 @@ Leftover sibling of Pair 276 `emit` and Pair 283 `on` on the same
 (an emit during capture is buffered), start flush in order, live `run_end`,
 then unsubscribe — not typed direct listeners, not `emit` of an
 already-started watch. Observed `hew_snap` / `hew_count` / `hew_start` /
-`hew_end` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`hew_end` are exact. First n=5 freeze **0.250×** (0.57 / 2.27 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
 
 ### Pair 285 — `harness_events` (make_start)
 
@@ -3345,8 +3349,9 @@ Leftover sibling of Pair 276 `emit`, Pair 283 `on`, and Pair 284 `watch` on
 the same `harness-events.lisp` `agent_tool_loop` hole. Timed work is
 constructing a `run_start` event (type / lane / run id) — not `on`, not
 `watch`, not `emit`. Observed `hes_type` / `hes_lane` / `hes_run` are exact.
-First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same
-commit no optimize.
+First n=5 freeze **1.18×** (0.14 / 0.12 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
