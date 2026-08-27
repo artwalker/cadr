@@ -130,7 +130,7 @@
 ;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
 ;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
 ;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
-;;;; 370. evals_harness default-eval-model-resolver vs ModelRuntime.getModel
+;;;; 370. evals_harness release-eval-extensions vs eval extension host clear
 ;;;; 371. evals_harness eval-agent-tools vs session/agent tools list
 ;;;; 372. evals_harness eval-extension-paths vs extensionRunner.getExtensionPaths
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
@@ -372,7 +372,7 @@
     ("evals_harness.resolve_selection" . 50)
     ("evals_harness.transcript" . 50)
     ("evals_harness.last_assistant" . 50)
-    ("evals_harness.model_resolver" . 50)
+    ("evals_harness.release_extensions" . 50)
     ("evals_harness.agent_tools" . 50)
     ("evals_harness.extension_paths" . 50)
     ("ai_crypto_model_data.manifest" . 50)
@@ -7005,41 +7005,6 @@
         (eq new (cadr-evals::last-assistant-since messages nil)))
        3))))
 
-(defun eval-bench-environment (name)
-  (and (string= name "OPENAI_API_KEY")
-       "sk-bench-not-a-secret"))
-
-(defun run-evals-harness-model-resolver ()
-  ;; Catalog lookup + stream-chat return, not a live eval run.
-  (let ((cadr-cli::*environment-function* #'eval-bench-environment))
-    (multiple-value-bind (prov id stream)
-        (handler-case
-            (multiple-value-bind (provider model stream-fn)
-                (cadr-evals::default-eval-model-resolver
-                 "openai" "gpt-4o")
-              (declare (ignore provider))
-              (values
-               (eval-flag
-                (string-equal
-                 (symbol-name
-                  (cadr-ai:model-provider model))
-                 "openai"))
-               (eval-flag
-                (string= (cadr-ai:model-id model) "gpt-4o"))
-               (eval-flag (eq stream-fn #'cadr-ai:stream-chat))))
-          (error () (values 0 0 0)))
-      (list
-       prov
-       id
-       stream
-       (handler-case
-           (progn
-             (cadr-evals::default-eval-model-resolver
-              "no-such" "no-such")
-             0)
-         (error () 1))
-       4))))
-
 (defun eval-harness-fixture-tools ()
   (list
    (cadr-ai:make-tool
@@ -7058,6 +7023,33 @@
     (lambda (&rest arguments)
       (declare (ignore arguments))
       nil))))
+
+(defun run-evals-harness-release-extensions ()
+  ;; Nil manager no-op plus host bundle clear — not reload/shutdown.
+  (let* ((nil-out (cadr-evals::release-eval-extensions nil))
+         (host (cadr-agent::make-extension-host))
+         (bundle
+           (cadr-agent::make-extension-bundle
+            :id "v"
+            :path "/tmp/ext-v"))
+         (manager
+           (cadr-cli::%make-cli-extension-manager
+            :cwd (uiop:getcwd)
+            :host host
+            :no-discovery-p t
+            :output (make-broadcast-stream))))
+    (setf (cadr-agent::extension-host-snapshot host)
+          (cadr-agent::make-extension-snapshot
+           :bundles (list bundle)))
+    (let ((mgr-out (cadr-evals::release-eval-extensions manager))
+          (left
+            (cadr-agent::extension-snapshot-bundles
+             (cadr-agent::extension-host-current-snapshot host))))
+      (list
+       (eval-flag (null nil-out))
+       (eval-flag (null mgr-out))
+       (eval-flag (null left))
+       3))))
 
 (defun run-evals-harness-agent-tools ()
   (let* ((empty
@@ -7123,7 +7115,7 @@
          (resolve (run-evals-harness-resolve-selection))
          (transcript (run-evals-harness-transcript))
          (last-assistant (run-evals-harness-last-assistant))
-         (model-resolver (run-evals-harness-model-resolver))
+         (release-extensions (run-evals-harness-release-extensions))
          (agent-tools (run-evals-harness-agent-tools))
          (extension-paths (run-evals-harness-extension-paths)))
     (json-object
@@ -7177,11 +7169,10 @@
       "la_none" (nth 1 last-assistant)
       "la_full" (nth 2 last-assistant)
       "la_n" (nth 3 last-assistant)
-      "mr_prov" (nth 0 model-resolver)
-      "mr_id" (nth 1 model-resolver)
-      "mr_stream" (nth 2 model-resolver)
-      "mr_miss" (nth 3 model-resolver)
-      "mr_n" (nth 4 model-resolver)
+      "re_nil" (nth 0 release-extensions)
+      "re_mgr" (nth 1 release-extensions)
+      "re_empty" (nth 2 release-extensions)
+      "re_n" (nth 3 release-extensions)
       "at_empty" (nth 0 agent-tools)
       "at_n" (nth 1 agent-tools)
       "at_read" (nth 2 agent-tools)
@@ -7233,11 +7224,11 @@
               (lambda ()
                 (lambda ()
                   (run-evals-harness-last-assistant))))
-     "model_resolver"
-     (collect "evals_harness.model_resolver"
+     "release_extensions"
+     (collect "evals_harness.release_extensions"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-model-resolver))))
+                  (run-evals-harness-release-extensions))))
      "agent_tools"
      (collect "evals_harness.agent_tools"
               (lambda ()
@@ -16455,8 +16446,8 @@
       "src/cadr-evals/harness.lisp messages-to-transcript"
       "evals_harness.last_assistant"
       "src/cadr-evals/harness.lisp last-assistant-since"
-      "evals_harness.model_resolver"
-      "src/cadr-evals/harness.lisp default-eval-model-resolver"
+      "evals_harness.release_extensions"
+      "src/cadr-evals/harness.lisp release-eval-extensions"
       "evals_harness.agent_tools"
       "src/cadr-evals/harness.lisp eval-agent-tools"
       "evals_harness.extension_paths"

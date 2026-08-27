@@ -3531,20 +3531,19 @@ from-end — not `agent-prompt`. Observed `la_new` / `la_none` / `la_full` /
 known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Over-1× booked (sub-µs). Same commit no optimize.
 
-### Pair 370 — `evals_harness` (model_resolver)
+### Pair 370 — `evals_harness` (release_extensions)
 
 | metric | cadr | pi |
 |---|---|---|
-| `model_resolver` | `default-eval-model-resolver` (`src/cadr-evals/harness.lisp`) | `ModelRuntime.getModel` (`packages/coding-agent/src/core/model-runtime.ts`; pi-harness `modelRuntime.getModel`) |
+| `release_extensions` | `release-eval-extensions` (`src/cadr-evals/harness.lisp`) | eval session extension cleanup (`packages/evals/src/pi-harness.ts`) |
 
 Leftover sibling of the `evals_harness` hole on `src/cadr-evals/harness.lisp`.
-Timed work is openai/gpt-4o catalog resolve plus stream-chat return, and a
-missing provider/model error — not a live eval run. Do not exact error copy.
-Observed `mr_prov` / `mr_id` / `mr_stream` / `mr_miss` / `mr_n` are exact.
-First n=5 freeze numbers are recorded in the freeze commit. Ceiling 8.0.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text when those still fire; this metric must not fail).
-Same commit no optimize.
+Timed work is nil-manager no-op plus `replace-extension-bundles` to empty —
+not reload, not `run-coding-agent-eval`. Observed `re_nil` / `re_mgr` /
+`re_empty` / `re_n` are exact. First n=5 freeze numbers are recorded in the
+freeze commit. Ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text when those still fire;
+this metric must not fail). Same commit no optimize.
 
 ### Pair 371 — `evals_harness` (agent_tools)
 
@@ -3552,7 +3551,7 @@ Same commit no optimize.
 |---|---|---|
 | `agent_tools` | `eval-agent-tools` (`src/cadr-evals/harness.lisp`) | session/agent `tools` list (`packages/evals/src/pi-harness.ts` selector) |
 
-Leftover sibling of Pair 370 `model_resolver` on the same `evals_harness`
+Leftover sibling of Pair 370 `release_extensions` on the same `evals_harness`
 hole. Timed work is empty-registry vs two fixture tools (`read`, `bash`) —
 not `run-coding-agent-eval`. Observed `at_empty` / `at_n` / `at_read` /
 `at_bash` / `at_keys` are exact. First n=5 freeze numbers are recorded in

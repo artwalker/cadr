@@ -9,10 +9,10 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20 P.13 leftover: pair `evals_harness.model_resolver` /
+- Goal 20 P.13 leftover: pair `evals_harness.release_extensions` /
   `agent_tools` / `extension_paths` (`src/cadr-evals/harness.lisp` vs
-  baseline `ModelRuntime.getModel` / session tools list /
-  `ExtensionRunner.getExtensionPaths`). Observed `mr_*` / `at_*` / `ep_*`
+  baseline eval session extension cleanup / session tools list /
+  `ExtensionRunner.getExtensionPaths`). Observed `re_*` / `at_*` / `ep_*`
   exact. n=5 freeze in the follow-up docs commit. Ceiling 8.0. Measure-only.
   `nextPairNum` stays 328. Pairs 370–372.
 - Goal 20 P.13: pair `core_rest.cancellation_abort` (`abort-cancellation` /

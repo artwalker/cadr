@@ -226,7 +226,7 @@ const REPETITIONS = {
 	"evals_harness.resolve_selection": 50,
 	"evals_harness.transcript": 50,
 	"evals_harness.last_assistant": 50,
-	"evals_harness.model_resolver": 50,
+	"evals_harness.release_extensions": 50,
 	"evals_harness.agent_tools": 50,
 	"evals_harness.extension_paths": 50,
 	"ai_crypto_model_data.manifest": 50,
@@ -5523,16 +5523,30 @@ function runEvalsHarnessLastAssistant() {
 	};
 }
 
-function runEvalsHarnessModelResolver(runtime) {
-	const model = runtime.getModel("openai", "gpt-4o");
-	const missing = runtime.getModel("no-such", "no-such");
-	return {
-		mr_prov: model?.provider === "openai" ? 1 : 0,
-		mr_id: model?.id === "gpt-4o" ? 1 : 0,
-		mr_stream: model ? 1 : 0,
-		mr_miss: missing ? 0 : 1,
-		mr_n: 4,
+function runEvalsHarnessReleaseExtensions() {
+	const none = releaseEvalExtensions(null);
+	const host = {
+		snapshot: { bundles: [{ path: "/tmp/ext-v", hidden: false }] },
 	};
+	const manager = { host };
+	const cleared = releaseEvalExtensions(manager);
+	return {
+		re_nil: none === null ? 1 : 0,
+		re_mgr: cleared === null ? 1 : 0,
+		re_empty: (host.snapshot?.bundles?.length ?? 0) === 0 ? 1 : 0,
+		re_n: 3,
+	};
+}
+
+function releaseEvalExtensions(manager) {
+	if (manager?.host) {
+		try {
+			manager.host.snapshot = { bundles: [] };
+		} catch {
+			/* ignore */
+		}
+	}
+	return null;
 }
 
 function evalAgentTools(agent) {
@@ -5587,7 +5601,6 @@ async function measureEvalsHarness() {
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
 		evalsHarnessObservations(),
 	);
-	const runtime = await createModelRuntime();
 	const observed = {
 		...runEvalsHarnessSummarize(),
 		...runEvalsHarnessGroupKey(),
@@ -5597,7 +5610,7 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessResolveSelection(),
 		...runEvalsHarnessTranscript(),
 		...runEvalsHarnessLastAssistant(),
-		...runEvalsHarnessModelResolver(runtime),
+		...runEvalsHarnessReleaseExtensions(),
 		...runEvalsHarnessAgentTools(),
 		...runEvalsHarnessExtensionPaths(),
 	};
@@ -5626,8 +5639,8 @@ async function measureEvalsHarness() {
 		last_assistant: await collect("evals_harness.last_assistant", () => {
 			return () => runEvalsHarnessLastAssistant();
 		}),
-		model_resolver: await collect("evals_harness.model_resolver", () => {
-			return () => runEvalsHarnessModelResolver(runtime);
+		release_extensions: await collect("evals_harness.release_extensions", () => {
+			return () => runEvalsHarnessReleaseExtensions();
 		}),
 		agent_tools: await collect("evals_harness.agent_tools", () => {
 			return () => runEvalsHarnessAgentTools();
@@ -16796,8 +16809,8 @@ const result = {
 				"packages/evals/src/pi-harness.ts toTranscriptEvents",
 			"evals_harness.last_assistant":
 				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
-			"evals_harness.model_resolver":
-				"packages/coding-agent/src/core/model-runtime.ts ModelRuntime.getModel (pi-harness modelRuntime.getModel)",
+			"evals_harness.release_extensions":
+				"packages/evals/src/pi-harness.ts eval session extension cleanup (cadr release-eval-extensions)",
 			"evals_harness.agent_tools":
 				"packages/evals/src/pi-harness.ts session tools list (cadr eval-agent-tools)",
 			"evals_harness.extension_paths":

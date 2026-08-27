@@ -117,7 +117,7 @@ METRIC_KEYS = (
     "evals_harness.resolve_selection",
     "evals_harness.transcript",
     "evals_harness.last_assistant",
-    "evals_harness.model_resolver",
+    "evals_harness.release_extensions",
     "evals_harness.agent_tools",
     "evals_harness.extension_paths",
     "ai_crypto_model_data.manifest",
