@@ -19,17 +19,20 @@ tag/Release step.
   `src/cadr-cli/tools/bash.lisp` vs the same Process-exited suffix strip; pi's
   tool path never injects that footer). Observed `sef_exact` / `sef_nl` /
   `sef_no_nl` / `sef_plain` / `sef_empty` / `sef_n` exact.
-  n=5 **RATIO_PLACEHOLDER**. Measure-only.
+  n=5 **1.599×** (0.989 / 0.619 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `bash_tool.append_status` (`append-bash-status` on
   `src/cadr-cli/tools/bash.lisp` vs baseline `appendStatus` in
   `packages/coding-agent/src/core/tools/bash.ts`). Observed `abs_empty` /
   `abs_abort` / `abs_exit` / `abs_timeout` / `abs_n` exact.
-  n=5 **RATIO_PLACEHOLDER**. Measure-only.
+  n=5 **2.911×** (1.109 / 0.381 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `bash_tool.truncation_notice` (`bash-truncation-notice` on
   `src/cadr-cli/tools/bash.lisp` vs baseline `formatOutput` truncation notice
   in `packages/coding-agent/src/core/tools/bash.ts`). Observed `btn_none` /
   `btn_partial` / `btn_lines` / `btn_bytes` / `btn_n` exact.
-  n=5 **RATIO_PLACEHOLDER**. Measure-only.
+  n=5 **3.363×** (2.798 / 0.832 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.ensure_state` (`ensure-file-mutation-queue-state` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `fileMutationQueues.get(key) ?? set`
   given a canonical key). Observed `fmqs_alias` / `fmqs_other` / `fmqs_missing` /

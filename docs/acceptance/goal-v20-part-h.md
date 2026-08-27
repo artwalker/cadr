@@ -3230,8 +3230,10 @@ Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/bash.lisp`
 Timed work is stripping `Process exited with code N` (exact footer, newline
 footer, glued footer, unchanged body, empty) — not execute/spawn. Observed
 `sef_exact` / `sef_nl` / `sef_no_nl` / `sef_plain` / `sef_empty` / `sef_n`
-are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`.
-Same commit no optimize.
+are exact. First n=5 freeze **1.599×** (0.989 / 0.619 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
 
 ### Pair 278 — `bash_tool` (append_status)
 
@@ -3242,8 +3244,10 @@ Same commit no optimize.
 Leftover sibling of Pair 277 `strip_exit_footer` on the same `agent_tool_loop`
 hole. Timed work is abort/exit/timeout status join (empty body vs non-empty)
 — not execute/spawn. Observed `abs_empty` / `abs_abort` / `abs_exit` /
-`abs_timeout` / `abs_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce`. Same commit no optimize.
+`abs_timeout` / `abs_n` are exact. First n=5 freeze **2.911×** (1.109 /
+0.381 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
 
 ### Pair 279 — `bash_tool` (truncation_notice)
 
@@ -3256,7 +3260,9 @@ on the same `agent_tool_loop` hole. Timed work is the `[Showing ...]` notice
 body (not truncated, last-line-partial, lines, bytes limit) — not
 truncate-tail and not execute/spawn. Observed `btn_none` / `btn_partial` /
 `btn_lines` / `btn_bytes` / `btn_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+**3.363×** (2.798 / 0.832 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
