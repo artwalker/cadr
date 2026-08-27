@@ -3710,6 +3710,54 @@ description / empty required list — not execute. Observed `lst_name` /
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
 metric did not fail). Over-1× booked. Same commit no optimize.
 
+### Pair 304 — `file_mutation_queue` (pending_count)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pending_count` | `file-mutation-queue-state-pending-count` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.pending` after enqueue (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 286 `call_with` through Pair 288 `state_key` on
+the same `agent_tool_loop` hole. Timed work is reading `pending` after
+enqueue (shared symlink key, distinct sibling, missing path) — not
+`make-file-mutation-queue-state` zeros, not `with-file-mutation-queue`,
+not write/edit tools. Same staged scratch layout as `with_queue`.
+Observed `fmqp_shared` / `fmqp_other` / `fmqp_missing` / `fmqp_alias` /
+`fmqp_n` are exact. First n=5 freeze **1.435×** (194.6 / 135.5 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 305 — `file_mutation_queue` (next_ticket)
+
+| metric | cadr | pi |
+|---|---|---|
+| `next_ticket` | `file-mutation-queue-state-next-ticket` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.nextTicket` after enqueue (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 304 `pending_count` on the same `agent_tool_loop`
+hole. Timed work is reading `nextTicket` after enqueue (shared symlink
+key, distinct sibling, missing path) — not constructor zeros, not
+write/edit tools. Same staged scratch layout as `with_queue`. Observed
+`fmqi_shared` / `fmqi_other` / `fmqi_missing` / `fmqi_alias` / `fmqi_n`
+are exact. First n=5 freeze **1.147×** (157.9 / 137.6 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
+### Pair 306 — `file_mutation_queue` (serving_ticket)
+
+| metric | cadr | pi |
+|---|---|---|
+| `serving_ticket` | `file-mutation-queue-state-serving-ticket` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.serving` after enqueue (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 304 `pending_count` and Pair 305 `next_ticket` on
+the same `agent_tool_loop` hole. Timed work is reading `serving` after
+enqueue (still 0 until release) — not wait/release, not write/edit tools.
+Same staged scratch layout as `with_queue`. Observed `fmqv_zero` /
+`fmqv_other` / `fmqv_missing` / `fmqv_alias` / `fmqv_n` are exact. First
+n=5 freeze **0.985×** (139.5 / 141.7 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

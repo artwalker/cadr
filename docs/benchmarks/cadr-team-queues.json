@@ -645,6 +645,48 @@
      "piUs": 279.6,
      "ceiling": 8.0,
      "rc": 1
+    },
+    {
+     "pair": 304,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.pending_count",
+     "branch": "cursor/pair-fmq-leftovers-304-306-c605",
+     "ratio": 1.435,
+     "cadrUs": 194.6,
+     "piUs": 135.5,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 305,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.next_ticket",
+     "branch": "cursor/pair-fmq-leftovers-304-306-c605",
+     "ratio": 1.147,
+     "cadrUs": 157.9,
+     "piUs": 137.6,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 306,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.serving_ticket",
+     "branch": "cursor/pair-fmq-leftovers-304-306-c605",
+     "ratio": 0.985,
+     "cadrUs": 139.5,
+     "piUs": 141.7,
+     "ceiling": 8.0,
+     "rc": 1
     }
    ],
    "mergeQueue": []
