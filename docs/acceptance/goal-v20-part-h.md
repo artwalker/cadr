@@ -3274,8 +3274,10 @@ Leftover sibling of the `agent_tool_loop` hole on `output-accumulator.lisp`.
 Timed work is streaming append of ASCII + split UTF-8 `é` + a trailing line
 under the spill ceiling — not snapshot/finish, not bash/tool execute. Observed
 `oa_append_bytes` / `oa_append_trunc` / `oa_append_lines` / `oa_append_last` /
-`oa_append_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`oa_append_n` are exact. First n=5 freeze **0.690×** (3.149 / 4.561 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
 
 ### Pair 281 — `output_accumulator` (snapshot)
 
@@ -3287,8 +3289,9 @@ Leftover sibling of Pair 280 `append` on the same `agent_tool_loop` hole.
 Timed work is display snapshot after the same append fixture (no
 `persistIfTruncated`, no temp file) — not finish. Observed `oa_snap_bytes` /
 `oa_snap_trunc` / `oa_snap_lines` / `oa_snap_total` / `oa_snap_n` are exact.
-First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same
-commit no optimize.
+First n=5 freeze **0.716×** (3.157 / 4.409 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 282 — `output_accumulator` (finish)
 
@@ -3300,8 +3303,10 @@ Leftover sibling of Pair 280 `append` and Pair 281 `snapshot` on the same
 `agent_tool_loop` hole. Timed work is finish after a lone incomplete UTF-8
 lead byte (`0xC3`) so both sides flush U+FFFD — not spill/temp-file. Observed
 `oa_fin_bytes` / `oa_fin_fffd` / `oa_fin_last` / `oa_fin_trunc` / `oa_fin_n`
-are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`.
-Same commit no optimize.
+are exact. First n=5 freeze **0.658×** (1.670 / 2.537 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
