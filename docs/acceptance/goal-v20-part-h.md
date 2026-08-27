@@ -3901,7 +3901,10 @@ Leftover sibling of the `oauth_pkce_device` hole on
 (`A` / `a` / `0` / `-` / `_`) — not token HTTP, not browser login. Do not
 exact characters outside `A-Za-z0-9-_` (Lisp `NIL` vs JS `indexOf` `-1`).
 Observed `bv_A` / `bv_a` / `bv_0` / `bv_dash` / `bv_us` / `bv_n` are exact.
-First n=5 freeze pending measurement, ceiling 8.0. Same commit no optimize.
+First n=5 freeze **2.692×** (0.736 / 0.273 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
+commit no optimize.
 
 ### Pair 359 — `oauth_pkce_device` (base64url_decode)
 
@@ -3913,8 +3916,10 @@ Leftover sibling of Pair 358 `base64url_value` on the same
 `oauth_pkce_device` hole. Timed work is unpadded alphabet-only decode
 (`{}` / `foo` / account-id JWT payload) — not `+`/`/` padding, not `-`/`_`
 (pi `atob`, not base64url). Observed `bd_obj` / `bd_foo` / `bd_acct` /
-`bd_n` are exact. First n=5 freeze pending measurement, ceiling 8.0. Same
-commit no optimize.
+`bd_n` are exact. First n=5 freeze **6.544×** (2.969 / 0.454 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked. Same commit no optimize.
 
 ### Pair 360 — `oauth_pkce_device` (account_id)
 
@@ -3927,8 +3932,10 @@ Timed work is JWT account-id extract (present / missing claim / not a JWT)
 — not token exchange, not `token-response-credential` expiry. Do not exact
 two-part tokens (pi `decodeJwt` requires three parts). Do not exact empty
 `chatgpt_account_id` (pi requires length > 0). Observed `aid_ok` /
-`aid_miss` / `aid_bad` / `aid_n` are exact. First n=5 freeze pending
-measurement, ceiling 8.0. Same commit no optimize.
+`aid_miss` / `aid_bad` / `aid_n` are exact. First n=5 freeze **5.986×**
+(6.112 / 1.021 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

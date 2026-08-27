@@ -247,5 +247,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
 | `oauth_pkce_device.percent_decode` | 1.592 | 1.044 | 1.525× | 8.00× | measure-only pair 310; `percent-decode` vs URLSearchParams | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_query` | 6.672 | 3.431 | 1.944× | 8.00× | measure-only pair 311; `parse-query` vs URLSearchParams | invent pause；地板优化另刀 |
+| `oauth_pkce_device.base64url_value` | 0.736 | 0.273 | 2.692× | 8.00× | measure-only pair 358; `base64url-value` vs RFC 4648 §5 alphabet; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `oauth_pkce_device.base64url_decode` | 2.969 | 0.454 | 6.544× | 8.00× | measure-only pair 359; `base64url-decode` vs `decodeJwt` `atob` | invent pause；地板优化另刀 |
+| `oauth_pkce_device.account_id` | 6.112 | 1.021 | 5.986× | 8.00× | measure-only pair 360; `openai-account-id-from-token` vs `getAccountId` | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
