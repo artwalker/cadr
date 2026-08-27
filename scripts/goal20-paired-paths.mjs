@@ -217,6 +217,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.percent_decode": 50,
 	"oauth_pkce_device.parse_query": 50,
 	"oauth_pkce_device.parse_authorization_input": 50,
+	"oauth_pkce_device.error_detail": 50,
+	"oauth_pkce_device.ensure_success": 50,
+	"oauth_pkce_device.notify_device": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -5970,6 +5973,131 @@ function runOauthPkceDeviceParseAuthorizationInput() {
 	};
 }
 
+// Baseline xai.ts requestFailure detail extraction (unexported). Overlap
+// with cadr oauth-response-error-detail: description-only / string error.
+function requestFailureDetail(body) {
+	const error = typeof body.error === "string" ? body.error : undefined;
+	const description =
+		typeof body.error_description === "string" ? body.error_description : undefined;
+	return [error, description].filter(Boolean).join(": ");
+}
+
+function runOauthPkceDeviceErrorDetail() {
+	return {
+		ed_desc: requestFailureDetail({ error_description: "bad desc" }) === "bad desc" ? 1 : 0,
+		ed_error: requestFailureDetail({ error: "access_denied" }) === "access_denied" ? 1 : 0,
+		ed_n: 2,
+	};
+}
+
+function requestFailure(action, response) {
+	const detail = requestFailureDetail(response.body);
+	return new Error(
+		`xAI OAuth ${action} failed (HTTP ${response.status})${detail ? `: ${detail}` : ""}`,
+	);
+}
+
+function ensureOauthResponseSuccess(action, response) {
+	if (!response.ok) {
+		throw requestFailure(action, response);
+	}
+	return response.body;
+}
+
+function runOauthPkceDeviceEnsureSuccess() {
+	const okBody = { ok: true };
+	const fail = { ok: false, status: 400, body: { error_description: "nope" } };
+	let created = 0;
+	let failed = 0;
+	try {
+		ensureOauthResponseSuccess("device authorization", {
+			ok: true,
+			status: 200,
+			body: okBody,
+		});
+		created = 1;
+	} catch {
+		created = 0;
+	}
+	let created201 = 0;
+	try {
+		ensureOauthResponseSuccess("device authorization", {
+			ok: true,
+			status: 201,
+			body: okBody,
+		});
+		created201 = 1;
+	} catch {
+		created201 = 0;
+	}
+	try {
+		ensureOauthResponseSuccess("token refresh", fail);
+		failed = 0;
+	} catch {
+		failed = 1;
+	}
+	return {
+		es_ok: created,
+		es_created: created201,
+		es_fail: failed,
+		es_n: 3,
+	};
+}
+
+function notifyDeviceEvent(device) {
+	return {
+		type: "device_code",
+		userCode: device.userCode,
+		verificationUri: device.verificationUriComplete ?? device.verificationUri,
+		intervalSeconds: device.intervalSeconds,
+		expiresInSeconds: device.expiresInSeconds,
+	};
+}
+
+function notifyDeviceFlag(device, expectedCode, expectedUri) {
+	const event = notifyDeviceEvent(device);
+	return event.type === "device_code" &&
+		event.userCode === expectedCode &&
+		event.verificationUri === expectedUri
+		? 1
+		: 0;
+}
+
+function runOauthPkceDeviceNotifyDevice() {
+	return {
+		nd_complete: notifyDeviceFlag(
+			{
+				userCode: "ABCD-EFGH",
+				verificationUri: "https://auth.x.ai/a",
+				verificationUriComplete: "https://auth.x.ai/a?c=1",
+				intervalSeconds: 5,
+				expiresInSeconds: 900,
+			},
+			"ABCD-EFGH",
+			"https://auth.x.ai/a?c=1",
+		),
+		nd_plain: notifyDeviceFlag(
+			{
+				userCode: "ABCD-EFGH",
+				verificationUri: "https://auth.x.ai/a",
+				intervalSeconds: 5,
+				expiresInSeconds: 900,
+			},
+			"ABCD-EFGH",
+			"https://auth.x.ai/a",
+		),
+		nd_code: notifyDeviceFlag(
+			{
+				userCode: "WXYZ",
+				verificationUri: "https://auth.x.ai/b",
+			},
+			"WXYZ",
+			"https://auth.x.ai/b",
+		),
+		nd_n: 3,
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -5980,6 +6108,9 @@ async function measureOauthPkceDevice() {
 	const percent = runOauthPkceDevicePercentDecode();
 	const query = runOauthPkceDeviceParseQuery();
 	const authInput = runOauthPkceDeviceParseAuthorizationInput();
+	const errorDetail = runOauthPkceDeviceErrorDetail();
+	const ensure = runOauthPkceDeviceEnsureSuccess();
+	const notify = runOauthPkceDeviceNotifyDevice();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -6008,6 +6139,15 @@ async function measureOauthPkceDevice() {
 		parse_authorization_input: await collect("oauth_pkce_device.parse_authorization_input", () => {
 			return () => runOauthPkceDeviceParseAuthorizationInput();
 		}),
+		error_detail: await collect("oauth_pkce_device.error_detail", () => {
+			return () => runOauthPkceDeviceErrorDetail();
+		}),
+		ensure_success: await collect("oauth_pkce_device.ensure_success", () => {
+			return () => runOauthPkceDeviceEnsureSuccess();
+		}),
+		notify_device: await collect("oauth_pkce_device.notify_device", () => {
+			return () => runOauthPkceDeviceNotifyDevice();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -6018,6 +6158,9 @@ async function measureOauthPkceDevice() {
 			...percent,
 			...query,
 			...authInput,
+			...errorDetail,
+			...ensure,
+			...notify,
 		},
 	};
 }
@@ -16826,6 +16969,12 @@ const result = {
 				"packages/ai/src/auth/oauth/openai-codex.ts URLSearchParams query parse (cadr parse-query)",
 			"oauth_pkce_device.parse_authorization_input":
 				"packages/ai/src/auth/oauth/openai-codex.ts parseAuthorizationInput",
+			"oauth_pkce_device.error_detail":
+				"packages/ai/src/auth/oauth/xai.ts requestFailure error/error_description (cadr oauth-response-error-detail)",
+			"oauth_pkce_device.ensure_success":
+				"packages/ai/src/auth/oauth/xai.ts !ok throw requestFailure (cadr ensure-oauth-response-success)",
+			"oauth_pkce_device.notify_device":
+				"packages/ai/src/auth/oauth/xai.ts interaction.notify device_code (cadr notify-device-authorization)",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

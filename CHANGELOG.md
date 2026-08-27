@@ -5,9 +5,20 @@ All notable changes to Cadr are documented in this file. The format follows
 yet cut a Cadr release tag. The `0.2.0` entry is frozen for the user-approved
 tag/Release step.
 
-## [Unreleased]
+- Goal 20 P.13: pair `oauth_pkce_device.error_detail` (`oauth-response-error-detail`
+  on `src/cadr-ai/oauth/providers/xai.lisp` vs baseline `requestFailure` detail
+  in `packages/ai/src/auth/oauth/xai.ts`). Observed `ed_desc` / `ed_error` /
+  `ed_n` exact. Measure-only leftover sibling. No `src/` perf. Pairs 379–381.
+- Goal 20 P.13: pair `oauth_pkce_device.ensure_success`
+  (`ensure-oauth-response-success` on `src/cadr-ai/oauth/providers/xai.lisp`
+  vs baseline `!ok` throw `requestFailure`). Observed `es_ok` / `es_created`
+  / `es_fail` / `es_n` exact. Measure-only leftover sibling. No `src/` perf.
+- Goal 20 P.13: pair `oauth_pkce_device.notify_device`
+  (`notify-device-authorization` on `src/cadr-ai/oauth/providers/xai.lisp`
+  vs baseline `interaction.notify` device_code). Observed `nd_complete` /
+  `nd_plain` / `nd_code` / `nd_n` exact. Measure-only leftover sibling.
+  No `src/` perf.
 
-### Changed
 
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).

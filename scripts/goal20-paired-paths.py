@@ -131,6 +131,9 @@ METRICS = {
         "percent_decode",
         "parse_query",
         "parse_authorization_input",
+        "error_detail",
+        "ensure_success",
+        "notify_device",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant"),
@@ -470,6 +473,9 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.percent_decode": 8.0,
     "oauth_pkce_device.parse_query": 8.0,
     "oauth_pkce_device.parse_authorization_input": 8.0,
+    "oauth_pkce_device.error_detail": 8.0,
+    "oauth_pkce_device.ensure_success": 8.0,
+    "oauth_pkce_device.notify_device": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed
     # 0.45x (4.79 / 10.52 us). cadr leads. 8.0 is
@@ -1915,6 +1921,17 @@ OBSERVED_EXACT = {
         "pai_qs",
         "pai_plain",
         "pai_n",
+        "ed_desc",
+        "ed_error",
+        "ed_n",
+        "es_ok",
+        "es_created",
+        "es_fail",
+        "es_n",
+        "nd_complete",
+        "nd_plain",
+        "nd_code",
+        "nd_n",
     ),
     "cli_extensions_install": (
         "nu_local",
