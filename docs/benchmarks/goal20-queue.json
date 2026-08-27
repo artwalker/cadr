@@ -558,6 +558,33 @@
    "piUs": 0.255,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 331,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.step_value",
+   "branch": "cursor/evals-harness-pairs-331-333-4603"
+  },
+  {
+   "pair": 332,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.usage",
+   "branch": "cursor/evals-harness-pairs-331-333-4603"
+  },
+  {
+   "pair": 333,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.result_json",
+   "branch": "cursor/evals-harness-pairs-331-333-4603"
   }
  ],
  "mergeQueue": []

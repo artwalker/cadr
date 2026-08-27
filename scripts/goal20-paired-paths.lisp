@@ -179,6 +179,9 @@
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
+;;;; 331. evals_harness step-value vs pi-harness step property access
+;;;; 332. evals_harness eval-usage vs pi-harness usage object assembly
+;;;; 333. evals_harness eval-result-json vs SimpleHarnessResult JSON shape
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
@@ -333,6 +336,9 @@
     ("evals_harness.artifact_persist" . 3)
     ("evals_harness.format" . 20)
     ("evals_harness.normalize_steps" . 50)
+    ("evals_harness.step_value" . 50)
+    ("evals_harness.usage" . 50)
+    ("evals_harness.result_json" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -6310,6 +6316,115 @@
      (length from-vec)
      (eval-normalize-steps-error-p 42))))
 
+(defun eval-flag (value)
+  (if value 1 0))
+
+(defun run-evals-harness-step-value ()
+  ;; Hash-table JSON step, keyword plist, interned keyword plist, miss.
+  (let* ((hash
+           (cadr-ai::json-object
+            "type" "prompt"
+            "content" "hi"))
+         (plist
+           (list :type :prompt :content "hi"))
+         (interned
+           (list (intern "TYPE" :keyword) :prompt
+                 (intern "CONTENT" :keyword) "hi")))
+    (list
+     (eval-flag
+      (string= (cadr-evals::step-value hash :type) "prompt"))
+     (eval-flag
+      (string= (cadr-evals::step-value plist :content) "hi"))
+     (eval-flag
+      (eq (cadr-evals::step-value interned :type) :prompt))
+     (eval-flag
+      (null (cadr-evals::step-value hash :missing)))
+     4)))
+
+(defun eval-usage-messages ()
+  (list
+   (cadr-ai:make-user-message :content "hi")
+   (cadr-ai:make-assistant-message
+    :content
+    (list
+     (cadr-ai:make-text-content :text "hello")
+     (cadr-ai:make-tool-call
+      :id "c1"
+      :name "bash"
+      :arguments (cadr-ai::json-object "cmd" "ls")))
+    :usage
+    (cadr-ai:make-usage
+     :input 10
+     :output 20
+     :cache-read 1
+     :cache-write 2
+     :cost (cadr-ai:make-cost :total 1.5d0)))
+   (cadr-ai:make-assistant-message
+    :content
+    (list (cadr-ai:make-text-content :text "done"))
+    :usage
+    (cadr-ai:make-usage :input 5 :output 7))))
+
+(defun run-evals-harness-usage ()
+  (let* ((model
+           (cadr-ai::make-model
+            :id "gpt-4o"
+            :provider :openai))
+         (usage
+           (cadr-evals::eval-usage
+            (eval-usage-messages)
+            model))
+         (meta (cadr-ai::json-get usage "metadata")))
+    (list
+     (eval-flag (= (cadr-ai::json-get usage "inputTokens") 15))
+     (eval-flag (= (cadr-ai::json-get usage "outputTokens") 27))
+     (eval-flag (= (cadr-ai::json-get usage "totalTokens") 45))
+     (eval-flag (= (cadr-ai::json-get usage "toolCalls") 1))
+     (eval-flag
+      (string= (cadr-ai::json-get usage "provider") "openai"))
+     (eval-flag
+      (string= (cadr-ai::json-get usage "model") "gpt-4o"))
+     (eval-flag
+      (and (= (cadr-ai::json-get meta "cacheReadTokens") 1)
+           (= (cadr-ai::json-get meta "cacheWriteTokens") 2)
+           (plusp
+            (cadr-ai::json-get meta "estimatedCostUsd" 0))))
+     7)))
+
+(defun run-evals-harness-result-json ()
+  (let* ((result
+           (cadr-evals::make-eval-result
+            :output "ok"
+            :events
+            (list
+             (cadr-ai::json-object
+              "type" "message"
+              "role" "user"))
+            :usage
+            (cadr-ai::json-object
+             "model" "gpt-4o"
+             "inputTokens" 3)
+            :errors nil
+            :artifacts
+            (cadr-ai::json-object "runId" "r1")
+            :timings
+            (cadr-ai::json-object "totalMs" 12.5d0)))
+         (json (cadr-evals::eval-result-json result))
+         (events (cadr-ai::json-get json "events"))
+         (errors (cadr-ai::json-get json "errors"))
+         (artifacts (cadr-ai::json-get json "artifacts"))
+         (timings (cadr-ai::json-get json "timings")))
+    (list
+     (eval-flag
+      (string= (cadr-ai::json-get json "output") "ok"))
+     (eval-flag (= (length events) 1))
+     (eval-flag (zerop (length errors)))
+     (eval-flag
+      (string= (cadr-ai::json-get artifacts "runId") "r1"))
+     (eval-flag
+      (eql (cadr-ai::json-get timings "totalMs") 12.5d0))
+     5)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -6320,7 +6435,10 @@
            (cadr-evals:summarize-harness-comparisons
             (evals-harness-observations)))
          (fmt (run-evals-harness-format empty-report report))
-         (normalize (run-evals-harness-normalize-steps)))
+         (normalize (run-evals-harness-normalize-steps))
+         (step-value (run-evals-harness-step-value))
+         (usage (run-evals-harness-usage))
+         (result-json (run-evals-harness-result-json)))
     (json-object
      "observed"
      (json-object
@@ -6352,7 +6470,26 @@
       "ns_kw_n" (nth 5 normalize)
       "ns_kw_rel" (nth 6 normalize)
       "ns_vec_n" (nth 7 normalize)
-      "ns_bad" (nth 8 normalize))
+      "ns_bad" (nth 8 normalize)
+      "sv_hash" (nth 0 step-value)
+      "sv_plist" (nth 1 step-value)
+      "sv_intern" (nth 2 step-value)
+      "sv_miss" (nth 3 step-value)
+      "sv_n" (nth 4 step-value)
+      "us_in" (nth 0 usage)
+      "us_out" (nth 1 usage)
+      "us_total" (nth 2 usage)
+      "us_tools" (nth 3 usage)
+      "us_prov" (nth 4 usage)
+      "us_model" (nth 5 usage)
+      "us_cost" (nth 6 usage)
+      "us_n" (nth 7 usage)
+      "rj_out" (nth 0 result-json)
+      "rj_ev" (nth 1 result-json)
+      "rj_err" (nth 2 result-json)
+      "rj_art" (nth 3 result-json)
+      "rj_time" (nth 4 result-json)
+      "rj_n" (nth 5 result-json))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -6378,7 +6515,22 @@
      (collect "evals_harness.normalize_steps"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-normalize-steps)))))))
+                  (run-evals-harness-normalize-steps))))
+     "step_value"
+     (collect "evals_harness.step_value"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-step-value))))
+     "usage"
+     (collect "evals_harness.usage"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-usage))))
+     "result_json"
+     (collect "evals_harness.result_json"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-result-json)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -15476,6 +15628,12 @@
       "src/cadr-evals/summary.lisp format-harness-comparison-report"
       "evals_harness.normalize_steps"
       "src/cadr-evals/harness.lisp normalize-eval-steps"
+      "evals_harness.step_value"
+      "src/cadr-evals/harness.lisp step-value"
+      "evals_harness.usage"
+      "src/cadr-evals/harness.lisp eval-usage"
+      "evals_harness.result_json"
+      "src/cadr-evals/harness.lisp eval-result-json"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.step_value` / `usage` /
+  `result_json` (`src/cadr-evals/harness.lisp` vs baseline step property
+  access / usage object assembly / `SimpleHarnessResult` JSON shape).
+  Observed `sv_*` / `us_*` / `rj_*` exact. n=5 freeze pending. Measure-only.
+  `nextPairNum` left unchanged (not written). Pairs 331–333.
 - Goal 20 P.13: pair `harness_events.make_end` (`make-run-end-event` on
   `src/cadr-agent/harness-events.lisp` vs baseline `RunEndEvent` object).
   Observed `hee_type` / `hee_lane` / `hee_run` / `hee_outcome` /
