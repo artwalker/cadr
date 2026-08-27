@@ -3984,9 +3984,10 @@ Timed work is first-wins candidate (`AGENTS.override.md` / `AGENTS.md` /
 `CLAUDE.md`) plus empty-dir miss — not ancestor walk, not `reload-resources`,
 not `dedupe-resources-by-name`. Do not exact file content (cadr returns a
 path; pi also reads). Observed `cfd_agents` / `cfd_empty` / `cfd_claude` /
-`cfd_override` / `cfd_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+`cfd_override` / `cfd_n` are exact. First n=5 freeze **2.413×** (64.741 /
+26.834 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 395 — `resource_loader` (project_context)
 
@@ -3998,9 +3999,9 @@ Leftover sibling of Pair 394 `context_from_dir` on the same `resource_loader`
 hole. Timed work is the exported ancestor+global context-file walk on the
 staged resource cwd/agent — not `reload-resources`. Do not exact file
 content. Observed `pc_n` / `pc_cwd` / `pc_cases` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce` (script rc=1 only from
-known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
-Same commit no optimize.
+**1.913×** (56.791 / 29.679 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 396 — `resource_loader` (nearest_config)
 
@@ -4012,9 +4013,9 @@ Leftover sibling of Pairs 394–395 on the same `resource_loader` hole. Timed
 work is nearest project-config `SYSTEM.md`, missing `APPEND_SYSTEM.md`, and
 missing `NOPE.md` — not agent-dir global fallback, not `reload-resources`.
 Observed `nc_sys` / `nc_append` / `nc_miss` / `nc_n` are exact. First n=5
-freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce` (script rc=1 only
-from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
-fail). Same commit no optimize.
+freeze **5.401×** (30.226 / 5.596 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

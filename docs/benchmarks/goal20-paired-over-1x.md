@@ -250,5 +250,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
 | `oauth_pkce_device.percent_decode` | 1.592 | 1.044 | 1.525× | 8.00× | measure-only pair 310; `percent-decode` vs URLSearchParams | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_query` | 6.672 | 3.431 | 1.944× | 8.00× | measure-only pair 311; `parse-query` vs URLSearchParams | invent pause；地板优化另刀 |
+| `resource_loader.context_from_dir` | 64.741 | 26.834 | 2.413× | 8.00× | measure-only pair 394; `load-context-file-from-dir` vs `loadContextFileFromDir` | invent pause；地板优化另刀 |
+| `resource_loader.project_context` | 56.791 | 29.679 | 1.913× | 8.00× | measure-only pair 395; `load-project-context-files` vs `loadProjectContextFiles` | invent pause；地板优化另刀 |
+| `resource_loader.nearest_config` | 30.226 | 5.596 | 5.401× | 8.00× | measure-only pair 396; `nearest-config-file` vs project SYSTEM.md existsSync | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

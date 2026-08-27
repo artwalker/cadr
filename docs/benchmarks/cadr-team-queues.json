@@ -796,6 +796,48 @@
      "measure": "measure-evals-harness",
      "metric": "evals_harness.last_assistant",
      "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+    },
+    {
+     "pair": 394,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/resource-loader.lisp",
+     "measure": "measure-resource-loader",
+     "metric": "resource_loader.context_from_dir",
+     "branch": "cursor/pair-394-396-resource-loader-leftovers-b350",
+     "ratio": 2.413,
+     "cadrUs": 64.741,
+     "piUs": 26.834,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 395,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/resource-loader.lisp",
+     "measure": "measure-resource-loader",
+     "metric": "resource_loader.project_context",
+     "branch": "cursor/pair-394-396-resource-loader-leftovers-b350",
+     "ratio": 1.913,
+     "cadrUs": 56.791,
+     "piUs": 29.679,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 396,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/resource-loader.lisp",
+     "measure": "measure-resource-loader",
+     "metric": "resource_loader.nearest_config",
+     "branch": "cursor/pair-394-396-resource-loader-leftovers-b350",
+     "ratio": 5.401,
+     "cadrUs": 30.226,
+     "piUs": 5.596,
+     "ceiling": 8.0,
+     "rc": 1
     }
    ],
    "mergeQueue": []

@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `resource_loader.context_from_dir` /
+  `project_context` / `nearest_config` (`src/cadr-cli/resource-loader.lisp` vs
+  baseline `loadContextFileFromDir` / `loadProjectContextFiles` / project
+  `SYSTEM.md` existsSync). Observed `cfd_*` / `pc_*` / `nc_*` exact. n=5
+  **2.413×** / **1.913×** / **5.401×** (64.741 / 26.834 µs, 56.791 / 29.679 µs,
+  30.226 / 5.596 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not these
+  metrics. All three booked on `docs/benchmarks/goal20-paired-over-1x.md`.
+  Pairs 394–396.
+
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.
@@ -45,13 +55,6 @@ tag/Release step.
   `th_absent` / `th_current` / `th_joined` exact. n=5 **0.00799×** (181.6 /
   22730 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from
   known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
-- Goal 20 P.13 leftover: pair `resource_loader.context_from_dir` /
-  `project_context` / `nearest_config` (`src/cadr-cli/resource-loader.lisp` vs
-  baseline `loadContextFileFromDir` / `loadProjectContextFiles` / project
-  `SYSTEM.md` existsSync). Observed `cfd_*` / `pc_*` / `nc_*` exact.
-  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
-  help text), not these metrics. Pairs 394–396. Freeze numbers follow.
-
 - Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
   `transcript` / `last_assistant` (`src/cadr-evals/harness.lisp` vs baseline
   `resolveModelSelection` / `toTranscriptEvents` / `promptAgent` assistant
