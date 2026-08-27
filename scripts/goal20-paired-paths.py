@@ -1193,10 +1193,16 @@ RATIO_CEILINGS = {
     # (0.176 / 211.2 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "provider_registry_defs.structured_api_key_login": 8.0,
-    # core_rest leftover trio (samples=5): first-freeze headroom 8.0.
-    # Ratchet down only after the freeze numbers land.
+    # core_rest.cancellation_abort pair (samples=5): observed 0.0712x
+    # (0.579 / 8.130 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "core_rest.cancellation_abort": 8.0,
+    # core_rest.redacted_secrets pair (samples=5): observed 2.488x
+    # (2.750 / 1.105 us). 8.0 is first-freeze headroom. Ratchet down only.
     "core_rest.redacted_secrets": 8.0,
+    # core_rest.threads_cleanup pair (samples=5): observed 0.00799x
+    # (181.6 / 22730 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "core_rest.threads_cleanup": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # skill_prompt_load pair (samples=5): observed 1170.57x

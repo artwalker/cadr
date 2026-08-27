@@ -3537,8 +3537,10 @@ help text; this metric did not fail). Same commit no optimize.
 
 Leftover on hole `core_rest`. Timed work is make → abort → check → clear plus the
 predicate helper — not a wait/timeout. Observed `ca_live` / `ca_abort` /
-`ca_clear` / `ca_pred` are exact. First n=5 freeze **TBD**. Gate used
-`--only-enforce`. Same commit no optimize.
+`ca_clear` / `ca_pred` are exact. First n=5 freeze **0.0712×** (0.579 /
+8.130 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
 
 ### Pair 323 — `core_rest` (redacted_secrets)
 
@@ -3548,8 +3550,10 @@ predicate helper — not a wait/timeout. Observed `ca_live` / `ca_abort` /
 
 Leftover on hole `core_rest`. Timed work is two-secret replace of `sk-live-abc`
 and `hunter2` while keeping visible text — not print-object. Observed `rd_keep`
-/ `rd_secret` / `rd_token` / `rd_mark` are exact. First n=5 freeze **TBD**.
-Gate used `--only-enforce`. Same commit no optimize.
+/ `rd_secret` / `rd_token` / `rd_mark` are exact. First n=5 freeze **2.488×**
+(2.750 / 1.105 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Same commit no optimize.
 
 ### Pair 324 — `core_rest` (threads_cleanup)
 
@@ -3560,7 +3564,9 @@ Gate used `--only-enforce`. Same commit no optimize.
 Leftover on hole `core_rest`. Timed work is nil → `:absent`, current →
 `:current`, and a finished thread → `:joined` — not an unbounded
 `join-active-thread`. Observed `th_absent` / `th_current` / `th_joined` are
-exact. First n=5 freeze **TBD**. Gate used `--only-enforce`. Same commit no
+exact. First n=5 freeze **0.00799×** (181.6 / 22730 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
