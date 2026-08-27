@@ -11,18 +11,21 @@ tag/Release step.
 
 - Goal 20 P.13: pair `provider_registry_defs.merge_environment` (`merge-provider-environment` on
   `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getProviderEnvValue`).
-  Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` exact. Measure-only leftover
-  sibling; freeze numbers in the recording commit.
+  Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` exact.
+  n=5 **0.118×** (0.324 / 2.741 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `provider_registry_defs.runtime_models` (`provider-runtime-models` on
   `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getBuiltinModels`).
-  Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` exact. Measure-only leftover
-  sibling; freeze numbers in the recording commit.
+  Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` exact.
+  n=5 **3.638×** (17.74 / 4.876 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `provider_registry_defs.structured_api_key_login`
   (`provider-definition-structured-api-key-login-p` on
   `src/cadr-ai/providers/runtime-projection.lisp` vs baseline Bedrock/Vertex
   `ApiKeyAuth.login` select flow). Observed `sl_openai` / `sl_anthropic` / `sl_google` /
-  `sl_bedrock` / `sl_vertex` exact. Measure-only leftover sibling; freeze numbers in the
-  recording commit.
+  `sl_bedrock` / `sl_vertex` exact.
+  n=5 **0.000816×** (0.177 / 216.4 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`

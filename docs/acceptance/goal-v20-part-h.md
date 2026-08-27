@@ -3273,7 +3273,10 @@ help text; this metric did not fail). Same commit no optimize.
 Leftover sibling of lookup/definition_ids on the same `provider_registry_defs`
 hole. Timed work is explicit-over-ambient env merge (OPENAI wins, ambient GEMINI
 kept, explicit Azure URL present, missing key absent) — not lookup, not stream.
-Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` are exact. Freeze pending.
+Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` are exact. First n=5 freeze
+**0.118×** (0.324 / 2.741 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 296 — `provider_registry_defs` (runtime_models)
 
@@ -3284,7 +3287,10 @@ Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` are exact. Freeze pendin
 Leftover sibling on the same `provider_registry_defs` hole. Timed work is catalog
 model lists for openai/anthropic/google plus an unknown id — not
 `getBuiltinProviders`, not stream. Observed `rm_openai` / `rm_anthropic` /
-`rm_google` / `rm_unknown` are exact. Freeze pending.
+`rm_google` / `rm_unknown` are exact. First n=5 freeze **3.638×** (17.74 /
+4.876 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
 
 ### Pair 297 — `provider_registry_defs` (structured_api_key_login)
 
@@ -3295,7 +3301,10 @@ model lists for openai/anthropic/google plus an unknown id — not
 Leftover sibling on the same `provider_registry_defs` hole. Timed work is the
 structured-login predicate for openai/anthropic/google/bedrock/vertex — not
 stream, not login interaction. Observed `sl_openai` / `sl_anthropic` /
-`sl_google` / `sl_bedrock` / `sl_vertex` are exact. Freeze pending.
+`sl_google` / `sl_bedrock` / `sl_vertex` are exact. First n=5 freeze
+**0.000816×** (0.177 / 216.4 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

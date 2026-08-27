@@ -1147,14 +1147,16 @@ RATIO_CEILINGS = {
     # provider_registry_defs.definition_ids pair (samples=5): observed 99.97x
     # (728.7 / 7.3 us). 125.0 is first-freeze headroom. Ratchet down only.
     "provider_registry_defs.definition_ids": 125.0,
-    # provider_registry_defs.merge_environment pair: first-freeze
-    # headroom 8.0. Ratchet down only.
+    # provider_registry_defs.merge_environment pair (samples=5): observed 0.118x
+    # (0.324 / 2.741 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "provider_registry_defs.merge_environment": 8.0,
-    # provider_registry_defs.runtime_models pair: first-freeze
-    # headroom 8.0. Ratchet down only.
+    # provider_registry_defs.runtime_models pair (samples=5): observed 3.638x
+    # (17.74 / 4.876 us). 8.0 is first-freeze headroom. Ratchet down only.
     "provider_registry_defs.runtime_models": 8.0,
-    # provider_registry_defs.structured_api_key_login pair: first-freeze
-    # headroom 8.0. Ratchet down only.
+    # provider_registry_defs.structured_api_key_login pair (samples=5): observed 0.000816x
+    # (0.177 / 216.4 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "provider_registry_defs.structured_api_key_login": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # skill_prompt_load pair (samples=5): observed 1170.57x
