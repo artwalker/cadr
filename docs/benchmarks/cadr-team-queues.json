@@ -360,7 +360,7 @@
     {
      "id": 7,
      "lane": "gate",
-     "status": "in_progress",
+     "status": "pending",
      "slug": "full-gate",
      "title": "verify.sh + test-cl.sh + CHANGELOG 0843",
      "branch": null
