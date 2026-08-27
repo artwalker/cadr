@@ -3580,12 +3580,12 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 128,879 lines**
+Denominator: **297 files / 128,901 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,070 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 174 | 77,092 | 59.8% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
 | `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
@@ -3724,7 +3724,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/models/matching.lisp` | 398 | `cli_models_rest.pattern_match` |
 | `src/cadr-cli/models/registry.lisp` | 846 | `cli_dispatch.list_models_registry` |
 | `src/cadr-cli/models/store.lisp` | 197 | `cli_dispatch.list_models_registry` |
-| `src/cadr-cli/modes/print.lisp` | 578 | `cli_print_rpc.jsonl_line` |
+| `src/cadr-cli/modes/print.lisp` | 600 | `cli_print_rpc.jsonl_line` |
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 123 | `cli_print_rpc.jsonl_read` |
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | `cli_print_rpc.session_stats` |
