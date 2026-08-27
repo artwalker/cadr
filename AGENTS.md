@@ -89,6 +89,9 @@ identity gates, official core render-diff, tool-result and event
 differentials, then credential-gated live stages. A live skip for missing
 credentials is not a skip of a deterministic stage.
 
+Cloud agents: do not paste full `verify.sh` / `test-cl.sh` logs into chat
+(tens of thousands of lines). Report the summary line and exit code only.
+
 Do not run the full suite as a substitute for the official render-diff
 invocation. After a disposition or render change, rerun the shipped gate:
 

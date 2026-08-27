@@ -1,72 +1,41 @@
-# cadr 多 Agent 团队开发平台
+# cadr development process
 
-> **状态：** Goal 20 pairing + Goal 21 baseline 共用本哲学。  
-> **入口：** `scripts/cadr-team.sh status` · `scripts/cadr-team.sh doctor`
+> **Status:** live. Goal 20 pairing and Goal 21 remaining work use this crew.
+> Local `scripts/cadr-team*.sh` / tmux / worktree / `cursor-agent --resume`
+> lanes are **retired** (scripts kept; do not treat them as current).
 
-## 原则（完整版，非阉割）
+## Standing crew
 
-| 原则 | 含义 | 机械 enforcement |
-|------|------|----------------|
-| **单写者合并** | 仅 director 合入 main | `director-merge.sh` + harness lock |
-| **硬隔离** | pairing/impl 永不改 main | dispatch `--workspace` = worktree；doctor 检测 main 绑定 |
-| **幂等任务** | 队列状态可从 git 重建 | `reconcile-in-progress`、peek-merge |
-| **Rebase 集成的 trunk** | 合入前 rebase 到 `cadr-migration`，ff-merge | `director-merge.sh` rebase+ff |
-| **分层 WIP** | 基线 bump 挡 pairing | G21 `goal20Paused` + anchor guard |
-| **快反馈** | merge 前 smoke，gate 前全量 | director 跑 `baseline-anchor`；gate lane 跑 verify |
-| **可观测** | 一条命令看全貌 | `cadr-team.sh status` |
+Three Grok Bot agents. None of them is a local tmux pane.
 
-## 反模式（禁止）
+| Role | What it does | What it does not do |
+|------|----------------|---------------------|
+| **总控** | Coordinates only: queue, briefs, pass/fail of a round, what to send next | Edit the repo, open PRs, merge |
+| **实现** | Turns accepted work into a Cursor Ultra cloud-agent run on GitHub | Merge, tag, release, force-push, spend |
+| **审** | Verdict: pass / change / stop | Write code |
 
-- `cursor-agent --workspace $REPO_ROOT` 跑 pairing/impl（**仅 anchor/gate/opt 调度可例外**）
-- director 在 dirty main 上 cherry-pick（应用 anchor guard + operational exclude）
-- merge 失败仍 pop mergeQueue（已改为 peek → 成功才 pop）
-- 手标 task done 无 commit 校验（anchor guard + reconcile）
+Code changes go through a **Cursor cloud agent** on GitHub `artwalker/cadr`.
+The agent starts from `cadr-migration` and returns a **branch + PR**.
 
-## 角色
+## Source of truth
 
-```
-┌─────────────┐   ensure worktree    ┌──────────────┐
-│ Lane agent  │ ──────────────────► │ /tmp/*-wt    │
-│ (a/b/c)     │   --workspace ONLY  │ feature branch│
-└─────────────┘                     └──────┘
-                                         │ rebase + ff-merge
-                                         ▼
-┌─────────────┐                     ┌──────────────┐
-│  Operator   │ ──tick/dispatch──►  │ cadr-migration│
-│  (5 min)    │                     │ (director)   │
-└─────────────┘                     └──────────────┘
-```
+GitHub `cadr-migration` is the source of truth for cloud agents. A local WSL
+checkout or worktree is not.
 
-## 命令
+Merge into `cadr-migration`, tags, releases, force-push, and spend require
+**Ethan**.
 
-```bash
-scripts/cadr-team.sh status    # 队列 + worktree + agent + tmux
-scripts/cadr-team.sh doctor    # 阻断项：anchor、main 绑定、丢分支
+## Cloud-agent output
 
-scripts/cadr-team-worktree.sh ensure /tmp/g21-3-wt g21-3-thinking-selector cadr-migration
-```
+- Report gate results as the **summary line and exit code only**.
+- Do not dump full `./scripts/verify.sh` or `./scripts/test-cl.sh` logs into
+  chat (those runs are tens of thousands of lines).
 
-## Goal 专用编排（薄封装）
+## Retired local team (do not use)
 
-- Goal 20：`goal20-orchestrator.sh` · `goal20-team-operator.sh`
-- Goal 21：`goal21-orchestrator.sh` · `goal21-team-operator.sh` · `goal21-anchor-guard.sh`
-
-共享：`cadr-team-worktree.sh` · `cadr-team.sh` · `cadr-team-dispatch.sh` · `cadr-team-premerge.sh` · `cadr-team-queue.py`
-
-## 统一队列
-
-- 真相源：`docs/benchmarks/cadr-team-queues.json`（`goals.20` / `goals.21`）
-- 兼容：`goal20-queue.json` / `goal21-queue.json` 镜像同步（`cadr-team-queue.py migrate`）
-- 每次 `save()` 双写 unified + legacy
-
-## Agent 超时
-
-- 默认 `CADR_AGENT_TIMEOUT_SEC=5400`（90 分钟）
-- 超时 → task 回 `pending`，operator 下轮重派
-
-## Merge 前 smoke（本地 CI）
-
-- `cadr-team-premerge.sh` 在 rebase 后、ff-merge 前于 worktree 内跑
-- G20：ledger + unpaired + 可选 `--only-enforce`
-- G21：`baseline-anchor` + `goal21-source-parity-test`（若存在）+ `GOAL21_GATE_MODE=fast`（`goal21-gate-run.sh`）
-- G21 director post-merge：`goal21-director-merge.sh` 在 ff-merge 后再跑 fast gate
+The previous local crew used `scripts/cadr-team.sh`, tmux panes, git
+worktrees, `cursor-agent --resume`, `director-merge.sh`, and a 90-minute
+agent timeout (`CADR_AGENT_TIMEOUT_SEC=5400`). Those scripts still exist
+under `scripts/` so history and Goal 21 records stay replayable. They are
+not how cadr is developed now. Do not delete them as part of ordinary
+process updates.
