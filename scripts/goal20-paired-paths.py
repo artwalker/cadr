@@ -107,6 +107,7 @@ METRICS = {
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
+    "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -320,6 +321,11 @@ RATIO_CEILINGS = {
     "tool_manager.get_tool_path": 8.0,
     "tool_manager.ensure_tool": 8.0,
     "tool_manager.cleanup_quarantine": 8.0,
+    # powershell_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "powershell_tool.utf8_prefix": 8.0,
+    "powershell_tool.prefix_command": 8.0,
+    "powershell_tool.make_tool": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1639,6 +1645,21 @@ OBSERVED_EXACT = {
         "cq_removed",
         "cq_noop",
         "cq_n",
+    ),
+    "powershell_tool": (
+        "psu_len",
+        "psu_nl",
+        "psu_try",
+        "psu_utf8",
+        "psu_n",
+        "psc_empty",
+        "psc_date",
+        "psc_write",
+        "psc_n",
+        "pmt_name",
+        "pmt_desc",
+        "pmt_req",
+        "pmt_n",
     ),
     "settings_load": (
         "tr_empty",
