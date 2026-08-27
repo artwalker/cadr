@@ -3135,6 +3135,22 @@ write/edit tools. Same staged scratch layout as `with_queue`. Observed
 n=5 freeze **1.08×** (169.3 / 156.2 µs) on host `cursor`, ceiling 8.0. Gate
 used `--only-enforce`. Same commit no optimize.
 
+### Pair 271 — `file_mutation_queue` (lock)
+
+| metric | cadr | pi |
+|---|---|---|
+| `lock` | `file-mutation-queue-lock` (`src/cadr-agent/file-mutation-queue.lisp`) | `fileMutationQueues.get(key) ?? Promise.resolve()` / `set` after the same key encoding (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 261 `with_queue` and Pair 270 `queue_key` on the same
+`agent_tool_loop` hole. Timed work is registry get-or-create after canonical
+key (existing path, symlink alias, missing path, distinct sibling, repeat
+lookup) — not `with-file-mutation-queue`, not write/edit tools. Same staged
+scratch layout as `with_queue`. Observed `fmql_alias` / `fmql_other` /
+`fmql_missing` / `fmql_repeat` / `fmql_n` are exact. First n=5 freeze
+**1.24×** (183.3 / 148.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
 ### Pair 257 — `execution_env` (exists_remove_temps)
 
 | metric | cadr | pi |

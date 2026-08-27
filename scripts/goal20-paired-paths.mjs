@@ -147,6 +147,7 @@ const REPETITIONS = {
 	"execution_env.exists_remove_temps": 50,
 	"file_mutation_queue.with_queue": 50,
 	"file_mutation_queue.queue_key": 50,
+	"file_mutation_queue.lock": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -2262,9 +2263,53 @@ async function runFileMutationQueueQueueKey() {
 	};
 }
 
+const fileMutationLockQueues = new Map();
+
+async function lockMutationQueue(filePath) {
+	const key = await getMutationQueueKey(filePath);
+	let state = fileMutationLockQueues.get(key);
+	if (!state) {
+		state = { key, pending: 0 };
+		fileMutationLockQueues.set(key, state);
+	}
+	return state;
+}
+
+function dropEmptyMutationLockQueues() {
+	for (const [key, state] of fileMutationLockQueues) {
+		if (state.pending === 0) {
+			fileMutationLockQueues.delete(key);
+		}
+	}
+}
+
+async function runFileMutationQueueLock() {
+	const { target, alias, other, missing } = stageFileMutationQueueLayout();
+	writeFileSync(target, "seed", "utf8");
+	if (existsSync(alias)) {
+		unlinkSync(alias);
+	}
+	symlinkSync(target, alias);
+	const targetState = await lockMutationQueue(target);
+	const aliasState = await lockMutationQueue(alias);
+	const otherState = await lockMutationQueue(other);
+	const missingState = await lockMutationQueue(missing);
+	const repeatState = await lockMutationQueue(target);
+	const observed = {
+		fmql_alias: targetState === aliasState ? 1 : 0,
+		fmql_other: targetState !== otherState ? 1 : 0,
+		fmql_missing: missingState.pending === 0 ? 1 : 0,
+		fmql_repeat: targetState === repeatState ? 1 : 0,
+		fmql_n: 5,
+	};
+	dropEmptyMutationLockQueues();
+	return observed;
+}
+
 async function measureFileMutationQueue() {
 	const withQueueObserved = await runFileMutationQueueWithQueue();
 	const queueKeyObserved = await runFileMutationQueueQueueKey();
+	const lockObserved = await runFileMutationQueueLock();
 	return {
 		with_queue: await collect("file_mutation_queue.with_queue", () => {
 			return () => runFileMutationQueueWithQueue();
@@ -2272,7 +2317,10 @@ async function measureFileMutationQueue() {
 		queue_key: await collect("file_mutation_queue.queue_key", () => {
 			return () => runFileMutationQueueQueueKey();
 		}),
-		observed: { ...withQueueObserved, ...queueKeyObserved },
+		lock: await collect("file_mutation_queue.lock", () => {
+			return () => runFileMutationQueueLock();
+		}),
+		observed: { ...withQueueObserved, ...queueKeyObserved, ...lockObserved },
 	};
 }
 
@@ -14487,6 +14535,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue",
 			"file_mutation_queue.queue_key":
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts queue-map key (realpath / ENOENT resolve)",
+			"file_mutation_queue.lock":
+				"packages/coding-agent/src/core/tools/file-mutation-queue.ts fileMutationQueues.get-or-create after key",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
