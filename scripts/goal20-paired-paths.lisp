@@ -14150,14 +14150,19 @@
     (list
      (if (equal (cdr (assoc "OPENAI_API_KEY" merged :test #'string=))
                 "sk-explicit")
-         1 0)
+         1
+         0)
      (if (equal (cdr (assoc "GEMINI_API_KEY" merged :test #'string=))
                 "sk-gemini-ambient")
-         1 0)
+         1
+         0)
      (if (equal (cdr (assoc "AZURE_OPENAI_BASE_URL" merged :test #'string=))
                 "https://explicit.example")
-         1 0)
-     (if (assoc "MISSING_KEY" merged :test #'string=) 0 1))))
+         1
+         0)
+     (if (assoc "MISSING_KEY" merged :test #'string=)
+         0
+         1))))
 
 (defun run-provider-structured-api-key-login ()
   (flet ((flag (id)
@@ -15306,7 +15311,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
