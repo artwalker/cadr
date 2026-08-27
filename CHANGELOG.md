@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `core_rest.cancellation_make` /
+  `cancellation_aborted` / `cancellation_set` (`make-cancellation-state` /
+  `cancellation-aborted-p` / `set-cancellation-aborted-p` on
+  `src/cadr-core/cancellation.lisp` vs `AbortController` constructor /
+  `AbortSignal.aborted` / `abort` + fresh controller). Observed `cm_*` /
+  `cab_*` / `cs_*` exact. n=5 **0.972×** / **0.0965×** / **0.148×**
+  (0.2446 / 0.2518 µs, 0.6703 / 6.943 µs, 0.5152 / 3.478 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not these metrics. Pairs 361–363.
+  Does not re-pair 322–324 or 337–339.
 - Goal 20 P.13: pair `file_mutation_queue.pending_count` (`file-mutation-queue-state-pending-count` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.pending` after enqueue).
   Observed `fmqp_shared` / `fmqp_other` / `fmqp_missing` / `fmqp_alias` /

@@ -3800,6 +3800,50 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
 old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Over-1× booked. Same commit no optimize.
 
+### Pair 361 — `core_rest` (cancellation_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cancellation_make` | `make-cancellation-state` (`src/cadr-core/cancellation.lisp`) | `AbortController` constructor |
+
+Leftover sibling of Pair 322 `cancellation_abort` and Pair 337
+`cancellation_wait` on the same `core_rest` hole. Timed work is the
+constructor (plain + unused aborted-function) — not abort, wait, or
+predicate as the timed owner. Observed `cm_type` / `cm_live` / `cm_pred`
+are exact. First n=5 freeze **0.972×** (0.2446 / 0.2518 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Same commit no optimize.
+
+### Pair 362 — `core_rest` (cancellation_aborted)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cancellation_aborted` | `cancellation-aborted-p` (`src/cadr-core/cancellation.lisp`) | `AbortSignal.aborted` |
+
+Leftover sibling of Pairs 322/337/361 on the same `core_rest` hole. Timed
+work is live / predicate-aborted / already-set reads — not
+`abort-cancellation` or `wait-for-cancellation` as the timed owner.
+Observed `cab_live` / `cab_pred` / `cab_abort` are exact. First n=5 freeze
+**0.0965×** (0.6703 / 6.943 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 363 — `core_rest` (cancellation_set)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cancellation_set` | `set-cancellation-aborted-p` (`src/cadr-core/cancellation.lisp`) | `AbortController.abort` + fresh controller (JS cannot un-abort) |
+
+Leftover sibling of Pair 322 `cancellation_abort` on the same `core_rest`
+hole. Timed work is set-true then clear — not `abort-cancellation` as the
+timed owner. Observed `cs_set` / `cs_clear` / `cs_n` are exact. First n=5
+freeze **0.148×** (0.5152 / 3.478 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
