@@ -129,7 +129,7 @@ METRICS = {
         "copilot_auth",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "eval_environment", "prompt_step", "reload_step"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
@@ -485,6 +485,11 @@ RATIO_CEILINGS = {
     # 0.11x (1.30 / 12.15 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "evals_harness.normalize_steps": 8.0,
+    # evals_harness leftover trio on harness.lisp (pairs 346-348):
+    # first-freeze headroom. Ratchet down only.
+    "evals_harness.eval_environment": 8.0,
+    "evals_harness.prompt_step": 8.0,
+    "evals_harness.reload_step": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -1872,6 +1877,17 @@ OBSERVED_EXACT = {
         "ns_kw_rel",
         "ns_vec_n",
         "ns_bad",
+        "ee_trim",
+        "ee_model",
+        "ee_ws",
+        "ee_miss",
+        "ee_n",
+        "ps_type",
+        "ps_content",
+        "ps_n",
+        "rs_type",
+        "rs_no_content",
+        "rs_n",
     ),
     "ai_crypto_model_data": (
         "schema_version",

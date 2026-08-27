@@ -214,6 +214,9 @@ const REPETITIONS = {
 	"evals_harness.artifact_persist": 3,
 	"evals_harness.format": 20,
 	"evals_harness.normalize_steps": 50,
+	"evals_harness.eval_environment": 50,
+	"evals_harness.prompt_step": 50,
+	"evals_harness.reload_step": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5202,6 +5205,53 @@ function runEvalsHarnessNormalizeSteps() {
 	};
 }
 
+function evalEnvironment(name, env) {
+	const value = env[name];
+	if (value == null) return undefined;
+	return String(value).trim();
+}
+
+function runEvalsHarnessEvalEnvironment() {
+	const env = {
+		CADR_EVAL_PROVIDER: "  openai  ",
+		CADR_EVAL_MODEL: "gpt-4o",
+		WS: "   ",
+	};
+	return {
+		ee_trim: evalEnvironment("CADR_EVAL_PROVIDER", env) === "openai" ? 1 : 0,
+		ee_model: evalEnvironment("CADR_EVAL_MODEL", env) === "gpt-4o" ? 1 : 0,
+		ee_ws: evalEnvironment("WS", env) === "" ? 1 : 0,
+		ee_miss: evalEnvironment("MISSING", env) === undefined ? 1 : 0,
+		ee_n: 4,
+	};
+}
+
+function makeEvalPromptStep(content) {
+	return { type: "prompt", content };
+}
+
+function makeEvalReloadStep() {
+	return { type: "reload" };
+}
+
+function runEvalsHarnessPromptStep() {
+	const step = makeEvalPromptStep("hello");
+	return {
+		ps_type: step.type === "prompt" ? 1 : 0,
+		ps_content: step.content === "hello" ? 1 : 0,
+		ps_n: 2,
+	};
+}
+
+function runEvalsHarnessReloadStep() {
+	const step = makeEvalReloadStep();
+	return {
+		rs_type: step.type === "reload" ? 1 : 0,
+		rs_no_content: step.content === undefined ? 1 : 0,
+		rs_n: 2,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5213,6 +5263,9 @@ async function measureEvalsHarness() {
 		...(await runEvalsHarnessArtifactPersist()),
 		...runEvalsHarnessFormat(emptyReport, report),
 		...runEvalsHarnessNormalizeSteps(),
+		...runEvalsHarnessEvalEnvironment(),
+		...runEvalsHarnessPromptStep(),
+		...runEvalsHarnessReloadStep(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5229,6 +5282,15 @@ async function measureEvalsHarness() {
 		}),
 		normalize_steps: await collect("evals_harness.normalize_steps", () => {
 			return () => runEvalsHarnessNormalizeSteps();
+		}),
+		eval_environment: await collect("evals_harness.eval_environment", () => {
+			return () => runEvalsHarnessEvalEnvironment();
+		}),
+		prompt_step: await collect("evals_harness.prompt_step", () => {
+			return () => runEvalsHarnessPromptStep();
+		}),
+		reload_step: await collect("evals_harness.reload_step", () => {
+			return () => runEvalsHarnessReloadStep();
 		}),
 		observed,
 	};
@@ -16170,6 +16232,12 @@ const result = {
 				"packages/evals/src/vitest-evals/summary.ts formatHarnessComparisonReport",
 			"evals_harness.normalize_steps":
 				"packages/evals/src/pi-harness.ts runPiCodingAgent input step normalization",
+			"evals_harness.eval_environment":
+				"packages/evals/src/pi-harness.ts resolveModelSelection environment trim",
+			"evals_harness.prompt_step":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent prompt step object",
+			"evals_harness.reload_step":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent reload step object",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

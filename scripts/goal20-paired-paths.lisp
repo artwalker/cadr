@@ -185,6 +185,9 @@
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
+;;;; 346. evals_harness eval-environment vs pi-harness environment trim
+;;;; 347. evals_harness make-eval-prompt-step vs pi-harness prompt step object
+;;;; 348. evals_harness make-eval-reload-step vs pi-harness reload step object
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
@@ -345,6 +348,9 @@
     ("evals_harness.artifact_persist" . 3)
     ("evals_harness.format" . 20)
     ("evals_harness.normalize_steps" . 50)
+    ("evals_harness.eval_environment" . 50)
+    ("evals_harness.prompt_step" . 50)
+    ("evals_harness.reload_step" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -6549,6 +6555,49 @@
      (length from-vec)
      (eval-normalize-steps-error-p 42))))
 
+(defun eval-flag (value)
+  (if value 1 0))
+
+(defun evals-environment-table ()
+  (let ((table (make-hash-table :test #'equal)))
+    (setf (gethash "CADR_EVAL_PROVIDER" table) "  openai  ")
+    (setf (gethash "CADR_EVAL_MODEL" table) "gpt-4o")
+    (setf (gethash "WS" table) "   ")
+    table))
+
+(defun run-evals-harness-eval-environment ()
+  ;; Leftover callee of resolve-eval-selection: getenv + trim.
+  (let ((cadr-evals::*eval-environment-function*
+          (let ((table (evals-environment-table)))
+            (lambda (name)
+              (gethash name table)))))
+    (list
+     (eval-flag
+      (string= (cadr-evals::eval-environment "CADR_EVAL_PROVIDER")
+               "openai"))
+     (eval-flag
+      (string= (cadr-evals::eval-environment "CADR_EVAL_MODEL")
+               "gpt-4o"))
+     (eval-flag
+      (string= (cadr-evals::eval-environment "WS") ""))
+     (eval-flag
+      (null (cadr-evals::eval-environment "MISSING")))
+     4)))
+
+(defun run-evals-harness-prompt-step ()
+  (let ((step (cadr-evals::make-eval-prompt-step "hello")))
+    (list
+     (eval-flag (eq (getf step :type) :prompt))
+     (eval-flag (string= (getf step :content) "hello"))
+     2)))
+
+(defun run-evals-harness-reload-step ()
+  (let ((step (cadr-evals::make-eval-reload-step)))
+    (list
+     (eval-flag (eq (getf step :type) :reload))
+     (eval-flag (null (getf step :content)))
+     2)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -6559,7 +6608,10 @@
            (cadr-evals:summarize-harness-comparisons
             (evals-harness-observations)))
          (fmt (run-evals-harness-format empty-report report))
-         (normalize (run-evals-harness-normalize-steps)))
+         (normalize (run-evals-harness-normalize-steps))
+         (environment (run-evals-harness-eval-environment))
+         (prompt-step (run-evals-harness-prompt-step))
+         (reload-step (run-evals-harness-reload-step)))
     (json-object
      "observed"
      (json-object
@@ -6591,7 +6643,18 @@
       "ns_kw_n" (nth 5 normalize)
       "ns_kw_rel" (nth 6 normalize)
       "ns_vec_n" (nth 7 normalize)
-      "ns_bad" (nth 8 normalize))
+      "ns_bad" (nth 8 normalize)
+      "ee_trim" (nth 0 environment)
+      "ee_model" (nth 1 environment)
+      "ee_ws" (nth 2 environment)
+      "ee_miss" (nth 3 environment)
+      "ee_n" (nth 4 environment)
+      "ps_type" (nth 0 prompt-step)
+      "ps_content" (nth 1 prompt-step)
+      "ps_n" (nth 2 prompt-step)
+      "rs_type" (nth 0 reload-step)
+      "rs_no_content" (nth 1 reload-step)
+      "rs_n" (nth 2 reload-step))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -6617,7 +6680,22 @@
      (collect "evals_harness.normalize_steps"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-normalize-steps)))))))
+                  (run-evals-harness-normalize-steps))))
+     "eval_environment"
+     (collect "evals_harness.eval_environment"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-eval-environment))))
+     "prompt_step"
+     (collect "evals_harness.prompt_step"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-prompt-step))))
+     "reload_step"
+     (collect "evals_harness.reload_step"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-reload-step)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -15727,6 +15805,12 @@
       "src/cadr-evals/summary.lisp format-harness-comparison-report"
       "evals_harness.normalize_steps"
       "src/cadr-evals/harness.lisp normalize-eval-steps"
+      "evals_harness.eval_environment"
+      "src/cadr-evals/harness.lisp eval-environment"
+      "evals_harness.prompt_step"
+      "src/cadr-evals/harness.lisp make-eval-prompt-step"
+      "evals_harness.reload_step"
+      "src/cadr-evals/harness.lisp make-eval-reload-step"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

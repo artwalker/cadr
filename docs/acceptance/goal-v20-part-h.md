@@ -3710,6 +3710,46 @@ description / empty required list — not execute. Observed `lst_name` /
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
 metric did not fail). Over-1× booked. Same commit no optimize.
 
+### Pair 346 — `evals_harness` (eval_environment)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_environment` | `eval-environment` (`src/cadr-evals/harness.lisp`) | environment trim (`packages/evals/src/pi-harness.ts` `resolveModelSelection`) |
+
+Leftover of the `evals_harness` hole on `harness.lisp`. Timed work is
+getenv lookup plus whitespace trim (padded provider, unpadded model,
+whitespace-only, missing) — not `resolve-eval-selection`, not
+`normalize-eval-steps`. Observed `ee_trim` / `ee_model` / `ee_ws` /
+`ee_miss` / `ee_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 347 — `evals_harness` (prompt_step)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prompt_step` | `make-eval-prompt-step` (`src/cadr-evals/harness.lisp`) | prompt step object (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
+
+Leftover sibling of Pair 346 `eval_environment` on the same `evals_harness`
+hole. Timed work is `{type: prompt, content}` construction — not step
+normalization of a sequence, not prompt-agent. Observed `ps_type` /
+`ps_content` / `ps_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 348 — `evals_harness` (reload_step)
+
+| metric | cadr | pi |
+|---|---|---|
+| `reload_step` | `make-eval-reload-step` (`src/cadr-evals/harness.lisp`) | reload step object (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
+
+Leftover sibling of Pairs 346–347 on the same `evals_harness` hole. Timed
+work is `{type: reload}` construction — not extension reload, not
+`run-coding-agent-eval`. Observed `rs_type` / `rs_no_content` / `rs_n` are
+exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

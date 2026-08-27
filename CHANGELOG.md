@@ -9,6 +9,18 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.eval_environment` (`eval-environment` on
+  `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
+  trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
+  Measure-only leftover (Pair 346). Gate `--only-enforce`.
+- Goal 20 P.13: pair `evals_harness.prompt_step` (`make-eval-prompt-step` on
+  `src/cadr-evals/harness.lisp` vs baseline prompt step object). Observed
+  `ps_type` / `ps_content` / `ps_n` exact. Measure-only leftover (Pair 347).
+  Gate `--only-enforce`.
+- Goal 20 P.13: pair `evals_harness.reload_step` (`make-eval-reload-step` on
+  `src/cadr-evals/harness.lisp` vs baseline reload step object). Observed
+  `rs_type` / `rs_no_content` / `rs_n` exact. Measure-only leftover (Pair 348).
+  Gate `--only-enforce`.
 - Goal 20 P.13: pair `ls_tool.directory_entry_name` (`directory-entry-name` on
   `src/cadr-cli/tools/ls.lisp` vs baseline directory suffix in
   `packages/coding-agent/src/core/tools/ls.ts`). Observed `lden_file` /
