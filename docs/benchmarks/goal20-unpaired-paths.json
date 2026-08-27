@@ -55,6 +55,9 @@
   "image_runtime.lookup",
   "image_runtime.dimension_note",
   "image_runtime.api_provider",
+  "image_runtime.output_modalities",
+  "image_runtime.openrouter_content",
+  "image_runtime.parse_data_image",
   "cli_print_rpc.jsonl_line",
   "cli_print_rpc.jsonl_read",
   "cli_print_rpc.clamp_thinking",
@@ -144,6 +147,9 @@
   "ai_runtime_faux.blocks",
   "http_transport.parse_url",
   "cli_settings.create",
+  "cli_settings.reload",
+  "cli_settings.enabled_models",
+  "cli_settings.block_images",
   "settings_load.project_trust",
   "settings_load.config_value",
   "settings_load.http_idle",
@@ -394,7 +400,10 @@
    "prefix": "src/cadr-cli/settings/manager.lisp",
    "class": "paired",
    "metrics": [
-    "cli_settings.create"
+    "cli_settings.create",
+    "cli_settings.reload",
+    "cli_settings.enabled_models",
+    "cli_settings.block_images"
    ]
   },
   {
@@ -946,8 +955,12 @@
   },
   {
    "prefix": "src/cadr-ai/images.lisp",
-   "class": "needs-pair",
-   "hole": "image_runtime"
+   "class": "paired",
+   "metrics": [
+    "image_runtime.output_modalities",
+    "image_runtime.openrouter_content",
+    "image_runtime.parse_data_image"
+   ]
   },
   {
    "prefix": "src/cadr-ai/model-data.lisp",

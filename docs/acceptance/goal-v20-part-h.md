@@ -3487,6 +3487,50 @@ Observed `cq_removed` / `cq_noop` / `cq_n` are exact. First n=5 freeze
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Over-1× booked. Same commit no optimize.
 
+### Pair 325 — `evals_harness` (resolve_selection)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resolve_selection` | `resolve-eval-selection` (`src/cadr-evals/harness.lisp`) | `resolveModelSelection` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of the `evals_harness` hole on `src/cadr-evals/harness.lisp`.
+Timed work is explicit provider/model, trimmed env fallback
+(`CADR_EVAL_*` / `PI_PROVIDER`+`PI_MODEL`), and missing/blank errors — not a
+live eval run. Do not exact error copy. Observed `rs_explicit` / `rs_env` /
+`rs_miss` / `rs_prov` / `rs_blank` / `rs_n` are exact. First n=5 freeze
+**0.170×** (1.06 / 6.22 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 326 — `evals_harness` (transcript)
+
+| metric | cadr | pi |
+|---|---|---|
+| `transcript` | `messages-to-transcript` (`src/cadr-evals/harness.lisp`) | `toTranscriptEvents` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pair 325 `resolve_selection` on the same `evals_harness`
+hole. Timed work is user / assistant+toolCall / toolResult / empty-assistant
+skip / error toolResult — not `run-coding-agent-eval`. Observed `tr_n` /
+`tr_user` / `tr_role` / `tr_text` / `tr_call` / `tr_name` / `tr_result` /
+`tr_err` / `tr_keys` are exact. First n=5 freeze **1.743×** (3.80 / 2.18 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Over-1× booked. Same commit no optimize.
+
+### Pair 327 — `evals_harness` (last_assistant)
+
+| metric | cadr | pi |
+|---|---|---|
+| `last_assistant` | `last-assistant-since` (`src/cadr-evals/harness.lisp`) | `promptAgent` assistant slice (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pairs 325–326 on the same `evals_harness` hole. Timed
+work is pre-prompt tail find of the new assistant, empty tail, and full-list
+from-end — not `agent-prompt`. Observed `la_new` / `la_none` / `la_full` /
+`la_n` are exact. First n=5 freeze **1.034×** (0.579 / 0.560 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked (sub-µs). Same commit no optimize.
+
 ### Pair 295 — `provider_registry_defs` (merge_environment)
 
 | metric | cadr | pi |
@@ -3569,6 +3613,322 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
+### Pair 298 — `image_runtime` (output_modalities)
+
+| metric | cadr | pi |
+|---|---|---|
+| `output_modalities` | `image-output-modalities` (`src/cadr-ai/images.lisp`) | `buildParams` modalities (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of `image_runtime` on `src/cadr-ai/images.lisp` after
+Pairs 33 / 63–66 (those timed other files). Timed work is the
+`["image","text"]` vs `["image"]` choice from catalog
+`google/gemini-2.5-flash-image` and `black-forest-labs/flux.2-pro` —
+not HTTP, not `generate-images`. Observed `om_gemini_n` /
+`om_gemini_text` / `om_flux_n` / `om_flux_text` are exact. First n=5
+freeze **0.657×** (0.196 / 0.299 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
+### Pair 299 — `image_runtime` (openrouter_content)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_content` | `openrouter-image-content` (`src/cadr-ai/images.lisp`) | `buildParams` content parts (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of Pair 298 on the same `image_runtime` hole. Timed
+work is text + image_url content parts (`Generate a dog` +
+`data:image/png;base64,aW1hZ2U=`) — not HTTP, not
+`generate-images`, not `build-openrouter-image-request`. Observed
+`oc_text_type` / `oc_text` / `oc_img_type` / `oc_img_url` / `oc_ok`
+are exact. First n=5 freeze **3.34×** (1.367 / 0.409 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
+
+### Pair 300 — `image_runtime` (parse_data_image)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_data_image` | `parse-data-image` (`src/cadr-ai/images.lisp`) | data-URL parse inside `generateImages` (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of Pairs 298–299 on the same `image_runtime` hole.
+Timed work is `data:image/png;base64,…` parse plus a miss and a plain
+HTTPS URL — not HTTP, not `generate-images`. Observed `pd_ok_mime` /
+`pd_ok_data` / `pd_ok` / `pd_miss` / `pd_plain` are exact (`pd_ok=1`,
+non-data-URL `pd_miss` / `pd_plain` = 0). First n=5 freeze **1.43×**
+(0.555 / 0.387 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+
+### Pair 313 — `harness_events` (make_end)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_end` | `make-run-end-event` (`src/cadr-agent/harness-events.lisp`) | `RunEndEvent` object (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 276 `emit` and Pairs 283–285 `on` / `watch` /
+`make_start` on the same `harness-events.lisp` `agent_tool_loop` hole.
+Timed work is constructing a `run_end` event (type / lane / run id /
+outcome / aborted-null leaf) — not `emit`, not `on`, not `watch`, not
+`make_start`. Observed `hee_type` / `hee_lane` / `hee_run` /
+`hee_outcome` / `hee_abort` are exact. First n=5 freeze
+**1.574×** (0.216 / 0.137 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+Pair numbers 289–312 belong to other lanes; this cut is 313–315 only.
+
+### Pair 314 — `harness_events` (event_type)
+
+| metric | cadr | pi |
+|---|---|---|
+| `event_type` | `harness-event-type` (`src/cadr-agent/harness-events.lisp`) | `event.type` (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 313 `make_end` on the same `harness-events.lisp`
+`agent_tool_loop` hole. Timed work is reading the type of a `run_start`,
+a completed `run_end`, and a failed `run_end` — not constructors as the
+timed owner, not `emit` / `on` / `watch`. Observed `het_start` /
+`het_end` / `het_fail` are exact. First n=5 freeze **1.468×** (0.175 /
+0.119 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 315 — `harness_events` (make_bus)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_bus` | `make-harness-event-bus` (`src/cadr-agent/harness-events.lisp`) | `new HarnessEventBus()` (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 313 `make_end` and Pair 314 `event_type` on the
+same `harness-events.lisp` `agent_tool_loop` hole. Timed work is
+constructing two distinct empty buses — not `on`, not `watch`, not
+`emit`. Observed `heb_distinct` / `heb_a` / `heb_b` are exact. First n=5
+freeze **1.351×** (0.344 / 0.255 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 301 — `powershell_tool` (utf8_prefix)
+
+| metric | cadr | pi |
+|---|---|---|
+| `utf8_prefix` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | `UTF8_OUTPUT_PREFIX` (`packages/coding-agent/src/core/tools/powershell.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole on
+`src/cadr-cli/tools/powershell.lisp`. Timed work is the UTF-8 console
+encoding prefix string (length, trailing newline, `try ` lead, `UTF8`
+token) — not execute/spawn. Observed `psu_len` / `psu_nl` / `psu_try` /
+`psu_utf8` / `psu_n` are exact. First n=5 freeze **3.79×** (0.647 /
+0.171 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 302 — `powershell_tool` (prefix_command)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prefix_command` | prefix + command concatenate (`src/cadr-cli/tools/powershell.lisp`) | `createLocalPowerShellOperations` wrap (`packages/coding-agent/src/core/tools/powershell.ts`) |
+
+Leftover sibling of Pair 301 `utf8_prefix` on the same `agent_tool_loop`
+hole. Timed work is concatenating the UTF-8 prefix onto empty / `Get-Date`
+/ `Write-Output hi` — not exec/spawn. Observed `psc_empty` / `psc_date` /
+`psc_write` / `psc_n` are exact. First n=5 freeze **1.39×** (0.468 /
+0.336 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 303 — `powershell_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | `createPowerShellToolDefinition` (`packages/coding-agent/src/core/tools/powershell.ts`) |
+
+Leftover sibling of Pair 301 `utf8_prefix` and Pair 302 `prefix_command`
+on the same `agent_tool_loop` hole. Timed work is tool name / description /
+required `command` — not execute. Observed `pmt_name` / `pmt_desc` /
+`pmt_req` / `pmt_n` are exact. First n=5 freeze **1.34×** (1.936 /
+1.448 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
+### Pair 316 — `ls_tool` (directory_entry_name)
+
+| metric | cadr | pi |
+|---|---|---|
+| `directory_entry_name` | `directory-entry-name` (`src/cadr-cli/tools/ls.lisp`) | directory suffix (`stat.isDirectory` + `'/'`) in `packages/coding-agent/src/core/tools/ls.ts` |
+
+Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/ls.lisp`.
+Timed work is file vs directory vs nested-directory name formatting — not
+readdir, not execute. Observed `lden_file` / `lden_dir` / `lden_nested` /
+`lden_n` are exact. First n=5 freeze **0.969×** (4.659 / 4.808 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 317 — `ls_tool` (list_directory)
+
+| metric | cadr | pi |
+|---|---|---|
+| `list_directory` | `list-directory` (`src/cadr-cli/tools/ls.lisp`) | execute listing assembly (`packages/coding-agent/src/core/tools/ls.ts`; readdir/sort/suffix/limit/`truncateHead`) |
+
+Leftover sibling of Pair 316 `directory_entry_name` on the same `agent_tool_loop`
+hole. Timed work is empty copy (`(empty directory)`), mixed top-level listing,
+and `limit=2` notice on a four-file fixture — not tool execute spawn, not
+write. Observed `ld_empty` / `ld_mixed` / `ld_first` / `ld_limit` / `ld_n`
+are exact. First n=5 freeze **1.119×** (352.2 / 314.9 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1× booked.
+Same commit no optimize.
+
+### Pair 318 — `ls_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-ls-tool` (`src/cadr-cli/tools/ls.lisp`) | `createLsToolDefinition` (`packages/coding-agent/src/core/tools/ls.ts`) |
+
+Leftover sibling of Pair 316 `directory_entry_name` and Pair 317
+`list_directory` on the same `agent_tool_loop` hole. Timed work is tool name /
+description / empty required list — not execute. Observed `lst_name` /
+`lst_desc` / `lst_req` / `lst_n` are exact. First n=5 freeze **1.017×**
+(284.4 / 279.6 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 304 — `file_mutation_queue` (pending_count)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pending_count` | `file-mutation-queue-state-pending-count` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.pending` after enqueue (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 286 `call_with` through Pair 288 `state_key` on
+the same `agent_tool_loop` hole. Timed work is reading `pending` after
+enqueue (shared symlink key, distinct sibling, missing path) — not
+`make-file-mutation-queue-state` zeros, not `with-file-mutation-queue`,
+not write/edit tools. Same staged scratch layout as `with_queue`.
+Observed `fmqp_shared` / `fmqp_other` / `fmqp_missing` / `fmqp_alias` /
+`fmqp_n` are exact. First n=5 freeze **1.435×** (194.6 / 135.5 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 305 — `file_mutation_queue` (next_ticket)
+
+| metric | cadr | pi |
+|---|---|---|
+| `next_ticket` | `file-mutation-queue-state-next-ticket` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.nextTicket` after enqueue (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 304 `pending_count` on the same `agent_tool_loop`
+hole. Timed work is reading `nextTicket` after enqueue (shared symlink
+key, distinct sibling, missing path) — not constructor zeros, not
+write/edit tools. Same staged scratch layout as `with_queue`. Observed
+`fmqi_shared` / `fmqi_other` / `fmqi_missing` / `fmqi_alias` / `fmqi_n`
+are exact. First n=5 freeze **1.147×** (157.9 / 137.6 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
+### Pair 306 — `file_mutation_queue` (serving_ticket)
+
+| metric | cadr | pi |
+|---|---|---|
+| `serving_ticket` | `file-mutation-queue-state-serving-ticket` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.serving` after enqueue (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 304 `pending_count` and Pair 305 `next_ticket` on
+the same `agent_tool_loop` hole. Timed work is reading `serving` after
+enqueue (still 0 until release) — not wait/release, not write/edit tools.
+Same staged scratch layout as `with_queue`. Observed `fmqv_zero` /
+`fmqv_other` / `fmqv_missing` / `fmqv_alias` / `fmqv_n` are exact. First
+n=5 freeze **0.985×** (139.5 / 141.7 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+### Pair 307 — `cli_settings` (reload)
+
+| metric | cadr | pi |
+|---|---|---|
+| `reload` | `settings-reload` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.reload` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 13 `cli_settings.create` on the same
+`cli_settings` hole. Timed work is re-read of staged
+`settings-global.json` / `settings-project.json` — not create, not
+TUI. Observed `rl_theme_light` / `rl_model` / `rl_idle` / `rl_n` are
+exact. First n=5 freeze **0.593×** (84.8 / 143.0 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 308 — `cli_settings` (enabled_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `enabled_models` | `settings-enabled-models` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getEnabledModels` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 307 `reload` on the same `cli_settings` hole.
+Timed work is missing-key `:all` / `undefined` plus one in-memory
+explicit pattern — not persist, not selector UI. Observed `em_all` /
+`em_one` / `em_n` are exact. First n=5 freeze **5.735×** (18.7 / 3.26 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked. Same commit no optimize.
+
+### Pair 309 — `cli_settings` (block_images)
+
+| metric | cadr | pi |
+|---|---|---|
+| `block_images` | `settings-block-images-p` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getBlockImages` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 307–308 on the same `cli_settings` hole.
+Timed work is default false plus in-memory `images.blockImages=true`
+— not decode/resize, not TUI. Observed `bi_default` / `bi_blocked` /
+`bi_n` are exact. First n=5 freeze **5.623×** (19.1 / 3.41 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked. Same commit no optimize.
+
+### Pair 310 — `oauth_pkce_device` (percent_decode)
+
+| metric | cadr | pi |
+|---|---|---|
+| `percent_decode` | `percent-decode` (`src/cadr-ai/oauth/callback.lisp`) | application/x-www-form-urlencoded percent-decode used by `URLSearchParams` / `parseAuthorizationInput` (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of the `oauth_pkce_device` hole on `src/cadr-ai/oauth/callback.lisp`.
+Timed work is `percent-decode` on valid encodings (plain / `+` as space /
+`%2F` / `%20` / UTF-8 `%C3%A9`) — not loopback HTTP, not
+`parse-oauth-callback-request`. Do not exact truncated or invalid percent
+escapes (Lisp signals; `URLSearchParams` is lenient). Observed `pd_plain` /
+`pd_plus` / `pd_slash` / `pd_space` / `pd_utf8` / `pd_n` are exact. First
+n=5 freeze **1.525×** (1.592 / 1.044 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 311 — `oauth_pkce_device` (parse_query)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_query` | `parse-query` (`src/cadr-ai/oauth/callback.lisp`) | `URLSearchParams` query parse (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of Pair 310 `percent_decode` on the same `oauth_pkce_device`
+hole. Timed work is query parse (`code`/`state`, `+` in a value, empty
+value) — not callback request-line routing. Observed `pq_code` / `pq_state` /
+`pq_plus` / `pq_empty` / `pq_n` are exact. First n=5 freeze **1.944×**
+(6.672 / 3.431 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 312 — `oauth_pkce_device` (parse_authorization_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_authorization_input` | `parse-oauth-authorization-input` (`src/cadr-ai/oauth/callback.lisp`) | `parseAuthorizationInput` (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of Pair 310 `percent_decode` and Pair 311 `parse_query` on
+the same `oauth_pkce_device` hole. Timed work is the four Goal 13 manual
+forms (callback URL, `code#state`, `code=` query, trimmed bare code) — not
+the loopback listener. Do not exact empty input (Lisp `""` / `NIL` vs pi
+`{}`). Observed `pai_url` / `pai_hash` / `pai_qs` / `pai_plain` / `pai_n`
+are exact. First n=5 freeze **0.535×** (6.292 / 11.750 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
+leads. Same commit no optimize.
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4050,14 +4410,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 179 | 77,738 | 60.3% | `no worse than baseline` is falsifiable |
+| `paired` | 180 | 77,960 | 60.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 66 | 26,259 | 20.4% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 65 | 26,037 | 20.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 60.3% of lines (179 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 66.1% of lines.
+- **Falsifiable vs baseline:** 60.5% of lines (180 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 66.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -4131,6 +4491,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
+| `src/cadr-ai/images.lisp` | 222 | `image_runtime.output_modalities`, `image_runtime.openrouter_content`, `image_runtime.parse_data_image` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
@@ -4206,7 +4567,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
-| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create` |
+| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |
@@ -4327,7 +4688,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
-| `image_runtime` | 1 | 222 |
 | `cli_support` | 5 | 123 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |

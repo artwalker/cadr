@@ -98,15 +98,17 @@ METRICS = {
     "provider_vertex": ("stream_roundtrip",),
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
-    "cli_settings": ("create",),
+    "cli_settings": ("create", "reload", "enabled_models", "block_images"),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
-    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key"),
-    "harness_events": ("emit", "on", "watch", "make_start"),
+    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
+    "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
+    "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
+    "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -125,13 +127,16 @@ METRICS = {
         "cloudflare_url",
         "radius_gateway",
         "copilot_auth",
+        "percent_decode",
+        "parse_query",
+        "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
-    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider"),
+    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats"),
     "tui_latex": ("render", "normalize_output"),
     "tui_mermaid": ("render", "source_box", "transform"),
@@ -252,6 +257,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "cli_settings.create": 1.5,
+    # cli_settings leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "cli_settings.reload": 8.0,
+    "cli_settings.enabled_models": 8.0,
+    "cli_settings.block_images": 8.0,
     # agent_conditions.error_probe pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "agent_conditions.error_probe": 8.0,
@@ -286,6 +296,15 @@ RATIO_CEILINGS = {
     # file_mutation_queue.state_key pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "file_mutation_queue.state_key": 8.0,
+    # file_mutation_queue.pending_count pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.pending_count": 8.0,
+    # file_mutation_queue.next_ticket pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.next_ticket": 8.0,
+    # file_mutation_queue.serving_ticket pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.serving_ticket": 8.0,
     # harness_events.emit pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.emit": 8.0,
@@ -306,16 +325,31 @@ RATIO_CEILINGS = {
     # harness_events.make_start pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.make_start": 8.0,
+    # harness_events leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.make_end": 8.0,
+    "harness_events.event_type": 8.0,
+    "harness_events.make_bus": 8.0,
     # find_tool leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "find_tool.pattern_match": 8.0,
     "find_tool.find_files": 8.0,
     "find_tool.make_tool": 8.0,
+    # ls_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "ls_tool.directory_entry_name": 8.0,
+    "ls_tool.list_directory": 8.0,
+    "ls_tool.make_tool": 8.0,
     # tool_manager.get_tool_path/ensure_tool/cleanup_quarantine pair
     # (samples=5): first-freeze headroom. Ratchet down only.
     "tool_manager.get_tool_path": 8.0,
     "tool_manager.ensure_tool": 8.0,
     "tool_manager.cleanup_quarantine": 8.0,
+    # powershell_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "powershell_tool.utf8_prefix": 8.0,
+    "powershell_tool.prefix_command": 8.0,
+    "powershell_tool.make_tool": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -425,6 +459,12 @@ RATIO_CEILINGS = {
     # headroom. Ratchet down only.
     "oauth_pkce_device.copilot_auth": 8.0,
     # Frozen from the first Friend-MachineD non-quick
+    # oauth_pkce_device leftover trio (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "oauth_pkce_device.percent_decode": 8.0,
+    "oauth_pkce_device.parse_query": 8.0,
+    "oauth_pkce_device.parse_authorization_input": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed
     # 0.45x (4.79 / 10.52 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
@@ -469,6 +509,11 @@ RATIO_CEILINGS = {
     # 0.11x (1.30 / 12.15 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "evals_harness.normalize_steps": 8.0,
+    # evals_harness leftover trio on harness.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "evals_harness.resolve_selection": 8.0,
+    "evals_harness.transcript": 8.0,
+    "evals_harness.last_assistant": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -517,6 +562,18 @@ RATIO_CEILINGS = {
     # 1.09x (0.23 / 0.21 us). 8.0 is first-freeze
     # headroom (variance). Ratchet down only.
     "image_runtime.api_provider": 8.0,
+    # Frozen from the first n=5 image_runtime.output_modalities
+    # leftover pair: observed 0.657x (0.196 / 0.299 us). cadr leads.
+    # 8.0 is first-freeze headroom. Ratchet down only.
+    "image_runtime.output_modalities": 8.0,
+    # Frozen from the first n=5 image_runtime.openrouter_content
+    # leftover pair: observed 3.34x (1.367 / 0.409 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "image_runtime.openrouter_content": 8.0,
+    # Frozen from the first n=5 image_runtime.parse_data_image
+    # leftover pair: observed 1.43x (0.555 / 0.387 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "image_runtime.parse_data_image": 8.0,
     # Frozen from the first Friend-MachineD non-quick cli_print_rpc
     # pair (samples=5): observed 13.21x (3.3 / 0.25 us). 8.0 follows
     # the microsecond-floor / agent_proxy variance precedent (not
@@ -1457,6 +1514,16 @@ OBSERVED_EXACT = {
         "default_project_trust",
         "http_idle_timeout_ms",
         "project_trusted",
+        "rl_theme_light",
+        "rl_model",
+        "rl_idle",
+        "rl_n",
+        "em_all",
+        "em_one",
+        "em_n",
+        "bi_default",
+        "bi_blocked",
+        "bi_n",
     ),
     "agent_conditions": (
         "ac_schema_tool",
@@ -1540,6 +1607,21 @@ OBSERVED_EXACT = {
         "fmqt_missing",
         "fmqt_repeat",
         "fmqt_n",
+        "fmqp_shared",
+        "fmqp_other",
+        "fmqp_missing",
+        "fmqp_alias",
+        "fmqp_n",
+        "fmqi_shared",
+        "fmqi_other",
+        "fmqi_missing",
+        "fmqi_alias",
+        "fmqi_n",
+        "fmqv_zero",
+        "fmqv_other",
+        "fmqv_missing",
+        "fmqv_alias",
+        "fmqv_n",
     ),
     "harness_events": (
         "he_direct",
@@ -1557,6 +1639,17 @@ OBSERVED_EXACT = {
         "hes_type",
         "hes_lane",
         "hes_run",
+        "hee_type",
+        "hee_lane",
+        "hee_run",
+        "hee_outcome",
+        "hee_abort",
+        "het_start",
+        "het_end",
+        "het_fail",
+        "heb_distinct",
+        "heb_a",
+        "heb_b",
     ),
     "bash_tool": (
         "sef_exact",
@@ -1611,6 +1704,21 @@ OBSERVED_EXACT = {
         "fmt_req",
         "fmt_n",
     ),
+    "ls_tool": (
+        "lden_file",
+        "lden_dir",
+        "lden_nested",
+        "lden_n",
+        "ld_empty",
+        "ld_mixed",
+        "ld_first",
+        "ld_limit",
+        "ld_n",
+        "lst_name",
+        "lst_desc",
+        "lst_req",
+        "lst_n",
+    ),
     "tool_manager": (
         "gtp_local_fd",
         "gtp_local_rg",
@@ -1623,6 +1731,21 @@ OBSERVED_EXACT = {
         "cq_removed",
         "cq_noop",
         "cq_n",
+    ),
+    "powershell_tool": (
+        "psu_len",
+        "psu_nl",
+        "psu_try",
+        "psu_utf8",
+        "psu_n",
+        "psc_empty",
+        "psc_date",
+        "psc_write",
+        "psc_n",
+        "pmt_name",
+        "pmt_desc",
+        "pmt_req",
+        "pmt_n",
     ),
     "settings_load": (
         "tr_empty",
@@ -1756,6 +1879,22 @@ OBSERVED_EXACT = {
         "ga_ent",
         "ga_dom",
         "ga_key",
+        "pd_plain",
+        "pd_plus",
+        "pd_slash",
+        "pd_space",
+        "pd_utf8",
+        "pd_n",
+        "pq_code",
+        "pq_state",
+        "pq_plus",
+        "pq_empty",
+        "pq_n",
+        "pai_url",
+        "pai_hash",
+        "pai_qs",
+        "pai_plain",
+        "pai_n",
     ),
     "cli_extensions_install": (
         "nu_local",
@@ -1814,6 +1953,25 @@ OBSERVED_EXACT = {
         "ns_kw_rel",
         "ns_vec_n",
         "ns_bad",
+        "rs_explicit",
+        "rs_env",
+        "rs_miss",
+        "rs_prov",
+        "rs_blank",
+        "rs_n",
+        "tr_n",
+        "tr_user",
+        "tr_role",
+        "tr_text",
+        "tr_call",
+        "tr_name",
+        "tr_result",
+        "tr_err",
+        "tr_keys",
+        "la_new",
+        "la_none",
+        "la_full",
+        "la_n",
     ),
     "ai_crypto_model_data": (
         "schema_version",
@@ -1877,6 +2035,20 @@ OBSERVED_EXACT = {
         "note_plain",
         "api_fixture",
         "api_unknown",
+        "om_gemini_n",
+        "om_gemini_text",
+        "om_flux_n",
+        "om_flux_text",
+        "oc_text_type",
+        "oc_text",
+        "oc_img_type",
+        "oc_img_url",
+        "oc_ok",
+        "pd_ok_mime",
+        "pd_ok_data",
+        "pd_ok",
+        "pd_miss",
+        "pd_plain",
     ),
     "cli_print_rpc": (
         "line_chars",
