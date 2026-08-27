@@ -2346,6 +2346,10 @@ def fixed_environment(home: Path, columns: int, rows: int, ready_path: Path) -> 
             "LINES": str(rows),
             "FORCE_COLOR": "3",
             "PI_OFFLINE": "1",
+            # Pair the cadr-side offline flag. Without it the cadr driver
+            # tries to download fd / check updates during captures while
+            # the baseline stays offline and emits "fd not found".
+            "CADR_OFFLINE": "1",
             "PATH": str(fake_binary_directory) + os.pathsep + env.get("PATH", ""),
             "RENDER_DIFF_READY_PATH": str(ready_path),
         }

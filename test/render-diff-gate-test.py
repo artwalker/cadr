@@ -368,6 +368,8 @@ class RenderDiffGateTest(unittest.TestCase):
         self.assertEqual(env["FORCE_COLOR"], "3")
         self.assertEqual(env["TERM"], "xterm-256color")
         self.assertEqual(env["COLORTERM"], "truecolor")
+        self.assertEqual(env["PI_OFFLINE"], "1")
+        self.assertEqual(env["CADR_OFFLINE"], "1")
 
     def test_captured_processes_pin_ripgrep_to_the_deterministic_walker(self) -> None:
         # Both products invoke rg without --sort.  Parallel walk order
