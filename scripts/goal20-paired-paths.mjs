@@ -174,6 +174,9 @@ const REPETITIONS = {
 	"tool_manager.get_tool_path": 50,
 	"tool_manager.ensure_tool": 50,
 	"tool_manager.cleanup_quarantine": 50,
+	"powershell_tool.utf8_prefix": 50,
+	"powershell_tool.prefix_command": 50,
+	"powershell_tool.make_tool": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -712,6 +715,9 @@ const outputAccumulatorModule = await import(
 );
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
+const powershellModule = await import(
+	moduleUrl("packages/coding-agent/src/core/tools/powershell.ts"),
+);
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const fileMutationQueueModule = await import(
@@ -2986,6 +2992,73 @@ async function measureFindTool() {
 		},
 	};
 }
+
+const POWERSHELL_UTF8_OUTPUT_PREFIX =
+	"try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\n";
+
+function runPowershellUtf8Prefix() {
+	const prefix = POWERSHELL_UTF8_OUTPUT_PREFIX;
+	return {
+		psu_len: prefix.length,
+		psu_nl: prefix.endsWith("\n") ? 1 : 0,
+		psu_try: prefix.startsWith("try ") ? 1 : 0,
+		psu_utf8: prefix.includes("UTF8") ? 1 : 0,
+		psu_n: 4,
+	};
+}
+
+function powershellPrefixCommand(command) {
+	return `${POWERSHELL_UTF8_OUTPUT_PREFIX}${command}`;
+}
+
+function runPowershellPrefixCommand() {
+	const prefix = POWERSHELL_UTF8_OUTPUT_PREFIX;
+	const empty = powershellPrefixCommand("");
+	const date = powershellPrefixCommand("Get-Date");
+	const write = powershellPrefixCommand("Write-Output hi");
+	return {
+		psc_empty: empty === prefix ? 1 : 0,
+		psc_date: date.startsWith(prefix) && date.endsWith("Get-Date") ? 1 : 0,
+		psc_write:
+			write.startsWith(prefix) && write.endsWith("Write-Output hi") ? 1 : 0,
+		psc_n: 3,
+	};
+}
+
+function runPowershellMakeTool() {
+	const def = powershellModule.createPowerShellToolDefinition("/tmp");
+	const required = def.parameters?.required ?? [];
+	const description = def.description ?? "";
+	return {
+		pmt_name: def.name === "powershell" ? 1 : 0,
+		pmt_desc: description.includes("Execute a PowerShell command") ? 1 : 0,
+		pmt_req: required.includes("command") ? 1 : 0,
+		pmt_n: 3,
+	};
+}
+
+async function measurePowershellTool() {
+	const prefixObserved = runPowershellUtf8Prefix();
+	const commandObserved = runPowershellPrefixCommand();
+	const makeObserved = runPowershellMakeTool();
+	return {
+		utf8_prefix: await collect("powershell_tool.utf8_prefix", () => {
+			return () => runPowershellUtf8Prefix();
+		}),
+		prefix_command: await collect("powershell_tool.prefix_command", () => {
+			return () => runPowershellPrefixCommand();
+		}),
+		make_tool: await collect("powershell_tool.make_tool", () => {
+			return () => runPowershellMakeTool();
+		}),
+		observed: {
+			...prefixObserved,
+			...commandObserved,
+			...makeObserved,
+		},
+	};
+}
+
 async function measureHarnessEvents() {
 	const emitObserved = runHarnessEventsEmit();
 	const onObserved = runHarnessEventsOn();
@@ -15685,6 +15758,8 @@ process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
 process.stderr.write("goal20 pi paired paths: tool_manager\n");
 const toolManager = await measureToolManager();
+process.stderr.write("goal20 pi paired paths: powershell_tool\n");
+const powershellTool = await measurePowershellTool();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -15868,6 +15943,12 @@ const result = {
 				"packages/coding-agent/src/utils/tools-manager.ts ensureTool (local / PI_OFFLINE, no network)",
 			"tool_manager.cleanup_quarantine":
 				"packages/coding-agent/src/utils/windows-self-update.ts cleanupWindowsSelfUpdateQuarantine",
+			"powershell_tool.utf8_prefix":
+				"packages/coding-agent/src/core/tools/powershell.ts UTF8_OUTPUT_PREFIX",
+			"powershell_tool.prefix_command":
+				"packages/coding-agent/src/core/tools/powershell.ts createLocalPowerShellOperations prefix+command",
+			"powershell_tool.make_tool":
+				"packages/coding-agent/src/core/tools/powershell.ts createPowerShellToolDefinition",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -16421,6 +16502,7 @@ const result = {
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
 		tool_manager: toolManager,
+		powershell_tool: powershellTool,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

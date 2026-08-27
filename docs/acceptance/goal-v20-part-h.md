@@ -3625,6 +3625,49 @@ freeze **1.351×** (0.344 / 0.255 µs) on host `cursor`, ceiling 8.0. Gate
 used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
 `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
+### Pair 301 — `powershell_tool` (utf8_prefix)
+
+| metric | cadr | pi |
+|---|---|---|
+| `utf8_prefix` | `+powershell-utf8-output-prefix+` (`src/cadr-cli/tools/powershell.lisp`) | `UTF8_OUTPUT_PREFIX` (`packages/coding-agent/src/core/tools/powershell.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole on
+`src/cadr-cli/tools/powershell.lisp`. Timed work is the UTF-8 console
+encoding prefix string (length, trailing newline, `try ` lead, `UTF8`
+token) — not execute/spawn. Observed `psu_len` / `psu_nl` / `psu_try` /
+`psu_utf8` / `psu_n` are exact. First n=5 freeze **3.79×** (0.647 /
+0.171 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 302 — `powershell_tool` (prefix_command)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prefix_command` | prefix + command concatenate (`src/cadr-cli/tools/powershell.lisp`) | `createLocalPowerShellOperations` wrap (`packages/coding-agent/src/core/tools/powershell.ts`) |
+
+Leftover sibling of Pair 301 `utf8_prefix` on the same `agent_tool_loop`
+hole. Timed work is concatenating the UTF-8 prefix onto empty / `Get-Date`
+/ `Write-Output hi` — not exec/spawn. Observed `psc_empty` / `psc_date` /
+`psc_write` / `psc_n` are exact. First n=5 freeze **1.39×** (0.468 /
+0.336 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 303 — `powershell_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-powershell-tool` (`src/cadr-cli/tools/powershell.lisp`) | `createPowerShellToolDefinition` (`packages/coding-agent/src/core/tools/powershell.ts`) |
+
+Leftover sibling of Pair 301 `utf8_prefix` and Pair 302 `prefix_command`
+on the same `agent_tool_loop` hole. Timed work is tool name / description /
+required `command` — not execute. Observed `pmt_name` / `pmt_desc` /
+`pmt_req` / `pmt_n` are exact. First n=5 freeze **1.34×** (1.936 /
+1.448 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
