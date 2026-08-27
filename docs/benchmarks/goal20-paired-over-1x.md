@@ -220,6 +220,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `bash_tool.strip_exit_footer` | 0.989 | 0.619 | 1.60× | 8.00× | measure-only pair 277; `bash-strip-exit-footer` only (not execute/spawn); sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `bash_tool.append_status` | 1.109 | 0.381 | 2.91× | 8.00× | measure-only pair 278; `append-bash-status` vs `appendStatus`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `bash_tool.truncation_notice` | 2.798 | 0.832 | 3.36× | 8.00× | measure-only pair 279; `bash-truncation-notice` vs `formatOutput` notice body | invent pause；地板优化另刀 |
-| `provider_registry_defs.runtime_models` | 17.74 | 4.876 | 3.64× | 8.00× | measure-only pair 296; leftover `provider-runtime-models` vs `getBuiltinModels` | invent pause；地板优化另刀 |
+| `provider_registry_defs.runtime_models` | 17.89 | 4.794 | 3.73× | 8.00× | measure-only pair 296; leftover `provider-runtime-models` vs `getBuiltinModels` | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
