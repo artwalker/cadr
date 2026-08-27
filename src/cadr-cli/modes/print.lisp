@@ -378,9 +378,10 @@
         (wire-message-to-json
          (cadr-agent:agent-event-message event))))
       (:message-update
-       ;; Baseline v0.84.2 modes/json-event.ts toJsonEvent: the wire
+       ;; Baseline v0.84.3 modes/json-event.ts toJsonEvent: the wire
        ;; event keeps the cumulative usage (constant size) alongside the
-       ;; delta; the partial snapshot stays stripped.
+       ;; delta; the partial snapshot stays stripped. toolcall_start also
+       ;; carries id and toolName without the cumulative snapshot.
        (cadr-ai::json-put
         object "usage"
         (wire-usage-to-json
@@ -388,11 +389,32 @@
           (cadr-agent:agent-event-message event))))
        (cadr-ai::json-put
         object "assistantMessageEvent"
-        (let ((stream-object
-                (stream-event-to-json
+        (let* ((stream-event
                  (cadr-agent:agent-event-stream-event
-                  event))))
+                  event))
+               (stream-object
+                 (stream-event-to-json stream-event)))
           (remhash "partial" stream-object)
+          (when (eq (cadr-ai:stream-event-type stream-event)
+                    :tool-call-start)
+            (let* ((message
+                     (cadr-agent:agent-event-message event))
+                   (index
+                     (cadr-ai:stream-event-content-index
+                      stream-event))
+                   (block
+                     (nth index
+                          (cadr-ai:assistant-message-content
+                           message))))
+              (unless (typep block 'cadr-ai:tool-call)
+                (error "toolcall_start content at index ~A is not a tool call"
+                       index))
+              (cadr-ai::json-put
+               stream-object "id"
+               (cadr-ai:tool-call-id block))
+              (cadr-ai::json-put
+               stream-object "toolName"
+               (cadr-ai:tool-call-name block))))
           stream-object)))
       (:turn-end
        (cadr-ai::json-put
