@@ -217,5 +217,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `tui_latex.normalize_output` | 12.7 | 8.7 | 1.46× | 20.00× | measure-only pair (Pair 243); latex marker cleanup | invent pause；地板优化另刀 |
 | `file_mutation_queue.queue_key` | 169.3 | 156.2 | 1.08× | 8.00× | measure-only pair 270; `file-mutation-queue-key` only (not `with_queue`) | invent pause；地板优化另刀 |
 | `file_mutation_queue.lock` | 183.3 | 148.0 | 1.24× | 8.00× | measure-only pair 271; `file-mutation-queue-lock` only (not `with_queue` / `queue_key`) | invent pause；地板优化另刀 |
+| `provider_registry_defs.runtime_models` | 17.85 | 5.05 | 3.54× | 8.00× | measure-only pair 295; leftover `provider-runtime-models` vs `getBuiltinModels` | invent pause；地板优化另刀 |
+| `provider_registry_defs.builtin_providers` | 292.9 | 251.5 | 1.16× | 8.00× | measure-only pair 296; leftover `make-built-in-runtime-provider` vs `builtinProviders` | invent pause；地板优化另刀 |
+| `provider_registry_defs.builtin_models` | 302.9 | 236.2 | 1.28× | 8.00× | measure-only pair 297; leftover `make-built-in-models-runtime` vs `builtinModels` | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

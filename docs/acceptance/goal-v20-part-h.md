@@ -3226,7 +3226,7 @@ this metric did not fail). Same commit no optimize.
 |---|---|---|
 | `runtime_models` | `provider-runtime-models` (`src/cadr-ai/providers/runtime-projection.lisp`) | `getBuiltinModels` (`packages/ai/src/providers/all.ts`) |
 
-Leftover sibling of Pair lookup/definition_ids on the same `provider_registry_defs` hole. Timed work is catalog model lists for openai/anthropic/google plus an unknown id — not `getBuiltinProviders`, not stream. Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+Leftover sibling of Pair lookup/definition_ids on the same `provider_registry_defs` hole. Timed work is catalog model lists for openai/anthropic/google plus an unknown id — not `getBuiltinProviders`, not stream. Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` are exact. First n=5 freeze **3.537×** (17.85 / 5.05 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 296 — `provider_registry_defs` (builtin_providers)
 
@@ -3234,7 +3234,7 @@ Leftover sibling of Pair lookup/definition_ids on the same `provider_registry_de
 |---|---|---|
 | `builtin_providers` | `make-built-in-runtime-provider` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinProviders` (`packages/ai/src/providers/all.ts`) |
 
-Leftover sibling on the same `provider_registry_defs` hole. Timed work is constructing every built-in runtime provider from definitions (no socket, no login). Observed `bp_openai` / `bp_anthropic` / `bp_google` / `bp_oa_key` / `bp_an_oauth` / `bp_oa_oauth` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+Leftover sibling on the same `provider_registry_defs` hole. Timed work is constructing every built-in runtime provider from definitions (no socket, no login). Observed `bp_openai` / `bp_anthropic` / `bp_google` / `bp_oa_key` / `bp_an_oauth` / `bp_oa_oauth` are exact. First n=5 freeze **1.165×** (292.9 / 251.5 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 297 — `provider_registry_defs` (builtin_models)
 
@@ -3242,7 +3242,7 @@ Leftover sibling on the same `provider_registry_defs` hole. Timed work is constr
 |---|---|---|
 | `builtin_models` | `make-built-in-models-runtime` (`src/cadr-ai/providers/runtime-projection.lisp`) | `builtinModels` (`packages/ai/src/providers/all.ts`) |
 
-Leftover sibling on the same `provider_registry_defs` hole. Timed work is registering every built-in provider into a models runtime and probing openai/anthropic/google/unknown — not stream. Observed `bm_openai` / `bm_anthropic` / `bm_google` / `bm_unknown` / `bm_oa_name` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+Leftover sibling on the same `provider_registry_defs` hole. Timed work is registering every built-in provider into a models runtime and probing openai/anthropic/google/unknown — not stream. Observed `bm_openai` / `bm_anthropic` / `bm_google` / `bm_unknown` / `bm_oa_name` are exact. First n=5 freeze **1.282×** (302.9 / 236.2 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
