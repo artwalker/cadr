@@ -240,6 +240,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `ls_tool.make_tool` | 284.4 | 279.6 | 1.017× | 8.00× | measure-only pair 318; `make-ls-tool` vs `createLsToolDefinition` | invent pause；地板优化另刀 |
 | `cli_settings.enabled_models` | 18.7 | 3.26 | 5.735× | 8.00× | measure-only pair 308; `settings-enabled-models` missing→`:all` plus one in-memory pattern | invent pause；地板优化另刀 |
 | `cli_settings.block_images` | 19.1 | 3.41 | 5.623× | 8.00× | measure-only pair 309; `settings-block-images-p` default false plus in-memory `images.blockImages` | invent pause；地板优化另刀 |
+| `cli_settings.default_model` | 15.69 | 2.080 | 7.544× | 8.00× | measure-only pair 352; `settings-default-model` fixture plus missing-key in-memory | invent pause；地板优化另刀 |
+| `cli_settings.default_provider` | 15.67 | 2.327 | 6.737× | 8.00× | measure-only pair 353; `settings-default-provider` fixture plus missing-key in-memory | invent pause；地板优化另刀 |
+| `cli_settings.output_padding` | 17.54 | 2.788 | 6.289× | 8.00× | measure-only pair 354; `settings-output-padding` default 1 plus in-memory `outputPad=0` | invent pause；地板优化另刀 |
 
 | `file_mutation_queue.pending_count` | 194.6 | 135.5 | 1.435× | 8.00× | measure-only pair 304; `file-mutation-queue-state-pending-count` after enqueue | invent pause；地板优化另刀 |
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
