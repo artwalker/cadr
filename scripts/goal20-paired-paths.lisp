@@ -257,6 +257,9 @@
     ("bash_tool.strip_exit_footer" . 50)
     ("bash_tool.append_status" . 50)
     ("bash_tool.truncation_notice" . 50)
+    ("output_accumulator.append" . 50)
+    ("output_accumulator.snapshot" . 50)
+    ("output_accumulator.finish" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4282,6 +4285,123 @@
                   (lambda ()
                     (lambda ()
                       (run-bash-truncation-notice)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/output-accumulator.lisp (Pairs 280-282).
+;;; ---------------------------------------------------------------------
+
+(defun oa-octets (&rest bytes)
+  (make-array (length bytes)
+              :element-type '(unsigned-byte 8)
+              :initial-contents bytes))
+
+(defun oa-truth (value)
+  (if value 1 0))
+
+(defun oa-truncation-flag (details)
+  (oa-truth (getf details :truncated)))
+
+(defun make-oa-bench-accumulator ()
+  (cadr-cli:make-output-accumulator
+   :max-lines 50
+   :max-bytes 2048
+   :temp-file-prefix "oa-bench"))
+
+(defun oa-append-complete-chunks (accumulator)
+  ;; hello\n + split UTF-8 é + " world\n" + "tail line"
+  (cadr-cli:output-accumulator-append
+   accumulator (oa-octets #x68 #x65 #x6c #x6c #x6f #x0a))
+  (cadr-cli:output-accumulator-append accumulator (oa-octets #xc3))
+  (cadr-cli:output-accumulator-append
+   accumulator (oa-octets #xa9 #x20 #x77 #x6f #x72 #x6c #x64 #x0a))
+  (cadr-cli:output-accumulator-append
+   accumulator (oa-octets #x74 #x61 #x69 #x6c #x20 #x6c #x69 #x6e #x65))
+  accumulator)
+
+(defun run-output-accumulator-append ()
+  (let ((accumulator (make-oa-bench-accumulator)))
+    (oa-append-complete-chunks accumulator)
+    (let ((snapshot (cadr-cli:output-accumulator-snapshot accumulator)))
+      (list
+       (cadr-agent::harness-utf8-length
+        (cadr-cli:output-snapshot-content snapshot))
+       (oa-truncation-flag
+        (cadr-cli:output-snapshot-truncation snapshot))
+       (getf (cadr-cli:output-snapshot-truncation snapshot) :total-lines)
+       (cadr-cli:output-accumulator-last-line-bytes accumulator)
+       4))))
+
+(defun run-output-accumulator-snapshot ()
+  (let ((accumulator (make-oa-bench-accumulator)))
+    (oa-append-complete-chunks accumulator)
+    (let ((snapshot (cadr-cli:output-accumulator-snapshot accumulator)))
+      (list
+       (cadr-agent::harness-utf8-length
+        (cadr-cli:output-snapshot-content snapshot))
+       (oa-truncation-flag
+        (cadr-cli:output-snapshot-truncation snapshot))
+       (getf (cadr-cli:output-snapshot-truncation snapshot) :total-lines)
+       (getf (cadr-cli:output-snapshot-truncation snapshot) :total-bytes)
+       4))))
+
+(defun run-output-accumulator-finish ()
+  (let ((accumulator (make-oa-bench-accumulator)))
+    (cadr-cli:output-accumulator-append accumulator (oa-octets #xc3))
+    (cadr-cli:output-accumulator-finish accumulator)
+    (let* ((snapshot (cadr-cli:output-accumulator-snapshot accumulator))
+           (content (cadr-cli:output-snapshot-content snapshot)))
+      (list
+       (cadr-agent::harness-utf8-length content)
+       (oa-truth (find (code-char #xfffd) content))
+       (cadr-cli:output-accumulator-last-line-bytes accumulator)
+       (oa-truncation-flag
+        (cadr-cli:output-snapshot-truncation snapshot))
+       4))))
+
+(defun measure-output-accumulator ()
+  (destructuring-bind (oa-append-bytes oa-append-trunc oa-append-lines
+                       oa-append-last oa-append-n)
+      (run-output-accumulator-append)
+    (destructuring-bind (oa-snap-bytes oa-snap-trunc oa-snap-lines
+                         oa-snap-total oa-snap-n)
+        (run-output-accumulator-snapshot)
+      (destructuring-bind (oa-fin-bytes oa-fin-fffd oa-fin-last
+                           oa-fin-trunc oa-fin-n)
+          (run-output-accumulator-finish)
+        (json-object
+         "observed"
+         (json-object
+          "oa_append_bytes" oa-append-bytes
+          "oa_append_trunc" oa-append-trunc
+          "oa_append_lines" oa-append-lines
+          "oa_append_last" oa-append-last
+          "oa_append_n" oa-append-n
+          "oa_snap_bytes" oa-snap-bytes
+          "oa_snap_trunc" oa-snap-trunc
+          "oa_snap_lines" oa-snap-lines
+          "oa_snap_total" oa-snap-total
+          "oa_snap_n" oa-snap-n
+          "oa_fin_bytes" oa-fin-bytes
+          "oa_fin_fffd" oa-fin-fffd
+          "oa_fin_last" oa-fin-last
+          "oa_fin_trunc" oa-fin-trunc
+          "oa_fin_n" oa-fin-n)
+         "append"
+         (collect "output_accumulator.append"
+                  (lambda ()
+                    (lambda ()
+                      (run-output-accumulator-append))))
+         "snapshot"
+         (collect "output_accumulator.snapshot"
+                  (lambda ()
+                    (lambda ()
+                      (run-output-accumulator-snapshot))))
+         "finish"
+         (collect "output_accumulator.finish"
+                  (lambda ()
+                    (lambda ()
+                      (run-output-accumulator-finish)))))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -14435,6 +14555,12 @@
       "src/cadr-cli/tools/bash.lisp append-bash-status"
       "bash_tool.truncation_notice"
       "src/cadr-cli/tools/bash.lisp bash-truncation-notice"
+      "output_accumulator.append"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-append"
+      "output_accumulator.snapshot"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-snapshot"
+      "output_accumulator.finish"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-finish"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -15030,6 +15156,8 @@
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
               (setf bash-tool (measure-bash-tool))
+              (format *error-output* "goal20 cadr paired paths: output_accumulator~%")
+              (let ((output-accumulator (measure-output-accumulator)))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -15165,6 +15293,7 @@
               "file_mutation_queue" file-mutation-queue
               "harness_events" harness-events
               "bash_tool" bash-tool
+              "output_accumulator" output-accumulator
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html
@@ -15225,7 +15354,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
