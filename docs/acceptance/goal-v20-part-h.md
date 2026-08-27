@@ -3455,7 +3455,9 @@ Leftover of the `agent_tool_loop` hole on `tool-manager.lisp`. Timed work is
 local `fd`/`rg` stub discovery plus PATH-empty miss — not download/install,
 not write/edit tools. Observed `gtp_local_fd` / `gtp_local_rg` /
 `gtp_miss_fd` / `gtp_miss_rg` / `gtp_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+**0.014×** (107.8 / 7742.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 293 — `tool_manager` (ensure_tool)
 
@@ -3467,7 +3469,9 @@ Leftover sibling of Pair 292 `get_tool_path` on the same `agent_tool_loop`
 hole. Timed work is local stub hit plus `CADR_OFFLINE`/`PI_OFFLINE` miss
 with an empty PATH so neither side downloads — not GitHub / unpack. Observed
 `et_local_fd` / `et_offline_miss` / `et_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+**0.013×** (65.1 / 5129.9 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 294 — `tool_manager` (cleanup_quarantine)
 
@@ -3479,7 +3483,9 @@ Leftover sibling of Pairs 292–293 on the same `agent_tool_loop` hole. Timed
 work is delete of a staged native-quarantine tree under `node_modules` plus
 a no-op path with no `node_modules` ancestor — not loaded-.so quarantine.
 Observed `cq_removed` / `cq_noop` / `cq_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+**1.365×** (120.1 / 88.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
