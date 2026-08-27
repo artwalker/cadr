@@ -146,6 +146,7 @@ const REPETITIONS = {
 	"agent_conditions.error_probe": 50,
 	"execution_env.exists_remove_temps": 50,
 	"file_mutation_queue.with_queue": 50,
+	"file_mutation_queue.queue_key": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -2242,13 +2243,36 @@ async function runFileMutationQueueWithQueue() {
 	};
 }
 
+async function runFileMutationQueueQueueKey() {
+	const { target, alias, other, missing } = stageFileMutationQueueLayout();
+	writeFileSync(target, "seed", "utf8");
+	if (existsSync(alias)) {
+		unlinkSync(alias);
+	}
+	symlinkSync(target, alias);
+	const targetKey = await getMutationQueueKey(target);
+	const aliasKey = await getMutationQueueKey(alias);
+	const missingKey = await getMutationQueueKey(missing);
+	const otherKey = await getMutationQueueKey(other);
+	return {
+		fmqk_alias: targetKey === aliasKey ? 1 : 0,
+		fmqk_missing: missingKey === path.resolve(missing) ? 1 : 0,
+		fmqk_other: targetKey !== otherKey ? 1 : 0,
+		fmqk_n: 4,
+	};
+}
+
 async function measureFileMutationQueue() {
-	const observed = await runFileMutationQueueWithQueue();
+	const withQueueObserved = await runFileMutationQueueWithQueue();
+	const queueKeyObserved = await runFileMutationQueueQueueKey();
 	return {
 		with_queue: await collect("file_mutation_queue.with_queue", () => {
 			return () => runFileMutationQueueWithQueue();
 		}),
-		observed,
+		queue_key: await collect("file_mutation_queue.queue_key", () => {
+			return () => runFileMutationQueueQueueKey();
+		}),
+		observed: { ...withQueueObserved, ...queueKeyObserved },
 	};
 }
 
@@ -14461,6 +14485,8 @@ const result = {
 				"packages/agent/src/harness/env/nodejs.ts exists/remove/createTempDir/createTempFile",
 			"file_mutation_queue.with_queue":
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue",
+			"file_mutation_queue.queue_key":
+				"packages/coding-agent/src/core/tools/file-mutation-queue.ts queue-map key (realpath / ENOENT resolve)",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":

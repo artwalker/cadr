@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 270,
+   "nextPairNum": 271,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -225,6 +225,15 @@
      "metric": null,
      "branch": null,
      "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
+    },
+    {
+     "pair": 270,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.queue_key",
+     "branch": "cursor/pair-270-queue-key-8765"
     }
    ],
    "mergeQueue": []
