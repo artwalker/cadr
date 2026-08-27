@@ -118,15 +118,33 @@
 ;;;; 286. file_mutation_queue call-with-file-mutation-queue vs withFileMutationQueue (function)
 ;;;; 287. file_mutation_queue make-file-mutation-queue-state vs queue-state object
 ;;;; 288. file_mutation_queue file-mutation-queue-state-key vs state.key
+;;;; 304. file_mutation_queue pending-count vs state.pending after enqueue
+;;;; 305. file_mutation_queue next-ticket vs state.nextTicket after enqueue
+;;;; 306. file_mutation_queue serving-ticket vs state.serving after enqueue
 ;;;; 289. find_tool pattern match vs find-pattern-match-p
 ;;;; 290. find_tool find-files vs find.ts execute output assembly
 ;;;; 291. find_tool make-find-tool vs createFindToolDefinition
+;;;; 343. write_tool ensure-write-parent-directories vs defaultWriteOperations.mkdir
+;;;; 344. write_tool write-utf8-file vs defaultWriteOperations.writeFile
+;;;; 345. write_tool make-write-tool vs createWriteToolDefinition
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
+;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
+;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
+;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
+;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
+;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
+;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
+;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
+;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
+;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
+;;;; 307. cli_settings settings-reload vs SettingsManager.reload
+;;;; 308. cli_settings settings-enabled-models vs SettingsManager.getEnabledModels
+;;;; 309. cli_settings settings-block-images-p vs SettingsManager.getBlockImages
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -179,9 +197,6 @@
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
-;;;; 331. evals_harness step-value vs pi-harness step property access
-;;;; 332. evals_harness eval-usage vs pi-harness usage object assembly
-;;;; 333. evals_harness eval-result-json vs SimpleHarnessResult JSON shape
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
@@ -196,6 +211,9 @@
 ;;;;  88. cli_sdk sdk-model-runtime-providers vs ModelRuntime.getProviders
 ;;;;  89. cli_print_rpc rpc-session-stats vs AgentSession.getSessionStats
 ;;;;  90. oauth_pkce_device github-copilot-oauth-to-auth vs githubCopilotOAuth.toAuth
+;;;; 310. oauth_pkce_device percent-decode vs URLSearchParams percent-decode
+;;;; 311. oauth_pkce_device parse-query vs URLSearchParams
+;;;; 312. oauth_pkce_device parse-oauth-authorization-input vs parseAuthorizationInput
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -271,6 +289,9 @@
     ("provider_codex.stream_roundtrip" . 10)
     ("provider_pi_messages.stream_roundtrip" . 10)
     ("cli_settings.create" . 5)
+    ("cli_settings.reload" . 50)
+    ("cli_settings.enabled_models" . 50)
+    ("cli_settings.block_images" . 50)
     ("agent_conditions.error_probe" . 50)
     ("execution_env.exists_remove_temps" . 50)
     ("file_mutation_queue.with_queue" . 50)
@@ -283,6 +304,9 @@
     ("file_mutation_queue.call_with" . 50)
     ("file_mutation_queue.make_state" . 50)
     ("file_mutation_queue.state_key" . 50)
+    ("file_mutation_queue.pending_count" . 50)
+    ("file_mutation_queue.next_ticket" . 50)
+    ("file_mutation_queue.serving_ticket" . 50)
     ("harness_events.emit" . 50)
     ("bash_tool.strip_exit_footer" . 50)
     ("bash_tool.append_status" . 50)
@@ -299,9 +323,18 @@
     ("find_tool.pattern_match" . 50)
     ("find_tool.find_files" . 50)
     ("find_tool.make_tool" . 50)
+    ("write_tool.ensure_parent" . 50)
+    ("write_tool.write_utf8" . 50)
+    ("write_tool.make_tool" . 50)
+    ("ls_tool.directory_entry_name" . 50)
+    ("ls_tool.list_directory" . 50)
+    ("ls_tool.make_tool" . 50)
     ("tool_manager.get_tool_path" . 50)
     ("tool_manager.ensure_tool" . 50)
     ("tool_manager.cleanup_quarantine" . 50)
+    ("powershell_tool.utf8_prefix" . 50)
+    ("powershell_tool.prefix_command" . 50)
+    ("powershell_tool.make_tool" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -327,6 +360,9 @@
     ("oauth_pkce_device.cloudflare_url" . 50)
     ("oauth_pkce_device.radius_gateway" . 50)
     ("oauth_pkce_device.copilot_auth" . 50)
+    ("oauth_pkce_device.percent_decode" . 50)
+    ("oauth_pkce_device.parse_query" . 50)
+    ("oauth_pkce_device.parse_authorization_input" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -336,6 +372,9 @@
     ("evals_harness.artifact_persist" . 3)
     ("evals_harness.format" . 20)
     ("evals_harness.normalize_steps" . 50)
+    ("evals_harness.resolve_selection" . 50)
+    ("evals_harness.transcript" . 50)
+    ("evals_harness.last_assistant" . 50)
     ("evals_harness.step_value" . 50)
     ("evals_harness.usage" . 50)
     ("evals_harness.result_json" . 50)
@@ -545,6 +584,9 @@
     ("provider_registry_defs.merge_environment" . 50)
     ("provider_registry_defs.runtime_models" . 50)
     ("provider_registry_defs.structured_api_key_login" . 50)
+    ("core_rest.cancellation_abort" . 50)
+    ("core_rest.redacted_secrets" . 50)
+    ("core_rest.threads_cleanup" . 5)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
@@ -2877,6 +2919,51 @@
    :project-path project
    :project-trusted-p t))
 
+(defun cs-truth (value)
+  (if value 1 0))
+
+(defun run-cli-settings-reload (manager)
+  (cadr-cli::settings-reload manager)
+  (list
+   (cs-truth
+    (string= "light"
+             (or (cadr-cli::settings-value manager "theme") "")))
+   (cs-truth
+    (string= "claude-sonnet-4-5"
+             (or (cadr-cli::settings-value manager "defaultModel") "")))
+   (cs-truth
+    (= 42 (cadr-cli::settings-http-idle-timeout-ms manager)))
+   3))
+
+(defun run-cli-settings-enabled-models (manager)
+  (let* ((missing (cadr-cli::settings-enabled-models manager))
+         (initial (cadr-ai::json-object)))
+    (cadr-ai::json-put
+     initial "enabledModels"
+     (cadr-ai::json-array "anthropic/claude-sonnet-4-5"))
+    (let ((explicit
+            (cadr-cli::settings-enabled-models
+             (cadr-cli::make-memory-settings-manager initial))))
+      (list
+       (cs-truth (eq missing :all))
+       (cs-truth
+        (equal explicit '("anthropic/claude-sonnet-4-5")))
+       2))))
+
+(defun run-cli-settings-block-images (manager)
+  (let ((default (cadr-cli::settings-block-images-p manager))
+        (initial (cadr-ai::json-object))
+        (images (cadr-ai::json-object)))
+    (cadr-ai::json-put images "blockImages" t)
+    (cadr-ai::json-put initial "images" images)
+    (let ((blocked
+            (cadr-cli::settings-block-images-p
+             (cadr-cli::make-memory-settings-manager initial))))
+      (list
+       (cs-truth (not default))
+       (cs-truth blocked)
+       2))))
+
 
 (defun agent-conditions-bool (value)
   (if value 1 0))
@@ -3061,31 +3148,62 @@
   (multiple-value-bind (global project)
       (stage-settings-layout)
     (let ((manager (run-cli-settings global project)))
-      (json-object
-       "observed"
-       (json-object
-        "theme"
-        (or (cadr-cli::settings-value manager "theme") "")
-        "default_model"
-        (or (cadr-cli::settings-value manager "defaultModel") "")
-        "default_provider"
-        (or (cadr-cli::settings-value manager "defaultProvider") "")
-        "compaction_reserve_tokens"
-        (or (cadr-cli::settings-nested-value
-             manager "compaction" "reserveTokens")
-            0)
-        "default_project_trust"
-        (or (cadr-cli::settings-value manager "defaultProjectTrust")
-            "")
-        "http_idle_timeout_ms"
-        (cadr-cli::settings-http-idle-timeout-ms manager)
-        "project_trusted"
-        (and (cadr-cli::settings-manager-project-trusted-p manager) t))
-       "create"
-       (collect "cli_settings.create"
-                (lambda ()
-                  (lambda ()
-                    (run-cli-settings global project))))))))
+      (destructuring-bind (rl-theme-light rl-model rl-idle rl-n)
+          (run-cli-settings-reload manager)
+        (destructuring-bind (em-all em-one em-n)
+            (run-cli-settings-enabled-models manager)
+          (destructuring-bind (bi-default bi-blocked bi-n)
+              (run-cli-settings-block-images manager)
+            (json-object
+             "observed"
+             (json-object
+              "theme"
+              (or (cadr-cli::settings-value manager "theme") "")
+              "default_model"
+              (or (cadr-cli::settings-value manager "defaultModel") "")
+              "default_provider"
+              (or (cadr-cli::settings-value manager "defaultProvider") "")
+              "compaction_reserve_tokens"
+              (or (cadr-cli::settings-nested-value
+                   manager "compaction" "reserveTokens")
+                  0)
+              "default_project_trust"
+              (or (cadr-cli::settings-value manager "defaultProjectTrust")
+                  "")
+              "http_idle_timeout_ms"
+              (cadr-cli::settings-http-idle-timeout-ms manager)
+              "project_trusted"
+              (and (cadr-cli::settings-manager-project-trusted-p manager) t)
+              "rl_theme_light" rl-theme-light
+              "rl_model" rl-model
+              "rl_idle" rl-idle
+              "rl_n" rl-n
+              "em_all" em-all
+              "em_one" em-one
+              "em_n" em-n
+              "bi_default" bi-default
+              "bi_blocked" bi-blocked
+              "bi_n" bi-n)
+             "create"
+             (collect "cli_settings.create"
+                      (lambda ()
+                        (lambda ()
+                          (run-cli-settings global project))))
+             "reload"
+             (collect "cli_settings.reload"
+                      (lambda ()
+                        (lambda ()
+                          (run-cli-settings-reload manager))))
+             "enabled_models"
+             (collect "cli_settings.enabled_models"
+                      (lambda ()
+                        (lambda ()
+                          (run-cli-settings-enabled-models manager))))
+             "block_images"
+             (collect "cli_settings.block_images"
+                      (lambda ()
+                        (lambda ()
+                          (run-cli-settings-block-images manager)))))))))))
 
 (defun stage-settings-load-trust ()
   (let* ((empty
@@ -4165,6 +4283,110 @@
            5)
         (fmq-drop-empty-queues)))))
 
+(defun fmq-register-layout-states ()
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (fmq-setup-alias target alias)
+    (multiple-value-bind (target-key target-state target-ticket)
+        (cadr-agent::register-file-mutation target)
+      (declare (ignore target-key target-ticket))
+      (multiple-value-bind (alias-key alias-state alias-ticket)
+          (cadr-agent::register-file-mutation alias)
+        (declare (ignore alias-key alias-ticket))
+        (multiple-value-bind (other-key other-state other-ticket)
+            (cadr-agent::register-file-mutation other)
+          (declare (ignore other-key other-ticket))
+          (multiple-value-bind (missing-key missing-state missing-ticket)
+              (cadr-agent::register-file-mutation missing)
+            (declare (ignore missing-key missing-ticket))
+            (values target-state alias-state other-state missing-state)))))))
+
+(defun run-file-mutation-queue-pending-count ()
+  ;; Baseline queue-state.pending after enqueue; not make-state zeros,
+  ;; not with-file-mutation-queue, not write/edit tools.
+  (multiple-value-bind (target-state alias-state other-state missing-state)
+      (fmq-register-layout-states)
+    (prog1
+        (list
+         (fmq-truth
+          (and (eq target-state alias-state)
+               (= 2
+                  (cadr-agent::file-mutation-queue-state-pending-count
+                   target-state))))
+         (fmq-truth
+          (= 1
+             (cadr-agent::file-mutation-queue-state-pending-count
+              other-state)))
+         (fmq-truth
+          (= 1
+             (cadr-agent::file-mutation-queue-state-pending-count
+              missing-state)))
+         (fmq-truth
+          (= 2
+             (cadr-agent::file-mutation-queue-state-pending-count
+              alias-state)))
+         4)
+      (fmq-clear-queues))))
+
+(defun run-file-mutation-queue-next-ticket ()
+  ;; Baseline queue-state.nextTicket after enqueue; not make-state zeros,
+  ;; not with-file-mutation-queue, not write/edit tools.
+  (multiple-value-bind (target-state alias-state other-state missing-state)
+      (fmq-register-layout-states)
+    (prog1
+        (list
+         (fmq-truth
+          (and (eq target-state alias-state)
+               (= 2
+                  (cadr-agent::file-mutation-queue-state-next-ticket
+                   target-state))))
+         (fmq-truth
+          (= 1
+             (cadr-agent::file-mutation-queue-state-next-ticket
+              other-state)))
+         (fmq-truth
+          (= 1
+             (cadr-agent::file-mutation-queue-state-next-ticket
+              missing-state)))
+         (fmq-truth
+          (= 2
+             (cadr-agent::file-mutation-queue-state-next-ticket
+              alias-state)))
+         4)
+      (fmq-clear-queues))))
+
+(defun run-file-mutation-queue-serving-ticket ()
+  ;; Baseline queue-state.serving after enqueue (still 0 until release);
+  ;; not make-state zeros, not wait/release, not write/edit tools.
+  (multiple-value-bind (target-state alias-state other-state missing-state)
+      (fmq-register-layout-states)
+    (prog1
+        (list
+         (fmq-truth
+          (and (eq target-state alias-state)
+               (zerop
+                (cadr-agent::file-mutation-queue-state-serving-ticket
+                 target-state))))
+         (fmq-truth
+          (zerop
+           (cadr-agent::file-mutation-queue-state-serving-ticket
+            other-state)))
+         (fmq-truth
+          (zerop
+           (cadr-agent::file-mutation-queue-state-serving-ticket
+            missing-state)))
+         (fmq-truth
+          (zerop
+           (cadr-agent::file-mutation-queue-state-serving-ticket
+            alias-state)))
+         4)
+      (fmq-clear-queues))))
+
 (defun measure-file-mutation-queue ()
   (destructuring-bind (alias-key missing-key other-key fifo-sum other-run clean)
       (run-file-mutation-queue-with-queue)
@@ -4186,6 +4408,12 @@
                       (run-file-mutation-queue-make-state)
                     (destructuring-bind (fmqt-alias fmqt-other fmqt-missing fmqt-repeat fmqt-n)
                         (run-file-mutation-queue-state-key)
+                      (destructuring-bind (fmqp-shared fmqp-other fmqp-missing fmqp-alias fmqp-n)
+                          (run-file-mutation-queue-pending-count)
+                        (destructuring-bind (fmqi-shared fmqi-other fmqi-missing fmqi-alias fmqi-n)
+                            (run-file-mutation-queue-next-ticket)
+                          (destructuring-bind (fmqv-zero fmqv-other fmqv-missing fmqv-alias fmqv-n)
+                              (run-file-mutation-queue-serving-ticket)
             (json-object
              "observed"
              (json-object
@@ -4238,7 +4466,22 @@
               "fmqt_other" fmqt-other
               "fmqt_missing" fmqt-missing
               "fmqt_repeat" fmqt-repeat
-              "fmqt_n" fmqt-n)
+              "fmqt_n" fmqt-n
+              "fmqp_shared" fmqp-shared
+              "fmqp_other" fmqp-other
+              "fmqp_missing" fmqp-missing
+              "fmqp_alias" fmqp-alias
+              "fmqp_n" fmqp-n
+              "fmqi_shared" fmqi-shared
+              "fmqi_other" fmqi-other
+              "fmqi_missing" fmqi-missing
+              "fmqi_alias" fmqi-alias
+              "fmqi_n" fmqi-n
+              "fmqv_zero" fmqv-zero
+              "fmqv_other" fmqv-other
+              "fmqv_missing" fmqv-missing
+              "fmqv_alias" fmqv-alias
+              "fmqv_n" fmqv-n)
              "with_queue"
              (collect "file_mutation_queue.with_queue"
                       (lambda ()
@@ -4288,7 +4531,22 @@
              (collect "file_mutation_queue.state_key"
                       (lambda ()
                         (lambda ()
-                          (run-file-mutation-queue-state-key))))))))))))))))
+                          (run-file-mutation-queue-state-key))))
+             "pending_count"
+             (collect "file_mutation_queue.pending_count"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-pending-count))))
+             "next_ticket"
+             (collect "file_mutation_queue.next_ticket"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-next-ticket))))
+             "serving_ticket"
+             (collect "file_mutation_queue.serving_ticket"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-serving-ticket)))))))))))))))))))
 
 (defun he-truth (value)
   (if value 1 0))
@@ -4799,6 +5057,371 @@
                   (lambda ()
                     (lambda ()
                       (run-find-make-tool)))))))))
+
+(defun ls-tool-truth (value)
+  (if value 1 0))
+
+(defparameter *ls-tool-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-ls-tool-cwd")))
+
+(defun ensure-ls-tool-fixture ()
+  (let ((root (uiop:ensure-directory-pathname *ls-tool-cwd*)))
+    (ensure-directories-exist (merge-pathnames "src/nested/" root))
+    (ensure-directories-exist (merge-pathnames "empty/" root))
+    (ensure-directories-exist (merge-pathnames "lots/" root))
+    (dolist (relative '(".dot" "a.txt" "z.txt" "src/nested/x.txt"
+                        "lots/f1.txt" "lots/f2.txt" "lots/f3.txt" "lots/f4.txt"))
+      (with-open-file
+          (out (merge-pathnames relative root)
+               :direction :output
+               :if-exists :supersede
+               :if-does-not-exist :create
+               :external-format :utf-8)
+        (write-string "x" out)))
+    *ls-tool-cwd*))
+
+(defun run-ls-directory-entry-name ()
+  ;; Pathname-shape name + directory slash; not readdir, not execute.
+  (let* ((cwd *ls-tool-cwd*)
+         (file (merge-pathnames "a.txt" cwd))
+         (dir (uiop:ensure-directory-pathname (merge-pathnames "src/" cwd)))
+         (nested
+           (uiop:ensure-directory-pathname
+            (merge-pathnames "src/nested/" cwd)))
+         (file-name (cadr-cli::directory-entry-name file))
+         (dir-name (cadr-cli::directory-entry-name dir))
+         (nested-name (cadr-cli::directory-entry-name nested)))
+    (list
+     (ls-tool-truth (string= file-name "a.txt"))
+     (ls-tool-truth (string= dir-name "src/"))
+     (ls-tool-truth (string= nested-name "nested/"))
+     3)))
+
+(defun ls-tool-output-text (cwd arguments)
+  (multiple-value-bind (content details)
+      (cadr-cli::list-directory cwd arguments)
+    (declare (ignore details))
+    (cadr-ai::text-content-text (first content))))
+
+(defun ls-tool-line-count (text)
+  (if (string= text "(empty directory)")
+      0
+      (1+ (count #\Newline text))))
+
+(defun run-ls-list-directory ()
+  (let* ((cwd (ensure-ls-tool-fixture))
+         (empty
+           (ls-tool-output-text
+            cwd (cadr-ai::json-object "path" "empty")))
+         (mixed
+           (ls-tool-output-text
+            cwd (cadr-ai::json-object "path" ".")))
+         (limited
+           (ls-tool-output-text
+            cwd (cadr-ai::json-object "path" "lots" "limit" 2)))
+         (first-line
+           (subseq mixed 0 (or (position #\Newline mixed) (length mixed)))))
+    (list
+     (ls-tool-truth (string= empty "(empty directory)"))
+     (ls-tool-line-count mixed)
+     (ls-tool-truth (string= first-line ".dot"))
+     (ls-tool-truth
+      (and (search "2 entries limit reached" limited)
+           (search "Use limit=4 for more" limited)))
+     4)))
+
+(defun run-ls-make-tool ()
+  (let* ((cwd (ensure-ls-tool-fixture))
+         (tool (cadr-cli::make-ls-tool cwd))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list))))
+    (list
+     (ls-tool-truth (string= (cadr-ai:tool-name tool) "ls"))
+     (ls-tool-truth
+      (and (search "List directory contents"
+                   (cadr-ai:tool-description tool))
+           (search "500 entries"
+                   (cadr-ai:tool-description tool))))
+     (ls-tool-truth (null required-list))
+     3)))
+
+(defun measure-ls-tool ()
+  (ensure-ls-tool-fixture)
+  (destructuring-bind (lden-file lden-dir lden-nested lden-n)
+      (run-ls-directory-entry-name)
+    (destructuring-bind (ld-empty ld-mixed ld-first ld-limit ld-n)
+        (run-ls-list-directory)
+      (destructuring-bind (lst-name lst-desc lst-req lst-n)
+          (run-ls-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "lden_file" lden-file
+          "lden_dir" lden-dir
+          "lden_nested" lden-nested
+          "lden_n" lden-n
+          "ld_empty" ld-empty
+          "ld_mixed" ld-mixed
+          "ld_first" ld-first
+          "ld_limit" ld-limit
+          "ld_n" ld-n
+          "lst_name" lst-name
+          "lst_desc" lst-desc
+          "lst_req" lst-req
+          "lst_n" lst-n)
+         "directory_entry_name"
+         (collect "ls_tool.directory_entry_name"
+                  (lambda ()
+                    (lambda ()
+                      (run-ls-directory-entry-name))))
+         "list_directory"
+         (collect "ls_tool.list_directory"
+                  (lambda ()
+                    (lambda ()
+                      (run-ls-list-directory))))
+         "make_tool"
+         (collect "ls_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-ls-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tools/write.lisp (Pairs 343-345).
+;;; Timed owners: ensure-write-parent-directories, write-utf8-file,
+;;; make-write-tool — not tool execute / mutation queue / result copy.
+;;; ---------------------------------------------------------------------
+
+(defun write-tool-truth (value)
+  (if value 1 0))
+
+(defparameter *write-tool-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-write-tool-cwd")))
+
+(defun write-tool-root ()
+  (uiop:ensure-directory-pathname *write-tool-cwd*))
+
+(defun write-tool-path (relative)
+  (merge-pathnames relative (write-tool-root)))
+
+(defun ensure-write-tool-fixture ()
+  (let ((root (write-tool-root)))
+    (ensure-directories-exist (merge-pathnames "nested/deep/" root))
+    (ensure-directories-exist (merge-pathnames "existing/" root))
+    *write-tool-cwd*))
+
+(defun run-write-ensure-parent ()
+  ;; Nested mkdir, already-a-directory, parent-is-file error.
+  ;; Not write-utf8-file, not execute.
+  (ensure-write-tool-fixture)
+  (let* ((nested (write-tool-path "nested/deep/a.txt"))
+         (existing (write-tool-path "existing/b.txt"))
+         (blocker (write-tool-path "blocker"))
+         (blocked (write-tool-path "blocker/c.txt")))
+    (ignore-errors (uiop:delete-file-if-exists blocker))
+    (let ((nested-ok
+            (handler-case
+                (progn
+                  (cadr-cli::ensure-write-parent-directories nested)
+                  1)
+              (error () 0)))
+          (exists-ok
+            (handler-case
+                (progn
+                  (cadr-cli::ensure-write-parent-directories existing)
+                  1)
+              (error () 0)))
+          (eexist
+            (progn
+              (with-open-file (out blocker
+                                   :direction :output
+                                   :if-exists :supersede
+                                   :if-does-not-exist :create
+                                   :external-format :utf-8)
+                (write-string "file" out))
+              (handler-case
+                  (progn
+                    (cadr-cli::ensure-write-parent-directories blocked)
+                    0)
+                (error () 1)))))
+      (list nested-ok exists-ok eexist 3))))
+
+(defun run-write-utf8 ()
+  ;; UTF-8 write into an existing parent — not mkdir as the timed owner,
+  ;; not execute / queue / result wording.
+  (ensure-write-tool-fixture)
+  (let* ((ascii-path (write-tool-path "out-ascii.txt"))
+         (cjk-path (write-tool-path "out-cjk.txt"))
+         (ascii-text "hello")
+         (cjk-text "中🙂"))
+    (cadr-cli::write-utf8-file ascii-path ascii-text)
+    (cadr-cli::write-utf8-file cjk-path cjk-text)
+    (list
+     (write-tool-truth (probe-file ascii-path))
+     (cadr-cli::utf16-code-unit-length ascii-text)
+     (cadr-cli::utf16-code-unit-length cjk-text)
+     3)))
+
+(defun run-write-make-tool ()
+  (let* ((cwd (ensure-write-tool-fixture))
+         (tool (cadr-cli::make-write-tool cwd))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list)))
+         (description (cadr-ai:tool-description tool)))
+    (list
+     (write-tool-truth (string= (cadr-ai:tool-name tool) "write"))
+     (write-tool-truth
+      (and (search "Write content to a file" description)
+           (search "Automatically creates parent directories" description)))
+     (write-tool-truth
+      (and required-list
+           (find "path" required-list :test #'string=)
+           (find "content" required-list :test #'string=)))
+     3)))
+
+(defun measure-write-tool ()
+  (ensure-write-tool-fixture)
+  (destructuring-bind (ep-nested ep-exists ep-eexist ep-n)
+      (run-write-ensure-parent)
+    (destructuring-bind (wu-ok wu-ascii wu-cjk wu-n)
+        (run-write-utf8)
+      (destructuring-bind (wmt-name wmt-desc wmt-req wmt-n)
+          (run-write-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "ep_nested" ep-nested
+          "ep_exists" ep-exists
+          "ep_eexist" ep-eexist
+          "ep_n" ep-n
+          "wu_ok" wu-ok
+          "wu_ascii" wu-ascii
+          "wu_cjk" wu-cjk
+          "wu_n" wu-n
+          "wmt_name" wmt-name
+          "wmt_desc" wmt-desc
+          "wmt_req" wmt-req
+          "wmt_n" wmt-n)
+         "ensure_parent"
+         (collect "write_tool.ensure_parent"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-ensure-parent))))
+         "write_utf8"
+         (collect "write_tool.write_utf8"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-utf8))))
+         "make_tool"
+         (collect "write_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tools/powershell.lisp (Pairs 301-303).
+;;; Timed work is the UTF-8 output prefix, prefix+command concat, and
+;;; make-powershell-tool schema — not execute/spawn.
+;;; ---------------------------------------------------------------------
+
+(defun powershell-tool-truth (value)
+  (if value 1 0))
+
+(defun run-powershell-utf8-prefix ()
+  (let ((prefix cadr-cli::+powershell-utf8-output-prefix+))
+    (list
+     (length prefix)
+     (powershell-tool-truth
+      (and (plusp (length prefix))
+           (char= #\Newline (char prefix (1- (length prefix))))))
+     (powershell-tool-truth
+      (and (>= (length prefix) 4)
+           (string= "try " prefix :end2 4)))
+     (powershell-tool-truth (search "UTF8" prefix))
+     4)))
+
+(defun powershell-prefix-command (command)
+  (concatenate 'string cadr-cli::+powershell-utf8-output-prefix+ command))
+
+(defun run-powershell-prefix-command ()
+  (let* ((prefix cadr-cli::+powershell-utf8-output-prefix+)
+         (empty (powershell-prefix-command ""))
+         (date (powershell-prefix-command "Get-Date"))
+         (write (powershell-prefix-command "Write-Output hi")))
+    (list
+     (powershell-tool-truth (string= empty prefix))
+     (powershell-tool-truth
+      (and (>= (length date) (length prefix))
+           (string= "Get-Date" date :start2 (length prefix))))
+     (powershell-tool-truth
+      (and (>= (length write) (length prefix))
+           (string= "Write-Output hi" write :start2 (length prefix))))
+     3)))
+
+(defun run-powershell-make-tool ()
+  (let* ((tool (cadr-cli:make-powershell-tool "/tmp"))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list))))
+    (list
+     (powershell-tool-truth
+      (string= (cadr-ai:tool-name tool) "powershell"))
+     (powershell-tool-truth
+      (search "Execute a PowerShell command"
+              (cadr-ai:tool-description tool)))
+     (powershell-tool-truth
+      (and required-list
+           (find "command" required-list :test #'string=)))
+     3)))
+
+(defun measure-powershell-tool ()
+  (destructuring-bind (psu-len psu-nl psu-try psu-utf8 psu-n)
+      (run-powershell-utf8-prefix)
+    (destructuring-bind (psc-empty psc-date psc-write psc-n)
+        (run-powershell-prefix-command)
+      (destructuring-bind (pmt-name pmt-desc pmt-req pmt-n)
+          (run-powershell-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "psu_len" psu-len
+          "psu_nl" psu-nl
+          "psu_try" psu-try
+          "psu_utf8" psu-utf8
+          "psu_n" psu-n
+          "psc_empty" psc-empty
+          "psc_date" psc-date
+          "psc_write" psc-write
+          "psc_n" psc-n
+          "pmt_name" pmt-name
+          "pmt_desc" pmt-desc
+          "pmt_req" pmt-req
+          "pmt_n" pmt-n)
+         "utf8_prefix"
+         (collect "powershell_tool.utf8_prefix"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-utf8-prefix))))
+         "prefix_command"
+         (collect "powershell_tool.prefix_command"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-prefix-command))))
+         "make_tool"
+         (collect "powershell_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -5716,13 +6339,74 @@
     "http://localhost:8080/"
     "http://localhost:8080")))
 
+(defun oauth-percent-decode-flag (encoded expected)
+  (handler-case
+      (if (string= (cadr-ai::percent-decode encoded) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-percent-decode ()
+  ;; Valid application/x-www-form-urlencoded only. Do not exact truncated
+  ;; or invalid percent escapes (Lisp signals; URLSearchParams is lenient).
+  (list
+   (oauth-percent-decode-flag "hello" "hello")
+   (oauth-percent-decode-flag "hello+world" "hello world")
+   (oauth-percent-decode-flag "%2Fpath" "/path")
+   (oauth-percent-decode-flag "%20x" " x")
+   (oauth-percent-decode-flag "%C3%A9" (string (code-char 233)))
+   5))
+
+(defun oauth-query-flag (query key expected)
+  (handler-case
+      (let ((value (gethash key (cadr-ai::parse-query query))))
+        (if (string= value expected)
+            1
+            0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-parse-query ()
+  (list
+   (oauth-query-flag "code=abc&state=xyz" "code" "abc")
+   (oauth-query-flag "code=abc&state=xyz" "state" "xyz")
+   (oauth-query-flag "q=hello+world" "q" "hello world")
+   (oauth-query-flag "a=" "a" "")
+   4))
+
+(defun oauth-authorization-input-flag (input expected-code expected-state)
+  (handler-case
+      (multiple-value-bind (code state)
+          (cadr-ai::parse-oauth-authorization-input input)
+        (if (and (equal code expected-code)
+                 (equal state expected-state))
+            1
+            0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-parse-authorization-input ()
+  ;; Same four forms as goal13-manual-oauth-input-matches-baseline.
+  ;; Do not exact empty input (Lisp "" / NIL vs pi {}).
+  (list
+   (oauth-authorization-input-flag
+    "http://localhost:1455/auth/callback?code=code-a&state=state-a"
+    "code-a" "state-a")
+   (oauth-authorization-input-flag "code-b#state-b" "code-b" "state-b")
+   (oauth-authorization-input-flag
+    "code=code-c&state=state-c"
+    "code-c" "state-c")
+   (oauth-authorization-input-flag " code-d " "code-d" nil)
+   4))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
         (copilot (run-oauth-pkce-device-copilot-url))
         (cloudflare (run-oauth-pkce-device-cloudflare-url))
         (radius (run-oauth-pkce-device-radius-gateway))
-        (copilot-auth (run-oauth-pkce-device-copilot-auth)))
+        (copilot-auth (run-oauth-pkce-device-copilot-auth))
+        (percent (run-oauth-pkce-device-percent-decode))
+        (query (run-oauth-pkce-device-parse-query))
+        (auth-input (run-oauth-pkce-device-parse-authorization-input)))
     (json-object
      "observed"
      (json-object
@@ -5749,7 +6433,23 @@
       "ga_ind" (nth 1 copilot-auth)
       "ga_ent" (nth 2 copilot-auth)
       "ga_dom" (nth 3 copilot-auth)
-      "ga_key" (nth 4 copilot-auth))
+      "ga_key" (nth 4 copilot-auth)
+      "pd_plain" (nth 0 percent)
+      "pd_plus" (nth 1 percent)
+      "pd_slash" (nth 2 percent)
+      "pd_space" (nth 3 percent)
+      "pd_utf8" (nth 4 percent)
+      "pd_n" (nth 5 percent)
+      "pq_code" (nth 0 query)
+      "pq_state" (nth 1 query)
+      "pq_plus" (nth 2 query)
+      "pq_empty" (nth 3 query)
+      "pq_n" (nth 4 query)
+      "pai_url" (nth 0 auth-input)
+      "pai_hash" (nth 1 auth-input)
+      "pai_qs" (nth 2 auth-input)
+      "pai_plain" (nth 3 auth-input)
+      "pai_n" (nth 4 auth-input))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -5779,7 +6479,22 @@
      (collect "oauth_pkce_device.copilot_auth"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-copilot-auth)))))))
+                  (run-oauth-pkce-device-copilot-auth))))
+     "percent_decode"
+     (collect "oauth_pkce_device.percent_decode"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-percent-decode))))
+     "parse_query"
+     (collect "oauth_pkce_device.parse_query"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-parse-query))))
+     "parse_authorization_input"
+     (collect "oauth_pkce_device.parse_authorization_input"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-parse-authorization-input)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -6319,6 +7034,118 @@
 (defun eval-flag (value)
   (if value 1 0))
 
+(defun eval-empty-environment (name)
+  (declare (ignore name))
+  nil)
+
+(defun eval-named-environment (entries)
+  (lambda (name)
+    (cdr (assoc name entries :test #'string=))))
+
+(defun eval-resolve-ok-p (provider model environment expected-provider expected-model)
+  (let ((cadr-evals::*eval-environment-function* environment))
+    (handler-case
+        (multiple-value-bind (resolved-provider resolved-model)
+            (cadr-evals::resolve-eval-selection provider model)
+          (eval-flag
+           (and (string= resolved-provider expected-provider)
+                (string= resolved-model expected-model))))
+      (error () 0))))
+
+(defun eval-resolve-error-p (provider model environment)
+  (let ((cadr-evals::*eval-environment-function* environment))
+    (handler-case
+        (progn
+          (cadr-evals::resolve-eval-selection provider model)
+          0)
+      (error () 1))))
+
+(defun run-evals-harness-resolve-selection ()
+  ;; Explicit args, trimmed env fallback, missing/blank errors.
+  ;; Do not exact error copy (CADR_ vs PI_ names).
+  (let ((empty #'eval-empty-environment)
+        (from-env
+          (eval-named-environment
+           '(("CADR_EVAL_PROVIDER" . "  openai  ")
+             ("CADR_EVAL_MODEL" . "  gpt-4o  ")))))
+    (list
+     (eval-resolve-ok-p "openai" "gpt-4o" empty "openai" "gpt-4o")
+     (eval-resolve-ok-p nil nil from-env "openai" "gpt-4o")
+     (eval-resolve-error-p nil nil empty)
+     (eval-resolve-error-p "openai" nil empty)
+     (eval-resolve-error-p "  " "gpt-4o" empty)
+     5)))
+
+(defun eval-transcript-messages ()
+  (list
+   (cadr-ai:make-user-message :content "hi")
+   (cadr-ai:make-assistant-message
+    :content
+    (list
+     (cadr-ai:make-text-content :text "hello")
+     (cadr-ai:make-tool-call
+      :id "c1"
+      :name "bash"
+      :arguments (cadr-ai::json-object "cmd" "ls"))))
+   (cadr-ai:make-tool-result-message
+    :tool-call-id "c1"
+    :tool-name "bash"
+    :content (list (cadr-ai:make-text-content :text "ok"))
+    :is-error nil)
+   (cadr-ai:make-assistant-message
+    :content (list (cadr-ai:make-text-content :text "")))
+   (cadr-ai:make-tool-result-message
+    :tool-call-id "c2"
+    :tool-name "fail"
+    :content (list (cadr-ai:make-text-content :text ""))
+    :is-error t)))
+
+(defun run-evals-harness-transcript ()
+  (let ((events
+          (cadr-evals::messages-to-transcript
+           (eval-transcript-messages))))
+    (list
+     (length events)
+     (eval-flag
+      (string= (cadr-ai::json-get (first events) "type") "message"))
+     (eval-flag
+      (string= (cadr-ai::json-get (first events) "role") "user"))
+     (eval-flag
+      (string= (cadr-ai::json-get (second events) "content") "hello"))
+     (eval-flag
+      (string= (cadr-ai::json-get (third events) "type") "tool_call"))
+     (eval-flag
+      (string= (cadr-ai::json-get (third events) "name") "bash"))
+     (eval-flag
+      (string= (cadr-ai::json-get (fourth events) "type")
+               "tool_result"))
+     (eval-flag (cadr-ai::json-get (fifth events) "error"))
+     8)))
+
+(defun run-evals-harness-last-assistant ()
+  (let* ((old
+           (cadr-ai:make-assistant-message
+            :content
+            (list (cadr-ai:make-text-content :text "old"))))
+         (user (cadr-ai:make-user-message :content "hi"))
+         (new
+           (cadr-ai:make-assistant-message
+            :content
+            (list (cadr-ai:make-text-content :text "new"))))
+         (messages (list old)))
+    (let ((pre (last messages)))
+      (setf (cdr pre) (list user new))
+      (list
+       (eval-flag
+        (eq new (cadr-evals::last-assistant-since messages pre)))
+       (eval-flag
+        (null
+         (cadr-evals::last-assistant-since
+          messages (last messages))))
+       (eval-flag
+        (eq new (cadr-evals::last-assistant-since messages nil)))
+       3))))
+
 (defun run-evals-harness-step-value ()
   ;; Hash-table JSON step, keyword plist, interned keyword plist, miss.
   (let* ((hash
@@ -6436,6 +7263,9 @@
             (evals-harness-observations)))
          (fmt (run-evals-harness-format empty-report report))
          (normalize (run-evals-harness-normalize-steps))
+         (resolve (run-evals-harness-resolve-selection))
+         (transcript (run-evals-harness-transcript))
+         (last-assistant (run-evals-harness-last-assistant))
          (step-value (run-evals-harness-step-value))
          (usage (run-evals-harness-usage))
          (result-json (run-evals-harness-result-json)))
@@ -6471,6 +7301,25 @@
       "ns_kw_rel" (nth 6 normalize)
       "ns_vec_n" (nth 7 normalize)
       "ns_bad" (nth 8 normalize)
+      "rs_explicit" (nth 0 resolve)
+      "rs_env" (nth 1 resolve)
+      "rs_miss" (nth 2 resolve)
+      "rs_prov" (nth 3 resolve)
+      "rs_blank" (nth 4 resolve)
+      "rs_n" (nth 5 resolve)
+      "tr_n" (nth 0 transcript)
+      "tr_user" (nth 1 transcript)
+      "tr_role" (nth 2 transcript)
+      "tr_text" (nth 3 transcript)
+      "tr_call" (nth 4 transcript)
+      "tr_name" (nth 5 transcript)
+      "tr_result" (nth 6 transcript)
+      "tr_err" (nth 7 transcript)
+      "tr_keys" (nth 8 transcript)
+      "la_new" (nth 0 last-assistant)
+      "la_none" (nth 1 last-assistant)
+      "la_full" (nth 2 last-assistant)
+      "la_n" (nth 3 last-assistant)
       "sv_hash" (nth 0 step-value)
       "sv_plist" (nth 1 step-value)
       "sv_intern" (nth 2 step-value)
@@ -6516,6 +7365,21 @@
               (lambda ()
                 (lambda ()
                   (run-evals-harness-normalize-steps))))
+     "resolve_selection"
+     (collect "evals_harness.resolve_selection"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-resolve-selection))))
+     "transcript"
+     (collect "evals_harness.transcript"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-transcript))))
+     "last_assistant"
+     (collect "evals_harness.last_assistant"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-last-assistant))))
      "step_value"
      (collect "evals_harness.step_value"
               (lambda ()
@@ -15426,6 +16290,80 @@
                 (lambda ()
                   (run-http-transport-parse-url)))))))
 
+(defun run-core-rest-cancellation ()
+  (let ((state (cadr-core:make-cancellation-state)))
+    (let ((live (if (cadr-core:cancellation-aborted-p state) 0 1)))
+      (cadr-core:abort-cancellation state)
+      (let ((aborted (if (cadr-core:cancellation-aborted-p state) 1 0)))
+        (cadr-core:set-cancellation-aborted-p state nil)
+        (list
+         live
+         aborted
+         (if (cadr-core:cancellation-aborted-p state) 0 1)
+         (if (cadr-core:cancellation-predicate-aborted-p (lambda () t))
+             1
+             0))))))
+
+(defun run-core-rest-redacted ()
+  (let* ((text "keep-visible token=sk-live-abc extra=hunter2 done")
+         (out (cadr-core:redact-secrets text '("sk-live-abc" "hunter2"))))
+    (list
+     (if (search "keep-visible" out) 1 0)
+     (if (search "sk-live-abc" out) 0 1)
+     (if (search "hunter2" out) 0 1)
+     (if (search "[REDACTED]" out) 1 0))))
+
+(defun run-core-rest-threads ()
+  (let ((absent (cadr-core:stop-thread-for-cleanup nil))
+        (current
+          (cadr-core:stop-thread-for-cleanup sb-thread:*current-thread*)))
+    (let* ((done
+             (sb-thread:make-thread
+              (lambda () :done)
+              :name "cadr-core-rest-join"))
+           (joined
+             (progn
+               (sb-thread:join-thread done)
+               (cadr-core:stop-thread-for-cleanup done))))
+      (list
+       (if (eq absent :absent) 1 0)
+       (if (eq current :current) 1 0)
+       (if (eq joined :joined) 1 0)))))
+
+(defun measure-core-rest ()
+  (let ((cancellation (run-core-rest-cancellation))
+        (redacted (run-core-rest-redacted))
+        (threads (run-core-rest-threads)))
+    (json-object
+     "observed"
+     (json-object
+      "ca_live" (first cancellation)
+      "ca_abort" (second cancellation)
+      "ca_clear" (third cancellation)
+      "ca_pred" (fourth cancellation)
+      "rd_keep" (first redacted)
+      "rd_secret" (second redacted)
+      "rd_token" (third redacted)
+      "rd_mark" (fourth redacted)
+      "th_absent" (first threads)
+      "th_current" (second threads)
+      "th_joined" (third threads))
+     "cancellation_abort"
+     (collect "core_rest.cancellation_abort"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-cancellation))))
+     "redacted_secrets"
+     (collect "core_rest.redacted_secrets"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-redacted))))
+     "threads_cleanup"
+     (collect "core_rest.threads_cleanup"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-threads)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -15498,6 +16436,12 @@
       "src/cadr-ai/providers/pi-messages.lisp stream-chat"
       "cli_settings.create"
       "src/cadr-cli/settings/manager.lisp make-settings-manager"
+      "cli_settings.reload"
+      "src/cadr-cli/settings/manager.lisp settings-reload"
+      "cli_settings.enabled_models"
+      "src/cadr-cli/settings/manager.lisp settings-enabled-models"
+      "cli_settings.block_images"
+      "src/cadr-cli/settings/manager.lisp settings-block-images-p"
       "agent_conditions.error_probe"
       "src/cadr-agent/conditions.lisp define-condition slot accessors + subtypep"
       "execution_env.exists_remove_temps"
@@ -15522,6 +16466,12 @@
       "src/cadr-agent/file-mutation-queue.lisp make-file-mutation-queue-state"
       "file_mutation_queue.state_key"
       "src/cadr-agent/file-mutation-queue.lisp file-mutation-queue-state-key"
+      "file_mutation_queue.pending_count"
+      "src/cadr-agent/file-mutation-queue.lisp file-mutation-queue-state-pending-count"
+      "file_mutation_queue.next_ticket"
+      "src/cadr-agent/file-mutation-queue.lisp file-mutation-queue-state-next-ticket"
+      "file_mutation_queue.serving_ticket"
+      "src/cadr-agent/file-mutation-queue.lisp file-mutation-queue-state-serving-ticket"
       "harness_events.emit"
       "src/cadr-agent/harness-events.lisp harness-event-bus-emit"
       "bash_tool.strip_exit_footer"
@@ -15554,12 +16504,30 @@
       "src/cadr-cli/tools/find.lisp find-files"
       "find_tool.make_tool"
       "src/cadr-cli/tools/find.lisp make-find-tool"
+      "write_tool.ensure_parent"
+      "src/cadr-cli/tools/write.lisp ensure-write-parent-directories"
+      "write_tool.write_utf8"
+      "src/cadr-cli/tools/write.lisp write-utf8-file"
+      "write_tool.make_tool"
+      "src/cadr-cli/tools/write.lisp make-write-tool"
+      "ls_tool.directory_entry_name"
+      "src/cadr-cli/tools/ls.lisp directory-entry-name"
+      "ls_tool.list_directory"
+      "src/cadr-cli/tools/ls.lisp list-directory"
+      "ls_tool.make_tool"
+      "src/cadr-cli/tools/ls.lisp make-ls-tool"
       "tool_manager.get_tool_path"
       "src/cadr-cli/tool-manager.lisp get-tool-path"
       "tool_manager.ensure_tool"
       "src/cadr-cli/tool-manager.lisp ensure-tool"
       "tool_manager.cleanup_quarantine"
       "src/cadr-cli/tool-manager.lisp cleanup-windows-self-update-quarantine"
+      "powershell_tool.utf8_prefix"
+      "src/cadr-cli/tools/powershell.lisp +powershell-utf8-output-prefix+"
+      "powershell_tool.prefix_command"
+      "src/cadr-cli/tools/powershell.lisp UTF-8 prefix + command concatenate"
+      "powershell_tool.make_tool"
+      "src/cadr-cli/tools/powershell.lisp make-powershell-tool"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -15610,6 +16578,12 @@
       "src/cadr-ai/oauth/providers/radius.lisp normalize-radius-gateway"
       "oauth_pkce_device.copilot_auth"
       "src/cadr-ai/oauth/providers/github-copilot.lisp github-copilot-oauth-to-auth"
+      "oauth_pkce_device.percent_decode"
+      "src/cadr-ai/oauth/callback.lisp percent-decode"
+      "oauth_pkce_device.parse_query"
+      "src/cadr-ai/oauth/callback.lisp parse-query"
+      "oauth_pkce_device.parse_authorization_input"
+      "src/cadr-ai/oauth/callback.lisp parse-oauth-authorization-input"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
@@ -15628,6 +16602,12 @@
       "src/cadr-evals/summary.lisp format-harness-comparison-report"
       "evals_harness.normalize_steps"
       "src/cadr-evals/harness.lisp normalize-eval-steps"
+      "evals_harness.resolve_selection"
+      "src/cadr-evals/harness.lisp resolve-eval-selection"
+      "evals_harness.transcript"
+      "src/cadr-evals/harness.lisp messages-to-transcript"
+      "evals_harness.last_assistant"
+      "src/cadr-evals/harness.lisp last-assistant-since"
       "evals_harness.step_value"
       "src/cadr-evals/harness.lisp step-value"
       "evals_harness.usage"
@@ -16054,6 +17034,12 @@
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
       "src/cadr-ai/transport/http.lisp parse-http-url"
+      "core_rest.cancellation_abort"
+      "src/cadr-core/cancellation.lisp abort-cancellation + cancellation-aborted-p"
+      "core_rest.redacted_secrets"
+      "src/cadr-core/redacted-print.lisp redact-secrets"
+      "core_rest.threads_cleanup"
+      "src/cadr-core/threads.lisp stop-thread-for-cleanup"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -16170,7 +17156,11 @@
                     (harness-events nil)
                     (bash-tool nil)
                     (find-tool nil)
-                    (tool-manager nil))
+                    (write-tool nil)
+                    (ls-tool nil)
+                    (tool-manager nil)
+                    (powershell-tool nil)
+                    (core-rest nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
@@ -16179,8 +17169,14 @@
               (let ((output-accumulator (measure-output-accumulator)))
               (format *error-output* "goal20 cadr paired paths: find_tool~%")
               (setf find-tool (measure-find-tool))
+              (format *error-output* "goal20 cadr paired paths: write_tool~%")
+              (setf write-tool (measure-write-tool))
+              (format *error-output* "goal20 cadr paired paths: ls_tool~%")
+              (setf ls-tool (measure-ls-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
               (setf tool-manager (measure-tool-manager))
+              (format *error-output* "goal20 cadr paired paths: powershell_tool~%")
+              (setf powershell-tool (measure-powershell-tool))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -16273,6 +17269,8 @@
               (let ((http-transport (measure-http-transport-parse-url)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
+              (format *error-output* "goal20 cadr paired paths: core_rest~%")
+              (setf core-rest (measure-core-rest))
               (format *error-output* "goal20 cadr paired paths: websocket_stream~%")
               (let ((websocket (measure-websocket-stream)))
             (json-object
@@ -16318,7 +17316,10 @@
               "bash_tool" bash-tool
               "output_accumulator" output-accumulator
               "find_tool" find-tool
+              "write_tool" write-tool
+              "ls_tool" ls-tool
               "tool_manager" tool-manager
+              "powershell_tool" powershell-tool
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html
@@ -16362,6 +17363,7 @@
               "cli_bootstrap_sessions" bootstrap
               "ai_runtime_faux" faux
               "http_transport" http-transport
+              "core_rest" core-rest
               "render_slicing" slicing
               "websocket_stream" websocket)
              "parameters"
