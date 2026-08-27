@@ -3929,6 +3929,55 @@ are exact. First n=5 freeze **0.535×** (6.292 / 11.750 µs) on host `cursor`,
 ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
 leads. Same commit no optimize.
+### Pair 340 — `tui_theme_overlay` (make_terminal_theme)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_terminal_theme` | `make-terminal-theme` (`src/cadr-tui/theme.lisp`) | `getThemeByName` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of already-paired `tui_theme_overlay.osc11_bg` on
+`src/cadr-tui/terminal-colors.lisp`. Same-file leftover on
+`src/cadr-tui/theme.lisp` (hole `tui_theme_overlay`). Timed work is builtin
+dark/light construction — not `theme-color-value`, not
+`canonical-theme-color-key`, not rgb/hex/fg leftovers on PR #32. Observed
+`mtt_dark` / `mtt_light` / `mtt_n` are exact. First n=5 freeze **0.0731×**
+(5.009 / 68.525 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). cadr leads. File stays `needs-pair`. Same commit no
+optimize. Pair numbers 319–321 belong to PR #32; this cut is 340–342 only.
+`nextPairNum` stays 328.
+
+### Pair 341 — `tui_theme_overlay` (theme_color_value)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_color_value` | `theme-color-value` (`src/cadr-tui/theme.lisp`) | `getResolvedThemeColors` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pair 340 `make_terminal_theme` on the same
+`theme.lisp` `tui_theme_overlay` hole. Timed work is dark accent / text /
+`borderAccent` lookup — not construction as the timed owner, not ANSI wrap.
+Observed `tcv_accent` / `tcv_text` / `tcv_border` / `tcv_n` are exact. First
+n=5 freeze **0.232×** (4.007 / 17.242 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). cadr leads. Same commit no
+optimize.
+
+### Pair 342 — `tui_theme_overlay` (canonical_theme_color_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `canonical_theme_color_key` | `canonical-theme-color-key` (`src/cadr-tui/theme.lisp`) | ThemeColor camelCase keys (harness copy of the Lisp canonicalizer) |
+
+Leftover sibling of Pair 340 `make_terminal_theme` and Pair 341
+`theme_color_value` on the same `theme.lisp` `tui_theme_overlay` hole. Timed
+work is camelCase / snake_case / kebab intern (`borderAccent` /
+`border_accent` / `thinkingHigh` / `mdCode`) — not color lookup, not ANSI.
+Observed `ctk_border` / `ctk_thinking` / `ctk_md` / `ctk_n` are exact. First
+n=5 freeze **0.374×** (1.089 / 2.914 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). cadr leads. Same commit no
+optimize.
+
 ### Pair 343 — `write_tool` (ensure_parent)
 
 | metric | cadr | pi |

@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `tui_theme_overlay.make_terminal_theme`
+  (`make-terminal-theme` on `src/cadr-tui/theme.lisp` vs baseline
+  `getThemeByName`). Observed `mtt_dark` / `mtt_light` / `mtt_n` exact.
+  n=5 **0.0731×** (5.009 / 68.525 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. File stays `needs-pair`. Pairs 340–342.
+- Goal 20 P.13 leftover: pair `tui_theme_overlay.theme_color_value`
+  (`theme-color-value` on `src/cadr-tui/theme.lisp` vs baseline
+  `getResolvedThemeColors`). Observed `tcv_accent` / `tcv_text` /
+  `tcv_border` / `tcv_n` exact. n=5 **0.232×** (4.007 / 17.242 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `tui_theme_overlay.canonical_theme_color_key`
+  (`canonical-theme-color-key` on `src/cadr-tui/theme.lisp`; ThemeColor keys
+  are camelCase — harness copies the Lisp canonicalizer). Observed
+  `ctk_border` / `ctk_thinking` / `ctk_md` / `ctk_n` exact. n=5 **0.374×**
+  (1.089 / 2.914 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric.
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.

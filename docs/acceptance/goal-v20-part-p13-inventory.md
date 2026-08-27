@@ -663,7 +663,7 @@ These must not be filed as callees.
 
 - pi: `packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor`
 - fixture: OSC 11 rgb:/hex + scheme report. Time parse, not a TUI frame.
-- Friend-MachineD n=5: **1.16×** (3.8 / 3.3 µs), ceiling 8.0. `overlay.lisp` now paired `tui_overlay.composite_line` **0.87×** (19.1 / 22.0 µs), ceiling 8.0. Other files still `needs-pair`. No optimize in the booking commit.
+- Friend-MachineD n=5: **1.16×** (3.8 / 3.3 µs), ceiling 8.0. `overlay.lisp` now paired `tui_overlay.composite_line` **0.87×** (19.1 / 22.0 µs), ceiling 8.0. `theme.lisp` leftover trio 340–342 (`make_terminal_theme` **0.0731×**, `theme_color_value` **0.232×**, `canonical_theme_color_key` **0.374×**, host `cursor`, ceiling 8.0); file stays `needs-pair`. Other files still `needs-pair`. No optimize in the booking commit.
 
 | file | lines |
 |---|---:|
