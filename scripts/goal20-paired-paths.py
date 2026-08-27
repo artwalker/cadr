@@ -98,15 +98,17 @@ METRICS = {
     "provider_vertex": ("stream_roundtrip",),
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
-    "cli_settings": ("create",),
+    "cli_settings": ("create", "reload", "enabled_models", "block_images"),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
-    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key"),
-    "harness_events": ("emit", "on", "watch", "make_start"),
+    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
+    "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
+    "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
+    "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -125,13 +127,16 @@ METRICS = {
         "cloudflare_url",
         "radius_gateway",
         "copilot_auth",
+        "percent_decode",
+        "parse_query",
+        "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
-    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider"),
+    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats"),
     "tui_latex": ("render", "normalize_output"),
     "tui_mermaid": ("render", "source_box", "transform"),
@@ -155,7 +160,13 @@ METRICS = {
     "cli_selectors": ("session_search", "session_format_age", "session_record_label", "session_shorten_path", "session_quoted_search", "session_thread_records", "session_binding_label", "session_same_path", "session_quoted_p", "session_named_p", "settings_thinking_description", "settings_display_value", "settings_automatic_theme_setting", "settings_active_automatic_theme", "settings_cycle", "settings_apply_filter", "tree_entry_filtered", "tree_query_matches", "tree_entry_search_text", "tree_settings_entry_p", "tree_normalize_display_text", "tree_status_labels", "tree_shorten_path", "tree_foldable_p", "tree_tool_argument", "tree_cycle_filter", "tree_format_label_timestamp", "tree_format_tool_call", "tree_entry_display_text", "tree_prefix", "tree_visual_nodes", "tree_horizontal_viewport", "tree_help_keys", "tree_help_key", "tree_app_key_p", "tree_help_lines", "tree_active_path", "tree_nearest_visible_id", "tree_prioritize_active", "tree_entry_map", "tree_order_entries", "tree_iso_timestamp", "tree_rebuild_visible_maps", "tree_apply_filter", "tree_render_lines", "tree_move", "tree_fold_or_up", "tree_unfold_or_down", "tree_branch_segment_id", "tree_set_query", "tree_set_filter", "tree_copy_selected", "tree_toggle_label_timestamps", "tree_start_label_edit", "tree_confirm_label", "tree_cancel_label", "tree_handle_raw_input", "tree_handle_event", "tree_handle_label_event", "tree_selected_entry", "tree_selected_id", "tree_select_id", "tree_visible_ids", "project_trust_options", "trust_selector_selection", "trust_decision_description", "trust_selector_move", "trust_selector_handle_event", "trust_selector_handle_raw_input", "trust_selector_ui_state", "oauth_option_status_label", "oauth_option_status_rendered", "credential_entry_auth_type", "oauth_environment_source_p", "oauth_selector_selection", "oauth_selector_apply_filter", "oauth_selector_handle_event", "oauth_selector_handle_raw_input", "oauth_selector_search_text", "login_auth_type_route", "login_provider_options", "logout_provider_options", "login_method_selector_handle_event", "oauth_selector_move", "api_key_input_state_handle_event", "login_method_selector_ui_state", "api_key_input_ui_state", "oauth_selector_ui_state", "model_selector_search_text", "qualified_model_id", "model_selector_apply_filter", "model_selector_move", "model_selector_handle_event", "model_selector_handle_raw_input", "model_selector_set_query", "model_selector_selected_model", "model_selector_toggle_scope", "model_selector_ui_state", "scoped_models_selector_set_query", "scoped_models_selector_move", "scoped_models_selector_handle_event", "scoped_models_selector_handle_raw_input", "scoped_models_selector_ui_state", "scoped_models_selector_sorted_ids", "scoped_models_selector_counts", "scoped_models_selector_toggle_selected", "scoped_models_selector_target_ids", "scoped_models_selector_enable_all", "scoped_models_selector_toggle_provider", "scoped_models_selector_clear_all", "scoped_models_selector_reorder", "scoped_models_selector_persist", "scoped_models_selector_provider_count", "key_text", "fuzzy_filter", "delete_query", "visible_slice", "move_index", "align_left_right", "fit_line", "border_line", "selected_line", "muted_line", "dim_line", "modified_cursor_key", "title_line", "overlay_title_line", "input_line", "keybinding_text", "keybinding_hint"),
     "websocket_stream": ("stream_roundtrip",),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime"),
-    "provider_registry_defs": ("lookup", "definition_ids"),
+    "provider_registry_defs": (
+        "lookup",
+        "definition_ids",
+        "merge_environment",
+        "runtime_models",
+        "structured_api_key_login",
+    ),
     "skill_prompt_load": ("build_prompt",),
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
     "ai_runtime_faux": ("blocks",),
@@ -245,6 +256,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "cli_settings.create": 1.5,
+    # cli_settings leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "cli_settings.reload": 8.0,
+    "cli_settings.enabled_models": 8.0,
+    "cli_settings.block_images": 8.0,
     # agent_conditions.error_probe pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "agent_conditions.error_probe": 8.0,
@@ -279,6 +295,15 @@ RATIO_CEILINGS = {
     # file_mutation_queue.state_key pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "file_mutation_queue.state_key": 8.0,
+    # file_mutation_queue.pending_count pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.pending_count": 8.0,
+    # file_mutation_queue.next_ticket pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.next_ticket": 8.0,
+    # file_mutation_queue.serving_ticket pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.serving_ticket": 8.0,
     # harness_events.emit pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.emit": 8.0,
@@ -299,16 +324,31 @@ RATIO_CEILINGS = {
     # harness_events.make_start pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.make_start": 8.0,
+    # harness_events leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.make_end": 8.0,
+    "harness_events.event_type": 8.0,
+    "harness_events.make_bus": 8.0,
     # find_tool leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "find_tool.pattern_match": 8.0,
     "find_tool.find_files": 8.0,
     "find_tool.make_tool": 8.0,
+    # ls_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "ls_tool.directory_entry_name": 8.0,
+    "ls_tool.list_directory": 8.0,
+    "ls_tool.make_tool": 8.0,
     # tool_manager.get_tool_path/ensure_tool/cleanup_quarantine pair
     # (samples=5): first-freeze headroom. Ratchet down only.
     "tool_manager.get_tool_path": 8.0,
     "tool_manager.ensure_tool": 8.0,
     "tool_manager.cleanup_quarantine": 8.0,
+    # powershell_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "powershell_tool.utf8_prefix": 8.0,
+    "powershell_tool.prefix_command": 8.0,
+    "powershell_tool.make_tool": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -418,6 +458,12 @@ RATIO_CEILINGS = {
     # headroom. Ratchet down only.
     "oauth_pkce_device.copilot_auth": 8.0,
     # Frozen from the first Friend-MachineD non-quick
+    # oauth_pkce_device leftover trio (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "oauth_pkce_device.percent_decode": 8.0,
+    "oauth_pkce_device.parse_query": 8.0,
+    "oauth_pkce_device.parse_authorization_input": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed
     # 0.45x (4.79 / 10.52 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
@@ -515,6 +561,18 @@ RATIO_CEILINGS = {
     # 1.09x (0.23 / 0.21 us). 8.0 is first-freeze
     # headroom (variance). Ratchet down only.
     "image_runtime.api_provider": 8.0,
+    # Frozen from the first n=5 image_runtime.output_modalities
+    # leftover pair: observed 0.657x (0.196 / 0.299 us). cadr leads.
+    # 8.0 is first-freeze headroom. Ratchet down only.
+    "image_runtime.output_modalities": 8.0,
+    # Frozen from the first n=5 image_runtime.openrouter_content
+    # leftover pair: observed 3.34x (1.367 / 0.409 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "image_runtime.openrouter_content": 8.0,
+    # Frozen from the first n=5 image_runtime.parse_data_image
+    # leftover pair: observed 1.43x (0.555 / 0.387 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "image_runtime.parse_data_image": 8.0,
     # Frozen from the first Friend-MachineD non-quick cli_print_rpc
     # pair (samples=5): observed 13.21x (3.3 / 0.25 us). 8.0 follows
     # the microsecond-floor / agent_proxy variance precedent (not
@@ -1180,6 +1238,17 @@ RATIO_CEILINGS = {
     # provider_registry_defs.definition_ids pair (samples=5): observed 99.97x
     # (728.7 / 7.3 us). 125.0 is first-freeze headroom. Ratchet down only.
     "provider_registry_defs.definition_ids": 125.0,
+    # provider_registry_defs.merge_environment pair (samples=5): observed 0.114x
+    # (0.320 / 2.803 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "provider_registry_defs.merge_environment": 8.0,
+    # provider_registry_defs.runtime_models pair (samples=5): observed 3.733x
+    # (17.89 / 4.794 us). 8.0 is first-freeze headroom. Ratchet down only.
+    "provider_registry_defs.runtime_models": 8.0,
+    # provider_registry_defs.structured_api_key_login pair (samples=5): observed 0.000831x
+    # (0.176 / 211.2 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "provider_registry_defs.structured_api_key_login": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # skill_prompt_load pair (samples=5): observed 1170.57x
     # (2196 / 1.88 us). Keyword initforms still hit ASDF
@@ -1433,6 +1502,16 @@ OBSERVED_EXACT = {
         "default_project_trust",
         "http_idle_timeout_ms",
         "project_trusted",
+        "rl_theme_light",
+        "rl_model",
+        "rl_idle",
+        "rl_n",
+        "em_all",
+        "em_one",
+        "em_n",
+        "bi_default",
+        "bi_blocked",
+        "bi_n",
     ),
     "agent_conditions": (
         "ac_schema_tool",
@@ -1516,6 +1595,21 @@ OBSERVED_EXACT = {
         "fmqt_missing",
         "fmqt_repeat",
         "fmqt_n",
+        "fmqp_shared",
+        "fmqp_other",
+        "fmqp_missing",
+        "fmqp_alias",
+        "fmqp_n",
+        "fmqi_shared",
+        "fmqi_other",
+        "fmqi_missing",
+        "fmqi_alias",
+        "fmqi_n",
+        "fmqv_zero",
+        "fmqv_other",
+        "fmqv_missing",
+        "fmqv_alias",
+        "fmqv_n",
     ),
     "harness_events": (
         "he_direct",
@@ -1533,6 +1627,17 @@ OBSERVED_EXACT = {
         "hes_type",
         "hes_lane",
         "hes_run",
+        "hee_type",
+        "hee_lane",
+        "hee_run",
+        "hee_outcome",
+        "hee_abort",
+        "het_start",
+        "het_end",
+        "het_fail",
+        "heb_distinct",
+        "heb_a",
+        "heb_b",
     ),
     "bash_tool": (
         "sef_exact",
@@ -1587,6 +1692,21 @@ OBSERVED_EXACT = {
         "fmt_req",
         "fmt_n",
     ),
+    "ls_tool": (
+        "lden_file",
+        "lden_dir",
+        "lden_nested",
+        "lden_n",
+        "ld_empty",
+        "ld_mixed",
+        "ld_first",
+        "ld_limit",
+        "ld_n",
+        "lst_name",
+        "lst_desc",
+        "lst_req",
+        "lst_n",
+    ),
     "tool_manager": (
         "gtp_local_fd",
         "gtp_local_rg",
@@ -1599,6 +1719,21 @@ OBSERVED_EXACT = {
         "cq_removed",
         "cq_noop",
         "cq_n",
+    ),
+    "powershell_tool": (
+        "psu_len",
+        "psu_nl",
+        "psu_try",
+        "psu_utf8",
+        "psu_n",
+        "psc_empty",
+        "psc_date",
+        "psc_write",
+        "psc_n",
+        "pmt_name",
+        "pmt_desc",
+        "pmt_req",
+        "pmt_n",
     ),
     "settings_load": (
         "tr_empty",
@@ -1732,6 +1867,22 @@ OBSERVED_EXACT = {
         "ga_ent",
         "ga_dom",
         "ga_key",
+        "pd_plain",
+        "pd_plus",
+        "pd_slash",
+        "pd_space",
+        "pd_utf8",
+        "pd_n",
+        "pq_code",
+        "pq_state",
+        "pq_plus",
+        "pq_empty",
+        "pq_n",
+        "pai_url",
+        "pai_hash",
+        "pai_qs",
+        "pai_plain",
+        "pai_n",
     ),
     "cli_extensions_install": (
         "nu_local",
@@ -1872,6 +2023,20 @@ OBSERVED_EXACT = {
         "note_plain",
         "api_fixture",
         "api_unknown",
+        "om_gemini_n",
+        "om_gemini_text",
+        "om_flux_n",
+        "om_flux_text",
+        "oc_text_type",
+        "oc_text",
+        "oc_img_type",
+        "oc_img_url",
+        "oc_ok",
+        "pd_ok_mime",
+        "pd_ok_data",
+        "pd_ok",
+        "pd_miss",
+        "pd_plain",
     ),
     "cli_print_rpc": (
         "line_chars",
@@ -2796,6 +2961,19 @@ OBSERVED_EXACT = {
         "unknown",
         "count",
         "sorted_digest",
+        "me_oa",
+        "me_gemini",
+        "me_azure",
+        "me_miss",
+        "rm_openai",
+        "rm_anthropic",
+        "rm_google",
+        "rm_unknown",
+        "sl_openai",
+        "sl_anthropic",
+        "sl_google",
+        "sl_bedrock",
+        "sl_vertex",
     ),
     "skill_prompt_load": (
         "custom_len",
