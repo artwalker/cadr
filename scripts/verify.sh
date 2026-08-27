@@ -206,7 +206,7 @@ run_statistical_liveness() {
     python3 test/goal20-liveness-check-test.py
     # Isolated build can leave the host busy; allow extra startup time and
     # rely on capture retries inside goal20-liveness-check.py.
-    python3 scripts/goal20-liveness-check.py --captures 3 --timeout 90
+    python3 scripts/goal20-liveness-check.py --captures 3 --timeout 150
   )
 }
 

@@ -4302,6 +4302,12 @@ def parser() -> argparse.ArgumentParser:
             command.add_argument("--dimension", choices=("wide", "narrow"), required=True)
             command.add_argument("--side", choices=("pi", "cadr", "both"), default="both")
             command.add_argument(
+                "--cadr-cache",
+                type=Path,
+                default=None,
+                help="reuse ASDF fasl cache for cadr captures (isolated HOME sandboxes)",
+            )
+            command.add_argument(
                 "--allow-partial-coverage",
                 action="store_true",
                 help="skip the render-gate coverage floor (liveness probe manifests)",

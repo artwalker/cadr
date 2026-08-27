@@ -88,6 +88,7 @@ def capture_timing(
     dimension: str,
     output: Path,
     timeout: float,
+    cadr_cache: Path | None = None,
 ) -> Path:
     command = [
         sys.executable,
@@ -107,6 +108,8 @@ def capture_timing(
         "--timeout",
         str(timeout),
     ]
+    if cadr_cache is not None:
+        command.extend(["--cadr-cache", str(cadr_cache)])
     if manifest == LIVENESS_MANIFEST:
         command.append("--allow-partial-coverage")
     last_error = ""
@@ -156,7 +159,7 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--thresholds", type=Path, default=THRESHOLDS)
     parser.add_argument("--captures", type=int, default=None)
-    parser.add_argument("--timeout", type=float, default=60.0)
+    parser.add_argument("--timeout", type=float, default=120.0)
     parser.add_argument("--all", action="store_true")
     parser.add_argument("--scenario", type=str, default=None)
     parser.add_argument("--from-artifacts", type=Path, default=None)
@@ -173,6 +176,7 @@ def main() -> int:
     output = args.output
     if output is None and args.from_artifacts is None:
         output = Path(tempfile.mkdtemp(prefix="cadr-liveness-check-"))
+    cadr_cache = None if args.from_artifacts is not None else output / ".cadr-cache"
 
     failed = 0
     checked = 0
@@ -205,6 +209,7 @@ def main() -> int:
                         dimension,
                         run_dir,
                         args.timeout,
+                        cadr_cache,
                     )
                     runs.append(evaluate_run(gaps_ms(timing), threshold_ms))
         except Exception as error:
