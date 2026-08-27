@@ -37,6 +37,7 @@ METRIC_KEYS = (
     "agent_conditions.error_probe",
     "execution_env.exists_remove_temps",
     "file_mutation_queue.with_queue",
+    "file_mutation_queue.queue_key",
     "settings_load.project_trust",
     "settings_load.config_value",
     "settings_load.http_idle",

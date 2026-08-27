@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.queue_key` (`file-mutation-queue-key` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue-map key / `realpath`).
+  Observed `fmqk_alias` / `fmqk_missing` / `fmqk_other` / `fmqk_n` exact.
+  Friend-MachineD n=5 **RATIO_PLACEHOLDER**. Measure-only.
 - Goal 21 gate: full `scripts/goal21-gate-run.sh` does not run a second
   `scripts/test-cl.sh` when `verify.sh` already recorded `deterministic
   FiveAM` as a timed PASS. `scripts/test-cl-fiveam.sh` is summary-only by
