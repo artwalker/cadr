@@ -232,6 +232,9 @@ const REPETITIONS = {
 	"tui_mermaid.transform": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
+	"tui_theme_overlay.rgb_to_ansi_256": 50,
+	"tui_theme_overlay.parse_hex_color": 50,
+	"tui_theme_overlay.theme_foreground_ansi": 50,
 	"ai_support.estimate_text": 50,
 	"ai_support.context_overflow": 50,
 	"ai_support.grammar_delta": 50,
@@ -6404,6 +6407,82 @@ function rgbTriple(color) {
 	return color ? [color.r, color.g, color.b] : [-1, -1, -1];
 }
 
+// rgbTo256 / hexToRgb are unexported on the baseline theme.ts. The copies
+// below match packages/coding-agent/src/modes/interactive/theme/theme.ts
+// at the pinned BASELINE revision (cube, gray ramp, Math.round, spread < 10).
+const THEME_CUBE_VALUES = [0, 95, 135, 175, 215, 255];
+const THEME_GRAY_VALUES = Array.from({ length: 24 }, (_, i) => 8 + i * 10);
+
+function themeHexToRgb(hex) {
+	const cleaned = hex.replace("#", "");
+	if (cleaned.length !== 6) {
+		throw new Error(`Invalid hex color: ${hex}`);
+	}
+	const r = parseInt(cleaned.substring(0, 2), 16);
+	const g = parseInt(cleaned.substring(2, 4), 16);
+	const b = parseInt(cleaned.substring(4, 6), 16);
+	if (Number.isNaN(r) || Number.isNaN(g) || Number.isNaN(b)) {
+		throw new Error(`Invalid hex color: ${hex}`);
+	}
+	return { r, g, b };
+}
+
+function themeFindClosestCubeIndex(value) {
+	let minDist = Infinity;
+	let minIdx = 0;
+	for (let i = 0; i < THEME_CUBE_VALUES.length; i++) {
+		const dist = Math.abs(value - THEME_CUBE_VALUES[i]);
+		if (dist < minDist) {
+			minDist = dist;
+			minIdx = i;
+		}
+	}
+	return minIdx;
+}
+
+function themeFindClosestGrayIndex(gray) {
+	let minDist = Infinity;
+	let minIdx = 0;
+	for (let i = 0; i < THEME_GRAY_VALUES.length; i++) {
+		const dist = Math.abs(gray - THEME_GRAY_VALUES[i]);
+		if (dist < minDist) {
+			minDist = dist;
+			minIdx = i;
+		}
+	}
+	return minIdx;
+}
+
+function themeColorDistance(r1, g1, b1, r2, g2, b2) {
+	const dr = r1 - r2;
+	const dg = g1 - g2;
+	const db = b1 - b2;
+	return dr * dr * 0.299 + dg * dg * 0.587 + db * db * 0.114;
+}
+
+function themeRgbTo256(r, g, b) {
+	const rIdx = themeFindClosestCubeIndex(r);
+	const gIdx = themeFindClosestCubeIndex(g);
+	const bIdx = themeFindClosestCubeIndex(b);
+	const cubeR = THEME_CUBE_VALUES[rIdx];
+	const cubeG = THEME_CUBE_VALUES[gIdx];
+	const cubeB = THEME_CUBE_VALUES[bIdx];
+	const cubeIndex = 16 + 36 * rIdx + 6 * gIdx + bIdx;
+	const cubeDist = themeColorDistance(r, g, b, cubeR, cubeG, cubeB);
+	const gray = Math.round(0.299 * r + 0.587 * g + 0.114 * b);
+	const grayIdx = themeFindClosestGrayIndex(gray);
+	const grayValue = THEME_GRAY_VALUES[grayIdx];
+	const grayIndex = 232 + grayIdx;
+	const grayDist = themeColorDistance(r, g, b, grayValue, grayValue, grayValue);
+	const maxC = Math.max(r, g, b);
+	const minC = Math.min(r, g, b);
+	const spread = maxC - minC;
+	if (spread < 10 && grayDist < cubeDist) {
+		return grayIndex;
+	}
+	return cubeIndex;
+}
+
 function runTuiThemeOverlay() {
 	const bell = "\x07";
 	const st = "\x1b\\";
@@ -6433,11 +6512,62 @@ function runTuiThemeOverlay() {
 	};
 }
 
+function runTuiThemeRgbToAnsi256() {
+	return {
+		r256_red: themeRgbTo256(255, 0, 0),
+		r256_black: themeRgbTo256(0, 0, 0),
+		r256_gray: themeRgbTo256(128, 128, 128),
+		r256_white: themeRgbTo256(255, 255, 255),
+		r256_accent: themeRgbTo256(138, 190, 183),
+	};
+}
+
+function runTuiThemeParseHexColor() {
+	const plain = themeHexToRgb("#112233");
+	const accent = themeHexToRgb("#8abeb7");
+	const white = themeHexToRgb("#ffffff");
+	return {
+		ph_112233_r: plain.r,
+		ph_112233_g: plain.g,
+		ph_112233_b: plain.b,
+		ph_accent_r: accent.r,
+		ph_white_b: white.b,
+	};
+}
+
+function themeForegroundAnsiEscCode(text) {
+	return typeof text === "string" && text.length > 0 && text.charCodeAt(0) === 27 ? 27 : 0;
+}
+
+function runTuiThemeForegroundAnsi() {
+	const accent = themeModule.theme.getFgAnsi("accent");
+	const text = themeModule.theme.getFgAnsi("text");
+	return {
+		tfa_accent_esc: themeForegroundAnsiEscCode(accent),
+		tfa_text_esc: themeForegroundAnsiEscCode(text),
+		tfa_n: 2,
+	};
+}
+
 async function measureTuiThemeOverlay() {
-	const observed = runTuiThemeOverlay();
+	const observed = {
+		...runTuiThemeOverlay(),
+		...runTuiThemeRgbToAnsi256(),
+		...runTuiThemeParseHexColor(),
+		...runTuiThemeForegroundAnsi(),
+	};
 	return {
 		osc11_bg: await collect("tui_theme_overlay.osc11_bg", () => {
 			return () => runTuiThemeOverlay();
+		}),
+		rgb_to_ansi_256: await collect("tui_theme_overlay.rgb_to_ansi_256", () => {
+			return () => runTuiThemeRgbToAnsi256();
+		}),
+		parse_hex_color: await collect("tui_theme_overlay.parse_hex_color", () => {
+			return () => runTuiThemeParseHexColor();
+		}),
+		theme_foreground_ansi: await collect("tui_theme_overlay.theme_foreground_ansi", () => {
+			return () => runTuiThemeForegroundAnsi();
 		}),
 		observed,
 	};
@@ -15974,6 +16104,12 @@ const result = {
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":
 				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",
+			"tui_theme_overlay.rgb_to_ansi_256":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts rgbTo256 (unexported; harness copy)",
+			"tui_theme_overlay.parse_hex_color":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts hexToRgb (unexported; harness copy)",
+			"tui_theme_overlay.theme_foreground_ansi":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts Theme.getFgAnsi",
 			"ai_support.estimate_text":
 				"packages/ai/src/utils/estimate.ts estimateTextTokens",
 			"ai_support.context_overflow":

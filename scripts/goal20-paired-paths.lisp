@@ -35,6 +35,8 @@
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
+;;;;      leftover trio (theme.lisp only): rgb-to-ansi-256 / parse-theme-hex-color /
+;;;;      theme-foreground-ansi vs rgbTo256 / hexToRgb / Theme.getFgAnsi
 ;;;;  24. ai_support estimate-text-tokens vs estimateTextTokens
 ;;;;  25. tui_select_settings_loaders select-list filter vs SelectList.setFilter
 ;;;;  26. tui_word_navigation find-word-backward/forward vs findWordBackward/Forward
@@ -357,6 +359,9 @@
     ("tui_mermaid.transform" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
+    ("tui_theme_overlay.rgb_to_ansi_256" . 50)
+    ("tui_theme_overlay.parse_hex_color" . 50)
+    ("tui_theme_overlay.theme_foreground_ansi" . 50)
     ("ai_support.estimate_text" . 50)
     ("ai_support.context_overflow" . 50)
     ("ai_support.grammar_delta" . 50)
@@ -7252,25 +7257,98 @@
           (if miss 0 1)
           (if (eq scheme :dark) 1 0))))
 
+(defun run-tui-theme-rgb-to-ansi-256 ()
+  (list
+   (cadr-tui:rgb-to-ansi-256 255 0 0)
+   (cadr-tui:rgb-to-ansi-256 0 0 0)
+   (cadr-tui:rgb-to-ansi-256 128 128 128)
+   (cadr-tui:rgb-to-ansi-256 255 255 255)
+   (cadr-tui:rgb-to-ansi-256 138 190 183)))
+
+(defun run-tui-theme-parse-hex-color ()
+  (let ((plain (cadr-tui:parse-theme-hex-color "#112233"))
+        (accent (cadr-tui:parse-theme-hex-color "#8abeb7"))
+        (white (cadr-tui:parse-theme-hex-color "#ffffff")))
+    (list (cadr-tui:rgb-color-red plain)
+          (cadr-tui:rgb-color-green plain)
+          (cadr-tui:rgb-color-blue plain)
+          (cadr-tui:rgb-color-red accent)
+          (cadr-tui:rgb-color-blue white))))
+
+(defun theme-foreground-ansi-esc-code (text)
+  (if (and (stringp text)
+           (plusp (length text))
+           (char= (char text 0) #\Escape))
+      27
+      0))
+
+(defun run-tui-theme-foreground-ansi ()
+  (let* ((theme
+           (cadr-tui:make-terminal-theme
+            :dark
+            :capabilities
+            (cadr-tui:make-terminal-capabilities :true-color-p t)
+            :enabled-p t))
+         (accent
+           (cadr-tui:theme-foreground-ansi
+            :accent :theme theme :enabled-p t))
+         (text
+           (cadr-tui:theme-foreground-ansi
+            :text :theme theme :enabled-p t)))
+    (list (theme-foreground-ansi-esc-code accent)
+          (theme-foreground-ansi-esc-code text)
+          2)))
+
 (defun measure-tui-theme-overlay ()
-  (let ((observed (run-tui-theme-overlay)))
+  (let ((osc11 (run-tui-theme-overlay))
+        (rgb256 (run-tui-theme-rgb-to-ansi-256))
+        (hex (run-tui-theme-parse-hex-color))
+        (fg (run-tui-theme-foreground-ansi)))
     (json-object
      "observed"
      (json-object
-      "rgb_r" (first observed)
-      "rgb_g" (second observed)
-      "rgb_b" (third observed)
-      "hex6_r" (fourth observed)
-      "hex6_g" (fifth observed)
-      "hex6_b" (sixth observed)
-      "hex12_r" (seventh observed)
-      "miss" (eighth observed)
-      "scheme_dark" (ninth observed))
+      "rgb_r" (first osc11)
+      "rgb_g" (second osc11)
+      "rgb_b" (third osc11)
+      "hex6_r" (fourth osc11)
+      "hex6_g" (fifth osc11)
+      "hex6_b" (sixth osc11)
+      "hex12_r" (seventh osc11)
+      "miss" (eighth osc11)
+      "scheme_dark" (ninth osc11)
+      "r256_red" (first rgb256)
+      "r256_black" (second rgb256)
+      "r256_gray" (third rgb256)
+      "r256_white" (fourth rgb256)
+      "r256_accent" (fifth rgb256)
+      "ph_112233_r" (first hex)
+      "ph_112233_g" (second hex)
+      "ph_112233_b" (third hex)
+      "ph_accent_r" (fourth hex)
+      "ph_white_b" (fifth hex)
+      "tfa_accent_esc" (first fg)
+      "tfa_text_esc" (second fg)
+      "tfa_n" (third fg))
      "osc11_bg"
      (collect "tui_theme_overlay.osc11_bg"
               (lambda ()
                 (lambda ()
-                  (run-tui-theme-overlay)))))))
+                  (run-tui-theme-overlay))))
+     "rgb_to_ansi_256"
+     (collect "tui_theme_overlay.rgb_to_ansi_256"
+              (lambda ()
+                (lambda ()
+                  (run-tui-theme-rgb-to-ansi-256))))
+     "parse_hex_color"
+     (collect "tui_theme_overlay.parse_hex_color"
+              (lambda ()
+                (lambda ()
+                  (run-tui-theme-parse-hex-color))))
+     "theme_foreground_ansi"
+     (collect "tui_theme_overlay.theme_foreground_ansi"
+              (lambda ()
+                (lambda ()
+                  (run-tui-theme-foreground-ansi)))))))
 
 (defparameter *estimate-empty* "")
 (defparameter *estimate-hello* "hello world")
@@ -15524,6 +15602,12 @@
       "src/cadr-tui/fuzzy.lisp fuzzy-match"
       "tui_theme_overlay.osc11_bg"
       "src/cadr-tui/terminal-colors.lisp parse-osc-11-background-color"
+      "tui_theme_overlay.rgb_to_ansi_256"
+      "src/cadr-tui/theme.lisp rgb-to-ansi-256"
+      "tui_theme_overlay.parse_hex_color"
+      "src/cadr-tui/theme.lisp parse-theme-hex-color"
+      "tui_theme_overlay.theme_foreground_ansi"
+      "src/cadr-tui/theme.lisp theme-foreground-ansi"
       "ai_support.estimate_text"
       "src/cadr-ai/support/token-estimation.lisp estimate-text-tokens"
       "ai_support.context_overflow"

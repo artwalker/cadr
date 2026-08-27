@@ -178,7 +178,10 @@
   "output_accumulator.finish",
   "tool_manager.get_tool_path",
   "tool_manager.ensure_tool",
-  "tool_manager.cleanup_quarantine"
+  "tool_manager.cleanup_quarantine",
+  "tui_theme_overlay.rgb_to_ansi_256",
+  "tui_theme_overlay.parse_hex_color",
+  "tui_theme_overlay.theme_foreground_ansi"
  ],
  "unpairablePaths": [
   {
@@ -2071,8 +2074,12 @@
   },
   {
    "prefix": "src/cadr-tui/theme.lisp",
-   "class": "needs-pair",
-   "hole": "tui_theme_overlay"
+   "class": "paired",
+   "metrics": [
+    "tui_theme_overlay.rgb_to_ansi_256",
+    "tui_theme_overlay.parse_hex_color",
+    "tui_theme_overlay.theme_foreground_ansi"
+   ]
   },
   {
    "prefix": "src/cadr-tui/threads.lisp",
