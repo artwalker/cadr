@@ -3498,8 +3498,10 @@ Leftover sibling of Pair 276 `emit` and Pairs 283–285 `on` / `watch` /
 Timed work is constructing a `run_end` event (type / lane / run id /
 outcome / aborted-null leaf) — not `emit`, not `on`, not `watch`, not
 `make_start`. Observed `hee_type` / `hee_lane` / `hee_run` /
-`hee_outcome` / `hee_abort` are exact. First n=5 freeze pending freeze
-run, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+`hee_outcome` / `hee_abort` are exact. First n=5 freeze
+**1.574×** (0.216 / 0.137 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 Pair numbers 289–312 belong to other lanes; this cut is 313–315 only.
 
 ### Pair 314 — `harness_events` (event_type)
@@ -3512,8 +3514,10 @@ Leftover sibling of Pair 313 `make_end` on the same `harness-events.lisp`
 `agent_tool_loop` hole. Timed work is reading the type of a `run_start`,
 a completed `run_end`, and a failed `run_end` — not constructors as the
 timed owner, not `emit` / `on` / `watch`. Observed `het_start` /
-`het_end` / `het_fail` are exact. First n=5 freeze pending freeze run,
-ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+`het_end` / `het_fail` are exact. First n=5 freeze **1.468×** (0.175 /
+0.119 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 315 — `harness_events` (make_bus)
 
@@ -3525,8 +3529,9 @@ Leftover sibling of Pair 313 `make_end` and Pair 314 `event_type` on the
 same `harness-events.lisp` `agent_tool_loop` hole. Timed work is
 constructing two distinct empty buses — not `on`, not `watch`, not
 `emit`. Observed `heb_distinct` / `heb_a` / `heb_b` are exact. First n=5
-freeze pending freeze run, ceiling 8.0. Gate used `--only-enforce`. Same
-commit no optimize.
+freeze **1.351×** (0.344 / 0.255 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
