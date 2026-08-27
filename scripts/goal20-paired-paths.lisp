@@ -102,6 +102,9 @@
 ;;;; 273. file_mutation_queue ticket wait vs wait-for-file-mutation-turn
 ;;;; 274. file_mutation_queue ticket release vs release-file-mutation-turn
 ;;;; 275. file_mutation_queue registry get-or-create vs ensure-file-mutation-queue-state
+;;;; 280. output_accumulator append vs OutputAccumulator.append
+;;;; 281. output_accumulator snapshot vs OutputAccumulator.snapshot
+;;;; 282. output_accumulator finish vs OutputAccumulator.finish
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -249,6 +252,9 @@
     ("file_mutation_queue.wait_turn" . 50)
     ("file_mutation_queue.release_turn" . 50)
     ("file_mutation_queue.ensure_state" . 50)
+    ("output_accumulator.append" . 50)
+    ("output_accumulator.snapshot" . 50)
+    ("output_accumulator.finish" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4076,6 +4082,130 @@
                       (lambda ()
                         (lambda ()
                           (run-file-mutation-queue-ensure-state)))))))))))))
+
+(defun output-accumulator-cleanup (accumulator)
+  (cadr-cli:output-accumulator-close-temp-file accumulator)
+  (let ((path (cadr-cli::output-accumulator-temp-file-path accumulator)))
+    (when (and path (probe-file path))
+      (delete-file path)))
+  nil)
+
+(defun output-accumulator-utf8 (text)
+  (cadr-ai::utf8-octets text))
+
+(defun output-accumulator-truncation-field (snapshot key)
+  (getf (cadr-cli:output-snapshot-truncation snapshot) key))
+
+(defun run-output-accumulator-append ()
+  ;; Baseline OutputAccumulator.append only (split UTF-8 + ASCII lines).
+  ;; High limits so this path does not spill a temp file.
+  (let* ((accumulator
+           (cadr-cli:make-output-accumulator :max-lines 100 :max-bytes 10000))
+         (zhong (output-accumulator-utf8 "中")))
+    (cadr-cli:output-accumulator-append
+     accumulator (output-accumulator-utf8 (concatenate 'string "hello" (string #\Newline))))
+    (cadr-cli:output-accumulator-append accumulator (subseq zhong 0 2))
+    (cadr-cli:output-accumulator-append accumulator (subseq zhong 2))
+    (cadr-cli:output-accumulator-append
+     accumulator (output-accumulator-utf8 (concatenate 'string " world" (string #\Newline))))
+    (cadr-cli:output-accumulator-append
+     accumulator
+     (output-accumulator-utf8
+      (concatenate 'string "line2" (string #\Newline) "line3")))
+    (let ((snapshot (cadr-cli:output-accumulator-snapshot accumulator)))
+      (prog1
+          (list
+           (cadr-cli:output-accumulator-last-line-bytes accumulator)
+           (length (cadr-cli:output-snapshot-content snapshot))
+           (or (output-accumulator-truncation-field snapshot :total-lines) 0)
+           (or (output-accumulator-truncation-field snapshot :total-bytes) 0)
+           5)
+        (output-accumulator-cleanup accumulator)))))
+
+(defun run-output-accumulator-snapshot ()
+  ;; Baseline OutputAccumulator.snapshot after line overflow; not persist.
+  (let ((accumulator
+          (cadr-cli:make-output-accumulator :max-lines 2 :max-bytes 1000)))
+    (cadr-cli:output-accumulator-append
+     accumulator
+     (output-accumulator-utf8
+      (concatenate 'string
+                   "aaaa" (string #\Newline)
+                   "bbbb" (string #\Newline)
+                   "cccc" (string #\Newline)
+                   "dddd" (string #\Newline))))
+    (let* ((snapshot (cadr-cli:output-accumulator-snapshot accumulator))
+           (details (cadr-cli:output-snapshot-truncation snapshot)))
+      (prog1
+          (list
+           (length (cadr-cli:output-snapshot-content snapshot))
+           (fmq-truth (getf details :truncated))
+           (or (getf details :total-lines) 0)
+           (or (getf details :total-bytes) 0)
+           5)
+        (output-accumulator-cleanup accumulator)))))
+
+(defun run-output-accumulator-finish ()
+  ;; Baseline OutputAccumulator.finish after an incomplete UTF-8 byte.
+  (let ((accumulator
+          (cadr-cli:make-output-accumulator :max-lines 100 :max-bytes 10000)))
+    (cadr-cli:output-accumulator-append
+     accumulator (output-accumulator-utf8 (concatenate 'string "ok" (string #\Newline))))
+    (cadr-cli:output-accumulator-append
+     accumulator (make-array 1 :element-type '(unsigned-byte 8) :initial-element #xe4))
+    (cadr-cli:output-accumulator-finish accumulator)
+    (let* ((snapshot (cadr-cli:output-accumulator-snapshot accumulator))
+           (content (cadr-cli:output-snapshot-content snapshot))
+           (details (cadr-cli:output-snapshot-truncation snapshot)))
+      (prog1
+          (list
+           (length content)
+           (fmq-truth (find (code-char #xfffd) content))
+           (or (getf details :total-lines) 0)
+           (or (getf details :total-bytes) 0)
+           5)
+        (output-accumulator-cleanup accumulator)))))
+
+(defun measure-output-accumulator ()
+  (destructuring-bind (oaa-last oaa-len oaa-lines oaa-bytes oaa-n)
+      (run-output-accumulator-append)
+    (destructuring-bind (oas-len oas-trunc oas-lines oas-bytes oas-n)
+        (run-output-accumulator-snapshot)
+      (destructuring-bind (oaf-len oaf-repl oaf-lines oaf-bytes oaf-n)
+          (run-output-accumulator-finish)
+        (json-object
+         "observed"
+         (json-object
+          "oaa_last" oaa-last
+          "oaa_len" oaa-len
+          "oaa_lines" oaa-lines
+          "oaa_bytes" oaa-bytes
+          "oaa_n" oaa-n
+          "oas_len" oas-len
+          "oas_trunc" oas-trunc
+          "oas_lines" oas-lines
+          "oas_bytes" oas-bytes
+          "oas_n" oas-n
+          "oaf_len" oaf-len
+          "oaf_repl" oaf-repl
+          "oaf_lines" oaf-lines
+          "oaf_bytes" oaf-bytes
+          "oaf_n" oaf-n)
+         "append"
+         (collect "output_accumulator.append"
+                  (lambda ()
+                    (lambda ()
+                      (run-output-accumulator-append))))
+         "snapshot"
+         (collect "output_accumulator.snapshot"
+                  (lambda ()
+                    (lambda ()
+                      (run-output-accumulator-snapshot))))
+         "finish"
+         (collect "output_accumulator.finish"
+                  (lambda ()
+                    (lambda ()
+                      (run-output-accumulator-finish)))))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -14221,6 +14351,12 @@
       "src/cadr-agent/file-mutation-queue.lisp release-file-mutation-turn"
       "file_mutation_queue.ensure_state"
       "src/cadr-agent/file-mutation-queue.lisp ensure-file-mutation-queue-state"
+      "output_accumulator.append"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-append"
+      "output_accumulator.snapshot"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-snapshot"
+      "output_accumulator.finish"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-finish"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -14810,6 +14946,8 @@
               (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: file_mutation_queue~%")
               (let ((file-mutation-queue (measure-file-mutation-queue)))
+              (format *error-output* "goal20 cadr paired paths: output_accumulator~%")
+              (let ((output-accumulator (measure-output-accumulator)))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -14943,6 +15081,7 @@
               "settings_load" settings-load
               "resource_loader" resources
               "file_mutation_queue" file-mutation-queue
+              "output_accumulator" output-accumulator
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html
@@ -15003,7 +15142,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

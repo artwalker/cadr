@@ -102,6 +102,7 @@ METRICS = {
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state"),
+    "output_accumulator": ("append", "snapshot", "finish"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -265,6 +266,15 @@ RATIO_CEILINGS = {
     # file_mutation_queue.ensure_state pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "file_mutation_queue.ensure_state": 8.0,
+    # output_accumulator.append pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "output_accumulator.append": 8.0,
+    # output_accumulator.snapshot pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "output_accumulator.snapshot": 8.0,
+    # output_accumulator.finish pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "output_accumulator.finish": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1452,6 +1462,23 @@ OBSERVED_EXACT = {
         "fmqs_missing",
         "fmqs_repeat",
         "fmqs_n",
+    ),
+    "output_accumulator": (
+        "oaa_last",
+        "oaa_len",
+        "oaa_lines",
+        "oaa_bytes",
+        "oaa_n",
+        "oas_len",
+        "oas_trunc",
+        "oas_lines",
+        "oas_bytes",
+        "oas_n",
+        "oaf_len",
+        "oaf_repl",
+        "oaf_lines",
+        "oaf_bytes",
+        "oaf_n",
     ),
     "settings_load": (
         "tr_empty",

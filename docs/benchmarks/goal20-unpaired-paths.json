@@ -169,7 +169,10 @@
   "text_truncation.truncate_middle",
   "render_slicing.slice_ansi_clip",
   "render_slicing.slice_plain_clip",
-  "session_compact.prepare_branch_entries"
+  "session_compact.prepare_branch_entries",
+  "output_accumulator.append",
+  "output_accumulator.snapshot",
+  "output_accumulator.finish"
  ],
  "unpairablePaths": [
   {
@@ -1489,8 +1492,12 @@
   },
   {
    "prefix": "src/cadr-cli/output-accumulator.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": [
+    "output_accumulator.append",
+    "output_accumulator.snapshot",
+    "output_accumulator.finish"
+   ]
   },
   {
    "prefix": "src/cadr-cli/package.lisp",

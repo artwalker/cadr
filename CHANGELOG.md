@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `output_accumulator.append` / `output_accumulator.snapshot` /
+  `output_accumulator.finish` (`output-accumulator-append` / `output-accumulator-snapshot` /
+  `output-accumulator-finish` on `src/cadr-cli/output-accumulator.lisp` vs baseline
+  `OutputAccumulator.append` / `snapshot` / `finish`). Observed `oaa_*` / `oas_*` /
+  `oaf_*` exact. Measure-only. Freeze numbers follow.
 - Goal 20 P.13: pair `file_mutation_queue.ensure_state` (`ensure-file-mutation-queue-state` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `fileMutationQueues.get(key) ?? set`
   given a canonical key). Observed `fmqs_alias` / `fmqs_other` / `fmqs_missing` /

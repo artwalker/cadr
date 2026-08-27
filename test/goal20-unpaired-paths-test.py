@@ -555,6 +555,16 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(trust), 1)
         self.assertEqual(trust[0]["class"], "paired")
         self.assertIn("settings_load.project_trust", trust[0]["metrics"])
+        output_acc = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-cli/output-accumulator.lisp"
+        ]
+        self.assertEqual(len(output_acc), 1)
+        self.assertEqual(output_acc[0]["class"], "paired")
+        self.assertIn("output_accumulator.append", output_acc[0]["metrics"])
+        self.assertIn("output_accumulator.snapshot", output_acc[0]["metrics"])
+        self.assertIn("output_accumulator.finish", output_acc[0]["metrics"])
         provider_defs = [
             row
             for row in classified["rows"]

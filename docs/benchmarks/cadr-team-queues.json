@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 276,
+   "nextPairNum": 283,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -279,6 +279,33 @@
      "measure": "measure-agent-tool-loop",
      "metric": "file_mutation_queue.ensure_state",
      "branch": "cursor/pair-275-fmq-ensure-state-b990"
+    },
+    {
+     "pair": 280,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-cli/output-accumulator.lisp",
+     "measure": "measure-output-accumulator",
+     "metric": "output_accumulator.append",
+     "branch": "cursor/pair-280-282-output-accumulator-389c"
+    },
+    {
+     "pair": 281,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-cli/output-accumulator.lisp",
+     "measure": "measure-output-accumulator",
+     "metric": "output_accumulator.snapshot",
+     "branch": "cursor/pair-280-282-output-accumulator-389c"
+    },
+    {
+     "pair": 282,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-cli/output-accumulator.lisp",
+     "measure": "measure-output-accumulator",
+     "metric": "output_accumulator.finish",
+     "branch": "cursor/pair-280-282-output-accumulator-389c"
     }
    ],
    "mergeQueue": []

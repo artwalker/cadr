@@ -3204,6 +3204,44 @@ layout as `with_queue`. Observed `fmqs_alias` / `fmqs_other` /
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
 
+### Pair 280 — `output_accumulator` (append)
+
+| metric | cadr | pi |
+|---|---|---|
+| `append` | `output-accumulator-append` (`src/cadr-cli/output-accumulator.lisp`) | `OutputAccumulator.append` (`packages/coding-agent/src/core/tools/output-accumulator.ts`) |
+
+Leftover of the `agent_tool_loop` hole on `src/cadr-cli/output-accumulator.lisp`.
+Timed work is incremental append of ASCII lines plus a split UTF-8 codepoint
+(`中` split across two chunks) — not `finish`, not persist. High line/byte
+limits so this path does not spill a temp file. Observed `oaa_last` /
+`oaa_len` / `oaa_lines` / `oaa_bytes` / `oaa_n` are exact. First n=5 freeze
+**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 281 — `output_accumulator` (snapshot)
+
+| metric | cadr | pi |
+|---|---|---|
+| `snapshot` | `output-accumulator-snapshot` (`src/cadr-cli/output-accumulator.lisp`) | `OutputAccumulator.snapshot` (`packages/coding-agent/src/core/tools/output-accumulator.ts`) |
+
+Leftover sibling of Pair 280 `append` on the same `agent_tool_loop` hole.
+Timed work is snapshot after line overflow (`max-lines` 2) — not persist.
+Observed `oas_len` / `oas_trunc` / `oas_lines` / `oas_bytes` / `oas_n` are
+exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`.
+Same commit no optimize.
+
+### Pair 282 — `output_accumulator` (finish)
+
+| metric | cadr | pi |
+|---|---|---|
+| `finish` | `output-accumulator-finish` (`src/cadr-cli/output-accumulator.lisp`) | `OutputAccumulator.finish` (`packages/coding-agent/src/core/tools/output-accumulator.ts`) |
+
+Leftover sibling of Pair 280 `append` and Pair 281 `snapshot` on the same
+`agent_tool_loop` hole. Timed work is finish after an incomplete UTF-8 byte
+(`0xE4`) then snapshot — replacement character on both sides. Observed
+`oaf_len` / `oaf_repl` / `oaf_lines` / `oaf_bytes` / `oaf_n` are exact.
+First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same
+commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -3685,14 +3723,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,092 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 175 | 77,291 | 60.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 70 | 26,706 | 20.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 59.8% of lines (174 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.6% of lines.
+- **Falsifiable vs baseline:** 60.0% of lines (175 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 65.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -3828,6 +3866,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 123 | `cli_print_rpc.jsonl_read` |
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | `cli_print_rpc.session_stats` |
+| `src/cadr-cli/output-accumulator.lisp` | 199 | `output_accumulator.append`, `output_accumulator.snapshot`, `output_accumulator.finish` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |
@@ -3947,9 +3986,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_bootstrap_sessions` | 4 | 5,226 |
 | `cli_selectors` | 10 | 3,706 |
 | `cli_extensions_install` | 5 | 2,200 |
-| `agent_tool_loop` | 10 | 1,847 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
+| `agent_tool_loop` | 9 | 1,648 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |

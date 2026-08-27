@@ -152,6 +152,9 @@ const REPETITIONS = {
 	"file_mutation_queue.wait_turn": 50,
 	"file_mutation_queue.release_turn": 50,
 	"file_mutation_queue.ensure_state": 50,
+	"output_accumulator.append": 50,
+	"output_accumulator.snapshot": 50,
+	"output_accumulator.finish": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -677,6 +680,9 @@ const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const fileMutationQueueModule = await import(
 	moduleUrl("packages/coding-agent/src/core/tools/file-mutation-queue.ts"),
+);
+const outputAccumulatorModule = await import(
+	moduleUrl("packages/coding-agent/src/core/tools/output-accumulator.ts"),
 );
 const editDiffModule = await import(moduleUrl("packages/coding-agent/src/core/tools/edit-diff.ts"));
 const tuiUtilsModule = await import(moduleUrl("packages/tui/src/utils.ts"));
@@ -2537,6 +2543,94 @@ async function measureFileMutationQueue() {
 			...waitTurnObserved,
 			...releaseTurnObserved,
 			...ensureStateObserved,
+		},
+	};
+}
+
+const { OutputAccumulator } = outputAccumulatorModule;
+
+async function closeOutputAccumulator(accumulator) {
+	const path = accumulator.snapshot().fullOutputPath;
+	await accumulator.closeTempFile();
+	if (path && existsSync(path)) {
+		unlinkSync(path);
+	}
+}
+
+function utf8Buffer(text) {
+	return Buffer.from(text, "utf8");
+}
+
+async function runOutputAccumulatorAppend() {
+	const accumulator = new OutputAccumulator({ maxLines: 100, maxBytes: 10000 });
+	const zhong = utf8Buffer("中");
+	accumulator.append(utf8Buffer("hello\n"));
+	accumulator.append(zhong.subarray(0, 2));
+	accumulator.append(zhong.subarray(2));
+	accumulator.append(utf8Buffer(" world\n"));
+	accumulator.append(utf8Buffer("line2\nline3"));
+	const snapshot = accumulator.snapshot();
+	const observed = {
+		oaa_last: accumulator.getLastLineBytes(),
+		oaa_len: snapshot.content.length,
+		oaa_lines: snapshot.truncation.totalLines,
+		oaa_bytes: snapshot.truncation.totalBytes,
+		oaa_n: 5,
+	};
+	await closeOutputAccumulator(accumulator);
+	return observed;
+}
+
+async function runOutputAccumulatorSnapshot() {
+	const accumulator = new OutputAccumulator({ maxLines: 2, maxBytes: 1000 });
+	accumulator.append(utf8Buffer("aaaa\nbbbb\ncccc\ndddd\n"));
+	const snapshot = accumulator.snapshot();
+	const observed = {
+		oas_len: snapshot.content.length,
+		oas_trunc: snapshot.truncation.truncated ? 1 : 0,
+		oas_lines: snapshot.truncation.totalLines,
+		oas_bytes: snapshot.truncation.totalBytes,
+		oas_n: 5,
+	};
+	await closeOutputAccumulator(accumulator);
+	return observed;
+}
+
+async function runOutputAccumulatorFinish() {
+	const accumulator = new OutputAccumulator({ maxLines: 100, maxBytes: 10000 });
+	accumulator.append(utf8Buffer("ok\n"));
+	accumulator.append(Buffer.from([0xe4]));
+	accumulator.finish();
+	const snapshot = accumulator.snapshot();
+	const observed = {
+		oaf_len: snapshot.content.length,
+		oaf_repl: snapshot.content.includes("\uFFFD") ? 1 : 0,
+		oaf_lines: snapshot.truncation.totalLines,
+		oaf_bytes: snapshot.truncation.totalBytes,
+		oaf_n: 5,
+	};
+	await closeOutputAccumulator(accumulator);
+	return observed;
+}
+
+async function measureOutputAccumulator() {
+	const appendObserved = await runOutputAccumulatorAppend();
+	const snapshotObserved = await runOutputAccumulatorSnapshot();
+	const finishObserved = await runOutputAccumulatorFinish();
+	return {
+		append: await collect("output_accumulator.append", () => {
+			return () => runOutputAccumulatorAppend();
+		}),
+		snapshot: await collect("output_accumulator.snapshot", () => {
+			return () => runOutputAccumulatorSnapshot();
+		}),
+		finish: await collect("output_accumulator.finish", () => {
+			return () => runOutputAccumulatorFinish();
+		}),
+		observed: {
+			...appendObserved,
+			...snapshotObserved,
+			...finishObserved,
 		},
 	};
 }
@@ -14623,6 +14717,8 @@ process.stderr.write("goal20 pi paired paths: resource_loader\n");
 const resourceLoader = await measureResourceLoader();
 process.stderr.write("goal20 pi paired paths: file_mutation_queue\n");
 const fileMutationQueue = await measureFileMutationQueue();
+process.stderr.write("goal20 pi paired paths: output_accumulator\n");
+const outputAccumulator = await measureOutputAccumulator();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -14762,6 +14858,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue finally (pending-- / delete when empty) after wait",
 			"file_mutation_queue.ensure_state":
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts fileMutationQueues.get-or-create given a canonical key",
+			"output_accumulator.append":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.append",
+			"output_accumulator.snapshot":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.snapshot",
+			"output_accumulator.finish":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.finish",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15298,6 +15400,7 @@ const result = {
 		settings_load: settingsLoad,
 		resource_loader: resourceLoader,
 		file_mutation_queue: fileMutationQueue,
+		output_accumulator: outputAccumulator,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1231,
+  "expected_findings": 1232,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -4415,6 +4415,14 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "process.stderr.write(\"goal20 pi paired paths: file_mutation_queue\\n\");",
+      "occurrences": 1,
+      "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
+      "line": "process.stderr.write(\"goal20 pi paired paths: output_accumulator\\n\");",
       "occurrences": 1,
       "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
     },
