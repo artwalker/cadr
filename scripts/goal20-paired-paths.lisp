@@ -127,6 +127,9 @@
 ;;;; 343. write_tool ensure-write-parent-directories vs defaultWriteOperations.mkdir
 ;;;; 344. write_tool write-utf8-file vs defaultWriteOperations.writeFile
 ;;;; 345. write_tool make-write-tool vs createWriteToolDefinition
+;;;; 373. grep_tool ripgrep-match-event vs grep.ts JSON.parse match event
+;;;; 374. grep_tool ripgrep-line-text vs grep.ts match.lineText sanitize
+;;;; 375. grep_tool make-grep-tool vs createGrepToolDefinition
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
@@ -326,6 +329,9 @@
     ("write_tool.ensure_parent" . 50)
     ("write_tool.write_utf8" . 50)
     ("write_tool.make_tool" . 50)
+    ("grep_tool.match_event" . 50)
+    ("grep_tool.line_text" . 50)
+    ("grep_tool.make_tool" . 50)
     ("ls_tool.directory_entry_name" . 50)
     ("ls_tool.list_directory" . 50)
     ("ls_tool.make_tool" . 50)
@@ -5320,6 +5326,109 @@
                   (lambda ()
                     (lambda ()
                       (run-write-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the tool_grep hole on
+;;; src/cadr-cli/tools/grep.lisp (Pairs 373-375).
+;;; Timed owners: ripgrep-match-event, ripgrep-line-text, make-grep-tool
+;;; — not grep-lines / execute / context blocks.
+;;; ---------------------------------------------------------------------
+
+(defun grep-tool-truth (value)
+  (if value 1 0))
+
+(defun run-grep-match-event ()
+  (let* ((match-line
+           "{\"type\":\"match\",\"data\":{\"path\":{\"text\":\"a.txt\"},\"lines\":{\"text\":\"hello\\n\"},\"line_number\":3}}")
+         (begin-line
+           "{\"type\":\"begin\",\"data\":{\"path\":{\"text\":\"a.txt\"}}}")
+         (bad-line "not-json")
+         (match (cadr-cli::ripgrep-match-event match-line))
+         (begin (cadr-cli::ripgrep-match-event begin-line))
+         (bad (cadr-cli::ripgrep-match-event bad-line)))
+    (list
+     (grep-tool-truth
+      (and match
+           (string= (getf match :path) "a.txt")
+           (eql (getf match :line-number) 3)))
+     (grep-tool-truth (null begin))
+     (grep-tool-truth (null bad))
+     3)))
+
+(defun run-grep-line-text ()
+  (list
+   (grep-tool-truth
+    (string=
+     (cadr-cli::ripgrep-line-text
+      (format nil "hello~C~C" #\Return #\Newline))
+     "hello"))
+   (grep-tool-truth
+    (string=
+     (cadr-cli::ripgrep-line-text (format nil "hello~C" #\Newline))
+     "hello"))
+   (grep-tool-truth
+    (string= (cadr-cli::ripgrep-line-text "hello") "hello"))
+   (grep-tool-truth
+    (string=
+     (cadr-cli::ripgrep-line-text (format nil "hello~C" #\Return))
+     "hello"))
+   4))
+
+(defun run-grep-make-tool ()
+  (let* ((tool (cadr-cli::make-grep-tool "/tmp"))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list)))
+         (description (cadr-ai:tool-description tool)))
+    (list
+     (grep-tool-truth (string= (cadr-ai:tool-name tool) "grep"))
+     (grep-tool-truth
+      (and (search "Search file contents for a pattern" description)
+           (search "Respects .gitignore" description)))
+     (grep-tool-truth
+      (and required-list
+           (find "pattern" required-list :test #'string=)))
+     3)))
+
+(defun measure-grep-tool ()
+  (destructuring-bind (rme-match rme-begin rme-bad rme-n)
+      (run-grep-match-event)
+    (destructuring-bind (rlt-crlf rlt-nl rlt-plain rlt-cr rlt-n)
+        (run-grep-line-text)
+      (destructuring-bind (gmt-name gmt-desc gmt-req gmt-n)
+          (run-grep-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "rme_match" rme-match
+          "rme_begin" rme-begin
+          "rme_bad" rme-bad
+          "rme_n" rme-n
+          "rlt_crlf" rlt-crlf
+          "rlt_nl" rlt-nl
+          "rlt_plain" rlt-plain
+          "rlt_cr" rlt-cr
+          "rlt_n" rlt-n
+          "gmt_name" gmt-name
+          "gmt_desc" gmt-desc
+          "gmt_req" gmt-req
+          "gmt_n" gmt-n)
+         "match_event"
+         (collect "grep_tool.match_event"
+                  (lambda ()
+                    (lambda ()
+                      (run-grep-match-event))))
+         "line_text"
+         (collect "grep_tool.line_text"
+                  (lambda ()
+                    (lambda ()
+                      (run-grep-line-text))))
+         "make_tool"
+         (collect "grep_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-grep-make-tool)))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -16364,6 +16473,12 @@
       "src/cadr-cli/tools/write.lisp write-utf8-file"
       "write_tool.make_tool"
       "src/cadr-cli/tools/write.lisp make-write-tool"
+      "grep_tool.match_event"
+      "src/cadr-cli/tools/grep.lisp ripgrep-match-event"
+      "grep_tool.line_text"
+      "src/cadr-cli/tools/grep.lisp ripgrep-line-text"
+      "grep_tool.make_tool"
+      "src/cadr-cli/tools/grep.lisp make-grep-tool"
       "ls_tool.directory_entry_name"
       "src/cadr-cli/tools/ls.lisp directory-entry-name"
       "ls_tool.list_directory"
@@ -17005,6 +17120,7 @@
                     (bash-tool nil)
                     (find-tool nil)
                     (write-tool nil)
+                    (grep-tool nil)
                     (ls-tool nil)
                     (tool-manager nil)
                     (powershell-tool nil)
@@ -17019,6 +17135,8 @@
               (setf find-tool (measure-find-tool))
               (format *error-output* "goal20 cadr paired paths: write_tool~%")
               (setf write-tool (measure-write-tool))
+              (format *error-output* "goal20 cadr paired paths: grep_tool~%")
+              (setf grep-tool (measure-grep-tool))
               (format *error-output* "goal20 cadr paired paths: ls_tool~%")
               (setf ls-tool (measure-ls-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
@@ -17165,6 +17283,7 @@
               "output_accumulator" output-accumulator
               "find_tool" find-tool
               "write_tool" write-tool
+              "grep_tool" grep-tool
               "ls_tool" ls-tool
               "tool_manager" tool-manager
               "powershell_tool" powershell-tool

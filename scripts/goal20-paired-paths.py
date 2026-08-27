@@ -107,6 +107,7 @@ METRICS = {
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
     "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
+    "grep_tool": ("match_event", "line_text", "make_tool"),
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
@@ -341,6 +342,11 @@ RATIO_CEILINGS = {
     "write_tool.ensure_parent": 8.0,
     "write_tool.write_utf8": 8.0,
     "write_tool.make_tool": 8.0,
+    # grep_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "grep_tool.match_event": 8.0,
+    "grep_tool.line_text": 8.0,
+    "grep_tool.make_tool": 8.0,
     # ls_tool leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "ls_tool.directory_entry_name": 8.0,
@@ -1723,6 +1729,21 @@ OBSERVED_EXACT = {
         "wmt_desc",
         "wmt_req",
         "wmt_n",
+    ),
+    "grep_tool": (
+        "rme_match",
+        "rme_begin",
+        "rme_bad",
+        "rme_n",
+        "rlt_crlf",
+        "rlt_nl",
+        "rlt_plain",
+        "rlt_cr",
+        "rlt_n",
+        "gmt_name",
+        "gmt_desc",
+        "gmt_req",
+        "gmt_n",
     ),
     "ls_tool": (
         "lden_file",

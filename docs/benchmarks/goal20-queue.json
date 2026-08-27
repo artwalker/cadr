@@ -720,7 +720,7 @@
    "measure": "measure-cli-settings",
    "metric": "cli_settings.reload",
    "branch": "cursor/pair-307-309-cli-settings-leftovers-17b4",
-   "note": "nextPairNum left at tip 328 (outside 307-309); 310-345 reserved for other leftover knives"
+   "note": "nextPairNum left at tip 328 (outside 307-309); 310-375 reserved for other leftover knives"
   },
   {
    "pair": 308,
@@ -835,6 +835,33 @@
    "piUs": 4.343,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 373,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/grep.lisp",
+   "measure": "measure-grep-tool",
+   "metric": "grep_tool.match_event",
+   "branch": "cursor/pair-373-375-grep-leftovers-eb2d"
+  },
+  {
+   "pair": 374,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/grep.lisp",
+   "measure": "measure-grep-tool",
+   "metric": "grep_tool.line_text",
+   "branch": "cursor/pair-373-375-grep-leftovers-eb2d"
+  },
+  {
+   "pair": 375,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/grep.lisp",
+   "measure": "measure-grep-tool",
+   "metric": "grep_tool.make_tool",
+   "branch": "cursor/pair-373-375-grep-leftovers-eb2d"
   }
  ],
  "mergeQueue": []

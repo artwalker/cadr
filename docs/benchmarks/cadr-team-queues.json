@@ -723,7 +723,7 @@
      "measure": "measure-cli-settings",
      "metric": "cli_settings.reload",
      "branch": "cursor/pair-307-309-cli-settings-leftovers-17b4",
-     "note": "nextPairNum left at tip 328 (outside 307-309); 310-345 reserved for other leftover knives"
+     "note": "nextPairNum left at tip 328 (outside 307-309); 310-375 reserved for other leftover knives"
     },
     {
      "pair": 308,

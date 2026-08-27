@@ -187,7 +187,10 @@
   "tool_manager.cleanup_quarantine",
   "write_tool.ensure_parent",
   "write_tool.write_utf8",
-  "write_tool.make_tool"
+  "write_tool.make_tool",
+  "grep_tool.match_event",
+  "grep_tool.line_text",
+  "grep_tool.make_tool"
  ],
  "unpairablePaths": [
   {
@@ -543,7 +546,10 @@
    "prefix": "src/cadr-cli/tools/grep.lisp",
    "class": "paired",
    "metrics": [
-    "tool_grep.context_file"
+    "tool_grep.context_file",
+    "grep_tool.match_event",
+    "grep_tool.line_text",
+    "grep_tool.make_tool"
    ]
   },
   {
