@@ -3983,7 +3983,10 @@ Leftover sibling of the `evals_harness` hole on `src/cadr-evals/main.lisp`.
 Timed work is `--flag=` suffix slice (value / empty prefix / miss / model)
 — not `parse-eval-arguments`, not a live eval run. Empty suffix stays
 unknown. Observed `apr_val` / `apr_empty` / `apr_miss` / `apr_model` / `apr_n`
-are exact. First n=5 freeze pending. Ceiling 8.0. Same commit no optimize.
+are exact. First n=5 freeze **0.904×** (0.216 / 0.239 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). cadr leads. Same
+commit no optimize.
 
 ### Pair 401 — `evals_harness` (parse_arguments)
 
@@ -3996,8 +3999,10 @@ hole in `src/cadr-evals/main.lisp`. Timed work is space/equals
 `--provider`/`--model`, cadr `--suite=` (default smoke), missing/empty/unknown
 errors — not `%eval-main`, not vitest spawn. Do not exact error copy.
 Observed `pa_space` / `pa_eq` / `pa_mix` / `pa_miss` / `pa_empty` /
-`pa_unknown` / `pa_n` are exact. First n=5 freeze pending. Ceiling 8.0.
-Same commit no optimize.
+`pa_unknown` / `pa_n` are exact. First n=5 freeze **0.134×** (1.186 / 8.837 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). cadr leads. Same commit no optimize.
 
 ### Pair 402 — `evals_harness` (validate_smoke)
 
@@ -4008,8 +4013,10 @@ Same commit no optimize.
 Leftover sibling of Pairs 400–401 on the same `evals_harness` hole in
 `src/cadr-evals/main.lisp`. Timed work is Paris trim + token usage on a
 constructed result — not `run-smoke-eval`, not a live provider. Observed
-`vs_ok` / `vs_trim` / `vs_city` / `vs_tok` / `vs_n` are exact. First n=5
-freeze pending. Ceiling 8.0. Same commit no optimize.
+`vs_ok` / `vs_trim` / `vs_city` / `vs_tok` / `vs_n` are exact. First n=5 freeze
+**0.512×** (2.384 / 4.654 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). cadr leads. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
