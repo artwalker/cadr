@@ -3800,6 +3800,48 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
 old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Over-1× booked. Same commit no optimize.
 
+### Pair 352 — `cli_settings` (default_model)
+
+| metric | cadr | pi |
+|---|---|---|
+| `default_model` | `settings-default-model` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getDefaultModel` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 307–309 on the same `cli_settings` hole.
+Timed work is fixture `defaultModel` plus missing-key in-memory —
+not persist, not selector UI. Observed `dm_fixture` / `dm_missing` /
+`dm_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 353 — `cli_settings` (default_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `default_provider` | `settings-default-provider` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getDefaultProvider` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 352 `default_model` on the same `cli_settings`
+hole. Timed work is fixture `defaultProvider` plus missing-key
+in-memory — not persist, not login UI. Observed `dp_fixture` /
+`dp_missing` / `dp_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
+### Pair 354 — `cli_settings` (output_padding)
+
+| metric | cadr | pi |
+|---|---|---|
+| `output_padding` | `settings-output-padding` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getOutputPad` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 352–353 on the same `cli_settings` hole.
+Timed work is default 1 plus in-memory `outputPad=0` — not TUI
+geometry, not persist. Observed `op_default` / `op_zero` / `op_n`
+are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4281,14 +4323,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 175 | 77,314 | 60.0% | `no worse than baseline` is falsifiable |
+| `paired` | 177 | 77,799 | 60.4% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 70 | 26,683 | 20.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 68 | 26,198 | 20.3% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 60.0% of lines (175 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.8% of lines.
+- **Falsifiable vs baseline:** 60.4% of lines (177 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 66.2% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -4438,7 +4480,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
-| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images` |
+| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_model`, `cli_settings.default_provider`, `cli_settings.output_padding` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |

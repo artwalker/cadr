@@ -715,6 +715,34 @@
      "measure": "measure-cli-settings",
      "metric": "cli_settings.block_images",
      "branch": "cursor/pair-307-309-cli-settings-leftovers-17b4"
+    },
+    {
+     "pair": 352,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-cli/settings/manager.lisp",
+     "measure": "measure-cli-settings",
+     "metric": "cli_settings.default_model",
+     "branch": "cursor/pair-352-354-cli-settings-leftovers-9088",
+     "note": "nextPairNum left at tip 328 (328-351 reserved for other leftover knives)"
+    },
+    {
+     "pair": 353,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-cli/settings/manager.lisp",
+     "measure": "measure-cli-settings",
+     "metric": "cli_settings.default_provider",
+     "branch": "cursor/pair-352-354-cli-settings-leftovers-9088"
+    },
+    {
+     "pair": 354,
+     "lane": "c",
+     "status": "done",
+     "source": "src/cadr-cli/settings/manager.lisp",
+     "measure": "measure-cli-settings",
+     "metric": "cli_settings.output_padding",
+     "branch": "cursor/pair-352-354-cli-settings-leftovers-9088"
     }
    ],
    "mergeQueue": []

@@ -139,6 +139,9 @@
 ;;;; 307. cli_settings settings-reload vs SettingsManager.reload
 ;;;; 308. cli_settings settings-enabled-models vs SettingsManager.getEnabledModels
 ;;;; 309. cli_settings settings-block-images-p vs SettingsManager.getBlockImages
+;;;; 352. cli_settings settings-default-model vs SettingsManager.getDefaultModel
+;;;; 353. cli_settings settings-default-provider vs SettingsManager.getDefaultProvider
+;;;; 354. cli_settings settings-output-padding vs SettingsManager.getOutputPad
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -283,6 +286,9 @@
     ("cli_settings.reload" . 50)
     ("cli_settings.enabled_models" . 50)
     ("cli_settings.block_images" . 50)
+    ("cli_settings.default_model" . 50)
+    ("cli_settings.default_provider" . 50)
+    ("cli_settings.output_padding" . 50)
     ("agent_conditions.error_probe" . 50)
     ("execution_env.exists_remove_temps" . 50)
     ("file_mutation_queue.with_queue" . 50)
@@ -2940,6 +2946,39 @@
        (cs-truth blocked)
        2))))
 
+(defun run-cli-settings-default-model (manager)
+  (let ((from-fixture (cadr-cli::settings-default-model manager))
+        (missing
+          (cadr-cli::settings-default-model
+           (cadr-cli::make-memory-settings-manager))))
+    (list
+     (cs-truth
+      (string= "claude-sonnet-4-5" (or from-fixture "")))
+     (cs-truth (null missing))
+     2)))
+
+(defun run-cli-settings-default-provider (manager)
+  (let ((from-fixture (cadr-cli::settings-default-provider manager))
+        (missing
+          (cadr-cli::settings-default-provider
+           (cadr-cli::make-memory-settings-manager))))
+    (list
+     (cs-truth (string= "anthropic" (or from-fixture "")))
+     (cs-truth (null missing))
+     2)))
+
+(defun run-cli-settings-output-padding (manager)
+  (let ((default (cadr-cli::settings-output-padding manager))
+        (initial (cadr-ai::json-object)))
+    (cadr-ai::json-put initial "outputPad" 0)
+    (let ((zero
+            (cadr-cli::settings-output-padding
+             (cadr-cli::make-memory-settings-manager initial))))
+      (list
+       (cs-truth (= 1 default))
+       (cs-truth (zerop zero))
+       2))))
+
 
 (defun agent-conditions-bool (value)
   (if value 1 0))
@@ -3130,56 +3169,86 @@
             (run-cli-settings-enabled-models manager)
           (destructuring-bind (bi-default bi-blocked bi-n)
               (run-cli-settings-block-images manager)
-            (json-object
-             "observed"
-             (json-object
-              "theme"
-              (or (cadr-cli::settings-value manager "theme") "")
-              "default_model"
-              (or (cadr-cli::settings-value manager "defaultModel") "")
-              "default_provider"
-              (or (cadr-cli::settings-value manager "defaultProvider") "")
-              "compaction_reserve_tokens"
-              (or (cadr-cli::settings-nested-value
-                   manager "compaction" "reserveTokens")
-                  0)
-              "default_project_trust"
-              (or (cadr-cli::settings-value manager "defaultProjectTrust")
-                  "")
-              "http_idle_timeout_ms"
-              (cadr-cli::settings-http-idle-timeout-ms manager)
-              "project_trusted"
-              (and (cadr-cli::settings-manager-project-trusted-p manager) t)
-              "rl_theme_light" rl-theme-light
-              "rl_model" rl-model
-              "rl_idle" rl-idle
-              "rl_n" rl-n
-              "em_all" em-all
-              "em_one" em-one
-              "em_n" em-n
-              "bi_default" bi-default
-              "bi_blocked" bi-blocked
-              "bi_n" bi-n)
-             "create"
-             (collect "cli_settings.create"
-                      (lambda ()
-                        (lambda ()
-                          (run-cli-settings global project))))
-             "reload"
-             (collect "cli_settings.reload"
-                      (lambda ()
-                        (lambda ()
-                          (run-cli-settings-reload manager))))
-             "enabled_models"
-             (collect "cli_settings.enabled_models"
-                      (lambda ()
-                        (lambda ()
-                          (run-cli-settings-enabled-models manager))))
-             "block_images"
-             (collect "cli_settings.block_images"
-                      (lambda ()
-                        (lambda ()
-                          (run-cli-settings-block-images manager)))))))))))
+            (destructuring-bind (dm-fixture dm-missing dm-n)
+                (run-cli-settings-default-model manager)
+              (destructuring-bind (dp-fixture dp-missing dp-n)
+                  (run-cli-settings-default-provider manager)
+                (destructuring-bind (op-default op-zero op-n)
+                    (run-cli-settings-output-padding manager)
+                  (json-object
+                   "observed"
+                   (json-object
+                    "theme"
+                    (or (cadr-cli::settings-value manager "theme") "")
+                    "default_model"
+                    (or (cadr-cli::settings-value manager "defaultModel") "")
+                    "default_provider"
+                    (or (cadr-cli::settings-value manager "defaultProvider") "")
+                    "compaction_reserve_tokens"
+                    (or (cadr-cli::settings-nested-value
+                         manager "compaction" "reserveTokens")
+                        0)
+                    "default_project_trust"
+                    (or (cadr-cli::settings-value manager "defaultProjectTrust")
+                        "")
+                    "http_idle_timeout_ms"
+                    (cadr-cli::settings-http-idle-timeout-ms manager)
+                    "project_trusted"
+                    (and (cadr-cli::settings-manager-project-trusted-p manager) t)
+                    "rl_theme_light" rl-theme-light
+                    "rl_model" rl-model
+                    "rl_idle" rl-idle
+                    "rl_n" rl-n
+                    "em_all" em-all
+                    "em_one" em-one
+                    "em_n" em-n
+                    "bi_default" bi-default
+                    "bi_blocked" bi-blocked
+                    "bi_n" bi-n
+                    "dm_fixture" dm-fixture
+                    "dm_missing" dm-missing
+                    "dm_n" dm-n
+                    "dp_fixture" dp-fixture
+                    "dp_missing" dp-missing
+                    "dp_n" dp-n
+                    "op_default" op-default
+                    "op_zero" op-zero
+                    "op_n" op-n)
+                   "create"
+                   (collect "cli_settings.create"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings global project))))
+                   "reload"
+                   (collect "cli_settings.reload"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-reload manager))))
+                   "enabled_models"
+                   (collect "cli_settings.enabled_models"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-enabled-models manager))))
+                   "block_images"
+                   (collect "cli_settings.block_images"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-block-images manager))))
+                   "default_model"
+                   (collect "cli_settings.default_model"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-default-model manager))))
+                   "default_provider"
+                   (collect "cli_settings.default_provider"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-default-provider manager))))
+                   "output_padding"
+                   (collect "cli_settings.output_padding"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-output-padding manager))))))))))))))
 
 (defun stage-settings-load-trust ()
   (let* ((empty
@@ -15819,6 +15888,12 @@
       "src/cadr-cli/settings/manager.lisp settings-enabled-models"
       "cli_settings.block_images"
       "src/cadr-cli/settings/manager.lisp settings-block-images-p"
+      "cli_settings.default_model"
+      "src/cadr-cli/settings/manager.lisp settings-default-model"
+      "cli_settings.default_provider"
+      "src/cadr-cli/settings/manager.lisp settings-default-provider"
+      "cli_settings.output_padding"
+      "src/cadr-cli/settings/manager.lisp settings-output-padding"
       "agent_conditions.error_probe"
       "src/cadr-agent/conditions.lisp define-condition slot accessors + subtypep"
       "execution_env.exists_remove_temps"

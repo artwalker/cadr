@@ -145,6 +145,12 @@ tag/Release step.
   `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
   (`lc_n` / `lc_sleep` / help text), not these metrics. Pair 294 is on the
   over-1× ledger. Pairs 292–294.
+- Goal 20 P.13 leftover: pair `cli_settings.default_model` /
+  `default_provider` / `output_padding` (`src/cadr-cli/settings/manager.lisp`
+  vs baseline `SettingsManager.getDefaultModel` / `getDefaultProvider` /
+  `getOutputPad`). Observed `dm_*` / `dp_*` / `op_*` exact. Measure-only.
+  Pairs 352–354. Freeze numbers in a follow-up docs commit.
+
 - Goal 20 P.13 leftover: pair `cli_settings.reload` / `enabled_models` /
   `block_images` (`src/cadr-cli/settings/manager.lisp` vs baseline
   `SettingsManager.reload` / `getEnabledModels` / `getBlockImages`).

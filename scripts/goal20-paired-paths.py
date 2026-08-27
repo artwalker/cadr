@@ -98,7 +98,7 @@ METRICS = {
     "provider_vertex": ("stream_roundtrip",),
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
-    "cli_settings": ("create", "reload", "enabled_models", "block_images"),
+    "cli_settings": ("create", "reload", "enabled_models", "block_images", "default_model", "default_provider", "output_padding"),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
@@ -258,6 +258,11 @@ RATIO_CEILINGS = {
     "cli_settings.reload": 8.0,
     "cli_settings.enabled_models": 8.0,
     "cli_settings.block_images": 8.0,
+    # cli_settings leftover trio 352-354 (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "cli_settings.default_model": 8.0,
+    "cli_settings.default_provider": 8.0,
+    "cli_settings.output_padding": 8.0,
     # agent_conditions.error_probe pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "agent_conditions.error_probe": 8.0,
@@ -1498,6 +1503,15 @@ OBSERVED_EXACT = {
         "bi_default",
         "bi_blocked",
         "bi_n",
+        "dm_fixture",
+        "dm_missing",
+        "dm_n",
+        "dp_fixture",
+        "dp_missing",
+        "dp_n",
+        "op_default",
+        "op_zero",
+        "op_n",
     ),
     "agent_conditions": (
         "ac_schema_tool",
