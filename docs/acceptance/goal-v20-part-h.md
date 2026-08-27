@@ -3353,6 +3353,55 @@ First n=5 freeze **1.18×** (0.14 / 0.12 µs) on host `cursor`, ceiling 8.0.
 Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
 `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
+### Pair 286 — `file_mutation_queue` (call_with)
+
+| metric | cadr | pi |
+|---|---|---|
+| `call_with` | `call-with-file-mutation-queue` (`src/cadr-agent/file-mutation-queue.lisp`) | `withFileMutationQueue` as a function (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 261 `with_queue` through Pair 275 `ensure_state` on
+the same `agent_tool_loop` hole. Timed work is the function (not the
+`with-` macro): canonical key plus FIFO acquire/fn/release on existing
+path, symlink alias, and distinct sibling — not write/edit tools. Same
+staged scratch layout as `with_queue`. Observed `fmqf_alias` /
+`fmqf_other` / `fmqf_fifo` / `fmqf_run` / `fmqf_n` are exact. First n=5
+freeze **0.523×** (124.1 / 237.4 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 287 — `file_mutation_queue` (make_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_state` | `make-file-mutation-queue-state` (`src/cadr-agent/file-mutation-queue.lisp`) | queue-state object `{ key, pending, nextTicket, serving }` (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 286 `call_with` on the same `agent_tool_loop`
+hole. Timed work is constructing a fresh queue state from a canonical
+key (existing path and distinct sibling) — not registry insert, not
+`with-file-mutation-queue`, not write/edit tools. Same staged scratch
+layout as `with_queue`. Observed `fmqm_pending` / `fmqm_ticket` /
+`fmqm_serving` / `fmqm_other` / `fmqm_n` are exact. First n=5 freeze
+**1.597×** (105.7 / 66.2 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 288 — `file_mutation_queue` (state_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `state_key` | `file-mutation-queue-state-key` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.key` after get-or-create given a canonical key (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 286 `call_with` and Pair 287 `make_state` on the
+same `agent_tool_loop` hole. Timed work is reading the state's canonical
+key after ensure (existing path, symlink alias, missing path, distinct
+sibling, repeat lookup) — not path encoding as the owner, not
+`with-file-mutation-queue`, not write/edit tools. Same staged scratch
+layout as `with_queue`. Observed `fmqt_alias` / `fmqt_other` /
+`fmqt_missing` / `fmqt_repeat` / `fmqt_n` are exact. First n=5 freeze
+**1.009×** (134.3 / 133.1 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

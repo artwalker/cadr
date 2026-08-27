@@ -221,5 +221,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `bash_tool.append_status` | 1.109 | 0.381 | 2.91× | 8.00× | measure-only pair 278; `append-bash-status` vs `appendStatus`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `bash_tool.truncation_notice` | 2.798 | 0.832 | 3.36× | 8.00× | measure-only pair 279; `bash-truncation-notice` vs `formatOutput` notice body | invent pause；地板优化另刀 |
 | `harness_events.make_start` | 0.14 | 0.12 | 1.18× | 8.00× | measure-only pair 285; `make-run-start-event` vs `RunStartEvent` object (sub-µs variance) | invent pause；地板优化另刀 |
+| `file_mutation_queue.make_state` | 105.7 | 66.2 | 1.597× | 8.00× | measure-only pair 287; `make-file-mutation-queue-state` vs JS object literal | invent pause；地板优化另刀 |
+| `file_mutation_queue.state_key` | 134.3 | 133.1 | 1.009× | 8.00× | measure-only pair 288; `file-mutation-queue-state-key` after ensure | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

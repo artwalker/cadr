@@ -106,9 +106,15 @@
 ;;;; 277. bash_tool strip Process-exited footer vs bash-strip-exit-footer
 ;;;; 278. bash_tool appendStatus vs append-bash-status
 ;;;; 279. bash_tool formatOutput truncation notice vs bash-truncation-notice
+;;;; 280. output_accumulator append vs OutputAccumulator.append
+;;;; 281. output_accumulator snapshot vs OutputAccumulator.snapshot
+;;;; 282. output_accumulator finish vs OutputAccumulator.finish
 ;;;; 283. harness_events on vs HarnessEventBus.on
 ;;;; 284. harness_events watch vs HarnessEventBus.watch
 ;;;; 285. harness_events make_start vs RunStartEvent object
+;;;; 286. file_mutation_queue call-with-file-mutation-queue vs withFileMutationQueue (function)
+;;;; 287. file_mutation_queue make-file-mutation-queue-state vs queue-state object
+;;;; 288. file_mutation_queue file-mutation-queue-state-key vs state.key
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -256,6 +262,9 @@
     ("file_mutation_queue.wait_turn" . 50)
     ("file_mutation_queue.release_turn" . 50)
     ("file_mutation_queue.ensure_state" . 50)
+    ("file_mutation_queue.call_with" . 50)
+    ("file_mutation_queue.make_state" . 50)
+    ("file_mutation_queue.state_key" . 50)
     ("harness_events.emit" . 50)
     ("bash_tool.strip_exit_footer" . 50)
     ("bash_tool.append_status" . 50)
@@ -4005,6 +4014,121 @@
            5)
         (fmq-drop-empty-queues)))))
 
+(defun run-file-mutation-queue-call-with ()
+  ;; Baseline withFileMutationQueue as a function, not the with- macro
+  ;; and not write/edit tools.
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir missing))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (fmq-setup-alias target alias)
+    (let* ((alias-key-ok
+             (fmq-truth
+              (string=
+               (cadr-agent::file-mutation-queue-key target)
+               (cadr-agent::file-mutation-queue-key alias))))
+           (other-key-ok
+             (fmq-truth
+              (not (string=
+                    (cadr-agent::file-mutation-queue-key target)
+                    (cadr-agent::file-mutation-queue-key other)))))
+           (fifo-sum 0)
+           (other-run 0))
+      (cadr-agent::call-with-file-mutation-queue
+       target (lambda () (incf fifo-sum 1)))
+      (cadr-agent::call-with-file-mutation-queue
+       target (lambda () (incf fifo-sum 2)))
+      (cadr-agent::call-with-file-mutation-queue
+       target (lambda () (incf fifo-sum 3)))
+      (cadr-agent::call-with-file-mutation-queue
+       target
+       (lambda ()
+         (setf other-run
+               (cadr-agent::call-with-file-mutation-queue
+                other (lambda () 7)))))
+      (list alias-key-ok other-key-ok fifo-sum other-run 4))))
+
+(defun run-file-mutation-queue-make-state ()
+  ;; Baseline queue-state object construction given a canonical key;
+  ;; not path encoding, not withFileMutationQueue, not write/edit tools.
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir alias missing))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (let* ((target-key (cadr-agent::file-mutation-queue-key target))
+           (other-key (cadr-agent::file-mutation-queue-key other))
+           (target-state
+             (cadr-agent::make-file-mutation-queue-state target-key))
+           (other-state
+             (cadr-agent::make-file-mutation-queue-state other-key)))
+      (list
+       (fmq-truth
+        (zerop
+         (cadr-agent::file-mutation-queue-state-pending-count
+          target-state)))
+       (fmq-truth
+        (zerop
+         (cadr-agent::file-mutation-queue-state-next-ticket
+          target-state)))
+       (fmq-truth
+        (zerop
+         (cadr-agent::file-mutation-queue-state-serving-ticket
+          target-state)))
+       (fmq-truth (not (eq target-state other-state)))
+       4))))
+
+(defun run-file-mutation-queue-state-key ()
+  ;; Baseline queue state.key after ensure given a canonical key;
+  ;; not path encoding as the timed owner, not withFileMutationQueue.
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (fmq-setup-alias target alias)
+    (let* ((target-key (cadr-agent::file-mutation-queue-key target))
+           (alias-key (cadr-agent::file-mutation-queue-key alias))
+           (other-key (cadr-agent::file-mutation-queue-key other))
+           (missing-key (cadr-agent::file-mutation-queue-key missing))
+           (target-state
+             (cadr-agent::ensure-file-mutation-queue-state target-key))
+           (alias-state
+             (cadr-agent::ensure-file-mutation-queue-state alias-key))
+           (other-state
+             (cadr-agent::ensure-file-mutation-queue-state other-key))
+           (missing-state
+             (cadr-agent::ensure-file-mutation-queue-state missing-key))
+           (repeat-state
+             (cadr-agent::ensure-file-mutation-queue-state target-key)))
+      (prog1
+          (list
+           (fmq-truth
+            (string=
+             (cadr-agent::file-mutation-queue-state-key target-state)
+             (cadr-agent::file-mutation-queue-state-key alias-state)))
+           (fmq-truth
+            (not (string=
+                  (cadr-agent::file-mutation-queue-state-key target-state)
+                  (cadr-agent::file-mutation-queue-state-key other-state))))
+           (fmq-truth
+            (string=
+             (cadr-agent::file-mutation-queue-state-key missing-state)
+             missing-key))
+           (fmq-truth
+            (string=
+             (cadr-agent::file-mutation-queue-state-key repeat-state)
+             target-key))
+           5)
+        (fmq-drop-empty-queues)))))
+
 (defun measure-file-mutation-queue ()
   (destructuring-bind (alias-key missing-key other-key fifo-sum other-run clean)
       (run-file-mutation-queue-with-queue)
@@ -4020,6 +4144,12 @@
                 (run-file-mutation-queue-release-turn)
               (destructuring-bind (fmqs-alias fmqs-other fmqs-missing fmqs-repeat fmqs-n)
                   (run-file-mutation-queue-ensure-state)
+                (destructuring-bind (fmqf-alias fmqf-other fmqf-fifo fmqf-run fmqf-n)
+                    (run-file-mutation-queue-call-with)
+                  (destructuring-bind (fmqm-pending fmqm-ticket fmqm-serving fmqm-other fmqm-n)
+                      (run-file-mutation-queue-make-state)
+                    (destructuring-bind (fmqt-alias fmqt-other fmqt-missing fmqt-repeat fmqt-n)
+                        (run-file-mutation-queue-state-key)
             (json-object
              "observed"
              (json-object
@@ -4057,7 +4187,22 @@
               "fmqs_other" fmqs-other
               "fmqs_missing" fmqs-missing
               "fmqs_repeat" fmqs-repeat
-              "fmqs_n" fmqs-n)
+              "fmqs_n" fmqs-n
+              "fmqf_alias" fmqf-alias
+              "fmqf_other" fmqf-other
+              "fmqf_fifo" fmqf-fifo
+              "fmqf_run" fmqf-run
+              "fmqf_n" fmqf-n
+              "fmqm_pending" fmqm-pending
+              "fmqm_ticket" fmqm-ticket
+              "fmqm_serving" fmqm-serving
+              "fmqm_other" fmqm-other
+              "fmqm_n" fmqm-n
+              "fmqt_alias" fmqt-alias
+              "fmqt_other" fmqt-other
+              "fmqt_missing" fmqt-missing
+              "fmqt_repeat" fmqt-repeat
+              "fmqt_n" fmqt-n)
              "with_queue"
              (collect "file_mutation_queue.with_queue"
                       (lambda ()
@@ -4092,7 +4237,22 @@
              (collect "file_mutation_queue.ensure_state"
                       (lambda ()
                         (lambda ()
-                          (run-file-mutation-queue-ensure-state)))))))))))))
+                          (run-file-mutation-queue-ensure-state))))
+             "call_with"
+             (collect "file_mutation_queue.call_with"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-call-with))))
+             "make_state"
+             (collect "file_mutation_queue.make_state"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-make-state))))
+             "state_key"
+             (collect "file_mutation_queue.state_key"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-state-key))))))))))))))))
 
 (defun he-truth (value)
   (if value 1 0))
@@ -14658,6 +14818,12 @@
       "src/cadr-agent/file-mutation-queue.lisp release-file-mutation-turn"
       "file_mutation_queue.ensure_state"
       "src/cadr-agent/file-mutation-queue.lisp ensure-file-mutation-queue-state"
+      "file_mutation_queue.call_with"
+      "src/cadr-agent/file-mutation-queue.lisp call-with-file-mutation-queue"
+      "file_mutation_queue.make_state"
+      "src/cadr-agent/file-mutation-queue.lisp make-file-mutation-queue-state"
+      "file_mutation_queue.state_key"
+      "src/cadr-agent/file-mutation-queue.lisp file-mutation-queue-state-key"
       "harness_events.emit"
       "src/cadr-agent/harness-events.lisp harness-event-bus-emit"
       "bash_tool.strip_exit_footer"

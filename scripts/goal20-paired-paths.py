@@ -101,7 +101,7 @@ METRICS = {
     "cli_settings": ("create",),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
-    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state"),
+    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key"),
     "harness_events": ("emit", "on", "watch", "make_start"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
@@ -268,6 +268,15 @@ RATIO_CEILINGS = {
     # file_mutation_queue.ensure_state pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "file_mutation_queue.ensure_state": 8.0,
+    # file_mutation_queue.call_with pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.call_with": 8.0,
+    # file_mutation_queue.make_state pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.make_state": 8.0,
+    # file_mutation_queue.state_key pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.state_key": 8.0,
     # harness_events.emit pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.emit": 8.0,
@@ -1475,6 +1484,21 @@ OBSERVED_EXACT = {
         "fmqs_missing",
         "fmqs_repeat",
         "fmqs_n",
+        "fmqf_alias",
+        "fmqf_other",
+        "fmqf_fifo",
+        "fmqf_run",
+        "fmqf_n",
+        "fmqm_pending",
+        "fmqm_ticket",
+        "fmqm_serving",
+        "fmqm_other",
+        "fmqm_n",
+        "fmqt_alias",
+        "fmqt_other",
+        "fmqt_missing",
+        "fmqt_repeat",
+        "fmqt_n",
     ),
     "harness_events": (
         "he_direct",
