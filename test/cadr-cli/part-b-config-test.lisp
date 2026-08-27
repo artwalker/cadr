@@ -749,7 +749,7 @@
         (write-text
          fake-sbcl
          (format nil
-                 "#!/bin/sh~%echo FIVEAM_FLOOD_LINE~%i=0~%while [ \"$i\" -lt 9 ]; do~%  printf ' Did 3 checks.\\n    Pass: 3 (100%%)\\n    Skip: 0 ( 0%%)\\n    Fail: 0 ( 0%%)\\n'~%  i=$((i + 1))~%done~%"))
+                 "#!/bin/sh~%echo FIVEAM_FLOOD_LINE~%i=0~%while [ \"$i\" -lt 9 ]; do~%  echo ' Did 3 checks.'~%  echo '    Pass: 3 (100%%)'~%  echo '    Skip: 0 ( 0%%)'~%  echo '    Fail: 0 ( 0%%)'~%  i=$((i + 1))~%done~%"))
         (write-text quicklisp "")
         (write-text
          ledger

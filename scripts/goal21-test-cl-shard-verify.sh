@@ -16,7 +16,7 @@ require_pattern() {
 	local file="$1"
 	local label="$2"
 	local pattern="$3"
-	if ! grep -qE "$pattern" "$file"; then
+	if ! grep -qE -- "$pattern" "$file"; then
 		echo "goal21-test-cl-shard-verify: missing $label in $file" >&2
 		exit 1
 	fi
@@ -74,7 +74,7 @@ write_green_fake_sbcl() {
 echo FIVEAM_FLOOD_LINE
 i=0
 while [ "$i" -lt 9 ]; do
-  printf ' Did 3 checks.\n    Pass: 3 (100%)\n    Skip: 0 (  0%)\n    Fail: 0 (  0%)\n'
+  printf '%s\n' " Did 3 checks." "    Pass: 3 (100%)" "    Skip: 0 (  0%)" "    Fail: 0 (  0%)"
   i=$((i + 1))
 done
 EOF
@@ -87,11 +87,11 @@ write_fail_fake_sbcl() {
 echo FIVEAM_FLOOD_LINE
 i=0
 while [ "$i" -lt 8 ]; do
-  printf ' Did 3 checks.\n    Pass: 3 (100%)\n    Skip: 0 (  0%)\n    Fail: 0 (  0%)\n'
+  printf '%s\n' " Did 3 checks." "    Pass: 3 (100%)" "    Skip: 0 (  0%)" "    Fail: 0 (  0%)"
   i=$((i + 1))
 done
-printf ' Did 3 checks.\n    Pass: 2 ( 66%)\n    Skip: 0 (  0%)\n    Fail: 1 ( 33%)\n'
-printf '\n Failure Details:\n --------------------------------\n EXAMPLE-FAILING-TEST []:\n\n expected 1 got 2.\n'
+printf '%s\n' " Did 3 checks." "    Pass: 2 ( 66%)" "    Skip: 0 (  0%)" "    Fail: 1 ( 33%)"
+printf '%s\n' "" " Failure Details:" " --------------------------------" " EXAMPLE-FAILING-TEST []:" "" " expected 1 got 2."
 exit 1
 EOF
 	chmod +x "$1"
