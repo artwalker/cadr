@@ -3058,13 +3058,7 @@ async function measurePowershellTool() {
 		},
 	};
 }
-		observed: {
-			...patternObserved,
-			...filesObserved,
-			...makeObserved,
-		},
-	};
-}
+
 async function measureHarnessEvents() {
 	const emitObserved = runHarnessEventsEmit();
 	const onObserved = runHarnessEventsOn();
