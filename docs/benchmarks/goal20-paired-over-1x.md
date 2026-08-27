@@ -24,6 +24,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `image_runtime.lookup` | 1.51 | 0.20 | 7.38× | 8.00× | measure-only pair `6d48a539f`; catalog presence; count not exact; sub-µs variance | invent pause；地板优化另刀 |
 | `image_runtime.dimension_note` | 3.67 | 2.12 | 1.73× | 8.00× | measure-only pair `94d472e68`; format note only (no decode/resize) | invent pause；地板优化另刀 |
 | `image_runtime.api_provider` | 0.23 | 0.21 | 1.09× | 8.00× | measure-only pair `7823f9c15`; fixture registry lookup; sub-µs variance | invent pause；地板优化另刀 |
+| `image_runtime.parse_data_image` | 0.556 | 0.371 | 1.50× | 8.00× | measure-only pair 299; data-URL parse on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
+| `image_runtime.openrouter_usage` | 2.181 | 0.396 | 5.50× | 8.00× | measure-only pair 300; OpenRouter usage arithmetic on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
 | `cli_print_rpc.jsonl_line` | 3.3 | 0.25 | 13.21× | 8.00× | measure-only pair `7178273d6`; **ratio > named ceiling**; sub-µs path — gate uses variance/10µs floor | invent pause；地板/抬天花板另刀 |
 | `tui_latex.render` | 64.4 | 25.8 | 2.49× | 3.00× | measure-only pair `d73577497` | invent pause；地板优化另刀 |
 | `tui_theme_overlay.osc11_bg` | 3.8 | 3.3 | 1.16× | 8.00× | measure-only pair `5f8210ae6` | invent pause；地板优化另刀 |

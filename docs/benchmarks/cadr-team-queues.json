@@ -496,7 +496,7 @@
     {
      "pair": 298,
      "lane": "a",
-     "status": "in_progress",
+     "status": "done",
      "source": "src/cadr-ai/images.lisp",
      "measure": "measure-image-runtime",
      "metric": "image_runtime.output_modalities",
@@ -505,7 +505,7 @@
     {
      "pair": 299,
      "lane": "a",
-     "status": "in_progress",
+     "status": "done",
      "source": "src/cadr-ai/images.lisp",
      "measure": "measure-image-runtime",
      "metric": "image_runtime.parse_data_image",
@@ -514,7 +514,7 @@
     {
      "pair": 300,
      "lane": "a",
-     "status": "in_progress",
+     "status": "done",
      "source": "src/cadr-ai/images.lisp",
      "measure": "measure-image-runtime",
      "metric": "image_runtime.openrouter_usage",
