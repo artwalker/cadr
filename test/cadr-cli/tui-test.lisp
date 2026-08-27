@@ -160,27 +160,31 @@
     (is (equal '("OAuth state mismatch") notices))))
 
 (test goal13-login-provider-list-preserves-baseline-provider-and-method-names
-  (dolist
-      (expected
-       '((:anthropic "Anthropic" "Anthropic (Claude Pro/Max)")
-         (:github-copilot "GitHub Copilot" "GitHub Copilot")
-         (:kimi-coding "Kimi For Coding" "Kimi Code (subscription)")
-         (:openai-codex "OpenAI Codex" "OpenAI (ChatGPT Plus/Pro)")
-         (:openrouter "OpenRouter" "OpenRouter OAuth")
-         (:radius "Radius" "Radius")
-         (:xai "xAI" "xAI (Grok/X subscription)")))
-    (destructuring-bind (provider-id provider-name method-name) expected
-      (let ((option
-              (find
-               provider-id
-               (cadr-cli::login-provider-options
-                (cadr-ai:list-provider-definitions)
-                :auth-type :oauth)
+  (let ((oauth-options
+          (cadr-cli::login-provider-options
+           (cadr-ai:list-provider-definitions)
+           :auth-type :oauth)))
+    (is (null
+         (find :kimi-coding oauth-options
                :key #'cadr-cli::oauth-selector-option-id)))
-        (is (string= provider-name
-                     (cadr-cli::oauth-selector-option-name option)))
-        (is (string= method-name
-                     (cadr-cli::oauth-selector-option-method-name option)))))))
+    (dolist
+        (expected
+         '((:anthropic "Anthropic" "Anthropic (Claude Pro/Max)")
+           (:github-copilot "GitHub Copilot" "GitHub Copilot")
+           (:openai-codex "OpenAI Codex" "OpenAI (ChatGPT Plus/Pro)")
+           (:openrouter "OpenRouter" "OpenRouter OAuth")
+           (:radius "Radius" "Radius")
+           (:xai "xAI" "xAI (Grok/X subscription)")))
+      (destructuring-bind (provider-id provider-name method-name) expected
+        (let ((option
+                (find
+                 provider-id oauth-options
+                 :key #'cadr-cli::oauth-selector-option-id)))
+          (is (string= provider-name
+                       (cadr-cli::oauth-selector-option-name option)))
+          (is (string= method-name
+                       (cadr-cli::oauth-selector-option-method-name
+                        option))))))))
 
 (test tui-status-entries-match-baseline-copy-spacing-and-coalescing
   (let ((state (cadr-cli::make-tui-state)))

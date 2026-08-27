@@ -242,11 +242,22 @@
   (query "" :type string)
   keybindings)
 
+(defparameter +login-selector-hidden-providers+
+  '(:kimi-coding)
+  "Built-in providers kept in the registry but not offered by /login.")
+
+(defun login-selector-hidden-p (provider-id)
+  (and provider-id
+       (member provider-id +login-selector-hidden-providers+)))
+
 (defun login-provider-options
     (definitions &key auth-type status-function)
   (stable-sort
    (loop
      for definition in definitions
+     unless
+       (login-selector-hidden-p
+        (cadr-ai:provider-definition-id definition))
      append
      (loop
        for candidate

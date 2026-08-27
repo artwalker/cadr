@@ -8,12 +8,15 @@ order.
 ## Built-in providers
 
 OpenAI (`openai`), Anthropic (`anthropic`), DeepSeek (`deepseek`),
-Kimi (`kimi-coding`), OpenRouter (`openrouter`), xAI (`xai`),
-GitHub Copilot (`github-copilot`), Google (`google` /
-`google-gemini-cli`), Amazon Bedrock (`amazon-bedrock`), Azure OpenAI,
-Vertex AI, Cloudflare Workers AI, Baseten, and the Radius gateway, among
-others — `cadr --list-models` shows every model whose provider currently
-has credentials.
+OpenRouter (`openrouter`), xAI (`xai`), GitHub Copilot
+(`github-copilot`), Google (`google` / `google-gemini-cli`), Amazon
+Bedrock (`amazon-bedrock`), Azure OpenAI, Vertex AI, Cloudflare Workers
+AI, Baseten, and the Radius gateway, among others — `cadr --list-models`
+shows every model whose provider currently has credentials.
+
+Kimi (`kimi-coding`) remains in the built-in provider registry (OAuth and
+catalog aligned with the baseline) but is **not offered** by `/login`.
+Stored Kimi credentials still refresh and `/logout`.
 
 ## Logging in
 

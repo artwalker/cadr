@@ -9,6 +9,9 @@ tag/Release step.
 
 ### Changed
 
+- `/login` no longer offers Kimi (`kimi-coding`) as a current provider.
+  The OAuth implementation and model catalog stay; stored credentials
+  still refresh and logout.
 - Goal 21: re-anchored the fixed pi baseline to v0.84.3.
   cadr 0.2.0 · aligned with pi v0.84.3 (+0, 4e58f324f). `/thinking`
   selector, session-level model/thinking defaults, `modelThinkingLevels`,
