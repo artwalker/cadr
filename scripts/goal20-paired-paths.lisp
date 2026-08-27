@@ -14871,9 +14871,10 @@
               (format *error-output* "goal20 cadr paired paths: resource_loader~%")
               (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: file_mutation_queue~%")
-              (let ((file-mutation-queue (measure-file-mutation-queue)))
+              (let ((file-mutation-queue (measure-file-mutation-queue))
+                    (harness-events nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
-              (let ((harness-events (measure-harness-events)))
+              (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -15068,7 +15069,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))
