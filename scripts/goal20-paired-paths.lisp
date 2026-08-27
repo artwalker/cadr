@@ -130,6 +130,9 @@
 ;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
 ;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
 ;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
+;;;; 364. evals_harness message-content-text vs contentText
+;;;; 365. evals_harness transcript-message-event vs transcript message object
+;;;; 366. evals_harness eval-elapsed-milliseconds vs performance.now timings.totalMs
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -369,6 +372,9 @@
     ("evals_harness.resolve_selection" . 50)
     ("evals_harness.transcript" . 50)
     ("evals_harness.last_assistant" . 50)
+    ("evals_harness.content_text" . 50)
+    ("evals_harness.transcript_event" . 50)
+    ("evals_harness.elapsed" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -6996,6 +7002,55 @@
         (eq new (cadr-evals::last-assistant-since messages nil)))
        3))))
 
+(defun run-evals-harness-content-text ()
+  ;; String / text-parts join / empty / non-text skip. Not messages-to-transcript.
+  (let ((plain (cadr-evals::message-content-text "hi"))
+        (parts
+          (cadr-evals::message-content-text
+           (list
+            (cadr-ai:make-text-content :text "a")
+            (cadr-ai:make-tool-call
+             :id "c1"
+             :name "bash"
+             :arguments (cadr-ai::json-object "cmd" "ls"))
+            (cadr-ai:make-text-content :text "b"))))
+        (empty (cadr-evals::message-content-text nil))
+        (blank
+          (cadr-evals::message-content-text
+           (list (cadr-ai:make-text-content :text "")))))
+    (list
+     (eval-flag (string= plain "hi"))
+     (eval-flag (string= parts (format nil "a~%b")))
+     (eval-flag (string= empty ""))
+     (eval-flag (string= blank ""))
+     4)))
+
+(defun run-evals-harness-transcript-event ()
+  ;; Message event object only. Not toTranscriptEvents / tool_call / tool_result.
+  (let ((user (cadr-evals::transcript-message-event "user" "hi"))
+        (asst (cadr-evals::transcript-message-event "assistant" "ok")))
+    (list
+     (eval-flag (string= (cadr-ai::json-get user "type") "message"))
+     (eval-flag (string= (cadr-ai::json-get user "role") "user"))
+     (eval-flag (string= (cadr-ai::json-get user "content") "hi"))
+     (eval-flag (string= (cadr-ai::json-get asst "role") "assistant"))
+     (eval-flag (string= (cadr-ai::json-get asst "content") "ok"))
+     5)))
+
+(defun run-evals-harness-elapsed ()
+  ;; timings.totalMs helper only. Flags, not the raw millisecond values.
+  (let* ((started-now (get-internal-real-time))
+         (now (cadr-evals::eval-elapsed-milliseconds started-now))
+         (started-past
+           (- (get-internal-real-time)
+              internal-time-units-per-second))
+         (past (cadr-evals::eval-elapsed-milliseconds started-past)))
+    (list
+     (eval-flag (>= now 0d0))
+     (eval-flag (>= past 0d0))
+     (eval-flag (>= past now))
+     3)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7009,7 +7064,10 @@
          (normalize (run-evals-harness-normalize-steps))
          (resolve (run-evals-harness-resolve-selection))
          (transcript (run-evals-harness-transcript))
-         (last-assistant (run-evals-harness-last-assistant)))
+         (last-assistant (run-evals-harness-last-assistant))
+         (content-text (run-evals-harness-content-text))
+         (transcript-event (run-evals-harness-transcript-event))
+         (elapsed (run-evals-harness-elapsed)))
     (json-object
      "observed"
      (json-object
@@ -7060,7 +7118,22 @@
       "la_new" (nth 0 last-assistant)
       "la_none" (nth 1 last-assistant)
       "la_full" (nth 2 last-assistant)
-      "la_n" (nth 3 last-assistant))
+      "la_n" (nth 3 last-assistant)
+      "ct_plain" (nth 0 content-text)
+      "ct_join" (nth 1 content-text)
+      "ct_empty" (nth 2 content-text)
+      "ct_blank" (nth 3 content-text)
+      "ct_n" (nth 4 content-text)
+      "te_type" (nth 0 transcript-event)
+      "te_role" (nth 1 transcript-event)
+      "te_content" (nth 2 transcript-event)
+      "te_asst_role" (nth 3 transcript-event)
+      "te_asst" (nth 4 transcript-event)
+      "te_n" (nth 5 transcript-event)
+      "el_now" (nth 0 elapsed)
+      "el_past" (nth 1 elapsed)
+      "el_order" (nth 2 elapsed)
+      "el_n" (nth 3 elapsed))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7101,7 +7174,22 @@
      (collect "evals_harness.last_assistant"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-last-assistant)))))))
+                  (run-evals-harness-last-assistant))))
+     "content_text"
+     (collect "evals_harness.content_text"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-content-text))))
+     "transcript_event"
+     (collect "evals_harness.transcript_event"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-transcript-event))))
+     "elapsed"
+     (collect "evals_harness.elapsed"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-elapsed)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16235,6 +16323,12 @@
       "src/cadr-evals/harness.lisp messages-to-transcript"
       "evals_harness.last_assistant"
       "src/cadr-evals/harness.lisp last-assistant-since"
+      "evals_harness.content_text"
+      "src/cadr-evals/harness.lisp message-content-text"
+      "evals_harness.transcript_event"
+      "src/cadr-evals/harness.lisp transcript-message-event"
+      "evals_harness.elapsed"
+      "src/cadr-evals/harness.lisp eval-elapsed-milliseconds"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.content_text` /
+  `transcript_event` / `elapsed` (`src/cadr-evals/harness.lisp` vs baseline
+  `contentText` / transcript message object / `performance.now`
+  timings.totalMs). Observed `ct_*` / `te_*` / `el_*` exact. n=5 freeze
+  pending the docs record commit. Ceiling 8.0. Measure-only. Pairs 364–366.
+  `nextPairNum` still 328.
+
 - Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
   `transcript` / `last_assistant` (`src/cadr-evals/harness.lisp` vs baseline
   `resolveModelSelection` / `toTranscriptEvents` / `promptAgent` assistant

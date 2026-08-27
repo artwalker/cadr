@@ -769,6 +769,33 @@
      "measure": "measure-evals-harness",
      "metric": "evals_harness.last_assistant",
      "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+    },
+    {
+     "pair": 364,
+     "lane": "a",
+     "status": "queued",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.content_text",
+     "branch": "cursor/evals-harness-pairs-364-366-d90b"
+    },
+    {
+     "pair": 365,
+     "lane": "a",
+     "status": "queued",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.transcript_event",
+     "branch": "cursor/evals-harness-pairs-364-366-d90b"
+    },
+    {
+     "pair": 366,
+     "lane": "a",
+     "status": "queued",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.elapsed",
+     "branch": "cursor/evals-harness-pairs-364-366-d90b"
     }
    ],
    "mergeQueue": []

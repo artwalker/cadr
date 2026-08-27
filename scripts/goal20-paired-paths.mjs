@@ -226,6 +226,9 @@ const REPETITIONS = {
 	"evals_harness.resolve_selection": 50,
 	"evals_harness.transcript": 50,
 	"evals_harness.last_assistant": 50,
+	"evals_harness.content_text": 50,
+	"evals_harness.transcript_event": 50,
+	"evals_harness.elapsed": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5517,6 +5520,54 @@ function runEvalsHarnessLastAssistant() {
 	};
 }
 
+function transcriptMessageEvent(role, content) {
+	return { type: "message", role, content };
+}
+
+function runEvalsHarnessContentText() {
+	const plain = evalContentText("hi");
+	const parts = evalContentText([
+		{ type: "text", text: "a" },
+		{ type: "toolCall", id: "c1", name: "bash", arguments: { cmd: "ls" } },
+		{ type: "text", text: "b" },
+	]);
+	const empty = evalContentText(undefined);
+	const blank = evalContentText([{ type: "text", text: "" }]);
+	return {
+		ct_plain: plain === "hi" ? 1 : 0,
+		ct_join: parts === "a\nb" ? 1 : 0,
+		ct_empty: empty === "" ? 1 : 0,
+		ct_blank: blank === "" ? 1 : 0,
+		ct_n: 4,
+	};
+}
+
+function runEvalsHarnessTranscriptEvent() {
+	const user = transcriptMessageEvent("user", "hi");
+	const asst = transcriptMessageEvent("assistant", "ok");
+	return {
+		te_type: user.type === "message" ? 1 : 0,
+		te_role: user.role === "user" ? 1 : 0,
+		te_content: user.content === "hi" ? 1 : 0,
+		te_asst_role: asst.role === "assistant" ? 1 : 0,
+		te_asst: asst.content === "ok" ? 1 : 0,
+		te_n: 5,
+	};
+}
+
+function runEvalsHarnessElapsed() {
+	const startedNow = performance.now();
+	const now = performance.now() - startedNow;
+	const startedPast = performance.now() - 1000;
+	const past = performance.now() - startedPast;
+	return {
+		el_now: now >= 0 ? 1 : 0,
+		el_past: past >= 0 ? 1 : 0,
+		el_order: past >= now ? 1 : 0,
+		el_n: 3,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5531,6 +5582,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessResolveSelection(),
 		...runEvalsHarnessTranscript(),
 		...runEvalsHarnessLastAssistant(),
+		...runEvalsHarnessContentText(),
+		...runEvalsHarnessTranscriptEvent(),
+		...runEvalsHarnessElapsed(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5556,6 +5610,15 @@ async function measureEvalsHarness() {
 		}),
 		last_assistant: await collect("evals_harness.last_assistant", () => {
 			return () => runEvalsHarnessLastAssistant();
+		}),
+		content_text: await collect("evals_harness.content_text", () => {
+			return () => runEvalsHarnessContentText();
+		}),
+		transcript_event: await collect("evals_harness.transcript_event", () => {
+			return () => runEvalsHarnessTranscriptEvent();
+		}),
+		elapsed: await collect("evals_harness.elapsed", () => {
+			return () => runEvalsHarnessElapsed();
 		}),
 		observed,
 	};
@@ -16644,6 +16707,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts toTranscriptEvents",
 			"evals_harness.last_assistant":
 				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
+			"evals_harness.content_text":
+				"packages/ai contentText (pi-harness.ts toTranscriptEvents)",
+			"evals_harness.transcript_event":
+				"packages/evals/src/pi-harness.ts transcript message object",
+			"evals_harness.elapsed":
+				"packages/evals/src/pi-harness.ts performance.now timings.totalMs",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

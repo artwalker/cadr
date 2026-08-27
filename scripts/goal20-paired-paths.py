@@ -132,7 +132,7 @@ METRICS = {
         "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "content_text", "transcript_event", "elapsed"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
@@ -513,6 +513,11 @@ RATIO_CEILINGS = {
     "evals_harness.resolve_selection": 8.0,
     "evals_harness.transcript": 8.0,
     "evals_harness.last_assistant": 8.0,
+    # evals_harness leftover trio 364-366 on harness.lisp (samples=5):
+    # first-freeze headroom. Ratchet down only.
+    "evals_harness.content_text": 8.0,
+    "evals_harness.transcript_event": 8.0,
+    "evals_harness.elapsed": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -1960,6 +1965,21 @@ OBSERVED_EXACT = {
         "la_none",
         "la_full",
         "la_n",
+        "ct_plain",
+        "ct_join",
+        "ct_empty",
+        "ct_blank",
+        "ct_n",
+        "te_type",
+        "te_role",
+        "te_content",
+        "te_asst_role",
+        "te_asst",
+        "te_n",
+        "el_now",
+        "el_past",
+        "el_order",
+        "el_n",
     ),
     "ai_crypto_model_data": (
         "schema_version",
