@@ -9,19 +9,14 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20 P.13: pair `evals_harness.resolve_selection` (`resolve-eval-selection` on
-  `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection`). Observed
-  `rs_explicit` / `rs_env` / `rs_miss` / `rs_prov` / `rs_blank` / `rs_n` exact.
-  n=5 **RATIO_PLACEHOLDER** on host `cursor`, ceiling 8.0. Measure-only.
-- Goal 20 P.13: pair `evals_harness.transcript` (`messages-to-transcript` on
-  `src/cadr-evals/harness.lisp` vs baseline `toTranscriptEvents`). Observed
-  `tr_n` / `tr_user` / `tr_role` / `tr_text` / `tr_call` / `tr_name` /
-  `tr_result` / `tr_err` / `tr_keys` exact. n=5 **RATIO_PLACEHOLDER** on host
-  `cursor`, ceiling 8.0. Measure-only.
-- Goal 20 P.13: pair `evals_harness.last_assistant` (`last-assistant-since` on
-  `src/cadr-evals/harness.lisp` vs baseline `promptAgent` assistant slice).
-  Observed `la_new` / `la_none` / `la_full` / `la_n` exact. n=5
-  **RATIO_PLACEHOLDER** on host `cursor`, ceiling 8.0. Measure-only.
+- Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
+  `transcript` / `last_assistant` (`src/cadr-evals/harness.lisp` vs baseline
+  `resolveModelSelection` / `toTranscriptEvents` / `promptAgent` assistant
+  slice). Observed `rs_*` / `tr_*` / `la_*` exact. n=5 **0.170×** / **1.743×** /
+  **1.034×** (1.06 / 6.22 µs, 3.80 / 2.18 µs, 0.579 / 0.560 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not these metrics. Pairs 326–327 are on
+  the over-1× ledger. Pairs 325–327.
 
 - Goal 20 P.13: pair `file_mutation_queue.call_with` (`call-with-file-mutation-queue` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue` as a
