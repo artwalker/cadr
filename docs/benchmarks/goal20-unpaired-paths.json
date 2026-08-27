@@ -55,6 +55,9 @@
   "image_runtime.lookup",
   "image_runtime.dimension_note",
   "image_runtime.api_provider",
+  "image_runtime.output_modalities",
+  "image_runtime.parse_data_image",
+  "image_runtime.openrouter_usage",
   "cli_print_rpc.jsonl_line",
   "cli_print_rpc.jsonl_read",
   "cli_print_rpc.clamp_thinking",
@@ -943,8 +946,12 @@
   },
   {
    "prefix": "src/cadr-ai/images.lisp",
-   "class": "needs-pair",
-   "hole": "image_runtime"
+   "class": "paired",
+   "metrics": [
+    "image_runtime.output_modalities",
+    "image_runtime.parse_data_image",
+    "image_runtime.openrouter_usage"
+   ]
   },
   {
    "prefix": "src/cadr-ai/model-data.lisp",

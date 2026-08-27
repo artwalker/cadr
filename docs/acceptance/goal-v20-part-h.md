@@ -3529,6 +3529,48 @@ stream, not login interaction. Observed `sl_openai` / `sl_anthropic` /
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
 
+### Pair 298 — `image_runtime` (output_modalities)
+
+| metric | cadr | pi |
+|---|---|---|
+| `output_modalities` | `image-output-modalities` (`src/cadr-ai/images.lisp`) | `buildParams` modalities (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of `image_runtime` on `src/cadr-ai/images.lisp` after
+Pairs 33 / 63–66 (those timed other files). Timed work is the
+`["image","text"]` vs `["image"]` choice from catalog
+`google/gemini-2.5-flash-image` and `black-forest-labs/flux.2-pro` —
+not HTTP, not `generate-images`. Observed `om_gemini_n` /
+`om_gemini_text` / `om_flux_n` / `om_flux_text` are exact. First n=5
+freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit
+no optimize.
+
+### Pair 299 — `image_runtime` (parse_data_image)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_data_image` | `parse-data-image` (`src/cadr-ai/images.lisp`) | data-URL parse inside `generateImages` (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of Pair 298 on the same `image_runtime` hole. Timed
+work is `data:image/png;base64,…` parse plus a miss and a plain HTTPS
+URL — not HTTP, not `generate-images`. Observed `pd_ok_mime` /
+`pd_ok_data` / `pd_ok` / `pd_miss` / `pd_plain` are exact. First n=5
+freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit
+no optimize.
+
+### Pair 300 — `image_runtime` (openrouter_usage)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_usage` | `openrouter-image-usage` (`src/cadr-ai/images.lisp`) | `parseUsage` (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of Pairs 298–299 on the same `image_runtime` hole.
+Timed work is token/cache arithmetic on two fixture usage objects
+(zero cache, then cache-write) against the gemini image catalog row —
+not HTTP, not cost exact. Observed `us_in` / `us_out` / `us_cr` /
+`us_cw` / `us_in2` / `us_out2` / `us_cr2` / `us_cw2` are exact. First
+n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same
+commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4010,14 +4052,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,092 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 175 | 77,314 | 60.0% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 70 | 26,683 | 20.7% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 59.8% of lines (174 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.6% of lines.
+- **Falsifiable vs baseline:** 60.0% of lines (175 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 65.8% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -4091,6 +4133,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
+| `src/cadr-ai/images.lisp` | 222 | `image_runtime.output_modalities`, `image_runtime.parse_data_image`, `image_runtime.openrouter_usage` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |
@@ -4285,7 +4328,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
-| `image_runtime` | 1 | 222 |
 | `core_rest` | 3 | 161 |
 | `cli_support` | 5 | 123 |
 | `tui_mermaid` | 1 | 17 |

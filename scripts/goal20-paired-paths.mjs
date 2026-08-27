@@ -215,6 +215,9 @@ const REPETITIONS = {
 	"image_runtime.lookup": 50,
 	"image_runtime.dimension_note": 50,
 	"image_runtime.api_provider": 50,
+	"image_runtime.output_modalities": 50,
+	"image_runtime.parse_data_image": 50,
+	"image_runtime.openrouter_usage": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
@@ -5828,12 +5831,128 @@ function runImageRuntimeApiProvider() {
 	};
 }
 
+let imageModalityGemini = null;
+let imageModalityFlux = null;
+
+function ensureImageOpenrouterModels() {
+	if (imageModalityGemini) {
+		return;
+	}
+	imageModalityGemini = imageModelsModule.getImageModel(
+		"openrouter",
+		"google/gemini-2.5-flash-image",
+	);
+	imageModalityFlux = imageModelsModule.getImageModel(
+		"openrouter",
+		"black-forest-labs/flux.2-pro",
+	);
+}
+
+function imageOutputModalities(model) {
+	return model.output.includes("text") ? ["image", "text"] : ["image"];
+}
+
+function runImageRuntimeOutputModalities() {
+	ensureImageOpenrouterModels();
+	const gemini = imageOutputModalities(imageModalityGemini);
+	const flux = imageOutputModalities(imageModalityFlux);
+	return {
+		om_gemini_n: gemini.length,
+		om_gemini_text: gemini.includes("text") ? 1 : 0,
+		om_flux_n: flux.length,
+		om_flux_text: flux.includes("text") ? 1 : 0,
+	};
+}
+
+function parseDataImage(value) {
+	if (typeof value !== "string" || !value.startsWith("data:")) {
+		return null;
+	}
+	const matches = value.match(/^data:([^;]+);base64,(.+)$/);
+	if (!matches) {
+		return null;
+	}
+	return { mimeType: matches[1], data: matches[2] };
+}
+
+function parseDataImageObs(value) {
+	const parsed = parseDataImage(value);
+	if (!parsed) {
+		return { mime: "", data: "", ok: 0 };
+	}
+	return { mime: parsed.mimeType, data: parsed.data, ok: 1 };
+}
+
+function runImageRuntimeParseDataImage() {
+	const ok = parseDataImageObs("data:image/png;base64,ZmFrZS1wbmc=");
+	return {
+		pd_ok_mime: ok.mime,
+		pd_ok_data: ok.data,
+		pd_ok: ok.ok,
+		pd_miss: parseDataImageObs("not-an-image").ok,
+		pd_plain: parseDataImageObs("https://example.com/x.png").ok,
+	};
+}
+
+function parseOpenRouterImageUsage(rawUsage, model) {
+	const promptTokens = rawUsage.prompt_tokens || 0;
+	const reportedCachedTokens = rawUsage.prompt_tokens_details?.cached_tokens || 0;
+	const cacheWriteTokens = rawUsage.prompt_tokens_details?.cache_write_tokens || 0;
+	const cacheReadTokens =
+		cacheWriteTokens > 0
+			? Math.max(0, reportedCachedTokens - cacheWriteTokens)
+			: reportedCachedTokens;
+	const input = Math.max(0, promptTokens - cacheReadTokens - cacheWriteTokens);
+	const output = rawUsage.completion_tokens || 0;
+	void model;
+	return {
+		input,
+		output,
+		cacheRead: cacheReadTokens,
+		cacheWrite: cacheWriteTokens,
+	};
+}
+
+function runImageRuntimeOpenrouterUsage() {
+	ensureImageOpenrouterModels();
+	const first = parseOpenRouterImageUsage(
+		{
+			prompt_tokens: 12,
+			completion_tokens: 34,
+			prompt_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
+		},
+		imageModalityGemini,
+	);
+	const second = parseOpenRouterImageUsage(
+		{
+			prompt_tokens: 100,
+			completion_tokens: 8,
+			prompt_tokens_details: { cached_tokens: 40, cache_write_tokens: 10 },
+		},
+		imageModalityGemini,
+	);
+	return {
+		us_in: first.input,
+		us_out: first.output,
+		us_cr: first.cacheRead,
+		us_cw: first.cacheWrite,
+		us_in2: second.input,
+		us_out2: second.output,
+		us_cr2: second.cacheRead,
+		us_cw2: second.cacheWrite,
+	};
+}
+
 async function measureImageRuntime() {
+	ensureImageOpenrouterModels();
 	const dims = runImageRuntime();
 	const mime = runImageRuntimeMime();
 	const lookup = runImageRuntimeLookup();
 	const notes = runImageRuntimeDimensionNote();
 	const api = runImageRuntimeApiProvider();
+	const modalities = runImageRuntimeOutputModalities();
+	const parsed = runImageRuntimeParseDataImage();
+	const usage = runImageRuntimeOpenrouterUsage();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -5850,7 +5969,25 @@ async function measureImageRuntime() {
 		api_provider: await collect("image_runtime.api_provider", () => {
 			return () => runImageRuntimeApiProvider();
 		}),
-		observed: { ...dims, ...mime, ...lookup, ...notes, ...api },
+		output_modalities: await collect("image_runtime.output_modalities", () => {
+			return () => runImageRuntimeOutputModalities();
+		}),
+		parse_data_image: await collect("image_runtime.parse_data_image", () => {
+			return () => runImageRuntimeParseDataImage();
+		}),
+		openrouter_usage: await collect("image_runtime.openrouter_usage", () => {
+			return () => runImageRuntimeOpenrouterUsage();
+		}),
+		observed: {
+			...dims,
+			...mime,
+			...lookup,
+			...notes,
+			...api,
+			...modalities,
+			...parsed,
+			...usage,
+		},
 	};
 }
 
@@ -15752,6 +15889,12 @@ const result = {
 				"packages/coding-agent/src/utils/image-resize.ts formatDimensionNote",
 			"image_runtime.api_provider":
 				"packages/ai/src/images-api-registry.ts getImagesApiProvider",
+			"image_runtime.output_modalities":
+				"packages/ai/src/api/openrouter-images.ts buildParams modalities",
+			"image_runtime.parse_data_image":
+				"packages/ai/src/api/openrouter-images.ts generateImages data-URL parse",
+			"image_runtime.openrouter_usage":
+				"packages/ai/src/api/openrouter-images.ts parseUsage",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"cli_print_rpc.jsonl_read":
