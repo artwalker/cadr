@@ -216,5 +216,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.scoped_models_selector_provider_count` | 182.6 | 3.9 | 46.51× | 50.00× | measure-only pair (Pair 240); scoped models provider count | invent pause；地板优化另刀 |
 | `tui_latex.normalize_output` | 12.7 | 8.7 | 1.46× | 20.00× | measure-only pair (Pair 243); latex marker cleanup | invent pause；地板优化另刀 |
 | `file_mutation_queue.queue_key` | 169.3 | 156.2 | 1.08× | 8.00× | measure-only pair 270; `file-mutation-queue-key` only (not `with_queue`) | invent pause；地板优化另刀 |
+| `file_mutation_queue.lock` | 183.3 | 148.0 | 1.24× | 8.00× | measure-only pair 271; `file-mutation-queue-lock` only (not `with_queue` / `queue_key`) | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -3147,7 +3147,9 @@ key (existing path, symlink alias, missing path, distinct sibling, repeat
 lookup) — not `with-file-mutation-queue`, not write/edit tools. Same staged
 scratch layout as `with_queue`. Observed `fmql_alias` / `fmql_other` /
 `fmql_missing` / `fmql_repeat` / `fmql_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+**1.24×** (183.3 / 148.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 257 — `execution_env` (exists_remove_temps)
 
