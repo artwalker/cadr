@@ -130,6 +130,9 @@
 ;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
 ;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
 ;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
+;;;; 370. evals_harness default-eval-model-resolver vs ModelRuntime.getModel
+;;;; 371. evals_harness eval-agent-tools vs session/agent tools list
+;;;; 372. evals_harness eval-extension-paths vs extensionRunner.getExtensionPaths
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -369,6 +372,9 @@
     ("evals_harness.resolve_selection" . 50)
     ("evals_harness.transcript" . 50)
     ("evals_harness.last_assistant" . 50)
+    ("evals_harness.model_resolver" . 50)
+    ("evals_harness.agent_tools" . 50)
+    ("evals_harness.extension_paths" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -6999,6 +7005,110 @@
         (eq new (cadr-evals::last-assistant-since messages nil)))
        3))))
 
+(defun eval-bench-environment (name)
+  (and (string= name "OPENAI_API_KEY")
+       "sk-bench-not-a-secret"))
+
+(defun run-evals-harness-model-resolver ()
+  ;; Catalog lookup + stream-chat return, not a live eval run.
+  (let ((cadr-cli::*environment-function* #'eval-bench-environment))
+    (multiple-value-bind (prov id stream)
+        (handler-case
+            (multiple-value-bind (provider model stream-fn)
+                (cadr-evals::default-eval-model-resolver
+                 "openai" "gpt-4o")
+              (declare (ignore provider))
+              (values
+               (eval-flag
+                (string-equal
+                 (symbol-name
+                  (cadr-ai:model-provider model))
+                 "openai"))
+               (eval-flag
+                (string= (cadr-ai:model-id model) "gpt-4o"))
+               (eval-flag (eq stream-fn #'cadr-ai:stream-chat))))
+          (error () (values 0 0 0)))
+      (list
+       prov
+       id
+       stream
+       (handler-case
+           (progn
+             (cadr-evals::default-eval-model-resolver
+              "no-such" "no-such")
+             0)
+         (error () 1))
+       4))))
+
+(defun eval-harness-fixture-tools ()
+  (list
+   (cadr-ai:make-tool
+    :name "read"
+    :description "read"
+    :parameters (make-hash-table :test #'equal)
+    :executor
+    (lambda (&rest arguments)
+      (declare (ignore arguments))
+      nil))
+   (cadr-ai:make-tool
+    :name "bash"
+    :description "bash"
+    :parameters (make-hash-table :test #'equal)
+    :executor
+    (lambda (&rest arguments)
+      (declare (ignore arguments))
+      nil))))
+
+(defun run-evals-harness-agent-tools ()
+  (let* ((empty
+           (cadr-agent:make-agent :auto-compact-p nil :tools nil))
+         (filled
+           (cadr-agent:make-agent
+            :auto-compact-p nil
+            :tools (eval-harness-fixture-tools)))
+         (empty-tools (cadr-evals::eval-agent-tools empty))
+         (filled-tools (cadr-evals::eval-agent-tools filled)))
+    (list
+     (eval-flag (null empty-tools))
+     (length filled-tools)
+     (eval-flag
+      (string= (cadr-ai:tool-name (first filled-tools)) "read"))
+     (eval-flag
+      (string= (cadr-ai:tool-name (second filled-tools)) "bash"))
+     4)))
+
+(defun run-evals-harness-extension-paths ()
+  (let* ((none (cadr-agent:make-agent :auto-compact-p nil))
+         (host (cadr-agent::make-extension-host))
+         (visible
+           (cadr-agent::make-extension-bundle
+            :id "v"
+            :path "/tmp/ext-v"
+            :hidden-p nil))
+         (hidden
+           (cadr-agent::make-extension-bundle
+            :id "h"
+            :path "/tmp/ext-h"
+            :hidden-p t))
+         (with-host
+           (cadr-agent:make-agent
+            :auto-compact-p nil
+            :extension-host host)))
+    (setf (cadr-agent::extension-host-snapshot host)
+          (cadr-agent::make-extension-snapshot
+           :bundles (list visible hidden)))
+    (let ((none-paths (cadr-evals::eval-extension-paths none))
+          (paths (cadr-evals::eval-extension-paths with-host)))
+      (list
+       (eval-flag (null none-paths))
+       (length paths)
+       (eval-flag
+        (and (= 1 (length paths))
+             (string= (first paths) "/tmp/ext-v")))
+       (eval-flag
+        (not (find "/tmp/ext-h" paths :test #'string=)))
+       4))))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7012,7 +7122,10 @@
          (normalize (run-evals-harness-normalize-steps))
          (resolve (run-evals-harness-resolve-selection))
          (transcript (run-evals-harness-transcript))
-         (last-assistant (run-evals-harness-last-assistant)))
+         (last-assistant (run-evals-harness-last-assistant))
+         (model-resolver (run-evals-harness-model-resolver))
+         (agent-tools (run-evals-harness-agent-tools))
+         (extension-paths (run-evals-harness-extension-paths)))
     (json-object
      "observed"
      (json-object
@@ -7063,7 +7176,22 @@
       "la_new" (nth 0 last-assistant)
       "la_none" (nth 1 last-assistant)
       "la_full" (nth 2 last-assistant)
-      "la_n" (nth 3 last-assistant))
+      "la_n" (nth 3 last-assistant)
+      "mr_prov" (nth 0 model-resolver)
+      "mr_id" (nth 1 model-resolver)
+      "mr_stream" (nth 2 model-resolver)
+      "mr_miss" (nth 3 model-resolver)
+      "mr_n" (nth 4 model-resolver)
+      "at_empty" (nth 0 agent-tools)
+      "at_n" (nth 1 agent-tools)
+      "at_read" (nth 2 agent-tools)
+      "at_bash" (nth 3 agent-tools)
+      "at_keys" (nth 4 agent-tools)
+      "ep_none" (nth 0 extension-paths)
+      "ep_n" (nth 1 extension-paths)
+      "ep_path" (nth 2 extension-paths)
+      "ep_skip" (nth 3 extension-paths)
+      "ep_keys" (nth 4 extension-paths))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7104,7 +7232,22 @@
      (collect "evals_harness.last_assistant"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-last-assistant)))))))
+                  (run-evals-harness-last-assistant))))
+     "model_resolver"
+     (collect "evals_harness.model_resolver"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-model-resolver))))
+     "agent_tools"
+     (collect "evals_harness.agent_tools"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-agent-tools))))
+     "extension_paths"
+     (collect "evals_harness.extension_paths"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-extension-paths)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16312,6 +16455,12 @@
       "src/cadr-evals/harness.lisp messages-to-transcript"
       "evals_harness.last_assistant"
       "src/cadr-evals/harness.lisp last-assistant-since"
+      "evals_harness.model_resolver"
+      "src/cadr-evals/harness.lisp default-eval-model-resolver"
+      "evals_harness.agent_tools"
+      "src/cadr-evals/harness.lisp eval-agent-tools"
+      "evals_harness.extension_paths"
+      "src/cadr-evals/harness.lisp eval-extension-paths"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

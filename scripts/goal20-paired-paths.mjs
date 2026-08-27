@@ -226,6 +226,9 @@ const REPETITIONS = {
 	"evals_harness.resolve_selection": 50,
 	"evals_harness.transcript": 50,
 	"evals_harness.last_assistant": 50,
+	"evals_harness.model_resolver": 50,
+	"evals_harness.agent_tools": 50,
+	"evals_harness.extension_paths": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5520,11 +5523,71 @@ function runEvalsHarnessLastAssistant() {
 	};
 }
 
+function runEvalsHarnessModelResolver(runtime) {
+	const model = runtime.getModel("openai", "gpt-4o");
+	const missing = runtime.getModel("no-such", "no-such");
+	return {
+		mr_prov: model?.provider === "openai" ? 1 : 0,
+		mr_id: model?.id === "gpt-4o" ? 1 : 0,
+		mr_stream: model ? 1 : 0,
+		mr_miss: missing ? 0 : 1,
+		mr_n: 4,
+	};
+}
+
+function evalAgentTools(agent) {
+	return agent.tools ?? [];
+}
+
+function runEvalsHarnessAgentTools() {
+	const emptyTools = evalAgentTools({ tools: [] });
+	const filledTools = evalAgentTools({
+		tools: [{ name: "read" }, { name: "bash" }],
+	});
+	return {
+		at_empty: emptyTools.length === 0 ? 1 : 0,
+		at_n: filledTools.length,
+		at_read: filledTools[0]?.name === "read" ? 1 : 0,
+		at_bash: filledTools[1]?.name === "bash" ? 1 : 0,
+		at_keys: 4,
+	};
+}
+
+function evalExtensionPaths(agent) {
+	const host = agent.extensionHost;
+	if (!host) return [];
+	return (host.snapshot?.bundles ?? [])
+		.filter((bundle) => !bundle.hidden)
+		.map((bundle) => bundle.path);
+}
+
+function runEvalsHarnessExtensionPaths() {
+	const nonePaths = evalExtensionPaths({});
+	const paths = evalExtensionPaths({
+		extensionHost: {
+			snapshot: {
+				bundles: [
+					{ path: "/tmp/ext-v", hidden: false },
+					{ path: "/tmp/ext-h", hidden: true },
+				],
+			},
+		},
+	});
+	return {
+		ep_none: nonePaths.length === 0 ? 1 : 0,
+		ep_n: paths.length,
+		ep_path: paths[0] === "/tmp/ext-v" ? 1 : 0,
+		ep_skip: paths.includes("/tmp/ext-h") ? 0 : 1,
+		ep_keys: 4,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
 		evalsHarnessObservations(),
 	);
+	const runtime = await createModelRuntime();
 	const observed = {
 		...runEvalsHarnessSummarize(),
 		...runEvalsHarnessGroupKey(),
@@ -5534,6 +5597,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessResolveSelection(),
 		...runEvalsHarnessTranscript(),
 		...runEvalsHarnessLastAssistant(),
+		...runEvalsHarnessModelResolver(runtime),
+		...runEvalsHarnessAgentTools(),
+		...runEvalsHarnessExtensionPaths(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5559,6 +5625,15 @@ async function measureEvalsHarness() {
 		}),
 		last_assistant: await collect("evals_harness.last_assistant", () => {
 			return () => runEvalsHarnessLastAssistant();
+		}),
+		model_resolver: await collect("evals_harness.model_resolver", () => {
+			return () => runEvalsHarnessModelResolver(runtime);
+		}),
+		agent_tools: await collect("evals_harness.agent_tools", () => {
+			return () => runEvalsHarnessAgentTools();
+		}),
+		extension_paths: await collect("evals_harness.extension_paths", () => {
+			return () => runEvalsHarnessExtensionPaths();
 		}),
 		observed,
 	};
@@ -16721,6 +16796,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts toTranscriptEvents",
 			"evals_harness.last_assistant":
 				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
+			"evals_harness.model_resolver":
+				"packages/coding-agent/src/core/model-runtime.ts ModelRuntime.getModel (pi-harness modelRuntime.getModel)",
+			"evals_harness.agent_tools":
+				"packages/evals/src/pi-harness.ts session tools list (cadr eval-agent-tools)",
+			"evals_harness.extension_paths":
+				"packages/coding-agent/src/core/extensions/runner.ts ExtensionRunner.getExtensionPaths",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
