@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Goal 21 gate: full `scripts/goal21-gate-run.sh` does not run a second
+  `scripts/test-cl.sh` when `verify.sh` already recorded `deterministic
+  FiveAM` as a timed PASS. `scripts/test-cl-fiveam.sh` is summary-only by
+  default; `CADR_TEST_CL_VERBOSE=1` or `--verbose` restores the old tee.
 - Goal 21: re-anchored the fixed pi baseline to v0.84.3.
   cadr 0.2.0 · aligned with pi v0.84.3 (+0, 4e58f324f). `/thinking`
   selector, session-level model/thinking defaults, `modelThinkingLevels`,
