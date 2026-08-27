@@ -1,9 +1,9 @@
 # Goal 21：pi 基线推进至 v0.84.3（Goal 20 前置）
 
-> **状态：** 已立项（用户 2026-08-25）。**在 Goal 20 继续 pairing / perf 之前完成。**
+> **状态：** 已立项（用户 2026-08-25）。基线已落到 **v0.84.3**。Goal 20 pairing / perf 仍暂停（`goal20Paused`）。不宣布 Goal 21 完成：「G20 在 0843 上继续」仍空。
 >
-> **当前：** `BASELINE` = `914cf1472` · `v0.84.2` +0  
-> **目标：** `4e58f324f` · `v0.84.3` +0（pi-mono tag `v0.84.3`）
+> **当前：** `BASELINE` = `4e58f324f` · `v0.84.3` +0（pi-mono tag `v0.84.3`）  
+> **自：** `914cf1472` · `v0.84.2` +0
 
 ## 为什么单独开 goal
 
@@ -80,11 +80,11 @@ Goal 18 Part L 把基线从 `v0.83.0` 推到 `v0.84.1`；此后 cadr 已落在 *
 
 ## 验收
 
-- [ ] `BASELINE` 第三列为 `0`，release 为 `v0.84.3`，commit 为 `4e58f324f…`
-- [ ] `python3 scripts/baseline-anchor.py check` 绿
-- [ ] `enumerate-baseline-diff` 各类 delta 均有 disposition（无 hand-wavy「同上」）
-- [ ] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 两套都绿（`verify.sh` 已跑 deterministic FiveAM；full `goal21-gate-run.sh` 不因验收而再执行一次完整 `test-cl.sh`）
-- [ ] `CHANGELOG.md` 记录：`cadr x.y.z · aligned with pi v0.84.3 (+0, 4e58f324f)`
+- [x] `BASELINE` 第三列为 `0`，release 为 `v0.84.3`，commit 为 `4e58f324f…`
+- [x] `python3 scripts/baseline-anchor.py check` 绿
+- [x] `enumerate-baseline-diff` 各类 delta 均有 disposition（无 hand-wavy「同上」）
+- [x] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 两套都绿（`verify.sh` 已跑 deterministic FiveAM；full `goal21-gate-run.sh` 不因验收而再执行一次完整 `test-cl.sh`）
+- [x] `CHANGELOG.md` 记录：`cadr x.y.z · aligned with pi v0.84.3 (+0, 4e58f324f)`
 - [ ] Goal 20 executor brief 中「G21 前置」勾选完成，队列为 **0843 基线** 上继续
 
 ## 与 Goal 20 的关系

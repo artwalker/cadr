@@ -16,7 +16,7 @@
 
 ## 目标
 
-`914cf1472` · v0.84.2 → `4e58f324f` · v0.84.3（机械枚举已确认：+`/thinking`、`modelThinkingLevels`、`session_compact_failed`、`powershell.ts` 等）。
+跟踪基线：`4e58f324f` · v0.84.3 +0（自 `914cf1472` · v0.84.2；机械枚举已确认：+`/thinking`、`modelThinkingLevels`、`session_compact_failed`、`powershell.ts` 等）。
 
 ## 三队 + 总监
 
@@ -71,7 +71,7 @@ Impl lane（`a`/`b`/`c`/`parity`）不是每次失忆：
 
 ## 验收
 
-见 `goal21-pi-0843-alignment.md` 验收清单。全绿后恢复 Goal 20 pairing。
+见 `goal21-pi-0843-alignment.md` 验收清单。`goal20Paused` 仍为 true；规格最后一项（G20 在 0843 上继续）保持空，本 closeout 不恢复 Goal 20 pairing。
 
 ## Operator 自愈（anchor guard）
 
