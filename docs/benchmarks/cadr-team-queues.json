@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 328,
+   "nextPairNum": 358,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -769,6 +769,33 @@
      "measure": "measure-evals-harness",
      "metric": "evals_harness.last_assistant",
      "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+    },
+    {
+     "pair": 337,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/cancellation.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.cancellation_wait",
+     "branch": "cursor/pair-337-339-core-rest-leftovers-5e64"
+    },
+    {
+     "pair": 338,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/redacted-print.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.redacted_types",
+     "branch": "cursor/pair-337-339-core-rest-leftovers-5e64"
+    },
+    {
+     "pair": 339,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/threads.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.threads_join",
+     "branch": "cursor/pair-337-339-core-rest-leftovers-5e64"
     }
    ],
    "mergeQueue": []

@@ -1274,10 +1274,15 @@ RATIO_CEILINGS = {
     # (1.16 / 1.17 us). 8.0 is first-freeze headroom
     # (variance). Ratchet down only.
     "http_transport.parse_url": 8.0,
-    # core_rest leftover trio on cancellation/redacted/threads (samples=5):
-    # first-freeze headroom. Ratchet down only.
+    # core_rest leftover trio (samples=5): cancellation_wait observed 6.041x
+    # (53.40 / 8.840 us). 8.0 is first-freeze headroom. Ratchet down only.
     "core_rest.cancellation_wait": 8.0,
+    # core_rest.redacted_types leftover pair (samples=5): observed 4.494x
+    # (2.375 / 0.528 us). 8.0 is first-freeze headroom. Ratchet down only.
     "core_rest.redacted_types": 8.0,
+    # core_rest.threads_join leftover pair (samples=5): observed 0.00575x
+    # (128.7 / 22383 us). cadr leads. 8.0 is first-freeze headroom.
+    # Ratchet down only.
     "core_rest.threads_join": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,

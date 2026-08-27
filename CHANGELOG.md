@@ -9,6 +9,17 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `core_rest.cancellation_wait` /
+  `redacted_types` / `threads_join` (`wait-for-cancellation` /
+  `redacted-object-types` / `join-active-thread` on `src/cadr-core/` vs
+  `Atomics.wait` timeout + aborted `AbortSignal` / sorted type-list copy /
+  `worker_threads` message+exit). Observed `cw_*` / `rt_*` / `tj_*` exact.
+  n=5 **6.041×** / **4.494×** / **0.00575×** (53.40 / 8.840 µs, 2.375 /
+  0.528 µs, 128.7 / 22383 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not these metrics. Pairs 337–338 are on the over-1× ledger. Pairs 337–339.
+  Does not re-pair 322–324.
+
 - Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
   `transcript` / `last_assistant` (`src/cadr-evals/harness.lisp` vs baseline
   `resolveModelSelection` / `toTranscriptEvents` / `promptAgent` assistant
