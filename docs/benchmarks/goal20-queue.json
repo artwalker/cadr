@@ -835,6 +835,48 @@
    "piUs": 4.343,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 388,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/edit.lisp",
+   "measure": "measure-edit-tool",
+   "metric": "edit_tool.normalize_line_endings",
+   "branch": "cursor/pair-388-390-edit-leftovers-b6da",
+   "ratio": 2.792,
+   "cadrUs": 1.574,
+   "piUs": 0.564,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 389,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/edit.lisp",
+   "measure": "measure-edit-tool",
+   "metric": "edit_tool.restore_line_endings",
+   "branch": "cursor/pair-388-390-edit-leftovers-b6da",
+   "ratio": 1.944,
+   "cadrUs": 0.773,
+   "piUs": 0.398,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 390,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/edit.lisp",
+   "measure": "measure-edit-tool",
+   "metric": "edit_tool.make_tool",
+   "branch": "cursor/pair-388-390-edit-leftovers-b6da",
+   "ratio": 5.850,
+   "cadrUs": 3.313,
+   "piUs": 0.566,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

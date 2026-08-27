@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `edit_tool.normalize_line_endings` (`normalize-line-endings`
+  on `src/cadr-cli/tools/edit.lisp` vs baseline `normalizeToLF`).
+  Observed `nlf_lf` / `nlf_crlf` / `nlf_cr` / `nlf_empty` / `nlf_n` exact.
+  n=5 **2.792×** (1.574 / 0.564 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. Pairs 388–390.
+- Goal 20 P.13: pair `edit_tool.restore_line_endings` (`restore-line-endings`
+  on `src/cadr-cli/tools/edit.lisp` vs baseline `restoreLineEndings`).
+  Observed `rle_lf` / `rle_crlf` / `rle_none` / `rle_empty` / `rle_n` exact.
+  n=5 **1.944×** (0.773 / 0.398 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13: pair `edit_tool.make_tool` (`make-edit-tool` on
+  `src/cadr-cli/tools/edit.lisp` vs baseline `createEditToolDefinition`).
+  Observed `emt_name` / `emt_desc` / `emt_req` / `emt_n` exact.
+  n=5 **5.850×** (3.313 / 0.566 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.
