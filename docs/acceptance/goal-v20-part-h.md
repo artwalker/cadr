@@ -3411,8 +3411,10 @@ Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/find.lisp`
 Timed work is glob match on basename (`*.lisp`) vs path (`src/**/*.lisp` /
 `src/*.lisp`) — not fd spawn, not gitignore walk. Observed `fpm_star_a` /
 `fpm_star_src` / `fpm_star_txt` / `fpm_path_src` / `fpm_path_root` /
-`fpm_src_star` / `fpm_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce`. Same commit no optimize.
+`fpm_src_star` / `fpm_n` are exact. First n=5 freeze **7.16×** (30.5 /
+4.26 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 290 — `find_tool` (find_files)
 
@@ -3424,8 +3426,10 @@ Leftover sibling of Pair 289 `pattern_match` on the same `agent_tool_loop`
 hole. Timed work is empty copy (`No files found matching pattern`) plus
 `*.lisp` / `src/**/*.lisp` / `src/*.lisp` result counts on a four-file
 fixture — not fd spawn. Observed `ff_empty` / `ff_lisp` / `ff_path` /
-`ff_src_star` / `ff_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce`. Same commit no optimize.
+`ff_src_star` / `ff_n` are exact. First n=5 freeze **3.44×** (633.4 /
+184.1 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 291 — `find_tool` (make_tool)
 
@@ -3436,8 +3440,10 @@ Gate used `--only-enforce`. Same commit no optimize.
 Leftover sibling of Pair 289 `pattern_match` and Pair 290 `find_files` on
 the same `agent_tool_loop` hole. Timed work is tool name / description /
 required `pattern` — not execute. Observed `fmt_name` / `fmt_desc` /
-`fmt_req` / `fmt_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce`. Same commit no optimize.
+`fmt_req` / `fmt_n` are exact. First n=5 freeze **1.41×** (131.9 /
+93.3 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
