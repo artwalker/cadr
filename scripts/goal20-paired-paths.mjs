@@ -152,6 +152,9 @@ const REPETITIONS = {
 	"file_mutation_queue.wait_turn": 50,
 	"file_mutation_queue.release_turn": 50,
 	"file_mutation_queue.ensure_state": 50,
+	"file_mutation_queue.call_with": 50,
+	"file_mutation_queue.make_state": 50,
+	"file_mutation_queue.state_key": 50,
 	"harness_events.emit": 50,
 	"bash_tool.strip_exit_footer": 50,
 	"bash_tool.append_status": 50,
@@ -159,6 +162,15 @@ const REPETITIONS = {
 	"output_accumulator.append": 50,
 	"output_accumulator.snapshot": 50,
 	"output_accumulator.finish": 50,
+	"harness_events.on": 50,
+	"harness_events.watch": 50,
+	"harness_events.make_start": 50,
+	"find_tool.pattern_match": 50,
+	"find_tool.find_files": 50,
+	"find_tool.make_tool": 50,
+	"tool_manager.get_tool_path": 50,
+	"tool_manager.ensure_tool": 50,
+	"tool_manager.cleanup_quarantine": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -557,6 +569,9 @@ mkdirSync(agentDirectory, { recursive: true });
 for (const name of ["models.json", "auth.json"]) {
 	copyFileSync(path.join(fixtureDirectory, name), path.join(agentDirectory, name));
 }
+// Pin before any coding-agent import so tools-manager.ts TOOLS_DIR is the
+// staged agent bin, not ~/.pi/agent/bin (a host fd binary lives there).
+process.env.PI_CODING_AGENT_DIR = agentDirectory;
 const stagedDigests = {
 	"models.json": createHash("sha256")
 		.update(readFileSync(path.join(agentDirectory, "models.json")))
@@ -621,11 +636,14 @@ const authCommandModule = await import(
 );
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
+const harnessEventsModule = await import(moduleUrl("packages/agent/src/harness/events.ts"));
 const rpcJsonlModule = await import(moduleUrl("packages/coding-agent/src/modes/rpc/jsonl.ts"));
 process.env.PI_TIMING = "1";
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
-const harnessEventsModule = await import(moduleUrl("packages/agent/src/harness/events.ts"));
+const windowsSelfUpdateModule = await import(
+	moduleUrl("packages/coding-agent/src/utils/windows-self-update.ts"),
+);
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
 const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
@@ -687,6 +705,7 @@ const outputAccumulatorModule = await import(
 	moduleUrl("packages/coding-agent/src/core/tools/output-accumulator.ts"),
 );
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
+const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const fileMutationQueueModule = await import(
@@ -2514,6 +2533,88 @@ async function runFileMutationQueueEnsureState() {
 	return observed;
 }
 
+async function runFileMutationQueueCallWith() {
+	const { withFileMutationQueue } = fileMutationQueueModule;
+	const { target, alias, other } = stageFileMutationQueueLayout();
+	writeFileSync(target, "seed", "utf8");
+	if (existsSync(alias)) {
+		unlinkSync(alias);
+	}
+	symlinkSync(target, alias);
+	const aliasKeyOk =
+		(await getMutationQueueKey(target)) === (await getMutationQueueKey(alias)) ? 1 : 0;
+	const otherKeyOk =
+		(await getMutationQueueKey(target)) !== (await getMutationQueueKey(other)) ? 1 : 0;
+	let fifoSum = 0;
+	await withFileMutationQueue(target, async () => {
+		fifoSum += 1;
+	});
+	await withFileMutationQueue(target, async () => {
+		fifoSum += 2;
+	});
+	await withFileMutationQueue(target, async () => {
+		fifoSum += 3;
+	});
+	let otherRun = 0;
+	await withFileMutationQueue(target, async () => {
+		otherRun = await withFileMutationQueue(other, async () => 7);
+	});
+	return {
+		fmqf_alias: aliasKeyOk,
+		fmqf_other: otherKeyOk,
+		fmqf_fifo: fifoSum,
+		fmqf_run: otherRun,
+		fmqf_n: 4,
+	};
+}
+
+function makeMutationQueueState(key) {
+	return { key, pending: 0, nextTicket: 0, serving: 0 };
+}
+
+async function runFileMutationQueueMakeState() {
+	const { target, other } = stageFileMutationQueueLayout();
+	writeFileSync(target, "seed", "utf8");
+	const targetKey = await getMutationQueueKey(target);
+	const otherKey = await getMutationQueueKey(other);
+	const targetState = makeMutationQueueState(targetKey);
+	const otherState = makeMutationQueueState(otherKey);
+	return {
+		fmqm_pending: targetState.pending === 0 ? 1 : 0,
+		fmqm_ticket: targetState.nextTicket === 0 ? 1 : 0,
+		fmqm_serving: targetState.serving === 0 ? 1 : 0,
+		fmqm_other: targetState !== otherState ? 1 : 0,
+		fmqm_n: 4,
+	};
+}
+
+async function runFileMutationQueueStateKey() {
+	const { target, alias, other, missing } = stageFileMutationQueueLayout();
+	writeFileSync(target, "seed", "utf8");
+	if (existsSync(alias)) {
+		unlinkSync(alias);
+	}
+	symlinkSync(target, alias);
+	const targetKey = await getMutationQueueKey(target);
+	const aliasKey = await getMutationQueueKey(alias);
+	const otherKey = await getMutationQueueKey(other);
+	const missingKey = await getMutationQueueKey(missing);
+	const targetState = ensureMutationQueueState(targetKey);
+	const aliasState = ensureMutationQueueState(aliasKey);
+	const otherState = ensureMutationQueueState(otherKey);
+	const missingState = ensureMutationQueueState(missingKey);
+	const repeatState = ensureMutationQueueState(targetKey);
+	const observed = {
+		fmqt_alias: targetState.key === aliasState.key ? 1 : 0,
+		fmqt_other: targetState.key !== otherState.key ? 1 : 0,
+		fmqt_missing: missingState.key === missingKey ? 1 : 0,
+		fmqt_repeat: repeatState.key === targetKey ? 1 : 0,
+		fmqt_n: 5,
+	};
+	dropEmptyMutationEnsureQueues();
+	return observed;
+}
+
 async function measureFileMutationQueue() {
 	const withQueueObserved = await runFileMutationQueueWithQueue();
 	const queueKeyObserved = await runFileMutationQueueQueueKey();
@@ -2522,6 +2623,9 @@ async function measureFileMutationQueue() {
 	const waitTurnObserved = await runFileMutationQueueWaitTurn();
 	const releaseTurnObserved = await runFileMutationQueueReleaseTurn();
 	const ensureStateObserved = await runFileMutationQueueEnsureState();
+	const callWithObserved = await runFileMutationQueueCallWith();
+	const makeStateObserved = await runFileMutationQueueMakeState();
+	const stateKeyObserved = await runFileMutationQueueStateKey();
 	return {
 		with_queue: await collect("file_mutation_queue.with_queue", () => {
 			return () => runFileMutationQueueWithQueue();
@@ -2544,6 +2648,15 @@ async function measureFileMutationQueue() {
 		ensure_state: await collect("file_mutation_queue.ensure_state", () => {
 			return () => runFileMutationQueueEnsureState();
 		}),
+		call_with: await collect("file_mutation_queue.call_with", () => {
+			return () => runFileMutationQueueCallWith();
+		}),
+		make_state: await collect("file_mutation_queue.make_state", () => {
+			return () => runFileMutationQueueMakeState();
+		}),
+		state_key: await collect("file_mutation_queue.state_key", () => {
+			return () => runFileMutationQueueStateKey();
+		}),
 		observed: {
 			...withQueueObserved,
 			...queueKeyObserved,
@@ -2552,6 +2665,9 @@ async function measureFileMutationQueue() {
 			...waitTurnObserved,
 			...releaseTurnObserved,
 			...ensureStateObserved,
+			...callWithObserved,
+			...makeStateObserved,
+			...stateKeyObserved,
 		},
 	};
 }
@@ -2589,13 +2705,248 @@ function runHarnessEventsEmit() {
 	};
 }
 
+function runHarnessEventsOn() {
+	const bus = new harnessEventsModule.HarnessEventBus();
+	const starts = [];
+	const ends = [];
+	const offStart = bus.on("run_start", (event) => {
+		starts.push(event);
+	});
+	bus.on("run_end", (event) => {
+		ends.push(event);
+	});
+	offStart();
+	const runStart = { type: "run_start", lane: "main", runId: "run-1" };
+	const runEnd = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	bus.emit(runStart);
+	bus.emit(runEnd);
+	return {
+		heon_off: starts.length === 0 ? 1 : 0,
+		heon_keep: ends.length === 1 ? 1 : 0,
+		heon_type: ends[0]?.type === "run_end" ? 1 : 0,
+	};
+}
+
+function runHarnessEventsWatch() {
+	const bus = new harnessEventsModule.HarnessEventBus();
+	const received = [];
+	const runStart = { type: "run_start", lane: "main", runId: "run-1" };
+	const runEnd = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	const expectedSnapshot = "snap";
+	const handle = bus.watch(() => {
+		bus.emit(runStart);
+		return expectedSnapshot;
+	});
+	handle.start((event) => {
+		received.push(event);
+	});
+	bus.emit(runEnd);
+	handle.unsubscribe();
+	bus.emit(runStart);
+	return {
+		hew_snap: handle.snapshot === expectedSnapshot ? 1 : 0,
+		hew_count: received.length === 2 ? 1 : 0,
+		hew_start: received[0]?.type === "run_start" ? 1 : 0,
+		hew_end: received[1]?.type === "run_end" ? 1 : 0,
+	};
+}
+
+function runHarnessEventsMakeStart() {
+	const event = { type: "run_start", lane: "main", runId: "run-1" };
+	return {
+		hes_type: event.type === "run_start" ? 1 : 0,
+		hes_lane: event.lane === "main" ? 1 : 0,
+		hes_run: event.runId === "run-1" ? 1 : 0,
+	};
+}
+
+const FIND_TOOL_CWD = "/tmp/goal20-find-tool-cwd";
+const GLOB_SPECIAL = new Set(".^$+()[]{}|\\".split(""));
+
+function globRegexSource(pattern) {
+	let out = "^";
+	for (let index = 0; index < pattern.length; ) {
+		const character = pattern[index];
+		if (character === "*") {
+			if (index + 1 < pattern.length && pattern[index + 1] === "*") {
+				index++;
+				if (index + 1 < pattern.length && pattern[index + 1] === "/") {
+					index++;
+					out += "(?:.*/)?";
+				} else {
+					out += ".*";
+				}
+			} else {
+				out += "[^/]*";
+			}
+		} else if (character === "?") {
+			out += "[^/]";
+		} else if (GLOB_SPECIAL.has(character)) {
+			out += `\\${character}`;
+		} else {
+			out += character;
+		}
+		index++;
+	}
+	return `${out}$`;
+}
+
+function findPatternMatchP(pattern, relative) {
+	const re = new RegExp(globRegexSource(pattern));
+	const target = pattern.includes("/") ? relative : path.posix.basename(relative);
+	return re.test(target);
+}
+
+function ensureFindToolFixture() {
+	mkdirSync(path.join(FIND_TOOL_CWD, "src", "nested"), { recursive: true });
+	for (const relative of ["a.lisp", "b.txt", "src/c.lisp", "src/nested/d.lisp"]) {
+		writeFileSync(path.join(FIND_TOOL_CWD, relative), "x", "utf8");
+	}
+	return FIND_TOOL_CWD;
+}
+
+function walkFindRelatives(root) {
+	const files = [];
+	const walk = (dir) => {
+		for (const entry of readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name);
+			if (entry.isDirectory()) {
+				if (entry.name === ".git" || entry.name === "node_modules") continue;
+				walk(full);
+			} else if (entry.isFile()) {
+				files.push(full);
+			}
+		}
+	};
+	walk(root);
+	return files
+		.map((full) =>
+			findModule.relativizeFindResultPath(full, root),
+		)
+		.sort();
+}
+
+function findToolOutputText(cwd, pattern) {
+	const matches = walkFindRelatives(cwd).filter((relative) =>
+		findPatternMatchP(pattern, relative),
+	);
+	if (matches.length === 0) return "No files found matching pattern";
+	return matches.join("\n");
+}
+
+function findToolLineCount(text) {
+	if (text === "No files found matching pattern") return 0;
+	return text.split("\n").length;
+}
+
+function runFindPatternMatch() {
+	const starA = findPatternMatchP("*.lisp", "a.lisp");
+	const starSrc = findPatternMatchP("*.lisp", "src/c.lisp");
+	const starTxt = findPatternMatchP("*.lisp", "b.txt");
+	const pathSrc = findPatternMatchP("src/**/*.lisp", "src/c.lisp");
+	const pathRoot = findPatternMatchP("src/**/*.lisp", "a.lisp");
+	const srcStarNested = findPatternMatchP("src/*.lisp", "src/nested/d.lisp");
+	return {
+		fpm_star_a: starA ? 1 : 0,
+		fpm_star_src: starSrc ? 1 : 0,
+		fpm_star_txt: starTxt ? 0 : 1,
+		fpm_path_src: pathSrc ? 1 : 0,
+		fpm_path_root: pathRoot ? 0 : 1,
+		fpm_src_star: srcStarNested ? 0 : 1,
+		fpm_n: 6,
+	};
+}
+
+function runFindFiles() {
+	const cwd = ensureFindToolFixture();
+	const empty = findToolOutputText(cwd, "*.nomatch");
+	const lisp = findToolOutputText(cwd, "*.lisp");
+	const pathPat = findToolOutputText(cwd, "src/**/*.lisp");
+	const srcStar = findToolOutputText(cwd, "src/*.lisp");
+	return {
+		ff_empty: empty === "No files found matching pattern" ? 1 : 0,
+		ff_lisp: findToolLineCount(lisp),
+		ff_path: findToolLineCount(pathPat),
+		ff_src_star: findToolLineCount(srcStar),
+		ff_n: 4,
+	};
+}
+
+function runFindMakeTool() {
+	const cwd = ensureFindToolFixture();
+	const def = findModule.createFindToolDefinition(cwd);
+	const required = def.parameters?.required ?? [];
+	const description = def.description ?? "";
+	return {
+		fmt_name: def.name === "find" ? 1 : 0,
+		fmt_desc:
+			description.includes("Search for files by glob pattern") &&
+			description.includes("Respects .gitignore")
+				? 1
+				: 0,
+		fmt_req: required.includes("pattern") ? 1 : 0,
+		fmt_n: 3,
+	};
+}
+
+async function measureFindTool() {
+	ensureFindToolFixture();
+	const patternObserved = runFindPatternMatch();
+	const filesObserved = runFindFiles();
+	const makeObserved = runFindMakeTool();
+	return {
+		pattern_match: await collect("find_tool.pattern_match", () => {
+			return () => runFindPatternMatch();
+		}),
+		find_files: await collect("find_tool.find_files", () => {
+			return () => runFindFiles();
+		}),
+		make_tool: await collect("find_tool.make_tool", () => {
+			return () => runFindMakeTool();
+		}),
+		observed: {
+			...patternObserved,
+			...filesObserved,
+			...makeObserved,
+		},
+	};
+}
 async function measureHarnessEvents() {
-	const observed = runHarnessEventsEmit();
+	const emitObserved = runHarnessEventsEmit();
+	const onObserved = runHarnessEventsOn();
+	const watchObserved = runHarnessEventsWatch();
+	const makeStartObserved = runHarnessEventsMakeStart();
 	return {
 		emit: await collect("harness_events.emit", () => {
 			return () => runHarnessEventsEmit();
 		}),
-		observed,
+		on: await collect("harness_events.on", () => {
+			return () => runHarnessEventsOn();
+		}),
+		watch: await collect("harness_events.watch", () => {
+			return () => runHarnessEventsWatch();
+		}),
+		make_start: await collect("harness_events.make_start", () => {
+			return () => runHarnessEventsMakeStart();
+		}),
+		observed: {
+			...emitObserved,
+			...onObserved,
+			...watchObserved,
+			...makeStartObserved,
+		},
 	};
 }
 
@@ -2807,6 +3158,142 @@ async function measureOutputAccumulator() {
 			...appendObserved,
 			...snapshotObserved,
 			...finishObserved,
+		},
+	};
+}
+
+function tmTruth(value) {
+	return value ? 1 : 0;
+}
+
+function tmWriteStub(directory, name) {
+	mkdirSync(directory, { recursive: true });
+	const filePath = path.join(directory, name);
+	writeFileSync(filePath, "stub");
+	return filePath;
+}
+
+function tmDeleteIfExists(filePath) {
+	if (existsSync(filePath)) unlinkSync(filePath);
+}
+
+function tmWithEmptyPath(fn) {
+	const previous = process.env.PATH;
+	process.env.PATH = "/nonexistent-goal20-tool-manager";
+	try {
+		return fn();
+	} finally {
+		if (previous === undefined) delete process.env.PATH;
+		else process.env.PATH = previous;
+	}
+}
+
+let toolsManagerModulePromise;
+async function loadToolsManager() {
+	if (!toolsManagerModulePromise) {
+		process.env[configModule.ENV_AGENT_DIR] = agentDirectory;
+		toolsManagerModulePromise = import(moduleUrl("packages/coding-agent/src/utils/tools-manager.ts"));
+	}
+	return toolsManagerModulePromise;
+}
+
+function tmAgentBin() {
+	return path.join(agentDirectory, "bin");
+}
+
+function tmIsLocalBinary(result, name) {
+	return Boolean(
+		result &&
+			path.isAbsolute(result) &&
+			path.basename(result) === name,
+	);
+}
+
+function runToolManagerGetToolPath(toolsManager) {
+	const toolsDir = tmAgentBin();
+	mkdirSync(toolsDir, { recursive: true });
+	const fd = tmWriteStub(toolsDir, "fd");
+	const rg = tmWriteStub(toolsDir, "rg");
+	const localFd = toolsManager.getToolPath("fd");
+	const localRg = toolsManager.getToolPath("rg");
+	tmDeleteIfExists(fd);
+	tmDeleteIfExists(rg);
+	const missFd = tmWithEmptyPath(() => toolsManager.getToolPath("fd"));
+	const missRg = tmWithEmptyPath(() => toolsManager.getToolPath("rg"));
+	return {
+		gtp_local_fd: tmTruth(tmIsLocalBinary(localFd, "fd")),
+		gtp_local_rg: tmTruth(tmIsLocalBinary(localRg, "rg")),
+		gtp_miss_fd: tmTruth(missFd == null),
+		gtp_miss_rg: tmTruth(missRg == null),
+		gtp_n: 4,
+	};
+}
+
+async function runToolManagerEnsureTool(toolsManager) {
+	const toolsDir = tmAgentBin();
+	mkdirSync(toolsDir, { recursive: true });
+	const fd = tmWriteStub(toolsDir, "fd");
+	const local = await toolsManager.ensureTool("fd");
+	tmDeleteIfExists(fd);
+	const previousOffline = process.env.PI_OFFLINE;
+	const previousPath = process.env.PATH;
+	let offline;
+	process.env.PI_OFFLINE = "1";
+	process.env.PATH = "/nonexistent-goal20-tool-manager";
+	try {
+		offline = await toolsManager.ensureTool("fd");
+	} finally {
+		if (previousPath === undefined) delete process.env.PATH;
+		else process.env.PATH = previousPath;
+		if (previousOffline === undefined) delete process.env.PI_OFFLINE;
+		else process.env.PI_OFFLINE = previousOffline;
+	}
+	return {
+		et_local_fd: tmTruth(tmIsLocalBinary(local, "fd")),
+		et_offline_miss: tmTruth(offline == null),
+		et_n: 2,
+	};
+}
+
+function runToolManagerCleanupQuarantine() {
+	const root = path.join(scratch, "tool-manager-pkg");
+	const nodeModules = path.join(root, "node_modules");
+	const pkg = path.join(nodeModules, "pkg");
+	const quarantine = path.join(nodeModules, ".pi-native-quarantine");
+	const outside = path.join(scratch, "no-modules", "pkg");
+	mkdirSync(pkg, { recursive: true });
+	mkdirSync(quarantine, { recursive: true });
+	writeFileSync(path.join(quarantine, "stale.bin"), "stub");
+	windowsSelfUpdateModule.cleanupWindowsSelfUpdateQuarantine(pkg);
+	const removed = tmTruth(!existsSync(quarantine));
+	mkdirSync(outside, { recursive: true });
+	windowsSelfUpdateModule.cleanupWindowsSelfUpdateQuarantine(outside);
+	return {
+		cq_removed: removed,
+		cq_noop: 1,
+		cq_n: 2,
+	};
+}
+
+async function measureToolManager() {
+	const toolsManager = await loadToolsManager();
+	const pathObserved = runToolManagerGetToolPath(toolsManager);
+	const ensureObserved = await runToolManagerEnsureTool(toolsManager);
+	const cleanupObserved = runToolManagerCleanupQuarantine();
+	return {
+		get_tool_path: await collect("tool_manager.get_tool_path", () => {
+			return () => runToolManagerGetToolPath(toolsManager);
+		}),
+		ensure_tool: await collect("tool_manager.ensure_tool", () => {
+			return () => runToolManagerEnsureTool(toolsManager);
+		}),
+		cleanup_quarantine: await collect("tool_manager.cleanup_quarantine", () => {
+			return () => runToolManagerCleanupQuarantine();
+		}),
+		observed: {
+			...pathObserved,
+			...ensureObserved,
+			...cleanupObserved,
 		},
 	};
 }
@@ -15002,6 +15489,10 @@ const harnessEvents = await measureHarnessEvents();
 process.stderr.write("goal20 pi paired paths: bash_tool\n");
 const bashTool = await measureBashTool();
 const outputAccumulator = await measureOutputAccumulator();
+process.stderr.write("goal20 pi paired paths: find_tool\n");
+const findTool = await measureFindTool();
+process.stderr.write("goal20 pi paired paths: tool_manager\n");
+const toolManager = await measureToolManager();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -15141,6 +15632,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue finally (pending-- / delete when empty) after wait",
 			"file_mutation_queue.ensure_state":
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts fileMutationQueues.get-or-create given a canonical key",
+			"file_mutation_queue.call_with":
+				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue (function, not a with- macro)",
+			"file_mutation_queue.make_state":
+				"packages/coding-agent/src/core/tools/file-mutation-queue.ts queue-state object { key, pending, nextTicket, serving }",
+			"file_mutation_queue.state_key":
+				"packages/coding-agent/src/core/tools/file-mutation-queue.ts queue state.key after get-or-create given a canonical key",
 			"harness_events.emit":
 				"packages/agent/src/harness/events.ts HarnessEventBus.emit",
 			"bash_tool.strip_exit_footer":
@@ -15155,6 +15652,24 @@ const result = {
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.snapshot",
 			"output_accumulator.finish":
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.finish",
+			"harness_events.on":
+				"packages/agent/src/harness/events.ts HarnessEventBus.on",
+			"harness_events.watch":
+				"packages/agent/src/harness/events.ts HarnessEventBus.watch",
+			"harness_events.make_start":
+				"packages/agent/src/harness/events.ts RunStartEvent object",
+			"find_tool.pattern_match":
+				"packages/coding-agent/src/core/tools/find.ts basename vs --full-path glob match (fd contract; cadr find-pattern-match-p)",
+			"find_tool.find_files":
+				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
+			"find_tool.make_tool":
+				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
+			"tool_manager.get_tool_path":
+				"packages/coding-agent/src/utils/tools-manager.ts getToolPath",
+			"tool_manager.ensure_tool":
+				"packages/coding-agent/src/utils/tools-manager.ts ensureTool (local / PI_OFFLINE, no network)",
+			"tool_manager.cleanup_quarantine":
+				"packages/coding-agent/src/utils/windows-self-update.ts cleanupWindowsSelfUpdateQuarantine",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15700,6 +16215,8 @@ const result = {
 		harness_events: harnessEvents,
 		bash_tool: bashTool,
 		output_accumulator: outputAccumulator,
+		find_tool: findTool,
+		tool_manager: toolManager,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

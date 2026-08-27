@@ -3308,6 +3308,185 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
+### Pair 283 — `harness_events` (on)
+
+| metric | cadr | pi |
+|---|---|---|
+| `on` | `harness-event-bus-on` (`src/cadr-agent/harness-events.lisp`) | `HarnessEventBus.on` (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 276 `emit` on the same `harness-events.lisp`
+`agent_tool_loop` hole. Timed work is typed subscribe plus unsubscribe of
+`run_start` while a `run_end` listener stays — not emit delivery of a live
+subscription, not watch buffering. Observed `heon_off` / `heon_keep` /
+`heon_type` are exact. First n=5 freeze **0.325×** (0.58 / 1.79 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 284 — `harness_events` (watch)
+
+| metric | cadr | pi |
+|---|---|---|
+| `watch` | `harness-event-bus-watch` (`src/cadr-agent/harness-events.lisp`) | `HarnessEventBus.watch` (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 276 `emit` and Pair 283 `on` on the same
+`harness-events.lisp` `agent_tool_loop` hole. Timed work is snapshot capture
+(an emit during capture is buffered), start flush in order, live `run_end`,
+then unsubscribe — not typed direct listeners, not `emit` of an
+already-started watch. Observed `hew_snap` / `hew_count` / `hew_start` /
+`hew_end` are exact. First n=5 freeze **0.250×** (0.57 / 2.27 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 285 — `harness_events` (make_start)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_start` | `make-run-start-event` (`src/cadr-agent/harness-events.lisp`) | `RunStartEvent` object (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 276 `emit`, Pair 283 `on`, and Pair 284 `watch` on
+the same `harness-events.lisp` `agent_tool_loop` hole. Timed work is
+constructing a `run_start` event (type / lane / run id) — not `on`, not
+`watch`, not `emit`. Observed `hes_type` / `hes_lane` / `hes_run` are exact.
+First n=5 freeze **1.18×** (0.14 / 0.12 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 286 — `file_mutation_queue` (call_with)
+
+| metric | cadr | pi |
+|---|---|---|
+| `call_with` | `call-with-file-mutation-queue` (`src/cadr-agent/file-mutation-queue.lisp`) | `withFileMutationQueue` as a function (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 261 `with_queue` through Pair 275 `ensure_state` on
+the same `agent_tool_loop` hole. Timed work is the function (not the
+`with-` macro): canonical key plus FIFO acquire/fn/release on existing
+path, symlink alias, and distinct sibling — not write/edit tools. Same
+staged scratch layout as `with_queue`. Observed `fmqf_alias` /
+`fmqf_other` / `fmqf_fifo` / `fmqf_run` / `fmqf_n` are exact. First n=5
+freeze **0.523×** (124.1 / 237.4 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 287 — `file_mutation_queue` (make_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_state` | `make-file-mutation-queue-state` (`src/cadr-agent/file-mutation-queue.lisp`) | queue-state object `{ key, pending, nextTicket, serving }` (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 286 `call_with` on the same `agent_tool_loop`
+hole. Timed work is constructing a fresh queue state from a canonical
+key (existing path and distinct sibling) — not registry insert, not
+`with-file-mutation-queue`, not write/edit tools. Same staged scratch
+layout as `with_queue`. Observed `fmqm_pending` / `fmqm_ticket` /
+`fmqm_serving` / `fmqm_other` / `fmqm_n` are exact. First n=5 freeze
+**1.597×** (105.7 / 66.2 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 288 — `file_mutation_queue` (state_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `state_key` | `file-mutation-queue-state-key` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.key` after get-or-create given a canonical key (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 286 `call_with` and Pair 287 `make_state` on the
+same `agent_tool_loop` hole. Timed work is reading the state's canonical
+key after ensure (existing path, symlink alias, missing path, distinct
+sibling, repeat lookup) — not path encoding as the owner, not
+`with-file-mutation-queue`, not write/edit tools. Same staged scratch
+layout as `with_queue`. Observed `fmqt_alias` / `fmqt_other` /
+`fmqt_missing` / `fmqt_repeat` / `fmqt_n` are exact. First n=5 freeze
+**1.009×** (134.3 / 133.1 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+### Pair 289 — `find_tool` (pattern_match)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pattern_match` | `find-pattern-match-p` (`src/cadr-cli/tools/find.lisp`) | basename vs path-containing glob match (`packages/coding-agent/src/core/tools/find.ts`; fd `--full-path` contract) |
+
+Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/find.lisp`.
+Timed work is glob match on basename (`*.lisp`) vs path (`src/**/*.lisp` /
+`src/*.lisp`) — not fd spawn, not gitignore walk. Observed `fpm_star_a` /
+`fpm_star_src` / `fpm_star_txt` / `fpm_path_src` / `fpm_path_root` /
+`fpm_src_star` / `fpm_n` are exact. First n=5 freeze **7.16×** (30.5 /
+4.26 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 290 — `find_tool` (find_files)
+
+| metric | cadr | pi |
+|---|---|---|
+| `find_files` | `find-files` (`src/cadr-cli/tools/find.lisp`) | execute output assembly + `relativizeFindResultPath` (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pair 289 `pattern_match` on the same `agent_tool_loop`
+hole. Timed work is empty copy (`No files found matching pattern`) plus
+`*.lisp` / `src/**/*.lisp` / `src/*.lisp` result counts on a four-file
+fixture — not fd spawn. Observed `ff_empty` / `ff_lisp` / `ff_path` /
+`ff_src_star` / `ff_n` are exact. First n=5 freeze **3.44×** (633.4 /
+184.1 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 291 — `find_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-find-tool` (`src/cadr-cli/tools/find.lisp`) | `createFindToolDefinition` (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pair 289 `pattern_match` and Pair 290 `find_files` on
+the same `agent_tool_loop` hole. Timed work is tool name / description /
+required `pattern` — not execute. Observed `fmt_name` / `fmt_desc` /
+`fmt_req` / `fmt_n` are exact. First n=5 freeze **1.41×** (131.9 /
+93.3 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 292 — `tool_manager` (get_tool_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `get_tool_path` | `get-tool-path` (`src/cadr-cli/tool-manager.lisp`) | `getToolPath` (`packages/coding-agent/src/utils/tools-manager.ts`) |
+
+Leftover of the `agent_tool_loop` hole on `tool-manager.lisp`. Timed work is
+local `fd`/`rg` stub discovery plus PATH-empty miss — not download/install,
+not write/edit tools. Observed `gtp_local_fd` / `gtp_local_rg` /
+`gtp_miss_fd` / `gtp_miss_rg` / `gtp_n` are exact. First n=5 freeze
+**0.014×** (107.8 / 7742.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 293 — `tool_manager` (ensure_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ensure_tool` | `ensure-tool` (`src/cadr-cli/tool-manager.lisp`) | `ensureTool` (`packages/coding-agent/src/utils/tools-manager.ts`) |
+
+Leftover sibling of Pair 292 `get_tool_path` on the same `agent_tool_loop`
+hole. Timed work is local stub hit plus `CADR_OFFLINE`/`PI_OFFLINE` miss
+with an empty PATH so neither side downloads — not GitHub / unpack. Observed
+`et_local_fd` / `et_offline_miss` / `et_n` are exact. First n=5 freeze
+**0.013×** (65.1 / 5129.9 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 294 — `tool_manager` (cleanup_quarantine)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cleanup_quarantine` | `cleanup-windows-self-update-quarantine` (`src/cadr-cli/tool-manager.lisp`) | `cleanupWindowsSelfUpdateQuarantine` (`packages/coding-agent/src/utils/windows-self-update.ts`) |
+
+Leftover sibling of Pairs 292–293 on the same `agent_tool_loop` hole. Timed
+work is delete of a staged native-quarantine tree under `node_modules` plus
+a no-op path with no `node_modules` ancestor — not loaded-.so quarantine.
+Observed `cq_removed` / `cq_noop` / `cq_n` are exact. First n=5 freeze
+**1.365×** (120.1 / 88.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 295 — `provider_registry_defs` (merge_environment)
 
 | metric | cadr | pi |
@@ -3997,7 +4176,9 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 147 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
+| `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
+| `src/cadr-cli/tools/find.lisp` | 101 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |

@@ -101,10 +101,12 @@ METRICS = {
     "cli_settings": ("create",),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
-    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state"),
-    "harness_events": ("emit",),
+    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key"),
+    "harness_events": ("emit", "on", "watch", "make_start"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
+    "find_tool": ("pattern_match", "find_files", "make_tool"),
+    "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -274,6 +276,15 @@ RATIO_CEILINGS = {
     # file_mutation_queue.ensure_state pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "file_mutation_queue.ensure_state": 8.0,
+    # file_mutation_queue.call_with pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.call_with": 8.0,
+    # file_mutation_queue.make_state pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.make_state": 8.0,
+    # file_mutation_queue.state_key pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.state_key": 8.0,
     # harness_events.emit pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.emit": 8.0,
@@ -282,11 +293,28 @@ RATIO_CEILINGS = {
     "bash_tool.strip_exit_footer": 8.0,
     "bash_tool.append_status": 8.0,
     "bash_tool.truncation_notice": 8.0,
-    # output_accumulator.append/snapshot/finish pair (samples=5): first-freeze headroom.
-    # Ratchet down only.
     "output_accumulator.append": 8.0,
     "output_accumulator.snapshot": 8.0,
     "output_accumulator.finish": 8.0,
+    # harness_events.on pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.on": 8.0,
+    # harness_events.watch pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.watch": 8.0,
+    # harness_events.make_start pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.make_start": 8.0,
+    # find_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "find_tool.pattern_match": 8.0,
+    "find_tool.find_files": 8.0,
+    "find_tool.make_tool": 8.0,
+    # tool_manager.get_tool_path/ensure_tool/cleanup_quarantine pair
+    # (samples=5): first-freeze headroom. Ratchet down only.
+    "tool_manager.get_tool_path": 8.0,
+    "tool_manager.ensure_tool": 8.0,
+    "tool_manager.cleanup_quarantine": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1485,6 +1513,21 @@ OBSERVED_EXACT = {
         "fmqs_missing",
         "fmqs_repeat",
         "fmqs_n",
+        "fmqf_alias",
+        "fmqf_other",
+        "fmqf_fifo",
+        "fmqf_run",
+        "fmqf_n",
+        "fmqm_pending",
+        "fmqm_ticket",
+        "fmqm_serving",
+        "fmqm_other",
+        "fmqm_n",
+        "fmqt_alias",
+        "fmqt_other",
+        "fmqt_missing",
+        "fmqt_repeat",
+        "fmqt_n",
     ),
     "harness_events": (
         "he_direct",
@@ -1492,6 +1535,16 @@ OBSERVED_EXACT = {
         "he_start",
         "he_end",
         "he_second",
+        "heon_off",
+        "heon_keep",
+        "heon_type",
+        "hew_snap",
+        "hew_count",
+        "hew_start",
+        "hew_end",
+        "hes_type",
+        "hes_lane",
+        "hes_run",
     ),
     "bash_tool": (
         "sef_exact",
@@ -1527,6 +1580,37 @@ OBSERVED_EXACT = {
         "oa_fin_last",
         "oa_fin_trunc",
         "oa_fin_n",
+    ),
+    "find_tool": (
+        "fpm_star_a",
+        "fpm_star_src",
+        "fpm_star_txt",
+        "fpm_path_src",
+        "fpm_path_root",
+        "fpm_src_star",
+        "fpm_n",
+        "ff_empty",
+        "ff_lisp",
+        "ff_path",
+        "ff_src_star",
+        "ff_n",
+        "fmt_name",
+        "fmt_desc",
+        "fmt_req",
+        "fmt_n",
+    ),
+    "tool_manager": (
+        "gtp_local_fd",
+        "gtp_local_rg",
+        "gtp_miss_fd",
+        "gtp_miss_rg",
+        "gtp_n",
+        "et_local_fd",
+        "et_offline_miss",
+        "et_n",
+        "cq_removed",
+        "cq_noop",
+        "cq_n",
     ),
     "settings_load": (
         "tr_empty",

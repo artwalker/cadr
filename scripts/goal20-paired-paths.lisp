@@ -106,6 +106,21 @@
 ;;;; 277. bash_tool strip Process-exited footer vs bash-strip-exit-footer
 ;;;; 278. bash_tool appendStatus vs append-bash-status
 ;;;; 279. bash_tool formatOutput truncation notice vs bash-truncation-notice
+;;;; 280. output_accumulator append vs OutputAccumulator.append
+;;;; 281. output_accumulator snapshot vs OutputAccumulator.snapshot
+;;;; 282. output_accumulator finish vs OutputAccumulator.finish
+;;;; 283. harness_events on vs HarnessEventBus.on
+;;;; 284. harness_events watch vs HarnessEventBus.watch
+;;;; 285. harness_events make_start vs RunStartEvent object
+;;;; 286. file_mutation_queue call-with-file-mutation-queue vs withFileMutationQueue (function)
+;;;; 287. file_mutation_queue make-file-mutation-queue-state vs queue-state object
+;;;; 288. file_mutation_queue file-mutation-queue-state-key vs state.key
+;;;; 289. find_tool pattern match vs find-pattern-match-p
+;;;; 290. find_tool find-files vs find.ts execute output assembly
+;;;; 291. find_tool make-find-tool vs createFindToolDefinition
+;;;; 292. tool_manager get-tool-path vs getToolPath
+;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
+;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -177,6 +192,9 @@
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
 ;;;;  95. cli_selectors format-key-text vs formatKeyText
 ;;;;  94. websocket_stream stream-chat websocket vs openai-codex-responses stream
+;;;; 292. tool_manager get-tool-path vs getToolPath
+;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
+;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -253,6 +271,9 @@
     ("file_mutation_queue.wait_turn" . 50)
     ("file_mutation_queue.release_turn" . 50)
     ("file_mutation_queue.ensure_state" . 50)
+    ("file_mutation_queue.call_with" . 50)
+    ("file_mutation_queue.make_state" . 50)
+    ("file_mutation_queue.state_key" . 50)
     ("harness_events.emit" . 50)
     ("bash_tool.strip_exit_footer" . 50)
     ("bash_tool.append_status" . 50)
@@ -260,6 +281,15 @@
     ("output_accumulator.append" . 50)
     ("output_accumulator.snapshot" . 50)
     ("output_accumulator.finish" . 50)
+    ("harness_events.on" . 50)
+    ("harness_events.watch" . 50)
+    ("harness_events.make_start" . 50)
+    ("find_tool.pattern_match" . 50)
+    ("find_tool.find_files" . 50)
+    ("find_tool.make_tool" . 50)
+    ("tool_manager.get_tool_path" . 50)
+    ("tool_manager.ensure_tool" . 50)
+    ("tool_manager.cleanup_quarantine" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4002,6 +4032,121 @@
            5)
         (fmq-drop-empty-queues)))))
 
+(defun run-file-mutation-queue-call-with ()
+  ;; Baseline withFileMutationQueue as a function, not the with- macro
+  ;; and not write/edit tools.
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir missing))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (fmq-setup-alias target alias)
+    (let* ((alias-key-ok
+             (fmq-truth
+              (string=
+               (cadr-agent::file-mutation-queue-key target)
+               (cadr-agent::file-mutation-queue-key alias))))
+           (other-key-ok
+             (fmq-truth
+              (not (string=
+                    (cadr-agent::file-mutation-queue-key target)
+                    (cadr-agent::file-mutation-queue-key other)))))
+           (fifo-sum 0)
+           (other-run 0))
+      (cadr-agent::call-with-file-mutation-queue
+       target (lambda () (incf fifo-sum 1)))
+      (cadr-agent::call-with-file-mutation-queue
+       target (lambda () (incf fifo-sum 2)))
+      (cadr-agent::call-with-file-mutation-queue
+       target (lambda () (incf fifo-sum 3)))
+      (cadr-agent::call-with-file-mutation-queue
+       target
+       (lambda ()
+         (setf other-run
+               (cadr-agent::call-with-file-mutation-queue
+                other (lambda () 7)))))
+      (list alias-key-ok other-key-ok fifo-sum other-run 4))))
+
+(defun run-file-mutation-queue-make-state ()
+  ;; Baseline queue-state object construction given a canonical key;
+  ;; not path encoding, not withFileMutationQueue, not write/edit tools.
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir alias missing))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (let* ((target-key (cadr-agent::file-mutation-queue-key target))
+           (other-key (cadr-agent::file-mutation-queue-key other))
+           (target-state
+             (cadr-agent::make-file-mutation-queue-state target-key))
+           (other-state
+             (cadr-agent::make-file-mutation-queue-state other-key)))
+      (list
+       (fmq-truth
+        (zerop
+         (cadr-agent::file-mutation-queue-state-pending-count
+          target-state)))
+       (fmq-truth
+        (zerop
+         (cadr-agent::file-mutation-queue-state-next-ticket
+          target-state)))
+       (fmq-truth
+        (zerop
+         (cadr-agent::file-mutation-queue-state-serving-ticket
+          target-state)))
+       (fmq-truth (not (eq target-state other-state)))
+       4))))
+
+(defun run-file-mutation-queue-state-key ()
+  ;; Baseline queue state.key after ensure given a canonical key;
+  ;; not path encoding as the timed owner, not withFileMutationQueue.
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (fmq-setup-alias target alias)
+    (let* ((target-key (cadr-agent::file-mutation-queue-key target))
+           (alias-key (cadr-agent::file-mutation-queue-key alias))
+           (other-key (cadr-agent::file-mutation-queue-key other))
+           (missing-key (cadr-agent::file-mutation-queue-key missing))
+           (target-state
+             (cadr-agent::ensure-file-mutation-queue-state target-key))
+           (alias-state
+             (cadr-agent::ensure-file-mutation-queue-state alias-key))
+           (other-state
+             (cadr-agent::ensure-file-mutation-queue-state other-key))
+           (missing-state
+             (cadr-agent::ensure-file-mutation-queue-state missing-key))
+           (repeat-state
+             (cadr-agent::ensure-file-mutation-queue-state target-key)))
+      (prog1
+          (list
+           (fmq-truth
+            (string=
+             (cadr-agent::file-mutation-queue-state-key target-state)
+             (cadr-agent::file-mutation-queue-state-key alias-state)))
+           (fmq-truth
+            (not (string=
+                  (cadr-agent::file-mutation-queue-state-key target-state)
+                  (cadr-agent::file-mutation-queue-state-key other-state))))
+           (fmq-truth
+            (string=
+             (cadr-agent::file-mutation-queue-state-key missing-state)
+             missing-key))
+           (fmq-truth
+            (string=
+             (cadr-agent::file-mutation-queue-state-key repeat-state)
+             target-key))
+           5)
+        (fmq-drop-empty-queues)))))
+
 (defun measure-file-mutation-queue ()
   (destructuring-bind (alias-key missing-key other-key fifo-sum other-run clean)
       (run-file-mutation-queue-with-queue)
@@ -4017,6 +4162,12 @@
                 (run-file-mutation-queue-release-turn)
               (destructuring-bind (fmqs-alias fmqs-other fmqs-missing fmqs-repeat fmqs-n)
                   (run-file-mutation-queue-ensure-state)
+                (destructuring-bind (fmqf-alias fmqf-other fmqf-fifo fmqf-run fmqf-n)
+                    (run-file-mutation-queue-call-with)
+                  (destructuring-bind (fmqm-pending fmqm-ticket fmqm-serving fmqm-other fmqm-n)
+                      (run-file-mutation-queue-make-state)
+                    (destructuring-bind (fmqt-alias fmqt-other fmqt-missing fmqt-repeat fmqt-n)
+                        (run-file-mutation-queue-state-key)
             (json-object
              "observed"
              (json-object
@@ -4054,7 +4205,22 @@
               "fmqs_other" fmqs-other
               "fmqs_missing" fmqs-missing
               "fmqs_repeat" fmqs-repeat
-              "fmqs_n" fmqs-n)
+              "fmqs_n" fmqs-n
+              "fmqf_alias" fmqf-alias
+              "fmqf_other" fmqf-other
+              "fmqf_fifo" fmqf-fifo
+              "fmqf_run" fmqf-run
+              "fmqf_n" fmqf-n
+              "fmqm_pending" fmqm-pending
+              "fmqm_ticket" fmqm-ticket
+              "fmqm_serving" fmqm-serving
+              "fmqm_other" fmqm-other
+              "fmqm_n" fmqm-n
+              "fmqt_alias" fmqt-alias
+              "fmqt_other" fmqt-other
+              "fmqt_missing" fmqt-missing
+              "fmqt_repeat" fmqt-repeat
+              "fmqt_n" fmqt-n)
              "with_queue"
              (collect "file_mutation_queue.with_queue"
                       (lambda ()
@@ -4089,7 +4255,22 @@
              (collect "file_mutation_queue.ensure_state"
                       (lambda ()
                         (lambda ()
-                          (run-file-mutation-queue-ensure-state)))))))))))))
+                          (run-file-mutation-queue-ensure-state))))
+             "call_with"
+             (collect "file_mutation_queue.call_with"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-call-with))))
+             "make_state"
+             (collect "file_mutation_queue.make_state"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-make-state))))
+             "state_key"
+             (collect "file_mutation_queue.state_key"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-state-key))))))))))))))))
 
 (defun he-truth (value)
   (if value 1 0))
@@ -4132,22 +4313,127 @@
               (eq (cadr-agent:harness-event-type (third watched-rev))
                   :run-start)))))))))
 
+(defun run-harness-events-on ()
+  ;; Baseline HarnessEventBus.on only; not emit delivery of a live
+  ;; subscription, not watch buffering. Same unsubscribe contract as
+  ;; test/cadr-agent/harness-events-test.lisp: off drops that type,
+  ;; a second type still fires.
+  (let ((bus (cadr-agent:make-harness-event-bus))
+        (starts '())
+        (ends '()))
+    (let ((off-start
+            (cadr-agent:harness-event-bus-on
+             bus :run-start
+             (lambda (event) (push event starts))))
+          (off-end
+            (cadr-agent:harness-event-bus-on
+             bus :run-end
+             (lambda (event) (push event ends)))))
+      (declare (ignore off-end))
+      (funcall off-start)
+      (let ((run-start (cadr-agent:make-run-start-event "main" "run-1"))
+            (run-end
+              (cadr-agent:make-run-end-event
+               "main" "run-1" :completed "entry-1")))
+        (cadr-agent:harness-event-bus-emit bus run-start)
+        (cadr-agent:harness-event-bus-emit bus run-end)
+        (list
+         (he-truth (null starts))
+         (he-truth (= (length ends) 1))
+         (he-truth
+          (eq (cadr-agent:harness-event-type (first ends))
+              :run-end)))))))
+
+(defun run-harness-events-watch ()
+  ;; Baseline HarnessEventBus.watch buffering until start; not typed
+  ;; direct listeners. Capture emits are buffered, start flushes in
+  ;; order, unsubscribe drops later events. Same contract as
+  ;; test/cadr-agent/harness-events-test.lisp snapshot-flush path.
+  (let ((bus (cadr-agent:make-harness-event-bus))
+        (received '())
+        (run-start (cadr-agent:make-run-start-event "main" "run-1"))
+        (run-end
+          (cadr-agent:make-run-end-event
+           "main" "run-1" :completed "entry-1"))
+        (expected-snapshot :snap))
+    (multiple-value-bind (snapshot start unsubscribe)
+        (cadr-agent:harness-event-bus-watch
+         bus
+         (lambda ()
+           (cadr-agent:harness-event-bus-emit bus run-start)
+           expected-snapshot))
+      (funcall start (lambda (event) (push event received)))
+      (cadr-agent:harness-event-bus-emit bus run-end)
+      (funcall unsubscribe)
+      (cadr-agent:harness-event-bus-emit bus run-start)
+      (let ((flushed (reverse received)))
+        (list
+         (he-truth (eq snapshot expected-snapshot))
+         (he-truth (= (length received) 2))
+         (he-truth
+          (eq (cadr-agent:harness-event-type (first flushed))
+              :run-start))
+         (he-truth
+          (eq (cadr-agent:harness-event-type (second flushed))
+              :run-end)))))))
+
+(defun run-harness-events-make-start ()
+  ;; Baseline RunStartEvent object shape vs make-run-start-event; not
+  ;; emit, not on, not watch.
+  (let ((event (cadr-agent:make-run-start-event "main" "run-1")))
+    (list
+     (he-truth (eq (cadr-agent:harness-event-type event) :run-start))
+     (he-truth (equal (getf event :lane) "main"))
+     (he-truth (equal (getf event :run-id) "run-1")))))
+
 (defun measure-harness-events ()
   (destructuring-bind (he-direct he-watch he-start he-end he-second)
       (run-harness-events-emit)
-    (json-object
-     "observed"
-     (json-object
-      "he_direct" he-direct
-      "he_watch" he-watch
-      "he_start" he-start
-      "he_end" he-end
-      "he_second" he-second)
-     "emit"
-     (collect "harness_events.emit"
-              (lambda ()
-                (lambda ()
-                  (run-harness-events-emit)))))))
+    (destructuring-bind (heon-off heon-keep heon-type)
+        (run-harness-events-on)
+      (destructuring-bind (hew-snap hew-count hew-start hew-end)
+          (run-harness-events-watch)
+        (destructuring-bind (hes-type hes-lane hes-run)
+            (run-harness-events-make-start)
+          (json-object
+           "observed"
+           (json-object
+            "he_direct" he-direct
+            "he_watch" he-watch
+            "he_start" he-start
+            "he_end" he-end
+            "he_second" he-second
+            "heon_off" heon-off
+            "heon_keep" heon-keep
+            "heon_type" heon-type
+            "hew_snap" hew-snap
+            "hew_count" hew-count
+            "hew_start" hew-start
+            "hew_end" hew-end
+            "hes_type" hes-type
+            "hes_lane" hes-lane
+            "hes_run" hes-run)
+           "emit"
+           (collect "harness_events.emit"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-emit))))
+           "on"
+           (collect "harness_events.on"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-on))))
+           "watch"
+           (collect "harness_events.watch"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-watch))))
+           "make_start"
+           (collect "harness_events.make_start"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-make-start))))))))))
+
 (defun bash-tool-truth (value)
   (if value 1 0))
 
@@ -4289,6 +4575,139 @@
                     (lambda ()
                       (run-bash-truncation-notice)))))))))
 
+(defun find-tool-truth (value)
+  (if value 1 0))
+
+(defparameter *find-tool-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-find-tool-cwd")))
+
+(defun ensure-find-tool-fixture ()
+  (let ((root (uiop:ensure-directory-pathname *find-tool-cwd*)))
+    (ensure-directories-exist
+     (merge-pathnames "src/nested/" root))
+    (dolist (relative '("a.lisp" "b.txt" "src/c.lisp" "src/nested/d.lisp"))
+      (with-open-file
+          (out (merge-pathnames relative root)
+               :direction :output
+               :if-exists :supersede
+               :if-does-not-exist :create
+               :external-format :utf-8)
+        (write-string "x" out)))
+    *find-tool-cwd*))
+
+(defun run-find-pattern-match ()
+  ;; Basename glob vs path-containing glob; not fd spawn.
+  (let ((star-a
+          (cadr-cli::find-pattern-match-p "*.lisp" "a.lisp"))
+        (star-src
+          (cadr-cli::find-pattern-match-p "*.lisp" "src/c.lisp"))
+        (star-txt
+          (cadr-cli::find-pattern-match-p "*.lisp" "b.txt"))
+        (path-src
+          (cadr-cli::find-pattern-match-p "src/**/*.lisp" "src/c.lisp"))
+        (path-root
+          (cadr-cli::find-pattern-match-p "src/**/*.lisp" "a.lisp"))
+        (src-star-nested
+          (cadr-cli::find-pattern-match-p "src/*.lisp" "src/nested/d.lisp")))
+    (list
+     (find-tool-truth star-a)
+     (find-tool-truth star-src)
+     (find-tool-truth (not star-txt))
+     (find-tool-truth path-src)
+     (find-tool-truth (not path-root))
+     (find-tool-truth (not src-star-nested))
+     6)))
+
+(defun find-tool-output-text (cwd pattern)
+  (multiple-value-bind (content details)
+      (cadr-cli::find-files
+       cwd (cadr-ai::json-object "pattern" pattern))
+    (declare (ignore details))
+    (cadr-ai::text-content-text (first content))))
+
+(defun find-tool-line-count (text)
+  (if (string= text "No files found matching pattern")
+      0
+      (1+ (count #\Newline text))))
+
+(defun run-find-files ()
+  (let* ((cwd (ensure-find-tool-fixture))
+         (empty (find-tool-output-text cwd "*.nomatch"))
+         (lisp (find-tool-output-text cwd "*.lisp"))
+         (path (find-tool-output-text cwd "src/**/*.lisp"))
+         (src-star (find-tool-output-text cwd "src/*.lisp")))
+    (list
+     (find-tool-truth (string= empty "No files found matching pattern"))
+     (find-tool-line-count lisp)
+     (find-tool-line-count path)
+     (find-tool-line-count src-star)
+     4)))
+
+(defun run-find-make-tool ()
+  (let* ((cwd (ensure-find-tool-fixture))
+         (tool (cadr-cli::make-find-tool cwd))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list))))
+    (list
+     (find-tool-truth (string= (cadr-ai:tool-name tool) "find"))
+     (find-tool-truth
+      (and (search "Search for files by glob pattern"
+                   (cadr-ai:tool-description tool))
+           (search "Respects .gitignore"
+                   (cadr-ai:tool-description tool))))
+     (find-tool-truth
+      (and required-list
+           (find "pattern" required-list :test #'string=)))
+     3)))
+
+(defun measure-find-tool ()
+  (ensure-find-tool-fixture)
+  (destructuring-bind
+      (fpm-star-a fpm-star-src fpm-star-txt fpm-path-src fpm-path-root
+       fpm-src-star fpm-n)
+      (run-find-pattern-match)
+    (destructuring-bind (ff-empty ff-lisp ff-path ff-src-star ff-n)
+        (run-find-files)
+      (destructuring-bind (fmt-name fmt-desc fmt-req fmt-n)
+          (run-find-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "fpm_star_a" fpm-star-a
+          "fpm_star_src" fpm-star-src
+          "fpm_star_txt" fpm-star-txt
+          "fpm_path_src" fpm-path-src
+          "fpm_path_root" fpm-path-root
+          "fpm_src_star" fpm-src-star
+          "fpm_n" fpm-n
+          "ff_empty" ff-empty
+          "ff_lisp" ff-lisp
+          "ff_path" ff-path
+          "ff_src_star" ff-src-star
+          "ff_n" ff-n
+          "fmt_name" fmt-name
+          "fmt_desc" fmt-desc
+          "fmt_req" fmt-req
+          "fmt_n" fmt-n)
+         "pattern_match"
+         (collect "find_tool.pattern_match"
+                  (lambda ()
+                    (lambda ()
+                      (run-find-pattern-match))))
+         "find_files"
+         (collect "find_tool.find_files"
+                  (lambda ()
+                    (lambda ()
+                      (run-find-files))))
+         "make_tool"
+         (collect "find_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-find-make-tool)))))))))
+
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
 ;;; src/cadr-cli/output-accumulator.lisp (Pairs 280-282).
@@ -4405,6 +4824,141 @@
                   (lambda ()
                     (lambda ()
                       (run-output-accumulator-finish)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tool-manager.lisp (Pairs 292-294).
+;;; ---------------------------------------------------------------------
+
+(defun tm-truth (value)
+  (if value 1 0))
+
+(defun tm-write-stub (directory name)
+  (let ((path (merge-pathnames name (uiop:ensure-directory-pathname directory))))
+    (ensure-directories-exist path)
+    (with-open-file (stream path :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "stub" stream))
+    path))
+
+(defun tm-delete-if-exists (path)
+  (when (probe-file path)
+    (delete-file path)))
+
+(defun tm-with-empty-path (function)
+  (let ((previous (or (uiop:getenv "PATH") "")))
+    (unwind-protect
+         (progn
+           (sb-posix:setenv "PATH" "/nonexistent-goal20-tool-manager" 1)
+           (funcall function))
+      (sb-posix:setenv "PATH" previous 1))))
+
+(defun tm-local-binary-p (result name)
+  (and result
+       (plusp (length result))
+       (char= (char result 0) #\/)
+       (string= (file-namestring result) name)))
+
+(defun run-tool-manager-get-tool-path ()
+  (let* ((bin (cadr-core:agent-bin-directory))
+         (fd (progn
+               (ensure-directories-exist bin)
+               (tm-write-stub bin "fd")))
+         (rg (tm-write-stub bin "rg"))
+         (local-fd (cadr-cli:get-tool-path :fd :bin-directory bin))
+         (local-rg (cadr-cli:get-tool-path :rg :bin-directory bin)))
+    (tm-delete-if-exists fd)
+    (tm-delete-if-exists rg)
+    (let ((miss-fd
+            (tm-with-empty-path
+             (lambda ()
+               (cadr-cli:get-tool-path :fd :bin-directory bin))))
+          (miss-rg
+            (tm-with-empty-path
+             (lambda ()
+               (cadr-cli:get-tool-path :rg :bin-directory bin)))))
+      (list
+       (tm-truth (tm-local-binary-p local-fd "fd"))
+       (tm-truth (tm-local-binary-p local-rg "rg"))
+       (tm-truth (null miss-fd))
+       (tm-truth (null miss-rg))
+       4))))
+
+(defun run-tool-manager-ensure-tool ()
+  (let* ((bin (cadr-core:agent-bin-directory))
+         (fd-path (progn
+                    (ensure-directories-exist bin)
+                    (tm-write-stub bin "fd")))
+         (local (cadr-cli:ensure-tool :fd :silent-p t)))
+    (tm-delete-if-exists fd-path)
+    (let ((previous-offline (or (uiop:getenv "CADR_OFFLINE") ""))
+          (offline nil))
+      (unwind-protect
+           (progn
+             (sb-posix:setenv "CADR_OFFLINE" "1" 1)
+             (setf offline
+                   (tm-with-empty-path
+                    (lambda ()
+                      (cadr-cli:ensure-tool :fd :silent-p t)))))
+        (if (string= previous-offline "")
+            (sb-posix:unsetenv "CADR_OFFLINE")
+            (sb-posix:setenv "CADR_OFFLINE" previous-offline 1)))
+      (list
+       (tm-truth (tm-local-binary-p local "fd"))
+       (tm-truth (null offline))
+       2))))
+
+(defun run-tool-manager-cleanup-quarantine ()
+  (let* ((root (merge-pathnames "tool-manager-pkg/" *scratch-directory*))
+         (node-modules (merge-pathnames "node_modules/" root))
+         (pkg (merge-pathnames "pkg/" node-modules))
+         (quarantine (merge-pathnames ".cadr-native-quarantine/" node-modules))
+         (outside (merge-pathnames "no-modules/pkg/" *scratch-directory*)))
+    (ensure-directories-exist pkg)
+    (ensure-directories-exist quarantine)
+    (tm-write-stub quarantine "stale.bin")
+    (cadr-cli:cleanup-windows-self-update-quarantine pkg)
+    (let ((removed (tm-truth (not (probe-file quarantine)))))
+      (ensure-directories-exist outside)
+      (cadr-cli:cleanup-windows-self-update-quarantine outside)
+      (list removed 1 2))))
+
+(defun measure-tool-manager ()
+  (destructuring-bind (gtp-local-fd gtp-local-rg gtp-miss-fd gtp-miss-rg gtp-n)
+      (run-tool-manager-get-tool-path)
+    (destructuring-bind (et-local-fd et-offline-miss et-n)
+        (run-tool-manager-ensure-tool)
+      (destructuring-bind (cq-removed cq-noop cq-n)
+          (run-tool-manager-cleanup-quarantine)
+        (json-object
+         "observed"
+         (json-object
+          "gtp_local_fd" gtp-local-fd
+          "gtp_local_rg" gtp-local-rg
+          "gtp_miss_fd" gtp-miss-fd
+          "gtp_miss_rg" gtp-miss-rg
+          "gtp_n" gtp-n
+          "et_local_fd" et-local-fd
+          "et_offline_miss" et-offline-miss
+          "et_n" et-n
+          "cq_removed" cq-removed
+          "cq_noop" cq-noop
+          "cq_n" cq-n)
+         "get_tool_path"
+         (collect "tool_manager.get_tool_path"
+                  (lambda ()
+                    (lambda ()
+                      (run-tool-manager-get-tool-path))))
+         "ensure_tool"
+         (collect "tool_manager.ensure_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-tool-manager-ensure-tool))))
+         "cleanup_quarantine"
+         (collect "tool_manager.cleanup_quarantine"
+                  (lambda ()
+                    (lambda ()
+                      (run-tool-manager-cleanup-quarantine)))))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -14627,6 +15181,12 @@
       "src/cadr-agent/file-mutation-queue.lisp release-file-mutation-turn"
       "file_mutation_queue.ensure_state"
       "src/cadr-agent/file-mutation-queue.lisp ensure-file-mutation-queue-state"
+      "file_mutation_queue.call_with"
+      "src/cadr-agent/file-mutation-queue.lisp call-with-file-mutation-queue"
+      "file_mutation_queue.make_state"
+      "src/cadr-agent/file-mutation-queue.lisp make-file-mutation-queue-state"
+      "file_mutation_queue.state_key"
+      "src/cadr-agent/file-mutation-queue.lisp file-mutation-queue-state-key"
       "harness_events.emit"
       "src/cadr-agent/harness-events.lisp harness-event-bus-emit"
       "bash_tool.strip_exit_footer"
@@ -14641,6 +15201,24 @@
       "src/cadr-cli/output-accumulator.lisp output-accumulator-snapshot"
       "output_accumulator.finish"
       "src/cadr-cli/output-accumulator.lisp output-accumulator-finish"
+      "harness_events.on"
+      "src/cadr-agent/harness-events.lisp harness-event-bus-on"
+      "harness_events.watch"
+      "src/cadr-agent/harness-events.lisp harness-event-bus-watch"
+      "harness_events.make_start"
+      "src/cadr-agent/harness-events.lisp make-run-start-event"
+      "find_tool.pattern_match"
+      "src/cadr-cli/tools/find.lisp find-pattern-match-p"
+      "find_tool.find_files"
+      "src/cadr-cli/tools/find.lisp find-files"
+      "find_tool.make_tool"
+      "src/cadr-cli/tools/find.lisp make-find-tool"
+      "tool_manager.get_tool_path"
+      "src/cadr-cli/tool-manager.lisp get-tool-path"
+      "tool_manager.ensure_tool"
+      "src/cadr-cli/tool-manager.lisp ensure-tool"
+      "tool_manager.cleanup_quarantine"
+      "src/cadr-cli/tool-manager.lisp cleanup-windows-self-update-quarantine"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -15237,13 +15815,19 @@
               (format *error-output* "goal20 cadr paired paths: file_mutation_queue~%")
               (let ((file-mutation-queue (measure-file-mutation-queue))
                     (harness-events nil)
-                    (bash-tool nil))
+                    (bash-tool nil)
+                    (find-tool nil)
+                    (tool-manager nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
               (setf bash-tool (measure-bash-tool))
               (format *error-output* "goal20 cadr paired paths: output_accumulator~%")
               (let ((output-accumulator (measure-output-accumulator)))
+              (format *error-output* "goal20 cadr paired paths: find_tool~%")
+              (setf find-tool (measure-find-tool))
+              (format *error-output* "goal20 cadr paired paths: tool_manager~%")
+              (setf tool-manager (measure-tool-manager))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -15380,6 +15964,8 @@
               "harness_events" harness-events
               "bash_tool" bash-tool
               "output_accumulator" output-accumulator
+              "find_tool" find-tool
+              "tool_manager" tool-manager
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html

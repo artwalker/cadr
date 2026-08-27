@@ -9,6 +9,68 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.call_with` (`call-with-file-mutation-queue` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue` as a
+  function). Observed `fmqf_alias` / `fmqf_other` / `fmqf_fifo` / `fmqf_run` /
+  `fmqf_n` exact. n=5 **0.523×** (124.1 / 237.4 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13: pair `file_mutation_queue.make_state` (`make-file-mutation-queue-state` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue-state object construction).
+  Observed `fmqm_pending` / `fmqm_ticket` / `fmqm_serving` / `fmqm_other` /
+  `fmqm_n` exact. n=5 **1.597×** (105.7 / 66.2 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13: pair `file_mutation_queue.state_key` (`file-mutation-queue-state-key` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.key` after
+  get-or-create). Observed `fmqt_alias` / `fmqt_other` / `fmqt_missing` /
+  `fmqt_repeat` / `fmqt_n` exact. n=5 **1.009×** (134.3 / 133.1 µs) on host `cursor`,
+  ceiling 8.0. Measure-only. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `harness_events.on` (`harness-event-bus-on` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.on`).
+  Observed `heon_off` / `heon_keep` / `heon_type` exact.
+  n=5 **0.325×** (0.58 / 1.79 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13: pair `harness_events.watch` (`harness-event-bus-watch` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.watch`).
+  Observed `hew_snap` / `hew_count` / `hew_start` / `hew_end` exact.
+  n=5 **0.250×** (0.57 / 2.27 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13: pair `harness_events.make_start` (`make-run-start-event` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `RunStartEvent` object).
+  Observed `hes_type` / `hes_lane` / `hes_run` exact.
+  n=5 **1.18×** (0.14 / 0.12 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13: pair `find_tool.pattern_match` (`find-pattern-match-p` on
+  `src/cadr-cli/tools/find.lisp` vs baseline basename vs path-containing glob
+  match in `packages/coding-agent/src/core/tools/find.ts`). Observed
+  `fpm_star_a` / `fpm_star_src` / `fpm_star_txt` / `fpm_path_src` /
+  `fpm_path_root` / `fpm_src_star` / `fpm_n` exact.
+  n=5 **7.16×** (30.5 / 4.26 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `find_tool.find_files` (`find-files` on
+  `src/cadr-cli/tools/find.lisp` vs baseline find execute output assembly +
+  `relativizeFindResultPath`). Observed `ff_empty` / `ff_lisp` / `ff_path` /
+  `ff_src_star` / `ff_n` exact.
+  n=5 **3.44×** (633.4 / 184.1 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `find_tool.make_tool` (`make-find-tool` on
+  `src/cadr-cli/tools/find.lisp` vs baseline `createFindToolDefinition`).
+  Observed `fmt_name` / `fmt_desc` / `fmt_req` / `fmt_n` exact.
+  n=5 **1.41×** (131.9 / 93.3 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `tool_manager.get_tool_path` / `ensure_tool` /
+  `cleanup_quarantine` (`src/cadr-cli/tool-manager.lisp` vs baseline
+  `getToolPath` / `ensureTool` / `cleanupWindowsSelfUpdateQuarantine`).
+  Observed `gtp_*` / `et_*` / `cq_*` exact. n=5 **0.014×** / **0.013×** /
+  **1.365×** (107.8 / 7742.0 µs, 65.1 / 5129.9 µs, 120.1 / 88.0 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not these metrics. Pair 294 is on the
+  over-1× ledger. Pairs 292–294.
 - Goal 20 P.13: pair `provider_registry_defs.merge_environment` (`merge-provider-environment` on
   `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getProviderEnvValue`).
   Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` exact.

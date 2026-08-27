@@ -344,6 +344,129 @@
      "branch": "cursor/pair-280-282-output-accumulator-7ccd"
     },
     {
+     "pair": 283,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/harness-events.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "harness_events.on",
+     "branch": "cursor/pair-283-285-harness-events-1bde"
+    },
+    {
+     "pair": 284,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/harness-events.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "harness_events.watch",
+     "branch": "cursor/pair-283-285-harness-events-1bde"
+    },
+    {
+     "pair": 285,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/harness-events.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "harness_events.make_start",
+     "branch": "cursor/pair-283-285-harness-events-1bde"
+    },
+    {
+     "pair": 286,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.call_with",
+     "branch": "cursor/pair-286-288-fmq-leftover-150d",
+     "ratio": 0.523,
+     "cadrUs": 124.1,
+     "piUs": 237.4,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 287,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.make_state",
+     "branch": "cursor/pair-286-288-fmq-leftover-150d",
+     "ratio": 1.597,
+     "cadrUs": 105.7,
+     "piUs": 66.2,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 288,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.state_key",
+     "branch": "cursor/pair-286-288-fmq-leftover-150d",
+     "ratio": 1.009,
+     "cadrUs": 134.3,
+     "piUs": 133.1,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 289,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-cli/tools/find.lisp",
+     "measure": "measure-find-tool",
+     "metric": "find_tool.pattern_match",
+     "branch": "cursor/pair-289-291-find-leftovers-c98c"
+    },
+    {
+     "pair": 290,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-cli/tools/find.lisp",
+     "measure": "measure-find-tool",
+     "metric": "find_tool.find_files",
+     "branch": "cursor/pair-289-291-find-leftovers-c98c"
+    },
+    {
+     "pair": 291,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-cli/tools/find.lisp",
+     "measure": "measure-find-tool",
+     "metric": "find_tool.make_tool",
+     "branch": "cursor/pair-289-291-find-leftovers-c98c"
+    },
+    {
+     "pair": 292,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/tool-manager.lisp",
+     "measure": "measure-tool-manager",
+     "metric": "tool_manager.get_tool_path",
+     "branch": "cursor/pair-292-294-tool-manager-af5e"
+    },
+    {
+     "pair": 293,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/tool-manager.lisp",
+     "measure": "measure-tool-manager",
+     "metric": "tool_manager.ensure_tool",
+     "branch": "cursor/pair-292-294-tool-manager-af5e"
+    },
+    {
+     "pair": 294,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/tool-manager.lisp",
+     "measure": "measure-tool-manager",
+     "metric": "tool_manager.cleanup_quarantine",
+     "branch": "cursor/pair-292-294-tool-manager-af5e"
+    },
+    {
      "pair": 295,
      "lane": "a",
      "status": "done",
