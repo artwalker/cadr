@@ -3181,7 +3181,9 @@ Leftover sibling of Pair 261 `with_queue`, Pair 270 `queue_key`, Pair 271
 sibling) — not fn, not `with-file-mutation-queue`, not write/edit tools.
 Same staged scratch layout as `with_queue`. Observed `fmqe_serving` /
 `fmqe_pending` / `fmqe_other` / `fmqe_missing` / `fmqe_n` are exact.
-First n=5 freeze pending. Gate used `--only-enforce`. Same commit no
+First n=5 freeze **0.918×** (155.2 / 169.1 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)

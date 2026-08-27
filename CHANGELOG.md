@@ -13,7 +13,8 @@ tag/Release step.
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
   finally / pending-- / delete-when-empty after wait). Observed `fmqe_serving` /
   `fmqe_pending` / `fmqe_other` / `fmqe_missing` / `fmqe_n` exact.
-  Measure-only. Freeze numbers in a follow-up commit.
+  n=5 **0.918×** (155.2 / 169.1 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.wait_turn` (`wait-for-file-mutation-turn` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
   await-current / ticket wait after enqueue). Observed `fmqw_serving` /
