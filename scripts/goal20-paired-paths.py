@@ -133,7 +133,7 @@ METRICS = {
         "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "argument_prefix", "parse_arguments", "validate_smoke"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
@@ -520,6 +520,11 @@ RATIO_CEILINGS = {
     "evals_harness.resolve_selection": 8.0,
     "evals_harness.transcript": 8.0,
     "evals_harness.last_assistant": 8.0,
+    # evals_harness leftover trio on main.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "evals_harness.argument_prefix": 8.0,
+    "evals_harness.parse_arguments": 8.0,
+    "evals_harness.validate_smoke": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -1992,6 +1997,23 @@ OBSERVED_EXACT = {
         "la_none",
         "la_full",
         "la_n",
+        "apr_val",
+        "apr_empty",
+        "apr_miss",
+        "apr_model",
+        "apr_n",
+        "pa_space",
+        "pa_eq",
+        "pa_mix",
+        "pa_miss",
+        "pa_empty",
+        "pa_unknown",
+        "pa_n",
+        "vs_ok",
+        "vs_trim",
+        "vs_city",
+        "vs_tok",
+        "vs_n",
     ),
     "ai_crypto_model_data": (
         "schema_version",

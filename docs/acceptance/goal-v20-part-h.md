@@ -3973,6 +3973,44 @@ on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
 from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 400 — `evals_harness` (argument_prefix)
+
+| metric | cadr | pi |
+|---|---|---|
+| `argument_prefix` | `argument-after-prefix` (`src/cadr-evals/main.lisp`) | startsWith+slice (`packages/evals/scripts/run-evals.mjs`) |
+
+Leftover sibling of the `evals_harness` hole on `src/cadr-evals/main.lisp`.
+Timed work is `--flag=` suffix slice (value / empty prefix / miss / model)
+— not `parse-eval-arguments`, not a live eval run. Empty suffix stays
+unknown. Observed `apr_val` / `apr_empty` / `apr_miss` / `apr_model` / `apr_n`
+are exact. First n=5 freeze pending. Ceiling 8.0. Same commit no optimize.
+
+### Pair 401 — `evals_harness` (parse_arguments)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_arguments` | `parse-eval-arguments` (`src/cadr-evals/main.lisp`) | argv loop (`packages/evals/scripts/run-evals.mjs`) |
+
+Leftover sibling of Pair 400 `argument_prefix` on the same `evals_harness`
+hole in `src/cadr-evals/main.lisp`. Timed work is space/equals
+`--provider`/`--model`, cadr `--suite=` (default smoke), missing/empty/unknown
+errors — not `%eval-main`, not vitest spawn. Do not exact error copy.
+Observed `pa_space` / `pa_eq` / `pa_mix` / `pa_miss` / `pa_empty` /
+`pa_unknown` / `pa_n` are exact. First n=5 freeze pending. Ceiling 8.0.
+Same commit no optimize.
+
+### Pair 402 — `evals_harness` (validate_smoke)
+
+| metric | cadr | pi |
+|---|---|---|
+| `validate_smoke` | `validate-smoke-result` (`src/cadr-evals/main.lisp`) | `expect(result.output.trim()).toBe("Paris")` + `totalTokens>0` (`packages/evals/src/smoke.eval.ts`) |
+
+Leftover sibling of Pairs 400–401 on the same `evals_harness` hole in
+`src/cadr-evals/main.lisp`. Timed work is Paris trim + token usage on a
+constructed result — not `run-smoke-eval`, not a live provider. Observed
+`vs_ok` / `vs_trim` / `vs_city` / `vs_tok` / `vs_n` are exact. First n=5
+freeze pending. Ceiling 8.0. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4633,6 +4671,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-core/threads.lisp` | 47 | `core_rest.threads_cleanup` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
+| `src/cadr-evals/main.lisp` | 158 | `evals_harness.argument_prefix`, `evals_harness.parse_arguments`, `evals_harness.validate_smoke` |
 | `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize`, `evals_harness.format` |
 | `src/cadr-protocol/cbor.lisp` | 492 | `protocol_cbor.roundtrip` |
 | `src/cadr-protocol/codec.lisp` | 121 | `protocol_codec.roundtrip` |

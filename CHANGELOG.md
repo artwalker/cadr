@@ -9,6 +9,18 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.argument_prefix` (`argument-after-prefix`
+  on `src/cadr-evals/main.lisp` vs baseline `run-evals.mjs` startsWith+slice).
+  Observed `apr_val` / `apr_empty` / `apr_miss` / `apr_model` / `apr_n` exact.
+  n=5 freeze pending. Ceiling 8.0. Measure-only.
+- Goal 20 P.13: pair `evals_harness.parse_arguments` (`parse-eval-arguments`
+  on `src/cadr-evals/main.lisp` vs baseline `run-evals.mjs` argv loop).
+  Observed `pa_space` / `pa_eq` / `pa_mix` / `pa_miss` / `pa_empty` /
+  `pa_unknown` / `pa_n` exact. n=5 freeze pending. Ceiling 8.0. Measure-only.
+- Goal 20 P.13: pair `evals_harness.validate_smoke` (`validate-smoke-result`
+  on `src/cadr-evals/main.lisp` vs baseline `smoke.eval.ts` Paris/tokens).
+  Observed `vs_ok` / `vs_trim` / `vs_city` / `vs_tok` / `vs_n` exact.
+  n=5 freeze pending. Ceiling 8.0. Measure-only.
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.

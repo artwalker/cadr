@@ -229,6 +229,9 @@ const REPETITIONS = {
 	"evals_harness.resolve_selection": 50,
 	"evals_harness.transcript": 50,
 	"evals_harness.last_assistant": 50,
+	"evals_harness.argument_prefix": 50,
+	"evals_harness.parse_arguments": 50,
+	"evals_harness.validate_smoke": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5641,6 +5644,144 @@ function runEvalsHarnessLastAssistant() {
 	};
 }
 
+function argumentAfterPrefix(argument, prefix) {
+	if (argument.length > prefix.length && argument.startsWith(prefix)) {
+		return argument.slice(prefix.length);
+	}
+	return undefined;
+}
+
+function runEvalsHarnessArgumentPrefix() {
+	return {
+		apr_val: argumentAfterPrefix("--provider=openai", "--provider=") === "openai" ? 1 : 0,
+		apr_empty: argumentAfterPrefix("--provider=", "--provider=") === undefined ? 1 : 0,
+		apr_miss: argumentAfterPrefix("--model=x", "--provider=") === undefined ? 1 : 0,
+		apr_model: argumentAfterPrefix("--model=m", "--model=") === "m" ? 1 : 0,
+		apr_n: 4,
+	};
+}
+
+function parseEvalArguments(argumentsList) {
+	const args = [...argumentsList];
+	let provider;
+	let model;
+	let suite = "smoke";
+	while (args.length > 0) {
+		const argument = args.shift();
+		if (argument === "--provider") {
+			if (args.length === 0) throw new Error("Missing value for --provider");
+			provider = args.shift();
+			continue;
+		}
+		if (argument === "--model") {
+			if (args.length === 0) throw new Error("Missing value for --model");
+			model = args.shift();
+			continue;
+		}
+		if (argument === "--suite") {
+			if (args.length === 0) throw new Error("Missing value for --suite");
+			suite = args.shift();
+			continue;
+		}
+		const providerEq = argumentAfterPrefix(argument, "--provider=");
+		if (providerEq !== undefined) {
+			provider = providerEq;
+			continue;
+		}
+		const modelEq = argumentAfterPrefix(argument, "--model=");
+		if (modelEq !== undefined) {
+			model = modelEq;
+			continue;
+		}
+		const suiteEq = argumentAfterPrefix(argument, "--suite=");
+		if (suiteEq !== undefined) {
+			suite = suiteEq;
+			continue;
+		}
+		throw new Error(`Unknown eval argument: ${argument}`);
+	}
+	return { provider, model, suite };
+}
+
+function evalParseOk(argumentsList, expectedProvider, expectedModel, expectedSuite) {
+	try {
+		const parsed = parseEvalArguments(argumentsList);
+		return parsed.provider === expectedProvider &&
+			parsed.model === expectedModel &&
+			parsed.suite === expectedSuite
+			? 1
+			: 0;
+	} catch {
+		return 0;
+	}
+}
+
+function evalParseError(argumentsList) {
+	try {
+		parseEvalArguments(argumentsList);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runEvalsHarnessParseArguments() {
+	return {
+		pa_space: evalParseOk(
+			["--provider", "openai", "--model", "gpt-4o"],
+			"openai",
+			"gpt-4o",
+			"smoke",
+		),
+		pa_eq: evalParseOk(
+			["--provider=openai", "--model=gpt-4o"],
+			"openai",
+			"gpt-4o",
+			"smoke",
+		),
+		pa_mix: evalParseOk(
+			["--provider", "p", "--model=m", "--suite=smoke"],
+			"p",
+			"m",
+			"smoke",
+		),
+		pa_miss: evalParseError(["--provider"]),
+		pa_empty: evalParseError(["--provider="]),
+		pa_unknown: evalParseError(["nope"]),
+		pa_n: 6,
+	};
+}
+
+function validateSmokeResult(result) {
+	const trimmed = String(result.output ?? "").replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
+	if (trimmed !== "Paris") {
+		throw new Error("Smoke eval expected Paris");
+	}
+	if (!(result.usage?.totalTokens > 0)) {
+		throw new Error("Smoke eval reported no token usage");
+	}
+	return result;
+}
+
+function evalValidateSmokeOk(output, tokens) {
+	try {
+		validateSmokeResult({ output, usage: { totalTokens: tokens } });
+		return 1;
+	} catch {
+		return 0;
+	}
+}
+
+function runEvalsHarnessValidateSmoke() {
+	return {
+		vs_ok: evalValidateSmokeOk("Paris", 12),
+		vs_trim: evalValidateSmokeOk(" Paris\n", 3),
+		vs_city: evalValidateSmokeOk("London", 12) === 0 ? 1 : 0,
+		vs_tok: evalValidateSmokeOk("Paris", 0) === 0 ? 1 : 0,
+		vs_n: 4,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5655,6 +5796,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessResolveSelection(),
 		...runEvalsHarnessTranscript(),
 		...runEvalsHarnessLastAssistant(),
+		...runEvalsHarnessArgumentPrefix(),
+		...runEvalsHarnessParseArguments(),
+		...runEvalsHarnessValidateSmoke(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5680,6 +5824,15 @@ async function measureEvalsHarness() {
 		}),
 		last_assistant: await collect("evals_harness.last_assistant", () => {
 			return () => runEvalsHarnessLastAssistant();
+		}),
+		argument_prefix: await collect("evals_harness.argument_prefix", () => {
+			return () => runEvalsHarnessArgumentPrefix();
+		}),
+		parse_arguments: await collect("evals_harness.parse_arguments", () => {
+			return () => runEvalsHarnessParseArguments();
+		}),
+		validate_smoke: await collect("evals_harness.validate_smoke", () => {
+			return () => runEvalsHarnessValidateSmoke();
 		}),
 		observed,
 	};
@@ -16850,6 +17003,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts toTranscriptEvents",
 			"evals_harness.last_assistant":
 				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
+			"evals_harness.argument_prefix":
+				"packages/evals/scripts/run-evals.mjs startsWith+slice --provider=/--model=",
+			"evals_harness.parse_arguments":
+				"packages/evals/scripts/run-evals.mjs argv loop (--provider/--model; cadr --suite default smoke)",
+			"evals_harness.validate_smoke":
+				"packages/evals/src/smoke.eval.ts expect Paris + totalTokens>0",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
