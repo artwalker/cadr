@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "expected_findings": 1250,
+  "expected_findings": 1231,
   "allow": [
     {
       "path": "CHANGELOG.md",
@@ -2801,118 +2801,6 @@
       "line": "     ;; User 2026-08-18 17:47: do not sleep 0.3 to mimic pi.",
       "occurrences": 1,
       "reason": "Recorded baseline product token in parity, migration, or audit tooling; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair260-apply-docs.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "| metric | cadr | pi |",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair260-complete.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "                f\"First Friend-MachineD freeze **{ratio:.2f}\u00d7** ({cadr:.1f} / {pi:.1f} \u00b5s), ceiling 8.0.\",",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair260-complete.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "            ratio, cadr, pi = entry[\"ratio\"], entry[\"cadrMedianUs\"], entry[\"baselineMedianUs\"]",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair260-complete.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "| metric | cadr | pi |",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair260-patch.py",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "| metric | cadr | pi |",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-final.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "src/cadr-agent/harness-events.lisp vs pi HarnessEventBus.",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-lane-c.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "    changelog = changelog.replace(\"## [Unreleased]\\n\\n### Fixed\\n\\n\", \"## [Unreleased]\\n\\n### Fixed\\n\\n- Goal 20 P.13: pair `agent_tool_loop.harness_events` (harness run\\n  lifecycle event bus on/emit/watch; cadr `harness-event-bus-*` vs pi\\n  `HarnessEventBus`). Friend-MachineD n=5 **RATIO_PLACEHOLDER**, ceiling 8.0.\\n  Measure-only.\\n\\n\")",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-lane-c.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "mjs = mjs.replace('const cliSettings = await measureCliSettings();\\nprocess.stderr.write(\"goal20 pi paired paths: agent_conditions','const cliSettings = await measureCliSettings();\\nprocess.stderr.write(\"goal20 pi paired paths: harness_events\\\\n\");\\nconst harnessEvents = await measureHarnessEvents();\\nprocess.stderr.write(\"goal20 pi paired paths: agent_conditions')",
-      "occurrences": 3,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-lane-c.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "src/cadr-agent/harness-events.lisp vs pi HarnessEventBus.",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-lane-c.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "| metric | cadr | pi |",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-run.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "    changelog = changelog.replace(\"## [Unreleased]\\n\\n### Fixed\\n\\n\", \"## [Unreleased]\\n\\n### Fixed\\n\\n- Goal 20 P.13: pair `agent_tool_loop.harness_events` (harness run\\n  lifecycle event bus on/emit/watch; cadr `harness-event-bus-*` vs pi\\n  `HarnessEventBus`). Friend-MachineD n=5 **RATIO_PLACEHOLDER**, ceiling 8.0.\\n  Measure-only.\\n\\n\")",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-run.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "mjs = mjs.replace('const cliSettings = await measureCliSettings();\\nprocess.stderr.write(\"goal20 pi paired paths: agent_conditions','const cliSettings = await measureCliSettings();\\nprocess.stderr.write(\"goal20 pi paired paths: harness_events\\\\n\");\\nconst harnessEvents = await measureHarnessEvents();\\nprocess.stderr.write(\"goal20 pi paired paths: agent_conditions')",
-      "occurrences": 3,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-run.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "src/cadr-agent/harness-events.lisp vs pi HarnessEventBus.",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
-    },
-    {
-      "path": "scripts/.pair262-run.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "| metric | cadr | pi |",
-      "occurrences": 1,
-      "reason": "Goal 21 operator harness names the baseline product in orchestration prose; not shipped runtime identity."
     },
     {
       "path": "scripts/baseline-anchor.py",
@@ -5951,14 +5839,6 @@
       "kind": "pi-token",
       "token": "pi",
       "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-director-conflict-dispatch.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "SPEC=\"$PROJECT_DIRECTORY/docs/acceptance/goal21-pi-0843-alignment.md\"",
       "occurrences": 1,
       "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
     },
