@@ -13,7 +13,8 @@ tag/Release step.
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
   await-current / ticket wait after enqueue). Observed `fmqw_serving` /
   `fmqw_pending` / `fmqw_other` / `fmqw_missing` / `fmqw_n` exact.
-  Measure-only; freeze numbers follow the `--only-enforce` run.
+  n=5 **0.767×** (101.7 / 132.5 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.register` (`register-file-mutation` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
   ticket enqueue after the same key encoding). Observed `fmqr_alias` /

@@ -3181,7 +3181,9 @@ missing path, distinct sibling) — not fn/release, not
 `with-file-mutation-queue`, not write/edit tools. Same staged scratch
 layout as `with_queue`. Observed `fmqw_serving` / `fmqw_pending` /
 `fmqw_other` / `fmqw_missing` / `fmqw_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+**0.767×** (101.7 / 132.5 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 257 — `execution_env` (exists_remove_temps)
 

@@ -256,7 +256,7 @@
     {
      "pair": 273,
      "lane": "a",
-     "status": "in_progress",
+     "status": "done",
      "source": "src/cadr-agent/file-mutation-queue.lisp",
      "measure": "measure-agent-tool-loop",
      "metric": "file_mutation_queue.wait_turn",
