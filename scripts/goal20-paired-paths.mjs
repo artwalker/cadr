@@ -49,7 +49,7 @@ import {
 	symlinkSync,
 	unlinkSync,
 } from "node:fs";
-import { realpath } from "node:fs/promises";
+import { mkdir as fsMkdir, realpath, writeFile as fsWriteFile } from "node:fs/promises";
 import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
@@ -171,6 +171,9 @@ const REPETITIONS = {
 	"find_tool.pattern_match": 50,
 	"find_tool.find_files": 50,
 	"find_tool.make_tool": 50,
+	"write_tool.ensure_parent": 50,
+	"write_tool.write_utf8": 50,
+	"write_tool.make_tool": 50,
 	"tool_manager.get_tool_path": 50,
 	"tool_manager.ensure_tool": 50,
 	"tool_manager.cleanup_quarantine": 50,
@@ -712,6 +715,7 @@ const outputAccumulatorModule = await import(
 );
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
+const writeModule = await import(moduleUrl("packages/coding-agent/src/core/tools/write.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const fileMutationQueueModule = await import(
@@ -2982,6 +2986,124 @@ async function measureFindTool() {
 		observed: {
 			...patternObserved,
 			...filesObserved,
+			...makeObserved,
+		},
+	};
+}
+const WRITE_TOOL_CWD = path.join(tmpdir(), "goal20-write-tool-cwd");
+
+function writeToolPath(relative) {
+	return path.join(WRITE_TOOL_CWD, relative);
+}
+
+function ensureWriteToolFixture() {
+	mkdirSync(path.join(WRITE_TOOL_CWD, "nested", "deep"), { recursive: true });
+	mkdirSync(path.join(WRITE_TOOL_CWD, "existing"), { recursive: true });
+	return WRITE_TOOL_CWD;
+}
+
+async function runWriteEnsureParent() {
+	ensureWriteToolFixture();
+	const nested = writeToolPath("nested/deep/a.txt");
+	const existing = writeToolPath("existing/b.txt");
+	const blocker = writeToolPath("blocker");
+	const blocked = writeToolPath("blocker/c.txt");
+	try {
+		unlinkSync(blocker);
+	} catch {
+		// missing is fine
+	}
+	let nestedOk = 0;
+	let existsOk = 0;
+	let eexist = 0;
+	try {
+		await fsMkdir(path.dirname(nested), { recursive: true });
+		nestedOk = 1;
+	} catch {
+		nestedOk = 0;
+	}
+	try {
+		await fsMkdir(path.dirname(existing), { recursive: true });
+		existsOk = 1;
+	} catch {
+		existsOk = 0;
+	}
+	writeFileSync(blocker, "file", "utf8");
+	try {
+		await fsMkdir(path.dirname(blocked), { recursive: true });
+		eexist = 0;
+	} catch {
+		eexist = 1;
+	}
+	return {
+		ep_nested: nestedOk,
+		ep_exists: existsOk,
+		ep_eexist: eexist,
+		ep_n: 3,
+	};
+}
+
+async function runWriteUtf8() {
+	ensureWriteToolFixture();
+	const asciiPath = writeToolPath("out-ascii.txt");
+	const cjkPath = writeToolPath("out-cjk.txt");
+	const asciiText = "hello";
+	const cjkText = "中🙂";
+	await fsWriteFile(asciiPath, asciiText, "utf-8");
+	await fsWriteFile(cjkPath, cjkText, "utf-8");
+	return {
+		wu_ok: existsSync(asciiPath) ? 1 : 0,
+		wu_ascii: asciiText.length,
+		wu_cjk: cjkText.length,
+		wu_n: 3,
+	};
+}
+
+function writeSchemaRequired(def) {
+	const params = def?.parameters;
+	if (Array.isArray(params?.required)) return params.required;
+	if (Array.isArray(params?.Required)) return params.Required;
+	const properties = params?.properties;
+	if (properties && typeof properties === "object") return Object.keys(properties);
+	return [];
+}
+
+function runWriteMakeTool() {
+	const cwd = ensureWriteToolFixture();
+	const def = writeModule.createWriteToolDefinition(cwd);
+	const required = writeSchemaRequired(def);
+	const description = def.description ?? "";
+	return {
+		wmt_name: def.name === "write" ? 1 : 0,
+		wmt_desc:
+			description.includes("Write content to a file") &&
+			description.includes("Automatically creates parent directories")
+				? 1
+				: 0,
+		wmt_req:
+			required.includes("path") && required.includes("content") ? 1 : 0,
+		wmt_n: 3,
+	};
+}
+
+async function measureWriteTool() {
+	ensureWriteToolFixture();
+	const parentObserved = await runWriteEnsureParent();
+	const utf8Observed = await runWriteUtf8();
+	const makeObserved = runWriteMakeTool();
+	return {
+		ensure_parent: await collect("write_tool.ensure_parent", () => {
+			return () => runWriteEnsureParent();
+		}),
+		write_utf8: await collect("write_tool.write_utf8", () => {
+			return () => runWriteUtf8();
+		}),
+		make_tool: await collect("write_tool.make_tool", () => {
+			return () => runWriteMakeTool();
+		}),
+		observed: {
+			...parentObserved,
+			...utf8Observed,
 			...makeObserved,
 		},
 	};
@@ -15683,6 +15805,8 @@ const bashTool = await measureBashTool();
 const outputAccumulator = await measureOutputAccumulator();
 process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
+process.stderr.write("goal20 pi paired paths: write_tool\n");
+const writeTool = await measureWriteTool();
 process.stderr.write("goal20 pi paired paths: tool_manager\n");
 const toolManager = await measureToolManager();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
@@ -15862,6 +15986,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
 			"find_tool.make_tool":
 				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
+			"write_tool.ensure_parent":
+				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.mkdir (fs.mkdir recursive)",
+			"write_tool.write_utf8":
+				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.writeFile (fs.writeFile utf-8)",
+			"write_tool.make_tool":
+				"packages/coding-agent/src/core/tools/write.ts createWriteToolDefinition",
 			"tool_manager.get_tool_path":
 				"packages/coding-agent/src/utils/tools-manager.ts getToolPath",
 			"tool_manager.ensure_tool":
@@ -16420,6 +16550,7 @@ const result = {
 		bash_tool: bashTool,
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
+		write_tool: writeTool,
 		tool_manager: toolManager,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,

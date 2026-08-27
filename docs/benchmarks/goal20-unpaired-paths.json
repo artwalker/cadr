@@ -178,7 +178,10 @@
   "output_accumulator.finish",
   "tool_manager.get_tool_path",
   "tool_manager.ensure_tool",
-  "tool_manager.cleanup_quarantine"
+  "tool_manager.cleanup_quarantine",
+  "write_tool.ensure_parent",
+  "write_tool.write_utf8",
+  "write_tool.make_tool"
  ],
  "unpairablePaths": [
   {
@@ -1738,8 +1741,12 @@
   },
   {
    "prefix": "src/cadr-cli/tools/write.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": [
+    "write_tool.ensure_parent",
+    "write_tool.write_utf8",
+    "write_tool.make_tool"
+   ]
   },
   {
    "prefix": "src/cadr-core/atomic-file.lisp",

@@ -3625,6 +3625,43 @@ freeze **1.351×** (0.344 / 0.255 µs) on host `cursor`, ceiling 8.0. Gate
 used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
 `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
+### Pair 343 — `write_tool` (ensure_parent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ensure_parent` | `ensure-write-parent-directories` (`src/cadr-cli/tools/write.lisp`) | `defaultWriteOperations.mkdir` / `fs.mkdir` recursive (`packages/coding-agent/src/core/tools/write.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/write.lisp`.
+Timed work is parent mkdir (nested create / already-a-directory / parent-is-file
+error) — not `write-utf8-file`, not `make-write-tool`, not execute / queue /
+result copy. Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` are
+exact. Measure-only; freeze numbers in a follow-up docs commit. Pair numbers
+316–342 belong to other lanes; this cut is 343–345 only.
+
+### Pair 344 — `write_tool` (write_utf8)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_utf8` | `write-utf8-file` (`src/cadr-cli/tools/write.lisp`) | `defaultWriteOperations.writeFile` / `fs.writeFile` utf-8 (`packages/coding-agent/src/core/tools/write.ts`) |
+
+Leftover sibling of Pair 343 `ensure_parent` on the same `write.lisp`
+`agent_tool_loop` hole. Timed work is UTF-8 write of ASCII `hello` plus CJK/emoji
+`中🙂` into an existing parent — not mkdir as the timed owner, not execute.
+Observed `wu_ok` / `wu_ascii` / `wu_cjk` / `wu_n` are exact. Measure-only;
+freeze numbers in a follow-up docs commit.
+
+### Pair 345 — `write_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-write-tool` (`src/cadr-cli/tools/write.lisp`) | `createWriteToolDefinition` (`packages/coding-agent/src/core/tools/write.ts`) |
+
+Leftover sibling of Pair 343 `ensure_parent` and Pair 344 `write_utf8` on the
+same `write.lisp` `agent_tool_loop` hole. Timed work is tool name / description /
+required `path`+`content` — not execute. Observed `wmt_name` / `wmt_desc` /
+`wmt_req` / `wmt_n` are exact. Measure-only; freeze numbers in a follow-up docs
+commit.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4279,6 +4316,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
+| `src/cadr-cli/tools/write.lisp` | 70 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |

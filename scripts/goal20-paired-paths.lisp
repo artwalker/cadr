@@ -121,6 +121,9 @@
 ;;;; 289. find_tool pattern match vs find-pattern-match-p
 ;;;; 290. find_tool find-files vs find.ts execute output assembly
 ;;;; 291. find_tool make-find-tool vs createFindToolDefinition
+;;;; 343. write_tool ensure-write-parent-directories vs defaultWriteOperations.mkdir
+;;;; 344. write_tool write-utf8-file vs defaultWriteOperations.writeFile
+;;;; 345. write_tool make-write-tool vs createWriteToolDefinition
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
@@ -296,6 +299,9 @@
     ("find_tool.pattern_match" . 50)
     ("find_tool.find_files" . 50)
     ("find_tool.make_tool" . 50)
+    ("write_tool.ensure_parent" . 50)
+    ("write_tool.write_utf8" . 50)
+    ("write_tool.make_tool" . 50)
     ("tool_manager.get_tool_path" . 50)
     ("tool_manager.ensure_tool" . 50)
     ("tool_manager.cleanup_quarantine" . 50)
@@ -4793,6 +4799,142 @@
                   (lambda ()
                     (lambda ()
                       (run-find-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tools/write.lisp (Pairs 343-345).
+;;; Timed owners: ensure-write-parent-directories, write-utf8-file,
+;;; make-write-tool — not tool execute / mutation queue / result copy.
+;;; ---------------------------------------------------------------------
+
+(defun write-tool-truth (value)
+  (if value 1 0))
+
+(defparameter *write-tool-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-write-tool-cwd")))
+
+(defun write-tool-root ()
+  (uiop:ensure-directory-pathname *write-tool-cwd*))
+
+(defun write-tool-path (relative)
+  (merge-pathnames relative (write-tool-root)))
+
+(defun ensure-write-tool-fixture ()
+  (let ((root (write-tool-root)))
+    (ensure-directories-exist (merge-pathnames "nested/deep/" root))
+    (ensure-directories-exist (merge-pathnames "existing/" root))
+    *write-tool-cwd*))
+
+(defun run-write-ensure-parent ()
+  ;; Nested mkdir, already-a-directory, parent-is-file error.
+  ;; Not write-utf8-file, not execute.
+  (ensure-write-tool-fixture)
+  (let* ((nested (write-tool-path "nested/deep/a.txt"))
+         (existing (write-tool-path "existing/b.txt"))
+         (blocker (write-tool-path "blocker"))
+         (blocked (write-tool-path "blocker/c.txt")))
+    (ignore-errors (uiop:delete-file-if-exists blocker))
+    (let ((nested-ok
+            (handler-case
+                (progn
+                  (cadr-cli::ensure-write-parent-directories nested)
+                  1)
+              (error () 0)))
+          (exists-ok
+            (handler-case
+                (progn
+                  (cadr-cli::ensure-write-parent-directories existing)
+                  1)
+              (error () 0)))
+          (eexist
+            (progn
+              (with-open-file (out blocker
+                                   :direction :output
+                                   :if-exists :supersede
+                                   :if-does-not-exist :create
+                                   :external-format :utf-8)
+                (write-string "file" out))
+              (handler-case
+                  (progn
+                    (cadr-cli::ensure-write-parent-directories blocked)
+                    0)
+                (error () 1)))))
+      (list nested-ok exists-ok eexist 3))))
+
+(defun run-write-utf8 ()
+  ;; UTF-8 write into an existing parent — not mkdir as the timed owner,
+  ;; not execute / queue / result wording.
+  (ensure-write-tool-fixture)
+  (let* ((ascii-path (write-tool-path "out-ascii.txt"))
+         (cjk-path (write-tool-path "out-cjk.txt"))
+         (ascii-text "hello")
+         (cjk-text "中🙂"))
+    (cadr-cli::write-utf8-file ascii-path ascii-text)
+    (cadr-cli::write-utf8-file cjk-path cjk-text)
+    (list
+     (write-tool-truth (probe-file ascii-path))
+     (cadr-cli::utf16-code-unit-length ascii-text)
+     (cadr-cli::utf16-code-unit-length cjk-text)
+     3)))
+
+(defun run-write-make-tool ()
+  (let* ((cwd (ensure-write-tool-fixture))
+         (tool (cadr-cli::make-write-tool cwd))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list)))
+         (description (cadr-ai:tool-description tool)))
+    (list
+     (write-tool-truth (string= (cadr-ai:tool-name tool) "write"))
+     (write-tool-truth
+      (and (search "Write content to a file" description)
+           (search "Automatically creates parent directories" description)))
+     (write-tool-truth
+      (and required-list
+           (find "path" required-list :test #'string=)
+           (find "content" required-list :test #'string=)))
+     3)))
+
+(defun measure-write-tool ()
+  (ensure-write-tool-fixture)
+  (destructuring-bind (ep-nested ep-exists ep-eexist ep-n)
+      (run-write-ensure-parent)
+    (destructuring-bind (wu-ok wu-ascii wu-cjk wu-n)
+        (run-write-utf8)
+      (destructuring-bind (wmt-name wmt-desc wmt-req wmt-n)
+          (run-write-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "ep_nested" ep-nested
+          "ep_exists" ep-exists
+          "ep_eexist" ep-eexist
+          "ep_n" ep-n
+          "wu_ok" wu-ok
+          "wu_ascii" wu-ascii
+          "wu_cjk" wu-cjk
+          "wu_n" wu-n
+          "wmt_name" wmt-name
+          "wmt_desc" wmt-desc
+          "wmt_req" wmt-req
+          "wmt_n" wmt-n)
+         "ensure_parent"
+         (collect "write_tool.ensure_parent"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-ensure-parent))))
+         "write_utf8"
+         (collect "write_tool.write_utf8"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-utf8))))
+         "make_tool"
+         (collect "write_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-make-tool)))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -15402,6 +15544,12 @@
       "src/cadr-cli/tools/find.lisp find-files"
       "find_tool.make_tool"
       "src/cadr-cli/tools/find.lisp make-find-tool"
+      "write_tool.ensure_parent"
+      "src/cadr-cli/tools/write.lisp ensure-write-parent-directories"
+      "write_tool.write_utf8"
+      "src/cadr-cli/tools/write.lisp write-utf8-file"
+      "write_tool.make_tool"
+      "src/cadr-cli/tools/write.lisp make-write-tool"
       "tool_manager.get_tool_path"
       "src/cadr-cli/tool-manager.lisp get-tool-path"
       "tool_manager.ensure_tool"
@@ -16012,6 +16160,7 @@
                     (harness-events nil)
                     (bash-tool nil)
                     (find-tool nil)
+                    (write-tool nil)
                     (tool-manager nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
@@ -16021,6 +16170,8 @@
               (let ((output-accumulator (measure-output-accumulator)))
               (format *error-output* "goal20 cadr paired paths: find_tool~%")
               (setf find-tool (measure-find-tool))
+              (format *error-output* "goal20 cadr paired paths: write_tool~%")
+              (setf write-tool (measure-write-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
               (setf tool-manager (measure-tool-manager))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
@@ -16160,6 +16311,7 @@
               "bash_tool" bash-tool
               "output_accumulator" output-accumulator
               "find_tool" find-tool
+              "write_tool" write-tool
               "tool_manager" tool-manager
               "package_manager" packages
               "session_discovery" discovery

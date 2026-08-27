@@ -9,6 +9,18 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
+  on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
+  Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact. Measure-only;
+  freeze numbers in a follow-up docs commit.
+- Goal 20 P.13: pair `write_tool.write_utf8` (`write-utf8-file` on
+  `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.writeFile`).
+  Observed `wu_ok` / `wu_ascii` / `wu_cjk` / `wu_n` exact. Measure-only;
+  freeze numbers in a follow-up docs commit.
+- Goal 20 P.13: pair `write_tool.make_tool` (`make-write-tool` on
+  `src/cadr-cli/tools/write.lisp` vs baseline `createWriteToolDefinition`).
+  Observed `wmt_name` / `wmt_desc` / `wmt_req` / `wmt_n` exact. Measure-only;
+  freeze numbers in a follow-up docs commit.
 - Goal 20 P.13: pair `harness_events.make_end` (`make-run-end-event` on
   `src/cadr-agent/harness-events.lisp` vs baseline `RunEndEvent` object).
   Observed `hee_type` / `hee_lane` / `hee_run` / `hee_outcome` /

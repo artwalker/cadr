@@ -106,6 +106,7 @@ METRICS = {
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
+    "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
@@ -315,6 +316,11 @@ RATIO_CEILINGS = {
     "find_tool.pattern_match": 8.0,
     "find_tool.find_files": 8.0,
     "find_tool.make_tool": 8.0,
+    # write_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "write_tool.ensure_parent": 8.0,
+    "write_tool.write_utf8": 8.0,
+    "write_tool.make_tool": 8.0,
     # tool_manager.get_tool_path/ensure_tool/cleanup_quarantine pair
     # (samples=5): first-freeze headroom. Ratchet down only.
     "tool_manager.get_tool_path": 8.0,
@@ -1626,6 +1632,20 @@ OBSERVED_EXACT = {
         "fmt_desc",
         "fmt_req",
         "fmt_n",
+    ),
+    "write_tool": (
+        "ep_nested",
+        "ep_exists",
+        "ep_eexist",
+        "ep_n",
+        "wu_ok",
+        "wu_ascii",
+        "wu_cjk",
+        "wu_n",
+        "wmt_name",
+        "wmt_desc",
+        "wmt_req",
+        "wmt_n",
     ),
     "tool_manager": (
         "gtp_local_fd",

@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "paused": false,
- "nextPairNum": 328,
+ "nextPairNum": 346,
  "lanes": {
   "a": {
    "role": "pairing",
@@ -558,6 +558,33 @@
    "piUs": 0.255,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 343,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/write.lisp",
+   "measure": "measure-write-tool",
+   "metric": "write_tool.ensure_parent",
+   "branch": "cursor/pair-343-345-write-leftovers-32fc"
+  },
+  {
+   "pair": 344,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/write.lisp",
+   "measure": "measure-write-tool",
+   "metric": "write_tool.write_utf8",
+   "branch": "cursor/pair-343-345-write-leftovers-32fc"
+  },
+  {
+   "pair": 345,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/write.lisp",
+   "measure": "measure-write-tool",
+   "metric": "write_tool.make_tool",
+   "branch": "cursor/pair-343-345-write-leftovers-32fc"
   }
  ],
  "mergeQueue": []
