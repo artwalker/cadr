@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.wait_turn` (`wait-for-file-mutation-turn` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
+  await-current / ticket wait after enqueue). Observed `fmqw_serving` /
+  `fmqw_pending` / `fmqw_other` / `fmqw_missing` / `fmqw_n` exact.
+  Measure-only; freeze numbers follow the `--only-enforce` run.
 - Goal 20 P.13: pair `file_mutation_queue.register` (`register-file-mutation` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
   ticket enqueue after the same key encoding). Observed `fmqr_alias` /
