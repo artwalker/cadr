@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.ensure_state` (`ensure-file-mutation-queue-state` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline `fileMutationQueues.get(key) ?? set`
+  given a canonical key). Observed `fmqs_alias` / `fmqs_other` / `fmqs_missing` /
+  `fmqs_repeat` / `fmqs_n` exact.
+  n=5 **0.879×** (109.2 / 124.3 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.release_turn` (`release-file-mutation-turn` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
   finally / pending-- / delete-when-empty after wait). Observed `fmqe_serving` /

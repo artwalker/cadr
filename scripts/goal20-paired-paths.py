@@ -101,7 +101,7 @@ METRICS = {
     "cli_settings": ("create",),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
-    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn"),
+    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -262,6 +262,9 @@ RATIO_CEILINGS = {
     # file_mutation_queue.release_turn pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "file_mutation_queue.release_turn": 8.0,
+    # file_mutation_queue.ensure_state pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.ensure_state": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1444,6 +1447,11 @@ OBSERVED_EXACT = {
         "fmqe_other",
         "fmqe_missing",
         "fmqe_n",
+        "fmqs_alias",
+        "fmqs_other",
+        "fmqs_missing",
+        "fmqs_repeat",
+        "fmqs_n",
     ),
     "settings_load": (
         "tr_empty",
