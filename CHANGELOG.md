@@ -9,11 +9,27 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20 P.13 leftover: pair `evals_harness.step_value` / `usage` /
-  `result_json` (`src/cadr-evals/harness.lisp` vs baseline step property
-  access / usage object assembly / `SimpleHarnessResult` JSON shape).
-  Observed `sv_*` / `us_*` / `rj_*` exact. n=5 freeze pending. Measure-only.
-  `nextPairNum` left unchanged (not written). Pairs 331–333.
+- Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
+  `src/cadr-evals/harness.lisp` vs baseline step property access).
+  Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.
+  n=5 **3.693×** (0.774 / 0.210 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.usage` (`eval-usage` on
+  `src/cadr-evals/harness.lisp` vs baseline usage object assembly).
+  Observed `us_in` / `us_out` / `us_total` / `us_tools` / `us_prov` /
+  `us_model` / `us_cost` / `us_n` exact. n=5 **2.148×** (2.240 / 1.042 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.result_json` (`eval-result-json`
+  on `src/cadr-evals/harness.lisp` vs baseline `SimpleHarnessResult` JSON
+  shape). Observed `rj_out` / `rj_ev` / `rj_err` / `rj_art` / `rj_time` /
+  `rj_n` exact. n=5 **5.225×** (1.933 / 0.370 µs) on host `cursor`,
+  ceiling 8.0. Measure-only. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 P.13: pair `harness_events.make_end` (`make-run-end-event` on
   `src/cadr-agent/harness-events.lisp` vs baseline `RunEndEvent` object).
   Observed `hee_type` / `hee_lane` / `hee_run` / `hee_outcome` /

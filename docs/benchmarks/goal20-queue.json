@@ -566,7 +566,12 @@
    "source": "src/cadr-evals/harness.lisp",
    "measure": "measure-evals-harness",
    "metric": "evals_harness.step_value",
-   "branch": "cursor/evals-harness-pairs-331-333-4603"
+   "branch": "cursor/evals-harness-pairs-331-333-4603",
+   "ratio": 3.693,
+   "cadrUs": 0.774,
+   "piUs": 0.210,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 332,
@@ -575,7 +580,12 @@
    "source": "src/cadr-evals/harness.lisp",
    "measure": "measure-evals-harness",
    "metric": "evals_harness.usage",
-   "branch": "cursor/evals-harness-pairs-331-333-4603"
+   "branch": "cursor/evals-harness-pairs-331-333-4603",
+   "ratio": 2.148,
+   "cadrUs": 2.240,
+   "piUs": 1.042,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 333,
@@ -584,7 +594,12 @@
    "source": "src/cadr-evals/harness.lisp",
    "measure": "measure-evals-harness",
    "metric": "evals_harness.result_json",
-   "branch": "cursor/evals-harness-pairs-331-333-4603"
+   "branch": "cursor/evals-harness-pairs-331-333-4603",
+   "ratio": 5.225,
+   "cadrUs": 1.933,
+   "piUs": 0.370,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
