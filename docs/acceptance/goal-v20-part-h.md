@@ -3767,9 +3767,10 @@ Leftover sibling of Pair 13 `cli_settings.create` on the same
 `cli_settings` hole. Timed work is re-read of staged
 `settings-global.json` / `settings-project.json` — not create, not
 TUI. Observed `rl_theme_light` / `rl_model` / `rl_idle` / `rl_n` are
-exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`
-(script rc from known old holes `lc_n` / `lc_sleep` / help text;
-this metric did not fail). Same commit no optimize.
+exact. First n=5 freeze **0.593×** (84.8 / 143.0 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
 
 ### Pair 308 — `cli_settings` (enabled_models)
 
@@ -3780,10 +3781,10 @@ this metric did not fail). Same commit no optimize.
 Leftover sibling of Pair 307 `reload` on the same `cli_settings` hole.
 Timed work is missing-key `:all` / `undefined` plus one in-memory
 explicit pattern — not persist, not selector UI. Observed `em_all` /
-`em_one` / `em_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce` (script rc from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no
-optimize.
+`em_one` / `em_n` are exact. First n=5 freeze **5.735×** (18.7 / 3.26 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked. Same commit no optimize.
 
 ### Pair 309 — `cli_settings` (block_images)
 
@@ -3794,9 +3795,10 @@ optimize.
 Leftover sibling of Pairs 307–308 on the same `cli_settings` hole.
 Timed work is default false plus in-memory `images.blockImages=true`
 — not decode/resize, not TUI. Observed `bi_default` / `bi_blocked` /
-`bi_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce` (script rc from known old holes `lc_n` / `lc_sleep` /
-help text; this metric did not fail). Same commit no optimize.
+`bi_n` are exact. First n=5 freeze **5.623×** (19.1 / 3.41 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
