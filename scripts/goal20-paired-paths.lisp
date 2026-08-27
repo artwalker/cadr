@@ -524,6 +524,9 @@
     ("cli_sdk.model_runtime" . 5)
     ("provider_registry_defs.lookup" . 50)
     ("provider_registry_defs.definition_ids" . 125)
+    ("provider_registry_defs.merge_environment" . 50)
+    ("provider_registry_defs.runtime_models" . 50)
+    ("provider_registry_defs.structured_api_key_login" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
@@ -14802,9 +14805,58 @@
      (length ids)
      (cadr-ai::provider-definition-ids-sorted-digest))))
 
+(defun run-provider-runtime-models ()
+  (flet ((model-count (id)
+           (length (cadr-ai::provider-runtime-models id))))
+    (list
+     (if (plusp (model-count :openai)) 1 0)
+     (if (plusp (model-count :anthropic)) 1 0)
+     (if (plusp (model-count :google)) 1 0)
+     (if (zerop (model-count :no-such-provider)) 1 0))))
+
+(defun run-provider-merge-environment ()
+  (let ((merged
+          (cadr-ai::merge-provider-environment
+           '(("OPENAI_API_KEY" . "sk-explicit")
+             ("AZURE_OPENAI_BASE_URL" . "https://explicit.example"))
+           '(("OPENAI_API_KEY" . "sk-ambient")
+             ("GEMINI_API_KEY" . "sk-gemini-ambient")))))
+    (list
+     (if (equal (cdr (assoc "OPENAI_API_KEY" merged :test #'string=))
+                "sk-explicit")
+         1
+         0)
+     (if (equal (cdr (assoc "GEMINI_API_KEY" merged :test #'string=))
+                "sk-gemini-ambient")
+         1
+         0)
+     (if (equal (cdr (assoc "AZURE_OPENAI_BASE_URL" merged :test #'string=))
+                "https://explicit.example")
+         1
+         0)
+     (if (assoc "MISSING_KEY" merged :test #'string=)
+         0
+         1))))
+
+(defun run-provider-structured-api-key-login ()
+  (flet ((flag (id)
+           (if (cadr-ai:provider-definition-structured-api-key-login-p
+                (cadr-ai::find-provider-definition id))
+               1
+               0)))
+    (list
+     (flag :openai)
+     (flag :anthropic)
+     (flag :google)
+     (flag :amazon-bedrock)
+     (flag :google-vertex))))
+
 (defun measure-provider-registry-defs ()
   (let* ((lookup-observed (run-provider-registry-defs))
-         (ids-observed (run-provider-definition-ids)))
+         (ids-observed (run-provider-definition-ids))
+         (merge-observed (run-provider-merge-environment))
+         (models-observed (run-provider-runtime-models))
+         (structured-observed (run-provider-structured-api-key-login)))
     (json-object
      "observed"
      (json-object
@@ -14813,7 +14865,20 @@
       "google" (third lookup-observed)
       "unknown" (fourth lookup-observed)
       "count" (fourth ids-observed)
-      "sorted_digest" (fifth ids-observed))
+      "sorted_digest" (fifth ids-observed)
+      "me_oa" (first merge-observed)
+      "me_gemini" (second merge-observed)
+      "me_azure" (third merge-observed)
+      "me_miss" (fourth merge-observed)
+      "rm_openai" (first models-observed)
+      "rm_anthropic" (second models-observed)
+      "rm_google" (third models-observed)
+      "rm_unknown" (fourth models-observed)
+      "sl_openai" (first structured-observed)
+      "sl_anthropic" (second structured-observed)
+      "sl_google" (third structured-observed)
+      "sl_bedrock" (fourth structured-observed)
+      "sl_vertex" (fifth structured-observed))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
@@ -14823,7 +14888,22 @@
      (collect "provider_registry_defs.definition_ids"
               (lambda ()
                 (lambda ()
-                  (run-provider-definition-ids)))))))
+                  (run-provider-definition-ids))))
+     "merge_environment"
+     (collect "provider_registry_defs.merge_environment"
+              (lambda ()
+                (lambda ()
+                  (run-provider-merge-environment))))
+     "runtime_models"
+     (collect "provider_registry_defs.runtime_models"
+              (lambda ()
+                (lambda ()
+                  (run-provider-runtime-models))))
+     "structured_api_key_login"
+     (collect "provider_registry_defs.structured_api_key_login"
+              (lambda ()
+                (lambda ()
+                  (run-provider-structured-api-key-login)))))))
 
 (defun run-skill-prompt-build ()
   (let* ((cwd "/tmp/proj")
@@ -15605,6 +15685,12 @@
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "provider_registry_defs.definition_ids"
       "src/cadr-ai/providers/definitions.lisp list-provider-definition-ids"
+      "provider_registry_defs.merge_environment"
+      "src/cadr-ai/providers/runtime-projection.lisp merge-provider-environment"
+      "provider_registry_defs.runtime_models"
+      "src/cadr-ai/providers/runtime-projection.lisp provider-runtime-models"
+      "provider_registry_defs.structured_api_key_login"
+      "src/cadr-ai/providers/runtime-projection.lisp provider-definition-structured-api-key-login-p"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "cli_bootstrap_sessions.coding_tools"
@@ -15940,7 +16026,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

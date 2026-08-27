@@ -3487,6 +3487,48 @@ Observed `cq_removed` / `cq_noop` / `cq_n` are exact. First n=5 freeze
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Over-1× booked. Same commit no optimize.
 
+### Pair 295 — `provider_registry_defs` (merge_environment)
+
+| metric | cadr | pi |
+|---|---|---|
+| `merge_environment` | `merge-provider-environment` (`src/cadr-ai/providers/runtime-projection.lisp`) | `getProviderEnvValue` (`packages/ai/src/utils/provider-env.ts`) |
+
+Leftover sibling of lookup/definition_ids on the same `provider_registry_defs`
+hole. Timed work is explicit-over-ambient env merge (OPENAI wins, ambient GEMINI
+kept, explicit Azure URL present, missing key absent) — not lookup, not stream.
+Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` are exact. First n=5 freeze
+**0.114×** (0.320 / 2.803 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 296 — `provider_registry_defs` (runtime_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `runtime_models` | `provider-runtime-models` (`src/cadr-ai/providers/runtime-projection.lisp`) | `getBuiltinModels` (`packages/ai/src/providers/all.ts`) |
+
+Leftover sibling on the same `provider_registry_defs` hole. Timed work is catalog
+model lists for openai/anthropic/google plus an unknown id — not
+`getBuiltinProviders`, not stream. Observed `rm_openai` / `rm_anthropic` /
+`rm_google` / `rm_unknown` are exact. First n=5 freeze **3.733×** (17.89 /
+4.794 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
+
+### Pair 297 — `provider_registry_defs` (structured_api_key_login)
+
+| metric | cadr | pi |
+|---|---|---|
+| `structured_api_key_login` | `provider-definition-structured-api-key-login-p` (`src/cadr-ai/providers/runtime-projection.lisp`) | Bedrock/Vertex `ApiKeyAuth.login` select flow (`packages/ai/src/providers/amazon-bedrock.ts`, `packages/ai/src/providers/google-vertex.ts`) |
+
+Leftover sibling on the same `provider_registry_defs` hole. Timed work is the
+structured-login predicate for openai/anthropic/google/bedrock/vertex — not
+stream, not login interaction. Observed `sl_openai` / `sl_anthropic` /
+`sl_google` / `sl_bedrock` / `sl_vertex` are exact. First n=5 freeze
+**0.000831×** (0.176 / 211.2 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
