@@ -229,6 +229,9 @@ const REPETITIONS = {
 	"evals_harness.resolve_selection": 50,
 	"evals_harness.transcript": 50,
 	"evals_harness.last_assistant": 50,
+	"evals_harness.eval_result": 50,
+	"evals_harness.root_observer": 50,
+	"evals_harness.model_resolver": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5641,6 +5644,67 @@ function runEvalsHarnessLastAssistant() {
 	};
 }
 
+function makeEvalResult(fields = {}) {
+	return {
+		output: fields.output,
+		events: fields.events ?? [],
+		usage: fields.usage,
+		errors: fields.errors ?? [],
+		artifacts: fields.artifacts ?? {},
+		timings: fields.timings ?? {},
+	};
+}
+
+function runEvalsHarnessEvalResult() {
+	const empty = makeEvalResult({ output: "ok" });
+	const full = makeEvalResult({
+		output: "full",
+		events: [1],
+		usage: { n: 1 },
+		errors: ["e"],
+	});
+	return {
+		er_out: empty.output === "ok" ? 1 : 0,
+		er_ev: empty.events.length === 0 ? 1 : 0,
+		er_art: empty.artifacts !== null && typeof empty.artifacts === "object" ? 1 : 0,
+		er_time: empty.timings !== null && typeof empty.timings === "object" ? 1 : 0,
+		er_full_ev: full.events.length === 1 && full.events[0] === 1 ? 1 : 0,
+		er_err: full.errors.length === 1 && full.errors[0] === "e" ? 1 : 0,
+		er_n: 6,
+	};
+}
+
+function runEvalsHarnessRootObserver() {
+	const root = "/tmp/cadr-eval-observer-bench/";
+	let seen;
+	const observer = (path) => {
+		seen = path;
+	};
+	observer(root);
+	return {
+		ro_seen: seen === root ? 1 : 0,
+		ro_path: typeof seen === "string" ? 1 : 0,
+		ro_name: String(seen).includes("cadr-eval-observer") ? 1 : 0,
+		ro_n: 3,
+	};
+}
+
+function runEvalsHarnessModelResolver() {
+	const stream = (value) => value;
+	const resolver = (provider, model) => [
+		String(provider).toLowerCase(),
+		model,
+		stream,
+	];
+	const [provider, model, streamFn] = resolver("OpenAI", "gpt-4o");
+	return {
+		mr_prov: provider === "openai" ? 1 : 0,
+		mr_model: model === "gpt-4o" ? 1 : 0,
+		mr_stream: streamFn === stream ? 1 : 0,
+		mr_n: 3,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5655,6 +5719,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessResolveSelection(),
 		...runEvalsHarnessTranscript(),
 		...runEvalsHarnessLastAssistant(),
+		...runEvalsHarnessEvalResult(),
+		...runEvalsHarnessRootObserver(),
+		...runEvalsHarnessModelResolver(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5680,6 +5747,15 @@ async function measureEvalsHarness() {
 		}),
 		last_assistant: await collect("evals_harness.last_assistant", () => {
 			return () => runEvalsHarnessLastAssistant();
+		}),
+		eval_result: await collect("evals_harness.eval_result", () => {
+			return () => runEvalsHarnessEvalResult();
+		}),
+		root_observer: await collect("evals_harness.root_observer", () => {
+			return () => runEvalsHarnessRootObserver();
+		}),
+		model_resolver: await collect("evals_harness.model_resolver", () => {
+			return () => runEvalsHarnessModelResolver();
 		}),
 		observed,
 	};
@@ -16850,6 +16926,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts toTranscriptEvents",
 			"evals_harness.last_assistant":
 				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
+			"evals_harness.eval_result":
+				"packages/evals/src/pi-harness.ts SimpleHarnessResult construction",
+			"evals_harness.root_observer":
+				"packages/evals/src/pi-harness.ts isolated eval root handoff",
+			"evals_harness.model_resolver":
+				"packages/evals/src/pi-harness.ts ModelRuntime.getModel stub (not default resolver)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

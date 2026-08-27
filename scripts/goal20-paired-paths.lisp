@@ -133,6 +133,9 @@
 ;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
 ;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
 ;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
+;;;; 376. evals_harness make-eval-result vs SimpleHarnessResult construction
+;;;; 377. evals_harness *eval-root-observer* vs isolated eval root handoff
+;;;; 378. evals_harness *eval-model-resolver* stub vs ModelRuntime.getModel stub
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -375,6 +378,9 @@
     ("evals_harness.resolve_selection" . 50)
     ("evals_harness.transcript" . 50)
     ("evals_harness.last_assistant" . 50)
+    ("evals_harness.eval_result" . 50)
+    ("evals_harness.root_observer" . 50)
+    ("evals_harness.model_resolver" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -7143,6 +7149,64 @@
         (eq new (cadr-evals::last-assistant-since messages nil)))
        3))))
 
+(defun run-evals-harness-eval-result ()
+  ;; Struct construction only — not eval-result-json (#36) and not
+  ;; default-eval-model-resolver (skipped this cut).
+  (let ((empty (cadr-evals::make-eval-result :output "ok"))
+        (full
+          (cadr-evals::make-eval-result
+           :output "full"
+           :events '(1)
+           :usage (cadr-ai::json-object "n" 1)
+           :errors '("e"))))
+    (list
+     (eval-flag
+      (string= (cadr-evals:eval-result-output empty) "ok"))
+     (eval-flag (null (cadr-evals:eval-result-events empty)))
+     (eval-flag
+      (hash-table-p (cadr-evals:eval-result-artifacts empty)))
+     (eval-flag
+      (hash-table-p (cadr-evals:eval-result-timings empty)))
+     (eval-flag
+      (equal (cadr-evals:eval-result-events full) '(1)))
+     (eval-flag
+      (equal (cadr-evals:eval-result-errors full) '("e")))
+     6)))
+
+(defun run-evals-harness-root-observer ()
+  ;; *eval-root-observer* seam only — not make-eval-root (#38).
+  (let* ((root #p"/tmp/cadr-eval-observer-bench/")
+         (seen nil)
+         (cadr-evals::*eval-root-observer*
+           (lambda (path)
+             (setf seen path))))
+    (funcall cadr-evals::*eval-root-observer* root)
+    (list
+     (eval-flag (eq seen root))
+     (eval-flag (pathnamep seen))
+     (eval-flag
+      (search "cadr-eval-observer" (namestring seen)))
+     3)))
+
+(defun run-evals-harness-model-resolver ()
+  ;; Stubbed *eval-model-resolver* funcall. Does not call
+  ;; default-eval-model-resolver (~54×; skipped this cut).
+  (let* ((stream #'identity)
+         (cadr-evals::*eval-model-resolver*
+           (lambda (provider model)
+             (values
+              (string-downcase provider)
+              model
+              stream))))
+    (multiple-value-bind (provider model stream-fn)
+        (funcall cadr-evals::*eval-model-resolver*
+                 "OpenAI" "gpt-4o")
+      (list
+       (eval-flag (string= provider "openai"))
+       (eval-flag (string= model "gpt-4o"))
+       (eval-flag (eq stream-fn stream))
+       3))))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7156,7 +7220,10 @@
          (normalize (run-evals-harness-normalize-steps))
          (resolve (run-evals-harness-resolve-selection))
          (transcript (run-evals-harness-transcript))
-         (last-assistant (run-evals-harness-last-assistant)))
+         (last-assistant (run-evals-harness-last-assistant))
+         (eval-result (run-evals-harness-eval-result))
+         (root-observer (run-evals-harness-root-observer))
+         (model-resolver (run-evals-harness-model-resolver)))
     (json-object
      "observed"
      (json-object
@@ -7207,7 +7274,22 @@
       "la_new" (nth 0 last-assistant)
       "la_none" (nth 1 last-assistant)
       "la_full" (nth 2 last-assistant)
-      "la_n" (nth 3 last-assistant))
+      "la_n" (nth 3 last-assistant)
+      "er_out" (nth 0 eval-result)
+      "er_ev" (nth 1 eval-result)
+      "er_art" (nth 2 eval-result)
+      "er_time" (nth 3 eval-result)
+      "er_full_ev" (nth 4 eval-result)
+      "er_err" (nth 5 eval-result)
+      "er_n" (nth 6 eval-result)
+      "ro_seen" (nth 0 root-observer)
+      "ro_path" (nth 1 root-observer)
+      "ro_name" (nth 2 root-observer)
+      "ro_n" (nth 3 root-observer)
+      "mr_prov" (nth 0 model-resolver)
+      "mr_model" (nth 1 model-resolver)
+      "mr_stream" (nth 2 model-resolver)
+      "mr_n" (nth 3 model-resolver))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7248,7 +7330,22 @@
      (collect "evals_harness.last_assistant"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-last-assistant)))))))
+                  (run-evals-harness-last-assistant))))
+     "eval_result"
+     (collect "evals_harness.eval_result"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-eval-result))))
+     "root_observer"
+     (collect "evals_harness.root_observer"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-root-observer))))
+     "model_resolver"
+     (collect "evals_harness.model_resolver"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-model-resolver)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16462,6 +16559,12 @@
       "src/cadr-evals/harness.lisp messages-to-transcript"
       "evals_harness.last_assistant"
       "src/cadr-evals/harness.lisp last-assistant-since"
+      "evals_harness.eval_result"
+      "src/cadr-evals/harness.lisp make-eval-result"
+      "evals_harness.root_observer"
+      "src/cadr-evals/harness.lisp *eval-root-observer*"
+      "evals_harness.model_resolver"
+      "src/cadr-evals/harness.lisp *eval-model-resolver* stub (not default-eval-model-resolver)"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

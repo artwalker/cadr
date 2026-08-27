@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.eval_result` /
+  `root_observer` / `model_resolver` (`src/cadr-evals/harness.lisp` vs
+  baseline SimpleHarnessResult construction / isolated eval root handoff /
+  ModelRuntime.getModel stub). Observed `er_*` / `ro_*` / `mr_*` exact.
+  Does not pair `default-eval-model-resolver` (skipped; ~54×). Measure-only.
+  Pairs 376–378.
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.

@@ -133,7 +133,7 @@ METRICS = {
         "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "eval_result", "root_observer", "model_resolver"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
@@ -520,6 +520,12 @@ RATIO_CEILINGS = {
     "evals_harness.resolve_selection": 8.0,
     "evals_harness.transcript": 8.0,
     "evals_harness.last_assistant": 8.0,
+    # evals_harness leftover seams on harness.lisp (samples=5): first-freeze
+    # headroom. eval_result / root_observer / model_resolver (stub; not
+    # default-eval-model-resolver). Ratchet down only.
+    "evals_harness.eval_result": 8.0,
+    "evals_harness.root_observer": 8.0,
+    "evals_harness.model_resolver": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -1992,6 +1998,21 @@ OBSERVED_EXACT = {
         "la_none",
         "la_full",
         "la_n",
+        "er_out",
+        "er_ev",
+        "er_art",
+        "er_time",
+        "er_full_ev",
+        "er_err",
+        "er_n",
+        "ro_seen",
+        "ro_path",
+        "ro_name",
+        "ro_n",
+        "mr_prov",
+        "mr_model",
+        "mr_stream",
+        "mr_n",
     ),
     "ai_crypto_model_data": (
         "schema_version",
