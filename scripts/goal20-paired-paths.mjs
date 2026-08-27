@@ -165,6 +165,9 @@ const REPETITIONS = {
 	"harness_events.on": 50,
 	"harness_events.watch": 50,
 	"harness_events.make_start": 50,
+	"harness_events.make_end": 50,
+	"harness_events.event_type": 50,
+	"harness_events.make_bus": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -2755,11 +2758,56 @@ function runHarnessEventsMakeStart() {
 	};
 }
 
+function runHarnessEventsMakeEnd() {
+	const event = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	return {
+		hee_type: event.type === "run_end" ? 1 : 0,
+		hee_lane: event.lane === "main" ? 1 : 0,
+		hee_run: event.runId === "run-1" ? 1 : 0,
+		hee_outcome: event.outcome === "completed" ? 1 : 0,
+		hee_leaf: event.leafId === "entry-1" ? 1 : 0,
+	};
+}
+
+function runHarnessEventsEventType() {
+	const start = { type: "run_start", lane: "main", runId: "run-1" };
+	const end = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	return {
+		het_start: start.type === "run_start" ? 1 : 0,
+		het_end: end.type === "run_end" ? 1 : 0,
+		het_diff: start.type !== end.type ? 1 : 0,
+	};
+}
+
+function runHarnessEventsMakeBus() {
+	const bus = new harnessEventsModule.HarnessEventBus();
+	return {
+		heb_ok: bus instanceof harnessEventsModule.HarnessEventBus ? 1 : 0,
+		heb_ctor: bus != null ? 1 : 0,
+		heb_n: 2,
+	};
+}
+
 async function measureHarnessEvents() {
 	const emitObserved = runHarnessEventsEmit();
 	const onObserved = runHarnessEventsOn();
 	const watchObserved = runHarnessEventsWatch();
 	const makeStartObserved = runHarnessEventsMakeStart();
+	const makeEndObserved = runHarnessEventsMakeEnd();
+	const eventTypeObserved = runHarnessEventsEventType();
+	const makeBusObserved = runHarnessEventsMakeBus();
 	return {
 		emit: await collect("harness_events.emit", () => {
 			return () => runHarnessEventsEmit();
@@ -2773,11 +2821,23 @@ async function measureHarnessEvents() {
 		make_start: await collect("harness_events.make_start", () => {
 			return () => runHarnessEventsMakeStart();
 		}),
+		make_end: await collect("harness_events.make_end", () => {
+			return () => runHarnessEventsMakeEnd();
+		}),
+		event_type: await collect("harness_events.event_type", () => {
+			return () => runHarnessEventsEventType();
+		}),
+		make_bus: await collect("harness_events.make_bus", () => {
+			return () => runHarnessEventsMakeBus();
+		}),
 		observed: {
 			...emitObserved,
 			...onObserved,
 			...watchObserved,
 			...makeStartObserved,
+			...makeEndObserved,
+			...eventTypeObserved,
+			...makeBusObserved,
 		},
 	};
 }
@@ -15246,6 +15306,12 @@ const result = {
 				"packages/agent/src/harness/events.ts HarnessEventBus.watch",
 			"harness_events.make_start":
 				"packages/agent/src/harness/events.ts RunStartEvent object",
+			"harness_events.make_end":
+				"packages/agent/src/harness/events.ts RunEndEvent object",
+			"harness_events.event_type":
+				"packages/agent/src/harness/events.ts event.type",
+			"harness_events.make_bus":
+				"packages/agent/src/harness/events.ts new HarnessEventBus()",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":

@@ -3353,6 +3353,49 @@ First n=5 freeze **1.18×** (0.14 / 0.12 µs) on host `cursor`, ceiling 8.0.
 Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
 `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
+### Pair 301 — `harness_events` (make_end)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_end` | `make-run-end-event` (`src/cadr-agent/harness-events.lisp`) | `RunEndEvent` object (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 276 `emit` through Pair 285 `make_start` on the same
+`harness-events.lisp` `agent_tool_loop` hole. Timed work is constructing a
+`run_end` event (type / lane / run id / outcome / leaf id) — not
+`make_start`, not `on`, not `watch`, not `emit`. Observed `hee_type` /
+`hee_lane` / `hee_run` / `hee_outcome` / `hee_leaf` are exact. First n=5
+freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 302 — `harness_events` (event_type)
+
+| metric | cadr | pi |
+|---|---|---|
+| `event_type` | `harness-event-type` (`src/cadr-agent/harness-events.lisp`) | `event.type` (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 301 `make_end` on the same `harness-events.lisp`
+`agent_tool_loop` hole. Timed work is reading the event type of a
+`run_start` and a `run_end` — not constructors as the owner, not `on`,
+not `watch`, not `emit`. Observed `het_start` / `het_end` / `het_diff`
+are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 303 — `harness_events` (make_bus)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_bus` | `make-harness-event-bus` (`src/cadr-agent/harness-events.lisp`) | `new HarnessEventBus()` (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 301 `make_end` and Pair 302 `event_type` on the same
+`harness-events.lisp` `agent_tool_loop` hole. Timed work is constructing a
+fresh bus (instance / non-null) — not `on`, not `watch`, not `emit`.
+Observed `heb_ok` / `heb_ctor` / `heb_n` are exact. First n=5 freeze
+**RATIO_PLACEHOLDER**. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
 ### Pair 286 — `file_mutation_queue` (call_with)
 
 | metric | cadr | pi |

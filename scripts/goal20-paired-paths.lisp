@@ -112,6 +112,9 @@
 ;;;; 283. harness_events on vs HarnessEventBus.on
 ;;;; 284. harness_events watch vs HarnessEventBus.watch
 ;;;; 285. harness_events make_start vs RunStartEvent object
+;;;; 301. harness_events make_end vs RunEndEvent object
+;;;; 302. harness_events event_type vs event.type
+;;;; 303. harness_events make_bus vs new HarnessEventBus()
 ;;;; 286. file_mutation_queue call-with-file-mutation-queue vs withFileMutationQueue (function)
 ;;;; 287. file_mutation_queue make-file-mutation-queue-state vs queue-state object
 ;;;; 288. file_mutation_queue file-mutation-queue-state-key vs state.key
@@ -275,6 +278,9 @@
     ("harness_events.on" . 50)
     ("harness_events.watch" . 50)
     ("harness_events.make_start" . 50)
+    ("harness_events.make_end" . 50)
+    ("harness_events.event_type" . 50)
+    ("harness_events.make_bus" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4368,6 +4374,42 @@
      (he-truth (equal (getf event :lane) "main"))
      (he-truth (equal (getf event :run-id) "run-1")))))
 
+(defun run-harness-events-make-end ()
+  ;; Baseline RunEndEvent object shape vs make-run-end-event; not
+  ;; make_start, not emit, not on, not watch.
+  (let ((event
+          (cadr-agent:make-run-end-event
+           "main" "run-1" :completed "entry-1")))
+    (list
+     (he-truth (eq (cadr-agent:harness-event-type event) :run-end))
+     (he-truth (equal (getf event :lane) "main"))
+     (he-truth (equal (getf event :run-id) "run-1"))
+     (he-truth (eq (getf event :outcome) :completed))
+     (he-truth (equal (getf event :leaf-id) "entry-1")))))
+
+(defun run-harness-events-event-type ()
+  ;; Baseline event.type vs harness-event-type; not constructors, not
+  ;; emit, not on, not watch.
+  (let ((start (cadr-agent:make-run-start-event "main" "run-1"))
+        (end
+          (cadr-agent:make-run-end-event
+           "main" "run-1" :completed "entry-1")))
+    (list
+     (he-truth (eq (cadr-agent:harness-event-type start) :run-start))
+     (he-truth (eq (cadr-agent:harness-event-type end) :run-end))
+     (he-truth
+      (not (eq (cadr-agent:harness-event-type start)
+               (cadr-agent:harness-event-type end)))))))
+
+(defun run-harness-events-make-bus ()
+  ;; Baseline `new HarnessEventBus()` vs make-harness-event-bus; not
+  ;; emit, not on, not watch.
+  (let ((bus (cadr-agent:make-harness-event-bus)))
+    (list
+     (he-truth (typep bus 'cadr-agent::harness-event-bus))
+     (he-truth (not (null bus)))
+     2)))
+
 (defun measure-harness-events ()
   (destructuring-bind (he-direct he-watch he-start he-end he-second)
       (run-harness-events-emit)
@@ -4377,44 +4419,76 @@
           (run-harness-events-watch)
         (destructuring-bind (hes-type hes-lane hes-run)
             (run-harness-events-make-start)
-          (json-object
-           "observed"
-           (json-object
-            "he_direct" he-direct
-            "he_watch" he-watch
-            "he_start" he-start
-            "he_end" he-end
-            "he_second" he-second
-            "heon_off" heon-off
-            "heon_keep" heon-keep
-            "heon_type" heon-type
-            "hew_snap" hew-snap
-            "hew_count" hew-count
-            "hew_start" hew-start
-            "hew_end" hew-end
-            "hes_type" hes-type
-            "hes_lane" hes-lane
-            "hes_run" hes-run)
-           "emit"
-           (collect "harness_events.emit"
-                    (lambda ()
-                      (lambda ()
-                        (run-harness-events-emit))))
-           "on"
-           (collect "harness_events.on"
-                    (lambda ()
-                      (lambda ()
-                        (run-harness-events-on))))
-           "watch"
-           (collect "harness_events.watch"
-                    (lambda ()
-                      (lambda ()
-                        (run-harness-events-watch))))
-           "make_start"
-           (collect "harness_events.make_start"
-                    (lambda ()
-                      (lambda ()
-                        (run-harness-events-make-start))))))))))
+          (destructuring-bind (hee-type hee-lane hee-run hee-outcome hee-leaf)
+              (run-harness-events-make-end)
+            (destructuring-bind (het-start het-end het-diff)
+                (run-harness-events-event-type)
+              (destructuring-bind (heb-ok heb-ctor heb-n)
+                  (run-harness-events-make-bus)
+                (json-object
+                 "observed"
+                 (json-object
+                  "he_direct" he-direct
+                  "he_watch" he-watch
+                  "he_start" he-start
+                  "he_end" he-end
+                  "he_second" he-second
+                  "heon_off" heon-off
+                  "heon_keep" heon-keep
+                  "heon_type" heon-type
+                  "hew_snap" hew-snap
+                  "hew_count" hew-count
+                  "hew_start" hew-start
+                  "hew_end" hew-end
+                  "hes_type" hes-type
+                  "hes_lane" hes-lane
+                  "hes_run" hes-run
+                  "hee_type" hee-type
+                  "hee_lane" hee-lane
+                  "hee_run" hee-run
+                  "hee_outcome" hee-outcome
+                  "hee_leaf" hee-leaf
+                  "het_start" het-start
+                  "het_end" het-end
+                  "het_diff" het-diff
+                  "heb_ok" heb-ok
+                  "heb_ctor" heb-ctor
+                  "heb_n" heb-n)
+                 "emit"
+                 (collect "harness_events.emit"
+                          (lambda ()
+                            (lambda ()
+                              (run-harness-events-emit))))
+                 "on"
+                 (collect "harness_events.on"
+                          (lambda ()
+                            (lambda ()
+                              (run-harness-events-on))))
+                 "watch"
+                 (collect "harness_events.watch"
+                          (lambda ()
+                            (lambda ()
+                              (run-harness-events-watch))))
+                 "make_start"
+                 (collect "harness_events.make_start"
+                          (lambda ()
+                            (lambda ()
+                              (run-harness-events-make-start))))
+                 "make_end"
+                 (collect "harness_events.make_end"
+                          (lambda ()
+                            (lambda ()
+                              (run-harness-events-make-end))))
+                 "event_type"
+                 (collect "harness_events.event_type"
+                          (lambda ()
+                            (lambda ()
+                              (run-harness-events-event-type))))
+                 "make_bus"
+                 (collect "harness_events.make_bus"
+                          (lambda ()
+                            (lambda ()
+                              (run-harness-events-make-bus)))))))))))))
 
 (defun bash-tool-truth (value)
   (if value 1 0))
@@ -14844,6 +14918,12 @@
       "src/cadr-agent/harness-events.lisp harness-event-bus-watch"
       "harness_events.make_start"
       "src/cadr-agent/harness-events.lisp make-run-start-event"
+      "harness_events.make_end"
+      "src/cadr-agent/harness-events.lisp make-run-end-event"
+      "harness_events.event_type"
+      "src/cadr-agent/harness-events.lisp harness-event-type"
+      "harness_events.make_bus"
+      "src/cadr-agent/harness-events.lisp make-harness-event-bus"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
