@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.register` (`register-file-mutation` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
+  ticket enqueue after the same key encoding). Observed `fmqr_alias` /
+  `fmqr_other` / `fmqr_pending` / `fmqr_ticket` / `fmqr_n` exact.
+  n=5 **0.996×** (126.0 / 126.5 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.lock` (`file-mutation-queue-lock` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `fileMutationQueues`
   get-or-create after the same key encoding). Observed `fmql_alias` /

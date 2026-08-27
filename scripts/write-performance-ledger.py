@@ -39,6 +39,7 @@ METRIC_KEYS = (
     "file_mutation_queue.with_queue",
     "file_mutation_queue.queue_key",
     "file_mutation_queue.lock",
+    "file_mutation_queue.register",
     "settings_load.project_trust",
     "settings_load.config_value",
     "settings_load.http_idle",
