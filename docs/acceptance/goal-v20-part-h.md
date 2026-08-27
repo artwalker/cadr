@@ -3800,6 +3800,51 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
 old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Over-1× booked. Same commit no optimize.
 
+### Pair 349 — `evals_harness` (make_eval_root)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_eval_root` | `make-eval-root` (`src/cadr-evals/harness.lisp`) | isolated eval directory (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
+
+Leftover of the `evals_harness` hole on `harness.lisp`. Timed work is
+creating an isolated temp root with the `cadr-eval-` prefix and no
+workspace yet — not `run-coding-agent-eval`, not prompt/reload. Observed
+`mer_exists` / `mer_prefix` / `mer_no_ws` / `mer_n` are exact. First n=5
+freeze **1.672×** (73.6 / 44.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
+commit no optimize.
+
+### Pair 350 — `evals_harness` (normalize_step_type)
+
+| metric | cadr | pi |
+|---|---|---|
+| `normalize_step_type` | `normalize-step-type` (`src/cadr-evals/harness.lisp`) | step type coercion (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
+
+Leftover sibling of Pair 349 `make_eval_root` on the same `evals_harness`
+hole. Timed work is keyword / symbol / string / other coercion — not
+`normalize-eval-steps` of a sequence, not prompt-agent. Observed `nst_kw`
+/ `nst_sym` / `nst_str` / `nst_bad` / `nst_n` are exact. First n=5 freeze
+**1.003×** (0.256 / 0.255 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
+commit no optimize.
+
+### Pair 351 — `evals_harness` (selected_eval_tools)
+
+| metric | cadr | pi |
+|---|---|---|
+| `selected_eval_tools` | `selected-eval-tools` (`src/cadr-evals/harness.lisp`) | coding-tool selection (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
+
+Leftover sibling of Pairs 349–350 on the same `evals_harness` hole. Timed
+work is default four-tool set, `:all` empty, and exclude-`bash` filter —
+not `make-coding-tools` as a CLI bootstrap pair, not execute. Observed
+`set_n` / `set_names` / `set_all` / `set_filt_n` / `set_no_bash` /
+`set_cases` are exact. First n=5 freeze **1.506×** (19.9 / 13.2 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.make_eval_root` (`make-eval-root` on
+  `src/cadr-evals/harness.lisp` vs baseline isolated eval directory). Observed
+  `mer_exists` / `mer_prefix` / `mer_no_ws` / `mer_n` exact.
+  n=5 **1.672×** (73.6 / 44.0 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 349). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13: pair `evals_harness.normalize_step_type` (`normalize-step-type` on
+  `src/cadr-evals/harness.lisp` vs baseline step type coercion). Observed
+  `nst_kw` / `nst_sym` / `nst_str` / `nst_bad` / `nst_n` exact.
+  n=5 **1.003×** (0.256 / 0.255 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 350). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13: pair `evals_harness.selected_eval_tools` (`selected-eval-tools` on
+  `src/cadr-evals/harness.lisp` vs baseline coding-tool selection). Observed
+  `set_n` / `set_names` / `set_all` / `set_filt_n` / `set_no_bash` / `set_cases` exact.
+  n=5 **1.506×** (19.9 / 13.2 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 351). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.pending_count` (`file-mutation-queue-state-pending-count` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.pending` after enqueue).
   Observed `fmqp_shared` / `fmqp_other` / `fmqp_missing` / `fmqp_alias` /
