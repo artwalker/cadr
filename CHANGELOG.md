@@ -92,6 +92,31 @@ tag/Release step.
   `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
   (`lc_n` / `lc_sleep` / help text), not these metrics. Pair 294 is on the
   over-1× ledger. Pairs 292–294.
+- Goal 20 P.13: pair `provider_registry_defs.merge_environment` (`merge-provider-environment` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getProviderEnvValue`).
+  Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` exact.
+  n=5 **0.114×** (0.320 / 2.803 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `provider_registry_defs.runtime_models` (`provider-runtime-models` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getBuiltinModels`).
+  Observed `rm_openai` / `rm_anthropic` / `rm_google` / `rm_unknown` exact.
+  n=5 **3.733×** (17.89 / 4.794 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `provider_registry_defs.structured_api_key_login`
+  (`provider-definition-structured-api-key-login-p` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs baseline Bedrock/Vertex
+  `ApiKeyAuth.login` select flow). Observed `sl_openai` / `sl_anthropic` / `sl_google` /
+  `sl_bedrock` / `sl_vertex` exact.
+  n=5 **0.000831×** (0.176 / 211.2 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `image_runtime.output_modalities` /
+  `image_runtime.openrouter_content` /
+  `image_runtime.parse_data_image` on `src/cadr-ai/images.lisp` (Pairs
+  298–300). Observed `om_*` / `oc_*` / `pd_*` exact. Measure-only. No
+  `src/` optimization. n=5 on host `cursor`: **0.657×** (0.196 / 0.299
+  µs), **3.34×** (1.367 / 0.409 µs), **1.43×** (0.555 / 0.387 µs);
+  ceiling 8.0. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not these metrics.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`

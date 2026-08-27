@@ -65,6 +65,9 @@
 ;;;;  50. image_runtime find-image-model vs getImageModel
 ;;;;  51. image_runtime format-image-dimension-note vs formatDimensionNote
 ;;;;  52. image_runtime get-images-api-provider vs getImagesApiProvider
+;;;; 298. image_runtime image-output-modalities vs buildParams modalities
+;;;; 299. image_runtime openrouter-image-content vs buildParams content parts
+;;;; 300. image_runtime parse-data-image vs generateImages data-URL parse
 ;;;;  53. ai_support uuid-v7 vs uuidv7
 ;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
 ;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
@@ -340,6 +343,9 @@
     ("image_runtime.lookup" . 50)
     ("image_runtime.dimension_note" . 50)
     ("image_runtime.api_provider" . 50)
+    ("image_runtime.output_modalities" . 50)
+    ("image_runtime.openrouter_content" . 50)
+    ("image_runtime.parse_data_image" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
@@ -530,6 +536,9 @@
     ("cli_sdk.model_runtime" . 5)
     ("provider_registry_defs.lookup" . 50)
     ("provider_registry_defs.definition_ids" . 125)
+    ("provider_registry_defs.merge_environment" . 50)
+    ("provider_registry_defs.runtime_models" . 50)
+    ("provider_registry_defs.structured_api_key_login" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
@@ -6722,12 +6731,80 @@
    (image-api-provider-flag :fixture-images)
    (image-api-provider-flag :nope)))
 
+(defparameter *image-modality-gemini* nil)
+(defparameter *image-modality-flux* nil)
+
+(defun ensure-image-openrouter-models ()
+  (unless *image-modality-gemini*
+    (setf *image-modality-gemini*
+          (cadr-ai:find-image-model
+           :openrouter "google/gemini-2.5-flash-image"))
+    (setf *image-modality-flux*
+          (cadr-ai:find-image-model
+           :openrouter "black-forest-labs/flux.2-pro"))))
+
+(defun modalities-has-text (mods)
+  (if (find "text" mods :test #'string=) 1 0))
+
+(defun run-image-runtime-output-modalities ()
+  (ensure-image-openrouter-models)
+  (let ((gemini (cadr-ai::image-output-modalities *image-modality-gemini*))
+        (flux (cadr-ai::image-output-modalities *image-modality-flux*)))
+    (list (length gemini)
+          (modalities-has-text gemini)
+          (length flux)
+          (modalities-has-text flux))))
+
+(defun parse-data-image-obs (value)
+  (let ((parsed (cadr-ai::parse-data-image value)))
+    (if parsed
+        (list (cadr-ai:image-content-mime-type parsed)
+              (cadr-ai:image-content-data parsed)
+              1)
+        (list "" "" 0))))
+
+(defun run-image-runtime-parse-data-image ()
+  (append
+   (parse-data-image-obs "data:image/png;base64,ZmFrZS1wbmc=")
+   (list
+    (third (parse-data-image-obs "not-an-image"))
+    (third (parse-data-image-obs "https://example.com/x.png")))))
+
+(defun run-image-runtime-openrouter-content ()
+  (let* ((text
+           (cadr-ai:make-text-content :text "Generate a dog"))
+         (image
+           (cadr-ai:make-image-content
+            :mime-type "image/png"
+            :data "aW1hZ2U="))
+         (text-part (cadr-ai::openrouter-image-content text))
+         (image-part (cadr-ai::openrouter-image-content image))
+         (url
+           (cadr-ai::json-get
+            (cadr-ai::json-get image-part "image_url")
+            "url")))
+    (list
+     (or (cadr-ai::json-get text-part "type") "")
+     (or (cadr-ai::json-get text-part "text") "")
+     (or (cadr-ai::json-get image-part "type") "")
+     (or url "")
+     (if (and (string= (or (cadr-ai::json-get text-part "type") "")
+                       "text")
+              (string= (or (cadr-ai::json-get image-part "type") "")
+                       "image_url"))
+         1
+         0))))
+
 (defun measure-image-runtime ()
+  (ensure-image-openrouter-models)
   (let ((dims (run-image-runtime))
         (mime (run-image-runtime-mime))
         (lookup (run-image-runtime-lookup))
         (notes (run-image-runtime-dimension-note))
-        (api (run-image-runtime-api-provider)))
+        (api (run-image-runtime-api-provider))
+        (modalities (run-image-runtime-output-modalities))
+        (content (run-image-runtime-openrouter-content))
+        (parsed (run-image-runtime-parse-data-image)))
     (json-object
      "observed"
      (json-object
@@ -6748,7 +6825,21 @@
       "note_half" (second notes)
       "note_plain" (third notes)
       "api_fixture" (first api)
-      "api_unknown" (second api))
+      "api_unknown" (second api)
+      "om_gemini_n" (first modalities)
+      "om_gemini_text" (second modalities)
+      "om_flux_n" (third modalities)
+      "om_flux_text" (fourth modalities)
+      "oc_text_type" (first content)
+      "oc_text" (second content)
+      "oc_img_type" (third content)
+      "oc_img_url" (fourth content)
+      "oc_ok" (fifth content)
+      "pd_ok_mime" (first parsed)
+      "pd_ok_data" (second parsed)
+      "pd_ok" (third parsed)
+      "pd_miss" (fourth parsed)
+      "pd_plain" (fifth parsed))
      "dimensions"
      (collect "image_runtime.dimensions"
               (lambda ()
@@ -6773,7 +6864,22 @@
      (collect "image_runtime.api_provider"
               (lambda ()
                 (lambda ()
-                  (run-image-runtime-api-provider)))))))
+                  (run-image-runtime-api-provider))))
+     "output_modalities"
+     (collect "image_runtime.output_modalities"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-output-modalities))))
+     "openrouter_content"
+     (collect "image_runtime.openrouter_content"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-openrouter-content))))
+     "parse_data_image"
+     (collect "image_runtime.parse_data_image"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-parse-data-image)))))))
 
 (defun rpc-jsonl-object ()
   (cadr-ai::json-object
@@ -14882,9 +14988,58 @@
      (length ids)
      (cadr-ai::provider-definition-ids-sorted-digest))))
 
+(defun run-provider-runtime-models ()
+  (flet ((model-count (id)
+           (length (cadr-ai::provider-runtime-models id))))
+    (list
+     (if (plusp (model-count :openai)) 1 0)
+     (if (plusp (model-count :anthropic)) 1 0)
+     (if (plusp (model-count :google)) 1 0)
+     (if (zerop (model-count :no-such-provider)) 1 0))))
+
+(defun run-provider-merge-environment ()
+  (let ((merged
+          (cadr-ai::merge-provider-environment
+           '(("OPENAI_API_KEY" . "sk-explicit")
+             ("AZURE_OPENAI_BASE_URL" . "https://explicit.example"))
+           '(("OPENAI_API_KEY" . "sk-ambient")
+             ("GEMINI_API_KEY" . "sk-gemini-ambient")))))
+    (list
+     (if (equal (cdr (assoc "OPENAI_API_KEY" merged :test #'string=))
+                "sk-explicit")
+         1
+         0)
+     (if (equal (cdr (assoc "GEMINI_API_KEY" merged :test #'string=))
+                "sk-gemini-ambient")
+         1
+         0)
+     (if (equal (cdr (assoc "AZURE_OPENAI_BASE_URL" merged :test #'string=))
+                "https://explicit.example")
+         1
+         0)
+     (if (assoc "MISSING_KEY" merged :test #'string=)
+         0
+         1))))
+
+(defun run-provider-structured-api-key-login ()
+  (flet ((flag (id)
+           (if (cadr-ai:provider-definition-structured-api-key-login-p
+                (cadr-ai::find-provider-definition id))
+               1
+               0)))
+    (list
+     (flag :openai)
+     (flag :anthropic)
+     (flag :google)
+     (flag :amazon-bedrock)
+     (flag :google-vertex))))
+
 (defun measure-provider-registry-defs ()
   (let* ((lookup-observed (run-provider-registry-defs))
-         (ids-observed (run-provider-definition-ids)))
+         (ids-observed (run-provider-definition-ids))
+         (merge-observed (run-provider-merge-environment))
+         (models-observed (run-provider-runtime-models))
+         (structured-observed (run-provider-structured-api-key-login)))
     (json-object
      "observed"
      (json-object
@@ -14893,7 +15048,20 @@
       "google" (third lookup-observed)
       "unknown" (fourth lookup-observed)
       "count" (fourth ids-observed)
-      "sorted_digest" (fifth ids-observed))
+      "sorted_digest" (fifth ids-observed)
+      "me_oa" (first merge-observed)
+      "me_gemini" (second merge-observed)
+      "me_azure" (third merge-observed)
+      "me_miss" (fourth merge-observed)
+      "rm_openai" (first models-observed)
+      "rm_anthropic" (second models-observed)
+      "rm_google" (third models-observed)
+      "rm_unknown" (fourth models-observed)
+      "sl_openai" (first structured-observed)
+      "sl_anthropic" (second structured-observed)
+      "sl_google" (third structured-observed)
+      "sl_bedrock" (fourth structured-observed)
+      "sl_vertex" (fifth structured-observed))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
@@ -14903,7 +15071,22 @@
      (collect "provider_registry_defs.definition_ids"
               (lambda ()
                 (lambda ()
-                  (run-provider-definition-ids)))))))
+                  (run-provider-definition-ids))))
+     "merge_environment"
+     (collect "provider_registry_defs.merge_environment"
+              (lambda ()
+                (lambda ()
+                  (run-provider-merge-environment))))
+     "runtime_models"
+     (collect "provider_registry_defs.runtime_models"
+              (lambda ()
+                (lambda ()
+                  (run-provider-runtime-models))))
+     "structured_api_key_login"
+     (collect "provider_registry_defs.structured_api_key_login"
+              (lambda ()
+                (lambda ()
+                  (run-provider-structured-api-key-login)))))))
 
 (defun run-skill-prompt-build ()
   (let* ((cwd "/tmp/proj")
@@ -15313,6 +15496,12 @@
       "src/cadr-cli/interactive/images.lisp format-image-dimension-note"
       "image_runtime.api_provider"
       "src/cadr-ai/capabilities/image-runtime.lisp get-images-api-provider"
+      "image_runtime.output_modalities"
+      "src/cadr-ai/images.lisp image-output-modalities"
+      "image_runtime.openrouter_content"
+      "src/cadr-ai/images.lisp openrouter-image-content"
+      "image_runtime.parse_data_image"
+      "src/cadr-ai/images.lisp parse-data-image"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
       "cli_print_rpc.jsonl_read"
@@ -15691,6 +15880,12 @@
       "src/cadr-ai/providers/definitions.lisp find-provider-definition"
       "provider_registry_defs.definition_ids"
       "src/cadr-ai/providers/definitions.lisp list-provider-definition-ids"
+      "provider_registry_defs.merge_environment"
+      "src/cadr-ai/providers/runtime-projection.lisp merge-provider-environment"
+      "provider_registry_defs.runtime_models"
+      "src/cadr-ai/providers/runtime-projection.lisp provider-runtime-models"
+      "provider_registry_defs.structured_api_key_login"
+      "src/cadr-ai/providers/runtime-projection.lisp provider-definition-structured-api-key-login-p"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "cli_bootstrap_sessions.coding_tools"

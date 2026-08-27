@@ -464,6 +464,60 @@
    "branch": "cursor/pair-292-294-tool-manager-af5e"
   },
   {
+   "pair": 295,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.merge_environment",
+   "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+  },
+  {
+   "pair": 296,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.runtime_models",
+   "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+  },
+  {
+   "pair": 297,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.structured_api_key_login",
+   "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+  },
+  {
+   "pair": 298,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.output_modalities",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
+   "pair": 299,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.openrouter_content",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
+   "pair": 300,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.parse_data_image",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
    "pair": 313,
    "lane": "a",
    "status": "done",

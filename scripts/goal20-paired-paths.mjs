@@ -218,6 +218,9 @@ const REPETITIONS = {
 	"image_runtime.lookup": 50,
 	"image_runtime.dimension_note": 50,
 	"image_runtime.api_provider": 50,
+	"image_runtime.output_modalities": 50,
+	"image_runtime.openrouter_content": 50,
+	"image_runtime.parse_data_image": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
@@ -408,6 +411,9 @@ const REPETITIONS = {
 	"cli_sdk.model_runtime": 5,
 	"provider_registry_defs.lookup": 50,
 	"provider_registry_defs.definition_ids": 125,
+	"provider_registry_defs.merge_environment": 50,
+	"provider_registry_defs.runtime_models": 50,
+	"provider_registry_defs.structured_api_key_login": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
@@ -817,6 +823,7 @@ const cacheStatsModule = await import(
 	moduleUrl("packages/coding-agent/src/core/cache-stats.ts")
 );
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
+const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
 const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
@@ -5899,12 +5906,108 @@ function runImageRuntimeApiProvider() {
 	};
 }
 
+let imageModalityGemini = null;
+let imageModalityFlux = null;
+
+function ensureImageOpenrouterModels() {
+	if (imageModalityGemini) {
+		return;
+	}
+	imageModalityGemini = imageModelsModule.getImageModel(
+		"openrouter",
+		"google/gemini-2.5-flash-image",
+	);
+	imageModalityFlux = imageModelsModule.getImageModel(
+		"openrouter",
+		"black-forest-labs/flux.2-pro",
+	);
+}
+
+function imageOutputModalities(model) {
+	return model.output.includes("text") ? ["image", "text"] : ["image"];
+}
+
+function runImageRuntimeOutputModalities() {
+	ensureImageOpenrouterModels();
+	const gemini = imageOutputModalities(imageModalityGemini);
+	const flux = imageOutputModalities(imageModalityFlux);
+	return {
+		om_gemini_n: gemini.length,
+		om_gemini_text: gemini.includes("text") ? 1 : 0,
+		om_flux_n: flux.length,
+		om_flux_text: flux.includes("text") ? 1 : 0,
+	};
+}
+
+function parseDataImage(value) {
+	if (typeof value !== "string" || !value.startsWith("data:")) {
+		return null;
+	}
+	const matches = value.match(/^data:([^;]+);base64,(.+)$/);
+	if (!matches) {
+		return null;
+	}
+	return { mimeType: matches[1], data: matches[2] };
+}
+
+function parseDataImageObs(value) {
+	const parsed = parseDataImage(value);
+	if (!parsed) {
+		return { mime: "", data: "", ok: 0 };
+	}
+	return { mime: parsed.mimeType, data: parsed.data, ok: 1 };
+}
+
+function runImageRuntimeParseDataImage() {
+	const ok = parseDataImageObs("data:image/png;base64,ZmFrZS1wbmc=");
+	return {
+		pd_ok_mime: ok.mime,
+		pd_ok_data: ok.data,
+		pd_ok: ok.ok,
+		pd_miss: parseDataImageObs("not-an-image").ok,
+		pd_plain: parseDataImageObs("https://example.com/x.png").ok,
+	};
+}
+
+function openrouterImageContent(item) {
+	if (item.type === "text") {
+		return { type: "text", text: item.text };
+	}
+	return {
+		type: "image_url",
+		image_url: { url: `data:${item.mimeType};base64,${item.data}` },
+	};
+}
+
+function runImageRuntimeOpenrouterContent() {
+	const textPart = openrouterImageContent({
+		type: "text",
+		text: "Generate a dog",
+	});
+	const imagePart = openrouterImageContent({
+		type: "image",
+		mimeType: "image/png",
+		data: "aW1hZ2U=",
+	});
+	return {
+		oc_text_type: textPart.type,
+		oc_text: textPart.text,
+		oc_img_type: imagePart.type,
+		oc_img_url: imagePart.image_url.url,
+		oc_ok: textPart.type === "text" && imagePart.type === "image_url" ? 1 : 0,
+	};
+}
+
 async function measureImageRuntime() {
+	ensureImageOpenrouterModels();
 	const dims = runImageRuntime();
 	const mime = runImageRuntimeMime();
 	const lookup = runImageRuntimeLookup();
 	const notes = runImageRuntimeDimensionNote();
 	const api = runImageRuntimeApiProvider();
+	const modalities = runImageRuntimeOutputModalities();
+	const content = runImageRuntimeOpenrouterContent();
+	const parsed = runImageRuntimeParseDataImage();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -5921,7 +6024,25 @@ async function measureImageRuntime() {
 		api_provider: await collect("image_runtime.api_provider", () => {
 			return () => runImageRuntimeApiProvider();
 		}),
-		observed: { ...dims, ...mime, ...lookup, ...notes, ...api },
+		output_modalities: await collect("image_runtime.output_modalities", () => {
+			return () => runImageRuntimeOutputModalities();
+		}),
+		openrouter_content: await collect("image_runtime.openrouter_content", () => {
+			return () => runImageRuntimeOpenrouterContent();
+		}),
+		parse_data_image: await collect("image_runtime.parse_data_image", () => {
+			return () => runImageRuntimeParseDataImage();
+		}),
+		observed: {
+			...dims,
+			...mime,
+			...lookup,
+			...notes,
+			...api,
+			...modalities,
+			...content,
+			...parsed,
+		},
 	};
 }
 
@@ -15067,9 +15188,98 @@ function runProviderDefinitionIds() {
 	};
 }
 
+function runProviderRuntimeModels() {
+	const openai = builtinProvidersModule.getBuiltinModels("openai");
+	const anthropic = builtinProvidersModule.getBuiltinModels("anthropic");
+	const google = builtinProvidersModule.getBuiltinModels("google");
+	const unknown = builtinProvidersModule.getBuiltinModels("no-such-provider");
+	return {
+		rm_openai: openai.length > 0 ? 1 : 0,
+		rm_anthropic: anthropic.length > 0 ? 1 : 0,
+		rm_google: google.length > 0 ? 1 : 0,
+		rm_unknown: unknown.length === 0 ? 1 : 0,
+	};
+}
+
+function runProviderMergeEnvironment() {
+	const explicit = {
+		OPENAI_API_KEY: "sk-explicit",
+		AZURE_OPENAI_BASE_URL: "https://explicit.example",
+	};
+	const previousOpenAi = process.env.OPENAI_API_KEY;
+	const previousGemini = process.env.GEMINI_API_KEY;
+	const previousAzure = process.env.AZURE_OPENAI_BASE_URL;
+	process.env.OPENAI_API_KEY = "sk-ambient";
+	process.env.GEMINI_API_KEY = "sk-gemini-ambient";
+	delete process.env.AZURE_OPENAI_BASE_URL;
+	try {
+		return {
+			me_oa:
+				providerEnvModule.getProviderEnvValue("OPENAI_API_KEY", explicit) ===
+				"sk-explicit"
+					? 1
+					: 0,
+			me_gemini:
+				providerEnvModule.getProviderEnvValue("GEMINI_API_KEY", explicit) ===
+				"sk-gemini-ambient"
+					? 1
+					: 0,
+			me_azure:
+				providerEnvModule.getProviderEnvValue("AZURE_OPENAI_BASE_URL", explicit) ===
+				"https://explicit.example"
+					? 1
+					: 0,
+			me_miss:
+				providerEnvModule.getProviderEnvValue("MISSING_KEY", explicit) == null
+					? 1
+					: 0,
+		};
+	} finally {
+		if (previousOpenAi === undefined) {
+			delete process.env.OPENAI_API_KEY;
+		} else {
+			process.env.OPENAI_API_KEY = previousOpenAi;
+		}
+		if (previousGemini === undefined) {
+			delete process.env.GEMINI_API_KEY;
+		} else {
+			process.env.GEMINI_API_KEY = previousGemini;
+		}
+		if (previousAzure === undefined) {
+			delete process.env.AZURE_OPENAI_BASE_URL;
+		} else {
+			process.env.AZURE_OPENAI_BASE_URL = previousAzure;
+		}
+	}
+}
+
+function structuredApiKeyLoginFlag(providersById, providerId) {
+	const login = providersById.get(providerId)?.auth?.apiKey?.login;
+	if (typeof login !== "function") {
+		return 0;
+	}
+	return Function.prototype.toString.call(login).includes("select") ? 1 : 0;
+}
+
+function runProviderStructuredApiKeyLogin() {
+	const providersById = new Map(
+		builtinProvidersModule.builtinProviders().map((provider) => [provider.id, provider]),
+	);
+	return {
+		sl_openai: structuredApiKeyLoginFlag(providersById, "openai"),
+		sl_anthropic: structuredApiKeyLoginFlag(providersById, "anthropic"),
+		sl_google: structuredApiKeyLoginFlag(providersById, "google"),
+		sl_bedrock: structuredApiKeyLoginFlag(providersById, "amazon-bedrock"),
+		sl_vertex: structuredApiKeyLoginFlag(providersById, "google-vertex"),
+	};
+}
+
 async function measureProviderRegistryDefs() {
 	const lookupObserved = runProviderRegistryDefs();
 	const idsObserved = runProviderDefinitionIds();
+	const mergeObserved = runProviderMergeEnvironment();
+	const modelsObserved = runProviderRuntimeModels();
+	const structuredObserved = runProviderStructuredApiKeyLogin();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -15077,10 +15287,25 @@ async function measureProviderRegistryDefs() {
 		definition_ids: await collect("provider_registry_defs.definition_ids", () => {
 			return () => runProviderDefinitionIds();
 		}),
+		merge_environment: await collect("provider_registry_defs.merge_environment", () => {
+			return () => runProviderMergeEnvironment();
+		}),
+		runtime_models: await collect("provider_registry_defs.runtime_models", () => {
+			return () => runProviderRuntimeModels();
+		}),
+		structured_api_key_login: await collect(
+			"provider_registry_defs.structured_api_key_login",
+			() => {
+				return () => runProviderStructuredApiKeyLogin();
+			},
+		),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
 			sorted_digest: idsObserved.sorted_digest,
+			...mergeObserved,
+			...modelsObserved,
+			...structuredObserved,
 		},
 	};
 }
@@ -15725,6 +15950,12 @@ const result = {
 				"packages/coding-agent/src/utils/image-resize.ts formatDimensionNote",
 			"image_runtime.api_provider":
 				"packages/ai/src/images-api-registry.ts getImagesApiProvider",
+			"image_runtime.output_modalities":
+				"packages/ai/src/api/openrouter-images.ts buildParams modalities",
+			"image_runtime.openrouter_content":
+				"packages/ai/src/api/openrouter-images.ts buildParams content parts",
+			"image_runtime.parse_data_image":
+				"packages/ai/src/api/openrouter-images.ts generateImages data-URL parse",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"cli_print_rpc.jsonl_read":
@@ -16085,6 +16316,12 @@ const result = {
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"provider_registry_defs.definition_ids":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
+			"provider_registry_defs.merge_environment":
+				"packages/ai/src/utils/provider-env.ts getProviderEnvValue",
+			"provider_registry_defs.runtime_models":
+				"packages/ai/src/providers/all.ts getBuiltinModels",
+			"provider_registry_defs.structured_api_key_login":
+				"packages/ai/src/providers/amazon-bedrock.ts + google-vertex.ts ApiKeyAuth.login select flow",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"cli_bootstrap_sessions.coding_tools":
