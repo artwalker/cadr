@@ -3200,7 +3200,9 @@ alias, missing path, distinct sibling, repeat lookup) — not path encoding,
 not `with-file-mutation-queue`, not write/edit tools. Same staged scratch
 layout as `with_queue`. Observed `fmqs_alias` / `fmqs_other` /
 `fmqs_missing` / `fmqs_repeat` / `fmqs_n` are exact. First n=5 freeze
-pending `--only-enforce`. Same commit no optimize.
+**0.879×** (109.2 / 124.3 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
