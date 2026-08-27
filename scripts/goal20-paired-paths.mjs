@@ -215,6 +215,9 @@ const REPETITIONS = {
 	"image_runtime.lookup": 50,
 	"image_runtime.dimension_note": 50,
 	"image_runtime.api_provider": 50,
+	"image_runtime.output_modalities": 50,
+	"image_runtime.openrouter_content": 50,
+	"image_runtime.parse_data_image": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
@@ -5828,12 +5831,108 @@ function runImageRuntimeApiProvider() {
 	};
 }
 
+let imageModalityGemini = null;
+let imageModalityFlux = null;
+
+function ensureImageOpenrouterModels() {
+	if (imageModalityGemini) {
+		return;
+	}
+	imageModalityGemini = imageModelsModule.getImageModel(
+		"openrouter",
+		"google/gemini-2.5-flash-image",
+	);
+	imageModalityFlux = imageModelsModule.getImageModel(
+		"openrouter",
+		"black-forest-labs/flux.2-pro",
+	);
+}
+
+function imageOutputModalities(model) {
+	return model.output.includes("text") ? ["image", "text"] : ["image"];
+}
+
+function runImageRuntimeOutputModalities() {
+	ensureImageOpenrouterModels();
+	const gemini = imageOutputModalities(imageModalityGemini);
+	const flux = imageOutputModalities(imageModalityFlux);
+	return {
+		om_gemini_n: gemini.length,
+		om_gemini_text: gemini.includes("text") ? 1 : 0,
+		om_flux_n: flux.length,
+		om_flux_text: flux.includes("text") ? 1 : 0,
+	};
+}
+
+function parseDataImage(value) {
+	if (typeof value !== "string" || !value.startsWith("data:")) {
+		return null;
+	}
+	const matches = value.match(/^data:([^;]+);base64,(.+)$/);
+	if (!matches) {
+		return null;
+	}
+	return { mimeType: matches[1], data: matches[2] };
+}
+
+function parseDataImageObs(value) {
+	const parsed = parseDataImage(value);
+	if (!parsed) {
+		return { mime: "", data: "", ok: 0 };
+	}
+	return { mime: parsed.mimeType, data: parsed.data, ok: 1 };
+}
+
+function runImageRuntimeParseDataImage() {
+	const ok = parseDataImageObs("data:image/png;base64,ZmFrZS1wbmc=");
+	return {
+		pd_ok_mime: ok.mime,
+		pd_ok_data: ok.data,
+		pd_ok: ok.ok,
+		pd_miss: parseDataImageObs("not-an-image").ok,
+		pd_plain: parseDataImageObs("https://example.com/x.png").ok,
+	};
+}
+
+function openrouterImageContent(item) {
+	if (item.type === "text") {
+		return { type: "text", text: item.text };
+	}
+	return {
+		type: "image_url",
+		image_url: { url: `data:${item.mimeType};base64,${item.data}` },
+	};
+}
+
+function runImageRuntimeOpenrouterContent() {
+	const textPart = openrouterImageContent({
+		type: "text",
+		text: "Generate a dog",
+	});
+	const imagePart = openrouterImageContent({
+		type: "image",
+		mimeType: "image/png",
+		data: "aW1hZ2U=",
+	});
+	return {
+		oc_text_type: textPart.type,
+		oc_text: textPart.text,
+		oc_img_type: imagePart.type,
+		oc_img_url: imagePart.image_url.url,
+		oc_ok: textPart.type === "text" && imagePart.type === "image_url" ? 1 : 0,
+	};
+}
+
 async function measureImageRuntime() {
+	ensureImageOpenrouterModels();
 	const dims = runImageRuntime();
 	const mime = runImageRuntimeMime();
 	const lookup = runImageRuntimeLookup();
 	const notes = runImageRuntimeDimensionNote();
 	const api = runImageRuntimeApiProvider();
+	const modalities = runImageRuntimeOutputModalities();
+	const content = runImageRuntimeOpenrouterContent();
+	const parsed = runImageRuntimeParseDataImage();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -5850,7 +5949,25 @@ async function measureImageRuntime() {
 		api_provider: await collect("image_runtime.api_provider", () => {
 			return () => runImageRuntimeApiProvider();
 		}),
-		observed: { ...dims, ...mime, ...lookup, ...notes, ...api },
+		output_modalities: await collect("image_runtime.output_modalities", () => {
+			return () => runImageRuntimeOutputModalities();
+		}),
+		openrouter_content: await collect("image_runtime.openrouter_content", () => {
+			return () => runImageRuntimeOpenrouterContent();
+		}),
+		parse_data_image: await collect("image_runtime.parse_data_image", () => {
+			return () => runImageRuntimeParseDataImage();
+		}),
+		observed: {
+			...dims,
+			...mime,
+			...lookup,
+			...notes,
+			...api,
+			...modalities,
+			...content,
+			...parsed,
+		},
 	};
 }
 
@@ -15752,6 +15869,12 @@ const result = {
 				"packages/coding-agent/src/utils/image-resize.ts formatDimensionNote",
 			"image_runtime.api_provider":
 				"packages/ai/src/images-api-registry.ts getImagesApiProvider",
+			"image_runtime.output_modalities":
+				"packages/ai/src/api/openrouter-images.ts buildParams modalities",
+			"image_runtime.openrouter_content":
+				"packages/ai/src/api/openrouter-images.ts buildParams content parts",
+			"image_runtime.parse_data_image":
+				"packages/ai/src/api/openrouter-images.ts generateImages data-URL parse",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"cli_print_rpc.jsonl_read":

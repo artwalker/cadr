@@ -131,7 +131,7 @@ METRICS = {
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
-    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider"),
+    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats"),
     "tui_latex": ("render", "normalize_output"),
     "tui_mermaid": ("render", "source_box", "transform"),
@@ -516,6 +516,18 @@ RATIO_CEILINGS = {
     # 1.09x (0.23 / 0.21 us). 8.0 is first-freeze
     # headroom (variance). Ratchet down only.
     "image_runtime.api_provider": 8.0,
+    # Frozen from the first n=5 image_runtime.output_modalities
+    # leftover pair: observed 0.657x (0.196 / 0.299 us). cadr leads.
+    # 8.0 is first-freeze headroom. Ratchet down only.
+    "image_runtime.output_modalities": 8.0,
+    # Frozen from the first n=5 image_runtime.openrouter_content
+    # leftover pair: observed 3.34x (1.367 / 0.409 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "image_runtime.openrouter_content": 8.0,
+    # Frozen from the first n=5 image_runtime.parse_data_image
+    # leftover pair: observed 1.43x (0.555 / 0.387 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "image_runtime.parse_data_image": 8.0,
     # Frozen from the first Friend-MachineD non-quick cli_print_rpc
     # pair (samples=5): observed 13.21x (3.3 / 0.25 us). 8.0 follows
     # the microsecond-floor / agent_proxy variance precedent (not
@@ -1865,6 +1877,20 @@ OBSERVED_EXACT = {
         "note_plain",
         "api_fixture",
         "api_unknown",
+        "om_gemini_n",
+        "om_gemini_text",
+        "om_flux_n",
+        "om_flux_text",
+        "oc_text_type",
+        "oc_text",
+        "oc_img_type",
+        "oc_img_url",
+        "oc_ok",
+        "pd_ok_mime",
+        "pd_ok_data",
+        "pd_ok",
+        "pd_miss",
+        "pd_plain",
     ),
     "cli_print_rpc": (
         "line_chars",

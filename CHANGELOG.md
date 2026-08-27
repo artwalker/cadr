@@ -88,6 +88,14 @@ tag/Release step.
   `sl_bedrock` / `sl_vertex` exact.
   n=5 **0.000831×** (0.176 / 211.2 µs) on host `cursor`, ceiling 8.0. Measure-only.
   Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `image_runtime.output_modalities` /
+  `image_runtime.openrouter_content` /
+  `image_runtime.parse_data_image` on `src/cadr-ai/images.lisp` (Pairs
+  298–300). Observed `om_*` / `oc_*` / `pd_*` exact. Measure-only. No
+  `src/` optimization. n=5 on host `cursor`: **0.657×** (0.196 / 0.299
+  µs), **3.34×** (1.367 / 0.409 µs), **1.43×** (0.555 / 0.387 µs);
+  ceiling 8.0. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not these metrics.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`
