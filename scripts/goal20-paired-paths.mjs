@@ -168,6 +168,9 @@ const REPETITIONS = {
 	"find_tool.pattern_match": 50,
 	"find_tool.find_files": 50,
 	"find_tool.make_tool": 50,
+	"tool_manager.get_tool_path": 50,
+	"tool_manager.ensure_tool": 50,
+	"tool_manager.cleanup_quarantine": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -632,6 +635,9 @@ const rpcJsonlModule = await import(moduleUrl("packages/coding-agent/src/modes/r
 process.env.PI_TIMING = "1";
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
+const windowsSelfUpdateModule = await import(
+	moduleUrl("packages/coding-agent/src/utils/windows-self-update.ts"),
+);
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
 const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
@@ -3145,6 +3151,130 @@ async function measureOutputAccumulator() {
 			...appendObserved,
 			...snapshotObserved,
 			...finishObserved,
+		},
+	};
+}
+
+function tmTruth(value) {
+	return value ? 1 : 0;
+}
+
+function tmWriteStub(directory, name) {
+	mkdirSync(directory, { recursive: true });
+	const filePath = path.join(directory, name);
+	writeFileSync(filePath, "stub");
+	return filePath;
+}
+
+function tmDeleteIfExists(filePath) {
+	if (existsSync(filePath)) unlinkSync(filePath);
+}
+
+function tmWithEmptyPath(fn) {
+	const previous = process.env.PATH;
+	process.env.PATH = "/nonexistent-goal20-tool-manager";
+	try {
+		return fn();
+	} finally {
+		if (previous === undefined) delete process.env.PATH;
+		else process.env.PATH = previous;
+	}
+}
+
+let toolsManagerModulePromise;
+async function loadToolsManager() {
+	if (!toolsManagerModulePromise) {
+		process.env[configModule.ENV_AGENT_DIR] = agentDirectory;
+		toolsManagerModulePromise = import(moduleUrl("packages/coding-agent/src/utils/tools-manager.ts"));
+	}
+	return toolsManagerModulePromise;
+}
+
+function runToolManagerGetToolPath(toolsManager) {
+	const toolsDir = configModule.getBinDir();
+	mkdirSync(toolsDir, { recursive: true });
+	const fd = tmWriteStub(toolsDir, "fd");
+	const rg = tmWriteStub(toolsDir, "rg");
+	const localFd = toolsManager.getToolPath("fd");
+	const localRg = toolsManager.getToolPath("rg");
+	tmDeleteIfExists(fd);
+	tmDeleteIfExists(rg);
+	const missFd = tmWithEmptyPath(() => toolsManager.getToolPath("fd"));
+	const missRg = tmWithEmptyPath(() => toolsManager.getToolPath("rg"));
+	return {
+		gtp_local_fd: tmTruth(localFd && path.basename(localFd) === "fd"),
+		gtp_local_rg: tmTruth(localRg && path.basename(localRg) === "rg"),
+		gtp_miss_fd: tmTruth(missFd == null),
+		gtp_miss_rg: tmTruth(missRg == null),
+		gtp_n: 4,
+	};
+}
+
+async function runToolManagerEnsureTool(toolsManager) {
+	const toolsDir = configModule.getBinDir();
+	mkdirSync(toolsDir, { recursive: true });
+	const fd = tmWriteStub(toolsDir, "fd");
+	const local = await toolsManager.ensureTool("fd");
+	tmDeleteIfExists(fd);
+	const previousOffline = process.env.PI_OFFLINE;
+	const previousPath = process.env.PATH;
+	let offline;
+	process.env.PI_OFFLINE = "1";
+	process.env.PATH = "/nonexistent-goal20-tool-manager";
+	try {
+		offline = await toolsManager.ensureTool("fd");
+	} finally {
+		if (previousPath === undefined) delete process.env.PATH;
+		else process.env.PATH = previousPath;
+		if (previousOffline === undefined) delete process.env.PI_OFFLINE;
+		else process.env.PI_OFFLINE = previousOffline;
+	}
+	return {
+		et_local_fd: tmTruth(local && path.basename(local) === "fd"),
+		et_offline_miss: tmTruth(offline == null),
+		et_n: 2,
+	};
+}
+
+function runToolManagerCleanupQuarantine() {
+	const root = path.join(scratch, "tool-manager-pkg");
+	const nodeModules = path.join(root, "node_modules");
+	const pkg = path.join(nodeModules, "pkg");
+	const quarantine = path.join(nodeModules, ".pi-native-quarantine");
+	const outside = path.join(scratch, "no-modules", "pkg");
+	mkdirSync(pkg, { recursive: true });
+	mkdirSync(quarantine, { recursive: true });
+	writeFileSync(path.join(quarantine, "stale.bin"), "stub");
+	windowsSelfUpdateModule.cleanupWindowsSelfUpdateQuarantine(pkg);
+	const removed = tmTruth(!existsSync(quarantine));
+	mkdirSync(outside, { recursive: true });
+	windowsSelfUpdateModule.cleanupWindowsSelfUpdateQuarantine(outside);
+	return {
+		cq_removed: removed,
+		cq_noop: 1,
+		cq_n: 2,
+	};
+}
+
+async function measureToolManager() {
+	const toolsManager = await loadToolsManager();
+	const pathObserved = runToolManagerGetToolPath(toolsManager);
+	const ensureObserved = await runToolManagerEnsureTool(toolsManager);
+	const cleanupObserved = runToolManagerCleanupQuarantine();
+	return {
+		get_tool_path: await collect("tool_manager.get_tool_path", () => {
+			return () => runToolManagerGetToolPath(toolsManager);
+		}),
+		ensure_tool: await collect("tool_manager.ensure_tool", () => {
+			return () => runToolManagerEnsureTool(toolsManager);
+		}),
+		cleanup_quarantine: await collect("tool_manager.cleanup_quarantine", () => {
+			return () => runToolManagerCleanupQuarantine();
+		}),
+		observed: {
+			...pathObserved,
+			...ensureObserved,
+			...cleanupObserved,
 		},
 	};
 }
@@ -15238,6 +15368,8 @@ const bashTool = await measureBashTool();
 const outputAccumulator = await measureOutputAccumulator();
 process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
+process.stderr.write("goal20 pi paired paths: tool_manager\n");
+const toolManager = await measureToolManager();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -15409,6 +15541,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
 			"find_tool.make_tool":
 				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
+			"tool_manager.get_tool_path":
+				"packages/coding-agent/src/utils/tools-manager.ts getToolPath",
+			"tool_manager.ensure_tool":
+				"packages/coding-agent/src/utils/tools-manager.ts ensureTool (local / PI_OFFLINE, no network)",
+			"tool_manager.cleanup_quarantine":
+				"packages/coding-agent/src/utils/windows-self-update.ts cleanupWindowsSelfUpdateQuarantine",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15949,6 +16087,7 @@ const result = {
 		bash_tool: bashTool,
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
+		tool_manager: toolManager,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

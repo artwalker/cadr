@@ -172,7 +172,10 @@
   "session_compact.prepare_branch_entries",
   "output_accumulator.append",
   "output_accumulator.snapshot",
-  "output_accumulator.finish"
+  "output_accumulator.finish",
+  "tool_manager.get_tool_path",
+  "tool_manager.ensure_tool",
+  "tool_manager.cleanup_quarantine"
  ],
  "unpairablePaths": [
   {
@@ -1680,8 +1683,12 @@
   },
   {
    "prefix": "src/cadr-cli/tool-manager.lisp",
-   "class": "needs-pair",
-   "hole": "agent_tool_loop"
+   "class": "paired",
+   "metrics": [
+    "tool_manager.get_tool_path",
+    "tool_manager.ensure_tool",
+    "tool_manager.cleanup_quarantine"
+   ]
   },
   {
    "prefix": "src/cadr-cli/tools/bash.lisp",

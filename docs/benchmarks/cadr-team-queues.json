@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 292,
+   "nextPairNum": 301,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -438,6 +438,33 @@
      "measure": "measure-find-tool",
      "metric": "find_tool.make_tool",
      "branch": "cursor/pair-289-291-find-leftovers-c98c"
+    },
+    {
+     "pair": 292,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/tool-manager.lisp",
+     "measure": "measure-tool-manager",
+     "metric": "tool_manager.get_tool_path",
+     "branch": "cursor/pair-292-294-tool-manager-af5e"
+    },
+    {
+     "pair": 293,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/tool-manager.lisp",
+     "measure": "measure-tool-manager",
+     "metric": "tool_manager.ensure_tool",
+     "branch": "cursor/pair-292-294-tool-manager-af5e"
+    },
+    {
+     "pair": 294,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-cli/tool-manager.lisp",
+     "measure": "measure-tool-manager",
+     "metric": "tool_manager.cleanup_quarantine",
+     "branch": "cursor/pair-292-294-tool-manager-af5e"
     }
    ],
    "mergeQueue": []

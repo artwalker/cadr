@@ -63,6 +63,11 @@ tag/Release step.
   Observed `fmt_name` / `fmt_desc` / `fmt_req` / `fmt_n` exact.
   n=5 **1.41×** (131.9 / 93.3 µs) on host `cursor`, ceiling 8.0. Measure-only.
   Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `tool_manager.get_tool_path` / `ensure_tool` /
+  `cleanup_quarantine` (`src/cadr-cli/tool-manager.lisp` vs baseline
+  `getToolPath` / `ensureTool` / `cleanupWindowsSelfUpdateQuarantine`).
+  Observed `gtp_*` / `et_*` / `cq_*` exact. n=5 freeze pending.
+  Measure-only. Pairs 292–294.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`
