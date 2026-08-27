@@ -3635,10 +3635,10 @@ Leftover sibling of the `agent_tool_loop` hole on
 `src/cadr-cli/tools/powershell.lisp`. Timed work is the UTF-8 console
 encoding prefix string (length, trailing newline, `try ` lead, `UTF8`
 token) — not execute/spawn. Observed `psu_len` / `psu_nl` / `psu_try` /
-`psu_utf8` / `psu_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** on
-host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
-from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
-fail). Same commit no optimize.
+`psu_utf8` / `psu_n` are exact. First n=5 freeze **3.79×** (0.647 /
+0.171 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 302 — `powershell_tool` (prefix_command)
 
@@ -3649,10 +3649,10 @@ fail). Same commit no optimize.
 Leftover sibling of Pair 301 `utf8_prefix` on the same `agent_tool_loop`
 hole. Timed work is concatenating the UTF-8 prefix onto empty / `Get-Date`
 / `Write-Output hi` — not exec/spawn. Observed `psc_empty` / `psc_date` /
-`psc_write` / `psc_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** on
-host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
-from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
-fail). Same commit no optimize.
+`psc_write` / `psc_n` are exact. First n=5 freeze **1.39×** (0.468 /
+0.336 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 303 — `powershell_tool` (make_tool)
 
@@ -3663,10 +3663,10 @@ fail). Same commit no optimize.
 Leftover sibling of Pair 301 `utf8_prefix` and Pair 302 `prefix_command`
 on the same `agent_tool_loop` hole. Timed work is tool name / description /
 required `command` — not execute. Observed `pmt_name` / `pmt_desc` /
-`pmt_req` / `pmt_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER** on
-host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
-from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
-fail). Same commit no optimize.
+`pmt_req` / `pmt_n` are exact. First n=5 freeze **1.34×** (1.936 /
+1.448 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

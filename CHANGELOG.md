@@ -12,15 +12,21 @@ tag/Release step.
 - Goal 20 P.13: pair `powershell_tool.utf8_prefix` (`+powershell-utf8-output-prefix+` on
   `src/cadr-cli/tools/powershell.lisp` vs baseline `UTF8_OUTPUT_PREFIX`). Observed
   `psu_len` / `psu_nl` / `psu_try` / `psu_utf8` / `psu_n` exact.
-  Measure-only leftover (Pair 301). Freeze numbers land in the record commit.
+  n=5 **3.79×** (0.647 / 0.171 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 301). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
 - Goal 20 P.13: pair `powershell_tool.prefix_command` (UTF-8 prefix + command concatenate
   on `src/cadr-cli/tools/powershell.lisp` vs baseline `createLocalPowerShellOperations`
   wrap). Observed `psc_empty` / `psc_date` / `psc_write` / `psc_n` exact.
-  Measure-only leftover (Pair 302). Freeze numbers land in the record commit.
+  n=5 **1.39×** (0.468 / 0.336 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 302). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
 - Goal 20 P.13: pair `powershell_tool.make_tool` (`make-powershell-tool` on
   `src/cadr-cli/tools/powershell.lisp` vs baseline `createPowerShellToolDefinition`).
   Observed `pmt_name` / `pmt_desc` / `pmt_req` / `pmt_n` exact.
-  Measure-only leftover (Pair 303). Freeze numbers land in the record commit.
+  n=5 **1.34×** (1.936 / 1.448 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 303). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
 - Goal 20 P.13: pair `harness_events.make_end` (`make-run-end-event` on
   `src/cadr-agent/harness-events.lisp` vs baseline `RunEndEvent` object).
   Observed `hee_type` / `hee_lane` / `hee_run` / `hee_outcome` /
