@@ -145,6 +145,14 @@ tag/Release step.
   `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
   (`lc_n` / `lc_sleep` / help text), not these metrics. Pair 294 is on the
   over-1× ledger. Pairs 292–294.
+- Goal 20 P.13 leftover: pair `cli_settings.reload` / `enabled_models` /
+  `block_images` (`src/cadr-cli/settings/manager.lisp` vs baseline
+  `SettingsManager.reload` / `getEnabledModels` / `getBlockImages`).
+  Observed `rl_*` / `em_*` / `bi_*` exact. First n=5 freeze **0.593×** /
+  **5.735×** / **5.623×** (84.8 / 143.0 µs, 18.7 / 3.26 µs, 19.1 / 3.41 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not these metrics. Pairs
+  308–309 are on the over-1× ledger. Pairs 307–309.
 - Goal 20 P.13: pair `provider_registry_defs.merge_environment` (`merge-provider-environment` on
   `src/cadr-ai/providers/runtime-projection.lisp` vs baseline `getProviderEnvValue`).
   Observed `me_oa` / `me_gemini` / `me_azure` / `me_miss` exact.

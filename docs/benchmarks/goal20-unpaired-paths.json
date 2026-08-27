@@ -144,6 +144,9 @@
   "ai_runtime_faux.blocks",
   "http_transport.parse_url",
   "cli_settings.create",
+  "cli_settings.reload",
+  "cli_settings.enabled_models",
+  "cli_settings.block_images",
   "settings_load.project_trust",
   "settings_load.config_value",
   "settings_load.http_idle",
@@ -394,7 +397,10 @@
    "prefix": "src/cadr-cli/settings/manager.lisp",
    "class": "paired",
    "metrics": [
-    "cli_settings.create"
+    "cli_settings.create",
+    "cli_settings.reload",
+    "cli_settings.enabled_models",
+    "cli_settings.block_images"
    ]
   },
   {

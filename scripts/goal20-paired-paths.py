@@ -98,7 +98,7 @@ METRICS = {
     "provider_vertex": ("stream_roundtrip",),
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
-    "cli_settings": ("create",),
+    "cli_settings": ("create", "reload", "enabled_models", "block_images"),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
@@ -253,6 +253,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "cli_settings.create": 1.5,
+    # cli_settings leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "cli_settings.reload": 8.0,
+    "cli_settings.enabled_models": 8.0,
+    "cli_settings.block_images": 8.0,
     # agent_conditions.error_probe pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "agent_conditions.error_probe": 8.0,
@@ -1483,6 +1488,16 @@ OBSERVED_EXACT = {
         "default_project_trust",
         "http_idle_timeout_ms",
         "project_trusted",
+        "rl_theme_light",
+        "rl_model",
+        "rl_idle",
+        "rl_n",
+        "em_all",
+        "em_one",
+        "em_n",
+        "bi_default",
+        "bi_blocked",
+        "bi_n",
     ),
     "agent_conditions": (
         "ac_schema_tool",

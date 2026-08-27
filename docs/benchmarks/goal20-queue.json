@@ -684,6 +684,34 @@
    "piUs": 141.7,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 307,
+   "lane": "c",
+   "status": "done",
+   "source": "src/cadr-cli/settings/manager.lisp",
+   "measure": "measure-cli-settings",
+   "metric": "cli_settings.reload",
+   "branch": "cursor/pair-307-309-cli-settings-leftovers-17b4",
+   "note": "nextPairNum left at tip 328 (outside 307-309); 310-345 reserved for other leftover knives"
+  },
+  {
+   "pair": 308,
+   "lane": "c",
+   "status": "done",
+   "source": "src/cadr-cli/settings/manager.lisp",
+   "measure": "measure-cli-settings",
+   "metric": "cli_settings.enabled_models",
+   "branch": "cursor/pair-307-309-cli-settings-leftovers-17b4"
+  },
+  {
+   "pair": 309,
+   "lane": "c",
+   "status": "done",
+   "source": "src/cadr-cli/settings/manager.lisp",
+   "measure": "measure-cli-settings",
+   "metric": "cli_settings.block_images",
+   "branch": "cursor/pair-307-309-cli-settings-leftovers-17b4"
   }
  ],
  "mergeQueue": []

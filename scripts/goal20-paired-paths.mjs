@@ -143,6 +143,9 @@ const REPETITIONS = {
 	"provider_codex.stream_roundtrip": 10,
 	"provider_pi_messages.stream_roundtrip": 10,
 	"cli_settings.create": 5,
+	"cli_settings.reload": 50,
+	"cli_settings.enabled_models": 50,
+	"cli_settings.block_images": 50,
 	"agent_conditions.error_probe": 50,
 	"execution_env.exists_remove_temps": 50,
 	"file_mutation_queue.with_queue": 50,
@@ -1740,6 +1743,49 @@ function runCliSettings() {
 	});
 }
 
+function csTruth(value) {
+	return value ? 1 : 0;
+}
+
+async function runCliSettingsReload(manager) {
+	await manager.reload();
+	return {
+		rl_theme_light: csTruth(manager.getThemeSetting() === "light"),
+		rl_model: csTruth(manager.getDefaultModel() === "claude-sonnet-4-5"),
+		rl_idle: csTruth(manager.getHttpIdleTimeoutMs() === 42),
+		rl_n: 3,
+	};
+}
+
+function runCliSettingsEnabledModels(manager) {
+	const missing = manager.getEnabledModels();
+	const memory = settingsModule.SettingsManager.inMemory({
+		enabledModels: ["anthropic/claude-sonnet-4-5"],
+	});
+	const explicit = memory.getEnabledModels();
+	return {
+		em_all: csTruth(missing === undefined),
+		em_one: csTruth(
+			Array.isArray(explicit) &&
+				explicit.length === 1 &&
+				explicit[0] === "anthropic/claude-sonnet-4-5",
+		),
+		em_n: 2,
+	};
+}
+
+function runCliSettingsBlockImages(manager) {
+	const defaultBlocked = manager.getBlockImages();
+	const memory = settingsModule.SettingsManager.inMemory({
+		images: { blockImages: true },
+	});
+	return {
+		bi_default: csTruth(!defaultBlocked),
+		bi_blocked: csTruth(memory.getBlockImages() === true),
+		bi_n: 2,
+	};
+}
+
 
 function runAgentConditionsErrorProbe() {
 	const bool = (value) => (value ? 1 : 0);
@@ -1892,9 +1938,21 @@ async function measureExecutionEnv() {
 
 async function measureCliSettings() {
 	const manager = runCliSettings();
+	const reloadObserved = await runCliSettingsReload(manager);
+	const enabledObserved = runCliSettingsEnabledModels(manager);
+	const blockObserved = runCliSettingsBlockImages(manager);
 	return {
 		create: await collect("cli_settings.create", () => {
 			return () => runCliSettings();
+		}),
+		reload: await collect("cli_settings.reload", () => {
+			return () => runCliSettingsReload(manager);
+		}),
+		enabled_models: await collect("cli_settings.enabled_models", () => {
+			return () => runCliSettingsEnabledModels(manager);
+		}),
+		block_images: await collect("cli_settings.block_images", () => {
+			return () => runCliSettingsBlockImages(manager);
 		}),
 		observed: {
 			theme: manager.getThemeSetting() ?? "",
@@ -1904,6 +1962,9 @@ async function measureCliSettings() {
 			default_project_trust: manager.getDefaultProjectTrust(),
 			http_idle_timeout_ms: manager.getHttpIdleTimeoutMs(),
 			project_trusted: manager.isProjectTrusted(),
+			...reloadObserved,
+			...enabledObserved,
+			...blockObserved,
 		},
 	};
 }
@@ -16127,6 +16188,11 @@ const result = {
 			"provider_codex.stream_roundtrip": "packages/ai/src/api/openai-codex-responses.ts stream",
 			"provider_pi_messages.stream_roundtrip": "packages/ai/src/api/pi-messages.ts stream",
 			"cli_settings.create": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.create",
+			"cli_settings.reload": "packages/coding-agent/src/core/settings-manager.ts SettingsManager.reload",
+			"cli_settings.enabled_models":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getEnabledModels",
+			"cli_settings.block_images":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getBlockImages",
 			"agent_conditions.error_probe":
 				"packages/agent/src agent error slot/type probe (fixture-aligned harness)",
 			"execution_env.exists_remove_temps":
