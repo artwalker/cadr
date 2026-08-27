@@ -98,10 +98,10 @@ METRICS = {
     "provider_vertex": ("stream_roundtrip",),
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
-    "cli_settings": ("create",),
+    "cli_settings": ("create", "reload", "enabled_models", "block_images"),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
-    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key"),
+    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
@@ -128,9 +128,12 @@ METRICS = {
         "cloudflare_url",
         "radius_gateway",
         "copilot_auth",
+        "percent_decode",
+        "parse_query",
+        "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
@@ -169,6 +172,7 @@ METRICS = {
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
+    "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup"),
     "session_pipeline": ("session_load", "context_walk", "session_leaf_id"),
     "storage_journal": ("journal_read", "journal_append", "journal_entry_count"),
     "sqlite_session": ("open_walk",),
@@ -254,6 +258,11 @@ RATIO_CEILINGS = {
     # 1.5 follows the list_models_registry / render_slicing precedent
     # (headroom above 1.0). Ratchet down only.
     "cli_settings.create": 1.5,
+    # cli_settings leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "cli_settings.reload": 8.0,
+    "cli_settings.enabled_models": 8.0,
+    "cli_settings.block_images": 8.0,
     # agent_conditions.error_probe pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "agent_conditions.error_probe": 8.0,
@@ -288,6 +297,15 @@ RATIO_CEILINGS = {
     # file_mutation_queue.state_key pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "file_mutation_queue.state_key": 8.0,
+    # file_mutation_queue.pending_count pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.pending_count": 8.0,
+    # file_mutation_queue.next_ticket pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.next_ticket": 8.0,
+    # file_mutation_queue.serving_ticket pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.serving_ticket": 8.0,
     # harness_events.emit pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.emit": 8.0,
@@ -447,6 +465,12 @@ RATIO_CEILINGS = {
     # headroom. Ratchet down only.
     "oauth_pkce_device.copilot_auth": 8.0,
     # Frozen from the first Friend-MachineD non-quick
+    # oauth_pkce_device leftover trio (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "oauth_pkce_device.percent_decode": 8.0,
+    "oauth_pkce_device.parse_query": 8.0,
+    "oauth_pkce_device.parse_authorization_input": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed
     # 0.45x (4.79 / 10.52 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
@@ -491,6 +515,11 @@ RATIO_CEILINGS = {
     # 0.11x (1.30 / 12.15 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "evals_harness.normalize_steps": 8.0,
+    # evals_harness leftover trio on harness.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "evals_harness.resolve_selection": 8.0,
+    "evals_harness.transcript": 8.0,
+    "evals_harness.last_assistant": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -1227,6 +1256,17 @@ RATIO_CEILINGS = {
     # (0.176 / 211.2 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "provider_registry_defs.structured_api_key_login": 8.0,
+    # core_rest.cancellation_abort pair (samples=5): observed 0.0712x
+    # (0.579 / 8.130 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.cancellation_abort": 8.0,
+    # core_rest.redacted_secrets pair (samples=5): observed 2.488x
+    # (2.750 / 1.105 us). 8.0 is first-freeze headroom. Ratchet down only.
+    "core_rest.redacted_secrets": 8.0,
+    # core_rest.threads_cleanup pair (samples=5): observed 0.00799x
+    # (181.6 / 22730 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.threads_cleanup": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # skill_prompt_load pair (samples=5): observed 1170.57x
     # (2196 / 1.88 us). Keyword initforms still hit ASDF
@@ -1480,6 +1520,16 @@ OBSERVED_EXACT = {
         "default_project_trust",
         "http_idle_timeout_ms",
         "project_trusted",
+        "rl_theme_light",
+        "rl_model",
+        "rl_idle",
+        "rl_n",
+        "em_all",
+        "em_one",
+        "em_n",
+        "bi_default",
+        "bi_blocked",
+        "bi_n",
     ),
     "agent_conditions": (
         "ac_schema_tool",
@@ -1563,6 +1613,21 @@ OBSERVED_EXACT = {
         "fmqt_missing",
         "fmqt_repeat",
         "fmqt_n",
+        "fmqp_shared",
+        "fmqp_other",
+        "fmqp_missing",
+        "fmqp_alias",
+        "fmqp_n",
+        "fmqi_shared",
+        "fmqi_other",
+        "fmqi_missing",
+        "fmqi_alias",
+        "fmqi_n",
+        "fmqv_zero",
+        "fmqv_other",
+        "fmqv_missing",
+        "fmqv_alias",
+        "fmqv_n",
     ),
     "harness_events": (
         "he_direct",
@@ -1834,6 +1899,22 @@ OBSERVED_EXACT = {
         "ga_ent",
         "ga_dom",
         "ga_key",
+        "pd_plain",
+        "pd_plus",
+        "pd_slash",
+        "pd_space",
+        "pd_utf8",
+        "pd_n",
+        "pq_code",
+        "pq_state",
+        "pq_plus",
+        "pq_empty",
+        "pq_n",
+        "pai_url",
+        "pai_hash",
+        "pai_qs",
+        "pai_plain",
+        "pai_n",
     ),
     "cli_extensions_install": (
         "nu_local",
@@ -1892,6 +1973,25 @@ OBSERVED_EXACT = {
         "ns_kw_rel",
         "ns_vec_n",
         "ns_bad",
+        "rs_explicit",
+        "rs_env",
+        "rs_miss",
+        "rs_prov",
+        "rs_blank",
+        "rs_n",
+        "tr_n",
+        "tr_user",
+        "tr_role",
+        "tr_text",
+        "tr_call",
+        "tr_name",
+        "tr_result",
+        "tr_err",
+        "tr_keys",
+        "la_new",
+        "la_none",
+        "la_full",
+        "la_n",
     ),
     "ai_crypto_model_data": (
         "schema_version",
@@ -2939,6 +3039,19 @@ OBSERVED_EXACT = {
         "http_host",
         "http_port",
         "http_path",
+    ),
+    "core_rest": (
+        "ca_live",
+        "ca_abort",
+        "ca_clear",
+        "ca_pred",
+        "rd_keep",
+        "rd_secret",
+        "rd_token",
+        "rd_mark",
+        "th_absent",
+        "th_current",
+        "th_joined",
     ),
     "resource_loader": (
         "skill_count",

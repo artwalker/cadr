@@ -35,6 +35,9 @@ METRIC_KEYS = (
     "provider_codex.stream_roundtrip",
     "provider_pi_messages.stream_roundtrip",
     "cli_settings.create",
+    "cli_settings.reload",
+    "cli_settings.enabled_models",
+    "cli_settings.block_images",
     "agent_conditions.error_probe",
     "execution_env.exists_remove_temps",
     "file_mutation_queue.with_queue",
@@ -47,6 +50,9 @@ METRIC_KEYS = (
     "file_mutation_queue.call_with",
     "file_mutation_queue.make_state",
     "file_mutation_queue.state_key",
+    "file_mutation_queue.pending_count",
+    "file_mutation_queue.next_ticket",
+    "file_mutation_queue.serving_ticket",
     "harness_events.emit",
     "bash_tool.strip_exit_footer",
     "bash_tool.append_status",
@@ -100,6 +106,9 @@ METRIC_KEYS = (
     "oauth_pkce_device.cloudflare_url",
     "oauth_pkce_device.radius_gateway",
     "oauth_pkce_device.copilot_auth",
+    "oauth_pkce_device.percent_decode",
+    "oauth_pkce_device.parse_query",
+    "oauth_pkce_device.parse_authorization_input",
     "cli_extensions_install.llama_url",
     "cli_extensions_install.hf_token",
     "cli_extensions_install.llama_catalog",
@@ -109,6 +118,9 @@ METRIC_KEYS = (
     "evals_harness.artifact_persist",
     "evals_harness.format",
     "evals_harness.normalize_steps",
+    "evals_harness.resolve_selection",
+    "evals_harness.transcript",
+    "evals_harness.last_assistant",
     "ai_crypto_model_data.manifest",
     "ai_crypto.hmac",
     "cli_models_rest.pattern_match",
@@ -315,6 +327,9 @@ METRIC_KEYS = (
     "provider_registry_defs.merge_environment",
     "provider_registry_defs.runtime_models",
     "provider_registry_defs.structured_api_key_login",
+    "core_rest.cancellation_abort",
+    "core_rest.redacted_secrets",
+    "core_rest.threads_cleanup",
     "skill_prompt_load.build_prompt",
     "cli_bootstrap_sessions.coding_tools",
     "cli_bootstrap_sessions.bootstrap_auth",
@@ -387,15 +402,33 @@ def build_entry(
 
 
 def append_entry(history_path: Path, entry: dict) -> dict:
+    """Append one entry without re-dumping existing JSON bytes."""
+    suffix = "\n  ]\n}\n"
     if history_path.is_file():
-        history = json.loads(history_path.read_text(encoding="utf-8"))
+        raw = history_path.read_text(encoding="utf-8")
+        history = json.loads(raw)
     else:
+        raw = None
         history = {"schemaVersion": 1, "entries": []}
     history.setdefault("schemaVersion", 1)
     history.setdefault("entries", []).append(entry)
     history_path.parent.mkdir(parents=True, exist_ok=True)
+    if raw is None:
+        history_path.write_text(
+            json.dumps(history, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        return history
+    if not raw.endswith(suffix):
+        raise ValueError(
+            f"paired-path history {history_path} is not append-splicable"
+        )
+    dumped = json.dumps(entry, indent=2, ensure_ascii=False)
+    indented = "\n".join(
+        ("  " + line if line else line) for line in dumped.split("\n")
+    )
     history_path.write_text(
-        json.dumps(history, indent=2, ensure_ascii=False) + "\n",
+        raw[: -len(suffix)] + ",\n" + indented + suffix,
         encoding="utf-8",
     )
     return history
