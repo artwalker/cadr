@@ -650,7 +650,12 @@
    "source": "src/cadr-evals/harness.lisp",
    "measure": "measure-evals-harness",
    "metric": "evals_harness.eval_environment",
-   "branch": "cursor/evals-harness-pairs-346-348-8a7a"
+   "branch": "cursor/evals-harness-pairs-346-348-8a7a",
+   "ratio": 2.692,
+   "cadrUs": 0.758,
+   "piUs": 0.282,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 347,
@@ -659,7 +664,12 @@
    "source": "src/cadr-evals/harness.lisp",
    "measure": "measure-evals-harness",
    "metric": "evals_harness.prompt_step",
-   "branch": "cursor/evals-harness-pairs-346-348-8a7a"
+   "branch": "cursor/evals-harness-pairs-346-348-8a7a",
+   "ratio": 0.956,
+   "cadrUs": 0.109,
+   "piUs": 0.114,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 348,
@@ -668,7 +678,12 @@
    "source": "src/cadr-evals/harness.lisp",
    "measure": "measure-evals-harness",
    "metric": "evals_harness.reload_step",
-   "branch": "cursor/evals-harness-pairs-346-348-8a7a"
+   "branch": "cursor/evals-harness-pairs-346-348-8a7a",
+   "ratio": 0.738,
+   "cadrUs": 0.078,
+   "piUs": 0.105,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
