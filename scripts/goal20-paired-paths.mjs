@@ -196,6 +196,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.cloudflare_url": 50,
 	"oauth_pkce_device.radius_gateway": 50,
 	"oauth_pkce_device.copilot_auth": 50,
+	"oauth_pkce_device.percent_decode": 50,
+	"oauth_pkce_device.parse_query": 50,
+	"oauth_pkce_device.parse_authorization_input": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -5116,6 +5119,108 @@ function runOauthPkceDeviceRadiusGateway() {
 	};
 }
 
+function percentDecode(value) {
+	return decodeURIComponent(String(value).replace(/\+/g, " "));
+}
+
+function percentDecodeFlag(encoded, expected) {
+	try {
+		return percentDecode(encoded) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDevicePercentDecode() {
+	return {
+		pd_plain: percentDecodeFlag("hello", "hello"),
+		pd_plus: percentDecodeFlag("hello+world", "hello world"),
+		pd_slash: percentDecodeFlag("%2Fpath", "/path"),
+		pd_space: percentDecodeFlag("%20x", " x"),
+		pd_utf8: percentDecodeFlag("%C3%A9", "é"),
+		pd_n: 5,
+	};
+}
+
+function parseQueryValue(query, key) {
+	return new URLSearchParams(query).get(key);
+}
+
+function parseQueryFlag(query, key, expected) {
+	try {
+		return parseQueryValue(query, key) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceParseQuery() {
+	return {
+		pq_code: parseQueryFlag("code=abc&state=xyz", "code", "abc"),
+		pq_state: parseQueryFlag("code=abc&state=xyz", "state", "xyz"),
+		pq_plus: parseQueryFlag("q=hello+world", "q", "hello world"),
+		pq_empty: parseQueryFlag("a=", "a", ""),
+		pq_n: 4,
+	};
+}
+
+// Baseline openai-codex.ts parseAuthorizationInput is unexported; keep the
+// production body so the timed work is the same function.
+function parseAuthorizationInput(input) {
+	const value = input.trim();
+	if (!value) return {};
+
+	try {
+		const url = new URL(value);
+		return {
+			code: url.searchParams.get("code") ?? undefined,
+			state: url.searchParams.get("state") ?? undefined,
+		};
+	} catch {
+		// not a URL
+	}
+
+	if (value.includes("#")) {
+		const [code, state] = value.split("#", 2);
+		return { code, state };
+	}
+
+	if (value.includes("code=")) {
+		const params = new URLSearchParams(value);
+		return {
+			code: params.get("code") ?? undefined,
+			state: params.get("state") ?? undefined,
+		};
+	}
+
+	return { code: value };
+}
+
+function parseAuthorizationInputFlag(input, expectedCode, expectedState) {
+	try {
+		const parsed = parseAuthorizationInput(input);
+		const code = parsed.code ?? null;
+		const state = parsed.state ?? null;
+		return code === expectedCode && state === expectedState ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceParseAuthorizationInput() {
+	return {
+		pai_url: parseAuthorizationInputFlag(
+			"http://localhost:1455/auth/callback?code=code-a&state=state-a",
+			"code-a",
+			"state-a",
+		),
+		pai_hash: parseAuthorizationInputFlag("code-b#state-b", "code-b", "state-b"),
+		pai_qs: parseAuthorizationInputFlag("code=code-c&state=state-c", "code-c", "state-c"),
+		pai_plain: parseAuthorizationInputFlag(" code-d ", "code-d", null),
+		pai_n: 4,
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -5123,6 +5228,9 @@ async function measureOauthPkceDevice() {
 	const cloudflare = runOauthPkceDeviceCloudflareUrl();
 	const radius = runOauthPkceDeviceRadiusGateway();
 	const copilotAuth = await runOauthPkceDeviceCopilotAuth();
+	const percent = runOauthPkceDevicePercentDecode();
+	const query = runOauthPkceDeviceParseQuery();
+	const authInput = runOauthPkceDeviceParseAuthorizationInput();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -5142,7 +5250,26 @@ async function measureOauthPkceDevice() {
 		copilot_auth: await collect("oauth_pkce_device.copilot_auth", () => {
 			return () => runOauthPkceDeviceCopilotAuth();
 		}),
-		observed: { ...poll, ...auth, ...copilot, ...cloudflare, ...radius, ...copilotAuth },
+		percent_decode: await collect("oauth_pkce_device.percent_decode", () => {
+			return () => runOauthPkceDevicePercentDecode();
+		}),
+		parse_query: await collect("oauth_pkce_device.parse_query", () => {
+			return () => runOauthPkceDeviceParseQuery();
+		}),
+		parse_authorization_input: await collect("oauth_pkce_device.parse_authorization_input", () => {
+			return () => runOauthPkceDeviceParseAuthorizationInput();
+		}),
+		observed: {
+			...poll,
+			...auth,
+			...copilot,
+			...cloudflare,
+			...radius,
+			...copilotAuth,
+			...percent,
+			...query,
+			...authInput,
+		},
 	};
 }
 
@@ -15715,6 +15842,12 @@ const result = {
 				"packages/ai/src/providers/radius-config.ts normalizeRadiusGatewayUrl",
 			"oauth_pkce_device.copilot_auth":
 				"packages/ai/src/auth/oauth/github-copilot.ts githubCopilotOAuth.toAuth",
+			"oauth_pkce_device.percent_decode":
+				"packages/ai/src/auth/oauth/openai-codex.ts URLSearchParams / application/x-www-form-urlencoded percent-decode (cadr percent-decode)",
+			"oauth_pkce_device.parse_query":
+				"packages/ai/src/auth/oauth/openai-codex.ts URLSearchParams query parse (cadr parse-query)",
+			"oauth_pkce_device.parse_authorization_input":
+				"packages/ai/src/auth/oauth/openai-codex.ts parseAuthorizationInput",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

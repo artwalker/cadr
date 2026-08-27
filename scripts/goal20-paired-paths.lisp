@@ -187,6 +187,9 @@
 ;;;;  88. cli_sdk sdk-model-runtime-providers vs ModelRuntime.getProviders
 ;;;;  89. cli_print_rpc rpc-session-stats vs AgentSession.getSessionStats
 ;;;;  90. oauth_pkce_device github-copilot-oauth-to-auth vs githubCopilotOAuth.toAuth
+;;;; 310. oauth_pkce_device percent-decode vs URLSearchParams percent-decode
+;;;; 311. oauth_pkce_device parse-query vs URLSearchParams
+;;;; 312. oauth_pkce_device parse-oauth-authorization-input vs parseAuthorizationInput
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -315,6 +318,9 @@
     ("oauth_pkce_device.cloudflare_url" . 50)
     ("oauth_pkce_device.radius_gateway" . 50)
     ("oauth_pkce_device.copilot_auth" . 50)
+    ("oauth_pkce_device.percent_decode" . 50)
+    ("oauth_pkce_device.parse_query" . 50)
+    ("oauth_pkce_device.parse_authorization_input" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -5624,13 +5630,74 @@
     "http://localhost:8080/"
     "http://localhost:8080")))
 
+(defun oauth-percent-decode-flag (encoded expected)
+  (handler-case
+      (if (string= (cadr-ai::percent-decode encoded) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-percent-decode ()
+  ;; Valid application/x-www-form-urlencoded only. Do not exact truncated
+  ;; or invalid percent escapes (Lisp signals; URLSearchParams is lenient).
+  (list
+   (oauth-percent-decode-flag "hello" "hello")
+   (oauth-percent-decode-flag "hello+world" "hello world")
+   (oauth-percent-decode-flag "%2Fpath" "/path")
+   (oauth-percent-decode-flag "%20x" " x")
+   (oauth-percent-decode-flag "%C3%A9" "é")
+   5))
+
+(defun oauth-query-flag (query key expected)
+  (handler-case
+      (let ((value (gethash key (cadr-ai::parse-query query))))
+        (if (string= value expected)
+            1
+            0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-parse-query ()
+  (list
+   (oauth-query-flag "code=abc&state=xyz" "code" "abc")
+   (oauth-query-flag "code=abc&state=xyz" "state" "xyz")
+   (oauth-query-flag "q=hello+world" "q" "hello world")
+   (oauth-query-flag "a=" "a" "")
+   4))
+
+(defun oauth-authorization-input-flag (input expected-code expected-state)
+  (handler-case
+      (multiple-value-bind (code state)
+          (cadr-ai::parse-oauth-authorization-input input)
+        (if (and (equal code expected-code)
+                 (equal state expected-state))
+            1
+            0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-parse-authorization-input ()
+  ;; Same four forms as goal13-manual-oauth-input-matches-baseline.
+  ;; Do not exact empty input (Lisp "" / NIL vs pi {}).
+  (list
+   (oauth-authorization-input-flag
+    "http://localhost:1455/auth/callback?code=code-a&state=state-a"
+    "code-a" "state-a")
+   (oauth-authorization-input-flag "code-b#state-b" "code-b" "state-b")
+   (oauth-authorization-input-flag
+    "code=code-c&state=state-c"
+    "code-c" "state-c")
+   (oauth-authorization-input-flag " code-d " "code-d" nil)
+   4))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
         (copilot (run-oauth-pkce-device-copilot-url))
         (cloudflare (run-oauth-pkce-device-cloudflare-url))
         (radius (run-oauth-pkce-device-radius-gateway))
-        (copilot-auth (run-oauth-pkce-device-copilot-auth)))
+        (copilot-auth (run-oauth-pkce-device-copilot-auth))
+        (percent (run-oauth-pkce-device-percent-decode))
+        (query (run-oauth-pkce-device-parse-query))
+        (auth-input (run-oauth-pkce-device-parse-authorization-input)))
     (json-object
      "observed"
      (json-object
@@ -5657,7 +5724,23 @@
       "ga_ind" (nth 1 copilot-auth)
       "ga_ent" (nth 2 copilot-auth)
       "ga_dom" (nth 3 copilot-auth)
-      "ga_key" (nth 4 copilot-auth))
+      "ga_key" (nth 4 copilot-auth)
+      "pd_plain" (nth 0 percent)
+      "pd_plus" (nth 1 percent)
+      "pd_slash" (nth 2 percent)
+      "pd_space" (nth 3 percent)
+      "pd_utf8" (nth 4 percent)
+      "pd_n" (nth 5 percent)
+      "pq_code" (nth 0 query)
+      "pq_state" (nth 1 query)
+      "pq_plus" (nth 2 query)
+      "pq_empty" (nth 3 query)
+      "pq_n" (nth 4 query)
+      "pai_url" (nth 0 auth-input)
+      "pai_hash" (nth 1 auth-input)
+      "pai_qs" (nth 2 auth-input)
+      "pai_plain" (nth 3 auth-input)
+      "pai_n" (nth 4 auth-input))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -5687,7 +5770,22 @@
      (collect "oauth_pkce_device.copilot_auth"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-copilot-auth)))))))
+                  (run-oauth-pkce-device-copilot-auth))))
+     "percent_decode"
+     (collect "oauth_pkce_device.percent_decode"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-percent-decode))))
+     "parse_query"
+     (collect "oauth_pkce_device.parse_query"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-parse-query))))
+     "parse_authorization_input"
+     (collect "oauth_pkce_device.parse_authorization_input"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-parse-authorization-input)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -15269,6 +15367,12 @@
       "src/cadr-ai/oauth/providers/radius.lisp normalize-radius-gateway"
       "oauth_pkce_device.copilot_auth"
       "src/cadr-ai/oauth/providers/github-copilot.lisp github-copilot-oauth-to-auth"
+      "oauth_pkce_device.percent_decode"
+      "src/cadr-ai/oauth/callback.lisp percent-decode"
+      "oauth_pkce_device.parse_query"
+      "src/cadr-ai/oauth/callback.lisp parse-query"
+      "oauth_pkce_device.parse_authorization_input"
+      "src/cadr-ai/oauth/callback.lisp parse-oauth-authorization-input"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

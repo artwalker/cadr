@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "paused": false,
- "nextPairNum": 301,
+ "nextPairNum": 334,
  "lanes": {
   "a": {
    "role": "pairing",
@@ -489,6 +489,33 @@
    "measure": "measure-provider-registry-defs",
    "metric": "provider_registry_defs.structured_api_key_login",
    "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+  },
+  {
+   "pair": 310,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/callback.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.percent_decode",
+   "branch": "cursor/pair-310-312-oauth-callback-leftovers-9da1"
+  },
+  {
+   "pair": 311,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/callback.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.parse_query",
+   "branch": "cursor/pair-310-312-oauth-callback-leftovers-9da1"
+  },
+  {
+   "pair": 312,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/oauth/callback.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.parse_authorization_input",
+   "branch": "cursor/pair-310-312-oauth-callback-leftovers-9da1"
   }
  ],
  "mergeQueue": []

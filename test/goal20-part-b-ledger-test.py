@@ -665,6 +665,30 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ga_ent", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("ga_dom", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("ga_key", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.percent_decode", RECORD.METRIC_KEYS)
+        self.assertIn("percent_decode", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.percent_decode", paired.RATIO_CEILINGS)
+        self.assertIn("pd_plain", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("pd_plus", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("pd_n", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.parse_query", RECORD.METRIC_KEYS)
+        self.assertIn("parse_query", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.parse_query", paired.RATIO_CEILINGS)
+        self.assertIn("pq_code", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("pq_state", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("pq_n", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn(
+            "oauth_pkce_device.parse_authorization_input", RECORD.METRIC_KEYS
+        )
+        self.assertIn(
+            "parse_authorization_input", paired.METRICS["oauth_pkce_device"]
+        )
+        self.assertIn(
+            "oauth_pkce_device.parse_authorization_input", paired.RATIO_CEILINGS
+        )
+        self.assertIn("pai_url", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("pai_hash", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("pai_n", paired.OBSERVED_EXACT["oauth_pkce_device"])
 
     def test_cli_extensions_install_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
@@ -2179,6 +2203,9 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`settings_load.project_trust`", section)
             self.assertIn("`settings_load.stored_auth_secrets`", section)
             self.assertIn("`oauth_pkce_device.poll`", section)
+            self.assertIn("`oauth_pkce_device.percent_decode`", section)
+            self.assertIn("`oauth_pkce_device.parse_query`", section)
+            self.assertIn("`oauth_pkce_device.parse_authorization_input`", section)
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`resource_loader.dedupe_by_name`", section)
             self.assertIn("`execution_env.exists_remove_temps`", section)
