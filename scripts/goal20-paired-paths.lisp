@@ -5645,7 +5645,7 @@
    (oauth-percent-decode-flag "hello+world" "hello world")
    (oauth-percent-decode-flag "%2Fpath" "/path")
    (oauth-percent-decode-flag "%20x" " x")
-   (oauth-percent-decode-flag "%C3%A9" "é")
+   (oauth-percent-decode-flag "%C3%A9" (string (code-char #x00e9)))
    5))
 
 (defun oauth-query-flag (query key expected)
