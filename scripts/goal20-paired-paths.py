@@ -103,6 +103,7 @@ METRICS = {
     "execution_env": ("exists_remove_temps",),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state"),
     "harness_events": ("emit",),
+    "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -269,6 +270,11 @@ RATIO_CEILINGS = {
     # harness_events.emit pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.emit": 8.0,
+    # bash_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "bash_tool.strip_exit_footer": 8.0,
+    "bash_tool.append_status": 8.0,
+    "bash_tool.truncation_notice": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1463,6 +1469,24 @@ OBSERVED_EXACT = {
         "he_start",
         "he_end",
         "he_second",
+    ),
+    "bash_tool": (
+        "sef_exact",
+        "sef_nl",
+        "sef_no_nl",
+        "sef_plain",
+        "sef_empty",
+        "sef_n",
+        "abs_empty",
+        "abs_abort",
+        "abs_exit",
+        "abs_timeout",
+        "abs_n",
+        "btn_none",
+        "btn_partial",
+        "btn_lines",
+        "btn_bytes",
+        "btn_n",
     ),
     "settings_load": (
         "tr_empty",

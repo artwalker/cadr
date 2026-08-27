@@ -288,6 +288,33 @@
      "measure": "measure-agent-tool-loop",
      "metric": "harness_events.emit",
      "branch": "cursor/pair-276-harness-events-emit-8cfd"
+    },
+    {
+     "pair": 277,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-cli/tools/bash.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "bash_tool.strip_exit_footer",
+     "branch": "cursor/pair-277-279-bash-leftovers-4440"
+    },
+    {
+     "pair": 278,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-cli/tools/bash.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "bash_tool.append_status",
+     "branch": "cursor/pair-277-279-bash-leftovers-4440"
+    },
+    {
+     "pair": 279,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-cli/tools/bash.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "bash_tool.truncation_notice",
+     "branch": "cursor/pair-277-279-bash-leftovers-4440"
     }
    ],
    "mergeQueue": []

@@ -103,6 +103,9 @@
 ;;;; 274. file_mutation_queue ticket release vs release-file-mutation-turn
 ;;;; 275. file_mutation_queue registry get-or-create vs ensure-file-mutation-queue-state
 ;;;; 276. harness_events emit vs HarnessEventBus.emit
+;;;; 277. bash_tool strip Process-exited footer vs bash-strip-exit-footer
+;;;; 278. bash_tool appendStatus vs append-bash-status
+;;;; 279. bash_tool formatOutput truncation notice vs bash-truncation-notice
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -251,6 +254,9 @@
     ("file_mutation_queue.release_turn" . 50)
     ("file_mutation_queue.ensure_state" . 50)
     ("harness_events.emit" . 50)
+    ("bash_tool.strip_exit_footer" . 50)
+    ("bash_tool.append_status" . 50)
+    ("bash_tool.truncation_notice" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4136,6 +4142,146 @@
               (lambda ()
                 (lambda ()
                   (run-harness-events-emit)))))))
+(defun bash-tool-truth (value)
+  (if value 1 0))
+
+(defun run-bash-strip-exit-footer ()
+  ;; Inverse of the "Process exited with code N" footer that
+  ;; run-bash-command injects; pi's tool path never adds that footer, so
+  ;; the JS half uses the same suffix strip. Not execute/spawn.
+  (let* ((exact
+           (cadr-cli::bash-strip-exit-footer
+            "Process exited with code 0" 0))
+         (nl
+           (cadr-cli::bash-strip-exit-footer
+            (format nil "hello~%Process exited with code 1") 1))
+         (no-nl
+           (cadr-cli::bash-strip-exit-footer
+            "helloProcess exited with code 2" 2))
+         (plain
+           (cadr-cli::bash-strip-exit-footer "plain output" 3))
+         (empty
+           (cadr-cli::bash-strip-exit-footer "" 4)))
+    (list
+     (bash-tool-truth (string= exact ""))
+     (bash-tool-truth (string= nl "hello"))
+     (bash-tool-truth (string= no-nl "hello"))
+     (bash-tool-truth (string= plain "plain output"))
+     (bash-tool-truth (string= empty ""))
+     5)))
+
+(defun run-bash-append-status ()
+  ;; Baseline appendStatus in bash.ts formatOutput catch path.
+  (let* ((empty
+           (cadr-cli::append-bash-status "" "Command aborted"))
+         (abort
+           (cadr-cli::append-bash-status "out" "Command aborted"))
+         (exit
+           (cadr-cli::append-bash-status
+            "out" "Command exited with code 1"))
+         (timeout
+           (cadr-cli::append-bash-status
+            "out" "Command timed out after 5 seconds")))
+    (list
+     (bash-tool-truth (string= empty "Command aborted"))
+     (bash-tool-truth
+      (string= abort (format nil "out~%~%Command aborted")))
+     (bash-tool-truth
+      (string= exit (format nil "out~%~%Command exited with code 1")))
+     (bash-tool-truth
+      (string=
+       timeout
+       (format nil "out~%~%Command timed out after 5 seconds")))
+     4)))
+
+(defparameter *bash-notice-path* "/tmp/pi-bash-notice.log")
+(defparameter *bash-notice-full-output* (format nil "keep~%LASTLINE"))
+
+(defun run-bash-truncation-notice ()
+  ;; Baseline formatOutput truncation notice body (the [Showing ...]
+  ;; bracket), not execute/spawn and not truncate-tail.
+  (let* ((none
+           (or (cadr-cli::bash-truncation-notice
+                '(:truncated nil)
+                *bash-notice-path*
+                *bash-notice-full-output*)
+               ""))
+         (partial
+           (or (cadr-cli::bash-truncation-notice
+                '(:truncated t
+                  :last-line-partial t
+                  :total-lines 2
+                  :output-lines 1
+                  :output-bytes 8)
+                *bash-notice-path*
+                *bash-notice-full-output*)
+               ""))
+         (lines
+           (or (cadr-cli::bash-truncation-notice
+                '(:truncated t
+                  :truncated-by :lines
+                  :total-lines 10
+                  :output-lines 3)
+                *bash-notice-path*
+                *bash-notice-full-output*)
+               ""))
+         (bytes
+           (or (cadr-cli::bash-truncation-notice
+                '(:truncated t
+                  :truncated-by :bytes
+                  :total-lines 10
+                  :output-lines 3)
+                *bash-notice-path*
+                *bash-notice-full-output*)
+               "")))
+    (list
+     (bash-tool-truth (string= none ""))
+     (length partial)
+     (length lines)
+     (length bytes)
+     4)))
+
+(defun measure-bash-tool ()
+  (destructuring-bind (sef-exact sef-nl sef-no-nl sef-plain sef-empty sef-n)
+      (run-bash-strip-exit-footer)
+    (destructuring-bind (abs-empty abs-abort abs-exit abs-timeout abs-n)
+        (run-bash-append-status)
+      (destructuring-bind (btn-none btn-partial btn-lines btn-bytes btn-n)
+          (run-bash-truncation-notice)
+        (json-object
+         "observed"
+         (json-object
+          "sef_exact" sef-exact
+          "sef_nl" sef-nl
+          "sef_no_nl" sef-no-nl
+          "sef_plain" sef-plain
+          "sef_empty" sef-empty
+          "sef_n" sef-n
+          "abs_empty" abs-empty
+          "abs_abort" abs-abort
+          "abs_exit" abs-exit
+          "abs_timeout" abs-timeout
+          "abs_n" abs-n
+          "btn_none" btn-none
+          "btn_partial" btn-partial
+          "btn_lines" btn-lines
+          "btn_bytes" btn-bytes
+          "btn_n" btn-n)
+         "strip_exit_footer"
+         (collect "bash_tool.strip_exit_footer"
+                  (lambda ()
+                    (lambda ()
+                      (run-bash-strip-exit-footer))))
+         "append_status"
+         (collect "bash_tool.append_status"
+                  (lambda ()
+                    (lambda ()
+                      (run-bash-append-status))))
+         "truncation_notice"
+         (collect "bash_tool.truncation_notice"
+                  (lambda ()
+                    (lambda ()
+                      (run-bash-truncation-notice)))))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -14283,6 +14429,12 @@
       "src/cadr-agent/file-mutation-queue.lisp ensure-file-mutation-queue-state"
       "harness_events.emit"
       "src/cadr-agent/harness-events.lisp harness-event-bus-emit"
+      "bash_tool.strip_exit_footer"
+      "src/cadr-cli/tools/bash.lisp bash-strip-exit-footer"
+      "bash_tool.append_status"
+      "src/cadr-cli/tools/bash.lisp append-bash-status"
+      "bash_tool.truncation_notice"
+      "src/cadr-cli/tools/bash.lisp bash-truncation-notice"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -14872,9 +15024,12 @@
               (let ((resources (measure-resource-loader)))
               (format *error-output* "goal20 cadr paired paths: file_mutation_queue~%")
               (let ((file-mutation-queue (measure-file-mutation-queue))
-                    (harness-events nil))
+                    (harness-events nil)
+                    (bash-tool nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
+              (format *error-output* "goal20 cadr paired paths: bash_tool~%")
+              (setf bash-tool (measure-bash-tool))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -15009,6 +15164,7 @@
               "resource_loader" resources
               "file_mutation_queue" file-mutation-queue
               "harness_events" harness-events
+              "bash_tool" bash-tool
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html
@@ -15069,7 +15225,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

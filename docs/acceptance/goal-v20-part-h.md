@@ -3220,6 +3220,44 @@ start, not write/edit tools. Observed `he_direct` / `he_watch` / `he_start`
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
 this metric did not fail). Same commit no optimize.
 
+### Pair 277 — `bash_tool` (strip_exit_footer)
+
+| metric | cadr | pi |
+|---|---|---|
+| `strip_exit_footer` | `bash-strip-exit-footer` (`src/cadr-cli/tools/bash.lisp`) | Process-exited suffix strip (cadr injects then strips; pi's tool path never adds the footer; same encoding as `packages/coding-agent/src/core/tools/bash.ts` result text) |
+
+Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/bash.lisp`.
+Timed work is stripping `Process exited with code N` (exact footer, newline
+footer, glued footer, unchanged body, empty) — not execute/spawn. Observed
+`sef_exact` / `sef_nl` / `sef_no_nl` / `sef_plain` / `sef_empty` / `sef_n`
+are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`.
+Same commit no optimize.
+
+### Pair 278 — `bash_tool` (append_status)
+
+| metric | cadr | pi |
+|---|---|---|
+| `append_status` | `append-bash-status` (`src/cadr-cli/tools/bash.lisp`) | `appendStatus` (`packages/coding-agent/src/core/tools/bash.ts`) |
+
+Leftover sibling of Pair 277 `strip_exit_footer` on the same `agent_tool_loop`
+hole. Timed work is abort/exit/timeout status join (empty body vs non-empty)
+— not execute/spawn. Observed `abs_empty` / `abs_abort` / `abs_exit` /
+`abs_timeout` / `abs_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 279 — `bash_tool` (truncation_notice)
+
+| metric | cadr | pi |
+|---|---|---|
+| `truncation_notice` | `bash-truncation-notice` (`src/cadr-cli/tools/bash.lisp`) | `formatOutput` truncation notice (`packages/coding-agent/src/core/tools/bash.ts`) |
+
+Leftover sibling of Pair 277 `strip_exit_footer` and Pair 278 `append_status`
+on the same `agent_tool_loop` hole. Timed work is the `[Showing ...]` notice
+body (not truncated, last-line-partial, lines, bytes limit) — not
+truncate-tail and not execute/spawn. Observed `btn_none` / `btn_partial` /
+`btn_lines` / `btn_bytes` / `btn_n` are exact. First n=5 freeze
+**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
