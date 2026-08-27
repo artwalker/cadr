@@ -226,6 +226,9 @@ const REPETITIONS = {
 	"evals_harness.resolve_selection": 50,
 	"evals_harness.transcript": 50,
 	"evals_harness.last_assistant": 50,
+	"evals_harness.prompt_eval_agent": 3,
+	"evals_harness.reload_shutdown": 3,
+	"evals_harness.run_coding_agent_eval": 3,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5517,6 +5520,82 @@ function runEvalsHarnessLastAssistant() {
 	};
 }
 
+function promptAgent(session, input) {
+	const previousMessageCount = session.messages.length;
+	session.messages.push({ role: "user", content: input });
+	session.messages.push({
+		role: "assistant",
+		content: "Paris",
+		stopReason: "stop",
+	});
+	const assistant = session.messages
+		.slice(previousMessageCount)
+		.reverse()
+		.find((message) => message.role === "assistant");
+	if (!assistant) throw new Error("Agent run completed without an assistant message.");
+	if (assistant.stopReason !== "stop") {
+		throw new Error(
+			assistant.errorMessage ?? `Agent run ended with unexpected stop reason: ${assistant.stopReason}.`,
+		);
+	}
+	const output = assistant.content;
+	if (!output) throw new Error("Agent run produced no assistant text.");
+	return output;
+}
+
+function runEvalsHarnessPromptEvalAgent() {
+	const session = { messages: [] };
+	const output = promptAgent(session, "What's the capital of France?");
+	const assistant = [...session.messages].reverse().find((message) => message.role === "assistant");
+	return {
+		pea_out: output === "Paris" ? 1 : 0,
+		pea_msgs: session.messages.length,
+		pea_stop: assistant?.stopReason === "stop" ? 1 : 0,
+		pea_n: 3,
+	};
+}
+
+function runEvalsHarnessReloadShutdown() {
+	const root = mkdtempSync(path.join(tmpdir(), "pi-eval-"));
+	try {
+		mkdirSync(path.join(root, "workspace"));
+		mkdirSync(path.join(root, "agent"));
+		const report = { errors: [], active: 0 };
+		const reports = [report];
+		return {
+			rld_err: report.errors.length === 0 ? 1 : 0,
+			rld_active: report.active === 0 ? 1 : 0,
+			rld_reports: reports.length,
+			rld_n: 3,
+		};
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+}
+
+function runEvalsHarnessRunCodingAgentEval() {
+	const root = mkdtempSync(path.join(tmpdir(), "pi-eval-"));
+	try {
+		mkdirSync(path.join(root, "workspace"));
+		mkdirSync(path.join(root, "agent"));
+		const session = { messages: [] };
+		const output = promptAgent(session, "What's the capital of France?");
+		const events = [
+			{ type: "message", role: "user", content: "What's the capital of France?" },
+			{ type: "message", role: "assistant", content: output },
+		];
+		return {
+			rca_out: output === "Paris" ? 1 : 0,
+			rca_events: events.length,
+			rca_err: 1,
+			rca_ms: 1,
+			rca_n: 4,
+		};
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5531,6 +5610,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessResolveSelection(),
 		...runEvalsHarnessTranscript(),
 		...runEvalsHarnessLastAssistant(),
+		...runEvalsHarnessPromptEvalAgent(),
+		...runEvalsHarnessReloadShutdown(),
+		...runEvalsHarnessRunCodingAgentEval(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5556,6 +5638,15 @@ async function measureEvalsHarness() {
 		}),
 		last_assistant: await collect("evals_harness.last_assistant", () => {
 			return () => runEvalsHarnessLastAssistant();
+		}),
+		prompt_eval_agent: await collect("evals_harness.prompt_eval_agent", () => {
+			return () => runEvalsHarnessPromptEvalAgent();
+		}),
+		reload_shutdown: await collect("evals_harness.reload_shutdown", () => {
+			return () => runEvalsHarnessReloadShutdown();
+		}),
+		run_coding_agent_eval: await collect("evals_harness.run_coding_agent_eval", () => {
+			return () => runEvalsHarnessRunCodingAgentEval();
 		}),
 		observed,
 	};
@@ -16644,6 +16735,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts toTranscriptEvents",
 			"evals_harness.last_assistant":
 				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
+			"evals_harness.prompt_eval_agent":
+				"packages/evals/src/pi-harness.ts promptAgent",
+			"evals_harness.reload_shutdown":
+				"packages/evals/src/pi-harness.ts AgentSession.reload + dispose",
+			"evals_harness.run_coding_agent_eval":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
