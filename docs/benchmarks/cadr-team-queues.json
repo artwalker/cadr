@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 286,
+   "nextPairNum": 289,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -369,6 +369,33 @@
      "measure": "measure-agent-tool-loop",
      "metric": "harness_events.make_start",
      "branch": "cursor/pair-283-285-harness-events-1bde"
+    },
+    {
+     "pair": 286,
+     "lane": "a",
+     "status": "in_progress",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.call_with",
+     "branch": "cursor/pair-286-288-fmq-leftover-150d"
+    },
+    {
+     "pair": 287,
+     "lane": "a",
+     "status": "in_progress",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.make_state",
+     "branch": "cursor/pair-286-288-fmq-leftover-150d"
+    },
+    {
+     "pair": 288,
+     "lane": "a",
+     "status": "in_progress",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.state_key",
+     "branch": "cursor/pair-286-288-fmq-leftover-150d"
     }
    ],
    "mergeQueue": []

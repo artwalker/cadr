@@ -9,6 +9,18 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.call_with` (`call-with-file-mutation-queue` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue` as a
+  function). Observed `fmqf_alias` / `fmqf_other` / `fmqf_fifo` / `fmqf_run` /
+  `fmqf_n` exact. Measure-only.
+- Goal 20 P.13: pair `file_mutation_queue.make_state` (`make-file-mutation-queue-state` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue-state object construction).
+  Observed `fmqm_pending` / `fmqm_ticket` / `fmqm_serving` / `fmqm_other` /
+  `fmqm_n` exact. Measure-only.
+- Goal 20 P.13: pair `file_mutation_queue.state_key` (`file-mutation-queue-state-key` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.key` after
+  get-or-create). Observed `fmqt_alias` / `fmqt_other` / `fmqt_missing` /
+  `fmqt_repeat` / `fmqt_n` exact. Measure-only.
 - Goal 20 P.13: pair `harness_events.on` (`harness-event-bus-on` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.on`).
   Observed `heon_off` / `heon_keep` / `heon_type` exact.
