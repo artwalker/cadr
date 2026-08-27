@@ -191,6 +191,9 @@
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
+;;;; 349. evals_harness make-eval-root vs pi-harness isolated eval directory
+;;;; 350. evals_harness normalize-step-type vs pi-harness step type coercion
+;;;; 351. evals_harness selected-eval-tools vs pi-harness coding-tool selection
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
@@ -357,6 +360,9 @@
     ("evals_harness.artifact_persist" . 3)
     ("evals_harness.format" . 20)
     ("evals_harness.normalize_steps" . 50)
+    ("evals_harness.make_eval_root" . 50)
+    ("evals_harness.normalize_step_type" . 50)
+    ("evals_harness.selected_eval_tools" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -6777,6 +6783,70 @@
      (length from-vec)
      (eval-normalize-steps-error-p 42))))
 
+(defun eval-flag (value)
+  (if value 1 0))
+
+(defun evals-delete-eval-root (root)
+  (when (and root (probe-file root))
+    (uiop:delete-directory-tree
+     root
+     :validate t
+     :if-does-not-exist :ignore)))
+
+(defun run-evals-harness-make-eval-root ()
+  ;; Leftover of run-coding-agent-eval: isolated temp root, no workspace yet.
+  (let ((root (cadr-evals::make-eval-root)))
+    (unwind-protect
+         (let ((names (namestring root)))
+           (list
+            (eval-flag (probe-file root))
+            (eval-flag (search "cadr-eval-" names))
+            (eval-flag
+             (not
+              (probe-file
+               (merge-pathnames "workspace/" root))))
+            3))
+      (evals-delete-eval-root root))))
+
+(defun run-evals-harness-normalize-step-type ()
+  ;; Leftover callee of normalize-eval-steps: keyword/symbol/string/other.
+  (list
+   (eval-flag
+    (eq (cadr-evals::normalize-step-type :prompt) :prompt))
+   (eval-flag
+    (eq (cadr-evals::normalize-step-type 'prompt) :prompt))
+   (eval-flag
+    (eq (cadr-evals::normalize-step-type "reload") :reload))
+   (eval-flag
+    (null (cadr-evals::normalize-step-type 42)))
+   4))
+
+(defun evals-tool-names (tools)
+  (mapcar #'cadr-ai:tool-name tools))
+
+(defun run-evals-harness-selected-eval-tools ()
+  ;; Leftover of run-coding-agent-eval: default / :all / exclude-name filter.
+  (let* ((cwd "/tmp/proj")
+         (all (cadr-evals::selected-eval-tools cwd nil))
+         (none (cadr-evals::selected-eval-tools cwd :all))
+         (filtered
+           (cadr-evals::selected-eval-tools cwd '("bash"))))
+    (list
+     (length all)
+     (eval-flag
+      (equal
+       (evals-tool-names all)
+       '("read" "bash" "edit" "write")))
+     (eval-flag (null none))
+     (length filtered)
+     (eval-flag
+      (not
+       (member
+        "bash"
+        (evals-tool-names filtered)
+        :test #'string=)))
+     5)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -6787,7 +6857,10 @@
            (cadr-evals:summarize-harness-comparisons
             (evals-harness-observations)))
          (fmt (run-evals-harness-format empty-report report))
-         (normalize (run-evals-harness-normalize-steps)))
+         (normalize (run-evals-harness-normalize-steps))
+         (eval-root (run-evals-harness-make-eval-root))
+         (step-type (run-evals-harness-normalize-step-type))
+         (eval-tools (run-evals-harness-selected-eval-tools)))
     (json-object
      "observed"
      (json-object
@@ -6819,7 +6892,22 @@
       "ns_kw_n" (nth 5 normalize)
       "ns_kw_rel" (nth 6 normalize)
       "ns_vec_n" (nth 7 normalize)
-      "ns_bad" (nth 8 normalize))
+      "ns_bad" (nth 8 normalize)
+      "mer_exists" (nth 0 eval-root)
+      "mer_prefix" (nth 1 eval-root)
+      "mer_no_ws" (nth 2 eval-root)
+      "mer_n" (nth 3 eval-root)
+      "nst_kw" (nth 0 step-type)
+      "nst_sym" (nth 1 step-type)
+      "nst_str" (nth 2 step-type)
+      "nst_bad" (nth 3 step-type)
+      "nst_n" (nth 4 step-type)
+      "set_n" (nth 0 eval-tools)
+      "set_names" (nth 1 eval-tools)
+      "set_all" (nth 2 eval-tools)
+      "set_filt_n" (nth 3 eval-tools)
+      "set_no_bash" (nth 4 eval-tools)
+      "set_cases" (nth 5 eval-tools))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -6845,7 +6933,22 @@
      (collect "evals_harness.normalize_steps"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-normalize-steps)))))))
+                  (run-evals-harness-normalize-steps))))
+     "make_eval_root"
+     (collect "evals_harness.make_eval_root"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-make-eval-root))))
+     "normalize_step_type"
+     (collect "evals_harness.normalize_step_type"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-normalize-step-type))))
+     "selected_eval_tools"
+     (collect "evals_harness.selected_eval_tools"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-selected-eval-tools)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -15967,6 +16070,12 @@
       "src/cadr-evals/summary.lisp format-harness-comparison-report"
       "evals_harness.normalize_steps"
       "src/cadr-evals/harness.lisp normalize-eval-steps"
+      "evals_harness.make_eval_root"
+      "src/cadr-evals/harness.lisp make-eval-root"
+      "evals_harness.normalize_step_type"
+      "src/cadr-evals/harness.lisp normalize-step-type"
+      "evals_harness.selected_eval_tools"
+      "src/cadr-evals/harness.lisp selected-eval-tools"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
