@@ -793,6 +793,36 @@
    "measure": "measure-evals-harness",
    "metric": "evals_harness.last_assistant",
    "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+  },
+  {
+   "pair": 367,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.openrouter_usage",
+   "branch": "cursor/pair-367-369-image-runtime-leftovers-d240",
+   "note": "nextPairNum left at tip 328 (outside 367-369)"
+  },
+  {
+   "pair": 368,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.parse_openrouter_images",
+   "branch": "cursor/pair-367-369-image-runtime-leftovers-d240",
+   "note": "nextPairNum left at tip 328 (outside 367-369)"
+  },
+  {
+   "pair": 369,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.error_result",
+   "branch": "cursor/pair-367-369-image-runtime-leftovers-d240",
+   "note": "nextPairNum left at tip 328 (outside 367-369)"
   }
  ],
  "mergeQueue": []

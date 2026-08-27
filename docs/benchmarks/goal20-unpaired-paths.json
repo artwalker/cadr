@@ -58,6 +58,9 @@
   "image_runtime.output_modalities",
   "image_runtime.openrouter_content",
   "image_runtime.parse_data_image",
+  "image_runtime.openrouter_usage",
+  "image_runtime.parse_openrouter_images",
+  "image_runtime.error_result",
   "cli_print_rpc.jsonl_line",
   "cli_print_rpc.jsonl_read",
   "cli_print_rpc.clamp_thinking",
@@ -959,7 +962,10 @@
    "metrics": [
     "image_runtime.output_modalities",
     "image_runtime.openrouter_content",
-    "image_runtime.parse_data_image"
+    "image_runtime.parse_data_image",
+    "image_runtime.openrouter_usage",
+    "image_runtime.parse_openrouter_images",
+    "image_runtime.error_result"
    ]
   },
   {

@@ -3663,6 +3663,47 @@ non-data-URL `pd_miss` / `pd_plain` = 0). First n=5 freeze **1.43×**
 `lc_sleep` / help text; this metric did not fail). Same commit no
 optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 367 — `image_runtime` (openrouter_usage)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_usage` | `openrouter-image-usage` (`src/cadr-ai/images.lisp`) | `parseUsage` (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of Pairs 298–300 on the same `image_runtime` hole on
+`src/cadr-ai/images.lisp`. Timed work is token arithmetic for a zero-cache
+usage object (prompt 12 / completion 34) and a cache-write case
+(prompt 100 / cached 40 / write 10) — not HTTP, not `generate-images`,
+not `build-openrouter-image-request`. Observed `us_in` / `us_out` /
+`us_cr` / `us_cw` / `us_in2` / `us_out2` / `us_cr2` / `us_cw2` are
+exact. First n=5 freeze pending. Gate uses `--only-enforce`. Same
+commit no optimize.
+
+### Pair 368 — `image_runtime` (parse_openrouter_images)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_openrouter_images` | `parse-openrouter-images` (`src/cadr-ai/images.lisp`) | `generateImages` response parse (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of Pair 367 on the same `image_runtime` hole. Timed
+work is OpenRouter JSON → assistant-images (id / text / data-URL image
+/ usage) — not HTTP, not `generate-images`. Observed `poi_id` /
+`poi_text` / `poi_n` / `poi_mime` / `poi_data` / `poi_in` / `poi_out`
+are exact. First n=5 freeze pending. Gate uses `--only-enforce`. Same
+commit no optimize.
+
+### Pair 369 — `image_runtime` (error_result)
+
+| metric | cadr | pi |
+|---|---|---|
+| `error_result` | `image-error-result` (`src/cadr-ai/images.lisp`) | `generateImages` catch error result (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of Pairs 367–368 on the same `image_runtime` hole.
+Timed work is authentication-error → `:error`, request-aborted →
+`:aborted`, and abort-p flag → `:aborted` — not HTTP, not
+`generate-images`. Observed `er_auth` / `er_hit` / `er_abort` /
+`er_flag` / `er_prov` are exact. First n=5 freeze pending. Gate uses
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 313 — `harness_events` (make_end)
 
 | metric | cadr | pi |
@@ -4491,7 +4532,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
-| `src/cadr-ai/images.lisp` | 222 | `image_runtime.output_modalities`, `image_runtime.openrouter_content`, `image_runtime.parse_data_image` |
+| `src/cadr-ai/images.lisp` | 222 | `image_runtime.output_modalities`, `image_runtime.openrouter_content`, `image_runtime.parse_data_image`, `image_runtime.openrouter_usage`, `image_runtime.parse_openrouter_images`, `image_runtime.error_result` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |

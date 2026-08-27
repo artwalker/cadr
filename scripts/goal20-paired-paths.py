@@ -136,7 +136,7 @@ METRICS = {
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
-    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image"),
+    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image", "openrouter_usage", "parse_openrouter_images", "error_result"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats"),
     "tui_latex": ("render", "normalize_output"),
     "tui_mermaid": ("render", "source_box", "transform"),
@@ -574,6 +574,15 @@ RATIO_CEILINGS = {
     # leftover pair: observed 1.43x (0.555 / 0.387 us). 8.0 is
     # first-freeze headroom. Ratchet down only.
     "image_runtime.parse_data_image": 8.0,
+    # First-freeze headroom for leftover image_runtime.openrouter_usage
+    # (Pair 367). Ratchet down only after n=5 freeze.
+    "image_runtime.openrouter_usage": 8.0,
+    # First-freeze headroom for leftover image_runtime.parse_openrouter_images
+    # (Pair 368). Ratchet down only after n=5 freeze.
+    "image_runtime.parse_openrouter_images": 8.0,
+    # First-freeze headroom for leftover image_runtime.error_result
+    # (Pair 369). Ratchet down only after n=5 freeze.
+    "image_runtime.error_result": 8.0,
     # Frozen from the first Friend-MachineD non-quick cli_print_rpc
     # pair (samples=5): observed 13.21x (3.3 / 0.25 us). 8.0 follows
     # the microsecond-floor / agent_proxy variance precedent (not
@@ -2049,6 +2058,26 @@ OBSERVED_EXACT = {
         "pd_ok",
         "pd_miss",
         "pd_plain",
+        "us_in",
+        "us_out",
+        "us_cr",
+        "us_cw",
+        "us_in2",
+        "us_out2",
+        "us_cr2",
+        "us_cw2",
+        "poi_id",
+        "poi_text",
+        "poi_n",
+        "poi_mime",
+        "poi_data",
+        "poi_in",
+        "poi_out",
+        "er_auth",
+        "er_hit",
+        "er_abort",
+        "er_flag",
+        "er_prov",
     ),
     "cli_print_rpc": (
         "line_chars",
