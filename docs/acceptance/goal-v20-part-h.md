@@ -3635,8 +3635,10 @@ Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/write.lisp
 Timed work is parent mkdir (nested create / already-a-directory / parent-is-file
 error) — not `write-utf8-file`, not `make-write-tool`, not execute / queue /
 result copy. Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` are
-exact. Measure-only; freeze numbers in a follow-up docs commit. Pair numbers
-316–342 belong to other lanes; this cut is 343–345 only.
+exact. First n=5 freeze **0.594×** (64.978 / 109.366 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize. Pair numbers 316–342 belong to other lanes; this cut is 343–345 only.
 
 ### Pair 344 — `write_tool` (write_utf8)
 
@@ -3647,8 +3649,11 @@ exact. Measure-only; freeze numbers in a follow-up docs commit. Pair numbers
 Leftover sibling of Pair 343 `ensure_parent` on the same `write.lisp`
 `agent_tool_loop` hole. Timed work is UTF-8 write of ASCII `hello` plus CJK/emoji
 `中🙂` into an existing parent — not mkdir as the timed owner, not execute.
-Observed `wu_ok` / `wu_ascii` / `wu_cjk` / `wu_n` are exact. Measure-only;
-freeze numbers in a follow-up docs commit.
+Observed `wu_ok` / `wu_ascii` / `wu_cjk` / `wu_n` are exact. First n=5 freeze
+**1.254×** (169.771 / 135.369 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 345 — `write_tool` (make_tool)
 
@@ -3659,8 +3664,10 @@ freeze numbers in a follow-up docs commit.
 Leftover sibling of Pair 343 `ensure_parent` and Pair 344 `write_utf8` on the
 same `write.lisp` `agent_tool_loop` hole. Timed work is tool name / description /
 required `path`+`content` — not execute. Observed `wmt_name` / `wmt_desc` /
-`wmt_req` / `wmt_n` are exact. Measure-only; freeze numbers in a follow-up docs
-commit.
+`wmt_req` / `wmt_n` are exact. First n=5 freeze **3.139×** (13.633 / 4.343 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
