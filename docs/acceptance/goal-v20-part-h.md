@@ -3889,6 +3889,47 @@ are exact. First n=5 freeze **0.535×** (6.292 / 11.750 µs) on host `cursor`,
 ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
 leads. Same commit no optimize.
+
+### Pair 358 — `oauth_pkce_device` (base64url_value)
+
+| metric | cadr | pi |
+|---|---|---|
+| `base64url_value` | `base64url-value` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | RFC 4648 §5 alphabet index used by `decodeJwt` / JWT payload decode (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of the `oauth_pkce_device` hole on
+`src/cadr-ai/oauth/openai-anthropic.lisp`. Timed work is alphabet lookup
+(`A` / `a` / `0` / `-` / `_`) — not token HTTP, not browser login. Do not
+exact characters outside `A-Za-z0-9-_` (Lisp `NIL` vs JS `indexOf` `-1`).
+Observed `bv_A` / `bv_a` / `bv_0` / `bv_dash` / `bv_us` / `bv_n` are exact.
+First n=5 freeze pending measurement, ceiling 8.0. Same commit no optimize.
+
+### Pair 359 — `oauth_pkce_device` (base64url_decode)
+
+| metric | cadr | pi |
+|---|---|---|
+| `base64url_decode` | `base64url-decode` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | `decodeJwt` `atob` (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of Pair 358 `base64url_value` on the same
+`oauth_pkce_device` hole. Timed work is unpadded alphabet-only decode
+(`{}` / `foo` / account-id JWT payload) — not `+`/`/` padding, not `-`/`_`
+(pi `atob`, not base64url). Observed `bd_obj` / `bd_foo` / `bd_acct` /
+`bd_n` are exact. First n=5 freeze pending measurement, ceiling 8.0. Same
+commit no optimize.
+
+### Pair 360 — `oauth_pkce_device` (account_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `account_id` | `openai-account-id-from-token` (`src/cadr-ai/oauth/openai-anthropic.lisp`) | `getAccountId` (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of Pairs 358–359 on the same `oauth_pkce_device` hole.
+Timed work is JWT account-id extract (present / missing claim / not a JWT)
+— not token exchange, not `token-response-credential` expiry. Do not exact
+two-part tokens (pi `decodeJwt` requires three parts). Do not exact empty
+`chatgpt_account_id` (pi requires length > 0). Observed `aid_ok` /
+`aid_miss` / `aid_bad` / `aid_n` are exact. First n=5 freeze pending
+measurement, ceiling 8.0. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

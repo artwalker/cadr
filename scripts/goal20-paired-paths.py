@@ -130,6 +130,9 @@ METRICS = {
         "percent_decode",
         "parse_query",
         "parse_authorization_input",
+        "base64url_value",
+        "base64url_decode",
+        "account_id",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant"),
@@ -463,6 +466,12 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.percent_decode": 8.0,
     "oauth_pkce_device.parse_query": 8.0,
     "oauth_pkce_device.parse_authorization_input": 8.0,
+    # Frozen from the first non-quick oauth_pkce_device leftover
+    # trio on openai-anthropic.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "oauth_pkce_device.base64url_value": 8.0,
+    "oauth_pkce_device.base64url_decode": 8.0,
+    "oauth_pkce_device.account_id": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed
     # 0.45x (4.79 / 10.52 us). cadr leads. 8.0 is
@@ -1883,6 +1892,20 @@ OBSERVED_EXACT = {
         "pai_qs",
         "pai_plain",
         "pai_n",
+        "bv_A",
+        "bv_a",
+        "bv_0",
+        "bv_dash",
+        "bv_us",
+        "bv_n",
+        "bd_obj",
+        "bd_foo",
+        "bd_acct",
+        "bd_n",
+        "aid_ok",
+        "aid_miss",
+        "aid_bad",
+        "aid_n",
     ),
     "cli_extensions_install": (
         "nu_local",

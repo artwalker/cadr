@@ -211,6 +211,9 @@
 ;;;; 310. oauth_pkce_device percent-decode vs URLSearchParams percent-decode
 ;;;; 311. oauth_pkce_device parse-query vs URLSearchParams
 ;;;; 312. oauth_pkce_device parse-oauth-authorization-input vs parseAuthorizationInput
+;;;; 358. oauth_pkce_device base64url-value vs RFC 4648 §5 alphabet index
+;;;; 359. oauth_pkce_device base64url-decode vs openai-codex.ts decodeJwt atob
+;;;; 360. oauth_pkce_device openai-account-id-from-token vs getAccountId
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -357,6 +360,9 @@
     ("oauth_pkce_device.percent_decode" . 50)
     ("oauth_pkce_device.parse_query" . 50)
     ("oauth_pkce_device.parse_authorization_input" . 50)
+    ("oauth_pkce_device.base64url_value" . 50)
+    ("oauth_pkce_device.base64url_decode" . 50)
+    ("oauth_pkce_device.account_id" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -6247,6 +6253,68 @@
    (oauth-authorization-input-flag " code-d " "code-d" nil)
    4))
 
+(defun oauth-base64url-value-flag (character expected)
+  (handler-case
+      (if (eql (cadr-ai::base64url-value character) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-base64url-value ()
+  ;; RFC 4648 §5 alphabet only. Do not exact characters outside
+  ;; A-Za-z0-9-_ (Lisp NIL vs JS indexOf -1).
+  (list
+   (oauth-base64url-value-flag #\A 0)
+   (oauth-base64url-value-flag #\a 26)
+   (oauth-base64url-value-flag #\0 52)
+   (oauth-base64url-value-flag #\- 62)
+   (oauth-base64url-value-flag #\_ 63)
+   5))
+
+(defun oauth-base64url-decode-flag (encoded expected)
+  (handler-case
+      (if (string=
+           (cadr-ai::utf8-string (cadr-ai::base64url-decode encoded))
+           expected)
+          1
+          0)
+    (error () 0)))
+
+(defparameter +oauth-account-id-payload+
+  "eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiYWNjdCJ9fQ")
+
+(defparameter +oauth-account-id-token+
+  "e30.eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiYWNjdCJ9fQ.sig")
+
+(defun run-oauth-pkce-device-base64url-decode ()
+  ;; Alphabet-only unpadded strings that Node atob and cadr
+  ;; base64url-decode both accept. Do not exact +/ padding, or -_
+  ;; (pi decodeJwt uses atob, not base64url).
+  (list
+   (oauth-base64url-decode-flag "e30" "{}")
+   (oauth-base64url-decode-flag "Zm9v" "foo")
+   (oauth-base64url-decode-flag
+    +oauth-account-id-payload+
+    "{\"https://api.openai.com/auth\":{\"chatgpt_account_id\":\"acct\"}}")
+   3))
+
+(defun oauth-account-id-flag (token expected)
+  (handler-case
+      (if (equal (cadr-ai::openai-account-id-from-token token) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-account-id ()
+  ;; Three-part JWT only. Do not exact two-part tokens (pi decodeJwt
+  ;; requires length 3; cadr splits and may still decode). Do not exact
+  ;; empty chatgpt_account_id (pi requires length > 0).
+  (list
+   (oauth-account-id-flag +oauth-account-id-token+ "acct")
+   (oauth-account-id-flag "e30.e30.sig" nil)
+   (oauth-account-id-flag "not-a-jwt" nil)
+   3))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -6256,7 +6324,10 @@
         (copilot-auth (run-oauth-pkce-device-copilot-auth))
         (percent (run-oauth-pkce-device-percent-decode))
         (query (run-oauth-pkce-device-parse-query))
-        (auth-input (run-oauth-pkce-device-parse-authorization-input)))
+        (auth-input (run-oauth-pkce-device-parse-authorization-input))
+        (b64-value (run-oauth-pkce-device-base64url-value))
+        (b64-decode (run-oauth-pkce-device-base64url-decode))
+        (account-id (run-oauth-pkce-device-account-id)))
     (json-object
      "observed"
      (json-object
@@ -6299,7 +6370,21 @@
       "pai_hash" (nth 1 auth-input)
       "pai_qs" (nth 2 auth-input)
       "pai_plain" (nth 3 auth-input)
-      "pai_n" (nth 4 auth-input))
+      "pai_n" (nth 4 auth-input)
+      "bv_A" (nth 0 b64-value)
+      "bv_a" (nth 1 b64-value)
+      "bv_0" (nth 2 b64-value)
+      "bv_dash" (nth 3 b64-value)
+      "bv_us" (nth 4 b64-value)
+      "bv_n" (nth 5 b64-value)
+      "bd_obj" (nth 0 b64-decode)
+      "bd_foo" (nth 1 b64-decode)
+      "bd_acct" (nth 2 b64-decode)
+      "bd_n" (nth 3 b64-decode)
+      "aid_ok" (nth 0 account-id)
+      "aid_miss" (nth 1 account-id)
+      "aid_bad" (nth 2 account-id)
+      "aid_n" (nth 3 account-id))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -6344,7 +6429,22 @@
      (collect "oauth_pkce_device.parse_authorization_input"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-authorization-input)))))))
+                  (run-oauth-pkce-device-parse-authorization-input))))
+     "base64url_value"
+     (collect "oauth_pkce_device.base64url_value"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-base64url-value))))
+     "base64url_decode"
+     (collect "oauth_pkce_device.base64url_decode"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-base64url-decode))))
+     "account_id"
+     (collect "oauth_pkce_device.account_id"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-account-id)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -16211,6 +16311,12 @@
       "src/cadr-ai/oauth/callback.lisp parse-query"
       "oauth_pkce_device.parse_authorization_input"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-authorization-input"
+      "oauth_pkce_device.base64url_value"
+      "src/cadr-ai/oauth/openai-anthropic.lisp base64url-value"
+      "oauth_pkce_device.base64url_decode"
+      "src/cadr-ai/oauth/openai-anthropic.lisp base64url-decode"
+      "oauth_pkce_device.account_id"
+      "src/cadr-ai/oauth/openai-anthropic.lisp openai-account-id-from-token"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

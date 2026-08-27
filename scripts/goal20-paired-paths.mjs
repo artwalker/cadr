@@ -214,6 +214,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.percent_decode": 50,
 	"oauth_pkce_device.parse_query": 50,
 	"oauth_pkce_device.parse_authorization_input": 50,
+	"oauth_pkce_device.base64url_value": 50,
+	"oauth_pkce_device.base64url_decode": 50,
+	"oauth_pkce_device.account_id": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -5846,6 +5849,90 @@ function runOauthPkceDeviceParseAuthorizationInput() {
 	};
 }
 
+const OAUTH_BASE64URL_ALPHABET =
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const OAUTH_ACCOUNT_ID_PAYLOAD =
+	"eyJodHRwczovL2FwaS5vcGVuYWkuY29tL2F1dGgiOnsiY2hhdGdwdF9hY2NvdW50X2lkIjoiYWNjdCJ9fQ";
+const OAUTH_ACCOUNT_ID_TOKEN = `e30.${OAUTH_ACCOUNT_ID_PAYLOAD}.sig`;
+const JWT_CLAIM_PATH = "https://api.openai.com/auth";
+
+function base64urlValueFlag(character, expected) {
+	try {
+		return OAUTH_BASE64URL_ALPHABET.indexOf(character) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceBase64urlValue() {
+	return {
+		bv_A: base64urlValueFlag("A", 0),
+		bv_a: base64urlValueFlag("a", 26),
+		bv_0: base64urlValueFlag("0", 52),
+		bv_dash: base64urlValueFlag("-", 62),
+		bv_us: base64urlValueFlag("_", 63),
+		bv_n: 5,
+	};
+}
+
+function base64urlDecodeFlag(encoded, expected) {
+	try {
+		return atob(encoded) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceBase64urlDecode() {
+	return {
+		bd_obj: base64urlDecodeFlag("e30", "{}"),
+		bd_foo: base64urlDecodeFlag("Zm9v", "foo"),
+		bd_acct: base64urlDecodeFlag(
+			OAUTH_ACCOUNT_ID_PAYLOAD,
+			'{"https://api.openai.com/auth":{"chatgpt_account_id":"acct"}}',
+		),
+		bd_n: 3,
+	};
+}
+
+// Baseline openai-codex.ts decodeJwt / getAccountId are unexported; keep the
+// production body so the timed work is the same function.
+function decodeJwt(token) {
+	try {
+		const parts = token.split(".");
+		if (parts.length !== 3) return null;
+		const payload = parts[1] ?? "";
+		const decoded = atob(payload);
+		return JSON.parse(decoded);
+	} catch {
+		return null;
+	}
+}
+
+function getAccountId(accessToken) {
+	const payload = decodeJwt(accessToken);
+	const auth = payload?.[JWT_CLAIM_PATH];
+	const accountId = auth?.chatgpt_account_id;
+	return typeof accountId === "string" && accountId.length > 0 ? accountId : null;
+}
+
+function accountIdFlag(token, expected) {
+	try {
+		return getAccountId(token) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceAccountId() {
+	return {
+		aid_ok: accountIdFlag(OAUTH_ACCOUNT_ID_TOKEN, "acct"),
+		aid_miss: accountIdFlag("e30.e30.sig", null),
+		aid_bad: accountIdFlag("not-a-jwt", null),
+		aid_n: 3,
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -5856,6 +5943,9 @@ async function measureOauthPkceDevice() {
 	const percent = runOauthPkceDevicePercentDecode();
 	const query = runOauthPkceDeviceParseQuery();
 	const authInput = runOauthPkceDeviceParseAuthorizationInput();
+	const b64Value = runOauthPkceDeviceBase64urlValue();
+	const b64Decode = runOauthPkceDeviceBase64urlDecode();
+	const accountId = runOauthPkceDeviceAccountId();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -5884,6 +5974,15 @@ async function measureOauthPkceDevice() {
 		parse_authorization_input: await collect("oauth_pkce_device.parse_authorization_input", () => {
 			return () => runOauthPkceDeviceParseAuthorizationInput();
 		}),
+		base64url_value: await collect("oauth_pkce_device.base64url_value", () => {
+			return () => runOauthPkceDeviceBase64urlValue();
+		}),
+		base64url_decode: await collect("oauth_pkce_device.base64url_decode", () => {
+			return () => runOauthPkceDeviceBase64urlDecode();
+		}),
+		account_id: await collect("oauth_pkce_device.account_id", () => {
+			return () => runOauthPkceDeviceAccountId();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -5894,6 +5993,9 @@ async function measureOauthPkceDevice() {
 			...percent,
 			...query,
 			...authInput,
+			...b64Value,
+			...b64Decode,
+			...accountId,
 		},
 	};
 }
@@ -16620,6 +16722,12 @@ const result = {
 				"packages/ai/src/auth/oauth/openai-codex.ts URLSearchParams query parse (cadr parse-query)",
 			"oauth_pkce_device.parse_authorization_input":
 				"packages/ai/src/auth/oauth/openai-codex.ts parseAuthorizationInput",
+			"oauth_pkce_device.base64url_value":
+				"packages/ai/src/auth/oauth/openai-codex.ts RFC 4648 §5 alphabet index (cadr base64url-value)",
+			"oauth_pkce_device.base64url_decode":
+				"packages/ai/src/auth/oauth/openai-codex.ts decodeJwt atob (cadr base64url-decode)",
+			"oauth_pkce_device.account_id":
+				"packages/ai/src/auth/oauth/openai-codex.ts getAccountId",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

@@ -9,6 +9,12 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `oauth_pkce_device.base64url_value` /
+  `base64url_decode` / `account_id` (`src/cadr-ai/oauth/openai-anthropic.lisp`
+  vs baseline RFC 4648 §5 alphabet / `decodeJwt` `atob` / `getAccountId`).
+  Observed `bv_*` / `bd_*` / `aid_*` exact. n=5 freeze pending. Ceiling 8.0.
+  Measure-only. No `src/` perf. Pairs 358–360.
+
 - Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
   `transcript` / `last_assistant` (`src/cadr-evals/harness.lisp` vs baseline
   `resolveModelSelection` / `toTranscriptEvents` / `promptAgent` assistant
