@@ -517,15 +517,16 @@ RATIO_CEILINGS = {
     # headroom (variance). Ratchet down only.
     "image_runtime.api_provider": 8.0,
     # Frozen from the first n=5 image_runtime.output_modalities
-    # pair: observed 0.896x (0.192 / 0.215 us). cadr leads. 8.0 is
-    # first-freeze headroom. Ratchet down only.
-    "image_runtime.output_modalities": 8.0,
-    # image_runtime.openrouter_content pair (samples=5): first freeze
+    # leftover pair: observed 0.657x (0.196 / 0.299 us). cadr leads.
     # 8.0 is first-freeze headroom. Ratchet down only.
+    "image_runtime.output_modalities": 8.0,
+    # Frozen from the first n=5 image_runtime.openrouter_content
+    # leftover pair: observed 3.34x (1.367 / 0.409 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
     "image_runtime.openrouter_content": 8.0,
     # Frozen from the first n=5 image_runtime.parse_data_image
-    # pair: observed 1.50x (0.556 / 0.371 us). 8.0 is first-freeze
-    # headroom. Ratchet down only.
+    # leftover pair: observed 1.43x (0.555 / 0.387 us). 8.0 is
+    # first-freeze headroom. Ratchet down only.
     "image_runtime.parse_data_image": 8.0,
     # Frozen from the first Friend-MachineD non-quick cli_print_rpc
     # pair (samples=5): observed 13.21x (3.3 / 0.25 us). 8.0 follows

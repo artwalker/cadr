@@ -3541,7 +3541,7 @@ Pairs 33 / 63–66 (those timed other files). Timed work is the
 `google/gemini-2.5-flash-image` and `black-forest-labs/flux.2-pro` —
 not HTTP, not `generate-images`. Observed `om_gemini_n` /
 `om_gemini_text` / `om_flux_n` / `om_flux_text` are exact. First n=5
-freeze **0.896×** (0.192 / 0.215 µs) on host `cursor`, ceiling 8.0.
+freeze **0.657×** (0.196 / 0.299 µs) on host `cursor`, ceiling 8.0.
 Gate used `--only-enforce` (script rc=1 only from known old holes
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
@@ -3557,8 +3557,11 @@ work is text + image_url content parts (`Generate a dog` +
 `data:image/png;base64,aW1hZ2U=`) — not HTTP, not
 `generate-images`, not `build-openrouter-image-request`. Observed
 `oc_text_type` / `oc_text` / `oc_img_type` / `oc_img_url` / `oc_ok`
-are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+are exact. First n=5 freeze **3.34×** (1.367 / 0.409 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 300 — `image_runtime` (parse_data_image)
 
@@ -3569,9 +3572,12 @@ are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
 Leftover sibling of Pairs 298–299 on the same `image_runtime` hole.
 Timed work is `data:image/png;base64,…` parse plus a miss and a plain
 HTTPS URL — not HTTP, not `generate-images`. Observed `pd_ok_mime` /
-`pd_ok_data` / `pd_ok` / `pd_miss` / `pd_plain` are exact. First n=5
-freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit
-no optimize.
+`pd_ok_data` / `pd_ok` / `pd_miss` / `pd_plain` are exact (`pd_ok=1`,
+non-data-URL `pd_miss` / `pd_plain` = 0). First n=5 freeze **1.43×**
+(0.555 / 0.387 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
