@@ -7278,7 +7278,7 @@
 (defun theme-foreground-ansi-esc-code (text)
   (if (and (stringp text)
            (plusp (length text))
-           (char= (char text 0) #\Escape))
+           (char= (char text 0) (code-char 27)))
       27
       0))
 
