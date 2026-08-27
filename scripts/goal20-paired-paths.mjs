@@ -159,6 +159,9 @@ const REPETITIONS = {
 	"output_accumulator.append": 50,
 	"output_accumulator.snapshot": 50,
 	"output_accumulator.finish": 50,
+	"harness_events.on": 50,
+	"harness_events.watch": 50,
+	"harness_events.make_start": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -618,11 +621,11 @@ const authCommandModule = await import(
 );
 const validationModule = await import(moduleUrl("packages/ai/src/utils/validation.ts"));
 const jsonlModule = await import(moduleUrl("packages/agent/src/harness/session/jsonl.ts"));
+const harnessEventsModule = await import(moduleUrl("packages/agent/src/harness/events.ts"));
 const rpcJsonlModule = await import(moduleUrl("packages/coding-agent/src/modes/rpc/jsonl.ts"));
 process.env.PI_TIMING = "1";
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
-const harnessEventsModule = await import(moduleUrl("packages/agent/src/harness/events.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
 const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
@@ -2585,13 +2588,97 @@ function runHarnessEventsEmit() {
 	};
 }
 
+function runHarnessEventsOn() {
+	const bus = new harnessEventsModule.HarnessEventBus();
+	const starts = [];
+	const ends = [];
+	const offStart = bus.on("run_start", (event) => {
+		starts.push(event);
+	});
+	bus.on("run_end", (event) => {
+		ends.push(event);
+	});
+	offStart();
+	const runStart = { type: "run_start", lane: "main", runId: "run-1" };
+	const runEnd = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	bus.emit(runStart);
+	bus.emit(runEnd);
+	return {
+		heon_off: starts.length === 0 ? 1 : 0,
+		heon_keep: ends.length === 1 ? 1 : 0,
+		heon_type: ends[0]?.type === "run_end" ? 1 : 0,
+	};
+}
+
+function runHarnessEventsWatch() {
+	const bus = new harnessEventsModule.HarnessEventBus();
+	const received = [];
+	const runStart = { type: "run_start", lane: "main", runId: "run-1" };
+	const runEnd = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	const expectedSnapshot = "snap";
+	const handle = bus.watch(() => {
+		bus.emit(runStart);
+		return expectedSnapshot;
+	});
+	handle.start((event) => {
+		received.push(event);
+	});
+	bus.emit(runEnd);
+	handle.unsubscribe();
+	bus.emit(runStart);
+	return {
+		hew_snap: handle.snapshot === expectedSnapshot ? 1 : 0,
+		hew_count: received.length === 2 ? 1 : 0,
+		hew_start: received[0]?.type === "run_start" ? 1 : 0,
+		hew_end: received[1]?.type === "run_end" ? 1 : 0,
+	};
+}
+
+function runHarnessEventsMakeStart() {
+	const event = { type: "run_start", lane: "main", runId: "run-1" };
+	return {
+		hes_type: event.type === "run_start" ? 1 : 0,
+		hes_lane: event.lane === "main" ? 1 : 0,
+		hes_run: event.runId === "run-1" ? 1 : 0,
+	};
+}
+
 async function measureHarnessEvents() {
-	const observed = runHarnessEventsEmit();
+	const emitObserved = runHarnessEventsEmit();
+	const onObserved = runHarnessEventsOn();
+	const watchObserved = runHarnessEventsWatch();
+	const makeStartObserved = runHarnessEventsMakeStart();
 	return {
 		emit: await collect("harness_events.emit", () => {
 			return () => runHarnessEventsEmit();
 		}),
-		observed,
+		on: await collect("harness_events.on", () => {
+			return () => runHarnessEventsOn();
+		}),
+		watch: await collect("harness_events.watch", () => {
+			return () => runHarnessEventsWatch();
+		}),
+		make_start: await collect("harness_events.make_start", () => {
+			return () => runHarnessEventsMakeStart();
+		}),
+		observed: {
+			...emitObserved,
+			...onObserved,
+			...watchObserved,
+			...makeStartObserved,
+		},
 	};
 }
 
@@ -15047,6 +15134,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.snapshot",
 			"output_accumulator.finish":
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.finish",
+			"harness_events.on":
+				"packages/agent/src/harness/events.ts HarnessEventBus.on",
+			"harness_events.watch":
+				"packages/agent/src/harness/events.ts HarnessEventBus.watch",
+			"harness_events.make_start":
+				"packages/agent/src/harness/events.ts RunStartEvent object",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":

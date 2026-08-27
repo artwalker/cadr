@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "paused": false,
- "nextPairNum": 283,
+ "nextPairNum": 286,
  "lanes": {
   "a": {
    "role": "pairing",
@@ -339,6 +339,33 @@
    "measure": "measure-output-accumulator",
    "metric": "output_accumulator.finish",
    "branch": "cursor/pair-280-282-output-accumulator-7ccd"
+  },
+  {
+   "pair": 283,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.on",
+   "branch": "cursor/pair-283-285-harness-events-1bde"
+  },
+  {
+   "pair": 284,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.watch",
+   "branch": "cursor/pair-283-285-harness-events-1bde"
+  },
+  {
+   "pair": 285,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.make_start",
+   "branch": "cursor/pair-283-285-harness-events-1bde"
   }
  ],
  "mergeQueue": []
