@@ -247,5 +247,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
 | `oauth_pkce_device.percent_decode` | 1.592 | 1.044 | 1.525× | 8.00× | measure-only pair 310; `percent-decode` vs URLSearchParams | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_query` | 6.672 | 3.431 | 1.944× | 8.00× | measure-only pair 311; `parse-query` vs URLSearchParams | invent pause；地板优化另刀 |
+| `evals_harness.prompt_eval_agent` | 19.3 | 1.84 | 10.47× | 20.00× | measure-only pair 355; `prompt-eval-agent` vs `promptAgent` (first-freeze ceiling 20) | invent pause；地板优化另刀 |
+| `evals_harness.reload_shutdown` | 222.4 | 118.8 | 1.872× | 8.00× | measure-only pair 356; reload + shutdown leftover | invent pause；地板优化另刀 |
+| `evals_harness.run_coding_agent_eval` | 940.1 | 117.8 | 7.979× | 8.00× | measure-only pair 357; `run-coding-agent-eval` vs `runPiCodingAgent` | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

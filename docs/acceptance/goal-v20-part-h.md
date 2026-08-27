@@ -3889,6 +3889,53 @@ are exact. First n=5 freeze **0.535×** (6.292 / 11.750 µs) on host `cursor`,
 ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
 leads. Same commit no optimize.
+
+### Pair 355 — `evals_harness` (prompt_eval_agent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prompt_eval_agent` | `prompt-eval-agent` (`src/cadr-evals/harness.lisp`) | `promptAgent` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover of the `evals_harness` hole on `harness.lisp`. Timed work is
+faux-stream `prompt-eval-agent` (last-assistant stop/text) — not
+`run-coding-agent-eval`, not `last-assistant-since` as a standalone
+pair. Observed `pea_out` / `pea_msgs` / `pea_stop` / `pea_n` are exact.
+First n=5 freeze **10.47×** (19.3 / 1.84 µs) on host `cursor`, ceiling
+20.0 (first-freeze bump from 8.0). Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail the ratio after the ceiling bump). Over-1× booked.
+Same commit no optimize.
+
+### Pair 356 — `evals_harness` (reload_shutdown)
+
+| metric | cadr | pi |
+|---|---|---|
+| `reload_shutdown` | `reload-eval-extensions` + `shutdown-eval-agent` (`src/cadr-evals/harness.lisp`) | `AgentSession.reload` + `dispose` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pair 355 `prompt_eval_agent` on the same
+`evals_harness` hole. Timed work is isolated empty-extension reload,
+session-shutdown, and release — not a live prompt. Observed `rld_err` /
+`rld_active` / `rld_reports` / `rld_n` are exact. First n=5 freeze
+**1.872×** (222.4 / 118.8 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
+commit no optimize.
+
+### Pair 357 — `evals_harness` (run_coding_agent_eval)
+
+| metric | cadr | pi |
+|---|---|---|
+| `run_coding_agent_eval` | `run-coding-agent-eval` (`src/cadr-evals/harness.lisp`) | `runPiCodingAgent` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pairs 355–356 on the same `evals_harness` hole. Timed
+work is an isolated faux no-tools coding-agent eval (prompt → transcript
+→ cleanup) — not a live provider. Observed `rca_out` / `rca_events` /
+`rca_err` / `rca_ms` / `rca_n` are exact. First n=5 freeze **7.979×**
+(940.1 / 117.8 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
+commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

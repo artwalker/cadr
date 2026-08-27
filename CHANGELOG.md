@@ -17,7 +17,24 @@ tag/Release step.
   `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
   (`lc_n` / `lc_sleep` / help text), not these metrics. Pairs 326–327 are on
   the over-1× ledger. Pairs 325–327.
-
+- Goal 20 P.13: pair `evals_harness.prompt_eval_agent` (`prompt-eval-agent` on
+  `src/cadr-evals/harness.lisp` vs baseline `promptAgent`). Observed
+  `pea_out` / `pea_msgs` / `pea_stop` / `pea_n` exact.
+  n=5 **10.47×** (19.3 / 1.84 µs) on host `cursor`, ceiling 20.0. Measure-only leftover
+  (Pair 355). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13: pair `evals_harness.reload_shutdown` (`reload-eval-extensions` +
+  `shutdown-eval-agent` on `src/cadr-evals/harness.lisp` vs baseline reload +
+  dispose). Observed `rld_err` / `rld_active` / `rld_reports` / `rld_n` exact.
+  n=5 **1.872×** (222.4 / 118.8 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 356). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13: pair `evals_harness.run_coding_agent_eval` (`run-coding-agent-eval`
+  on `src/cadr-evals/harness.lisp` vs baseline `runPiCodingAgent`). Observed
+  `rca_out` / `rca_events` / `rca_err` / `rca_ms` / `rca_n` exact.
+  n=5 **7.979×** (940.1 / 117.8 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 357). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
 - Goal 20 P.13: pair `oauth_pkce_device.percent_decode` (`percent-decode` on
   `src/cadr-ai/oauth/callback.lisp` vs baseline URLSearchParams percent-decode
   in `packages/ai/src/auth/oauth/openai-codex.ts`). Observed `pd_plain` /
