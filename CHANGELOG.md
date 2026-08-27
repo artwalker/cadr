@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `core_rest.cancellation_predicate`
+  (`cancellation-predicate-aborted-p` on `src/cadr-core/cancellation.lisp` vs
+  `Boolean(fn())` try/catch). Observed `cp_nil` / `cp_true` / `cp_false` /
+  `cp_err` exact. n=5 freeze pending `--only-enforce`, ceiling 8.0.
+  Measure-only. Pairs 385–387.
+- Goal 20 P.13 leftover: pair `core_rest.redacted_register`
+  (`register-redacted-object-type` on `src/cadr-core/redacted-print.lisp` vs
+  array push-if-absent). Observed `rr_new` / `rr_dup` / `rr_sort` exact.
+  n=5 freeze pending `--only-enforce`, ceiling 8.0. Measure-only.
+- Goal 20 P.13 leftover: pair `core_rest.redacted_replace` (`replace-all` on
+  `src/cadr-core/redacted-print.lisp` vs String.split/join one needle).
+  Observed `ra_hit` / `ra_mark` / `ra_miss` / `ra_empty` exact. n=5 freeze
+  pending `--only-enforce`, ceiling 8.0. Measure-only.
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.

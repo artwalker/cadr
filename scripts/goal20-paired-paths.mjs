@@ -438,6 +438,9 @@ const REPETITIONS = {
 	"core_rest.cancellation_abort": 50,
 	"core_rest.redacted_secrets": 50,
 	"core_rest.threads_cleanup": 5,
+	"core_rest.cancellation_predicate": 50,
+	"core_rest.redacted_register": 50,
+	"core_rest.redacted_replace": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
@@ -16323,10 +16326,79 @@ async function runCoreRestThreads() {
 	};
 }
 
+function cancellationPredicateAbortedP(predicate) {
+	if (!predicate) {
+		return false;
+	}
+	try {
+		return Boolean(predicate());
+	} catch {
+		return false;
+	}
+}
+
+function runCoreRestCancellationPredicate() {
+	return {
+		cp_nil: cancellationPredicateAbortedP(null) ? 0 : 1,
+		cp_true: cancellationPredicateAbortedP(() => true) ? 1 : 0,
+		cp_false: cancellationPredicateAbortedP(() => false) ? 0 : 1,
+		cp_err: cancellationPredicateAbortedP(() => {
+			throw new Error("cadr-core-rest-predicate");
+		})
+			? 0
+			: 1,
+	};
+}
+
+function runCoreRestRedactedRegister() {
+	const types = [];
+	const register = (type) => {
+		if (!types.includes(type)) {
+			types.push(type);
+		}
+		return type;
+	};
+	const first = register("GOAL20-REDACTED-A");
+	register("GOAL20-REDACTED-A");
+	register("GOAL20-REDACTED-B");
+	const sorted = [...types].sort();
+	return {
+		rr_new: first === "GOAL20-REDACTED-A" ? 1 : 0,
+		rr_dup: types.length === 2 ? 1 : 0,
+		rr_sort:
+			sorted[0] === "GOAL20-REDACTED-A" && sorted[1] === "GOAL20-REDACTED-B"
+				? 1
+				: 0,
+	};
+}
+
+function replaceAllPi(source, needle, replacement) {
+	if (needle.length === 0) {
+		return source;
+	}
+	return source.split(needle).join(replacement);
+}
+
+function runCoreRestRedactedReplace() {
+	const source = "keep-visible token=sk-live-abc extra";
+	const hit = replaceAllPi(source, "sk-live-abc", "[REDACTED]");
+	const miss = replaceAllPi("keep-visible", "zzz", "[REDACTED]");
+	const empty = replaceAllPi(source, "", "[REDACTED]");
+	return {
+		ra_hit: hit.includes("sk-live-abc") ? 0 : 1,
+		ra_mark: hit.includes("[REDACTED]") ? 1 : 0,
+		ra_miss: miss === "keep-visible" ? 1 : 0,
+		ra_empty: empty === source ? 1 : 0,
+	};
+}
+
 async function measureCoreRest() {
 	const cancellation = runCoreRestCancellation();
 	const redacted = runCoreRestRedacted();
 	const threads = await runCoreRestThreads();
+	const predicate = runCoreRestCancellationPredicate();
+	const register = runCoreRestRedactedRegister();
+	const replace = runCoreRestRedactedReplace();
 	return {
 		cancellation_abort: await collect("core_rest.cancellation_abort", () => {
 			return () => runCoreRestCancellation();
@@ -16337,10 +16409,22 @@ async function measureCoreRest() {
 		threads_cleanup: await collect("core_rest.threads_cleanup", () => {
 			return () => runCoreRestThreads();
 		}),
+		cancellation_predicate: await collect("core_rest.cancellation_predicate", () => {
+			return () => runCoreRestCancellationPredicate();
+		}),
+		redacted_register: await collect("core_rest.redacted_register", () => {
+			return () => runCoreRestRedactedRegister();
+		}),
+		redacted_replace: await collect("core_rest.redacted_replace", () => {
+			return () => runCoreRestRedactedReplace();
+		}),
 		observed: {
 			...cancellation,
 			...redacted,
 			...threads,
+			...predicate,
+			...register,
+			...replace,
 		},
 	};
 }
@@ -17257,6 +17341,12 @@ const result = {
 				"String.split/join [REDACTED] (cadr-core redact-secrets counterpart; baseline has no secret-replace helper)",
 			"core_rest.threads_cleanup":
 				"worker_threads Worker eval-exit (stop-thread-for-cleanup counterpart)",
+			"core_rest.cancellation_predicate":
+				"Boolean(fn()) try/catch (cadr-core cancellation-predicate-aborted-p counterpart)",
+			"core_rest.redacted_register":
+				"array push-if-absent (cadr-core register-redacted-object-type counterpart; baseline has no type registry)",
+			"core_rest.redacted_replace":
+				"String.split/join one needle (cadr-core replace-all counterpart)",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":

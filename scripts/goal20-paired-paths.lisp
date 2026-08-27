@@ -127,6 +127,9 @@
 ;;;; 343. write_tool ensure-write-parent-directories vs defaultWriteOperations.mkdir
 ;;;; 344. write_tool write-utf8-file vs defaultWriteOperations.writeFile
 ;;;; 345. write_tool make-write-tool vs createWriteToolDefinition
+;;;; 385. core_rest cancellation-predicate-aborted-p vs Boolean(fn())
+;;;; 386. core_rest register-redacted-object-type vs Set add
+;;;; 387. core_rest replace-all vs String.split/join
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
@@ -584,6 +587,9 @@
     ("core_rest.cancellation_abort" . 50)
     ("core_rest.redacted_secrets" . 50)
     ("core_rest.threads_cleanup" . 5)
+    ("core_rest.cancellation_predicate" . 50)
+    ("core_rest.redacted_register" . 50)
+    ("core_rest.redacted_replace" . 50)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
@@ -16184,10 +16190,62 @@
        (if (eq current :current) 1 0)
        (if (eq joined :joined) 1 0)))))
 
+(defun run-core-rest-cancellation-predicate ()
+  ;; Leftover sibling of Pair 322 abort / Pair 361 make: the predicate
+  ;; helper as timed owner. Not abort-cancellation, wait, or aborted-p
+  ;; on a cancellation-state.
+  (list
+   (if (cadr-core:cancellation-predicate-aborted-p nil) 0 1)
+   (if (cadr-core:cancellation-predicate-aborted-p (lambda () t)) 1 0)
+   (if (cadr-core:cancellation-predicate-aborted-p (lambda () nil)) 0 1)
+   (if (cadr-core:cancellation-predicate-aborted-p
+        (lambda () (error "cadr-core-rest-predicate")))
+       0
+       1)))
+
+(defun run-core-rest-redacted-register ()
+  ;; Leftover sibling of Pair 323 secrets / Pair 338 types: unexported
+  ;; register-redacted-object-type as timed owner. Bind the registry
+  ;; so production types stay untouched.
+  (let ((cadr-core::*redacted-object-types* nil))
+    (let ((first
+            (cadr-core::register-redacted-object-type
+             'cadr-core::goal20-redacted-a)))
+      (cadr-core::register-redacted-object-type
+       'cadr-core::goal20-redacted-a)
+      (cadr-core::register-redacted-object-type
+       'cadr-core::goal20-redacted-b)
+      (let ((names
+              (mapcar #'symbol-name cadr-core::*redacted-object-types*)))
+        (list
+         (if (eq first 'cadr-core::goal20-redacted-a) 1 0)
+         (if (= (length names) 2) 1 0)
+         (if (equal
+              (sort (copy-list names) #'string<)
+              '("GOAL20-REDACTED-A" "GOAL20-REDACTED-B"))
+             1
+             0))))))
+
+(defun run-core-rest-redacted-replace ()
+  ;; Leftover sibling of Pair 323 redact-secrets: unexported replace-all
+  ;; as timed owner. One needle, empty needle, miss.
+  (let* ((source "keep-visible token=sk-live-abc extra")
+         (hit (cadr-core::replace-all source "sk-live-abc" "[REDACTED]"))
+         (miss (cadr-core::replace-all "keep-visible" "zzz" "[REDACTED]"))
+         (empty (cadr-core::replace-all source "" "[REDACTED]")))
+    (list
+     (if (search "sk-live-abc" hit) 0 1)
+     (if (search "[REDACTED]" hit) 1 0)
+     (if (string= miss "keep-visible") 1 0)
+     (if (eq empty source) 1 0))))
+
 (defun measure-core-rest ()
   (let ((cancellation (run-core-rest-cancellation))
         (redacted (run-core-rest-redacted))
-        (threads (run-core-rest-threads)))
+        (threads (run-core-rest-threads))
+        (predicate (run-core-rest-cancellation-predicate))
+        (register (run-core-rest-redacted-register))
+        (replace (run-core-rest-redacted-replace)))
     (json-object
      "observed"
      (json-object
@@ -16201,7 +16259,18 @@
       "rd_mark" (fourth redacted)
       "th_absent" (first threads)
       "th_current" (second threads)
-      "th_joined" (third threads))
+      "th_joined" (third threads)
+      "cp_nil" (first predicate)
+      "cp_true" (second predicate)
+      "cp_false" (third predicate)
+      "cp_err" (fourth predicate)
+      "rr_new" (first register)
+      "rr_dup" (second register)
+      "rr_sort" (third register)
+      "ra_hit" (first replace)
+      "ra_mark" (second replace)
+      "ra_miss" (third replace)
+      "ra_empty" (fourth replace))
      "cancellation_abort"
      (collect "core_rest.cancellation_abort"
               (lambda ()
@@ -16216,7 +16285,22 @@
      (collect "core_rest.threads_cleanup"
               (lambda ()
                 (lambda ()
-                  (run-core-rest-threads)))))))
+                  (run-core-rest-threads))))
+     "cancellation_predicate"
+     (collect "core_rest.cancellation_predicate"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-cancellation-predicate))))
+     "redacted_register"
+     (collect "core_rest.redacted_register"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-redacted-register))))
+     "redacted_replace"
+     (collect "core_rest.redacted_replace"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-redacted-replace)))))))
 
 (defun slicing-fixtures ()
   (values
@@ -16888,6 +16972,12 @@
       "src/cadr-core/redacted-print.lisp redact-secrets"
       "core_rest.threads_cleanup"
       "src/cadr-core/threads.lisp stop-thread-for-cleanup"
+      "core_rest.cancellation_predicate"
+      "src/cadr-core/cancellation.lisp cancellation-predicate-aborted-p"
+      "core_rest.redacted_register"
+      "src/cadr-core/redacted-print.lisp register-redacted-object-type"
+      "core_rest.redacted_replace"
+      "src/cadr-core/redacted-print.lisp replace-all"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
