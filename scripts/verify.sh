@@ -205,7 +205,8 @@ run_statistical_liveness() {
     cd "$PROJECT_DIRECTORY"
     python3 test/goal20-liveness-check-test.py
     # Isolated build can leave the host busy; allow extra startup time and
-    # rely on capture retries inside goal20-liveness-check.py.
+    # rely on capture retries inside goal20-liveness-check.py.  Cold ASDF on
+    # the render-diff sandbox HOME can exceed 90s before the first PTY frame.
     python3 scripts/goal20-liveness-check.py --captures 3 --timeout 150
   )
 }
