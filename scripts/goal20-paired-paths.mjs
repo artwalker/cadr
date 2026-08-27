@@ -216,8 +216,8 @@ const REPETITIONS = {
 	"image_runtime.dimension_note": 50,
 	"image_runtime.api_provider": 50,
 	"image_runtime.output_modalities": 50,
+	"image_runtime.openrouter_content": 50,
 	"image_runtime.parse_data_image": 50,
-	"image_runtime.openrouter_usage": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
@@ -5894,52 +5894,32 @@ function runImageRuntimeParseDataImage() {
 	};
 }
 
-function parseOpenRouterImageUsage(rawUsage, model) {
-	const promptTokens = rawUsage.prompt_tokens || 0;
-	const reportedCachedTokens = rawUsage.prompt_tokens_details?.cached_tokens || 0;
-	const cacheWriteTokens = rawUsage.prompt_tokens_details?.cache_write_tokens || 0;
-	const cacheReadTokens =
-		cacheWriteTokens > 0
-			? Math.max(0, reportedCachedTokens - cacheWriteTokens)
-			: reportedCachedTokens;
-	const input = Math.max(0, promptTokens - cacheReadTokens - cacheWriteTokens);
-	const output = rawUsage.completion_tokens || 0;
-	void model;
+function openrouterImageContent(item) {
+	if (item.type === "text") {
+		return { type: "text", text: item.text };
+	}
 	return {
-		input,
-		output,
-		cacheRead: cacheReadTokens,
-		cacheWrite: cacheWriteTokens,
+		type: "image_url",
+		image_url: { url: `data:${item.mimeType};base64,${item.data}` },
 	};
 }
 
-function runImageRuntimeOpenrouterUsage() {
-	ensureImageOpenrouterModels();
-	const first = parseOpenRouterImageUsage(
-		{
-			prompt_tokens: 12,
-			completion_tokens: 34,
-			prompt_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
-		},
-		imageModalityGemini,
-	);
-	const second = parseOpenRouterImageUsage(
-		{
-			prompt_tokens: 100,
-			completion_tokens: 8,
-			prompt_tokens_details: { cached_tokens: 40, cache_write_tokens: 10 },
-		},
-		imageModalityGemini,
-	);
+function runImageRuntimeOpenrouterContent() {
+	const textPart = openrouterImageContent({
+		type: "text",
+		text: "Generate a dog",
+	});
+	const imagePart = openrouterImageContent({
+		type: "image",
+		mimeType: "image/png",
+		data: "aW1hZ2U=",
+	});
 	return {
-		us_in: first.input,
-		us_out: first.output,
-		us_cr: first.cacheRead,
-		us_cw: first.cacheWrite,
-		us_in2: second.input,
-		us_out2: second.output,
-		us_cr2: second.cacheRead,
-		us_cw2: second.cacheWrite,
+		oc_text_type: textPart.type,
+		oc_text: textPart.text,
+		oc_img_type: imagePart.type,
+		oc_img_url: imagePart.image_url.url,
+		oc_ok: textPart.type === "text" && imagePart.type === "image_url" ? 1 : 0,
 	};
 }
 
@@ -5951,8 +5931,8 @@ async function measureImageRuntime() {
 	const notes = runImageRuntimeDimensionNote();
 	const api = runImageRuntimeApiProvider();
 	const modalities = runImageRuntimeOutputModalities();
+	const content = runImageRuntimeOpenrouterContent();
 	const parsed = runImageRuntimeParseDataImage();
-	const usage = runImageRuntimeOpenrouterUsage();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -5972,11 +5952,11 @@ async function measureImageRuntime() {
 		output_modalities: await collect("image_runtime.output_modalities", () => {
 			return () => runImageRuntimeOutputModalities();
 		}),
+		openrouter_content: await collect("image_runtime.openrouter_content", () => {
+			return () => runImageRuntimeOpenrouterContent();
+		}),
 		parse_data_image: await collect("image_runtime.parse_data_image", () => {
 			return () => runImageRuntimeParseDataImage();
-		}),
-		openrouter_usage: await collect("image_runtime.openrouter_usage", () => {
-			return () => runImageRuntimeOpenrouterUsage();
 		}),
 		observed: {
 			...dims,
@@ -5985,8 +5965,8 @@ async function measureImageRuntime() {
 			...notes,
 			...api,
 			...modalities,
+			...content,
 			...parsed,
-			...usage,
 		},
 	};
 }
@@ -15891,10 +15871,10 @@ const result = {
 				"packages/ai/src/images-api-registry.ts getImagesApiProvider",
 			"image_runtime.output_modalities":
 				"packages/ai/src/api/openrouter-images.ts buildParams modalities",
+			"image_runtime.openrouter_content":
+				"packages/ai/src/api/openrouter-images.ts buildParams content parts",
 			"image_runtime.parse_data_image":
 				"packages/ai/src/api/openrouter-images.ts generateImages data-URL parse",
-			"image_runtime.openrouter_usage":
-				"packages/ai/src/api/openrouter-images.ts parseUsage",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"cli_print_rpc.jsonl_read":

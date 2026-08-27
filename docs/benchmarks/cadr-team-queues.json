@@ -508,7 +508,7 @@
      "status": "done",
      "source": "src/cadr-ai/images.lisp",
      "measure": "measure-image-runtime",
-     "metric": "image_runtime.parse_data_image",
+     "metric": "image_runtime.openrouter_content",
      "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
     },
     {
@@ -517,7 +517,7 @@
      "status": "done",
      "source": "src/cadr-ai/images.lisp",
      "measure": "measure-image-runtime",
-     "metric": "image_runtime.openrouter_usage",
+     "metric": "image_runtime.parse_data_image",
      "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
     }
    ],

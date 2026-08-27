@@ -3546,37 +3546,32 @@ Gate used `--only-enforce` (script rc=1 only from known old holes
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
-### Pair 299 — `image_runtime` (parse_data_image)
+### Pair 299 — `image_runtime` (openrouter_content)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_content` | `openrouter-image-content` (`src/cadr-ai/images.lisp`) | `buildParams` content parts (`packages/ai/src/api/openrouter-images.ts`) |
+
+Leftover sibling of Pair 298 on the same `image_runtime` hole. Timed
+work is text + image_url content parts (`Generate a dog` +
+`data:image/png;base64,aW1hZ2U=`) — not HTTP, not
+`generate-images`, not `build-openrouter-image-request`. Observed
+`oc_text_type` / `oc_text` / `oc_img_type` / `oc_img_url` / `oc_ok`
+are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
+### Pair 300 — `image_runtime` (parse_data_image)
 
 | metric | cadr | pi |
 |---|---|---|
 | `parse_data_image` | `parse-data-image` (`src/cadr-ai/images.lisp`) | data-URL parse inside `generateImages` (`packages/ai/src/api/openrouter-images.ts`) |
 
-Leftover sibling of Pair 298 on the same `image_runtime` hole. Timed
-work is `data:image/png;base64,…` parse plus a miss and a plain HTTPS
-URL — not HTTP, not `generate-images`. Observed `pd_ok_mime` /
-`pd_ok_data` / `pd_ok` / `pd_miss` / `pd_plain` are exact (`pd_ok=1`,
-non-data-URL `pd_miss` / `pd_plain` = 0). First n=5 freeze **1.50×**
-(0.556 / 0.371 µs) on host `cursor`, ceiling 8.0. Gate used
-`--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no
-optimize.
-
-### Pair 300 — `image_runtime` (openrouter_usage)
-
-| metric | cadr | pi |
-|---|---|---|
-| `openrouter_usage` | `openrouter-image-usage` (`src/cadr-ai/images.lisp`) | `parseUsage` (`packages/ai/src/api/openrouter-images.ts`) |
-
 Leftover sibling of Pairs 298–299 on the same `image_runtime` hole.
-Timed work is token/cache arithmetic on two fixture usage objects
-(zero cache, then cache-write) against the gemini image catalog row —
-not HTTP, not cost exact. Observed `us_in` / `us_out` / `us_cr` /
-`us_cw` / `us_in2` / `us_out2` / `us_cr2` / `us_cw2` are exact. First
-n=5 freeze **5.50×** (2.181 / 0.396 µs) on host `cursor`, ceiling 8.0.
-Gate used `--only-enforce` (script rc=1 only from known old holes
-`lc_n` / `lc_sleep` / help text; this metric did not fail). Same
-commit no optimize.
+Timed work is `data:image/png;base64,…` parse plus a miss and a plain
+HTTPS URL — not HTTP, not `generate-images`. Observed `pd_ok_mime` /
+`pd_ok_data` / `pd_ok` / `pd_miss` / `pd_plain` are exact. First n=5
+freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit
+no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
@@ -4140,7 +4135,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-ai/capabilities/streaming-json.lisp` | 162 | `ai_capabilities.short_hash` |
 | `src/cadr-ai/crypto.lisp` | 367 | `ai_crypto.hmac` |
 | `src/cadr-ai/image-models.generated.lisp` | 185 | `image_runtime.lookup` |
-| `src/cadr-ai/images.lisp` | 222 | `image_runtime.output_modalities`, `image_runtime.parse_data_image`, `image_runtime.openrouter_usage` |
+| `src/cadr-ai/images.lisp` | 222 | `image_runtime.output_modalities`, `image_runtime.openrouter_content`, `image_runtime.parse_data_image` |
 | `src/cadr-ai/json.lisp` | 1,920 | `provider_stream.stream_roundtrip`, `storage_journal.journal_read`, `storage_journal.journal_append`, `session_pipeline.session_load` |
 | `src/cadr-ai/model-data.lisp` | 407 | `ai_crypto_model_data.manifest` |
 | `src/cadr-ai/oauth/pkce.lisp` | 322 | `oauth_pkce.challenge_urls` |

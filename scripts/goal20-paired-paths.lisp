@@ -66,8 +66,8 @@
 ;;;;  51. image_runtime format-image-dimension-note vs formatDimensionNote
 ;;;;  52. image_runtime get-images-api-provider vs getImagesApiProvider
 ;;;; 298. image_runtime image-output-modalities vs buildParams modalities
-;;;; 299. image_runtime parse-data-image vs generateImages data-URL parse
-;;;; 300. image_runtime openrouter-image-usage vs parseUsage
+;;;; 299. image_runtime openrouter-image-content vs buildParams content parts
+;;;; 300. image_runtime parse-data-image vs generateImages data-URL parse
 ;;;;  53. ai_support uuid-v7 vs uuidv7
 ;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
 ;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
@@ -125,8 +125,8 @@
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
 ;;;; 298. image_runtime image-output-modalities vs buildParams modalities
-;;;; 299. image_runtime parse-data-image vs generateImages data-URL parse
-;;;; 300. image_runtime openrouter-image-usage vs parseUsage
+;;;; 299. image_runtime openrouter-image-content vs buildParams content parts
+;;;; 300. image_runtime parse-data-image vs generateImages data-URL parse
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -341,8 +341,8 @@
     ("image_runtime.dimension_note" . 50)
     ("image_runtime.api_provider" . 50)
     ("image_runtime.output_modalities" . 50)
+    ("image_runtime.openrouter_content" . 50)
     ("image_runtime.parse_data_image" . 50)
-    ("image_runtime.openrouter_usage" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
@@ -6656,7 +6656,6 @@
 
 (defparameter *image-modality-gemini* nil)
 (defparameter *image-modality-flux* nil)
-(defparameter *image-usage-gemini* nil)
 
 (defun ensure-image-openrouter-models ()
   (unless *image-modality-gemini*
@@ -6665,8 +6664,7 @@
            :openrouter "google/gemini-2.5-flash-image"))
     (setf *image-modality-flux*
           (cadr-ai:find-image-model
-           :openrouter "black-forest-labs/flux.2-pro"))
-    (setf *image-usage-gemini* *image-modality-gemini*)))
+           :openrouter "black-forest-labs/flux.2-pro"))))
 
 (defun modalities-has-text (mods)
   (if (find "text" mods :test #'string=) 1 0))
@@ -6695,32 +6693,30 @@
     (third (parse-data-image-obs "not-an-image"))
     (third (parse-data-image-obs "https://example.com/x.png")))))
 
-(defun image-usage-raw (prompt output cached cache-write)
-  (cadr-ai::json-object
-   "prompt_tokens" prompt
-   "completion_tokens" output
-   "prompt_tokens_details"
-   (cadr-ai::json-object
-    "cached_tokens" cached
-    "cache_write_tokens" cache-write)))
-
-(defun image-usage-counts (usage)
-  (list (cadr-ai:usage-input usage)
-        (cadr-ai:usage-output usage)
-        (cadr-ai:usage-cache-read usage)
-        (cadr-ai:usage-cache-write usage)))
-
-(defun run-image-runtime-openrouter-usage ()
-  (ensure-image-openrouter-models)
-  (append
-   (image-usage-counts
-    (cadr-ai::openrouter-image-usage
-     (image-usage-raw 12 34 0 0)
-     *image-usage-gemini*))
-   (image-usage-counts
-    (cadr-ai::openrouter-image-usage
-     (image-usage-raw 100 8 40 10)
-     *image-usage-gemini*))))
+(defun run-image-runtime-openrouter-content ()
+  (let* ((text
+           (cadr-ai:make-text-content :text "Generate a dog"))
+         (image
+           (cadr-ai:make-image-content
+            :mime-type "image/png"
+            :data "aW1hZ2U="))
+         (text-part (cadr-ai::openrouter-image-content text))
+         (image-part (cadr-ai::openrouter-image-content image))
+         (url
+           (cadr-ai::json-get
+            (cadr-ai::json-get image-part "image_url")
+            "url")))
+    (list
+     (or (cadr-ai::json-get text-part "type") "")
+     (or (cadr-ai::json-get text-part "text") "")
+     (or (cadr-ai::json-get image-part "type") "")
+     (or url "")
+     (if (and (string= (or (cadr-ai::json-get text-part "type") "")
+                       "text")
+              (string= (or (cadr-ai::json-get image-part "type") "")
+                       "image_url"))
+         1
+         0))))
 
 (defun measure-image-runtime ()
   (ensure-image-openrouter-models)
@@ -6730,8 +6726,8 @@
         (notes (run-image-runtime-dimension-note))
         (api (run-image-runtime-api-provider))
         (modalities (run-image-runtime-output-modalities))
-        (parsed (run-image-runtime-parse-data-image))
-        (usage (run-image-runtime-openrouter-usage)))
+        (content (run-image-runtime-openrouter-content))
+        (parsed (run-image-runtime-parse-data-image)))
     (json-object
      "observed"
      (json-object
@@ -6757,19 +6753,16 @@
       "om_gemini_text" (second modalities)
       "om_flux_n" (third modalities)
       "om_flux_text" (fourth modalities)
+      "oc_text_type" (first content)
+      "oc_text" (second content)
+      "oc_img_type" (third content)
+      "oc_img_url" (fourth content)
+      "oc_ok" (fifth content)
       "pd_ok_mime" (first parsed)
       "pd_ok_data" (second parsed)
       "pd_ok" (third parsed)
       "pd_miss" (fourth parsed)
-      "pd_plain" (fifth parsed)
-      "us_in" (first usage)
-      "us_out" (second usage)
-      "us_cr" (third usage)
-      "us_cw" (fourth usage)
-      "us_in2" (fifth usage)
-      "us_out2" (sixth usage)
-      "us_cr2" (seventh usage)
-      "us_cw2" (nth 7 usage))
+      "pd_plain" (fifth parsed))
      "dimensions"
      (collect "image_runtime.dimensions"
               (lambda ()
@@ -6800,16 +6793,16 @@
               (lambda ()
                 (lambda ()
                   (run-image-runtime-output-modalities))))
+     "openrouter_content"
+     (collect "image_runtime.openrouter_content"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-openrouter-content))))
      "parse_data_image"
      (collect "image_runtime.parse_data_image"
               (lambda ()
                 (lambda ()
-                  (run-image-runtime-parse-data-image))))
-     "openrouter_usage"
-     (collect "image_runtime.openrouter_usage"
-              (lambda ()
-                (lambda ()
-                  (run-image-runtime-openrouter-usage)))))))
+                  (run-image-runtime-parse-data-image)))))))
 
 (defun rpc-jsonl-object ()
   (cadr-ai::json-object
@@ -15422,10 +15415,10 @@
       "src/cadr-ai/capabilities/image-runtime.lisp get-images-api-provider"
       "image_runtime.output_modalities"
       "src/cadr-ai/images.lisp image-output-modalities"
+      "image_runtime.openrouter_content"
+      "src/cadr-ai/images.lisp openrouter-image-content"
       "image_runtime.parse_data_image"
       "src/cadr-ai/images.lisp parse-data-image"
-      "image_runtime.openrouter_usage"
-      "src/cadr-ai/images.lisp openrouter-image-usage"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
       "cli_print_rpc.jsonl_read"

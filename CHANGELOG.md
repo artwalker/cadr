@@ -89,13 +89,10 @@ tag/Release step.
   n=5 **0.000831×** (0.176 / 211.2 µs) on host `cursor`, ceiling 8.0. Measure-only.
   Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `image_runtime.output_modalities` /
-  `image_runtime.parse_data_image` /
-  `image_runtime.openrouter_usage` on `src/cadr-ai/images.lisp` (Pairs
-  298–300). Observed `om_*` / `pd_*` / `us_*` exact. n=5 on host
-  `cursor`: **0.896×** (0.192 / 0.215 µs), **1.50×** (0.556 / 0.371 µs),
-  **5.50×** (2.181 / 0.396 µs), ceiling 8.0. Measure-only. Gate rc=1
-  only from known old holes (`lc_n` / `lc_sleep` / help text), not these
-  metrics. No `src/` optimization.
+  `image_runtime.openrouter_content` /
+  `image_runtime.parse_data_image` on `src/cadr-ai/images.lisp` (Pairs
+  298–300). Observed `om_*` / `oc_*` / `pd_*` exact. Measure-only. No
+  `src/` optimization. Freeze numbers follow for `openrouter_content`.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`

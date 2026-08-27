@@ -56,8 +56,8 @@
   "image_runtime.dimension_note",
   "image_runtime.api_provider",
   "image_runtime.output_modalities",
+  "image_runtime.openrouter_content",
   "image_runtime.parse_data_image",
-  "image_runtime.openrouter_usage",
   "cli_print_rpc.jsonl_line",
   "cli_print_rpc.jsonl_read",
   "cli_print_rpc.clamp_thinking",
@@ -949,8 +949,8 @@
    "class": "paired",
    "metrics": [
     "image_runtime.output_modalities",
-    "image_runtime.parse_data_image",
-    "image_runtime.openrouter_usage"
+    "image_runtime.openrouter_content",
+    "image_runtime.parse_data_image"
    ]
   },
   {
