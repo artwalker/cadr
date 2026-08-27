@@ -107,6 +107,7 @@ METRICS = {
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
     "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
+    "edit_tool": ("normalize_line_endings", "restore_line_endings", "make_tool"),
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
@@ -341,6 +342,11 @@ RATIO_CEILINGS = {
     "write_tool.ensure_parent": 8.0,
     "write_tool.write_utf8": 8.0,
     "write_tool.make_tool": 8.0,
+    # edit_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "edit_tool.normalize_line_endings": 8.0,
+    "edit_tool.restore_line_endings": 8.0,
+    "edit_tool.make_tool": 8.0,
     # ls_tool leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "ls_tool.directory_entry_name": 8.0,
@@ -1723,6 +1729,22 @@ OBSERVED_EXACT = {
         "wmt_desc",
         "wmt_req",
         "wmt_n",
+    ),
+    "edit_tool": (
+        "nlf_lf",
+        "nlf_crlf",
+        "nlf_cr",
+        "nlf_empty",
+        "nlf_n",
+        "rle_lf",
+        "rle_crlf",
+        "rle_none",
+        "rle_empty",
+        "rle_n",
+        "emt_name",
+        "emt_desc",
+        "emt_req",
+        "emt_n",
     ),
     "ls_tool": (
         "lden_file",

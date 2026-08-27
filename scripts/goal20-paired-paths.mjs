@@ -180,6 +180,9 @@ const REPETITIONS = {
 	"write_tool.ensure_parent": 50,
 	"write_tool.write_utf8": 50,
 	"write_tool.make_tool": 50,
+	"edit_tool.normalize_line_endings": 50,
+	"edit_tool.restore_line_endings": 50,
+	"edit_tool.make_tool": 50,
 	"ls_tool.directory_entry_name": 50,
 	"ls_tool.list_directory": 50,
 	"ls_tool.make_tool": 50,
@@ -737,6 +740,7 @@ const outputAccumulatorModule = await import(
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
 const writeModule = await import(moduleUrl("packages/coding-agent/src/core/tools/write.ts"));
+const editModule = await import(moduleUrl("packages/coding-agent/src/core/tools/edit.ts"));
 const lsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/ls.ts"));
 const powershellModule = await import(
 	moduleUrl("packages/coding-agent/src/core/tools/powershell.ts"),
@@ -3278,6 +3282,79 @@ async function measureWriteTool() {
 		observed: {
 			...parentObserved,
 			...utf8Observed,
+			...makeObserved,
+		},
+	};
+}
+
+function editToolTruth(value) {
+	return value ? 1 : 0;
+}
+
+function runEditNormalizeLineEndings() {
+	const lf = "a\nb";
+	const crlf = "a\r\nb";
+	const cr = "a\rb";
+	const want = "a\nb";
+	return {
+		nlf_lf: editToolTruth(editDiffModule.normalizeToLF(lf) === want),
+		nlf_crlf: editToolTruth(editDiffModule.normalizeToLF(crlf) === want),
+		nlf_cr: editToolTruth(editDiffModule.normalizeToLF(cr) === want),
+		nlf_empty: editToolTruth(editDiffModule.normalizeToLF("") === ""),
+		nlf_n: 4,
+	};
+}
+
+function runEditRestoreLineEndings() {
+	const lf = "a\nb";
+	const crlf = "a\r\nb";
+	return {
+		rle_lf: editToolTruth(editDiffModule.restoreLineEndings(lf, "\n") === lf),
+		rle_crlf: editToolTruth(editDiffModule.restoreLineEndings(lf, "\r\n") === crlf),
+		rle_none: editToolTruth(editDiffModule.restoreLineEndings("ab", "\r\n") === "ab"),
+		rle_empty: editToolTruth(editDiffModule.restoreLineEndings("", "\r\n") === ""),
+		rle_n: 4,
+	};
+}
+
+function editSchemaRequired(def) {
+	const params = def?.parameters;
+	if (Array.isArray(params?.required)) return params.required;
+	if (Array.isArray(params?.Required)) return params.Required;
+	const properties = params?.properties;
+	if (properties && typeof properties === "object") return Object.keys(properties);
+	return [];
+}
+
+function runEditMakeTool() {
+	const def = editModule.createEditToolDefinition("/tmp/goal20-edit-tool-cwd");
+	const required = editSchemaRequired(def);
+	const description = def.description ?? "";
+	return {
+		emt_name: def.name === "edit" ? 1 : 0,
+		emt_desc: description.includes("Edit a single file using exact text replacement") ? 1 : 0,
+		emt_req: required.includes("path") && required.includes("edits") ? 1 : 0,
+		emt_n: 3,
+	};
+}
+
+async function measureEditTool() {
+	const normalizeObserved = runEditNormalizeLineEndings();
+	const restoreObserved = runEditRestoreLineEndings();
+	const makeObserved = runEditMakeTool();
+	return {
+		normalize_line_endings: await collect("edit_tool.normalize_line_endings", () => {
+			return () => runEditNormalizeLineEndings();
+		}),
+		restore_line_endings: await collect("edit_tool.restore_line_endings", () => {
+			return () => runEditRestoreLineEndings();
+		}),
+		make_tool: await collect("edit_tool.make_tool", () => {
+			return () => runEditMakeTool();
+		}),
+		observed: {
+			...normalizeObserved,
+			...restoreObserved,
 			...makeObserved,
 		},
 	};
@@ -16555,6 +16632,8 @@ process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
 process.stderr.write("goal20 pi paired paths: write_tool\n");
 const writeTool = await measureWriteTool();
+process.stderr.write("goal20 pi paired paths: edit_tool\n");
+const editTool = await measureEditTool();
 process.stderr.write("goal20 pi paired paths: ls_tool\n");
 const lsTool = await measureLsTool();
 process.stderr.write("goal20 pi paired paths: tool_manager\n");
@@ -16751,6 +16830,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
 			"find_tool.make_tool":
 				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
+			"edit_tool.normalize_line_endings":
+				"packages/coding-agent/src/core/tools/edit-diff.ts normalizeToLF",
+			"edit_tool.restore_line_endings":
+				"packages/coding-agent/src/core/tools/edit-diff.ts restoreLineEndings",
+			"edit_tool.make_tool":
+				"packages/coding-agent/src/core/tools/edit.ts createEditToolDefinition",
 			"write_tool.ensure_parent":
 				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.mkdir (fs.mkdir recursive)",
 			"write_tool.write_utf8":
@@ -17346,6 +17431,7 @@ const result = {
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
 		write_tool: writeTool,
+		edit_tool: editTool,
 		ls_tool: lsTool,
 		tool_manager: toolManager,
 		powershell_tool: powershellTool,

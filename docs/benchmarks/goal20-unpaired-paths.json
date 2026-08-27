@@ -187,7 +187,10 @@
   "tool_manager.cleanup_quarantine",
   "write_tool.ensure_parent",
   "write_tool.write_utf8",
-  "write_tool.make_tool"
+  "write_tool.make_tool",
+  "edit_tool.normalize_line_endings",
+  "edit_tool.restore_line_endings",
+  "edit_tool.make_tool"
  ],
  "unpairablePaths": [
   {
@@ -1723,7 +1726,10 @@
    "prefix": "src/cadr-cli/tools/edit.lisp",
    "class": "paired",
    "metrics": [
-    "agent_tool_loop.line_ending"
+    "agent_tool_loop.line_ending",
+    "edit_tool.normalize_line_endings",
+    "edit_tool.restore_line_endings",
+    "edit_tool.make_tool"
    ]
   },
   {

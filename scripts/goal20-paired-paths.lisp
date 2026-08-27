@@ -127,6 +127,9 @@
 ;;;; 343. write_tool ensure-write-parent-directories vs defaultWriteOperations.mkdir
 ;;;; 344. write_tool write-utf8-file vs defaultWriteOperations.writeFile
 ;;;; 345. write_tool make-write-tool vs createWriteToolDefinition
+;;;; 388. edit_tool normalize-line-endings vs normalizeToLF
+;;;; 389. edit_tool restore-line-endings vs restoreLineEndings
+;;;; 390. edit_tool make-edit-tool vs createEditToolDefinition
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
@@ -326,6 +329,9 @@
     ("write_tool.ensure_parent" . 50)
     ("write_tool.write_utf8" . 50)
     ("write_tool.make_tool" . 50)
+    ("edit_tool.normalize_line_endings" . 50)
+    ("edit_tool.restore_line_endings" . 50)
+    ("edit_tool.make_tool" . 50)
     ("ls_tool.directory_entry_name" . 50)
     ("ls_tool.list_directory" . 50)
     ("ls_tool.make_tool" . 50)
@@ -5320,6 +5326,107 @@
                   (lambda ()
                     (lambda ()
                       (run-write-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of Pair 110 detect-line-ending on
+;;; src/cadr-cli/tools/edit.lisp (Pairs 388-390).
+;;; Timed owners: normalize-line-endings, restore-line-endings,
+;;; make-edit-tool — not detect-line-ending, not execute / queue / diff.
+;;; ---------------------------------------------------------------------
+
+(defun edit-tool-truth (value)
+  (if value 1 0))
+
+(defun run-edit-normalize-line-endings ()
+  ;; LF stays LF; CRLF and lone CR become LF. Empty stays empty.
+  ;; Not detect-line-ending, not restore, not execute.
+  (let ((lf (format nil "a~Cb" #\Newline))
+        (crlf (format nil "a~C~Cb" #\Return #\Newline))
+        (cr (format nil "a~Cb" #\Return))
+        (want (format nil "a~Cb" #\Newline)))
+    (list
+     (edit-tool-truth
+      (string= (cadr-cli::normalize-line-endings lf) want))
+     (edit-tool-truth
+      (string= (cadr-cli::normalize-line-endings crlf) want))
+     (edit-tool-truth
+      (string= (cadr-cli::normalize-line-endings cr) want))
+     (edit-tool-truth
+      (string= (cadr-cli::normalize-line-endings "") ""))
+     4)))
+
+(defun run-edit-restore-line-endings ()
+  ;; Restore LF-normalized text. Do not exact a string that already
+  ;; contains CRLF (would double the CR). Not detect, not execute.
+  (let ((lf (format nil "a~Cb" #\Newline))
+        (crlf (format nil "a~C~Cb" #\Return #\Newline)))
+    (list
+     (edit-tool-truth
+      (string= (cadr-cli::restore-line-endings lf :lf) lf))
+     (edit-tool-truth
+      (string= (cadr-cli::restore-line-endings lf :crlf) crlf))
+     (edit-tool-truth
+      (string= (cadr-cli::restore-line-endings "ab" :crlf) "ab"))
+     (edit-tool-truth
+      (string= (cadr-cli::restore-line-endings "" :crlf) ""))
+     4)))
+
+(defun run-edit-make-tool ()
+  (let* ((tool (cadr-cli::make-edit-tool "/tmp/goal20-edit-tool-cwd"))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list)))
+         (description (cadr-ai:tool-description tool)))
+    (list
+     (edit-tool-truth (string= (cadr-ai:tool-name tool) "edit"))
+     (edit-tool-truth
+      (search "Edit a single file using exact text replacement" description))
+     (edit-tool-truth
+      (and required-list
+           (find "path" required-list :test #'string=)
+           (find "edits" required-list :test #'string=)))
+     3)))
+
+(defun measure-edit-tool ()
+  (destructuring-bind (nlf-lf nlf-crlf nlf-cr nlf-empty nlf-n)
+      (run-edit-normalize-line-endings)
+    (destructuring-bind (rle-lf rle-crlf rle-none rle-empty rle-n)
+        (run-edit-restore-line-endings)
+      (destructuring-bind (emt-name emt-desc emt-req emt-n)
+          (run-edit-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "nlf_lf" nlf-lf
+          "nlf_crlf" nlf-crlf
+          "nlf_cr" nlf-cr
+          "nlf_empty" nlf-empty
+          "nlf_n" nlf-n
+          "rle_lf" rle-lf
+          "rle_crlf" rle-crlf
+          "rle_none" rle-none
+          "rle_empty" rle-empty
+          "rle_n" rle-n
+          "emt_name" emt-name
+          "emt_desc" emt-desc
+          "emt_req" emt-req
+          "emt_n" emt-n)
+         "normalize_line_endings"
+         (collect "edit_tool.normalize_line_endings"
+                  (lambda ()
+                    (lambda ()
+                      (run-edit-normalize-line-endings))))
+         "restore_line_endings"
+         (collect "edit_tool.restore_line_endings"
+                  (lambda ()
+                    (lambda ()
+                      (run-edit-restore-line-endings))))
+         "make_tool"
+         (collect "edit_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-edit-make-tool)))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -16358,6 +16465,12 @@
       "src/cadr-cli/tools/find.lisp find-files"
       "find_tool.make_tool"
       "src/cadr-cli/tools/find.lisp make-find-tool"
+      "edit_tool.normalize_line_endings"
+      "src/cadr-cli/tools/edit.lisp normalize-line-endings"
+      "edit_tool.restore_line_endings"
+      "src/cadr-cli/tools/edit.lisp restore-line-endings"
+      "edit_tool.make_tool"
+      "src/cadr-cli/tools/edit.lisp make-edit-tool"
       "write_tool.ensure_parent"
       "src/cadr-cli/tools/write.lisp ensure-write-parent-directories"
       "write_tool.write_utf8"
@@ -17005,6 +17118,7 @@
                     (bash-tool nil)
                     (find-tool nil)
                     (write-tool nil)
+                    (edit-tool nil)
                     (ls-tool nil)
                     (tool-manager nil)
                     (powershell-tool nil)
@@ -17019,6 +17133,8 @@
               (setf find-tool (measure-find-tool))
               (format *error-output* "goal20 cadr paired paths: write_tool~%")
               (setf write-tool (measure-write-tool))
+              (format *error-output* "goal20 cadr paired paths: edit_tool~%")
+              (setf edit-tool (measure-edit-tool))
               (format *error-output* "goal20 cadr paired paths: ls_tool~%")
               (setf ls-tool (measure-ls-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
@@ -17165,6 +17281,7 @@
               "output_accumulator" output-accumulator
               "find_tool" find-tool
               "write_tool" write-tool
+              "edit_tool" edit-tool
               "ls_tool" ls-tool
               "tool_manager" tool-manager
               "powershell_tool" powershell-tool
