@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.release_turn` (`release-file-mutation-turn` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
+  finally / pending-- / delete-when-empty after wait). Observed `fmqe_serving` /
+  `fmqe_pending` / `fmqe_other` / `fmqe_missing` / `fmqe_n` exact.
+  Measure-only. Freeze numbers in a follow-up commit.
 - Goal 20 P.13: pair `file_mutation_queue.wait_turn` (`wait-for-file-mutation-turn` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue`
   await-current / ticket wait after enqueue). Observed `fmqw_serving` /

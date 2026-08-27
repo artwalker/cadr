@@ -100,6 +100,7 @@
 ;;;; 271. file_mutation_queue queue-map get-or-create vs file-mutation-queue-lock
 ;;;; 272. file_mutation_queue ticket enqueue vs register-file-mutation
 ;;;; 273. file_mutation_queue ticket wait vs wait-for-file-mutation-turn
+;;;; 274. file_mutation_queue ticket release vs release-file-mutation-turn
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -245,6 +246,7 @@
     ("file_mutation_queue.lock" . 50)
     ("file_mutation_queue.register" . 50)
     ("file_mutation_queue.wait_turn" . 50)
+    ("file_mutation_queue.release_turn" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -3779,6 +3781,10 @@
   (sb-thread:with-mutex (cadr-agent::*file-mutation-queues-guard*)
     (clrhash cadr-agent::*file-mutation-queues*)))
 
+(defun fmq-queue-present-p (key)
+  (sb-thread:with-mutex (cadr-agent::*file-mutation-queues-guard*)
+    (nth-value 1 (gethash key cadr-agent::*file-mutation-queues*))))
+
 (defun run-file-mutation-queue-lock ()
   ;; Baseline fileMutationQueues.get(key) ?? Promise.resolve() / set after
   ;; the same key encoding; not withFileMutationQueue and not write/edit.
@@ -3894,6 +3900,55 @@
                  4)
               (fmq-clear-queues))))))))
 
+(defun run-file-mutation-queue-release-turn ()
+  ;; Baseline withFileMutationQueue finally (pending-- / delete when
+  ;; empty) after wait; not fn and not write/edit tools. Ticket 0 waits
+  ;; without blocking; release advances serving and remhashes empty keys.
+  (multiple-value-bind (dir target alias other missing)
+      (stage-file-mutation-queue-layout)
+    (declare (ignore dir))
+    (ensure-directories-exist target)
+    (with-open-file (stream target :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "seed" stream))
+    (fmq-setup-alias target alias)
+    (multiple-value-bind (target-key target-state target-ticket)
+        (cadr-agent::register-file-mutation target)
+      (multiple-value-bind (alias-key alias-state alias-ticket)
+          (cadr-agent::register-file-mutation alias)
+        (declare (ignore alias-key alias-ticket))
+        (multiple-value-bind (other-key other-state other-ticket)
+            (cadr-agent::register-file-mutation other)
+          (multiple-value-bind (missing-key missing-state missing-ticket)
+              (cadr-agent::register-file-mutation missing)
+            (cadr-agent::wait-for-file-mutation-turn
+             target-state target-ticket)
+            (cadr-agent::release-file-mutation-turn
+             target-key target-state)
+            (cadr-agent::wait-for-file-mutation-turn
+             other-state other-ticket)
+            (cadr-agent::release-file-mutation-turn
+             other-key other-state)
+            (cadr-agent::wait-for-file-mutation-turn
+             missing-state missing-ticket)
+            (cadr-agent::release-file-mutation-turn
+             missing-key missing-state)
+            (prog1
+                (list
+                 (fmq-truth
+                  (= 1
+                     (cadr-agent::file-mutation-queue-state-serving-ticket
+                      target-state)))
+                 (fmq-truth
+                  (and (eq target-state alias-state)
+                       (= 1
+                          (cadr-agent::file-mutation-queue-state-pending-count
+                           target-state))))
+                 (fmq-truth (not (fmq-queue-present-p other-key)))
+                 (fmq-truth (not (fmq-queue-present-p missing-key)))
+                 4)
+              (fmq-clear-queues))))))))
+
 (defun measure-file-mutation-queue ()
   (destructuring-bind (alias-key missing-key other-key fifo-sum other-run clean)
       (run-file-mutation-queue-with-queue)
@@ -3905,6 +3960,8 @@
             (run-file-mutation-queue-register)
           (destructuring-bind (fmqw-serving fmqw-pending fmqw-other fmqw-missing fmqw-n)
               (run-file-mutation-queue-wait-turn)
+            (destructuring-bind (fmqe-serving fmqe-pending fmqe-other fmqe-missing fmqe-n)
+                (run-file-mutation-queue-release-turn)
             (json-object
              "observed"
              (json-object
@@ -3932,7 +3989,12 @@
               "fmqw_pending" fmqw-pending
               "fmqw_other" fmqw-other
               "fmqw_missing" fmqw-missing
-              "fmqw_n" fmqw-n)
+              "fmqw_n" fmqw-n
+              "fmqe_serving" fmqe-serving
+              "fmqe_pending" fmqe-pending
+              "fmqe_other" fmqe-other
+              "fmqe_missing" fmqe-missing
+              "fmqe_n" fmqe-n)
              "with_queue"
              (collect "file_mutation_queue.with_queue"
                       (lambda ()
@@ -3957,7 +4019,12 @@
              (collect "file_mutation_queue.wait_turn"
                       (lambda ()
                         (lambda ()
-                          (run-file-mutation-queue-wait-turn)))))))))))
+                          (run-file-mutation-queue-wait-turn))))
+             "release_turn"
+             (collect "file_mutation_queue.release_turn"
+                      (lambda ()
+                        (lambda ()
+                          (run-file-mutation-queue-release-turn))))))))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -14099,6 +14166,8 @@
       "src/cadr-agent/file-mutation-queue.lisp register-file-mutation"
       "file_mutation_queue.wait_turn"
       "src/cadr-agent/file-mutation-queue.lisp wait-for-file-mutation-turn"
+      "file_mutation_queue.release_turn"
+      "src/cadr-agent/file-mutation-queue.lisp release-file-mutation-turn"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"

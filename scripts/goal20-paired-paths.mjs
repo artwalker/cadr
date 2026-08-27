@@ -150,6 +150,7 @@ const REPETITIONS = {
 	"file_mutation_queue.lock": 50,
 	"file_mutation_queue.register": 50,
 	"file_mutation_queue.wait_turn": 50,
+	"file_mutation_queue.release_turn": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -2393,12 +2394,71 @@ async function runFileMutationQueueWaitTurn() {
 	return observed;
 }
 
+const fileMutationReleaseQueues = new Map();
+
+async function registerMutationReleaseQueue(filePath) {
+	const key = await getMutationQueueKey(filePath);
+	let state = fileMutationReleaseQueues.get(key);
+	if (!state) {
+		state = { key, pending: 0, nextTicket: 0, serving: 0 };
+		fileMutationReleaseQueues.set(key, state);
+	}
+	const ticket = state.nextTicket;
+	state.nextTicket += 1;
+	state.pending += 1;
+	return { key, state, ticket };
+}
+
+async function waitMutationReleaseTurn(state, ticket) {
+	while (state.serving !== ticket) {
+		await Promise.resolve();
+	}
+}
+
+function releaseMutationTurn(map, key, state) {
+	state.serving += 1;
+	state.pending -= 1;
+	if (state.pending === 0 && map.get(key) === state) {
+		map.delete(key);
+	}
+}
+
+async function runFileMutationQueueReleaseTurn() {
+	const { target, alias, other, missing } = stageFileMutationQueueLayout();
+	writeFileSync(target, "seed", "utf8");
+	if (existsSync(alias)) {
+		unlinkSync(alias);
+	}
+	symlinkSync(target, alias);
+	const targetReg = await registerMutationReleaseQueue(target);
+	const aliasReg = await registerMutationReleaseQueue(alias);
+	const otherReg = await registerMutationReleaseQueue(other);
+	const missingReg = await registerMutationReleaseQueue(missing);
+	await waitMutationReleaseTurn(targetReg.state, targetReg.ticket);
+	releaseMutationTurn(fileMutationReleaseQueues, targetReg.key, targetReg.state);
+	await waitMutationReleaseTurn(otherReg.state, otherReg.ticket);
+	releaseMutationTurn(fileMutationReleaseQueues, otherReg.key, otherReg.state);
+	await waitMutationReleaseTurn(missingReg.state, missingReg.ticket);
+	releaseMutationTurn(fileMutationReleaseQueues, missingReg.key, missingReg.state);
+	const observed = {
+		fmqe_serving: targetReg.state.serving === 1 ? 1 : 0,
+		fmqe_pending:
+			targetReg.state === aliasReg.state && targetReg.state.pending === 1 ? 1 : 0,
+		fmqe_other: fileMutationReleaseQueues.has(otherReg.key) ? 0 : 1,
+		fmqe_missing: fileMutationReleaseQueues.has(missingReg.key) ? 0 : 1,
+		fmqe_n: 4,
+	};
+	fileMutationReleaseQueues.clear();
+	return observed;
+}
+
 async function measureFileMutationQueue() {
 	const withQueueObserved = await runFileMutationQueueWithQueue();
 	const queueKeyObserved = await runFileMutationQueueQueueKey();
 	const lockObserved = await runFileMutationQueueLock();
 	const registerObserved = await runFileMutationQueueRegister();
 	const waitTurnObserved = await runFileMutationQueueWaitTurn();
+	const releaseTurnObserved = await runFileMutationQueueReleaseTurn();
 	return {
 		with_queue: await collect("file_mutation_queue.with_queue", () => {
 			return () => runFileMutationQueueWithQueue();
@@ -2415,12 +2475,16 @@ async function measureFileMutationQueue() {
 		wait_turn: await collect("file_mutation_queue.wait_turn", () => {
 			return () => runFileMutationQueueWaitTurn();
 		}),
+		release_turn: await collect("file_mutation_queue.release_turn", () => {
+			return () => runFileMutationQueueReleaseTurn();
+		}),
 		observed: {
 			...withQueueObserved,
 			...queueKeyObserved,
 			...lockObserved,
 			...registerObserved,
 			...waitTurnObserved,
+			...releaseTurnObserved,
 		},
 	};
 }
@@ -14642,6 +14706,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue ticket enqueue (pending++ / next-promise chain) after key",
 			"file_mutation_queue.wait_turn":
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue await-current (ticket wait) after enqueue",
+			"file_mutation_queue.release_turn":
+				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue finally (pending-- / delete when empty) after wait",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":

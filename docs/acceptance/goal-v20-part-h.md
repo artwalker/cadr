@@ -3168,6 +3168,22 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
+### Pair 274 — `file_mutation_queue` (release_turn)
+
+| metric | cadr | pi |
+|---|---|---|
+| `release_turn` | `release-file-mutation-turn` (`src/cadr-agent/file-mutation-queue.lisp`) | `withFileMutationQueue` finally / pending-- / delete-when-empty after wait (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 261 `with_queue`, Pair 270 `queue_key`, Pair 271
+`lock`, Pair 272 `register`, and Pair 273 `wait_turn` on the same
+`agent_tool_loop` hole. Timed work is FIFO ticket release after wait
+(existing path, symlink alias leftover pending, missing path, distinct
+sibling) — not fn, not `with-file-mutation-queue`, not write/edit tools.
+Same staged scratch layout as `with_queue`. Observed `fmqe_serving` /
+`fmqe_pending` / `fmqe_other` / `fmqe_missing` / `fmqe_n` are exact.
+First n=5 freeze pending. Gate used `--only-enforce`. Same commit no
+optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
