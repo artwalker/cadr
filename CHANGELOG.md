@@ -13,8 +13,12 @@ tag/Release step.
   `parse_openrouter_images` / `error_result` on `src/cadr-ai/images.lisp`
   (`openrouter-image-usage` / `parse-openrouter-images` /
   `image-error-result` vs baseline `parseUsage` / generateImages response
-  parse / catch). Observed `us_*` / `poi_*` / `er_*` exact. Measure-only;
-  freeze numbers follow. Pairs 367–369. No `src/` perf.
+  parse / catch). Observed `us_*` / `poi_*` / `er_*` exact. n=5
+  **4.218×** / **2.986×** / **3.028×** (2.167 / 0.514 µs, 3.188 / 1.068 µs,
+  1.047 / 0.346 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not these
+  metrics. All three booked on the over-1× ledger. Pairs 367–369. No
+  `src/` perf.
 
 - Goal 20 P.13: pair `core_rest.cancellation_abort` (`abort-cancellation` /
   `cancellation-aborted-p` on `src/cadr-core/cancellation.lisp` vs

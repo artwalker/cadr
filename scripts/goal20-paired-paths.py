@@ -574,14 +574,17 @@ RATIO_CEILINGS = {
     # leftover pair: observed 1.43x (0.555 / 0.387 us). 8.0 is
     # first-freeze headroom. Ratchet down only.
     "image_runtime.parse_data_image": 8.0,
-    # First-freeze headroom for leftover image_runtime.openrouter_usage
-    # (Pair 367). Ratchet down only after n=5 freeze.
+    # Frozen from the first n=5 image_runtime.openrouter_usage leftover
+    # pair: observed 4.218x (2.167 / 0.514 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "image_runtime.openrouter_usage": 8.0,
-    # First-freeze headroom for leftover image_runtime.parse_openrouter_images
-    # (Pair 368). Ratchet down only after n=5 freeze.
+    # Frozen from the first n=5 image_runtime.parse_openrouter_images leftover
+    # pair: observed 2.986x (3.188 / 1.068 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "image_runtime.parse_openrouter_images": 8.0,
-    # First-freeze headroom for leftover image_runtime.error_result
-    # (Pair 369). Ratchet down only after n=5 freeze.
+    # Frozen from the first n=5 image_runtime.error_result leftover
+    # pair: observed 3.028x (1.047 / 0.346 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "image_runtime.error_result": 8.0,
     # Frozen from the first Friend-MachineD non-quick cli_print_rpc
     # pair (samples=5): observed 13.21x (3.3 / 0.25 us). 8.0 follows

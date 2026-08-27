@@ -3675,8 +3675,10 @@ usage object (prompt 12 / completion 34) and a cache-write case
 (prompt 100 / cached 40 / write 10) — not HTTP, not `generate-images`,
 not `build-openrouter-image-request`. Observed `us_in` / `us_out` /
 `us_cr` / `us_cw` / `us_in2` / `us_out2` / `us_cr2` / `us_cw2` are
-exact. First n=5 freeze pending. Gate uses `--only-enforce`. Same
-commit no optimize.
+exact. First n=5 freeze **4.218×** (2.167 / 0.514 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked. Same commit no optimize.
 
 ### Pair 368 — `image_runtime` (parse_openrouter_images)
 
@@ -3688,8 +3690,10 @@ Leftover sibling of Pair 367 on the same `image_runtime` hole. Timed
 work is OpenRouter JSON → assistant-images (id / text / data-URL image
 / usage) — not HTTP, not `generate-images`. Observed `poi_id` /
 `poi_text` / `poi_n` / `poi_mime` / `poi_data` / `poi_in` / `poi_out`
-are exact. First n=5 freeze pending. Gate uses `--only-enforce`. Same
-commit no optimize.
+are exact. First n=5 freeze **2.986×** (3.188 / 1.068 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 369 — `image_runtime` (error_result)
 
@@ -3701,8 +3705,11 @@ Leftover sibling of Pairs 367–368 on the same `image_runtime` hole.
 Timed work is authentication-error → `:error`, request-aborted →
 `:aborted`, and abort-p flag → `:aborted` — not HTTP, not
 `generate-images`. Observed `er_auth` / `er_hit` / `er_abort` /
-`er_flag` / `er_prov` are exact. First n=5 freeze pending. Gate uses
-`--only-enforce`. Same commit no optimize.
+`er_flag` / `er_prov` are exact. First n=5 freeze **3.028×** (1.047 /
+0.346 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help
+text; this metric did not fail). Over-1× booked. Same commit no
+optimize.
 
 ### Pair 313 — `harness_events` (make_end)
 

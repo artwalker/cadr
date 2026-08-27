@@ -805,7 +805,12 @@
      "measure": "measure-image-runtime",
      "metric": "image_runtime.openrouter_usage",
      "branch": "cursor/pair-367-369-image-runtime-leftovers-d240",
-     "note": "nextPairNum left at tip 328 (outside 367-369)"
+     "note": "nextPairNum left at tip 328 (outside 367-369)",
+     "ratio": 4.218,
+     "cadrUs": 2.167,
+     "piUs": 0.514,
+     "ceiling": 8.0,
+     "rc": 1
     },
     {
      "pair": 368,
@@ -815,7 +820,12 @@
      "measure": "measure-image-runtime",
      "metric": "image_runtime.parse_openrouter_images",
      "branch": "cursor/pair-367-369-image-runtime-leftovers-d240",
-     "note": "nextPairNum left at tip 328 (outside 367-369)"
+     "note": "nextPairNum left at tip 328 (outside 367-369)",
+     "ratio": 2.986,
+     "cadrUs": 3.188,
+     "piUs": 1.068,
+     "ceiling": 8.0,
+     "rc": 1
     },
     {
      "pair": 369,
@@ -825,7 +835,12 @@
      "measure": "measure-image-runtime",
      "metric": "image_runtime.error_result",
      "branch": "cursor/pair-367-369-image-runtime-leftovers-d240",
-     "note": "nextPairNum left at tip 328 (outside 367-369)"
+     "note": "nextPairNum left at tip 328 (outside 367-369)",
+     "ratio": 3.028,
+     "cadrUs": 1.047,
+     "piUs": 0.346,
+     "ceiling": 8.0,
+     "rc": 1
     }
    ],
    "mergeQueue": []
