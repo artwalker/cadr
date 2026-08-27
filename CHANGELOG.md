@@ -12,7 +12,9 @@ tag/Release step.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`
-  exact. Measure-only; freeze numbers in the follow-up record commit.
+  exact. n=5 **0.306×** (0.75 / 2.45 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
 - Goal 20 P.13: pair `file_mutation_queue.ensure_state` (`ensure-file-mutation-queue-state` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `fileMutationQueues.get(key) ?? set`
   given a canonical key). Observed `fmqs_alias` / `fmqs_other` / `fmqs_missing` /

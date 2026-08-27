@@ -3215,8 +3215,10 @@ Leftover of the `agent_tool_loop` hole on `harness-events.lisp` after the
 to a typed direct listener plus an already-started watch (run_start,
 run_end, unsubscribe direct, second run_start) — not watch buffering until
 start, not write/edit tools. Observed `he_direct` / `he_watch` / `he_start`
-/ `he_end` / `he_second` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce`. Same commit no optimize.
+/ `he_end` / `he_second` are exact. First n=5 freeze **0.306×** (0.75 /
+2.45 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
