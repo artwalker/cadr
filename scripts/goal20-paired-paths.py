@@ -111,7 +111,7 @@ METRICS = {
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
-    "resource_loader": ("reload", "dedupe_by_name"),
+    "resource_loader": ("reload", "dedupe_by_name", "context_from_dir", "project_context", "nearest_config"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
     "session_discovery": ("header_probe", "session_list_probe"),
     "session_export_html": ("to_html",),
@@ -385,6 +385,11 @@ RATIO_CEILINGS = {
     # resource_loader.dedupe_by_name pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "resource_loader.dedupe_by_name": 8.0,
+    # resource_loader leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "resource_loader.context_from_dir": 8.0,
+    "resource_loader.project_context": 8.0,
+    "resource_loader.nearest_config": 8.0,
     # Frozen from the first Friend-MachineD non-quick package_manager
     # pair (samples=5): observed 0.36x (200 / 551 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -3068,6 +3073,18 @@ OBSERVED_EXACT = {
         "dbn_prompt_count",
         "dbn_prompt_collisions",
         "dbn_prompt_project",
+        "cfd_agents",
+        "cfd_empty",
+        "cfd_claude",
+        "cfd_override",
+        "cfd_n",
+        "pc_n",
+        "pc_cwd",
+        "pc_cases",
+        "nc_sys",
+        "nc_append",
+        "nc_miss",
+        "nc_n",
     ),
     "session_pipeline": (
         "entry_count",
