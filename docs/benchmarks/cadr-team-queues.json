@@ -3,8 +3,7 @@
  "goals": {
   "20": {
    "schemaVersion": 1,
-   "paused": true,
-   "pauseReason": "goal21-pi-0843-alignment",
+   "paused": false,
    "nextPairNum": 270,
    "lanes": {
     "a": {
@@ -134,11 +133,12 @@
     {
      "pair": 260,
      "lane": "a",
-     "status": "pending",
+     "status": "dropped",
      "source": "src/cadr-agent/execution-env.lisp",
      "measure": "measure-agent-tool-loop",
      "metric": null,
-     "branch": null
+     "branch": null,
+     "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
     },
     {
      "pair": 261,
@@ -179,64 +179,60 @@
     {
      "pair": 265,
      "lane": "c",
-     "status": "pending",
+     "status": "dropped",
      "source": "src/cadr-ai/images.lisp",
      "measure": "measure-cli-settings",
      "metric": null,
-     "branch": null
+     "branch": null,
+     "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
     },
     {
      "pair": 266,
      "lane": "b",
-     "status": "in_progress",
+     "status": "abandoned",
      "source": "src/cadr-agent/file-mutation-queue.lisp",
      "measure": "measure-resource-loader",
      "metric": null,
-     "branch": null
+     "branch": null,
+     "note": "in_progress leftover from before Goal 21 with metric=null and no branch"
     },
     {
      "pair": 267,
      "lane": "a",
-     "status": "pending",
+     "status": "dropped",
      "source": "src/cadr-agent/file-mutation-queue.lisp",
      "measure": "measure-agent-tool-loop",
      "metric": null,
-     "branch": null
+     "branch": null,
+     "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
     },
     {
      "pair": 268,
      "lane": "c",
-     "status": "pending",
+     "status": "dropped",
      "source": "src/cadr-agent/harness-events.lisp",
      "measure": "measure-cli-settings",
      "metric": null,
-     "branch": null
+     "branch": null,
+     "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
     },
     {
      "pair": 269,
      "lane": "b",
-     "status": "pending",
+     "status": "dropped",
      "source": "src/cadr-agent/file-mutation-queue.lisp",
      "measure": "measure-resource-loader",
      "metric": null,
-     "branch": null
+     "branch": null,
+     "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
     }
    ],
-   "mergeQueue": [
-    {
-     "branch": "pair-263-file-mutation-queue",
-     "pair": 263
-    },
-    {
-     "branch": "pair-264-harness-events",
-     "pair": 264
-    }
-   ]
+   "mergeQueue": []
   },
   "21": {
    "schemaVersion": 1,
    "paused": false,
-   "goal20Paused": true,
+   "goal20Paused": false,
    "nextTaskId": 18,
    "lanes": {
     "anchor": {
@@ -360,10 +356,10 @@
     {
      "id": 7,
      "lane": "gate",
-     "status": "in_progress",
+     "status": "done",
      "slug": "full-gate",
      "title": "verify.sh + test-cl.sh + CHANGELOG 0843",
-     "branch": null
+     "branch": "cursor/g21-task7-gate-299b"
     },
     {
      "id": 13,

@@ -1,6 +1,6 @@
 # Goal 21：pi 基线推进至 v0.84.3（Goal 20 前置）
 
-> **状态：** 完成。基线已落到 **v0.84.3**。Goal 20 pairing / perf 仍暂停（`goal20Paused`）。本 closeout 不恢复 pairing、不开新 pair。
+> **状态：** 完成。基线已落到 **v0.84.3**。Ethan restored Goal 20 pairing on 2026-08-27（`goal20Paused` = false）。Does not announce Goal 20 complete.
 >
 > **当前：** `BASELINE` = `4e58f324f` · `v0.84.3` +0（pi-mono tag `v0.84.3`）  
 > **自：** `914cf1472` · `v0.84.2` +0
@@ -90,4 +90,4 @@ Goal 18 Part L 把基线从 `v0.83.0` 推到 `v0.84.1`；此后 cadr 已落在 *
 ## 与 Goal 20 的关系
 
 - **G21 完成前：** 不新开 Goal 20 pair/perf 提交（避免双次 freeze）。
-- **G21 已完成。** pairing 与 perf 仍暂停（`goal20Paused`）；恢复不在本 closeout。已有 paired metric 若 harness 未变可只跑增量 gate，若 0.84.3 改了被测入口则须重 freeze 该 metric。
+- **G21 已完成。** Ethan restored pairing on 2026-08-27（`goal20Paused` = false）。已有 paired metric 若 harness 未变可只跑增量 gate，若 0.84.3 改了被测入口则须重 freeze 该 metric。Does not announce Goal 20 complete or mark G.17 `met`.
