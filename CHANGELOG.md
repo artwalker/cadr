@@ -33,6 +33,14 @@ tag/Release step.
   `btn_partial` / `btn_lines` / `btn_bytes` / `btn_n` exact.
   n=5 **3.363×** (2.798 / 0.832 µs) on host `cursor`, ceiling 8.0. Measure-only.
   Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `output_accumulator.append` / `snapshot` /
+  `finish` (`src/cadr-cli/output-accumulator.lisp` vs baseline
+  `OutputAccumulator.append` / `snapshot` / `finish`). Observed
+  `oa_append_*` / `oa_snap_*` / `oa_fin_*` exact.
+  n=5 append **0.690×** (3.149 / 4.561 µs), snapshot **0.716×** (3.157 / 4.409 µs),
+  finish **0.658×** (1.670 / 2.537 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Pairs 280–282. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not these metrics.
 - Goal 20 P.13: pair `file_mutation_queue.ensure_state` (`ensure-file-mutation-queue-state` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `fileMutationQueues.get(key) ?? set`
   given a canonical key). Observed `fmqs_alias` / `fmqs_other` / `fmqs_missing` /
