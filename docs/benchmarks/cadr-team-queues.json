@@ -773,7 +773,7 @@
     {
      "pair": 364,
      "lane": "a",
-     "status": "queued",
+     "status": "done",
      "source": "src/cadr-evals/harness.lisp",
      "measure": "measure-evals-harness",
      "metric": "evals_harness.content_text",
@@ -782,7 +782,7 @@
     {
      "pair": 365,
      "lane": "a",
-     "status": "queued",
+     "status": "done",
      "source": "src/cadr-evals/harness.lisp",
      "measure": "measure-evals-harness",
      "metric": "evals_harness.transcript_event",
@@ -791,7 +791,7 @@
     {
      "pair": 366,
      "lane": "a",
-     "status": "queued",
+     "status": "done",
      "source": "src/cadr-evals/harness.lisp",
      "measure": "measure-evals-harness",
      "metric": "evals_harness.elapsed",

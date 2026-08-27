@@ -12,8 +12,11 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `evals_harness.content_text` /
   `transcript_event` / `elapsed` (`src/cadr-evals/harness.lisp` vs baseline
   `contentText` / transcript message object / `performance.now`
-  timings.totalMs). Observed `ct_*` / `te_*` / `el_*` exact. n=5 freeze
-  pending the docs record commit. Ceiling 8.0. Measure-only. Pairs 364–366.
+  timings.totalMs). Observed `ct_*` / `te_*` / `el_*` exact. n=5
+  **1.386×** / **5.702×** / **0.275×** (0.997 / 0.719 µs, 1.016 / 0.178 µs,
+  0.182 / 0.663 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not these
+  metrics. Pairs 364–365 are on the over-1× ledger. Pairs 364–366.
   `nextPairNum` still 328.
 
 - Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
