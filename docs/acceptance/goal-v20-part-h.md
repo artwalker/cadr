@@ -3151,6 +3151,21 @@ scratch layout as `with_queue`. Observed `fmql_alias` / `fmql_other` /
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
 
+### Pair 272 — `file_mutation_queue` (register)
+
+| metric | cadr | pi |
+|---|---|---|
+| `register` | `register-file-mutation` (`src/cadr-agent/file-mutation-queue.lisp`) | `withFileMutationQueue` ticket enqueue (`pending++` / next-promise chain after the same key encoding in `packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 261 `with_queue`, Pair 270 `queue_key`, and Pair 271
+`lock` on the same `agent_tool_loop` hole. Timed work is FIFO ticket
+allocation after canonical key (existing path, symlink alias, missing path,
+distinct sibling) — not wait/fn/release, not `with-file-mutation-queue`, not
+write/edit tools. Same staged scratch layout as `with_queue`. Observed
+`fmqr_alias` / `fmqr_other` / `fmqr_pending` / `fmqr_ticket` / `fmqr_n` are
+exact. First Friend-MachineD freeze **RATIO_PLACEHOLDER**, ceiling 8.0. Gate
+used `--only-enforce`. Same commit no optimize.
+
 ### Pair 257 — `execution_env` (exists_remove_temps)
 
 | metric | cadr | pi |

@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 272,
+   "nextPairNum": 273,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -243,6 +243,15 @@
      "measure": "measure-agent-tool-loop",
      "metric": "file_mutation_queue.lock",
      "branch": "cursor/pair-271-fmq-lock-7523"
+    },
+    {
+     "pair": 272,
+     "lane": "a",
+     "status": "in_progress",
+     "source": "src/cadr-agent/file-mutation-queue.lisp",
+     "measure": "measure-agent-tool-loop",
+     "metric": "file_mutation_queue.register",
+     "branch": "cursor/pair-272-fmq-register-68aa"
     }
    ],
    "mergeQueue": []
