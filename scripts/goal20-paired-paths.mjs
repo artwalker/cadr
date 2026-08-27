@@ -165,6 +165,9 @@ const REPETITIONS = {
 	"harness_events.on": 50,
 	"harness_events.watch": 50,
 	"harness_events.make_start": 50,
+	"find_tool.pattern_match": 50,
+	"find_tool.find_files": 50,
+	"find_tool.make_tool": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -690,6 +693,7 @@ const outputAccumulatorModule = await import(
 	moduleUrl("packages/coding-agent/src/core/tools/output-accumulator.ts"),
 );
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
+const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const fileMutationQueueModule = await import(
@@ -2755,6 +2759,157 @@ function runHarnessEventsMakeStart() {
 	};
 }
 
+const FIND_TOOL_CWD = "/tmp/goal20-find-tool-cwd";
+const GLOB_SPECIAL = new Set(".^$+()[]{}|\\".split(""));
+
+function globRegexSource(pattern) {
+	let out = "^";
+	for (let index = 0; index < pattern.length; ) {
+		const character = pattern[index];
+		if (character === "*") {
+			if (index + 1 < pattern.length && pattern[index + 1] === "*") {
+				index++;
+				if (index + 1 < pattern.length && pattern[index + 1] === "/") {
+					index++;
+					out += "(?:.*/)?";
+				} else {
+					out += ".*";
+				}
+			} else {
+				out += "[^/]*";
+			}
+		} else if (character === "?") {
+			out += "[^/]";
+		} else if (GLOB_SPECIAL.has(character)) {
+			out += `\\${character}`;
+		} else {
+			out += character;
+		}
+		index++;
+	}
+	return `${out}$`;
+}
+
+function findPatternMatchP(pattern, relative) {
+	const re = new RegExp(globRegexSource(pattern));
+	const target = pattern.includes("/") ? relative : path.posix.basename(relative);
+	return re.test(target);
+}
+
+function ensureFindToolFixture() {
+	mkdirSync(path.join(FIND_TOOL_CWD, "src", "nested"), { recursive: true });
+	for (const relative of ["a.lisp", "b.txt", "src/c.lisp", "src/nested/d.lisp"]) {
+		writeFileSync(path.join(FIND_TOOL_CWD, relative), "x", "utf8");
+	}
+	return FIND_TOOL_CWD;
+}
+
+function walkFindRelatives(root) {
+	const files = [];
+	const walk = (dir) => {
+		for (const entry of readdirSync(dir, { withFileTypes: true })) {
+			const full = path.join(dir, entry.name);
+			if (entry.isDirectory()) {
+				if (entry.name === ".git" || entry.name === "node_modules") continue;
+				walk(full);
+			} else if (entry.isFile()) {
+				files.push(full);
+			}
+		}
+	};
+	walk(root);
+	return files
+		.map((full) =>
+			findModule.relativizeFindResultPath(full, root),
+		)
+		.sort();
+}
+
+function findToolOutputText(cwd, pattern) {
+	const matches = walkFindRelatives(cwd).filter((relative) =>
+		findPatternMatchP(pattern, relative),
+	);
+	if (matches.length === 0) return "No files found matching pattern";
+	return matches.join("\n");
+}
+
+function findToolLineCount(text) {
+	if (text === "No files found matching pattern") return 0;
+	return text.split("\n").length;
+}
+
+function runFindPatternMatch() {
+	const starA = findPatternMatchP("*.lisp", "a.lisp");
+	const starSrc = findPatternMatchP("*.lisp", "src/c.lisp");
+	const starTxt = findPatternMatchP("*.lisp", "b.txt");
+	const pathSrc = findPatternMatchP("src/**/*.lisp", "src/c.lisp");
+	const pathRoot = findPatternMatchP("src/**/*.lisp", "a.lisp");
+	const srcStarNested = findPatternMatchP("src/*.lisp", "src/nested/d.lisp");
+	return {
+		fpm_star_a: starA ? 1 : 0,
+		fpm_star_src: starSrc ? 1 : 0,
+		fpm_star_txt: starTxt ? 0 : 1,
+		fpm_path_src: pathSrc ? 1 : 0,
+		fpm_path_root: pathRoot ? 0 : 1,
+		fpm_src_star: srcStarNested ? 0 : 1,
+		fpm_n: 6,
+	};
+}
+
+function runFindFiles() {
+	const cwd = ensureFindToolFixture();
+	const empty = findToolOutputText(cwd, "*.nomatch");
+	const lisp = findToolOutputText(cwd, "*.lisp");
+	const pathPat = findToolOutputText(cwd, "src/**/*.lisp");
+	const srcStar = findToolOutputText(cwd, "src/*.lisp");
+	return {
+		ff_empty: empty === "No files found matching pattern" ? 1 : 0,
+		ff_lisp: findToolLineCount(lisp),
+		ff_path: findToolLineCount(pathPat),
+		ff_src_star: findToolLineCount(srcStar),
+		ff_n: 4,
+	};
+}
+
+function runFindMakeTool() {
+	const cwd = ensureFindToolFixture();
+	const def = findModule.createFindToolDefinition(cwd);
+	const required = def.parameters?.required ?? [];
+	const description = def.description ?? "";
+	return {
+		fmt_name: def.name === "find" ? 1 : 0,
+		fmt_desc:
+			description.includes("Search for files by glob pattern") &&
+			description.includes("Respects .gitignore")
+				? 1
+				: 0,
+		fmt_req: required.includes("pattern") ? 1 : 0,
+		fmt_n: 3,
+	};
+}
+
+async function measureFindTool() {
+	ensureFindToolFixture();
+	const patternObserved = runFindPatternMatch();
+	const filesObserved = runFindFiles();
+	const makeObserved = runFindMakeTool();
+	return {
+		pattern_match: await collect("find_tool.pattern_match", () => {
+			return () => runFindPatternMatch();
+		}),
+		find_files: await collect("find_tool.find_files", () => {
+			return () => runFindFiles();
+		}),
+		make_tool: await collect("find_tool.make_tool", () => {
+			return () => runFindMakeTool();
+		}),
+		observed: {
+			...patternObserved,
+			...filesObserved,
+			...makeObserved,
+		},
+	};
+}
 async function measureHarnessEvents() {
 	const emitObserved = runHarnessEventsEmit();
 	const onObserved = runHarnessEventsOn();
@@ -15081,6 +15236,8 @@ const harnessEvents = await measureHarnessEvents();
 process.stderr.write("goal20 pi paired paths: bash_tool\n");
 const bashTool = await measureBashTool();
 const outputAccumulator = await measureOutputAccumulator();
+process.stderr.write("goal20 pi paired paths: find_tool\n");
+const findTool = await measureFindTool();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -15246,6 +15403,12 @@ const result = {
 				"packages/agent/src/harness/events.ts HarnessEventBus.watch",
 			"harness_events.make_start":
 				"packages/agent/src/harness/events.ts RunStartEvent object",
+			"find_tool.pattern_match":
+				"packages/coding-agent/src/core/tools/find.ts basename vs --full-path glob match (fd contract; cadr find-pattern-match-p)",
+			"find_tool.find_files":
+				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
+			"find_tool.make_tool":
+				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15785,6 +15948,7 @@ const result = {
 		harness_events: harnessEvents,
 		bash_tool: bashTool,
 		output_accumulator: outputAccumulator,
+		find_tool: findTool,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

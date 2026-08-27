@@ -3401,6 +3401,43 @@ layout as `with_queue`. Observed `fmqt_alias` / `fmqt_other` /
 **1.009×** (134.3 / 133.1 µs) on host `cursor`, ceiling 8.0. Gate used
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
+### Pair 289 — `find_tool` (pattern_match)
+
+| metric | cadr | pi |
+|---|---|---|
+| `pattern_match` | `find-pattern-match-p` (`src/cadr-cli/tools/find.lisp`) | basename vs path-containing glob match (`packages/coding-agent/src/core/tools/find.ts`; fd `--full-path` contract) |
+
+Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/find.lisp`.
+Timed work is glob match on basename (`*.lisp`) vs path (`src/**/*.lisp` /
+`src/*.lisp`) — not fd spawn, not gitignore walk. Observed `fpm_star_a` /
+`fpm_star_src` / `fpm_star_txt` / `fpm_path_src` / `fpm_path_root` /
+`fpm_src_star` / `fpm_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 290 — `find_tool` (find_files)
+
+| metric | cadr | pi |
+|---|---|---|
+| `find_files` | `find-files` (`src/cadr-cli/tools/find.lisp`) | execute output assembly + `relativizeFindResultPath` (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pair 289 `pattern_match` on the same `agent_tool_loop`
+hole. Timed work is empty copy (`No files found matching pattern`) plus
+`*.lisp` / `src/**/*.lisp` / `src/*.lisp` result counts on a four-file
+fixture — not fd spawn. Observed `ff_empty` / `ff_lisp` / `ff_path` /
+`ff_src_star` / `ff_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 291 — `find_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-find-tool` (`src/cadr-cli/tools/find.lisp`) | `createFindToolDefinition` (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pair 289 `pattern_match` and Pair 290 `find_files` on
+the same `agent_tool_loop` hole. Timed work is tool name / description /
+required `pattern` — not execute. Observed `fmt_name` / `fmt_desc` /
+`fmt_req` / `fmt_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
@@ -4050,6 +4087,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/shell-process.lisp` | 147 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
+| `src/cadr-cli/tools/find.lisp` | 101 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
