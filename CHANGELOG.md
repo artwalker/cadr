@@ -9,6 +9,20 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.resolve_selection` (`resolve-eval-selection` on
+  `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection`). Observed
+  `rs_explicit` / `rs_env` / `rs_miss` / `rs_prov` / `rs_blank` / `rs_n` exact.
+  n=5 **RATIO_PLACEHOLDER** on host `cursor`, ceiling 8.0. Measure-only.
+- Goal 20 P.13: pair `evals_harness.transcript` (`messages-to-transcript` on
+  `src/cadr-evals/harness.lisp` vs baseline `toTranscriptEvents`). Observed
+  `tr_n` / `tr_user` / `tr_role` / `tr_text` / `tr_call` / `tr_name` /
+  `tr_result` / `tr_err` / `tr_keys` exact. n=5 **RATIO_PLACEHOLDER** on host
+  `cursor`, ceiling 8.0. Measure-only.
+- Goal 20 P.13: pair `evals_harness.last_assistant` (`last-assistant-since` on
+  `src/cadr-evals/harness.lisp` vs baseline `promptAgent` assistant slice).
+  Observed `la_new` / `la_none` / `la_full` / `la_n` exact. n=5
+  **RATIO_PLACEHOLDER** on host `cursor`, ceiling 8.0. Measure-only.
+
 - Goal 20 P.13: pair `file_mutation_queue.call_with` (`call-with-file-mutation-queue` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue` as a
   function). Observed `fmqf_alias` / `fmqf_other` / `fmqf_fifo` / `fmqf_run` /

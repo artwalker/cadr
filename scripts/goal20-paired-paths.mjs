@@ -205,6 +205,9 @@ const REPETITIONS = {
 	"evals_harness.artifact_persist": 3,
 	"evals_harness.format": 20,
 	"evals_harness.normalize_steps": 50,
+	"evals_harness.resolve_selection": 50,
+	"evals_harness.transcript": 50,
+	"evals_harness.last_assistant": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -4897,6 +4900,160 @@ function runEvalsHarnessNormalizeSteps() {
 	};
 }
 
+function resolveModelSelection(explicitModel, environment = {}) {
+	const provider = (explicitModel?.provider ?? environment.PI_PROVIDER)?.trim();
+	const id = (explicitModel?.id ?? environment.PI_MODEL)?.trim();
+	if (!provider || !id) {
+		throw new Error(
+			"Select a harness model explicitly or set both PI_PROVIDER and PI_MODEL as defaults.",
+		);
+	}
+	return { provider, id };
+}
+
+function evalResolveOk(explicitModel, environment, expectedProvider, expectedId) {
+	try {
+		const selection = resolveModelSelection(explicitModel, environment);
+		return selection.provider === expectedProvider && selection.id === expectedId ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function evalResolveError(explicitModel, environment) {
+	try {
+		resolveModelSelection(explicitModel, environment);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runEvalsHarnessResolveSelection() {
+	const empty = {};
+	const fromEnv = { PI_PROVIDER: "  openai  ", PI_MODEL: "  gpt-4o  " };
+	return {
+		rs_explicit: evalResolveOk({ provider: "openai", id: "gpt-4o" }, empty, "openai", "gpt-4o"),
+		rs_env: evalResolveOk(undefined, fromEnv, "openai", "gpt-4o"),
+		rs_miss: evalResolveError(undefined, empty),
+		rs_prov: evalResolveError({ provider: "openai" }, empty),
+		rs_blank: evalResolveError({ provider: "  ", id: "gpt-4o" }, empty),
+		rs_n: 5,
+	};
+}
+
+function evalContentText(content, separator = "\n") {
+	if (typeof content === "string") return content;
+	if (Array.isArray(content)) {
+		return content
+			.filter((part) => part.type === "text")
+			.map((part) => part.text)
+			.join(separator);
+	}
+	return "";
+}
+
+function toTranscriptEvents(messages) {
+	const events = [];
+	for (const message of messages) {
+		if (message.role === "user") {
+			events.push({
+				type: "message",
+				role: "user",
+				content: evalContentText(message.content),
+			});
+		} else if (message.role === "assistant") {
+			const text = evalContentText(message.content);
+			if (text) events.push({ type: "message", role: "assistant", content: text });
+			for (const part of message.content) {
+				if (part.type === "toolCall") {
+					events.push({
+						type: "tool_call",
+						id: part.id,
+						name: part.name,
+						arguments: part.arguments,
+					});
+				}
+			}
+		} else if (message.role === "toolResult") {
+			const text = evalContentText(message.content);
+			events.push({
+				type: "tool_result",
+				toolCallId: message.toolCallId,
+				name: message.toolName,
+				content: text,
+				...(message.isError ? { error: { message: text || "Tool failed" } } : {}),
+			});
+		}
+	}
+	return events;
+}
+
+function evalTranscriptMessages() {
+	return [
+		{ role: "user", content: "hi" },
+		{
+			role: "assistant",
+			content: [
+				{ type: "text", text: "hello" },
+				{ type: "toolCall", id: "c1", name: "bash", arguments: { cmd: "ls" } },
+			],
+		},
+		{
+			role: "toolResult",
+			toolCallId: "c1",
+			toolName: "bash",
+			content: [{ type: "text", text: "ok" }],
+			isError: false,
+		},
+		{ role: "assistant", content: [{ type: "text", text: "" }] },
+		{
+			role: "toolResult",
+			toolCallId: "c2",
+			toolName: "fail",
+			content: [{ type: "text", text: "" }],
+			isError: true,
+		},
+	];
+}
+
+function runEvalsHarnessTranscript() {
+	const events = toTranscriptEvents(evalTranscriptMessages());
+	return {
+		tr_n: events.length,
+		tr_user: events[0]?.type === "message" ? 1 : 0,
+		tr_role: events[0]?.role === "user" ? 1 : 0,
+		tr_text: events[1]?.content === "hello" ? 1 : 0,
+		tr_call: events[2]?.type === "tool_call" ? 1 : 0,
+		tr_name: events[2]?.name === "bash" ? 1 : 0,
+		tr_result: events[3]?.type === "tool_result" ? 1 : 0,
+		tr_err: events[4]?.error ? 1 : 0,
+		tr_keys: 8,
+	};
+}
+
+function lastAssistantSince(messages, previousMessageCount) {
+	return (
+		messages
+			.slice(previousMessageCount)
+			.reverse()
+			.find((message) => message.role === "assistant") ?? null
+	);
+}
+
+function runEvalsHarnessLastAssistant() {
+	const old = { role: "assistant", content: [{ type: "text", text: "old" }] };
+	const user = { role: "user", content: "hi" };
+	const neu = { role: "assistant", content: [{ type: "text", text: "new" }] };
+	const messages = [old, user, neu];
+	return {
+		la_new: lastAssistantSince(messages, 1) === neu ? 1 : 0,
+		la_none: lastAssistantSince(messages, 3) === null ? 1 : 0,
+		la_full: lastAssistantSince(messages, 0) === neu ? 1 : 0,
+		la_n: 3,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -4908,6 +5065,9 @@ async function measureEvalsHarness() {
 		...(await runEvalsHarnessArtifactPersist()),
 		...runEvalsHarnessFormat(emptyReport, report),
 		...runEvalsHarnessNormalizeSteps(),
+		...runEvalsHarnessResolveSelection(),
+		...runEvalsHarnessTranscript(),
+		...runEvalsHarnessLastAssistant(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -4924,6 +5084,15 @@ async function measureEvalsHarness() {
 		}),
 		normalize_steps: await collect("evals_harness.normalize_steps", () => {
 			return () => runEvalsHarnessNormalizeSteps();
+		}),
+		resolve_selection: await collect("evals_harness.resolve_selection", () => {
+			return () => runEvalsHarnessResolveSelection();
+		}),
+		transcript: await collect("evals_harness.transcript", () => {
+			return () => runEvalsHarnessTranscript();
+		}),
+		last_assistant: await collect("evals_harness.last_assistant", () => {
+			return () => runEvalsHarnessLastAssistant();
 		}),
 		observed,
 	};
@@ -15625,6 +15794,12 @@ const result = {
 				"packages/evals/src/vitest-evals/summary.ts formatHarnessComparisonReport",
 			"evals_harness.normalize_steps":
 				"packages/evals/src/pi-harness.ts runPiCodingAgent input step normalization",
+			"evals_harness.resolve_selection":
+				"packages/evals/src/pi-harness.ts resolveModelSelection",
+			"evals_harness.transcript":
+				"packages/evals/src/pi-harness.ts toTranscriptEvents",
+			"evals_harness.last_assistant":
+				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "paused": false,
- "nextPairNum": 301,
+ "nextPairNum": 328,
  "lanes": {
   "a": {
    "role": "pairing",
@@ -462,6 +462,33 @@
    "measure": "measure-tool-manager",
    "metric": "tool_manager.cleanup_quarantine",
    "branch": "cursor/pair-292-294-tool-manager-af5e"
+  },
+  {
+   "pair": 325,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.resolve_selection",
+   "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+  },
+  {
+   "pair": 326,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.transcript",
+   "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+  },
+  {
+   "pair": 327,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.last_assistant",
+   "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
   }
  ],
  "mergeQueue": []
