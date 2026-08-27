@@ -229,6 +229,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `find_tool.find_files` | 633.4 | 184.1 | 3.44× | 8.00× | measure-only pair 290; `find-files` empty copy + fixture counts | invent pause；地板优化另刀 |
 | `find_tool.make_tool` | 131.9 | 93.3 | 1.41× | 8.00× | measure-only pair 291; `make-find-tool` vs `createFindToolDefinition` | invent pause；地板优化另刀 |
 | `tool_manager.cleanup_quarantine` | 120.1 | 88.0 | 1.37× | 8.00× | measure-only pair 294; `cleanup-windows-self-update-quarantine` (not download/ensure) | invent pause；地板优化另刀 |
+| `evals_harness.transcript` | 3.80 | 2.18 | 1.743× | 8.00× | measure-only pair 326; `messages-to-transcript` vs `toTranscriptEvents` | invent pause；地板优化另刀 |
+| `evals_harness.last_assistant` | 0.579 | 0.560 | 1.034× | 8.00× | measure-only pair 327; `last-assistant-since` vs promptAgent slice; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `provider_registry_defs.runtime_models` | 17.89 | 4.794 | 3.73× | 8.00× | measure-only pair 296; leftover `provider-runtime-models` vs `getBuiltinModels` | invent pause；地板优化另刀 |
 | `powershell_tool.utf8_prefix` | 0.647 | 0.171 | 3.79× | 8.00× | measure-only pair 301; `+powershell-utf8-output-prefix+` vs `UTF8_OUTPUT_PREFIX` (not execute/spawn); sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `powershell_tool.prefix_command` | 0.468 | 0.336 | 1.39× | 8.00× | measure-only pair 302; UTF-8 prefix + command concatenate (not exec/spawn) | invent pause；地板优化另刀 |

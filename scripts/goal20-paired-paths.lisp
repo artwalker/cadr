@@ -127,6 +127,9 @@
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
+;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
+;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
+;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -363,6 +366,9 @@
     ("evals_harness.artifact_persist" . 3)
     ("evals_harness.format" . 20)
     ("evals_harness.normalize_steps" . 50)
+    ("evals_harness.resolve_selection" . 50)
+    ("evals_harness.transcript" . 50)
+    ("evals_harness.last_assistant" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -6875,6 +6881,121 @@
      (length from-vec)
      (eval-normalize-steps-error-p 42))))
 
+(defun eval-flag (value)
+  (if value 1 0))
+
+(defun eval-empty-environment (name)
+  (declare (ignore name))
+  nil)
+
+(defun eval-named-environment (entries)
+  (lambda (name)
+    (cdr (assoc name entries :test #'string=))))
+
+(defun eval-resolve-ok-p (provider model environment expected-provider expected-model)
+  (let ((cadr-evals::*eval-environment-function* environment))
+    (handler-case
+        (multiple-value-bind (resolved-provider resolved-model)
+            (cadr-evals::resolve-eval-selection provider model)
+          (eval-flag
+           (and (string= resolved-provider expected-provider)
+                (string= resolved-model expected-model))))
+      (error () 0))))
+
+(defun eval-resolve-error-p (provider model environment)
+  (let ((cadr-evals::*eval-environment-function* environment))
+    (handler-case
+        (progn
+          (cadr-evals::resolve-eval-selection provider model)
+          0)
+      (error () 1))))
+
+(defun run-evals-harness-resolve-selection ()
+  ;; Explicit args, trimmed env fallback, missing/blank errors.
+  ;; Do not exact error copy (CADR_ vs PI_ names).
+  (let ((empty #'eval-empty-environment)
+        (from-env
+          (eval-named-environment
+           '(("CADR_EVAL_PROVIDER" . "  openai  ")
+             ("CADR_EVAL_MODEL" . "  gpt-4o  ")))))
+    (list
+     (eval-resolve-ok-p "openai" "gpt-4o" empty "openai" "gpt-4o")
+     (eval-resolve-ok-p nil nil from-env "openai" "gpt-4o")
+     (eval-resolve-error-p nil nil empty)
+     (eval-resolve-error-p "openai" nil empty)
+     (eval-resolve-error-p "  " "gpt-4o" empty)
+     5)))
+
+(defun eval-transcript-messages ()
+  (list
+   (cadr-ai:make-user-message :content "hi")
+   (cadr-ai:make-assistant-message
+    :content
+    (list
+     (cadr-ai:make-text-content :text "hello")
+     (cadr-ai:make-tool-call
+      :id "c1"
+      :name "bash"
+      :arguments (cadr-ai::json-object "cmd" "ls"))))
+   (cadr-ai:make-tool-result-message
+    :tool-call-id "c1"
+    :tool-name "bash"
+    :content (list (cadr-ai:make-text-content :text "ok"))
+    :is-error nil)
+   (cadr-ai:make-assistant-message
+    :content (list (cadr-ai:make-text-content :text "")))
+   (cadr-ai:make-tool-result-message
+    :tool-call-id "c2"
+    :tool-name "fail"
+    :content (list (cadr-ai:make-text-content :text ""))
+    :is-error t)))
+
+(defun run-evals-harness-transcript ()
+  (let ((events
+          (cadr-evals::messages-to-transcript
+           (eval-transcript-messages))))
+    (list
+     (length events)
+     (eval-flag
+      (string= (cadr-ai::json-get (first events) "type") "message"))
+     (eval-flag
+      (string= (cadr-ai::json-get (first events) "role") "user"))
+     (eval-flag
+      (string= (cadr-ai::json-get (second events) "content") "hello"))
+     (eval-flag
+      (string= (cadr-ai::json-get (third events) "type") "tool_call"))
+     (eval-flag
+      (string= (cadr-ai::json-get (third events) "name") "bash"))
+     (eval-flag
+      (string= (cadr-ai::json-get (fourth events) "type")
+               "tool_result"))
+     (eval-flag (cadr-ai::json-get (fifth events) "error"))
+     8)))
+
+(defun run-evals-harness-last-assistant ()
+  (let* ((old
+           (cadr-ai:make-assistant-message
+            :content
+            (list (cadr-ai:make-text-content :text "old"))))
+         (user (cadr-ai:make-user-message :content "hi"))
+         (new
+           (cadr-ai:make-assistant-message
+            :content
+            (list (cadr-ai:make-text-content :text "new"))))
+         (messages (list old)))
+    (let ((pre (last messages)))
+      (setf (cdr pre) (list user new))
+      (list
+       (eval-flag
+        (eq new (cadr-evals::last-assistant-since messages pre)))
+       (eval-flag
+        (null
+         (cadr-evals::last-assistant-since
+          messages (last messages))))
+       (eval-flag
+        (eq new (cadr-evals::last-assistant-since messages nil)))
+       3))))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -6885,7 +7006,10 @@
            (cadr-evals:summarize-harness-comparisons
             (evals-harness-observations)))
          (fmt (run-evals-harness-format empty-report report))
-         (normalize (run-evals-harness-normalize-steps)))
+         (normalize (run-evals-harness-normalize-steps))
+         (resolve (run-evals-harness-resolve-selection))
+         (transcript (run-evals-harness-transcript))
+         (last-assistant (run-evals-harness-last-assistant)))
     (json-object
      "observed"
      (json-object
@@ -6917,7 +7041,26 @@
       "ns_kw_n" (nth 5 normalize)
       "ns_kw_rel" (nth 6 normalize)
       "ns_vec_n" (nth 7 normalize)
-      "ns_bad" (nth 8 normalize))
+      "ns_bad" (nth 8 normalize)
+      "rs_explicit" (nth 0 resolve)
+      "rs_env" (nth 1 resolve)
+      "rs_miss" (nth 2 resolve)
+      "rs_prov" (nth 3 resolve)
+      "rs_blank" (nth 4 resolve)
+      "rs_n" (nth 5 resolve)
+      "tr_n" (nth 0 transcript)
+      "tr_user" (nth 1 transcript)
+      "tr_role" (nth 2 transcript)
+      "tr_text" (nth 3 transcript)
+      "tr_call" (nth 4 transcript)
+      "tr_name" (nth 5 transcript)
+      "tr_result" (nth 6 transcript)
+      "tr_err" (nth 7 transcript)
+      "tr_keys" (nth 8 transcript)
+      "la_new" (nth 0 last-assistant)
+      "la_none" (nth 1 last-assistant)
+      "la_full" (nth 2 last-assistant)
+      "la_n" (nth 3 last-assistant))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -6943,7 +7086,22 @@
      (collect "evals_harness.normalize_steps"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-normalize-steps)))))))
+                  (run-evals-harness-normalize-steps))))
+     "resolve_selection"
+     (collect "evals_harness.resolve_selection"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-resolve-selection))))
+     "transcript"
+     (collect "evals_harness.transcript"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-transcript))))
+     "last_assistant"
+     (collect "evals_harness.last_assistant"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-last-assistant)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16071,6 +16229,12 @@
       "src/cadr-evals/summary.lisp format-harness-comparison-report"
       "evals_harness.normalize_steps"
       "src/cadr-evals/harness.lisp normalize-eval-steps"
+      "evals_harness.resolve_selection"
+      "src/cadr-evals/harness.lisp resolve-eval-selection"
+      "evals_harness.transcript"
+      "src/cadr-evals/harness.lisp messages-to-transcript"
+      "evals_harness.last_assistant"
+      "src/cadr-evals/harness.lisp last-assistant-since"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

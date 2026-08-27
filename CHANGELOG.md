@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
+  `transcript` / `last_assistant` (`src/cadr-evals/harness.lisp` vs baseline
+  `resolveModelSelection` / `toTranscriptEvents` / `promptAgent` assistant
+  slice). Observed `rs_*` / `tr_*` / `la_*` exact. n=5 **0.170×** / **1.743×** /
+  **1.034×** (1.06 / 6.22 µs, 3.80 / 2.18 µs, 0.579 / 0.560 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not these metrics. Pairs 326–327 are on
+  the over-1× ledger. Pairs 325–327.
+
 - Goal 20 P.13: pair `oauth_pkce_device.percent_decode` (`percent-decode` on
   `src/cadr-ai/oauth/callback.lisp` vs baseline URLSearchParams percent-decode
   in `packages/ai/src/auth/oauth/openai-codex.ts`). Observed `pd_plain` /

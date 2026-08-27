@@ -3487,6 +3487,50 @@ Observed `cq_removed` / `cq_noop` / `cq_n` are exact. First n=5 freeze
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Over-1× booked. Same commit no optimize.
 
+### Pair 325 — `evals_harness` (resolve_selection)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resolve_selection` | `resolve-eval-selection` (`src/cadr-evals/harness.lisp`) | `resolveModelSelection` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of the `evals_harness` hole on `src/cadr-evals/harness.lisp`.
+Timed work is explicit provider/model, trimmed env fallback
+(`CADR_EVAL_*` / `PI_PROVIDER`+`PI_MODEL`), and missing/blank errors — not a
+live eval run. Do not exact error copy. Observed `rs_explicit` / `rs_env` /
+`rs_miss` / `rs_prov` / `rs_blank` / `rs_n` are exact. First n=5 freeze
+**0.170×** (1.06 / 6.22 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 326 — `evals_harness` (transcript)
+
+| metric | cadr | pi |
+|---|---|---|
+| `transcript` | `messages-to-transcript` (`src/cadr-evals/harness.lisp`) | `toTranscriptEvents` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pair 325 `resolve_selection` on the same `evals_harness`
+hole. Timed work is user / assistant+toolCall / toolResult / empty-assistant
+skip / error toolResult — not `run-coding-agent-eval`. Observed `tr_n` /
+`tr_user` / `tr_role` / `tr_text` / `tr_call` / `tr_name` / `tr_result` /
+`tr_err` / `tr_keys` are exact. First n=5 freeze **1.743×** (3.80 / 2.18 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Over-1× booked. Same commit no optimize.
+
+### Pair 327 — `evals_harness` (last_assistant)
+
+| metric | cadr | pi |
+|---|---|---|
+| `last_assistant` | `last-assistant-since` (`src/cadr-evals/harness.lisp`) | `promptAgent` assistant slice (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pairs 325–326 on the same `evals_harness` hole. Timed
+work is pre-prompt tail find of the new assistant, empty tail, and full-list
+from-end — not `agent-prompt`. Observed `la_new` / `la_none` / `la_full` /
+`la_n` are exact. First n=5 freeze **1.034×** (0.579 / 0.560 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked (sub-µs). Same commit no optimize.
+
 ### Pair 295 — `provider_registry_defs` (merge_environment)
 
 | metric | cadr | pi |
