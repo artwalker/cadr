@@ -125,10 +125,10 @@
   {
    "id": 7,
    "lane": "gate",
-   "status": "in_progress",
+   "status": "done",
    "slug": "full-gate",
    "title": "verify.sh + test-cl.sh + CHANGELOG 0843",
-   "branch": null
+   "branch": "cursor/g21-task7-gate-299b"
   },
   {
    "id": 13,
