@@ -3132,8 +3132,8 @@ Timed work is canonical key resolution only (existing path, symlink alias,
 missing path, distinct sibling) — not `with-file-mutation-queue` and not
 write/edit tools. Same staged scratch layout as `with_queue`. Observed
 `fmqk_alias` / `fmqk_missing` / `fmqk_other` / `fmqk_n` are exact. First
-Friend-MachineD freeze **RATIO_PLACEHOLDER**, ceiling 8.0. Gate used
-`--only-enforce`. Same commit no optimize.
+n=5 freeze **1.08×** (169.3 / 156.2 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce`. Same commit no optimize.
 
 ### Pair 257 — `execution_env` (exists_remove_temps)
 
