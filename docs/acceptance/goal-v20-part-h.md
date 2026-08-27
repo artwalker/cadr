@@ -3540,10 +3540,11 @@ Over-1× booked (sub-µs). Same commit no optimize.
 Leftover sibling of the `evals_harness` hole on `src/cadr-evals/harness.lisp`.
 Timed work is nil-manager no-op plus `replace-extension-bundles` to empty —
 not reload, not `run-coding-agent-eval`. Observed `re_nil` / `re_mgr` /
-`re_empty` / `re_n` are exact. First n=5 freeze numbers are recorded in the
-freeze commit. Ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
-from known old holes `lc_n` / `lc_sleep` / help text when those still fire;
-this metric must not fail). Same commit no optimize.
+`re_empty` / `re_n` are exact. First n=5 freeze **21.13×** (6.187 / 0.293 µs)
+on host `cursor`, ceiling 8.0 — ratio is above 8.0 but the gate bound is the
+variance/µs floor (this metric did not fail). Over-1× booked. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 371 — `evals_harness` (agent_tools)
 
@@ -3554,9 +3555,10 @@ this metric must not fail). Same commit no optimize.
 Leftover sibling of Pair 370 `release_extensions` on the same `evals_harness`
 hole. Timed work is empty-registry vs two fixture tools (`read`, `bash`) —
 not `run-coding-agent-eval`. Observed `at_empty` / `at_n` / `at_read` /
-`at_bash` / `at_keys` are exact. First n=5 freeze numbers are recorded in
-the freeze commit. Ceiling 8.0. Gate used `--only-enforce`. Same commit no
-optimize.
+`at_bash` / `at_keys` are exact. First n=5 freeze **5.118×** (1.466 / 0.286 µs)
+on host `cursor`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Same commit no optimize.
 
 ### Pair 372 — `evals_harness` (extension_paths)
 
@@ -3567,9 +3569,10 @@ optimize.
 Leftover sibling of Pairs 370–371 on the same `evals_harness` hole. Timed
 work is no-host empty list plus visible/hidden snapshot bundles (hidden
 skipped) — not extension load/reload. Observed `ep_none` / `ep_n` /
-`ep_path` / `ep_skip` / `ep_keys` are exact. First n=5 freeze numbers are
-recorded in the freeze commit. Ceiling 8.0. Gate used `--only-enforce`.
-Same commit no optimize.
+`ep_path` / `ep_skip` / `ep_keys` are exact. First n=5 freeze **6.381×**
+(2.963 / 0.464 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 295 — `provider_registry_defs` (merge_environment)
 
