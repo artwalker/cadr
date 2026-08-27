@@ -127,6 +127,9 @@
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
+;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
+;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
+;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
 ;;;; 313. harness_events make_end vs RunEndEvent object
 ;;;; 314. harness_events event_type vs event.type
 ;;;; 315. harness_events make_bus vs new HarnessEventBus()
@@ -305,6 +308,9 @@
     ("tool_manager.get_tool_path" . 50)
     ("tool_manager.ensure_tool" . 50)
     ("tool_manager.cleanup_quarantine" . 50)
+    ("powershell_tool.utf8_prefix" . 50)
+    ("powershell_tool.prefix_command" . 50)
+    ("powershell_tool.make_tool" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4935,6 +4941,105 @@
                   (lambda ()
                     (lambda ()
                       (run-write-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tools/powershell.lisp (Pairs 301-303).
+;;; Timed work is the UTF-8 output prefix, prefix+command concat, and
+;;; make-powershell-tool schema — not execute/spawn.
+;;; ---------------------------------------------------------------------
+
+(defun powershell-tool-truth (value)
+  (if value 1 0))
+
+(defun run-powershell-utf8-prefix ()
+  (let ((prefix cadr-cli::+powershell-utf8-output-prefix+))
+    (list
+     (length prefix)
+     (powershell-tool-truth
+      (and (plusp (length prefix))
+           (char= #\Newline (char prefix (1- (length prefix))))))
+     (powershell-tool-truth
+      (and (>= (length prefix) 4)
+           (string= "try " prefix :end2 4)))
+     (powershell-tool-truth (search "UTF8" prefix))
+     4)))
+
+(defun powershell-prefix-command (command)
+  (concatenate 'string cadr-cli::+powershell-utf8-output-prefix+ command))
+
+(defun run-powershell-prefix-command ()
+  (let* ((prefix cadr-cli::+powershell-utf8-output-prefix+)
+         (empty (powershell-prefix-command ""))
+         (date (powershell-prefix-command "Get-Date"))
+         (write (powershell-prefix-command "Write-Output hi")))
+    (list
+     (powershell-tool-truth (string= empty prefix))
+     (powershell-tool-truth
+      (and (>= (length date) (length prefix))
+           (string= "Get-Date" date :start2 (length prefix))))
+     (powershell-tool-truth
+      (and (>= (length write) (length prefix))
+           (string= "Write-Output hi" write :start2 (length prefix))))
+     3)))
+
+(defun run-powershell-make-tool ()
+  (let* ((tool (cadr-cli:make-powershell-tool "/tmp"))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list))))
+    (list
+     (powershell-tool-truth
+      (string= (cadr-ai:tool-name tool) "powershell"))
+     (powershell-tool-truth
+      (search "Execute a PowerShell command"
+              (cadr-ai:tool-description tool)))
+     (powershell-tool-truth
+      (and required-list
+           (find "command" required-list :test #'string=)))
+     3)))
+
+(defun measure-powershell-tool ()
+  (destructuring-bind (psu-len psu-nl psu-try psu-utf8 psu-n)
+      (run-powershell-utf8-prefix)
+    (destructuring-bind (psc-empty psc-date psc-write psc-n)
+        (run-powershell-prefix-command)
+      (destructuring-bind (pmt-name pmt-desc pmt-req pmt-n)
+          (run-powershell-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "psu_len" psu-len
+          "psu_nl" psu-nl
+          "psu_try" psu-try
+          "psu_utf8" psu-utf8
+          "psu_n" psu-n
+          "psc_empty" psc-empty
+          "psc_date" psc-date
+          "psc_write" psc-write
+          "psc_n" psc-n
+          "pmt_name" pmt-name
+          "pmt_desc" pmt-desc
+          "pmt_req" pmt-req
+          "pmt_n" pmt-n)
+         "utf8_prefix"
+         (collect "powershell_tool.utf8_prefix"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-utf8-prefix))))
+         "prefix_command"
+         (collect "powershell_tool.prefix_command"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-prefix-command))))
+         "make_tool"
+         (collect "powershell_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -15556,6 +15661,12 @@
       "src/cadr-cli/tool-manager.lisp ensure-tool"
       "tool_manager.cleanup_quarantine"
       "src/cadr-cli/tool-manager.lisp cleanup-windows-self-update-quarantine"
+      "powershell_tool.utf8_prefix"
+      "src/cadr-cli/tools/powershell.lisp +powershell-utf8-output-prefix+"
+      "powershell_tool.prefix_command"
+      "src/cadr-cli/tools/powershell.lisp UTF-8 prefix + command concatenate"
+      "powershell_tool.make_tool"
+      "src/cadr-cli/tools/powershell.lisp make-powershell-tool"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -16161,7 +16272,8 @@
                     (bash-tool nil)
                     (find-tool nil)
                     (write-tool nil)
-                    (tool-manager nil))
+                    (tool-manager nil)
+                    (powershell-tool nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
@@ -16174,6 +16286,8 @@
               (setf write-tool (measure-write-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
               (setf tool-manager (measure-tool-manager))
+              (format *error-output* "goal20 cadr paired paths: powershell_tool~%")
+              (setf powershell-tool (measure-powershell-tool))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -16313,6 +16427,7 @@
               "find_tool" find-tool
               "write_tool" write-tool
               "tool_manager" tool-manager
+              "powershell_tool" powershell-tool
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html

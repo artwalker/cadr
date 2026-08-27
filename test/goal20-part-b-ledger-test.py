@@ -487,6 +487,21 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cq_removed", paired.OBSERVED_EXACT["tool_manager"])
         self.assertIn("cq_n", paired.OBSERVED_EXACT["tool_manager"])
 
+    def test_powershell_tool_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("powershell_tool.utf8_prefix", RECORD.METRIC_KEYS)
+        self.assertIn("powershell_tool.prefix_command", RECORD.METRIC_KEYS)
+        self.assertIn("powershell_tool.make_tool", RECORD.METRIC_KEYS)
+        self.assertIn("utf8_prefix", paired.METRICS["powershell_tool"])
+        self.assertIn("prefix_command", paired.METRICS["powershell_tool"])
+        self.assertIn("make_tool", paired.METRICS["powershell_tool"])
+        self.assertIn("powershell_tool.utf8_prefix", paired.RATIO_CEILINGS)
+        self.assertIn("powershell_tool.prefix_command", paired.RATIO_CEILINGS)
+        self.assertIn("powershell_tool.make_tool", paired.RATIO_CEILINGS)
+        self.assertIn("psu_len", paired.OBSERVED_EXACT["powershell_tool"])
+        self.assertIn("psc_empty", paired.OBSERVED_EXACT["powershell_tool"])
+        self.assertIn("pmt_n", paired.OBSERVED_EXACT["powershell_tool"])
+
     def test_settings_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("settings_load.project_trust", RECORD.METRIC_KEYS)
@@ -2256,6 +2271,9 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`tool_manager.get_tool_path`", section)
             self.assertIn("`tool_manager.ensure_tool`", section)
             self.assertIn("`tool_manager.cleanup_quarantine`", section)
+            self.assertIn("`powershell_tool.utf8_prefix`", section)
+            self.assertIn("`powershell_tool.prefix_command`", section)
+            self.assertIn("`powershell_tool.make_tool`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)
