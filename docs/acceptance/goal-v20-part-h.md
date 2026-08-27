@@ -3445,6 +3445,48 @@ required `pattern` — not execute. Observed `fmt_name` / `fmt_desc` /
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
 this metric did not fail). Same commit no optimize.
 
+### Pair 292 — `tool_manager` (get_tool_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `get_tool_path` | `get-tool-path` (`src/cadr-cli/tool-manager.lisp`) | `getToolPath` (`packages/coding-agent/src/utils/tools-manager.ts`) |
+
+Leftover of the `agent_tool_loop` hole on `tool-manager.lisp`. Timed work is
+local `fd`/`rg` stub discovery plus PATH-empty miss — not download/install,
+not write/edit tools. Observed `gtp_local_fd` / `gtp_local_rg` /
+`gtp_miss_fd` / `gtp_miss_rg` / `gtp_n` are exact. First n=5 freeze
+**0.014×** (107.8 / 7742.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 293 — `tool_manager` (ensure_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ensure_tool` | `ensure-tool` (`src/cadr-cli/tool-manager.lisp`) | `ensureTool` (`packages/coding-agent/src/utils/tools-manager.ts`) |
+
+Leftover sibling of Pair 292 `get_tool_path` on the same `agent_tool_loop`
+hole. Timed work is local stub hit plus `CADR_OFFLINE`/`PI_OFFLINE` miss
+with an empty PATH so neither side downloads — not GitHub / unpack. Observed
+`et_local_fd` / `et_offline_miss` / `et_n` are exact. First n=5 freeze
+**0.013×** (65.1 / 5129.9 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 294 — `tool_manager` (cleanup_quarantine)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cleanup_quarantine` | `cleanup-windows-self-update-quarantine` (`src/cadr-cli/tool-manager.lisp`) | `cleanupWindowsSelfUpdateQuarantine` (`packages/coding-agent/src/utils/windows-self-update.ts`) |
+
+Leftover sibling of Pairs 292–293 on the same `agent_tool_loop` hole. Timed
+work is delete of a staged native-quarantine tree under `node_modules` plus
+a no-op path with no `node_modules` ancestor — not loaded-.so quarantine.
+Observed `cq_removed` / `cq_noop` / `cq_n` are exact. First n=5 freeze
+**1.365×** (120.1 / 88.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4092,6 +4134,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 147 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
+| `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
 | `src/cadr-cli/tools/find.lisp` | 101 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |

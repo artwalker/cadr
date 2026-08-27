@@ -118,6 +118,9 @@
 ;;;; 289. find_tool pattern match vs find-pattern-match-p
 ;;;; 290. find_tool find-files vs find.ts execute output assembly
 ;;;; 291. find_tool make-find-tool vs createFindToolDefinition
+;;;; 292. tool_manager get-tool-path vs getToolPath
+;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
+;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -189,6 +192,9 @@
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
 ;;;;  95. cli_selectors format-key-text vs formatKeyText
 ;;;;  94. websocket_stream stream-chat websocket vs openai-codex-responses stream
+;;;; 292. tool_manager get-tool-path vs getToolPath
+;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
+;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -281,6 +287,9 @@
     ("find_tool.pattern_match" . 50)
     ("find_tool.find_files" . 50)
     ("find_tool.make_tool" . 50)
+    ("tool_manager.get_tool_path" . 50)
+    ("tool_manager.ensure_tool" . 50)
+    ("tool_manager.cleanup_quarantine" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -4812,6 +4821,141 @@
                   (lambda ()
                     (lambda ()
                       (run-output-accumulator-finish)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tool-manager.lisp (Pairs 292-294).
+;;; ---------------------------------------------------------------------
+
+(defun tm-truth (value)
+  (if value 1 0))
+
+(defun tm-write-stub (directory name)
+  (let ((path (merge-pathnames name (uiop:ensure-directory-pathname directory))))
+    (ensure-directories-exist path)
+    (with-open-file (stream path :direction :output
+                            :if-exists :supersede :if-does-not-exist :create)
+      (write-string "stub" stream))
+    path))
+
+(defun tm-delete-if-exists (path)
+  (when (probe-file path)
+    (delete-file path)))
+
+(defun tm-with-empty-path (function)
+  (let ((previous (or (uiop:getenv "PATH") "")))
+    (unwind-protect
+         (progn
+           (sb-posix:setenv "PATH" "/nonexistent-goal20-tool-manager" 1)
+           (funcall function))
+      (sb-posix:setenv "PATH" previous 1))))
+
+(defun tm-local-binary-p (result name)
+  (and result
+       (plusp (length result))
+       (char= (char result 0) #\/)
+       (string= (file-namestring result) name)))
+
+(defun run-tool-manager-get-tool-path ()
+  (let* ((bin (cadr-core:agent-bin-directory))
+         (fd (progn
+               (ensure-directories-exist bin)
+               (tm-write-stub bin "fd")))
+         (rg (tm-write-stub bin "rg"))
+         (local-fd (cadr-cli:get-tool-path :fd :bin-directory bin))
+         (local-rg (cadr-cli:get-tool-path :rg :bin-directory bin)))
+    (tm-delete-if-exists fd)
+    (tm-delete-if-exists rg)
+    (let ((miss-fd
+            (tm-with-empty-path
+             (lambda ()
+               (cadr-cli:get-tool-path :fd :bin-directory bin))))
+          (miss-rg
+            (tm-with-empty-path
+             (lambda ()
+               (cadr-cli:get-tool-path :rg :bin-directory bin)))))
+      (list
+       (tm-truth (tm-local-binary-p local-fd "fd"))
+       (tm-truth (tm-local-binary-p local-rg "rg"))
+       (tm-truth (null miss-fd))
+       (tm-truth (null miss-rg))
+       4))))
+
+(defun run-tool-manager-ensure-tool ()
+  (let* ((bin (cadr-core:agent-bin-directory))
+         (fd-path (progn
+                    (ensure-directories-exist bin)
+                    (tm-write-stub bin "fd")))
+         (local (cadr-cli:ensure-tool :fd :silent-p t)))
+    (tm-delete-if-exists fd-path)
+    (let ((previous-offline (or (uiop:getenv "CADR_OFFLINE") ""))
+          (offline nil))
+      (unwind-protect
+           (progn
+             (sb-posix:setenv "CADR_OFFLINE" "1" 1)
+             (setf offline
+                   (tm-with-empty-path
+                    (lambda ()
+                      (cadr-cli:ensure-tool :fd :silent-p t)))))
+        (if (string= previous-offline "")
+            (sb-posix:unsetenv "CADR_OFFLINE")
+            (sb-posix:setenv "CADR_OFFLINE" previous-offline 1)))
+      (list
+       (tm-truth (tm-local-binary-p local "fd"))
+       (tm-truth (null offline))
+       2))))
+
+(defun run-tool-manager-cleanup-quarantine ()
+  (let* ((root (merge-pathnames "tool-manager-pkg/" *scratch-directory*))
+         (node-modules (merge-pathnames "node_modules/" root))
+         (pkg (merge-pathnames "pkg/" node-modules))
+         (quarantine (merge-pathnames ".cadr-native-quarantine/" node-modules))
+         (outside (merge-pathnames "no-modules/pkg/" *scratch-directory*)))
+    (ensure-directories-exist pkg)
+    (ensure-directories-exist quarantine)
+    (tm-write-stub quarantine "stale.bin")
+    (cadr-cli:cleanup-windows-self-update-quarantine pkg)
+    (let ((removed (tm-truth (not (probe-file quarantine)))))
+      (ensure-directories-exist outside)
+      (cadr-cli:cleanup-windows-self-update-quarantine outside)
+      (list removed 1 2))))
+
+(defun measure-tool-manager ()
+  (destructuring-bind (gtp-local-fd gtp-local-rg gtp-miss-fd gtp-miss-rg gtp-n)
+      (run-tool-manager-get-tool-path)
+    (destructuring-bind (et-local-fd et-offline-miss et-n)
+        (run-tool-manager-ensure-tool)
+      (destructuring-bind (cq-removed cq-noop cq-n)
+          (run-tool-manager-cleanup-quarantine)
+        (json-object
+         "observed"
+         (json-object
+          "gtp_local_fd" gtp-local-fd
+          "gtp_local_rg" gtp-local-rg
+          "gtp_miss_fd" gtp-miss-fd
+          "gtp_miss_rg" gtp-miss-rg
+          "gtp_n" gtp-n
+          "et_local_fd" et-local-fd
+          "et_offline_miss" et-offline-miss
+          "et_n" et-n
+          "cq_removed" cq-removed
+          "cq_noop" cq-noop
+          "cq_n" cq-n)
+         "get_tool_path"
+         (collect "tool_manager.get_tool_path"
+                  (lambda ()
+                    (lambda ()
+                      (run-tool-manager-get-tool-path))))
+         "ensure_tool"
+         (collect "tool_manager.ensure_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-tool-manager-ensure-tool))))
+         "cleanup_quarantine"
+         (collect "tool_manager.cleanup_quarantine"
+                  (lambda ()
+                    (lambda ()
+                      (run-tool-manager-cleanup-quarantine)))))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -14989,6 +15133,12 @@
       "src/cadr-cli/tools/find.lisp find-files"
       "find_tool.make_tool"
       "src/cadr-cli/tools/find.lisp make-find-tool"
+      "tool_manager.get_tool_path"
+      "src/cadr-cli/tool-manager.lisp get-tool-path"
+      "tool_manager.ensure_tool"
+      "src/cadr-cli/tool-manager.lisp ensure-tool"
+      "tool_manager.cleanup_quarantine"
+      "src/cadr-cli/tool-manager.lisp cleanup-windows-self-update-quarantine"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -15580,7 +15730,8 @@
               (let ((file-mutation-queue (measure-file-mutation-queue))
                     (harness-events nil)
                     (bash-tool nil)
-                    (find-tool nil))
+                    (find-tool nil)
+                    (tool-manager nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
@@ -15589,6 +15740,8 @@
               (let ((output-accumulator (measure-output-accumulator)))
               (format *error-output* "goal20 cadr paired paths: find_tool~%")
               (setf find-tool (measure-find-tool))
+              (format *error-output* "goal20 cadr paired paths: tool_manager~%")
+              (setf tool-manager (measure-tool-manager))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -15726,6 +15879,7 @@
               "bash_tool" bash-tool
               "output_accumulator" output-accumulator
               "find_tool" find-tool
+              "tool_manager" tool-manager
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html

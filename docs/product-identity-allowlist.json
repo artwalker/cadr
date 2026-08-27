@@ -4678,6 +4678,14 @@
       "path": "scripts/goal20-paired-paths.mjs",
       "kind": "pi-token",
       "token": "pi",
+      "line": "process.stderr.write(\"goal20 pi paired paths: tool_manager\\n\");",
+      "occurrences": 1,
+      "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."
+    },
+    {
+      "path": "scripts/goal20-paired-paths.mjs",
+      "kind": "pi-token",
+      "token": "pi",
       "line": "process.stderr.write(\"goal20 pi paired paths: tool_read\\n\");",
       "occurrences": 1,
       "reason": "Goal 20 paired-path harness names the baseline product in assertion prose; shipped runtime identity remains cadr-only."

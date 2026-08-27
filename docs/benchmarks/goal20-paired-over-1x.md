@@ -226,5 +226,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `find_tool.pattern_match` | 30.5 | 4.26 | 7.16× | 8.00× | measure-only pair 289; `find-pattern-match-p` basename vs path glob | invent pause；地板优化另刀 |
 | `find_tool.find_files` | 633.4 | 184.1 | 3.44× | 8.00× | measure-only pair 290; `find-files` empty copy + fixture counts | invent pause；地板优化另刀 |
 | `find_tool.make_tool` | 131.9 | 93.3 | 1.41× | 8.00× | measure-only pair 291; `make-find-tool` vs `createFindToolDefinition` | invent pause；地板优化另刀 |
+| `tool_manager.cleanup_quarantine` | 120.1 | 88.0 | 1.37× | 8.00× | measure-only pair 294; `cleanup-windows-self-update-quarantine` (not download/ensure) | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

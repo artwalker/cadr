@@ -106,6 +106,7 @@ METRICS = {
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
+    "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -303,6 +304,11 @@ RATIO_CEILINGS = {
     "find_tool.pattern_match": 8.0,
     "find_tool.find_files": 8.0,
     "find_tool.make_tool": 8.0,
+    # tool_manager.get_tool_path/ensure_tool/cleanup_quarantine pair
+    # (samples=5): first-freeze headroom. Ratchet down only.
+    "tool_manager.get_tool_path": 8.0,
+    "tool_manager.ensure_tool": 8.0,
+    "tool_manager.cleanup_quarantine": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1575,6 +1581,19 @@ OBSERVED_EXACT = {
         "fmt_desc",
         "fmt_req",
         "fmt_n",
+    ),
+    "tool_manager": (
+        "gtp_local_fd",
+        "gtp_local_rg",
+        "gtp_miss_fd",
+        "gtp_miss_rg",
+        "gtp_n",
+        "et_local_fd",
+        "et_offline_miss",
+        "et_n",
+        "cq_removed",
+        "cq_noop",
+        "cq_n",
     ),
     "settings_load": (
         "tr_empty",

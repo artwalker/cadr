@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "paused": false,
- "nextPairNum": 292,
+ "nextPairNum": 301,
  "lanes": {
   "a": {
    "role": "pairing",
@@ -135,7 +135,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 261,
@@ -181,7 +181,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 266,
@@ -201,7 +201,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 268,
@@ -211,7 +211,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 269,
@@ -221,7 +221,7 @@
    "measure": "measure-resource-loader",
    "metric": null,
    "branch": null,
-    "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 270,
@@ -435,6 +435,33 @@
    "measure": "measure-find-tool",
    "metric": "find_tool.make_tool",
    "branch": "cursor/pair-289-291-find-leftovers-c98c"
+  },
+  {
+   "pair": 292,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/tool-manager.lisp",
+   "measure": "measure-tool-manager",
+   "metric": "tool_manager.get_tool_path",
+   "branch": "cursor/pair-292-294-tool-manager-af5e"
+  },
+  {
+   "pair": 293,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/tool-manager.lisp",
+   "measure": "measure-tool-manager",
+   "metric": "tool_manager.ensure_tool",
+   "branch": "cursor/pair-292-294-tool-manager-af5e"
+  },
+  {
+   "pair": 294,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/tool-manager.lisp",
+   "measure": "measure-tool-manager",
+   "metric": "tool_manager.cleanup_quarantine",
+   "branch": "cursor/pair-292-294-tool-manager-af5e"
   }
  ],
  "mergeQueue": []
