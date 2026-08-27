@@ -165,6 +165,9 @@ const REPETITIONS = {
 	"harness_events.on": 50,
 	"harness_events.watch": 50,
 	"harness_events.make_start": 50,
+	"harness_events.make_end": 50,
+	"harness_events.event_type": 50,
+	"harness_events.make_bus": 50,
 	"find_tool.pattern_match": 50,
 	"find_tool.find_files": 50,
 	"find_tool.make_tool": 50,
@@ -2775,6 +2778,63 @@ function runHarnessEventsMakeStart() {
 	};
 }
 
+function runHarnessEventsMakeEnd() {
+	const event = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	const aborted = {
+		type: "run_end",
+		lane: "side",
+		runId: "run-2",
+		outcome: "aborted",
+		leafId: null,
+	};
+	return {
+		hee_type: event.type === "run_end" ? 1 : 0,
+		hee_lane: event.lane === "main" ? 1 : 0,
+		hee_run: event.runId === "run-1" ? 1 : 0,
+		hee_outcome: event.outcome === "completed" ? 1 : 0,
+		hee_abort: aborted.outcome === "aborted" && aborted.leafId == null ? 1 : 0,
+	};
+}
+
+function runHarnessEventsEventType() {
+	const start = { type: "run_start", lane: "main", runId: "run-1" };
+	const end = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	const failed = {
+		type: "run_end",
+		lane: "side",
+		runId: "run-2",
+		outcome: "failed",
+		leafId: "leaf-2",
+	};
+	return {
+		het_start: start.type === "run_start" ? 1 : 0,
+		het_end: end.type === "run_end" ? 1 : 0,
+		het_fail: failed.type === "run_end" ? 1 : 0,
+	};
+}
+
+function runHarnessEventsMakeBus() {
+	const a = new harnessEventsModule.HarnessEventBus();
+	const b = new harnessEventsModule.HarnessEventBus();
+	return {
+		heb_distinct: a !== b ? 1 : 0,
+		heb_a: a instanceof harnessEventsModule.HarnessEventBus ? 1 : 0,
+		heb_b: b instanceof harnessEventsModule.HarnessEventBus ? 1 : 0,
+	};
+}
+
 const FIND_TOOL_CWD = "/tmp/goal20-find-tool-cwd";
 const GLOB_SPECIAL = new Set(".^$+()[]{}|\\".split(""));
 
@@ -2931,6 +2991,9 @@ async function measureHarnessEvents() {
 	const onObserved = runHarnessEventsOn();
 	const watchObserved = runHarnessEventsWatch();
 	const makeStartObserved = runHarnessEventsMakeStart();
+	const makeEndObserved = runHarnessEventsMakeEnd();
+	const eventTypeObserved = runHarnessEventsEventType();
+	const makeBusObserved = runHarnessEventsMakeBus();
 	return {
 		emit: await collect("harness_events.emit", () => {
 			return () => runHarnessEventsEmit();
@@ -2944,11 +3007,23 @@ async function measureHarnessEvents() {
 		make_start: await collect("harness_events.make_start", () => {
 			return () => runHarnessEventsMakeStart();
 		}),
+		make_end: await collect("harness_events.make_end", () => {
+			return () => runHarnessEventsMakeEnd();
+		}),
+		event_type: await collect("harness_events.event_type", () => {
+			return () => runHarnessEventsEventType();
+		}),
+		make_bus: await collect("harness_events.make_bus", () => {
+			return () => runHarnessEventsMakeBus();
+		}),
 		observed: {
 			...emitObserved,
 			...onObserved,
 			...watchObserved,
 			...makeStartObserved,
+			...makeEndObserved,
+			...eventTypeObserved,
+			...makeBusObserved,
 		},
 	};
 }
@@ -15775,6 +15850,12 @@ const result = {
 				"packages/agent/src/harness/events.ts HarnessEventBus.watch",
 			"harness_events.make_start":
 				"packages/agent/src/harness/events.ts RunStartEvent object",
+			"harness_events.make_end":
+				"packages/agent/src/harness/events.ts RunEndEvent object",
+			"harness_events.event_type":
+				"packages/agent/src/harness/events.ts event.type",
+			"harness_events.make_bus":
+				"packages/agent/src/harness/events.ts new HarnessEventBus()",
 			"find_tool.pattern_match":
 				"packages/coding-agent/src/core/tools/find.ts basename vs --full-path glob match (fd contract; cadr find-pattern-match-p)",
 			"find_tool.find_files":

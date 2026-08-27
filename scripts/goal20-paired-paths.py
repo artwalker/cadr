@@ -102,7 +102,7 @@ METRICS = {
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key"),
-    "harness_events": ("emit", "on", "watch", "make_start"),
+    "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
@@ -305,6 +305,11 @@ RATIO_CEILINGS = {
     # harness_events.make_start pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.make_start": 8.0,
+    # harness_events leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.make_end": 8.0,
+    "harness_events.event_type": 8.0,
+    "harness_events.make_bus": 8.0,
     # find_tool leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "find_tool.pattern_match": 8.0,
@@ -1557,6 +1562,17 @@ OBSERVED_EXACT = {
         "hes_type",
         "hes_lane",
         "hes_run",
+        "hee_type",
+        "hee_lane",
+        "hee_run",
+        "hee_outcome",
+        "hee_abort",
+        "het_start",
+        "het_end",
+        "het_fail",
+        "heb_distinct",
+        "heb_a",
+        "heb_b",
     ),
     "bash_tool": (
         "sef_exact",

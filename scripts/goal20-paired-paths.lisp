@@ -124,9 +124,9 @@
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
-;;;; 298. image_runtime image-output-modalities vs buildParams modalities
-;;;; 299. image_runtime openrouter-image-content vs buildParams content parts
-;;;; 300. image_runtime parse-data-image vs generateImages data-URL parse
+;;;; 313. harness_events make_end vs RunEndEvent object
+;;;; 314. harness_events event_type vs event.type
+;;;; 315. harness_events make_bus vs new HarnessEventBus()
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -290,6 +290,9 @@
     ("harness_events.on" . 50)
     ("harness_events.watch" . 50)
     ("harness_events.make_start" . 50)
+    ("harness_events.make_end" . 50)
+    ("harness_events.event_type" . 50)
+    ("harness_events.make_bus" . 50)
     ("find_tool.pattern_match" . 50)
     ("find_tool.find_files" . 50)
     ("find_tool.make_tool" . 50)
@@ -4395,6 +4398,48 @@
      (he-truth (equal (getf event :lane) "main"))
      (he-truth (equal (getf event :run-id) "run-1")))))
 
+(defun run-harness-events-make-end ()
+  ;; Baseline RunEndEvent object vs make-run-end-event; not emit, not
+  ;; on, not watch, not make_start.
+  (let ((event
+          (cadr-agent:make-run-end-event
+           "main" "run-1" :completed "entry-1"))
+        (aborted
+          (cadr-agent:make-run-end-event "side" "run-2" :aborted nil)))
+    (list
+     (he-truth (eq (cadr-agent:harness-event-type event) :run-end))
+     (he-truth (equal (getf event :lane) "main"))
+     (he-truth (equal (getf event :run-id) "run-1"))
+     (he-truth (eq (getf event :outcome) :completed))
+     (he-truth
+      (and (eq (getf aborted :outcome) :aborted)
+           (null (getf aborted :leaf-id)))))))
+
+(defun run-harness-events-event-type ()
+  ;; Baseline event.type field vs harness-event-type; not constructors
+  ;; as the timed owner, not emit/on/watch.
+  (let ((start (cadr-agent:make-run-start-event "main" "run-1"))
+        (end
+          (cadr-agent:make-run-end-event
+           "main" "run-1" :completed "entry-1"))
+        (failed
+          (cadr-agent:make-run-end-event
+           "side" "run-2" :failed "leaf-2")))
+    (list
+     (he-truth (eq (cadr-agent:harness-event-type start) :run-start))
+     (he-truth (eq (cadr-agent:harness-event-type end) :run-end))
+     (he-truth (eq (cadr-agent:harness-event-type failed) :run-end)))))
+
+(defun run-harness-events-make-bus ()
+  ;; Baseline `new HarnessEventBus()` vs make-harness-event-bus; not
+  ;; on/watch/emit delivery.
+  (let ((a (cadr-agent:make-harness-event-bus))
+        (b (cadr-agent:make-harness-event-bus)))
+    (list
+     (he-truth (not (eq a b)))
+     (he-truth (typep a 'cadr-agent::harness-event-bus))
+     (he-truth (typep b 'cadr-agent::harness-event-bus)))))
+
 (defun measure-harness-events ()
   (destructuring-bind (he-direct he-watch he-start he-end he-second)
       (run-harness-events-emit)
@@ -4404,6 +4449,12 @@
           (run-harness-events-watch)
         (destructuring-bind (hes-type hes-lane hes-run)
             (run-harness-events-make-start)
+          (destructuring-bind (hee-type hee-lane hee-run hee-outcome hee-abort)
+              (run-harness-events-make-end)
+            (destructuring-bind (het-start het-end het-fail)
+                (run-harness-events-event-type)
+              (destructuring-bind (heb-distinct heb-a heb-b)
+                  (run-harness-events-make-bus)
           (json-object
            "observed"
            (json-object
@@ -4421,7 +4472,18 @@
             "hew_end" hew-end
             "hes_type" hes-type
             "hes_lane" hes-lane
-            "hes_run" hes-run)
+            "hes_run" hes-run
+            "hee_type" hee-type
+            "hee_lane" hee-lane
+            "hee_run" hee-run
+            "hee_outcome" hee-outcome
+            "hee_abort" hee-abort
+            "het_start" het-start
+            "het_end" het-end
+            "het_fail" het-fail
+            "heb_distinct" heb-distinct
+            "heb_a" heb-a
+            "heb_b" heb-b)
            "emit"
            (collect "harness_events.emit"
                     (lambda ()
@@ -4441,7 +4503,22 @@
            (collect "harness_events.make_start"
                     (lambda ()
                       (lambda ()
-                        (run-harness-events-make-start))))))))))
+                        (run-harness-events-make-start))))
+           "make_end"
+           (collect "harness_events.make_end"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-make-end))))
+           "event_type"
+           (collect "harness_events.event_type"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-event-type))))
+           "make_bus"
+           (collect "harness_events.make_bus"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-make-bus)))))))))))))
 
 (defun bash-tool-truth (value)
   (if value 1 0))
@@ -15313,6 +15390,12 @@
       "src/cadr-agent/harness-events.lisp harness-event-bus-watch"
       "harness_events.make_start"
       "src/cadr-agent/harness-events.lisp make-run-start-event"
+      "harness_events.make_end"
+      "src/cadr-agent/harness-events.lisp make-run-end-event"
+      "harness_events.event_type"
+      "src/cadr-agent/harness-events.lisp harness-event-type"
+      "harness_events.make_bus"
+      "src/cadr-agent/harness-events.lisp make-harness-event-bus"
       "find_tool.pattern_match"
       "src/cadr-cli/tools/find.lisp find-pattern-match-p"
       "find_tool.find_files"
