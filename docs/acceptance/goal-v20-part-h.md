@@ -4370,14 +4370,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 175 | 77,314 | 60.0% | `no worse than baseline` is falsifiable |
+| `paired` | 180 | 77,960 | 60.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 70 | 26,683 | 20.7% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 65 | 26,037 | 20.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 60.0% of lines (175 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.8% of lines.
+- **Falsifiable vs baseline:** 60.5% of lines (180 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 66.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -4543,6 +4543,9 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
+| `src/cadr-core/cancellation.lisp` | 70 | `core_rest.cancellation_wait` |
+| `src/cadr-core/redacted-print.lisp` | 44 | `core_rest.redacted_types` |
+| `src/cadr-core/threads.lisp` | 47 | `core_rest.threads_join` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
 | `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize`, `evals_harness.format` |
@@ -4645,7 +4648,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
-| `core_rest` | 3 | 161 |
 | `cli_support` | 5 | 123 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |

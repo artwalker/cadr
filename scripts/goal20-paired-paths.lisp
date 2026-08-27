@@ -57,6 +57,9 @@
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
+;;;; 337. core_rest wait-for-cancellation vs Atomics.wait timeout + aborted AbortSignal
+;;;; 338. core_rest redacted-object-types vs sorted copy of a redacted-type list
+;;;; 339. core_rest join-active-thread vs worker_threads message+exit
 ;;;;  45. cli_support normalize-path-input vs normalizePath
 ;;;;  46. ai_support context-overflow-p vs isContextOverflow
 ;;;;  47. ai_crypto hmac-sha256 vs node:crypto createHmac
@@ -580,6 +583,9 @@
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
+    ("core_rest.cancellation_wait" . 50)
+    ("core_rest.redacted_types" . 50)
+    ("core_rest.threads_join" . 5)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("session_pipeline.session_leaf_id" . 50)
@@ -15997,6 +16003,86 @@
                 (lambda ()
                   (run-http-transport-parse-url)))))))
 
+(defun run-core-rest-cancellation-wait ()
+  ;; Leftover sibling of Pair 322 abort-cancellation: wait-for-cancellation
+  ;; timeout / predicate-aborted / already-aborted. Not abort as the timed
+  ;; owner.
+  (let* ((timeout-state (cadr-core:make-cancellation-state))
+         (timeout
+           (cadr-core:wait-for-cancellation timeout-state :timeout 0.0d0))
+         (pred-state
+           (cadr-core:make-cancellation-state
+            :aborted-function (lambda () t)))
+         (pred
+           (cadr-core:wait-for-cancellation pred-state :timeout 0.1d0))
+         (abort-state (cadr-core:make-cancellation-state)))
+    (cadr-core:abort-cancellation abort-state)
+    (let ((aborted
+            (cadr-core:wait-for-cancellation abort-state :timeout 0.1d0)))
+      (list
+       (if (eq timeout :timeout) 1 0)
+       (if (eq pred :aborted) 1 0)
+       (if (eq aborted :aborted) 1 0)))))
+
+(defun run-core-rest-redacted-types ()
+  ;; Leftover sibling of Pair 323 redact-secrets: redacted-object-types
+  ;; copy+sort. Not replace-all / redact-secrets.
+  (let ((types (cadr-core:redacted-object-types)))
+    (list
+     (if (listp types) 1 0)
+     (if (every #'symbolp types) 1 0)
+     (if (equal types
+                (sort (copy-list types) #'string< :key #'symbol-name))
+         1
+         0))))
+
+(defun run-core-rest-threads-join ()
+  ;; Leftover sibling of Pair 324 stop-thread-for-cleanup: required
+  ;; result join with a non-empty reason. Not cleanup/terminate.
+  (let* ((reason "goal20-core-rest-join")
+         (worker
+           (sb-thread:make-thread
+            (lambda () 42)
+            :name "cadr-core-rest-join-active"))
+         (value
+           (cadr-core:join-active-thread worker :reason reason)))
+    (list
+     (if (eql value 42) 1 0)
+     (if (sb-thread:thread-alive-p worker) 0 1)
+     (length reason))))
+
+(defun measure-core-rest ()
+  (let ((wait (run-core-rest-cancellation-wait))
+        (types (run-core-rest-redacted-types))
+        (join (run-core-rest-threads-join)))
+    (json-object
+     "observed"
+     (json-object
+      "cw_timeout" (first wait)
+      "cw_pred" (second wait)
+      "cw_abort" (third wait)
+      "rt_list" (first types)
+      "rt_syms" (second types)
+      "rt_sorted" (third types)
+      "tj_value" (first join)
+      "tj_done" (second join)
+      "tj_reason" (third join))
+     "cancellation_wait"
+     (collect "core_rest.cancellation_wait"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-cancellation-wait))))
+     "redacted_types"
+     (collect "core_rest.redacted_types"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-redacted-types))))
+     "threads_join"
+     (collect "core_rest.threads_join"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-threads-join)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -16655,6 +16741,12 @@
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
       "src/cadr-ai/transport/http.lisp parse-http-url"
+      "core_rest.cancellation_wait"
+      "src/cadr-core/cancellation.lisp wait-for-cancellation"
+      "core_rest.redacted_types"
+      "src/cadr-core/redacted-print.lisp redacted-object-types"
+      "core_rest.threads_join"
+      "src/cadr-core/threads.lisp join-active-thread"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -16878,6 +16970,8 @@
               (let ((faux (measure-ai-runtime-faux-blocks)))
               (format *error-output* "goal20 cadr paired paths: http_transport~%")
               (let ((http-transport (measure-http-transport-parse-url)))
+              (format *error-output* "goal20 cadr paired paths: core_rest~%")
+              (let ((core-rest (measure-core-rest)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
               (format *error-output* "goal20 cadr paired paths: websocket_stream~%")
@@ -16971,6 +17065,7 @@
               "cli_bootstrap_sessions" bootstrap
               "ai_runtime_faux" faux
               "http_transport" http-transport
+              "core_rest" core-rest
               "render_slicing" slicing
               "websocket_stream" websocket)
              "parameters"
@@ -16988,7 +17083,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

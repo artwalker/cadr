@@ -437,6 +437,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
+	"core_rest.cancellation_wait": 50,
+	"core_rest.redacted_types": 50,
+	"core_rest.threads_join": 5,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"session_pipeline.session_leaf_id": 50,
@@ -16149,6 +16152,82 @@ async function measureHttpTransportParseUrl() {
 	};
 }
 
+function runCoreRestCancellationWait() {
+	const sab = new SharedArrayBuffer(4);
+	const view = new Int32Array(sab);
+	const timeout = Atomics.wait(view, 0, 0, 0);
+	const pred = new AbortController();
+	pred.abort();
+	const abortCtl = new AbortController();
+	abortCtl.abort();
+	return {
+		cw_timeout: timeout === "timed-out" ? 1 : 0,
+		cw_pred: pred.signal.aborted ? 1 : 0,
+		cw_abort: abortCtl.signal.aborted ? 1 : 0,
+	};
+}
+
+function runCoreRestRedactedTypes() {
+	const types = ["Agent", "SessionManager", "AbortController"].sort();
+	const sorted = [...types].sort();
+	return {
+		rt_list: Array.isArray(types) ? 1 : 0,
+		rt_syms: types.every((item) => typeof item === "string") ? 1 : 0,
+		rt_sorted: types.join("\0") === sorted.join("\0") ? 1 : 0,
+	};
+}
+
+async function runCoreRestThreadsJoin() {
+	const { Worker } = await import("node:worker_threads");
+	const reason = "goal20-core-rest-join";
+	return await new Promise((resolve) => {
+		const worker = new Worker(
+			"const { parentPort } = require('node:worker_threads'); parentPort.postMessage(42);",
+			{ eval: true },
+		);
+		let value = null;
+		worker.on("message", (msg) => {
+			value = msg;
+		});
+		worker.on("exit", () => {
+			resolve({
+				tj_value: value === 42 ? 1 : 0,
+				tj_done: 1,
+				tj_reason: reason.length,
+			});
+		});
+		worker.on("error", () => {
+			resolve({
+				tj_value: 0,
+				tj_done: 0,
+				tj_reason: reason.length,
+			});
+		});
+	});
+}
+
+async function measureCoreRest() {
+	const wait = runCoreRestCancellationWait();
+	const types = runCoreRestRedactedTypes();
+	const join = await runCoreRestThreadsJoin();
+	return {
+		cancellation_wait: await collect("core_rest.cancellation_wait", () => {
+			return () => runCoreRestCancellationWait();
+		}),
+		redacted_types: await collect("core_rest.redacted_types", () => {
+			return () => runCoreRestRedactedTypes();
+		}),
+		threads_join: await collect("core_rest.threads_join", () => {
+			return () => runCoreRestThreadsJoin();
+		}),
+		observed: {
+			...wait,
+			...types,
+			...join,
+		},
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -16453,6 +16532,8 @@ process.stderr.write("goal20 pi paired paths: ai_runtime_faux\n");
 const aiRuntimeFaux = await measureAiRuntimeFauxBlocks();
 process.stderr.write("goal20 pi paired paths: http_transport\n");
 const httpTransport = await measureHttpTransportParseUrl();
+process.stderr.write("goal20 pi paired paths: core_rest\n");
+const coreRest = await measureCoreRest();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 process.stderr.write("goal20 pi paired paths: websocket_stream\n");
@@ -17045,6 +17126,12 @@ const result = {
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
 				"WHATWG URL (https://example.com/foo + http://localhost:8080/bar)",
+			"core_rest.cancellation_wait":
+				"Atomics.wait timeout 0 + aborted AbortSignal (wait-for-cancellation counterpart)",
+			"core_rest.redacted_types":
+				"sorted copy of a redacted-type list (redacted-object-types counterpart; baseline has no type registry)",
+			"core_rest.threads_join":
+				"worker_threads Worker postMessage+exit (join-active-thread counterpart)",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -17179,6 +17266,7 @@ const result = {
 		cli_bootstrap_sessions: cliBootstrap,
 		ai_runtime_faux: aiRuntimeFaux,
 		http_transport: httpTransport,
+		core_rest: coreRest,
 		render_slicing: renderSlicing,
 		websocket_stream: websocketStream,
 	},

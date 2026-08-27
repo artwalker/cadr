@@ -143,6 +143,9 @@
   "cli_bootstrap_sessions.bootstrap_auth",
   "ai_runtime_faux.blocks",
   "http_transport.parse_url",
+  "core_rest.cancellation_wait",
+  "core_rest.redacted_types",
+  "core_rest.threads_join",
   "cli_settings.create",
   "cli_settings.reload",
   "cli_settings.enabled_models",
@@ -1756,8 +1759,10 @@
   },
   {
    "prefix": "src/cadr-core/cancellation.lisp",
-   "class": "needs-pair",
-   "hole": "core_rest"
+   "class": "paired",
+   "metrics": [
+    "core_rest.cancellation_wait"
+   ]
   },
   {
    "prefix": "src/cadr-core/package.lisp",
@@ -1776,13 +1781,17 @@
   },
   {
    "prefix": "src/cadr-core/redacted-print.lisp",
-   "class": "needs-pair",
-   "hole": "core_rest"
+   "class": "paired",
+   "metrics": [
+    "core_rest.redacted_types"
+   ]
   },
   {
    "prefix": "src/cadr-core/threads.lisp",
-   "class": "needs-pair",
-   "hole": "core_rest"
+   "class": "paired",
+   "metrics": [
+    "core_rest.threads_join"
+   ]
   },
   {
    "prefix": "src/cadr-core/time.lisp",

@@ -171,6 +171,7 @@ METRICS = {
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
+    "core_rest": ("cancellation_wait", "redacted_types", "threads_join"),
     "session_pipeline": ("session_load", "context_walk", "session_leaf_id"),
     "storage_journal": ("journal_read", "journal_append", "journal_entry_count"),
     "sqlite_session": ("open_walk",),
@@ -1273,6 +1274,11 @@ RATIO_CEILINGS = {
     # (1.16 / 1.17 us). 8.0 is first-freeze headroom
     # (variance). Ratchet down only.
     "http_transport.parse_url": 8.0,
+    # core_rest leftover trio on cancellation/redacted/threads (samples=5):
+    # first-freeze headroom. Ratchet down only.
+    "core_rest.cancellation_wait": 8.0,
+    "core_rest.redacted_types": 8.0,
+    "core_rest.threads_join": 8.0,
     "session_pipeline.session_load": 9.0,
     "session_pipeline.context_walk": 2.0,
     # Frozen from the first Friend-MachineD non-quick
@@ -3007,6 +3013,17 @@ OBSERVED_EXACT = {
         "http_host",
         "http_port",
         "http_path",
+    ),
+    "core_rest": (
+        "cw_timeout",
+        "cw_pred",
+        "cw_abort",
+        "rt_list",
+        "rt_syms",
+        "rt_sorted",
+        "tj_value",
+        "tj_done",
+        "tj_reason",
     ),
     "resource_loader": (
         "skill_count",
