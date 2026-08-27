@@ -9,6 +9,11 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.lock` (`file-mutation-queue-lock` on
+  `src/cadr-agent/file-mutation-queue.lisp` vs baseline `fileMutationQueues`
+  get-or-create after the same key encoding). Observed `fmql_alias` /
+  `fmql_other` / `fmql_missing` / `fmql_repeat` / `fmql_n` exact.
+  Measure-only; freeze ratio in the follow-up record commit.
 - Goal 20 P.13: pair `file_mutation_queue.queue_key` (`file-mutation-queue-key` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue-map key / `realpath`).
   Observed `fmqk_alias` / `fmqk_missing` / `fmqk_other` / `fmqk_n` exact.
