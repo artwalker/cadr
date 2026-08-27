@@ -74,7 +74,7 @@ Goal 18 Part L 把基线从 `v0.83.0` 推到 `v0.84.1`；此后 cadr 已落在 *
    ```bash
    python3 scripts/baseline-anchor.py check
    ./scripts/verify.sh
-   ./test-cl.sh
+   ./scripts/test-cl.sh
    ```
 9. **Goal 20 恢复：** 对受基线影响的 metric **重跑** `--only-enforce` 或子集 freeze；`goal20-unpaired-paths.py --check` 保持绿。
 
@@ -83,7 +83,7 @@ Goal 18 Part L 把基线从 `v0.83.0` 推到 `v0.84.1`；此后 cadr 已落在 *
 - [ ] `BASELINE` 第三列为 `0`，release 为 `v0.84.3`，commit 为 `4e58f324f…`
 - [ ] `python3 scripts/baseline-anchor.py check` 绿
 - [ ] `enumerate-baseline-diff` 各类 delta 均有 disposition（无 hand-wavy「同上」）
-- [ ] `./scripts/verify.sh` + `./test-cl.sh` 绿
+- [ ] `./scripts/verify.sh` + `./scripts/test-cl.sh` 绿
 - [ ] `CHANGELOG.md` 记录：`cadr x.y.z · aligned with pi v0.84.3 (+0, 4e58f324f)`
 - [ ] Goal 20 executor brief 中「G21 前置」勾选完成，队列为 **0843 基线** 上继续
 

@@ -1,6 +1,12 @@
 # Goal 21 开发执行 brief（顾问维护）
 
-**平台哲学：** [`team-dev-platform.md`](team-dev-platform.md) · `scripts/cadr-team.sh status`
+> **Process (live):** [`team-dev-platform.md`](team-dev-platform.md) — three
+> Grok Bot agents (总控 / 实现 / 审) plus a Cursor cloud agent on GitHub
+> `artwalker/cadr`. The `scripts/cadr-team.sh` / tmux / worktree /
+> `cursor-agent --resume` crew below is **retired** (scripts kept). This file
+> is a Goal 21 execution record, not the current development process.
+
+**平台哲学（现行）：** [`team-dev-platform.md`](team-dev-platform.md)
 
 **读者：** 开发 Cursor 实例。**规格：** [`goal21-pi-0843-alignment.md`](goal21-pi-0843-alignment.md)。
 
