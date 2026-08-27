@@ -208,6 +208,9 @@
 ;;;; 310. oauth_pkce_device percent-decode vs URLSearchParams percent-decode
 ;;;; 311. oauth_pkce_device parse-query vs URLSearchParams
 ;;;; 312. oauth_pkce_device parse-oauth-authorization-input vs parseAuthorizationInput
+;;;; 334. oauth_pkce_device oauth-callback-provider-key vs Anthropic/Radius display-name map
+;;;; 335. oauth_pkce_device oauth-http-status-text vs node:http STATUS_CODES
+;;;; 336. oauth_pkce_device parse-oauth-callback-request vs openai-codex startLocalOAuthServer handler
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -354,6 +357,9 @@
     ("oauth_pkce_device.percent_decode" . 50)
     ("oauth_pkce_device.parse_query" . 50)
     ("oauth_pkce_device.parse_authorization_input" . 50)
+    ("oauth_pkce_device.provider_key" . 50)
+    ("oauth_pkce_device.http_status_text" . 50)
+    ("oauth_pkce_device.parse_callback_request" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -6241,6 +6247,72 @@
    (oauth-authorization-input-flag " code-d " "code-d" nil)
    4))
 
+(defun oauth-provider-key-flag (provider-name expected)
+  (handler-case
+      (if (eq (cadr-ai::oauth-callback-provider-key provider-name)
+              expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-provider-key ()
+  ;; Display-name map used by parse-oauth-callback-request and page.lisp.
+  ;; Do not exact unknown-provider error copy.
+  (list
+   (oauth-provider-key-flag "Anthropic" :anthropic)
+   (oauth-provider-key-flag "Radius" :radius)
+   (oauth-provider-key-flag "OpenAI" nil)
+   3))
+
+(defun oauth-http-status-text-flag (status expected)
+  (handler-case
+      (if (string= (cadr-ai::oauth-http-status-text status) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-http-status-text ()
+  ;; Recorded phrases only. Do not exact the otherwise "Error" branch
+  ;; (Node STATUS_CODES is undefined).
+  (list
+   (oauth-http-status-text-flag 200 "OK")
+   (oauth-http-status-text-flag 400 "Bad Request")
+   (oauth-http-status-text-flag 404 "Not Found")
+   (oauth-http-status-text-flag 500 "Internal Server Error")
+   4))
+
+(defun oauth-callback-request-status-flag
+    (request-line path state provider-name expected-status)
+  (handler-case
+      (multiple-value-bind (code status)
+          (cadr-ai:parse-oauth-callback-request
+           request-line path state
+           :provider-name provider-name)
+        (declare (ignore code))
+        (if (= status expected-status)
+            1
+            0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-parse-callback-request ()
+  ;; OpenAI loopback handler cases only (pathname / state / code).
+  ;; Do not exact Anthropic/Radius error copy, invalid percent (Lisp 500
+  ;; vs URLSearchParams lenient), or HTML body.
+  (list
+   (oauth-callback-request-status-flag
+    "GET /auth/callback?code=abc&state=expected HTTP/1.1"
+    "/auth/callback" "expected" "OpenAI" 200)
+   (oauth-callback-request-status-flag
+    "GET /auth/callback?code=abc&state=wrong HTTP/1.1"
+    "/auth/callback" "expected" "OpenAI" 400)
+   (oauth-callback-request-status-flag
+    "GET /wrong?code=abc&state=expected HTTP/1.1"
+    "/auth/callback" "expected" "OpenAI" 404)
+   (oauth-callback-request-status-flag
+    "GET /auth/callback?state=expected HTTP/1.1"
+    "/auth/callback" "expected" "OpenAI" 400)
+   4))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -6250,7 +6322,10 @@
         (copilot-auth (run-oauth-pkce-device-copilot-auth))
         (percent (run-oauth-pkce-device-percent-decode))
         (query (run-oauth-pkce-device-parse-query))
-        (auth-input (run-oauth-pkce-device-parse-authorization-input)))
+        (auth-input (run-oauth-pkce-device-parse-authorization-input))
+        (provider-key (run-oauth-pkce-device-provider-key))
+        (status-text (run-oauth-pkce-device-http-status-text))
+        (callback-request (run-oauth-pkce-device-parse-callback-request)))
     (json-object
      "observed"
      (json-object
@@ -6293,7 +6368,21 @@
       "pai_hash" (nth 1 auth-input)
       "pai_qs" (nth 2 auth-input)
       "pai_plain" (nth 3 auth-input)
-      "pai_n" (nth 4 auth-input))
+      "pai_n" (nth 4 auth-input)
+      "pk_anth" (nth 0 provider-key)
+      "pk_rad" (nth 1 provider-key)
+      "pk_other" (nth 2 provider-key)
+      "pk_n" (nth 3 provider-key)
+      "st_ok" (nth 0 status-text)
+      "st_bad" (nth 1 status-text)
+      "st_miss" (nth 2 status-text)
+      "st_err" (nth 3 status-text)
+      "st_n" (nth 4 status-text)
+      "pcr_ok" (nth 0 callback-request)
+      "pcr_state" (nth 1 callback-request)
+      "pcr_path" (nth 2 callback-request)
+      "pcr_code" (nth 3 callback-request)
+      "pcr_n" (nth 4 callback-request))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -6338,7 +6427,22 @@
      (collect "oauth_pkce_device.parse_authorization_input"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-authorization-input)))))))
+                  (run-oauth-pkce-device-parse-authorization-input))))
+     "provider_key"
+     (collect "oauth_pkce_device.provider_key"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-provider-key))))
+     "http_status_text"
+     (collect "oauth_pkce_device.http_status_text"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-http-status-text))))
+     "parse_callback_request"
+     (collect "oauth_pkce_device.parse_callback_request"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-parse-callback-request)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -16053,6 +16157,12 @@
       "src/cadr-ai/oauth/callback.lisp parse-query"
       "oauth_pkce_device.parse_authorization_input"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-authorization-input"
+      "oauth_pkce_device.provider_key"
+      "src/cadr-ai/oauth/callback.lisp oauth-callback-provider-key"
+      "oauth_pkce_device.http_status_text"
+      "src/cadr-ai/oauth/callback.lisp oauth-http-status-text"
+      "oauth_pkce_device.parse_callback_request"
+      "src/cadr-ai/oauth/callback.lisp parse-oauth-callback-request"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

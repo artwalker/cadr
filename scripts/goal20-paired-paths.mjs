@@ -34,6 +34,7 @@
 
 import { execFileSync } from "node:child_process";
 import { createHash, createHmac } from "node:crypto";
+import { STATUS_CODES } from "node:http";
 import {
 	copyFileSync,
 	mkdirSync,
@@ -214,6 +215,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.percent_decode": 50,
 	"oauth_pkce_device.parse_query": 50,
 	"oauth_pkce_device.parse_authorization_input": 50,
+	"oauth_pkce_device.provider_key": 50,
+	"oauth_pkce_device.http_status_text": 50,
+	"oauth_pkce_device.parse_callback_request": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -5677,6 +5681,114 @@ function runOauthPkceDeviceParseAuthorizationInput() {
 	};
 }
 
+function oauthCallbackProviderKey(name) {
+	const lowered = String(name).toLowerCase();
+	if (lowered === "anthropic") return "anthropic";
+	if (lowered === "radius") return "radius";
+	return null;
+}
+
+function oauthProviderKeyFlag(name, expected) {
+	try {
+		return oauthCallbackProviderKey(name) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceProviderKey() {
+	return {
+		pk_anth: oauthProviderKeyFlag("Anthropic", "anthropic"),
+		pk_rad: oauthProviderKeyFlag("Radius", "radius"),
+		pk_other: oauthProviderKeyFlag("OpenAI", null),
+		pk_n: 3,
+	};
+}
+
+function oauthHttpStatusText(status) {
+	return STATUS_CODES[status] || "Error";
+}
+
+function oauthHttpStatusTextFlag(status, expected) {
+	try {
+		return oauthHttpStatusText(status) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceHttpStatusText() {
+	return {
+		st_ok: oauthHttpStatusTextFlag(200, "OK"),
+		st_bad: oauthHttpStatusTextFlag(400, "Bad Request"),
+		st_miss: oauthHttpStatusTextFlag(404, "Not Found"),
+		st_err: oauthHttpStatusTextFlag(500, "Internal Server Error"),
+		st_n: 4,
+	};
+}
+
+// Baseline openai-codex.ts startLocalOAuthServer request handler is unexported;
+// keep the production pathname/state/code checks so the timed work matches.
+function parseOauthCallbackRequest(requestLine, expectedPath, expectedState) {
+	try {
+		const target = String(requestLine).split(" ")[1] || "";
+		const url = new URL(target, "http://localhost");
+		if (url.pathname !== expectedPath) return 404;
+		if (url.searchParams.get("state") !== expectedState) return 400;
+		const code = url.searchParams.get("code");
+		if (!code) return 400;
+		return 200;
+	} catch {
+		return 500;
+	}
+}
+
+function parseOauthCallbackRequestFlag(
+	requestLine,
+	expectedPath,
+	expectedState,
+	expectedStatus,
+) {
+	try {
+		return parseOauthCallbackRequest(requestLine, expectedPath, expectedState) ===
+			expectedStatus
+			? 1
+			: 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceParseCallbackRequest() {
+	return {
+		pcr_ok: parseOauthCallbackRequestFlag(
+			"GET /auth/callback?code=abc&state=expected HTTP/1.1",
+			"/auth/callback",
+			"expected",
+			200,
+		),
+		pcr_state: parseOauthCallbackRequestFlag(
+			"GET /auth/callback?code=abc&state=wrong HTTP/1.1",
+			"/auth/callback",
+			"expected",
+			400,
+		),
+		pcr_path: parseOauthCallbackRequestFlag(
+			"GET /wrong?code=abc&state=expected HTTP/1.1",
+			"/auth/callback",
+			"expected",
+			404,
+		),
+		pcr_code: parseOauthCallbackRequestFlag(
+			"GET /auth/callback?state=expected HTTP/1.1",
+			"/auth/callback",
+			"expected",
+			400,
+		),
+		pcr_n: 4,
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -5687,6 +5799,9 @@ async function measureOauthPkceDevice() {
 	const percent = runOauthPkceDevicePercentDecode();
 	const query = runOauthPkceDeviceParseQuery();
 	const authInput = runOauthPkceDeviceParseAuthorizationInput();
+	const providerKey = runOauthPkceDeviceProviderKey();
+	const statusText = runOauthPkceDeviceHttpStatusText();
+	const callbackRequest = runOauthPkceDeviceParseCallbackRequest();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -5715,6 +5830,15 @@ async function measureOauthPkceDevice() {
 		parse_authorization_input: await collect("oauth_pkce_device.parse_authorization_input", () => {
 			return () => runOauthPkceDeviceParseAuthorizationInput();
 		}),
+		provider_key: await collect("oauth_pkce_device.provider_key", () => {
+			return () => runOauthPkceDeviceProviderKey();
+		}),
+		http_status_text: await collect("oauth_pkce_device.http_status_text", () => {
+			return () => runOauthPkceDeviceHttpStatusText();
+		}),
+		parse_callback_request: await collect("oauth_pkce_device.parse_callback_request", () => {
+			return () => runOauthPkceDeviceParseCallbackRequest();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -5725,6 +5849,9 @@ async function measureOauthPkceDevice() {
 			...percent,
 			...query,
 			...authInput,
+			...providerKey,
+			...statusText,
+			...callbackRequest,
 		},
 	};
 }
@@ -16451,6 +16578,12 @@ const result = {
 				"packages/ai/src/auth/oauth/openai-codex.ts URLSearchParams query parse (cadr parse-query)",
 			"oauth_pkce_device.parse_authorization_input":
 				"packages/ai/src/auth/oauth/openai-codex.ts parseAuthorizationInput",
+			"oauth_pkce_device.provider_key":
+				"packages/ai/src/auth/oauth/anthropic.ts + radius.ts display-name branches (cadr oauth-callback-provider-key)",
+			"oauth_pkce_device.http_status_text":
+				"node:http STATUS_CODES (cadr oauth-http-status-text)",
+			"oauth_pkce_device.parse_callback_request":
+				"packages/ai/src/auth/oauth/openai-codex.ts startLocalOAuthServer pathname/state/code (cadr parse-oauth-callback-request)",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":
