@@ -3541,7 +3541,9 @@ Timed work is `percent-decode` on valid encodings (plain / `+` as space /
 `parse-oauth-callback-request`. Do not exact truncated or invalid percent
 escapes (Lisp signals; `URLSearchParams` is lenient). Observed `pd_plain` /
 `pd_plus` / `pd_slash` / `pd_space` / `pd_utf8` / `pd_n` are exact. First
-n=5 freeze pending. Same commit no optimize.
+n=5 freeze **1.525×** (1.592 / 1.044 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 311 — `oauth_pkce_device` (parse_query)
 
@@ -3552,8 +3554,10 @@ n=5 freeze pending. Same commit no optimize.
 Leftover sibling of Pair 310 `percent_decode` on the same `oauth_pkce_device`
 hole. Timed work is query parse (`code`/`state`, `+` in a value, empty
 value) — not callback request-line routing. Observed `pq_code` / `pq_state` /
-`pq_plus` / `pq_empty` / `pq_n` are exact. First n=5 freeze pending. Same
-commit no optimize.
+`pq_plus` / `pq_empty` / `pq_n` are exact. First n=5 freeze **1.944×**
+(6.672 / 3.431 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 312 — `oauth_pkce_device` (parse_authorization_input)
 
@@ -3566,7 +3570,10 @@ the same `oauth_pkce_device` hole. Timed work is the four Goal 13 manual
 forms (callback URL, `code#state`, `code=` query, trimmed bare code) — not
 the loopback listener. Do not exact empty input (Lisp `""` / `NIL` vs pi
 `{}`). Observed `pai_url` / `pai_hash` / `pai_qs` / `pai_plain` / `pai_n`
-are exact. First n=5 freeze pending. Same commit no optimize.
+are exact. First n=5 freeze **0.535×** (6.292 / 11.750 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
+leads. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

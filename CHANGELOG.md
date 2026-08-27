@@ -12,17 +12,23 @@ tag/Release step.
 - Goal 20 P.13: pair `oauth_pkce_device.percent_decode` (`percent-decode` on
   `src/cadr-ai/oauth/callback.lisp` vs baseline URLSearchParams percent-decode
   in `packages/ai/src/auth/oauth/openai-codex.ts`). Observed `pd_plain` /
-  `pd_plus` / `pd_slash` / `pd_space` / `pd_utf8` / `pd_n` exact. Measure-only.
-  Freeze numbers pending. No `src/` perf.
+  `pd_plus` / `pd_slash` / `pd_space` / `pd_utf8` / `pd_n` exact. n=5
+  **1.525×** (1.592 / 1.044 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. No `src/` perf.
 - Goal 20 P.13: pair `oauth_pkce_device.parse_query` (`parse-query` on
   `src/cadr-ai/oauth/callback.lisp` vs baseline `URLSearchParams`). Observed
-  `pq_code` / `pq_state` / `pq_plus` / `pq_empty` / `pq_n` exact. Measure-only.
-  Freeze numbers pending. No `src/` perf.
+  `pq_code` / `pq_state` / `pq_plus` / `pq_empty` / `pq_n` exact. n=5
+  **1.944×** (6.672 / 3.431 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. No `src/` perf.
 - Goal 20 P.13: pair `oauth_pkce_device.parse_authorization_input`
   (`parse-oauth-authorization-input` on `src/cadr-ai/oauth/callback.lisp` vs
   baseline `parseAuthorizationInput`). Observed `pai_url` / `pai_hash` /
-  `pai_qs` / `pai_plain` / `pai_n` exact. Measure-only. Freeze numbers pending.
-  No `src/` perf.
+  `pai_qs` / `pai_plain` / `pai_n` exact. n=5 **0.535×** (6.292 / 11.750 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. No `src/`
+  perf.
 - Goal 20 P.13: pair `file_mutation_queue.call_with` (`call-with-file-mutation-queue` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue` as a
   function). Observed `fmqf_alias` / `fmqf_other` / `fmqf_fifo` / `fmqf_run` /
