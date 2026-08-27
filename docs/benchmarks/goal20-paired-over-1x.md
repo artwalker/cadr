@@ -238,5 +238,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `harness_events.make_bus` | 0.344 | 0.255 | 1.351× | 8.00× | measure-only pair 315; `make-harness-event-bus` vs `new HarnessEventBus()` (sub-µs variance) | invent pause；地板优化另刀 |
 | `write_tool.write_utf8` | 169.771 | 135.369 | 1.254× | 8.00× | measure-only pair 344; `write-utf8-file` vs `fs.writeFile` utf-8 | invent pause；地板优化另刀 |
 | `write_tool.make_tool` | 13.633 | 4.343 | 3.139× | 8.00× | measure-only pair 345; `make-write-tool` vs `createWriteToolDefinition` | invent pause；地板优化另刀 |
+| `ls_tool.list_directory` | 352.2 | 314.9 | 1.119× | 8.00× | measure-only pair 317; `list-directory` empty/mixed/limit listing | invent pause；地板优化另刀 |
+| `ls_tool.make_tool` | 284.4 | 279.6 | 1.017× | 8.00× | measure-only pair 318; `make-ls-tool` vs `createLsToolDefinition` | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

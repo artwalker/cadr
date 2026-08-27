@@ -469,6 +469,21 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("wu_ok", paired.OBSERVED_EXACT["write_tool"])
         self.assertIn("wmt_n", paired.OBSERVED_EXACT["write_tool"])
 
+    def test_ls_tool_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("ls_tool.directory_entry_name", RECORD.METRIC_KEYS)
+        self.assertIn("ls_tool.list_directory", RECORD.METRIC_KEYS)
+        self.assertIn("ls_tool.make_tool", RECORD.METRIC_KEYS)
+        self.assertIn("directory_entry_name", paired.METRICS["ls_tool"])
+        self.assertIn("list_directory", paired.METRICS["ls_tool"])
+        self.assertIn("make_tool", paired.METRICS["ls_tool"])
+        self.assertIn("ls_tool.directory_entry_name", paired.RATIO_CEILINGS)
+        self.assertIn("ls_tool.list_directory", paired.RATIO_CEILINGS)
+        self.assertIn("ls_tool.make_tool", paired.RATIO_CEILINGS)
+        self.assertIn("lden_file", paired.OBSERVED_EXACT["ls_tool"])
+        self.assertIn("ld_empty", paired.OBSERVED_EXACT["ls_tool"])
+        self.assertIn("lst_n", paired.OBSERVED_EXACT["ls_tool"])
+
     def test_tool_manager_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("tool_manager.get_tool_path", RECORD.METRIC_KEYS)
@@ -2268,6 +2283,9 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`write_tool.ensure_parent`", section)
             self.assertIn("`write_tool.write_utf8`", section)
             self.assertIn("`write_tool.make_tool`", section)
+            self.assertIn("`ls_tool.directory_entry_name`", section)
+            self.assertIn("`ls_tool.list_directory`", section)
+            self.assertIn("`ls_tool.make_tool`", section)
             self.assertIn("`tool_manager.get_tool_path`", section)
             self.assertIn("`tool_manager.ensure_tool`", section)
             self.assertIn("`tool_manager.cleanup_quarantine`", section)

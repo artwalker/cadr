@@ -107,6 +107,7 @@ METRICS = {
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
     "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
+    "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
@@ -322,6 +323,11 @@ RATIO_CEILINGS = {
     "write_tool.ensure_parent": 8.0,
     "write_tool.write_utf8": 8.0,
     "write_tool.make_tool": 8.0,
+    # ls_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "ls_tool.directory_entry_name": 8.0,
+    "ls_tool.list_directory": 8.0,
+    "ls_tool.make_tool": 8.0,
     # tool_manager.get_tool_path/ensure_tool/cleanup_quarantine pair
     # (samples=5): first-freeze headroom. Ratchet down only.
     "tool_manager.get_tool_path": 8.0,
@@ -1652,6 +1658,21 @@ OBSERVED_EXACT = {
         "wmt_desc",
         "wmt_req",
         "wmt_n",
+    ),
+    "ls_tool": (
+        "lden_file",
+        "lden_dir",
+        "lden_nested",
+        "lden_n",
+        "ld_empty",
+        "ld_mixed",
+        "ld_first",
+        "ld_limit",
+        "ld_n",
+        "lst_name",
+        "lst_desc",
+        "lst_req",
+        "lst_n",
     ),
     "tool_manager": (
         "gtp_local_fd",
