@@ -11,6 +11,10 @@
 
 **禁止：** 宣布 Goal 20 完成；标 G.17 `met`；**同一提交**里既测量又改 `src/` 优化；把顾问稿混进 pairing 提交。
 
+## G21 前置
+
+- [x] Goal 21 完成（pi `v0.84.3` / `4e58f324f`）。队列在 **0843 基线**。Goal 20 pairing / perf 仍暂停（`docs/benchmarks/goal21-queue.json` `goal20Paused` = true）。本项不恢复 pairing、不开新 pair。
+
 ---
 
 ## 开发模式（dev/test）

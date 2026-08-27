@@ -1,6 +1,6 @@
 # Goal 21：pi 基线推进至 v0.84.3（Goal 20 前置）
 
-> **状态：** 已立项（用户 2026-08-25）。基线已落到 **v0.84.3**。Goal 20 pairing / perf 仍暂停（`goal20Paused`）。不宣布 Goal 21 完成：「G20 在 0843 上继续」仍空。
+> **状态：** 完成。基线已落到 **v0.84.3**。Goal 20 pairing / perf 仍暂停（`goal20Paused`）。本 closeout 不恢复 pairing、不开新 pair。
 >
 > **当前：** `BASELINE` = `4e58f324f` · `v0.84.3` +0（pi-mono tag `v0.84.3`）  
 > **自：** `914cf1472` · `v0.84.2` +0
@@ -85,9 +85,9 @@ Goal 18 Part L 把基线从 `v0.83.0` 推到 `v0.84.1`；此后 cadr 已落在 *
 - [x] `enumerate-baseline-diff` 各类 delta 均有 disposition（无 hand-wavy「同上」）
 - [x] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 两套都绿（`verify.sh` 已跑 deterministic FiveAM；full `goal21-gate-run.sh` 不因验收而再执行一次完整 `test-cl.sh`）
 - [x] `CHANGELOG.md` 记录：`cadr x.y.z · aligned with pi v0.84.3 (+0, 4e58f324f)`
-- [ ] Goal 20 executor brief 中「G21 前置」勾选完成，队列为 **0843 基线** 上继续
+- [x] Goal 20 executor brief 中「G21 前置」勾选完成，队列为 **0843 基线** 上继续
 
 ## 与 Goal 20 的关系
 
 - **G21 完成前：** 不新开 Goal 20 pair/perf 提交（避免双次 freeze）。
-- **G21 完成后：** pairing 与 perf 在 `v0.84.3` 基线上继续；已有 paired metric 若 harness 未变可只跑增量 gate，若 0.84.3 改了被测入口则须重 freeze 该 metric。
+- **G21 已完成。** pairing 与 perf 仍暂停（`goal20Paused`）；恢复不在本 closeout。已有 paired metric 若 harness 未变可只跑增量 gate，若 0.84.3 改了被测入口则须重 freeze 该 metric。
