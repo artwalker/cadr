@@ -229,6 +229,9 @@ const REPETITIONS = {
 	"evals_harness.resolve_selection": 50,
 	"evals_harness.transcript": 50,
 	"evals_harness.last_assistant": 50,
+	"evals_harness.step_value": 50,
+	"evals_harness.usage": 50,
+	"evals_harness.result_json": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5641,6 +5644,129 @@ function runEvalsHarnessLastAssistant() {
 	};
 }
 
+function evalStepValue(step, name) {
+	if (step == null || typeof step !== "object") return undefined;
+	return step[name];
+}
+
+function runEvalsHarnessStepValue() {
+	const hash = { type: "prompt", content: "hi" };
+	const plist = { type: "prompt", content: "hi" };
+	const interned = { TYPE: "prompt", type: "prompt", CONTENT: "hi" };
+	return {
+		sv_hash: evalStepValue(hash, "type") === "prompt" ? 1 : 0,
+		sv_plist: evalStepValue(plist, "content") === "hi" ? 1 : 0,
+		sv_intern: evalStepValue(interned, "type") === "prompt" ? 1 : 0,
+		sv_miss: evalStepValue(hash, "missing") === undefined ? 1 : 0,
+		sv_n: 4,
+	};
+}
+
+function evalUsage(messages, model) {
+	let input = 0;
+	let output = 0;
+	let cacheRead = 0;
+	let cacheWrite = 0;
+	let toolCalls = 0;
+	let estimatedCost = 0;
+	for (const message of messages) {
+		if (message.role !== "assistant") continue;
+		const parts = Array.isArray(message.content) ? message.content : [];
+		toolCalls += parts.filter((part) => part.type === "toolCall").length;
+		const usage = message.usage;
+		if (usage) {
+			input += usage.input ?? 0;
+			output += usage.output ?? 0;
+			cacheRead += usage.cacheRead ?? 0;
+			cacheWrite += usage.cacheWrite ?? 0;
+			estimatedCost += usage.cost ?? 0;
+		}
+	}
+	const metadata = {
+		cacheReadTokens: cacheRead,
+		cacheWriteTokens: cacheWrite,
+	};
+	if (estimatedCost > 0) metadata.estimatedCostUsd = estimatedCost;
+	return {
+		provider: String(model.provider).toLowerCase(),
+		model: model.id,
+		inputTokens: input,
+		outputTokens: output,
+		totalTokens: input + output + cacheRead + cacheWrite,
+		toolCalls,
+		metadata,
+	};
+}
+
+function evalUsageMessages() {
+	return [
+		{ role: "user", content: "hi" },
+		{
+			role: "assistant",
+			content: [
+				{ type: "text", text: "hello" },
+				{ type: "toolCall", id: "c1", name: "bash", arguments: { cmd: "ls" } },
+			],
+			usage: { input: 10, output: 20, cacheRead: 1, cacheWrite: 2, cost: 1.5 },
+		},
+		{
+			role: "assistant",
+			content: [{ type: "text", text: "done" }],
+			usage: { input: 5, output: 7 },
+		},
+	];
+}
+
+function runEvalsHarnessUsage() {
+	const usage = evalUsage(evalUsageMessages(), { provider: "openai", id: "gpt-4o" });
+	const meta = usage.metadata;
+	return {
+		us_in: usage.inputTokens === 15 ? 1 : 0,
+		us_out: usage.outputTokens === 27 ? 1 : 0,
+		us_total: usage.totalTokens === 45 ? 1 : 0,
+		us_tools: usage.toolCalls === 1 ? 1 : 0,
+		us_prov: usage.provider === "openai" ? 1 : 0,
+		us_model: usage.model === "gpt-4o" ? 1 : 0,
+		us_cost:
+			meta.cacheReadTokens === 1 &&
+			meta.cacheWriteTokens === 2 &&
+			meta.estimatedCostUsd > 0
+				? 1
+				: 0,
+		us_n: 7,
+	};
+}
+
+function evalResultJson(result) {
+	return {
+		output: result.output,
+		events: result.events,
+		usage: result.usage,
+		errors: result.errors,
+		artifacts: result.artifacts,
+		timings: result.timings,
+	};
+}
+
+function runEvalsHarnessResultJson() {
+	const json = evalResultJson({
+		output: "ok",
+		events: [{ type: "message", role: "user" }],
+		usage: { model: "gpt-4o", inputTokens: 3 },
+		errors: [],
+		artifacts: { runId: "r1" },
+		timings: { totalMs: 12.5 },
+	});
+	return {
+		rj_out: json.output === "ok" ? 1 : 0,
+		rj_ev: json.events.length === 1 ? 1 : 0,
+		rj_err: json.errors.length === 0 ? 1 : 0,
+		rj_art: json.artifacts.runId === "r1" ? 1 : 0,
+		rj_time: json.timings.totalMs === 12.5 ? 1 : 0,
+		rj_n: 5,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5655,6 +5781,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessResolveSelection(),
 		...runEvalsHarnessTranscript(),
 		...runEvalsHarnessLastAssistant(),
+		...runEvalsHarnessStepValue(),
+		...runEvalsHarnessUsage(),
+		...runEvalsHarnessResultJson(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5680,6 +5809,15 @@ async function measureEvalsHarness() {
 		}),
 		last_assistant: await collect("evals_harness.last_assistant", () => {
 			return () => runEvalsHarnessLastAssistant();
+		}),
+		step_value: await collect("evals_harness.step_value", () => {
+			return () => runEvalsHarnessStepValue();
+		}),
+		usage: await collect("evals_harness.usage", () => {
+			return () => runEvalsHarnessUsage();
+		}),
+		result_json: await collect("evals_harness.result_json", () => {
+			return () => runEvalsHarnessResultJson();
 		}),
 		observed,
 	};
@@ -16850,6 +16988,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts toTranscriptEvents",
 			"evals_harness.last_assistant":
 				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
+			"evals_harness.step_value":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent step property access",
+			"evals_harness.usage":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent usage object assembly",
+			"evals_harness.result_json":
+				"packages/evals/src/pi-harness.ts SimpleHarnessResult JSON shape",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

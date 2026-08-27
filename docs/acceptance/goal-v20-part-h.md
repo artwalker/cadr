@@ -3973,6 +3973,49 @@ on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
 from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 331 — `evals_harness` (step_value)
+
+| metric | cadr | pi |
+|---|---|---|
+| `step_value` | `step-value` (`src/cadr-evals/harness.lisp`) | step property access (`packages/evals/src/pi-harness.ts` `runPiCodingAgent` step loop) |
+
+Leftover of the `evals_harness` hole on `harness.lisp`. Timed work is JSON
+hash / keyword plist / interned-keyword lookup plus a miss — not
+`normalize-eval-steps`, not `resolve-eval-selection`. Observed `sv_hash` /
+`sv_plist` / `sv_intern` / `sv_miss` / `sv_n` are exact. First n=5 freeze
+**3.693×** (0.774 / 0.210 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 332 — `evals_harness` (usage)
+
+| metric | cadr | pi |
+|---|---|---|
+| `usage` | `eval-usage` (`src/cadr-evals/harness.lisp`) | usage object assembly (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
+
+Leftover sibling of Pair 331 `step_value` on the same `evals_harness` hole.
+Timed work is token / tool-call / cost aggregation over fixture assistant
+messages — not `getSessionStats` live session, not prompt. Observed `us_in`
+/ `us_out` / `us_total` / `us_tools` / `us_prov` / `us_model` / `us_cost` /
+`us_n` are exact. First n=5 freeze **2.148×** (2.240 / 1.042 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 333 — `evals_harness` (result_json)
+
+| metric | cadr | pi |
+|---|---|---|
+| `result_json` | `eval-result-json` (`src/cadr-evals/harness.lisp`) | `SimpleHarnessResult` JSON shape (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pairs 331–332 on the same `evals_harness` hole. Timed
+work is result object JSON (output / events / errors / artifacts / timings)
+— not persist, not summarize. Observed `rj_out` / `rj_ev` / `rj_err` /
+`rj_art` / `rj_time` / `rj_n` are exact. First n=5 freeze **5.225×**
+(1.933 / 0.370 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
