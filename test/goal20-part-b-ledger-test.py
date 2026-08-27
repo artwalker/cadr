@@ -484,6 +484,21 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ff_empty", paired.OBSERVED_EXACT["find_tool"])
         self.assertIn("fmt_n", paired.OBSERVED_EXACT["find_tool"])
 
+    def test_write_tool_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("write_tool.ensure_parent", RECORD.METRIC_KEYS)
+        self.assertIn("write_tool.write_utf8", RECORD.METRIC_KEYS)
+        self.assertIn("write_tool.make_tool", RECORD.METRIC_KEYS)
+        self.assertIn("ensure_parent", paired.METRICS["write_tool"])
+        self.assertIn("write_utf8", paired.METRICS["write_tool"])
+        self.assertIn("make_tool", paired.METRICS["write_tool"])
+        self.assertIn("write_tool.ensure_parent", paired.RATIO_CEILINGS)
+        self.assertIn("write_tool.write_utf8", paired.RATIO_CEILINGS)
+        self.assertIn("write_tool.make_tool", paired.RATIO_CEILINGS)
+        self.assertIn("ep_nested", paired.OBSERVED_EXACT["write_tool"])
+        self.assertIn("wu_ok", paired.OBSERVED_EXACT["write_tool"])
+        self.assertIn("wmt_n", paired.OBSERVED_EXACT["write_tool"])
+
     def test_ls_tool_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("ls_tool.directory_entry_name", RECORD.METRIC_KEYS)
@@ -2361,6 +2376,9 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`find_tool.pattern_match`", section)
             self.assertIn("`find_tool.find_files`", section)
             self.assertIn("`find_tool.make_tool`", section)
+            self.assertIn("`write_tool.ensure_parent`", section)
+            self.assertIn("`write_tool.write_utf8`", section)
+            self.assertIn("`write_tool.make_tool`", section)
             self.assertIn("`ls_tool.directory_entry_name`", section)
             self.assertIn("`ls_tool.list_directory`", section)
             self.assertIn("`ls_tool.make_tool`", section)

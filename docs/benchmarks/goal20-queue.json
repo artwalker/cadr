@@ -793,6 +793,48 @@
    "measure": "measure-evals-harness",
    "metric": "evals_harness.last_assistant",
    "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+  },
+  {
+   "pair": 343,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/write.lisp",
+   "measure": "measure-write-tool",
+   "metric": "write_tool.ensure_parent",
+   "branch": "cursor/pair-343-345-write-leftovers-32fc",
+   "ratio": 0.594,
+   "cadrUs": 64.978,
+   "piUs": 109.366,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 344,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/write.lisp",
+   "measure": "measure-write-tool",
+   "metric": "write_tool.write_utf8",
+   "branch": "cursor/pair-343-345-write-leftovers-32fc",
+   "ratio": 1.254,
+   "cadrUs": 169.771,
+   "piUs": 135.369,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 345,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/write.lisp",
+   "measure": "measure-write-tool",
+   "metric": "write_tool.make_tool",
+   "branch": "cursor/pair-343-345-write-leftovers-32fc",
+   "ratio": 3.139,
+   "cadrUs": 13.633,
+   "piUs": 4.343,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

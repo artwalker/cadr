@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
+  on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
+  Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.
+  n=5 **0.594×** (64.978 / 109.366 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13: pair `write_tool.write_utf8` (`write-utf8-file` on
+  `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.writeFile`).
+  Observed `wu_ok` / `wu_ascii` / `wu_cjk` / `wu_n` exact.
+  n=5 **1.254×** (169.771 / 135.369 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13: pair `write_tool.make_tool` (`make-write-tool` on
+  `src/cadr-cli/tools/write.lisp` vs baseline `createWriteToolDefinition`).
+  Observed `wmt_name` / `wmt_desc` / `wmt_req` / `wmt_n` exact.
+  n=5 **3.139×** (13.633 / 4.343 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13: pair `core_rest.cancellation_abort` (`abort-cancellation` /
   `cancellation-aborted-p` on `src/cadr-core/cancellation.lisp` vs
   `AbortController.abort` / `AbortSignal.aborted`). Observed `ca_live` /

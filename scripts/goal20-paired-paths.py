@@ -106,6 +106,7 @@ METRICS = {
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
+    "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
@@ -335,6 +336,11 @@ RATIO_CEILINGS = {
     "find_tool.pattern_match": 8.0,
     "find_tool.find_files": 8.0,
     "find_tool.make_tool": 8.0,
+    # write_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "write_tool.ensure_parent": 8.0,
+    "write_tool.write_utf8": 8.0,
+    "write_tool.make_tool": 8.0,
     # ls_tool leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "ls_tool.directory_entry_name": 8.0,
@@ -1703,6 +1709,20 @@ OBSERVED_EXACT = {
         "fmt_desc",
         "fmt_req",
         "fmt_n",
+    ),
+    "write_tool": (
+        "ep_nested",
+        "ep_exists",
+        "ep_eexist",
+        "ep_n",
+        "wu_ok",
+        "wu_ascii",
+        "wu_cjk",
+        "wu_n",
+        "wmt_name",
+        "wmt_desc",
+        "wmt_req",
+        "wmt_n",
     ),
     "ls_tool": (
         "lden_file",

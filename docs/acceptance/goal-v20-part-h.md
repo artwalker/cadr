@@ -3929,6 +3929,50 @@ are exact. First n=5 freeze **0.535×** (6.292 / 11.750 µs) on host `cursor`,
 ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
 leads. Same commit no optimize.
+### Pair 343 — `write_tool` (ensure_parent)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ensure_parent` | `ensure-write-parent-directories` (`src/cadr-cli/tools/write.lisp`) | `defaultWriteOperations.mkdir` / `fs.mkdir` recursive (`packages/coding-agent/src/core/tools/write.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/write.lisp`.
+Timed work is parent mkdir (nested create / already-a-directory / parent-is-file
+error) — not `write-utf8-file`, not `make-write-tool`, not execute / queue /
+result copy. Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` are
+exact. First n=5 freeze **0.594×** (64.978 / 109.366 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize. Pair numbers 316–342 belong to other lanes; this cut is 343–345 only.
+
+### Pair 344 — `write_tool` (write_utf8)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_utf8` | `write-utf8-file` (`src/cadr-cli/tools/write.lisp`) | `defaultWriteOperations.writeFile` / `fs.writeFile` utf-8 (`packages/coding-agent/src/core/tools/write.ts`) |
+
+Leftover sibling of Pair 343 `ensure_parent` on the same `write.lisp`
+`agent_tool_loop` hole. Timed work is UTF-8 write of ASCII `hello` plus CJK/emoji
+`中🙂` into an existing parent — not mkdir as the timed owner, not execute.
+Observed `wu_ok` / `wu_ascii` / `wu_cjk` / `wu_n` are exact. First n=5 freeze
+**1.254×** (169.771 / 135.369 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
+
+### Pair 345 — `write_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-write-tool` (`src/cadr-cli/tools/write.lisp`) | `createWriteToolDefinition` (`packages/coding-agent/src/core/tools/write.ts`) |
+
+Leftover sibling of Pair 343 `ensure_parent` and Pair 344 `write_utf8` on the
+same `write.lisp` `agent_tool_loop` hole. Timed work is tool name / description /
+required `path`+`content` — not execute. Observed `wmt_name` / `wmt_desc` /
+`wmt_req` / `wmt_n` are exact. First n=5 freeze **3.139×** (13.633 / 4.343 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4410,13 +4454,13 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 180 | 77,960 | 60.5% | `no worse than baseline` is falsifiable |
+| `paired` | 181 | 78,030 | 60.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 65 | 26,037 | 20.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 64 | 25,967 | 20.1% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 60.5% of lines (180 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **Falsifiable vs baseline:** 60.5% of lines (181 files). This is the share whose `no worse than baseline` claim is a measured pair.
 - **K-advanceable** (paired ∪ unpairable): 66.3% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
@@ -4582,6 +4626,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
+| `src/cadr-cli/tools/write.lisp` | 70 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
 | `src/cadr-core/cancellation.lisp` | 70 | `core_rest.cancellation_abort` |
 | `src/cadr-core/redacted-print.lisp` | 44 | `core_rest.redacted_secrets` |
@@ -4680,7 +4725,7 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_extensions_install` | 5 | 2,200 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
-| `agent_tool_loop` | 8 | 1,362 |
+| `agent_tool_loop` | 7 | 1,292 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |
