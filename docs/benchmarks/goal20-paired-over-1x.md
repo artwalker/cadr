@@ -24,6 +24,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `image_runtime.lookup` | 1.51 | 0.20 | 7.38× | 8.00× | measure-only pair `6d48a539f`; catalog presence; count not exact; sub-µs variance | invent pause；地板优化另刀 |
 | `image_runtime.dimension_note` | 3.67 | 2.12 | 1.73× | 8.00× | measure-only pair `94d472e68`; format note only (no decode/resize) | invent pause；地板优化另刀 |
 | `image_runtime.api_provider` | 0.23 | 0.21 | 1.09× | 8.00× | measure-only pair `7823f9c15`; fixture registry lookup; sub-µs variance | invent pause；地板优化另刀 |
+| `image_runtime.openrouter_content` | 1.367 | 0.409 | 3.34× | 8.00× | measure-only pair 299; OpenRouter content parts on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
+| `image_runtime.parse_data_image` | 0.555 | 0.387 | 1.43× | 8.00× | measure-only pair 300; data-URL parse on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
 | `cli_print_rpc.jsonl_line` | 3.3 | 0.25 | 13.21× | 8.00× | measure-only pair `7178273d6`; **ratio > named ceiling**; sub-µs path — gate uses variance/10µs floor | invent pause；地板/抬天花板另刀 |
 | `tui_latex.render` | 64.4 | 25.8 | 2.49× | 3.00× | measure-only pair `d73577497` | invent pause；地板优化另刀 |
 | `tui_theme_overlay.osc11_bg` | 3.8 | 3.3 | 1.16× | 8.00× | measure-only pair `5f8210ae6` | invent pause；地板优化另刀 |
@@ -228,6 +230,19 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `find_tool.make_tool` | 131.9 | 93.3 | 1.41× | 8.00× | measure-only pair 291; `make-find-tool` vs `createFindToolDefinition` | invent pause；地板优化另刀 |
 | `tool_manager.cleanup_quarantine` | 120.1 | 88.0 | 1.37× | 8.00× | measure-only pair 294; `cleanup-windows-self-update-quarantine` (not download/ensure) | invent pause；地板优化另刀 |
 | `provider_registry_defs.runtime_models` | 17.89 | 4.794 | 3.73× | 8.00× | measure-only pair 296; leftover `provider-runtime-models` vs `getBuiltinModels` | invent pause；地板优化另刀 |
+| `powershell_tool.utf8_prefix` | 0.647 | 0.171 | 3.79× | 8.00× | measure-only pair 301; `+powershell-utf8-output-prefix+` vs `UTF8_OUTPUT_PREFIX` (not execute/spawn); sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `powershell_tool.prefix_command` | 0.468 | 0.336 | 1.39× | 8.00× | measure-only pair 302; UTF-8 prefix + command concatenate (not exec/spawn) | invent pause；地板优化另刀 |
+| `powershell_tool.make_tool` | 1.936 | 1.448 | 1.34× | 8.00× | measure-only pair 303; `make-powershell-tool` vs `createPowerShellToolDefinition` | invent pause；地板优化另刀 |
+| `harness_events.make_end` | 0.216 | 0.137 | 1.574× | 8.00× | measure-only pair 313; `make-run-end-event` vs `RunEndEvent` object (sub-µs variance) | invent pause；地板优化另刀 |
+| `harness_events.event_type` | 0.175 | 0.119 | 1.468× | 8.00× | measure-only pair 314; `harness-event-type` vs `event.type` (sub-µs variance) | invent pause；地板优化另刀 |
+| `harness_events.make_bus` | 0.344 | 0.255 | 1.351× | 8.00× | measure-only pair 315; `make-harness-event-bus` vs `new HarnessEventBus()` (sub-µs variance) | invent pause；地板优化另刀 |
+| `ls_tool.list_directory` | 352.2 | 314.9 | 1.119× | 8.00× | measure-only pair 317; `list-directory` empty/mixed/limit listing | invent pause；地板优化另刀 |
+| `ls_tool.make_tool` | 284.4 | 279.6 | 1.017× | 8.00× | measure-only pair 318; `make-ls-tool` vs `createLsToolDefinition` | invent pause；地板优化另刀 |
+| `cli_settings.enabled_models` | 18.7 | 3.26 | 5.735× | 8.00× | measure-only pair 308; `settings-enabled-models` missing→`:all` plus one in-memory pattern | invent pause；地板优化另刀 |
+| `cli_settings.block_images` | 19.1 | 3.41 | 5.623× | 8.00× | measure-only pair 309; `settings-block-images-p` default false plus in-memory `images.blockImages` | invent pause；地板优化另刀 |
+
+| `file_mutation_queue.pending_count` | 194.6 | 135.5 | 1.435× | 8.00× | measure-only pair 304; `file-mutation-queue-state-pending-count` after enqueue | invent pause；地板优化另刀 |
+| `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
 | `oauth_pkce_device.percent_decode` | 1.592 | 1.044 | 1.525× | 8.00× | measure-only pair 310; `percent-decode` vs URLSearchParams | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_query` | 6.672 | 3.431 | 1.944× | 8.00× | measure-only pair 311; `parse-query` vs URLSearchParams | invent pause；地板优化另刀 |
 
