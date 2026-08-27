@@ -156,6 +156,9 @@ const REPETITIONS = {
 	"bash_tool.strip_exit_footer": 50,
 	"bash_tool.append_status": 50,
 	"bash_tool.truncation_notice": 50,
+	"output_accumulator.append": 50,
+	"output_accumulator.snapshot": 50,
+	"output_accumulator.finish": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -680,6 +683,9 @@ const promptTemplatesModule = await import(
 );
 const packageManagerModule = await import(moduleUrl("packages/coding-agent/src/core/package-manager.ts"));
 const truncateModule = await import(moduleUrl("packages/coding-agent/src/core/tools/truncate.ts"));
+const outputAccumulatorModule = await import(
+	moduleUrl("packages/coding-agent/src/core/tools/output-accumulator.ts"),
+);
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
@@ -2723,6 +2729,84 @@ async function measureBashTool() {
 			...stripObserved,
 			...appendObserved,
 			...noticeObserved,
+		},
+	};
+}
+
+function makeOutputAccumulatorBench() {
+	return new outputAccumulatorModule.OutputAccumulator({
+		maxLines: 50,
+		maxBytes: 2048,
+		tempFilePrefix: "oa-bench",
+	});
+}
+
+function appendOutputAccumulatorCompleteChunks(accumulator) {
+	accumulator.append(Buffer.from([0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x0a]));
+	accumulator.append(Buffer.from([0xc3]));
+	accumulator.append(Buffer.from([0xa9, 0x20, 0x77, 0x6f, 0x72, 0x6c, 0x64, 0x0a]));
+	accumulator.append(Buffer.from([0x74, 0x61, 0x69, 0x6c, 0x20, 0x6c, 0x69, 0x6e, 0x65]));
+	return accumulator;
+}
+
+function runOutputAccumulatorAppend() {
+	const accumulator = makeOutputAccumulatorBench();
+	appendOutputAccumulatorCompleteChunks(accumulator);
+	const snapshot = accumulator.snapshot();
+	return {
+		oa_append_bytes: Buffer.byteLength(snapshot.content, "utf8"),
+		oa_append_trunc: snapshot.truncation.truncated ? 1 : 0,
+		oa_append_lines: snapshot.truncation.totalLines,
+		oa_append_last: accumulator.getLastLineBytes(),
+		oa_append_n: 4,
+	};
+}
+
+function runOutputAccumulatorSnapshot() {
+	const accumulator = makeOutputAccumulatorBench();
+	appendOutputAccumulatorCompleteChunks(accumulator);
+	const snapshot = accumulator.snapshot();
+	return {
+		oa_snap_bytes: Buffer.byteLength(snapshot.content, "utf8"),
+		oa_snap_trunc: snapshot.truncation.truncated ? 1 : 0,
+		oa_snap_lines: snapshot.truncation.totalLines,
+		oa_snap_total: snapshot.truncation.totalBytes,
+		oa_snap_n: 4,
+	};
+}
+
+function runOutputAccumulatorFinish() {
+	const accumulator = makeOutputAccumulatorBench();
+	accumulator.append(Buffer.from([0xc3]));
+	accumulator.finish();
+	const snapshot = accumulator.snapshot();
+	return {
+		oa_fin_bytes: Buffer.byteLength(snapshot.content, "utf8"),
+		oa_fin_fffd: snapshot.content.includes("\uFFFD") ? 1 : 0,
+		oa_fin_last: accumulator.getLastLineBytes(),
+		oa_fin_trunc: snapshot.truncation.truncated ? 1 : 0,
+		oa_fin_n: 4,
+	};
+}
+
+async function measureOutputAccumulator() {
+	const appendObserved = runOutputAccumulatorAppend();
+	const snapshotObserved = runOutputAccumulatorSnapshot();
+	const finishObserved = runOutputAccumulatorFinish();
+	return {
+		append: await collect("output_accumulator.append", () => {
+			return () => runOutputAccumulatorAppend();
+		}),
+		snapshot: await collect("output_accumulator.snapshot", () => {
+			return () => runOutputAccumulatorSnapshot();
+		}),
+		finish: await collect("output_accumulator.finish", () => {
+			return () => runOutputAccumulatorFinish();
+		}),
+		observed: {
+			...appendObserved,
+			...snapshotObserved,
+			...finishObserved,
 		},
 	};
 }
@@ -14917,6 +15001,7 @@ process.stderr.write("goal20 pi paired paths: harness_events\n");
 const harnessEvents = await measureHarnessEvents();
 process.stderr.write("goal20 pi paired paths: bash_tool\n");
 const bashTool = await measureBashTool();
+const outputAccumulator = await measureOutputAccumulator();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -15064,6 +15149,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/bash.ts appendStatus",
 			"bash_tool.truncation_notice":
 				"packages/coding-agent/src/core/tools/bash.ts formatOutput truncation notice [Showing ...]",
+			"output_accumulator.append":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.append",
+			"output_accumulator.snapshot":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.snapshot",
+			"output_accumulator.finish":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.finish",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15608,6 +15699,7 @@ const result = {
 		file_mutation_queue: fileMutationQueue,
 		harness_events: harnessEvents,
 		bash_tool: bashTool,
+		output_accumulator: outputAccumulator,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

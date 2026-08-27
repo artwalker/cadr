@@ -104,6 +104,7 @@ METRICS = {
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state"),
     "harness_events": ("emit",),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
+    "output_accumulator": ("append", "snapshot", "finish"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
@@ -281,6 +282,11 @@ RATIO_CEILINGS = {
     "bash_tool.strip_exit_footer": 8.0,
     "bash_tool.append_status": 8.0,
     "bash_tool.truncation_notice": 8.0,
+    # output_accumulator.append/snapshot/finish pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "output_accumulator.append": 8.0,
+    "output_accumulator.snapshot": 8.0,
+    "output_accumulator.finish": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1504,6 +1510,23 @@ OBSERVED_EXACT = {
         "btn_lines",
         "btn_bytes",
         "btn_n",
+    ),
+    "output_accumulator": (
+        "oa_append_bytes",
+        "oa_append_trunc",
+        "oa_append_lines",
+        "oa_append_last",
+        "oa_append_n",
+        "oa_snap_bytes",
+        "oa_snap_trunc",
+        "oa_snap_lines",
+        "oa_snap_total",
+        "oa_snap_n",
+        "oa_fin_bytes",
+        "oa_fin_fffd",
+        "oa_fin_last",
+        "oa_fin_trunc",
+        "oa_fin_n",
     ),
     "settings_load": (
         "tr_empty",

@@ -3264,6 +3264,50 @@ truncate-tail and not execute/spawn. Observed `btn_none` / `btn_partial` /
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
 
+### Pair 280 — `output_accumulator` (append)
+
+| metric | cadr | pi |
+|---|---|---|
+| `append` | `output-accumulator-append` (`src/cadr-cli/output-accumulator.lisp`) | `OutputAccumulator.append` (`packages/coding-agent/src/core/tools/output-accumulator.ts`) |
+
+Leftover sibling of the `agent_tool_loop` hole on `output-accumulator.lisp`.
+Timed work is streaming append of ASCII + split UTF-8 `é` + a trailing line
+under the spill ceiling — not snapshot/finish, not bash/tool execute. Observed
+`oa_append_bytes` / `oa_append_trunc` / `oa_append_lines` / `oa_append_last` /
+`oa_append_n` are exact. First n=5 freeze **0.690×** (3.149 / 4.561 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
+### Pair 281 — `output_accumulator` (snapshot)
+
+| metric | cadr | pi |
+|---|---|---|
+| `snapshot` | `output-accumulator-snapshot` (`src/cadr-cli/output-accumulator.lisp`) | `OutputAccumulator.snapshot` (`packages/coding-agent/src/core/tools/output-accumulator.ts`) |
+
+Leftover sibling of Pair 280 `append` on the same `agent_tool_loop` hole.
+Timed work is display snapshot after the same append fixture (no
+`persistIfTruncated`, no temp file) — not finish. Observed `oa_snap_bytes` /
+`oa_snap_trunc` / `oa_snap_lines` / `oa_snap_total` / `oa_snap_n` are exact.
+First n=5 freeze **0.716×** (3.157 / 4.409 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 282 — `output_accumulator` (finish)
+
+| metric | cadr | pi |
+|---|---|---|
+| `finish` | `output-accumulator-finish` (`src/cadr-cli/output-accumulator.lisp`) | `OutputAccumulator.finish` (`packages/coding-agent/src/core/tools/output-accumulator.ts`) |
+
+Leftover sibling of Pair 280 `append` and Pair 281 `snapshot` on the same
+`agent_tool_loop` hole. Timed work is finish after a lone incomplete UTF-8
+lead byte (`0xC3`) so both sides flush U+FFFD — not spill/temp-file. Observed
+`oa_fin_bytes` / `oa_fin_fffd` / `oa_fin_last` / `oa_fin_trunc` / `oa_fin_n`
+are exact. First n=5 freeze **0.658×** (1.670 / 2.537 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
 ### Pair 295 — `provider_registry_defs` (merge_environment)
 
 | metric | cadr | pi |
@@ -3930,6 +3974,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/modes/rpc/jsonl.lisp` | 123 | `cli_print_rpc.jsonl_read` |
 | `src/cadr-cli/modes/rpc/models.lisp` | 226 | `cli_print_rpc.clamp_thinking` |
 | `src/cadr-cli/modes/rpc/sessions.lisp` | 283 | `cli_print_rpc.session_stats` |
+| `src/cadr-cli/output-accumulator.lisp` | 199 | `output_accumulator.append`, `output_accumulator.snapshot`, `output_accumulator.finish` |
 | `src/cadr-cli/packages/commands.lisp` | 764 | `package_manager.resolve` |
 | `src/cadr-cli/packages/manifest.lisp` | 142 | `package_manager.resolve` |
 | `src/cadr-cli/packages/settings.lisp` | 214 | `package_manager.resolve` |

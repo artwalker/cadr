@@ -135,7 +135,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 261,
@@ -181,7 +181,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 266,
@@ -201,7 +201,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 268,
@@ -211,7 +211,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 269,
@@ -221,7 +221,7 @@
    "measure": "measure-resource-loader",
    "metric": null,
    "branch": null,
-    "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 270,
@@ -312,6 +312,33 @@
    "measure": "measure-agent-tool-loop",
    "metric": "bash_tool.truncation_notice",
    "branch": "cursor/pair-277-279-bash-leftovers-4440"
+  },
+  {
+   "pair": 280,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/output-accumulator.lisp",
+   "measure": "measure-output-accumulator",
+   "metric": "output_accumulator.append",
+   "branch": "cursor/pair-280-282-output-accumulator-7ccd"
+  },
+  {
+   "pair": 281,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/output-accumulator.lisp",
+   "measure": "measure-output-accumulator",
+   "metric": "output_accumulator.snapshot",
+   "branch": "cursor/pair-280-282-output-accumulator-7ccd"
+  },
+  {
+   "pair": 282,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/output-accumulator.lisp",
+   "measure": "measure-output-accumulator",
+   "metric": "output_accumulator.finish",
+   "branch": "cursor/pair-280-282-output-accumulator-7ccd"
   },
   {
    "pair": 295,
