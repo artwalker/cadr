@@ -9,6 +9,18 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `core_rest.cancellation_abort` (`abort-cancellation` /
+  `cancellation-aborted-p` on `src/cadr-core/cancellation.lisp` vs
+  `AbortController.abort` / `AbortSignal.aborted`). Observed `ca_live` /
+  `ca_abort` / `ca_clear` / `ca_pred` exact. n=5 **TBD** on host `cursor`,
+  ceiling 8.0. Measure-only. Gate `--only-enforce`. Pairs 322–324.
+- Goal 20 P.13: pair `core_rest.redacted_secrets` (`redact-secrets` on
+  `src/cadr-core/redacted-print.lisp` vs String.split/join `[REDACTED]`).
+  Observed `rd_keep` / `rd_secret` / `rd_token` / `rd_mark` exact. n=5 **TBD**.
+  Measure-only.
+- Goal 20 P.13: pair `core_rest.threads_cleanup` (`stop-thread-for-cleanup` on
+  `src/cadr-core/threads.lisp` vs `worker_threads` Worker eval-exit). Observed
+  `th_absent` / `th_current` / `th_joined` exact. n=5 **TBD**. Measure-only.
 - Goal 20 P.13: pair `file_mutation_queue.call_with` (`call-with-file-mutation-queue` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline `withFileMutationQueue` as a
   function). Observed `fmqf_alias` / `fmqf_other` / `fmqf_fifo` / `fmqf_run` /

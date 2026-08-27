@@ -2021,6 +2021,22 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("sl_bedrock", paired.OBSERVED_EXACT["provider_registry_defs"])
         self.assertIn("sl_vertex", paired.OBSERVED_EXACT["provider_registry_defs"])
 
+    def test_core_rest_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("core_rest.cancellation_abort", RECORD.METRIC_KEYS)
+        self.assertIn("cancellation_abort", paired.METRICS["core_rest"])
+        self.assertIn("core_rest.cancellation_abort", paired.RATIO_CEILINGS)
+        self.assertIn("core_rest.redacted_secrets", RECORD.METRIC_KEYS)
+        self.assertIn("redacted_secrets", paired.METRICS["core_rest"])
+        self.assertIn("core_rest.redacted_secrets", paired.RATIO_CEILINGS)
+        self.assertIn("core_rest.threads_cleanup", RECORD.METRIC_KEYS)
+        self.assertIn("threads_cleanup", paired.METRICS["core_rest"])
+        self.assertIn("core_rest.threads_cleanup", paired.RATIO_CEILINGS)
+        self.assertIn("ca_live", paired.OBSERVED_EXACT["core_rest"])
+        self.assertIn("ca_abort", paired.OBSERVED_EXACT["core_rest"])
+        self.assertIn("rd_mark", paired.OBSERVED_EXACT["core_rest"])
+        self.assertIn("th_joined", paired.OBSERVED_EXACT["core_rest"])
+
     def test_skill_prompt_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("skill_prompt_load.build_prompt", RECORD.METRIC_KEYS)
@@ -2266,6 +2282,9 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`provider_registry_defs.runtime_models`", section)
             self.assertIn("`provider_registry_defs.merge_environment`", section)
             self.assertIn("`provider_registry_defs.structured_api_key_login`", section)
+            self.assertIn("`core_rest.cancellation_abort`", section)
+            self.assertIn("`core_rest.redacted_secrets`", section)
+            self.assertIn("`core_rest.threads_cleanup`", section)
             self.assertIn("`skill_prompt_load.build_prompt`", section)
             self.assertIn("`cli_bootstrap_sessions.coding_tools`", section)
             self.assertIn("`cli_bootstrap_sessions.bootstrap_auth`", section)

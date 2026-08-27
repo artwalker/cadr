@@ -3529,6 +3529,40 @@ stream, not login interaction. Observed `sl_openai` / `sl_anthropic` /
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
 
+### Pair 322 — `core_rest` (cancellation_abort)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cancellation_abort` | `abort-cancellation` + `cancellation-aborted-p` (`src/cadr-core/cancellation.lisp`) | `AbortController.abort` + `AbortSignal.aborted` |
+
+Leftover on hole `core_rest`. Timed work is make → abort → check → clear plus the
+predicate helper — not a wait/timeout. Observed `ca_live` / `ca_abort` /
+`ca_clear` / `ca_pred` are exact. First n=5 freeze **TBD**. Gate used
+`--only-enforce`. Same commit no optimize.
+
+### Pair 323 — `core_rest` (redacted_secrets)
+
+| metric | cadr | pi |
+|---|---|---|
+| `redacted_secrets` | `redact-secrets` (`src/cadr-core/redacted-print.lisp`) | `String.split` / `join` of `[REDACTED]` (baseline has no secret-replace helper) |
+
+Leftover on hole `core_rest`. Timed work is two-secret replace of `sk-live-abc`
+and `hunter2` while keeping visible text — not print-object. Observed `rd_keep`
+/ `rd_secret` / `rd_token` / `rd_mark` are exact. First n=5 freeze **TBD**.
+Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 324 — `core_rest` (threads_cleanup)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_cleanup` | `stop-thread-for-cleanup` (`src/cadr-core/threads.lisp`) | `worker_threads` Worker eval-exit |
+
+Leftover on hole `core_rest`. Timed work is nil → `:absent`, current →
+`:current`, and a finished thread → `:joined` — not an unbounded
+`join-active-thread`. Observed `th_absent` / `th_current` / `th_joined` are
+exact. First n=5 freeze **TBD**. Gate used `--only-enforce`. Same commit no
+optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4010,14 +4044,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 174 | 77,092 | 59.8% | `no worse than baseline` is falsifiable |
+| `paired` | 179 | 77,738 | 60.3% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 71 | 26,905 | 20.9% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 66 | 26,259 | 20.4% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 59.8% of lines (174 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 65.6% of lines.
+- **Falsifiable vs baseline:** 60.3% of lines (179 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 66.1% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -4178,11 +4212,13 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
-| `src/cadr-cli/tools/find.lisp` | 101 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/truncation.lisp` | 235 | `tool_read.text_file` |
+| `src/cadr-core/cancellation.lisp` | 70 | `core_rest.cancellation_abort` |
+| `src/cadr-core/redacted-print.lisp` | 44 | `core_rest.redacted_secrets` |
+| `src/cadr-core/threads.lisp` | 47 | `core_rest.threads_cleanup` |
 | `src/cadr-evals/artifacts.lisp` | 168 | `evals_harness.artifact_persist` |
 | `src/cadr-evals/harness-table.lisp` | 339 | `evals_harness.group_key` |
 | `src/cadr-evals/summary.lisp` | 732 | `evals_harness.summarize`, `evals_harness.format` |
@@ -4275,9 +4311,9 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `cli_bootstrap_sessions` | 4 | 5,226 |
 | `cli_selectors` | 10 | 3,706 |
 | `cli_extensions_install` | 5 | 2,200 |
-| `agent_tool_loop` | 10 | 1,847 |
 | `package_manager` | 2 | 1,811 |
 | `evals_harness` | 4 | 1,677 |
+| `agent_tool_loop` | 8 | 1,362 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
 | `tui_theme_overlay` | 1 | 562 |
@@ -4286,7 +4322,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `skill_prompt_load` | 2 | 423 |
 | `tui_select_settings_loaders` | 1 | 235 |
 | `image_runtime` | 1 | 222 |
-| `core_rest` | 3 | 161 |
 | `cli_support` | 5 | 123 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |
