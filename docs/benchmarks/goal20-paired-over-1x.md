@@ -233,5 +233,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `harness_events.make_end` | 0.216 | 0.137 | 1.574× | 8.00× | measure-only pair 313; `make-run-end-event` vs `RunEndEvent` object (sub-µs variance) | invent pause；地板优化另刀 |
 | `harness_events.event_type` | 0.175 | 0.119 | 1.468× | 8.00× | measure-only pair 314; `harness-event-type` vs `event.type` (sub-µs variance) | invent pause；地板优化另刀 |
 | `harness_events.make_bus` | 0.344 | 0.255 | 1.351× | 8.00× | measure-only pair 315; `make-harness-event-bus` vs `new HarnessEventBus()` (sub-µs variance) | invent pause；地板优化另刀 |
+| `tui_theme_overlay.rgb_to_ansi_256` | 2.52 | 1.29 | 1.955× | 8.00× | measure-only pair 319; `rgb-to-ansi-256` vs unexported `rgbTo256`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `tui_theme_overlay.parse_hex_color` | 0.944 | 0.837 | 1.127× | 8.00× | measure-only pair 320; `parse-theme-hex-color` vs unexported `hexToRgb`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `tui_theme_overlay.theme_foreground_ansi` | 5.58 | 0.379 | 14.724× | 8.00× | measure-only pair 321; `theme-foreground-ansi` vs `Theme.getFgAnsi`; **ratio > named ceiling**; sub-µs path — gate uses variance/10µs floor | invent pause；地板/抬天花板另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
