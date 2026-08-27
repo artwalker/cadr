@@ -127,6 +127,9 @@ METRICS = {
         "cloudflare_url",
         "radius_gateway",
         "copilot_auth",
+        "percent_decode",
+        "parse_query",
+        "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps"),
@@ -454,6 +457,12 @@ RATIO_CEILINGS = {
     # 1.35x (3.21 / 2.38 us). 8.0 is first-freeze
     # headroom. Ratchet down only.
     "oauth_pkce_device.copilot_auth": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # oauth_pkce_device leftover trio (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "oauth_pkce_device.percent_decode": 8.0,
+    "oauth_pkce_device.parse_query": 8.0,
+    "oauth_pkce_device.parse_authorization_input": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed
     # 0.45x (4.79 / 10.52 us). cadr leads. 8.0 is
@@ -1853,6 +1862,22 @@ OBSERVED_EXACT = {
         "ga_ent",
         "ga_dom",
         "ga_key",
+        "pd_plain",
+        "pd_plus",
+        "pd_slash",
+        "pd_space",
+        "pd_utf8",
+        "pd_n",
+        "pq_code",
+        "pq_state",
+        "pq_plus",
+        "pq_empty",
+        "pq_n",
+        "pai_url",
+        "pai_hash",
+        "pai_qs",
+        "pai_plain",
+        "pai_n",
     ),
     "cli_extensions_install": (
         "nu_local",

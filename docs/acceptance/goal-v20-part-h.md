@@ -3800,6 +3800,51 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
 old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Over-1× booked. Same commit no optimize.
 
+### Pair 310 — `oauth_pkce_device` (percent_decode)
+
+| metric | cadr | pi |
+|---|---|---|
+| `percent_decode` | `percent-decode` (`src/cadr-ai/oauth/callback.lisp`) | application/x-www-form-urlencoded percent-decode used by `URLSearchParams` / `parseAuthorizationInput` (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of the `oauth_pkce_device` hole on `src/cadr-ai/oauth/callback.lisp`.
+Timed work is `percent-decode` on valid encodings (plain / `+` as space /
+`%2F` / `%20` / UTF-8 `%C3%A9`) — not loopback HTTP, not
+`parse-oauth-callback-request`. Do not exact truncated or invalid percent
+escapes (Lisp signals; `URLSearchParams` is lenient). Observed `pd_plain` /
+`pd_plus` / `pd_slash` / `pd_space` / `pd_utf8` / `pd_n` are exact. First
+n=5 freeze **1.525×** (1.592 / 1.044 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 311 — `oauth_pkce_device` (parse_query)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_query` | `parse-query` (`src/cadr-ai/oauth/callback.lisp`) | `URLSearchParams` query parse (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of Pair 310 `percent_decode` on the same `oauth_pkce_device`
+hole. Timed work is query parse (`code`/`state`, `+` in a value, empty
+value) — not callback request-line routing. Observed `pq_code` / `pq_state` /
+`pq_plus` / `pq_empty` / `pq_n` are exact. First n=5 freeze **1.944×**
+(6.672 / 3.431 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 312 — `oauth_pkce_device` (parse_authorization_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_authorization_input` | `parse-oauth-authorization-input` (`src/cadr-ai/oauth/callback.lisp`) | `parseAuthorizationInput` (`packages/ai/src/auth/oauth/openai-codex.ts`) |
+
+Leftover sibling of Pair 310 `percent_decode` and Pair 311 `parse_query` on
+the same `oauth_pkce_device` hole. Timed work is the four Goal 13 manual
+forms (callback URL, `code#state`, `code=` query, trimmed bare code) — not
+the loopback listener. Do not exact empty input (Lisp `""` / `NIL` vs pi
+`{}`). Observed `pai_url` / `pai_hash` / `pai_qs` / `pai_plain` / `pai_n`
+are exact. First n=5 freeze **0.535×** (6.292 / 11.750 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
+leads. Same commit no optimize.
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
