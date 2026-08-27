@@ -168,9 +168,21 @@ const REPETITIONS = {
 	"harness_events.on": 50,
 	"harness_events.watch": 50,
 	"harness_events.make_start": 50,
+	"harness_events.make_end": 50,
+	"harness_events.event_type": 50,
+	"harness_events.make_bus": 50,
 	"find_tool.pattern_match": 50,
 	"find_tool.find_files": 50,
 	"find_tool.make_tool": 50,
+	"ls_tool.directory_entry_name": 50,
+	"ls_tool.list_directory": 50,
+	"ls_tool.make_tool": 50,
+	"tool_manager.get_tool_path": 50,
+	"tool_manager.ensure_tool": 50,
+	"tool_manager.cleanup_quarantine": 50,
+	"powershell_tool.utf8_prefix": 50,
+	"powershell_tool.prefix_command": 50,
+	"powershell_tool.make_tool": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -215,6 +227,9 @@ const REPETITIONS = {
 	"image_runtime.lookup": 50,
 	"image_runtime.dimension_note": 50,
 	"image_runtime.api_provider": 50,
+	"image_runtime.output_modalities": 50,
+	"image_runtime.openrouter_content": 50,
+	"image_runtime.parse_data_image": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
@@ -405,6 +420,9 @@ const REPETITIONS = {
 	"cli_sdk.model_runtime": 5,
 	"provider_registry_defs.lookup": 50,
 	"provider_registry_defs.definition_ids": 125,
+	"provider_registry_defs.merge_environment": 50,
+	"provider_registry_defs.runtime_models": 50,
+	"provider_registry_defs.structured_api_key_login": 50,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
@@ -566,6 +584,9 @@ mkdirSync(agentDirectory, { recursive: true });
 for (const name of ["models.json", "auth.json"]) {
 	copyFileSync(path.join(fixtureDirectory, name), path.join(agentDirectory, name));
 }
+// Pin before any coding-agent import so tools-manager.ts TOOLS_DIR is the
+// staged agent bin, not ~/.pi/agent/bin (a host fd binary lives there).
+process.env.PI_CODING_AGENT_DIR = agentDirectory;
 const stagedDigests = {
 	"models.json": createHash("sha256")
 		.update(readFileSync(path.join(agentDirectory, "models.json")))
@@ -635,6 +656,9 @@ const rpcJsonlModule = await import(moduleUrl("packages/coding-agent/src/modes/r
 process.env.PI_TIMING = "1";
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
+const windowsSelfUpdateModule = await import(
+	moduleUrl("packages/coding-agent/src/utils/windows-self-update.ts"),
+);
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
 const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
@@ -697,6 +721,10 @@ const outputAccumulatorModule = await import(
 );
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
+const lsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/ls.ts"));
+const powershellModule = await import(
+	moduleUrl("packages/coding-agent/src/core/tools/powershell.ts"),
+);
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const fileMutationQueueModule = await import(
@@ -808,6 +836,7 @@ const cacheStatsModule = await import(
 	moduleUrl("packages/coding-agent/src/core/cache-stats.ts")
 );
 const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers/all.ts"));
+const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
 const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
@@ -2853,6 +2882,63 @@ function runHarnessEventsMakeStart() {
 	};
 }
 
+function runHarnessEventsMakeEnd() {
+	const event = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	const aborted = {
+		type: "run_end",
+		lane: "side",
+		runId: "run-2",
+		outcome: "aborted",
+		leafId: null,
+	};
+	return {
+		hee_type: event.type === "run_end" ? 1 : 0,
+		hee_lane: event.lane === "main" ? 1 : 0,
+		hee_run: event.runId === "run-1" ? 1 : 0,
+		hee_outcome: event.outcome === "completed" ? 1 : 0,
+		hee_abort: aborted.outcome === "aborted" && aborted.leafId == null ? 1 : 0,
+	};
+}
+
+function runHarnessEventsEventType() {
+	const start = { type: "run_start", lane: "main", runId: "run-1" };
+	const end = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	const failed = {
+		type: "run_end",
+		lane: "side",
+		runId: "run-2",
+		outcome: "failed",
+		leafId: "leaf-2",
+	};
+	return {
+		het_start: start.type === "run_start" ? 1 : 0,
+		het_end: end.type === "run_end" ? 1 : 0,
+		het_fail: failed.type === "run_end" ? 1 : 0,
+	};
+}
+
+function runHarnessEventsMakeBus() {
+	const a = new harnessEventsModule.HarnessEventBus();
+	const b = new harnessEventsModule.HarnessEventBus();
+	return {
+		heb_distinct: a !== b ? 1 : 0,
+		heb_a: a instanceof harnessEventsModule.HarnessEventBus ? 1 : 0,
+		heb_b: b instanceof harnessEventsModule.HarnessEventBus ? 1 : 0,
+	};
+}
+
 const FIND_TOOL_CWD = "/tmp/goal20-find-tool-cwd";
 const GLOB_SPECIAL = new Set(".^$+()[]{}|\\".split(""));
 
@@ -3004,11 +3090,227 @@ async function measureFindTool() {
 		},
 	};
 }
+
+const LS_TOOL_CWD = "/tmp/goal20-ls-tool-cwd";
+
+function lsDirectoryEntryName(fullPath) {
+	const stats = statSync(fullPath);
+	const base = path.basename(fullPath.replace(/[\\/]+$/, "") || fullPath);
+	return stats.isDirectory() ? `${base}/` : base;
+}
+
+function ensureLsToolFixture() {
+	mkdirSync(path.join(LS_TOOL_CWD, "src", "nested"), { recursive: true });
+	mkdirSync(path.join(LS_TOOL_CWD, "empty"), { recursive: true });
+	mkdirSync(path.join(LS_TOOL_CWD, "lots"), { recursive: true });
+	for (const relative of [
+		".dot",
+		"a.txt",
+		"z.txt",
+		"src/nested/x.txt",
+		"lots/f1.txt",
+		"lots/f2.txt",
+		"lots/f3.txt",
+		"lots/f4.txt",
+	]) {
+		writeFileSync(path.join(LS_TOOL_CWD, relative), "x", "utf8");
+	}
+	return LS_TOOL_CWD;
+}
+
+function lsToolOutputText(cwd, args) {
+	const dirPath = path.resolve(cwd, args.path || ".");
+	const limit = args.limit ?? 500;
+	const names = readdirSync(dirPath);
+	names.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+	const results = [];
+	let entryLimitReached = false;
+	for (const entry of names) {
+		if (results.length >= limit) {
+			entryLimitReached = true;
+			break;
+		}
+		const fullPath = path.join(dirPath, entry);
+		let suffix = "";
+		try {
+			if (statSync(fullPath).isDirectory()) suffix = "/";
+		} catch {
+			continue;
+		}
+		results.push(entry + suffix);
+	}
+	if (results.length === 0) return "(empty directory)";
+	const rawOutput = results.join("\n");
+	const truncation = truncateModule.truncateHead(rawOutput, {
+		maxLines: Number.MAX_SAFE_INTEGER,
+	});
+	let output = truncation.content;
+	const notices = [];
+	if (entryLimitReached) {
+		notices.push(`${limit} entries limit reached. Use limit=${limit * 2} for more`);
+	}
+	if (truncation.truncated) {
+		notices.push(
+			`${truncateModule.formatSize(truncateModule.DEFAULT_MAX_BYTES)} limit reached`,
+		);
+	}
+	if (notices.length > 0) {
+		output += `\n\n[${notices.join(". ")}]`;
+	}
+	return output;
+}
+
+function lsToolLineCount(text) {
+	if (text === "(empty directory)") return 0;
+	return text.split("\n").length;
+}
+
+function runLsDirectoryEntryName() {
+	const cwd = LS_TOOL_CWD;
+	const fileName = lsDirectoryEntryName(path.join(cwd, "a.txt"));
+	const dirName = lsDirectoryEntryName(path.join(cwd, "src"));
+	const nestedName = lsDirectoryEntryName(path.join(cwd, "src", "nested"));
+	return {
+		lden_file: fileName === "a.txt" ? 1 : 0,
+		lden_dir: dirName === "src/" ? 1 : 0,
+		lden_nested: nestedName === "nested/" ? 1 : 0,
+		lden_n: 3,
+	};
+}
+
+function runLsListDirectory() {
+	const cwd = ensureLsToolFixture();
+	const empty = lsToolOutputText(cwd, { path: "empty" });
+	const mixed = lsToolOutputText(cwd, { path: "." });
+	const limited = lsToolOutputText(cwd, { path: "lots", limit: 2 });
+	const firstLine = mixed.split("\n")[0];
+	return {
+		ld_empty: empty === "(empty directory)" ? 1 : 0,
+		ld_mixed: lsToolLineCount(mixed),
+		ld_first: firstLine === ".dot" ? 1 : 0,
+		ld_limit:
+			limited.includes("2 entries limit reached") &&
+			limited.includes("Use limit=4 for more")
+				? 1
+				: 0,
+		ld_n: 4,
+	};
+}
+
+function runLsMakeTool() {
+	const cwd = ensureLsToolFixture();
+	const def = lsModule.createLsToolDefinition(cwd);
+	const required = def.parameters?.required ?? [];
+	const description = def.description ?? "";
+	return {
+		lst_name: def.name === "ls" ? 1 : 0,
+		lst_desc:
+			description.includes("List directory contents") &&
+			description.includes("500 entries")
+				? 1
+				: 0,
+		lst_req: required.length === 0 ? 1 : 0,
+		lst_n: 3,
+	};
+}
+
+async function measureLsTool() {
+	ensureLsToolFixture();
+	const nameObserved = runLsDirectoryEntryName();
+	const listObserved = runLsListDirectory();
+	const makeObserved = runLsMakeTool();
+	return {
+		directory_entry_name: await collect("ls_tool.directory_entry_name", () => {
+			return () => runLsDirectoryEntryName();
+		}),
+		list_directory: await collect("ls_tool.list_directory", () => {
+			return () => runLsListDirectory();
+		}),
+		make_tool: await collect("ls_tool.make_tool", () => {
+			return () => runLsMakeTool();
+		}),
+		observed: {
+			...nameObserved,
+			...listObserved,
+			...makeObserved,
+		},
+	};
+}
+
+const POWERSHELL_UTF8_OUTPUT_PREFIX =
+	"try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\n";
+
+function runPowershellUtf8Prefix() {
+	const prefix = POWERSHELL_UTF8_OUTPUT_PREFIX;
+	return {
+		psu_len: prefix.length,
+		psu_nl: prefix.endsWith("\n") ? 1 : 0,
+		psu_try: prefix.startsWith("try ") ? 1 : 0,
+		psu_utf8: prefix.includes("UTF8") ? 1 : 0,
+		psu_n: 4,
+	};
+}
+
+function powershellPrefixCommand(command) {
+	return `${POWERSHELL_UTF8_OUTPUT_PREFIX}${command}`;
+}
+
+function runPowershellPrefixCommand() {
+	const prefix = POWERSHELL_UTF8_OUTPUT_PREFIX;
+	const empty = powershellPrefixCommand("");
+	const date = powershellPrefixCommand("Get-Date");
+	const write = powershellPrefixCommand("Write-Output hi");
+	return {
+		psc_empty: empty === prefix ? 1 : 0,
+		psc_date: date.startsWith(prefix) && date.endsWith("Get-Date") ? 1 : 0,
+		psc_write:
+			write.startsWith(prefix) && write.endsWith("Write-Output hi") ? 1 : 0,
+		psc_n: 3,
+	};
+}
+
+function runPowershellMakeTool() {
+	const def = powershellModule.createPowerShellToolDefinition("/tmp");
+	const required = def.parameters?.required ?? [];
+	const description = def.description ?? "";
+	return {
+		pmt_name: def.name === "powershell" ? 1 : 0,
+		pmt_desc: description.includes("Execute a PowerShell command") ? 1 : 0,
+		pmt_req: required.includes("command") ? 1 : 0,
+		pmt_n: 3,
+	};
+}
+
+async function measurePowershellTool() {
+	const prefixObserved = runPowershellUtf8Prefix();
+	const commandObserved = runPowershellPrefixCommand();
+	const makeObserved = runPowershellMakeTool();
+	return {
+		utf8_prefix: await collect("powershell_tool.utf8_prefix", () => {
+			return () => runPowershellUtf8Prefix();
+		}),
+		prefix_command: await collect("powershell_tool.prefix_command", () => {
+			return () => runPowershellPrefixCommand();
+		}),
+		make_tool: await collect("powershell_tool.make_tool", () => {
+			return () => runPowershellMakeTool();
+		}),
+		observed: {
+			...prefixObserved,
+			...commandObserved,
+			...makeObserved,
+		},
+	};
+}
+
 async function measureHarnessEvents() {
 	const emitObserved = runHarnessEventsEmit();
 	const onObserved = runHarnessEventsOn();
 	const watchObserved = runHarnessEventsWatch();
 	const makeStartObserved = runHarnessEventsMakeStart();
+	const makeEndObserved = runHarnessEventsMakeEnd();
+	const eventTypeObserved = runHarnessEventsEventType();
+	const makeBusObserved = runHarnessEventsMakeBus();
 	return {
 		emit: await collect("harness_events.emit", () => {
 			return () => runHarnessEventsEmit();
@@ -3022,11 +3324,23 @@ async function measureHarnessEvents() {
 		make_start: await collect("harness_events.make_start", () => {
 			return () => runHarnessEventsMakeStart();
 		}),
+		make_end: await collect("harness_events.make_end", () => {
+			return () => runHarnessEventsMakeEnd();
+		}),
+		event_type: await collect("harness_events.event_type", () => {
+			return () => runHarnessEventsEventType();
+		}),
+		make_bus: await collect("harness_events.make_bus", () => {
+			return () => runHarnessEventsMakeBus();
+		}),
 		observed: {
 			...emitObserved,
 			...onObserved,
 			...watchObserved,
 			...makeStartObserved,
+			...makeEndObserved,
+			...eventTypeObserved,
+			...makeBusObserved,
 		},
 	};
 }
@@ -3239,6 +3553,142 @@ async function measureOutputAccumulator() {
 			...appendObserved,
 			...snapshotObserved,
 			...finishObserved,
+		},
+	};
+}
+
+function tmTruth(value) {
+	return value ? 1 : 0;
+}
+
+function tmWriteStub(directory, name) {
+	mkdirSync(directory, { recursive: true });
+	const filePath = path.join(directory, name);
+	writeFileSync(filePath, "stub");
+	return filePath;
+}
+
+function tmDeleteIfExists(filePath) {
+	if (existsSync(filePath)) unlinkSync(filePath);
+}
+
+function tmWithEmptyPath(fn) {
+	const previous = process.env.PATH;
+	process.env.PATH = "/nonexistent-goal20-tool-manager";
+	try {
+		return fn();
+	} finally {
+		if (previous === undefined) delete process.env.PATH;
+		else process.env.PATH = previous;
+	}
+}
+
+let toolsManagerModulePromise;
+async function loadToolsManager() {
+	if (!toolsManagerModulePromise) {
+		process.env[configModule.ENV_AGENT_DIR] = agentDirectory;
+		toolsManagerModulePromise = import(moduleUrl("packages/coding-agent/src/utils/tools-manager.ts"));
+	}
+	return toolsManagerModulePromise;
+}
+
+function tmAgentBin() {
+	return path.join(agentDirectory, "bin");
+}
+
+function tmIsLocalBinary(result, name) {
+	return Boolean(
+		result &&
+			path.isAbsolute(result) &&
+			path.basename(result) === name,
+	);
+}
+
+function runToolManagerGetToolPath(toolsManager) {
+	const toolsDir = tmAgentBin();
+	mkdirSync(toolsDir, { recursive: true });
+	const fd = tmWriteStub(toolsDir, "fd");
+	const rg = tmWriteStub(toolsDir, "rg");
+	const localFd = toolsManager.getToolPath("fd");
+	const localRg = toolsManager.getToolPath("rg");
+	tmDeleteIfExists(fd);
+	tmDeleteIfExists(rg);
+	const missFd = tmWithEmptyPath(() => toolsManager.getToolPath("fd"));
+	const missRg = tmWithEmptyPath(() => toolsManager.getToolPath("rg"));
+	return {
+		gtp_local_fd: tmTruth(tmIsLocalBinary(localFd, "fd")),
+		gtp_local_rg: tmTruth(tmIsLocalBinary(localRg, "rg")),
+		gtp_miss_fd: tmTruth(missFd == null),
+		gtp_miss_rg: tmTruth(missRg == null),
+		gtp_n: 4,
+	};
+}
+
+async function runToolManagerEnsureTool(toolsManager) {
+	const toolsDir = tmAgentBin();
+	mkdirSync(toolsDir, { recursive: true });
+	const fd = tmWriteStub(toolsDir, "fd");
+	const local = await toolsManager.ensureTool("fd");
+	tmDeleteIfExists(fd);
+	const previousOffline = process.env.PI_OFFLINE;
+	const previousPath = process.env.PATH;
+	let offline;
+	process.env.PI_OFFLINE = "1";
+	process.env.PATH = "/nonexistent-goal20-tool-manager";
+	try {
+		offline = await toolsManager.ensureTool("fd");
+	} finally {
+		if (previousPath === undefined) delete process.env.PATH;
+		else process.env.PATH = previousPath;
+		if (previousOffline === undefined) delete process.env.PI_OFFLINE;
+		else process.env.PI_OFFLINE = previousOffline;
+	}
+	return {
+		et_local_fd: tmTruth(tmIsLocalBinary(local, "fd")),
+		et_offline_miss: tmTruth(offline == null),
+		et_n: 2,
+	};
+}
+
+function runToolManagerCleanupQuarantine() {
+	const root = path.join(scratch, "tool-manager-pkg");
+	const nodeModules = path.join(root, "node_modules");
+	const pkg = path.join(nodeModules, "pkg");
+	const quarantine = path.join(nodeModules, ".pi-native-quarantine");
+	const outside = path.join(scratch, "no-modules", "pkg");
+	mkdirSync(pkg, { recursive: true });
+	mkdirSync(quarantine, { recursive: true });
+	writeFileSync(path.join(quarantine, "stale.bin"), "stub");
+	windowsSelfUpdateModule.cleanupWindowsSelfUpdateQuarantine(pkg);
+	const removed = tmTruth(!existsSync(quarantine));
+	mkdirSync(outside, { recursive: true });
+	windowsSelfUpdateModule.cleanupWindowsSelfUpdateQuarantine(outside);
+	return {
+		cq_removed: removed,
+		cq_noop: 1,
+		cq_n: 2,
+	};
+}
+
+async function measureToolManager() {
+	const toolsManager = await loadToolsManager();
+	const pathObserved = runToolManagerGetToolPath(toolsManager);
+	const ensureObserved = await runToolManagerEnsureTool(toolsManager);
+	const cleanupObserved = runToolManagerCleanupQuarantine();
+	return {
+		get_tool_path: await collect("tool_manager.get_tool_path", () => {
+			return () => runToolManagerGetToolPath(toolsManager);
+		}),
+		ensure_tool: await collect("tool_manager.ensure_tool", () => {
+			return () => runToolManagerEnsureTool(toolsManager);
+		}),
+		cleanup_quarantine: await collect("tool_manager.cleanup_quarantine", () => {
+			return () => runToolManagerCleanupQuarantine();
+		}),
+		observed: {
+			...pathObserved,
+			...ensureObserved,
+			...cleanupObserved,
 		},
 	};
 }
@@ -5773,12 +6223,108 @@ function runImageRuntimeApiProvider() {
 	};
 }
 
+let imageModalityGemini = null;
+let imageModalityFlux = null;
+
+function ensureImageOpenrouterModels() {
+	if (imageModalityGemini) {
+		return;
+	}
+	imageModalityGemini = imageModelsModule.getImageModel(
+		"openrouter",
+		"google/gemini-2.5-flash-image",
+	);
+	imageModalityFlux = imageModelsModule.getImageModel(
+		"openrouter",
+		"black-forest-labs/flux.2-pro",
+	);
+}
+
+function imageOutputModalities(model) {
+	return model.output.includes("text") ? ["image", "text"] : ["image"];
+}
+
+function runImageRuntimeOutputModalities() {
+	ensureImageOpenrouterModels();
+	const gemini = imageOutputModalities(imageModalityGemini);
+	const flux = imageOutputModalities(imageModalityFlux);
+	return {
+		om_gemini_n: gemini.length,
+		om_gemini_text: gemini.includes("text") ? 1 : 0,
+		om_flux_n: flux.length,
+		om_flux_text: flux.includes("text") ? 1 : 0,
+	};
+}
+
+function parseDataImage(value) {
+	if (typeof value !== "string" || !value.startsWith("data:")) {
+		return null;
+	}
+	const matches = value.match(/^data:([^;]+);base64,(.+)$/);
+	if (!matches) {
+		return null;
+	}
+	return { mimeType: matches[1], data: matches[2] };
+}
+
+function parseDataImageObs(value) {
+	const parsed = parseDataImage(value);
+	if (!parsed) {
+		return { mime: "", data: "", ok: 0 };
+	}
+	return { mime: parsed.mimeType, data: parsed.data, ok: 1 };
+}
+
+function runImageRuntimeParseDataImage() {
+	const ok = parseDataImageObs("data:image/png;base64,ZmFrZS1wbmc=");
+	return {
+		pd_ok_mime: ok.mime,
+		pd_ok_data: ok.data,
+		pd_ok: ok.ok,
+		pd_miss: parseDataImageObs("not-an-image").ok,
+		pd_plain: parseDataImageObs("https://example.com/x.png").ok,
+	};
+}
+
+function openrouterImageContent(item) {
+	if (item.type === "text") {
+		return { type: "text", text: item.text };
+	}
+	return {
+		type: "image_url",
+		image_url: { url: `data:${item.mimeType};base64,${item.data}` },
+	};
+}
+
+function runImageRuntimeOpenrouterContent() {
+	const textPart = openrouterImageContent({
+		type: "text",
+		text: "Generate a dog",
+	});
+	const imagePart = openrouterImageContent({
+		type: "image",
+		mimeType: "image/png",
+		data: "aW1hZ2U=",
+	});
+	return {
+		oc_text_type: textPart.type,
+		oc_text: textPart.text,
+		oc_img_type: imagePart.type,
+		oc_img_url: imagePart.image_url.url,
+		oc_ok: textPart.type === "text" && imagePart.type === "image_url" ? 1 : 0,
+	};
+}
+
 async function measureImageRuntime() {
+	ensureImageOpenrouterModels();
 	const dims = runImageRuntime();
 	const mime = runImageRuntimeMime();
 	const lookup = runImageRuntimeLookup();
 	const notes = runImageRuntimeDimensionNote();
 	const api = runImageRuntimeApiProvider();
+	const modalities = runImageRuntimeOutputModalities();
+	const content = runImageRuntimeOpenrouterContent();
+	const parsed = runImageRuntimeParseDataImage();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -5795,7 +6341,25 @@ async function measureImageRuntime() {
 		api_provider: await collect("image_runtime.api_provider", () => {
 			return () => runImageRuntimeApiProvider();
 		}),
-		observed: { ...dims, ...mime, ...lookup, ...notes, ...api },
+		output_modalities: await collect("image_runtime.output_modalities", () => {
+			return () => runImageRuntimeOutputModalities();
+		}),
+		openrouter_content: await collect("image_runtime.openrouter_content", () => {
+			return () => runImageRuntimeOpenrouterContent();
+		}),
+		parse_data_image: await collect("image_runtime.parse_data_image", () => {
+			return () => runImageRuntimeParseDataImage();
+		}),
+		observed: {
+			...dims,
+			...mime,
+			...lookup,
+			...notes,
+			...api,
+			...modalities,
+			...content,
+			...parsed,
+		},
 	};
 }
 
@@ -14941,9 +15505,98 @@ function runProviderDefinitionIds() {
 	};
 }
 
+function runProviderRuntimeModels() {
+	const openai = builtinProvidersModule.getBuiltinModels("openai");
+	const anthropic = builtinProvidersModule.getBuiltinModels("anthropic");
+	const google = builtinProvidersModule.getBuiltinModels("google");
+	const unknown = builtinProvidersModule.getBuiltinModels("no-such-provider");
+	return {
+		rm_openai: openai.length > 0 ? 1 : 0,
+		rm_anthropic: anthropic.length > 0 ? 1 : 0,
+		rm_google: google.length > 0 ? 1 : 0,
+		rm_unknown: unknown.length === 0 ? 1 : 0,
+	};
+}
+
+function runProviderMergeEnvironment() {
+	const explicit = {
+		OPENAI_API_KEY: "sk-explicit",
+		AZURE_OPENAI_BASE_URL: "https://explicit.example",
+	};
+	const previousOpenAi = process.env.OPENAI_API_KEY;
+	const previousGemini = process.env.GEMINI_API_KEY;
+	const previousAzure = process.env.AZURE_OPENAI_BASE_URL;
+	process.env.OPENAI_API_KEY = "sk-ambient";
+	process.env.GEMINI_API_KEY = "sk-gemini-ambient";
+	delete process.env.AZURE_OPENAI_BASE_URL;
+	try {
+		return {
+			me_oa:
+				providerEnvModule.getProviderEnvValue("OPENAI_API_KEY", explicit) ===
+				"sk-explicit"
+					? 1
+					: 0,
+			me_gemini:
+				providerEnvModule.getProviderEnvValue("GEMINI_API_KEY", explicit) ===
+				"sk-gemini-ambient"
+					? 1
+					: 0,
+			me_azure:
+				providerEnvModule.getProviderEnvValue("AZURE_OPENAI_BASE_URL", explicit) ===
+				"https://explicit.example"
+					? 1
+					: 0,
+			me_miss:
+				providerEnvModule.getProviderEnvValue("MISSING_KEY", explicit) == null
+					? 1
+					: 0,
+		};
+	} finally {
+		if (previousOpenAi === undefined) {
+			delete process.env.OPENAI_API_KEY;
+		} else {
+			process.env.OPENAI_API_KEY = previousOpenAi;
+		}
+		if (previousGemini === undefined) {
+			delete process.env.GEMINI_API_KEY;
+		} else {
+			process.env.GEMINI_API_KEY = previousGemini;
+		}
+		if (previousAzure === undefined) {
+			delete process.env.AZURE_OPENAI_BASE_URL;
+		} else {
+			process.env.AZURE_OPENAI_BASE_URL = previousAzure;
+		}
+	}
+}
+
+function structuredApiKeyLoginFlag(providersById, providerId) {
+	const login = providersById.get(providerId)?.auth?.apiKey?.login;
+	if (typeof login !== "function") {
+		return 0;
+	}
+	return Function.prototype.toString.call(login).includes("select") ? 1 : 0;
+}
+
+function runProviderStructuredApiKeyLogin() {
+	const providersById = new Map(
+		builtinProvidersModule.builtinProviders().map((provider) => [provider.id, provider]),
+	);
+	return {
+		sl_openai: structuredApiKeyLoginFlag(providersById, "openai"),
+		sl_anthropic: structuredApiKeyLoginFlag(providersById, "anthropic"),
+		sl_google: structuredApiKeyLoginFlag(providersById, "google"),
+		sl_bedrock: structuredApiKeyLoginFlag(providersById, "amazon-bedrock"),
+		sl_vertex: structuredApiKeyLoginFlag(providersById, "google-vertex"),
+	};
+}
+
 async function measureProviderRegistryDefs() {
 	const lookupObserved = runProviderRegistryDefs();
 	const idsObserved = runProviderDefinitionIds();
+	const mergeObserved = runProviderMergeEnvironment();
+	const modelsObserved = runProviderRuntimeModels();
+	const structuredObserved = runProviderStructuredApiKeyLogin();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -14951,10 +15604,25 @@ async function measureProviderRegistryDefs() {
 		definition_ids: await collect("provider_registry_defs.definition_ids", () => {
 			return () => runProviderDefinitionIds();
 		}),
+		merge_environment: await collect("provider_registry_defs.merge_environment", () => {
+			return () => runProviderMergeEnvironment();
+		}),
+		runtime_models: await collect("provider_registry_defs.runtime_models", () => {
+			return () => runProviderRuntimeModels();
+		}),
+		structured_api_key_login: await collect(
+			"provider_registry_defs.structured_api_key_login",
+			() => {
+				return () => runProviderStructuredApiKeyLogin();
+			},
+		),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
 			sorted_digest: idsObserved.sorted_digest,
+			...mergeObserved,
+			...modelsObserved,
+			...structuredObserved,
 		},
 	};
 }
@@ -15332,6 +16000,12 @@ const bashTool = await measureBashTool();
 const outputAccumulator = await measureOutputAccumulator();
 process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
+process.stderr.write("goal20 pi paired paths: ls_tool\n");
+const lsTool = await measureLsTool();
+process.stderr.write("goal20 pi paired paths: tool_manager\n");
+const toolManager = await measureToolManager();
+process.stderr.write("goal20 pi paired paths: powershell_tool\n");
+const powershellTool = await measurePowershellTool();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -15503,12 +16177,36 @@ const result = {
 				"packages/agent/src/harness/events.ts HarnessEventBus.watch",
 			"harness_events.make_start":
 				"packages/agent/src/harness/events.ts RunStartEvent object",
+			"harness_events.make_end":
+				"packages/agent/src/harness/events.ts RunEndEvent object",
+			"harness_events.event_type":
+				"packages/agent/src/harness/events.ts event.type",
+			"harness_events.make_bus":
+				"packages/agent/src/harness/events.ts new HarnessEventBus()",
 			"find_tool.pattern_match":
 				"packages/coding-agent/src/core/tools/find.ts basename vs --full-path glob match (fd contract; cadr find-pattern-match-p)",
 			"find_tool.find_files":
 				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
 			"find_tool.make_tool":
 				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
+			"ls_tool.directory_entry_name":
+				"packages/coding-agent/src/core/tools/ls.ts directory suffix (stat isDirectory + '/' ; cadr directory-entry-name)",
+			"ls_tool.list_directory":
+				"packages/coding-agent/src/core/tools/ls.ts execute listing assembly (readdir/sort/suffix/limit/truncateHead)",
+			"ls_tool.make_tool":
+				"packages/coding-agent/src/core/tools/ls.ts createLsToolDefinition",
+			"tool_manager.get_tool_path":
+				"packages/coding-agent/src/utils/tools-manager.ts getToolPath",
+			"tool_manager.ensure_tool":
+				"packages/coding-agent/src/utils/tools-manager.ts ensureTool (local / PI_OFFLINE, no network)",
+			"tool_manager.cleanup_quarantine":
+				"packages/coding-agent/src/utils/windows-self-update.ts cleanupWindowsSelfUpdateQuarantine",
+			"powershell_tool.utf8_prefix":
+				"packages/coding-agent/src/core/tools/powershell.ts UTF8_OUTPUT_PREFIX",
+			"powershell_tool.prefix_command":
+				"packages/coding-agent/src/core/tools/powershell.ts createLocalPowerShellOperations prefix+command",
+			"powershell_tool.make_tool":
+				"packages/coding-agent/src/core/tools/powershell.ts createPowerShellToolDefinition",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15591,6 +16289,12 @@ const result = {
 				"packages/coding-agent/src/utils/image-resize.ts formatDimensionNote",
 			"image_runtime.api_provider":
 				"packages/ai/src/images-api-registry.ts getImagesApiProvider",
+			"image_runtime.output_modalities":
+				"packages/ai/src/api/openrouter-images.ts buildParams modalities",
+			"image_runtime.openrouter_content":
+				"packages/ai/src/api/openrouter-images.ts buildParams content parts",
+			"image_runtime.parse_data_image":
+				"packages/ai/src/api/openrouter-images.ts generateImages data-URL parse",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"cli_print_rpc.jsonl_read":
@@ -15951,6 +16655,12 @@ const result = {
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
 			"provider_registry_defs.definition_ids":
 				"packages/ai/src/providers/all.ts getBuiltinProviders",
+			"provider_registry_defs.merge_environment":
+				"packages/ai/src/utils/provider-env.ts getProviderEnvValue",
+			"provider_registry_defs.runtime_models":
+				"packages/ai/src/providers/all.ts getBuiltinModels",
+			"provider_registry_defs.structured_api_key_login":
+				"packages/ai/src/providers/amazon-bedrock.ts + google-vertex.ts ApiKeyAuth.login select flow",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"cli_bootstrap_sessions.coding_tools":
@@ -16049,6 +16759,9 @@ const result = {
 		bash_tool: bashTool,
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
+		ls_tool: lsTool,
+		tool_manager: toolManager,
+		powershell_tool: powershellTool,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,

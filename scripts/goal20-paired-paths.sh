@@ -82,8 +82,11 @@ export NO_COLOR=1
 # measurements mean anything.
 node "$PROJECT_DIRECTORY/scripts/goal20-gen-paired-fixtures.mjs" --check
 
+# Cloud/small-heap hosts exhaust the default 1GiB dynamic space compiling
+# this script. Override with SBCL_DYNAMIC_SPACE_SIZE (MiB).
+SBCL_DYNAMIC_SPACE_SIZE="${SBCL_DYNAMIC_SPACE_SIZE:-4096}"
 # shellcheck disable=SC2086
-"$SBCL_COMMAND" --noinform --disable-debugger \
+"$SBCL_COMMAND" --dynamic-space-size "$SBCL_DYNAMIC_SPACE_SIZE" --noinform --disable-debugger \
   --script "$PROJECT_DIRECTORY/scripts/goal20-paired-paths.lisp" \
   $BENCH_ARGUMENTS --keep-journal "$CADR_JOURNAL" --output "$CADR_REPORT"
 

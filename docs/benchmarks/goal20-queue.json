@@ -135,7 +135,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 261,
@@ -181,7 +181,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 266,
@@ -201,7 +201,7 @@
    "measure": "measure-agent-tool-loop",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 268,
@@ -211,7 +211,7 @@
    "measure": "measure-cli-settings",
    "metric": null,
    "branch": null,
-   "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 269,
@@ -221,7 +221,7 @@
    "measure": "measure-resource-loader",
    "metric": null,
    "branch": null,
-    "note": "empty slot leftover from before Goal 21; metric was null — not started"
+   "note": "empty slot leftover from before Goal 21; metric was null \u2014 not started"
   },
   {
    "pair": 270,
@@ -435,6 +435,213 @@
    "measure": "measure-find-tool",
    "metric": "find_tool.make_tool",
    "branch": "cursor/pair-289-291-find-leftovers-c98c"
+  },
+  {
+   "pair": 292,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/tool-manager.lisp",
+   "measure": "measure-tool-manager",
+   "metric": "tool_manager.get_tool_path",
+   "branch": "cursor/pair-292-294-tool-manager-af5e"
+  },
+  {
+   "pair": 293,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/tool-manager.lisp",
+   "measure": "measure-tool-manager",
+   "metric": "tool_manager.ensure_tool",
+   "branch": "cursor/pair-292-294-tool-manager-af5e"
+  },
+  {
+   "pair": 294,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/tool-manager.lisp",
+   "measure": "measure-tool-manager",
+   "metric": "tool_manager.cleanup_quarantine",
+   "branch": "cursor/pair-292-294-tool-manager-af5e"
+  },
+  {
+   "pair": 295,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.merge_environment",
+   "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+  },
+  {
+   "pair": 296,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.runtime_models",
+   "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+  },
+  {
+   "pair": 297,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.structured_api_key_login",
+   "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+  },
+  {
+   "pair": 298,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.output_modalities",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
+   "pair": 299,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.openrouter_content",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
+   "pair": 300,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.parse_data_image",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
+   "pair": 313,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.make_end",
+   "branch": "cursor/pair-harness-events-leftovers-313-315-1cff",
+   "ratio": 1.574,
+   "cadrUs": 0.216,
+   "piUs": 0.137,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 314,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.event_type",
+   "branch": "cursor/pair-harness-events-leftovers-313-315-1cff",
+   "ratio": 1.468,
+   "cadrUs": 0.175,
+   "piUs": 0.119,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 315,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.make_bus",
+   "branch": "cursor/pair-harness-events-leftovers-313-315-1cff",
+   "ratio": 1.351,
+   "cadrUs": 0.344,
+   "piUs": 0.255,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 301,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.utf8_prefix",
+   "branch": "cursor/pair-301-303-powershell-leftovers-1ace",
+   "ratio": 3.791,
+   "cadrUs": 0.647,
+   "piUs": 0.171,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 302,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.prefix_command",
+   "branch": "cursor/pair-301-303-powershell-leftovers-1ace",
+   "ratio": 1.395,
+   "cadrUs": 0.468,
+   "piUs": 0.336,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 303,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.make_tool",
+   "branch": "cursor/pair-301-303-powershell-leftovers-1ace",
+   "ratio": 1.337,
+   "cadrUs": 1.936,
+   "piUs": 1.448,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 316,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/ls.lisp",
+   "measure": "measure-ls-tool",
+   "metric": "ls_tool.directory_entry_name",
+   "branch": "cursor/pair-316-318-ls-leftovers-41ff",
+   "ratio": 0.969,
+   "cadrUs": 4.659,
+   "piUs": 4.808,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 317,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/ls.lisp",
+   "measure": "measure-ls-tool",
+   "metric": "ls_tool.list_directory",
+   "branch": "cursor/pair-316-318-ls-leftovers-41ff",
+   "ratio": 1.119,
+   "cadrUs": 352.2,
+   "piUs": 314.9,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 318,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/ls.lisp",
+   "measure": "measure-ls-tool",
+   "metric": "ls_tool.make_tool",
+   "branch": "cursor/pair-316-318-ls-leftovers-41ff",
+   "ratio": 1.017,
+   "cadrUs": 284.4,
+   "piUs": 279.6,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 304,
