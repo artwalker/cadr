@@ -13,7 +13,7 @@
 
 ## G21 前置
 
-- [x] Goal 21 完成（pi `v0.84.3` / `4e58f324f`）。队列在 **0843 基线**。Goal 20 pairing / perf 仍暂停（`docs/benchmarks/goal21-queue.json` `goal20Paused` = true）。本项不恢复 pairing、不开新 pair。
+- [x] Goal 21 完成（pi `v0.84.3` / `4e58f324f`）。队列在 **0843 基线**。Ethan restored pairing on 2026-08-27（`docs/benchmarks/goal21-queue.json` `goal20Paused` = false；`docs/benchmarks/goal20-queue.json` `paused` = false）。This cut does not announce Goal 20 complete, does not mark G.17 `met`, and does not start a new pair.
 
 ---
 
