@@ -323,6 +323,9 @@ METRIC_KEYS = (
     "cli_bootstrap_sessions.bootstrap_auth",
     "ai_runtime_faux.blocks",
     "http_transport.parse_url",
+    "core_rest.cancellation_make",
+    "core_rest.cancellation_aborted",
+    "core_rest.cancellation_set",
     "session_pipeline.session_load",
     "session_pipeline.context_walk",
     "session_pipeline.session_leaf_id",
@@ -390,15 +393,33 @@ def build_entry(
 
 
 def append_entry(history_path: Path, entry: dict) -> dict:
+    """Append one entry without re-dumping existing JSON bytes."""
+    suffix = "\n  ]\n}\n"
     if history_path.is_file():
-        history = json.loads(history_path.read_text(encoding="utf-8"))
+        raw = history_path.read_text(encoding="utf-8")
+        history = json.loads(raw)
     else:
+        raw = None
         history = {"schemaVersion": 1, "entries": []}
     history.setdefault("schemaVersion", 1)
     history.setdefault("entries", []).append(entry)
     history_path.parent.mkdir(parents=True, exist_ok=True)
+    if raw is None:
+        history_path.write_text(
+            json.dumps(history, indent=2, ensure_ascii=False) + "\n",
+            encoding="utf-8",
+        )
+        return history
+    if not raw.endswith(suffix):
+        raise ValueError(
+            f"paired-path history {history_path} is not append-splicable"
+        )
+    dumped = json.dumps(entry, indent=2, ensure_ascii=False)
+    indented = "\n".join(
+        ("  " + line if line else line) for line in dumped.split("\n")
+    )
     history_path.write_text(
-        json.dumps(history, indent=2, ensure_ascii=False) + "\n",
+        raw[: -len(suffix)] + ",\n" + indented + suffix,
         encoding="utf-8",
     )
     return history

@@ -139,6 +139,9 @@
 ;;;; 307. cli_settings settings-reload vs SettingsManager.reload
 ;;;; 308. cli_settings settings-enabled-models vs SettingsManager.getEnabledModels
 ;;;; 309. cli_settings settings-block-images-p vs SettingsManager.getBlockImages
+;;;; 361. core_rest make-cancellation-state vs AbortController constructor
+;;;; 362. core_rest cancellation-aborted-p vs AbortSignal.aborted
+;;;; 363. core_rest set-cancellation-aborted-p vs AbortController.abort + fresh controller
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -568,6 +571,9 @@
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
+    ("core_rest.cancellation_make" . 50)
+    ("core_rest.cancellation_aborted" . 50)
+    ("core_rest.cancellation_set" . 50)
     ("session_pipeline.session_load" . 3)
     ("session_pipeline.context_walk" . 50)
     ("session_pipeline.session_leaf_id" . 50)
@@ -15741,6 +15747,75 @@
                 (lambda ()
                   (run-http-transport-parse-url)))))))
 
+(defun run-core-rest-cancellation-make ()
+  ;; Leftover sibling of Pair 322 abort / Pair 337 wait: constructor only.
+  ;; Not abort-cancellation or wait-for-cancellation as the timed owner.
+  (let ((state (cadr-core:make-cancellation-state))
+        (with-pred
+          (cadr-core:make-cancellation-state
+           :aborted-function (lambda () nil))))
+    (list
+     (if (typep state 'cadr-core:cancellation-state) 1 0)
+     (if (cadr-core:cancellation-aborted-p state) 0 1)
+     (if (typep with-pred 'cadr-core:cancellation-state) 1 0))))
+
+(defun run-core-rest-cancellation-aborted ()
+  ;; Leftover sibling: cancellation-aborted-p as timed owner, not abort/wait.
+  (let ((live (cadr-core:make-cancellation-state))
+        (pred
+          (cadr-core:make-cancellation-state
+           :aborted-function (lambda () t)))
+        (aborted (cadr-core:make-cancellation-state)))
+    (cadr-core:set-cancellation-aborted-p aborted t)
+    (list
+     (if (cadr-core:cancellation-aborted-p live) 0 1)
+     (if (cadr-core:cancellation-aborted-p pred) 1 0)
+     (if (cadr-core:cancellation-aborted-p aborted) 1 0))))
+
+(defun run-core-rest-cancellation-set ()
+  ;; Leftover sibling: set-cancellation-aborted-p including clear.
+  ;; Not abort-cancellation as the timed owner.
+  (let ((state (cadr-core:make-cancellation-state)))
+    (cadr-core:set-cancellation-aborted-p state t)
+    (let ((set-ok (if (cadr-core:cancellation-aborted-p state) 1 0)))
+      (cadr-core:set-cancellation-aborted-p state nil)
+      (list
+       set-ok
+       (if (cadr-core:cancellation-aborted-p state) 0 1)
+       1))))
+
+(defun measure-core-rest ()
+  (let ((make (run-core-rest-cancellation-make))
+        (aborted (run-core-rest-cancellation-aborted))
+        (set (run-core-rest-cancellation-set)))
+    (json-object
+     "observed"
+     (json-object
+      "cm_type" (first make)
+      "cm_live" (second make)
+      "cm_pred" (third make)
+      "cab_live" (first aborted)
+      "cab_pred" (second aborted)
+      "cab_abort" (third aborted)
+      "cs_set" (first set)
+      "cs_clear" (second set)
+      "cs_n" (third set))
+     "cancellation_make"
+     (collect "core_rest.cancellation_make"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-cancellation-make))))
+     "cancellation_aborted"
+     (collect "core_rest.cancellation_aborted"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-cancellation-aborted))))
+     "cancellation_set"
+     (collect "core_rest.cancellation_set"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-cancellation-set)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -16387,6 +16462,12 @@
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
       "src/cadr-ai/transport/http.lisp parse-http-url"
+      "core_rest.cancellation_make"
+      "src/cadr-core/cancellation.lisp make-cancellation-state"
+      "core_rest.cancellation_aborted"
+      "src/cadr-core/cancellation.lisp cancellation-aborted-p"
+      "core_rest.cancellation_set"
+      "src/cadr-core/cancellation.lisp set-cancellation-aborted-p"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -16610,6 +16691,8 @@
               (let ((faux (measure-ai-runtime-faux-blocks)))
               (format *error-output* "goal20 cadr paired paths: http_transport~%")
               (let ((http-transport (measure-http-transport-parse-url)))
+              (format *error-output* "goal20 cadr paired paths: core_rest~%")
+              (let ((core-rest (measure-core-rest)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
               (format *error-output* "goal20 cadr paired paths: websocket_stream~%")
@@ -16703,6 +16786,7 @@
               "cli_bootstrap_sessions" bootstrap
               "ai_runtime_faux" faux
               "http_transport" http-transport
+              "core_rest" core-rest
               "render_slicing" slicing
               "websocket_stream" websocket)
              "parameters"
@@ -16720,7 +16804,7 @@
               "cadr-ai:*http-request-function* returns the SSE fixture; no socket is opened"
               "warmups" *warmups*)
              "provenance" (provenance-json staged-digests)
-             "schema_version" 1))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+             "schema_version" 1)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 
 (defun write-result (result)
   (let ((text (cadr-ai::stringify-json result)))

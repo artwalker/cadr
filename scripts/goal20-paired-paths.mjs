@@ -431,6 +431,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
+	"core_rest.cancellation_make": 50,
+	"core_rest.cancellation_aborted": 50,
+	"core_rest.cancellation_set": 50,
 	"session_pipeline.session_load": 3,
 	"session_pipeline.context_walk": 50,
 	"session_pipeline.session_leaf_id": 50,
@@ -15853,6 +15856,69 @@ async function measureHttpTransportParseUrl() {
 	};
 }
 
+function runCoreRestCancellationMake() {
+	const live = new AbortController();
+	const withPred = new AbortController();
+	return {
+		cm_type: live.signal ? 1 : 0,
+		cm_live: live.signal.aborted ? 0 : 1,
+		cm_pred: withPred.signal ? 1 : 0,
+	};
+}
+
+function runCoreRestCancellationAborted() {
+	const live = new AbortController();
+	const pred = new AbortController();
+	pred.abort();
+	const aborted = new AbortController();
+	aborted.abort();
+	return {
+		cab_live: live.signal.aborted ? 0 : 1,
+		cab_pred: pred.signal.aborted ? 1 : 0,
+		cab_abort: aborted.signal.aborted ? 1 : 0,
+	};
+}
+
+function runCoreRestCancellationSet() {
+	const state = new AbortController();
+	state.abort();
+	const setOk = state.signal.aborted ? 1 : 0;
+	const cleared = new AbortController();
+	return {
+		cs_set: setOk,
+		cs_clear: cleared.signal.aborted ? 0 : 1,
+		cs_n: 1,
+	};
+}
+
+async function measureCoreRest() {
+	const make = runCoreRestCancellationMake();
+	const aborted = runCoreRestCancellationAborted();
+	const set = runCoreRestCancellationSet();
+	return {
+		observed: {
+			cm_type: make.cm_type,
+			cm_live: make.cm_live,
+			cm_pred: make.cm_pred,
+			cab_live: aborted.cab_live,
+			cab_pred: aborted.cab_pred,
+			cab_abort: aborted.cab_abort,
+			cs_set: set.cs_set,
+			cs_clear: set.cs_clear,
+			cs_n: set.cs_n,
+		},
+		cancellation_make: await collect("core_rest.cancellation_make", () => {
+			return () => runCoreRestCancellationMake();
+		}),
+		cancellation_aborted: await collect("core_rest.cancellation_aborted", () => {
+			return () => runCoreRestCancellationAborted();
+		}),
+		cancellation_set: await collect("core_rest.cancellation_set", () => {
+			return () => runCoreRestCancellationSet();
+		}),
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -16157,6 +16223,8 @@ process.stderr.write("goal20 pi paired paths: ai_runtime_faux\n");
 const aiRuntimeFaux = await measureAiRuntimeFauxBlocks();
 process.stderr.write("goal20 pi paired paths: http_transport\n");
 const httpTransport = await measureHttpTransportParseUrl();
+process.stderr.write("goal20 pi paired paths: core_rest\n");
+const coreRest = await measureCoreRest();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 process.stderr.write("goal20 pi paired paths: websocket_stream\n");
@@ -16737,6 +16805,12 @@ const result = {
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
 				"WHATWG URL (https://example.com/foo + http://localhost:8080/bar)",
+			"core_rest.cancellation_make":
+				"AbortController constructor (live + unused aborted handler)",
+			"core_rest.cancellation_aborted":
+				"AbortSignal.aborted (live / aborted / aborted)",
+			"core_rest.cancellation_set":
+				"AbortController.abort + fresh controller (JS cannot un-abort)",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -16871,6 +16945,7 @@ const result = {
 		cli_bootstrap_sessions: cliBootstrap,
 		ai_runtime_faux: aiRuntimeFaux,
 		http_transport: httpTransport,
+		core_rest: coreRest,
 		render_slicing: renderSlicing,
 		websocket_stream: websocketStream,
 	},

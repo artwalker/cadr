@@ -715,6 +715,34 @@
      "measure": "measure-cli-settings",
      "metric": "cli_settings.block_images",
      "branch": "cursor/pair-307-309-cli-settings-leftovers-17b4"
+    },
+    {
+     "pair": 361,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/cancellation.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.cancellation_make",
+     "branch": "cursor/pair-361-363-core-rest-leftovers-0556",
+     "note": "nextPairNum left at tip 328 (outside 361-363); 328-357 locked by other leftover knives"
+    },
+    {
+     "pair": 362,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/cancellation.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.cancellation_aborted",
+     "branch": "cursor/pair-361-363-core-rest-leftovers-0556"
+    },
+    {
+     "pair": 363,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/cancellation.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.cancellation_set",
+     "branch": "cursor/pair-361-363-core-rest-leftovers-0556"
     }
    ],
    "mergeQueue": []
