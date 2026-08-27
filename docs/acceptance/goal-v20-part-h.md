@@ -3365,8 +3365,9 @@ the same `agent_tool_loop` hole. Timed work is the function (not the
 path, symlink alias, and distinct sibling — not write/edit tools. Same
 staged scratch layout as `with_queue`. Observed `fmqf_alias` /
 `fmqf_other` / `fmqf_fifo` / `fmqf_run` / `fmqf_n` are exact. First n=5
-freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
-optimize.
+freeze **0.523×** (124.1 / 237.4 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 287 — `file_mutation_queue` (make_state)
 
@@ -3380,8 +3381,9 @@ key (existing path and distinct sibling) — not registry insert, not
 `with-file-mutation-queue`, not write/edit tools. Same staged scratch
 layout as `with_queue`. Observed `fmqm_pending` / `fmqm_ticket` /
 `fmqm_serving` / `fmqm_other` / `fmqm_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
-optimize.
+**1.597×** (105.7 / 66.2 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 288 — `file_mutation_queue` (state_key)
 
@@ -3396,8 +3398,9 @@ sibling, repeat lookup) — not path encoding as the owner, not
 `with-file-mutation-queue`, not write/edit tools. Same staged scratch
 layout as `with_queue`. Observed `fmqt_alias` / `fmqt_other` /
 `fmqt_missing` / `fmqt_repeat` / `fmqt_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
-optimize.
+**1.009×** (134.3 / 133.1 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

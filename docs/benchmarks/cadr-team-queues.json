@@ -373,29 +373,44 @@
     {
      "pair": 286,
      "lane": "a",
-     "status": "in_progress",
+     "status": "done",
      "source": "src/cadr-agent/file-mutation-queue.lisp",
      "measure": "measure-agent-tool-loop",
      "metric": "file_mutation_queue.call_with",
-     "branch": "cursor/pair-286-288-fmq-leftover-150d"
+     "branch": "cursor/pair-286-288-fmq-leftover-150d",
+     "ratio": 0.523,
+     "cadrUs": 124.1,
+     "piUs": 237.4,
+     "ceiling": 8.0,
+     "rc": 1
     },
     {
      "pair": 287,
      "lane": "a",
-     "status": "in_progress",
+     "status": "done",
      "source": "src/cadr-agent/file-mutation-queue.lisp",
      "measure": "measure-agent-tool-loop",
      "metric": "file_mutation_queue.make_state",
-     "branch": "cursor/pair-286-288-fmq-leftover-150d"
+     "branch": "cursor/pair-286-288-fmq-leftover-150d",
+     "ratio": 1.597,
+     "cadrUs": 105.7,
+     "piUs": 66.2,
+     "ceiling": 8.0,
+     "rc": 1
     },
     {
      "pair": 288,
      "lane": "a",
-     "status": "in_progress",
+     "status": "done",
      "source": "src/cadr-agent/file-mutation-queue.lisp",
      "measure": "measure-agent-tool-loop",
      "metric": "file_mutation_queue.state_key",
-     "branch": "cursor/pair-286-288-fmq-leftover-150d"
+     "branch": "cursor/pair-286-288-fmq-leftover-150d",
+     "ratio": 1.009,
+     "cadrUs": 134.3,
+     "piUs": 133.1,
+     "ceiling": 8.0,
+     "rc": 1
     }
    ],
    "mergeQueue": []
