@@ -1,7 +1,7 @@
 {
  "schemaVersion": 1,
  "paused": false,
- "nextPairNum": 301,
+ "nextPairNum": 328,
  "lanes": {
   "a": {
    "role": "pairing",
@@ -489,6 +489,117 @@
    "measure": "measure-provider-registry-defs",
    "metric": "provider_registry_defs.structured_api_key_login",
    "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
+  },
+  {
+   "pair": 298,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.output_modalities",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
+   "pair": 299,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.openrouter_content",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
+   "pair": 300,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/images.lisp",
+   "measure": "measure-image-runtime",
+   "metric": "image_runtime.parse_data_image",
+   "branch": "cursor/pair-298-300-image-runtime-leftovers-4eb0"
+  },
+  {
+   "pair": 313,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.make_end",
+   "branch": "cursor/pair-harness-events-leftovers-313-315-1cff",
+   "ratio": 1.574,
+   "cadrUs": 0.216,
+   "piUs": 0.137,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 314,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.event_type",
+   "branch": "cursor/pair-harness-events-leftovers-313-315-1cff",
+   "ratio": 1.468,
+   "cadrUs": 0.175,
+   "piUs": 0.119,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 315,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/harness-events.lisp",
+   "measure": "measure-agent-tool-loop",
+   "metric": "harness_events.make_bus",
+   "branch": "cursor/pair-harness-events-leftovers-313-315-1cff",
+   "ratio": 1.351,
+   "cadrUs": 0.344,
+   "piUs": 0.255,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 301,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.utf8_prefix",
+   "branch": "cursor/pair-301-303-powershell-leftovers-1ace",
+   "ratio": 3.791,
+   "cadrUs": 0.647,
+   "piUs": 0.171,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 302,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.prefix_command",
+   "branch": "cursor/pair-301-303-powershell-leftovers-1ace",
+   "ratio": 1.395,
+   "cadrUs": 0.468,
+   "piUs": 0.336,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 303,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-cli/tools/powershell.lisp",
+   "measure": "measure-powershell-tool",
+   "metric": "powershell_tool.make_tool",
+   "branch": "cursor/pair-301-303-powershell-leftovers-1ace",
+   "ratio": 1.337,
+   "cadrUs": 1.936,
+   "piUs": 1.448,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 316,

@@ -65,6 +65,9 @@
 ;;;;  50. image_runtime find-image-model vs getImageModel
 ;;;;  51. image_runtime format-image-dimension-note vs formatDimensionNote
 ;;;;  52. image_runtime get-images-api-provider vs getImagesApiProvider
+;;;; 298. image_runtime image-output-modalities vs buildParams modalities
+;;;; 299. image_runtime openrouter-image-content vs buildParams content parts
+;;;; 300. image_runtime parse-data-image vs generateImages data-URL parse
 ;;;;  53. ai_support uuid-v7 vs uuidv7
 ;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
 ;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
@@ -124,6 +127,12 @@
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
+;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
+;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
+;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
+;;;; 313. harness_events make_end vs RunEndEvent object
+;;;; 314. harness_events event_type vs event.type
+;;;; 315. harness_events make_bus vs new HarnessEventBus()
 ;;;; 109. agent_tool_loop resolve-tool-path vs resolveToCwd
 ;;;; 110. agent_tool_loop detect-line-ending vs detectLineEnding
 ;;;; 245. agent_tool_loop truncate-summary-tool-result vs truncateForSummary
@@ -287,6 +296,9 @@
     ("harness_events.on" . 50)
     ("harness_events.watch" . 50)
     ("harness_events.make_start" . 50)
+    ("harness_events.make_end" . 50)
+    ("harness_events.event_type" . 50)
+    ("harness_events.make_bus" . 50)
     ("find_tool.pattern_match" . 50)
     ("find_tool.find_files" . 50)
     ("find_tool.make_tool" . 50)
@@ -296,6 +308,9 @@
     ("tool_manager.get_tool_path" . 50)
     ("tool_manager.ensure_tool" . 50)
     ("tool_manager.cleanup_quarantine" . 50)
+    ("powershell_tool.utf8_prefix" . 50)
+    ("powershell_tool.prefix_command" . 50)
+    ("powershell_tool.make_tool" . 50)
     ("settings_load.project_trust" . 20)
     ("settings_load.config_value" . 50)
     ("settings_load.http_idle" . 50)
@@ -340,6 +355,9 @@
     ("image_runtime.lookup" . 50)
     ("image_runtime.dimension_note" . 50)
     ("image_runtime.api_provider" . 50)
+    ("image_runtime.output_modalities" . 50)
+    ("image_runtime.openrouter_content" . 50)
+    ("image_runtime.parse_data_image" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
@@ -4392,6 +4410,48 @@
      (he-truth (equal (getf event :lane) "main"))
      (he-truth (equal (getf event :run-id) "run-1")))))
 
+(defun run-harness-events-make-end ()
+  ;; Baseline RunEndEvent object vs make-run-end-event; not emit, not
+  ;; on, not watch, not make_start.
+  (let ((event
+          (cadr-agent:make-run-end-event
+           "main" "run-1" :completed "entry-1"))
+        (aborted
+          (cadr-agent:make-run-end-event "side" "run-2" :aborted nil)))
+    (list
+     (he-truth (eq (cadr-agent:harness-event-type event) :run-end))
+     (he-truth (equal (getf event :lane) "main"))
+     (he-truth (equal (getf event :run-id) "run-1"))
+     (he-truth (eq (getf event :outcome) :completed))
+     (he-truth
+      (and (eq (getf aborted :outcome) :aborted)
+           (null (getf aborted :leaf-id)))))))
+
+(defun run-harness-events-event-type ()
+  ;; Baseline event.type field vs harness-event-type; not constructors
+  ;; as the timed owner, not emit/on/watch.
+  (let ((start (cadr-agent:make-run-start-event "main" "run-1"))
+        (end
+          (cadr-agent:make-run-end-event
+           "main" "run-1" :completed "entry-1"))
+        (failed
+          (cadr-agent:make-run-end-event
+           "side" "run-2" :failed "leaf-2")))
+    (list
+     (he-truth (eq (cadr-agent:harness-event-type start) :run-start))
+     (he-truth (eq (cadr-agent:harness-event-type end) :run-end))
+     (he-truth (eq (cadr-agent:harness-event-type failed) :run-end)))))
+
+(defun run-harness-events-make-bus ()
+  ;; Baseline `new HarnessEventBus()` vs make-harness-event-bus; not
+  ;; on/watch/emit delivery.
+  (let ((a (cadr-agent:make-harness-event-bus))
+        (b (cadr-agent:make-harness-event-bus)))
+    (list
+     (he-truth (not (eq a b)))
+     (he-truth (typep a 'cadr-agent::harness-event-bus))
+     (he-truth (typep b 'cadr-agent::harness-event-bus)))))
+
 (defun measure-harness-events ()
   (destructuring-bind (he-direct he-watch he-start he-end he-second)
       (run-harness-events-emit)
@@ -4401,6 +4461,12 @@
           (run-harness-events-watch)
         (destructuring-bind (hes-type hes-lane hes-run)
             (run-harness-events-make-start)
+          (destructuring-bind (hee-type hee-lane hee-run hee-outcome hee-abort)
+              (run-harness-events-make-end)
+            (destructuring-bind (het-start het-end het-fail)
+                (run-harness-events-event-type)
+              (destructuring-bind (heb-distinct heb-a heb-b)
+                  (run-harness-events-make-bus)
           (json-object
            "observed"
            (json-object
@@ -4418,7 +4484,18 @@
             "hew_end" hew-end
             "hes_type" hes-type
             "hes_lane" hes-lane
-            "hes_run" hes-run)
+            "hes_run" hes-run
+            "hee_type" hee-type
+            "hee_lane" hee-lane
+            "hee_run" hee-run
+            "hee_outcome" hee-outcome
+            "hee_abort" hee-abort
+            "het_start" het-start
+            "het_end" het-end
+            "het_fail" het-fail
+            "heb_distinct" heb-distinct
+            "heb_a" heb-a
+            "heb_b" heb-b)
            "emit"
            (collect "harness_events.emit"
                     (lambda ()
@@ -4438,7 +4515,22 @@
            (collect "harness_events.make_start"
                     (lambda ()
                       (lambda ()
-                        (run-harness-events-make-start))))))))))
+                        (run-harness-events-make-start))))
+           "make_end"
+           (collect "harness_events.make_end"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-make-end))))
+           "event_type"
+           (collect "harness_events.event_type"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-event-type))))
+           "make_bus"
+           (collect "harness_events.make_bus"
+                    (lambda ()
+                      (lambda ()
+                        (run-harness-events-make-bus)))))))))))))
 
 (defun bash-tool-truth (value)
   (if value 1 0))
@@ -4843,6 +4935,103 @@
                   (lambda ()
                     (lambda ()
                       (run-ls-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tools/powershell.lisp (Pairs 301-303).
+;;; Timed work is the UTF-8 output prefix, prefix+command concat, and
+;;; make-powershell-tool schema — not execute/spawn.
+;;; ---------------------------------------------------------------------
+
+(defun powershell-tool-truth (value)
+  (if value 1 0))
+
+(defun run-powershell-utf8-prefix ()
+  (let ((prefix cadr-cli::+powershell-utf8-output-prefix+))
+    (list
+     (length prefix)
+     (powershell-tool-truth
+      (and (plusp (length prefix))
+           (char= #\Newline (char prefix (1- (length prefix))))))
+     (powershell-tool-truth
+      (and (>= (length prefix) 4)
+           (string= "try " prefix :end2 4)))
+     (powershell-tool-truth (search "UTF8" prefix))
+     4)))
+
+(defun powershell-prefix-command (command)
+  (concatenate 'string cadr-cli::+powershell-utf8-output-prefix+ command))
+
+(defun run-powershell-prefix-command ()
+  (let* ((prefix cadr-cli::+powershell-utf8-output-prefix+)
+         (empty (powershell-prefix-command ""))
+         (date (powershell-prefix-command "Get-Date"))
+         (write (powershell-prefix-command "Write-Output hi")))
+    (list
+     (powershell-tool-truth (string= empty prefix))
+     (powershell-tool-truth
+      (and (>= (length date) (length prefix))
+           (string= "Get-Date" date :start2 (length prefix))))
+     (powershell-tool-truth
+      (and (>= (length write) (length prefix))
+           (string= "Write-Output hi" write :start2 (length prefix))))
+     3)))
+
+(defun run-powershell-make-tool ()
+  (let* ((tool (cadr-cli:make-powershell-tool "/tmp"))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list))))
+    (list
+     (powershell-tool-truth
+      (string= (cadr-ai:tool-name tool) "powershell"))
+     (powershell-tool-truth
+      (search "Execute a PowerShell command"
+              (cadr-ai:tool-description tool)))
+     (powershell-tool-truth
+      (and required-list
+           (find "command" required-list :test #'string=)))
+     3)))
+
+(defun measure-powershell-tool ()
+  (destructuring-bind (psu-len psu-nl psu-try psu-utf8 psu-n)
+      (run-powershell-utf8-prefix)
+    (destructuring-bind (psc-empty psc-date psc-write psc-n)
+        (run-powershell-prefix-command)
+      (destructuring-bind (pmt-name pmt-desc pmt-req pmt-n)
+          (run-powershell-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "psu_len" psu-len
+          "psu_nl" psu-nl
+          "psu_try" psu-try
+          "psu_utf8" psu-utf8
+          "psu_n" psu-n
+          "psc_empty" psc-empty
+          "psc_date" psc-date
+          "psc_write" psc-write
+          "psc_n" psc-n
+          "pmt_name" pmt-name
+          "pmt_desc" pmt-desc
+          "pmt_req" pmt-req
+          "pmt_n" pmt-n)
+         "utf8_prefix"
+         (collect "powershell_tool.utf8_prefix"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-utf8-prefix))))
+         "prefix_command"
+         (collect "powershell_tool.prefix_command"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-prefix-command))))
+         "make_tool"
+         (collect "powershell_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-powershell-make-tool)))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -6781,12 +6970,80 @@
    (image-api-provider-flag :fixture-images)
    (image-api-provider-flag :nope)))
 
+(defparameter *image-modality-gemini* nil)
+(defparameter *image-modality-flux* nil)
+
+(defun ensure-image-openrouter-models ()
+  (unless *image-modality-gemini*
+    (setf *image-modality-gemini*
+          (cadr-ai:find-image-model
+           :openrouter "google/gemini-2.5-flash-image"))
+    (setf *image-modality-flux*
+          (cadr-ai:find-image-model
+           :openrouter "black-forest-labs/flux.2-pro"))))
+
+(defun modalities-has-text (mods)
+  (if (find "text" mods :test #'string=) 1 0))
+
+(defun run-image-runtime-output-modalities ()
+  (ensure-image-openrouter-models)
+  (let ((gemini (cadr-ai::image-output-modalities *image-modality-gemini*))
+        (flux (cadr-ai::image-output-modalities *image-modality-flux*)))
+    (list (length gemini)
+          (modalities-has-text gemini)
+          (length flux)
+          (modalities-has-text flux))))
+
+(defun parse-data-image-obs (value)
+  (let ((parsed (cadr-ai::parse-data-image value)))
+    (if parsed
+        (list (cadr-ai:image-content-mime-type parsed)
+              (cadr-ai:image-content-data parsed)
+              1)
+        (list "" "" 0))))
+
+(defun run-image-runtime-parse-data-image ()
+  (append
+   (parse-data-image-obs "data:image/png;base64,ZmFrZS1wbmc=")
+   (list
+    (third (parse-data-image-obs "not-an-image"))
+    (third (parse-data-image-obs "https://example.com/x.png")))))
+
+(defun run-image-runtime-openrouter-content ()
+  (let* ((text
+           (cadr-ai:make-text-content :text "Generate a dog"))
+         (image
+           (cadr-ai:make-image-content
+            :mime-type "image/png"
+            :data "aW1hZ2U="))
+         (text-part (cadr-ai::openrouter-image-content text))
+         (image-part (cadr-ai::openrouter-image-content image))
+         (url
+           (cadr-ai::json-get
+            (cadr-ai::json-get image-part "image_url")
+            "url")))
+    (list
+     (or (cadr-ai::json-get text-part "type") "")
+     (or (cadr-ai::json-get text-part "text") "")
+     (or (cadr-ai::json-get image-part "type") "")
+     (or url "")
+     (if (and (string= (or (cadr-ai::json-get text-part "type") "")
+                       "text")
+              (string= (or (cadr-ai::json-get image-part "type") "")
+                       "image_url"))
+         1
+         0))))
+
 (defun measure-image-runtime ()
+  (ensure-image-openrouter-models)
   (let ((dims (run-image-runtime))
         (mime (run-image-runtime-mime))
         (lookup (run-image-runtime-lookup))
         (notes (run-image-runtime-dimension-note))
-        (api (run-image-runtime-api-provider)))
+        (api (run-image-runtime-api-provider))
+        (modalities (run-image-runtime-output-modalities))
+        (content (run-image-runtime-openrouter-content))
+        (parsed (run-image-runtime-parse-data-image)))
     (json-object
      "observed"
      (json-object
@@ -6807,7 +7064,21 @@
       "note_half" (second notes)
       "note_plain" (third notes)
       "api_fixture" (first api)
-      "api_unknown" (second api))
+      "api_unknown" (second api)
+      "om_gemini_n" (first modalities)
+      "om_gemini_text" (second modalities)
+      "om_flux_n" (third modalities)
+      "om_flux_text" (fourth modalities)
+      "oc_text_type" (first content)
+      "oc_text" (second content)
+      "oc_img_type" (third content)
+      "oc_img_url" (fourth content)
+      "oc_ok" (fifth content)
+      "pd_ok_mime" (first parsed)
+      "pd_ok_data" (second parsed)
+      "pd_ok" (third parsed)
+      "pd_miss" (fourth parsed)
+      "pd_plain" (fifth parsed))
      "dimensions"
      (collect "image_runtime.dimensions"
               (lambda ()
@@ -6832,7 +7103,22 @@
      (collect "image_runtime.api_provider"
               (lambda ()
                 (lambda ()
-                  (run-image-runtime-api-provider)))))))
+                  (run-image-runtime-api-provider))))
+     "output_modalities"
+     (collect "image_runtime.output_modalities"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-output-modalities))))
+     "openrouter_content"
+     (collect "image_runtime.openrouter_content"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-openrouter-content))))
+     "parse_data_image"
+     (collect "image_runtime.parse_data_image"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-parse-data-image)))))))
 
 (defun rpc-jsonl-object ()
   (cadr-ai::json-object
@@ -15343,6 +15629,12 @@
       "src/cadr-agent/harness-events.lisp harness-event-bus-watch"
       "harness_events.make_start"
       "src/cadr-agent/harness-events.lisp make-run-start-event"
+      "harness_events.make_end"
+      "src/cadr-agent/harness-events.lisp make-run-end-event"
+      "harness_events.event_type"
+      "src/cadr-agent/harness-events.lisp harness-event-type"
+      "harness_events.make_bus"
+      "src/cadr-agent/harness-events.lisp make-harness-event-bus"
       "find_tool.pattern_match"
       "src/cadr-cli/tools/find.lisp find-pattern-match-p"
       "find_tool.find_files"
@@ -15361,6 +15653,12 @@
       "src/cadr-cli/tool-manager.lisp ensure-tool"
       "tool_manager.cleanup_quarantine"
       "src/cadr-cli/tool-manager.lisp cleanup-windows-self-update-quarantine"
+      "powershell_tool.utf8_prefix"
+      "src/cadr-cli/tools/powershell.lisp +powershell-utf8-output-prefix+"
+      "powershell_tool.prefix_command"
+      "src/cadr-cli/tools/powershell.lisp UTF-8 prefix + command concatenate"
+      "powershell_tool.make_tool"
+      "src/cadr-cli/tools/powershell.lisp make-powershell-tool"
       "settings_load.project_trust"
       "src/cadr-cli/settings/trust.lisp resolve-project-trusted"
       "settings_load.config_value"
@@ -15449,6 +15747,12 @@
       "src/cadr-cli/interactive/images.lisp format-image-dimension-note"
       "image_runtime.api_provider"
       "src/cadr-ai/capabilities/image-runtime.lisp get-images-api-provider"
+      "image_runtime.output_modalities"
+      "src/cadr-ai/images.lisp image-output-modalities"
+      "image_runtime.openrouter_content"
+      "src/cadr-ai/images.lisp openrouter-image-content"
+      "image_runtime.parse_data_image"
+      "src/cadr-ai/images.lisp parse-data-image"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
       "cli_print_rpc.jsonl_read"
@@ -15960,7 +16264,8 @@
                     (bash-tool nil)
                     (find-tool nil)
                     (ls-tool nil)
-                    (tool-manager nil))
+                    (tool-manager nil)
+                    (powershell-tool nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
@@ -15973,6 +16278,8 @@
               (setf ls-tool (measure-ls-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
               (setf tool-manager (measure-tool-manager))
+              (format *error-output* "goal20 cadr paired paths: powershell_tool~%")
+              (setf powershell-tool (measure-powershell-tool))
               (format *error-output* "goal20 cadr paired paths: branch_summarize~%")
               (let ((branch-summarize (measure-branch-summarize)))
               (format *error-output* "goal20 cadr paired paths: prepare_branch_entries~%")
@@ -16112,6 +16419,7 @@
               "find_tool" find-tool
               "ls_tool" ls-tool
               "tool_manager" tool-manager
+              "powershell_tool" powershell-tool
               "package_manager" packages
               "session_discovery" discovery
               "session_export_html" export-html

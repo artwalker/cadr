@@ -165,6 +165,9 @@ const REPETITIONS = {
 	"harness_events.on": 50,
 	"harness_events.watch": 50,
 	"harness_events.make_start": 50,
+	"harness_events.make_end": 50,
+	"harness_events.event_type": 50,
+	"harness_events.make_bus": 50,
 	"find_tool.pattern_match": 50,
 	"find_tool.find_files": 50,
 	"find_tool.make_tool": 50,
@@ -174,6 +177,9 @@ const REPETITIONS = {
 	"tool_manager.get_tool_path": 50,
 	"tool_manager.ensure_tool": 50,
 	"tool_manager.cleanup_quarantine": 50,
+	"powershell_tool.utf8_prefix": 50,
+	"powershell_tool.prefix_command": 50,
+	"powershell_tool.make_tool": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -218,6 +224,9 @@ const REPETITIONS = {
 	"image_runtime.lookup": 50,
 	"image_runtime.dimension_note": 50,
 	"image_runtime.api_provider": 50,
+	"image_runtime.output_modalities": 50,
+	"image_runtime.openrouter_content": 50,
+	"image_runtime.parse_data_image": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
@@ -710,6 +719,9 @@ const outputAccumulatorModule = await import(
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
 const lsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/ls.ts"));
+const powershellModule = await import(
+	moduleUrl("packages/coding-agent/src/core/tools/powershell.ts"),
+);
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const fileMutationQueueModule = await import(
@@ -2776,6 +2788,63 @@ function runHarnessEventsMakeStart() {
 	};
 }
 
+function runHarnessEventsMakeEnd() {
+	const event = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	const aborted = {
+		type: "run_end",
+		lane: "side",
+		runId: "run-2",
+		outcome: "aborted",
+		leafId: null,
+	};
+	return {
+		hee_type: event.type === "run_end" ? 1 : 0,
+		hee_lane: event.lane === "main" ? 1 : 0,
+		hee_run: event.runId === "run-1" ? 1 : 0,
+		hee_outcome: event.outcome === "completed" ? 1 : 0,
+		hee_abort: aborted.outcome === "aborted" && aborted.leafId == null ? 1 : 0,
+	};
+}
+
+function runHarnessEventsEventType() {
+	const start = { type: "run_start", lane: "main", runId: "run-1" };
+	const end = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	const failed = {
+		type: "run_end",
+		lane: "side",
+		runId: "run-2",
+		outcome: "failed",
+		leafId: "leaf-2",
+	};
+	return {
+		het_start: start.type === "run_start" ? 1 : 0,
+		het_end: end.type === "run_end" ? 1 : 0,
+		het_fail: failed.type === "run_end" ? 1 : 0,
+	};
+}
+
+function runHarnessEventsMakeBus() {
+	const a = new harnessEventsModule.HarnessEventBus();
+	const b = new harnessEventsModule.HarnessEventBus();
+	return {
+		heb_distinct: a !== b ? 1 : 0,
+		heb_a: a instanceof harnessEventsModule.HarnessEventBus ? 1 : 0,
+		heb_b: b instanceof harnessEventsModule.HarnessEventBus ? 1 : 0,
+	};
+}
+
 const FIND_TOOL_CWD = "/tmp/goal20-find-tool-cwd";
 const GLOB_SPECIAL = new Set(".^$+()[]{}|\\".split(""));
 
@@ -3073,11 +3142,81 @@ async function measureLsTool() {
 		},
 	};
 }
+
+const POWERSHELL_UTF8_OUTPUT_PREFIX =
+	"try { [Console]::OutputEncoding=[System.Text.Encoding]::UTF8 } catch {}\n";
+
+function runPowershellUtf8Prefix() {
+	const prefix = POWERSHELL_UTF8_OUTPUT_PREFIX;
+	return {
+		psu_len: prefix.length,
+		psu_nl: prefix.endsWith("\n") ? 1 : 0,
+		psu_try: prefix.startsWith("try ") ? 1 : 0,
+		psu_utf8: prefix.includes("UTF8") ? 1 : 0,
+		psu_n: 4,
+	};
+}
+
+function powershellPrefixCommand(command) {
+	return `${POWERSHELL_UTF8_OUTPUT_PREFIX}${command}`;
+}
+
+function runPowershellPrefixCommand() {
+	const prefix = POWERSHELL_UTF8_OUTPUT_PREFIX;
+	const empty = powershellPrefixCommand("");
+	const date = powershellPrefixCommand("Get-Date");
+	const write = powershellPrefixCommand("Write-Output hi");
+	return {
+		psc_empty: empty === prefix ? 1 : 0,
+		psc_date: date.startsWith(prefix) && date.endsWith("Get-Date") ? 1 : 0,
+		psc_write:
+			write.startsWith(prefix) && write.endsWith("Write-Output hi") ? 1 : 0,
+		psc_n: 3,
+	};
+}
+
+function runPowershellMakeTool() {
+	const def = powershellModule.createPowerShellToolDefinition("/tmp");
+	const required = def.parameters?.required ?? [];
+	const description = def.description ?? "";
+	return {
+		pmt_name: def.name === "powershell" ? 1 : 0,
+		pmt_desc: description.includes("Execute a PowerShell command") ? 1 : 0,
+		pmt_req: required.includes("command") ? 1 : 0,
+		pmt_n: 3,
+	};
+}
+
+async function measurePowershellTool() {
+	const prefixObserved = runPowershellUtf8Prefix();
+	const commandObserved = runPowershellPrefixCommand();
+	const makeObserved = runPowershellMakeTool();
+	return {
+		utf8_prefix: await collect("powershell_tool.utf8_prefix", () => {
+			return () => runPowershellUtf8Prefix();
+		}),
+		prefix_command: await collect("powershell_tool.prefix_command", () => {
+			return () => runPowershellPrefixCommand();
+		}),
+		make_tool: await collect("powershell_tool.make_tool", () => {
+			return () => runPowershellMakeTool();
+		}),
+		observed: {
+			...prefixObserved,
+			...commandObserved,
+			...makeObserved,
+		},
+	};
+}
+
 async function measureHarnessEvents() {
 	const emitObserved = runHarnessEventsEmit();
 	const onObserved = runHarnessEventsOn();
 	const watchObserved = runHarnessEventsWatch();
 	const makeStartObserved = runHarnessEventsMakeStart();
+	const makeEndObserved = runHarnessEventsMakeEnd();
+	const eventTypeObserved = runHarnessEventsEventType();
+	const makeBusObserved = runHarnessEventsMakeBus();
 	return {
 		emit: await collect("harness_events.emit", () => {
 			return () => runHarnessEventsEmit();
@@ -3091,11 +3230,23 @@ async function measureHarnessEvents() {
 		make_start: await collect("harness_events.make_start", () => {
 			return () => runHarnessEventsMakeStart();
 		}),
+		make_end: await collect("harness_events.make_end", () => {
+			return () => runHarnessEventsMakeEnd();
+		}),
+		event_type: await collect("harness_events.event_type", () => {
+			return () => runHarnessEventsEventType();
+		}),
+		make_bus: await collect("harness_events.make_bus", () => {
+			return () => runHarnessEventsMakeBus();
+		}),
 		observed: {
 			...emitObserved,
 			...onObserved,
 			...watchObserved,
 			...makeStartObserved,
+			...makeEndObserved,
+			...eventTypeObserved,
+			...makeBusObserved,
 		},
 	};
 }
@@ -5978,12 +6129,108 @@ function runImageRuntimeApiProvider() {
 	};
 }
 
+let imageModalityGemini = null;
+let imageModalityFlux = null;
+
+function ensureImageOpenrouterModels() {
+	if (imageModalityGemini) {
+		return;
+	}
+	imageModalityGemini = imageModelsModule.getImageModel(
+		"openrouter",
+		"google/gemini-2.5-flash-image",
+	);
+	imageModalityFlux = imageModelsModule.getImageModel(
+		"openrouter",
+		"black-forest-labs/flux.2-pro",
+	);
+}
+
+function imageOutputModalities(model) {
+	return model.output.includes("text") ? ["image", "text"] : ["image"];
+}
+
+function runImageRuntimeOutputModalities() {
+	ensureImageOpenrouterModels();
+	const gemini = imageOutputModalities(imageModalityGemini);
+	const flux = imageOutputModalities(imageModalityFlux);
+	return {
+		om_gemini_n: gemini.length,
+		om_gemini_text: gemini.includes("text") ? 1 : 0,
+		om_flux_n: flux.length,
+		om_flux_text: flux.includes("text") ? 1 : 0,
+	};
+}
+
+function parseDataImage(value) {
+	if (typeof value !== "string" || !value.startsWith("data:")) {
+		return null;
+	}
+	const matches = value.match(/^data:([^;]+);base64,(.+)$/);
+	if (!matches) {
+		return null;
+	}
+	return { mimeType: matches[1], data: matches[2] };
+}
+
+function parseDataImageObs(value) {
+	const parsed = parseDataImage(value);
+	if (!parsed) {
+		return { mime: "", data: "", ok: 0 };
+	}
+	return { mime: parsed.mimeType, data: parsed.data, ok: 1 };
+}
+
+function runImageRuntimeParseDataImage() {
+	const ok = parseDataImageObs("data:image/png;base64,ZmFrZS1wbmc=");
+	return {
+		pd_ok_mime: ok.mime,
+		pd_ok_data: ok.data,
+		pd_ok: ok.ok,
+		pd_miss: parseDataImageObs("not-an-image").ok,
+		pd_plain: parseDataImageObs("https://example.com/x.png").ok,
+	};
+}
+
+function openrouterImageContent(item) {
+	if (item.type === "text") {
+		return { type: "text", text: item.text };
+	}
+	return {
+		type: "image_url",
+		image_url: { url: `data:${item.mimeType};base64,${item.data}` },
+	};
+}
+
+function runImageRuntimeOpenrouterContent() {
+	const textPart = openrouterImageContent({
+		type: "text",
+		text: "Generate a dog",
+	});
+	const imagePart = openrouterImageContent({
+		type: "image",
+		mimeType: "image/png",
+		data: "aW1hZ2U=",
+	});
+	return {
+		oc_text_type: textPart.type,
+		oc_text: textPart.text,
+		oc_img_type: imagePart.type,
+		oc_img_url: imagePart.image_url.url,
+		oc_ok: textPart.type === "text" && imagePart.type === "image_url" ? 1 : 0,
+	};
+}
+
 async function measureImageRuntime() {
+	ensureImageOpenrouterModels();
 	const dims = runImageRuntime();
 	const mime = runImageRuntimeMime();
 	const lookup = runImageRuntimeLookup();
 	const notes = runImageRuntimeDimensionNote();
 	const api = runImageRuntimeApiProvider();
+	const modalities = runImageRuntimeOutputModalities();
+	const content = runImageRuntimeOpenrouterContent();
+	const parsed = runImageRuntimeParseDataImage();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -6000,7 +6247,25 @@ async function measureImageRuntime() {
 		api_provider: await collect("image_runtime.api_provider", () => {
 			return () => runImageRuntimeApiProvider();
 		}),
-		observed: { ...dims, ...mime, ...lookup, ...notes, ...api },
+		output_modalities: await collect("image_runtime.output_modalities", () => {
+			return () => runImageRuntimeOutputModalities();
+		}),
+		openrouter_content: await collect("image_runtime.openrouter_content", () => {
+			return () => runImageRuntimeOpenrouterContent();
+		}),
+		parse_data_image: await collect("image_runtime.parse_data_image", () => {
+			return () => runImageRuntimeParseDataImage();
+		}),
+		observed: {
+			...dims,
+			...mime,
+			...lookup,
+			...notes,
+			...api,
+			...modalities,
+			...content,
+			...parsed,
+		},
 	};
 }
 
@@ -15645,6 +15910,8 @@ process.stderr.write("goal20 pi paired paths: ls_tool\n");
 const lsTool = await measureLsTool();
 process.stderr.write("goal20 pi paired paths: tool_manager\n");
 const toolManager = await measureToolManager();
+process.stderr.write("goal20 pi paired paths: powershell_tool\n");
+const powershellTool = await measurePowershellTool();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -15810,6 +16077,12 @@ const result = {
 				"packages/agent/src/harness/events.ts HarnessEventBus.watch",
 			"harness_events.make_start":
 				"packages/agent/src/harness/events.ts RunStartEvent object",
+			"harness_events.make_end":
+				"packages/agent/src/harness/events.ts RunEndEvent object",
+			"harness_events.event_type":
+				"packages/agent/src/harness/events.ts event.type",
+			"harness_events.make_bus":
+				"packages/agent/src/harness/events.ts new HarnessEventBus()",
 			"find_tool.pattern_match":
 				"packages/coding-agent/src/core/tools/find.ts basename vs --full-path glob match (fd contract; cadr find-pattern-match-p)",
 			"find_tool.find_files":
@@ -15828,6 +16101,12 @@ const result = {
 				"packages/coding-agent/src/utils/tools-manager.ts ensureTool (local / PI_OFFLINE, no network)",
 			"tool_manager.cleanup_quarantine":
 				"packages/coding-agent/src/utils/windows-self-update.ts cleanupWindowsSelfUpdateQuarantine",
+			"powershell_tool.utf8_prefix":
+				"packages/coding-agent/src/core/tools/powershell.ts UTF8_OUTPUT_PREFIX",
+			"powershell_tool.prefix_command":
+				"packages/coding-agent/src/core/tools/powershell.ts createLocalPowerShellOperations prefix+command",
+			"powershell_tool.make_tool":
+				"packages/coding-agent/src/core/tools/powershell.ts createPowerShellToolDefinition",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15910,6 +16189,12 @@ const result = {
 				"packages/coding-agent/src/utils/image-resize.ts formatDimensionNote",
 			"image_runtime.api_provider":
 				"packages/ai/src/images-api-registry.ts getImagesApiProvider",
+			"image_runtime.output_modalities":
+				"packages/ai/src/api/openrouter-images.ts buildParams modalities",
+			"image_runtime.openrouter_content":
+				"packages/ai/src/api/openrouter-images.ts buildParams content parts",
+			"image_runtime.parse_data_image":
+				"packages/ai/src/api/openrouter-images.ts generateImages data-URL parse",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"cli_print_rpc.jsonl_read":
@@ -16376,6 +16661,7 @@ const result = {
 		find_tool: findTool,
 		ls_tool: lsTool,
 		tool_manager: toolManager,
+		powershell_tool: powershellTool,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,
