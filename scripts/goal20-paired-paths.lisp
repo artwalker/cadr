@@ -35,6 +35,9 @@
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
+;;;;      leftover trio (theme.lisp only, pairs 340-342): make-terminal-theme /
+;;;;      theme-color-value / canonical-theme-color-key. Not rgb-to-ansi-256 /
+;;;;      parse-theme-hex-color / theme-foreground-ansi (pairs 319-321).
 ;;;;  24. ai_support estimate-text-tokens vs estimateTextTokens
 ;;;;  25. tui_select_settings_loaders select-list filter vs SelectList.setFilter
 ;;;;  26. tui_word_navigation find-word-backward/forward vs findWordBackward/Forward
@@ -399,6 +402,9 @@
     ("tui_mermaid.transform" . 20)
     ("tui_editor_helpers.fuzzy_match" . 50)
     ("tui_theme_overlay.osc11_bg" . 50)
+    ("tui_theme_overlay.make_terminal_theme" . 50)
+    ("tui_theme_overlay.theme_color_value" . 50)
+    ("tui_theme_overlay.canonical_theme_color_key" . 50)
     ("ai_support.estimate_text" . 50)
     ("ai_support.context_overflow" . 50)
     ("ai_support.grammar_delta" . 50)
@@ -8122,25 +8128,107 @@
           (if miss 0 1)
           (if (eq scheme :dark) 1 0))))
 
+;;; Leftover siblings of the tui_theme_overlay hole on
+;;; src/cadr-tui/theme.lisp (Pairs 340-342). Timed owners:
+;;; make-terminal-theme, theme-color-value, canonical-theme-color-key —
+;;; not rgb-to-ansi-256 / parse-theme-hex-color / theme-foreground-ansi
+;;; (pairs 319-321) and not OSC 11 parse.
+
+(defun theme-truth (value)
+  (if value 1 0))
+
+(defun theme-bench-capabilities ()
+  (cadr-tui:make-terminal-capabilities :true-color-p t))
+
+(defun run-tui-theme-make-terminal-theme ()
+  (let* ((capabilities (theme-bench-capabilities))
+         (dark
+           (cadr-tui:make-terminal-theme
+            :dark :capabilities capabilities))
+         (light
+           (cadr-tui:make-terminal-theme
+            :light :capabilities capabilities)))
+    (list
+     (theme-truth (eq (cadr-tui:terminal-theme-name dark) :dark))
+     (theme-truth (eq (cadr-tui:terminal-theme-name light) :light))
+     2)))
+
+(defun run-tui-theme-color-value ()
+  (let* ((theme
+           (cadr-tui:make-terminal-theme
+            :dark :capabilities (theme-bench-capabilities)))
+         (accent (cadr-tui:theme-color-value :accent :theme theme))
+         (text (cadr-tui:theme-color-value :text :theme theme))
+         (border
+           (cadr-tui:theme-color-value "borderAccent" :theme theme)))
+    (list
+     (theme-truth (string= accent "#8abeb7"))
+     (theme-truth (string= text "#d4d4d4"))
+     (theme-truth (string= border "#00d7ff"))
+     3)))
+
+(defun run-tui-theme-canonical-color-key ()
+  (list
+   (theme-truth
+    (and (eq (cadr-tui::canonical-theme-color-key "borderAccent")
+             :border-accent)
+         (eq (cadr-tui::canonical-theme-color-key "border_accent")
+             :border-accent)))
+   (theme-truth
+    (eq (cadr-tui::canonical-theme-color-key "thinkingHigh")
+        :thinking-high))
+   (theme-truth
+    (eq (cadr-tui::canonical-theme-color-key "mdCode") :md-code))
+   3))
+
 (defun measure-tui-theme-overlay ()
-  (let ((observed (run-tui-theme-overlay)))
+  (let ((osc11 (run-tui-theme-overlay))
+        (made (run-tui-theme-make-terminal-theme))
+        (value (run-tui-theme-color-value))
+        (canonical (run-tui-theme-canonical-color-key)))
     (json-object
      "observed"
      (json-object
-      "rgb_r" (first observed)
-      "rgb_g" (second observed)
-      "rgb_b" (third observed)
-      "hex6_r" (fourth observed)
-      "hex6_g" (fifth observed)
-      "hex6_b" (sixth observed)
-      "hex12_r" (seventh observed)
-      "miss" (eighth observed)
-      "scheme_dark" (ninth observed))
+      "rgb_r" (first osc11)
+      "rgb_g" (second osc11)
+      "rgb_b" (third osc11)
+      "hex6_r" (fourth osc11)
+      "hex6_g" (fifth osc11)
+      "hex6_b" (sixth osc11)
+      "hex12_r" (seventh osc11)
+      "miss" (eighth osc11)
+      "scheme_dark" (ninth osc11)
+      "mtt_dark" (first made)
+      "mtt_light" (second made)
+      "mtt_n" (third made)
+      "tcv_accent" (first value)
+      "tcv_text" (second value)
+      "tcv_border" (third value)
+      "tcv_n" (fourth value)
+      "ctk_border" (first canonical)
+      "ctk_thinking" (second canonical)
+      "ctk_md" (third canonical)
+      "ctk_n" (fourth canonical))
      "osc11_bg"
      (collect "tui_theme_overlay.osc11_bg"
               (lambda ()
                 (lambda ()
-                  (run-tui-theme-overlay)))))))
+                  (run-tui-theme-overlay))))
+     "make_terminal_theme"
+     (collect "tui_theme_overlay.make_terminal_theme"
+              (lambda ()
+                (lambda ()
+                  (run-tui-theme-make-terminal-theme))))
+     "theme_color_value"
+     (collect "tui_theme_overlay.theme_color_value"
+              (lambda ()
+                (lambda ()
+                  (run-tui-theme-color-value))))
+     "canonical_theme_color_key"
+     (collect "tui_theme_overlay.canonical_theme_color_key"
+              (lambda ()
+                (lambda ()
+                  (run-tui-theme-canonical-color-key)))))))
 
 (defparameter *estimate-empty* "")
 (defparameter *estimate-hello* "hello world")
@@ -16510,6 +16598,12 @@
       "src/cadr-tui/fuzzy.lisp fuzzy-match"
       "tui_theme_overlay.osc11_bg"
       "src/cadr-tui/terminal-colors.lisp parse-osc-11-background-color"
+      "tui_theme_overlay.make_terminal_theme"
+      "src/cadr-tui/theme.lisp make-terminal-theme"
+      "tui_theme_overlay.theme_color_value"
+      "src/cadr-tui/theme.lisp theme-color-value"
+      "tui_theme_overlay.canonical_theme_color_key"
+      "src/cadr-tui/theme.lisp canonical-theme-color-key"
       "ai_support.estimate_text"
       "src/cadr-ai/support/token-estimation.lisp estimate-text-tokens"
       "ai_support.context_overflow"

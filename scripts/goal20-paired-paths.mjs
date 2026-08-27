@@ -253,6 +253,9 @@ const REPETITIONS = {
 	"tui_mermaid.transform": 20,
 	"tui_editor_helpers.fuzzy_match": 50,
 	"tui_theme_overlay.osc11_bg": 50,
+	"tui_theme_overlay.make_terminal_theme": 50,
+	"tui_theme_overlay.theme_color_value": 50,
+	"tui_theme_overlay.canonical_theme_color_key": 50,
 	"ai_support.estimate_text": 50,
 	"ai_support.context_overflow": 50,
 	"ai_support.grammar_delta": 50,
@@ -7231,12 +7234,88 @@ function runTuiThemeOverlay() {
 	};
 }
 
+function runTuiThemeMakeTerminalTheme() {
+	const dark = themeModule.getThemeByName("dark");
+	const light = themeModule.getThemeByName("light");
+	return {
+		mtt_dark: dark ? 1 : 0,
+		mtt_light: light ? 1 : 0,
+		mtt_n: 2,
+	};
+}
+
+function runTuiThemeColorValue() {
+	const colors = themeModule.getResolvedThemeColors("dark");
+	return {
+		tcv_accent: colors.accent === "#8abeb7" ? 1 : 0,
+		tcv_text: colors.text === "#d4d4d4" ? 1 : 0,
+		tcv_border: colors.borderAccent === "#00d7ff" ? 1 : 0,
+		tcv_n: 3,
+	};
+}
+
+// ThemeColor keys are camelCase. cadr leftover canonical-theme-color-key
+// accepts camelCase / snake_case / kebab and intern's kebab keywords. Copy
+// the Lisp algorithm so the leftover is measurable (no exported counterpart).
+function themeCanonicalColorKey(key) {
+	const source = String(key);
+	let out = "";
+	for (let index = 0; index < source.length; index += 1) {
+		const character = source[index];
+		const previous = index > 0 ? source[index - 1] : "";
+		if (character === "_" || character === " " || character === "\t") {
+			if (index !== 0 && previous !== "-") out += "-";
+		} else if (
+			character >= "A" &&
+			character <= "Z" &&
+			index > 0 &&
+			previous &&
+			((previous >= "a" && previous <= "z") || (previous >= "0" && previous <= "9"))
+		) {
+			out += `-${character}`;
+		} else {
+			out += character;
+		}
+	}
+	return out.toLowerCase();
+}
+
+function runTuiThemeCanonicalColorKey() {
+	return {
+		ctk_border:
+			themeCanonicalColorKey("borderAccent") === "border-accent" &&
+			themeCanonicalColorKey("border_accent") === "border-accent"
+				? 1
+				: 0,
+		ctk_thinking: themeCanonicalColorKey("thinkingHigh") === "thinking-high" ? 1 : 0,
+		ctk_md: themeCanonicalColorKey("mdCode") === "md-code" ? 1 : 0,
+		ctk_n: 3,
+	};
+}
+
 async function measureTuiThemeOverlay() {
-	const observed = runTuiThemeOverlay();
+	const observed = {
+		...runTuiThemeOverlay(),
+		...runTuiThemeMakeTerminalTheme(),
+		...runTuiThemeColorValue(),
+		...runTuiThemeCanonicalColorKey(),
+	};
 	return {
 		osc11_bg: await collect("tui_theme_overlay.osc11_bg", () => {
 			return () => runTuiThemeOverlay();
 		}),
+		make_terminal_theme: await collect("tui_theme_overlay.make_terminal_theme", () => {
+			return () => runTuiThemeMakeTerminalTheme();
+		}),
+		theme_color_value: await collect("tui_theme_overlay.theme_color_value", () => {
+			return () => runTuiThemeColorValue();
+		}),
+		canonical_theme_color_key: await collect(
+			"tui_theme_overlay.canonical_theme_color_key",
+			() => {
+				return () => runTuiThemeCanonicalColorKey();
+			},
+		),
 		observed,
 	};
 }
@@ -16893,6 +16972,12 @@ const result = {
 			"tui_editor_helpers.fuzzy_match": "packages/tui/src/fuzzy.ts fuzzyMatch",
 			"tui_theme_overlay.osc11_bg":
 				"packages/tui/src/terminal-colors.ts parseOsc11BackgroundColor",
+			"tui_theme_overlay.make_terminal_theme":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts getThemeByName",
+			"tui_theme_overlay.theme_color_value":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts getResolvedThemeColors",
+			"tui_theme_overlay.canonical_theme_color_key":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts ThemeColor key canonicalizer (cadr leftover; harness copy)",
 			"ai_support.estimate_text":
 				"packages/ai/src/utils/estimate.ts estimateTextTokens",
 			"ai_support.context_overflow":

@@ -267,6 +267,14 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(terminal_colors), 1)
         self.assertEqual(terminal_colors[0]["class"], "paired")
         self.assertIn("tui_theme_overlay.osc11_bg", terminal_colors[0]["metrics"])
+        theme_file = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/theme.lisp"
+        ]
+        self.assertEqual(len(theme_file), 1)
+        self.assertEqual(theme_file[0]["class"], "needs-pair")
+        self.assertEqual(theme_file[0]["hole"], "tui_theme_overlay")
         estimate = [
             row
             for row in classified["rows"]
