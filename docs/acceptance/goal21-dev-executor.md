@@ -10,7 +10,7 @@
 
 **读者：** 开发 Cursor 实例。**规格：** [`goal21-pi-0843-alignment.md`](goal21-pi-0843-alignment.md)。
 
-**禁止：** 在 G21 完成前新开 Goal 20 pair/perf；宣布 G21 完成前须 `verify.sh` + `test-cl.sh` 全绿。
+**禁止：** 在 G21 完成前新开 Goal 20 pair/perf；宣布 G21 完成前须 `verify.sh` 与 `test-cl.sh` 两套都绿（`verify.sh` 的 deterministic FiveAM 即 `test-cl.sh`；full `goal21-gate-run.sh` 在该 stage 已 PASS 时不再跑第二次）。
 
 ---
 
@@ -27,7 +27,7 @@
 | **Impl A** | `a` | `/thinking` selector、`modelThinkingLevels`、session 级 model/thinking（Ctrl+S 全局） |
 | **Impl B** | `b` | `session_compact_failed`、compaction summary 不入库（#7048） |
 | **Impl C** | `c` | `GoogleApiThinkingLevel` 重命名、provider 表增量 |
-| **Gate** | `gate` | 脚本 `goal21-gate-run.sh` 跑 `verify.sh`+`test-cl.sh`；失败才短会话 fix agent（勿让单 agent 扛全量长跑） |
+| **Gate** | `gate` | 脚本 `goal21-gate-run.sh` 跑 `verify.sh`（含 FiveAM）；仅当摘要里 `deterministic FiveAM` 未 timed-PASS 时才再跑 `test-cl.sh`；失败才短会话 fix agent（勿让单 agent 扛全量长跑） |
 | **Infra** | `infra` | 验证/提交 gate 结构性改进（disposition audit、fast gate、capture cache、anchor-guard 隔离） |
 | **总监** | director | **机械合入**（`goal21-director-merge.sh`：rebase+ff+fast gate）；**冲突时**才派 Director agent（`goal21-director-conflict-dispatch.sh`） |
 
@@ -109,7 +109,7 @@ Impl lane（`a`/`b`/`c`/`parity`）不是每次失忆：
 | Capture cache | `goal21-render-diff-capture-cache.sh` | 按 BASELINE commit 存/取 capture，gate-run 无本地缓存时自动 restore |
 | CI capture cache | `.github/workflows/ci.yml` + `verify.sh` | Actions `cache/restore`+`save` keyed on `BASELINE`；`verify.sh` 读 `GOAL21_RENDER_DIFF_*`，有 capture 时用 `analyze` 而非全量 `gate` |
 | Class rules | `disposition-class-rules.json` + `goal21-render-diff-prune-class-rules.py` | 常见 I01/I04 模式由 class rule 裁决；ledger 可 `--apply`  prune；`goal21-class-rules-verify.sh` 跑 cached analyze |
-| Test-cl shard | `CADR_TEST_CL_SHARD` + `test-cl-fiveam.sh` / `test-cl-goal20.sh` | gate 可拆跑 FiveAM 与 goal20 ledger；`goal21-test-cl-shard-verify.sh` 校验 `fiveam\|goal20` 别名与委托 |
+| Test-cl shard | `CADR_TEST_CL_SHARD` + `test-cl-fiveam.sh` / `test-cl-goal20.sh` | gate 可拆跑 FiveAM 与 goal20 ledger；FiveAM 默认 summary-only（`CADR_TEST_CL_VERBOSE=1` / `--verbose`）；`goal21-test-cl-shard-verify.sh` 校验别名、quiet、以及 full gate-run 跳过第二次 `test-cl.sh` |
 | Manifest skeletons | `goal21-render-diff-ensure-skeletons.py` + `goal21-render-diff-on-manifest-change.sh` | manifest 变更后 audit + 缺省 disposition 骨架；gate auto-fix 用 `--apply`；`goal21-manifest-skeletons-verify.sh` 机械校验 |
 
 **调度：** `scripts/goal21-team-operator.sh once` 在 impl 完成后、gate 之前 dispatch `infra` lane（tasks 8–12）；core infra batch 全 `done` 后才 dispatch gate task 7。tasks 13+ 为 gate 后 follow-up，不阻塞 gate。

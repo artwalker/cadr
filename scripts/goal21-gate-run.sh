@@ -5,6 +5,13 @@
 # usage:
 #   scripts/goal21-gate-run.sh
 #   scripts/goal21-gate-run.sh --fail-log /tmp/goal21-gate-fail.txt
+#   scripts/goal21-gate-run.sh --check-fiveam-log PATH
+#
+# Full mode runs verify.sh (which already includes deterministic FiveAM /
+# test-cl.sh). After verify exits 0, a second test-cl.sh runs only when
+# the verify summary did not record deterministic FiveAM as a timed PASS
+# (for example verify.sh --only skipping that stage). Fast mode is
+# unchanged and does not run test-cl.sh.
 #
 # exit 0 = all green; non-zero = failure (excerpt in --fail-log)
 set -euo pipefail
@@ -75,14 +82,36 @@ maybe_restore_render_diff_captures() {
 	fi
 }
 
+# True when verify.sh recorded a real deterministic FiveAM pass: the
+# Deterministic stages row is PASS and Stage timings has a seconds value
+# (SKIP / NOT RUN use "-" and never PASS).
+goal21_verify_log_fiveam_already_green() {
+	local log="$1"
+	[ -f "$log" ] || return 1
+	grep -E '^deterministic FiveAM[[:space:]]+PASS$' "$log" >/dev/null 2>&1 || return 1
+	grep -E '^deterministic FiveAM[[:space:]]+[0-9]+s$' "$log" >/dev/null 2>&1
+}
+
 while [ "$#" -gt 0 ]; do
 	case "$1" in
 	--fail-log)
 		FAIL_LOG="${2:?}"
 		shift 2
 		;;
+	--check-fiveam-log)
+		[ "${2:-}" ] || {
+			echo "usage: $0 [--fail-log PATH] [--check-fiveam-log PATH]" >&2
+			exit 2
+		}
+		if goal21_verify_log_fiveam_already_green "$2"; then
+			echo "goal21-gate-run: fiveam-already-green yes"
+			exit 0
+		fi
+		echo "goal21-gate-run: fiveam-already-green no"
+		exit 1
+		;;
 	*)
-		echo "usage: $0 [--fail-log PATH]" >&2
+		echo "usage: $0 [--fail-log PATH] [--check-fiveam-log PATH]" >&2
 		exit 2
 		;;
 	esac
@@ -208,16 +237,20 @@ if [ "$RC" -ne 0 ]; then
 	exit "$RC"
 fi
 
-set +e
-heartbeat "test-cl.sh"
-./scripts/test-cl.sh >>"$RUN_LOG" 2>&1
-RC=$?
-set -e
-if [ "$RC" -ne 0 ]; then
-	heartbeat "fail test-cl.sh rc=$RC"
-	tail -n "$TAIL_LINES" "$RUN_LOG" >"$FAIL_LOG"
-	echo "goal21-gate-run: FAILED test-cl.sh (log $FAIL_LOG)" >&2
-	exit "$RC"
+if goal21_verify_log_fiveam_already_green "$RUN_LOG"; then
+	heartbeat "test-cl.sh skipped (deterministic FiveAM already PASS in verify.sh)"
+else
+	set +e
+	heartbeat "test-cl.sh"
+	./scripts/test-cl.sh >>"$RUN_LOG" 2>&1
+	RC=$?
+	set -e
+	if [ "$RC" -ne 0 ]; then
+		heartbeat "fail test-cl.sh rc=$RC"
+		tail -n "$TAIL_LINES" "$RUN_LOG" >"$FAIL_LOG"
+		echo "goal21-gate-run: FAILED test-cl.sh (log $FAIL_LOG)" >&2
+		exit "$RC"
+	fi
 fi
 
 heartbeat "pass"

@@ -6,7 +6,8 @@
 #   fiveam|unit   — FiveAM only
 #   goal20|ledger — goal20-unpaired-paths only
 #
-# usage: scripts/test-cl.sh [--record]
+# usage: scripts/test-cl.sh [--record] [--verbose]
+#   --verbose / CADR_TEST_CL_VERBOSE=1  full FiveAM dribble (default: summary)
 set -euo pipefail
 
 PROJECT_DIRECTORY="$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)"

@@ -738,7 +738,9 @@
                         "fail_lines != 9" "checks != pass + skip + fail"
                         "cadr test summary: systems=%d checks=%d pass=%d skip=%d fail=%d"
                         "write-test-check-anchor.py"
-                        "CADR_TEST_CHECK_LEDGER"))
+                        "CADR_TEST_CHECK_LEDGER"
+                        "CADR_TEST_CL_VERBOSE"
+                        "--verbose"))
       (is (search contract source)))
     (with-test-directory (temporary)
       (let ((fake-sbcl (merge-pathnames "fake-sbcl" temporary))
@@ -747,7 +749,7 @@
         (write-text
          fake-sbcl
          (format nil
-                 "#!/bin/sh~%i=0~%while [ \"$i\" -lt 9 ]; do~%  printf ' Did 3 checks.\\n    Pass: 3 (100%%)\\n    Skip: 0 ( 0%%)\\n    Fail: 0 ( 0%%)\\n'~%  i=$((i + 1))~%done~%"))
+                 "#!/bin/sh~%echo FIVEAM_FLOOD_LINE~%i=0~%while [ \"$i\" -lt 9 ]; do~%  printf ' Did 3 checks.\\n    Pass: 3 (100%%)\\n    Skip: 0 ( 0%%)\\n    Fail: 0 ( 0%%)\\n'~%  i=$((i + 1))~%done~%"))
         (write-text quicklisp "")
         (write-text
          ledger
@@ -775,7 +777,14 @@
             (is (search
                  "cadr test summary: systems=9 checks=27 pass=27 skip=0 fail=0"
                  output))
-            (is (search "test-check-anchor: systems=9 checks=27" output)))
+            (is (search "test-check-anchor: systems=9 checks=27" output))
+            (is (not (search "FIVEAM_FLOOD_LINE" output))
+                "quiet default must not tee FiveAM dribble: ~A" output))
+          (destructuring-bind (output errors status)
+              (run-test-cl "--verbose" ledger)
+            (declare (ignore errors))
+            (is (zerop status))
+            (is (search "FIVEAM_FLOOD_LINE" output)))
           ;; The read-only default must go red on a dirty ledger.
           (let ((dirty (merge-pathnames "dirty-test-matrix.md" temporary)))
             (write-text
