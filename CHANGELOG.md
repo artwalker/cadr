@@ -9,6 +9,18 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `harness_events.on` (`harness-event-bus-on` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.on`).
+  Observed `heon_off` / `heon_keep` / `heon_type` exact. Measure-only;
+  freeze numbers in the follow-up record commit.
+- Goal 20 P.13: pair `harness_events.watch` (`harness-event-bus-watch` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.watch`).
+  Observed `hew_snap` / `hew_count` / `hew_start` / `hew_end` exact.
+  Measure-only; freeze numbers in the follow-up record commit.
+- Goal 20 P.13: pair `harness_events.make_start` (`make-run-start-event` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `RunStartEvent` object).
+  Observed `hes_type` / `hes_lane` / `hes_run` exact. Measure-only;
+  freeze numbers in the follow-up record commit.
 - Goal 20 P.13: pair `harness_events.emit` (`harness-event-bus-emit` on
   `src/cadr-agent/harness-events.lisp` vs baseline `HarnessEventBus.emit`).
   Observed `he_direct` / `he_watch` / `he_start` / `he_end` / `he_second`

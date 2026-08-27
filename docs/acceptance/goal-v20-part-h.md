@@ -3308,6 +3308,46 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
+### Pair 283 — `harness_events` (on)
+
+| metric | cadr | pi |
+|---|---|---|
+| `on` | `harness-event-bus-on` (`src/cadr-agent/harness-events.lisp`) | `HarnessEventBus.on` (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 276 `emit` on the same `harness-events.lisp`
+`agent_tool_loop` hole. Timed work is typed subscribe plus unsubscribe of
+`run_start` while a `run_end` listener stays — not emit delivery of a live
+subscription, not watch buffering. Observed `heon_off` / `heon_keep` /
+`heon_type` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
+### Pair 284 — `harness_events` (watch)
+
+| metric | cadr | pi |
+|---|---|---|
+| `watch` | `harness-event-bus-watch` (`src/cadr-agent/harness-events.lisp`) | `HarnessEventBus.watch` (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 276 `emit` and Pair 283 `on` on the same
+`harness-events.lisp` `agent_tool_loop` hole. Timed work is snapshot capture
+(an emit during capture is buffered), start flush in order, live `run_end`,
+then unsubscribe — not typed direct listeners, not `emit` of an
+already-started watch. Observed `hew_snap` / `hew_count` / `hew_start` /
+`hew_end` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
+### Pair 285 — `harness_events` (make_start)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_start` | `make-run-start-event` (`src/cadr-agent/harness-events.lisp`) | `RunStartEvent` object (`packages/agent/src/harness/events.ts`) |
+
+Leftover sibling of Pair 276 `emit`, Pair 283 `on`, and Pair 284 `watch` on
+the same `harness-events.lisp` `agent_tool_loop` hole. Timed work is
+constructing a `run_start` event (type / lane / run id) — not `on`, not
+`watch`, not `emit`. Observed `hes_type` / `hes_lane` / `hes_run` are exact.
+First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same
+commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

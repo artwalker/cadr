@@ -102,7 +102,7 @@ METRICS = {
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state"),
-    "harness_events": ("emit",),
+    "harness_events": ("emit", "on", "watch", "make_start"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
@@ -276,11 +276,18 @@ RATIO_CEILINGS = {
     "bash_tool.strip_exit_footer": 8.0,
     "bash_tool.append_status": 8.0,
     "bash_tool.truncation_notice": 8.0,
-    # output_accumulator.append/snapshot/finish pair (samples=5): first-freeze headroom.
-    # Ratchet down only.
     "output_accumulator.append": 8.0,
     "output_accumulator.snapshot": 8.0,
     "output_accumulator.finish": 8.0,
+    # harness_events.on pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.on": 8.0,
+    # harness_events.watch pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.watch": 8.0,
+    # harness_events.make_start pair (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "harness_events.make_start": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # settings_load.project_trust pair (samples=5): observed
     # 0.24x (330.6 / 1402.9 us). cadr leads. 8.0 is
@@ -1475,6 +1482,16 @@ OBSERVED_EXACT = {
         "he_start",
         "he_end",
         "he_second",
+        "heon_off",
+        "heon_keep",
+        "heon_type",
+        "hew_snap",
+        "hew_count",
+        "hew_start",
+        "hew_end",
+        "hes_type",
+        "hes_lane",
+        "hes_run",
     ),
     "bash_tool": (
         "sef_exact",
