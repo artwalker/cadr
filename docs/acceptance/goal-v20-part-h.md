@@ -3529,6 +3529,49 @@ stream, not login interaction. Observed `sl_openai` / `sl_anthropic` /
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
 
+### Pair 316 — `ls_tool` (directory_entry_name)
+
+| metric | cadr | pi |
+|---|---|---|
+| `directory_entry_name` | `directory-entry-name` (`src/cadr-cli/tools/ls.lisp`) | directory suffix (`stat.isDirectory` + `'/'`) in `packages/coding-agent/src/core/tools/ls.ts` |
+
+Leftover sibling of the `agent_tool_loop` hole on `src/cadr-cli/tools/ls.lisp`.
+Timed work is file vs directory vs nested-directory name formatting — not
+readdir, not execute. Observed `lden_file` / `lden_dir` / `lden_nested` /
+`lden_n` are exact. First n=5 freeze **0.969×** (4.659 / 4.808 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 317 — `ls_tool` (list_directory)
+
+| metric | cadr | pi |
+|---|---|---|
+| `list_directory` | `list-directory` (`src/cadr-cli/tools/ls.lisp`) | execute listing assembly (`packages/coding-agent/src/core/tools/ls.ts`; readdir/sort/suffix/limit/`truncateHead`) |
+
+Leftover sibling of Pair 316 `directory_entry_name` on the same `agent_tool_loop`
+hole. Timed work is empty copy (`(empty directory)`), mixed top-level listing,
+and `limit=2` notice on a four-file fixture — not tool execute spawn, not
+write. Observed `ld_empty` / `ld_mixed` / `ld_first` / `ld_limit` / `ld_n`
+are exact. First n=5 freeze **1.119×** (352.2 / 314.9 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1× booked.
+Same commit no optimize.
+
+### Pair 318 — `ls_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-ls-tool` (`src/cadr-cli/tools/ls.lisp`) | `createLsToolDefinition` (`packages/coding-agent/src/core/tools/ls.ts`) |
+
+Leftover sibling of Pair 316 `directory_entry_name` and Pair 317
+`list_directory` on the same `agent_tool_loop` hole. Timed work is tool name /
+description / empty required list — not execute. Observed `lst_name` /
+`lst_desc` / `lst_req` / `lst_n` are exact. First n=5 freeze **1.017×**
+(284.4 / 279.6 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

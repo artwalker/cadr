@@ -168,6 +168,9 @@ const REPETITIONS = {
 	"find_tool.pattern_match": 50,
 	"find_tool.find_files": 50,
 	"find_tool.make_tool": 50,
+	"ls_tool.directory_entry_name": 50,
+	"ls_tool.list_directory": 50,
+	"ls_tool.make_tool": 50,
 	"tool_manager.get_tool_path": 50,
 	"tool_manager.ensure_tool": 50,
 	"tool_manager.cleanup_quarantine": 50,
@@ -706,6 +709,7 @@ const outputAccumulatorModule = await import(
 );
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
+const lsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/ls.ts"));
 const grepModule = await import(moduleUrl("packages/coding-agent/src/core/tools/grep.ts"));
 const toolPathModule = await import(moduleUrl("packages/coding-agent/src/core/tools/path-utils.ts"));
 const fileMutationQueueModule = await import(
@@ -2919,6 +2923,152 @@ async function measureFindTool() {
 		observed: {
 			...patternObserved,
 			...filesObserved,
+			...makeObserved,
+		},
+	};
+}
+
+const LS_TOOL_CWD = "/tmp/goal20-ls-tool-cwd";
+
+function lsDirectoryEntryName(fullPath) {
+	const stats = statSync(fullPath);
+	const base = path.basename(fullPath.replace(/[\\/]+$/, "") || fullPath);
+	return stats.isDirectory() ? `${base}/` : base;
+}
+
+function ensureLsToolFixture() {
+	mkdirSync(path.join(LS_TOOL_CWD, "src", "nested"), { recursive: true });
+	mkdirSync(path.join(LS_TOOL_CWD, "empty"), { recursive: true });
+	mkdirSync(path.join(LS_TOOL_CWD, "lots"), { recursive: true });
+	for (const relative of [
+		".dot",
+		"a.txt",
+		"z.txt",
+		"src/nested/x.txt",
+		"lots/f1.txt",
+		"lots/f2.txt",
+		"lots/f3.txt",
+		"lots/f4.txt",
+	]) {
+		writeFileSync(path.join(LS_TOOL_CWD, relative), "x", "utf8");
+	}
+	return LS_TOOL_CWD;
+}
+
+function lsToolOutputText(cwd, args) {
+	const dirPath = path.resolve(cwd, args.path || ".");
+	const limit = args.limit ?? 500;
+	const names = readdirSync(dirPath);
+	names.sort((a, b) => a.toLowerCase().localeCompare(b.toLowerCase()));
+	const results = [];
+	let entryLimitReached = false;
+	for (const entry of names) {
+		if (results.length >= limit) {
+			entryLimitReached = true;
+			break;
+		}
+		const fullPath = path.join(dirPath, entry);
+		let suffix = "";
+		try {
+			if (statSync(fullPath).isDirectory()) suffix = "/";
+		} catch {
+			continue;
+		}
+		results.push(entry + suffix);
+	}
+	if (results.length === 0) return "(empty directory)";
+	const rawOutput = results.join("\n");
+	const truncation = truncateModule.truncateHead(rawOutput, {
+		maxLines: Number.MAX_SAFE_INTEGER,
+	});
+	let output = truncation.content;
+	const notices = [];
+	if (entryLimitReached) {
+		notices.push(`${limit} entries limit reached. Use limit=${limit * 2} for more`);
+	}
+	if (truncation.truncated) {
+		notices.push(
+			`${truncateModule.formatSize(truncateModule.DEFAULT_MAX_BYTES)} limit reached`,
+		);
+	}
+	if (notices.length > 0) {
+		output += `\n\n[${notices.join(". ")}]`;
+	}
+	return output;
+}
+
+function lsToolLineCount(text) {
+	if (text === "(empty directory)") return 0;
+	return text.split("\n").length;
+}
+
+function runLsDirectoryEntryName() {
+	const cwd = LS_TOOL_CWD;
+	const fileName = lsDirectoryEntryName(path.join(cwd, "a.txt"));
+	const dirName = lsDirectoryEntryName(path.join(cwd, "src"));
+	const nestedName = lsDirectoryEntryName(path.join(cwd, "src", "nested"));
+	return {
+		lden_file: fileName === "a.txt" ? 1 : 0,
+		lden_dir: dirName === "src/" ? 1 : 0,
+		lden_nested: nestedName === "nested/" ? 1 : 0,
+		lden_n: 3,
+	};
+}
+
+function runLsListDirectory() {
+	const cwd = ensureLsToolFixture();
+	const empty = lsToolOutputText(cwd, { path: "empty" });
+	const mixed = lsToolOutputText(cwd, { path: "." });
+	const limited = lsToolOutputText(cwd, { path: "lots", limit: 2 });
+	const firstLine = mixed.split("\n")[0];
+	return {
+		ld_empty: empty === "(empty directory)" ? 1 : 0,
+		ld_mixed: lsToolLineCount(mixed),
+		ld_first: firstLine === ".dot" ? 1 : 0,
+		ld_limit:
+			limited.includes("2 entries limit reached") &&
+			limited.includes("Use limit=4 for more")
+				? 1
+				: 0,
+		ld_n: 4,
+	};
+}
+
+function runLsMakeTool() {
+	const cwd = ensureLsToolFixture();
+	const def = lsModule.createLsToolDefinition(cwd);
+	const required = def.parameters?.required ?? [];
+	const description = def.description ?? "";
+	return {
+		lst_name: def.name === "ls" ? 1 : 0,
+		lst_desc:
+			description.includes("List directory contents") &&
+			description.includes("500 entries")
+				? 1
+				: 0,
+		lst_req: required.length === 0 ? 1 : 0,
+		lst_n: 3,
+	};
+}
+
+async function measureLsTool() {
+	ensureLsToolFixture();
+	const nameObserved = runLsDirectoryEntryName();
+	const listObserved = runLsListDirectory();
+	const makeObserved = runLsMakeTool();
+	return {
+		directory_entry_name: await collect("ls_tool.directory_entry_name", () => {
+			return () => runLsDirectoryEntryName();
+		}),
+		list_directory: await collect("ls_tool.list_directory", () => {
+			return () => runLsListDirectory();
+		}),
+		make_tool: await collect("ls_tool.make_tool", () => {
+			return () => runLsMakeTool();
+		}),
+		observed: {
+			...nameObserved,
+			...listObserved,
 			...makeObserved,
 		},
 	};
@@ -15491,6 +15641,8 @@ const bashTool = await measureBashTool();
 const outputAccumulator = await measureOutputAccumulator();
 process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
+process.stderr.write("goal20 pi paired paths: ls_tool\n");
+const lsTool = await measureLsTool();
 process.stderr.write("goal20 pi paired paths: tool_manager\n");
 const toolManager = await measureToolManager();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
@@ -15664,6 +15816,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
 			"find_tool.make_tool":
 				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
+			"ls_tool.directory_entry_name":
+				"packages/coding-agent/src/core/tools/ls.ts directory suffix (stat isDirectory + '/' ; cadr directory-entry-name)",
+			"ls_tool.list_directory":
+				"packages/coding-agent/src/core/tools/ls.ts execute listing assembly (readdir/sort/suffix/limit/truncateHead)",
+			"ls_tool.make_tool":
+				"packages/coding-agent/src/core/tools/ls.ts createLsToolDefinition",
 			"tool_manager.get_tool_path":
 				"packages/coding-agent/src/utils/tools-manager.ts getToolPath",
 			"tool_manager.ensure_tool":
@@ -16216,6 +16374,7 @@ const result = {
 		bash_tool: bashTool,
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
+		ls_tool: lsTool,
 		tool_manager: toolManager,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
