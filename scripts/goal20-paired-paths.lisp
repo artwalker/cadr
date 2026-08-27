@@ -124,6 +124,9 @@
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
+;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
+;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
+;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
 ;;;; 301. powershell_tool utf8 prefix vs UTF8_OUTPUT_PREFIX
 ;;;; 302. powershell_tool prefix+command vs createLocalPowerShellOperations wrap
 ;;;; 303. powershell_tool make-powershell-tool vs createPowerShellToolDefinition
@@ -299,6 +302,9 @@
     ("find_tool.pattern_match" . 50)
     ("find_tool.find_files" . 50)
     ("find_tool.make_tool" . 50)
+    ("ls_tool.directory_entry_name" . 50)
+    ("ls_tool.list_directory" . 50)
+    ("ls_tool.make_tool" . 50)
     ("tool_manager.get_tool_path" . 50)
     ("tool_manager.ensure_tool" . 50)
     ("tool_manager.cleanup_quarantine" . 50)
@@ -4799,6 +4805,136 @@
                   (lambda ()
                     (lambda ()
                       (run-find-make-tool)))))))))
+
+(defun ls-tool-truth (value)
+  (if value 1 0))
+
+(defparameter *ls-tool-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-ls-tool-cwd")))
+
+(defun ensure-ls-tool-fixture ()
+  (let ((root (uiop:ensure-directory-pathname *ls-tool-cwd*)))
+    (ensure-directories-exist (merge-pathnames "src/nested/" root))
+    (ensure-directories-exist (merge-pathnames "empty/" root))
+    (ensure-directories-exist (merge-pathnames "lots/" root))
+    (dolist (relative '(".dot" "a.txt" "z.txt" "src/nested/x.txt"
+                        "lots/f1.txt" "lots/f2.txt" "lots/f3.txt" "lots/f4.txt"))
+      (with-open-file
+          (out (merge-pathnames relative root)
+               :direction :output
+               :if-exists :supersede
+               :if-does-not-exist :create
+               :external-format :utf-8)
+        (write-string "x" out)))
+    *ls-tool-cwd*))
+
+(defun run-ls-directory-entry-name ()
+  ;; Pathname-shape name + directory slash; not readdir, not execute.
+  (let* ((cwd *ls-tool-cwd*)
+         (file (merge-pathnames "a.txt" cwd))
+         (dir (uiop:ensure-directory-pathname (merge-pathnames "src/" cwd)))
+         (nested
+           (uiop:ensure-directory-pathname
+            (merge-pathnames "src/nested/" cwd)))
+         (file-name (cadr-cli::directory-entry-name file))
+         (dir-name (cadr-cli::directory-entry-name dir))
+         (nested-name (cadr-cli::directory-entry-name nested)))
+    (list
+     (ls-tool-truth (string= file-name "a.txt"))
+     (ls-tool-truth (string= dir-name "src/"))
+     (ls-tool-truth (string= nested-name "nested/"))
+     3)))
+
+(defun ls-tool-output-text (cwd arguments)
+  (multiple-value-bind (content details)
+      (cadr-cli::list-directory cwd arguments)
+    (declare (ignore details))
+    (cadr-ai::text-content-text (first content))))
+
+(defun ls-tool-line-count (text)
+  (if (string= text "(empty directory)")
+      0
+      (1+ (count #\Newline text))))
+
+(defun run-ls-list-directory ()
+  (let* ((cwd (ensure-ls-tool-fixture))
+         (empty
+           (ls-tool-output-text
+            cwd (cadr-ai::json-object "path" "empty")))
+         (mixed
+           (ls-tool-output-text
+            cwd (cadr-ai::json-object "path" ".")))
+         (limited
+           (ls-tool-output-text
+            cwd (cadr-ai::json-object "path" "lots" "limit" 2)))
+         (first-line
+           (subseq mixed 0 (or (position #\Newline mixed) (length mixed)))))
+    (list
+     (ls-tool-truth (string= empty "(empty directory)"))
+     (ls-tool-line-count mixed)
+     (ls-tool-truth (string= first-line ".dot"))
+     (ls-tool-truth
+      (and (search "2 entries limit reached" limited)
+           (search "Use limit=4 for more" limited)))
+     4)))
+
+(defun run-ls-make-tool ()
+  (let* ((cwd (ensure-ls-tool-fixture))
+         (tool (cadr-cli::make-ls-tool cwd))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list))))
+    (list
+     (ls-tool-truth (string= (cadr-ai:tool-name tool) "ls"))
+     (ls-tool-truth
+      (and (search "List directory contents"
+                   (cadr-ai:tool-description tool))
+           (search "500 entries"
+                   (cadr-ai:tool-description tool))))
+     (ls-tool-truth (null required-list))
+     3)))
+
+(defun measure-ls-tool ()
+  (ensure-ls-tool-fixture)
+  (destructuring-bind (lden-file lden-dir lden-nested lden-n)
+      (run-ls-directory-entry-name)
+    (destructuring-bind (ld-empty ld-mixed ld-first ld-limit ld-n)
+        (run-ls-list-directory)
+      (destructuring-bind (lst-name lst-desc lst-req lst-n)
+          (run-ls-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "lden_file" lden-file
+          "lden_dir" lden-dir
+          "lden_nested" lden-nested
+          "lden_n" lden-n
+          "ld_empty" ld-empty
+          "ld_mixed" ld-mixed
+          "ld_first" ld-first
+          "ld_limit" ld-limit
+          "ld_n" ld-n
+          "lst_name" lst-name
+          "lst_desc" lst-desc
+          "lst_req" lst-req
+          "lst_n" lst-n)
+         "directory_entry_name"
+         (collect "ls_tool.directory_entry_name"
+                  (lambda ()
+                    (lambda ()
+                      (run-ls-directory-entry-name))))
+         "list_directory"
+         (collect "ls_tool.list_directory"
+                  (lambda ()
+                    (lambda ()
+                      (run-ls-list-directory))))
+         "make_tool"
+         (collect "ls_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-ls-make-tool)))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -15505,6 +15641,12 @@
       "src/cadr-cli/tools/find.lisp find-files"
       "find_tool.make_tool"
       "src/cadr-cli/tools/find.lisp make-find-tool"
+      "ls_tool.directory_entry_name"
+      "src/cadr-cli/tools/ls.lisp directory-entry-name"
+      "ls_tool.list_directory"
+      "src/cadr-cli/tools/ls.lisp list-directory"
+      "ls_tool.make_tool"
+      "src/cadr-cli/tools/ls.lisp make-ls-tool"
       "tool_manager.get_tool_path"
       "src/cadr-cli/tool-manager.lisp get-tool-path"
       "tool_manager.ensure_tool"
@@ -16121,6 +16263,7 @@
                     (harness-events nil)
                     (bash-tool nil)
                     (find-tool nil)
+                    (ls-tool nil)
                     (tool-manager nil)
                     (powershell-tool nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
@@ -16131,6 +16274,8 @@
               (let ((output-accumulator (measure-output-accumulator)))
               (format *error-output* "goal20 cadr paired paths: find_tool~%")
               (setf find-tool (measure-find-tool))
+              (format *error-output* "goal20 cadr paired paths: ls_tool~%")
+              (setf ls-tool (measure-ls-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
               (setf tool-manager (measure-tool-manager))
               (format *error-output* "goal20 cadr paired paths: powershell_tool~%")
@@ -16272,6 +16417,7 @@
               "bash_tool" bash-tool
               "output_accumulator" output-accumulator
               "find_tool" find-tool
+              "ls_tool" ls-tool
               "tool_manager" tool-manager
               "powershell_tool" powershell-tool
               "package_manager" packages

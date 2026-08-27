@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `ls_tool.directory_entry_name` (`directory-entry-name` on
+  `src/cadr-cli/tools/ls.lisp` vs baseline directory suffix in
+  `packages/coding-agent/src/core/tools/ls.ts`). Observed `lden_file` /
+  `lden_dir` / `lden_nested` / `lden_n` exact.
+  n=5 **0.969×** (4.659 / 4.808 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `ls_tool.list_directory` (`list-directory` on
+  `src/cadr-cli/tools/ls.lisp` vs baseline ls execute listing assembly).
+  Observed `ld_empty` / `ld_mixed` / `ld_first` / `ld_limit` / `ld_n` exact.
+  n=5 **1.119×** (352.2 / 314.9 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `ls_tool.make_tool` (`make-ls-tool` on
+  `src/cadr-cli/tools/ls.lisp` vs baseline `createLsToolDefinition`).
+  Observed `lst_name` / `lst_desc` / `lst_req` / `lst_n` exact.
+  n=5 **1.017×** (284.4 / 279.6 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13: pair `powershell_tool.utf8_prefix` (`+powershell-utf8-output-prefix+` on
   `src/cadr-cli/tools/powershell.lisp` vs baseline `UTF8_OUTPUT_PREFIX`). Observed
   `psu_len` / `psu_nl` / `psu_try` / `psu_utf8` / `psu_n` exact.
