@@ -3204,6 +3204,20 @@ layout as `with_queue`. Observed `fmqs_alias` / `fmqs_other` /
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
 
+### Pair 276 — `harness_events` (emit)
+
+| metric | cadr | pi |
+|---|---|---|
+| `emit` | `harness-event-bus-emit` (`src/cadr-agent/harness-events.lisp`) | `HarnessEventBus.emit` (`packages/agent/src/harness/events.ts`) |
+
+Leftover of the `agent_tool_loop` hole on `harness-events.lisp` after the
+`file_mutation_queue` siblings (Pairs 261 / 270–275). Timed work is publish
+to a typed direct listener plus an already-started watch (run_start,
+run_end, unsubscribe direct, second run_start) — not watch buffering until
+start, not write/edit tools. Observed `he_direct` / `he_watch` / `he_start`
+/ `he_end` / `he_second` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

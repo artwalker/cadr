@@ -362,6 +362,14 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("fmqs_alias", paired.OBSERVED_EXACT["file_mutation_queue"])
         self.assertIn("fmqs_n", paired.OBSERVED_EXACT["file_mutation_queue"])
 
+    def test_harness_events_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("harness_events.emit", RECORD.METRIC_KEYS)
+        self.assertIn("emit", paired.METRICS["harness_events"])
+        self.assertIn("harness_events.emit", paired.RATIO_CEILINGS)
+        self.assertIn("he_direct", paired.OBSERVED_EXACT["harness_events"])
+        self.assertIn("he_second", paired.OBSERVED_EXACT["harness_events"])
+
     def test_settings_load_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("settings_load.project_trust", RECORD.METRIC_KEYS)
@@ -2075,6 +2083,7 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`file_mutation_queue.wait_turn`", section)
             self.assertIn("`file_mutation_queue.release_turn`", section)
             self.assertIn("`file_mutation_queue.ensure_state`", section)
+            self.assertIn("`harness_events.emit`", section)
             self.assertIn("`ai_crypto_model_data.manifest`", section)
             self.assertIn("`ai_crypto.hmac`", section)
             self.assertIn("`cli_models_rest.pattern_match`", section)

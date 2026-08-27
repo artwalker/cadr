@@ -152,6 +152,7 @@ const REPETITIONS = {
 	"file_mutation_queue.wait_turn": 50,
 	"file_mutation_queue.release_turn": 50,
 	"file_mutation_queue.ensure_state": 50,
+	"harness_events.emit": 50,
 	"settings_load.project_trust": 20,
 	"settings_load.config_value": 50,
 	"settings_load.http_idle": 50,
@@ -615,6 +616,7 @@ const rpcJsonlModule = await import(moduleUrl("packages/coding-agent/src/modes/r
 process.env.PI_TIMING = "1";
 const sqliteModule = await import(moduleUrl("packages/session-backends/sqlite-node/src/index.ts"));
 const nodeEnvModule = await import(moduleUrl("packages/agent/src/harness/env/nodejs.ts"));
+const harnessEventsModule = await import(moduleUrl("packages/agent/src/harness/events.ts"));
 const completionsModule = await import(moduleUrl("packages/ai/src/api/openai-completions.ts"));
 const anthropicModule = await import(moduleUrl("packages/ai/src/api/anthropic-messages.ts"));
 const googleModule = await import(moduleUrl("packages/ai/src/api/google-generative-ai.ts"));
@@ -2538,6 +2540,49 @@ async function measureFileMutationQueue() {
 			...releaseTurnObserved,
 			...ensureStateObserved,
 		},
+	};
+}
+
+function runHarnessEventsEmit() {
+	const bus = new harnessEventsModule.HarnessEventBus();
+	const direct = [];
+	const watched = [];
+	const off = bus.on("run_start", (event) => {
+		direct.push(event);
+	});
+	const handle = bus.watch(() => null);
+	handle.start((event) => {
+		watched.push(event);
+	});
+	const runStart = { type: "run_start", lane: "main", runId: "run-1" };
+	const runEnd = {
+		type: "run_end",
+		lane: "main",
+		runId: "run-1",
+		outcome: "completed",
+		leafId: "entry-1",
+	};
+	bus.emit(runStart);
+	bus.emit(runEnd);
+	off();
+	bus.emit(runStart);
+	handle.unsubscribe();
+	return {
+		he_direct: direct.length === 1 ? 1 : 0,
+		he_watch: watched.length === 3 ? 1 : 0,
+		he_start: watched[0]?.type === "run_start" ? 1 : 0,
+		he_end: watched[1]?.type === "run_end" ? 1 : 0,
+		he_second: watched[2]?.type === "run_start" ? 1 : 0,
+	};
+}
+
+async function measureHarnessEvents() {
+	const observed = runHarnessEventsEmit();
+	return {
+		emit: await collect("harness_events.emit", () => {
+			return () => runHarnessEventsEmit();
+		}),
+		observed,
 	};
 }
 
@@ -14623,6 +14668,8 @@ process.stderr.write("goal20 pi paired paths: resource_loader\n");
 const resourceLoader = await measureResourceLoader();
 process.stderr.write("goal20 pi paired paths: file_mutation_queue\n");
 const fileMutationQueue = await measureFileMutationQueue();
+process.stderr.write("goal20 pi paired paths: harness_events\n");
+const harnessEvents = await measureHarnessEvents();
 process.stderr.write("goal20 pi paired paths: branch_summarize\n");
 const branchSummarize = await measureBranchSummarize();
 process.stderr.write("goal20 pi paired paths: prepare_branch_entries\n");
@@ -14762,6 +14809,8 @@ const result = {
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue finally (pending-- / delete when empty) after wait",
 			"file_mutation_queue.ensure_state":
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts fileMutationQueues.get-or-create given a canonical key",
+			"harness_events.emit":
+				"packages/agent/src/harness/events.ts HarnessEventBus.emit",
 			"settings_load.project_trust":
 				"packages/coding-agent/src/core/project-trust.ts resolveProjectTrusted",
 			"settings_load.config_value":
@@ -15298,6 +15347,7 @@ const result = {
 		settings_load: settingsLoad,
 		resource_loader: resourceLoader,
 		file_mutation_queue: fileMutationQueue,
+		harness_events: harnessEvents,
 		package_manager: packageManager,
 		session_discovery: sessionDiscovery,
 		session_export_html: sessionExportHtml,
