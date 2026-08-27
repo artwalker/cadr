@@ -6035,43 +6035,11 @@
       "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
     },
     {
-      "path": "scripts/goal21-gate-fix-dispatch.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-fix-dispatch.sh",
-      "kind": "pi-token",
-      "token": "pi",
-      "line": "PI_BASELINE_CACHE=\"/tmp/cadr-render-diff-pi-$(cut -d' ' -f1 \"$PROJECT_DIRECTORY/BASELINE\" | cut -c1-9)\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration cites upstream baseline contracts; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-fix-dispatch.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "TARGET=\"Read /tmp/goal21-gate-run.log for the event differential summary. Run: python3 test/event-diff-gate-test.py && python3 scripts/event-diff.py --baseline-repo $PI_BASELINE_CACHE --artifacts /tmp/goal21-event-diff-output; inspect /tmp/goal21-event-diff-output/report.json for unresolved differences. Fix cadr event emission/normalization in src/ for cadr-bug; add exact entries to test/fixtures/event-diff/dispositions.json only for approved baseline differences (max 8 keys this round).\"",
-      "occurrences": 1,
-      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
-    },
-    {
       "path": "scripts/goal21-gate-postfix-check.sh",
       "kind": "legacy-env",
       "token": "PI_BASELINE_CACHE",
       "line": "\t\t\t--baseline-cache \"$PI_BASELINE_CACHE\" \\",
       "occurrences": 2,
-      "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
-    },
-    {
-      "path": "scripts/goal21-gate-postfix-check.sh",
-      "kind": "legacy-env",
-      "token": "PI_BASELINE_CACHE",
-      "line": "\t\t--baseline-repo \"$PI_BASELINE_CACHE\" \\",
-      "occurrences": 1,
       "reason": "Goal 21 gate orchestration uses fixed-baseline cache paths; not shipped Cadr identity."
     },
     {
