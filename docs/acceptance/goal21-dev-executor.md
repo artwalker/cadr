@@ -71,7 +71,7 @@ Impl lane（`a`/`b`/`c`/`parity`）不是每次失忆：
 
 ## 验收
 
-见 `goal21-pi-0843-alignment.md` 验收清单。`goal20Paused` 仍为 true；规格最后一项（G20 在 0843 上继续）保持空，本 closeout 不恢复 Goal 20 pairing。
+见 `goal21-pi-0843-alignment.md` 验收清单（含已勾选的「G21 前置」）。`goal20Paused` 仍为 true；本 closeout 不恢复 Goal 20 pairing、不开新 pair。
 
 ## Operator 自愈（anchor guard）
 
