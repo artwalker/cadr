@@ -4282,6 +4282,48 @@ host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
 did not fail). Same commit no optimize.
 
+### Pair 337 — `core_rest` (cancellation_wait)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cancellation_wait` | `wait-for-cancellation` (`src/cadr-core/cancellation.lisp`) | `Atomics.wait` timeout 0 + aborted `AbortSignal` |
+
+Leftover sibling of Pair 322 `cancellation_abort` on the same `core_rest`
+hole. Timed work is wait timeout, predicate-aborted, and already-aborted —
+not `abort-cancellation` as the timed owner. Observed `cw_timeout` /
+`cw_pred` / `cw_abort` are exact. First n=5 freeze **6.041×** (53.40 /
+8.840 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 338 — `core_rest` (redacted_types)
+
+| metric | cadr | pi |
+|---|---|---|
+| `redacted_types` | `redacted-object-types` (`src/cadr-core/redacted-print.lisp`) | sorted copy of a redacted-type list |
+
+Leftover sibling of Pair 323 `redacted_secrets` on the same `core_rest`
+hole. Timed work is copy+sort of the registered redacted type list — not
+`redact-secrets`. Observed `rt_list` / `rt_syms` / `rt_sorted` are exact.
+First n=5 freeze **4.494×** (2.375 / 0.528 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1× booked.
+Same commit no optimize.
+
+### Pair 339 — `core_rest` (threads_join)
+
+| metric | cadr | pi |
+|---|---|---|
+| `threads_join` | `join-active-thread` (`src/cadr-core/threads.lisp`) | `worker_threads` Worker `postMessage`+exit |
+
+Leftover sibling of Pair 324 `threads_cleanup` on the same `core_rest`
+hole. Timed work is a required-result join with a non-empty reason — not
+cleanup/terminate. Observed `tj_value` / `tj_done` / `tj_reason` are exact.
+First n=5 freeze **0.00575×** (128.7 / 22383 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

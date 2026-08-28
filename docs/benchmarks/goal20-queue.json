@@ -1088,6 +1088,33 @@
    "piUs": 3.403,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 337,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-core/cancellation.lisp",
+   "measure": "measure-core-rest",
+   "metric": "core_rest.cancellation_wait",
+   "branch": "cursor/pair-337-339-core-rest-leftovers-5e64"
+  },
+  {
+   "pair": 338,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-core/redacted-print.lisp",
+   "measure": "measure-core-rest",
+   "metric": "core_rest.redacted_types",
+   "branch": "cursor/pair-337-339-core-rest-leftovers-5e64"
+  },
+  {
+   "pair": 339,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-core/threads.lisp",
+   "measure": "measure-core-rest",
+   "metric": "core_rest.threads_join",
+   "branch": "cursor/pair-337-339-core-rest-leftovers-5e64"
   }
  ],
  "mergeQueue": []

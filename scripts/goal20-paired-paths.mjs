@@ -248,6 +248,9 @@ const REPETITIONS = {
 	"evals_harness.prompt_eval_agent": 3,
 	"evals_harness.reload_shutdown": 3,
 	"evals_harness.run_coding_agent_eval": 3,
+	"core_rest.cancellation_wait": 50,
+	"core_rest.redacted_types": 50,
+	"core_rest.threads_join": 5,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -16997,10 +17000,70 @@ async function runCoreRestThreads() {
 	};
 }
 
+function runCoreRestCancellationWait() {
+	const sab = new SharedArrayBuffer(4);
+	const view = new Int32Array(sab);
+	const timeout = Atomics.wait(view, 0, 0, 0);
+	const pred = new AbortController();
+	pred.abort();
+	const abortCtl = new AbortController();
+	abortCtl.abort();
+	return {
+		cw_timeout: timeout === "timed-out" ? 1 : 0,
+		cw_pred: pred.signal.aborted ? 1 : 0,
+		cw_abort: abortCtl.signal.aborted ? 1 : 0,
+	};
+}
+
+
+function runCoreRestRedactedTypes() {
+	const types = ["Agent", "SessionManager", "AbortController"].sort();
+	const sorted = [...types].sort();
+	return {
+		rt_list: Array.isArray(types) ? 1 : 0,
+		rt_syms: types.every((item) => typeof item === "string") ? 1 : 0,
+		rt_sorted: types.join("\0") === sorted.join("\0") ? 1 : 0,
+	};
+}
+
+
+async function runCoreRestThreadsJoin() {
+	const { Worker } = await import("node:worker_threads");
+	const reason = "goal20-core-rest-join";
+	return await new Promise((resolve) => {
+		const worker = new Worker(
+			"const { parentPort } = require('node:worker_threads'); parentPort.postMessage(42);",
+			{ eval: true },
+		);
+		let value = null;
+		worker.on("message", (msg) => {
+			value = msg;
+		});
+		worker.on("exit", () => {
+			resolve({
+				tj_value: value === 42 ? 1 : 0,
+				tj_done: 1,
+				tj_reason: reason.length,
+			});
+		});
+		worker.on("error", () => {
+			resolve({
+				tj_value: 0,
+				tj_done: 0,
+				tj_reason: reason.length,
+			});
+		});
+	});
+}
+
+
 async function measureCoreRest() {
 	const cancellation = runCoreRestCancellation();
 	const redacted = runCoreRestRedacted();
 	const threads = await runCoreRestThreads();
+	const wait = runCoreRestCancellationWait();
+	const types = runCoreRestRedactedTypes();
+	const join = await runCoreRestThreadsJoin();
 	return {
 		cancellation_abort: await collect("core_rest.cancellation_abort", () => {
 			return () => runCoreRestCancellation();
@@ -17011,10 +17074,22 @@ async function measureCoreRest() {
 		threads_cleanup: await collect("core_rest.threads_cleanup", () => {
 			return () => runCoreRestThreads();
 		}),
+		cancellation_wait: await collect("core_rest.cancellation_wait", () => {
+			return () => runCoreRestCancellationWait();
+		}),
+		redacted_types: await collect("core_rest.redacted_types", () => {
+			return () => runCoreRestRedactedTypes();
+		}),
+		threads_join: await collect("core_rest.threads_join", () => {
+			return () => runCoreRestThreadsJoin();
+		}),
 		observed: {
 			...cancellation,
 			...redacted,
 			...threads,
+			...wait,
+			...types,
+			...join,
 		},
 	};
 }
@@ -17973,6 +18048,12 @@ const result = {
 				"String.split/join [REDACTED] (cadr-core redact-secrets counterpart; baseline has no secret-replace helper)",
 			"core_rest.threads_cleanup":
 				"worker_threads Worker eval-exit (stop-thread-for-cleanup counterpart)",
+			"core_rest.cancellation_wait":
+				"Atomics.wait timeout 0 + aborted AbortSignal (wait-for-cancellation counterpart)",
+			"core_rest.redacted_types":
+				"sorted copy of a redacted-type list (redacted-object-types counterpart; baseline has no type registry)",
+			"core_rest.threads_join":
+				"worker_threads Worker postMessage+exit (join-active-thread counterpart)",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":

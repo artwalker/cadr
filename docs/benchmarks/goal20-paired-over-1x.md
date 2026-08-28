@@ -267,4 +267,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.reload_shutdown` | 222.4 | 118.8 | 1.872× | 8.00× | measure-only pair 356; reload + shutdown leftover | invent pause；地板优化另刀 |
 | `evals_harness.run_coding_agent_eval` | 940.1 | 117.8 | 7.979× | 8.00× | measure-only pair 357; `run-coding-agent-eval` vs `runPiCodingAgent` | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_callback_request` | 12.588 | 3.403 | 3.699× | 8.00× | measure-only pair 336; `parse-oauth-callback-request` vs openai-codex loopback pathname/state/code | invent pause；地板优化另刀 |
+| `core_rest.cancellation_wait` | 53.40 | 8.840 | 6.041× | 8.00× | measure-only pair 337; leftover `wait-for-cancellation` vs Atomics.wait timeout + aborted AbortSignal | invent pause；地板优化另刀 |
+| `core_rest.redacted_types` | 2.375 | 0.528 | 4.494× | 8.00× | measure-only pair 338; leftover `redacted-object-types` vs sorted type-list copy; not redact-secrets | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
