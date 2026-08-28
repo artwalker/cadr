@@ -12,17 +12,19 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.theme_primitive`
   (`valid-tui-theme-primitive-p` on `src/cadr-cli/interactive/themes.lisp`).
   Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil` exact.
-  Pending first n=5 freeze. Measure-only leftover (Pair 523).
-  `nextPairNum` left unchanged.
+  n=5 **0.472×** (0.110 / 0.233 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 523). cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.theme_resolve`
   (`resolve-tui-theme-value` on `src/cadr-cli/interactive/themes.lisp`).
   Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` /
-  `tr_miss` exact. Pending first n=5 freeze. Measure-only leftover
-  (Pair 524). `nextPairNum` left unchanged.
+  `tr_miss` exact. n=5 **0.184×** (1.442 / 7.853 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 524). cadr leads.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.theme_validate`
   (`validate-tui-theme-object` on `src/cadr-cli/interactive/themes.lisp`).
-  Observed `tv_ok` / `tv_slash` / `tv_unknown` exact. Pending first n=5 freeze.
-  Measure-only leftover (Pair 525). `nextPairNum` left unchanged.
+  Observed `tv_ok` / `tv_slash` / `tv_unknown` exact. n=5 **0.795×**
+  (20.435 / 25.698 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 525). cadr leads. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
