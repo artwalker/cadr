@@ -194,6 +194,9 @@ const REPETITIONS = {
 	"settings_load.http_idle": 50,
 	"settings_load.stored_auth_secrets": 50,
 	"settings_load.config_paths": 50,
+	"settings_load.sdk_nonempty": 50,
+	"settings_load.sdk_boolean": 50,
+	"settings_load.sdk_tools": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"package_manager.resolve": 5,
@@ -2181,6 +2184,77 @@ function runSettingsLoadConfigPaths(agentDir) {
 	}
 }
 
+const SDK_SETTINGS_MISSING = { sentinel: "missing" };
+
+const SDK_SETTINGS_FIXTURE = {
+	defaultProvider: "openai",
+	defaultModel: "",
+	compaction: { enabled: true },
+	tools: ["read", "bash"],
+};
+
+function sdkSettingsValue(settings, key, defaultValue) {
+	if (Object.prototype.hasOwnProperty.call(settings, key)) return settings[key];
+	return arguments.length >= 3 ? defaultValue : null;
+}
+
+function sdkNonemptySettingString(settings, key) {
+	const value = sdkSettingsValue(settings, key);
+	return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+function sdkSettingsBoolean(settings, key, defaultValue, nestedKey) {
+	let value = sdkSettingsValue(settings, key, SDK_SETTINGS_MISSING);
+	if (
+		nestedKey &&
+		value &&
+		typeof value === "object" &&
+		!Array.isArray(value) &&
+		value !== SDK_SETTINGS_MISSING
+	) {
+		value = Object.prototype.hasOwnProperty.call(value, nestedKey)
+			? value[nestedKey]
+			: SDK_SETTINGS_MISSING;
+	}
+	if (value === SDK_SETTINGS_MISSING) return defaultValue;
+	return value === true;
+}
+
+function sdkSettingsEnabledTools(settings) {
+	const value = sdkSettingsValue(settings, "tools", null);
+	if (Array.isArray(value)) return [...value];
+	return null;
+}
+
+function runSettingsLoadSdkNonempty() {
+	const manager = SDK_SETTINGS_FIXTURE;
+	const empty = {};
+	return {
+		sn_prov: sdkNonemptySettingString(manager, "defaultProvider") ?? "",
+		sn_empty: sdkNonemptySettingString(manager, "defaultModel") ? 1 : 0,
+		sn_miss: sdkNonemptySettingString(empty, "defaultProvider") ? 1 : 0,
+	};
+}
+
+function runSettingsLoadSdkBoolean() {
+	const manager = SDK_SETTINGS_FIXTURE;
+	const empty = {};
+	return {
+		sb_on: sdkSettingsBoolean(manager, "compaction", false, "enabled") ? 1 : 0,
+		sb_def: sdkSettingsBoolean(empty, "compaction", true, "enabled") ? 1 : 0,
+		sb_miss: sdkSettingsBoolean(empty, "missing", false) ? 1 : 0,
+	};
+}
+
+function runSettingsLoadSdkTools() {
+	const tools = sdkSettingsEnabledTools(SDK_SETTINGS_FIXTURE);
+	return {
+		st_n: tools ? tools.length : 0,
+		st_read: tools && tools[0] === "read" ? 1 : 0,
+		st_none: sdkSettingsEnabledTools({}) == null ? 1 : 0,
+	};
+}
+
 async function measureSettingsLoad() {
 	const configPathsAgent = stageSettingsLoadConfigPaths();
 	const { empty, project, agent } = stageSettingsLoadTrust();
@@ -2190,6 +2264,9 @@ async function measureSettingsLoad() {
 	const idle = runSettingsLoadHttpIdle();
 	const storedAuth = runSettingsLoadStoredAuthSecrets(missingPath, fixturePath, oauthPath, badPath);
 	const configPaths = runSettingsLoadConfigPaths(configPathsAgent);
+	const sdkNonempty = runSettingsLoadSdkNonempty();
+	const sdkBoolean = runSettingsLoadSdkBoolean();
+	const sdkTools = runSettingsLoadSdkTools();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -2206,7 +2283,25 @@ async function measureSettingsLoad() {
 		config_paths: await collect("settings_load.config_paths", () => {
 			return () => runSettingsLoadConfigPaths(configPathsAgent);
 		}),
-		observed: { ...trust, ...config, ...idle, ...storedAuth, ...configPaths },
+		sdk_nonempty: await collect("settings_load.sdk_nonempty", () => {
+			return () => runSettingsLoadSdkNonempty();
+		}),
+		sdk_boolean: await collect("settings_load.sdk_boolean", () => {
+			return () => runSettingsLoadSdkBoolean();
+		}),
+		sdk_tools: await collect("settings_load.sdk_tools", () => {
+			return () => runSettingsLoadSdkTools();
+		}),
+		observed: {
+			...trust,
+			...config,
+			...idle,
+			...storedAuth,
+			...configPaths,
+			...sdkNonempty,
+			...sdkBoolean,
+			...sdkTools,
+		},
 	};
 }
 
@@ -16986,6 +17081,12 @@ const result = {
 				"packages/coding-agent/src/config.ts getAuthPath (auth.json key/access/refresh scan)",
 			"settings_load.config_paths":
 				"packages/coding-agent/src/config.ts getSettingsPath + getAuthPath",
+			"settings_load.sdk_nonempty":
+				"packages/coding-agent/src/core/settings-manager.ts getDefaultProvider nonempty string",
+			"settings_load.sdk_boolean":
+				"packages/coding-agent/src/core/settings-manager.ts compaction.enabled boolean",
+			"settings_load.sdk_tools":
+				"packages/coding-agent/src/core/settings-manager.ts defaultTools list",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",

@@ -919,6 +919,51 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 469,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_nonempty",
+   "branch": "cursor/sdk-settings-leftovers-469-471-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 469-471, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 470,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_boolean",
+   "branch": "cursor/sdk-settings-leftovers-469-471-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 469-471, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 471,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_tools",
+   "branch": "cursor/sdk-settings-leftovers-469-471-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 469-471, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

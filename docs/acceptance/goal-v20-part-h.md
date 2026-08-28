@@ -4059,6 +4059,39 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 469 — `settings_load` (sdk_nonempty)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_nonempty` | `sdk-nonempty-setting-string` (`src/cadr-cli/sdk/settings-service.lisp`) | nonempty `getDefaultProvider` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover of the `settings_load` hole on `settings-service.lisp`. Timed work is
+nonempty string setting lookup. Observed `sn_prov` / `sn_empty` / `sn_miss`
+are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`.
+Same commit no optimize.
+
+### Pair 470 — `settings_load` (sdk_boolean)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_boolean` | `sdk-settings-boolean` (`src/cadr-cli/sdk/settings-service.lisp`) | compaction.enabled boolean (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 469 on the same hole. Timed work is nested JSON
+boolean with default. Observed `sb_on` / `sb_def` / `sb_miss` are exact.
+First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same
+commit no optimize.
+
+### Pair 471 — `settings_load` (sdk_tools)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_tools` | `sdk-settings-enabled-tools` (`src/cadr-cli/sdk/settings-service.lisp`) | defaultTools list (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 469–470 on the same hole. Timed work is tools
+array-to-list projection. Observed `st_n` / `st_read` / `st_none` are exact.
+First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same
+commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

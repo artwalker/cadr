@@ -92,6 +92,7 @@
 ;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
+;;;;      leftover: sdk-nonempty-setting-string / sdk-settings-boolean / sdk-settings-enabled-tools
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
 ;;;; 253. settings_load default-config-path/default-auth-path vs getSettingsPath/getAuthPath
@@ -343,6 +344,9 @@
     ("settings_load.http_idle" . 50)
     ("settings_load.stored_auth_secrets" . 50)
     ("settings_load.config_paths" . 50)
+    ("settings_load.sdk_nonempty" . 50)
+    ("settings_load.sdk_boolean" . 50)
+    ("settings_load.sdk_tools" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("package_manager.resolve" . 5)
@@ -3412,6 +3416,58 @@
           (sb-posix:setenv "CADR_CODING_AGENT_DIR" previous 1)
           (sb-posix:unsetenv "CADR_CODING_AGENT_DIR")))))
 
+(defun sdk-settings-fixture-manager ()
+  (cadr-cli::make-memory-sdk-settings-manager
+   (cadr-ai::json-object
+    "defaultProvider" "openai"
+    "defaultModel" ""
+    "compaction"
+    (cadr-ai::json-object "enabled" t)
+    "tools"
+    (cadr-ai::json-array "read" "bash"))))
+
+(defun run-settings-load-sdk-nonempty ()
+  (let ((manager (sdk-settings-fixture-manager))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (or (cadr-cli::sdk-nonempty-setting-string
+          manager "defaultProvider")
+         "")
+     (if (cadr-cli::sdk-nonempty-setting-string
+          manager "defaultModel")
+         1
+         0)
+     (if (cadr-cli::sdk-nonempty-setting-string
+          empty "defaultProvider")
+         1
+         0))))
+
+(defun run-settings-load-sdk-boolean ()
+  (let ((manager (sdk-settings-fixture-manager))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (cadr-cli::sdk-settings-boolean
+          manager "compaction" nil "enabled")
+         1
+         0)
+     (if (cadr-cli::sdk-settings-compaction-enabled-p empty)
+         1
+         0)
+     (if (cadr-cli::sdk-settings-boolean empty "missing" nil)
+         1
+         0))))
+
+(defun run-settings-load-sdk-tools ()
+  (let* ((manager (sdk-settings-fixture-manager))
+         (empty (cadr-cli::make-memory-sdk-settings-manager))
+         (tools (cadr-cli::sdk-settings-enabled-tools manager)))
+    (list
+     (length tools)
+     (if (equal (first tools) "read") 1 0)
+     (if (null (cadr-cli::sdk-settings-enabled-tools empty))
+         1
+         0))))
+
 (defun measure-settings-load ()
   (let ((config-paths-agent (stage-settings-load-config-paths)))
     (destructuring-bind (empty project store-path)
@@ -3426,7 +3482,10 @@
                 (run-settings-load-stored-auth-secrets
                  missing-path fixture-path oauth-path bad-path))
               (config-paths
-                (run-settings-load-config-paths config-paths-agent)))
+                (run-settings-load-config-paths config-paths-agent))
+              (sdk-nonempty (run-settings-load-sdk-nonempty))
+              (sdk-boolean (run-settings-load-sdk-boolean))
+              (sdk-tools (run-settings-load-sdk-tools)))
         (json-object
          "observed"
          (json-object
@@ -3462,7 +3521,16 @@
           "cp_cfg_eq" (nth 1 config-paths)
           "cp_same_p" (nth 2 config-paths)
           "cp_auth_leaf" (nth 3 config-paths)
-          "cp_cfg_leaf" (nth 4 config-paths))
+          "cp_cfg_leaf" (nth 4 config-paths)
+          "sn_prov" (nth 0 sdk-nonempty)
+          "sn_empty" (nth 1 sdk-nonempty)
+          "sn_miss" (nth 2 sdk-nonempty)
+          "sb_on" (nth 0 sdk-boolean)
+          "sb_def" (nth 1 sdk-boolean)
+          "sb_miss" (nth 2 sdk-boolean)
+          "st_n" (nth 0 sdk-tools)
+          "st_read" (nth 1 sdk-tools)
+          "st_none" (nth 2 sdk-tools))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -3490,7 +3558,22 @@
                   (lambda ()
                     (lambda ()
                       (run-settings-load-config-paths
-                       config-paths-agent))))))))))
+                       config-paths-agent))))
+         "sdk_nonempty"
+         (collect "settings_load.sdk_nonempty"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-nonempty))))
+         "sdk_boolean"
+         (collect "settings_load.sdk_boolean"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-boolean))))
+         "sdk_tools"
+         (collect "settings_load.sdk_tools"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-tools))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -16614,6 +16697,12 @@
       "src/cadr-cli/config.lisp stored-auth-secrets"
       "settings_load.config_paths"
       "src/cadr-cli/config.lisp default-config-path + default-auth-path"
+      "settings_load.sdk_nonempty"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-nonempty-setting-string"
+      "settings_load.sdk_boolean"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-boolean"
+      "settings_load.sdk_tools"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-enabled-tools"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"
