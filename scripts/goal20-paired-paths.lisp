@@ -14408,6 +14408,100 @@
      (encode-git-footer-paths (merge-pathnames "empty/" root)))))
 
 
+(defun framed-select-title-encoded (title deadline now)
+  (cadr-cli::framed-select-title
+   (cadr-cli::%make-framed-select-state
+    :title title
+    :deadline deadline)
+   now))
+
+
+(defun run-cli-interactive-framed-select-title ()
+  ;; Baseline ExtensionSelectorComponent countdown:
+  ;; `${baseTitle} (${Math.ceil(remaining)}s)`. Message is cadr-only; omit it.
+  (list
+   (framed-select-title-encoded "Pick" nil 0d0)
+   (framed-select-title-encoded "Pick" 10.1d0 8.0d0)
+   (framed-select-title-encoded "Pick" 10.0d0 8.0d0)
+   (framed-select-title-encoded "Pick" 8.0d0 8.0d0)
+   (framed-select-title-encoded "Pick" 7.0d0 8.0d0)
+   (framed-select-title-encoded "" 5.5d0 4.0d0)))
+
+
+(defun overlay-options-encode (options)
+  (if (null options)
+      ""
+      (let ((anchor (getf options :anchor)))
+        (format
+         nil "w:~A|a:~A|ox:~A"
+         (or (getf options :width) "")
+         (if anchor
+             (string-downcase
+              (if (symbolp anchor)
+                  (symbol-name anchor)
+                  (string anchor)))
+             "")
+         (let ((offset (getf options :offset-x)))
+           (if offset offset 0))))))
+
+
+(defun run-cli-interactive-extension-overlay-options ()
+  ;; Baseline showExtensionCustom resolveOptions: static object, function, or missing.
+  (list
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state)))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options '(:width 50 :anchor :center :offset-x 2))))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options
+      (lambda ()
+        '(:width 40 :anchor :right-center :offset-x -1)))))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options '(:width "50%"))))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options '(:width 0 :anchor :center :offset-x 0))))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options '(:width 10))))))
+
+
+(defun extension-custom-ui-visible-encoded (state)
+  (if (cadr-cli::extension-custom-ui-visible-p state) "1" "0"))
+
+
+(defun run-cli-interactive-extension-custom-ui-visible ()
+  ;; Handle is nil (no OverlayHandle). Pair explicit visible/visible-p flags,
+  ;; not the size callback (cadr does not call OverlayOptions.visible).
+  (list
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options '(:width 50)))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options '(:visible nil)))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options '(:visible-p nil)))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options '(:visible t)))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options (lambda () nil)))))
+
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))

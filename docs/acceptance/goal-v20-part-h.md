@@ -6831,6 +6831,51 @@ Observed `dcl_plain` / `dcl_odd` / `dcl_narrow` / `dcl_empty` / `dcl_ansi` /
 known old holes; this metric did not fail). Same commit no optimize.
 `nextPairNum` left at 328.
 
+### Pair 550 — `cli_interactive_controller` (framed_select_title)
+
+| metric | cadr | pi |
+|---|---|---|
+| `framed_select_title` | `framed-select-title` (`src/cadr-cli/interactive/extension-ui.lisp`) | ExtensionSelector countdown title (`packages/coding-agent/src/modes/interactive/components/extension-selector.ts` `${baseTitle} (${s}s)`) |
+
+Leftover trio on the `cli_interactive_controller` hole for
+`extension-ui.lisp` (inventory `needs-pair`). Timed work is title +
+`Math.ceil` remaining seconds — not select-list render, not TUI overlay.
+Message is cadr-only and omitted. Observed `fst_plain` / `fst_ceil` /
+`fst_exact` / `fst_zero` / `fst_neg` / `fst_empty` are exact. First n=5
+freeze **1.406×** (0.775 / 0.551 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail).
+Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Same commit no
+optimize. `nextPairNum` left at 328.
+
+### Pair 551 — `cli_interactive_controller` (extension_overlay_options)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extension_overlay_options` | `extension-overlay-options` (`src/cadr-cli/interactive/extension-ui.lisp`) | `showExtensionCustom` resolveOptions (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pair 550. Timed work is static overlay options vs
+function vs missing — not `showOverlay`, not layout. Observed `eoo_nil` /
+`eoo_static` / `eoo_fn` / `eoo_pct` / `eoo_zero` / `eoo_width` are exact.
+First n=5 freeze **2.114×** (1.270 / 0.601 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes;
+this metric did not fail). Booked over-1×. Same commit no optimize.
+`nextPairNum` left at 328.
+
+### Pair 552 — `cli_interactive_controller` (extension_custom_ui_visible)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extension_custom_ui_visible` | `extension-custom-ui-visible-p` (`src/cadr-cli/interactive/extension-ui.lisp`) | OverlayHandle `isHidden` plus explicit `visible`/`visible-p` flags (`packages/tui/src/tui.ts`) |
+
+Leftover sibling of Pairs 550–551. Handle is nil (no overlay stack). Does
+not call `OverlayOptions.visible(termWidth, termHeight)` (cadr does not).
+Observed `ecu_default` / `ecu_width` / `ecu_vis_nil` / `ecu_visp_nil` /
+`ecu_vis_t` / `ecu_fn_nil` are exact. First n=5 freeze **1.866×** (1.027 /
+0.551 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes; this metric did not fail). Booked
+over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

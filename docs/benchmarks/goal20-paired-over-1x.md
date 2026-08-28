@@ -370,4 +370,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.llama_model_description` | 1.450 | 1.283 | 1.130× | 8.00× | measure-only pair 545; `llama-model-description` vs `modelDescription` | invent pause；地板优化另刀 |
 | `cli_extensions_install.llama_compact_count` | 0.968 | 0.641 | 1.511× | 8.00× | measure-only pair 546; `llama-compact-count` vs `compactCount` | invent pause；地板优化另刀 |
 | `cli_selectors.daxnuts_image_line` | 36.319 | 16.357 | 2.220× | 8.00× | measure-only leftover 548; `daxnuts-image-line` vs `buildImage` half-block row | invent pause；地板优化另刀 |
+| `cli_interactive_controller.framed_select_title` | 0.775 | 0.551 | 1.406× | 8.00× | measure-only leftover 550; `framed-select-title` vs countdown `${title} (${s}s)` (sub-µs) | invent pause；地板优化另刀 |
+| `cli_interactive_controller.extension_overlay_options` | 1.270 | 0.601 | 2.114× | 8.00× | measure-only leftover 551; `extension-overlay-options` vs resolveOptions | invent pause；地板优化另刀 |
+| `cli_interactive_controller.extension_custom_ui_visible` | 1.027 | 0.551 | 1.866× | 8.00× | measure-only leftover 552; `extension-custom-ui-visible-p` flags (no size callback) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

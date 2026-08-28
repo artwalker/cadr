@@ -410,6 +410,9 @@ const REPETITIONS = {
 	"cli_selectors.daxnuts_parse_image": 50,
 	"cli_selectors.daxnuts_image_line": 50,
 	"cli_selectors.daxnuts_center_line": 50,
+	"cli_interactive_controller.framed_select_title": 50,
+	"cli_interactive_controller.extension_overlay_options": 50,
+	"cli_interactive_controller.extension_custom_ui_visible": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -14076,6 +14079,97 @@ function runCliInteractiveFooterGitPaths() {
 		fgp_common: encodeGitFooterPaths(path.join(root, "linked")),
 		fgp_nohead: encodeGitFooterPaths(path.join(root, "nohead")),
 		fgp_none: encodeGitFooterPaths(path.join(root, "empty")),
+	};
+}
+
+
+function framedSelectTitle(title, deadline, now) {
+	if (deadline == null) {
+		return title;
+	}
+	const seconds = Math.max(0, Math.ceil(deadline - now));
+	return `${title} (${seconds}s)`;
+}
+
+
+function runCliInteractiveFramedSelectTitle() {
+	return {
+		fst_plain: framedSelectTitle("Pick", null, 0),
+		fst_ceil: framedSelectTitle("Pick", 10.1, 8.0),
+		fst_exact: framedSelectTitle("Pick", 10.0, 8.0),
+		fst_zero: framedSelectTitle("Pick", 8.0, 8.0),
+		fst_neg: framedSelectTitle("Pick", 7.0, 8.0),
+		fst_empty: framedSelectTitle("", 5.5, 4.0),
+	};
+}
+
+
+function resolveOverlayOptions(overlayOptions) {
+	if (overlayOptions) {
+		return typeof overlayOptions === "function" ? overlayOptions() : overlayOptions;
+	}
+	return undefined;
+}
+
+
+function overlayOptionsEncode(opts) {
+	if (opts == null) {
+		return "";
+	}
+	const width = opts.width ?? "";
+	const anchor = opts.anchor ?? "";
+	const offsetX = opts.offsetX ?? 0;
+	return `w:${width}|a:${anchor}|ox:${offsetX}`;
+}
+
+
+function runCliInteractiveExtensionOverlayOptions() {
+	return {
+		eoo_nil: overlayOptionsEncode(resolveOverlayOptions(undefined)),
+		eoo_static: overlayOptionsEncode(
+			resolveOverlayOptions({ width: 50, anchor: "center", offsetX: 2 }),
+		),
+		eoo_fn: overlayOptionsEncode(
+			resolveOverlayOptions(() => ({
+				width: 40,
+				anchor: "right-center",
+				offsetX: -1,
+			})),
+		),
+		eoo_pct: overlayOptionsEncode(resolveOverlayOptions({ width: "50%" })),
+		eoo_zero: overlayOptionsEncode(
+			resolveOverlayOptions({ width: 0, anchor: "center", offsetX: 0 }),
+		),
+		eoo_width: overlayOptionsEncode(resolveOverlayOptions({ width: 10 })),
+	};
+}
+
+
+function extensionCustomUiVisible(options) {
+	if (options == null) {
+		return "1";
+	}
+	if (Object.prototype.hasOwnProperty.call(options, "visible") && options.visible == null) {
+		return "0";
+	}
+	if (Object.prototype.hasOwnProperty.call(options, "visibleP") && options.visibleP == null) {
+		return "0";
+	}
+	if (options.visible === false || options.visibleP === false) {
+		return "0";
+	}
+	return "1";
+}
+
+
+function runCliInteractiveExtensionCustomUiVisible() {
+	return {
+		ecu_default: extensionCustomUiVisible(resolveOverlayOptions(undefined)),
+		ecu_width: extensionCustomUiVisible(resolveOverlayOptions({ width: 50 })),
+		ecu_vis_nil: extensionCustomUiVisible(resolveOverlayOptions({ visible: null })),
+		ecu_visp_nil: extensionCustomUiVisible(resolveOverlayOptions({ visibleP: null })),
+		ecu_vis_t: extensionCustomUiVisible(resolveOverlayOptions({ visible: true })),
+		ecu_fn_nil: extensionCustomUiVisible(resolveOverlayOptions(() => undefined)),
 	};
 }
 

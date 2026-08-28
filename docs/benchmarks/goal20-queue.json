@@ -3874,6 +3874,51 @@
    "ceiling": 8.0,
    "rc": 1,
    "note": "nextPairNum left at tip 328; leftover IDs 547-549"
+  },
+  {
+   "pair": 550,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.framed_select_title",
+   "branch": "cursor/extension-ui-leftovers-550-552-34f9",
+   "ratio": 1.406,
+   "cadrUs": 0.775,
+   "piUs": 0.551,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 550-552"
+  },
+  {
+   "pair": 551,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.extension_overlay_options",
+   "branch": "cursor/extension-ui-leftovers-550-552-34f9",
+   "ratio": 2.114,
+   "cadrUs": 1.27,
+   "piUs": 0.601,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 550-552"
+  },
+  {
+   "pair": 552,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.extension_custom_ui_visible",
+   "branch": "cursor/extension-ui-leftovers-550-552-34f9",
+   "ratio": 1.866,
+   "cadrUs": 1.027,
+   "piUs": 0.551,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 550-552"
   }
  ],
  "mergeQueue": []
