@@ -14184,18 +14184,6 @@ function runCliSelectorsScopedModelIdEnabledP() {
 	};
 }
 
-function scopedModelsToggleId(enabledIds, id) {
-	if (enabledIds === null) return [id];
-	const index = enabledIds.indexOf(id);
-	if (index >= 0) {
-		return [
-			...enabledIds.slice(0, index),
-			...enabledIds.slice(index + 1),
-		];
-	}
-	return [...enabledIds, id];
-}
-
 function encodeScopedModelsToggleId(enabledIds, id) {
 	return scopedModelsToggleId(enabledIds, id).join(",");
 }
