@@ -13,8 +13,11 @@ tag/Release step.
   `root_observer` / `model_resolver` (`src/cadr-evals/harness.lisp` vs
   baseline SimpleHarnessResult construction / isolated eval root handoff /
   ModelRuntime.getModel stub). Observed `er_*` / `ro_*` / `mr_*` exact.
-  Does not pair `default-eval-model-resolver` (skipped; ~54×). Measure-only.
-  Pairs 376–378.
+  n=5 **1.734×** / **2.239×** / **0.601×** (0.762 / 0.440 µs, 0.362 / 0.162 µs,
+  0.153 / 0.254 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not these
+  metrics. Does not pair `default-eval-model-resolver` (skipped; ~54×).
+  Pairs 376–377 are on the over-1× ledger. Pairs 376–378.
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.
