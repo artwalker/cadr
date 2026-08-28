@@ -325,4 +325,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.no_models_help` | 244.9 | 8.92 | 27.45× | 50.00× | measure-only pair 460; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
 | `cli_support.no_model_selected` | 245.4 | 8.87 | 27.67× | 50.00× | measure-only pair 461; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
 | `cli_support.no_api_key` | 480.3 | 17.48 | 27.48× | 50.00× | measure-only pair 462; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
+| `cli_print_rpc.rpc_prompt` | 1.323 | 0.584 | 2.266× | 8.00× | measure-only leftover 464; `rpc-prompt-message` vs RPC prompt message+images (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_print_rpc.bash_result` | 2.165 | 0.743 | 2.913× | 8.00× | measure-only leftover 465; `rpc-bash-result-json` vs RPC bash result payload (sub-µs variance) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

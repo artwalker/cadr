@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_print_rpc.rpc_images`
+  (`rpc-images-from-json` on `src/cadr-cli/modes/rpc/prompt-bash.lisp` vs
+  RPC prompt `command.images`). Observed `img_nil` / `img_n` / `img_mime` /
+  `img_bad` exact. n=5 **0.657×** (2.260 / 3.439 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 463). Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_print_rpc.rpc_prompt`
+  (`rpc-prompt-message` on `src/cadr-cli/modes/rpc/prompt-bash.lisp` vs RPC
+  prompt message+images). Observed `rp_str` / `rp_len` / `rp_parts` /
+  `rp_mime` exact. n=5 **2.266×** (1.323 / 0.584 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 464). Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13 leftover: pair `cli_print_rpc.bash_result`
+  (`rpc-bash-result-json` on `src/cadr-cli/modes/rpc/prompt-bash.lisp` vs RPC
+  bash result payload). Observed `br_out` / `br_code` / `br_can` / `br_tr` /
+  `br_path` / `br_null` exact. n=5 **2.913×** (2.165 / 0.743 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 465). Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `cli_support.no_models_help`
   (`format-no-models-available-message` on `src/cadr-cli/support/model-help.lisp`
   vs `formatNoModelsAvailableMessage`). Observed `nm_pref` / `nm_login` /
