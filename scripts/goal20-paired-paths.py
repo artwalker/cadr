@@ -133,7 +133,7 @@ METRICS = {
         "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step", "make_eval_root", "normalize_step_type", "selected_eval_tools"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step", "make_eval_root", "normalize_step_type", "selected_eval_tools", "prompt_eval_agent", "reload_shutdown", "run_coding_agent_eval"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
@@ -538,6 +538,14 @@ RATIO_CEILINGS = {
     "evals_harness.make_eval_root": 8.0,
     "evals_harness.normalize_step_type": 8.0,
     "evals_harness.selected_eval_tools": 8.0,
+    # evals_harness leftover trio on harness.lisp (pairs 355-357).
+    # prompt_eval_agent first freeze observed 10.47x (19.3 / 1.84 us);
+    # 20.0 follows the session_compact / model_data headroom precedent.
+    # reload_shutdown 1.87x and run_coding_agent_eval 7.98x keep 8.0.
+    # Ratchet down only.
+    "evals_harness.prompt_eval_agent": 20.0,
+    "evals_harness.reload_shutdown": 8.0,
+    "evals_harness.run_coding_agent_eval": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -2069,6 +2077,19 @@ OBSERVED_EXACT = {
         "set_filt_n",
         "set_no_bash",
         "set_cases",
+        "pea_out",
+        "pea_msgs",
+        "pea_stop",
+        "pea_n",
+        "rld_err",
+        "rld_active",
+        "rld_reports",
+        "rld_n",
+        "rca_out",
+        "rca_events",
+        "rca_err",
+        "rca_ms",
+        "rca_n",
     ),
     "ai_crypto_model_data": (
         "schema_version",

@@ -208,6 +208,9 @@
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
+;;;; 355. evals_harness prompt-eval-agent vs pi-harness promptAgent
+;;;; 356. evals_harness reload/shutdown vs pi-harness reload + dispose
+;;;; 357. evals_harness run-coding-agent-eval vs pi-harness runPiCodingAgent
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
@@ -398,6 +401,9 @@
     ("evals_harness.make_eval_root" . 50)
     ("evals_harness.normalize_step_type" . 50)
     ("evals_harness.selected_eval_tools" . 50)
+    ("evals_harness.prompt_eval_agent" . 3)
+    ("evals_harness.reload_shutdown" . 3)
+    ("evals_harness.run_coding_agent_eval" . 3)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -7231,6 +7237,133 @@
        (eval-flag
         (eq new (cadr-evals::last-assistant-since messages nil)))
        3))))
+(defun evals-delete-eval-root (root)
+  (when (and root (probe-file root))
+    (uiop:delete-directory-tree
+     root
+     :validate t
+     :if-does-not-exist :ignore)))
+
+(defun evals-faux-stream (handle)
+  (lambda (provider selected-model context on-event &rest options)
+    (declare (ignore provider))
+    (apply #'cadr-ai:faux-stream
+           handle selected-model context on-event options)))
+
+(defun evals-make-faux-agent (&optional host)
+  (let ((handle (cadr-ai:make-faux-provider)))
+    (cadr-ai:faux-set-responses
+     handle
+     (list (cadr-ai:faux-assistant-message "Paris")))
+    (cadr-agent:make-agent
+     :provider (cadr-ai:faux-handle-provider handle)
+     :model (cadr-ai:faux-get-model handle)
+     :system-prompt "You are a test harness."
+     :tools nil
+     :extension-host host
+     :auto-compact-p nil
+     :stream-function (evals-faux-stream handle))))
+
+(defun run-evals-harness-prompt-eval-agent ()
+  ;; Leftover of run-coding-agent-eval: promptAgent with faux stream, no tools.
+  (let* ((agent (evals-make-faux-agent))
+         (output
+           (cadr-evals::prompt-eval-agent
+            agent
+            "What's the capital of France?")))
+    (list
+     (eval-flag (string= output "Paris"))
+     (length (cadr-agent:agent-messages agent))
+     (eval-flag
+      (eq :stop
+          (cadr-ai:assistant-message-stop-reason
+           (cadr-evals::last-assistant-since
+            (cadr-agent:agent-messages agent)
+            nil))))
+     3)))
+
+(defun run-evals-harness-reload-shutdown ()
+  ;; Leftover of run-coding-agent-eval: reload + session-shutdown + release.
+  (let ((root (cadr-evals::make-eval-root)))
+    (unwind-protect
+         (let* ((cwd
+                  (merge-pathnames "workspace/" root))
+                (agent-directory
+                  (merge-pathnames "agent/" root))
+                (extension-directory
+                  (merge-pathnames "extensions/" agent-directory)))
+           (ensure-directories-exist
+            (merge-pathnames "anchor" cwd))
+           (ensure-directories-exist
+            (merge-pathnames "anchor" agent-directory))
+           (let ((cadr-evals::*eval-reload-reports* nil)
+                 (manager
+                   (cadr-cli::make-cli-extension-manager
+                    :cwd cwd
+                    :global-directory extension-directory
+                    :output (make-string-output-stream)
+                    :mode :rpc)))
+             (setf
+              (cadr-cli::cli-extension-manager-extension-factories
+               manager)
+              nil)
+             (cadr-cli::reload-cli-extensions manager)
+             (let* ((agent
+                      (evals-make-faux-agent
+                       (cadr-cli::cli-extension-manager-host
+                        manager)))
+                    (report
+                      (cadr-evals::reload-eval-extensions
+                       manager agent
+                       :errors-are-fatal-p t)))
+               (cadr-evals::shutdown-eval-agent agent)
+               (cadr-evals::release-eval-extensions manager)
+               (list
+                (eval-flag (null (getf report :errors)))
+                (eval-flag (zerop (getf report :active)))
+                (length cadr-evals::*eval-reload-reports*)
+                3))))
+      (evals-delete-eval-root root))))
+
+(defun run-evals-harness-run-coding-agent-eval ()
+  ;; Leftover of the evals_harness hole: isolated faux coding-agent eval.
+  (let ((handle (cadr-ai:make-faux-provider)))
+    (cadr-ai:faux-set-responses
+     handle
+     (list (cadr-ai:faux-assistant-message "Paris")))
+    (let ((cadr-evals::*eval-model-resolver*
+            (lambda (provider model)
+              (unless
+                  (and (string= provider "faux")
+                       (string= model "faux-1"))
+                (error "Unexpected faux selection: ~A/~A"
+                       provider model))
+              (values
+               (cadr-ai:faux-handle-provider handle)
+               (cadr-ai:faux-get-model handle)
+               (evals-faux-stream handle))))
+          (cadr-evals::*eval-environment-function*
+            (constantly nil)))
+      (let ((result
+              (cadr-evals:run-coding-agent-eval
+               "What's the capital of France?"
+               :provider "faux"
+               :model "faux-1"
+               :no-tools :all)))
+        (list
+         (eval-flag
+          (string=
+           "Paris"
+           (cadr-evals:eval-result-output result)))
+         (length (cadr-evals:eval-result-events result))
+         (eval-flag
+          (null (cadr-evals:eval-result-errors result)))
+         (eval-flag
+          (numberp
+           (cadr-ai::json-get
+            (cadr-evals:eval-result-timings result)
+            "totalMs")))
+         4)))))
 
 (defun run-evals-harness-step-value ()
   ;; Hash-table JSON step, keyword plist, interned keyword plist, miss.
@@ -7462,7 +7595,10 @@
          (reload-step (run-evals-harness-reload-step))
          (eval-root (run-evals-harness-make-eval-root))
          (step-type (run-evals-harness-normalize-step-type))
-         (eval-tools (run-evals-harness-selected-eval-tools)))
+         (eval-tools (run-evals-harness-selected-eval-tools))
+         (prompt-agent (run-evals-harness-prompt-eval-agent))
+         (reload-shutdown (run-evals-harness-reload-shutdown))
+         (coding-eval (run-evals-harness-run-coding-agent-eval)))
     (json-object
      "observed"
      (json-object
@@ -7558,7 +7694,20 @@
       "set_all" (nth 2 eval-tools)
       "set_filt_n" (nth 3 eval-tools)
       "set_no_bash" (nth 4 eval-tools)
-      "set_cases" (nth 5 eval-tools))
+      "set_cases" (nth 5 eval-tools)
+      "pea_out" (nth 0 prompt-agent)
+      "pea_msgs" (nth 1 prompt-agent)
+      "pea_stop" (nth 2 prompt-agent)
+      "pea_n" (nth 3 prompt-agent)
+      "rld_err" (nth 0 reload-shutdown)
+      "rld_active" (nth 1 reload-shutdown)
+      "rld_reports" (nth 2 reload-shutdown)
+      "rld_n" (nth 3 reload-shutdown)
+      "rca_out" (nth 0 coding-eval)
+      "rca_events" (nth 1 coding-eval)
+      "rca_err" (nth 2 coding-eval)
+      "rca_ms" (nth 3 coding-eval)
+      "rca_n" (nth 4 coding-eval))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7644,8 +7793,22 @@
      (collect "evals_harness.selected_eval_tools"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-selected-eval-tools)))))))
-
+                  (run-evals-harness-selected-eval-tools))))
+     "prompt_eval_agent"
+     (collect "evals_harness.prompt_eval_agent"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-prompt-eval-agent))))
+     "reload_shutdown"
+     (collect "evals_harness.reload_shutdown"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-reload-shutdown))))
+     "run_coding_agent_eval"
+     (collect "evals_harness.run_coding_agent_eval"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-run-coding-agent-eval)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -16955,6 +17118,12 @@
       "src/cadr-evals/harness.lisp normalize-step-type"
       "evals_harness.selected_eval_tools"
       "src/cadr-evals/harness.lisp selected-eval-tools"
+      "evals_harness.prompt_eval_agent"
+      "src/cadr-evals/harness.lisp prompt-eval-agent"
+      "evals_harness.reload_shutdown"
+      "src/cadr-evals/harness.lisp reload-eval-extensions shutdown-eval-agent"
+      "evals_harness.run_coding_agent_eval"
+      "src/cadr-evals/harness.lisp run-coding-agent-eval"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

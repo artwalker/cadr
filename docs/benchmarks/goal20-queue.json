@@ -1004,6 +1004,48 @@
    "piUs": 2.788,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 355,
+   "lane": "evals",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.prompt_eval_agent",
+   "branch": "cursor/evals-harness-pairs-355-357-f964",
+   "ratio": 10.475,
+   "cadrUs": 19.3,
+   "piUs": 1.84,
+   "ceiling": 20.0,
+   "rc": 1
+  },
+  {
+   "pair": 356,
+   "lane": "evals",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.reload_shutdown",
+   "branch": "cursor/evals-harness-pairs-355-357-f964",
+   "ratio": 1.872,
+   "cadrUs": 222.4,
+   "piUs": 118.8,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 357,
+   "lane": "evals",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.run_coding_agent_eval",
+   "branch": "cursor/evals-harness-pairs-355-357-f964",
+   "ratio": 7.979,
+   "cadrUs": 940.1,
+   "piUs": 117.8,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
