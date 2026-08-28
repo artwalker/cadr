@@ -4067,8 +4067,9 @@ commit no optimize.
 
 Leftover of the `settings_load` hole on `config.lisp`. Timed work is
 string-upcase intern to keyword. Observed `ps_openai` / `ps_mixed` /
-`ps_hyphen` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`ps_hyphen` are exact. First n=5 freeze **1.351×** (0.313 / 0.231 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit
+no optimize. Over-1× booked.
 
 ### Pair 455 — `settings_load` (parse_auth_provider)
 
@@ -4079,7 +4080,8 @@ string-upcase intern to keyword. Observed `ps_openai` / `ps_mixed` /
 Leftover sibling of Pair 454 on the same hole. Timed work is OAuth provider
 identity plus the configuration-error message. Observed `pap_openai` /
 `pap_anth` / `pap_codex` / `pap_bad` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+**0.365×** (0.846 / 2.314 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Same commit no optimize.
 
 ### Pair 456 — `settings_load` (split_command_line)
 
@@ -4089,8 +4091,9 @@ identity plus the configuration-error message. Observed `pap_openai` /
 
 Leftover sibling of Pairs 454–455 on the same hole. Timed work is trim plus
 space/tab split dropping empties. Observed `scl_two` / `scl_trim` /
-`scl_empty` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`scl_empty` are exact. First n=5 freeze **0.967×** (0.939 / 0.971 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit
+no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
