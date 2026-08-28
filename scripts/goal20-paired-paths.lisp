@@ -446,6 +446,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.fit_footer_text" . 50)
+    ("cli_interactive_controller.footer_usage" . 50)
+    ("cli_interactive_controller.footer_git_paths" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -9672,13 +9675,174 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defparameter *footer-git-root* nil)
+
+(defun footer-git-posix (pathname)
+  (string-right-trim "/" (namestring pathname)))
+
+(defun footer-git-rel (root pathname)
+  (let* ((root-s (footer-git-posix
+                  (uiop:ensure-directory-pathname root)))
+         (path-s (footer-git-posix pathname)))
+    (cond
+      ((string= path-s root-s) ".")
+      ((and (> (length path-s) (length root-s))
+            (string= root-s (subseq path-s 0 (length root-s)))
+            (char= (char path-s (length root-s)) #\/))
+       (subseq path-s (1+ (length root-s))))
+      (t path-s))))
+
+(defun footer-git-file (directory relative)
+  (uiop:parse-native-namestring
+   (concatenate
+    'string
+    (footer-git-posix (uiop:ensure-directory-pathname directory))
+    "/"
+    relative)))
+
+(defun write-footer-git-text (pathname contents)
+  (ensure-directories-exist
+   (uiop:pathname-directory-pathname pathname))
+  (with-open-file (out pathname
+                       :direction :output
+                       :if-exists :supersede
+                       :if-does-not-exist :create
+                       :external-format :utf-8)
+    (write-string contents out)))
+
+(defun ensure-footer-git-fixture ()
+  (unless *footer-git-root*
+    (let* ((root (merge-pathnames
+                  "footer-git/"
+                  *scratch-directory*))
+           (repo (merge-pathnames "repo/" root))
+           (wt (merge-pathnames "wt/" root))
+           (wt-git (merge-pathnames "wt.git/" root))
+           (linked (merge-pathnames "linked/" root))
+           (linked-git (merge-pathnames "linked.git/" root))
+           (main-git (merge-pathnames "main.git/" root)))
+      (ensure-directories-exist
+       (merge-pathnames "src/nested/" repo))
+      (ensure-directories-exist
+       (merge-pathnames ".git/" repo))
+      (write-footer-git-text
+       (footer-git-file (merge-pathnames ".git/" repo) "HEAD")
+       "ref: refs/heads/main
+")
+      (ensure-directories-exist (merge-pathnames "empty/" root))
+      (ensure-directories-exist
+       (merge-pathnames ".git/" (merge-pathnames "nohead/" root)))
+      (ensure-directories-exist wt)
+      (ensure-directories-exist wt-git)
+      (write-footer-git-text
+       (footer-git-file wt-git "HEAD")
+       "ref: refs/heads/wt
+")
+      (write-footer-git-text
+       (footer-git-file wt ".git")
+       "gitdir: ../wt.git
+")
+      (ensure-directories-exist linked)
+      (ensure-directories-exist linked-git)
+      (ensure-directories-exist main-git)
+      (write-footer-git-text
+       (footer-git-file linked-git "HEAD")
+       "ref: refs/heads/link
+")
+      (write-footer-git-text
+       (footer-git-file linked-git "commondir")
+       "../main.git
+")
+      (write-footer-git-text
+       (footer-git-file linked ".git")
+       "gitdir: ../linked.git
+")
+      (setf *footer-git-root* root)))
+  *footer-git-root*)
+
+(defun encode-git-footer-paths (cwd)
+  (let ((paths (cadr-cli::find-git-footer-paths cwd)))
+    (if (null paths)
+        ""
+        (format
+         nil
+         "~A|~A|~A"
+         (footer-git-rel
+          *footer-git-root*
+          (cadr-cli::git-footer-paths-repo-directory paths))
+         (footer-git-rel
+          *footer-git-root*
+          (cadr-cli::git-footer-paths-common-git-directory paths))
+         (footer-git-rel
+          *footer-git-root*
+          (cadr-cli::git-footer-paths-head-path paths))))))
+
+(defun run-cli-interactive-fit-footer-text ()
+  ;; Default ellipsis "...". Width 0 is empty. Do not pad.
+  (list
+   (cadr-cli:fit-footer-text "hi" 10)
+   (cadr-cli:fit-footer-text "abcdefghij" 7)
+   (cadr-cli:fit-footer-text
+    (with-output-to-string (out)
+      (dotimes (index 30)
+        (write-char #\界 out)))
+    20)
+   (cadr-cli:fit-footer-text "" 8)
+   (cadr-cli:fit-footer-text "hello" 0)
+   (cadr-cli:fit-footer-text "🎉 Celebration!" 8)))
+
+(defun run-cli-interactive-footer-usage ()
+  ;; Sum like addUsageToTotals, emit cadr's format string so observed
+  ;; strings match. string-equal on provider. Do not use 0-as-missing.
+  (let ((kimi
+          (list
+           (list :input 100
+                 :output 10
+                 :cache-read 50
+                 :cache-write 50
+                 :cost 0.5d0)
+           (list :input 20
+                 :output 5
+                 :cost 0.75d0)))
+        (nocache
+          (list
+           (list :input 8 :output 2 :cost 0.125d0)))
+        (zero-cost
+          (list
+           (list :input 1 :output 0 :cost 0d0))))
+    (list
+     (cadr-cli:footer-usage-summary kimi :provider "kimi-coding")
+     (cadr-cli:footer-usage-summary kimi :provider "openai")
+     (cadr-cli:footer-usage-summary '())
+     (cadr-cli:footer-usage-summary nocache :provider "x")
+     (cadr-cli:footer-usage-summary kimi :provider "Kimi-Coding")
+     (cadr-cli:footer-usage-summary zero-cost :provider "x"))))
+
+(defun run-cli-interactive-footer-git-paths ()
+  ;; Relative repo|commonGit|HEAD. Do not exact a .git directory
+  ;; without HEAD (pi returns null; cadr also requires HEAD).
+  (let* ((root (ensure-footer-git-fixture))
+         (repo (merge-pathnames "repo/" root)))
+    (list
+     (encode-git-footer-paths repo)
+     (encode-git-footer-paths
+      (merge-pathnames "src/nested/" repo))
+     (encode-git-footer-paths (merge-pathnames "wt/" root))
+     (encode-git-footer-paths (merge-pathnames "linked/" root))
+     (encode-git-footer-paths (merge-pathnames "nohead/" root))
+     (encode-git-footer-paths (merge-pathnames "empty/" root)))))
+
 (defun measure-cli-interactive-decode-entity ()
+  (ensure-footer-git-fixture)
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (fit-footer (run-cli-interactive-fit-footer-text))
+        (footer-usage (run-cli-interactive-footer-usage))
+        (footer-git (run-cli-interactive-footer-git-paths)))
     (json-object
      "observed"
      (json-object
@@ -9709,7 +9873,25 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "fft_short" (first fit-footer)
+      "fft_long" (second fit-footer)
+      "fft_cjk" (third fit-footer)
+      "fft_empty" (fourth fit-footer)
+      "fft_zero" (fifth fit-footer)
+      "fft_emoji" (sixth fit-footer)
+      "fu_kimi" (first footer-usage)
+      "fu_plain" (second footer-usage)
+      "fu_zero" (third footer-usage)
+      "fu_nocache" (fourth footer-usage)
+      "fu_case" (fifth footer-usage)
+      "fu_cost0" (sixth footer-usage)
+      "fgp_repo" (first footer-git)
+      "fgp_nested" (second footer-git)
+      "fgp_worktree" (third footer-git)
+      "fgp_common" (fourth footer-git)
+      "fgp_nohead" (fifth footer-git)
+      "fgp_none" (sixth footer-git))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -9739,7 +9921,22 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "fit_footer_text"
+     (collect "cli_interactive_controller.fit_footer_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-fit-footer-text))))
+     "footer_usage"
+     (collect "cli_interactive_controller.footer_usage"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-footer-usage))))
+     "footer_git_paths"
+     (collect "cli_interactive_controller.footer_git_paths"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-footer-git-paths)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -16820,6 +17017,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.fit_footer_text"
+      "src/cadr-cli/interactive/footer.lisp fit-footer-text"
+      "cli_interactive_controller.footer_usage"
+      "src/cadr-cli/interactive/footer.lisp footer-usage-summary"
+      "cli_interactive_controller.footer_git_paths"
+      "src/cadr-cli/interactive/footer.lisp find-git-footer-paths"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
