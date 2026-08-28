@@ -374,6 +374,9 @@ const REPETITIONS = {
 	"cli_extensions_install.gated_approval": 50,
 	"cli_extensions_install.split_args": 50,
 	"cli_extensions_install.quant_label": 50,
+	"cli_interactive_controller.sanitize_title": 50,
+	"cli_interactive_controller.title_basename": 50,
+	"cli_interactive_controller.terminal_title": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -13124,6 +13127,78 @@ function runCliInteractiveBashCompleteEntry() {
 		ce_err_cancel: err.cancelled,
 	};
 }
+
+function replicaSanitizeTerminalTitleText(text) {
+	const src = text == null ? "" : String(text);
+	let out = "";
+	for (const ch of src) {
+		if (ch !== "\x1b" && ch !== "\x07") {
+			out += ch;
+		}
+	}
+	return out;
+}
+
+
+function replicaTuiTerminalTitleCwdBasename(cwd) {
+	let cwdText = cwd == null ? "" : String(cwd);
+	let trimmed = cwdText;
+	while (trimmed.endsWith("/") || trimmed.endsWith("\\")) {
+		trimmed = trimmed.slice(0, -1);
+	}
+	let sep = -1;
+	for (let i = trimmed.length - 1; i >= 0; i--) {
+		const c = trimmed[i];
+		if (c === "/" || c === "\\") {
+			sep = i;
+			break;
+		}
+	}
+	return sep >= 0 ? trimmed.slice(sep + 1) : trimmed;
+}
+
+
+function replicaTuiTerminalTitle(cwd, sessionName) {
+	const basename = replicaTuiTerminalTitleCwdBasename(cwd);
+	const cleanSession = replicaSanitizeTerminalTitleText(sessionName);
+	if (cleanSession.length > 0) {
+		return `cadr - ${cleanSession} - ${basename}`;
+	}
+	return `cadr - ${basename}`;
+}
+
+
+function runCliInteractiveSanitizeTitle() {
+	return {
+		st_plain: replicaSanitizeTerminalTitleText("hello"),
+		st_esc: replicaSanitizeTerminalTitleText("a\x1bb"),
+		st_bel: replicaSanitizeTerminalTitleText("a\x07b"),
+		st_nil: replicaSanitizeTerminalTitleText(undefined),
+		st_empty: replicaSanitizeTerminalTitleText(""),
+	};
+}
+
+
+function runCliInteractiveTitleBasename() {
+	return {
+		bn_unix: replicaTuiTerminalTitleCwdBasename("/tmp/project/"),
+		bn_win: replicaTuiTerminalTitleCwdBasename("C:\\foo\\bar\\"),
+		bn_plain: replicaTuiTerminalTitleCwdBasename("nopath"),
+		bn_empty: replicaTuiTerminalTitleCwdBasename(""),
+		bn_nil: replicaTuiTerminalTitleCwdBasename(undefined),
+	};
+}
+
+
+function runCliInteractiveTerminalTitle() {
+	return {
+		tt_none: replicaTuiTerminalTitle("/tmp/project/", undefined),
+		tt_session: replicaTuiTerminalTitle("/tmp/project/", "branch work"),
+		tt_esc: replicaTuiTerminalTitle("/tmp/project/", "branch\x1bwork"),
+		tt_empty: replicaTuiTerminalTitle("/tmp/project/", ""),
+	};
+}
+
 
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {

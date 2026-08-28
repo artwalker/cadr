@@ -9,6 +9,23 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.sanitize_title`
+  (`sanitize-terminal-title-text` on `src/cadr-cli/interactive/controller.lisp`).
+  Observed `st_plain` / `st_esc` / `st_bel` / `st_nil` / `st_empty` exact.
+  n=5 **0.895×** (0.586 / 0.655 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 511). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`), not this
+  metric. cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.title_basename`
+  (`tui-terminal-title-cwd-basename` on `src/cadr-cli/interactive/controller.lisp`).
+  Observed `bn_unix` / `bn_win` / `bn_plain` / `bn_empty` / `bn_nil` exact.
+  n=5 **0.393×** (0.353 / 0.898 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 512). cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.terminal_title`
+  (`tui-terminal-title` on `src/cadr-cli/interactive/controller.lisp`).
+  Observed `tt_none` / `tt_session` / `tt_esc` / `tt_empty` exact.
+  n=5 **0.645×** (1.530 / 2.370 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 513). cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `bash_tool.live_output`
   (`bash-live-output-for-mode` on `src/cadr-cli/tools/bash.lisp`).
   Observed `lo_repl` / `lo_tui` / `lo_print` / `lo_rpc` exact. n=5

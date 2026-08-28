@@ -13744,6 +13744,36 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defun run-cli-interactive-sanitize-title ()
+  (list
+   (cadr-cli::sanitize-terminal-title-text "hello")
+   (cadr-cli::sanitize-terminal-title-text
+    (format nil "a~Cb" #\Escape))
+   (cadr-cli::sanitize-terminal-title-text
+    (format nil "a~Cb" (code-char 7)))
+   (cadr-cli::sanitize-terminal-title-text nil)
+   (cadr-cli::sanitize-terminal-title-text "")))
+
+
+(defun run-cli-interactive-title-basename ()
+  (list
+   (cadr-cli::tui-terminal-title-cwd-basename "/tmp/project/")
+   (cadr-cli::tui-terminal-title-cwd-basename "C:\\foo\\bar\\")
+   (cadr-cli::tui-terminal-title-cwd-basename "nopath")
+   (cadr-cli::tui-terminal-title-cwd-basename "")
+   (cadr-cli::tui-terminal-title-cwd-basename nil)))
+
+
+(defun run-cli-interactive-terminal-title ()
+  (list
+   (cadr-cli::tui-terminal-title "/tmp/project/" nil)
+   (cadr-cli::tui-terminal-title "/tmp/project/" "branch work")
+   (cadr-cli::tui-terminal-title
+    "/tmp/project/"
+    (format nil "branch~Cwork" #\Escape))
+   (cadr-cli::tui-terminal-title "/tmp/project/" "")))
+
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
