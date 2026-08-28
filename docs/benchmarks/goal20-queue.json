@@ -919,6 +919,34 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 436,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_input",
+   "branch": "cursor/pair-436-438-oauth-openrouter-31c4",
+   "note": "nextPairNum left at tip 328; leftover knife 436-438"
+  },
+  {
+   "pair": 437,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_refresh",
+   "branch": "cursor/pair-436-438-oauth-openrouter-31c4"
+  },
+  {
+   "pair": 438,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-ai/oauth/providers/openrouter.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.openrouter_exchange",
+   "branch": "cursor/pair-436-438-oauth-openrouter-31c4"
   }
  ],
  "mergeQueue": []

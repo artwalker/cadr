@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `oauth_pkce_device.openrouter_input` /
+  `openrouter_refresh` / `openrouter_exchange` on
+  `src/cadr-ai/oauth/providers/openrouter.lisp` vs baseline
+  `packages/ai/src/auth/oauth/openrouter.ts` (`parseAuthorizationInput` /
+  `openRouterOAuth.refresh` / `exchangeAuthorizationCode`). Observed
+  `ori_*` / `orr_*` / `ox_*` exact. Measure-only. Pairs 436–438. Freeze
+  numbers in the following docs commit. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.

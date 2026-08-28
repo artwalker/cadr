@@ -217,6 +217,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.percent_decode": 50,
 	"oauth_pkce_device.parse_query": 50,
 	"oauth_pkce_device.parse_authorization_input": 50,
+	"oauth_pkce_device.openrouter_input": 50,
+	"oauth_pkce_device.openrouter_refresh": 50,
+	"oauth_pkce_device.openrouter_exchange": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -6171,6 +6174,135 @@ function runOauthPkceDeviceParseAuthorizationInput() {
 	};
 }
 
+// Baseline openrouter.ts parseAuthorizationInput / refresh / exchangeAuthorizationCode
+// are unexported; keep the production bodies so the timed work matches.
+function parseOpenRouterAuthorizationInput(input) {
+	const value = input.trim();
+	if (!value) return undefined;
+
+	try {
+		return new URL(value).searchParams.get("code") ?? undefined;
+	} catch {
+		// not a URL
+	}
+
+	if (value.includes("code=")) {
+		return new URLSearchParams(value).get("code") ?? undefined;
+	}
+
+	return value;
+}
+
+function oauthOpenRouterInputFlag(input, expected) {
+	try {
+		return parseOpenRouterAuthorizationInput(input) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceOpenrouterInput() {
+	return {
+		ori_url: oauthOpenRouterInputFlag(
+			"http://127.0.0.1:1457/oauth/callback/x?code=or-a&state=s",
+			"or-a",
+		),
+		ori_qs: oauthOpenRouterInputFlag("code=or-b&state=s", "or-b"),
+		ori_plain: oauthOpenRouterInputFlag(" or-c ", "or-c"),
+		ori_n: 3,
+	};
+}
+
+async function refreshOpenRouter(credential, _signal) {
+	return credential;
+}
+
+async function runOauthPkceDeviceOpenrouterRefresh() {
+	const credential = {
+		type: "oauth",
+		access: "sk-or-test",
+		refresh: "",
+		expires: Number.MAX_SAFE_INTEGER,
+	};
+	const refreshed = await refreshOpenRouter(credential);
+	return {
+		orr_same: refreshed === credential ? 1 : 0,
+		orr_access: refreshed.access === "sk-or-test" ? 1 : 0,
+		orr_empty: refreshed.refresh === "" ? 1 : 0,
+		orr_n: 3,
+	};
+}
+
+function openRouterErrorDetail(body) {
+	if (typeof body.error_description === "string") return body.error_description;
+	if (typeof body.message === "string") return body.message;
+	if (typeof body.error === "string") return body.error;
+	if (body.error && typeof body.error === "object" && !Array.isArray(body.error)) {
+		const message = body.error.message;
+		if (typeof message === "string") return message;
+	}
+	return undefined;
+}
+
+function exchangeAuthorizationCodeFromResponse(response, code, verifier) {
+	JSON.stringify({ code, code_verifier: verifier, code_challenge_method: "S256" });
+	const body = response.json || {};
+	if (!response.ok) {
+		const detail = openRouterErrorDetail(body);
+		throw new Error(
+			`OpenRouter OAuth key exchange failed (HTTP ${response.status})${detail ? `: ${detail}` : ""}`,
+		);
+	}
+	if (typeof body.key !== "string" || body.key.length === 0) {
+		throw new Error('OpenRouter OAuth response carries no "key"');
+	}
+	return {
+		type: "oauth",
+		access: body.key,
+		refresh: "",
+		expires: Number.MAX_SAFE_INTEGER,
+	};
+}
+
+function oauthOpenRouterExchangeOkFlag() {
+	try {
+		const credential = exchangeAuthorizationCodeFromResponse(
+			{ ok: true, status: 200, json: { key: "sk-or-test" } },
+			"code",
+			"verifier",
+		);
+		return credential.access === "sk-or-test" &&
+			credential.refresh === "" &&
+			credential.type === "oauth"
+			? 1
+			: 0;
+	} catch {
+		return 0;
+	}
+}
+
+function oauthOpenRouterExchangeErrorFlag(response, needle) {
+	try {
+		exchangeAuthorizationCodeFromResponse(response, "code", "verifier");
+		return 0;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		return message.includes(needle) ? 1 : 0;
+	}
+}
+
+function runOauthPkceDeviceOpenrouterExchange() {
+	return {
+		ox_ok: oauthOpenRouterExchangeOkFlag(),
+		ox_fail: oauthOpenRouterExchangeErrorFlag(
+			{ ok: false, status: 400, json: { error: "boom" } },
+			"key exchange failed",
+		),
+		ox_bad: oauthOpenRouterExchangeErrorFlag({ ok: true, status: 200, json: {} }, "key"),
+		ox_n: 3,
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -6181,6 +6313,9 @@ async function measureOauthPkceDevice() {
 	const percent = runOauthPkceDevicePercentDecode();
 	const query = runOauthPkceDeviceParseQuery();
 	const authInput = runOauthPkceDeviceParseAuthorizationInput();
+	const openrouterInput = runOauthPkceDeviceOpenrouterInput();
+	const openrouterRefresh = await runOauthPkceDeviceOpenrouterRefresh();
+	const openrouterExchange = runOauthPkceDeviceOpenrouterExchange();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -6209,6 +6344,15 @@ async function measureOauthPkceDevice() {
 		parse_authorization_input: await collect("oauth_pkce_device.parse_authorization_input", () => {
 			return () => runOauthPkceDeviceParseAuthorizationInput();
 		}),
+		openrouter_input: await collect("oauth_pkce_device.openrouter_input", () => {
+			return () => runOauthPkceDeviceOpenrouterInput();
+		}),
+		openrouter_refresh: await collect("oauth_pkce_device.openrouter_refresh", () => {
+			return () => runOauthPkceDeviceOpenrouterRefresh();
+		}),
+		openrouter_exchange: await collect("oauth_pkce_device.openrouter_exchange", () => {
+			return () => runOauthPkceDeviceOpenrouterExchange();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -6219,6 +6363,9 @@ async function measureOauthPkceDevice() {
 			...percent,
 			...query,
 			...authInput,
+			...openrouterInput,
+			...openrouterRefresh,
+			...openrouterExchange,
 		},
 	};
 }
@@ -17027,6 +17174,12 @@ const result = {
 				"packages/ai/src/auth/oauth/openai-codex.ts URLSearchParams query parse (cadr parse-query)",
 			"oauth_pkce_device.parse_authorization_input":
 				"packages/ai/src/auth/oauth/openai-codex.ts parseAuthorizationInput",
+			"oauth_pkce_device.openrouter_input":
+				"packages/ai/src/auth/oauth/openrouter.ts parseAuthorizationInput",
+			"oauth_pkce_device.openrouter_refresh":
+				"packages/ai/src/auth/oauth/openrouter.ts openRouterOAuth.refresh",
+			"oauth_pkce_device.openrouter_exchange":
+				"packages/ai/src/auth/oauth/openrouter.ts exchangeAuthorizationCode",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

@@ -217,6 +217,9 @@
 ;;;; 310. oauth_pkce_device percent-decode vs URLSearchParams percent-decode
 ;;;; 311. oauth_pkce_device parse-query vs URLSearchParams
 ;;;; 312. oauth_pkce_device parse-oauth-authorization-input vs parseAuthorizationInput
+;;;; 436. oauth_pkce_device parse-openrouter-authorization-input vs openrouter parseAuthorizationInput
+;;;; 437. oauth_pkce_device refresh-openrouter-oauth-credential vs openRouterOAuth.refresh
+;;;; 438. oauth_pkce_device openrouter-exchange-code vs exchangeAuthorizationCode
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -366,6 +369,9 @@
     ("oauth_pkce_device.percent_decode" . 50)
     ("oauth_pkce_device.parse_query" . 50)
     ("oauth_pkce_device.parse_authorization_input" . 50)
+    ("oauth_pkce_device.openrouter_input" . 50)
+    ("oauth_pkce_device.openrouter_refresh" . 50)
+    ("oauth_pkce_device.openrouter_exchange" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -6403,6 +6409,99 @@
    (oauth-authorization-input-flag " code-d " "code-d" nil)
    4))
 
+(defun oauth-openrouter-input-flag (input expected)
+  (handler-case
+      (let ((code (cadr-ai::parse-openrouter-authorization-input input)))
+        (if (equal code expected)
+            1
+            0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-openrouter-input ()
+  ;; Manual OpenRouter forms only. Do not exact empty input (Lisp NIL vs
+  ;; pi undefined) or a URL with no query (Lisp returns the URL; pi
+  ;; returns undefined).
+  (list
+   (oauth-openrouter-input-flag
+    "http://127.0.0.1:1457/oauth/callback/x?code=or-a&state=s"
+    "or-a")
+   (oauth-openrouter-input-flag "code=or-b&state=s" "or-b")
+   (oauth-openrouter-input-flag " or-c " "or-c")
+   3))
+
+(defun run-oauth-pkce-device-openrouter-refresh ()
+  (let ((credential
+          (cadr-ai:make-oauth-credential
+           :provider :openrouter
+           :access "sk-or-test"
+           :refresh ""
+           :expires most-positive-fixnum)))
+    (let ((refreshed
+            (cadr-ai::refresh-openrouter-oauth-credential credential)))
+      (list
+       (if (eq refreshed credential) 1 0)
+       (if (string= (cadr-ai:oauth-credential-access refreshed)
+                    "sk-or-test")
+           1
+           0)
+       (if (string= (cadr-ai:oauth-credential-refresh refreshed) "")
+           1
+           0)
+       3))))
+
+(defun with-oauth-flow-stub (status object thunk)
+  (let ((cadr-ai::*oauth-flow-request-function*
+          (lambda (url &key method headers content connect-timeout read-timeout)
+            (declare (ignore url method headers content
+                             connect-timeout read-timeout))
+            (values object status nil))))
+    (funcall thunk)))
+
+(defun oauth-openrouter-exchange-ok-flag ()
+  (handler-case
+      (let ((credential
+              (with-oauth-flow-stub
+               200
+               (cadr-ai::json-object "key" "sk-or-test")
+               (lambda ()
+                 (cadr-ai::openrouter-exchange-code "code" "verifier")))))
+        (if (and (string= (cadr-ai:oauth-credential-access credential)
+                          "sk-or-test")
+                 (string= (cadr-ai:oauth-credential-refresh credential) "")
+                 (eq (cadr-ai:oauth-credential-provider credential)
+                     :openrouter))
+            1
+            0))
+    (error () 0)))
+
+(defun oauth-openrouter-exchange-error-flag (status object needle)
+  (handler-case
+      (progn
+        (with-oauth-flow-stub
+         status
+         object
+         (lambda ()
+           (cadr-ai::openrouter-exchange-code "code" "verifier")))
+        0)
+    (cadr-ai:authentication-error (condition)
+      (if (search needle (cadr-ai:cadr-error-message condition))
+          1
+          0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-openrouter-exchange ()
+  (list
+   (oauth-openrouter-exchange-ok-flag)
+   (oauth-openrouter-exchange-error-flag
+    400
+    (cadr-ai::json-object "error" "boom")
+    "key exchange failed")
+   (oauth-openrouter-exchange-error-flag
+    200
+    (cadr-ai::json-object)
+    "key")
+   3))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -6412,7 +6511,10 @@
         (copilot-auth (run-oauth-pkce-device-copilot-auth))
         (percent (run-oauth-pkce-device-percent-decode))
         (query (run-oauth-pkce-device-parse-query))
-        (auth-input (run-oauth-pkce-device-parse-authorization-input)))
+        (auth-input (run-oauth-pkce-device-parse-authorization-input))
+        (openrouter-input (run-oauth-pkce-device-openrouter-input))
+        (openrouter-refresh (run-oauth-pkce-device-openrouter-refresh))
+        (openrouter-exchange (run-oauth-pkce-device-openrouter-exchange)))
     (json-object
      "observed"
      (json-object
@@ -6455,7 +6557,19 @@
       "pai_hash" (nth 1 auth-input)
       "pai_qs" (nth 2 auth-input)
       "pai_plain" (nth 3 auth-input)
-      "pai_n" (nth 4 auth-input))
+      "pai_n" (nth 4 auth-input)
+      "ori_url" (nth 0 openrouter-input)
+      "ori_qs" (nth 1 openrouter-input)
+      "ori_plain" (nth 2 openrouter-input)
+      "ori_n" (nth 3 openrouter-input)
+      "orr_same" (nth 0 openrouter-refresh)
+      "orr_access" (nth 1 openrouter-refresh)
+      "orr_empty" (nth 2 openrouter-refresh)
+      "orr_n" (nth 3 openrouter-refresh)
+      "ox_ok" (nth 0 openrouter-exchange)
+      "ox_fail" (nth 1 openrouter-exchange)
+      "ox_bad" (nth 2 openrouter-exchange)
+      "ox_n" (nth 3 openrouter-exchange))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -6500,7 +6614,22 @@
      (collect "oauth_pkce_device.parse_authorization_input"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-authorization-input)))))))
+                  (run-oauth-pkce-device-parse-authorization-input))))
+     "openrouter_input"
+     (collect "oauth_pkce_device.openrouter_input"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-input))))
+     "openrouter_refresh"
+     (collect "oauth_pkce_device.openrouter_refresh"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-refresh))))
+     "openrouter_exchange"
+     (collect "oauth_pkce_device.openrouter_exchange"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openrouter-exchange)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -16660,6 +16789,12 @@
       "src/cadr-ai/oauth/callback.lisp parse-query"
       "oauth_pkce_device.parse_authorization_input"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-authorization-input"
+      "oauth_pkce_device.openrouter_input"
+      "src/cadr-ai/oauth/providers/openrouter.lisp parse-openrouter-authorization-input"
+      "oauth_pkce_device.openrouter_refresh"
+      "src/cadr-ai/oauth/providers/openrouter.lisp refresh-openrouter-oauth-credential"
+      "oauth_pkce_device.openrouter_exchange"
+      "src/cadr-ai/oauth/providers/openrouter.lisp openrouter-exchange-code"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

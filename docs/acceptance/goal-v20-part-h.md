@@ -3929,6 +3929,46 @@ are exact. First n=5 freeze **0.535×** (6.292 / 11.750 µs) on host `cursor`,
 ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
 leads. Same commit no optimize.
+
+### Pair 436 — `oauth_pkce_device` (openrouter_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_input` | `parse-openrouter-authorization-input` (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `parseAuthorizationInput` (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover sibling of the `oauth_pkce_device` hole on `src/cadr-ai/oauth/providers/openrouter.lisp`.
+Timed work is callback URL / `code=` query / trimmed bare code — not loopback
+HTTP, not `login-openrouter-oauth`. Do not exact empty input (Lisp `NIL` vs
+pi `undefined`) or a URL with no query. Observed `ori_url` / `ori_qs` /
+`ori_plain` / `ori_n` are exact. First n=5 freeze numbers land in the freeze
+commit. Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 437 — `oauth_pkce_device` (openrouter_refresh)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_refresh` | `refresh-openrouter-oauth-credential` (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `openRouterOAuth.refresh` (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover sibling of Pair 436 `openrouter_input` on the same `openrouter.lisp`
+`oauth_pkce_device` hole. Timed work is identity refresh (same object, access
+kept, empty refresh) — not key exchange, not login. Observed `orr_same` /
+`orr_access` / `orr_empty` / `orr_n` are exact. First n=5 freeze numbers
+land in the freeze commit. Gate used `--only-enforce`. Same commit no
+optimize.
+
+### Pair 438 — `oauth_pkce_device` (openrouter_exchange)
+
+| metric | cadr | pi |
+|---|---|---|
+| `openrouter_exchange` | `openrouter-exchange-code` (`src/cadr-ai/oauth/providers/openrouter.lisp`) | `exchangeAuthorizationCode` (`packages/ai/src/auth/oauth/openrouter.ts`) |
+
+Leftover sibling of Pairs 436–437 on the same `openrouter.lisp`
+`oauth_pkce_device` hole. Timed work is stubbed-HTTP key exchange (200 with
+`key`, 400 with `error`, 200 missing `key`) — not the loopback listener, not
+runtime login. Observed `ox_ok` / `ox_fail` / `ox_bad` / `ox_n` are exact.
+First n=5 freeze numbers land in the freeze commit. Gate used `--only-enforce`.
+Same commit no optimize.
+
 ### Pair 343 — `write_tool` (ensure_parent)
 
 | metric | cadr | pi |
