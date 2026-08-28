@@ -7480,6 +7480,54 @@ not time `make-keybindings-manager`. Observed `smbl_save` / `smbl_enable` /
 headroom. Gate used `--only-enforce`. Over-1× booked. Same commit no
 optimize. `nextPairNum` left at 328.
 
+### Pair 598 — `cli_selectors` (model_selector_key_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_key_p` | `model-selector-key-p` (`src/cadr-cli/interactive/selectors/models.lisp`) | `KeybindingsManager.matches` + CSI modified-arrow canonical compare (`packages/tui/src/keybindings.ts`) |
+
+Leftover sibling of Pair 596 on the same `models.lisp` hole. Timed work is
+`selector-keybinding-matches-p` on cached
+`*default-models-selector-keybindings*` (tab hit / miss, up-arrow hit, CSI
+`1;1A` up, ctrl+s save). Does not time `make-keybindings-manager`. Observed
+`mskp_tab_hit` / `mskp_tab_miss` / `mskp_up_hit` / `mskp_csi_up` /
+`mskp_save_hit` are exact. First n=5 freeze **18.605×** (16.140 / 0.868 µs)
+on host `cursor`, ceiling 30.0 first-freeze headroom. Gate used
+`--only-enforce` (py invalid-report `parsed_provider` from METRICS
+observed-key pollution; this metric did not fail observed-exact). Over-1×
+booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 599 — `cli_selectors` (model_selector_keybindings)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_keybindings` | `model-selector-keybindings` (`src/cadr-cli/interactive/selectors/models.lisp`) | `getKeybindings` slot-or-default (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pairs 597–598 on the same `models.lisp` hole. Timed
+work is the cached manager slot-or-default, then first bound key (nil slot
+/ explicit default / custom `ctrl+k` / enableAll / confirm). Does not time
+`make-keybindings-manager`. Observed `mskb_nil` / `mskb_default` /
+`mskb_custom` / `mskb_enable` / `mskb_confirm` are exact. First n=5 freeze
+**8.076×** (4.144 / 0.513 µs) on host `cursor`, ceiling 12.0 first-freeze
+headroom. Gate used `--only-enforce`. Over-1× booked. Same commit no
+optimize. `nextPairNum` left at 328.
+
+### Pair 600 — `cli_selectors` (make_model_selector_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_model_selector_state` | `make-model-selector-state` (`src/cadr-cli/interactive/selectors/models.lisp`) | constructor sort + filter + select current (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pairs 598–599 on the same `models.lisp` hole. Timed
+work is sort-by-current, scoped copy, search-text table rebuild, empty-query
+filter, and select-current (all / current-last / scoped / extra scoped id /
+single model). Passes cached default keybindings; does not time
+`make-keybindings-manager`. Observed `msmk_all` / `msmk_last` /
+`msmk_scoped` / `msmk_extra` / `msmk_one` are exact. First n=5 freeze
+**3.037×** (21.230 / 6.989 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Over-1× booked. Same commit no optimize.
+`nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

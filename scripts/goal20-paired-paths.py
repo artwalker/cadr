@@ -1117,11 +1117,13 @@ RATIO_CEILINGS = {
   # Measure-only leftover 597; first freeze 16.362× (5.542 / 0.339 µs).
   # 25.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.scoped_models_binding_label": 25.0,
-  # Measure-only leftover 598; first freeze pending.
-  "cli_selectors.model_selector_key_p": 8.0,
-  # Measure-only leftover 599; first freeze pending.
-  "cli_selectors.model_selector_keybindings": 8.0,
-  # Measure-only leftover 600; first freeze pending.
+  # Measure-only leftover 598; first freeze 18.605× (16.140 / 0.868 µs).
+  # 30.0 is first-freeze headroom. Ratchet down only.
+  "cli_selectors.model_selector_key_p": 30.0,
+  # Measure-only leftover 599; first freeze 8.076× (4.144 / 0.513 µs).
+  # 12.0 is first-freeze headroom. Ratchet down only.
+  "cli_selectors.model_selector_keybindings": 12.0,
+  # Measure-only leftover 600; first freeze 3.037× (21.230 / 6.989 µs).
   "cli_selectors.make_model_selector_state": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
