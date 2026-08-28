@@ -635,6 +635,9 @@
     ("cli_interactive_controller.make_framed_select_state" . 50)
     ("cli_interactive_controller.note_component_render_channel" . 50)
     ("cli_interactive_controller.tui_extension_theme_runtime" . 50)
+    ("cli_interactive_controller.make_extension_input_dialog" . 50)
+    ("cli_interactive_controller.make_extension_editor_dialog" . 50)
+    ("cli_interactive_controller.make_runtime_auth_input_state" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14628,6 +14631,26 @@
    "tet_hi" (nth 4 theme-runtime)))
 
 
+(defun leftover-extension-ui-input-editor-auth-observed-pairs
+    (input-dialog editor-dialog auth-state)
+  (list
+   "eid_t" (nth 0 input-dialog)
+   "eid_proto" (nth 1 input-dialog)
+   "eid_in" (nth 2 input-dialog)
+   "eid_pr" (nth 3 input-dialog)
+   "eid_empty" (nth 4 input-dialog)
+   "eed_t" (nth 0 editor-dialog)
+   "eed_hi" (nth 1 editor-dialog)
+   "eed_empty" (nth 2 editor-dialog)
+   "eed_proto" (nth 3 editor-dialog)
+   "eed_ed" (nth 4 editor-dialog)
+   "rai_type" (nth 0 auth-state)
+   "rai_copy" (nth 1 auth-state)
+   "rai_in" (nth 2 auth-state)
+   "rai_pr" (nth 3 auth-state)
+   "rai_nil" (nth 4 auth-state)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15149,7 +15172,13 @@
         (leftover-note-component-render-channel
           (run-cli-interactive-note-component-render-channel))
         (leftover-tui-extension-theme-runtime
-          (run-cli-interactive-tui-extension-theme-runtime)))
+          (run-cli-interactive-tui-extension-theme-runtime))
+        (leftover-make-extension-input-dialog
+          (run-cli-interactive-make-extension-input-dialog))
+        (leftover-make-extension-editor-dialog
+          (run-cli-interactive-make-extension-editor-dialog))
+        (leftover-make-runtime-auth-input-state
+          (run-cli-interactive-make-runtime-auth-input-state)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15256,7 +15285,11 @@
              (leftover-extension-ui-framed-note-theme-observed-pairs
               leftover-make-framed-select-state
               leftover-note-component-render-channel
-              leftover-tui-extension-theme-runtime)))
+              leftover-tui-extension-theme-runtime)
+             (leftover-extension-ui-input-editor-auth-observed-pairs
+              leftover-make-extension-input-dialog
+              leftover-make-extension-editor-dialog
+              leftover-make-runtime-auth-input-state)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15496,7 +15529,22 @@
      (collect "cli_interactive_controller.tui_extension_theme_runtime"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-tui-extension-theme-runtime)))))))
+                  (run-cli-interactive-tui-extension-theme-runtime))))
+     "make_extension_input_dialog"
+     (collect "cli_interactive_controller.make_extension_input_dialog"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-make-extension-input-dialog))))
+     "make_extension_editor_dialog"
+     (collect "cli_interactive_controller.make_extension_editor_dialog"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-make-extension-editor-dialog))))
+     "make_runtime_auth_input_state"
+     (collect "cli_interactive_controller.make_runtime_auth_input_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-make-runtime-auth-input-state)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -16581,6 +16629,65 @@
           "hi"
           (cadr-cli::strip-ansi
            (funcall (getf rt :fg) :accent "hi")))
+         1 0))))
+
+(defun run-cli-interactive-make-extension-input-dialog ()
+  (cadr-cli::make-extension-input-dialog "Pick")
+  (cadr-cli::make-extension-input-dialog "")
+  (let* ((dlg (cadr-cli::make-extension-input-dialog "Pick"))
+         (empty (cadr-cli::make-extension-input-dialog ""))
+         (input (cadr-cli::extension-input-dialog-input dlg)))
+    (list
+     (if (equal "Pick" (cadr-cli::extension-input-dialog-title dlg))
+         1 0)
+     (if (cadr-cli::tui-component-protocol-p dlg) 1 0)
+     (if (typep input 'cadr-tui:single-line-input) 1 0)
+     (if (equal "> " (cadr-tui::single-line-input-prompt input))
+         1 0)
+     (if (cadr-cli::tui-component-protocol-p empty) 1 0))))
+
+(defun run-cli-interactive-make-extension-editor-dialog ()
+  (cadr-cli::make-extension-editor-dialog "Edit" "hi")
+  (cadr-cli::make-extension-editor-dialog "Edit" nil)
+  (let* ((dlg (cadr-cli::make-extension-editor-dialog "Edit" "hi"))
+         (empty (cadr-cli::make-extension-editor-dialog "Edit" nil))
+         (editor (cadr-cli::extension-editor-dialog-editor dlg)))
+    (list
+     (if (equal "Edit" (cadr-cli::extension-editor-dialog-title dlg))
+         1 0)
+     (if (equal "hi" (cadr-tui:editor-text editor)) 1 0)
+     (if
+         (equal
+          ""
+          (cadr-tui:editor-text
+           (cadr-cli::extension-editor-dialog-editor empty)))
+         1 0)
+     (if (cadr-cli::tui-component-protocol-p dlg) 1 0)
+     (if (typep editor 'cadr-tui:multiline-editor) 1 0))))
+
+(defun run-cli-interactive-make-runtime-auth-input-state ()
+  (let* ((prompt (list :type :oauth))
+         (st (cadr-cli::make-runtime-auth-input-state prompt))
+         (empty (cadr-cli::make-runtime-auth-input-state nil))
+         (input (cadr-cli::runtime-auth-input-state-input st)))
+    (cadr-cli::make-runtime-auth-input-state prompt)
+    (cadr-cli::make-runtime-auth-input-state nil)
+    (list
+     (if (eq :oauth
+             (getf
+              (cadr-cli::runtime-auth-input-state-prompt st)
+              :type))
+         1 0)
+     (if (not (eq prompt
+                  (cadr-cli::runtime-auth-input-state-prompt st)))
+         1 0)
+     (if (typep input 'cadr-tui:single-line-input) 1 0)
+     (if (equal "> " (cadr-tui::single-line-input-prompt input))
+         1 0)
+     (if (null
+          (getf
+           (cadr-cli::runtime-auth-input-state-prompt empty)
+           :type))
          1 0))))
 
 (defun session-search-fixture-records ()
@@ -28932,6 +29039,12 @@
       "src/cadr-cli/interactive/extension-ui.lisp note-component-render-channel"
       "cli_interactive_controller.tui_extension_theme_runtime"
       "src/cadr-cli/interactive/extension-ui.lisp tui-extension-theme-runtime"
+      "cli_interactive_controller.make_extension_input_dialog"
+      "src/cadr-cli/interactive/extension-ui.lisp make-extension-input-dialog"
+      "cli_interactive_controller.make_extension_editor_dialog"
+      "src/cadr-cli/interactive/extension-ui.lisp make-extension-editor-dialog"
+      "cli_interactive_controller.make_runtime_auth_input_state"
+      "src/cadr-cli/interactive/extension-ui.lisp make-runtime-auth-input-state"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
