@@ -8248,6 +8248,30 @@ Leftover sibling of Pair 688. Timed work is stripping `^`/`$` from glob regex so
 
 Leftover sibling of Pairs 688–689. Timed work is empty/`#` skip, `foo` rule, `!foo` negation, and scanner construction. Observed `pgl_empty` / `pgl_hash` / `pgl_foo` / `pgl_bang` / `pgl_scan` are exact. First n=5 freeze **5.556×** (7.267 / 1.308 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 691 — `find_tool` (ignored_directory)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ignored_directory` | `ignored-directory-p` (`src/cadr-cli/tools/glob.lisp`) | ignored directory names (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pairs 688–690 on the same `glob.lisp` `find_tool` hole. Timed work is `.git` / `node_modules` / `src` / `.github` / trailing-slash `.git/` last-component checks. Observed `igd_git` / `igd_nm` / `igd_src` / `igd_hub` / `igd_slash` are exact. First n=5 freeze **8.621×** (16.582 / 1.923 µs) on host `cursor`, ceiling 16.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 692 — `find_tool` (gitignored)
+
+| metric | cadr | pi |
+|---|---|---|
+| `gitignored` | `gitignored-p` (`src/cadr-cli/tools/glob.lisp`) | gitignore rule apply (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pair 691. Timed work is empty rules, `foo` hit, `bar` miss, `!foo` re-include, and a path outside the rule base. Observed `gig_empty` / `gig_hit` / `gig_miss` / `gig_bang` / `gig_out` are exact. First n=5 freeze **10.286×** (37.755 / 3.671 µs) on host `cursor`, ceiling 20.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 693 — `find_tool` (make_glob_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_glob_tool` | `make-glob-tool` (`src/cadr-cli/tools/glob.lisp`) | glob tool constructor (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pairs 691–692. Timed work is constructing the glob tool (name / description / required `pattern` / `:parallel`). Observed `mgt_name` / `mgt_desc` / `mgt_req` / `mgt_par` / `mgt_n` are exact. First n=5 freeze **701.525×** (193.915 / 0.276 µs) on host `cursor`, ceiling 1200.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

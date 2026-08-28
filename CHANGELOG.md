@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `find_tool.ignored_directory`
+  (`ignored-directory-p` vs ignored directory names). Observed
+  `igd_git` / `igd_nm` / `igd_src` / `igd_hub` / `igd_slash` exact.
+  n=5 **8.621×** (16.582 / 1.923 µs) on host `cursor`, ceiling 16.0
+  (first-freeze headroom). Measure-only leftover (Pair 691). Over-1×
+  booked. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `find_tool.gitignored`
+  (`gitignored-p` vs gitignore rule apply). Observed `gig_empty` /
+  `gig_hit` / `gig_miss` / `gig_bang` / `gig_out` exact. n=5
+  **10.286×** (37.755 / 3.671 µs) on host `cursor`, ceiling 20.0
+  (first-freeze headroom). Measure-only leftover (Pair 692). Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `find_tool.make_glob_tool`
+  (`make-glob-tool` vs glob tool constructor). Observed `mgt_name` /
+  `mgt_desc` / `mgt_req` / `mgt_par` / `mgt_n` exact. n=5 **701.525×**
+  (193.915 / 0.276 µs) on host `cursor`, ceiling 1200.0 (first-freeze
+  headroom). Measure-only leftover (Pair 693). Over-1× booked.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `find_tool.glob_scanner`
   (`glob-scanner` vs glob scanner compile+test). Observed `gsc_star` /
   `gsc_miss` / `gsc_glob` / `gsc_q` / `gsc_dot` exact. n=5 **11.176×**

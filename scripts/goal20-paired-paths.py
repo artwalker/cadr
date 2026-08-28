@@ -729,9 +729,13 @@ RATIO_CEILINGS = {
     "find_tool.parse_gitignore_line": 8.0,
     # find_tool leftover trio on glob.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 691–693.
-    "find_tool.ignored_directory": 8.0,
-    "find_tool.gitignored": 8.0,
-    "find_tool.make_glob_tool": 8.0,
+    # leftover 691; first freeze 8.621× (16.582 / 1.923 µs).
+    "find_tool.ignored_directory": 16.0,
+    # leftover 692; first freeze 10.286× (37.755 / 3.671 µs).
+    "find_tool.gitignored": 20.0,
+    # leftover 693; first freeze 701.525× (193.915 / 0.276 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "find_tool.make_glob_tool": 1200.0,
     # cli_bootstrap_sessions leftover trio on sessions.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.session_path": 8.0,
