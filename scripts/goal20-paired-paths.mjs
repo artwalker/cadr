@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.scoped_models_copy_enabled": 50,
+	"cli_selectors.scoped_models_selector_items": 50,
+	"cli_selectors.scoped_models_selector_cancel": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,72 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function scopedModelsCopyEnabledEncoded(enabled) {
+	if (enabled === null) {
+		return "all";
+	}
+	return [...enabled].join(",");
+}
+
+function runCliSelectorsScopedModelsCopyEnabled() {
+	const src = ["a", "b"];
+	const copied = [...src];
+	src.push("c");
+	return {
+		smce_all: scopedModelsCopyEnabledEncoded(null),
+		smce_two: scopedModelsCopyEnabledEncoded([
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+		smce_empty: scopedModelsCopyEnabledEncoded([]),
+		smce_one: scopedModelsCopyEnabledEncoded(["google/gemini-2.5-pro"]),
+		smce_copy: `${copied.join(",")}|${src.join(",")}`,
+	};
+}
+
+function scopedModelsSelectorItemsEncoded(allModels, enabledIds) {
+	return scopedModelsBuildItems(allModels, enabledIds)
+		.map((item) => item.fullId)
+		.join(",");
+}
+
+function runCliSelectorsScopedModelsSelectorItems() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsi_all: scopedModelsSelectorItemsEncoded(models, null),
+		smsi_partial: scopedModelsSelectorItemsEncoded(models, [
+			"google/gemini-2.5-pro",
+			"openai/gpt-4o",
+		]),
+		smsi_none: scopedModelsSelectorItemsEncoded(models, []),
+		smsi_empty: scopedModelsSelectorItemsEncoded([], null),
+		smsi_single: scopedModelsSelectorItemsEncoded(models, [
+			"anthropic/claude-sonnet-4",
+		]),
+	};
+}
+
+function scopedModelsSelectorCancelEncoded(withCallback, times = 1) {
+	let n = 0;
+	const onCancel = withCallback ? () => {
+		n += 1;
+	} : undefined;
+	for (let i = 0; i < times; i++) {
+		onCancel?.();
+	}
+	return String(n);
+}
+
+function runCliSelectorsScopedModelsSelectorCancel() {
+	return {
+		smsc_once: scopedModelsSelectorCancelEncoded(true, 1),
+		smsc_twice: scopedModelsSelectorCancelEncoded(true, 2),
+		smsc_none: scopedModelsSelectorCancelEncoded(false, 1),
+		smsc_none2: scopedModelsSelectorCancelEncoded(false, 2),
+		smsc_zero: scopedModelsSelectorCancelEncoded(true, 0),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +14966,12 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const scopedModelsCopyEnabledResults =
+		runCliSelectorsScopedModelsCopyEnabled();
+	const scopedModelsSelectorItemsResults =
+		runCliSelectorsScopedModelsSelectorItems();
+	const scopedModelsSelectorCancelResults =
+		runCliSelectorsScopedModelsSelectorCancel();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15277,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...scopedModelsCopyEnabledResults,
+		...scopedModelsSelectorItemsResults,
+		...scopedModelsSelectorCancelResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15659,6 +15737,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		scoped_models_copy_enabled: await collect(
+			"cli_selectors.scoped_models_copy_enabled",
+			() => {
+				return () => runCliSelectorsScopedModelsCopyEnabled();
+			},
+		),
+		scoped_models_selector_items: await collect(
+			"cli_selectors.scoped_models_selector_items",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorItems();
+			},
+		),
+		scoped_models_selector_cancel: await collect(
+			"cli_selectors.scoped_models_selector_cancel",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorCancel();
 			},
 		),
 		observed,
@@ -17393,6 +17489,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.scoped_models_copy_enabled":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts enabledIds copy",
+			"cli_selectors.scoped_models_selector_items":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts items after rebuild",
+			"cli_selectors.scoped_models_selector_cancel":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts onCancel",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

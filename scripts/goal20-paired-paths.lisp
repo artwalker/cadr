@@ -576,6 +576,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.scoped_models_copy_enabled" . 50)
+    ("cli_selectors.scoped_models_selector_items" . 50)
+    ("cli_selectors.scoped_models_selector_cancel" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13713,7 +13716,7 @@
       models '("google/gemini-2.5-pro") :persist-callback t))))
 
 (defun scoped-models-selector-tail-observed-pairs
-    (reorder persist provider-count)
+    (reorder persist provider-count copy-enabled items cancel)
   (append
     (list
      "smsror_down" (nth 0 reorder)
@@ -13728,7 +13731,9 @@
      "smsper_empty" (nth 3 persist)
      "smsper_two" (nth 4 persist)
      "smsper_single" (nth 5 persist))
-    (scoped-models-provider-count-observed-pairs provider-count)))
+    (scoped-models-provider-count-observed-pairs provider-count)
+    (scoped-models-copy-items-cancel-observed-pairs
+     copy-enabled items cancel)))
 
 (defun scoped-models-provider-count-observed-pairs (results)
   (list
@@ -13763,6 +13768,96 @@
       (cadr-cli::make-scoped-models-selector-state
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
+
+(defun make-scoped-models-copy-items-bench-state (models enabled-ids)
+  (cadr-cli::%make-scoped-models-selector-state
+   :all-models (copy-list models)
+   :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+   :enabled-ids
+   (cadr-cli::scoped-models-copy-enabled enabled-ids)))
+
+(defun encode-scoped-models-copy-enabled (enabled)
+  (let ((copied (cadr-cli::scoped-models-copy-enabled enabled)))
+    (cond
+      ((eq copied :all) "all")
+      ((null copied) "")
+      (t (format nil "~{~a~^,~}" copied)))))
+
+(defun run-cli-selectors-scoped-models-copy-enabled ()
+  (let ((two '("openai/gpt-4o" "anthropic/claude-sonnet-4"))
+        (src (list "a" "b")))
+    (let ((copied (cadr-cli::scoped-models-copy-enabled src)))
+      (setf (cdr src) (list "b" "c"))
+      (list
+       (encode-scoped-models-copy-enabled :all)
+       (encode-scoped-models-copy-enabled two)
+       (encode-scoped-models-copy-enabled '())
+       (encode-scoped-models-copy-enabled '("google/gemini-2.5-pro"))
+       (format nil "~{~a~^,~}|~{~a~^,~}" copied src)))))
+
+(defun encode-scoped-models-selector-items (models enabled-ids)
+  (let ((state
+          (make-scoped-models-copy-items-bench-state models enabled-ids)))
+    (cadr-cli::scoped-models-selector-rebuild-items state)
+    (format
+     nil
+     "~{~a~^,~}"
+     (mapcar
+      (lambda (item)
+        (let ((id (getf item :id)))
+          (cond
+            ((stringp id) id)
+            ((null id) "")
+            (t (coerce id 'string)))))
+      (cadr-cli::scoped-models-selector-items state)))))
+
+(defun run-cli-selectors-scoped-models-selector-items ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-items models :all)
+     (encode-scoped-models-selector-items models partial)
+     (encode-scoped-models-selector-items models '())
+     (encode-scoped-models-selector-items nil :all)
+     (encode-scoped-models-selector-items
+      models '("anthropic/claude-sonnet-4")))))
+
+(defun scoped-models-selector-cancel-encoded (callback-p &optional (times 1))
+  (let* ((n 0)
+         (state
+           (cadr-cli::%make-scoped-models-selector-state
+            :cancel-callback
+            (when callback-p (lambda () (incf n))))))
+    (dotimes (i times)
+      (cadr-cli::scoped-models-selector-cancel state))
+    (write-to-string n)))
+
+(defun run-cli-selectors-scoped-models-selector-cancel ()
+  (list
+   (scoped-models-selector-cancel-encoded t 1)
+   (scoped-models-selector-cancel-encoded t 2)
+   (scoped-models-selector-cancel-encoded nil 1)
+   (scoped-models-selector-cancel-encoded nil 2)
+   (scoped-models-selector-cancel-encoded t 0)))
+
+(defun scoped-models-copy-items-cancel-observed-pairs
+    (copy-enabled items cancel)
+  (list
+   "smce_all" (nth 0 copy-enabled)
+   "smce_two" (nth 1 copy-enabled)
+   "smce_empty" (nth 2 copy-enabled)
+   "smce_one" (nth 3 copy-enabled)
+   "smce_copy" (nth 4 copy-enabled)
+   "smsi_all" (nth 0 items)
+   "smsi_partial" (nth 1 items)
+   "smsi_none" (nth 2 items)
+   "smsi_empty" (nth 3 items)
+   "smsi_single" (nth 4 items)
+   "smsc_once" (nth 0 cancel)
+   "smsc_twice" (nth 1 cancel)
+   "smsc_none" (nth 2 cancel)
+   "smsc_none2" (nth 3 cancel)
+   "smsc_zero" (nth 4 cancel)))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list
@@ -14022,7 +14117,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (copy-enabled-obs
+          (run-cli-selectors-scoped-models-copy-enabled))
+        (items-obs
+          (run-cli-selectors-scoped-models-selector-items))
+        (cancel-obs
+          (run-cli-selectors-scoped-models-selector-cancel)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14856,10 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs
+              copy-enabled-obs
+              items-obs
+              cancel-obs)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15507,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "scoped_models_copy_enabled"
+     (collect "cli_selectors.scoped_models_copy_enabled"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-copy-enabled))))
+     "scoped_models_selector_items"
+     (collect "cli_selectors.scoped_models_selector_items"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-items))))
+     "scoped_models_selector_cancel"
+     (collect "cli_selectors.scoped_models_selector_cancel"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-cancel)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17044,6 +17163,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.scoped_models_copy_enabled"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-copy-enabled"
+      "cli_selectors.scoped_models_selector_items"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-items"
+      "cli_selectors.scoped_models_selector_cancel"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-cancel"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
