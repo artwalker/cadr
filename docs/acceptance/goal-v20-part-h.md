@@ -4540,14 +4540,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 181 | 78,030 | 60.5% | `no worse than baseline` is falsifiable |
+| `paired` | 182 | 78,265 | 60.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 64 | 25,967 | 20.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 63 | 25,732 | 20.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 60.5% of lines (181 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 66.3% of lines.
+- **Falsifiable vs baseline:** 60.7% of lines (182 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 66.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -4731,6 +4731,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/select-list.lisp` | 305 | `tui_select_settings_loaders.filter` |
 | `src/cadr-tui/components/tool-block.lisp` | 623 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/loaders.lisp` | 235 | `tui_select_settings_loaders.update_display`, `tui_select_settings_loaders.make_cancellable_loader`, `tui_select_settings_loaders.cancellation_token_aborted` |
 | `src/cadr-tui/composition/protocol.lisp` | 143 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -4818,7 +4819,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `settings_load` | 2 | 479 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
-| `tui_select_settings_loaders` | 1 | 235 |
 | `cli_support` | 5 | 123 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |

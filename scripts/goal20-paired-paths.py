@@ -144,7 +144,7 @@ METRICS = {
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
     "ai_support": ("estimate_text", "context_overflow", "grammar_delta", "uuid_v7", "auth_guidance"),
-    "tui_select_settings_loaders": ("filter",),
+    "tui_select_settings_loaders": ("filter", "update_display", "make_cancellable_loader", "cancellation_token_aborted"),
     "tui_word_navigation": ("step",),
     "tui_overlay": ("composite_line",),
     "tui_kill_ring": ("push_peek",),
@@ -673,6 +673,12 @@ RATIO_CEILINGS = {
     # 1.27x (1.2 / 1.0 us). 8.0 follows the microsecond-floor
     # first-freeze headroom. Ratchet down only.
     "tui_select_settings_loaders.filter": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_select_settings_loaders leftover trio 433-435 (samples=5):
+    # first-freeze headroom 8.0. Ratchet down only.
+    "tui_select_settings_loaders.update_display": 8.0,
+    "tui_select_settings_loaders.make_cancellable_loader": 8.0,
+    "tui_select_settings_loaders.cancellation_token_aborted": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # tui_word_navigation pair (samples=5): observed 0.17x
     # (0.94 / 5.4 us). cadr leads. 8.0 is first-freeze
@@ -2211,6 +2217,15 @@ OBSERVED_EXACT = {
         "he_first",
         "wo_count",
         "zz_count",
+        "ud_has_a",
+        "ud_frames",
+        "ud_n",
+        "cl_has_a",
+        "cl_aborted",
+        "cl_n",
+        "ct_before",
+        "ct_after",
+        "ct_n",
     ),
     "tui_word_navigation": (
         "back_from_space",

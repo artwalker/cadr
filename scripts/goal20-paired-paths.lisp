@@ -37,6 +37,9 @@
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
 ;;;;  24. ai_support estimate-text-tokens vs estimateTextTokens
 ;;;;  25. tui_select_settings_loaders select-list filter vs SelectList.setFilter
+;;;; 433. tui_select_settings_loaders loader-component-update-display vs Loader.updateDisplay
+;;;; 434. tui_select_settings_loaders make-cancellable-loader-component vs CancellableLoader constructor
+;;;; 435. tui_select_settings_loaders cancellation-token-aborted-p vs CancellableLoader.aborted
 ;;;;  26. tui_word_navigation find-word-backward/forward vs findWordBackward/Forward
 ;;;;  27. tui_overlay composite-overlay-line vs compositeTuiLine
 ;;;;  28. tui_kill_ring kill-ring-push/peek/rotate vs KillRing
@@ -414,6 +417,9 @@
     ("ai_support.uuid_v7" . 50)
     ("ai_support.auth_guidance" . 50)
     ("tui_select_settings_loaders.filter" . 50)
+    ("tui_select_settings_loaders.update_display" . 50)
+    ("tui_select_settings_loaders.make_cancellable_loader" . 50)
+    ("tui_select_settings_loaders.cancellation_token_aborted" . 50)
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
     ("tui_kill_ring.push_peek" . 50)
@@ -8538,20 +8544,103 @@
      (select-list-filter-count list "wo")
      (select-list-filter-count list "zz"))))
 
+(defun loader-text-has (loader needle)
+  (if (search needle (cadr-tui:text-component-text loader)) 1 0))
+
+(defun make-bench-loader
+    (&key (frames '("a" "b")) (message "Loading..."))
+  (cadr-tui:make-loader-component
+   (lambda ()) #'identity #'identity
+   :message message
+   :indicator-frames frames
+   :start-p nil))
+
+(defun make-bench-cancellable-loader
+    (&key (frames '("a" "b")) (message "Loading..."))
+  (cadr-tui:make-cancellable-loader-component
+   (lambda ()) #'identity #'identity
+   :message message
+   :indicator-frames frames
+   :start-p nil))
+
+(defun run-tui-loader-update-display ()
+  (let ((loader (make-bench-loader)))
+    (cadr-tui::loader-component-update-display loader)
+    (let ((has-a (loader-text-has loader "a Loading..."))
+          (nframes
+            (length (cadr-tui::loader-component-frames loader))))
+      (cadr-tui:component-dispose loader)
+      (list has-a nframes 2))))
+
+(defun run-tui-loader-make-cancellable ()
+  (let ((loader (make-bench-cancellable-loader)))
+    (let ((has-a (loader-text-has loader "a Loading..."))
+          (aborted
+            (if (cadr-tui:cancellation-token-aborted-p
+                 (cadr-tui:cancellable-loader-token loader))
+                1
+                0)))
+      (cadr-tui:component-dispose loader)
+      (list has-a aborted 2))))
+
+(defun run-tui-loader-aborted ()
+  (let ((token (make-instance 'cadr-tui:cancellation-token)))
+    (let ((before
+            (if (cadr-tui:cancellation-token-aborted-p token) 1 0)))
+      (setf (cadr-tui:cancellation-token-aborted-p token) t)
+      (list
+       before
+       (if (cadr-tui:cancellation-token-aborted-p token) 1 0)
+       2))))
+
 (defun measure-tui-select-list ()
-  (let ((observed (run-tui-select-list)))
+  (let ((observed (run-tui-select-list))
+        (display (run-tui-loader-update-display))
+        (cancellable (run-tui-loader-make-cancellable))
+        (aborted (run-tui-loader-aborted)))
     (json-object
      "observed"
      (json-object
       "he_count" (first observed)
       "he_first" (second observed)
       "wo_count" (third observed)
-      "zz_count" (fourth observed))
+      "zz_count" (fourth observed)
+      "ud_has_a" (first display)
+      "ud_frames" (second display)
+      "ud_n" (third display)
+      "cl_has_a" (first cancellable)
+      "cl_aborted" (second cancellable)
+      "cl_n" (third cancellable)
+      "ct_before" (first aborted)
+      "ct_after" (second aborted)
+      "ct_n" (third aborted))
      "filter"
      (collect "tui_select_settings_loaders.filter"
               (lambda ()
                 (lambda ()
-                  (run-tui-select-list)))))))
+                  (run-tui-select-list))))
+     "update_display"
+     (collect "tui_select_settings_loaders.update_display"
+              (lambda ()
+                (let ((loader (make-bench-loader)))
+                  (lambda ()
+                    (cadr-tui::loader-component-update-display
+                     loader)))))
+     "make_cancellable_loader"
+     (collect "tui_select_settings_loaders.make_cancellable_loader"
+              (lambda ()
+                (lambda ()
+                  (make-bench-cancellable-loader))))
+     "cancellation_token_aborted"
+     (collect "tui_select_settings_loaders.cancellation_token_aborted"
+              (lambda ()
+                (let ((token
+                        (make-instance 'cadr-tui:cancellation-token)))
+                  (setf (cadr-tui:cancellation-token-aborted-p token)
+                        t)
+                  (lambda ()
+                    (cadr-tui:cancellation-token-aborted-p
+                     token))))))))
 
 (defparameter *word-nav-text* "hello world")
 
@@ -16756,6 +16845,12 @@
       "src/cadr-ai/support/release.lisp no-models-available-message"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
+      "tui_select_settings_loaders.update_display"
+      "src/cadr-tui/composition/loaders.lisp loader-component-update-display"
+      "tui_select_settings_loaders.make_cancellable_loader"
+      "src/cadr-tui/composition/loaders.lisp make-cancellable-loader-component"
+      "tui_select_settings_loaders.cancellation_token_aborted"
+      "src/cadr-tui/composition/loaders.lisp cancellation-token-aborted-p"
       "tui_word_navigation.step"
       "src/cadr-tui/word-navigation.lisp find-word-backward + find-word-forward"
       "tui_overlay.composite_line"

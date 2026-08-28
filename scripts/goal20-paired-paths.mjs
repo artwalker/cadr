@@ -265,6 +265,9 @@ const REPETITIONS = {
 	"ai_support.uuid_v7": 50,
 	"ai_support.auth_guidance": 50,
 	"tui_select_settings_loaders.filter": 50,
+	"tui_select_settings_loaders.update_display": 50,
+	"tui_select_settings_loaders.make_cancellable_loader": 50,
+	"tui_select_settings_loaders.cancellation_token_aborted": 50,
 	"tui_word_navigation.step": 50,
 	"tui_overlay.composite_line": 50,
 	"tui_kill_ring.push_peek": 50,
@@ -801,6 +804,10 @@ const authGuidanceModule = await import(
 const overflowModule = await import(moduleUrl("packages/ai/src/utils/overflow.ts"));
 const grammarModule = await import(moduleUrl("packages/ai/src/api/constrained-sampling.ts"));
 const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
+const loaderModule = await import(moduleUrl("packages/tui/src/components/loader.ts"));
+const cancellableLoaderModule = await import(
+	moduleUrl("packages/tui/src/components/cancellable-loader.ts"),
+);
 const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navigation.ts"));
 const tuiModule = await import(moduleUrl("packages/tui/src/tui.ts"));
 const killRingModule = await import(moduleUrl("packages/tui/src/kill-ring.ts"));
@@ -7618,13 +7625,94 @@ function runTuiSelectList() {
 	};
 }
 
+function loaderTextHas(loader, needle) {
+	return typeof loader.text === "string" && loader.text.includes(needle) ? 1 : 0;
+}
+
+function makeStoppedBenchLoader(frames = ["a", "b"], message = "Loading...") {
+	const ui = { requestRender() {} };
+	const loader = new loaderModule.Loader(ui, (text) => text, (text) => text, message, {
+		frames,
+	});
+	loader.stop();
+	return loader;
+}
+
+function makeStoppedCancellableLoader(frames = ["a", "b"], message = "Loading...") {
+	const ui = { requestRender() {} };
+	const loader = new cancellableLoaderModule.CancellableLoader(
+		ui,
+		(text) => text,
+		(text) => text,
+		message,
+		{ frames },
+	);
+	loader.stop();
+	return loader;
+}
+
+function runTuiLoaderUpdateDisplay() {
+	const loader = makeStoppedBenchLoader();
+	loader.updateDisplay();
+	const hasA = loaderTextHas(loader, "a Loading...");
+	const nframes = loader.frames.length;
+	loader.stop();
+	return { ud_has_a: hasA, ud_frames: nframes, ud_n: 2 };
+}
+
+function runTuiLoaderMakeCancellable() {
+	const loader = makeStoppedCancellableLoader();
+	const hasA = loaderTextHas(loader, "a Loading...");
+	const aborted = loader.aborted ? 1 : 0;
+	loader.stop();
+	return { cl_has_a: hasA, cl_aborted: aborted, cl_n: 2 };
+}
+
+function runTuiLoaderAborted() {
+	const loader = makeStoppedCancellableLoader();
+	const before = loader.aborted ? 1 : 0;
+	loader.abortController.abort();
+	const after = loader.aborted ? 1 : 0;
+	loader.stop();
+	return { ct_before: before, ct_after: after, ct_n: 2 };
+}
+
 async function measureTuiSelectList() {
 	const observed = runTuiSelectList();
+	const display = runTuiLoaderUpdateDisplay();
+	const cancellable = runTuiLoaderMakeCancellable();
+	const aborted = runTuiLoaderAborted();
 	return {
 		filter: await collect("tui_select_settings_loaders.filter", () => {
 			return () => runTuiSelectList();
 		}),
-		observed,
+		update_display: await collect("tui_select_settings_loaders.update_display", () => {
+			const loader = makeStoppedBenchLoader();
+			return () => loader.updateDisplay();
+		}),
+		make_cancellable_loader: await collect(
+			"tui_select_settings_loaders.make_cancellable_loader",
+			() => {
+				return () => {
+					const loader = makeStoppedCancellableLoader();
+					return loader;
+				};
+			},
+		),
+		cancellation_token_aborted: await collect(
+			"tui_select_settings_loaders.cancellation_token_aborted",
+			() => {
+				const loader = makeStoppedCancellableLoader();
+				loader.abortController.abort();
+				return () => loader.aborted;
+			},
+		),
+		observed: {
+			...observed,
+			...display,
+			...cancellable,
+			...aborted,
+		},
 	};
 }
 
@@ -17117,6 +17205,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelsAvailableMessage",
 			"tui_select_settings_loaders.filter":
 				"packages/tui/src/components/select-list.ts SelectList.setFilter",
+			"tui_select_settings_loaders.update_display":
+				"packages/tui/src/components/loader.ts Loader.updateDisplay",
+			"tui_select_settings_loaders.make_cancellable_loader":
+				"packages/tui/src/components/cancellable-loader.ts CancellableLoader constructor (then stop; skip start/run threads)",
+			"tui_select_settings_loaders.cancellation_token_aborted":
+				"packages/tui/src/components/cancellable-loader.ts CancellableLoader.aborted",
 			"tui_word_navigation.step":
 				"packages/tui/src/word-navigation.ts findWordBackward + findWordForward",
 			"tui_overlay.composite_line":
