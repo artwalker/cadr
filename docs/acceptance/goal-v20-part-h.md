@@ -8008,6 +8008,30 @@ Leftover sibling of Pair 658. Timed work is nil-host mermaid passthrough, cache 
 
 Leftover sibling of Pairs 658–659. Timed work is collapsed skill/branch/compaction box render. Observed `rts_skill` / `rts_foo` / `rts_branch` / `rts_comp` / `rts_n` are exact. First n=5 freeze **255.111×** (786.501 / 3.083 µs) on host `cursor`. First-freeze headroom ceiling **400.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 661 — `cli_interactive_controller` (render_assistant_blocks)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_assistant_blocks` | `render-assistant-blocks` (`src/cadr-cli/interactive/transcript.lisp`) | assistant markdown blocks + stop error (`packages/coding-agent/src/modes/interactive/components/assistant-message.ts`) |
+
+Leftover sibling of Pairs 658–660 on the same `transcript.lisp` hole. Timed work is nil-host markdown blocks, empty text, stop-reason error lines, and hidden thinking label (`Thinking...`). Observed `rab_hi` / `rab_n` / `rab_empty` / `rab_err` / `rab_think` are exact. First n=5 freeze **5.377×** (54.605 / 10.156 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 662 — `cli_interactive_controller` (render_version_notification)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_version_notification` | `render-version-update-notification` (`src/cadr-cli/interactive/transcript.lisp`) | version warning DynamicBorder (`packages/coding-agent/src/modes/interactive/components/dynamic-border.ts`) |
+
+Leftover sibling of Pair 661. Timed work is the version-update warning box (`Update Available` / version text / Changelog). Observed does not exact-match the product slug (`cadr` vs `pi`). Observed `rvn_avail` / `rvn_ver` / `rvn_change` / `rvn_n` / `rvn_dash` are exact. First n=5 freeze **69.400×** (304.547 / 4.388 µs) on host `cursor`. First-freeze headroom ceiling **120.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 663 — `cli_interactive_controller` (render_package_notification)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_package_notification` | `render-package-update-notification` (`src/cadr-cli/interactive/transcript.lisp`) | package warning DynamicBorder (`packages/coding-agent/src/modes/interactive/components/dynamic-border.ts`) |
+
+Leftover sibling of Pairs 661–662. Timed work is the package-update warning box (`Package Updates Available` / package names / `update`). Observed does not exact-match the product slug. Observed `rpn_avail` / `rpn_pkg` / `rpn_run` / `rpn_n` / `rpn_dash` are exact. First n=5 freeze **52.727×** (217.221 / 4.120 µs) on host `cursor`. First-freeze headroom ceiling **100.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.render_assistant_blocks`
+  (`render-assistant-blocks` on
+  `src/cadr-cli/interactive/transcript.lisp` vs assistant markdown
+  blocks + stop error). Observed `rab_hi` / `rab_n` / `rab_empty` /
+  `rab_err` / `rab_think` exact. n=5 **5.377×** (54.605 / 10.156 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 661). Over-1×
+  booked. Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_version_notification`
+  (`render-version-update-notification` vs version warning
+  DynamicBorder). Observed `rvn_avail` / `rvn_ver` / `rvn_change` /
+  `rvn_n` / `rvn_dash` exact. n=5 **69.400×** (304.547 / 4.388 µs) on
+  host `cursor`. First-freeze headroom ceiling **120.0** (ratchet down
+  only). Measure-only leftover (Pair 662). Over-1× booked. `nextPairNum`
+  left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_package_notification`
+  (`render-package-update-notification` vs package warning
+  DynamicBorder). Observed `rpn_avail` / `rpn_pkg` / `rpn_run` /
+  `rpn_n` / `rpn_dash` exact. n=5 **52.727×** (217.221 / 4.120 µs) on
+  host `cursor`. First-freeze headroom ceiling **100.0** (ratchet down
+  only). Measure-only leftover (Pair 663). Over-1× booked. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.render_assistant_lines`
   (`render-assistant-message-lines` on
   `src/cadr-cli/interactive/transcript.lisp` vs AssistantMessageComponent
