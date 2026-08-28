@@ -183,6 +183,9 @@
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
+;;;; 517. cli_interactive_controller wrap-transcript-lines vs OSC 133 wrap
+;;;; 518. cli_interactive_controller output-padding-string vs user-message pad
+;;;; 519. cli_interactive_controller tui-entry-render-cacheable-p vs entry render cache gate
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -446,6 +449,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.wrap_transcript" . 50)
+    ("cli_interactive_controller.output_padding" . 50)
+    ("cli_interactive_controller.render_cacheable" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -9672,13 +9678,80 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defun wrap-transcript-flag (got expected)
+  (if (equal got expected) 1 0))
+
+(defun run-cli-interactive-wrap-transcript ()
+  (let* ((one (cadr-cli::wrap-transcript-lines (list "x")))
+         (two (cadr-cli::wrap-transcript-lines (list "a" "b")))
+         (expected-one
+           (concatenate
+            'string
+            cadr-cli::+osc-133-end+
+            cadr-cli::+osc-133-final+
+            cadr-cli::+osc-133-start+
+            "x"))
+         (expected-two-first
+           (concatenate 'string cadr-cli::+osc-133-start+ "a"))
+         (expected-two-last
+           (concatenate
+            'string
+            cadr-cli::+osc-133-end+
+            cadr-cli::+osc-133-final+
+            "b")))
+    (list
+     (if (cadr-cli::wrap-transcript-lines nil) 0 1)
+     (wrap-transcript-flag (length one) 1)
+     (wrap-transcript-flag (first one) expected-one)
+     (wrap-transcript-flag (length two) 2)
+     (wrap-transcript-flag (first two) expected-two-first)
+     (wrap-transcript-flag (second two) expected-two-last))))
+
+(defun run-cli-interactive-output-padding ()
+  (list
+   (length (cadr-cli::output-padding-string 0))
+   (length (cadr-cli::output-padding-string 1))
+   (length (cadr-cli::output-padding-string 2))
+   (if (string= (cadr-cli::output-padding-string 1) " ") 1 0)))
+
+(defun render-cacheable-flag (entry)
+  (if (cadr-cli::tui-entry-render-cacheable-p entry) 1 0))
+
+(defun run-cli-interactive-render-cacheable ()
+  (list
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry :type :assistant :streaming-p nil))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry :type :assistant :streaming-p t))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry :type :tool :streaming-p nil))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry
+     :type :tool
+     :streaming-p nil
+     :tool-block (cadr-tui:make-tool-block :status :complete)))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry
+     :type :tool
+     :streaming-p nil
+     :tool-block (cadr-tui:make-tool-block :status :running)))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry
+     :type :tool
+     :streaming-p nil
+     :tool-block (cadr-tui:make-tool-block :status :complete)
+     :custom-call-rendered-p t))))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (wrap-transcript (run-cli-interactive-wrap-transcript))
+        (output-padding (run-cli-interactive-output-padding))
+        (render-cacheable (run-cli-interactive-render-cacheable)))
     (json-object
      "observed"
      (json-object
@@ -9709,7 +9782,23 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "wt_nil" (first wrap-transcript)
+      "wt_one_n" (second wrap-transcript)
+      "wt_one_order" (third wrap-transcript)
+      "wt_two_n" (fourth wrap-transcript)
+      "wt_two_first" (fifth wrap-transcript)
+      "wt_two_last" (sixth wrap-transcript)
+      "op_0" (first output-padding)
+      "op_1" (second output-padding)
+      "op_other" (third output-padding)
+      "op_space" (fourth output-padding)
+      "rc_assist" (first render-cacheable)
+      "rc_stream" (second render-cacheable)
+      "rc_tool_nil" (third render-cacheable)
+      "rc_tool_done" (fourth render-cacheable)
+      "rc_tool_run" (fifth render-cacheable)
+      "rc_custom" (sixth render-cacheable))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -9739,7 +9828,22 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "wrap_transcript"
+     (collect "cli_interactive_controller.wrap_transcript"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-wrap-transcript))))
+     "output_padding"
+     (collect "cli_interactive_controller.output_padding"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-output-padding))))
+     "render_cacheable"
+     (collect "cli_interactive_controller.render_cacheable"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-cacheable)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -16820,6 +16924,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.wrap_transcript"
+      "src/cadr-cli/interactive/transcript.lisp wrap-transcript-lines"
+      "cli_interactive_controller.output_padding"
+      "src/cadr-cli/interactive/transcript.lisp output-padding-string"
+      "cli_interactive_controller.render_cacheable"
+      "src/cadr-cli/interactive/transcript.lisp tui-entry-render-cacheable-p"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

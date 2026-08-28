@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.wrap_transcript`
+  (`wrap-transcript-lines` on `src/cadr-cli/interactive/transcript.lisp`).
+  Observed `wt_nil` / `wt_one_n` / `wt_one_order` / `wt_two_n` /
+  `wt_two_first` / `wt_two_last` exact. Pending first n=5 freeze.
+  Measure-only leftover (Pair 517). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.output_padding`
+  (`output-padding-string` on `src/cadr-cli/interactive/transcript.lisp`).
+  Observed `op_0` / `op_1` / `op_other` / `op_space` exact.
+  Pending first n=5 freeze. Measure-only leftover (Pair 518).
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.render_cacheable`
+  (`tui-entry-render-cacheable-p` on `src/cadr-cli/interactive/transcript.lisp`).
+  Observed `rc_assist` / `rc_stream` / `rc_tool_nil` / `rc_tool_done` /
+  `rc_tool_run` / `rc_custom` exact. Pending first n=5 freeze.
+  Measure-only leftover (Pair 519). `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

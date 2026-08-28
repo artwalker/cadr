@@ -4059,6 +4059,30 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 517 — `cli_interactive_controller` (wrap_transcript)
+
+| metric | cadr | pi |
+|---|---|---|
+| `wrap_transcript` | `wrap-transcript-lines` (`src/cadr-cli/interactive/transcript.lisp`) | `UserMessageComponent.render` OSC 133 wrap (`packages/coding-agent/src/modes/interactive/components/user-message.ts`) |
+
+Leftover of the `cli_interactive_controller` hole on `interactive/transcript.lisp`. Timed work is OSC 133 A/B/C wrap of a line list (nil, one-element shared-cons order, two-element first/last) — not user-message markdown, not assistant render. Observed `wt_nil` / `wt_one_n` / `wt_one_order` / `wt_two_n` / `wt_two_first` / `wt_two_last` are exact. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
+### Pair 518 — `cli_interactive_controller` (output_padding)
+
+| metric | cadr | pi |
+|---|---|---|
+| `output_padding` | `output-padding-string` (`src/cadr-cli/interactive/transcript.lisp`) | `UserMessageComponent` outputPad (`packages/coding-agent/src/modes/interactive/components/user-message.ts`) |
+
+Leftover sibling of Pair 517 on the same hole. Timed work is pad 0/1 vs other → length-1 space string — not wrap-text, not OSC wrap. Observed `op_0` / `op_1` / `op_other` / `op_space` are exact. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
+### Pair 519 — `cli_interactive_controller` (render_cacheable)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_cacheable` | `tui-entry-render-cacheable-p` (`src/cadr-cli/interactive/transcript.lisp`) | TUI entry render cache gate (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pairs 517–518 on the same hole. Timed work is streaming/tool-block/custom-call cache predicate — not `render-tui-entry`, not theme snapshot. Observed `rc_assist` / `rc_stream` / `rc_tool_nil` / `rc_tool_done` / `rc_tool_run` / `rc_custom` are exact. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

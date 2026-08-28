@@ -297,6 +297,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.auth_type": 50,
 	"cli_interactive_controller.parse_auto_theme": 50,
 	"cli_interactive_controller.resolve_theme": 50,
+	"cli_interactive_controller.wrap_transcript": 50,
+	"cli_interactive_controller.output_padding": 50,
+	"cli_interactive_controller.render_cacheable": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -8622,6 +8625,91 @@ function runCliInteractiveResolveTheme() {
 	};
 }
 
+const OSC133_ZONE_START = "\x1b]133;A\x07";
+const OSC133_ZONE_END = "\x1b]133;B\x07";
+const OSC133_ZONE_FINAL = "\x1b]133;C\x07";
+
+function wrapTranscriptLines(lines) {
+	if (!lines || lines.length === 0) return null;
+	const copy = lines.slice();
+	copy[0] = OSC133_ZONE_START + copy[0];
+	copy[copy.length - 1] = OSC133_ZONE_END + OSC133_ZONE_FINAL + copy[copy.length - 1];
+	return copy;
+}
+
+function wrapTranscriptFlag(got, expected) {
+	return got === expected ? 1 : 0;
+}
+
+function runCliInteractiveWrapTranscript() {
+	const one = wrapTranscriptLines(["x"]);
+	const two = wrapTranscriptLines(["a", "b"]);
+	const expectedOne = OSC133_ZONE_END + OSC133_ZONE_FINAL + OSC133_ZONE_START + "x";
+	const expectedTwoFirst = OSC133_ZONE_START + "a";
+	const expectedTwoLast = OSC133_ZONE_END + OSC133_ZONE_FINAL + "b";
+	return {
+		wt_nil: wrapTranscriptLines(null) ? 0 : 1,
+		wt_one_n: wrapTranscriptFlag(one.length, 1),
+		wt_one_order: wrapTranscriptFlag(one[0], expectedOne),
+		wt_two_n: wrapTranscriptFlag(two.length, 2),
+		wt_two_first: wrapTranscriptFlag(two[0], expectedTwoFirst),
+		wt_two_last: wrapTranscriptFlag(two[1], expectedTwoLast),
+	};
+}
+
+function outputPaddingString(outputPad) {
+	const n = outputPad === 0 || outputPad === 1 ? outputPad : 1;
+	return " ".repeat(n);
+}
+
+function runCliInteractiveOutputPadding() {
+	return {
+		op_0: outputPaddingString(0).length,
+		op_1: outputPaddingString(1).length,
+		op_other: outputPaddingString(2).length,
+		op_space: outputPaddingString(1) === " " ? 1 : 0,
+	};
+}
+
+function tuiEntryRenderCacheableP(entry) {
+	return (
+		!entry.streamingP &&
+		(entry.type !== "tool" ||
+			(!!entry.toolBlock &&
+				entry.toolBlock.status !== "running" &&
+				!entry.customCallRenderedP &&
+				!entry.customResultRenderedP))
+	);
+}
+
+function renderCacheableFlag(entry) {
+	return tuiEntryRenderCacheableP(entry) ? 1 : 0;
+}
+
+function runCliInteractiveRenderCacheable() {
+	return {
+		rc_assist: renderCacheableFlag({ type: "assistant", streamingP: false }),
+		rc_stream: renderCacheableFlag({ type: "assistant", streamingP: true }),
+		rc_tool_nil: renderCacheableFlag({ type: "tool", streamingP: false }),
+		rc_tool_done: renderCacheableFlag({
+			type: "tool",
+			streamingP: false,
+			toolBlock: { status: "complete" },
+		}),
+		rc_tool_run: renderCacheableFlag({
+			type: "tool",
+			streamingP: false,
+			toolBlock: { status: "running" },
+		}),
+		rc_custom: renderCacheableFlag({
+			type: "tool",
+			streamingP: false,
+			toolBlock: { status: "complete" },
+			customCallRenderedP: true,
+		}),
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
@@ -8630,6 +8718,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveAuthType(),
 		...runCliInteractiveParseAutoTheme(),
 		...runCliInteractiveResolveTheme(),
+		...runCliInteractiveWrapTranscript(),
+		...runCliInteractiveOutputPadding(),
+		...runCliInteractiveRenderCacheable(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -8649,6 +8740,15 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		resolve_theme: await collect("cli_interactive_controller.resolve_theme", () => {
 			return () => runCliInteractiveResolveTheme();
+		}),
+		wrap_transcript: await collect("cli_interactive_controller.wrap_transcript", () => {
+			return () => runCliInteractiveWrapTranscript();
+		}),
+		output_padding: await collect("cli_interactive_controller.output_padding", () => {
+			return () => runCliInteractiveOutputPadding();
+		}),
+		render_cacheable: await collect("cli_interactive_controller.render_cacheable", () => {
+			return () => runCliInteractiveRenderCacheable();
 		}),
 		observed,
 	};
@@ -17179,6 +17279,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts parseAutoThemeSetting",
 			"cli_interactive_controller.resolve_theme":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts resolveThemeSetting",
+			"cli_interactive_controller.wrap_transcript":
+				"packages/coding-agent/src/modes/interactive/components/user-message.ts UserMessageComponent.render OSC 133 wrap",
+			"cli_interactive_controller.output_padding":
+				"packages/coding-agent/src/modes/interactive/components/user-message.ts UserMessageComponent outputPad",
+			"cli_interactive_controller.render_cacheable":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts TUI entry render cache gate",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
