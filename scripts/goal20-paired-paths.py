@@ -1145,12 +1145,13 @@ RATIO_CEILINGS = {
   "cli_selectors.thinking_selector_handle_raw_input": 30.0,
   # Measure-only leftover 609; first freeze 0.834× (3.312 / 3.974 µs). cadr leads.
   "cli_selectors.thinking_selector_handle_event": 8.0,
-  # Measure-only leftover 610; first freeze pending.
+  # Measure-only leftover 610; first freeze 0.608× (0.467 / 0.768 µs). cadr leads.
   "cli_selectors.thinking_selector_selected_level": 8.0,
-  # Measure-only leftover 611; first freeze pending.
+  # Measure-only leftover 611; first freeze 1.155× (0.268 / 0.232 µs).
   "cli_selectors.thinking_level_description_line": 8.0,
-  # Measure-only leftover 612; first freeze pending.
-  "cli_selectors.render_thinking_selector": 8.0,
+  # Measure-only leftover 612; first freeze 44.726× (316.671 / 7.080 µs).
+  # 60.0 is first-freeze headroom. Ratchet down only.
+  "cli_selectors.render_thinking_selector": 60.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
