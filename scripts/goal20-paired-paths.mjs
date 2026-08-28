@@ -14764,7 +14764,7 @@ function goal20UserMessageItems(...values) {
 	return values.map((value) => ({ label: value, value }));
 }
 
-function makeUserMessageSelectorState({ items = [], initialSelectedValue, maxVisible = 10 } = {}) {
+function makeUserMessageSelectorState({ items = [], initialSelectedValue, maxVisible = 10, keybindings = "bench" } = {}) {
 	let initial = null;
 	if (initialSelectedValue != null) {
 		const idx = items.findIndex((item) => item.value === initialSelectedValue);

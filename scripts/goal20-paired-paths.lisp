@@ -9990,22 +9990,28 @@
          (two (goal20-user-message-items "a" "b"))
          (three (goal20-user-message-items "a" "b" "c"))
          (empty-state
-           (cadr-cli::make-user-message-selector-state :items nil))
+           (cadr-cli::make-user-message-selector-state
+            :items nil :keybindings :bench))
          (one-state
-           (cadr-cli::make-user-message-selector-state :items one))
+           (cadr-cli::make-user-message-selector-state
+            :items one :keybindings :bench))
          (two-state
-           (cadr-cli::make-user-message-selector-state :items two))
+           (cadr-cli::make-user-message-selector-state
+            :items two :keybindings :bench))
          (hit-state
            (cadr-cli::make-user-message-selector-state
             :items three
-            :initial-selected-value "a"))
+            :initial-selected-value "a"
+            :keybindings :bench))
          (miss-state
            (cadr-cli::make-user-message-selector-state
             :items two
-            :initial-selected-value "z"))
+            :initial-selected-value "z"
+            :keybindings :bench))
          (orig (goal20-user-message-items "a"))
          (copy-state
-           (cadr-cli::make-user-message-selector-state :items orig)))
+           (cadr-cli::make-user-message-selector-state
+            :items orig :keybindings :bench)))
     (setf (cdr orig) (goal20-user-message-items "x"))
     (list
      (cadr-cli::user-message-selector-state-selected empty-state)
@@ -10018,22 +10024,28 @@
 
 (defun run-cli-selectors-user-message-move ()
   (let ((empty
-          (cadr-cli::make-user-message-selector-state :items nil))
+          (cadr-cli::make-user-message-selector-state
+           :items nil :keybindings :bench))
         (two-fwd
           (cadr-cli::make-user-message-selector-state
-           :items (goal20-user-message-items "a" "b")))
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
         (two-back
           (cadr-cli::make-user-message-selector-state
-           :items (goal20-user-message-items "a" "b")))
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
         (two-full
           (cadr-cli::make-user-message-selector-state
-           :items (goal20-user-message-items "a" "b")))
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
         (three-back
           (cadr-cli::make-user-message-selector-state
-           :items (goal20-user-message-items "a" "b" "c")))
+           :items (goal20-user-message-items "a" "b" "c")
+           :keybindings :bench))
         (three-fwd
           (cadr-cli::make-user-message-selector-state
-           :items (goal20-user-message-items "a" "b" "c"))))
+           :items (goal20-user-message-items "a" "b" "c")
+           :keybindings :bench)))
     (cadr-cli::user-message-selector-move empty 1)
     (cadr-cli::user-message-selector-move two-fwd 1)
     (cadr-cli::user-message-selector-move two-back -1)
@@ -10050,24 +10062,30 @@
 
 (defun run-cli-selectors-user-message-selection ()
   (let ((empty
-          (cadr-cli::make-user-message-selector-state :items nil))
+          (cadr-cli::make-user-message-selector-state
+           :items nil :keybindings :bench))
         (two
           (cadr-cli::make-user-message-selector-state
-           :items (goal20-user-message-items "a" "b")))
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
         (hit
           (cadr-cli::make-user-message-selector-state
            :items (goal20-user-message-items "a" "b" "c")
-           :initial-selected-value "a"))
+           :initial-selected-value "a"
+           :keybindings :bench))
         (moved
           (cadr-cli::make-user-message-selector-state
-           :items (goal20-user-message-items "a" "b")))
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
         (miss
           (cadr-cli::make-user-message-selector-state
            :items (goal20-user-message-items "a" "b")
-           :initial-selected-value "z"))
+           :initial-selected-value "z"
+           :keybindings :bench))
         (one
           (cadr-cli::make-user-message-selector-state
-           :items (goal20-user-message-items "only"))))
+           :items (goal20-user-message-items "only")
+           :keybindings :bench)))
     (cadr-cli::user-message-selector-move moved 1)
     (list
      (user-message-selector-selection-text empty)
