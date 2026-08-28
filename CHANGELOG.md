@@ -12,18 +12,20 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.sanitize_title`
   (`sanitize-terminal-title-text` on `src/cadr-cli/interactive/controller.lisp`).
   Observed `st_plain` / `st_esc` / `st_bel` / `st_nil` / `st_empty` exact.
-  Pending first n=5 freeze. Measure-only leftover (Pair 511).
-  `nextPairNum` left unchanged.
+  n=5 **0.895×** (0.586 / 0.655 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 511). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`), not this
+  metric. cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.title_basename`
   (`tui-terminal-title-cwd-basename` on `src/cadr-cli/interactive/controller.lisp`).
   Observed `bn_unix` / `bn_win` / `bn_plain` / `bn_empty` / `bn_nil` exact.
-  Pending first n=5 freeze. Measure-only leftover (Pair 512).
-  `nextPairNum` left unchanged.
+  n=5 **0.393×** (0.353 / 0.898 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 512). cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.terminal_title`
   (`tui-terminal-title` on `src/cadr-cli/interactive/controller.lisp`).
   Observed `tt_none` / `tt_session` / `tt_esc` / `tt_empty` exact.
-  Pending first n=5 freeze. Measure-only leftover (Pair 513).
-  `nextPairNum` left unchanged.
+  n=5 **0.645×** (1.530 / 2.370 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 513). cadr leads. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
