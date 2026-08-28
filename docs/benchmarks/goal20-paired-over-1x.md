@@ -449,4 +449,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.bash_append_running` | 0.735 | 0.357 | 2.059× | 8.00× | measure-only leftover 640; `append-tui-user-bash-running` vs BashExecutionComponent addChild running | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_complete_string` | 0.745 | 0.274 | 2.719× | 8.00× | measure-only leftover 641; `complete-tui-user-bash-string` vs setComplete exit 0 string | invent pause；地板优化另刀 |
 | `cli_interactive_controller.bash_stop_entry` | 0.621 | 0.219 | 2.843× | 8.00× | measure-only leftover 642; `stop-tui-user-bash-entry` vs loader.stop without setComplete | invent pause；地板优化另刀 |
+| `cli_interactive_controller.assistant_has_tools` | 1.082 | 0.933 | 1.160× | 8.00× | measure-only leftover 643; `assistant-message-has-tool-calls-p` vs hasToolCalls | invent pause；地板优化另刀 |
+| `cli_interactive_controller.transcript_summary_label` | 12.217 | 1.923 | 6.352× | 8.00× | measure-only leftover 645; `transcript-summary-label` vs skill/branch/compaction [name] label | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.assistant_has_tools`
+  (`assistant-message-has-tool-calls-p` on
+  `src/cadr-cli/interactive/transcript.lisp` vs AssistantMessageComponent
+  hasToolCalls). Observed `aht_empty` / `aht_text` / `aht_tool` /
+  `aht_both` / `aht_think` exact. n=5 **1.160×** (1.082 / 0.933 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 643). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact. Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.assistant_display_blocks`
+  (`assistant-display-blocks` vs assistant display block flatten). Observed
+  `adb_n` / `adb_first` / `adb_think` / `adb_tail` / `adb_blank` exact.
+  n=5 **0.686×** (0.948 / 1.383 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 644). cadr leads. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.transcript_summary_label`
+  (`transcript-summary-label` vs skill/branch/compaction `[name]` label).
+  Observed `tsl_skill` / `tsl_branch` / `tsl_empty` / `tsl_n` / `tsl_comp`
+  exact. n=5 **6.352×** (12.217 / 1.923 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 645). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.bash_append_running`
   (`append-tui-user-bash-running` on
   `src/cadr-cli/interactive/user-bash.lisp` vs BashExecutionComponent

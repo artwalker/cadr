@@ -943,11 +943,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.bash_complete_string": 8.0,
     # Measure-only leftover 642; first freeze 2.843× (0.621 / 0.219 µs).
     "cli_interactive_controller.bash_stop_entry": 8.0,
-    # Measure-only leftover 643; first freeze recorded after n=5.
+    # Measure-only leftover 643; first freeze 1.160× (1.082 / 0.933 µs).
     "cli_interactive_controller.assistant_has_tools": 8.0,
-    # Measure-only leftover 644; first freeze recorded after n=5.
+    # Measure-only leftover 644; first freeze 0.686× (0.948 / 1.383 µs).
     "cli_interactive_controller.assistant_display_blocks": 8.0,
-    # Measure-only leftover 645; first freeze recorded after n=5.
+    # Measure-only leftover 645; first freeze 6.352× (12.217 / 1.923 µs).
     "cli_interactive_controller.transcript_summary_label": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
