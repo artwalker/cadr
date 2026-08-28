@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.session_scoped_models`
+  (`session-scoped-models` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs session-scoped
+  model filter). Observed `ssm_all` / `ssm_partial` / `ssm_unavail` /
+  `ssm_empty` / `ssm_full` / `ssm_single` exact. n=5 **2.563×**
+  (11.473 / 4.477 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 562). Gate rc=1 only from known old holes, not this metric.
+  Booked over-1×. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.scoped_model_id_enabled_p`
+  (`scoped-model-id-enabled-p` vs `isEnabled`). Observed `smie_all` /
+  `smie_hit` / `smie_miss` / `smie_empty` / `smie_stale` /
+  `smie_all_stale` exact. n=5 **0.775×** (0.167 / 0.215 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 563). Gate rc=1 only
+  from known old holes, not this metric.
+- Goal 20 P.13 leftover: pair `cli_selectors.scoped_models_toggle_id`
+  (`scoped-models-toggle-id` vs `toggle`). Observed `smti_from_all` /
+  `smti_remove` / `smti_add` / `smti_empty` / `smti_again` /
+  `smti_unavail` exact. n=5 **1.191×** (1.098 / 0.922 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 564). Gate rc=1 only
+  from known old holes, not this metric. Booked over-1×.
 - Goal 20 P.13 leftover: pair `cli_selectors.model_selector_provider_badge`
   (`model-selector-provider-badge` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs baseline

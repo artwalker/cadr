@@ -421,6 +421,9 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_provider_badge": 50,
 	"cli_selectors.scoped_models_copy_enabled": 50,
 	"cli_selectors.move_list_item": 50,
+	"cli_selectors.session_scoped_models": 50,
+	"cli_selectors.scoped_model_id_enabled_p": 50,
+	"cli_selectors.scoped_models_toggle_id": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20036,6 +20039,90 @@ function runCliSelectorsMoveListItem() {
 		mli_over: encodeMovedListItem(moveListItem(items, 1, 4)),
 		mli_same: encodeMovedListItem(moveListItem(items, 2, 2)),
 		mli_empty: encodeMovedListItem(moveListItem([], 0, 1)),
+	};
+}
+
+
+function encodeSessionScopedModels(models) {
+	if (models === null) return "";
+	return models.map(scopedModelsFullId).join(",");
+}
+
+
+function runCliSelectorsSessionScopedModels() {
+	const models = makeModelSelectorTestModels();
+	const allIds = models.map(scopedModelsFullId);
+	return {
+		ssm_all: encodeSessionScopedModels(
+			sessionScopedModelsForProviderCount(models, null),
+		),
+		ssm_partial: encodeSessionScopedModels(
+			sessionScopedModelsForProviderCount(models, [
+				"openai/gpt-4o",
+				"anthropic/claude-sonnet-4",
+			]),
+		),
+		ssm_unavail: encodeSessionScopedModels(
+			sessionScopedModelsForProviderCount(models, [
+				"stale/missing",
+				"openai/gpt-4o",
+			]),
+		),
+		ssm_empty: encodeSessionScopedModels(
+			sessionScopedModelsForProviderCount(models, []),
+		),
+		ssm_full: encodeSessionScopedModels(
+			sessionScopedModelsForProviderCount(models, allIds),
+		),
+		ssm_single: encodeSessionScopedModels(
+			sessionScopedModelsForProviderCount(models, [
+				"google/gemini-2.5-pro",
+			]),
+		),
+	};
+}
+
+
+function scopedModelIdEnabledP(enabledIds, id) {
+	return enabledIds === null || enabledIds.includes(id) ? "1" : "0";
+}
+
+
+function runCliSelectorsScopedModelIdEnabledP() {
+	const partial = ["openai/gpt-4o", "anthropic/claude-sonnet-4"];
+	return {
+		smie_all: scopedModelIdEnabledP(null, "openai/gpt-4o"),
+		smie_hit: scopedModelIdEnabledP(partial, "openai/gpt-4o"),
+		smie_miss: scopedModelIdEnabledP(partial, "google/gemini-2.5-pro"),
+		smie_empty: scopedModelIdEnabledP([], "openai/gpt-4o"),
+		smie_stale: scopedModelIdEnabledP(partial, "stale/missing"),
+		smie_all_stale: scopedModelIdEnabledP(null, "stale/missing"),
+	};
+}
+
+
+function encodeScopedModelsToggleId(enabledIds, id) {
+	return scopedModelsToggleId(enabledIds, id).join(",");
+}
+
+
+function runCliSelectorsScopedModelsToggleId() {
+	return {
+		smti_from_all: encodeScopedModelsToggleId(null, "openai/gpt-4o"),
+		smti_remove: encodeScopedModelsToggleId(
+			["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+			"openai/gpt-4o",
+		),
+		smti_add: encodeScopedModelsToggleId(
+			["openai/gpt-4o"],
+			"anthropic/claude-sonnet-4",
+		),
+		smti_empty: encodeScopedModelsToggleId([], "google/gemini-2.5-pro"),
+		smti_again: encodeScopedModelsToggleId(["openai/gpt-4o"], "openai/gpt-4o"),
+		smti_unavail: encodeScopedModelsToggleId(
+			["openai/gpt-4o"],
+			"stale/missing",
+		),
 	};
 }
 

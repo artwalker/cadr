@@ -4054,6 +4054,51 @@
    "ceiling": 8.0,
    "rc": 1,
    "note": "nextPairNum left at tip 328; leftover IDs 559-561"
+  },
+  {
+   "pair": 562,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.session_scoped_models",
+   "branch": "cursor/scoped-models-leftovers-562-564-34f9",
+   "ratio": 2.563,
+   "cadrUs": 11.473,
+   "piUs": 4.477,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 562-564"
+  },
+  {
+   "pair": 563,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.scoped_model_id_enabled_p",
+   "branch": "cursor/scoped-models-leftovers-562-564-34f9",
+   "ratio": 0.775,
+   "cadrUs": 0.167,
+   "piUs": 0.215,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 562-564"
+  },
+  {
+   "pair": 564,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.scoped_models_toggle_id",
+   "branch": "cursor/scoped-models-leftovers-562-564-34f9",
+   "ratio": 1.191,
+   "cadrUs": 1.098,
+   "piUs": 0.922,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 562-564"
   }
  ],
  "mergeQueue": []

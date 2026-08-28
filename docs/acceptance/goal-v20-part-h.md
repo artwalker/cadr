@@ -7007,6 +7007,49 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
 old holes; this metric did not fail). Booked over-1×. Same commit no
 optimize. `nextPairNum` left at 328.
 
+### Pair 562 — `cli_selectors` (session_scoped_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_scoped_models` | `session-scoped-models` (`src/cadr-cli/interactive/selectors/models.lisp`) | session-scoped model filter (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover trio on unused helpers in `models.lisp` (inventory `needs-pair`).
+Timed work is the session-scoped model subset — not provider-count, not
+selector render. Observed `ssm_all` / `ssm_partial` / `ssm_unavail` /
+`ssm_empty` / `ssm_full` / `ssm_single` are exact. First n=5 freeze
+**2.563×** (11.473 / 4.477 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
+fail). Booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 563 — `cli_selectors` (scoped_model_id_enabled_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_model_id_enabled_p` | `scoped-model-id-enabled-p` (`src/cadr-cli/interactive/selectors/models.lisp`) | `isEnabled` (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 562. Selector states prepared with
+`:keybindings :bench` so constructor cost is not on the timed path.
+Observed `smie_all` / `smie_hit` / `smie_miss` / `smie_empty` /
+`smie_stale` / `smie_all_stale` are exact. First n=5 freeze **0.775×**
+(0.167 / 0.215 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes; this metric
+did not fail). Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 564 — `cli_selectors` (scoped_models_toggle_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_toggle_id` | `scoped-models-toggle-id` (`src/cadr-cli/interactive/selectors/models.lisp`) | `toggle` (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pairs 562–563. Timed work is enable-id list toggle
+— not `scoped-models-selector-toggle-selected`. Observed `smti_from_all`
+/ `smti_remove` / `smti_add` / `smti_empty` / `smti_again` /
+`smti_unavail` are exact. First n=5 freeze **1.191×** (1.098 / 0.922 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes; this metric did not fail). Booked over-1×.
+Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
