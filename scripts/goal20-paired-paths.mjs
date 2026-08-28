@@ -413,6 +413,8 @@ const REPETITIONS = {
 	"cli_interactive_controller.framed_select_title": 50,
 	"cli_interactive_controller.extension_overlay_options": 50,
 	"cli_interactive_controller.extension_custom_ui_visible": 50,
+	"cli_bootstrap_sessions.session_argument_path": 50,
+	"cli_bootstrap_sessions.path_command_argument": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -22874,6 +22876,54 @@ function splitCommand(line) {
 	};
 }
 
+function runCliBootstrapSessionArgumentPath() {
+	return {
+		sap_slash: sessionArgumentPathP("sessions/foo.jsonl"),
+		sap_backslash: sessionArgumentPathP("sessions\\foo.jsonl"),
+		sap_jsonl: sessionArgumentPathP("abc.jsonl"),
+		sap_id: sessionArgumentPathP("019fabc"),
+		sap_empty: sessionArgumentPathP(""),
+		sap_json: sessionArgumentPathP("file.json"),
+	};
+}
+
+
+function cadrSplitCommand(line) {
+	const isPad = (character) =>
+		character === " " || character === "\t" || character === "\n" || character === "\r";
+	const isSeparator = (character) => character === " " || character === "\t";
+	let start = 0;
+	let end = line.length;
+	while (start < end && isPad(line[start])) start += 1;
+	while (end > start && isPad(line[end - 1])) end -= 1;
+	const trimmed = line.slice(start, end);
+	let separator = -1;
+	for (let index = 0; index < trimmed.length; index += 1) {
+		if (isSeparator(trimmed[index])) {
+			separator = index;
+			break;
+		}
+	}
+	if (separator < 0) return `${trimmed}|`;
+	const command = trimmed.slice(0, separator);
+	let argumentStart = separator + 1;
+	let argumentEnd = trimmed.length;
+	while (
+		argumentStart < argumentEnd &&
+		(trimmed[argumentStart] === " " || trimmed[argumentStart] === "\t")
+	) {
+		argumentStart += 1;
+	}
+	while (
+		argumentEnd > argumentStart &&
+		(trimmed[argumentEnd - 1] === " " || trimmed[argumentEnd - 1] === "\t")
+	) {
+		argumentEnd -= 1;
+	}
+	return `${command}|${trimmed.slice(argumentStart, argumentEnd)}`;
+}
+
+
 function runCliBootstrapSplitCommand() {
 	const first = splitCommand("list foo");
 	const second = splitCommand("  only  ");
@@ -23198,6 +23248,50 @@ function runCliBootstrapDispatchPlain() {
 		dp_bash_n: bash.result,
 		dp_bang: bang.kind,
 		dp_n: 6,
+	};
+}
+
+
+function getPathCommandArgument(text, command) {
+	if (text === command) {
+		return undefined;
+	}
+	if (!text.startsWith(`${command} `)) {
+		return undefined;
+	}
+	const argsString = text.slice(command.length + 1).trimStart();
+	if (!argsString) {
+		return undefined;
+	}
+	const firstChar = argsString[0];
+	if (firstChar === '"' || firstChar === "'") {
+		const closingQuoteIndex = argsString.indexOf(firstChar, 1);
+		if (closingQuoteIndex < 0) {
+			return undefined;
+		}
+		return argsString.slice(1, closingQuoteIndex);
+	}
+	const firstWhitespaceIndex = argsString.search(/\s/);
+	if (firstWhitespaceIndex < 0) {
+		return argsString;
+	}
+	return argsString.slice(0, firstWhitespaceIndex);
+}
+
+
+function encodePathCommandArgument(text, command) {
+	return getPathCommandArgument(text, command) ?? "";
+}
+
+
+function runCliBootstrapPathCommandArgument() {
+	return {
+		pca_none: encodePathCommandArgument("/import", "/import"),
+		pca_plain: encodePathCommandArgument("/import foo.jsonl", "/import"),
+		pca_dq: encodePathCommandArgument('/import "foo bar.jsonl"', "/import"),
+		pca_sq: encodePathCommandArgument("/import 'foo bar.jsonl'", "/import"),
+		pca_unclosed: encodePathCommandArgument('/import "foo', "/import"),
+		pca_extra: encodePathCommandArgument("/import foo.jsonl trailing", "/import"),
 	};
 }
 

@@ -300,6 +300,8 @@ METRIC_KEYS = (
     "cli_interactive_controller.framed_select_title",
     "cli_interactive_controller.extension_overlay_options",
     "cli_interactive_controller.extension_custom_ui_visible",
+    "cli_bootstrap_sessions.session_argument_path",
+    "cli_bootstrap_sessions.path_command_argument",
     "ai_crypto_model_data.manifest",
     "ai_crypto.hmac",
     "cli_models_rest.pattern_match",

@@ -21968,6 +21968,26 @@
    (if (cadr-cli::session-argument-path-p "jsonl") 1 0)
    5))
 
+(defun run-cli-bootstrap-session-argument-path ()
+  (flet ((flag (argument)
+           (if (cadr-cli::session-argument-path-p argument)
+               "1"
+               "0")))
+    (list
+     (flag "sessions/foo.jsonl")
+     (flag "sessions\\foo.jsonl")
+     (flag "abc.jsonl")
+     (flag "019fabc")
+     (flag "")
+     (flag "file.json"))))
+
+
+(defun encode-cli-bootstrap-split-command (line)
+  (multiple-value-bind (command argument)
+      (cadr-cli::split-command line)
+    (format nil "~A|~A" (or command "") (or argument ""))))
+
+
 (defun run-cli-bootstrap-split-command ()
   (multiple-value-bind (cmd arg)
       (cadr-cli::split-command "list foo")
@@ -22244,6 +22264,25 @@
      (second bash)
      (first bang)
      6)))
+
+
+(defun encode-cli-bootstrap-path-command-argument (line command)
+  (or (cadr-cli::path-command-argument line command) ""))
+
+
+(defun run-cli-bootstrap-path-command-argument ()
+  (list
+   (encode-cli-bootstrap-path-command-argument "/import" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import foo.jsonl" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import \"foo bar.jsonl\"" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import 'foo bar.jsonl'" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import \"foo" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import foo.jsonl trailing" "/import")))
 
 
 (defun measure-cli-bootstrap-coding-tools ()
