@@ -162,6 +162,7 @@ METRICS = {
     "session_compact": ("compact", "branch_summarize", "prepare_branch_entries", "compacted", "first_kept", "summary_chars", "summarized", "entry_count", "branch_summary_chars", "prepared", "message_count", "total_tokens", "read_file_count", "modified_file_count"),
     "text_truncation": ("truncate_head", "truncate_tail", "truncate_middle", "content_bytes", "head_output_lines", "head_output_bytes", "head_truncated_by", "head_first_line_exceeds", "tail_output_lines", "tail_output_bytes", "tail_truncated_by", "tail_last_line_partial", "middle_output_lines", "middle_output_bytes", "middle_truncated_by", "middle_omitted_lines", "middle_first_line_exceeds"),
     "render_slicing": ("slice_ansi_clip", "slice_plain_clip", "dense_clip_text", "dense_clip_width", "dense_head_text", "dense_head_width", "plain_clip_text", "plain_clip_width"),
+    "edit_tool": ("normalize_line_endings", "restore_line_endings", "make_tool"),
 }
 
 # Recorded cadr/pi median ratios plus headroom.  Observed spread over repeated
@@ -576,7 +577,12 @@ RATIO_CEILINGS = {
     "grep_tool.match_event": 8.0,
     "grep_tool.line_text": 8.0,
     "grep_tool.make_tool": 8.0,
-    "ai_crypto_model_data.manifest": 20.0,
+        # edit_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "edit_tool.normalize_line_endings": 8.0,
+    "edit_tool.restore_line_endings": 8.0,
+    "edit_tool.make_tool": 8.0,
+"ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
     # (133.9 / 7.1 us). A first attempt at 8.0 failed.
@@ -1814,6 +1820,22 @@ OBSERVED_EXACT = {
         "wmt_desc",
         "wmt_req",
         "wmt_n",
+    ),
+    "edit_tool": (
+        "nlf_lf",
+        "nlf_crlf",
+        "nlf_cr",
+        "nlf_empty",
+        "nlf_n",
+        "rle_lf",
+        "rle_crlf",
+        "rle_none",
+        "rle_empty",
+        "rle_n",
+        "emt_name",
+        "emt_desc",
+        "emt_req",
+        "emt_n",
     ),
     "ls_tool": (
         "lden_file",

@@ -4594,6 +4594,53 @@ Printed ratio is above the named 8.0× ceiling; the gate bound is the 10 µs
 variance floor. Same commit no optimize. Booked in
 `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 388 — `edit_tool` (normalize_line_endings)
+
+| metric | cadr | pi |
+|---|---|---|
+| `normalize_line_endings` | `normalize-line-endings` (`src/cadr-cli/tools/edit.lisp`) | `normalizeToLF` (`packages/coding-agent/src/core/tools/edit-diff.ts`) |
+
+Leftover sibling of Pair 110 `detect-line-ending` on
+`src/cadr-cli/tools/edit.lisp`. Timed work is LF / CRLF / lone-CR / empty
+normalize — not `detect-line-ending`, not restore, not execute / queue /
+diff. Observed `nlf_lf` / `nlf_crlf` / `nlf_cr` / `nlf_empty` / `nlf_n`
+are exact. First n=5 freeze **2.792×** (1.574 / 0.564 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+Pair numbers 328–387 belong to other lanes; this cut is 388–390 only.
+
+### Pair 389 — `edit_tool` (restore_line_endings)
+
+| metric | cadr | pi |
+|---|---|---|
+| `restore_line_endings` | `restore-line-endings` (`src/cadr-cli/tools/edit.lisp`) | `restoreLineEndings` (`packages/coding-agent/src/core/tools/edit-diff.ts`) |
+
+Leftover sibling of Pair 388 `normalize_line_endings` on the same
+`edit.lisp` hole. Timed work is restore of LF-normalized text to LF / CRLF
+(plus no-newline and empty) — not detect, not execute. Do not exact a
+string that already contains CRLF. Observed `rle_lf` / `rle_crlf` /
+`rle_none` / `rle_empty` / `rle_n` are exact. First n=5 freeze **1.944×**
+(0.773 / 0.398 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+
+### Pair 390 — `edit_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-edit-tool` (`src/cadr-cli/tools/edit.lisp`) | `createEditToolDefinition` (`packages/coding-agent/src/core/tools/edit.ts`) |
+
+Leftover sibling of Pair 388 `normalize_line_endings` and Pair 389
+`restore_line_endings` on the same `edit.lisp` hole. Timed work is tool
+name / description / required `path`+`edits` — not execute. Observed
+`emt_name` / `emt_desc` / `emt_req` / `emt_n` are exact. First n=5 freeze
+**5.850×** (3.313 / 0.566 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

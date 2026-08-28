@@ -5547,6 +5547,112 @@
 ;;; make-powershell-tool schema — not execute/spawn.
 ;;; ---------------------------------------------------------------------
 
+(defun edit-tool-truth (value)
+  (if value 1 0))
+
+
+(defun run-edit-normalize-line-endings ()
+  ;; LF stays LF; CRLF and lone CR become LF. Empty stays empty.
+  ;; Not detect-line-ending, not restore, not execute.
+  (let ((lf (format nil "a~Cb" #\Newline))
+        (crlf (format nil "a~C~Cb" #\Return #\Newline))
+        (cr (format nil "a~Cb" #\Return))
+        (want (format nil "a~Cb" #\Newline)))
+    (list
+     (edit-tool-truth
+      (string= (cadr-cli::normalize-line-endings lf) want))
+     (edit-tool-truth
+      (string= (cadr-cli::normalize-line-endings crlf) want))
+     (edit-tool-truth
+      (string= (cadr-cli::normalize-line-endings cr) want))
+     (edit-tool-truth
+      (string= (cadr-cli::normalize-line-endings "") ""))
+     4)))
+
+
+(defun run-edit-restore-line-endings ()
+  ;; Restore LF-normalized text. Do not exact a string that already
+  ;; contains CRLF (would double the CR). Not detect, not execute.
+  (let ((lf (format nil "a~Cb" #\Newline))
+        (crlf (format nil "a~C~Cb" #\Return #\Newline)))
+    (list
+     (edit-tool-truth
+      (string= (cadr-cli::restore-line-endings lf :lf) lf))
+     (edit-tool-truth
+      (string= (cadr-cli::restore-line-endings lf :crlf) crlf))
+     (edit-tool-truth
+      (string= (cadr-cli::restore-line-endings "ab" :crlf) "ab"))
+     (edit-tool-truth
+      (string= (cadr-cli::restore-line-endings "" :crlf) ""))
+     4)))
+
+
+(defun run-edit-make-tool ()
+  (let* ((tool (cadr-cli::make-edit-tool "/tmp/goal20-edit-tool-cwd"))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list)))
+         (description (cadr-ai:tool-description tool)))
+    (list
+     (edit-tool-truth (string= (cadr-ai:tool-name tool) "edit"))
+     (edit-tool-truth
+      (search "Edit a single file using exact text replacement" description))
+     (edit-tool-truth
+      (and required-list
+           (find "path" required-list :test #'string=)
+           (find "edits" required-list :test #'string=)))
+     3)))
+
+
+(defun measure-edit-tool ()
+  (destructuring-bind (nlf-lf nlf-crlf nlf-cr nlf-empty nlf-n)
+      (run-edit-normalize-line-endings)
+    (destructuring-bind (rle-lf rle-crlf rle-none rle-empty rle-n)
+        (run-edit-restore-line-endings)
+      (destructuring-bind (emt-name emt-desc emt-req emt-n)
+          (run-edit-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "nlf_lf" nlf-lf
+          "nlf_crlf" nlf-crlf
+          "nlf_cr" nlf-cr
+          "nlf_empty" nlf-empty
+          "nlf_n" nlf-n
+          "rle_lf" rle-lf
+          "rle_crlf" rle-crlf
+          "rle_none" rle-none
+          "rle_empty" rle-empty
+          "rle_n" rle-n
+          "emt_name" emt-name
+          "emt_desc" emt-desc
+          "emt_req" emt-req
+          "emt_n" emt-n)
+         "normalize_line_endings"
+         (collect "edit_tool.normalize_line_endings"
+                  (lambda ()
+                    (lambda ()
+                      (run-edit-normalize-line-endings))))
+         "restore_line_endings"
+         (collect "edit_tool.restore_line_endings"
+                  (lambda ()
+                    (lambda ()
+                      (run-edit-restore-line-endings))))
+         "make_tool"
+         (collect "edit_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-edit-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tools/powershell.lisp (Pairs 301-303).
+;;; Timed work is the UTF-8 output prefix, prefix+command concat, and
+;;; make-powershell-tool schema — not execute/spawn.
+;;; ---------------------------------------------------------------------
+
+
 (defun powershell-tool-truth (value)
   (if value 1 0))
 

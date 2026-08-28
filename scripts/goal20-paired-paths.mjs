@@ -3472,6 +3472,84 @@ async function measureGrepTool() {
 
 const LS_TOOL_CWD = "/tmp/goal20-ls-tool-cwd";
 
+function editToolTruth(value) {
+	return value ? 1 : 0;
+}
+
+
+function runEditNormalizeLineEndings() {
+	const lf = "a\nb";
+	const crlf = "a\r\nb";
+	const cr = "a\rb";
+	const want = "a\nb";
+	return {
+		nlf_lf: editToolTruth(editDiffModule.normalizeToLF(lf) === want),
+		nlf_crlf: editToolTruth(editDiffModule.normalizeToLF(crlf) === want),
+		nlf_cr: editToolTruth(editDiffModule.normalizeToLF(cr) === want),
+		nlf_empty: editToolTruth(editDiffModule.normalizeToLF("") === ""),
+		nlf_n: 4,
+	};
+}
+
+
+function runEditRestoreLineEndings() {
+	const lf = "a\nb";
+	const crlf = "a\r\nb";
+	return {
+		rle_lf: editToolTruth(editDiffModule.restoreLineEndings(lf, "\n") === lf),
+		rle_crlf: editToolTruth(editDiffModule.restoreLineEndings(lf, "\r\n") === crlf),
+		rle_none: editToolTruth(editDiffModule.restoreLineEndings("ab", "\r\n") === "ab"),
+		rle_empty: editToolTruth(editDiffModule.restoreLineEndings("", "\r\n") === ""),
+		rle_n: 4,
+	};
+}
+
+
+function editSchemaRequired(def) {
+	const params = def?.parameters;
+	if (Array.isArray(params?.required)) return params.required;
+	if (Array.isArray(params?.Required)) return params.Required;
+	const properties = params?.properties;
+	if (properties && typeof properties === "object") return Object.keys(properties);
+	return [];
+}
+
+
+function runEditMakeTool() {
+	const def = editModule.createEditToolDefinition("/tmp/goal20-edit-tool-cwd");
+	const required = editSchemaRequired(def);
+	const description = def.description ?? "";
+	return {
+		emt_name: def.name === "edit" ? 1 : 0,
+		emt_desc: description.includes("Edit a single file using exact text replacement") ? 1 : 0,
+		emt_req: required.includes("path") && required.includes("edits") ? 1 : 0,
+		emt_n: 3,
+	};
+}
+
+
+async function measureEditTool() {
+	const normalizeObserved = runEditNormalizeLineEndings();
+	const restoreObserved = runEditRestoreLineEndings();
+	const makeObserved = runEditMakeTool();
+	return {
+		normalize_line_endings: await collect("edit_tool.normalize_line_endings", () => {
+			return () => runEditNormalizeLineEndings();
+		}),
+		restore_line_endings: await collect("edit_tool.restore_line_endings", () => {
+			return () => runEditRestoreLineEndings();
+		}),
+		make_tool: await collect("edit_tool.make_tool", () => {
+			return () => runEditMakeTool();
+		}),
+		observed: {
+			...normalizeObserved,
+			...restoreObserved,
+			...makeObserved,
+		},
+	};
+}
+
 function lsDirectoryEntryName(fullPath) {
 	const stats = statSync(fullPath);
 	const base = path.basename(fullPath.replace(/[\\/]+$/, "") || fullPath);
