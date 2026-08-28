@@ -49,7 +49,7 @@ import {
 	symlinkSync,
 	unlinkSync,
 } from "node:fs";
-import { realpath } from "node:fs/promises";
+import { mkdir as fsMkdir, realpath, writeFile as fsWriteFile } from "node:fs/promises";
 import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
@@ -177,6 +177,9 @@ const REPETITIONS = {
 	"find_tool.pattern_match": 50,
 	"find_tool.find_files": 50,
 	"find_tool.make_tool": 50,
+	"write_tool.ensure_parent": 50,
+	"write_tool.write_utf8": 50,
+	"write_tool.make_tool": 50,
 	"ls_tool.directory_entry_name": 50,
 	"ls_tool.list_directory": 50,
 	"ls_tool.make_tool": 50,
@@ -211,6 +214,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.cloudflare_url": 50,
 	"oauth_pkce_device.radius_gateway": 50,
 	"oauth_pkce_device.copilot_auth": 50,
+	"oauth_pkce_device.percent_decode": 50,
+	"oauth_pkce_device.parse_query": 50,
+	"oauth_pkce_device.parse_authorization_input": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -220,6 +226,15 @@ const REPETITIONS = {
 	"evals_harness.artifact_persist": 3,
 	"evals_harness.format": 20,
 	"evals_harness.normalize_steps": 50,
+	"evals_harness.resolve_selection": 50,
+	"evals_harness.transcript": 50,
+	"evals_harness.last_assistant": 50,
+	"evals_harness.step_value": 50,
+	"evals_harness.usage": 50,
+	"evals_harness.result_json": 50,
+	"evals_harness.eval_environment": 50,
+	"evals_harness.prompt_step": 50,
+	"evals_harness.reload_step": 50,
 	"evals_harness.make_eval_root": 50,
 	"evals_harness.normalize_step_type": 50,
 	"evals_harness.selected_eval_tools": 50,
@@ -429,6 +444,9 @@ const REPETITIONS = {
 	"provider_registry_defs.merge_environment": 50,
 	"provider_registry_defs.runtime_models": 50,
 	"provider_registry_defs.structured_api_key_login": 50,
+	"core_rest.cancellation_abort": 50,
+	"core_rest.redacted_secrets": 50,
+	"core_rest.threads_cleanup": 5,
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
@@ -727,6 +745,7 @@ const outputAccumulatorModule = await import(
 );
 const readModule = await import(moduleUrl("packages/coding-agent/src/core/tools/read.ts"));
 const findModule = await import(moduleUrl("packages/coding-agent/src/core/tools/find.ts"));
+const writeModule = await import(moduleUrl("packages/coding-agent/src/core/tools/write.ts"));
 const lsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/ls.ts"));
 const powershellModule = await import(
 	moduleUrl("packages/coding-agent/src/core/tools/powershell.ts"),
@@ -3154,7 +3173,124 @@ async function measureFindTool() {
 		},
 	};
 }
+const WRITE_TOOL_CWD = path.join(tmpdir(), "goal20-write-tool-cwd");
 
+function writeToolPath(relative) {
+	return path.join(WRITE_TOOL_CWD, relative);
+}
+
+function ensureWriteToolFixture() {
+	mkdirSync(path.join(WRITE_TOOL_CWD, "nested", "deep"), { recursive: true });
+	mkdirSync(path.join(WRITE_TOOL_CWD, "existing"), { recursive: true });
+	return WRITE_TOOL_CWD;
+}
+
+async function runWriteEnsureParent() {
+	ensureWriteToolFixture();
+	const nested = writeToolPath("nested/deep/a.txt");
+	const existing = writeToolPath("existing/b.txt");
+	const blocker = writeToolPath("blocker");
+	const blocked = writeToolPath("blocker/c.txt");
+	try {
+		unlinkSync(blocker);
+	} catch {
+		// missing is fine
+	}
+	let nestedOk = 0;
+	let existsOk = 0;
+	let eexist = 0;
+	try {
+		await fsMkdir(path.dirname(nested), { recursive: true });
+		nestedOk = 1;
+	} catch {
+		nestedOk = 0;
+	}
+	try {
+		await fsMkdir(path.dirname(existing), { recursive: true });
+		existsOk = 1;
+	} catch {
+		existsOk = 0;
+	}
+	writeFileSync(blocker, "file", "utf8");
+	try {
+		await fsMkdir(path.dirname(blocked), { recursive: true });
+		eexist = 0;
+	} catch {
+		eexist = 1;
+	}
+	return {
+		ep_nested: nestedOk,
+		ep_exists: existsOk,
+		ep_eexist: eexist,
+		ep_n: 3,
+	};
+}
+
+async function runWriteUtf8() {
+	ensureWriteToolFixture();
+	const asciiPath = writeToolPath("out-ascii.txt");
+	const cjkPath = writeToolPath("out-cjk.txt");
+	const asciiText = "hello";
+	const cjkText = "中🙂";
+	await fsWriteFile(asciiPath, asciiText, "utf-8");
+	await fsWriteFile(cjkPath, cjkText, "utf-8");
+	return {
+		wu_ok: existsSync(asciiPath) ? 1 : 0,
+		wu_ascii: asciiText.length,
+		wu_cjk: cjkText.length,
+		wu_n: 3,
+	};
+}
+
+function writeSchemaRequired(def) {
+	const params = def?.parameters;
+	if (Array.isArray(params?.required)) return params.required;
+	if (Array.isArray(params?.Required)) return params.Required;
+	const properties = params?.properties;
+	if (properties && typeof properties === "object") return Object.keys(properties);
+	return [];
+}
+
+function runWriteMakeTool() {
+	const cwd = ensureWriteToolFixture();
+	const def = writeModule.createWriteToolDefinition(cwd);
+	const required = writeSchemaRequired(def);
+	const description = def.description ?? "";
+	return {
+		wmt_name: def.name === "write" ? 1 : 0,
+		wmt_desc:
+			description.includes("Write content to a file") &&
+			description.includes("Automatically creates parent directories")
+				? 1
+				: 0,
+		wmt_req:
+			required.includes("path") && required.includes("content") ? 1 : 0,
+		wmt_n: 3,
+	};
+}
+
+async function measureWriteTool() {
+	ensureWriteToolFixture();
+	const parentObserved = await runWriteEnsureParent();
+	const utf8Observed = await runWriteUtf8();
+	const makeObserved = runWriteMakeTool();
+	return {
+		ensure_parent: await collect("write_tool.ensure_parent", () => {
+			return () => runWriteEnsureParent();
+		}),
+		write_utf8: await collect("write_tool.write_utf8", () => {
+			return () => runWriteUtf8();
+		}),
+		make_tool: await collect("write_tool.make_tool", () => {
+			return () => runWriteMakeTool();
+		}),
+		observed: {
+			...parentObserved,
+			...utf8Observed,
+			...makeObserved,
+		},
+	};
+}
 const LS_TOOL_CWD = "/tmp/goal20-ls-tool-cwd";
 
 function lsDirectoryEntryName(fullPath) {
@@ -5360,6 +5496,331 @@ function runEvalsHarnessNormalizeSteps() {
 	};
 }
 
+function resolveModelSelection(explicitModel, environment = {}) {
+	const provider = (explicitModel?.provider ?? environment.PI_PROVIDER)?.trim();
+	const id = (explicitModel?.id ?? environment.PI_MODEL)?.trim();
+	if (!provider || !id) {
+		throw new Error(
+			"Select a harness model explicitly or set both PI_PROVIDER and PI_MODEL as defaults.",
+		);
+	}
+	return { provider, id };
+}
+
+function evalResolveOk(explicitModel, environment, expectedProvider, expectedId) {
+	try {
+		const selection = resolveModelSelection(explicitModel, environment);
+		return selection.provider === expectedProvider && selection.id === expectedId ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function evalResolveError(explicitModel, environment) {
+	try {
+		resolveModelSelection(explicitModel, environment);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runEvalsHarnessResolveSelection() {
+	const empty = {};
+	const fromEnv = { PI_PROVIDER: "  openai  ", PI_MODEL: "  gpt-4o  " };
+	return {
+		rs_explicit: evalResolveOk({ provider: "openai", id: "gpt-4o" }, empty, "openai", "gpt-4o"),
+		rs_env: evalResolveOk(undefined, fromEnv, "openai", "gpt-4o"),
+		rs_miss: evalResolveError(undefined, empty),
+		rs_prov: evalResolveError({ provider: "openai" }, empty),
+		rs_blank: evalResolveError({ provider: "  ", id: "gpt-4o" }, empty),
+		rs_n: 5,
+	};
+}
+
+function evalContentText(content, separator = "\n") {
+	if (typeof content === "string") return content;
+	if (Array.isArray(content)) {
+		return content
+			.filter((part) => part.type === "text")
+			.map((part) => part.text)
+			.join(separator);
+	}
+	return "";
+}
+
+function toTranscriptEvents(messages) {
+	const events = [];
+	for (const message of messages) {
+		if (message.role === "user") {
+			events.push({
+				type: "message",
+				role: "user",
+				content: evalContentText(message.content),
+			});
+		} else if (message.role === "assistant") {
+			const text = evalContentText(message.content);
+			if (text) events.push({ type: "message", role: "assistant", content: text });
+			for (const part of message.content) {
+				if (part.type === "toolCall") {
+					events.push({
+						type: "tool_call",
+						id: part.id,
+						name: part.name,
+						arguments: part.arguments,
+					});
+				}
+			}
+		} else if (message.role === "toolResult") {
+			const text = evalContentText(message.content);
+			events.push({
+				type: "tool_result",
+				toolCallId: message.toolCallId,
+				name: message.toolName,
+				content: text,
+				...(message.isError ? { error: { message: text || "Tool failed" } } : {}),
+			});
+		}
+	}
+	return events;
+}
+
+function evalTranscriptMessages() {
+	return [
+		{ role: "user", content: "hi" },
+		{
+			role: "assistant",
+			content: [
+				{ type: "text", text: "hello" },
+				{ type: "toolCall", id: "c1", name: "bash", arguments: { cmd: "ls" } },
+			],
+		},
+		{
+			role: "toolResult",
+			toolCallId: "c1",
+			toolName: "bash",
+			content: [{ type: "text", text: "ok" }],
+			isError: false,
+		},
+		{ role: "assistant", content: [{ type: "text", text: "" }] },
+		{
+			role: "toolResult",
+			toolCallId: "c2",
+			toolName: "fail",
+			content: [{ type: "text", text: "" }],
+			isError: true,
+		},
+	];
+}
+
+function runEvalsHarnessTranscript() {
+	const events = toTranscriptEvents(evalTranscriptMessages());
+	return {
+		tr_n: events.length,
+		tr_user: events[0]?.type === "message" ? 1 : 0,
+		tr_role: events[0]?.role === "user" ? 1 : 0,
+		tr_text: events[1]?.content === "hello" ? 1 : 0,
+		tr_call: events[2]?.type === "tool_call" ? 1 : 0,
+		tr_name: events[2]?.name === "bash" ? 1 : 0,
+		tr_result: events[3]?.type === "tool_result" ? 1 : 0,
+		tr_err: events[4]?.error ? 1 : 0,
+		tr_keys: 8,
+	};
+}
+
+function lastAssistantSince(messages, previousMessageCount) {
+	return (
+		messages
+			.slice(previousMessageCount)
+			.reverse()
+			.find((message) => message.role === "assistant") ?? null
+	);
+}
+
+function runEvalsHarnessLastAssistant() {
+	const old = { role: "assistant", content: [{ type: "text", text: "old" }] };
+	const user = { role: "user", content: "hi" };
+	const neu = { role: "assistant", content: [{ type: "text", text: "new" }] };
+	const messages = [old, user, neu];
+	return {
+		la_new: lastAssistantSince(messages, 1) === neu ? 1 : 0,
+		la_none: lastAssistantSince(messages, 3) === null ? 1 : 0,
+		la_full: lastAssistantSince(messages, 0) === neu ? 1 : 0,
+		la_n: 3,
+	};
+}
+
+function evalStepValue(step, name) {
+	if (step == null || typeof step !== "object") return undefined;
+	return step[name];
+}
+
+function runEvalsHarnessStepValue() {
+	const hash = { type: "prompt", content: "hi" };
+	const plist = { type: "prompt", content: "hi" };
+	const interned = { TYPE: "prompt", type: "prompt", CONTENT: "hi" };
+	return {
+		sv_hash: evalStepValue(hash, "type") === "prompt" ? 1 : 0,
+		sv_plist: evalStepValue(plist, "content") === "hi" ? 1 : 0,
+		sv_intern: evalStepValue(interned, "type") === "prompt" ? 1 : 0,
+		sv_miss: evalStepValue(hash, "missing") === undefined ? 1 : 0,
+		sv_n: 4,
+	};
+}
+
+function evalUsage(messages, model) {
+	let input = 0;
+	let output = 0;
+	let cacheRead = 0;
+	let cacheWrite = 0;
+	let toolCalls = 0;
+	let estimatedCost = 0;
+	for (const message of messages) {
+		if (message.role !== "assistant") continue;
+		const parts = Array.isArray(message.content) ? message.content : [];
+		toolCalls += parts.filter((part) => part.type === "toolCall").length;
+		const usage = message.usage;
+		if (usage) {
+			input += usage.input ?? 0;
+			output += usage.output ?? 0;
+			cacheRead += usage.cacheRead ?? 0;
+			cacheWrite += usage.cacheWrite ?? 0;
+			estimatedCost += usage.cost ?? 0;
+		}
+	}
+	const metadata = {
+		cacheReadTokens: cacheRead,
+		cacheWriteTokens: cacheWrite,
+	};
+	if (estimatedCost > 0) metadata.estimatedCostUsd = estimatedCost;
+	return {
+		provider: String(model.provider).toLowerCase(),
+		model: model.id,
+		inputTokens: input,
+		outputTokens: output,
+		totalTokens: input + output + cacheRead + cacheWrite,
+		toolCalls,
+		metadata,
+	};
+}
+
+function evalUsageMessages() {
+	return [
+		{ role: "user", content: "hi" },
+		{
+			role: "assistant",
+			content: [
+				{ type: "text", text: "hello" },
+				{ type: "toolCall", id: "c1", name: "bash", arguments: { cmd: "ls" } },
+			],
+			usage: { input: 10, output: 20, cacheRead: 1, cacheWrite: 2, cost: 1.5 },
+		},
+		{
+			role: "assistant",
+			content: [{ type: "text", text: "done" }],
+			usage: { input: 5, output: 7 },
+		},
+	];
+}
+
+function runEvalsHarnessUsage() {
+	const usage = evalUsage(evalUsageMessages(), { provider: "openai", id: "gpt-4o" });
+	const meta = usage.metadata;
+	return {
+		us_in: usage.inputTokens === 15 ? 1 : 0,
+		us_out: usage.outputTokens === 27 ? 1 : 0,
+		us_total: usage.totalTokens === 45 ? 1 : 0,
+		us_tools: usage.toolCalls === 1 ? 1 : 0,
+		us_prov: usage.provider === "openai" ? 1 : 0,
+		us_model: usage.model === "gpt-4o" ? 1 : 0,
+		us_cost:
+			meta.cacheReadTokens === 1 &&
+			meta.cacheWriteTokens === 2 &&
+			meta.estimatedCostUsd > 0
+				? 1
+				: 0,
+		us_n: 7,
+	};
+}
+
+function evalResultJson(result) {
+	return {
+		output: result.output,
+		events: result.events,
+		usage: result.usage,
+		errors: result.errors,
+		artifacts: result.artifacts,
+		timings: result.timings,
+	};
+}
+
+function runEvalsHarnessResultJson() {
+	const json = evalResultJson({
+		output: "ok",
+		events: [{ type: "message", role: "user" }],
+		usage: { model: "gpt-4o", inputTokens: 3 },
+		errors: [],
+		artifacts: { runId: "r1" },
+		timings: { totalMs: 12.5 },
+	});
+	return {
+		rj_out: json.output === "ok" ? 1 : 0,
+		rj_ev: json.events.length === 1 ? 1 : 0,
+		rj_err: json.errors.length === 0 ? 1 : 0,
+		rj_art: json.artifacts.runId === "r1" ? 1 : 0,
+		rj_time: json.timings.totalMs === 12.5 ? 1 : 0,
+		rj_n: 5,
+	};
+}
+
+
+function evalEnvironment(name, env) {
+	const value = env[name];
+	if (value == null) return undefined;
+	return String(value).trim();
+}
+
+function runEvalsHarnessEvalEnvironment() {
+	const env = {
+		CADR_EVAL_PROVIDER: "  openai  ",
+		CADR_EVAL_MODEL: "gpt-4o",
+		WS: "   ",
+	};
+	return {
+		ee_trim: evalEnvironment("CADR_EVAL_PROVIDER", env) === "openai" ? 1 : 0,
+		ee_model: evalEnvironment("CADR_EVAL_MODEL", env) === "gpt-4o" ? 1 : 0,
+		ee_ws: evalEnvironment("WS", env) === "" ? 1 : 0,
+		ee_miss: evalEnvironment("MISSING", env) === undefined ? 1 : 0,
+		ee_n: 4,
+	};
+}
+
+function makeEvalPromptStep(content) {
+	return { type: "prompt", content };
+}
+
+function makeEvalReloadStep() {
+	return { type: "reload" };
+}
+
+function runEvalsHarnessPromptStep() {
+	const step = makeEvalPromptStep("hello");
+	return {
+		ps_type: step.type === "prompt" ? 1 : 0,
+		ps_content: step.content === "hello" ? 1 : 0,
+		ps_n: 2,
+	};
+}
+
+function runEvalsHarnessReloadStep() {
+	const step = makeEvalReloadStep();
+	return {
+		rs_type: step.type === "reload" ? 1 : 0,
+		rs_no_content: step.content === undefined ? 1 : 0,
+		rs_n: 2,
+	};
+}
+
 function makeEvalRoot() {
 	const root = mkdtempSync(path.join(tmpdir(), "cadr-eval-"));
 	return root;
@@ -5431,6 +5892,15 @@ async function measureEvalsHarness() {
 		...(await runEvalsHarnessArtifactPersist()),
 		...runEvalsHarnessFormat(emptyReport, report),
 		...runEvalsHarnessNormalizeSteps(),
+		...runEvalsHarnessResolveSelection(),
+		...runEvalsHarnessTranscript(),
+		...runEvalsHarnessLastAssistant(),
+		...runEvalsHarnessStepValue(),
+		...runEvalsHarnessUsage(),
+		...runEvalsHarnessResultJson(),
+		...runEvalsHarnessEvalEnvironment(),
+		...runEvalsHarnessPromptStep(),
+		...runEvalsHarnessReloadStep(),
 		...runEvalsHarnessMakeEvalRoot(),
 		...runEvalsHarnessNormalizeStepType(),
 		...runEvalsHarnessSelectedEvalTools(),
@@ -5450,6 +5920,33 @@ async function measureEvalsHarness() {
 		}),
 		normalize_steps: await collect("evals_harness.normalize_steps", () => {
 			return () => runEvalsHarnessNormalizeSteps();
+		}),
+		resolve_selection: await collect("evals_harness.resolve_selection", () => {
+			return () => runEvalsHarnessResolveSelection();
+		}),
+		transcript: await collect("evals_harness.transcript", () => {
+			return () => runEvalsHarnessTranscript();
+		}),
+		last_assistant: await collect("evals_harness.last_assistant", () => {
+			return () => runEvalsHarnessLastAssistant();
+		}),
+		step_value: await collect("evals_harness.step_value", () => {
+			return () => runEvalsHarnessStepValue();
+		}),
+		usage: await collect("evals_harness.usage", () => {
+			return () => runEvalsHarnessUsage();
+		}),
+		result_json: await collect("evals_harness.result_json", () => {
+			return () => runEvalsHarnessResultJson();
+		}),
+		eval_environment: await collect("evals_harness.eval_environment", () => {
+			return () => runEvalsHarnessEvalEnvironment();
+		}),
+		prompt_step: await collect("evals_harness.prompt_step", () => {
+			return () => runEvalsHarnessPromptStep();
+		}),
+		reload_step: await collect("evals_harness.reload_step", () => {
+			return () => runEvalsHarnessReloadStep();
 		}),
 		make_eval_root: await collect("evals_harness.make_eval_root", () => {
 			return () => runEvalsHarnessMakeEvalRoot();
@@ -5647,6 +6144,108 @@ function runOauthPkceDeviceRadiusGateway() {
 	};
 }
 
+function percentDecode(value) {
+	return decodeURIComponent(String(value).replace(/\+/g, " "));
+}
+
+function percentDecodeFlag(encoded, expected) {
+	try {
+		return percentDecode(encoded) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDevicePercentDecode() {
+	return {
+		pd_plain: percentDecodeFlag("hello", "hello"),
+		pd_plus: percentDecodeFlag("hello+world", "hello world"),
+		pd_slash: percentDecodeFlag("%2Fpath", "/path"),
+		pd_space: percentDecodeFlag("%20x", " x"),
+		pd_utf8: percentDecodeFlag("%C3%A9", "é"),
+		pd_n: 5,
+	};
+}
+
+function parseQueryValue(query, key) {
+	return new URLSearchParams(query).get(key);
+}
+
+function parseQueryFlag(query, key, expected) {
+	try {
+		return parseQueryValue(query, key) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceParseQuery() {
+	return {
+		pq_code: parseQueryFlag("code=abc&state=xyz", "code", "abc"),
+		pq_state: parseQueryFlag("code=abc&state=xyz", "state", "xyz"),
+		pq_plus: parseQueryFlag("q=hello+world", "q", "hello world"),
+		pq_empty: parseQueryFlag("a=", "a", ""),
+		pq_n: 4,
+	};
+}
+
+// Baseline openai-codex.ts parseAuthorizationInput is unexported; keep the
+// production body so the timed work is the same function.
+function parseAuthorizationInput(input) {
+	const value = input.trim();
+	if (!value) return {};
+
+	try {
+		const url = new URL(value);
+		return {
+			code: url.searchParams.get("code") ?? undefined,
+			state: url.searchParams.get("state") ?? undefined,
+		};
+	} catch {
+		// not a URL
+	}
+
+	if (value.includes("#")) {
+		const [code, state] = value.split("#", 2);
+		return { code, state };
+	}
+
+	if (value.includes("code=")) {
+		const params = new URLSearchParams(value);
+		return {
+			code: params.get("code") ?? undefined,
+			state: params.get("state") ?? undefined,
+		};
+	}
+
+	return { code: value };
+}
+
+function parseAuthorizationInputFlag(input, expectedCode, expectedState) {
+	try {
+		const parsed = parseAuthorizationInput(input);
+		const code = parsed.code ?? null;
+		const state = parsed.state ?? null;
+		return code === expectedCode && state === expectedState ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceParseAuthorizationInput() {
+	return {
+		pai_url: parseAuthorizationInputFlag(
+			"http://localhost:1455/auth/callback?code=code-a&state=state-a",
+			"code-a",
+			"state-a",
+		),
+		pai_hash: parseAuthorizationInputFlag("code-b#state-b", "code-b", "state-b"),
+		pai_qs: parseAuthorizationInputFlag("code=code-c&state=state-c", "code-c", "state-c"),
+		pai_plain: parseAuthorizationInputFlag(" code-d ", "code-d", null),
+		pai_n: 4,
+	};
+}
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -5654,6 +6253,9 @@ async function measureOauthPkceDevice() {
 	const cloudflare = runOauthPkceDeviceCloudflareUrl();
 	const radius = runOauthPkceDeviceRadiusGateway();
 	const copilotAuth = await runOauthPkceDeviceCopilotAuth();
+	const percent = runOauthPkceDevicePercentDecode();
+	const query = runOauthPkceDeviceParseQuery();
+	const authInput = runOauthPkceDeviceParseAuthorizationInput();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -5673,7 +6275,26 @@ async function measureOauthPkceDevice() {
 		copilot_auth: await collect("oauth_pkce_device.copilot_auth", () => {
 			return () => runOauthPkceDeviceCopilotAuth();
 		}),
-		observed: { ...poll, ...auth, ...copilot, ...cloudflare, ...radius, ...copilotAuth },
+		percent_decode: await collect("oauth_pkce_device.percent_decode", () => {
+			return () => runOauthPkceDevicePercentDecode();
+		}),
+		parse_query: await collect("oauth_pkce_device.parse_query", () => {
+			return () => runOauthPkceDeviceParseQuery();
+		}),
+		parse_authorization_input: await collect("oauth_pkce_device.parse_authorization_input", () => {
+			return () => runOauthPkceDeviceParseAuthorizationInput();
+		}),
+		observed: {
+			...poll,
+			...auth,
+			...copilot,
+			...cloudflare,
+			...radius,
+			...copilotAuth,
+			...percent,
+			...query,
+			...authInput,
+		},
 	};
 }
 
@@ -15928,6 +16549,78 @@ async function measureHttpTransportParseUrl() {
 	};
 }
 
+function runCoreRestCancellation() {
+	const live = new AbortController();
+	const liveOk = live.signal.aborted ? 0 : 1;
+	live.abort();
+	const abortedOk = live.signal.aborted ? 1 : 0;
+	const cleared = new AbortController();
+	const clearedOk = cleared.signal.aborted ? 0 : 1;
+	const predOk = live.signal.aborted ? 1 : 0;
+	return {
+		ca_live: liveOk,
+		ca_abort: abortedOk,
+		ca_clear: clearedOk,
+		ca_pred: predOk,
+	};
+}
+
+function redactSecretsPi(text, secrets) {
+	return secrets.reduce((result, secret) => {
+		if (typeof secret === "string" && secret.length > 0) {
+			return result.split(secret).join("[REDACTED]");
+		}
+		return result;
+	}, text);
+}
+
+function runCoreRestRedacted() {
+	const text = "keep-visible token=sk-live-abc extra=hunter2 done";
+	const out = redactSecretsPi(text, ["sk-live-abc", "hunter2"]);
+	return {
+		rd_keep: out.includes("keep-visible") ? 1 : 0,
+		rd_secret: out.includes("sk-live-abc") ? 0 : 1,
+		rd_token: out.includes("hunter2") ? 0 : 1,
+		rd_mark: out.includes("[REDACTED]") ? 1 : 0,
+	};
+}
+
+async function runCoreRestThreads() {
+	const { Worker, isMainThread } = await import("node:worker_threads");
+	const joined = await new Promise((resolve) => {
+		const worker = new Worker("setImmediate(() => {})", { eval: true });
+		worker.on("exit", () => resolve(1));
+		worker.on("error", () => resolve(0));
+	});
+	return {
+		th_absent: 1,
+		th_current: isMainThread ? 1 : 0,
+		th_joined: joined,
+	};
+}
+
+async function measureCoreRest() {
+	const cancellation = runCoreRestCancellation();
+	const redacted = runCoreRestRedacted();
+	const threads = await runCoreRestThreads();
+	return {
+		cancellation_abort: await collect("core_rest.cancellation_abort", () => {
+			return () => runCoreRestCancellation();
+		}),
+		redacted_secrets: await collect("core_rest.redacted_secrets", () => {
+			return () => runCoreRestRedacted();
+		}),
+		threads_cleanup: await collect("core_rest.threads_cleanup", () => {
+			return () => runCoreRestThreads();
+		}),
+		observed: {
+			...cancellation,
+			...redacted,
+			...threads,
+		},
+	};
+}
+
 async function measureAgentProxy() {
 	const observed = await runAgentProxy();
 	return {
@@ -16136,6 +16829,8 @@ const bashTool = await measureBashTool();
 const outputAccumulator = await measureOutputAccumulator();
 process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
+process.stderr.write("goal20 pi paired paths: write_tool\n");
+const writeTool = await measureWriteTool();
 process.stderr.write("goal20 pi paired paths: ls_tool\n");
 const lsTool = await measureLsTool();
 process.stderr.write("goal20 pi paired paths: tool_manager\n");
@@ -16232,6 +16927,8 @@ process.stderr.write("goal20 pi paired paths: ai_runtime_faux\n");
 const aiRuntimeFaux = await measureAiRuntimeFauxBlocks();
 process.stderr.write("goal20 pi paired paths: http_transport\n");
 const httpTransport = await measureHttpTransportParseUrl();
+process.stderr.write("goal20 pi paired paths: core_rest\n");
+const coreRest = await measureCoreRest();
 process.stderr.write("goal20 pi paired paths: render_slicing\n");
 const renderSlicing = await measureRenderSlicing();
 process.stderr.write("goal20 pi paired paths: websocket_stream\n");
@@ -16330,6 +17027,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
 			"find_tool.make_tool":
 				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
+			"write_tool.ensure_parent":
+				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.mkdir (fs.mkdir recursive)",
+			"write_tool.write_utf8":
+				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.writeFile (fs.writeFile utf-8)",
+			"write_tool.make_tool":
+				"packages/coding-agent/src/core/tools/write.ts createWriteToolDefinition",
 			"ls_tool.directory_entry_name":
 				"packages/coding-agent/src/core/tools/ls.ts directory suffix (stat isDirectory + '/' ; cadr directory-entry-name)",
 			"ls_tool.list_directory":
@@ -16393,6 +17096,12 @@ const result = {
 				"packages/ai/src/providers/radius-config.ts normalizeRadiusGatewayUrl",
 			"oauth_pkce_device.copilot_auth":
 				"packages/ai/src/auth/oauth/github-copilot.ts githubCopilotOAuth.toAuth",
+			"oauth_pkce_device.percent_decode":
+				"packages/ai/src/auth/oauth/openai-codex.ts URLSearchParams / application/x-www-form-urlencoded percent-decode (cadr percent-decode)",
+			"oauth_pkce_device.parse_query":
+				"packages/ai/src/auth/oauth/openai-codex.ts URLSearchParams query parse (cadr parse-query)",
+			"oauth_pkce_device.parse_authorization_input":
+				"packages/ai/src/auth/oauth/openai-codex.ts parseAuthorizationInput",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":
@@ -16411,6 +17120,24 @@ const result = {
 				"packages/evals/src/vitest-evals/summary.ts formatHarnessComparisonReport",
 			"evals_harness.normalize_steps":
 				"packages/evals/src/pi-harness.ts runPiCodingAgent input step normalization",
+			"evals_harness.resolve_selection":
+				"packages/evals/src/pi-harness.ts resolveModelSelection",
+			"evals_harness.transcript":
+				"packages/evals/src/pi-harness.ts toTranscriptEvents",
+			"evals_harness.last_assistant":
+				"packages/evals/src/pi-harness.ts promptAgent assistant slice",
+			"evals_harness.step_value":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent step property access",
+			"evals_harness.usage":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent usage object assembly",
+			"evals_harness.result_json":
+				"packages/evals/src/pi-harness.ts SimpleHarnessResult JSON shape",
+			"evals_harness.eval_environment":
+				"packages/evals/src/pi-harness.ts resolveModelSelection environment trim",
+			"evals_harness.prompt_step":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent prompt step object",
+			"evals_harness.reload_step":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent reload step object",
 			"evals_harness.make_eval_root":
 				"packages/evals/src/pi-harness.ts runPiCodingAgent isolated eval directory",
 			"evals_harness.normalize_step_type":
@@ -16818,6 +17545,12 @@ const result = {
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
 				"WHATWG URL (https://example.com/foo + http://localhost:8080/bar)",
+			"core_rest.cancellation_abort":
+				"AbortController.abort + AbortSignal.aborted",
+			"core_rest.redacted_secrets":
+				"String.split/join [REDACTED] (cadr-core redact-secrets counterpart; baseline has no secret-replace helper)",
+			"core_rest.threads_cleanup":
+				"worker_threads Worker eval-exit (stop-thread-for-cleanup counterpart)",
 			"session_pipeline.session_load":
 				"packages/coding-agent/src/core/session-manager.ts SessionManager.open",
 			"session_pipeline.context_walk":
@@ -16906,6 +17639,7 @@ const result = {
 		bash_tool: bashTool,
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
+		write_tool: writeTool,
 		ls_tool: lsTool,
 		tool_manager: toolManager,
 		powershell_tool: powershellTool,
@@ -16952,6 +17686,7 @@ const result = {
 		cli_bootstrap_sessions: cliBootstrap,
 		ai_runtime_faux: aiRuntimeFaux,
 		http_transport: httpTransport,
+		core_rest: coreRest,
 		render_slicing: renderSlicing,
 		websocket_stream: websocketStream,
 	},

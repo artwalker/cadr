@@ -124,9 +124,21 @@
 ;;;; 289. find_tool pattern match vs find-pattern-match-p
 ;;;; 290. find_tool find-files vs find.ts execute output assembly
 ;;;; 291. find_tool make-find-tool vs createFindToolDefinition
+;;;; 343. write_tool ensure-write-parent-directories vs defaultWriteOperations.mkdir
+;;;; 344. write_tool write-utf8-file vs defaultWriteOperations.writeFile
+;;;; 345. write_tool make-write-tool vs createWriteToolDefinition
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
+;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
+;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
+;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
+;;;; 346. evals_harness eval-environment vs pi-harness environment trim
+;;;; 347. evals_harness make-eval-prompt-step vs pi-harness prompt step object
+;;;; 348. evals_harness make-eval-reload-step vs pi-harness reload step object
+;;;; 349. evals_harness make-eval-root vs pi-harness isolated eval directory
+;;;; 350. evals_harness normalize-step-type vs pi-harness step type coercion
+;;;; 351. evals_harness selected-eval-tools vs pi-harness coding-tool selection
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -191,9 +203,6 @@
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
 ;;;; 242. evals_harness normalize-eval-steps vs pi-harness input step normalization
-;;;; 349. evals_harness make-eval-root vs pi-harness isolated eval directory
-;;;; 350. evals_harness normalize-step-type vs pi-harness step type coercion
-;;;; 351. evals_harness selected-eval-tools vs pi-harness coding-tool selection
 ;;;; 246. session_pipeline session-leaf-id vs SessionManager.getLeafId
 ;;;; 247. text_truncation truncate-harness-middle vs truncateMiddle
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
@@ -208,6 +217,9 @@
 ;;;;  88. cli_sdk sdk-model-runtime-providers vs ModelRuntime.getProviders
 ;;;;  89. cli_print_rpc rpc-session-stats vs AgentSession.getSessionStats
 ;;;;  90. oauth_pkce_device github-copilot-oauth-to-auth vs githubCopilotOAuth.toAuth
+;;;; 310. oauth_pkce_device percent-decode vs URLSearchParams percent-decode
+;;;; 311. oauth_pkce_device parse-query vs URLSearchParams
+;;;; 312. oauth_pkce_device parse-oauth-authorization-input vs parseAuthorizationInput
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -317,6 +329,9 @@
     ("find_tool.pattern_match" . 50)
     ("find_tool.find_files" . 50)
     ("find_tool.make_tool" . 50)
+    ("write_tool.ensure_parent" . 50)
+    ("write_tool.write_utf8" . 50)
+    ("write_tool.make_tool" . 50)
     ("ls_tool.directory_entry_name" . 50)
     ("ls_tool.list_directory" . 50)
     ("ls_tool.make_tool" . 50)
@@ -351,6 +366,9 @@
     ("oauth_pkce_device.cloudflare_url" . 50)
     ("oauth_pkce_device.radius_gateway" . 50)
     ("oauth_pkce_device.copilot_auth" . 50)
+    ("oauth_pkce_device.percent_decode" . 50)
+    ("oauth_pkce_device.parse_query" . 50)
+    ("oauth_pkce_device.parse_authorization_input" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -360,6 +378,15 @@
     ("evals_harness.artifact_persist" . 3)
     ("evals_harness.format" . 20)
     ("evals_harness.normalize_steps" . 50)
+    ("evals_harness.resolve_selection" . 50)
+    ("evals_harness.transcript" . 50)
+    ("evals_harness.last_assistant" . 50)
+    ("evals_harness.step_value" . 50)
+    ("evals_harness.usage" . 50)
+    ("evals_harness.result_json" . 50)
+    ("evals_harness.eval_environment" . 50)
+    ("evals_harness.prompt_step" . 50)
+    ("evals_harness.reload_step" . 50)
     ("evals_harness.make_eval_root" . 50)
     ("evals_harness.normalize_step_type" . 50)
     ("evals_harness.selected_eval_tools" . 50)
@@ -569,6 +596,9 @@
     ("provider_registry_defs.merge_environment" . 50)
     ("provider_registry_defs.runtime_models" . 50)
     ("provider_registry_defs.structured_api_key_login" . 50)
+    ("core_rest.cancellation_abort" . 50)
+    ("core_rest.redacted_secrets" . 50)
+    ("core_rest.threads_cleanup" . 5)
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
@@ -5172,6 +5202,142 @@
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
+;;; src/cadr-cli/tools/write.lisp (Pairs 343-345).
+;;; Timed owners: ensure-write-parent-directories, write-utf8-file,
+;;; make-write-tool — not tool execute / mutation queue / result copy.
+;;; ---------------------------------------------------------------------
+
+(defun write-tool-truth (value)
+  (if value 1 0))
+
+(defparameter *write-tool-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-write-tool-cwd")))
+
+(defun write-tool-root ()
+  (uiop:ensure-directory-pathname *write-tool-cwd*))
+
+(defun write-tool-path (relative)
+  (merge-pathnames relative (write-tool-root)))
+
+(defun ensure-write-tool-fixture ()
+  (let ((root (write-tool-root)))
+    (ensure-directories-exist (merge-pathnames "nested/deep/" root))
+    (ensure-directories-exist (merge-pathnames "existing/" root))
+    *write-tool-cwd*))
+
+(defun run-write-ensure-parent ()
+  ;; Nested mkdir, already-a-directory, parent-is-file error.
+  ;; Not write-utf8-file, not execute.
+  (ensure-write-tool-fixture)
+  (let* ((nested (write-tool-path "nested/deep/a.txt"))
+         (existing (write-tool-path "existing/b.txt"))
+         (blocker (write-tool-path "blocker"))
+         (blocked (write-tool-path "blocker/c.txt")))
+    (ignore-errors (uiop:delete-file-if-exists blocker))
+    (let ((nested-ok
+            (handler-case
+                (progn
+                  (cadr-cli::ensure-write-parent-directories nested)
+                  1)
+              (error () 0)))
+          (exists-ok
+            (handler-case
+                (progn
+                  (cadr-cli::ensure-write-parent-directories existing)
+                  1)
+              (error () 0)))
+          (eexist
+            (progn
+              (with-open-file (out blocker
+                                   :direction :output
+                                   :if-exists :supersede
+                                   :if-does-not-exist :create
+                                   :external-format :utf-8)
+                (write-string "file" out))
+              (handler-case
+                  (progn
+                    (cadr-cli::ensure-write-parent-directories blocked)
+                    0)
+                (error () 1)))))
+      (list nested-ok exists-ok eexist 3))))
+
+(defun run-write-utf8 ()
+  ;; UTF-8 write into an existing parent — not mkdir as the timed owner,
+  ;; not execute / queue / result wording.
+  (ensure-write-tool-fixture)
+  (let* ((ascii-path (write-tool-path "out-ascii.txt"))
+         (cjk-path (write-tool-path "out-cjk.txt"))
+         (ascii-text "hello")
+         (cjk-text "中🙂"))
+    (cadr-cli::write-utf8-file ascii-path ascii-text)
+    (cadr-cli::write-utf8-file cjk-path cjk-text)
+    (list
+     (write-tool-truth (probe-file ascii-path))
+     (cadr-cli::utf16-code-unit-length ascii-text)
+     (cadr-cli::utf16-code-unit-length cjk-text)
+     3)))
+
+(defun run-write-make-tool ()
+  (let* ((cwd (ensure-write-tool-fixture))
+         (tool (cadr-cli::make-write-tool cwd))
+         (params (cadr-ai:tool-parameters tool))
+         (required (cadr-ai::json-get params "required"))
+         (required-list
+           (and required (coerce required 'list)))
+         (description (cadr-ai:tool-description tool)))
+    (list
+     (write-tool-truth (string= (cadr-ai:tool-name tool) "write"))
+     (write-tool-truth
+      (and (search "Write content to a file" description)
+           (search "Automatically creates parent directories" description)))
+     (write-tool-truth
+      (and required-list
+           (find "path" required-list :test #'string=)
+           (find "content" required-list :test #'string=)))
+     3)))
+
+(defun measure-write-tool ()
+  (ensure-write-tool-fixture)
+  (destructuring-bind (ep-nested ep-exists ep-eexist ep-n)
+      (run-write-ensure-parent)
+    (destructuring-bind (wu-ok wu-ascii wu-cjk wu-n)
+        (run-write-utf8)
+      (destructuring-bind (wmt-name wmt-desc wmt-req wmt-n)
+          (run-write-make-tool)
+        (json-object
+         "observed"
+         (json-object
+          "ep_nested" ep-nested
+          "ep_exists" ep-exists
+          "ep_eexist" ep-eexist
+          "ep_n" ep-n
+          "wu_ok" wu-ok
+          "wu_ascii" wu-ascii
+          "wu_cjk" wu-cjk
+          "wu_n" wu-n
+          "wmt_name" wmt-name
+          "wmt_desc" wmt-desc
+          "wmt_req" wmt-req
+          "wmt_n" wmt-n)
+         "ensure_parent"
+         (collect "write_tool.ensure_parent"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-ensure-parent))))
+         "write_utf8"
+         (collect "write_tool.write_utf8"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-utf8))))
+         "make_tool"
+         (collect "write_tool.make_tool"
+                  (lambda ()
+                    (lambda ()
+                      (run-write-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the agent_tool_loop hole on
 ;;; src/cadr-cli/tools/powershell.lisp (Pairs 301-303).
 ;;; Timed work is the UTF-8 output prefix, prefix+command concat, and
 ;;; make-powershell-tool schema — not execute/spawn.
@@ -5266,6 +5432,8 @@
                   (lambda ()
                     (lambda ()
                       (run-powershell-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -6183,13 +6351,74 @@
     "http://localhost:8080/"
     "http://localhost:8080")))
 
+(defun oauth-percent-decode-flag (encoded expected)
+  (handler-case
+      (if (string= (cadr-ai::percent-decode encoded) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-percent-decode ()
+  ;; Valid application/x-www-form-urlencoded only. Do not exact truncated
+  ;; or invalid percent escapes (Lisp signals; URLSearchParams is lenient).
+  (list
+   (oauth-percent-decode-flag "hello" "hello")
+   (oauth-percent-decode-flag "hello+world" "hello world")
+   (oauth-percent-decode-flag "%2Fpath" "/path")
+   (oauth-percent-decode-flag "%20x" " x")
+   (oauth-percent-decode-flag "%C3%A9" (string (code-char 233)))
+   5))
+
+(defun oauth-query-flag (query key expected)
+  (handler-case
+      (let ((value (gethash key (cadr-ai::parse-query query))))
+        (if (string= value expected)
+            1
+            0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-parse-query ()
+  (list
+   (oauth-query-flag "code=abc&state=xyz" "code" "abc")
+   (oauth-query-flag "code=abc&state=xyz" "state" "xyz")
+   (oauth-query-flag "q=hello+world" "q" "hello world")
+   (oauth-query-flag "a=" "a" "")
+   4))
+
+(defun oauth-authorization-input-flag (input expected-code expected-state)
+  (handler-case
+      (multiple-value-bind (code state)
+          (cadr-ai::parse-oauth-authorization-input input)
+        (if (and (equal code expected-code)
+                 (equal state expected-state))
+            1
+            0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-parse-authorization-input ()
+  ;; Same four forms as goal13-manual-oauth-input-matches-baseline.
+  ;; Do not exact empty input (Lisp "" / NIL vs pi {}).
+  (list
+   (oauth-authorization-input-flag
+    "http://localhost:1455/auth/callback?code=code-a&state=state-a"
+    "code-a" "state-a")
+   (oauth-authorization-input-flag "code-b#state-b" "code-b" "state-b")
+   (oauth-authorization-input-flag
+    "code=code-c&state=state-c"
+    "code-c" "state-c")
+   (oauth-authorization-input-flag " code-d " "code-d" nil)
+   4))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
         (copilot (run-oauth-pkce-device-copilot-url))
         (cloudflare (run-oauth-pkce-device-cloudflare-url))
         (radius (run-oauth-pkce-device-radius-gateway))
-        (copilot-auth (run-oauth-pkce-device-copilot-auth)))
+        (copilot-auth (run-oauth-pkce-device-copilot-auth))
+        (percent (run-oauth-pkce-device-percent-decode))
+        (query (run-oauth-pkce-device-parse-query))
+        (auth-input (run-oauth-pkce-device-parse-authorization-input)))
     (json-object
      "observed"
      (json-object
@@ -6216,7 +6445,23 @@
       "ga_ind" (nth 1 copilot-auth)
       "ga_ent" (nth 2 copilot-auth)
       "ga_dom" (nth 3 copilot-auth)
-      "ga_key" (nth 4 copilot-auth))
+      "ga_key" (nth 4 copilot-auth)
+      "pd_plain" (nth 0 percent)
+      "pd_plus" (nth 1 percent)
+      "pd_slash" (nth 2 percent)
+      "pd_space" (nth 3 percent)
+      "pd_utf8" (nth 4 percent)
+      "pd_n" (nth 5 percent)
+      "pq_code" (nth 0 query)
+      "pq_state" (nth 1 query)
+      "pq_plus" (nth 2 query)
+      "pq_empty" (nth 3 query)
+      "pq_n" (nth 4 query)
+      "pai_url" (nth 0 auth-input)
+      "pai_hash" (nth 1 auth-input)
+      "pai_qs" (nth 2 auth-input)
+      "pai_plain" (nth 3 auth-input)
+      "pai_n" (nth 4 auth-input))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -6246,7 +6491,22 @@
      (collect "oauth_pkce_device.copilot_auth"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-copilot-auth)))))))
+                  (run-oauth-pkce-device-copilot-auth))))
+     "percent_decode"
+     (collect "oauth_pkce_device.percent_decode"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-percent-decode))))
+     "parse_query"
+     (collect "oauth_pkce_device.parse_query"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-parse-query))))
+     "parse_authorization_input"
+     (collect "oauth_pkce_device.parse_authorization_input"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-parse-authorization-input)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -6786,6 +7046,265 @@
 (defun eval-flag (value)
   (if value 1 0))
 
+(defun eval-empty-environment (name)
+  (declare (ignore name))
+  nil)
+
+(defun eval-named-environment (entries)
+  (lambda (name)
+    (cdr (assoc name entries :test #'string=))))
+
+(defun eval-resolve-ok-p (provider model environment expected-provider expected-model)
+  (let ((cadr-evals::*eval-environment-function* environment))
+    (handler-case
+        (multiple-value-bind (resolved-provider resolved-model)
+            (cadr-evals::resolve-eval-selection provider model)
+          (eval-flag
+           (and (string= resolved-provider expected-provider)
+                (string= resolved-model expected-model))))
+      (error () 0))))
+
+(defun eval-resolve-error-p (provider model environment)
+  (let ((cadr-evals::*eval-environment-function* environment))
+    (handler-case
+        (progn
+          (cadr-evals::resolve-eval-selection provider model)
+          0)
+      (error () 1))))
+
+(defun run-evals-harness-resolve-selection ()
+  ;; Explicit args, trimmed env fallback, missing/blank errors.
+  ;; Do not exact error copy (CADR_ vs PI_ names).
+  (let ((empty #'eval-empty-environment)
+        (from-env
+          (eval-named-environment
+           '(("CADR_EVAL_PROVIDER" . "  openai  ")
+             ("CADR_EVAL_MODEL" . "  gpt-4o  ")))))
+    (list
+     (eval-resolve-ok-p "openai" "gpt-4o" empty "openai" "gpt-4o")
+     (eval-resolve-ok-p nil nil from-env "openai" "gpt-4o")
+     (eval-resolve-error-p nil nil empty)
+     (eval-resolve-error-p "openai" nil empty)
+     (eval-resolve-error-p "  " "gpt-4o" empty)
+     5)))
+
+(defun eval-transcript-messages ()
+  (list
+   (cadr-ai:make-user-message :content "hi")
+   (cadr-ai:make-assistant-message
+    :content
+    (list
+     (cadr-ai:make-text-content :text "hello")
+     (cadr-ai:make-tool-call
+      :id "c1"
+      :name "bash"
+      :arguments (cadr-ai::json-object "cmd" "ls"))))
+   (cadr-ai:make-tool-result-message
+    :tool-call-id "c1"
+    :tool-name "bash"
+    :content (list (cadr-ai:make-text-content :text "ok"))
+    :is-error nil)
+   (cadr-ai:make-assistant-message
+    :content (list (cadr-ai:make-text-content :text "")))
+   (cadr-ai:make-tool-result-message
+    :tool-call-id "c2"
+    :tool-name "fail"
+    :content (list (cadr-ai:make-text-content :text ""))
+    :is-error t)))
+
+(defun run-evals-harness-transcript ()
+  (let ((events
+          (cadr-evals::messages-to-transcript
+           (eval-transcript-messages))))
+    (list
+     (length events)
+     (eval-flag
+      (string= (cadr-ai::json-get (first events) "type") "message"))
+     (eval-flag
+      (string= (cadr-ai::json-get (first events) "role") "user"))
+     (eval-flag
+      (string= (cadr-ai::json-get (second events) "content") "hello"))
+     (eval-flag
+      (string= (cadr-ai::json-get (third events) "type") "tool_call"))
+     (eval-flag
+      (string= (cadr-ai::json-get (third events) "name") "bash"))
+     (eval-flag
+      (string= (cadr-ai::json-get (fourth events) "type")
+               "tool_result"))
+     (eval-flag (cadr-ai::json-get (fifth events) "error"))
+     8)))
+
+(defun run-evals-harness-last-assistant ()
+  (let* ((old
+           (cadr-ai:make-assistant-message
+            :content
+            (list (cadr-ai:make-text-content :text "old"))))
+         (user (cadr-ai:make-user-message :content "hi"))
+         (new
+           (cadr-ai:make-assistant-message
+            :content
+            (list (cadr-ai:make-text-content :text "new"))))
+         (messages (list old)))
+    (let ((pre (last messages)))
+      (setf (cdr pre) (list user new))
+      (list
+       (eval-flag
+        (eq new (cadr-evals::last-assistant-since messages pre)))
+       (eval-flag
+        (null
+         (cadr-evals::last-assistant-since
+          messages (last messages))))
+       (eval-flag
+        (eq new (cadr-evals::last-assistant-since messages nil)))
+       3))))
+
+(defun run-evals-harness-step-value ()
+  ;; Hash-table JSON step, keyword plist, interned keyword plist, miss.
+  (let* ((hash
+           (cadr-ai::json-object
+            "type" "prompt"
+            "content" "hi"))
+         (plist
+           (list :type :prompt :content "hi"))
+         (interned
+           (list (intern "TYPE" :keyword) :prompt
+                 (intern "CONTENT" :keyword) "hi")))
+    (list
+     (eval-flag
+      (string= (cadr-evals::step-value hash :type) "prompt"))
+     (eval-flag
+      (string= (cadr-evals::step-value plist :content) "hi"))
+     (eval-flag
+      (eq (cadr-evals::step-value interned :type) :prompt))
+     (eval-flag
+      (null (cadr-evals::step-value hash :missing)))
+     4)))
+
+(defun eval-usage-messages ()
+  (list
+   (cadr-ai:make-user-message :content "hi")
+   (cadr-ai:make-assistant-message
+    :content
+    (list
+     (cadr-ai:make-text-content :text "hello")
+     (cadr-ai:make-tool-call
+      :id "c1"
+      :name "bash"
+      :arguments (cadr-ai::json-object "cmd" "ls")))
+    :usage
+    (cadr-ai:make-usage
+     :input 10
+     :output 20
+     :cache-read 1
+     :cache-write 2
+     :cost (cadr-ai:make-cost :total 1.5d0)))
+   (cadr-ai:make-assistant-message
+    :content
+    (list (cadr-ai:make-text-content :text "done"))
+    :usage
+    (cadr-ai:make-usage :input 5 :output 7))))
+
+(defun run-evals-harness-usage ()
+  (let* ((model
+           (cadr-ai::make-model
+            :id "gpt-4o"
+            :provider :openai))
+         (usage
+           (cadr-evals::eval-usage
+            (eval-usage-messages)
+            model))
+         (meta (cadr-ai::json-get usage "metadata")))
+    (list
+     (eval-flag (= (cadr-ai::json-get usage "inputTokens") 15))
+     (eval-flag (= (cadr-ai::json-get usage "outputTokens") 27))
+     (eval-flag (= (cadr-ai::json-get usage "totalTokens") 45))
+     (eval-flag (= (cadr-ai::json-get usage "toolCalls") 1))
+     (eval-flag
+      (string= (cadr-ai::json-get usage "provider") "openai"))
+     (eval-flag
+      (string= (cadr-ai::json-get usage "model") "gpt-4o"))
+     (eval-flag
+      (and (= (cadr-ai::json-get meta "cacheReadTokens") 1)
+           (= (cadr-ai::json-get meta "cacheWriteTokens") 2)
+           (plusp
+            (cadr-ai::json-get meta "estimatedCostUsd" 0))))
+     7)))
+
+(defun run-evals-harness-result-json ()
+  (let* ((result
+           (cadr-evals::make-eval-result
+            :output "ok"
+            :events
+            (list
+             (cadr-ai::json-object
+              "type" "message"
+              "role" "user"))
+            :usage
+            (cadr-ai::json-object
+             "model" "gpt-4o"
+             "inputTokens" 3)
+            :errors nil
+            :artifacts
+            (cadr-ai::json-object "runId" "r1")
+            :timings
+            (cadr-ai::json-object "totalMs" 12.5d0)))
+         (json (cadr-evals::eval-result-json result))
+         (events (cadr-ai::json-get json "events"))
+         (errors (cadr-ai::json-get json "errors"))
+         (artifacts (cadr-ai::json-get json "artifacts"))
+         (timings (cadr-ai::json-get json "timings")))
+    (list
+     (eval-flag
+      (string= (cadr-ai::json-get json "output") "ok"))
+     (eval-flag (= (length events) 1))
+     (eval-flag (zerop (length errors)))
+     (eval-flag
+      (string= (cadr-ai::json-get artifacts "runId") "r1"))
+     (eval-flag
+      (eql (cadr-ai::json-get timings "totalMs") 12.5d0))
+     5)))
+
+
+(defun evals-environment-table ()
+  (let ((table (make-hash-table :test #'equal)))
+    (setf (gethash "CADR_EVAL_PROVIDER" table) "  openai  ")
+    (setf (gethash "CADR_EVAL_MODEL" table) "gpt-4o")
+    (setf (gethash "WS" table) "   ")
+    table))
+
+(defun run-evals-harness-eval-environment ()
+  ;; Leftover callee of resolve-eval-selection: getenv + trim.
+  (let ((cadr-evals::*eval-environment-function*
+          (let ((table (evals-environment-table)))
+            (lambda (name)
+              (gethash name table)))))
+    (list
+     (eval-flag
+      (string= (cadr-evals::eval-environment "CADR_EVAL_PROVIDER")
+               "openai"))
+     (eval-flag
+      (string= (cadr-evals::eval-environment "CADR_EVAL_MODEL")
+               "gpt-4o"))
+     (eval-flag
+      (string= (cadr-evals::eval-environment "WS") ""))
+     (eval-flag
+      (null (cadr-evals::eval-environment "MISSING")))
+     4)))
+
+(defun run-evals-harness-prompt-step ()
+  (let ((step (cadr-evals::make-eval-prompt-step "hello")))
+    (list
+     (eval-flag (eq (getf step :type) :prompt))
+     (eval-flag (string= (getf step :content) "hello"))
+     2)))
+
+(defun run-evals-harness-reload-step ()
+  (let ((step (cadr-evals::make-eval-reload-step)))
+    (list
+     (eval-flag (eq (getf step :type) :reload))
+     (eval-flag (null (getf step :content)))
+     2)))
+
 (defun evals-delete-eval-root (root)
   (when (and root (probe-file root))
     (uiop:delete-directory-tree
@@ -6858,6 +7377,15 @@
             (evals-harness-observations)))
          (fmt (run-evals-harness-format empty-report report))
          (normalize (run-evals-harness-normalize-steps))
+         (resolve (run-evals-harness-resolve-selection))
+         (transcript (run-evals-harness-transcript))
+         (last-assistant (run-evals-harness-last-assistant))
+         (step-value (run-evals-harness-step-value))
+         (usage (run-evals-harness-usage))
+         (result-json (run-evals-harness-result-json))
+         (environment (run-evals-harness-eval-environment))
+         (prompt-step (run-evals-harness-prompt-step))
+         (reload-step (run-evals-harness-reload-step))
          (eval-root (run-evals-harness-make-eval-root))
          (step-type (run-evals-harness-normalize-step-type))
          (eval-tools (run-evals-harness-selected-eval-tools)))
@@ -6893,6 +7421,55 @@
       "ns_kw_rel" (nth 6 normalize)
       "ns_vec_n" (nth 7 normalize)
       "ns_bad" (nth 8 normalize)
+      "rs_explicit" (nth 0 resolve)
+      "rs_env" (nth 1 resolve)
+      "rs_miss" (nth 2 resolve)
+      "rs_prov" (nth 3 resolve)
+      "rs_blank" (nth 4 resolve)
+      "rs_n" (nth 5 resolve)
+      "tr_n" (nth 0 transcript)
+      "tr_user" (nth 1 transcript)
+      "tr_role" (nth 2 transcript)
+      "tr_text" (nth 3 transcript)
+      "tr_call" (nth 4 transcript)
+      "tr_name" (nth 5 transcript)
+      "tr_result" (nth 6 transcript)
+      "tr_err" (nth 7 transcript)
+      "tr_keys" (nth 8 transcript)
+      "la_new" (nth 0 last-assistant)
+      "la_none" (nth 1 last-assistant)
+      "la_full" (nth 2 last-assistant)
+      "la_n" (nth 3 last-assistant)
+      "sv_hash" (nth 0 step-value)
+      "sv_plist" (nth 1 step-value)
+      "sv_intern" (nth 2 step-value)
+      "sv_miss" (nth 3 step-value)
+      "sv_n" (nth 4 step-value)
+      "us_in" (nth 0 usage)
+      "us_out" (nth 1 usage)
+      "us_total" (nth 2 usage)
+      "us_tools" (nth 3 usage)
+      "us_prov" (nth 4 usage)
+      "us_model" (nth 5 usage)
+      "us_cost" (nth 6 usage)
+      "us_n" (nth 7 usage)
+      "rj_out" (nth 0 result-json)
+      "rj_ev" (nth 1 result-json)
+      "rj_err" (nth 2 result-json)
+      "rj_art" (nth 3 result-json)
+      "rj_time" (nth 4 result-json)
+      "rj_n" (nth 5 result-json)
+      "ee_trim" (nth 0 environment)
+      "ee_model" (nth 1 environment)
+      "ee_ws" (nth 2 environment)
+      "ee_miss" (nth 3 environment)
+      "ee_n" (nth 4 environment)
+      "ps_type" (nth 0 prompt-step)
+      "ps_content" (nth 1 prompt-step)
+      "ps_n" (nth 2 prompt-step)
+      "rs_type" (nth 0 reload-step)
+      "rs_no_content" (nth 1 reload-step)
+      "rs_n" (nth 2 reload-step)
       "mer_exists" (nth 0 eval-root)
       "mer_prefix" (nth 1 eval-root)
       "mer_no_ws" (nth 2 eval-root)
@@ -6934,6 +7511,51 @@
               (lambda ()
                 (lambda ()
                   (run-evals-harness-normalize-steps))))
+     "resolve_selection"
+     (collect "evals_harness.resolve_selection"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-resolve-selection))))
+     "transcript"
+     (collect "evals_harness.transcript"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-transcript))))
+     "last_assistant"
+     (collect "evals_harness.last_assistant"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-last-assistant))))
+     "step_value"
+     (collect "evals_harness.step_value"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-step-value))))
+     "usage"
+     (collect "evals_harness.usage"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-usage))))
+     "result_json"
+     (collect "evals_harness.result_json"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-result-json))))
+     "eval_environment"
+     (collect "evals_harness.eval_environment"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-eval-environment))))
+     "prompt_step"
+     (collect "evals_harness.prompt_step"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-prompt-step))))
+     "reload_step"
+     (collect "evals_harness.reload_step"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-reload-step))))
      "make_eval_root"
      (collect "evals_harness.make_eval_root"
               (lambda ()
@@ -15844,6 +16466,80 @@
                 (lambda ()
                   (run-http-transport-parse-url)))))))
 
+(defun run-core-rest-cancellation ()
+  (let ((state (cadr-core:make-cancellation-state)))
+    (let ((live (if (cadr-core:cancellation-aborted-p state) 0 1)))
+      (cadr-core:abort-cancellation state)
+      (let ((aborted (if (cadr-core:cancellation-aborted-p state) 1 0)))
+        (cadr-core:set-cancellation-aborted-p state nil)
+        (list
+         live
+         aborted
+         (if (cadr-core:cancellation-aborted-p state) 0 1)
+         (if (cadr-core:cancellation-predicate-aborted-p (lambda () t))
+             1
+             0))))))
+
+(defun run-core-rest-redacted ()
+  (let* ((text "keep-visible token=sk-live-abc extra=hunter2 done")
+         (out (cadr-core:redact-secrets text '("sk-live-abc" "hunter2"))))
+    (list
+     (if (search "keep-visible" out) 1 0)
+     (if (search "sk-live-abc" out) 0 1)
+     (if (search "hunter2" out) 0 1)
+     (if (search "[REDACTED]" out) 1 0))))
+
+(defun run-core-rest-threads ()
+  (let ((absent (cadr-core:stop-thread-for-cleanup nil))
+        (current
+          (cadr-core:stop-thread-for-cleanup sb-thread:*current-thread*)))
+    (let* ((done
+             (sb-thread:make-thread
+              (lambda () :done)
+              :name "cadr-core-rest-join"))
+           (joined
+             (progn
+               (sb-thread:join-thread done)
+               (cadr-core:stop-thread-for-cleanup done))))
+      (list
+       (if (eq absent :absent) 1 0)
+       (if (eq current :current) 1 0)
+       (if (eq joined :joined) 1 0)))))
+
+(defun measure-core-rest ()
+  (let ((cancellation (run-core-rest-cancellation))
+        (redacted (run-core-rest-redacted))
+        (threads (run-core-rest-threads)))
+    (json-object
+     "observed"
+     (json-object
+      "ca_live" (first cancellation)
+      "ca_abort" (second cancellation)
+      "ca_clear" (third cancellation)
+      "ca_pred" (fourth cancellation)
+      "rd_keep" (first redacted)
+      "rd_secret" (second redacted)
+      "rd_token" (third redacted)
+      "rd_mark" (fourth redacted)
+      "th_absent" (first threads)
+      "th_current" (second threads)
+      "th_joined" (third threads))
+     "cancellation_abort"
+     (collect "core_rest.cancellation_abort"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-cancellation))))
+     "redacted_secrets"
+     (collect "core_rest.redacted_secrets"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-redacted))))
+     "threads_cleanup"
+     (collect "core_rest.threads_cleanup"
+              (lambda ()
+                (lambda ()
+                  (run-core-rest-threads)))))))
+
 (defun slicing-fixtures ()
   (values
    (with-output-to-string (out)
@@ -15984,6 +16680,12 @@
       "src/cadr-cli/tools/find.lisp find-files"
       "find_tool.make_tool"
       "src/cadr-cli/tools/find.lisp make-find-tool"
+      "write_tool.ensure_parent"
+      "src/cadr-cli/tools/write.lisp ensure-write-parent-directories"
+      "write_tool.write_utf8"
+      "src/cadr-cli/tools/write.lisp write-utf8-file"
+      "write_tool.make_tool"
+      "src/cadr-cli/tools/write.lisp make-write-tool"
       "ls_tool.directory_entry_name"
       "src/cadr-cli/tools/ls.lisp directory-entry-name"
       "ls_tool.list_directory"
@@ -16052,6 +16754,12 @@
       "src/cadr-ai/oauth/providers/radius.lisp normalize-radius-gateway"
       "oauth_pkce_device.copilot_auth"
       "src/cadr-ai/oauth/providers/github-copilot.lisp github-copilot-oauth-to-auth"
+      "oauth_pkce_device.percent_decode"
+      "src/cadr-ai/oauth/callback.lisp percent-decode"
+      "oauth_pkce_device.parse_query"
+      "src/cadr-ai/oauth/callback.lisp parse-query"
+      "oauth_pkce_device.parse_authorization_input"
+      "src/cadr-ai/oauth/callback.lisp parse-oauth-authorization-input"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
@@ -16070,6 +16778,24 @@
       "src/cadr-evals/summary.lisp format-harness-comparison-report"
       "evals_harness.normalize_steps"
       "src/cadr-evals/harness.lisp normalize-eval-steps"
+      "evals_harness.resolve_selection"
+      "src/cadr-evals/harness.lisp resolve-eval-selection"
+      "evals_harness.transcript"
+      "src/cadr-evals/harness.lisp messages-to-transcript"
+      "evals_harness.last_assistant"
+      "src/cadr-evals/harness.lisp last-assistant-since"
+      "evals_harness.step_value"
+      "src/cadr-evals/harness.lisp step-value"
+      "evals_harness.usage"
+      "src/cadr-evals/harness.lisp eval-usage"
+      "evals_harness.result_json"
+      "src/cadr-evals/harness.lisp eval-result-json"
+      "evals_harness.eval_environment"
+      "src/cadr-evals/harness.lisp eval-environment"
+      "evals_harness.prompt_step"
+      "src/cadr-evals/harness.lisp make-eval-prompt-step"
+      "evals_harness.reload_step"
+      "src/cadr-evals/harness.lisp make-eval-reload-step"
       "evals_harness.make_eval_root"
       "src/cadr-evals/harness.lisp make-eval-root"
       "evals_harness.normalize_step_type"
@@ -16496,6 +17222,12 @@
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
       "src/cadr-ai/transport/http.lisp parse-http-url"
+      "core_rest.cancellation_abort"
+      "src/cadr-core/cancellation.lisp abort-cancellation + cancellation-aborted-p"
+      "core_rest.redacted_secrets"
+      "src/cadr-core/redacted-print.lisp redact-secrets"
+      "core_rest.threads_cleanup"
+      "src/cadr-core/threads.lisp stop-thread-for-cleanup"
       "session_pipeline.session_load"
       "src/cadr-agent/session/migration.lisp load-session"
       "session_pipeline.context_walk"
@@ -16612,9 +17344,11 @@
                     (harness-events nil)
                     (bash-tool nil)
                     (find-tool nil)
+                    (write-tool nil)
                     (ls-tool nil)
                     (tool-manager nil)
-                    (powershell-tool nil))
+                    (powershell-tool nil)
+                    (core-rest nil))
               (format *error-output* "goal20 cadr paired paths: harness_events~%")
               (setf harness-events (measure-harness-events))
               (format *error-output* "goal20 cadr paired paths: bash_tool~%")
@@ -16623,6 +17357,8 @@
               (let ((output-accumulator (measure-output-accumulator)))
               (format *error-output* "goal20 cadr paired paths: find_tool~%")
               (setf find-tool (measure-find-tool))
+              (format *error-output* "goal20 cadr paired paths: write_tool~%")
+              (setf write-tool (measure-write-tool))
               (format *error-output* "goal20 cadr paired paths: ls_tool~%")
               (setf ls-tool (measure-ls-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
@@ -16721,6 +17457,8 @@
               (let ((http-transport (measure-http-transport-parse-url)))
               (format *error-output* "goal20 cadr paired paths: render_slicing~%")
               (let ((slicing (measure-render-slicing)))
+              (format *error-output* "goal20 cadr paired paths: core_rest~%")
+              (setf core-rest (measure-core-rest))
               (format *error-output* "goal20 cadr paired paths: websocket_stream~%")
               (let ((websocket (measure-websocket-stream)))
             (json-object
@@ -16766,6 +17504,7 @@
               "bash_tool" bash-tool
               "output_accumulator" output-accumulator
               "find_tool" find-tool
+              "write_tool" write-tool
               "ls_tool" ls-tool
               "tool_manager" tool-manager
               "powershell_tool" powershell-tool
@@ -16812,6 +17551,7 @@
               "cli_bootstrap_sessions" bootstrap
               "ai_runtime_faux" faux
               "http_transport" http-transport
+              "core_rest" core-rest
               "render_slicing" slicing
               "websocket_stream" websocket)
              "parameters"

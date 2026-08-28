@@ -494,6 +494,33 @@
      "branch": "cursor/pair-295-297-cadr-ai-providers-0e8d"
     },
     {
+     "pair": 322,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/cancellation.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.cancellation_abort",
+     "branch": "cursor/pair-322-324-core-rest-4664"
+    },
+    {
+     "pair": 323,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/redacted-print.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.redacted_secrets",
+     "branch": "cursor/pair-322-324-core-rest-4664"
+    },
+    {
+     "pair": 324,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-core/threads.lisp",
+     "measure": "measure-core-rest",
+     "metric": "core_rest.threads_cleanup",
+     "branch": "cursor/pair-322-324-core-rest-4664"
+    },
+    {
      "pair": 298,
      "lane": "a",
      "status": "done",
@@ -715,6 +742,60 @@
      "measure": "measure-cli-settings",
      "metric": "cli_settings.block_images",
      "branch": "cursor/pair-307-309-cli-settings-leftovers-17b4"
+    },
+    {
+     "pair": 310,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/callback.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.percent_decode",
+     "branch": "cursor/pair-310-312-oauth-callback-leftovers-9da1"
+    },
+    {
+     "pair": 311,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/callback.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.parse_query",
+     "branch": "cursor/pair-310-312-oauth-callback-leftovers-9da1"
+    },
+    {
+     "pair": 312,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/callback.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.parse_authorization_input",
+     "branch": "cursor/pair-310-312-oauth-callback-leftovers-9da1"
+    },
+    {
+     "pair": 325,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.resolve_selection",
+     "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+    },
+    {
+     "pair": 326,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.transcript",
+     "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+    },
+    {
+     "pair": 327,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.last_assistant",
+     "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
     }
    ],
    "mergeQueue": []

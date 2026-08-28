@@ -27,6 +27,111 @@ tag/Release step.
   n=5 **1.506×** (19.9 / 13.2 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 351). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
   not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
+  `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
+  trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
+  n=5 **2.692×** (0.758 / 0.282 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 346). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.prompt_step` (`make-eval-prompt-step` on
+  `src/cadr-evals/harness.lisp` vs baseline prompt step object). Observed
+  `ps_type` / `ps_content` / `ps_n` exact.
+  n=5 **0.956×** (0.109 / 0.114 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 347). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.reload_step` (`make-eval-reload-step` on
+  `src/cadr-evals/harness.lisp` vs baseline reload step object). Observed
+  `rs_type` / `rs_no_content` / `rs_n` exact.
+  n=5 **0.738×** (0.078 / 0.105 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 348). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
+  `src/cadr-evals/harness.lisp` vs baseline step property access).
+  Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.
+  n=5 **3.693×** (0.774 / 0.210 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.usage` (`eval-usage` on
+  `src/cadr-evals/harness.lisp` vs baseline usage object assembly).
+  Observed `us_in` / `us_out` / `us_total` / `us_tools` / `us_prov` /
+  `us_model` / `us_cost` / `us_n` exact. n=5 **2.148×** (2.240 / 1.042 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.result_json` (`eval-result-json`
+  on `src/cadr-evals/harness.lisp` vs baseline `SimpleHarnessResult` JSON
+  shape). Observed `rj_out` / `rj_ev` / `rj_err` / `rj_art` / `rj_time` /
+  `rj_n` exact. n=5 **5.225×** (1.933 / 0.370 µs) on host `cursor`,
+  ceiling 8.0. Measure-only. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
+  on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
+  Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.
+  n=5 **0.594×** (64.978 / 109.366 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13: pair `write_tool.write_utf8` (`write-utf8-file` on
+  `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.writeFile`).
+  Observed `wu_ok` / `wu_ascii` / `wu_cjk` / `wu_n` exact.
+  n=5 **1.254×** (169.771 / 135.369 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13: pair `write_tool.make_tool` (`make-write-tool` on
+  `src/cadr-cli/tools/write.lisp` vs baseline `createWriteToolDefinition`).
+  Observed `wmt_name` / `wmt_desc` / `wmt_req` / `wmt_n` exact.
+  n=5 **3.139×** (13.633 / 4.343 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13: pair `core_rest.cancellation_abort` (`abort-cancellation` /
+  `cancellation-aborted-p` on `src/cadr-core/cancellation.lisp` vs
+  `AbortController.abort` / `AbortSignal.aborted`). Observed `ca_live` /
+  `ca_abort` / `ca_clear` / `ca_pred` exact. n=5 **0.0712×** (0.579 / 8.130 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric. Pairs 322–324.
+- Goal 20 P.13: pair `core_rest.redacted_secrets` (`redact-secrets` on
+  `src/cadr-core/redacted-print.lisp` vs String.split/join `[REDACTED]`).
+  Observed `rd_keep` / `rd_secret` / `rd_token` / `rd_mark` exact. n=5 **2.488×**
+  (2.750 / 1.105 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13: pair `core_rest.threads_cleanup` (`stop-thread-for-cleanup` on
+  `src/cadr-core/threads.lisp` vs `worker_threads` Worker eval-exit). Observed
+  `th_absent` / `th_current` / `th_joined` exact. n=5 **0.00799×** (181.6 /
+  22730 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.resolve_selection` /
+  `transcript` / `last_assistant` (`src/cadr-evals/harness.lisp` vs baseline
+  `resolveModelSelection` / `toTranscriptEvents` / `promptAgent` assistant
+  slice). Observed `rs_*` / `tr_*` / `la_*` exact. n=5 **0.170×** / **1.743×** /
+  **1.034×** (1.06 / 6.22 µs, 3.80 / 2.18 µs, 0.579 / 0.560 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not these metrics. Pairs 326–327 are on
+  the over-1× ledger. Pairs 325–327.
+
+- Goal 20 P.13: pair `oauth_pkce_device.percent_decode` (`percent-decode` on
+  `src/cadr-ai/oauth/callback.lisp` vs baseline URLSearchParams percent-decode
+  in `packages/ai/src/auth/oauth/openai-codex.ts`). Observed `pd_plain` /
+  `pd_plus` / `pd_slash` / `pd_space` / `pd_utf8` / `pd_n` exact. n=5
+  **1.525×** (1.592 / 1.044 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. No `src/` perf.
+- Goal 20 P.13: pair `oauth_pkce_device.parse_query` (`parse-query` on
+  `src/cadr-ai/oauth/callback.lisp` vs baseline `URLSearchParams`). Observed
+  `pq_code` / `pq_state` / `pq_plus` / `pq_empty` / `pq_n` exact. n=5
+  **1.944×** (6.672 / 3.431 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. No `src/` perf.
+- Goal 20 P.13: pair `oauth_pkce_device.parse_authorization_input`
+  (`parse-oauth-authorization-input` on `src/cadr-ai/oauth/callback.lisp` vs
+  baseline `parseAuthorizationInput`). Observed `pai_url` / `pai_hash` /
+  `pai_qs` / `pai_plain` / `pai_n` exact. n=5 **0.535×** (6.292 / 11.750 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. No `src/`
+  perf.
 - Goal 20 P.13: pair `file_mutation_queue.pending_count` (`file-mutation-queue-state-pending-count` on
   `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.pending` after enqueue).
   Observed `fmqp_shared` / `fmqp_other` / `fmqp_missing` / `fmqp_alias` /
