@@ -4067,8 +4067,9 @@ commit no optimize.
 
 Leftover of the `cli_bootstrap_sessions` hole on `migration.lisp`. Timed work
 is the two-character product name plus `-cl`. Observed `lp_len` / `lp_p` /
-`lp_i` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`lp_i` are exact. First n=5 freeze **1.178×** (0.171 / 0.145 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
+Over-1× booked.
 
 ### Pair 458 — `cli_bootstrap_sessions` (shell_quote)
 
@@ -4078,8 +4079,8 @@ is the two-character product name plus `-cl`. Observed `lp_len` / `lp_p` /
 
 Leftover sibling of Pair 457 on the same hole. Timed work is wrapping plus
 embedded-quote escape. Observed `sq_plain` / `sq_space` / `sq_quote` /
-`sq_empty` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`sq_empty` are exact. First n=5 freeze **0.714×** (0.461 / 0.645 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
 ### Pair 459 — `cli_bootstrap_sessions` (affirmative)
 
@@ -4089,8 +4090,8 @@ embedded-quote escape. Observed `sq_plain` / `sq_space` / `sq_quote` /
 
 Leftover sibling of Pairs 457–458 on the same hole. Timed work is trim plus
 downcase membership in y/yes. Observed `af_y` / `af_yes` / `af_trim` /
-`af_no` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`af_no` are exact. First n=5 freeze **0.584×** (0.371 / 0.635 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
