@@ -928,7 +928,12 @@
    "measure": "measure-cli-support-strip-ansi",
    "metric": "cli_support.no_models_help",
    "branch": "cursor/model-help-leftovers-460-462-34f9",
-   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)"
+   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)",
+   "ratio": 27.45,
+   "cadrUs": 244.9,
+   "piUs": 8.92,
+   "ceiling": 50.0,
+   "rc": 1
   },
   {
    "pair": 461,
@@ -938,7 +943,12 @@
    "measure": "measure-cli-support-strip-ansi",
    "metric": "cli_support.no_model_selected",
    "branch": "cursor/model-help-leftovers-460-462-34f9",
-   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)"
+   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)",
+   "ratio": 27.67,
+   "cadrUs": 245.4,
+   "piUs": 8.87,
+   "ceiling": 50.0,
+   "rc": 1
   },
   {
    "pair": 462,
@@ -948,7 +958,12 @@
    "measure": "measure-cli-support-strip-ansi",
    "metric": "cli_support.no_api_key",
    "branch": "cursor/model-help-leftovers-460-462-34f9",
-   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)"
+   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)",
+   "ratio": 27.48,
+   "cadrUs": 480.3,
+   "piUs": 17.48,
+   "ceiling": 50.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
