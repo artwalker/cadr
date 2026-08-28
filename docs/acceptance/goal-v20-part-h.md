@@ -4059,6 +4059,39 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 454 — `settings_load` (provider_symbol)
+
+| metric | cadr | pi |
+|---|---|---|
+| `provider_symbol` | `provider-symbol` (`src/cadr-cli/config.lisp`) | upcase keyword intern (`packages/coding-agent/src/config.ts`) |
+
+Leftover of the `settings_load` hole on `config.lisp`. Timed work is
+string-upcase intern to keyword. Observed `ps_openai` / `ps_mixed` /
+`ps_hyphen` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
+### Pair 455 — `settings_load` (parse_auth_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_auth_provider` | `parse-auth-provider` (`src/cadr-cli/config.lisp`) | openai / openai-codex / anthropic identity (`packages/coding-agent/src/cli`) |
+
+Leftover sibling of Pair 454 on the same hole. Timed work is OAuth provider
+identity plus the configuration-error message. Observed `pap_openai` /
+`pap_anth` / `pap_codex` / `pap_bad` are exact. First n=5 freeze
+**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 456 — `settings_load` (split_command_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `split_command_line` | `split-command-line` (`src/cadr-cli/config.lisp`) | space/tab command-line split (`packages/coding-agent/src/cli`) |
+
+Leftover sibling of Pairs 454–455 on the same hole. Timed work is trim plus
+space/tab split dropping empties. Observed `scl_two` / `scl_trim` /
+`scl_empty` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

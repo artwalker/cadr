@@ -110,7 +110,7 @@ METRICS = {
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
-    "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
+    "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths", "provider_symbol", "parse_auth_provider", "split_command_line"),
     "resource_loader": ("reload", "dedupe_by_name"),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
     "session_discovery": ("header_probe", "session_list_probe"),
@@ -377,6 +377,9 @@ RATIO_CEILINGS = {
     # settings_load.config_paths pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "settings_load.config_paths": 8.0,
+    "settings_load.provider_symbol": 8.0,
+    "settings_load.parse_auth_provider": 8.0,
+    "settings_load.split_command_line": 8.0,
     # Frozen from the first Friend-MachineD non-quick resource_loader
     # pair (samples=5): observed 0.29x (568 / 1978 µs). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent
@@ -1809,6 +1812,16 @@ OBSERVED_EXACT = {
         "cp_same_p",
         "cp_auth_leaf",
         "cp_cfg_leaf",
+        "ps_openai",
+        "ps_mixed",
+        "ps_hyphen",
+        "pap_openai",
+        "pap_anth",
+        "pap_codex",
+        "pap_bad",
+        "scl_two",
+        "scl_trim",
+        "scl_empty",
     ),
     "package_manager": (
         "package_count",
