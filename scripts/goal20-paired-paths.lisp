@@ -576,6 +576,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.model_selector_provider_badge" . 50)
+    ("cli_selectors.scoped_models_copy_enabled" . 50)
+    ("cli_selectors.move_list_item" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13713,7 +13716,7 @@
       models '("google/gemini-2.5-pro") :persist-callback t))))
 
 (defun scoped-models-selector-tail-observed-pairs
-    (reorder persist provider-count)
+    (reorder persist provider-count badge copy moved)
   (append
     (list
      "smsror_down" (nth 0 reorder)
@@ -13728,7 +13731,8 @@
      "smsper_empty" (nth 3 persist)
      "smsper_two" (nth 4 persist)
      "smsper_single" (nth 5 persist))
-    (scoped-models-provider-count-observed-pairs provider-count)))
+    (scoped-models-provider-count-observed-pairs provider-count)
+    (models-leftover-observed-pairs badge copy moved)))
 
 (defun scoped-models-provider-count-observed-pairs (results)
   (list
@@ -13763,6 +13767,68 @@
       (cadr-cli::make-scoped-models-selector-state
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
+
+(defun models-leftover-observed-pairs (badge copy moved)
+  (list
+   "mspb_openai" (nth 0 badge)
+   "mspb_anthropic" (nth 1 badge)
+   "mspb_codex" (nth 2 badge)
+   "mspb_google" (nth 3 badge)
+   "mspb_openrouter" (nth 4 badge)
+   "mspb_hit" (nth 5 badge)
+   "smce_all" (nth 0 copy)
+   "smce_two" (nth 1 copy)
+   "smce_empty" (nth 2 copy)
+   "smce_one" (nth 3 copy)
+   "smce_three" (nth 4 copy)
+   "smce_unavail" (nth 5 copy)
+   "mli_swap" (nth 0 moved)
+   "mli_ends" (nth 1 moved)
+   "mli_neg" (nth 2 moved)
+   "mli_over" (nth 3 moved)
+   "mli_same" (nth 4 moved)
+   "mli_empty" (nth 5 moved)))
+
+(defun encode-moved-list-item (items)
+  (format nil "~{~a~^,~}" items))
+
+(defun run-cli-selectors-model-selector-provider-badge ()
+  (list
+   (cadr-cli::model-selector-provider-badge :openai)
+   (cadr-cli::model-selector-provider-badge :anthropic)
+   (cadr-cli::model-selector-provider-badge :openai-codex)
+   (cadr-cli::model-selector-provider-badge :google)
+   (cadr-cli::model-selector-provider-badge :openrouter)
+   (cadr-cli::model-selector-provider-badge :openai)))
+
+(defun run-cli-selectors-scoped-models-copy-enabled ()
+  (mapcar
+   (lambda (enabled)
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-copy-enabled enabled)))
+   (list
+    :all
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+    '()
+    '("google/gemini-2.5-pro")
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4" "google/gemini-2.5-pro")
+    '("stale/missing" "openai/gpt-4o"))))
+
+(defun run-cli-selectors-move-list-item ()
+  (let ((items '("a" "b" "c" "d")))
+    (list
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 1 2))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 0 3))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 1 -1))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 1 4))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 2 2))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item '() 0 1)))))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list
@@ -14022,7 +14088,12 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (provider-badge
+          (run-cli-selectors-model-selector-provider-badge))
+        (copy-enabled
+          (run-cli-selectors-scoped-models-copy-enabled))
+        (move-list (run-cli-selectors-move-list-item)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14826,10 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs
+              provider-badge
+              copy-enabled
+              move-list)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15477,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "model_selector_provider_badge"
+     (collect "cli_selectors.model_selector_provider_badge"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-provider-badge))))
+     "scoped_models_copy_enabled"
+     (collect "cli_selectors.scoped_models_copy_enabled"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-copy-enabled))))
+     "move_list_item"
+     (collect "cli_selectors.move_list_item"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-move-list-item)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17044,6 +17133,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.model_selector_provider_badge"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-provider-badge"
+      "cli_selectors.scoped_models_copy_enabled"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-copy-enabled"
+      "cli_selectors.move_list_item"
+      "src/cadr-cli/interactive/selectors/models.lisp move-list-item"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
