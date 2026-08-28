@@ -576,6 +576,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.all_known_model_ids_enabled_p" . 50)
+    ("cli_selectors.scoped_models_enable_ids" . 50)
+    ("cli_selectors.scoped_models_clear_ids" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13713,7 +13716,7 @@
       models '("google/gemini-2.5-pro") :persist-callback t))))
 
 (defun scoped-models-selector-tail-observed-pairs
-    (reorder persist provider-count)
+    (reorder persist provider-count all-known enable-ids clear-ids)
   (append
     (list
      "smsror_down" (nth 0 reorder)
@@ -13728,7 +13731,9 @@
      "smsper_empty" (nth 3 persist)
      "smsper_two" (nth 4 persist)
      "smsper_single" (nth 5 persist))
-    (scoped-models-provider-count-observed-pairs provider-count)))
+    (scoped-models-provider-count-observed-pairs provider-count)
+    (scoped-enable-leftover-observed-pairs
+     all-known enable-ids clear-ids)))
 
 (defun scoped-models-provider-count-observed-pairs (results)
   (list
@@ -13763,6 +13768,95 @@
       (cadr-cli::make-scoped-models-selector-state
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
+
+(defun scoped-enable-leftover-observed-pairs
+    (all-known enable-ids clear-ids)
+  (list
+   "ake_all" (nth 0 all-known)
+   "ake_full" (nth 1 all-known)
+   "ake_partial" (nth 2 all-known)
+   "ake_empty" (nth 3 all-known)
+   "ake_vacuous" (nth 4 all-known)
+   "ake_wrong" (nth 5 all-known)
+   "smei_all" (nth 0 enable-ids)
+   "smei_one" (nth 1 enable-ids)
+   "smei_rest" (nth 2 enable-ids)
+   "smei_add" (nth 3 enable-ids)
+   "smei_fill" (nth 4 enable-ids)
+   "smei_none" (nth 5 enable-ids)
+   "smci_all_one" (nth 0 clear-ids)
+   "smci_list" (nth 1 clear-ids)
+   "smci_all_all" (nth 2 clear-ids)
+   "smci_empty" (nth 3 clear-ids)
+   "smci_keep" (nth 4 clear-ids)
+   "smci_all_none" (nth 5 clear-ids)))
+
+(defun all-known-model-ids-enabled-flag (enabled all-ids)
+  (if (cadr-cli::all-known-model-ids-enabled-p enabled all-ids)
+      "1"
+      "0"))
+
+(defun run-cli-selectors-all-known-model-ids-enabled-p ()
+  (let* ((models (make-scoped-models-test-models))
+         (all-ids
+           (mapcar #'cadr-cli::qualified-model-id models)))
+    (list
+     (all-known-model-ids-enabled-flag :all all-ids)
+     (all-known-model-ids-enabled-flag all-ids all-ids)
+     (all-known-model-ids-enabled-flag
+      '("openai/gpt-4o" "anthropic/claude-sonnet-4") all-ids)
+     (all-known-model-ids-enabled-flag '() all-ids)
+     (all-known-model-ids-enabled-flag '() '())
+     (all-known-model-ids-enabled-flag
+      '("a" "b" "c" "d" "e") all-ids))))
+
+(defun run-cli-selectors-scoped-models-enable-ids ()
+  (let* ((models (make-scoped-models-test-models))
+         (all-ids
+           (mapcar #'cadr-cli::qualified-model-id models)))
+    (list
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       :all all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '() all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '("openai/gpt-4o") all-ids all-ids))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '("openai/gpt-4o") all-ids '("anthropic/claude-sonnet-4")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '() all-ids all-ids))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '("openai/gpt-4o") all-ids '())))))
+
+(defun run-cli-selectors-scoped-models-clear-ids ()
+  (let* ((models (make-scoped-models-test-models))
+         (all-ids
+           (mapcar #'cadr-cli::qualified-model-id models)))
+    (list
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       :all all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+       all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids :all all-ids all-ids))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       '() all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       '("openai/gpt-4o") all-ids '()))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       :all all-ids '())))))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list
@@ -14022,7 +14116,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (all-known
+          (run-cli-selectors-all-known-model-ids-enabled-p))
+        (enable-ids
+          (run-cli-selectors-scoped-models-enable-ids))
+        (clear-ids
+          (run-cli-selectors-scoped-models-clear-ids)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14855,10 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs
+              all-known
+              enable-ids
+              clear-ids)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15506,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "all_known_model_ids_enabled_p"
+     (collect "cli_selectors.all_known_model_ids_enabled_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-all-known-model-ids-enabled-p))))
+     "scoped_models_enable_ids"
+     (collect "cli_selectors.scoped_models_enable_ids"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-enable-ids))))
+     "scoped_models_clear_ids"
+     (collect "cli_selectors.scoped_models_clear_ids"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-clear-ids)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17044,6 +17162,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.all_known_model_ids_enabled_p"
+      "src/cadr-cli/interactive/selectors/models.lisp all-known-model-ids-enabled-p"
+      "cli_selectors.scoped_models_enable_ids"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-enable-ids"
+      "cli_selectors.scoped_models_clear_ids"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-clear-ids"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

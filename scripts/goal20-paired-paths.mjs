@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.all_known_model_ids_enabled_p": 50,
+	"cli_selectors.scoped_models_enable_ids": 50,
+	"cli_selectors.scoped_models_clear_ids": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,86 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function allKnownModelIdsEnabledP(enabledIds, allIds) {
+	return Array.isArray(enabledIds) &&
+		enabledIds.length === allIds.length &&
+		enabledIds.every((id) => allIds.includes(id))
+		? "1"
+		: "0";
+}
+
+function runCliSelectorsAllKnownModelIdsEnabledP() {
+	const models = makeModelSelectorTestModels();
+	const allIds = models.map(scopedModelsFullId);
+	return {
+		ake_all: allKnownModelIdsEnabledP(null, allIds),
+		ake_full: allKnownModelIdsEnabledP(allIds, allIds),
+		ake_partial: allKnownModelIdsEnabledP(
+			["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+			allIds,
+		),
+		ake_empty: allKnownModelIdsEnabledP([], allIds),
+		ake_vacuous: allKnownModelIdsEnabledP([], []),
+		ake_wrong: allKnownModelIdsEnabledP(["a", "b", "c", "d", "e"], allIds),
+	};
+}
+
+function runCliSelectorsScopedModelsEnableIds() {
+	const models = makeModelSelectorTestModels();
+	const allIds = models.map(scopedModelsFullId);
+	return {
+		smei_all: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds(null, allIds, ["openai/gpt-4o"]),
+		),
+		smei_one: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds([], allIds, ["openai/gpt-4o"]),
+		),
+		smei_rest: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds(["openai/gpt-4o"], allIds, allIds),
+		),
+		smei_add: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds(["openai/gpt-4o"], allIds, [
+				"anthropic/claude-sonnet-4",
+			]),
+		),
+		smei_fill: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds([], allIds, allIds),
+		),
+		smei_none: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds(["openai/gpt-4o"], allIds, []),
+		),
+	};
+}
+
+function runCliSelectorsScopedModelsClearIds() {
+	const models = makeModelSelectorTestModels();
+	const allIds = models.map(scopedModelsFullId);
+	return {
+		smci_all_one: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(null, allIds, ["openai/gpt-4o"]),
+		),
+		smci_list: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(
+				["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+				allIds,
+				["openai/gpt-4o"],
+			),
+		),
+		smci_all_all: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(null, allIds, allIds),
+		),
+		smci_empty: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds([], allIds, ["openai/gpt-4o"]),
+		),
+		smci_keep: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(["openai/gpt-4o"], allIds, []),
+		),
+		smci_all_none: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(null, allIds, []),
+		),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +14980,11 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const allKnownModelIdsEnabledPResults =
+		runCliSelectorsAllKnownModelIdsEnabledP();
+	const scopedModelsEnableIdsResults =
+		runCliSelectorsScopedModelsEnableIds();
+	const scopedModelsClearIdsResults = runCliSelectorsScopedModelsClearIds();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15290,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...allKnownModelIdsEnabledPResults,
+		...scopedModelsEnableIdsResults,
+		...scopedModelsClearIdsResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15659,6 +15750,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		all_known_model_ids_enabled_p: await collect(
+			"cli_selectors.all_known_model_ids_enabled_p",
+			() => {
+				return () => runCliSelectorsAllKnownModelIdsEnabledP();
+			},
+		),
+		scoped_models_enable_ids: await collect(
+			"cli_selectors.scoped_models_enable_ids",
+			() => {
+				return () => runCliSelectorsScopedModelsEnableIds();
+			},
+		),
+		scoped_models_clear_ids: await collect(
+			"cli_selectors.scoped_models_clear_ids",
+			() => {
+				return () => runCliSelectorsScopedModelsClearIds();
 			},
 		),
 		observed,
@@ -17393,6 +17502,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.all_known_model_ids_enabled_p":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts enableAll collapse-to-null check",
+			"cli_selectors.scoped_models_enable_ids":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts enableAll",
+			"cli_selectors.scoped_models_clear_ids":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts clearAll",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
