@@ -836,10 +836,14 @@ RATIO_CEILINGS = {
     # First-freeze headroom for cli_interactive_controller.resolve_theme.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_interactive_controller.resolve_theme": 8.0,
-    # cli_interactive_controller leftover trio on user-bash.lisp (493-495).
-    # First leftover freeze pending; 8.0 is first-freeze headroom.
+    # cli_interactive_controller.make_entry leftover (samples=5): observed 5.982x
+    # (1.424 / 0.238 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_interactive_controller.make_entry": 8.0,
+    # cli_interactive_controller.append_output leftover (samples=5): observed 2.670x
+    # (0.776 / 0.290 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_interactive_controller.append_output": 8.0,
+    # cli_interactive_controller.complete_entry leftover (samples=5): observed 2.411x
+    # (0.974 / 0.404 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_interactive_controller.complete_entry": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_selectors.session_search pair (samples=5): observed

@@ -13,21 +13,26 @@ tag/Release step.
   (`make-tui-user-bash-entry` on
   `src/cadr-cli/interactive/user-bash.lisp` vs
   `BashExecutionComponent` constructor). Observed `me_label` / `me_run`
-  / `me_ex` / `me_n` exact. n=5 freeze pending on host `cursor`,
-  ceiling 8.0. Measure-only leftover (Pair 493). `nextPairNum` left
+  / `me_ex` / `me_n` exact. n=5 **5.982×** (1.424 / 0.238 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 493). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text /
+  `execution_env.tmp_*`), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
   unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.append_output`
   (`append-tui-user-bash-output` on
   `src/cadr-cli/interactive/user-bash.lisp` vs `appendOutput`). Observed
-  `ao_text` / `ao_n` / `ao_skip` exact. n=5 freeze pending on host
-  `cursor`, ceiling 8.0. Measure-only leftover (Pair 494).
-  `nextPairNum` left unchanged.
+  `ao_text` / `ao_n` / `ao_skip` exact. n=5 **2.670×** (0.776 / 0.290 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 494).
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum`
+  left unchanged.
 - Goal 20 P.13 leftover: pair
   `cli_interactive_controller.complete_entry`
   (`complete-tui-user-bash-entry` on
   `src/cadr-cli/interactive/user-bash.lisp` vs `setComplete`). Observed
-  `ce_text` / `ce_exit` / `ce_path` / `ce_err` exact. n=5 freeze pending
-  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 495).
+  `ce_text` / `ce_exit` / `ce_path` / `ce_err` exact. n=5 **2.411×**
+  (0.974 / 0.404 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 495). Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
   `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
