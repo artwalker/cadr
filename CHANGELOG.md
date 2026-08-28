@@ -14,8 +14,11 @@ tag/Release step.
   `src/cadr-ai/oauth/providers/openai-device.lisp` vs baseline
   `startOpenAICodexDeviceAuth` error-body copy / interval parse / device start
   (`packages/ai/src/auth/oauth/openai-codex.ts`). Observed `jc_*` / `iv_*` /
-  `ds_*` exact. Measure-only. Pairs 421–423. Freeze numbers in the following
-  docs commit. `nextPairNum` left unchanged.
+  `ds_*` exact. n=5 **2.191×** / **0.711×** / **1.116×** (0.936 / 0.427 µs,
+  3.764 / 5.293 µs, 8.710 / 7.805 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not these metrics. Pairs 421 and 423 booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
   `src/cadr-evals/harness.lisp` vs baseline step property access).
   Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.

@@ -3939,8 +3939,10 @@ leads. Same commit no optimize.
 Leftover sibling of the `oauth_pkce_device` hole on `src/cadr-ai/oauth/providers/openai-device.lisp`.
 Timed work is empty-object / `{error: boom}` / nil copy — not loopback HTTP, not
 `start-openai-codex-device-authorization`. Observed `jc_empty` / `jc_ok` /
-`jc_nil` / `jc_n` are exact. First n=5 freeze numbers land in the freeze
-commit. Gate used `--only-enforce`. Same commit no optimize.
+`jc_nil` / `jc_n` are exact. First n=5 freeze **2.191×** (0.936 / 0.427 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 422 — `oauth_pkce_device` (interval_seconds)
 
@@ -3952,8 +3954,10 @@ Leftover sibling of Pair 421 `json_copy` on the same `openai-device.lisp`
 `oauth_pkce_device` hole. Timed work is numeric / trimmed-string / zero
 interval plus negative and `nope` errors — not the device POST. Observed
 `iv_num` / `iv_str` / `iv_zero` / `iv_neg` / `iv_bad` / `iv_n` are exact.
-First n=5 freeze numbers land in the freeze commit. Gate used `--only-enforce`.
-Same commit no optimize.
+First n=5 freeze **0.711×** (3.764 / 5.293 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). cadr leads. Same commit
+no optimize.
 
 ### Pair 423 — `oauth_pkce_device` (device_start)
 
@@ -3965,8 +3969,9 @@ Leftover sibling of Pairs 421–422 on the same `openai-device.lisp`
 `oauth_pkce_device` hole. Timed work is stubbed-HTTP start (200 valid / 404 /
 500 body / missing `user_code`) — not poll, not runtime login select. Observed
 `ds_ok` / `ds_404` / `ds_fail` / `ds_bad` / `ds_n` are exact. First n=5 freeze
-numbers land in the freeze commit. Gate used `--only-enforce`. Same commit no
-optimize.
+**1.116×** (8.710 / 7.805 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 343 — `write_tool` (ensure_parent)
 
