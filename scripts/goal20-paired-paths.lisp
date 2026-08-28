@@ -764,6 +764,9 @@
     ("cli_selectors.trust_option_saved_p" . 50)
     ("cli_selectors.make_trust_selector_state" . 50)
     ("cli_selectors.render_trust_selector" . 50)
+    ("cli_selectors.make_login_method_selector_state" . 50)
+    ("cli_selectors.make_api_key_input_state" . 50)
+    ("cli_selectors.make_oauth_selector_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -18697,6 +18700,161 @@
    (oauth-selector-ui-encoded
     (make-oauth-selector-ui-state :mode :logout :options '()) 40)))
 
+(defparameter *goal20-oauth-keybindings*
+  (cadr-tui:make-keybindings-manager))
+
+(defun encode-make-login-method-selector-state (state)
+  (let* ((select-list
+           (cadr-cli::login-method-selector-state-select-list state))
+         (items (cadr-tui::select-list-items select-list)))
+    (format
+     nil "~A|~D|~D|~A|~D|~{~A~^,~}"
+     (cadr-cli::login-method-selector-state-title state)
+     (length items)
+     (cadr-tui::select-list-height select-list)
+     (if (cadr-tui::select-list-show-filter-p select-list)
+         "true"
+         "false")
+     (cadr-tui::select-list-selected select-list)
+     (loop for item in items
+           collect
+           (encode-login-method-selector-value
+            (cadr-tui:select-item-value item))))))
+
+(defun run-cli-selectors-make-login-method-selector-state ()
+  (list
+   (encode-make-login-method-selector-state
+    (cadr-cli::make-login-method-selector-state))
+   (encode-make-login-method-selector-state
+    (cadr-cli::make-login-method-selector-state
+     :title "Select authentication method for Anthropic:"))
+   (encode-make-login-method-selector-state
+    (cadr-cli::make-login-method-selector-state
+     :items
+     (list
+      (cadr-tui:make-select-item
+       :label "Account" :value :oauth)
+      (cadr-tui:make-select-item
+       :label "API key" :value :api-key))))
+   (encode-make-login-method-selector-state
+    (cadr-cli::make-login-method-selector-state
+     :items
+     (list
+      (cadr-tui:make-select-item
+       :label "Sign in with an account" :value :oauth))))
+   (encode-make-login-method-selector-state
+    (cadr-cli::make-login-method-selector-state
+     :items
+     (list
+      (cadr-tui:make-select-item
+       :label "Sign in with an account" :value :oauth)
+      (cadr-tui:make-select-item
+       :label "Sign in with an API key" :value :api-key)
+      (cadr-tui:make-select-item
+       :label "Other" :value :oauth))))))
+
+(defun encode-make-api-key-input-state (state)
+  (let ((option (cadr-cli::api-key-input-state-option state))
+        (input (cadr-cli::api-key-input-state-input state)))
+    (format
+     nil "~A|~A|~A|~A|~D|~D"
+     (cadr-cli::provider-key
+      (cadr-cli::oauth-selector-option-id option))
+     (cadr-cli::oauth-selector-option-name option)
+     (if (eq (cadr-cli::oauth-selector-option-auth-type option) :oauth)
+         "oauth"
+         "api_key")
+     (cadr-tui::single-line-input-prompt input)
+     (length (cadr-tui:single-line-input-value input))
+     (cadr-tui::single-line-input-cursor input))))
+
+(defun run-cli-selectors-make-api-key-input-state ()
+  (list
+   (encode-make-api-key-input-state
+    (cadr-cli::make-api-key-input-state
+     (make-oauth-option-status-fixture
+      :id :anthropic :name "Anthropic" :auth-type :api-key)))
+   (encode-make-api-key-input-state
+    (cadr-cli::make-api-key-input-state
+     (make-oauth-option-status-fixture
+      :id :openai :name "OpenAI" :auth-type :api-key)))
+   (encode-make-api-key-input-state
+    (cadr-cli::make-api-key-input-state
+     (make-oauth-option-status-fixture
+      :id :google :name "Google" :auth-type :api-key)))
+   (encode-make-api-key-input-state
+    (cadr-cli::make-api-key-input-state
+     (make-oauth-option-status-fixture
+      :id :anthropic :name "Anthropic" :auth-type :oauth)))
+   (encode-make-api-key-input-state
+    (cadr-cli::make-api-key-input-state
+     (make-oauth-option-status-fixture
+      :id :google-vertex :name "Google Vertex" :auth-type :api-key)))))
+
+(defun encode-make-oauth-selector-state (state)
+  (let ((options (cadr-cli::oauth-selector-state-options state))
+        (filtered
+          (cadr-cli::oauth-selector-state-filtered-options state)))
+    (format
+     nil "~A|~D|~D|~D|~A|~A"
+     (if (eq (cadr-cli::oauth-selector-state-mode state) :logout)
+         "logout"
+         "login")
+     (length options)
+     (length filtered)
+     (cadr-cli::oauth-selector-state-selected state)
+     (cadr-cli::oauth-selector-state-query state)
+     (if options
+         (cadr-cli::provider-key
+          (cadr-cli::oauth-selector-option-id (first options)))
+         ""))))
+
+(defun run-cli-selectors-make-oauth-selector-state ()
+  (list
+   (encode-make-oauth-selector-state
+    (cadr-cli::make-oauth-selector-state
+     :options (make-oauth-selector-test-options)
+     :keybindings *goal20-oauth-keybindings*))
+   (encode-make-oauth-selector-state
+    (cadr-cli::make-oauth-selector-state
+     :options (make-oauth-selector-test-options)
+     :query "open"
+     :keybindings *goal20-oauth-keybindings*))
+   (encode-make-oauth-selector-state
+    (cadr-cli::make-oauth-selector-state
+     :options (make-oauth-selector-test-options)
+     :query "nope"
+     :keybindings *goal20-oauth-keybindings*))
+   (encode-make-oauth-selector-state
+    (cadr-cli::make-oauth-selector-state
+     :mode :logout
+     :options '()
+     :keybindings *goal20-oauth-keybindings*))
+   (encode-make-oauth-selector-state
+    (cadr-cli::make-oauth-selector-state
+     :mode :logout
+     :options (make-oauth-selector-test-options)
+     :keybindings *goal20-oauth-keybindings*))))
+
+(defun auth-make-login-api-oauth-observed-pairs
+    (login-method api-key oauth)
+  (list
+   "mlms_default" (nth 0 login-method)
+   "mlms_title" (nth 1 login-method)
+   "mlms_custom" (nth 2 login-method)
+   "mlms_one" (nth 3 login-method)
+   "mlms_three" (nth 4 login-method)
+   "makis_anth" (nth 0 api-key)
+   "makis_openai" (nth 1 api-key)
+   "makis_google" (nth 2 api-key)
+   "makis_oauth_opt" (nth 3 api-key)
+   "makis_named" (nth 4 api-key)
+   "moss_default" (nth 0 oauth)
+   "moss_filter" (nth 1 oauth)
+   "moss_miss" (nth 2 oauth)
+   "moss_logout_empty" (nth 3 oauth)
+   "moss_logout" (nth 4 oauth)))
+
 (defun make-model-selector-search-fixture
     (&key (id "gpt-4o") (provider :openai) (name "GPT-4o"))
   (cadr-ai:make-model
@@ -21866,7 +22024,13 @@
           (run-cli-selectors-make-trust-selector-state))
         (leftover-trust-render
           (run-cli-selectors-render-trust-selector))
-        (user-message-make
+        (leftover-make-login-method-state
+          (run-cli-selectors-make-login-method-selector-state))
+        (leftover-make-api-key-state
+          (run-cli-selectors-make-api-key-input-state))
+        (leftover-make-oauth-state
+          (run-cli-selectors-make-oauth-selector-state))
+        (user-message-make)
           (run-cli-selectors-user-message-make))
         (user-message-move
           (run-cli-selectors-user-message-move))
@@ -22645,7 +22809,9 @@
               leftover-thinking-selected-level leftover-thinking-description-line leftover-thinking-render)
              (trust-saved-make-render-observed-pairs
               leftover-trust-saved-p leftover-make-trust-state leftover-trust-render)
-             (user-message-selector-observed-pairs
+             (auth-make-login-api-oauth-observed-pairs
+              leftover-make-login-method-state leftover-make-api-key-state leftover-make-oauth-state)
+             (user-message-selector-observed-pairs)
               user-message-make
               user-message-move
               user-message-selection)))
@@ -23606,7 +23772,22 @@
      (collect "cli_selectors.render_trust_selector"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-render-trust-selector)))))))
+                  (run-cli-selectors-render-trust-selector))))
+     "make_login_method_selector_state"
+     (collect "cli_selectors.make_login_method_selector_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-login-method-selector-state))))
+     "make_api_key_input_state"
+     (collect "cli_selectors.make_api_key_input_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-api-key-input-state))))
+     "make_oauth_selector_state"
+     (collect "cli_selectors.make_oauth_selector_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-oauth-selector-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -26294,6 +26475,12 @@
       "src/cadr-cli/interactive/selectors/trust.lisp make-trust-selector-state"
       "cli_selectors.render_trust_selector"
       "src/cadr-cli/interactive/selectors/trust.lisp render-trust-selector"
+      "cli_selectors.make_login_method_selector_state"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-login-method-selector-state"
+      "cli_selectors.make_api_key_input_state"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
+      "cli_selectors.make_oauth_selector_state"
+      "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

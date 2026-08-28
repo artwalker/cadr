@@ -410,6 +410,9 @@ const REPETITIONS = {
 	"cli_selectors.trust_option_saved_p": 50,
 	"cli_selectors.make_trust_selector_state": 50,
 	"cli_selectors.render_trust_selector": 50,
+	"cli_selectors.make_login_method_selector_state": 50,
+	"cli_selectors.make_api_key_input_state": 50,
+	"cli_selectors.make_oauth_selector_state": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -18500,6 +18503,169 @@ function runCliSelectorsOauthSelectorUiState() {
 	};
 }
 
+const GOAL20_OAUTH_KEYBINDINGS = { cached: true };
+
+const DEFAULT_LOGIN_METHOD_ITEMS = [
+	{ label: "Sign in with an account", value: "oauth" },
+	{ label: "Sign in with an API key", value: "api_key" },
+];
+
+function makeLoginMethodSelectorConstructorState({
+	title = "Select authentication method:",
+	items = DEFAULT_LOGIN_METHOD_ITEMS,
+} = {}) {
+	const copied = items.map((item) => ({ label: item.label, value: item.value }));
+	return {
+		title,
+		selectList: {
+			items: copied,
+			height: copied.length,
+			showFilter: false,
+			selected: 0,
+			query: "",
+		},
+	};
+}
+
+function encodeMakeLoginMethodSelectorState(state) {
+	const items = state.selectList.items;
+	const values = items.map((item) => item.value).join(",");
+	return `${state.title}|${items.length}|${state.selectList.height}|${state.selectList.showFilter ? "true" : "false"}|${state.selectList.selected}|${values}`;
+}
+
+function runCliSelectorsMakeLoginMethodSelectorState() {
+	return {
+		mlms_default: encodeMakeLoginMethodSelectorState(
+			makeLoginMethodSelectorConstructorState(),
+		),
+		mlms_title: encodeMakeLoginMethodSelectorState(
+			makeLoginMethodSelectorConstructorState({
+				title: "Select authentication method for Anthropic:",
+			}),
+		),
+		mlms_custom: encodeMakeLoginMethodSelectorState(
+			makeLoginMethodSelectorConstructorState({
+				items: [
+					{ label: "Account", value: "oauth" },
+					{ label: "API key", value: "api_key" },
+				],
+			}),
+		),
+		mlms_one: encodeMakeLoginMethodSelectorState(
+			makeLoginMethodSelectorConstructorState({
+				items: [{ label: "Sign in with an account", value: "oauth" }],
+			}),
+		),
+		mlms_three: encodeMakeLoginMethodSelectorState(
+			makeLoginMethodSelectorConstructorState({
+				items: [
+					{ label: "Sign in with an account", value: "oauth" },
+					{ label: "Sign in with an API key", value: "api_key" },
+					{ label: "Other", value: "oauth" },
+				],
+			}),
+		),
+	};
+}
+
+function makeApiKeyInputConstructorState(option) {
+	return {
+		option,
+		input: { value: "", cursor: 0, prompt: "> " },
+	};
+}
+
+function encodeMakeApiKeyInputState(state) {
+	const auth = state.option.authType === "oauth" ? "oauth" : "api_key";
+	return `${state.option.id}|${state.option.name}|${auth}|${state.input.prompt}|${state.input.value.length}|${state.input.cursor}`;
+}
+
+function runCliSelectorsMakeApiKeyInputState() {
+	return {
+		makis_anth: encodeMakeApiKeyInputState(
+			makeApiKeyInputConstructorState({
+				id: "anthropic",
+				name: "Anthropic",
+				authType: "api_key",
+			}),
+		),
+		makis_openai: encodeMakeApiKeyInputState(
+			makeApiKeyInputConstructorState({
+				id: "openai",
+				name: "OpenAI",
+				authType: "api_key",
+			}),
+		),
+		makis_google: encodeMakeApiKeyInputState(
+			makeApiKeyInputConstructorState({
+				id: "google",
+				name: "Google",
+				authType: "api_key",
+			}),
+		),
+		makis_oauth_opt: encodeMakeApiKeyInputState(
+			makeApiKeyInputConstructorState({
+				id: "anthropic",
+				name: "Anthropic",
+				authType: "oauth",
+			}),
+		),
+		makis_named: encodeMakeApiKeyInputState(
+			makeApiKeyInputConstructorState({
+				id: "google-vertex",
+				name: "Google Vertex",
+				authType: "api_key",
+			}),
+		),
+	};
+}
+
+function makeOauthSelectorConstructorState({
+	mode = "login",
+	options = makeOauthSelectorTestOptions(),
+	query = "",
+	keybindings = GOAL20_OAUTH_KEYBINDINGS,
+} = {}) {
+	const copied = options.slice();
+	const filtered = query
+		? fuzzyModule.fuzzyFilter(copied, query, oauthSelectorSearchText)
+		: copied.slice();
+	return {
+		mode,
+		options: copied,
+		filtered,
+		selected: 0,
+		query,
+		keybindings,
+	};
+}
+
+function encodeMakeOauthSelectorState(state) {
+	const firstId = state.options[0]?.id ?? "";
+	return `${state.mode}|${state.options.length}|${state.filtered.length}|${state.selected}|${state.query}|${firstId}`;
+}
+
+function runCliSelectorsMakeOauthSelectorState() {
+	return {
+		moss_default: encodeMakeOauthSelectorState(makeOauthSelectorConstructorState()),
+		moss_filter: encodeMakeOauthSelectorState(
+			makeOauthSelectorConstructorState({ query: "open" }),
+		),
+		moss_miss: encodeMakeOauthSelectorState(
+			makeOauthSelectorConstructorState({ query: "nope" }),
+		),
+		moss_logout_empty: encodeMakeOauthSelectorState(
+			makeOauthSelectorConstructorState({ mode: "logout", options: [] }),
+		),
+		moss_logout: encodeMakeOauthSelectorState(
+			makeOauthSelectorConstructorState({
+				mode: "logout",
+				options: makeOauthSelectorTestOptions(),
+			}),
+		),
+	};
+}
+
 function runCliSelectorsModelSelectorSearchText() {
 	return {
 		msst_openai: modelSearchModule.getModelSelectorSearchText({
@@ -23163,6 +23329,10 @@ async function measureCliSelectorsSessionSearch() {
 	const trustOptionSavedPResults = runCliSelectorsTrustOptionSavedP();
 	const makeTrustSelectorStateResults = runCliSelectorsMakeTrustSelectorState();
 	const renderTrustSelectorResults = runCliSelectorsRenderTrustSelector();
+	const makeLoginMethodSelectorStateResults =
+		runCliSelectorsMakeLoginMethodSelectorState();
+	const makeApiKeyInputStateResults = runCliSelectorsMakeApiKeyInputState();
+	const makeOauthSelectorStateResults = runCliSelectorsMakeOauthSelectorState();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -23530,6 +23700,9 @@ async function measureCliSelectorsSessionSearch() {
 		...trustOptionSavedPResults,
 		...makeTrustSelectorStateResults,
 		...renderTrustSelectorResults,
+		...makeLoginMethodSelectorStateResults,
+		...makeApiKeyInputStateResults,
+		...makeOauthSelectorStateResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -24338,6 +24511,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.render_trust_selector",
 			() => {
 				return () => runCliSelectorsRenderTrustSelector();
+			},
+		),
+		make_login_method_selector_state: await collect(
+			"cli_selectors.make_login_method_selector_state",
+			() => {
+				return () => runCliSelectorsMakeLoginMethodSelectorState();
+			},
+		),
+		make_api_key_input_state: await collect(
+			"cli_selectors.make_api_key_input_state",
+			() => {
+				return () => runCliSelectorsMakeApiKeyInputState();
+			},
+		),
+		make_oauth_selector_state: await collect(
+			"cli_selectors.make_oauth_selector_state",
+			() => {
+				return () => runCliSelectorsMakeOauthSelectorState();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -27246,6 +27437,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent constructor",
 			"cli_selectors.render_trust_selector":
 				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent layout",
+			"cli_selectors.make_login_method_selector_state":
+				"packages/coding-agent/src/modes/interactive/components/extension-selector.ts ExtensionSelectorComponent constructor (login method selector)",
+			"cli_selectors.make_api_key_input_state":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor",
+			"cli_selectors.make_oauth_selector_state":
+				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
