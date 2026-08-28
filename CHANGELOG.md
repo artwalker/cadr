@@ -12,8 +12,11 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `execution_env.absolute_path` /
   `join_path` / `file_info` (`src/cadr-agent/execution-env.lisp` vs
   baseline `NodeExecutionEnv.absolutePath` / `joinPath` / `fileInfo`).
-  Observed `ap_*` / `jp_*` / `fi_*` exact. Measure-only leftover
-  (Pairs 391–393). Gate `--only-enforce` pending freeze. No `src/`
+  Observed `ap_*` / `jp_*` / `fi_*` exact. n=5 **2.926×** / **10.262×** /
+  **0.411×** (11.812 / 4.037 µs, 9.174 / 0.894 µs, 5.723 / 13.935 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pairs 391–393).
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not these metrics. Pairs 391–392 are on the over-1× ledger. No `src/`
   optimization. Does not touch `file-mutation-queue.lisp`. `nextPairNum`
   stays 328.
 

@@ -4016,9 +4016,12 @@ Leftover sibling of Pair 257 `exists_remove_temps` on the same
 relative leaf, an absolute `/tmp` path, a `~/` home path, and a
 `file://` URL — not exists/remove/temps, not join, not fileInfo, not
 exec. Observed `ap_rel` / `ap_abs` / `ap_home` / `ap_file` / `ap_n` are
-exact. First n=5 freeze pending `--only-enforce`. Same commit no
-optimize. Pair numbers 328–330 belong to the in-flight
-`file-mutation-queue.lisp` knife; this cut is 391–393 only.
+exact. First n=5 freeze **2.926×** (11.812 / 4.037 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize. Pair numbers 328–330 belong to the in-flight
+`file-mutation-queue.lisp` knife; this cut is 391–393 only. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 392 — `execution_env` (join_path)
 
@@ -4030,8 +4033,11 @@ Leftover sibling of Pair 391 `absolute_path` on the same
 `execution-env.lisp` hole. Timed work is joining relative `a`/`b` plus
 an absolute `/tmp/goal20-jp-abs`/`x`/`y` — not absolutePath, not
 fileInfo, not exists/remove. Observed `jp_rel` / `jp_abs` / `jp_n` are
-exact. First n=5 freeze pending `--only-enforce`. Same commit no
-optimize.
+exact. First n=5 freeze **10.262×** (9.174 / 0.894 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail — variance
+floor binds on a sub-µs pi median). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 393 — `execution_env` (file_info)
 
@@ -4043,7 +4049,10 @@ Leftover sibling of Pair 391 `absolute_path` and Pair 392 `join_path` on
 the same `execution-env.lisp` hole. Timed work is `lstat` name/kind/size
 of a staged `info.txt` — not write as the timed owner, not exists, not
 listDir. Observed `fi_name` / `fi_kind` / `fi_size` / `fi_n` are exact.
-First n=5 freeze pending `--only-enforce`. Same commit no optimize.
+First n=5 freeze **0.411×** (5.723 / 13.935 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). cadr
+leads. Same commit no optimize.
 
 ### Pair 256 — `resource_loader` (dedupe_by_name)
 
