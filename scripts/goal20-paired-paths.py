@@ -609,6 +609,10 @@ RATIO_CEILINGS = {
     # 0.19x (13.16 / 70.76 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "cli_print_rpc.session_stats": 8.0,
+    # cli_print_rpc leftover trio (samples=5): observed
+    # queue_mode 0.12x (0.32 / 2.72 us), last_assistant 0.71x
+    # (0.28 / 0.40 us), command_list 4.15x (1.49 / 0.36 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
     "cli_print_rpc.queue_mode": 8.0,
     "cli_print_rpc.last_assistant": 8.0,
     "cli_print_rpc.command_list": 8.0,

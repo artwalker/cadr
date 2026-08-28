@@ -929,9 +929,9 @@
    "metric": "cli_print_rpc.queue_mode",
    "branch": "cursor/rpc-commands-leftovers-475-477-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 475-477, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 0.116,
+   "cadrUs": 0.316,
+   "piUs": 2.720,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -944,9 +944,9 @@
    "metric": "cli_print_rpc.last_assistant",
    "branch": "cursor/rpc-commands-leftovers-475-477-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 475-477, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 0.713,
+   "cadrUs": 0.285,
+   "piUs": 0.400,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -959,9 +959,9 @@
    "metric": "cli_print_rpc.command_list",
    "branch": "cursor/rpc-commands-leftovers-475-477-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 475-477, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 4.151,
+   "cadrUs": 1.490,
+   "piUs": 0.359,
    "ceiling": 8.0,
    "rc": 1
   }

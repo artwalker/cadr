@@ -12,20 +12,23 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `cli_print_rpc.queue_mode`
   (`parse-queue-mode` on `src/cadr-cli/modes/rpc/commands.lisp` vs RPC
   steering/follow-up mode strings). Observed `qm_all` / `qm_one` / `qm_bad`
-  exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 475). Gate
-  rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this
-  metric. `nextPairNum` left unchanged.
+  exact. n=5 **0.116×** (0.316 / 2.720 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 475). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  unchanged.
 - Goal 20 P.13 leftover: pair `cli_print_rpc.last_assistant`
   (`rpc-last-assistant-text` on `src/cadr-cli/modes/rpc/commands.lisp` vs
   `getLastAssistantText`). Observed `la_hit` / `la_len` / `la_miss` exact.
-  n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 476). Gate rc=1 only
-  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  n=5 **0.713×** (0.285 / 0.400 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 476). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `cli_print_rpc.command_list`
   (`rpc-command-list` on `src/cadr-cli/modes/rpc/commands.lisp` vs
   `get_commands` extension+prompt walk). Observed `cl_n` / `cl_ext` /
-  `cl_prompt` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair
-  477). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help
-  text), not this metric.
+  `cl_prompt` exact. n=5 **4.151×** (1.490 / 0.359 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 477). Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
