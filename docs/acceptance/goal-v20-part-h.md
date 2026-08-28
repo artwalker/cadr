@@ -4016,6 +4016,49 @@ work is result object JSON (output / events / errors / artifacts / timings)
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
 this metric did not fail). Same commit no optimize.
 
+### Pair 409 — `tool_manager` (release_asset)
+
+| metric | cadr | pi |
+|---|---|---|
+| `release_asset` | `tool-release-asset` (`src/cadr-cli/tool-manager.lisp`) | `TOOLS.getAssetName` (`packages/coding-agent/src/utils/tools-manager.ts`) |
+
+Leftover sibling of Pairs 292–294 on the same `tool-manager.lisp` hole.
+Timed work is fd/rg GitHub release asset names for darwin-arm64, linux-x64,
+windows-x64, linux musl/gnu, and darwin-arm64 ripgrep — not download, not
+unpack, not `ensure-tool`. Observed `ra_fd_darwin_arm` / `ra_fd_linux_x64` /
+`ra_fd_win_x64` / `ra_rg_linux_x64` / `ra_rg_linux_arm` / `ra_rg_darwin_arm` /
+`ra_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
+### Pair 410 — `tool_manager` (find_binary)
+
+| metric | cadr | pi |
+|---|---|---|
+| `find_binary` | `find-file-recursively` (`src/cadr-cli/tool-manager.lisp`) | `findBinaryRecursively` (`packages/coding-agent/src/utils/tools-manager.ts`) |
+
+Leftover sibling of Pair 409 `release_asset` on the same `tool-manager.lisp`
+hole. Timed work is nested `fd`, root `rg`, and a missing name — not archive
+extract, not chmod. Observed `fb_nested` / `fb_root` / `fb_miss` / `fb_n` are
+exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Same commit no optimize.
+
+### Pair 411 — `tool_manager` (quarantine_native)
+
+| metric | cadr | pi |
+|---|---|---|
+| `quarantine_native` | `quarantine-windows-native-dependencies` (`src/cadr-cli/tool-manager.lisp`) | `quarantineWindowsNativeDependencies` (`packages/coding-agent/src/utils/windows-self-update.ts`) |
+
+Leftover sibling of Pair 294 `cleanup_quarantine` on the same
+`tool-manager.lisp` hole. Timed work is rename+copy of a fixture native under
+`node_modules` plus a no-op path with no `node_modules` ancestor — not
+`process.report` enumeration on cadr (`:loaded-paths`), not cleanup. Observed
+`qn_restored` / `qn_stashed` / `qn_noop` / `qn_n` are exact. First n=5 freeze
+**RATIO_PLACEHOLDER**. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4664,7 +4707,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/resume-version-git.lisp` | 225 | `cli_support.git_source`, `cli_support.user_agent` |
 | `src/cadr-cli/support/shell-process.lisp` | 147 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
-| `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine` |
+| `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine`, `tool_manager.release_asset`, `tool_manager.find_binary`, `tool_manager.quarantine_native` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |

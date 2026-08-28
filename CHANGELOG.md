@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `tool_manager.release_asset` (`tool-release-asset`
+  on `src/cadr-cli/tool-manager.lisp` vs baseline `TOOLS.getAssetName`).
+  Observed `ra_fd_darwin_arm` / `ra_fd_linux_x64` / `ra_fd_win_x64` /
+  `ra_rg_linux_x64` / `ra_rg_linux_arm` / `ra_rg_darwin_arm` / `ra_n` exact.
+  n=5 **RATIO_PLACEHOLDER** on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not
+  this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `tool_manager.find_binary` (`find-file-recursively`
+  on `src/cadr-cli/tool-manager.lisp` vs baseline `findBinaryRecursively`).
+  Observed `fb_nested` / `fb_root` / `fb_miss` / `fb_n` exact. n=5
+  **RATIO_PLACEHOLDER** on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `tool_manager.quarantine_native`
+  (`quarantine-windows-native-dependencies` on `src/cadr-cli/tool-manager.lisp`
+  vs baseline `quarantineWindowsNativeDependencies`). Observed `qn_restored` /
+  `qn_stashed` / `qn_noop` / `qn_n` exact. n=5 **RATIO_PLACEHOLDER** on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  unchanged.
+
 - Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
   `src/cadr-evals/harness.lisp` vs baseline step property access).
   Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.
