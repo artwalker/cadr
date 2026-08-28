@@ -132,7 +132,7 @@ METRICS = {
         "parse_query",
         "parse_authorization_input",
     ),
-    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
+    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery", "gated_approval", "split_args", "quant_label"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
@@ -490,6 +490,11 @@ RATIO_CEILINGS = {
     # 1.98x (1954.5 / 987.2 us). pi leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_extensions_install.extension_discovery": 8.0,
+    # cli_extensions_install leftover trio on llama/extension.lisp (505-507).
+    # First leftover freeze pending; 8.0 is first-freeze headroom.
+    "cli_extensions_install.gated_approval": 8.0,
+    "cli_extensions_install.split_args": 8.0,
+    "cli_extensions_install.quant_label": 8.0,
     # Frozen from the first Friend-MachineD non-quick evals_harness
     # pair (samples=5): observed 0.88x (8.0 / 9.0 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -1950,6 +1955,19 @@ OBSERVED_EXACT = {
         "ed_glob",
         "ed_probe",
         "ed_miss",
+        "ga_manual",
+        "ga_auto",
+        "ga_str",
+        "ga_nil",
+        "sa_login",
+        "sa_view",
+        "sa_bare",
+        "sa_tab",
+        "sa_n",
+        "ql_name",
+        "ql_rec",
+        "ql_bytes",
+        "ql_both",
     ),
     "evals_harness": (
         "eval_sets",

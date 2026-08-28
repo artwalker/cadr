@@ -221,6 +221,9 @@ const REPETITIONS = {
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
 	"cli_extensions_install.extension_discovery": 50,
+	"cli_extensions_install.gated_approval": 50,
+	"cli_extensions_install.split_args": 50,
+	"cli_extensions_install.quant_label": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -6481,11 +6484,108 @@ function runCliExtensionsExtensionDiscovery() {
 	};
 }
 
+function replicaLlamaGatedApprovalText(gated) {
+	if (gated && typeof gated === "object" && gated.keyword === "manual") {
+		return "Manual approval is required";
+	}
+	return "Accept the access terms";
+}
+
+function replicaLispTrim(text) {
+	const chars = new Set([" ", "\t", "\n", "\r"]);
+	let start = 0;
+	let end = text.length;
+	while (start < end && chars.has(text[start])) {
+		start += 1;
+	}
+	while (end > start && chars.has(text[end - 1])) {
+		end -= 1;
+	}
+	return text.slice(start, end);
+}
+
+function replicaSplitLlamaCommandArguments(argumentsText) {
+	const trimmed = replicaLispTrim(argumentsText);
+	let separator = -1;
+	for (let index = 0; index < trimmed.length; index += 1) {
+		const character = trimmed[index];
+		if (character === " " || character === "\t") {
+			separator = index;
+			break;
+		}
+	}
+	const command = (separator >= 0 ? trimmed.slice(0, separator) : trimmed).toLowerCase();
+	let rest = "";
+	if (separator >= 0) {
+		rest = trimmed.slice(separator).replace(/^[\t ]+/, "");
+	}
+	return [command, rest];
+}
+
+function replicaFormatLlamaBytes(bytes) {
+	if (bytes < 1024) {
+		return `${bytes} B`;
+	}
+	throw new Error("replicaFormatLlamaBytes leftover fixtures stay under 1024");
+}
+
+function replicaLlamaQuantizationOptionLabel(entry) {
+	const details = [];
+	if (entry.size != null) {
+		details.push(replicaFormatLlamaBytes(entry.size));
+	}
+	if (entry.name === "Q4_K_M") {
+		details.push("recommended");
+	}
+	if (details.length > 0) {
+		return `${entry.name} · ${details.join(" · ")}`;
+	}
+	return entry.name;
+}
+
+function runCliExtensionsGatedApproval() {
+	const txt = replicaLlamaGatedApprovalText;
+	return [
+		txt({ keyword: "manual" }) === "Manual approval is required" ? 1 : 0,
+		txt({ keyword: "auto" }) === "Accept the access terms" ? 1 : 0,
+		txt("manual") === "Accept the access terms" ? 1 : 0,
+		txt(null) === "Accept the access terms" ? 1 : 0,
+	];
+}
+
+function runCliExtensionsSplitArgs() {
+	const split = replicaSplitLlamaCommandArguments;
+	const login = split("Login extra");
+	const view = split("  VIEW  foo");
+	const bare = split("status");
+	const tab = split("Load\tmodel id");
+	return [
+		login[0] === "login" && login[1] === "extra" ? 1 : 0,
+		view[0] === "view" && view[1] === "foo" ? 1 : 0,
+		bare[0] === "status" && bare[1] === "" ? 1 : 0,
+		tab[0] === "load" && tab[1] === "model id" ? 1 : 0,
+		4,
+	];
+}
+
+function runCliExtensionsQuantLabel() {
+	const lab = replicaLlamaQuantizationOptionLabel;
+	return [
+		lab({ name: "Q8_0" }) === "Q8_0" ? 1 : 0,
+		lab({ name: "Q4_K_M" }) === "Q4_K_M · recommended" ? 1 : 0,
+		lab({ name: "Q5", size: 512 }) === "Q5 · 512 B" ? 1 : 0,
+		lab({ name: "Q4_K_M", size: 256 }) === "Q4_K_M · 256 B · recommended" ? 1 : 0,
+	];
+}
+
 async function measureCliExtensionsInstall() {
 	const url = runCliExtensionsLlamaUrl();
 	const token = await runCliExtensionsHfToken();
 	const catalog = runCliExtensionsLlamaCatalog();
 	const discovery = runCliExtensionsExtensionDiscovery();
+	const gated = runCliExtensionsGatedApproval();
+	const splitArgs = runCliExtensionsSplitArgs();
+	const quant = runCliExtensionsQuantLabel();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -6499,7 +6599,34 @@ async function measureCliExtensionsInstall() {
 		extension_discovery: await collect("cli_extensions_install.extension_discovery", () => {
 			return () => runCliExtensionsExtensionDiscovery();
 		}),
-		observed: { ...url, ...token, ...catalog, ...discovery },
+		gated_approval: await collect("cli_extensions_install.gated_approval", () => {
+			return () => runCliExtensionsGatedApproval();
+		}),
+		split_args: await collect("cli_extensions_install.split_args", () => {
+			return () => runCliExtensionsSplitArgs();
+		}),
+		quant_label: await collect("cli_extensions_install.quant_label", () => {
+			return () => runCliExtensionsQuantLabel();
+		}),
+		observed: {
+			...url,
+			...token,
+			...catalog,
+			...discovery,
+			ga_manual: gated[0],
+			ga_auto: gated[1],
+			ga_str: gated[2],
+			ga_nil: gated[3],
+			sa_login: splitArgs[0],
+			sa_view: splitArgs[1],
+			sa_bare: splitArgs[2],
+			sa_tab: splitArgs[3],
+			sa_n: splitArgs[4],
+			ql_name: quant[0],
+			ql_rec: quant[1],
+			ql_bytes: quant[2],
+			ql_both: quant[3],
+		},
 	};
 }
 
@@ -17035,6 +17162,12 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/provider.ts createLlamaProvider.setCatalog",
 			"cli_extensions_install.extension_discovery":
 				"packages/coding-agent/src/core/extensions/loader.ts discoverAndLoadExtensions path discovery",
+			"cli_extensions_install.gated_approval":
+				"packages/coding-agent/src/extensions/llama/index.ts gated-repo approval copy",
+			"cli_extensions_install.split_args":
+				"packages/coding-agent/src/extensions/llama/index.ts llama command argv split",
+			"cli_extensions_install.quant_label":
+				"packages/coding-agent/src/extensions/llama/index.ts downloadModel option text",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

@@ -91,6 +91,9 @@
 ;;;;  72. oauth_pkce_device poll-device-authorization vs pollOAuthDeviceCodeFlow
 ;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
+;;;; 505. cli_extensions_install llama-gated-approval-text vs gated-repo approval copy
+;;;; 506. cli_extensions_install split-llama-command-arguments vs llama command argv split
+;;;; 507. cli_extensions_install llama-quantization-option-label vs downloadModel option text
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
@@ -370,6 +373,9 @@
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
     ("cli_extensions_install.extension_discovery" . 50)
+    ("cli_extensions_install.gated_approval" . 50)
+    ("cli_extensions_install.split_args" . 50)
+    ("cli_extensions_install.quant_label" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -6754,11 +6760,62 @@
          1
          0))))
 
+(defun run-cli-extensions-gated-approval ()
+  (flet ((txt (gated)
+           (cadr-cli::llama-gated-approval-text gated)))
+    (list
+     (if (string= (txt :manual) "Manual approval is required") 1 0)
+     (if (string= (txt :auto) "Accept the access terms") 1 0)
+     (if (string= (txt "manual") "Accept the access terms") 1 0)
+     (if (string= (txt nil) "Accept the access terms") 1 0))))
+
+(defun run-cli-extensions-split-args ()
+  (flet ((split (arguments)
+           (multiple-value-list
+            (cadr-cli::split-llama-command-arguments arguments))))
+    (let ((login (split "Login extra"))
+          (view (split "  VIEW  foo"))
+          (bare (split "status"))
+          (tab (split (format nil "Load~Cmodel id" #\Tab))))
+      (list
+       (if (and (string= (first login) "login")
+                (string= (second login) "extra"))
+           1
+           0)
+       (if (and (string= (first view) "view")
+                (string= (second view) "foo"))
+           1
+           0)
+       (if (and (string= (first bare) "status")
+                (string= (second bare) ""))
+           1
+           0)
+       (if (and (string= (first tab) "load")
+                (string= (second tab) "model id"))
+           1
+           0)
+       4))))
+
+(defun run-cli-extensions-quant-label ()
+  (flet ((lab (entry)
+           (cadr-cli::llama-quantization-option-label entry)))
+    (list
+     (if (string= (lab '(:name "Q8_0")) "Q8_0") 1 0)
+     (if (string= (lab '(:name "Q4_K_M")) "Q4_K_M · recommended") 1 0)
+     (if (string= (lab '(:name "Q5" :size 512)) "Q5 · 512 B") 1 0)
+     (if (string= (lab '(:name "Q4_K_M" :size 256))
+                  "Q4_K_M · 256 B · recommended")
+         1
+         0))))
+
 (defun measure-cli-extensions-install ()
   (let ((url (run-cli-extensions-llama-url))
         (token (run-cli-extensions-hf-token))
         (catalog (run-cli-extensions-llama-catalog))
-        (discovery (run-cli-extensions-extension-discovery)))
+        (discovery (run-cli-extensions-extension-discovery))
+        (gated (run-cli-extensions-gated-approval))
+        (split-args (run-cli-extensions-split-args))
+        (quant (run-cli-extensions-quant-label)))
     (json-object
      "observed"
      (json-object
@@ -6786,7 +6843,20 @@
       "ed_proj" (nth 4 discovery)
       "ed_glob" (nth 5 discovery)
       "ed_probe" (nth 6 discovery)
-      "ed_miss" (nth 7 discovery))
+      "ed_miss" (nth 7 discovery)
+      "ga_manual" (nth 0 gated)
+      "ga_auto" (nth 1 gated)
+      "ga_str" (nth 2 gated)
+      "ga_nil" (nth 3 gated)
+      "sa_login" (nth 0 split-args)
+      "sa_view" (nth 1 split-args)
+      "sa_bare" (nth 2 split-args)
+      "sa_tab" (nth 3 split-args)
+      "sa_n" (nth 4 split-args)
+      "ql_name" (nth 0 quant)
+      "ql_rec" (nth 1 quant)
+      "ql_bytes" (nth 2 quant)
+      "ql_both" (nth 3 quant))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -6806,7 +6876,22 @@
      (collect "cli_extensions_install.extension_discovery"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-extension-discovery)))))))
+                  (run-cli-extensions-extension-discovery))))
+     "gated_approval"
+     (collect "cli_extensions_install.gated_approval"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-gated-approval))))
+     "split_args"
+     (collect "cli_extensions_install.split_args"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-split-args))))
+     "quant_label"
+     (collect "cli_extensions_install.quant_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-quant-label)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -16668,6 +16753,12 @@
       "src/cadr-cli/extensions/llama/provider.lisp llama-provider-set-catalog"
       "cli_extensions_install.extension_discovery"
       "src/cadr-cli/extensions/discovery.lisp discover-extension-sources"
+      "cli_extensions_install.gated_approval"
+      "src/cadr-cli/extensions/llama/extension.lisp llama-gated-approval-text"
+      "cli_extensions_install.split_args"
+      "src/cadr-cli/extensions/llama/extension.lisp split-llama-command-arguments"
+      "cli_extensions_install.quant_label"
+      "src/cadr-cli/extensions/llama/extension.lisp llama-quantization-option-label"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"
