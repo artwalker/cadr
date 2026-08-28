@@ -344,6 +344,9 @@ const REPETITIONS = {
 	"cli_print_rpc.queue_mode": 50,
 	"cli_print_rpc.last_assistant": 50,
 	"cli_print_rpc.command_list": 50,
+	"skill_prompt_load.sdk_prompt_input": 50,
+	"skill_prompt_load.sdk_list_override": 50,
+	"skill_prompt_load.sdk_context_files": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20246,6 +20249,81 @@ function runSkillPromptPromptAppends() {
 		pa_base: joined.startsWith("base") ? 1 : 0,
 	};
 }
+
+function skillPromptSdkPromptFile() {
+	const promptPath = path.join(scratch, "sdk-prompt.txt");
+	writeFileSync(promptPath, "hello-file");
+	return promptPath;
+}
+
+
+function runSkillPromptSdkPromptInput(promptPath) {
+	const nilHit = resolvePromptInput(undefined);
+	const lit = resolvePromptInput("hello");
+	const fromFile = resolvePromptInput(promptPath);
+	return {
+		si_nil: nilHit ? 1 : 0,
+		si_lit: lit === "hello" ? 1 : 0,
+		si_file: fromFile === "hello-file" ? 1 : 0,
+	};
+}
+
+
+function applyResourceListOverride(fn, items, diagnostics) {
+	if (!fn) return { items, diagnostics };
+	const next = fn(items.slice(), diagnostics.slice());
+	return {
+		items: next.items ?? null,
+		diagnostics: next.diagnostics == null ? diagnostics : next.diagnostics,
+	};
+}
+
+
+function runSkillPromptSdkListOverride() {
+	const none = applyResourceListOverride(null, ["a"], ["d0"]);
+	const replaced = applyResourceListOverride(
+		() => ({ items: ["b"], diagnostics: ["d1"] }),
+		["a"],
+		["d0"],
+	);
+	const keep = applyResourceListOverride(
+		(items) => ({ items, diagnostics: null }),
+		["a"],
+		["d0"],
+	);
+	return {
+		ov_none: none.items.length === 1 && none.items[0] === "a" ? 1 : 0,
+		ov_replace:
+			replaced.items.length === 1 &&
+			replaced.items[0] === "b" &&
+			replaced.diagnostics.length === 1 &&
+			replaced.diagnostics[0] === "d1"
+				? 1
+				: 0,
+		ov_keep:
+			keep.diagnostics.length === 1 && keep.diagnostics[0] === "d0" ? 1 : 0,
+	};
+}
+
+
+function contextFileRecords(paths) {
+	return paths.map((filePath) => ({
+		path: filePath,
+		content: readFileSync(filePath, "utf-8"),
+	}));
+}
+
+
+function runSkillPromptSdkContextFiles(promptPath) {
+	const records = contextFileRecords([promptPath]);
+	const first = records[0];
+	return {
+		cf_n: records.length,
+		cf_path: first?.path === promptPath ? 1 : 0,
+		cf_text: first?.content === "hello-file" ? 1 : 0,
+	};
+}
+
 
 async function measureSkillPromptBuild() {
 	const file = stageSkillPromptResolveFile();

@@ -336,4 +336,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `skill_prompt_load.node_read_error` | 10.042 | 3.219 | 3.120× | 8.00× | measure-only pair 473; leftover `node-read-error-message` vs Node fs errno text | invent pause；地板优化另刀 |
 | `skill_prompt_load.prompt_appends` | 6.306 | 1.930 | 3.268× | 8.00× | measure-only pair 474; leftover `resolve-system-prompt-with-appends` vs append join | invent pause；地板优化另刀 |
 | `cli_print_rpc.command_list` | 1.490 | 0.359 | 4.151× | 8.00× | measure-only leftover pair 477; `rpc-command-list` vs `get_commands` walk | invent pause；地板优化另刀 |
+| `skill_prompt_load.sdk_prompt_input` | 15.179 | 3.512 | 4.322× | 8.00× | measure-only leftover pair 478; `sdk-resolve-prompt-input` vs `resolvePromptInput` | invent pause；地板优化另刀 |
+| `skill_prompt_load.sdk_context_files` | 7.556 | 2.625 | 2.879× | 8.00× | measure-only leftover pair 480; `sdk-context-file-records` vs agentsFiles records | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

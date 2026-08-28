@@ -5986,6 +5986,48 @@ First n=5 freeze **4.151×** (1.490 / 0.359 µs) on host `cursor`, ceiling
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit
 no optimize.
 
+### Pair 478 — `skill_prompt_load` (sdk_prompt_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_prompt_input` | `sdk-resolve-prompt-input` (`src/cadr-cli/sdk/resource-service.lisp`) | `resolvePromptInput` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover of the `skill_prompt_load` hole on `resource-service.lisp`. Timed
+work is nil / literal / file prompt input resolve — not
+`build-system-prompt`, not reload. Observed `si_nil` / `si_lit` /
+`si_file` are exact. First n=5 freeze **4.322×** (15.179 / 3.512 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Same commit no optimize.
+
+### Pair 479 — `skill_prompt_load` (sdk_list_override)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_list_override` | `sdk-apply-resource-list-override` (`src/cadr-cli/sdk/resource-service.lisp`) | `skillsOverride` apply (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pair 478 on the same hole. Timed work is no-op /
+replace / keep-diagnostics override apply — not extension reload.
+Observed `ov_none` / `ov_replace` / `ov_keep` are exact. First n=5 freeze
+**0.365×** (0.188 / 0.516 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 480 — `skill_prompt_load` (sdk_context_files)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_context_files` | `sdk-context-file-records` (`src/cadr-cli/sdk/resource-service.lisp`) | agentsFiles path+content records (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pairs 478–479 on the same hole. Timed work is one
+staged file mapped to path+content — not directory discovery, not
+reload. Observed `cf_n` / `cf_path` / `cf_text` are exact. First n=5
+freeze **2.879×** (7.556 / 2.625 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

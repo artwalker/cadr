@@ -19880,6 +19880,75 @@
                 (lambda ()
                   (run-provider-strip-runtime-options)))))))
 
+(defun skill-prompt-sdk-prompt-file ()
+  (ensure-directories-exist *scratch-directory*)
+  (let ((path
+          (merge-pathnames
+           "sdk-prompt.txt" *scratch-directory*)))
+    (with-open-file
+        (out path
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create)
+      (write-string "hello-file" out))
+    path))
+
+
+(defun run-skill-prompt-sdk-prompt-input (path)
+  (let ((nil-hit (cadr-cli::sdk-resolve-prompt-input nil))
+        (lit (cadr-cli::sdk-resolve-prompt-input "hello"))
+        (from-file
+          (cadr-cli::sdk-resolve-prompt-input
+           (namestring path))))
+    (list
+     (if nil-hit 1 0)
+     (if (string= lit "hello") 1 0)
+     (if (string= from-file "hello-file") 1 0))))
+
+
+(defun run-skill-prompt-sdk-list-override ()
+  (multiple-value-bind (items diags)
+      (cadr-cli::sdk-apply-resource-list-override
+       nil '("a") '("d0"))
+    (declare (ignore diags))
+    (multiple-value-bind (items2 diags2)
+        (cadr-cli::sdk-apply-resource-list-override
+         (lambda (items diagnostics)
+           (declare (ignore items diagnostics))
+           (values '("b") '("d1")))
+         '("a") '("d0"))
+      (multiple-value-bind (items3 diags3)
+          (cadr-cli::sdk-apply-resource-list-override
+           (lambda (items diagnostics)
+             (declare (ignore diagnostics))
+             (values items nil))
+           '("a") '("d0"))
+        (declare (ignore items3))
+        (list
+         (if (equal items '("a")) 1 0)
+         (if (and (equal items2 '("b"))
+                  (equal diags2 '("d1")))
+             1
+             0)
+         (if (equal diags3 '("d0")) 1 0))))))
+
+
+(defun run-skill-prompt-sdk-context-files (path)
+  (let* ((records
+           (cadr-cli::sdk-context-file-records (list path)))
+         (first (first records)))
+    (list
+     (length records)
+     (if (and first
+              (equal (getf first :path) path))
+         1
+         0)
+     (if (and first
+              (string= (getf first :content) "hello-file"))
+         1
+         0))))
+
+
 (defun run-skill-prompt-build ()
   (let* ((cwd "/tmp/proj")
          (custom
