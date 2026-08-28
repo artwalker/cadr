@@ -4059,6 +4059,30 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 568 — `cli_selectors` (scoped_models_enabled_set)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_enabled_set` | `scoped-models-enabled-set` (`src/cadr-cli/interactive/selectors/models.lisp`) | `new Set(enabledIds)` in `getSortedIds` (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of the `cli_selectors` hole on `models.lisp`. Timed work is hash-table / Set construction over enabled ids (empty, one, two, duplicate, unsorted, three) — not `getSortedIds` order merge, not the selector UI. Observed `smes_empty` / `smes_one` / `smes_two` / `smes_dup` / `smes_sort` / `smes_three` are exact. First n=5 freeze **2.540×** (2.709 / 1.067 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 569 — `cli_selectors` (model_equal_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_equal_p` | `model-equal-p` (`src/cadr-cli/interactive/selectors/models.lisp`) | `modelsAreEqual` (`packages/ai/src/models.ts`) |
+
+Leftover sibling of Pair 568 on the same `models.lisp` hole. Timed work is id+provider equality plus both-nil / one-nil misses — not `sort-model-selector-models`, not the selector. Observed `meq_same` / `meq_diff_id` / `meq_diff_prov` / `meq_nil_left` / `meq_nil_right` / `meq_both_nil` are exact. First n=5 freeze **1.840×** (0.458 / 0.249 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 570 — `cli_selectors` (scoped_model_selector_search_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_model_selector_search_text` | `scoped-model-selector-search-text` (`src/cadr-cli/interactive/selectors/models.lisp`) | `getModelSearchText` (`packages/coding-agent/src/modes/interactive/model-search.ts`) |
+
+Leftover sibling of Pairs 568–569 on the same `models.lisp` hole. Timed work is the scoped-selector search haystack (`id provider provider/id provider id` plus optional name) — not `getModelSelectorSearchText` / `model-selector-search-text`. Observed `smsst_openai` / `smsst_anthropic` / `smsst_codex` / `smsst_openrouter` / `smsst_google` / `smsst_noname` are exact. First n=5 freeze **8.503×** (4.242 / 0.499 µs) on host `cursor`, ceiling 12.0. Gate used `--only-enforce` (script rc=1 only from known old holes; this metric did not fail; variance floor bound the 8.0 ratio on the first run, ceiling raised to 12.0). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

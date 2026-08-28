@@ -254,5 +254,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
 | `oauth_pkce_device.percent_decode` | 1.592 | 1.044 | 1.525× | 8.00× | measure-only pair 310; `percent-decode` vs URLSearchParams | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_query` | 6.672 | 3.431 | 1.944× | 8.00× | measure-only pair 311; `parse-query` vs URLSearchParams | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_enabled_set` | 2.709 | 1.067 | 2.540× | 8.00× | leftover 568; `scoped-models-enabled-set` vs `new Set(enabledIds)` | invent pause；地板优化另刀 |
+| `cli_selectors.model_equal_p` | 0.458 | 0.249 | 1.840× | 8.00× | leftover 569; `model-equal-p` vs `modelsAreEqual` (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_model_selector_search_text` | 4.242 | 0.499 | 8.503× | 12.00× | leftover 570; `scoped-model-selector-search-text` vs `getModelSearchText` | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
