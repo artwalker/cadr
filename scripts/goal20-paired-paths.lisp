@@ -8665,6 +8665,76 @@
    (extension-handle-flag "/missing" manager)
    (length "/nope args")))
 
+(defun run-cli-extensions-unsafe-git ()
+  (flet ((flag (source)
+           (if (cadr-cli::unsafe-git-source-p source) 1 0)))
+    (list
+     (flag "")
+     (flag "-evil")
+     (flag (format nil "a~Ab" #\Null))
+     (flag "a\\b")
+     (flag "foo/../bar")
+     (flag "user/repo")
+     6)))
+
+
+(defun git-source-path-text (source)
+  (or (cadr-cli::git-source-path source) ""))
+
+
+(defun run-cli-extensions-git-path ()
+  (let ((https-path
+          (git-source-path-text
+           "https://github.com/user/repo.git"))
+        (scp-path
+          (git-source-path-text "git@github.com:user/repo"))
+        (slash-path
+          (git-source-path-text "github.com/user/repo"))
+        (miss (git-source-path-text "noslash")))
+    (list
+     (if (string= https-path "user/repo.git") 1 0)
+     (if (string= scp-path "user/repo") 1 0)
+     (if (string= slash-path "user/repo") 1 0)
+     (if (zerop (length miss)) 1 0)
+     4)))
+
+
+(defun normalize-git-install-flag (input expected-name)
+  (handler-case
+      (multiple-value-bind (source name)
+          (cadr-cli::normalize-git-install-source input)
+        (declare (ignore source))
+        (let ((text
+                (cond
+                  ((stringp name) (copy-seq name))
+                  ((and (vectorp name) (not (stringp name)))
+                   (coerce name 'string))
+                  (t ""))))
+          (if (and expected-name (string= text expected-name))
+              1
+              0)))
+    (error () 0)))
+
+
+(defun normalize-git-install-error-p (input)
+  (handler-case
+      (progn
+        (cadr-cli::normalize-git-install-source input)
+        0)
+    (error () 1)))
+
+
+(defun run-cli-extensions-normalize-git ()
+  (list
+   (normalize-git-install-flag
+    "https://github.com/user/repo.git" "repo")
+   (normalize-git-install-flag
+    "git:https://github.com/user/other" "other")
+   (normalize-git-install-error-p "file://tmp/x")
+   (normalize-git-install-error-p "")
+   (normalize-git-install-error-p "github.com/user/repo")))
+
+
 (defun measure-cli-extensions-install ()
   (let* ((url (run-cli-extensions-llama-url))
          (token (run-cli-extensions-hf-token))

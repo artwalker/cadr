@@ -362,6 +362,9 @@ const REPETITIONS = {
 	"cli_print_rpc.handle_bad_json": 50,
 	"cli_print_rpc.handle_not_object": 50,
 	"cli_print_rpc.handle_ui_miss": 50,
+	"cli_extensions_install.unsafe_git": 50,
+	"cli_extensions_install.git_path": 50,
+	"cli_extensions_install.normalize_git": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -9419,6 +9422,171 @@ function runCliExtensionsHandleUnknown() {
 		hu_n: "/nope args".length,
 	};
 }
+
+function replicaUnsafeGitSourceP(source) {
+	if (source.length === 0) return true;
+	if (source.charAt(0) === "-") return true;
+	if (source.includes("\0") || source.includes("\\")) return true;
+	return source.split("/").includes("..");
+}
+
+
+function replicaGitSourcePath(source) {
+	if (source.includes("://")) {
+		const schemeEnd = source.indexOf("://") + 3;
+		const pathStart = source.indexOf("/", schemeEnd);
+		if (pathStart < 0) return null;
+		return source.slice(pathStart + 1);
+	}
+	if (source.startsWith("git@") && source.includes(":")) {
+		return source.slice(source.indexOf(":") + 1);
+	}
+	const slash = source.indexOf("/");
+	if (slash < 0) return null;
+	return source.slice(slash + 1);
+}
+
+
+function replicaStripGitQueryAndRef(path) {
+	for (let i = 0; i < path.length; i += 1) {
+		if (path[i] === "?" || path[i] === "#") {
+			return path.slice(0, i);
+		}
+	}
+	return path;
+}
+
+
+function replicaValidExtensionResourceNameP(name) {
+	if (typeof name !== "string" || name.length === 0) return false;
+	return [...name].every((character) => {
+		const code = character.charCodeAt(0);
+		return (
+			(code >= 97 && code <= 122) ||
+			(code >= 65 && code <= 90) ||
+			(code >= 48 && code <= 57) ||
+			character === "-" ||
+			character === "_" ||
+			character === ":"
+		);
+	});
+}
+
+
+function replicaLispTrim(input) {
+	const chars = new Set([" ", "\t", "\n", "\r"]);
+	let start = 0;
+	let end = input.length;
+	while (start < end && chars.has(input[start])) start += 1;
+	while (end > start && chars.has(input[end - 1])) end -= 1;
+	return input.slice(start, end);
+}
+
+
+function replicaLispLeftTrimSpaceTab(input) {
+	let start = 0;
+	while (start < input.length && (input[start] === " " || input[start] === "\t")) {
+		start += 1;
+	}
+	return input.slice(start);
+}
+
+
+function replicaNormalizeGitInstallSource(input) {
+	const trimmed = replicaLispTrim(input);
+	const prefixedP = trimmed.startsWith("git:") && !trimmed.startsWith("git://");
+	const source = prefixedP ? replicaLispLeftTrimSpaceTab(trimmed.slice(4)) : trimmed;
+	const explicitProtocolP = ["http://", "https://", "ssh://", "git://"].some((prefix) =>
+		source.startsWith(prefix),
+	);
+	if (
+		replicaUnsafeGitSourceP(source) ||
+		source.startsWith("file://") ||
+		(!prefixedP && !explicitProtocolP) ||
+		(prefixedP &&
+			!(explicitProtocolP || source.startsWith("git@") || source.includes("/")))
+	) {
+		throw new Error(`Invalid git extension URL: ${input}`);
+	}
+	const rawPath = replicaGitSourcePath(source);
+	const path = rawPath ? replicaStripGitQueryAndRef(rawPath) : null;
+	const segments = path ? path.split("/").filter((part) => part !== "") : null;
+	const lastSegment = segments && segments.length ? segments[segments.length - 1] : null;
+	let name = lastSegment;
+	if (
+		name &&
+		name.length > 4 &&
+		name.slice(-4).toLowerCase() === ".git"
+	) {
+		name = name.slice(0, -4);
+	}
+	const downcased = name ? name.toLowerCase() : null;
+	if (!downcased || !replicaValidExtensionResourceNameP(downcased)) {
+		throw new Error(`Cannot derive a safe extension name from ${input}`);
+	}
+	return { source, name: downcased };
+}
+
+
+function runCliExtensionsUnsafeGit() {
+	const flag = (source) => (replicaUnsafeGitSourceP(source) ? 1 : 0);
+	return [
+		flag(""),
+		flag("-evil"),
+		flag("a\0b"),
+		flag("a\\b"),
+		flag("foo/../bar"),
+		flag("user/repo"),
+		6,
+	];
+}
+
+
+function runCliExtensionsGitPath() {
+	const httpsPath = replicaGitSourcePath("https://github.com/user/repo.git") ?? "";
+	const scpPath = replicaGitSourcePath("git@github.com:user/repo") ?? "";
+	const slashPath = replicaGitSourcePath("github.com/user/repo") ?? "";
+	const miss = replicaGitSourcePath("noslash") ?? "";
+	return [
+		httpsPath === "user/repo.git" ? 1 : 0,
+		scpPath === "user/repo" ? 1 : 0,
+		slashPath === "user/repo" ? 1 : 0,
+		miss.length === 0 ? 1 : 0,
+		4,
+	];
+}
+
+
+function normalizeGitInstallFlag(input, expectedName) {
+	try {
+		const { name } = replicaNormalizeGitInstallSource(input);
+		return expectedName && name === expectedName ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+
+function normalizeGitInstallErrorP(input) {
+	try {
+		replicaNormalizeGitInstallSource(input);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+
+function runCliExtensionsNormalizeGit() {
+	return [
+		normalizeGitInstallFlag("https://github.com/user/repo.git", "repo"),
+		normalizeGitInstallFlag("git:https://github.com/user/other", "other"),
+		normalizeGitInstallErrorP("file://tmp/x"),
+		normalizeGitInstallErrorP(""),
+		normalizeGitInstallErrorP("github.com/user/repo"),
+	];
+}
+
 
 async function measureCliExtensionsInstall() {
 	const url = runCliExtensionsLlamaUrl();
