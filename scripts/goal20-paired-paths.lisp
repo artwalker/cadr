@@ -13780,12 +13780,17 @@
        table))
     (format nil "~{~a~^,~}" (sort keys #'string<))))
 
+(defun make-scoped-models-by-id-bench-state (models enabled-ids)
+  (cadr-cli::%make-scoped-models-selector-state
+   :all-models (copy-list models)
+   :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+   :enabled-ids
+   (cadr-cli::scoped-models-copy-enabled enabled-ids)))
+
 (defun scoped-models-selector-rebuild-models-by-id-encoded
     (models enabled-ids)
   (let ((state
-          (cadr-cli::make-scoped-models-selector-state
-           :all-models models
-           :enabled-ids enabled-ids)))
+          (make-scoped-models-by-id-bench-state models enabled-ids)))
     (cadr-cli::scoped-models-selector-rebuild-models-by-id state)
     (encode-scoped-models-by-id-keys state)))
 
@@ -13808,9 +13813,7 @@
 
 (defun scoped-models-model-by-id-encoded (models enabled-ids id)
   (let ((state
-          (cadr-cli::make-scoped-models-selector-state
-           :all-models models
-           :enabled-ids enabled-ids)))
+          (make-scoped-models-by-id-bench-state models enabled-ids)))
     (cadr-cli::scoped-models-selector-rebuild-models-by-id state)
     (let ((model (cadr-cli::scoped-models-model-by-id state id)))
       (if model
