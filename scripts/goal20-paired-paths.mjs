@@ -196,6 +196,9 @@ const REPETITIONS = {
 	"tool_manager.get_tool_path": 50,
 	"tool_manager.ensure_tool": 50,
 	"tool_manager.cleanup_quarantine": 50,
+	"tool_manager.release_asset": 50,
+	"tool_manager.find_binary": 50,
+	"tool_manager.quarantine_native": 50,
 	"powershell_tool.utf8_prefix": 50,
 	"powershell_tool.prefix_command": 50,
 	"powershell_tool.make_tool": 50,
@@ -4321,11 +4324,168 @@ function runToolManagerCleanupQuarantine() {
 	};
 }
 
+// Baseline tools-manager.ts TOOLS.getAssetName is unexported; keep the
+// production algorithm here so the pair times the same asset names.
+function toolReleaseAsset(tool, version, plat, architecture) {
+	const archStr = architecture === "arm64" ? "aarch64" : "x86_64";
+	if (tool === "fd") {
+		if (plat === "darwin") return `fd-v${version}-${archStr}-apple-darwin.tar.gz`;
+		if (plat === "linux") return `fd-v${version}-${archStr}-unknown-linux-gnu.tar.gz`;
+		if (plat === "win32") return `fd-v${version}-${archStr}-pc-windows-msvc.zip`;
+		return null;
+	}
+	if (tool === "rg") {
+		if (plat === "darwin") return `ripgrep-${version}-${archStr}-apple-darwin.tar.gz`;
+		if (plat === "linux") {
+			if (architecture === "arm64") {
+				return `ripgrep-${version}-aarch64-unknown-linux-gnu.tar.gz`;
+			}
+			return `ripgrep-${version}-x86_64-unknown-linux-musl.tar.gz`;
+		}
+		if (plat === "win32") return `ripgrep-${version}-${archStr}-pc-windows-msvc.zip`;
+		return null;
+	}
+	return null;
+}
+
+function tmAssetFlag(tool, version, plat, architecture, expected) {
+	return toolReleaseAsset(tool, version, plat, architecture) === expected ? 1 : 0;
+}
+
+function runToolManagerReleaseAsset() {
+	return {
+		ra_fd_darwin_arm: tmAssetFlag(
+			"fd",
+			"10.2.0",
+			"darwin",
+			"arm64",
+			"fd-v10.2.0-aarch64-apple-darwin.tar.gz",
+		),
+		ra_fd_linux_x64: tmAssetFlag(
+			"fd",
+			"10.2.0",
+			"linux",
+			"x64",
+			"fd-v10.2.0-x86_64-unknown-linux-gnu.tar.gz",
+		),
+		ra_fd_win_x64: tmAssetFlag(
+			"fd",
+			"10.2.0",
+			"win32",
+			"x64",
+			"fd-v10.2.0-x86_64-pc-windows-msvc.zip",
+		),
+		ra_rg_linux_x64: tmAssetFlag(
+			"rg",
+			"14.1.0",
+			"linux",
+			"x64",
+			"ripgrep-14.1.0-x86_64-unknown-linux-musl.tar.gz",
+		),
+		ra_rg_linux_arm: tmAssetFlag(
+			"rg",
+			"14.1.0",
+			"linux",
+			"arm64",
+			"ripgrep-14.1.0-aarch64-unknown-linux-gnu.tar.gz",
+		),
+		ra_rg_darwin_arm: tmAssetFlag(
+			"rg",
+			"14.1.0",
+			"darwin",
+			"arm64",
+			"ripgrep-14.1.0-aarch64-apple-darwin.tar.gz",
+		),
+		ra_n: 6,
+	};
+}
+
+function findBinaryRecursively(rootDir, binaryFileName) {
+	const stack = [rootDir];
+	while (stack.length > 0) {
+		const currentDir = stack.pop();
+		if (!currentDir) continue;
+		const entries = readdirSync(currentDir, { withFileTypes: true });
+		for (const entry of entries) {
+			const fullPath = path.join(currentDir, entry.name);
+			if (entry.isFile() && entry.name === binaryFileName) {
+				return fullPath;
+			}
+			if (entry.isDirectory()) {
+				stack.push(fullPath);
+			}
+		}
+	}
+	return null;
+}
+
+function runToolManagerFindBinary() {
+	const extract = path.join(scratch, "tool-manager-extract");
+	const nested = path.join(extract, "nested", "bin");
+	rmSync(extract, { recursive: true, force: true });
+	mkdirSync(nested, { recursive: true });
+	writeFileSync(path.join(nested, "fd"), "stub");
+	writeFileSync(path.join(extract, "rg"), "stub");
+	const nestedFd = findBinaryRecursively(extract, "fd");
+	const rootRg = findBinaryRecursively(extract, "rg");
+	const miss = findBinaryRecursively(extract, "missing-bin");
+	return {
+		fb_nested: tmTruth(nestedFd && path.basename(nestedFd) === "fd"),
+		fb_root: tmTruth(rootRg && path.basename(rootRg) === "rg"),
+		fb_miss: tmTruth(miss == null),
+		fb_n: 3,
+	};
+}
+
+function runToolManagerQuarantineNative() {
+	const root = path.join(scratch, "tool-manager-qn");
+	const nodeModules = path.join(root, "node_modules");
+	const pkg = path.join(nodeModules, "pkg");
+	const native = path.join(pkg, "native.so");
+	const quarantine = path.join(nodeModules, ".pi-native-quarantine");
+	const outsideRoot = path.join(scratch, "no-modules-qn");
+	const outside = path.join(outsideRoot, "pkg");
+	const outsideNative = path.join(outside, "native.so");
+	const outsideQuarantine = path.join(outsideRoot, ".pi-native-quarantine");
+	rmSync(root, { recursive: true, force: true });
+	rmSync(outsideRoot, { recursive: true, force: true });
+	mkdirSync(pkg, { recursive: true });
+	mkdirSync(outside, { recursive: true });
+	writeFileSync(native, "stub");
+	writeFileSync(outsideNative, "stub");
+	const originalGetReport = process.report.getReport;
+	process.report.getReport = () => ({ sharedObjects: [native] });
+	try {
+		windowsSelfUpdateModule.quarantineWindowsNativeDependencies(pkg);
+	} finally {
+		process.report.getReport = originalGetReport;
+	}
+	const restored = tmTruth(existsSync(native));
+	const stashed = tmTruth(
+		existsSync(quarantine) && findBinaryRecursively(quarantine, "native.so"),
+	);
+	process.report.getReport = () => ({ sharedObjects: [outsideNative] });
+	try {
+		windowsSelfUpdateModule.quarantineWindowsNativeDependencies(outside);
+	} finally {
+		process.report.getReport = originalGetReport;
+	}
+	return {
+		qn_restored: restored,
+		qn_stashed: stashed,
+		qn_noop: tmTruth(existsSync(outsideNative) && !existsSync(outsideQuarantine)),
+		qn_n: 3,
+	};
+}
+
 async function measureToolManager() {
 	const toolsManager = await loadToolsManager();
 	const pathObserved = runToolManagerGetToolPath(toolsManager);
 	const ensureObserved = await runToolManagerEnsureTool(toolsManager);
 	const cleanupObserved = runToolManagerCleanupQuarantine();
+	const releaseObserved = runToolManagerReleaseAsset();
+	const findObserved = runToolManagerFindBinary();
+	const quarantineNativeObserved = runToolManagerQuarantineNative();
 	return {
 		get_tool_path: await collect("tool_manager.get_tool_path", () => {
 			return () => runToolManagerGetToolPath(toolsManager);
@@ -4336,10 +4496,22 @@ async function measureToolManager() {
 		cleanup_quarantine: await collect("tool_manager.cleanup_quarantine", () => {
 			return () => runToolManagerCleanupQuarantine();
 		}),
+		release_asset: await collect("tool_manager.release_asset", () => {
+			return () => runToolManagerReleaseAsset();
+		}),
+		find_binary: await collect("tool_manager.find_binary", () => {
+			return () => runToolManagerFindBinary();
+		}),
+		quarantine_native: await collect("tool_manager.quarantine_native", () => {
+			return () => runToolManagerQuarantineNative();
+		}),
 		observed: {
 			...pathObserved,
 			...ensureObserved,
 			...cleanupObserved,
+			...releaseObserved,
+			...findObserved,
+			...quarantineNativeObserved,
 		},
 	};
 }
@@ -18981,6 +19153,12 @@ const result = {
 				"packages/coding-agent/src/utils/tools-manager.ts ensureTool (local / PI_OFFLINE, no network)",
 			"tool_manager.cleanup_quarantine":
 				"packages/coding-agent/src/utils/windows-self-update.ts cleanupWindowsSelfUpdateQuarantine",
+			"tool_manager.release_asset":
+				"packages/coding-agent/src/utils/tools-manager.ts TOOLS.getAssetName",
+			"tool_manager.find_binary":
+				"packages/coding-agent/src/utils/tools-manager.ts findBinaryRecursively",
+			"tool_manager.quarantine_native":
+				"packages/coding-agent/src/utils/windows-self-update.ts quarantineWindowsNativeDependencies",
 			"powershell_tool.utf8_prefix":
 				"packages/coding-agent/src/core/tools/powershell.ts UTF8_OUTPUT_PREFIX",
 			"powershell_tool.prefix_command":

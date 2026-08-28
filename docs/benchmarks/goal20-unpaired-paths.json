@@ -203,6 +203,9 @@
   "tool_manager.get_tool_path",
   "tool_manager.ensure_tool",
   "tool_manager.cleanup_quarantine",
+  "tool_manager.release_asset",
+  "tool_manager.find_binary",
+  "tool_manager.quarantine_native",
   "write_tool.ensure_parent",
   "write_tool.write_utf8",
   "write_tool.make_tool",
@@ -1735,7 +1738,10 @@
    "metrics": [
     "tool_manager.get_tool_path",
     "tool_manager.ensure_tool",
-    "tool_manager.cleanup_quarantine"
+    "tool_manager.cleanup_quarantine",
+    "tool_manager.release_asset",
+    "tool_manager.find_binary",
+    "tool_manager.quarantine_native"
    ]
   },
   {

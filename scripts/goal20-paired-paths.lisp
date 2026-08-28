@@ -147,6 +147,9 @@
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
+;;;; 409. tool_manager tool-release-asset vs TOOLS.getAssetName
+;;;; 410. tool_manager find-file-recursively vs findBinaryRecursively
+;;;; 411. tool_manager quarantine-windows-native-dependencies vs quarantineWindowsNativeDependencies
 ;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
 ;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
 ;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
@@ -257,6 +260,9 @@
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
+;;;; 409. tool_manager tool-release-asset vs TOOLS.getAssetName
+;;;; 410. tool_manager find-file-recursively vs findBinaryRecursively
+;;;; 411. tool_manager quarantine-windows-native-dependencies vs quarantineWindowsNativeDependencies
 ;;;;
 ;;;; usage (via scripts/goal20-paired-paths.sh, or directly):
 ;;;;   CADR_BENCH_PROJECT_DIRECTORY=... QUICKLISP_SETUP=... \
@@ -376,6 +382,9 @@
     ("tool_manager.get_tool_path" . 50)
     ("tool_manager.ensure_tool" . 50)
     ("tool_manager.cleanup_quarantine" . 50)
+    ("tool_manager.release_asset" . 50)
+    ("tool_manager.find_binary" . 50)
+    ("tool_manager.quarantine_native" . 50)
     ("powershell_tool.utf8_prefix" . 50)
     ("powershell_tool.prefix_command" . 50)
     ("powershell_tool.make_tool" . 50)
@@ -6223,6 +6232,79 @@
       (cadr-cli:cleanup-windows-self-update-quarantine outside)
       (list removed 1 2))))
 
+(defun tm-asset= (tool version platform architecture expected)
+  (tm-truth
+   (string= (cadr-cli::tool-release-asset tool version platform architecture)
+            expected)))
+
+(defun run-tool-manager-release-asset ()
+  (list
+   (tm-asset= :fd "10.2.0" :darwin :arm64
+              "fd-v10.2.0-aarch64-apple-darwin.tar.gz")
+   (tm-asset= :fd "10.2.0" :linux :x64
+              "fd-v10.2.0-x86_64-unknown-linux-gnu.tar.gz")
+   (tm-asset= :fd "10.2.0" :windows :x64
+              "fd-v10.2.0-x86_64-pc-windows-msvc.zip")
+   (tm-asset= :rg "14.1.0" :linux :x64
+              "ripgrep-14.1.0-x86_64-unknown-linux-musl.tar.gz")
+   (tm-asset= :rg "14.1.0" :linux :arm64
+              "ripgrep-14.1.0-aarch64-unknown-linux-gnu.tar.gz")
+   (tm-asset= :rg "14.1.0" :darwin :arm64
+              "ripgrep-14.1.0-aarch64-apple-darwin.tar.gz")
+   6))
+
+(defun run-tool-manager-find-binary ()
+  (let* ((extract (merge-pathnames "tool-manager-extract/" *scratch-directory*))
+         (nested (merge-pathnames "nested/bin/" extract)))
+    (when (probe-file extract)
+      (uiop:delete-directory-tree extract :validate t :if-does-not-exist :ignore))
+    (ensure-directories-exist nested)
+    (tm-write-stub nested "fd")
+    (tm-write-stub extract "rg")
+    (let ((nested-fd (cadr-cli::find-file-recursively extract "fd"))
+          (root-rg (cadr-cli::find-file-recursively extract "rg"))
+          (miss (cadr-cli::find-file-recursively extract "missing-bin")))
+      (list
+       (tm-truth (and nested-fd (string= (file-namestring nested-fd) "fd")))
+       (tm-truth (and root-rg (string= (file-namestring root-rg) "rg")))
+       (tm-truth (null miss))
+       3))))
+
+(defun run-tool-manager-quarantine-native ()
+  (let* ((root (merge-pathnames "tool-manager-qn/" *scratch-directory*))
+         (node-modules (merge-pathnames "node_modules/" root))
+         (pkg (merge-pathnames "pkg/" node-modules))
+         (native (merge-pathnames "native.so" pkg))
+         (quarantine (merge-pathnames ".cadr-native-quarantine/" node-modules))
+         (outside (merge-pathnames "no-modules-qn/pkg/" *scratch-directory*))
+         (outside-native (merge-pathnames "native.so" outside))
+         (outside-quarantine
+           (merge-pathnames ".cadr-native-quarantine/"
+                            (merge-pathnames "no-modules-qn/" *scratch-directory*))))
+    (when (probe-file root)
+      (uiop:delete-directory-tree root :validate t :if-does-not-exist :ignore))
+    (when (probe-file (merge-pathnames "no-modules-qn/" *scratch-directory*))
+      (uiop:delete-directory-tree
+       (merge-pathnames "no-modules-qn/" *scratch-directory*)
+       :validate t :if-does-not-exist :ignore))
+    (ensure-directories-exist pkg)
+    (ensure-directories-exist outside)
+    (tm-write-stub pkg "native.so")
+    (tm-write-stub outside "native.so")
+    (cadr-cli:quarantine-windows-native-dependencies
+     pkg :loaded-paths (list native))
+    (let ((restored (tm-truth (probe-file native)))
+          (stashed
+            (tm-truth
+             (and (probe-file quarantine)
+                  (cadr-cli::find-file-recursively quarantine "native.so")))))
+      (cadr-cli:quarantine-windows-native-dependencies
+       outside :loaded-paths (list outside-native))
+      (list restored stashed
+            (tm-truth (and (probe-file outside-native)
+                           (not (probe-file outside-quarantine))))
+            3))))
+
 (defun measure-tool-manager ()
   (destructuring-bind (gtp-local-fd gtp-local-rg gtp-miss-fd gtp-miss-rg gtp-n)
       (run-tool-manager-get-tool-path)
@@ -6230,35 +6312,73 @@
         (run-tool-manager-ensure-tool)
       (destructuring-bind (cq-removed cq-noop cq-n)
           (run-tool-manager-cleanup-quarantine)
-        (json-object
-         "observed"
-         (json-object
-          "gtp_local_fd" gtp-local-fd
-          "gtp_local_rg" gtp-local-rg
-          "gtp_miss_fd" gtp-miss-fd
-          "gtp_miss_rg" gtp-miss-rg
-          "gtp_n" gtp-n
-          "et_local_fd" et-local-fd
-          "et_offline_miss" et-offline-miss
-          "et_n" et-n
-          "cq_removed" cq-removed
-          "cq_noop" cq-noop
-          "cq_n" cq-n)
-         "get_tool_path"
-         (collect "tool_manager.get_tool_path"
-                  (lambda ()
-                    (lambda ()
-                      (run-tool-manager-get-tool-path))))
-         "ensure_tool"
-         (collect "tool_manager.ensure_tool"
-                  (lambda ()
-                    (lambda ()
-                      (run-tool-manager-ensure-tool))))
-         "cleanup_quarantine"
-         (collect "tool_manager.cleanup_quarantine"
-                  (lambda ()
-                    (lambda ()
-                      (run-tool-manager-cleanup-quarantine)))))))))
+        (destructuring-bind (ra-fd-darwin-arm ra-fd-linux-x64 ra-fd-win-x64
+                             ra-rg-linux-x64 ra-rg-linux-arm ra-rg-darwin-arm
+                             ra-n)
+            (run-tool-manager-release-asset)
+          (destructuring-bind (fb-nested fb-root fb-miss fb-n)
+              (run-tool-manager-find-binary)
+            (destructuring-bind (qn-restored qn-stashed qn-noop qn-n)
+                (run-tool-manager-quarantine-native)
+              (json-object
+               "observed"
+               (json-object
+                "gtp_local_fd" gtp-local-fd
+                "gtp_local_rg" gtp-local-rg
+                "gtp_miss_fd" gtp-miss-fd
+                "gtp_miss_rg" gtp-miss-rg
+                "gtp_n" gtp-n
+                "et_local_fd" et-local-fd
+                "et_offline_miss" et-offline-miss
+                "et_n" et-n
+                "cq_removed" cq-removed
+                "cq_noop" cq-noop
+                "cq_n" cq-n
+                "ra_fd_darwin_arm" ra-fd-darwin-arm
+                "ra_fd_linux_x64" ra-fd-linux-x64
+                "ra_fd_win_x64" ra-fd-win-x64
+                "ra_rg_linux_x64" ra-rg-linux-x64
+                "ra_rg_linux_arm" ra-rg-linux-arm
+                "ra_rg_darwin_arm" ra-rg-darwin-arm
+                "ra_n" ra-n
+                "fb_nested" fb-nested
+                "fb_root" fb-root
+                "fb_miss" fb-miss
+                "fb_n" fb-n
+                "qn_restored" qn-restored
+                "qn_stashed" qn-stashed
+                "qn_noop" qn-noop
+                "qn_n" qn-n)
+               "get_tool_path"
+               (collect "tool_manager.get_tool_path"
+                        (lambda ()
+                          (lambda ()
+                            (run-tool-manager-get-tool-path))))
+               "ensure_tool"
+               (collect "tool_manager.ensure_tool"
+                        (lambda ()
+                          (lambda ()
+                            (run-tool-manager-ensure-tool))))
+               "cleanup_quarantine"
+               (collect "tool_manager.cleanup_quarantine"
+                        (lambda ()
+                          (lambda ()
+                            (run-tool-manager-cleanup-quarantine))))
+               "release_asset"
+               (collect "tool_manager.release_asset"
+                        (lambda ()
+                          (lambda ()
+                            (run-tool-manager-release-asset))))
+               "find_binary"
+               (collect "tool_manager.find_binary"
+                        (lambda ()
+                          (lambda ()
+                            (run-tool-manager-find-binary))))
+               "quarantine_native"
+               (collect "tool_manager.quarantine_native"
+                        (lambda ()
+                          (lambda ()
+                            (run-tool-manager-quarantine-native))))))))))))
 
 ;;; ---------------------------------------------------------------------
 
@@ -18620,6 +18740,12 @@
       "src/cadr-cli/tool-manager.lisp ensure-tool"
       "tool_manager.cleanup_quarantine"
       "src/cadr-cli/tool-manager.lisp cleanup-windows-self-update-quarantine"
+      "tool_manager.release_asset"
+      "src/cadr-cli/tool-manager.lisp tool-release-asset"
+      "tool_manager.find_binary"
+      "src/cadr-cli/tool-manager.lisp find-file-recursively"
+      "tool_manager.quarantine_native"
+      "src/cadr-cli/tool-manager.lisp quarantine-windows-native-dependencies"
       "powershell_tool.utf8_prefix"
       "src/cadr-cli/tools/powershell.lisp +powershell-utf8-output-prefix+"
       "powershell_tool.prefix_command"

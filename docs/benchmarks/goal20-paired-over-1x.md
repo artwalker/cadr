@@ -298,4 +298,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `execution_env.absolute_path` | 11.920 | 3.612 | 3.301× | 8.00× | measure-only pair 391; leftover `execution-env-absolute-path` vs `absolutePath` | invent pause；地板优化另刀 |
 | `execution_env.join_path` | 9.267 | 0.918 | 10.091× | 8.00× | measure-only pair 392; leftover `execution-env-join-path` vs `joinPath`; sub-µs pi — variance floor applies | invent pause；地板优化另刀 |
 | `provider_registry_defs.provider_options` | 0.560 | 0.330 | 1.697× | 8.00× | measure-only pair 404; leftover `built-in-provider-options` vs Azure/Cloudflare/Google env keys (sub-µs variance) | invent pause；地板优化另刀 |
+| `tool_manager.release_asset` | 1.532 | 1.046 | 1.465× | 8.00× | measure-only pair 409; leftover `tool-release-asset` vs `TOOLS.getAssetName` (sub-µs variance) | invent pause；地板优化另刀 |
+| `tool_manager.find_binary` | 339.3 | 216.5 | 1.568× | 8.00× | measure-only pair 410; leftover `find-file-recursively` vs `findBinaryRecursively` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -104,7 +104,7 @@ METRICS = {
     "grep_tool": ("match_event", "line_text", "make_tool"),
     "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool", "lden_file", "lden_dir", "lden_nested", "lden_n", "ld_empty", "ld_mixed", "ld_first", "ld_limit", "ld_n", "lst_name", "lst_desc", "lst_req", "lst_n"),
-    "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine", "gtp_local_fd", "gtp_local_rg", "gtp_miss_fd", "gtp_miss_rg", "gtp_n", "et_local_fd", "et_offline_miss", "et_n", "cq_removed", "cq_noop", "cq_n"),
+    "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine", "gtp_local_fd", "gtp_local_rg", "gtp_miss_fd", "gtp_miss_rg", "gtp_n", "et_local_fd", "et_offline_miss", "et_n", "cq_removed", "cq_noop", "cq_n", "release_asset", "find_binary", "quarantine_native"),
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool", "psu_len", "psu_nl", "psu_try", "psu_utf8", "psu_n", "psc_empty", "psc_date", "psc_write", "psc_n", "pmt_name", "pmt_desc", "pmt_req", "pmt_n"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths", "tr_empty", "tr_proj", "rs_empty", "rs_ask", "rs_always", "rs_never", "rs_ov_yes", "rs_ov_no", "cv_lit", "cv_dol", "cv_brace", "cv_esc", "cv_bang", "cv_miss", "cv_mix", "cv_cmd", "ht_30", "ht_1m", "ht_2m", "ht_5m", "ht_off", "sas_missing", "sas_fixture", "sas_oauth", "sas_bad", "sas_fixture_key", "sas_oauth_access", "sas_oauth_refresh", "cp_auth_eq", "cp_cfg_eq", "cp_same_p", "cp_auth_leaf", "cp_cfg_leaf"),
     "resource_loader": ("reload", "dedupe_by_name", "skill_count", "prompt_count", "skill_names", "prompt_names", "skill_from_project", "prompt_from_project", "context_file_count", "system_prompt", "dbn_skill_count", "dbn_skill_collisions", "dbn_skill_project", "dbn_prompt_count", "dbn_prompt_collisions", "dbn_prompt_project", "context_from_dir", "project_context", "nearest_config"),
@@ -633,6 +633,9 @@ RATIO_CEILINGS = {
     # (0.134 / 2.131 µs). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "provider_registry_defs.strip_runtime_options": 8.0,
+    "tool_manager.release_asset": 8.0,
+    "tool_manager.find_binary": 8.0,
+    "tool_manager.quarantine_native": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -1927,6 +1930,21 @@ OBSERVED_EXACT = {
         "cq_removed",
         "cq_noop",
         "cq_n",
+        "ra_fd_darwin_arm",
+        "ra_fd_linux_x64",
+        "ra_fd_win_x64",
+        "ra_rg_linux_x64",
+        "ra_rg_linux_arm",
+        "ra_rg_darwin_arm",
+        "ra_n",
+        "fb_nested",
+        "fb_root",
+        "fb_miss",
+        "fb_n",
+        "qn_restored",
+        "qn_stashed",
+        "qn_noop",
+        "qn_n",
     ),
     "powershell_tool": (
         "psu_len",
