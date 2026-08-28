@@ -5793,7 +5793,7 @@
                (collect "tool_manager.quarantine_native"
                         (lambda ()
                           (lambda ()
-                            (run-tool-manager-quarantine-native)))))))))))))
+                            (run-tool-manager-quarantine-native))))))))))))
 
 ;;; ---------------------------------------------------------------------
 
