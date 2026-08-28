@@ -5610,6 +5610,45 @@ work is trimming the first 40-hex token (rev-parse / ls-remote) — not
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
 this metric did not fail). Over-1× booked. Same commit no optimize.
 
+### Pair 448 — `find_tool` (glob_regex)
+
+| metric | cadr | pi |
+|---|---|---|
+| `glob_regex` | `glob-regex-source` (`src/cadr-cli/tools/glob.lisp`) | glob pattern compile (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover of the `agent_tool_loop` hole on `glob.lisp`. Timed work is `*` /
+`**` / `?` / `.` glob-to-regex source. Observed `gr_star` / `gr_glob` /
+`gr_q` / `gr_dot` are exact. First n=5 freeze **2.403×** (0.527 / 0.220 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Over-1× booked. Same commit no optimize.
+
+### Pair 449 — `find_tool` (glob_special)
+
+| metric | cadr | pi |
+|---|---|---|
+| `glob_special` | `regex-special-p` (`src/cadr-cli/tools/glob.lisp`) | glob regex metacharacters (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pair 448 on the same `find_tool` hole. Timed work is
+the metacharacter table for glob compile. Observed `gs_dot` / `gs_star` /
+`gs_pipe` / `gs_bs` are exact. First n=5 freeze **0.549×** (0.082 / 0.149 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Same commit no optimize.
+
+### Pair 450 — `find_tool` (gitignore_regex)
+
+| metric | cadr | pi |
+|---|---|---|
+| `gitignore_regex` | `gitignore-regex-source` (`src/cadr-cli/tools/glob.lisp`) | gitignore glob compile (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pairs 448–449 on the same `find_tool` hole. Timed work
+is anchored / directory-only / plain gitignore regex source. Observed
+`gi_plain` / `gi_anch` / `gi_dir` are exact. First n=5 freeze **1.142×**
+(0.693 / 0.607 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

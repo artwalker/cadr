@@ -383,6 +383,9 @@
     ("find_tool.pattern_match" . 50)
     ("find_tool.find_files" . 50)
     ("find_tool.make_tool" . 50)
+    ("find_tool.glob_regex" . 50)
+    ("find_tool.glob_special" . 50)
+    ("find_tool.gitignore_regex" . 50)
     ("write_tool.ensure_parent" . 50)
     ("write_tool.write_utf8" . 50)
     ("write_tool.make_tool" . 50)
@@ -5688,6 +5691,40 @@
            (find "pattern" required-list :test #'string=)))
      3)))
 
+(defun run-find-glob-regex ()
+  (list
+   (find-tool-truth
+    (string= (cadr-cli::glob-regex-source "*") "^[^/]*$"))
+   (find-tool-truth
+    (string= (cadr-cli::glob-regex-source "**") "^.*$"))
+   (find-tool-truth
+    (string= (cadr-cli::glob-regex-source "?") "^[^/]$"))
+   (find-tool-truth
+    (string= (cadr-cli::glob-regex-source ".a") "^\\.a$"))
+   4))
+
+(defun run-find-glob-special ()
+  (list
+   (find-tool-truth (cadr-cli::regex-special-p #\.))
+   (find-tool-truth (not (cadr-cli::regex-special-p #\*)))
+   (find-tool-truth (cadr-cli::regex-special-p #\|))
+   (find-tool-truth (cadr-cli::regex-special-p #\\))
+   4))
+
+(defun run-find-gitignore-regex ()
+  (list
+   (find-tool-truth
+    (string=
+     (cadr-cli::gitignore-regex-source "foo" nil nil)
+     "(?:^|/)foo(?:$|/)"))
+   (find-tool-truth
+    (string= (cadr-cli::gitignore-regex-source "foo" t t) "^foo/"))
+   (find-tool-truth
+    (string=
+     (cadr-cli::gitignore-regex-source "foo" t nil)
+     "^foo(?:$|/)"))
+   3))
+
 (defun measure-find-tool ()
   (ensure-find-tool-fixture)
   (destructuring-bind
@@ -5698,40 +5735,73 @@
         (run-find-files)
       (destructuring-bind (fmt-name fmt-desc fmt-req fmt-n)
           (run-find-make-tool)
-        (json-object
-         "observed"
-         (json-object
-          "fpm_star_a" fpm-star-a
-          "fpm_star_src" fpm-star-src
-          "fpm_star_txt" fpm-star-txt
-          "fpm_path_src" fpm-path-src
-          "fpm_path_root" fpm-path-root
-          "fpm_src_star" fpm-src-star
-          "fpm_n" fpm-n
-          "ff_empty" ff-empty
-          "ff_lisp" ff-lisp
-          "ff_path" ff-path
-          "ff_src_star" ff-src-star
-          "ff_n" ff-n
-          "fmt_name" fmt-name
-          "fmt_desc" fmt-desc
-          "fmt_req" fmt-req
-          "fmt_n" fmt-n)
-         "pattern_match"
-         (collect "find_tool.pattern_match"
-                  (lambda ()
-                    (lambda ()
-                      (run-find-pattern-match))))
-         "find_files"
-         (collect "find_tool.find_files"
-                  (lambda ()
-                    (lambda ()
-                      (run-find-files))))
-         "make_tool"
-         (collect "find_tool.make_tool"
-                  (lambda ()
-                    (lambda ()
-                      (run-find-make-tool)))))))))
+        (destructuring-bind (gr-star gr-glob gr-q gr-dot gr-n)
+            (run-find-glob-regex)
+          (destructuring-bind (gs-dot gs-star gs-pipe gs-bs gs-n)
+              (run-find-glob-special)
+            (destructuring-bind (gi-plain gi-anch gi-dir gi-n)
+                (run-find-gitignore-regex)
+              (declare (ignore gr-n gs-n gi-n))
+              (json-object
+               "observed"
+               (json-object
+                "fpm_star_a" fpm-star-a
+                "fpm_star_src" fpm-star-src
+                "fpm_star_txt" fpm-star-txt
+                "fpm_path_src" fpm-path-src
+                "fpm_path_root" fpm-path-root
+                "fpm_src_star" fpm-src-star
+                "fpm_n" fpm-n
+                "ff_empty" ff-empty
+                "ff_lisp" ff-lisp
+                "ff_path" ff-path
+                "ff_src_star" ff-src-star
+                "ff_n" ff-n
+                "fmt_name" fmt-name
+                "fmt_desc" fmt-desc
+                "fmt_req" fmt-req
+                "fmt_n" fmt-n
+                "gr_star" gr-star
+                "gr_glob" gr-glob
+                "gr_q" gr-q
+                "gr_dot" gr-dot
+                "gs_dot" gs-dot
+                "gs_star" gs-star
+                "gs_pipe" gs-pipe
+                "gs_bs" gs-bs
+                "gi_plain" gi-plain
+                "gi_anch" gi-anch
+                "gi_dir" gi-dir)
+               "pattern_match"
+               (collect "find_tool.pattern_match"
+                        (lambda ()
+                          (lambda ()
+                            (run-find-pattern-match))))
+               "find_files"
+               (collect "find_tool.find_files"
+                        (lambda ()
+                          (lambda ()
+                            (run-find-files))))
+               "make_tool"
+               (collect "find_tool.make_tool"
+                        (lambda ()
+                          (lambda ()
+                            (run-find-make-tool))))
+               "glob_regex"
+               (collect "find_tool.glob_regex"
+                        (lambda ()
+                          (lambda ()
+                            (run-find-glob-regex))))
+               "glob_special"
+               (collect "find_tool.glob_special"
+                        (lambda ()
+                          (lambda ()
+                            (run-find-glob-special))))
+               "gitignore_regex"
+               (collect "find_tool.gitignore_regex"
+                        (lambda ()
+                          (lambda ()
+                            (run-find-gitignore-regex))))))))))))
 
 (defun ls-tool-truth (value)
   (if value 1 0))
@@ -19958,6 +20028,12 @@
       "src/cadr-cli/tools/find.lisp find-files"
       "find_tool.make_tool"
       "src/cadr-cli/tools/find.lisp make-find-tool"
+      "find_tool.glob_regex"
+      "src/cadr-cli/tools/glob.lisp glob-regex-source"
+      "find_tool.glob_special"
+      "src/cadr-cli/tools/glob.lisp regex-special-p"
+      "find_tool.gitignore_regex"
+      "src/cadr-cli/tools/glob.lisp gitignore-regex-source"
       "write_tool.ensure_parent"
       "src/cadr-cli/tools/write.lisp ensure-write-parent-directories"
       "write_tool.write_utf8"

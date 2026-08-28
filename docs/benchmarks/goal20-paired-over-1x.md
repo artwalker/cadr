@@ -318,4 +318,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.type_label` | 0.135 | 0.134 | 1.002× | 8.00× | measure-only pair 444; `config-resource-type-label` leftover (sub-µs variance) | invent pause；地板优化另刀 |
 | `package_manager.update_argv` | 5.696 | 1.588 | 3.587× | 8.00× | measure-only pair 445; leftover `package-update-check-process-argv` (sub-µs path) | invent pause；地板优化另刀 |
 | `package_manager.git_object_id` | 2.328 | 1.215 | 1.916× | 8.00× | measure-only pair 447; leftover `package-update-git-object-id` (sub-µs path) | invent pause；地板优化另刀 |
+| `find_tool.glob_regex` | 0.527 | 0.220 | 2.403× | 8.00× | measure-only pair 448; leftover `glob-regex-source` (sub-µs path) | invent pause；地板优化另刀 |
+| `find_tool.gitignore_regex` | 0.693 | 0.607 | 1.142× | 8.00× | measure-only pair 450; leftover `gitignore-regex-source` (sub-µs path) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

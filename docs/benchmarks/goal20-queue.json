@@ -2348,6 +2348,51 @@
    "piUs": 1.215,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 448,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.glob_regex",
+   "branch": "cursor/glob-leftovers-448-450-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 448-450, not sequential nextPairNum)",
+   "ratio": 2.403,
+   "cadrUs": 0.527,
+   "piUs": 0.22,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 449,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.glob_special",
+   "branch": "cursor/glob-leftovers-448-450-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 448-450, not sequential nextPairNum)",
+   "ratio": 0.549,
+   "cadrUs": 0.082,
+   "piUs": 0.149,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 450,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.gitignore_regex",
+   "branch": "cursor/glob-leftovers-448-450-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 448-450, not sequential nextPairNum)",
+   "ratio": 1.142,
+   "cadrUs": 0.693,
+   "piUs": 0.607,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

@@ -100,7 +100,7 @@ METRICS = {
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus", "he_direct", "he_watch", "he_start", "he_end", "he_second", "heon_off", "heon_keep", "heon_type", "hew_snap", "hew_count", "hew_start", "hew_end", "hes_type", "hes_lane", "hes_run", "hee_type", "hee_lane", "hee_run", "hee_outcome", "hee_abort", "het_start", "het_end", "het_fail", "heb_distinct", "heb_a", "heb_b"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice", "sef_exact", "sef_nl", "sef_no_nl", "sef_plain", "sef_empty", "sef_n", "abs_empty", "abs_abort", "abs_exit", "abs_timeout", "abs_n", "btn_none", "btn_partial", "btn_lines", "btn_bytes", "btn_n"),
     "output_accumulator": ("append", "snapshot", "finish", "oa_append_bytes", "oa_append_trunc", "oa_append_lines", "oa_append_last", "oa_append_n", "oa_snap_bytes", "oa_snap_trunc", "oa_snap_lines", "oa_snap_total", "oa_snap_n", "oa_fin_bytes", "oa_fin_fffd", "oa_fin_last", "oa_fin_trunc", "oa_fin_n", "last_line_bytes", "needs_file", "close_temp_file"),
-    "find_tool": ("pattern_match", "find_files", "make_tool", "fpm_star_a", "fpm_star_src", "fpm_star_txt", "fpm_path_src", "fpm_path_root", "fpm_src_star", "fpm_n", "ff_empty", "ff_lisp", "ff_path", "ff_src_star", "ff_n", "fmt_name", "fmt_desc", "fmt_req", "fmt_n"),
+    "find_tool": ("pattern_match", "find_files", "make_tool", "fpm_star_a", "fpm_star_src", "fpm_star_txt", "fpm_path_src", "fpm_path_root", "fpm_src_star", "fpm_n", "ff_empty", "ff_lisp", "ff_path", "ff_src_star", "ff_n", "fmt_name", "fmt_desc", "fmt_req", "fmt_n", "glob_regex", "glob_special", "gitignore_regex"),
     "grep_tool": ("match_event", "line_text", "make_tool", "read_utf8", "file_lines", "context_block"),
     "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool", "lden_file", "lden_dir", "lden_nested", "lden_n", "ld_empty", "ld_mixed", "ld_first", "ld_limit", "ld_n", "lst_name", "lst_desc", "lst_req", "lst_n"),
@@ -713,6 +713,11 @@ RATIO_CEILINGS = {
     "package_manager.update_argv": 8.0,
     "package_manager.update_env": 8.0,
     "package_manager.git_object_id": 8.0,
+    # find_tool leftover trio on glob.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "find_tool.glob_regex": 8.0,
+    "find_tool.glob_special": 8.0,
+    "find_tool.gitignore_regex": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -1961,6 +1966,17 @@ OBSERVED_EXACT = {
         "fmt_desc",
         "fmt_req",
         "fmt_n",
+        "gr_star",
+        "gr_glob",
+        "gr_q",
+        "gr_dot",
+        "gs_dot",
+        "gs_star",
+        "gs_pipe",
+        "gs_bs",
+        "gi_plain",
+        "gi_anch",
+        "gi_dir",
     ),
     "grep_tool": (
         "rme_match",
