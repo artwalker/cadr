@@ -433,6 +433,9 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_active_models": 50,
 	"cli_selectors.model_selector_clamp_selected": 50,
 	"cli_selectors.model_selector_select_current": 50,
+	"cli_selectors.sort_model_selector_models": 50,
+	"cli_selectors.model_selector_visible_models": 50,
+	"cli_selectors.model_selector_visible_slice": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20421,6 +20424,73 @@ function runCliSelectorsModelSelectorSelectCurrent() {
 		msel_miss: modelSelectorSelectCurrentEncoded(models, outsider),
 		msel_nil: modelSelectorSelectCurrentEncoded(models, null),
 		msel_empty: modelSelectorSelectCurrentEncoded([], models[0]),
+	};
+}
+
+
+function encodeSortedModelSelectorModels(models, currentItem) {
+	return sortModelSelectorTestModels(models, currentItem)
+		.map((item) => qualifiedModelId(item))
+		.join(",");
+}
+
+
+function runCliSelectorsSortModelSelectorModels() {
+	const models = makeModelSelectorTestModels();
+	const reversed = [...models].reverse();
+	return {
+		smsort_first: encodeSortedModelSelectorModels(models, models[0]),
+		smsort_last: encodeSortedModelSelectorModels(
+			models,
+			models[models.length - 1],
+		),
+		smsort_mid: encodeSortedModelSelectorModels(models, models[2]),
+		smsort_rev: encodeSortedModelSelectorModels(reversed, models[0]),
+		smsort_single: encodeSortedModelSelectorModels([models[0]], models[0]),
+	};
+}
+
+
+function encodeModelSelectorVisibleModels(models, query) {
+	return modelSelectorFilteredModels(models, query)
+		.map((item) => qualifiedModelId(item))
+		.join(",");
+}
+
+
+function runCliSelectorsModelSelectorVisibleModels() {
+	const models = makeModelSelectorTestModels();
+	return {
+		msvm_all: encodeModelSelectorVisibleModels(models, ""),
+		msvm_gpt: encodeModelSelectorVisibleModels(models, "gpt"),
+		msvm_nope: encodeModelSelectorVisibleModels(models, "nope"),
+		msvm_anth: encodeModelSelectorVisibleModels(models, "anth"),
+		msvm_oogle: encodeModelSelectorVisibleModels(models, "oogle"),
+	};
+}
+
+
+function encodeModelSelectorVisibleSlice(models, selected, maximum, query = "") {
+	const current = models[0];
+	const sorted = sortModelSelectorTestModels(models, current);
+	const filtered = modelSelectorFilterActiveModels(sorted, query);
+	const { visible, start, total } = modelSelectorVisibleSlice(
+		filtered,
+		selected,
+		maximum,
+	);
+	return `${start}|${total}|${visible.map((item) => qualifiedModelId(item)).join(",")}`;
+}
+
+
+function runCliSelectorsModelSelectorVisibleSlice() {
+	const models = makeModelSelectorTestModels();
+	return {
+		msvs_all: encodeModelSelectorVisibleSlice(models, 0, 10),
+		msvs_mid: encodeModelSelectorVisibleSlice(models, 4, 3),
+		msvs_filter: encodeModelSelectorVisibleSlice(models, 0, 10, "gpt"),
+		msvs_empty: encodeModelSelectorVisibleSlice(models, 0, 10, "nope"),
+		msvs_max1: encodeModelSelectorVisibleSlice(models, 2, 1),
 	};
 }
 

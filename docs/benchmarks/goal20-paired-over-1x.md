@@ -389,4 +389,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.model_selector_active_models` | 20.408 | 1.804 | 11.315× | 15.00× | leftover 571; `model-selector-active-models` vs `activeModels` scope switch | invent pause；地板优化另刀 |
 | `cli_selectors.model_selector_clamp_selected` | 21.011 | 5.234 | 4.015× | 8.00× | leftover 572; `model-selector-clamp-selected` vs `filterModels` selectedIndex clamp | invent pause；地板优化另刀 |
 | `cli_selectors.model_selector_select_current` | 19.744 | 0.449 | 43.943× | 55.00× | leftover 573; `model-selector-select-current` vs `setScope` currentIndex | invent pause；地板优化另刀 |
+| `cli_selectors.sort_model_selector_models` | 8.603 | 2.939 | 2.928× | 8.00× | measure-only leftover 574; `sort-model-selector-models` vs current-first + provider localeCompare | invent pause；地板优化另刀 |
+| `cli_selectors.model_selector_visible_models` | 37.867 | 20.148 | 1.879× | 8.00× | measure-only leftover 575; `model-selector-visible-models` vs filteredModels after filter | invent pause；地板优化另刀 |
+| `cli_selectors.model_selector_visible_slice` | 31.486 | 11.617 | 2.710× | 8.00× | measure-only leftover 576; `model-selector-visible-slice` vs filteredModels viewport slice | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

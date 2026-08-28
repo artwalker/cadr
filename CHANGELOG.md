@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.sort_model_selector_models`
+  (`sort-model-selector-models` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs current-first then
+  provider `localeCompare`). Observed `smsort_first` / `smsort_last` /
+  `smsort_mid` / `smsort_rev` / `smsort_single` exact. n=5 **2.928×**
+  (8.603 / 2.939 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 574). Gate rc=1 only from known old holes. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.model_selector_visible_models`
+  (`model-selector-visible-models` vs `filteredModels` after filter).
+  Observed `msvm_all` / `msvm_gpt` / `msvm_nope` / `msvm_anth` / `msvm_oogle`
+  exact. n=5 **1.879×** (37.867 / 20.148 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 575). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.model_selector_visible_slice`
+  (`model-selector-visible-slice` vs filteredModels viewport slice). Distinct
+  from `cli_selectors.visible_slice`. Observed `msvs_all` / `msvs_mid` /
+  `msvs_filter` / `msvs_empty` / `msvs_max1` exact. n=5 **2.710×**
+  (31.486 / 11.617 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 576). Gate rc=1 only from known old holes. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.model_selector_active_models`
   (`model-selector-active-models` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs `activeModels` scope

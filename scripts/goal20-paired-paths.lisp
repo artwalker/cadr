@@ -19683,6 +19683,96 @@
      (model-selector-select-current-encoded '() (first models)))))
 
 
+(defun encode-model-selector-qualified-ids (models)
+  (format nil "~{~a~^,~}"
+          (mapcar #'cadr-cli::qualified-model-id models)))
+
+
+(defun sort-model-selector-models-encoded (models current)
+  (encode-model-selector-qualified-ids
+   (cadr-cli::sort-model-selector-models models current)))
+
+
+(defun run-cli-selectors-sort-model-selector-models ()
+  (let* ((models (make-model-selector-test-models))
+         (reversed (reverse models)))
+    (list
+     (sort-model-selector-models-encoded models (first models))
+     (sort-model-selector-models-encoded models (car (last models)))
+     (sort-model-selector-models-encoded models (nth 2 models))
+     (sort-model-selector-models-encoded reversed (first models))
+     (sort-model-selector-models-encoded
+      (list (first models)) (first models)))))
+
+
+(defun model-selector-visible-models-encoded (models query)
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (setf (cadr-cli::model-selector-state-query state) query)
+    (cadr-cli::model-selector-apply-filter state)
+    (encode-model-selector-qualified-ids
+     (cadr-cli::model-selector-visible-models state))))
+
+
+(defun run-cli-selectors-model-selector-visible-models ()
+  (let ((models (make-model-selector-test-models)))
+    (list
+     (model-selector-visible-models-encoded models "")
+     (model-selector-visible-models-encoded models "gpt")
+     (model-selector-visible-models-encoded models "nope")
+     (model-selector-visible-models-encoded models "anth")
+     (model-selector-visible-models-encoded models "oogle"))))
+
+
+(defun model-selector-visible-slice-encoded
+    (models selected maximum &optional (query ""))
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (setf (cadr-cli::model-selector-state-query state) query)
+    (cadr-cli::model-selector-apply-filter state)
+    (setf (cadr-cli::model-selector-state-selected state) selected)
+    (multiple-value-bind (visible start total)
+        (cadr-cli::model-selector-visible-slice state maximum)
+      (format nil "~D|~D|~a"
+              start total
+              (encode-model-selector-qualified-ids visible)))))
+
+
+(defun run-cli-selectors-model-selector-visible-slice ()
+  (let ((models (make-model-selector-test-models)))
+    (list
+     (model-selector-visible-slice-encoded models 0 10)
+     (model-selector-visible-slice-encoded models 4 3)
+     (model-selector-visible-slice-encoded models 0 10 "gpt")
+     (model-selector-visible-slice-encoded models 0 10 "nope")
+     (model-selector-visible-slice-encoded models 2 1))))
+
+
+(defun sort-slice-observed-pairs (sort-obs visible-obs slice-obs)
+  (list
+   "smsort_first" (nth 0 sort-obs)
+   "smsort_last" (nth 1 sort-obs)
+   "smsort_mid" (nth 2 sort-obs)
+   "smsort_rev" (nth 3 sort-obs)
+   "smsort_single" (nth 4 sort-obs)
+   "msvm_all" (nth 0 visible-obs)
+   "msvm_gpt" (nth 1 visible-obs)
+   "msvm_nope" (nth 2 visible-obs)
+   "msvm_anth" (nth 3 visible-obs)
+   "msvm_oogle" (nth 4 visible-obs)
+   "msvs_all" (nth 0 slice-obs)
+   "msvs_mid" (nth 1 slice-obs)
+   "msvs_filter" (nth 2 slice-obs)
+   "msvs_empty" (nth 3 slice-obs)
+   "msvs_max1" (nth 4 slice-obs)))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
