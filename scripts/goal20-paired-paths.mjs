@@ -398,6 +398,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
+	"cli_interactive_controller.colorfgbg_index": 50,
+	"cli_interactive_controller.rgb_background": 50,
+	"cli_interactive_controller.detect_background": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -13776,6 +13779,65 @@ function runCliInteractiveClipboardCopy() {
 			termuxP: true,
 			commandRunner: ok,
 		}),
+	};
+}
+
+
+function colorfgbgIndexOrEmpty(value) {
+	const parts = value.split(";");
+	for (let i = parts.length - 1; i >= 0; i--) {
+		const bg = parseInt(parts[i].trim(), 10);
+		if (Number.isInteger(bg) && bg >= 0 && bg <= 255) {
+			return String(bg);
+		}
+	}
+	return "";
+}
+
+
+function runCliInteractiveColorfgbgIndex() {
+	return {
+		cfg_plain: colorfgbgIndexOrEmpty("15"),
+		cfg_last: colorfgbgIndexOrEmpty("0;7"),
+		cfg_skip: colorfgbgIndexOrEmpty("15;256"),
+		cfg_miss: colorfgbgIndexOrEmpty("nope"),
+		cfg_pad: colorfgbgIndexOrEmpty("  0  ;  15  "),
+		cfg_empty: colorfgbgIndexOrEmpty(""),
+	};
+}
+
+
+function rgbBackgroundName(r, g, b) {
+	return themeModule.getThemeForRgbColor({ r, g, b });
+}
+
+
+function runCliInteractiveRgbBackground() {
+	return {
+		rgb_black: rgbBackgroundName(8, 8, 8),
+		rgb_white: rgbBackgroundName(250, 250, 250),
+		rgb_mid: rgbBackgroundName(128, 128, 128),
+		rgb_187: rgbBackgroundName(187, 187, 187),
+		rgb_188: rgbBackgroundName(188, 188, 188),
+		rgb_red: rgbBackgroundName(255, 0, 0),
+	};
+}
+
+
+function detectBackgroundEncoded(env) {
+	const detection = themeModule.detectTerminalBackgroundFromEnv({ env });
+	return `${detection.theme}|${detection.source}|${detection.confidence}`;
+}
+
+
+function runCliInteractiveDetectBackground() {
+	return {
+		dbg_white: detectBackgroundEncoded({ COLORFGBG: "15" }),
+		dbg_black: detectBackgroundEncoded({ COLORFGBG: "0" }),
+		dbg_none: detectBackgroundEncoded({ FOO: "1" }),
+		dbg_empty: detectBackgroundEncoded({ COLORFGBG: "" }),
+		dbg_bad: detectBackgroundEncoded({ COLORFGBG: "nope" }),
+		dbg_pair: detectBackgroundEncoded({ COLORFGBG: "0;15" }),
 	};
 }
 

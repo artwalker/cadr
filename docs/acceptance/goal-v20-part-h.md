@@ -6678,6 +6678,30 @@ Leftover sibling of Pair 535 on the same hole. Timed work is hello/empty/CJK/ove
 
 Leftover sibling of Pairs 535–536 on the same hole. Timed work is darwin-native/linux-shell/remote+osc52/osc-only/windows-native/termux-shell with injected runners — not `execSync`, not image paste. Observed `cc_darwin` / `cc_linux_shell` / `cc_remote` / `cc_osc` / `cc_win` / `cc_termux` are exact. First n=5 freeze **1.137×** (1.911 / 1.680 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
 
+### Pair 538 — `cli_interactive_controller` (colorfgbg_index)
+
+| metric | cadr | pi |
+|---|---|---|
+| `colorfgbg_index` | `colorfgbg-background-index` (`src/cadr-cli/interactive/theme.lisp`) | COLORFGBG parse (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover trio on `src/cadr-cli/interactive/theme.lisp` / hole `cli_interactive_controller`. Timed work is last-valid 0–255 segment parse — not OSC 11, not getenv. Observed `cfg_plain` / `cfg_last` / `cfg_skip` / `cfg_miss` / `cfg_pad` / `cfg_empty` are exact. First n=5 freeze **1.605×** (1.430 / 0.891 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 539 — `cli_interactive_controller` (rgb_background)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rgb_background` | `rgb-background-theme` (`src/cadr-cli/interactive/theme.lisp`) | `getThemeForRgbColor` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pair 538 on the same hole. Timed work is WCAG luminance ≥0.5 light/dark on six RGB fixtures — not type-error, not hex. Observed `rgb_black` / `rgb_white` / `rgb_mid` / `rgb_187` / `rgb_188` / `rgb_red` are exact. First n=5 freeze **0.659×** (2.180 / 3.309 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 540 — `cli_interactive_controller` (detect_background)
+
+| metric | cadr | pi |
+|---|---|---|
+| `detect_background` | `detect-background-from-environment` (`src/cadr-cli/interactive/theme.lisp`) | `detectTerminalBackgroundFromEnv` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pairs 538–539 on the same hole. Timed work is COLORFGBG white/black/missing/empty/invalid/pair detection — not live getenv (dummy alist), not OSC 11. Observed `dbg_white` / `dbg_black` / `dbg_none` / `dbg_empty` / `dbg_bad` / `dbg_pair` are exact. First n=5 freeze **0.863×** (3.025 / 3.504 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

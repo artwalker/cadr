@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.colorfgbg_index`
+  (`colorfgbg-background-index` on
+  `src/cadr-cli/interactive/theme.lisp`). Observed `cfg_plain` /
+  `cfg_last` / `cfg_skip` / `cfg_miss` / `cfg_pad` / `cfg_empty` exact.
+  n=5 **1.605×** (1.430 / 0.891 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 538). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.rgb_background`
+  (`rgb-background-theme` on
+  `src/cadr-cli/interactive/theme.lisp`). Observed `rgb_black` /
+  `rgb_white` / `rgb_mid` / `rgb_187` / `rgb_188` / `rgb_red` exact.
+  n=5 **0.659×** (2.180 / 3.309 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 539). cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.detect_background`
+  (`detect-background-from-environment` on
+  `src/cadr-cli/interactive/theme.lisp`). Observed `dbg_white` /
+  `dbg_black` / `dbg_none` / `dbg_empty` / `dbg_bad` / `dbg_pair` exact.
+  n=5 **0.863×** (3.025 / 3.504 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 540). cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.clipboard_candidates`
   (`clipboard-command-candidates` on
   `src/cadr-cli/interactive/clipboard.lisp`). Observed `ccand_darwin` /

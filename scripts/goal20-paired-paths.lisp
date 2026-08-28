@@ -14123,6 +14123,62 @@
       :command-runner ok))))
 
 
+(defun colorfgbg-index-or-empty (value)
+  (let ((index (cadr-cli::colorfgbg-background-index value)))
+    (if index
+        (princ-to-string index)
+        "")))
+
+
+(defun run-cli-interactive-colorfgbg-index ()
+  (list
+   (colorfgbg-index-or-empty "15")
+   (colorfgbg-index-or-empty "0;7")
+   (colorfgbg-index-or-empty "15;256")
+   (colorfgbg-index-or-empty "nope")
+   (colorfgbg-index-or-empty "  0  ;  15  ")
+   (colorfgbg-index-or-empty "")))
+
+
+(defun rgb-background-name (red green blue)
+  (string-downcase
+   (symbol-name
+    (cadr-cli:rgb-background-theme red green blue))))
+
+
+(defun run-cli-interactive-rgb-background ()
+  (list
+   (rgb-background-name 8 8 8)
+   (rgb-background-name 250 250 250)
+   (rgb-background-name 128 128 128)
+   (rgb-background-name 187 187 187)
+   (rgb-background-name 188 188 188)
+   (rgb-background-name 255 0 0)))
+
+
+(defun detect-background-encoded (environment)
+  (let ((detection
+          (cadr-cli:detect-background-from-environment environment)))
+    (format
+     nil "~A|~A|~A"
+     (string-downcase
+      (symbol-name (cadr-cli:theme-detection-theme detection)))
+     (cadr-cli:theme-detection-source detection)
+     (string-downcase
+      (symbol-name (cadr-cli:theme-detection-confidence detection))))))
+
+
+(defun run-cli-interactive-detect-background ()
+  ;; Non-NIL dummy alist: NIL falls through to live getenv.
+  (list
+   (detect-background-encoded '(("COLORFGBG" . "15")))
+   (detect-background-encoded '(("COLORFGBG" . "0")))
+   (detect-background-encoded '(("FOO" . "1")))
+   (detect-background-encoded '(("COLORFGBG" . "")))
+   (detect-background-encoded '(("COLORFGBG" . "nope")))
+   (detect-background-encoded '(("COLORFGBG" . "0;15")))))
+
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
