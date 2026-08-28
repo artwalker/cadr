@@ -632,6 +632,9 @@
     ("cli_interactive_controller.extension_dialog_chrome" . 50)
     ("cli_interactive_controller.tui_component_protocol" . 50)
     ("cli_interactive_controller.extension_render_value_lines" . 50)
+    ("cli_interactive_controller.make_framed_select_state" . 50)
+    ("cli_interactive_controller.note_component_render_channel" . 50)
+    ("cli_interactive_controller.tui_extension_theme_runtime" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14605,6 +14608,26 @@
    "erv_n" (nth 4 render-value-lines)))
 
 
+(defun leftover-extension-ui-framed-note-theme-observed-pairs
+    (framed-select note-render theme-runtime)
+  (list
+   "mfs_title" (nth 0 framed-select)
+   "mfs_n" (nth 1 framed-select)
+   "mfs_a" (nth 2 framed-select)
+   "mfs_dead" (nth 3 framed-select)
+   "mfs_open" (nth 4 framed-select)
+   "ncr_nil" (nth 0 note-render)
+   "ncr_eq" (nth 1 note-render)
+   "ncr_set" (nth 2 note-render)
+   "ncr_plain" (nth 3 note-render)
+   "ncr_ret" (nth 4 note-render)
+   "tet_fg" (nth 0 theme-runtime)
+   "tet_bg" (nth 1 theme-runtime)
+   "tet_bold" (nth 2 theme-runtime)
+   "tet_italic" (nth 3 theme-runtime)
+   "tet_hi" (nth 4 theme-runtime)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15120,7 +15143,13 @@
         (leftover-tui-component-protocol
           (run-cli-interactive-tui-component-protocol))
         (leftover-extension-render-value-lines
-          (run-cli-interactive-extension-render-value-lines)))
+          (run-cli-interactive-extension-render-value-lines))
+        (leftover-make-framed-select-state
+          (run-cli-interactive-make-framed-select-state))
+        (leftover-note-component-render-channel
+          (run-cli-interactive-note-component-render-channel))
+        (leftover-tui-extension-theme-runtime
+          (run-cli-interactive-tui-extension-theme-runtime)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15223,7 +15252,11 @@
              (leftover-extension-ui-chrome-protocol-lines-observed-pairs
               leftover-extension-dialog-chrome
               leftover-tui-component-protocol
-              leftover-extension-render-value-lines)))
+              leftover-extension-render-value-lines)
+             (leftover-extension-ui-framed-note-theme-observed-pairs
+              leftover-make-framed-select-state
+              leftover-note-component-render-channel
+              leftover-tui-extension-theme-runtime)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15448,7 +15481,22 @@
      (collect "cli_interactive_controller.extension_render_value_lines"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-extension-render-value-lines)))))))
+                  (run-cli-interactive-extension-render-value-lines))))
+     "make_framed_select_state"
+     (collect "cli_interactive_controller.make_framed_select_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-make-framed-select-state))))
+     "note_component_render_channel"
+     (collect "cli_interactive_controller.note_component_render_channel"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-note-component-render-channel))))
+     "tui_extension_theme_runtime"
+     (collect "cli_interactive_controller.tui_extension_theme_runtime"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tui-extension-theme-runtime)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -16472,6 +16520,68 @@
      (if (and (search "aa" listed-text) (search "bb" listed-text)) 1 0)
      (if (null num) 1 0)
      (if (>= (length hello) 1) 1 0))))
+
+(defun run-cli-interactive-make-framed-select-state ()
+  (cadr-cli::make-framed-select-state
+   "Pick" '("a" "b") '(1 2) :timeout-ms 5000)
+  (cadr-cli::make-framed-select-state "Pick" '("a" "b") '(1 2))
+  (let* ((st
+           (cadr-cli::make-framed-select-state
+            "Pick" '("a" "b") '(1 2) :timeout-ms 5000))
+         (open
+           (cadr-cli::make-framed-select-state
+            "Pick" '("a" "b") '(1 2)))
+         (items
+           (cadr-tui::select-list-items
+            (cadr-cli::framed-select-state-select-list st))))
+    (list
+     (if (equal "Pick" (cadr-cli::framed-select-state-title st)) 1 0)
+     (if (= 2 (length items)) 1 0)
+     (if
+         (and items
+              (equal "a"
+                     (cadr-tui:select-item-label (first items))))
+         1 0)
+     (if (cadr-cli::framed-select-state-deadline st) 1 0)
+     (if (null (cadr-cli::framed-select-state-deadline open)) 1 0))))
+
+(defun run-cli-interactive-note-component-render-channel ()
+  (let* ((fn (lambda () nil))
+         (aware (make-instance 'cadr-cli::render-aware-component))
+         (noted
+           (cadr-cli::note-component-render-channel aware fn))
+         (plain (cadr-cli::make-extension-input-dialog "t"))
+         (noted-plain
+           (cadr-cli::note-component-render-channel plain fn)))
+    (cadr-cli::note-component-render-channel nil fn)
+    (cadr-cli::note-component-render-channel aware fn)
+    (cadr-cli::note-component-render-channel plain fn)
+    (list
+     (if (null (cadr-cli::note-component-render-channel nil fn))
+         1 0)
+     (if (eq aware noted) 1 0)
+     (if
+         (eq fn
+             (cadr-cli::component-render-request-function noted))
+         1 0)
+     (if (eq plain noted-plain) 1 0)
+     (if (cadr-cli::tui-component-protocol-p noted-plain) 1 0))))
+
+(defun run-cli-interactive-tui-extension-theme-runtime ()
+  (let ((rt (cadr-cli::tui-extension-theme-runtime)))
+    (cadr-cli::tui-extension-theme-runtime)
+    (cadr-cli::tui-extension-theme-runtime)
+    (list
+     (if (functionp (getf rt :fg)) 1 0)
+     (if (functionp (getf rt :bg)) 1 0)
+     (if (functionp (getf rt :bold)) 1 0)
+     (if (functionp (getf rt :italic)) 1 0)
+     (if
+         (search
+          "hi"
+          (cadr-cli::strip-ansi
+           (funcall (getf rt :fg) :accent "hi")))
+         1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -28816,6 +28926,12 @@
       "src/cadr-cli/interactive/extension-ui.lisp tui-component-protocol-p"
       "cli_interactive_controller.extension_render_value_lines"
       "src/cadr-cli/interactive/extension-ui.lisp extension-render-value-lines"
+      "cli_interactive_controller.make_framed_select_state"
+      "src/cadr-cli/interactive/extension-ui.lisp make-framed-select-state"
+      "cli_interactive_controller.note_component_render_channel"
+      "src/cadr-cli/interactive/extension-ui.lisp note-component-render-channel"
+      "cli_interactive_controller.tui_extension_theme_runtime"
+      "src/cadr-cli/interactive/extension-ui.lisp tui-extension-theme-runtime"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
