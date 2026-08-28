@@ -300,4 +300,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `provider_registry_defs.provider_options` | 0.560 | 0.330 | 1.697× | 8.00× | measure-only pair 404; leftover `built-in-provider-options` vs Azure/Cloudflare/Google env keys (sub-µs variance) | invent pause；地板优化另刀 |
 | `tool_manager.release_asset` | 1.532 | 1.046 | 1.465× | 8.00× | measure-only pair 409; leftover `tool-release-asset` vs `TOOLS.getAssetName` (sub-µs variance) | invent pause；地板优化另刀 |
 | `tool_manager.find_binary` | 339.3 | 216.5 | 1.568× | 8.00× | measure-only pair 410; leftover `find-file-recursively` vs `findBinaryRecursively` | invent pause；地板优化另刀 |
+| `tui_select_settings_loaders.set_message` | 0.244 | 0.192 | 1.269× | 8.00× | measure-only pair 416; leftover `loader-component-set-message` vs `Loader.setMessage` (sub-µs variance) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

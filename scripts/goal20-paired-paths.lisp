@@ -10347,6 +10347,35 @@
          (loader-text-has loader "a Loading...")
          3)))))
 
+(defun run-tui-loader-make ()
+  (let ((loader (make-bench-loader)))
+    (let ((has-a (loader-text-has loader "a Loading..."))
+          (nframes
+            (length (cadr-tui::loader-component-frames loader))))
+      (cadr-tui:component-dispose loader)
+      (list has-a nframes 2))))
+
+
+(defun run-tui-loader-set-message ()
+  (let ((loader (make-bench-loader)))
+    (cadr-tui:loader-component-set-message loader "Working")
+    (let ((working (loader-text-has loader "Working"))
+          (kept (loader-text-has loader "a ")))
+      (cadr-tui:component-dispose loader)
+      (list working kept 2))))
+
+
+(defun run-tui-loader-set-indicator ()
+  (let ((loader (make-bench-loader)))
+    (cadr-tui:loader-component-set-indicator
+     loader :frames '("x" "y") :interval-seconds 0.2d0 :start-p nil)
+    (let ((has-x (loader-text-has loader "x Loading..."))
+          (nframes
+            (length (cadr-tui::loader-component-frames loader))))
+      (cadr-tui:component-dispose loader)
+      (list has-x nframes 2))))
+
+
 (defun measure-tui-select-list ()
   (let ((observed (run-tui-select-list))
         (frames (run-tui-loader-frames))

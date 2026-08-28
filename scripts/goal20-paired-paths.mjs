@@ -287,6 +287,9 @@ const REPETITIONS = {
 	"evals_harness.eval_result": 50,
 	"evals_harness.root_observer": 50,
 	"evals_harness.model_resolver": 50,
+	"tui_select_settings_loaders.make_loader_component": 50,
+	"tui_select_settings_loaders.set_message": 50,
+	"tui_select_settings_loaders.set_indicator": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -9469,6 +9472,35 @@ function runTuiLoaderStep() {
 		ls_n: 3,
 	};
 }
+
+function runTuiLoaderMake() {
+	const loader = makeStoppedBenchLoader();
+	const hasA = loaderTextHas(loader, "a Loading...");
+	const nframes = loader.frames.length;
+	loader.stop();
+	return { ml_has_a: hasA, ml_frames: nframes, ml_n: 2 };
+}
+
+
+function runTuiLoaderSetMessage() {
+	const loader = makeStoppedBenchLoader();
+	loader.setMessage("Working");
+	const working = loaderTextHas(loader, "Working");
+	const kept = loaderTextHas(loader, "a ");
+	loader.stop();
+	return { sm_working: working, sm_kept_a: kept, sm_n: 2 };
+}
+
+
+function runTuiLoaderSetIndicator() {
+	const loader = makeStoppedBenchLoader();
+	loader.setIndicator({ frames: ["x", "y"], intervalMs: 200 });
+	loader.stop();
+	const hasX = loaderTextHas(loader, "x Loading...");
+	const nframes = loader.frames.length;
+	return { si_has_x: hasX, si_frames: nframes, si_n: 2 };
+}
+
 
 async function measureTuiSelectList() {
 	const observed = runTuiSelectList();

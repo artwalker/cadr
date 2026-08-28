@@ -1766,6 +1766,49 @@
    "piUs": 583.0,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 415,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.make_loader_component",
+   "branch": "cursor/pair-tui-loaders-leftover-415-417-fcad",
+   "note": "nextPairNum left at tip 328 (outside 415-417); staggered from #53 loader_frames/interval/step",
+   "ratio": 0.182,
+   "cadrUs": 0.402,
+   "piUs": 2.207,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 416,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.set_message",
+   "branch": "cursor/pair-tui-loaders-leftover-415-417-fcad",
+   "ratio": 1.269,
+   "cadrUs": 0.244,
+   "piUs": 0.192,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 417,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.set_indicator",
+   "branch": "cursor/pair-tui-loaders-leftover-415-417-fcad",
+   "ratio": 0.201,
+   "cadrUs": 0.341,
+   "piUs": 1.700,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
