@@ -297,6 +297,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.auth_type": 50,
 	"cli_interactive_controller.parse_auto_theme": 50,
 	"cli_interactive_controller.resolve_theme": 50,
+	"cli_interactive_controller.colorfgbg_index": 50,
+	"cli_interactive_controller.rgb_background": 50,
+	"cli_interactive_controller.detect_background": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -8622,6 +8625,59 @@ function runCliInteractiveResolveTheme() {
 	};
 }
 
+function colorfgbgIndexOrEmpty(value) {
+	const parts = value.split(";");
+	for (let i = parts.length - 1; i >= 0; i--) {
+		const bg = parseInt(parts[i].trim(), 10);
+		if (Number.isInteger(bg) && bg >= 0 && bg <= 255) {
+			return String(bg);
+		}
+	}
+	return "";
+}
+
+function runCliInteractiveColorfgbgIndex() {
+	return {
+		cfg_plain: colorfgbgIndexOrEmpty("15"),
+		cfg_last: colorfgbgIndexOrEmpty("0;7"),
+		cfg_skip: colorfgbgIndexOrEmpty("15;256"),
+		cfg_miss: colorfgbgIndexOrEmpty("nope"),
+		cfg_pad: colorfgbgIndexOrEmpty("  0  ;  15  "),
+		cfg_empty: colorfgbgIndexOrEmpty(""),
+	};
+}
+
+function rgbBackgroundName(r, g, b) {
+	return themeModule.getThemeForRgbColor({ r, g, b });
+}
+
+function runCliInteractiveRgbBackground() {
+	return {
+		rgb_black: rgbBackgroundName(8, 8, 8),
+		rgb_white: rgbBackgroundName(250, 250, 250),
+		rgb_mid: rgbBackgroundName(128, 128, 128),
+		rgb_187: rgbBackgroundName(187, 187, 187),
+		rgb_188: rgbBackgroundName(188, 188, 188),
+		rgb_red: rgbBackgroundName(255, 0, 0),
+	};
+}
+
+function detectBackgroundEncoded(env) {
+	const detection = themeModule.detectTerminalBackgroundFromEnv({ env });
+	return `${detection.theme}|${detection.source}|${detection.confidence}`;
+}
+
+function runCliInteractiveDetectBackground() {
+	return {
+		dbg_white: detectBackgroundEncoded({ COLORFGBG: "15" }),
+		dbg_black: detectBackgroundEncoded({ COLORFGBG: "0" }),
+		dbg_none: detectBackgroundEncoded({ FOO: "1" }),
+		dbg_empty: detectBackgroundEncoded({ COLORFGBG: "" }),
+		dbg_bad: detectBackgroundEncoded({ COLORFGBG: "nope" }),
+		dbg_pair: detectBackgroundEncoded({ COLORFGBG: "0;15" }),
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
@@ -8630,6 +8686,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveAuthType(),
 		...runCliInteractiveParseAutoTheme(),
 		...runCliInteractiveResolveTheme(),
+		...runCliInteractiveColorfgbgIndex(),
+		...runCliInteractiveRgbBackground(),
+		...runCliInteractiveDetectBackground(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -8649,6 +8708,15 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		resolve_theme: await collect("cli_interactive_controller.resolve_theme", () => {
 			return () => runCliInteractiveResolveTheme();
+		}),
+		colorfgbg_index: await collect("cli_interactive_controller.colorfgbg_index", () => {
+			return () => runCliInteractiveColorfgbgIndex();
+		}),
+		rgb_background: await collect("cli_interactive_controller.rgb_background", () => {
+			return () => runCliInteractiveRgbBackground();
+		}),
+		detect_background: await collect("cli_interactive_controller.detect_background", () => {
+			return () => runCliInteractiveDetectBackground();
 		}),
 		observed,
 	};
@@ -17179,6 +17247,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts parseAutoThemeSetting",
 			"cli_interactive_controller.resolve_theme":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts resolveThemeSetting",
+			"cli_interactive_controller.colorfgbg_index":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts COLORFGBG parse",
+			"cli_interactive_controller.rgb_background":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts getThemeForRgbColor",
+			"cli_interactive_controller.detect_background":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts detectTerminalBackgroundFromEnv",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

@@ -196,6 +196,9 @@
 ;;;;  80. oauth_pkce_device materialize-cloudflare-url vs resolveCloudflareModel
 ;;;;  81. oauth_pkce_device normalize-radius-gateway vs normalizeRadiusGatewayUrl
 ;;;;  82. cli_interactive_controller clipboard-wayland-p vs isWaylandSession
+;;;; 538. leftover cli_interactive_controller colorfgbg-background-index vs COLORFGBG parse
+;;;; 539. leftover cli_interactive_controller rgb-background-theme vs getThemeForRgbColor
+;;;; 540. leftover cli_interactive_controller detect-background-from-environment vs detectTerminalBackgroundFromEnv
 ;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
@@ -446,6 +449,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.colorfgbg_index" . 50)
+    ("cli_interactive_controller.rgb_background" . 50)
+    ("cli_interactive_controller.detect_background" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -9672,13 +9678,66 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defun colorfgbg-index-or-empty (value)
+  (let ((index (cadr-cli::colorfgbg-background-index value)))
+    (if index
+        (princ-to-string index)
+        "")))
+
+(defun run-cli-interactive-colorfgbg-index ()
+  (list
+   (colorfgbg-index-or-empty "15")
+   (colorfgbg-index-or-empty "0;7")
+   (colorfgbg-index-or-empty "15;256")
+   (colorfgbg-index-or-empty "nope")
+   (colorfgbg-index-or-empty "  0  ;  15  ")
+   (colorfgbg-index-or-empty "")))
+
+(defun rgb-background-name (red green blue)
+  (string-downcase
+   (symbol-name
+    (cadr-cli:rgb-background-theme red green blue))))
+
+(defun run-cli-interactive-rgb-background ()
+  (list
+   (rgb-background-name 8 8 8)
+   (rgb-background-name 250 250 250)
+   (rgb-background-name 128 128 128)
+   (rgb-background-name 187 187 187)
+   (rgb-background-name 188 188 188)
+   (rgb-background-name 255 0 0)))
+
+(defun detect-background-encoded (environment)
+  (let ((detection
+          (cadr-cli:detect-background-from-environment environment)))
+    (format
+     nil "~A|~A|~A"
+     (string-downcase
+      (symbol-name (cadr-cli:theme-detection-theme detection)))
+     (cadr-cli:theme-detection-source detection)
+     (string-downcase
+      (symbol-name (cadr-cli:theme-detection-confidence detection))))))
+
+(defun run-cli-interactive-detect-background ()
+  ;; Non-NIL dummy alist: NIL falls through to live getenv.
+  (list
+   (detect-background-encoded '(("COLORFGBG" . "15")))
+   (detect-background-encoded '(("COLORFGBG" . "0")))
+   (detect-background-encoded '(("FOO" . "1")))
+   (detect-background-encoded '(("COLORFGBG" . "")))
+   (detect-background-encoded '(("COLORFGBG" . "nope")))
+   (detect-background-encoded '(("COLORFGBG" . "0;15")))))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (colorfgbg-index (run-cli-interactive-colorfgbg-index))
+        (rgb-background (run-cli-interactive-rgb-background))
+        (detect-background (run-cli-interactive-detect-background)))
     (json-object
      "observed"
      (json-object
@@ -9709,7 +9768,25 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "cfg_plain" (nth 0 colorfgbg-index)
+      "cfg_last" (nth 1 colorfgbg-index)
+      "cfg_skip" (nth 2 colorfgbg-index)
+      "cfg_miss" (nth 3 colorfgbg-index)
+      "cfg_pad" (nth 4 colorfgbg-index)
+      "cfg_empty" (nth 5 colorfgbg-index)
+      "rgb_black" (nth 0 rgb-background)
+      "rgb_white" (nth 1 rgb-background)
+      "rgb_mid" (nth 2 rgb-background)
+      "rgb_187" (nth 3 rgb-background)
+      "rgb_188" (nth 4 rgb-background)
+      "rgb_red" (nth 5 rgb-background)
+      "dbg_white" (nth 0 detect-background)
+      "dbg_black" (nth 1 detect-background)
+      "dbg_none" (nth 2 detect-background)
+      "dbg_empty" (nth 3 detect-background)
+      "dbg_bad" (nth 4 detect-background)
+      "dbg_pair" (nth 5 detect-background))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -9739,7 +9816,22 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "colorfgbg_index"
+     (collect "cli_interactive_controller.colorfgbg_index"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-colorfgbg-index))))
+     "rgb_background"
+     (collect "cli_interactive_controller.rgb_background"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-rgb-background))))
+     "detect_background"
+     (collect "cli_interactive_controller.detect_background"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-detect-background)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -16820,6 +16912,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.colorfgbg_index"
+      "src/cadr-cli/interactive/theme.lisp colorfgbg-background-index"
+      "cli_interactive_controller.rgb_background"
+      "src/cadr-cli/interactive/theme.lisp rgb-background-theme"
+      "cli_interactive_controller.detect_background"
+      "src/cadr-cli/interactive/theme.lisp detect-background-from-environment"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
