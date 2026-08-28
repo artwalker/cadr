@@ -240,6 +240,9 @@
 ;;;; 652. cli_interactive_controller assistant-price-known-p vs find-model-metadata presence
 ;;;; 653. cli_interactive_controller accumulate-message-usage vs session usage accumulate
 ;;;; 654. cli_interactive_controller append-tui-user-message vs parseSkillBlock UserMessageComponent
+;;;; 655. cli_interactive_controller seed-tui-message vs interactive-mode addChild user/assistant/bash
+;;;; 656. cli_interactive_controller reset-tui-messages vs chatContainer reset + usage preserve
+;;;; 657. cli_interactive_controller render-user-message-lines vs UserMessageComponent wrap + OSC 133
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -605,6 +608,9 @@
     ("cli_interactive_controller.assistant_price_known" . 50)
     ("cli_interactive_controller.accumulate_usage" . 50)
     ("cli_interactive_controller.append_user_message" . 50)
+    ("cli_interactive_controller.seed_tui_message" . 50)
+    ("cli_interactive_controller.reset_tui_messages" . 50)
+    ("cli_interactive_controller.render_user_lines" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14458,6 +14464,26 @@
    "aum_text" (nth 4 append-user)))
 
 
+(defun leftover-transcript-seed-reset-user-lines-observed-pairs
+    (seed reset render-user)
+  (list
+   "stm_user" (nth 0 seed)
+   "stm_n" (nth 1 seed)
+   "stm_asst" (nth 2 seed)
+   "stm_bash" (nth 3 seed)
+   "stm_mix" (nth 4 seed)
+   "rtm_n" (nth 0 reset)
+   "rtm_drop" (nth 1 reset)
+   "rtm_keep" (nth 2 reset)
+   "rtm_zero" (nth 3 reset)
+   "rtm_unk" (nth 4 reset)
+   "rum_hi" (nth 0 render-user)
+   "rum_n" (nth 1 render-user)
+   "rum_osc" (nth 2 render-user)
+   "rum_pad" (nth 3 render-user)
+   "rum_empty" (nth 4 render-user)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -14937,7 +14963,13 @@
         (leftover-accumulate-usage
           (run-cli-interactive-accumulate-usage))
         (leftover-append-user-message
-          (run-cli-interactive-append-user-message)))
+          (run-cli-interactive-append-user-message))
+        (leftover-seed-tui-message
+          (run-cli-interactive-seed-tui-message))
+        (leftover-reset-tui-messages
+          (run-cli-interactive-reset-tui-messages))
+        (leftover-render-user-lines
+          (run-cli-interactive-render-user-lines)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15016,7 +15048,11 @@
              (leftover-transcript-price-usage-user-observed-pairs
               leftover-assistant-price-known
               leftover-accumulate-usage
-              leftover-append-user-message)))
+              leftover-append-user-message)
+             (leftover-transcript-seed-reset-user-lines-observed-pairs
+              leftover-seed-tui-message
+              leftover-reset-tui-messages
+              leftover-render-user-lines)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15151,7 +15187,22 @@
      (collect "cli_interactive_controller.append_user_message"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-append-user-message)))))))
+                  (run-cli-interactive-append-user-message))))
+     "seed_tui_message"
+     (collect "cli_interactive_controller.seed_tui_message"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-seed-tui-message))))
+     "reset_tui_messages"
+     (collect "cli_interactive_controller.reset_tui_messages"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-reset-tui-messages))))
+     "render_user_lines"
+     (collect "cli_interactive_controller.render_user_lines"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-user-lines)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -15625,6 +15676,100 @@
          0)
      (first skill)
      (if (string= (fourth skill) "hello") 1 0))))
+
+(defun leftover-entry-type-name (state)
+  (let ((entries (cadr-cli::tui-state-entries state)))
+    (if entries
+        (string-downcase
+         (symbol-name
+          (cadr-cli::tui-entry-type (first entries))))
+        "")))
+
+(defun run-cli-interactive-seed-tui-message ()
+  (let ((user-state (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+        (asst-state (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+        (bash-state (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+        (mix-state (cadr-cli::make-tui-state :cwd "/tmp/proj")))
+    (cadr-cli::seed-tui-message
+     user-state
+     (cadr-ai:make-user-message :content "hi"))
+    (cadr-cli::seed-tui-message
+     asst-state
+     (cadr-ai:make-assistant-message
+      :content
+      (list (cadr-ai:make-text-content :text "ok"))))
+    (cadr-cli::seed-tui-message
+     bash-state
+     (cadr-agent::make-bash-execution-message
+      :command "ls"
+      :output "ok"))
+    (cadr-cli::seed-tui-message
+     mix-state
+     (cadr-ai:make-user-message :content "hi"))
+    (cadr-cli::seed-tui-message
+     mix-state
+     (cadr-ai:make-assistant-message
+      :content
+      (list (cadr-ai:make-text-content :text "ok"))))
+    (list
+     (if (string= (leftover-entry-type-name user-state) "user") 1 0)
+     (length (cadr-cli::tui-state-entries user-state))
+     (if (string= (leftover-entry-type-name asst-state) "assistant") 1 0)
+     (if (string= (leftover-entry-type-name bash-state)
+                  "bash-execution")
+         1
+         0)
+     (length (cadr-cli::tui-state-entries mix-state)))))
+
+(defun run-cli-interactive-reset-tui-messages ()
+  (let ((filled (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+        (drop (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+        (keep (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+        (unk (cadr-cli::make-tui-state :cwd "/tmp/proj")))
+    (cadr-cli::seed-tui-message
+     filled
+     (cadr-ai:make-user-message :content "old"))
+    (cadr-cli::reset-tui-messages
+     filled
+     (list (cadr-ai:make-user-message :content "new")))
+    (setf (cadr-cli::tui-state-input-tokens drop) 7)
+    (cadr-cli::reset-tui-messages drop nil)
+    (setf (cadr-cli::tui-state-input-tokens keep) 7)
+    (cadr-cli::reset-tui-messages keep nil :preserve-usage-p t)
+    (setf (cadr-cli::tui-state-context-percent unk) 50d0)
+    (cadr-cli::reset-tui-messages
+     unk
+     (list (cadr-ai:make-user-message :content "x"))
+     :context-unknown-p t)
+    (list
+     (length (cadr-cli::tui-state-entries filled))
+     (if (zerop (cadr-cli::tui-state-input-tokens drop)) 1 0)
+     (cadr-cli::tui-state-input-tokens keep)
+     (if (zerop (cadr-cli::tui-state-input-tokens filled)) 1 0)
+     (if (null (cadr-cli::tui-state-context-percent unk)) 1 0))))
+
+(defun leftover-render-user-joined (text width &key (output-pad 1))
+  (format
+   nil "~{~A~^~%~}"
+   (cadr-cli::render-user-message-lines
+    text width :output-pad output-pad)))
+
+(defun run-cli-interactive-render-user-lines ()
+  (let* ((hello (leftover-render-user-joined "hello" 80))
+         (stripped (cadr-cli::strip-ansi hello))
+         (lines
+           (cadr-cli::render-user-message-lines "hello" 80))
+         (empty
+           (cadr-cli::render-user-message-lines "" 80)))
+    (cadr-cli::render-user-message-lines "hello" 80)
+    (cadr-cli::render-user-message-lines "" 80)
+    (cadr-cli::render-user-message-lines "hello" 80 :output-pad 0)
+    (list
+     (if (search "hello" stripped) 1 0)
+     (if (>= (length lines) 2) 1 0)
+     (if (search "133" hello) 1 0)
+     (if (search " hello" stripped) 1 0)
+     (if (>= (length empty) 2) 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -27933,6 +28078,12 @@
       "src/cadr-cli/interactive/transcript.lisp accumulate-message-usage"
       "cli_interactive_controller.append_user_message"
       "src/cadr-cli/interactive/transcript.lisp append-tui-user-message"
+      "cli_interactive_controller.seed_tui_message"
+      "src/cadr-cli/interactive/transcript.lisp seed-tui-message"
+      "cli_interactive_controller.reset_tui_messages"
+      "src/cadr-cli/interactive/transcript.lisp reset-tui-messages"
+      "cli_interactive_controller.render_user_lines"
+      "src/cadr-cli/interactive/transcript.lisp render-user-message-lines"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
