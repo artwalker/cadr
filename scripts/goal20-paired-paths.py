@@ -168,7 +168,7 @@ METRICS = {
         "runtime_models",
         "structured_api_key_login",
     ),
-    "skill_prompt_load": ("build_prompt",),
+    "skill_prompt_load": ("build_prompt", "resolve_prompt", "node_read_error", "prompt_appends"),
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
@@ -1281,6 +1281,9 @@ RATIO_CEILINGS = {
     # on the custom-prompt path. 3000.0 is first-freeze
     # headroom. Ratchet down only.
     "skill_prompt_load.build_prompt": 3000.0,
+    "skill_prompt_load.resolve_prompt": 8.0,
+    "skill_prompt_load.node_read_error": 8.0,
+    "skill_prompt_load.prompt_appends": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_bootstrap_sessions pair (samples=5): observed 2.40x
     # (11.1 / 4.6 us). 8.0 is first-freeze headroom.
@@ -3052,6 +3055,15 @@ OBSERVED_EXACT = {
         "has_cwd",
         "has_extra",
         "has_agents",
+        "rp_lit",
+        "rp_file",
+        "rp_miss",
+        "nr_eisdir",
+        "nr_eacces",
+        "nr_other",
+        "pa_len",
+        "pa_join",
+        "pa_base",
     ),
     "cli_bootstrap_sessions": (
         "count",

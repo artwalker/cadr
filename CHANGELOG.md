@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `skill_prompt_load.resolve_prompt`
+  (`resolve-system-prompt` on `src/cadr-cli/system-prompt.lisp` vs
+  `resolvePromptInput`). Observed `rp_lit` / `rp_file` / `rp_miss` exact.
+  n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 472). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `skill_prompt_load.node_read_error`
+  (`node-read-error-message` on `src/cadr-cli/system-prompt.lisp` vs Node
+  fs errno text). Observed `nr_eisdir` / `nr_eacces` / `nr_other` exact.
+  n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 473). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric.
+- Goal 20 P.13 leftover: pair `skill_prompt_load.prompt_appends`
+  (`resolve-system-prompt-with-appends` on `src/cadr-cli/system-prompt.lisp`
+  vs appendSystemPrompt join). Observed `pa_len` / `pa_join` / `pa_base`
+  exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 474). Gate
+  rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not
+  this metric.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.

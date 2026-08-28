@@ -445,6 +445,9 @@ const REPETITIONS = {
 	"core_rest.redacted_secrets": 50,
 	"core_rest.threads_cleanup": 5,
 	"skill_prompt_load.build_prompt": 50,
+	"skill_prompt_load.resolve_prompt": 50,
+	"skill_prompt_load.node_read_error": 50,
+	"skill_prompt_load.prompt_appends": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
 	"ai_runtime_faux.blocks": 50,
@@ -731,6 +734,7 @@ const trustManagerModule = await import(
 	moduleUrl("packages/coding-agent/src/core/trust-manager.ts")
 );
 const resourceLoaderModule = await import(moduleUrl("packages/coding-agent/src/core/resource-loader.ts"));
+const textUtilModule = await import(moduleUrl("packages/coding-agent/src/utils/text.ts"));
 const skillsModule = await import(moduleUrl("packages/coding-agent/src/core/skills.ts"));
 const promptTemplatesModule = await import(
 	moduleUrl("packages/coding-agent/src/core/prompt-templates.ts")
@@ -16338,13 +16342,96 @@ function runSkillPromptBuild() {
 	};
 }
 
+function stageSkillPromptResolveFile() {
+	const dir = "/tmp/goal20-skill-prompt-resolve";
+	mkdirSync(dir, { recursive: true });
+	const file = path.join(dir, "prompt.md");
+	writeFileSync(file, "from-file");
+	return file;
+}
+
+function resolvePromptInput(input) {
+	if (!input) return undefined;
+	if (existsSync(input)) {
+		try {
+			return textUtilModule.stripBom(readFileSync(input, "utf-8"));
+		} catch {
+			return input;
+		}
+	}
+	return input;
+}
+
+function nodeReadErrorMessage(pathName, cause) {
+	try {
+		if (existsSync(pathName) && statSync(pathName).isDirectory()) {
+			return "EISDIR: illegal operation on a directory, read";
+		}
+	} catch {
+		// missing path falls through
+	}
+	const text = String(cause);
+	if (/permission denied/i.test(text)) {
+		return `EACCES: permission denied, open '${pathName}'`;
+	}
+	return text;
+}
+
+function runSkillPromptResolvePrompt(file) {
+	const literal = resolvePromptInput("hello");
+	const fromFile = resolvePromptInput(file);
+	const missing = resolvePromptInput("literally-not-a-path-zzz");
+	return {
+		rp_lit: literal ? literal.length : 0,
+		rp_file: fromFile === "from-file" ? 1 : 0,
+		rp_miss: missing ? missing.length : 0,
+	};
+}
+
+function runSkillPromptNodeReadError(dir) {
+	const eisdir = nodeReadErrorMessage(dir, "x");
+	const eacces = nodeReadErrorMessage("/tmp/missing-eacces", "Permission denied");
+	const other = nodeReadErrorMessage("/tmp/missing-other", "boom");
+	return {
+		nr_eisdir: /eisdir/i.test(eisdir) ? 1 : 0,
+		nr_eacces: /eacces/i.test(eacces) ? 1 : 0,
+		nr_other: other.length > 0 ? 1 : 0,
+	};
+}
+
+function runSkillPromptPromptAppends() {
+	const joined = ["base", "one", "two"]
+		.map((part) => resolvePromptInput(part))
+		.filter((part) => part !== undefined)
+		.join("\n\n");
+	return {
+		pa_len: joined.length,
+		pa_join: joined.includes("\n\n") ? 1 : 0,
+		pa_base: joined.startsWith("base") ? 1 : 0,
+	};
+}
+
 async function measureSkillPromptBuild() {
+	const file = stageSkillPromptResolveFile();
+	const dir = "/tmp/goal20-skill-prompt-resolve";
 	const observed = runSkillPromptBuild();
+	const resolve = runSkillPromptResolvePrompt(file);
+	const nodeErr = runSkillPromptNodeReadError(dir);
+	const appends = runSkillPromptPromptAppends();
 	return {
 		build_prompt: await collect("skill_prompt_load.build_prompt", () => {
 			return () => runSkillPromptBuild();
 		}),
-		observed,
+		resolve_prompt: await collect("skill_prompt_load.resolve_prompt", () => {
+			return () => runSkillPromptResolvePrompt(file);
+		}),
+		node_read_error: await collect("skill_prompt_load.node_read_error", () => {
+			return () => runSkillPromptNodeReadError(dir);
+		}),
+		prompt_appends: await collect("skill_prompt_load.prompt_appends", () => {
+			return () => runSkillPromptPromptAppends();
+		}),
+		observed: { ...observed, ...resolve, ...nodeErr, ...appends },
 	};
 }
 
@@ -17456,6 +17543,12 @@ const result = {
 				"packages/ai/src/providers/amazon-bedrock.ts + google-vertex.ts ApiKeyAuth.login select flow",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
+			"skill_prompt_load.resolve_prompt":
+				"packages/coding-agent/src/core/resource-loader.ts resolvePromptInput",
+			"skill_prompt_load.node_read_error":
+				"packages/coding-agent/src/core/resource-loader.ts Node fs errno text (EISDIR/EACCES)",
+			"skill_prompt_load.prompt_appends":
+				"packages/coding-agent/src/core/resource-loader.ts appendSystemPrompt join",
 			"cli_bootstrap_sessions.coding_tools":
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"cli_bootstrap_sessions.bootstrap_auth":
