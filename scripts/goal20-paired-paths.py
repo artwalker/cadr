@@ -112,7 +112,7 @@ METRICS = {
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths"),
     "resource_loader": ("reload", "dedupe_by_name"),
-    "package_manager": ("resolve", "manifest_parse", "package_source"),
+    "package_manager": ("resolve", "manifest_parse", "package_source", "normalize_pattern", "resource_kinds", "type_label"),
     "session_discovery": ("header_probe", "session_list_probe"),
     "session_export_html": ("to_html",),
     "protocol_cbor": ("roundtrip",),
@@ -396,6 +396,11 @@ RATIO_CEILINGS = {
     # package_manager.package_source pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "package_manager.package_source": 8.0,
+    # package_manager leftover trio on config-selector.lisp (samples=5):
+    # first-freeze headroom. Ratchet down only.
+    "package_manager.normalize_pattern": 8.0,
+    "package_manager.resource_kinds": 8.0,
+    "package_manager.type_label": 8.0,
     # Frozen from the first Friend-MachineD non-quick session_discovery
     # pair (samples=5): observed 2.05x (1450 / 709 us). 8.0 follows
     # the journal_read / tool_read headroom precedent. Ratchet down only.
@@ -1830,6 +1835,18 @@ OBSERVED_EXACT = {
         "ps_git_id",
         "ps_ded_n",
         "ps_ded_proj",
+        "np_dot",
+        "np_plain",
+        "np_win",
+        "rk_n",
+        "rk_ext",
+        "rk_sk",
+        "rk_pr",
+        "rk_th",
+        "tl_ext",
+        "tl_sk",
+        "tl_pr",
+        "tl_th",
     ),
     "session_discovery": (
         "file_count",

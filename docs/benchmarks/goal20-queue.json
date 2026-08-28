@@ -919,6 +919,34 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 442,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.normalize_pattern",
+   "branch": "cursor/config-selector-leftovers-442-444-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 442-444, not sequential nextPairNum)"
+  },
+  {
+   "pair": 443,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.resource_kinds",
+   "branch": "cursor/config-selector-leftovers-442-444-34f9"
+  },
+  {
+   "pair": 444,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.type_label",
+   "branch": "cursor/config-selector-leftovers-442-444-34f9"
   }
  ],
  "mergeQueue": []
