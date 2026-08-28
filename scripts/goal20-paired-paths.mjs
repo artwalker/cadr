@@ -424,6 +424,9 @@ const REPETITIONS = {
 	"cli_selectors.session_scoped_models": 50,
 	"cli_selectors.scoped_model_id_enabled_p": 50,
 	"cli_selectors.scoped_models_toggle_id": 50,
+	"cli_selectors.all_known_model_ids_enabled_p": 50,
+	"cli_selectors.scoped_models_enable_ids": 50,
+	"cli_selectors.scoped_models_clear_ids": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20122,6 +20125,90 @@ function runCliSelectorsScopedModelsToggleId() {
 		smti_unavail: encodeScopedModelsToggleId(
 			["openai/gpt-4o"],
 			"stale/missing",
+		),
+	};
+}
+
+
+function allKnownModelIdsEnabledP(enabledIds, allIds) {
+	return Array.isArray(enabledIds) &&
+		enabledIds.length === allIds.length &&
+		enabledIds.every((id) => allIds.includes(id))
+		? "1"
+		: "0";
+}
+
+
+function runCliSelectorsAllKnownModelIdsEnabledP() {
+	const models = makeModelSelectorTestModels();
+	const allIds = models.map(scopedModelsFullId);
+	return {
+		ake_all: allKnownModelIdsEnabledP(null, allIds),
+		ake_full: allKnownModelIdsEnabledP(allIds, allIds),
+		ake_partial: allKnownModelIdsEnabledP(
+			["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+			allIds,
+		),
+		ake_empty: allKnownModelIdsEnabledP([], allIds),
+		ake_vacuous: allKnownModelIdsEnabledP([], []),
+		ake_wrong: allKnownModelIdsEnabledP(["a", "b", "c", "d", "e"], allIds),
+	};
+}
+
+
+function runCliSelectorsScopedModelsEnableIds() {
+	const models = makeModelSelectorTestModels();
+	const allIds = models.map(scopedModelsFullId);
+	return {
+		smei_all: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds(null, allIds, ["openai/gpt-4o"]),
+		),
+		smei_one: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds([], allIds, ["openai/gpt-4o"]),
+		),
+		smei_rest: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds(["openai/gpt-4o"], allIds, allIds),
+		),
+		smei_add: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds(["openai/gpt-4o"], allIds, [
+				"anthropic/claude-sonnet-4",
+			]),
+		),
+		smei_fill: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds([], allIds, allIds),
+		),
+		smei_none: encodeScopedModelsEnabledIds(
+			scopedModelsEnableIds(["openai/gpt-4o"], allIds, []),
+		),
+	};
+}
+
+
+function runCliSelectorsScopedModelsClearIds() {
+	const models = makeModelSelectorTestModels();
+	const allIds = models.map(scopedModelsFullId);
+	return {
+		smci_all_one: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(null, allIds, ["openai/gpt-4o"]),
+		),
+		smci_list: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(
+				["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+				allIds,
+				["openai/gpt-4o"],
+			),
+		),
+		smci_all_all: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(null, allIds, allIds),
+		),
+		smci_empty: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds([], allIds, ["openai/gpt-4o"]),
+		),
+		smci_keep: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(["openai/gpt-4o"], allIds, []),
+		),
+		smci_all_none: encodeScopedModelsEnabledIds(
+			scopedModelsClearIds(null, allIds, []),
 		),
 	};
 }

@@ -19354,6 +19354,100 @@
     (list '("openai/gpt-4o") "stale/missing"))))
 
 
+(defun scoped-enable-leftover-observed-pairs
+    (all-known enable-ids clear-ids)
+  (list
+   "ake_all" (nth 0 all-known)
+   "ake_full" (nth 1 all-known)
+   "ake_partial" (nth 2 all-known)
+   "ake_empty" (nth 3 all-known)
+   "ake_vacuous" (nth 4 all-known)
+   "ake_wrong" (nth 5 all-known)
+   "smei_all" (nth 0 enable-ids)
+   "smei_one" (nth 1 enable-ids)
+   "smei_rest" (nth 2 enable-ids)
+   "smei_add" (nth 3 enable-ids)
+   "smei_fill" (nth 4 enable-ids)
+   "smei_none" (nth 5 enable-ids)
+   "smci_all_one" (nth 0 clear-ids)
+   "smci_list" (nth 1 clear-ids)
+   "smci_all_all" (nth 2 clear-ids)
+   "smci_empty" (nth 3 clear-ids)
+   "smci_keep" (nth 4 clear-ids)
+   "smci_all_none" (nth 5 clear-ids)))
+
+
+(defun all-known-model-ids-enabled-flag (enabled all-ids)
+  (if (cadr-cli::all-known-model-ids-enabled-p enabled all-ids)
+      "1"
+      "0"))
+
+
+(defun run-cli-selectors-all-known-model-ids-enabled-p ()
+  (let* ((models (make-scoped-models-test-models))
+         (all-ids
+           (mapcar #'cadr-cli::qualified-model-id models)))
+    (list
+     (all-known-model-ids-enabled-flag :all all-ids)
+     (all-known-model-ids-enabled-flag all-ids all-ids)
+     (all-known-model-ids-enabled-flag
+      '("openai/gpt-4o" "anthropic/claude-sonnet-4") all-ids)
+     (all-known-model-ids-enabled-flag '() all-ids)
+     (all-known-model-ids-enabled-flag '() '())
+     (all-known-model-ids-enabled-flag
+      '("a" "b" "c" "d" "e") all-ids))))
+
+
+(defun run-cli-selectors-scoped-models-enable-ids ()
+  (let* ((models (make-scoped-models-test-models))
+         (all-ids
+           (mapcar #'cadr-cli::qualified-model-id models)))
+    (list
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       :all all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '() all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '("openai/gpt-4o") all-ids all-ids))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '("openai/gpt-4o") all-ids '("anthropic/claude-sonnet-4")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '() all-ids all-ids))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-enable-ids
+       '("openai/gpt-4o") all-ids '())))))
+
+
+(defun run-cli-selectors-scoped-models-clear-ids ()
+  (let* ((models (make-scoped-models-test-models))
+         (all-ids
+           (mapcar #'cadr-cli::qualified-model-id models)))
+    (list
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       :all all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+       all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids :all all-ids all-ids))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       '() all-ids '("openai/gpt-4o")))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       '("openai/gpt-4o") all-ids '()))
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-clear-ids
+       :all all-ids '())))))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id

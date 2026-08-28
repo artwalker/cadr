@@ -380,4 +380,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.move_list_item` | 1.317 | 0.971 | 1.357× | 8.00× | measure-only leftover 561; `move-list-item` vs `move()` index swap (low-µs) | invent pause；地板优化另刀 |
 | `cli_selectors.session_scoped_models` | 11.473 | 4.477 | 2.563× | 8.00× | measure-only leftover 562; `session-scoped-models` vs session-scoped filter | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_toggle_id` | 1.098 | 0.922 | 1.191× | 8.00× | measure-only leftover 564; `scoped-models-toggle-id` vs `toggle` (low-µs) | invent pause；地板优化另刀 |
+| `cli_selectors.all_known_model_ids_enabled_p` | 1.679 | 0.825 | 2.035× | 8.00× | leftover 565; `all-known-model-ids-enabled-p` vs enableAll collapse-to-null (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_enable_ids` | 2.605 | 1.715 | 1.519× | 8.00× | leftover 566; `scoped-models-enable-ids` vs enableAll id union | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_clear_ids` | 2.931 | 1.455 | 2.015× | 8.00× | leftover 567; `scoped-models-clear-ids` vs clearAll id subtract | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
