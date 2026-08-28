@@ -383,6 +383,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.tool_session_make": 50,
 	"cli_interactive_controller.tool_session_update": 50,
 	"cli_interactive_controller.tool_session_render": 50,
+	"cli_interactive_controller.theme_primitive": 50,
+	"cli_interactive_controller.theme_resolve": 50,
+	"cli_interactive_controller.theme_validate": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -13384,6 +13387,177 @@ function runCliInteractiveToolSessionRender() {
 		trr_done_result: doneLines[1] === "ok" ? 1 : 0,
 		trr_custom: customLines[0] === "CALL:foo.txt" && customLines[1] === "RES:ok" ? 1 : 0,
 		trr_empty: emptyLines.length === 0 ? 1 : 0,
+	};
+}
+
+
+function validTuiThemePrimitiveP(value) {
+	return typeof value === "string" || (Number.isInteger(value) && value >= 0 && value <= 255);
+}
+
+
+function runCliInteractiveThemePrimitive() {
+	return {
+		tp_str: validTuiThemePrimitiveP("x") ? 1 : 0,
+		tp_int: validTuiThemePrimitiveP(0) ? 1 : 0,
+		tp_255: validTuiThemePrimitiveP(255) ? 1 : 0,
+		tp_256: validTuiThemePrimitiveP(256) ? 1 : 0,
+		tp_neg: validTuiThemePrimitiveP(-1) ? 1 : 0,
+		tp_nil: validTuiThemePrimitiveP(null) ? 1 : 0,
+	};
+}
+
+
+function parseThemeHexColor(text) {
+	if (typeof text !== "string" || text.length !== 7 || text[0] !== "#") {
+		throw new Error("Invalid hex color");
+	}
+	for (let index = 1; index < 7; index += 1) {
+		if (!/[0-9a-fA-F]/.test(text[index])) {
+			throw new Error("Invalid hex color");
+		}
+	}
+}
+
+
+function resolveTuiThemeValue(value, variables, seen = []) {
+	if (Number.isInteger(value)) {
+		if (value < 0 || value > 255) {
+			throw new Error("Theme color index is outside 0..255");
+		}
+		return value;
+	}
+	if (typeof value !== "string") {
+		throw new Error("Theme color must be a string or integer");
+	}
+	if (value.length === 0) {
+		return "";
+	}
+	if (value[0] === "#") {
+		parseThemeHexColor(value);
+		return value.toLowerCase();
+	}
+	if (seen.includes(value)) {
+		throw new Error("Cyclic theme variable reference");
+	}
+	if (!Object.hasOwn(variables, value)) {
+		throw new Error("Unknown theme variable");
+	}
+	return resolveTuiThemeValue(variables[value], variables, [value, ...seen]);
+}
+
+
+function themeResolveErrorP(thunk) {
+	try {
+		thunk();
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+
+function runCliInteractiveThemeResolve() {
+	const variables = { accent: 7, loop: "loop" };
+	return {
+		tr_int: resolveTuiThemeValue(12, variables),
+		tr_empty: resolveTuiThemeValue("", variables) === "" ? 1 : 0,
+		tr_hex: resolveTuiThemeValue("#FF0000", variables) === "#ff0000" ? 1 : 0,
+		tr_var: resolveTuiThemeValue("accent", variables),
+		tr_cycle: themeResolveErrorP(() => resolveTuiThemeValue("loop", variables)),
+		tr_miss: themeResolveErrorP(() => resolveTuiThemeValue("missing", variables)),
+	};
+}
+
+function goal20ThemeRequiredColors() {
+	const colors = {};
+	for (const name of GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES) {
+		colors[name] = 1;
+	}
+	return colors;
+}
+
+
+function validateTuiThemeObject(object, variables, variablesPresentP, colors, exportObject, exportPresentP) {
+	const allowed = new Set(["$schema", "name", "vars", "colors", "export"]);
+	for (const name of Object.keys(object)) {
+		if (!allowed.has(name)) {
+			throw new Error(`Unknown theme property: ${name}`);
+		}
+	}
+	if (Object.hasOwn(object, "$schema") && typeof object.$schema !== "string") {
+		throw new Error("Theme $schema must be a string");
+	}
+	const name = object.name;
+	if (typeof name !== "string" || name.length === 0 || name.includes("/")) {
+		throw new Error("Theme requires a valid name without '/'");
+	}
+	if (colors === null || typeof colors !== "object" || Array.isArray(colors)) {
+		throw new Error("Theme requires a colors object");
+	}
+	if (variablesPresentP && (variables === null || typeof variables !== "object" || Array.isArray(variables))) {
+		throw new Error("Theme vars must be an object");
+	}
+	for (const value of Object.values(variables)) {
+		if (!validTuiThemePrimitiveP(value)) {
+			throw new Error("Invalid theme variable value");
+		}
+	}
+	const known = new Set([
+		...GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES,
+		...GOAL20_TUI_THEME_OPTIONAL_COLOR_NAMES,
+	]);
+	for (const [colorName, value] of Object.entries(colors)) {
+		if (!known.has(colorName)) {
+			throw new Error(`Unknown theme color token: ${colorName}`);
+		}
+		if (!validTuiThemePrimitiveP(value)) {
+			throw new Error("Invalid theme color value");
+		}
+	}
+	for (const colorName of GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES) {
+		if (!Object.hasOwn(colors, colorName)) {
+			throw new Error(`Missing required theme color token: ${colorName}`);
+		}
+	}
+	if (exportPresentP) {
+		if (exportObject === null || typeof exportObject !== "object" || Array.isArray(exportObject)) {
+			throw new Error("Theme export must be an object");
+		}
+		const exportKnown = new Set(["pageBg", "cardBg", "infoBg"]);
+		for (const [exportName, value] of Object.entries(exportObject)) {
+			if (!exportKnown.has(exportName)) {
+				throw new Error(`Unknown theme export token: ${exportName}`);
+			}
+			if (!validTuiThemePrimitiveP(value)) {
+				throw new Error("Invalid theme export value");
+			}
+		}
+	}
+	return true;
+}
+
+
+function themeValidateFlag(object, variables, variablesPresentP, colors, exportObject, exportPresentP) {
+	try {
+		validateTuiThemeObject(object, variables, variablesPresentP, colors, exportObject, exportPresentP);
+		return 1;
+	} catch {
+		return 0;
+	}
+}
+
+
+function runCliInteractiveThemeValidate() {
+	const colors = goal20ThemeRequiredColors();
+	const emptyVars = {};
+	const ok = { name: "ok", colors };
+	const slash = { name: "a/b", colors };
+	const unknown = { name: "ok", colors, foo: 1 };
+	return {
+		tv_ok: themeValidateFlag(ok, emptyVars, false, colors, null, false),
+		tv_slash: themeValidateFlag(slash, emptyVars, false, colors, null, false),
+		tv_unknown: themeValidateFlag(unknown, emptyVars, false, colors, null, false),
 	};
 }
 

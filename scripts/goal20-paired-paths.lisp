@@ -13926,6 +13926,84 @@
        (if empty-lines 0 1)))))
 
 
+(defun theme-primitive-flag (value)
+  (if (cadr-cli::valid-tui-theme-primitive-p value) 1 0))
+
+
+(defun run-cli-interactive-theme-primitive ()
+  (list
+   (theme-primitive-flag "x")
+   (theme-primitive-flag 0)
+   (theme-primitive-flag 255)
+   (theme-primitive-flag 256)
+   (theme-primitive-flag -1)
+   (theme-primitive-flag nil)))
+
+
+(defun theme-resolve-error-p (thunk)
+  (handler-case
+      (progn (funcall thunk) 0)
+    (error () 1)))
+
+
+(defun run-cli-interactive-theme-resolve ()
+  (let ((variables (make-hash-table :test #'equal)))
+    (setf (gethash "accent" variables) 7)
+    (setf (gethash "loop" variables) "loop")
+    (list
+     (cadr-cli::resolve-tui-theme-value 12 variables)
+     (if (string= (cadr-cli::resolve-tui-theme-value "" variables) "") 1 0)
+     (if
+         (string=
+          (cadr-cli::resolve-tui-theme-value "#FF0000" variables)
+          "#ff0000")
+         1
+         0)
+     (cadr-cli::resolve-tui-theme-value "accent" variables)
+     (theme-resolve-error-p
+      (lambda ()
+        (cadr-cli::resolve-tui-theme-value "loop" variables)))
+     (theme-resolve-error-p
+      (lambda ()
+        (cadr-cli::resolve-tui-theme-value "missing" variables))))))
+
+(defun goal20-theme-required-colors ()
+  (let ((colors (make-hash-table :test #'equal)))
+    (dolist (name *goal20-tui-theme-required-color-names*)
+      (setf (gethash name colors) 1))
+    colors))
+
+
+(defun theme-validate-flag (object variables variables-present-p
+                            colors export export-present-p)
+  (handler-case
+      (progn
+        (cadr-cli::validate-tui-theme-object
+         object variables variables-present-p
+         colors export export-present-p)
+        1)
+    (error () 0)))
+
+
+(defun run-cli-interactive-theme-validate ()
+  (let* ((colors (goal20-theme-required-colors))
+         (empty-vars (make-hash-table :test #'equal))
+         (ok (make-hash-table :test #'equal))
+         (slash (make-hash-table :test #'equal))
+         (unknown (make-hash-table :test #'equal)))
+    (setf (gethash "name" ok) "ok")
+    (setf (gethash "colors" ok) colors)
+    (setf (gethash "name" slash) "a/b")
+    (setf (gethash "colors" slash) colors)
+    (setf (gethash "name" unknown) "ok")
+    (setf (gethash "colors" unknown) colors)
+    (setf (gethash "foo" unknown) 1)
+    (list
+     (theme-validate-flag ok empty-vars nil colors nil nil)
+     (theme-validate-flag slash empty-vars nil colors nil nil)
+     (theme-validate-flag unknown empty-vars nil colors nil nil))))
+
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))

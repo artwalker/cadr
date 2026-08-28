@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.theme_primitive`
+  (`valid-tui-theme-primitive-p` on `src/cadr-cli/interactive/themes.lisp`).
+  Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil` exact.
+  n=5 **0.472×** (0.110 / 0.233 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 523). cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.theme_resolve`
+  (`resolve-tui-theme-value` on `src/cadr-cli/interactive/themes.lisp`).
+  Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` /
+  `tr_miss` exact. n=5 **0.184×** (1.442 / 7.853 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 524). cadr leads.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.theme_validate`
+  (`validate-tui-theme-object` on `src/cadr-cli/interactive/themes.lisp`).
+  Observed `tv_ok` / `tv_slash` / `tv_unknown` exact. n=5 **0.795×**
+  (20.435 / 25.698 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 525). cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_make`
   (`make-tool-render-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
   Observed `tsm_name` / `tsm_pending` / `tsm_nil` exact. n=5 **1.224×**
