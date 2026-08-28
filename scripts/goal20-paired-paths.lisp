@@ -19934,6 +19934,130 @@
    "msfr_query" (nth 4 refresh)))
 
 
+(defun encode-scoped-models-by-id-keys (state)
+  (let ((keys nil)
+        (table
+          (cadr-cli::scoped-models-selector-state-models-by-id
+           state)))
+    (when (hash-table-p table)
+      (maphash
+       (lambda (key value)
+         (declare (ignore value))
+         (push key keys))
+       table))
+    (format nil "~{~a~^,~}" (sort keys #'string<))))
+
+
+(defun make-scoped-models-by-id-bench-state (models enabled-ids)
+  (cadr-cli::%make-scoped-models-selector-state
+   :all-models (copy-list models)
+   :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+   :enabled-ids
+   (cadr-cli::scoped-models-copy-enabled enabled-ids)))
+
+
+(defun scoped-models-selector-rebuild-models-by-id-encoded
+    (models enabled-ids)
+  (let ((state
+          (make-scoped-models-by-id-bench-state models enabled-ids)))
+    (cadr-cli::scoped-models-selector-rebuild-models-by-id state)
+    (encode-scoped-models-by-id-keys state)))
+
+
+(defun run-cli-selectors-scoped-models-selector-rebuild-models-by-id ()
+  (let* ((models (make-scoped-models-test-models))
+         (extra
+           (make-model-selector-search-fixture
+            :id "grok"
+            :provider :xai
+            :name "Grok"))
+         (partial '("openai/gpt-4o" "anthropic/claude-sonnet-4")))
+    (list
+     (scoped-models-selector-rebuild-models-by-id-encoded models :all)
+     (scoped-models-selector-rebuild-models-by-id-encoded models partial)
+     (scoped-models-selector-rebuild-models-by-id-encoded nil :all)
+     (scoped-models-selector-rebuild-models-by-id-encoded
+      (list (first models)) :all)
+     (scoped-models-selector-rebuild-models-by-id-encoded
+      (append models (list extra)) :all))))
+
+
+(defun scoped-models-model-by-id-encoded (models enabled-ids id)
+  (let ((state
+          (make-scoped-models-by-id-bench-state models enabled-ids)))
+    (cadr-cli::scoped-models-selector-rebuild-models-by-id state)
+    (let ((model (cadr-cli::scoped-models-model-by-id state id)))
+      (if model
+          (cadr-cli::qualified-model-id model)
+          ""))))
+
+
+(defun run-cli-selectors-scoped-models-model-by-id ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (scoped-models-model-by-id-encoded models :all "openai/gpt-4o")
+     (scoped-models-model-by-id-encoded
+      models :all "google/gemini-2.5-pro")
+     (scoped-models-model-by-id-encoded models :all "stale/missing")
+     (scoped-models-model-by-id-encoded nil :all "openai/gpt-4o")
+     (scoped-models-model-by-id-encoded
+      models :all "openrouter/openai/gpt-4o"))))
+
+
+(defun encode-scoped-model-item-search-text (item)
+  (let ((text (cadr-cli::scoped-model-item-search-text item)))
+    (if (stringp text)
+        text
+        (coerce text 'string))))
+
+
+(defun run-cli-selectors-scoped-model-item-search-text ()
+  (let* ((gpt (make-model-selector-search-fixture))
+         (claude
+           (make-model-selector-search-fixture
+            :id "claude-sonnet-4"
+            :provider :anthropic
+            :name "Claude Sonnet 4"))
+         (codex
+           (make-model-selector-search-fixture
+            :id "gpt-5"
+            :provider :openai-codex
+            :name "")))
+    (list
+     (encode-scoped-model-item-search-text
+      (list :id (cadr-cli::qualified-model-id gpt) :model gpt))
+     (encode-scoped-model-item-search-text
+      (list :id (cadr-cli::qualified-model-id claude) :model claude))
+     (encode-scoped-model-item-search-text
+      (list :id (cadr-cli::qualified-model-id codex) :model codex))
+     (encode-scoped-model-item-search-text
+      (list
+       :id (cadr-cli::qualified-model-id gpt)
+       :model gpt
+       :search-text "cached"))
+     (encode-scoped-model-item-search-text
+      (list :id "stale/missing")))))
+
+
+(defun models-by-id-observed-pairs (rebuild by-id search-text)
+  (list
+   "smrm_all" (nth 0 rebuild)
+   "smrm_partial" (nth 1 rebuild)
+   "smrm_empty" (nth 2 rebuild)
+   "smrm_single" (nth 3 rebuild)
+   "smrm_extra" (nth 4 rebuild)
+   "smbid_hit" (nth 0 by-id)
+   "smbid_google" (nth 1 by-id)
+   "smbid_miss" (nth 2 by-id)
+   "smbid_empty" (nth 3 by-id)
+   "smbid_openrouter" (nth 4 by-id)
+   "smist_gpt" (nth 0 search-text)
+   "smist_claude" (nth 1 search-text)
+   "smist_codex" (nth 2 search-text)
+   "smist_cached" (nth 3 search-text)
+   "smist_noid" (nth 4 search-text)))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id

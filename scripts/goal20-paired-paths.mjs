@@ -439,6 +439,9 @@ const REPETITIONS = {
 	"cli_selectors.model_selector_rebuild_search_text_table": 50,
 	"cli_selectors.model_selector_filter_search_text": 50,
 	"cli_selectors.model_selector_finish_refresh": 50,
+	"cli_selectors.scoped_models_selector_rebuild_models_by_id": 50,
+	"cli_selectors.scoped_models_model_by_id": 50,
+	"cli_selectors.scoped_model_item_search_text": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20665,6 +20668,91 @@ function runCliSelectorsModelSelectorFinishRefresh() {
 		msfr_query: encodeModelSelectorFinishRefreshCase(models, {
 			query: "gpt",
 			status: "done",
+		}),
+	};
+}
+
+
+function scopedModelsRebuildModelsByIdEncoded(allModels) {
+	const table = new Map();
+	for (const item of allModels) {
+		table.set(scopedModelsFullId(item), item);
+	}
+	return [...table.keys()].sort().join(",");
+}
+
+
+function runCliSelectorsScopedModelsSelectorRebuildModelsById() {
+	const models = makeModelSelectorTestModels();
+	const extra = goal20ModelItem({ id: "grok", provider: "xai", name: "Grok" });
+	return {
+		smrm_all: scopedModelsRebuildModelsByIdEncoded(models),
+		smrm_partial: scopedModelsRebuildModelsByIdEncoded(models),
+		smrm_empty: scopedModelsRebuildModelsByIdEncoded([]),
+		smrm_single: scopedModelsRebuildModelsByIdEncoded([models[0]]),
+		smrm_extra: scopedModelsRebuildModelsByIdEncoded([...models, extra]),
+	};
+}
+
+
+function scopedModelsModelByIdEncoded(allModels, id) {
+	const table = new Map();
+	for (const item of allModels) {
+		table.set(scopedModelsFullId(item), item);
+	}
+	const found = table.get(id);
+	return found ? scopedModelsFullId(found) : "";
+}
+
+
+function runCliSelectorsScopedModelsModelById() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smbid_hit: scopedModelsModelByIdEncoded(models, "openai/gpt-4o"),
+		smbid_google: scopedModelsModelByIdEncoded(models, "google/gemini-2.5-pro"),
+		smbid_miss: scopedModelsModelByIdEncoded(models, "stale/missing"),
+		smbid_empty: scopedModelsModelByIdEncoded([], "openai/gpt-4o"),
+		smbid_openrouter: scopedModelsModelByIdEncoded(
+			models,
+			"openrouter/openai/gpt-4o",
+		),
+	};
+}
+
+
+function encodeScopedModelItemSearchText(item) {
+	if (item.searchText) {
+		return item.searchText;
+	}
+	return scopedModelItemSearchText(item);
+}
+
+
+function runCliSelectorsScopedModelItemSearchText() {
+	const models = makeModelSelectorTestModels();
+	const gpt = models[0];
+	const claude = models[1];
+	const codex = models[2];
+	return {
+		smist_gpt: encodeScopedModelItemSearchText({
+			fullId: scopedModelsFullId(gpt),
+			model: gpt.model,
+		}),
+		smist_claude: encodeScopedModelItemSearchText({
+			fullId: scopedModelsFullId(claude),
+			model: claude.model,
+		}),
+		smist_codex: encodeScopedModelItemSearchText({
+			fullId: scopedModelsFullId(codex),
+			model: codex.model,
+		}),
+		smist_cached: encodeScopedModelItemSearchText({
+			fullId: scopedModelsFullId(gpt),
+			model: gpt.model,
+			searchText: "cached",
+		}),
+		smist_noid: encodeScopedModelItemSearchText({
+			fullId: "stale/missing",
 		}),
 	};
 }
