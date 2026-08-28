@@ -4059,6 +4059,49 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 583 — `cli_selectors` (scoped_models_copy_enabled)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_copy_enabled` | `scoped-models-copy-enabled` (`src/cadr-cli/interactive/selectors/models.lisp`) | enabled-ids copy (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover on unused helpers in `models.lisp`. Timed work is `:all` / two ids /
+empty / one id / copy independence — not persist pairing. Observed `smce_all`
+/ `smce_two` / `smce_empty` / `smce_one` / `smce_copy` are exact. First n=5
+freeze **1.604×** (0.743 / 0.463 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail).
+Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 584 — `cli_selectors` (scoped_models_selector_items)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_items` | `scoped-models-selector-items` (`src/cadr-cli/interactive/selectors/models.lisp`) | items after rebuild (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 583 on the same `models.lisp` hole. Timed work is
+rebuild-items then items getter (all / partial / empty-enabled / empty
+models / single). Reuses JS `scopedModelsBuildItems`. Constructor uses
+`%make-scoped-models-selector-state`. Observed `smsi_all` / `smsi_partial`
+/ `smsi_none` / `smsi_empty` / `smsi_single` are exact. First n=5 freeze
+**4.189×** (26.959 / 6.435 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum`
+left at 328.
+
+### Pair 585 — `cli_selectors` (scoped_models_selector_cancel)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_cancel` | `scoped-models-selector-cancel` (`src/cadr-cli/interactive/selectors/models.lisp`) | `onCancel` (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pairs 583–584 on the same `models.lisp` hole. Timed
+work is callback once / twice / missing / missing twice / zero times —
+not handle-event escape. Observed `smsc_once` / `smsc_twice` / `smsc_none`
+/ `smsc_none2` / `smsc_zero` are exact. First n=5 freeze **1.746×**
+(0.667 / 0.382 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum`
+left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
