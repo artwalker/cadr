@@ -464,6 +464,9 @@
     ("cli_selectors.input_line" . 50)
     ("cli_selectors.keybinding_text" . 50)
     ("cli_selectors.keybinding_hint" . 50)
+    ("cli_selectors.login_dialog_make" . 50)
+    ("cli_selectors.login_dialog_auth" . 50)
+    ("cli_selectors.login_dialog_device" . 50)
     ("cli_selectors.session_format_age" . 50)
     ("cli_selectors.session_record_label" . 50)
     ("cli_selectors.session_shorten_path" . 50)
@@ -9973,6 +9976,109 @@
      (cadr-cli::selector-keybinding-hint custom "tui.select.confirm" "save")
      (cadr-cli::selector-keybinding-hint custom "tui.select.cancel" "cancel"))))
 
+(defun login-dialog-sections-encoded (state)
+  (format
+   nil "~{~A~^|~}"
+   (mapcar
+    (lambda (section)
+      (let ((kind (getf section :kind)))
+        (case kind
+          (:url (format nil "url:~A" (getf section :url)))
+          (:warning (format nil "warn:~A" (getf section :text)))
+          (:dim (format nil "dim:~A" (getf section :text)))
+          (otherwise (string-downcase (symbol-name kind))))))
+    (login-dialog-state-sections state))))
+
+(defun run-cli-selectors-login-dialog-make ()
+  (let ((empty (cadr-cli::make-login-dialog-state ""))
+        (named (cadr-cli::make-login-dialog-state "OpenAI"))
+        (long (cadr-cli::make-login-dialog-state "Anthropic Claude")))
+    (list
+     (length (cadr-cli::login-dialog-state-provider-name empty))
+     (cadr-cli::login-dialog-state-provider-name named)
+     (length (cadr-cli::login-dialog-state-sections named))
+     (cadr-cli::login-dialog-state-provider-name long)
+     (if (cadr-cli::login-dialog-state-input empty) 1 0)
+     (length (cadr-cli::login-dialog-state-provider-name long)))))
+
+(defun run-cli-selectors-login-dialog-auth ()
+  (let ((plain
+          (cadr-cli::login-dialog-show-auth
+           (cadr-cli::make-login-dialog-state "OpenAI")
+           "https://example.invalid/auth" nil))
+        (instr
+          (cadr-cli::login-dialog-show-auth
+           (cadr-cli::make-login-dialog-state "OpenAI")
+           "https://example.invalid/auth"
+           "Open the URL"))
+        (empty-instr
+          (cadr-cli::login-dialog-show-auth
+           (cadr-cli::make-login-dialog-state "OpenAI")
+           "https://example.invalid/a"
+           ""))
+        (replace
+          (cadr-cli::login-dialog-show-auth
+           (cadr-cli::login-dialog-show-auth
+            (cadr-cli::make-login-dialog-state "X")
+            "https://old.invalid" "old")
+           "https://new.invalid" nil)))
+    (list
+     (login-dialog-sections-encoded plain)
+     (login-dialog-sections-encoded instr)
+     (login-dialog-sections-encoded empty-instr)
+     (login-dialog-sections-encoded replace)
+     (cadr-cli::login-dialog-state-provider-name instr)
+     (length (cadr-cli::login-dialog-state-sections instr)))))
+
+(defun run-cli-selectors-login-dialog-device ()
+  (let ((code
+          (cadr-cli::login-dialog-show-device-code
+           (cadr-cli::make-login-dialog-state "GitHub")
+           "https://github.com/login/device"
+           "ABCD-1234"))
+        (empty-code
+          (cadr-cli::login-dialog-show-device-code
+           (cadr-cli::make-login-dialog-state "GitHub")
+           "https://example.invalid/device"
+           ""))
+        (replace
+          (cadr-cli::login-dialog-show-device-code
+           (cadr-cli::login-dialog-show-auth
+            (cadr-cli::make-login-dialog-state "GitHub")
+            "https://old.invalid" nil)
+           "https://new.invalid/device"
+           "ZZZZ")))
+    (list
+     (login-dialog-sections-encoded code)
+     (login-dialog-sections-encoded empty-code)
+     (login-dialog-sections-encoded replace)
+     (cadr-cli::login-dialog-state-provider-name code)
+     (length (cadr-cli::login-dialog-state-sections code))
+     (if (search "Enter code:" (login-dialog-sections-encoded code))
+         1
+         0)))))
+
+(defun login-dialog-observed-pairs (make auth device)
+  (list
+   "ldm_empty_n" (nth 0 make)
+   "ldm_named" (nth 1 make)
+   "ldm_named_sec" (nth 2 make)
+   "ldm_long" (nth 3 make)
+   "ldm_input" (nth 4 make)
+   "ldm_long_n" (nth 5 make)
+   "lda_plain" (nth 0 auth)
+   "lda_instr" (nth 1 auth)
+   "lda_empty_instr" (nth 2 auth)
+   "lda_replace" (nth 3 auth)
+   "lda_provider" (nth 4 auth)
+   "lda_n" (nth 5 auth)
+   "ldd_code" (nth 0 device)
+   "ldd_empty" (nth 1 device)
+   "ldd_replace" (nth 2 device)
+   "ldd_provider" (nth 3 device)
+   "ldd_n" (nth 4 device)
+   "ldd_hint" (nth 5 device)))
+
 (defparameter *session-format-age-now* 1700000000000)
 
 (defun run-cli-selectors-session-format-age ()
@@ -14022,7 +14128,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (login-dialog-make
+          (run-cli-selectors-login-dialog-make))
+        (login-dialog-auth
+          (run-cli-selectors-login-dialog-auth))
+        (login-dialog-device
+          (run-cli-selectors-login-dialog-device)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14867,11 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs)
+             (login-dialog-observed-pairs
+              login-dialog-make
+              login-dialog-auth
+              login-dialog-device)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -14846,6 +14962,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-keybinding-hint))))
+     "login_dialog_make"
+     (collect "cli_selectors.login_dialog_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-make))))
+     "login_dialog_auth"
+     (collect "cli_selectors.login_dialog_auth"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-auth))))
+     "login_dialog_device"
+     (collect "cli_selectors.login_dialog_device"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-device))))
      "session_format_age"
      (collect "cli_selectors.session_format_age"
               (lambda ()
@@ -17078,6 +17209,12 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-text"
       "cli_selectors.keybinding_hint"
       "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-hint"
+      "cli_selectors.login_dialog_make"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp make-login-dialog-state"
+      "cli_selectors.login_dialog_auth"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-auth"
+      "cli_selectors.login_dialog_device"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-device-code"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"

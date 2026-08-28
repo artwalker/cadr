@@ -315,6 +315,9 @@ const REPETITIONS = {
 	"cli_selectors.input_line": 50,
 	"cli_selectors.keybinding_text": 50,
 	"cli_selectors.keybinding_hint": 50,
+	"cli_selectors.login_dialog_make": 50,
+	"cli_selectors.login_dialog_auth": 50,
+	"cli_selectors.login_dialog_device": 50,
 	"cli_selectors.session_format_age": 50,
 	"cli_selectors.session_record_label": 50,
 	"cli_selectors.session_shorten_path": 50,
@@ -14750,6 +14753,123 @@ function runCliSelectorsKeybindingHint() {
 	];
 }
 
+function loginDialogSectionsEncoded(state) {
+	return state.sections
+		.map((section) => {
+			switch (section.kind) {
+				case "url":
+					return `url:${section.url}`;
+				case "warning":
+					return `warn:${section.text}`;
+				case "dim":
+					return `dim:${section.text}`;
+				default:
+					return section.kind;
+			}
+		})
+		.join("|");
+}
+
+function makeLoginDialogState(providerName) {
+	return {
+		providerName,
+		sections: [],
+		input: null,
+		cancelFunction: null,
+	};
+}
+
+function loginDialogShowAuth(state, url, instructions) {
+	const sections = [{ kind: "blank" }, { kind: "url", url }];
+	if (instructions && instructions.length > 0) {
+		sections.push({ kind: "blank" }, { kind: "warning", text: instructions });
+	}
+	state.sections = sections;
+	return state;
+}
+
+function loginDialogShowDeviceCode(state, url, userCode) {
+	state.sections = [
+		{ kind: "blank" },
+		{ kind: "url", url },
+		{ kind: "blank" },
+		{ kind: "warning", text: `Enter code: ${userCode}` },
+	];
+	return state;
+}
+
+function runCliSelectorsLoginDialogMake() {
+	const empty = makeLoginDialogState("");
+	const named = makeLoginDialogState("OpenAI");
+	const long = makeLoginDialogState("Anthropic Claude");
+	return {
+		ldm_empty_n: empty.providerName.length,
+		ldm_named: named.providerName,
+		ldm_named_sec: named.sections.length,
+		ldm_long: long.providerName,
+		ldm_input: named.input ? 1 : 0,
+		ldm_long_n: long.providerName.length,
+	};
+}
+
+function runCliSelectorsLoginDialogAuth() {
+	const plain = loginDialogShowAuth(
+		makeLoginDialogState("OpenAI"),
+		"https://example.invalid/auth",
+		null,
+	);
+	const instr = loginDialogShowAuth(
+		makeLoginDialogState("OpenAI"),
+		"https://example.invalid/auth",
+		"Open the URL",
+	);
+	const emptyInstr = loginDialogShowAuth(
+		makeLoginDialogState("OpenAI"),
+		"https://example.invalid/a",
+		"",
+	);
+	const replace = loginDialogShowAuth(
+		loginDialogShowAuth(makeLoginDialogState("X"), "https://old.invalid", "old"),
+		"https://new.invalid",
+		null,
+	);
+	return {
+		lda_plain: loginDialogSectionsEncoded(plain),
+		lda_instr: loginDialogSectionsEncoded(instr),
+		lda_empty_instr: loginDialogSectionsEncoded(emptyInstr),
+		lda_replace: loginDialogSectionsEncoded(replace),
+		lda_provider: instr.providerName,
+		lda_n: instr.sections.length,
+	};
+}
+
+function runCliSelectorsLoginDialogDevice() {
+	const code = loginDialogShowDeviceCode(
+		makeLoginDialogState("GitHub"),
+		"https://github.com/login/device",
+		"ABCD-1234",
+	);
+	const emptyCode = loginDialogShowDeviceCode(
+		makeLoginDialogState("GitHub"),
+		"https://example.invalid/device",
+		"",
+	);
+	const replace = loginDialogShowDeviceCode(
+		loginDialogShowAuth(makeLoginDialogState("GitHub"), "https://old.invalid", null),
+		"https://new.invalid/device",
+		"ZZZZ",
+	);
+	const encoded = loginDialogSectionsEncoded(code);
+	return {
+		ldd_code: encoded,
+		ldd_empty: loginDialogSectionsEncoded(emptyCode),
+		ldd_replace: loginDialogSectionsEncoded(replace),
+		ldd_provider: code.providerName,
+		ldd_n: code.sections.length,
+		ldd_hint: encoded.includes("Enter code:") ? 1 : 0,
+	};
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -14765,6 +14885,9 @@ async function measureCliSelectorsSessionSearch() {
 	const inputLineResults = runCliSelectorsInputLine();
 	const keybindingTextResults = runCliSelectorsKeybindingText();
 	const keybindingHintResults = runCliSelectorsKeybindingHint();
+	const loginDialogMakeResults = runCliSelectorsLoginDialogMake();
+	const loginDialogAuthResults = runCliSelectorsLoginDialogAuth();
+	const loginDialogDeviceResults = runCliSelectorsLoginDialogDevice();
 	const sessionFormatAgeResults = runCliSelectorsSessionFormatAge();
 	const sessionRecordLabelResults = runCliSelectorsSessionRecordLabel();
 	const sessionShortenPathResults = runCliSelectorsSessionShortenPath();
@@ -15202,6 +15325,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...loginDialogMakeResults,
+		...loginDialogAuthResults,
+		...loginDialogDeviceResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15257,6 +15383,15 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		keybinding_hint: await collect("cli_selectors.keybinding_hint", () => {
 			return () => runCliSelectorsKeybindingHint();
+		}),
+		login_dialog_make: await collect("cli_selectors.login_dialog_make", () => {
+			return () => runCliSelectorsLoginDialogMake();
+		}),
+		login_dialog_auth: await collect("cli_selectors.login_dialog_auth", () => {
+			return () => runCliSelectorsLoginDialogAuth();
+		}),
+		login_dialog_device: await collect("cli_selectors.login_dialog_device", () => {
+			return () => runCliSelectorsLoginDialogDevice();
 		}),
 		session_format_age: await collect("cli_selectors.session_format_age", () => {
 			return () => runCliSelectorsSessionFormatAge();
@@ -17426,6 +17561,12 @@ const result = {
 				"packages/tui/src/keybindings.ts KeybindingsManager.getKeys join",
 			"cli_selectors.keybinding_hint":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts rawKeyHint",
+			"cli_selectors.login_dialog_make":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent constructor",
+			"cli_selectors.login_dialog_auth":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showAuth",
+			"cli_selectors.login_dialog_device":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showDeviceCode",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":
