@@ -7599,6 +7599,49 @@
    5))
 
 
+(defun oauth-openrouter-input-flag (input expected)
+  (handler-case
+      (let ((code (cadr-ai::parse-openrouter-authorization-input input)))
+        (if (equal code expected)
+            1
+            0))
+    (error () 0)))
+
+
+(defun run-oauth-pkce-device-openrouter-input ()
+  ;; Manual OpenRouter forms only. Do not exact empty input (Lisp NIL vs
+  ;; pi undefined) or a URL with no query (Lisp returns the URL; pi
+  ;; returns undefined).
+  (list
+   (oauth-openrouter-input-flag
+    "http://127.0.0.1:1457/oauth/callback/x?code=or-a&state=s"
+    "or-a")
+   (oauth-openrouter-input-flag "code=or-b&state=s" "or-b")
+   (oauth-openrouter-input-flag " or-c " "or-c")
+   3))
+
+
+(defun run-oauth-pkce-device-openrouter-refresh ()
+  (let ((credential
+          (cadr-ai:make-oauth-credential
+           :provider :openrouter
+           :access "sk-or-test"
+           :refresh ""
+           :expires most-positive-fixnum)))
+    (let ((refreshed
+            (cadr-ai::refresh-openrouter-oauth-credential credential)))
+      (list
+       (if (eq refreshed credential) 1 0)
+       (if (string= (cadr-ai:oauth-credential-access refreshed)
+                    "sk-or-test")
+           1
+           0)
+       (if (string= (cadr-ai:oauth-credential-refresh refreshed) "")
+           1
+           0)
+       3))))
+
+
 (defun with-oauth-flow-stub (status object thunk)
   (let ((cadr-ai::*oauth-flow-request-function*
           (lambda (url &key method headers content connect-timeout read-timeout)
@@ -7661,6 +7704,54 @@
      "interval" 5)
     "Invalid OpenAI Codex device code response")
    4))
+
+
+(defun oauth-openrouter-exchange-ok-flag ()
+  (handler-case
+      (let ((credential
+              (with-oauth-flow-stub
+               200
+               (cadr-ai::json-object "key" "sk-or-test")
+               (lambda ()
+                 (cadr-ai::openrouter-exchange-code "code" "verifier")))))
+        (if (and (string= (cadr-ai:oauth-credential-access credential)
+                          "sk-or-test")
+                 (string= (cadr-ai:oauth-credential-refresh credential) "")
+                 (eq (cadr-ai:oauth-credential-provider credential)
+                     :openrouter))
+            1
+            0))
+    (error () 0)))
+
+
+(defun oauth-openrouter-exchange-error-flag (status object needle)
+  (handler-case
+      (progn
+        (with-oauth-flow-stub
+         status
+         object
+         (lambda ()
+           (cadr-ai::openrouter-exchange-code "code" "verifier")))
+        0)
+    (cadr-ai:authentication-error (condition)
+      (if (search needle (cadr-ai:cadr-error-message condition))
+          1
+          0))
+    (error () 0)))
+
+
+(defun run-oauth-pkce-device-openrouter-exchange ()
+  (list
+   (oauth-openrouter-exchange-ok-flag)
+   (oauth-openrouter-exchange-error-flag
+    400
+    (cadr-ai::json-object "error" "boom")
+    "key exchange failed")
+   (oauth-openrouter-exchange-error-flag
+    200
+    (cadr-ai::json-object)
+    "key")
+   3))
 
 
 (defun measure-oauth-pkce-device ()

@@ -310,4 +310,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.device_start` | 8.710 | 7.805 | 1.116× | 8.00× | measure-only pair 423; stubbed `start-openai-codex-device-authorization` | invent pause；地板优化另刀 |
 | `evals_harness.eval_layout` | 3.297 | 1.074 | 3.071× | 8.00× | measure-only pair 418; leftover eval workspace/agent/sessions layout vs path join | invent pause；地板优化另刀 |
 | `evals_harness.output_selector` | 0.189 | 0.188 | 1.007× | 8.00× | measure-only pair 420; leftover `:selector` vs `options.output`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `oauth_pkce_device.openrouter_exchange` | 10.390 | 6.991 | 1.486× | 8.00× | measure-only pair 438; leftover `openrouter-exchange-code` vs `exchangeAuthorizationCode` (stubbed HTTP) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
