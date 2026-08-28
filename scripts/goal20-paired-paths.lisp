@@ -3751,6 +3751,62 @@
    (length (cadr-cli::split-command-line (format nil "  a~Cb  " #\Tab)))
    (length (cadr-cli::split-command-line "   "))))
 
+(defun sdk-settings-fixture-manager ()
+  (cadr-cli::make-memory-sdk-settings-manager
+   (cadr-ai::json-object
+    "defaultProvider" "openai"
+    "defaultModel" ""
+    "compaction"
+    (cadr-ai::json-object "enabled" t)
+    "tools"
+    (cadr-ai::json-array "read" "bash"))))
+
+
+(defun run-settings-load-sdk-nonempty ()
+  (let ((manager (sdk-settings-fixture-manager))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (or (cadr-cli::sdk-nonempty-setting-string
+          manager "defaultProvider")
+         "")
+     (if (cadr-cli::sdk-nonempty-setting-string
+          manager "defaultModel")
+         1
+         0)
+     (if (cadr-cli::sdk-nonempty-setting-string
+          empty "defaultProvider")
+         1
+         0))))
+
+
+(defun run-settings-load-sdk-boolean ()
+  (let ((manager (sdk-settings-fixture-manager))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (cadr-cli::sdk-settings-boolean
+          manager "compaction" nil "enabled")
+         1
+         0)
+     (if (cadr-cli::sdk-settings-compaction-enabled-p empty)
+         1
+         0)
+     (if (cadr-cli::sdk-settings-boolean empty "missing" nil)
+         1
+         0))))
+
+
+(defun run-settings-load-sdk-tools ()
+  (let* ((manager (sdk-settings-fixture-manager))
+         (empty (cadr-cli::make-memory-sdk-settings-manager))
+         (tools (cadr-cli::sdk-settings-enabled-tools manager)))
+    (list
+     (length tools)
+     (if (equal (first tools) "read") 1 0)
+     (if (null (cadr-cli::sdk-settings-enabled-tools empty))
+         1
+         0))))
+
+
 (defun measure-settings-load ()
   (let ((config-paths-agent (stage-settings-load-config-paths)))
     (destructuring-bind (empty project store-path)

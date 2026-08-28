@@ -338,6 +338,9 @@ const REPETITIONS = {
 	"cli_print_rpc.dialog_request": 50,
 	"cli_print_rpc.dialog_result": 50,
 	"cli_print_rpc.dialog_expired": 50,
+	"settings_load.sdk_nonempty": 50,
+	"settings_load.sdk_boolean": 50,
+	"settings_load.sdk_tools": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -2490,6 +2493,53 @@ function runSettingsLoadSplitCommandLine() {
 		scl_empty: settingsLoadSplitCommandLine("   ").length,
 	};
 }
+
+function sdkSettingsFixtureManager() {
+	return settingsModule.SettingsManager.inMemory(SDK_SETTINGS_FIXTURE);
+}
+
+
+function sdkSettingsEmptyManager() {
+	return settingsModule.SettingsManager.inMemory({});
+}
+
+
+function sdkNonemptySettingString(value) {
+	return typeof value === "string" && value.length > 0 ? value : null;
+}
+
+
+function runSettingsLoadSdkNonempty() {
+	const manager = sdkSettingsFixtureManager();
+	const empty = sdkSettingsEmptyManager();
+	return {
+		sn_prov: sdkNonemptySettingString(manager.getDefaultProvider()) ?? "",
+		sn_empty: sdkNonemptySettingString(manager.getDefaultModel()) ? 1 : 0,
+		sn_miss: sdkNonemptySettingString(empty.getDefaultProvider()) ? 1 : 0,
+	};
+}
+
+
+function runSettingsLoadSdkBoolean() {
+	const manager = sdkSettingsFixtureManager();
+	const empty = sdkSettingsEmptyManager();
+	return {
+		sb_on: manager.getCompactionEnabled() ? 1 : 0,
+		sb_def: empty.getCompactionEnabled() ? 1 : 0,
+		sb_miss: empty.getDefaultProvider() ? 1 : 0,
+	};
+}
+
+
+function runSettingsLoadSdkTools() {
+	const tools = sdkSettingsFixtureManager().getDefaultTools();
+	return {
+		st_n: tools ? tools.length : 0,
+		st_read: tools && tools[0] === "read" ? 1 : 0,
+		st_none: sdkSettingsEmptyManager().getDefaultTools() == null ? 1 : 0,
+	};
+}
+
 
 async function measureSettingsLoad() {
 	const configPathsAgent = stageSettingsLoadConfigPaths();

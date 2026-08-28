@@ -106,7 +106,7 @@ METRICS = {
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool", "lden_file", "lden_dir", "lden_nested", "lden_n", "ld_empty", "ld_mixed", "ld_first", "ld_limit", "ld_n", "lst_name", "lst_desc", "lst_req", "lst_n"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine", "gtp_local_fd", "gtp_local_rg", "gtp_miss_fd", "gtp_miss_rg", "gtp_n", "et_local_fd", "et_offline_miss", "et_n", "cq_removed", "cq_noop", "cq_n", "release_asset", "find_binary", "quarantine_native"),
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool", "psu_len", "psu_nl", "psu_try", "psu_utf8", "psu_n", "psc_empty", "psc_date", "psc_write", "psc_n", "pmt_name", "pmt_desc", "pmt_req", "pmt_n"),
-    "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths", "tr_empty", "tr_proj", "rs_empty", "rs_ask", "rs_always", "rs_never", "rs_ov_yes", "rs_ov_no", "cv_lit", "cv_dol", "cv_brace", "cv_esc", "cv_bang", "cv_miss", "cv_mix", "cv_cmd", "ht_30", "ht_1m", "ht_2m", "ht_5m", "ht_off", "sas_missing", "sas_fixture", "sas_oauth", "sas_bad", "sas_fixture_key", "sas_oauth_access", "sas_oauth_refresh", "cp_auth_eq", "cp_cfg_eq", "cp_same_p", "cp_auth_leaf", "cp_cfg_leaf", "provider_symbol", "parse_auth_provider", "split_command_line"),
+    "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths", "tr_empty", "tr_proj", "rs_empty", "rs_ask", "rs_always", "rs_never", "rs_ov_yes", "rs_ov_no", "cv_lit", "cv_dol", "cv_brace", "cv_esc", "cv_bang", "cv_miss", "cv_mix", "cv_cmd", "ht_30", "ht_1m", "ht_2m", "ht_5m", "ht_off", "sas_missing", "sas_fixture", "sas_oauth", "sas_bad", "sas_fixture_key", "sas_oauth_access", "sas_oauth_refresh", "cp_auth_eq", "cp_cfg_eq", "cp_same_p", "cp_auth_leaf", "cp_cfg_leaf", "provider_symbol", "parse_auth_provider", "split_command_line", "sdk_nonempty", "sdk_boolean", "sdk_tools"),
     "resource_loader": ("reload", "dedupe_by_name", "skill_count", "prompt_count", "skill_names", "prompt_names", "skill_from_project", "prompt_from_project", "context_file_count", "system_prompt", "dbn_skill_count", "dbn_skill_collisions", "dbn_skill_project", "dbn_prompt_count", "dbn_prompt_collisions", "dbn_prompt_project", "context_from_dir", "project_context", "nearest_config"),
     "package_manager": ("resolve", "manifest_parse", "package_source", "package_count", "skill_count", "prompt_count", "theme_count", "extension_count", "manifest_p", "manifest_extensions", "manifest_skills", "manifest_prompts", "manifest_themes", "ps_npm_pin", "ps_npm_rng", "ps_git", "ps_git_pin", "ps_local", "ps_ref_ok", "ps_git_id", "ps_ded_n", "ps_ded_proj", "normalize_pattern", "resource_kinds", "type_label", "update_argv", "update_env", "git_object_id"),
     "session_discovery": ("header_probe", "session_list_probe", "file_count", "header_count", "found", "session_id", "most_recent_name", "list_count", "list_id", "list_most_recent_name", "empty_count"),
@@ -741,6 +741,13 @@ RATIO_CEILINGS = {
     "cli_print_rpc.dialog_request": 8.0,
     "cli_print_rpc.dialog_result": 8.0,
     "cli_print_rpc.dialog_expired": 8.0,
+    # settings_load SDK leftover trio (samples=5): observed
+    # sdk_nonempty 3.32x (20.85 / 6.28 us), sdk_boolean 2.14x
+    # (13.42 / 6.28 us), sdk_tools 2.04x (12.77 / 6.27 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
+    "settings_load.sdk_nonempty": 8.0,
+    "settings_load.sdk_boolean": 8.0,
+    "settings_load.sdk_tools": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -2159,6 +2166,15 @@ OBSERVED_EXACT = {
         "scl_two",
         "scl_trim",
         "scl_empty",
+        "sn_prov",
+        "sn_empty",
+        "sn_miss",
+        "sb_on",
+        "sb_def",
+        "sb_miss",
+        "st_n",
+        "st_read",
+        "st_none",
     ),
     "package_manager": (
         "package_count",

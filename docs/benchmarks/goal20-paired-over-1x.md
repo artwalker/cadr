@@ -329,4 +329,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.bash_result` | 2.165 | 0.743 | 2.913× | 8.00× | measure-only leftover 465; `rpc-bash-result-json` vs RPC bash result payload (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_print_rpc.dialog_request` | 1.129 | 0.325 | 3.471× | 8.00× | measure-only leftover 466; `rpc-dialog-request-object` vs createDialogPromise request (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_print_rpc.dialog_result` | 1.233 | 0.290 | 4.257× | 8.00× | measure-only leftover 467; `rpc-dialog-result` vs createDialogPromise parseResponse (sub-µs variance) | invent pause；地板优化另刀 |
+| `settings_load.sdk_nonempty` | 20.855 | 6.284 | 3.319× | 8.00× | measure-only pair 469; leftover `sdk-nonempty-setting-string` vs `getDefaultProvider` | invent pause；地板优化另刀 |
+| `settings_load.sdk_boolean` | 13.423 | 6.283 | 2.136× | 8.00× | measure-only pair 470; leftover `sdk-settings-boolean` vs `getCompactionEnabled` | invent pause；地板优化另刀 |
+| `settings_load.sdk_tools` | 12.769 | 6.268 | 2.037× | 8.00× | measure-only pair 471; leftover `sdk-settings-enabled-tools` vs `getDefaultTools` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
