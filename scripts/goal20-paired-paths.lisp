@@ -14007,6 +14007,122 @@
      (theme-validate-flag unknown empty-vars nil colors nil nil))))
 
 
+(defun encode-clipboard-command-candidates (candidates)
+  (format
+   nil "~{~A~^|~}"
+   (mapcar
+    (lambda (argv)
+      (format nil "~{~A~^ ~}" argv))
+    candidates)))
+
+
+(defun run-cli-interactive-clipboard-candidates ()
+  (list
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates :platform :darwin))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates :platform :windows))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates :platform :linux))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates
+     :platform :linux
+     :termux-p t
+     :wayland-p t
+     :wayland-display-p t
+     :x11-display-p t))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates
+     :platform :linux
+     :wayland-p t
+     :wayland-display-p t))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates
+     :platform :linux
+     :x11-display-p t))))
+
+
+(defun osc52-copy-sequence-or-empty (text &key (maximum-bytes 100000))
+  (or (cadr-cli:osc52-copy-sequence
+       text :maximum-bytes maximum-bytes)
+      ""))
+
+
+(defun run-cli-interactive-osc52-copy ()
+  (list
+   (osc52-copy-sequence-or-empty "hello")
+   (osc52-copy-sequence-or-empty "")
+   (osc52-copy-sequence-or-empty "你好")
+   (osc52-copy-sequence-or-empty "oversized" :maximum-bytes 1)
+   (osc52-copy-sequence-or-empty "😀")
+   (osc52-copy-sequence-or-empty "hello" :maximum-bytes 8)))
+
+
+(defun clipboard-copy-kind-name (kind)
+  (string-downcase (symbol-name kind)))
+
+
+(defun clipboard-copy-kind
+    (text &key platform remote-p native-setter command-runner
+       termux-p wayland-p wayland-display-p x11-display-p)
+  (clipboard-copy-kind-name
+   (cadr-cli::copy-to-clipboard
+    text
+    :platform platform
+    :remote-p remote-p
+    :termux-p termux-p
+    :wayland-p wayland-p
+    :wayland-display-p wayland-display-p
+    :x11-display-p x11-display-p
+    :native-setter native-setter
+    :command-runner command-runner
+    :output (make-string-output-stream))))
+
+
+(defun run-cli-interactive-clipboard-copy ()
+  (let ((ok (lambda (argv input)
+              (declare (ignore argv input))
+              t))
+        (fail (lambda (argv input)
+                (declare (ignore argv input))
+                nil))
+        (native (lambda (text)
+                  (declare (ignore text))
+                  nil)))
+    (list
+     (clipboard-copy-kind
+      "hello"
+      :platform :darwin
+      :remote-p nil
+      :native-setter native
+      :command-runner fail)
+     (clipboard-copy-kind
+      "hello"
+      :platform :linux
+      :x11-display-p t
+      :command-runner ok)
+     (clipboard-copy-kind
+      "hello"
+      :platform :darwin
+      :remote-p t
+      :native-setter native
+      :command-runner fail)
+     (clipboard-copy-kind
+      "hello"
+      :platform :linux
+      :command-runner fail)
+     (clipboard-copy-kind
+      "hello"
+      :platform :windows
+      :native-setter native
+      :command-runner fail)
+     (clipboard-copy-kind
+      "hello"
+      :platform :linux
+      :termux-p t
+      :command-runner ok))))
+
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))

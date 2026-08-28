@@ -6654,6 +6654,30 @@ Leftover sibling of Pair 532 on the same hole. Timed work is label plus `setting
 
 Leftover sibling of Pairs 532–533 on the same hole. Timed work is empty/off/high/miss/nil/clear-after-off query apply — not handle-event, not render. Fixtures pass `:keybindings :bench`. Observed `tsq_empty` / `tsq_off` / `tsq_high` / `tsq_miss` / `tsq_nil` / `tsq_clear` are exact. First n=5 freeze **1.081×** (11.827 / 10.942 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
 
+### Pair 535 — `cli_interactive_controller` (clipboard_candidates)
+
+| metric | cadr | pi |
+|---|---|---|
+| `clipboard_candidates` | `clipboard-command-candidates` (`src/cadr-cli/interactive/clipboard.lisp`) | copy argv lists (`packages/coding-agent/src/utils/clipboard.ts`) |
+
+Leftover trio on `src/cadr-cli/interactive/clipboard.lisp` / hole `cli_interactive_controller`. Timed work is darwin/windows/linux-empty/termux+wayland+x11/wayland/x11 argv lists — not OSC 52, not subprocess. Observed `ccand_darwin` / `ccand_win` / `ccand_none` / `ccand_termux` / `ccand_wl` / `ccand_x11` are exact. First n=5 freeze **1.405×** (2.349 / 1.672 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 536 — `cli_interactive_controller` (osc52_copy)
+
+| metric | cadr | pi |
+|---|---|---|
+| `osc52_copy` | `osc52-copy-sequence` (`src/cadr-cli/interactive/clipboard.lisp`) | OSC 52 encode (`packages/coding-agent/src/utils/clipboard.ts`) |
+
+Leftover sibling of Pair 535 on the same hole. Timed work is hello/empty/CJK/oversize/emoji/bound-length encode — not stdout write, not native clipboard. Observed `osc_hello` / `osc_empty` / `osc_cjk` / `osc_over` / `osc_emoji` / `osc_bound` are exact. First n=5 freeze **1.043×** (1.614 / 1.547 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 537 — `cli_interactive_controller` (clipboard_copy)
+
+| metric | cadr | pi |
+|---|---|---|
+| `clipboard_copy` | `copy-to-clipboard` (`src/cadr-cli/interactive/clipboard.lisp`) | copyToClipboard injected (`packages/coding-agent/src/utils/clipboard.ts`) |
+
+Leftover sibling of Pairs 535–536 on the same hole. Timed work is darwin-native/linux-shell/remote+osc52/osc-only/windows-native/termux-shell with injected runners — not `execSync`, not image paste. Observed `cc_darwin` / `cc_linux_shell` / `cc_remote` / `cc_osc` / `cc_win` / `cc_termux` are exact. First n=5 freeze **1.137×** (1.911 / 1.680 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -395,6 +395,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_level_label": 50,
 	"cli_selectors.thinking_level_search_text": 50,
 	"cli_selectors.thinking_selector_set_query": 50,
+	"cli_interactive_controller.clipboard_candidates": 50,
+	"cli_interactive_controller.osc52_copy": 50,
+	"cli_interactive_controller.clipboard_copy": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -13567,6 +13570,212 @@ function runCliInteractiveThemeValidate() {
 		tv_ok: themeValidateFlag(ok, emptyVars, false, colors, null, false),
 		tv_slash: themeValidateFlag(slash, emptyVars, false, colors, null, false),
 		tv_unknown: themeValidateFlag(unknown, emptyVars, false, colors, null, false),
+	};
+}
+
+
+function encodeClipboardCommandCandidates(candidates) {
+	return candidates.map((argv) => argv.join(" ")).join("|");
+}
+
+
+function clipboardCommandCandidates({
+	platform,
+	termuxP = false,
+	waylandP = false,
+	waylandDisplayP = false,
+	x11DisplayP = false,
+} = {}) {
+	if (platform === "darwin") {
+		return [["pbcopy"]];
+	}
+	if (platform === "windows") {
+		return [["clip"]];
+	}
+	const candidates = [];
+	if (termuxP) {
+		candidates.push(["termux-clipboard-set"]);
+	}
+	if (waylandP && waylandDisplayP) {
+		candidates.push(["wl-copy"]);
+	}
+	if (x11DisplayP) {
+		candidates.push(["xclip", "-selection", "clipboard"]);
+		candidates.push(["xsel", "--clipboard", "--input"]);
+	}
+	return candidates;
+}
+
+
+function runCliInteractiveClipboardCandidates() {
+	return {
+		ccand_darwin: encodeClipboardCommandCandidates(
+			clipboardCommandCandidates({ platform: "darwin" }),
+		),
+		ccand_win: encodeClipboardCommandCandidates(
+			clipboardCommandCandidates({ platform: "windows" }),
+		),
+		ccand_none: encodeClipboardCommandCandidates(
+			clipboardCommandCandidates({ platform: "linux" }),
+		),
+		ccand_termux: encodeClipboardCommandCandidates(
+			clipboardCommandCandidates({
+				platform: "linux",
+				termuxP: true,
+				waylandP: true,
+				waylandDisplayP: true,
+				x11DisplayP: true,
+			}),
+		),
+		ccand_wl: encodeClipboardCommandCandidates(
+			clipboardCommandCandidates({
+				platform: "linux",
+				waylandP: true,
+				waylandDisplayP: true,
+			}),
+		),
+		ccand_x11: encodeClipboardCommandCandidates(
+			clipboardCommandCandidates({
+				platform: "linux",
+				x11DisplayP: true,
+			}),
+		),
+	};
+}
+
+
+function osc52CopySequence(text, maximumBytes = 100000) {
+	const encoded = Buffer.from(text, "utf8").toString("base64");
+	if (encoded.length > maximumBytes) {
+		return "";
+	}
+	return `\x1b]52;c;${encoded}\x07`;
+}
+
+
+function runCliInteractiveOsc52Copy() {
+	return {
+		osc_hello: osc52CopySequence("hello"),
+		osc_empty: osc52CopySequence(""),
+		osc_cjk: osc52CopySequence("你好"),
+		osc_over: osc52CopySequence("oversized", 1),
+		osc_emoji: osc52CopySequence("😀"),
+		osc_bound: osc52CopySequence("hello", 8),
+	};
+}
+
+
+function copyToClipboardPi(
+	text,
+	{
+		platform,
+		remoteP = false,
+		nativeSetter = null,
+		commandRunner = () => false,
+		termuxP = false,
+		waylandP = false,
+		waylandDisplayP = false,
+		x11DisplayP = false,
+	} = {},
+) {
+	let copied = false;
+	let nativeP = false;
+	let shellP = false;
+	if (nativeSetter && platform !== "linux") {
+		try {
+			nativeSetter(text);
+			copied = true;
+			nativeP = true;
+		} catch {
+			// fall through
+		}
+	}
+	if (copied && !remoteP) {
+		return "native";
+	}
+	if (!copied) {
+		for (const argv of clipboardCommandCandidates({
+			platform,
+			termuxP,
+			waylandP,
+			waylandDisplayP,
+			x11DisplayP,
+		})) {
+			try {
+				if (commandRunner(argv, text)) {
+					copied = true;
+					shellP = true;
+					break;
+				}
+			} catch {
+				// next argv
+			}
+		}
+	}
+	let osc52 = "";
+	if (remoteP || !copied) {
+		osc52 = osc52CopySequence(text);
+		if (osc52) {
+			copied = true;
+		}
+	}
+	if (!copied) {
+		throw new Error("Failed to copy to clipboard");
+	}
+	if (nativeP && osc52) {
+		return "native+osc52";
+	}
+	if (shellP && osc52) {
+		return "shell+osc52";
+	}
+	if (nativeP) {
+		return "native";
+	}
+	if (shellP) {
+		return "shell";
+	}
+	if (osc52) {
+		return "osc52";
+	}
+	return "unknown";
+}
+
+
+function runCliInteractiveClipboardCopy() {
+	const ok = () => true;
+	const fail = () => false;
+	const native = () => {};
+	return {
+		cc_darwin: copyToClipboardPi("hello", {
+			platform: "darwin",
+			nativeSetter: native,
+			commandRunner: fail,
+		}),
+		cc_linux_shell: copyToClipboardPi("hello", {
+			platform: "linux",
+			x11DisplayP: true,
+			commandRunner: ok,
+		}),
+		cc_remote: copyToClipboardPi("hello", {
+			platform: "darwin",
+			remoteP: true,
+			nativeSetter: native,
+			commandRunner: fail,
+		}),
+		cc_osc: copyToClipboardPi("hello", {
+			platform: "linux",
+			commandRunner: fail,
+		}),
+		cc_win: copyToClipboardPi("hello", {
+			platform: "windows",
+			nativeSetter: native,
+			commandRunner: fail,
+		}),
+		cc_termux: copyToClipboardPi("hello", {
+			platform: "linux",
+			termuxP: true,
+			commandRunner: ok,
+		}),
 	};
 }
 
