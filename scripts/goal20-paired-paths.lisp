@@ -9614,6 +9614,69 @@
      4)))
 
 
+(defun run-evals-harness-extension-authoring-input ()
+  ;; Leftover on suites.lisp: three-step extension-authoring input
+  ;; vector. Types only — product copy in prompt strings is not
+  ;; an exact key (CADR vs pi).
+  (let ((steps (cadr-evals::extension-authoring-input)))
+    (list
+     (eval-flag (= (length steps) 3))
+     (eval-flag
+      (string=
+       (cadr-ai::json-get (aref steps 0) "type")
+       "prompt"))
+     (eval-flag
+      (string=
+       (cadr-ai::json-get (aref steps 1) "type")
+       "reload"))
+     (eval-flag
+      (string=
+       (cadr-ai::json-get (aref steps 2) "type")
+       "prompt"))
+     (eval-flag
+      (stringp
+       (cadr-ai::json-get (aref steps 0) "content")))
+     5)))
+
+
+(defun run-evals-harness-json-array-items ()
+  ;; Leftover callee of the extension-authoring judge: vector and
+  ;; list become sequences, atom and NIL do not.
+  (list
+   (eval-flag
+    (= (length
+        (cadr-evals::json-array-items
+         (vector "a" "b")))
+       2))
+   (eval-flag
+    (= (length
+        (cadr-evals::json-array-items
+         '("a" "b")))
+       2))
+   (eval-flag (null (cadr-evals::json-array-items 3)))
+   (eval-flag (null (cadr-evals::json-array-items nil)))
+   4))
+
+
+(defun run-evals-harness-json-string ()
+  ;; Leftover of the hello judge: json-get or "". Missing and NIL
+  ;; become empty, a present string is kept.
+  (let ((hit
+          (cadr-ai::json-object "a" "hi"))
+        (empty
+          (cadr-ai::json-object "a" ""))
+        (miss
+          (cadr-ai::json-object "b" "x")))
+    (list
+     (eval-flag
+      (string= (cadr-evals::json-string hit "a") "hi"))
+     (eval-flag
+      (string= (cadr-evals::json-string miss "a") ""))
+     (eval-flag
+      (string= (cadr-evals::json-string empty "a") ""))
+     3)))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))

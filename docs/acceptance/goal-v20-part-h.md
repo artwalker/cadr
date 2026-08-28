@@ -5484,6 +5484,49 @@ keeping custom metadata — not persist, not `runs.jsonl`. Observed
 `lc_sleep` / help text; this metric did not fail). Over-1× booked.
 Same commit no optimize.
 
+### Pair 439 — `evals_harness` (extension_authoring_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extension_authoring_input` | `extension-authoring-input` (`src/cadr-evals/suites.lisp`) | `describeEval` input steps (`packages/evals/src/extensions.eval.ts`) |
+
+Leftover of the `evals_harness` hole on `suites.lisp`. Timed work is the
+three-step extension-authoring input vector (prompt / reload / prompt).
+Types and length only — product copy in prompt strings is not an exact
+key (Cadr vs Pi). Observed `ei_n` / `ei_t0` / `ei_t1` / `ei_t2` / `ei_c0`
+are exact. First n=5 freeze **4.662×** (1.148 / 0.246 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1×
+booked. Same commit no optimize.
+
+### Pair 440 — `evals_harness` (json_array_items)
+
+| metric | cadr | pi |
+|---|---|---|
+| `json_array_items` | `json-array-items` (`src/cadr-evals/suites.lisp`) | `Array.isArray` judge helper (`packages/evals/src/extensions.eval.ts`) |
+
+Leftover sibling of Pair 439 on the same `evals_harness` hole. Timed work
+is vector/list → sequence, atom and NIL → NIL — not the hello judge, not
+`extension-authoring-input`. Observed `ja_vec` / `ja_list` / `ja_atom` /
+`ja_nil` are exact. First n=5 freeze **0.766×** (0.162 / 0.212 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 441 — `evals_harness` (json_string)
+
+| metric | cadr | pi |
+|---|---|---|
+| `json_string` | `json-string` (`src/cadr-evals/suites.lisp`) | missing/false JSON string accessor (`packages/evals/src/extensions.eval.ts`) |
+
+Leftover sibling of Pairs 439–440 on the same `evals_harness` hole. Timed
+work is `(or (json-get …) "")` — present string kept, missing and NIL
+become empty. Observed `js_hit` / `js_miss` / `js_empty` are exact. First
+n=5 freeze **5.012×** (0.902 / 0.180 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
+commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

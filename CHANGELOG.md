@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.extension_authoring_input`
+  (`extension-authoring-input` on `src/cadr-evals/suites.lisp` vs baseline
+  `describeEval` input steps). Types/length only. Observed `ei_n` / `ei_t0` /
+  `ei_t1` / `ei_t2` / `ei_c0` exact. n=5 **4.662×** (1.148 / 0.246 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 439). Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.json_array_items`
+  (`json-array-items` on `src/cadr-evals/suites.lisp` vs `Array.isArray`).
+  Observed `ja_vec` / `ja_list` / `ja_atom` / `ja_nil` exact. n=5 **0.766×**
+  (0.162 / 0.212 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 440). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.json_string` (`json-string` on
+  `src/cadr-evals/suites.lisp` vs missing/false JSON string accessor).
+  Observed `js_hit` / `js_miss` / `js_empty` exact. n=5 **5.012×** (0.902 /
+  0.180 µs) on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 441).
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `evals_harness.make_reporter` (`make-eval-harness-reporter`
   on `src/cadr-evals/reporter.lisp` vs baseline `EvalHarnessReporter` constructor plus
   `PI_EVAL_ARTIFACT_DIR` trim). Observed `mr_explicit` / `mr_env` / `mr_miss` / `mr_n`

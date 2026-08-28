@@ -317,6 +317,9 @@ const REPETITIONS = {
 	"evals_harness.make_reporter": 50,
 	"evals_harness.finite_number": 50,
 	"evals_harness.artifact_metadata": 50,
+	"evals_harness.extension_authoring_input": 50,
+	"evals_harness.json_array_items": 50,
+	"evals_harness.json_string": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -7541,6 +7544,75 @@ function runEvalsHarnessArtifactMetadata() {
 		am_runid: metadata.runId === undefined ? 1 : 0,
 		am_snap: metadata[snapshot] === undefined ? 1 : 0,
 		am_n: Object.keys(metadata).length === 1 ? 1 : 0,
+	};
+}
+
+
+function extensionAuthoringInput() {
+	// packages/evals/src/extensions.eval.ts describeEval input steps.
+	// Types and length only — product copy in prompt strings is not an
+	// exact key (Cadr vs Pi).
+	return [
+		{
+			type: "prompt",
+			content:
+				"Create a Pi extension with a hello tool that takes a name and returns a greeting. For example, passing Bob should return `Hello, Bob!`.",
+		},
+		{ type: "reload" },
+		{
+			type: "prompt",
+			content:
+				"Use the hello tool to greet Bob. Respond with exactly the tool's greeting and nothing else.",
+		},
+	];
+}
+
+
+function runEvalsHarnessExtensionAuthoringInput() {
+	const steps = extensionAuthoringInput();
+	return {
+		ei_n: steps.length === 3 ? 1 : 0,
+		ei_t0: steps[0]?.type === "prompt" ? 1 : 0,
+		ei_t1: steps[1]?.type === "reload" ? 1 : 0,
+		ei_t2: steps[2]?.type === "prompt" ? 1 : 0,
+		ei_c0: typeof steps[0]?.content === "string" ? 1 : 0,
+	};
+}
+
+
+function jsonArrayItems(value) {
+	return Array.isArray(value) ? value : null;
+}
+
+
+function runEvalsHarnessJsonArrayItems() {
+	const vec = jsonArrayItems(["a", "b"]);
+	const list = jsonArrayItems(["a", "b"]);
+	const atom = jsonArrayItems(3);
+	const none = jsonArrayItems(null);
+	return {
+		ja_vec: vec !== null && vec.length === 2 ? 1 : 0,
+		ja_list: list !== null && list.length === 2 ? 1 : 0,
+		ja_atom: atom === null ? 1 : 0,
+		ja_nil: none === null ? 1 : 0,
+	};
+}
+
+
+function jsonString(object, key) {
+	const value = object == null ? null : object[key];
+	return value == null || value === false ? "" : value;
+}
+
+
+function runEvalsHarnessJsonString() {
+	const hit = jsonString({ a: "hi" }, "a");
+	const miss = jsonString({ b: "x" }, "a");
+	const empty = jsonString({ a: "" }, "a");
+	return {
+		js_hit: hit === "hi" ? 1 : 0,
+		js_miss: miss === "" ? 1 : 0,
+		js_empty: empty === "" ? 1 : 0,
 	};
 }
 

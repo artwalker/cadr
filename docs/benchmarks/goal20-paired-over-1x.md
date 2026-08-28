@@ -313,4 +313,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.openrouter_exchange` | 10.390 | 6.991 | 1.486× | 8.00× | measure-only pair 438; leftover `openrouter-exchange-code` vs `exchangeAuthorizationCode` (stubbed HTTP) | invent pause；地板优化另刀 |
 | `output_accumulator.needs_file` | 50.564 | 20.524 | 2.464× | 8.00× | measure-only pair 428; leftover `needs-file-p` vs `shouldUseTempFile` | invent pause；地板优化另刀 |
 | `evals_harness.artifact_metadata` | 1.025 | 0.868 | 1.182× | 8.00× | measure-only pair 432; leftover `reporter-artifact-metadata` vs `appendHarnessRunReport` metadata filter | invent pause；地板优化另刀 |
+| `evals_harness.extension_authoring_input` | 1.148 | 0.246 | 4.662× | 8.00× | measure-only pair 439; `extension-authoring-input` types/length leftover (sub-µs variance) | invent pause；地板优化另刀 |
+| `evals_harness.json_string` | 0.902 | 0.180 | 5.012× | 8.00× | measure-only pair 441; `json-string` leftover vs missing/false JSON accessor (sub-µs variance) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
