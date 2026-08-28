@@ -392,6 +392,9 @@ const REPETITIONS = {
 	"cli_selectors.login_dialog_make": 50,
 	"cli_selectors.login_dialog_auth": 50,
 	"cli_selectors.login_dialog_device": 50,
+	"cli_selectors.thinking_level_label": 50,
+	"cli_selectors.thinking_level_search_text": 50,
+	"cli_selectors.thinking_selector_set_query": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20036,6 +20039,141 @@ function runCliSelectorsLoginDialogDevice() {
 		ldd_provider: code.providerName,
 		ldd_n: code.sections.length,
 		ldd_hint: encoded.includes("Enter code:") ? 1 : 0,
+	};
+}
+
+
+function thinkingLevelLabel(level) {
+	return String(level).toLowerCase();
+}
+
+
+function thinkingLevelSearchText(level) {
+	const desc = settingsThinkingDescriptionPi(level);
+	return `${thinkingLevelLabel(level)} ${desc}`;
+}
+
+
+function makeThinkingSelectorState({
+	levels = [],
+	currentLevel = null,
+	defaultLevel = null,
+	keybindings = "bench",
+} = {}) {
+	const state = {
+		levels: levels.slice(),
+		currentLevel,
+		defaultLevel,
+		query: "",
+		filteredLevels: [],
+		filterQuery: null,
+		filteredCount: 0,
+		selected: 0,
+		keybindings,
+	};
+	thinkingSelectorApplyFilter(state);
+	thinkingSelectorSelectCurrent(state);
+	return state;
+}
+
+
+function thinkingSelectorApplyFilter(state) {
+	const query = state.query;
+	const lastQuery = state.filterQuery ?? "";
+	if (query !== lastQuery) {
+		const levels = state.levels;
+		const filtered =
+			query.length === 0
+				? levels.slice()
+				: fuzzyModule.fuzzyFilter(levels, query, thinkingLevelSearchText);
+		state.filteredLevels = filtered;
+		state.filterQuery = query;
+		state.filteredCount = filtered.length;
+	}
+	return state;
+}
+
+
+function thinkingSelectorClampSelected(state) {
+	const count = state.filteredCount;
+	state.selected = count === 0 ? 0 : Math.min(state.selected, count - 1);
+	return state;
+}
+
+
+function thinkingSelectorSetQuery(state, query) {
+	state.query = query ?? "";
+	thinkingSelectorApplyFilter(state);
+	if (state.query.length > 0) {
+		state.selected = 0;
+	} else {
+		thinkingSelectorClampSelected(state);
+	}
+	return state;
+}
+
+
+function thinkingSelectorSetQueryEncoded(state, query) {
+	thinkingSelectorSetQuery(state, query);
+	return `${thinkingLevelName(thinkingSelectorSelectedLevel(state))}|${state.filteredCount}|${state.query.length}`;
+}
+
+
+function runCliSelectorsThinkingSelectorSetQuery() {
+	const levels = ["off", "low", "high"];
+	const make = () =>
+		makeThinkingSelectorState({ levels, currentLevel: "high" });
+	const clear = make();
+	thinkingSelectorSetQuery(clear, "off");
+	return {
+		tsq_empty: thinkingSelectorSetQueryEncoded(make(), ""),
+		tsq_off: thinkingSelectorSetQueryEncoded(make(), "off"),
+		tsq_high: thinkingSelectorSetQueryEncoded(make(), "high"),
+		tsq_miss: thinkingSelectorSetQueryEncoded(make(), "zzzzz"),
+		tsq_nil: thinkingSelectorSetQueryEncoded(make(), null),
+		tsq_clear: thinkingSelectorSetQueryEncoded(clear, ""),
+	};
+}
+
+
+function thinkingSelectorSelectCurrent(state) {
+	const index = state.filteredLevels.indexOf(state.currentLevel);
+	state.selected = index >= 0 ? index : 0;
+	return state;
+}
+
+
+function thinkingSelectorSelectedLevel(state) {
+	const level = state.filteredLevels[state.selected];
+	return level === undefined ? null : level;
+}
+
+
+function thinkingLevelName(level) {
+	return level ? thinkingLevelLabel(level) : "";
+}
+
+
+function runCliSelectorsThinkingLevelLabel() {
+	return {
+		tll_off: thinkingLevelLabel("off"),
+		tll_minimal: thinkingLevelLabel("minimal"),
+		tll_xhigh: thinkingLevelLabel("xhigh"),
+		tll_max: thinkingLevelLabel("max"),
+		tll_low: thinkingLevelLabel("low"),
+		tll_bogus: thinkingLevelLabel("bogus"),
+	};
+}
+
+
+function runCliSelectorsThinkingLevelSearchText() {
+	return {
+		tlst_off: thinkingLevelSearchText("off"),
+		tlst_minimal: thinkingLevelSearchText("minimal"),
+		tlst_high: thinkingLevelSearchText("high"),
+		tlst_xhigh: thinkingLevelSearchText("xhigh"),
+		tlst_max: thinkingLevelSearchText("max"),
+		tlst_bogus: thinkingLevelSearchText("bogus"),
 	};
 }
 

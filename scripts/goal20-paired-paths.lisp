@@ -14676,6 +14676,93 @@
    "ldd_n" (nth 4 device)
    "ldd_hint" (nth 5 device)))
 
+(defun thinking-level-name (level)
+  (if level
+      (string-downcase (symbol-name level))
+      ""))
+
+
+(defun run-cli-selectors-thinking-level-label ()
+  (list
+   (cadr-cli::thinking-level-label :off)
+   (cadr-cli::thinking-level-label :minimal)
+   (cadr-cli::thinking-level-label :xhigh)
+   (cadr-cli::thinking-level-label :max)
+   (cadr-cli::thinking-level-label :low)
+   (cadr-cli::thinking-level-label :bogus)))
+
+
+(defun run-cli-selectors-thinking-level-search-text ()
+  (list
+   (cadr-cli::thinking-level-search-text :off)
+   (cadr-cli::thinking-level-search-text :minimal)
+   (cadr-cli::thinking-level-search-text :high)
+   (cadr-cli::thinking-level-search-text :xhigh)
+   (cadr-cli::thinking-level-search-text :max)
+   (cadr-cli::thinking-level-search-text :bogus)))
+
+
+(defun thinking-selector-set-query-encoded (state query)
+  (cadr-cli::thinking-selector-set-query state query)
+  (format
+   nil "~A|~A|~A"
+   (thinking-level-name
+    (cadr-cli::thinking-selector-selected-level state))
+   (cadr-cli::thinking-selector-state-filtered-count state)
+   (length (cadr-cli::thinking-selector-state-query state))))
+
+
+(defun run-cli-selectors-thinking-selector-set-query ()
+  (let ((levels (list :off :low :high)))
+    (list
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      "")
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      "off")
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      "high")
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      "zzzzz")
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      nil)
+     (let ((state
+             (cadr-cli::make-thinking-selector-state
+              :levels levels :current-level :high :keybindings :bench)))
+       (cadr-cli::thinking-selector-set-query state "off")
+       (thinking-selector-set-query-encoded state "")))))
+
+
+(defun thinking-selector-observed-pairs (label search set-query)
+  (list
+   "tll_off" (nth 0 label)
+   "tll_minimal" (nth 1 label)
+   "tll_xhigh" (nth 2 label)
+   "tll_max" (nth 3 label)
+   "tll_low" (nth 4 label)
+   "tll_bogus" (nth 5 label)
+   "tlst_off" (nth 0 search)
+   "tlst_minimal" (nth 1 search)
+   "tlst_high" (nth 2 search)
+   "tlst_xhigh" (nth 3 search)
+   "tlst_max" (nth 4 search)
+   "tlst_bogus" (nth 5 search)
+   "tsq_empty" (nth 0 set-query)
+   "tsq_off" (nth 1 set-query)
+   "tsq_high" (nth 2 set-query)
+   "tsq_miss" (nth 3 set-query)
+   "tsq_nil" (nth 4 set-query)
+   "tsq_clear" (nth 5 set-query)))
+
 (defun run-cli-selectors-session-format-age ()
   (let ((now *session-format-age-now*))
     (list
