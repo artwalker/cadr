@@ -877,6 +877,48 @@
    "piUs": 0.370,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 424,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/stdin-buffer.lisp",
+   "measure": "measure-tui-stdin-buffer",
+   "metric": "tui_stdin_buffer.flush",
+   "branch": "cursor/pair-tui-stdin-leftover-424-426-8d33",
+   "ratio": 0.139,
+   "cadrUs": 0.392,
+   "piUs": 2.818,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 425,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/stdin-buffer.lisp",
+   "measure": "measure-tui-stdin-buffer",
+   "metric": "tui_stdin_buffer.clear",
+   "branch": "cursor/pair-tui-stdin-leftover-424-426-8d33",
+   "ratio": 0.172,
+   "cadrUs": 0.710,
+   "piUs": 4.129,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 426,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/stdin-buffer.lisp",
+   "measure": "measure-tui-stdin-buffer",
+   "metric": "tui_stdin_buffer.contents",
+   "branch": "cursor/pair-tui-stdin-leftover-424-426-8d33",
+   "ratio": 0.155,
+   "cadrUs": 0.715,
+   "piUs": 4.615,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
