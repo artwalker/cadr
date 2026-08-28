@@ -377,6 +377,10 @@ RATIO_CEILINGS = {
     # settings_load.config_paths pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "settings_load.config_paths": 8.0,
+    # settings_load SDK leftover trio (samples=5): observed
+    # sdk_nonempty 3.32x (20.85 / 6.28 us), sdk_boolean 2.14x
+    # (13.42 / 6.28 us), sdk_tools 2.04x (12.77 / 6.27 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
     "settings_load.sdk_nonempty": 8.0,
     "settings_load.sdk_boolean": 8.0,
     "settings_load.sdk_tools": 8.0,
