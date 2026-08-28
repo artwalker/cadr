@@ -576,6 +576,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.scoped_models_selector_rebuild_items" . 50)
+    ("cli_selectors.scoped_models_selector_apply_filter" . 50)
+    ("cli_selectors.scoped_models_selector_visible_items" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13713,7 +13716,7 @@
       models '("google/gemini-2.5-pro") :persist-callback t))))
 
 (defun scoped-models-selector-tail-observed-pairs
-    (reorder persist provider-count)
+    (reorder persist provider-count rebuild-items apply-filter visible-items)
   (append
     (list
      "smsror_down" (nth 0 reorder)
@@ -13728,7 +13731,9 @@
      "smsper_empty" (nth 3 persist)
      "smsper_two" (nth 4 persist)
      "smsper_single" (nth 5 persist))
-    (scoped-models-provider-count-observed-pairs provider-count)))
+    (scoped-models-provider-count-observed-pairs provider-count)
+    (scoped-models-rebuild-filter-visible-observed-pairs
+     rebuild-items apply-filter visible-items)))
 
 (defun scoped-models-provider-count-observed-pairs (results)
   (list
@@ -13763,6 +13768,105 @@
       (cadr-cli::make-scoped-models-selector-state
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
+
+(defun make-scoped-models-filter-bench-state
+    (models enabled-ids &key (query ""))
+  (cadr-cli::%make-scoped-models-selector-state
+   :all-models (copy-list models)
+   :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+   :enabled-ids
+   (cadr-cli::scoped-models-copy-enabled enabled-ids)
+   :query (or query "")))
+
+(defun encode-scoped-model-item-ids (items)
+  (format
+   nil
+   "~{~a~^,~}"
+   (mapcar
+    (lambda (item)
+      (let ((id (getf item :id)))
+        (cond
+          ((stringp id) id)
+          ((null id) "")
+          (t (coerce id 'string)))))
+    items)))
+
+(defun encode-scoped-models-selector-rebuild-items (models enabled-ids)
+  (let ((state
+          (make-scoped-models-filter-bench-state models enabled-ids)))
+    (cadr-cli::scoped-models-selector-rebuild-items state)
+    (encode-scoped-model-item-ids
+     (cadr-cli::scoped-models-selector-state-items state))))
+
+(defun run-cli-selectors-scoped-models-selector-rebuild-items ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-rebuild-items models :all)
+     (encode-scoped-models-selector-rebuild-items models partial)
+     (encode-scoped-models-selector-rebuild-items models '())
+     (encode-scoped-models-selector-rebuild-items nil :all)
+     (encode-scoped-models-selector-rebuild-items
+      models '("anthropic/claude-sonnet-4")))))
+
+(defun encode-scoped-models-selector-apply-filter
+    (models enabled-ids query)
+  (let ((state
+          (make-scoped-models-filter-bench-state
+           models enabled-ids :query query)))
+    (cadr-cli::scoped-models-selector-rebuild-items state)
+    (cadr-cli::scoped-models-selector-apply-filter state)
+    (encode-scoped-model-item-ids
+     (cadr-cli::scoped-models-selector-state-visible-items
+      state))))
+
+(defun run-cli-selectors-scoped-models-selector-apply-filter ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-apply-filter models :all "")
+     (encode-scoped-models-selector-apply-filter models :all "gpt")
+     (encode-scoped-models-selector-apply-filter models :all "nope")
+     (encode-scoped-models-selector-apply-filter models partial "gpt")
+     (encode-scoped-models-selector-apply-filter nil :all ""))))
+
+(defun encode-scoped-models-selector-visible-items
+    (models enabled-ids query)
+  (let ((state
+          (make-scoped-models-filter-bench-state
+           models enabled-ids :query query)))
+    (encode-scoped-model-item-ids
+     (cadr-cli::scoped-models-selector-visible-items state))))
+
+(defun run-cli-selectors-scoped-models-selector-visible-items ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-visible-items models :all "")
+     (encode-scoped-models-selector-visible-items models :all "gpt")
+     (encode-scoped-models-selector-visible-items models :all "nope")
+     (encode-scoped-models-selector-visible-items nil :all "")
+     (encode-scoped-models-selector-visible-items
+      models partial ""))))
+
+(defun scoped-models-rebuild-filter-visible-observed-pairs
+    (rebuild-items apply-filter visible-items)
+  (list
+   "smri_all" (nth 0 rebuild-items)
+   "smri_partial" (nth 1 rebuild-items)
+   "smri_none" (nth 2 rebuild-items)
+   "smri_empty" (nth 3 rebuild-items)
+   "smri_single" (nth 4 rebuild-items)
+   "smaf_all" (nth 0 apply-filter)
+   "smaf_gpt" (nth 1 apply-filter)
+   "smaf_miss" (nth 2 apply-filter)
+   "smaf_partial" (nth 3 apply-filter)
+   "smaf_empty" (nth 4 apply-filter)
+   "smvi_all" (nth 0 visible-items)
+   "smvi_gpt" (nth 1 visible-items)
+   "smvi_miss" (nth 2 visible-items)
+   "smvi_empty" (nth 3 visible-items)
+   "smvi_partial" (nth 4 visible-items)))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list
@@ -14022,7 +14126,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (rebuild-items-obs
+          (run-cli-selectors-scoped-models-selector-rebuild-items))
+        (apply-filter-obs
+          (run-cli-selectors-scoped-models-selector-apply-filter))
+        (visible-items-obs
+          (run-cli-selectors-scoped-models-selector-visible-items)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14865,10 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs
+              rebuild-items-obs
+              apply-filter-obs
+              visible-items-obs)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15516,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "scoped_models_selector_rebuild_items"
+     (collect "cli_selectors.scoped_models_selector_rebuild_items"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-rebuild-items))))
+     "scoped_models_selector_apply_filter"
+     (collect "cli_selectors.scoped_models_selector_apply_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-apply-filter))))
+     "scoped_models_selector_visible_items"
+     (collect "cli_selectors.scoped_models_selector_visible_items"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-visible-items)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17044,6 +17172,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.scoped_models_selector_rebuild_items"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-rebuild-items"
+      "cli_selectors.scoped_models_selector_apply_filter"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-apply-filter"
+      "cli_selectors.scoped_models_selector_visible_items"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-visible-items"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
