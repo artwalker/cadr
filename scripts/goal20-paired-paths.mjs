@@ -262,6 +262,9 @@ const REPETITIONS = {
 	"ai_support.uuid_v7": 50,
 	"ai_support.auth_guidance": 50,
 	"tui_select_settings_loaders.filter": 50,
+	"tui_select_settings_loaders.make_loader_component": 50,
+	"tui_select_settings_loaders.set_message": 50,
+	"tui_select_settings_loaders.set_indicator": 50,
 	"tui_word_navigation.step": 50,
 	"tui_overlay.composite_line": 50,
 	"tui_kill_ring.push_peek": 50,
@@ -798,6 +801,7 @@ const authGuidanceModule = await import(
 const overflowModule = await import(moduleUrl("packages/ai/src/utils/overflow.ts"));
 const grammarModule = await import(moduleUrl("packages/ai/src/api/constrained-sampling.ts"));
 const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
+const loaderModule = await import(moduleUrl("packages/tui/src/components/loader.ts"));
 const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navigation.ts"));
 const tuiModule = await import(moduleUrl("packages/tui/src/tui.ts"));
 const killRingModule = await import(moduleUrl("packages/tui/src/kill-ring.ts"));
@@ -7555,13 +7559,80 @@ function runTuiSelectList() {
 	};
 }
 
+function loaderTextHas(loader, needle) {
+	return typeof loader.text === "string" && loader.text.includes(needle) ? 1 : 0;
+}
+
+function makeStoppedBenchLoader(frames = ["a", "b"], message = "Loading...") {
+	const ui = { requestRender() {} };
+	const loader = new loaderModule.Loader(ui, (text) => text, (text) => text, message, {
+		frames,
+	});
+	loader.stop();
+	return loader;
+}
+
+function runTuiLoaderMake() {
+	const loader = makeStoppedBenchLoader();
+	const hasA = loaderTextHas(loader, "a Loading...");
+	const nframes = loader.frames.length;
+	loader.stop();
+	return { ml_has_a: hasA, ml_frames: nframes, ml_n: 2 };
+}
+
+function runTuiLoaderSetMessage() {
+	const loader = makeStoppedBenchLoader();
+	loader.setMessage("Working");
+	const working = loaderTextHas(loader, "Working");
+	const kept = loaderTextHas(loader, "a ");
+	loader.stop();
+	return { sm_working: working, sm_kept_a: kept, sm_n: 2 };
+}
+
+function runTuiLoaderSetIndicator() {
+	const loader = makeStoppedBenchLoader();
+	loader.setIndicator({ frames: ["x", "y"], intervalMs: 200 });
+	loader.stop();
+	const hasX = loaderTextHas(loader, "x Loading...");
+	const nframes = loader.frames.length;
+	return { si_has_x: hasX, si_frames: nframes, si_n: 2 };
+}
+
 async function measureTuiSelectList() {
 	const observed = runTuiSelectList();
+	const make = runTuiLoaderMake();
+	const message = runTuiLoaderSetMessage();
+	const indicator = runTuiLoaderSetIndicator();
 	return {
 		filter: await collect("tui_select_settings_loaders.filter", () => {
 			return () => runTuiSelectList();
 		}),
-		observed,
+		make_loader_component: await collect(
+			"tui_select_settings_loaders.make_loader_component",
+			() => {
+				return () => {
+					const loader = makeStoppedBenchLoader();
+					return loader;
+				};
+			},
+		),
+		set_message: await collect("tui_select_settings_loaders.set_message", () => {
+			const loader = makeStoppedBenchLoader();
+			return () => loader.setMessage("Working");
+		}),
+		set_indicator: await collect("tui_select_settings_loaders.set_indicator", () => {
+			const loader = makeStoppedBenchLoader();
+			return () => {
+				loader.setIndicator({ frames: ["x", "y"], intervalMs: 200 });
+				loader.stop();
+			};
+		}),
+		observed: {
+			...observed,
+			...make,
+			...message,
+			...indicator,
+		},
 	};
 }
 
@@ -17048,6 +17119,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelsAvailableMessage",
 			"tui_select_settings_loaders.filter":
 				"packages/tui/src/components/select-list.ts SelectList.setFilter",
+			"tui_select_settings_loaders.make_loader_component":
+				"packages/tui/src/components/loader.ts Loader constructor (then stop; skip start/run threads)",
+			"tui_select_settings_loaders.set_message":
+				"packages/tui/src/components/loader.ts Loader.setMessage",
+			"tui_select_settings_loaders.set_indicator":
+				"packages/tui/src/components/loader.ts Loader.setIndicator (then stop; skip start/run threads)",
 			"tui_word_navigation.step":
 				"packages/tui/src/word-navigation.ts findWordBackward + findWordForward",
 			"tui_overlay.composite_line":

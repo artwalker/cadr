@@ -144,7 +144,7 @@ METRICS = {
     "tui_editor_helpers": ("fuzzy_match",),
     "tui_theme_overlay": ("osc11_bg",),
     "ai_support": ("estimate_text", "context_overflow", "grammar_delta", "uuid_v7", "auth_guidance"),
-    "tui_select_settings_loaders": ("filter",),
+    "tui_select_settings_loaders": ("filter", "make_loader_component", "set_message", "set_indicator"),
     "tui_word_navigation": ("step",),
     "tui_overlay": ("composite_line",),
     "tui_kill_ring": ("push_peek",),
@@ -668,6 +668,12 @@ RATIO_CEILINGS = {
     # 1.27x (1.2 / 1.0 us). 8.0 follows the microsecond-floor
     # first-freeze headroom. Ratchet down only.
     "tui_select_settings_loaders.filter": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_select_settings_loaders leftover trio 415-417 (samples=5):
+    # first-freeze headroom 8.0. Ratchet down only.
+    "tui_select_settings_loaders.make_loader_component": 8.0,
+    "tui_select_settings_loaders.set_message": 8.0,
+    "tui_select_settings_loaders.set_indicator": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # tui_word_navigation pair (samples=5): observed 0.17x
     # (0.94 / 5.4 us). cadr leads. 8.0 is first-freeze
@@ -2195,6 +2201,15 @@ OBSERVED_EXACT = {
         "he_first",
         "wo_count",
         "zz_count",
+        "ml_has_a",
+        "ml_frames",
+        "ml_n",
+        "sm_working",
+        "sm_kept_a",
+        "sm_n",
+        "si_has_x",
+        "si_frames",
+        "si_n",
     ),
     "tui_word_navigation": (
         "back_from_space",

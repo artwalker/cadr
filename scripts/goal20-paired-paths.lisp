@@ -37,6 +37,9 @@
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
 ;;;;  24. ai_support estimate-text-tokens vs estimateTextTokens
 ;;;;  25. tui_select_settings_loaders select-list filter vs SelectList.setFilter
+;;;; 415. tui_select_settings_loaders make-loader-component vs Loader constructor
+;;;; 416. tui_select_settings_loaders loader-component-set-message vs Loader.setMessage
+;;;; 417. tui_select_settings_loaders loader-component-set-indicator vs Loader.setIndicator
 ;;;;  26. tui_word_navigation find-word-backward/forward vs findWordBackward/Forward
 ;;;;  27. tui_overlay composite-overlay-line vs compositeTuiLine
 ;;;;  28. tui_kill_ring kill-ring-push/peek/rotate vs KillRing
@@ -408,6 +411,9 @@
     ("ai_support.uuid_v7" . 50)
     ("ai_support.auth_guidance" . 50)
     ("tui_select_settings_loaders.filter" . 50)
+    ("tui_select_settings_loaders.make_loader_component" . 50)
+    ("tui_select_settings_loaders.set_message" . 50)
+    ("tui_select_settings_loaders.set_indicator" . 50)
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
     ("tui_kill_ring.push_peek" . 50)
@@ -8462,20 +8468,91 @@
      (select-list-filter-count list "wo")
      (select-list-filter-count list "zz"))))
 
+(defun loader-text-has (loader needle)
+  (if (search needle (cadr-tui:text-component-text loader))
+      1
+      0))
+
+(defun make-bench-loader
+    (&key (frames '("a" "b")) (message "Loading..."))
+  (cadr-tui:make-loader-component
+   (lambda ()) #'identity #'identity
+   :message message
+   :indicator-frames frames
+   :start-p nil))
+
+(defun run-tui-loader-make ()
+  (let ((loader (make-bench-loader)))
+    (let ((has-a (loader-text-has loader "a Loading..."))
+          (nframes
+            (length (cadr-tui::loader-component-frames loader))))
+      (cadr-tui:component-dispose loader)
+      (list has-a nframes 2))))
+
+(defun run-tui-loader-set-message ()
+  (let ((loader (make-bench-loader)))
+    (cadr-tui:loader-component-set-message loader "Working")
+    (let ((working (loader-text-has loader "Working"))
+          (kept (loader-text-has loader "a ")))
+      (cadr-tui:component-dispose loader)
+      (list working kept 2))))
+
+(defun run-tui-loader-set-indicator ()
+  (let ((loader (make-bench-loader)))
+    (cadr-tui:loader-component-set-indicator
+     loader :frames '("x" "y") :interval-seconds 0.2d0 :start-p nil)
+    (let ((has-x (loader-text-has loader "x Loading..."))
+          (nframes
+            (length (cadr-tui::loader-component-frames loader))))
+      (cadr-tui:component-dispose loader)
+      (list has-x nframes 2))))
+
 (defun measure-tui-select-list ()
-  (let ((observed (run-tui-select-list)))
+  (let ((observed (run-tui-select-list))
+        (make (run-tui-loader-make))
+        (message (run-tui-loader-set-message))
+        (indicator (run-tui-loader-set-indicator)))
     (json-object
      "observed"
      (json-object
       "he_count" (first observed)
       "he_first" (second observed)
       "wo_count" (third observed)
-      "zz_count" (fourth observed))
+      "zz_count" (fourth observed)
+      "ml_has_a" (first make)
+      "ml_frames" (second make)
+      "ml_n" (third make)
+      "sm_working" (first message)
+      "sm_kept_a" (second message)
+      "sm_n" (third message)
+      "si_has_x" (first indicator)
+      "si_frames" (second indicator)
+      "si_n" (third indicator))
      "filter"
      (collect "tui_select_settings_loaders.filter"
               (lambda ()
                 (lambda ()
-                  (run-tui-select-list)))))))
+                  (run-tui-select-list))))
+     "make_loader_component"
+     (collect "tui_select_settings_loaders.make_loader_component"
+              (lambda ()
+                (lambda ()
+                  (make-bench-loader))))
+     "set_message"
+     (collect "tui_select_settings_loaders.set_message"
+              (lambda ()
+                (let ((loader (make-bench-loader)))
+                  (lambda ()
+                    (cadr-tui:loader-component-set-message
+                     loader "Working")))))
+     "set_indicator"
+     (collect "tui_select_settings_loaders.set_indicator"
+              (lambda ()
+                (let ((loader (make-bench-loader)))
+                  (lambda ()
+                    (cadr-tui:loader-component-set-indicator
+                     loader :frames '("x" "y")
+                     :interval-seconds 0.2d0 :start-p nil))))))))
 
 (defparameter *word-nav-text* "hello world")
 
@@ -16674,6 +16751,12 @@
       "src/cadr-ai/support/release.lisp no-models-available-message"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
+      "tui_select_settings_loaders.make_loader_component"
+      "src/cadr-tui/composition/loaders.lisp make-loader-component"
+      "tui_select_settings_loaders.set_message"
+      "src/cadr-tui/composition/loaders.lisp loader-component-set-message"
+      "tui_select_settings_loaders.set_indicator"
+      "src/cadr-tui/composition/loaders.lisp loader-component-set-indicator"
       "tui_word_navigation.step"
       "src/cadr-tui/word-navigation.lisp find-word-backward + find-word-forward"
       "tui_overlay.composite_line"
