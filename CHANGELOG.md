@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `execution_env.absolute_path` /
+  `join_path` / `file_info` (`src/cadr-agent/execution-env.lisp` vs
+  baseline `NodeExecutionEnv.absolutePath` / `joinPath` / `fileInfo`).
+  Observed `ap_*` / `jp_*` / `fi_*` exact. Measure-only leftover
+  (Pairs 391–393). Gate `--only-enforce` pending freeze. No `src/`
+  optimization. Does not touch `file-mutation-queue.lisp`. `nextPairNum`
+  stays 328.
+
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.

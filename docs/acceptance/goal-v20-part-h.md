@@ -4005,6 +4005,46 @@ scratch only. Observed `ex_missing` / `ex_present` / `ex_after_rm` /
 First Friend-MachineD freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`.
 Same commit no optimize.
 
+### Pair 391 — `execution_env` (absolute_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `absolute_path` | `execution-env-absolute-path` (`src/cadr-agent/execution-env.lisp`) | `NodeExecutionEnv.absolutePath` / `resolvePath` (`packages/agent/src/harness/env/nodejs.ts`) |
+
+Leftover sibling of Pair 257 `exists_remove_temps` on the same
+`execution-env.lisp` `agent_tool_loop` hole. Timed work is resolving a
+relative leaf, an absolute `/tmp` path, a `~/` home path, and a
+`file://` URL — not exists/remove/temps, not join, not fileInfo, not
+exec. Observed `ap_rel` / `ap_abs` / `ap_home` / `ap_file` / `ap_n` are
+exact. First n=5 freeze pending `--only-enforce`. Same commit no
+optimize. Pair numbers 328–330 belong to the in-flight
+`file-mutation-queue.lisp` knife; this cut is 391–393 only.
+
+### Pair 392 — `execution_env` (join_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `join_path` | `execution-env-join-path` (`src/cadr-agent/execution-env.lisp`) | `NodeExecutionEnv.joinPath` (`packages/agent/src/harness/env/nodejs.ts`) |
+
+Leftover sibling of Pair 391 `absolute_path` on the same
+`execution-env.lisp` hole. Timed work is joining relative `a`/`b` plus
+an absolute `/tmp/goal20-jp-abs`/`x`/`y` — not absolutePath, not
+fileInfo, not exists/remove. Observed `jp_rel` / `jp_abs` / `jp_n` are
+exact. First n=5 freeze pending `--only-enforce`. Same commit no
+optimize.
+
+### Pair 393 — `execution_env` (file_info)
+
+| metric | cadr | pi |
+|---|---|---|
+| `file_info` | `execution-env-file-info` (`src/cadr-agent/execution-env.lisp`) | `NodeExecutionEnv.fileInfo` (`packages/agent/src/harness/env/nodejs.ts`) |
+
+Leftover sibling of Pair 391 `absolute_path` and Pair 392 `join_path` on
+the same `execution-env.lisp` hole. Timed work is `lstat` name/kind/size
+of a staged `info.txt` — not write as the timed owner, not exists, not
+listDir. Observed `fi_name` / `fi_kind` / `fi_size` / `fi_n` are exact.
+First n=5 freeze pending `--only-enforce`. Same commit no optimize.
+
 ### Pair 256 — `resource_loader` (dedupe_by_name)
 
 | metric | cadr | pi |
@@ -4498,7 +4538,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-agent/branch-summarization.lisp` | 184 | `session_compact.branch_summarize`, `session_compact.prepare_branch_entries` |
 | `src/cadr-agent/compaction.lisp` | 943 | `session_compact.compact` |
 | `src/cadr-agent/conditions.lisp` | 43 | `agent_conditions.error_probe` |
-| `src/cadr-agent/execution-env.lisp` | 855 | `execution_env.exists_remove_temps` |
+| `src/cadr-agent/execution-env.lisp` | 855 | `execution_env.exists_remove_temps`, `execution_env.absolute_path`, `execution_env.join_path`, `execution_env.file_info` |
 | `src/cadr-agent/loop/agent-loop.lisp` | 445 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/events.lisp` | 169 | `agent_tool_loop.roundtrip` |
 | `src/cadr-agent/loop/tool-execution.lisp` | 489 | `agent_tool_loop.roundtrip` |

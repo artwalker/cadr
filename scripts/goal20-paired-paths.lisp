@@ -98,6 +98,9 @@
 ;;;; 254. session_discovery list-sessions vs SessionManager.listAll
 ;;;; 254. agent_conditions error-slot probe vs agent error shapes
 ;;;; 257. execution_env exists/remove/temps vs NodeExecutionEnv exists/remove/createTemp*
+;;;; 391. execution_env absolutePath vs execution-env-absolute-path
+;;;; 392. execution_env joinPath vs execution-env-join-path
+;;;; 393. execution_env fileInfo vs execution-env-file-info
 ;;;; 261. file_mutation_queue withFileMutationQueue vs with-file-mutation-queue
 ;;;; 270. file_mutation_queue queue key (realpath) vs file-mutation-queue-key
 ;;;; 271. file_mutation_queue queue-map get-or-create vs file-mutation-queue-lock
@@ -294,6 +297,9 @@
     ("cli_settings.block_images" . 50)
     ("agent_conditions.error_probe" . 50)
     ("execution_env.exists_remove_temps" . 50)
+    ("execution_env.absolute_path" . 50)
+    ("execution_env.join_path" . 50)
+    ("execution_env.file_info" . 50)
     ("file_mutation_queue.with_queue" . 50)
     ("file_mutation_queue.queue_key" . 50)
     ("file_mutation_queue.lock" . 50)
@@ -3117,28 +3123,143 @@
                    rm-force rm-recursive)))
       (cadr-agent:execution-env-cleanup environment))))
 
+;;; Leftover siblings of Pair 257 exists_remove_temps on
+;;; src/cadr-agent/execution-env.lisp (Pairs 391-393).
+;;; Timed owners: execution-env-absolute-path, execution-env-join-path,
+;;; execution-env-file-info — not exists/remove/temps, not exec/spawn.
+
+(defun execution-env-ends-with (text suffix)
+  (and (stringp text)
+       (>= (length text) (length suffix))
+       (string= suffix text :start2 (- (length text) (length suffix)))))
+
+(defun run-execution-env-absolute-path (cwd)
+  (let ((environment (cadr-agent:make-node-execution-env :cwd cwd)))
+    (flet ((truth (value) (execution-env-truth value)))
+      (multiple-value-bind (rel error-rel)
+          (cadr-agent:execution-env-absolute-path environment "rel.txt")
+        (multiple-value-bind (abs error-abs)
+            (cadr-agent:execution-env-absolute-path
+             environment "/tmp/goal20-ap-abs")
+          (multiple-value-bind (home error-home)
+              (cadr-agent:execution-env-absolute-path
+               environment "~/goal20-ap-home")
+            (multiple-value-bind (file-url error-file)
+                (cadr-agent:execution-env-absolute-path
+                 environment "file:///tmp/goal20-ap-file")
+              (list
+               (truth
+                (and (null error-rel)
+                     (execution-env-ends-with rel "/rel.txt")
+                     (and (plusp (length rel))
+                          (char= (char rel 0) #\/))))
+               (truth
+                (and (null error-abs)
+                     (string= abs "/tmp/goal20-ap-abs")))
+               (truth
+                (and (null error-home)
+                     (execution-env-ends-with home "goal20-ap-home")))
+               (truth
+                (and (null error-file)
+                     (string= file-url "/tmp/goal20-ap-file")))
+               4))))))))
+
+(defun run-execution-env-join-path (cwd)
+  (let ((environment (cadr-agent:make-node-execution-env :cwd cwd)))
+    (flet ((truth (value) (execution-env-truth value)))
+      (multiple-value-bind (rel error-rel)
+          (cadr-agent:execution-env-join-path environment '("a" "b"))
+        (multiple-value-bind (abs error-abs)
+            (cadr-agent:execution-env-join-path
+             environment '("/tmp/goal20-jp-abs" "x" "y"))
+          (list
+           (truth
+            (and (null error-rel)
+                 (execution-env-ends-with rel "a/b")))
+           (truth
+            (and (null error-abs)
+                 (string= abs "/tmp/goal20-jp-abs/x/y")))
+           2))))))
+
+(defun stage-execution-env-info-file (cwd)
+  (let ((environment (cadr-agent:make-node-execution-env :cwd cwd)))
+    (cadr-agent:execution-env-write-file environment "info.txt" "hello")
+    environment))
+
+(defun run-execution-env-file-info (environment)
+  (flet ((truth (value) (execution-env-truth value)))
+    (multiple-value-bind (info error)
+        (cadr-agent:execution-env-file-info environment "info.txt")
+      (list
+       (truth
+        (and (null error)
+             (string= (cadr-agent:execution-file-info-name info)
+                      "info.txt")))
+       (truth
+        (and (null error)
+             (eq (cadr-agent:execution-file-info-kind info) :file)))
+       (if (and (null error) info)
+           (cadr-agent:execution-file-info-size info)
+           0)
+       3))))
+
 (defun measure-execution-env ()
-  (let ((cwd (stage-execution-env-cwd)))
+  (let* ((cwd (stage-execution-env-cwd))
+         (info-environment (stage-execution-env-info-file cwd)))
     (destructuring-bind
           (ex-missing ex-present ex-after-rm tmp-dir tmp-file tmp-suffix
            rm-force rm-recursive)
         (run-execution-env-exists-remove-temps cwd)
-      (json-object
-       "observed"
-       (json-object
-        "ex_missing" ex-missing
-        "ex_present" ex-present
-        "ex_after_rm" ex-after-rm
-        "tmp_dir" tmp-dir
-        "tmp_file" tmp-file
-        "tmp_suffix" tmp-suffix
-        "rm_force" rm-force
-        "rm_recursive" rm-recursive)
-       "exists_remove_temps"
-       (collect "execution_env.exists_remove_temps"
-                (lambda ()
-                  (lambda ()
-                    (run-execution-env-exists-remove-temps cwd))))))))
+      (destructuring-bind (ap-rel ap-abs ap-home ap-file ap-n)
+          (run-execution-env-absolute-path cwd)
+        (destructuring-bind (jp-rel jp-abs jp-n)
+            (run-execution-env-join-path cwd)
+          (destructuring-bind (fi-name fi-kind fi-size fi-n)
+              (run-execution-env-file-info info-environment)
+            (json-object
+             "observed"
+             (json-object
+              "ex_missing" ex-missing
+              "ex_present" ex-present
+              "ex_after_rm" ex-after-rm
+              "tmp_dir" tmp-dir
+              "tmp_file" tmp-file
+              "tmp_suffix" tmp-suffix
+              "rm_force" rm-force
+              "rm_recursive" rm-recursive
+              "ap_rel" ap-rel
+              "ap_abs" ap-abs
+              "ap_home" ap-home
+              "ap_file" ap-file
+              "ap_n" ap-n
+              "jp_rel" jp-rel
+              "jp_abs" jp-abs
+              "jp_n" jp-n
+              "fi_name" fi-name
+              "fi_kind" fi-kind
+              "fi_size" fi-size
+              "fi_n" fi-n)
+             "exists_remove_temps"
+             (collect "execution_env.exists_remove_temps"
+                      (lambda ()
+                        (lambda ()
+                          (run-execution-env-exists-remove-temps cwd))))
+             "absolute_path"
+             (collect "execution_env.absolute_path"
+                      (lambda ()
+                        (lambda ()
+                          (run-execution-env-absolute-path cwd))))
+             "join_path"
+             (collect "execution_env.join_path"
+                      (lambda ()
+                        (lambda ()
+                          (run-execution-env-join-path cwd))))
+             "file_info"
+             (collect "execution_env.file_info"
+                      (lambda ()
+                        (lambda ()
+                          (run-execution-env-file-info
+                           info-environment)))))))))))
 
 
 (defun measure-cli-settings ()
@@ -16300,6 +16421,12 @@
       "src/cadr-agent/conditions.lisp define-condition slot accessors + subtypep"
       "execution_env.exists_remove_temps"
       "src/cadr-agent/execution-env.lisp execution-env-exists-p/remove/create-temp-*"
+      "execution_env.absolute_path"
+      "src/cadr-agent/execution-env.lisp execution-env-absolute-path"
+      "execution_env.join_path"
+      "src/cadr-agent/execution-env.lisp execution-env-join-path"
+      "execution_env.file_info"
+      "src/cadr-agent/execution-env.lisp execution-env-file-info"
       "file_mutation_queue.with_queue"
       "src/cadr-agent/file-mutation-queue.lisp with-file-mutation-queue"
       "file_mutation_queue.queue_key"

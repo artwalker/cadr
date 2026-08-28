@@ -100,7 +100,7 @@ METRICS = {
     "provider_pi_messages": ("stream_roundtrip",),
     "cli_settings": ("create", "reload", "enabled_models", "block_images"),
     "agent_conditions": ("error_probe",),
-    "execution_env": ("exists_remove_temps",),
+    "execution_env": ("exists_remove_temps", "absolute_path", "join_path", "file_info"),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
@@ -269,6 +269,9 @@ RATIO_CEILINGS = {
     # execution_env.exists_remove_temps pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "execution_env.exists_remove_temps": 8.0,
+    "execution_env.absolute_path": 8.0,
+    "execution_env.join_path": 8.0,
+    "execution_env.file_info": 8.0,
     "file_mutation_queue.with_queue": 8.0,
     # file_mutation_queue.queue_key pair (samples=5): first-freeze headroom.
     # Ratchet down only.
@@ -1561,6 +1564,18 @@ OBSERVED_EXACT = {
         "tmp_suffix",
         "rm_force",
         "rm_recursive",
+        "ap_rel",
+        "ap_abs",
+        "ap_home",
+        "ap_file",
+        "ap_n",
+        "jp_rel",
+        "jp_abs",
+        "jp_n",
+        "fi_name",
+        "fi_kind",
+        "fi_size",
+        "fi_n",
     ),
     "file_mutation_queue": (
         "fmq_alias_key",
