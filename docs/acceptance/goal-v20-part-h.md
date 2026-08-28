@@ -5036,6 +5036,50 @@ on the same `loaders.lisp` hole. Timed work is frames/interval replace with
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
 metric did not fail). Same commit no optimize.
 
+### Pair 412 — `evals_harness` (status_name)
+
+| metric | cadr | pi |
+|---|---|---|
+| `status_name` | `reporter-status-name` (`src/cadr-evals/reporter.lisp`) | `test.result().state` lowercasing (`packages/evals/src/vitest-evals/reporter.ts`) |
+
+Leftover of the `evals_harness` hole on `src/cadr-evals/reporter.lisp`. Timed
+work is keyword / uppercase / mixed-case status downcasing — not
+`eval-reporter-record-case`, not JSONL append. Observed `sn_kw` / `sn_str` /
+`sn_mixed` / `sn_n` are exact. First n=5 freeze **1.726×** (0.352 / 0.204 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
+
+### Pair 413 — `evals_harness` (case_observation)
+
+| metric | cadr | pi |
+|---|---|---|
+| `case_observation` | `reporter-case-observation` (`src/cadr-evals/reporter.lisp`) | `collectHarnessObservations` (`packages/evals/src/vitest-evals/reporter.ts`) |
+
+Leftover sibling of Pair 412 `status_name` on the same `evals_harness` hole.
+Timed work is scored / errored-from-errors / unscored-passed / failed-errored
+/ missing-iteration skip — not persist, not finish. Observed `co_scored` /
+`co_err` / `co_unscored` / `co_fail` / `co_miss` / `co_n` are exact. First n=5 freeze **3.069×**
+(9.383 / 3.057 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
+
+### Pair 414 — `evals_harness` (finish)
+
+| metric | cadr | pi |
+|---|---|---|
+| `finish` | `eval-reporter-finish` (`src/cadr-evals/reporter.lisp`) | `onTestRunEnd` (`packages/evals/src/vitest-evals/reporter.ts`) |
+
+Leftover sibling of Pairs 412–413 on the same `evals_harness` hole. Timed
+work is interrupted notice, completed comparison print, and empty-observation
+silence — not record-case, not JSONL. Observed `rf_int` / `rf_cmp` /
+`rf_empty` / `rf_n` are exact. First n=5 freeze **0.701×** (20.345 / 29.007 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -8745,6 +8745,153 @@
        3))))
 
 
+(defun eval-reporter-iteration-artifact ()
+  (cadr-ai::json-object
+   "schemaVersion" 1
+   "evalSet" "extension authoring"
+   "groupKey" "[\"hello\",1]"
+   "harness" "without-docs"
+   "baseline" "without-docs"
+   "candidates" (vector "with-docs")
+   "repetition" 1))
+
+
+(defun eval-reporter-case-for
+    (&key (status :passed) score errors iteration)
+  (let ((artifacts
+          (make-hash-table :test #'equal)))
+    (when iteration
+      (setf (gethash
+             cadr-evals:+eval-harness-iteration-artifact+
+             artifacts)
+            (eval-reporter-iteration-artifact)))
+    (cadr-evals:make-eval-reporter-case
+     :id "case-1"
+     :file "src/extensions.eval.lisp"
+     :name "hello"
+     :full-name "hello"
+     :status status
+     :harness-name "without-docs"
+     :score score
+     :result
+     (cadr-evals::make-eval-result
+      :output "ok"
+      :usage
+      (cadr-ai::json-object
+       "totalTokens" 10
+       "metadata"
+       (cadr-ai::json-object
+        "estimatedCostUsd" 0.01d0))
+      :timings
+      (cadr-ai::json-object "totalMs" 20)
+      :errors errors
+      :artifacts artifacts))))
+
+
+(defun run-evals-harness-status-name ()
+  (list
+   (eval-flag
+    (string=
+     (cadr-evals::reporter-status-name :passed)
+     "passed"))
+   (eval-flag
+    (string=
+     (cadr-evals::reporter-status-name "FAILED")
+     "failed"))
+   (eval-flag
+    (string=
+     (cadr-evals::reporter-status-name "Passed")
+     "passed"))
+   3))
+
+
+(defun eval-observation-outcome-p (case expected)
+  (let ((observation
+          (cadr-evals::reporter-case-observation case)))
+    (and observation
+         (eq (cadr-evals::harness-observation-outcome
+              observation)
+             expected))))
+
+
+(defun run-evals-harness-case-observation ()
+  (let ((scored
+          (cadr-evals::reporter-case-observation
+           (eval-reporter-case-for
+            :status :passed
+            :score 1
+            :iteration t))))
+    (list
+     (eval-flag
+      (and scored
+           (eq (cadr-evals::harness-observation-outcome scored)
+               :scored)
+           (= (cadr-evals::harness-observation-score scored) 1)
+           (string=
+            (cadr-evals::harness-observation-eval-set scored)
+            "extension authoring")))
+     (eval-flag
+      (eval-observation-outcome-p
+       (eval-reporter-case-for
+        :status :passed
+        :score 1
+        :errors '("boom")
+        :iteration t)
+       :errored))
+     (eval-flag
+      (eval-observation-outcome-p
+       (eval-reporter-case-for
+        :status :passed
+        :iteration t)
+       :unscored))
+     (eval-flag
+      (eval-observation-outcome-p
+       (eval-reporter-case-for
+        :status :failed
+        :iteration t)
+       :errored))
+     (eval-flag
+      (null
+       (cadr-evals::reporter-case-observation
+        (eval-reporter-case-for
+         :status :passed
+         :score 1))))
+     5)))
+
+
+(defun run-evals-harness-finish ()
+  (let* ((interrupted-out (make-string-output-stream))
+         (completed-out (make-string-output-stream))
+         (empty-out (make-string-output-stream))
+         (interrupted
+           (cadr-evals:make-eval-harness-reporter
+            :output interrupted-out))
+         (completed
+           (cadr-evals:make-eval-harness-reporter
+            :output completed-out))
+         (empty
+           (cadr-evals:make-eval-harness-reporter
+            :output empty-out)))
+    (setf (cadr-evals:eval-harness-reporter-observations completed)
+          (reverse (evals-harness-observations)))
+    (cadr-evals:eval-reporter-finish interrupted :interrupted)
+    (cadr-evals:eval-reporter-finish completed :completed)
+    (cadr-evals:eval-reporter-finish empty :completed)
+    (list
+     (eval-flag
+      (search
+       "Eval comparisons unavailable: test run interrupted."
+       (get-output-stream-string interrupted-out)))
+     (eval-flag
+      (search
+       "Eval Comparisons"
+       (get-output-stream-string completed-out)))
+     (eval-flag
+      (zerop
+       (length (get-output-stream-string empty-out))))
+     3)))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))

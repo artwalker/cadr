@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.status_name` (`reporter-status-name`
+  on `src/cadr-evals/reporter.lisp` vs baseline `test.result().state`
+  lowercasing). Observed `sn_kw` / `sn_str` / `sn_mixed` / `sn_n` exact.
+  n=5 **1.726×** (0.352 / 0.204 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.case_observation`
+  (`reporter-case-observation` on `src/cadr-evals/reporter.lisp` vs baseline
+  `collectHarnessObservations`). Observed `co_scored` / `co_err` /
+  `co_unscored` / `co_fail` / `co_miss` / `co_n` exact. n=5 **3.069×**
+  (9.383 / 3.057 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum`
+  left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.finish` (`eval-reporter-finish`
+  on `src/cadr-evals/reporter.lisp` vs baseline `onTestRunEnd`). Observed
+  `rf_int` / `rf_cmp` / `rf_empty` / `rf_n` exact. n=5 **0.701×**
+  (20.345 / 29.007 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `tui_select_settings_loaders.make_loader_component`
   (`make-loader-component` on `src/cadr-tui/composition/loaders.lisp` vs baseline
   `Loader` constructor). Skip start/stop/run threads. Observed `ml_has_a` /
