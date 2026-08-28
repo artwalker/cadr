@@ -4068,7 +4068,8 @@ commit no optimize.
 Leftover of the `cli_bootstrap_sessions` hole on `sessions.lisp`. Timed work
 is slash / backslash / `.jsonl` path detection. Observed `sp_id` /
 `sp_slash` / `sp_win` / `sp_jsonl` / `sp_plain` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+**0.752×** (0.294 / 0.391 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Same commit no optimize.
 
 ### Pair 452 — `cli_bootstrap_sessions` (split_command)
 
@@ -4078,8 +4079,9 @@ is slash / backslash / `.jsonl` path detection. Observed `sp_id` /
 
 Leftover sibling of Pair 451 on the same hole. Timed work is trim plus
 first space/tab split. Observed `sc_cmd` / `sc_arg` / `sc_only` /
-`sc_noarg` / `sc_cmd3` / `sc_rest` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+`sc_noarg` / `sc_cmd3` / `sc_rest` are exact. First n=5 freeze **0.937×**
+(0.491 / 0.524 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`.
+Same commit no optimize.
 
 ### Pair 453 — `cli_bootstrap_sessions` (path_argument)
 
@@ -4089,8 +4091,9 @@ first space/tab split. Observed `sc_cmd` / `sc_arg` / `sc_only` /
 
 Leftover sibling of Pairs 451–452 on the same hole. Timed work is the
 path token after a command, including quotes. Observed `pa_plain` /
-`pa_quote` / `pa_empty` / `pa_miss` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+`pa_quote` / `pa_empty` / `pa_miss` are exact. First n=5 freeze **0.598×**
+(0.379 / 0.633 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`.
+Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
