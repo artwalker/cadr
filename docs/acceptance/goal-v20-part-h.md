@@ -4059,6 +4059,41 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 481 — `cli_support` (watch_retry_delay)
+
+| metric | cadr | pi |
+|---|---|---|
+| `watch_retry_delay` | `+fs-watch-retry-delay-milliseconds+` (`src/cadr-cli/support/file-watcher.lisp`) | `FS_WATCH_RETRY_DELAY_MS` (`packages/coding-agent/src/utils/fs-watch.ts`) |
+
+Leftover of the `cli_support` hole on `file-watcher.lisp`. Timed work is
+the 5000ms retry constant — not poll, not native `fs.watch`. Observed
+`rd_eq` / `rd_ms` / `rd_pos` are exact. First n=5 freeze
+**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
+optimize.
+
+### Pair 482 — `cli_support` (close_watcher)
+
+| metric | cadr | pi |
+|---|---|---|
+| `close_watcher` | `close-watcher` (`src/cadr-cli/support/file-watcher.lisp`) | `closeWatcher` (`packages/coding-agent/src/utils/fs-watch.ts`) |
+
+Leftover sibling of Pair 481 on the same hole. Timed work is close on a
+null watcher twice — not start-watch, not thread join. Observed `cl_nil`
+/ `cl_twice` / `cl_ok` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 483 — `cli_support` (watch_signature)
+
+| metric | cadr | pi |
+|---|---|---|
+| `watch_signature` | `watched-path-signature` (`src/cadr-cli/support/file-watcher.lisp`) | `statSync` mtime+size presence (`packages/coding-agent/src/core/footer-data-provider.ts`) |
+
+Leftover sibling of Pairs 481–482 on the same hole. Timed work is missing
+vs present path signature shape — not `watchWithErrorHandler`, not
+poll. Observed `sg_miss` / `sg_hit` / `sg_n` are exact. First n=5 freeze
+**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
+optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

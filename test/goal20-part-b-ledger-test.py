@@ -1324,6 +1324,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ex_zero", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("ex_true", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("ex_nil", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("cli_support.watch_retry_delay", RECORD.METRIC_KEYS)
+        self.assertIn("watch_retry_delay", paired.METRICS["cli_support"])
+        self.assertIn("cli_support.watch_retry_delay", paired.RATIO_CEILINGS)
+        self.assertIn("rd_eq", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("cli_support.close_watcher", RECORD.METRIC_KEYS)
+        self.assertIn("close_watcher", paired.METRICS["cli_support"])
+        self.assertIn("cli_support.close_watcher", paired.RATIO_CEILINGS)
+        self.assertIn("cl_nil", paired.OBSERVED_EXACT["cli_support"])
+        self.assertIn("cli_support.watch_signature", RECORD.METRIC_KEYS)
+        self.assertIn("watch_signature", paired.METRICS["cli_support"])
+        self.assertIn("cli_support.watch_signature", paired.RATIO_CEILINGS)
+        self.assertIn("sg_miss", paired.OBSERVED_EXACT["cli_support"])
         self.assertIn("cl_miss", paired.OBSERVED_EXACT["cli_support"])
 
     def test_cli_interactive_controller_is_a_recorded_metric(self) -> None:

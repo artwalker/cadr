@@ -291,6 +291,9 @@ const REPETITIONS = {
 	"cli_support.user_agent": 50,
 	"cli_support.parse_changelog": 50,
 	"cli_support.experimental": 50,
+	"cli_support.watch_retry_delay": 50,
+	"cli_support.close_watcher": 50,
+	"cli_support.watch_signature": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
@@ -831,6 +834,7 @@ const ansiModule = await import(moduleUrl("packages/coding-agent/src/utils/ansi.
 const pathsModule = await import(moduleUrl("packages/coding-agent/src/utils/paths.ts"));
 const timingsModule = await import(moduleUrl("packages/coding-agent/src/core/timings.ts"));
 const experimentalModule = await import(moduleUrl("packages/coding-agent/src/core/experimental.ts"));
+const fsWatchModule = await import(moduleUrl("packages/coding-agent/src/utils/fs-watch.ts"));
 const eventBusModule = await import(moduleUrl("packages/coding-agent/src/core/event-bus.ts"));
 const attributionModule = await import(
 	moduleUrl("packages/coding-agent/src/core/provider-attribution.ts")
@@ -8458,6 +8462,50 @@ function runCliSupportExperimental() {
 	};
 }
 
+function cliSupportWatchPresentFile() {
+	const watchPath = path.join(scratch, "watch-present.txt");
+	writeFileSync(watchPath, "watched");
+	return watchPath;
+}
+
+function runCliSupportWatchRetryDelay() {
+	return {
+		rd_eq: fsWatchModule.FS_WATCH_RETRY_DELAY_MS === 5000 ? 1 : 0,
+		rd_ms: fsWatchModule.FS_WATCH_RETRY_DELAY_MS,
+		rd_pos: fsWatchModule.FS_WATCH_RETRY_DELAY_MS > 0 ? 1 : 0,
+	};
+}
+
+function runCliSupportCloseWatcher() {
+	try {
+		fsWatchModule.closeWatcher(null);
+		fsWatchModule.closeWatcher(undefined);
+		return { cl_nil: 1, cl_twice: 1, cl_ok: 1 };
+	} catch {
+		return { cl_nil: 0, cl_twice: 0, cl_ok: 0 };
+	}
+}
+
+function watchedPathSignature(filePath) {
+	try {
+		if (!existsSync(filePath)) return null;
+		const stats = statSync(filePath);
+		return [stats.mtimeMs, stats.size];
+	} catch {
+		return null;
+	}
+}
+
+function runCliSupportWatchSignature(missing, present) {
+	const miss = watchedPathSignature(missing);
+	const hit = watchedPathSignature(present);
+	return {
+		sg_miss: miss ? 0 : 1,
+		sg_hit: hit ? 1 : 0,
+		sg_n: Array.isArray(hit) && hit.length === 2 ? 1 : 0,
+	};
+}
+
 function runCliSupportParseChangelog() {
 	const changelogPath = path.join(scratch, "changelog.md");
 	const entries = changelogModule.parseChangelog(changelogPath);
@@ -8488,6 +8536,11 @@ async function measureCliSupportStripAnsi() {
 	writePairedChangelog();
 	const changelog = runCliSupportParseChangelog();
 	const experimental = runCliSupportExperimental();
+	const watchPresent = cliSupportWatchPresentFile();
+	const watchMissing = path.join(scratch, "watch-missing.txt");
+	const retryDelay = runCliSupportWatchRetryDelay();
+	const closeWatcher = runCliSupportCloseWatcher();
+	const watchSignature = runCliSupportWatchSignature(watchMissing, watchPresent);
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -8522,6 +8575,15 @@ async function measureCliSupportStripAnsi() {
 		experimental: await collect("cli_support.experimental", () => {
 			return () => runCliSupportExperimental();
 		}),
+		watch_retry_delay: await collect("cli_support.watch_retry_delay", () => {
+			return () => runCliSupportWatchRetryDelay();
+		}),
+		close_watcher: await collect("cli_support.close_watcher", () => {
+			return () => runCliSupportCloseWatcher();
+		}),
+		watch_signature: await collect("cli_support.watch_signature", () => {
+			return () => runCliSupportWatchSignature(watchMissing, watchPresent);
+		}),
 		observed: {
 			...ansi,
 			...paths,
@@ -8534,6 +8596,9 @@ async function measureCliSupportStripAnsi() {
 			...ua,
 			...changelog,
 			...experimental,
+			...retryDelay,
+			...closeWatcher,
+			...watchSignature,
 		},
 	};
 }
@@ -17167,6 +17232,12 @@ const result = {
 				"packages/coding-agent/src/utils/changelog.ts parseChangelog",
 			"cli_support.experimental":
 				"packages/coding-agent/src/core/experimental.ts areExperimentalFeaturesEnabled",
+			"cli_support.watch_retry_delay":
+				"packages/coding-agent/src/utils/fs-watch.ts FS_WATCH_RETRY_DELAY_MS",
+			"cli_support.close_watcher":
+				"packages/coding-agent/src/utils/fs-watch.ts closeWatcher",
+			"cli_support.watch_signature":
+				"packages/coding-agent/src/core/footer-data-provider.ts statSync mtime+size presence",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":

@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_support.watch_retry_delay`
+  (`+fs-watch-retry-delay-milliseconds+` on
+  `src/cadr-cli/support/file-watcher.lisp` vs `FS_WATCH_RETRY_DELAY_MS`).
+  Observed `rd_eq` / `rd_ms` / `rd_pos` exact. n=5 **RATIO_PLACEHOLDER**.
+  Measure-only leftover (Pair 481). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  unchanged.
+- Goal 20 P.13 leftover: pair `cli_support.close_watcher`
+  (`close-watcher` on `src/cadr-cli/support/file-watcher.lisp` vs
+  `closeWatcher`). Observed `cl_nil` / `cl_twice` / `cl_ok` exact. n=5
+  **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 482). Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `cli_support.watch_signature`
+  (`watched-path-signature` on `src/cadr-cli/support/file-watcher.lisp` vs
+  `statSync` mtime+size presence). Observed `sg_miss` / `sg_hit` / `sg_n`
+  exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 483). Gate
+  rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not
+  this metric.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.

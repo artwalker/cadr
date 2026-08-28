@@ -440,6 +440,9 @@
     ("cli_support.user_agent" . 50)
     ("cli_support.parse_changelog" . 50)
     ("cli_support.experimental" . 50)
+    ("cli_support.watch_retry_delay" . 50)
+    ("cli_support.close_watcher" . 50)
+    ("cli_support.watch_signature" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -9453,6 +9456,46 @@
    (experimental-flag "true")
    (experimental-flag nil)))
 
+(defun cli-support-watch-present-file ()
+  (ensure-directories-exist *scratch-directory*)
+  (let ((path
+          (merge-pathnames
+           "watch-present.txt" *scratch-directory*)))
+    (with-open-file
+        (out path
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create)
+      (write-string "watched" out))
+    path))
+
+(defun run-cli-support-watch-retry-delay ()
+  (list
+   (if (= cadr-cli::+fs-watch-retry-delay-milliseconds+ 5000)
+       1
+       0)
+   cadr-cli::+fs-watch-retry-delay-milliseconds+
+   (if (plusp cadr-cli::+fs-watch-retry-delay-milliseconds+)
+       1
+       0)))
+
+(defun run-cli-support-close-watcher ()
+  (handler-case
+      (progn
+        (cadr-cli::close-watcher nil)
+        (cadr-cli::close-watcher nil)
+        (list 1 1 1))
+    (error ()
+      (list 0 0 0))))
+
+(defun run-cli-support-watch-signature (missing present)
+  (let ((miss (cadr-cli::watched-path-signature missing))
+        (hit (cadr-cli::watched-path-signature present)))
+    (list
+     (if miss 0 1)
+     (if hit 1 0)
+     (if (and (consp hit) (= (length hit) 2)) 1 0))))
+
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
   (let ((ansi (run-cli-support-strip-ansi))
@@ -9465,7 +9508,16 @@
         (git (run-cli-support-git-source))
         (ua (run-cli-support-user-agent))
         (changelog (run-cli-support-parse-changelog))
-        (experimental (run-cli-support-experimental)))
+        (experimental (run-cli-support-experimental))
+        (watch-present (cli-support-watch-present-file))
+        (watch-missing
+          (merge-pathnames
+           "watch-missing.txt" *scratch-directory*))
+        (retry-delay (run-cli-support-watch-retry-delay))
+        (close-watcher (run-cli-support-close-watcher))
+        (watch-signature
+          (run-cli-support-watch-signature
+           watch-missing watch-present)))
     (json-object
      "observed"
      (json-object
@@ -9532,7 +9584,16 @@
       "ex_empty" (nth 1 experimental)
       "ex_zero" (nth 2 experimental)
       "ex_true" (nth 3 experimental)
-      "ex_nil" (nth 4 experimental))
+      "ex_nil" (nth 4 experimental)
+      "rd_eq" (nth 0 retry-delay)
+      "rd_ms" (nth 1 retry-delay)
+      "rd_pos" (nth 2 retry-delay)
+      "cl_nil" (nth 0 close-watcher)
+      "cl_twice" (nth 1 close-watcher)
+      "cl_ok" (nth 2 close-watcher)
+      "sg_miss" (nth 0 watch-signature)
+      "sg_hit" (nth 1 watch-signature)
+      "sg_n" (nth 2 watch-signature))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -9587,7 +9648,23 @@
      (collect "cli_support.experimental"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-experimental)))))))
+                  (run-cli-support-experimental))))
+     "watch_retry_delay"
+     (collect "cli_support.watch_retry_delay"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-watch-retry-delay))))
+     "close_watcher"
+     (collect "cli_support.close_watcher"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-close-watcher))))
+     "watch_signature"
+     (collect "cli_support.watch_signature"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-watch-signature
+                   watch-missing watch-present)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -16808,6 +16885,12 @@
       "src/cadr-cli/support/changelog-share.lisp parse-changelog"
       "cli_support.experimental"
       "src/cadr-cli/support/html.lisp experimental-features-enabled-p"
+      "cli_support.watch_retry_delay"
+      "src/cadr-cli/support/file-watcher.lisp +fs-watch-retry-delay-milliseconds+"
+      "cli_support.close_watcher"
+      "src/cadr-cli/support/file-watcher.lisp close-watcher"
+      "cli_support.watch_signature"
+      "src/cadr-cli/support/file-watcher.lisp watched-path-signature"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"
