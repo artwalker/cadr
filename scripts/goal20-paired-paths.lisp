@@ -20244,6 +20244,130 @@
    (if (cadr-cli::affirmative-response-p "n") 0 1)))
 
 
+(defun bootstrap-cycle-model (id)
+  (cadr-ai:make-model :id id :provider :faux :api :faux))
+
+
+(defun bootstrap-cycle-entries ()
+  (list
+   (list :model (bootstrap-cycle-model "one") :thinking nil)
+   (list :model (bootstrap-cycle-model "two") :thinking :high)
+   (list :model (bootstrap-cycle-model "three") :thinking :off)))
+
+
+(defun bootstrap-cycle-id (entries current direction)
+  (let ((entry
+          (cadr-cli::model-cycle-target-entry
+           entries current direction)))
+    (if entry
+        (cadr-ai:model-id (getf entry :model))
+        "")))
+
+
+(defun run-cli-bootstrap-model-cycle ()
+  (let* ((entries (bootstrap-cycle-entries))
+         (one (getf (first entries) :model))
+         (three (getf (third entries) :model))
+         (missing (bootstrap-cycle-model "missing")))
+    (list
+     (bootstrap-cycle-id entries one :forward)
+     (bootstrap-cycle-id entries one :backward)
+     (bootstrap-cycle-id entries three :forward)
+     (bootstrap-cycle-id entries missing :forward)
+     (if (cadr-cli::model-cycle-target-entry
+          (list (first entries)) one :forward)
+         0
+         1)
+     (if (cadr-cli::model-cycle-target-entry nil one :forward)
+         0
+         1))))
+
+
+(defun bootstrap-scope-entries ()
+  (list
+   (list :model (bootstrap-cycle-model "faux-1") :thinking nil)
+   (list :model (bootstrap-cycle-model "other-1") :thinking :high)))
+
+
+(defun bootstrap-scope-stripped (line)
+  (if line
+      (coerce (cadr-tui:strip-terminal-sequences line) 'string)
+      ""))
+
+
+(defun run-cli-bootstrap-model-scope ()
+  (let* ((entries (bootstrap-scope-entries))
+         (manager (cadr-tui:make-keybindings-manager))
+         (disabled
+           (cadr-tui:make-keybindings-manager
+            :user-bindings
+            '(("app.model.cycleForward" . nil))))
+         (shown
+           (cadr-cli::model-scope-startup-line
+            entries manager
+            :verbose-p nil :quiet-startup-p nil))
+         (quiet
+           (cadr-cli::model-scope-startup-line
+            entries manager
+            :verbose-p nil :quiet-startup-p t))
+         (empty
+           (cadr-cli::model-scope-startup-line
+            nil manager
+            :verbose-p t :quiet-startup-p nil))
+         (no-hint
+           (cadr-cli::model-scope-startup-line
+            entries disabled
+            :verbose-p t :quiet-startup-p nil))
+         (shown-text (bootstrap-scope-stripped shown)))
+    (list
+     (if quiet 0 1)
+     (if empty 0 1)
+     shown-text
+     (length shown-text)
+     (bootstrap-scope-stripped no-hint))))
+
+
+(defun count-file-name-tags (text)
+  (loop with start = 0
+        with n = 0
+        for pos = (search "<file name=" text :start2 start)
+        while pos
+        do (incf n)
+           (setf start (+ pos 11))
+        finally (return n)))
+
+
+(defun cli-bootstrap-process-file-paths ()
+  (let* ((root
+           (merge-pathnames "bootstrap-files/" *scratch-directory*))
+         (hello (merge-pathnames "hello.txt" root))
+         (empty (merge-pathnames "empty.txt" root)))
+    (ensure-directories-exist hello)
+    (with-open-file (out hello
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string "goal20-hello" out))
+    (with-open-file (out empty
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8))
+    (list hello empty)))
+
+
+(defun run-cli-bootstrap-process-files (hello empty)
+  (multiple-value-bind (text images)
+      (cadr-cli::process-cli-file-arguments
+       (list (namestring hello) (namestring empty))
+       (uiop:pathname-directory-pathname hello))
+    (list
+     (if (search "goal20-hello" text) 1 0)
+     (count-file-name-tags text)
+     (length images))))
+
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
          (auth-observed (run-cli-bootstrap-auth))

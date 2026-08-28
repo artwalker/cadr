@@ -2888,6 +2888,51 @@
    "piUs": 2.262,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 484,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/bootstrap/commands.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.model_cycle",
+   "branch": "cursor/bootstrap-commands-leftovers-484-486-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 484-486, not sequential nextPairNum)",
+   "ratio": 0.622,
+   "cadrUs": 0.632,
+   "piUs": 1.017,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 485,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/bootstrap/commands.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.model_scope_line",
+   "branch": "cursor/bootstrap-commands-leftovers-484-486-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 484-486, not sequential nextPairNum)",
+   "ratio": 1.608,
+   "cadrUs": 37.431,
+   "piUs": 23.274,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 486,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/bootstrap/commands.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.process_files",
+   "branch": "cursor/bootstrap-commands-leftovers-484-486-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 484-486, not sequential nextPairNum)",
+   "ratio": 0.419,
+   "cadrUs": 61.164,
+   "piUs": 146.148,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
