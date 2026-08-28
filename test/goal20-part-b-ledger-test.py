@@ -2591,6 +2591,25 @@ class TestPairedPathRecord(unittest.TestCase):
         )
         self.assertIn("tshe_down", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("tshe_text", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.thinking_selector_selected_level", RECORD.METRIC_KEYS)
+        self.assertIn("thinking_selector_selected_level", paired.METRICS["cli_selectors"])
+        self.assertIn(
+            "cli_selectors.thinking_selector_selected_level", paired.RATIO_CEILINGS
+        )
+        self.assertIn("tssl_first", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tssl_oob", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.thinking_level_description_line", RECORD.METRIC_KEYS)
+        self.assertIn("thinking_level_description_line", paired.METRICS["cli_selectors"])
+        self.assertIn(
+            "cli_selectors.thinking_level_description_line", paired.RATIO_CEILINGS
+        )
+        self.assertIn("tsdl_off_def", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tsdl_bogus", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.render_thinking_selector", RECORD.METRIC_KEYS)
+        self.assertIn("render_thinking_selector", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.render_thinking_selector", paired.RATIO_CEILINGS)
+        self.assertIn("tsrd_default", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tsrd_wide", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])
