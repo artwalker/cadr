@@ -249,6 +249,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `ls_tool.make_tool` | 284.4 | 279.6 | 1.017× | 8.00× | measure-only pair 318; `make-ls-tool` vs `createLsToolDefinition` | invent pause；地板优化另刀 |
 | `cli_settings.enabled_models` | 18.7 | 3.26 | 5.735× | 8.00× | measure-only pair 308; `settings-enabled-models` missing→`:all` plus one in-memory pattern | invent pause；地板优化另刀 |
 | `cli_settings.block_images` | 19.1 | 3.41 | 5.623× | 8.00× | measure-only pair 309; `settings-block-images-p` default false plus in-memory `images.blockImages` | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_image_line` | 36.319 | 16.357 | 2.220× | 8.00× | measure-only leftover 548; `daxnuts-image-line` vs `buildImage` half-block row | invent pause；地板优化另刀 |
 
 | `file_mutation_queue.pending_count` | 194.6 | 135.5 | 1.435× | 8.00× | measure-only pair 304; `file-mutation-queue-state-pending-count` after enqueue | invent pause；地板优化另刀 |
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |

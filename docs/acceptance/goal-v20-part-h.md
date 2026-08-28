@@ -4059,6 +4059,49 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 547 — `cli_selectors` (daxnuts_parse_image)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_parse_image` | `parse-daxnuts-rgb-grid` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | `parseImage` (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover trio on the `cli_selectors` hole for `daxnuts.lisp` (inventory
+`needs-pair`). Timed work is hex-blob RGB grid parse — not component tick,
+not TUI render. Observed `dpi_00` / `dpi_0x` / `dpi_mid` / `dpi_last` /
+`dpi_h` / `dpi_w` are exact (RGB samples, not the blob). First n=5 freeze
+**0.557×** (50.293 / 90.217 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text / `execution_env.tmp_*`; this metric did not fail). Same commit
+no optimize. `nextPairNum` left at 328.
+
+### Pair 548 — `cli_selectors` (daxnuts_image_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_image_line` | `daxnuts-image-line` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | `buildImage` half-block row (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of Pair 547. Timed work is half-block ANSI scanline from
+the cached RGB grid — not animation, not `center`. Observed `dil_0` /
+`dil_7` / `dil_15` / `dil_0_len` / `dil_15_len` / `dil_reset` are exact.
+First n=5 freeze **2.220×** (36.319 / 16.357 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes;
+this metric did not fail). Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 549 — `cli_selectors` (daxnuts_center_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_center_line` | `center-component-line` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | `render()` `center` (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of Pairs 547–548. Timed work is left-pad to visible width
+— ASCII and CSI only (`visible-width` vs regex `.length` diverge on CJK).
+Observed `dcl_plain` / `dcl_odd` / `dcl_narrow` / `dcl_empty` / `dcl_ansi` /
+`dcl_wide` are exact. First n=5 freeze **0.970×** (0.896 / 0.924 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes; this metric did not fail). Same commit no optimize.
+`nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

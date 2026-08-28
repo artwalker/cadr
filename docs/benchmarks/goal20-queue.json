@@ -846,7 +846,7 @@
    "branch": "cursor/evals-harness-pairs-331-333-4603",
    "ratio": 3.693,
    "cadrUs": 0.774,
-   "piUs": 0.210,
+   "piUs": 0.21,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -859,7 +859,7 @@
    "metric": "evals_harness.usage",
    "branch": "cursor/evals-harness-pairs-331-333-4603",
    "ratio": 2.148,
-   "cadrUs": 2.240,
+   "cadrUs": 2.24,
    "piUs": 1.042,
    "ceiling": 8.0,
    "rc": 1
@@ -874,7 +874,7 @@
    "branch": "cursor/evals-harness-pairs-331-333-4603",
    "ratio": 5.225,
    "cadrUs": 1.933,
-   "piUs": 0.370,
+   "piUs": 0.37,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -919,6 +919,51 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 547,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.daxnuts_parse_image",
+   "branch": "cursor/daxnuts-leftovers-547-549-34f9",
+   "ratio": 0.557,
+   "cadrUs": 50.293,
+   "piUs": 90.217,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 547-549"
+  },
+  {
+   "pair": 548,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.daxnuts_image_line",
+   "branch": "cursor/daxnuts-leftovers-547-549-34f9",
+   "ratio": 2.22,
+   "cadrUs": 36.319,
+   "piUs": 16.357,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 547-549"
+  },
+  {
+   "pair": 549,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/components/daxnuts.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.daxnuts_center_line",
+   "branch": "cursor/daxnuts-leftovers-547-549-34f9",
+   "ratio": 0.97,
+   "cadrUs": 0.896,
+   "piUs": 0.924,
+   "ceiling": 8.0,
+   "rc": 1,
+   "note": "nextPairNum left at tip 328; leftover IDs 547-549"
   }
  ],
  "mergeQueue": []
