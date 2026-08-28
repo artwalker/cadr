@@ -422,4 +422,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.thinking_selector_handle_raw_input` | 144.448 | 6.908 | 20.910× | 30.00× | measure-only leftover 608; `thinking-selector-handle-raw-input` vs handleInput; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
 | `cli_selectors.thinking_level_description_line` | 0.268 | 0.232 | 1.155× | 8.00× | measure-only leftover 611; `thinking-level-description-line` vs LEVEL_DESCRIPTIONS · default | invent pause；地板优化另刀 |
 | `cli_selectors.render_thinking_selector` | 316.671 | 7.080 | 44.726× | 60.00× | measure-only leftover 612; `render-thinking-selector` vs ThinkingSelectorComponent layout; first-freeze headroom 60.0 | invent pause；地板优化另刀 |
+| `cli_selectors.trust_option_saved_p` | 35.594 | 15.530 | 2.292× | 8.00× | measure-only leftover 613; `trust-option-saved-p` vs isSavedOption | invent pause；地板优化另刀 |
+| `cli_selectors.make_trust_selector_state` | 91.097 | 53.106 | 1.715× | 8.00× | measure-only leftover 614; `make-trust-selector-state` vs TrustSelectorComponent constructor | invent pause；地板优化另刀 |
+| `cli_selectors.render_trust_selector` | 1074.462 | 122.128 | 8.798× | 15.00× | measure-only leftover 615; `render-trust-selector` vs TrustSelectorComponent layout; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

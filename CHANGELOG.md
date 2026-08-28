@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.trust_option_saved_p`
+  (`trust-option-saved-p` on
+  `src/cadr-cli/interactive/selectors/trust.lisp` vs isSavedOption). Observed
+  `tosp_nil` / `tosp_trust` / `tosp_parent` / `tosp_mismatch` /
+  `tosp_distrust` exact. n=5 **2.292×** (35.594 / 15.530 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 613). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.make_trust_selector_state`
+  (`make-trust-selector-state` vs TrustSelectorComponent constructor).
+  Observed `mtss_child` / `mtss_saved` / `mtss_inherited` / `mtss_distrust` /
+  `mtss_single` exact. Cached keybindings. n=5 **1.715×** (91.097 / 53.106
+  µs) on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 614).
+  Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.render_trust_selector`
+  (`render-trust-selector` vs TrustSelectorComponent layout). Observed
+  `rtrs_default` / `rtrs_saved` / `rtrs_inherited` / `rtrs_distrust` /
+  `rtrs_single` exact. n=5 **8.798×** (1074.462 / 122.128 µs) on host
+  `cursor`, ceiling 15.0 first-freeze headroom. Measure-only leftover
+  (Pair 615). Over-1× booked. Same commit no optimize. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.thinking_selector_selected_level`
   (`thinking-selector-selected-level` on
   `src/cadr-cli/interactive/selectors/thinking.lisp` vs selected SelectList
