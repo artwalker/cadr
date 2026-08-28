@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.user_message_handle_event`
+  (`user-message-selector-handle-event` on
+  `src/cadr-cli/interactive/selectors/fork.lisp` vs
+  UserMessageList.handleInput structured events). Observed
+  `umhe_down` / `umhe_enter` / `umhe_esc` / `umhe_text` / `umhe_empty`
+  exact. n=5 **0.766×** (1.754 / 2.288 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 628). Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. cadr leads. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.user_message_handle_raw`
+  (`user-message-selector-handle-raw-input` vs UserMessageList.handleInput
+  raw keys). Observed `umhr_down` / `umhr_up` / `umhr_enter` / `umhr_esc` /
+  `umhr_nop` exact. n=5 **15.827×** (85.983 / 5.433 µs) on host `cursor`,
+  ceiling 30.0 first-freeze headroom. Measure-only leftover (Pair 629).
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.render_user_message_selector`
+  (`render-user-message-selector` vs UserMessageSelectorComponent layout).
+  Observed `umrd_three` / `umrd_one` / `umrd_empty` / `umrd_narrow` /
+  `umrd_hit` exact. n=5 **65.009×** (265.302 / 4.081 µs) on host `cursor`,
+  ceiling 100.0 first-freeze headroom. Measure-only leftover (Pair 630).
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_selectors.login_dialog_complete_input`
   (`login-dialog-complete-input` on
   `src/cadr-cli/interactive/selectors/login-dialog.lisp` vs
