@@ -8782,6 +8782,57 @@
        0)))
 
 
+(defun run-cli-extensions-gated-approval ()
+  (flet ((txt (gated)
+           (cadr-cli::llama-gated-approval-text gated)))
+    (list
+     (if (string= (txt :manual) "Manual approval is required") 1 0)
+     (if (string= (txt :auto) "Accept the access terms") 1 0)
+     (if (string= (txt "manual") "Accept the access terms") 1 0)
+     (if (string= (txt nil) "Accept the access terms") 1 0))))
+
+
+(defun run-cli-extensions-split-args ()
+  (flet ((split (arguments)
+           (multiple-value-list
+            (cadr-cli::split-llama-command-arguments arguments))))
+    (let ((login (split "Login extra"))
+          (view (split "  VIEW  foo"))
+          (bare (split "status"))
+          (tab (split (format nil "Load~Cmodel id" #\Tab))))
+      (list
+       (if (and (string= (first login) "login")
+                (string= (second login) "extra"))
+           1
+           0)
+       (if (and (string= (first view) "view")
+                (string= (second view) "foo"))
+           1
+           0)
+       (if (and (string= (first bare) "status")
+                (string= (second bare) ""))
+           1
+           0)
+       (if (and (string= (first tab) "load")
+                (string= (second tab) "model id"))
+           1
+           0)
+       4))))
+
+
+(defun run-cli-extensions-quant-label ()
+  (flet ((lab (entry)
+           (cadr-cli::llama-quantization-option-label entry)))
+    (list
+     (if (string= (lab '(:name "Q8_0")) "Q8_0") 1 0)
+     (if (string= (lab '(:name "Q4_K_M")) "Q4_K_M · recommended") 1 0)
+     (if (string= (lab '(:name "Q5" :size 512)) "Q5 · 512 B") 1 0)
+     (if (string= (lab '(:name "Q4_K_M" :size 256))
+                  "Q4_K_M · 256 B · recommended")
+         1
+         0))))
+
+
 (defun measure-cli-extensions-install ()
   (let* ((url (run-cli-extensions-llama-url))
          (token (run-cli-extensions-hf-token))

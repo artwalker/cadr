@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_extensions_install.gated_approval`
+  (`llama-gated-approval-text` on
+  `src/cadr-cli/extensions/llama/extension.lisp`). Observed `ga_manual` /
+  `ga_auto` / `ga_str` / `ga_nil` exact. n=5 **0.579×** (0.120 / 0.208 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 505). Gate
+  rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text /
+  `execution_env.tmp_*`), not this metric. cadr leads. `nextPairNum`
+  left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.split_args`
+  (`split-llama-command-arguments` on
+  `src/cadr-cli/extensions/llama/extension.lisp`). Observed `sa_login` /
+  `sa_view` / `sa_bare` / `sa_tab` exact. n=5 **0.408×** (0.827 / 2.025 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 506). cadr
+  leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.quant_label`
+  (`llama-quantization-option-label` on
+  `src/cadr-cli/extensions/llama/extension.lisp`). Observed `ql_name` /
+  `ql_rec` / `ql_bytes` / `ql_both` exact. n=5 **1.249×** (1.033 / 0.827 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 507). Gate
+  rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text /
+  `execution_env.tmp_*`), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
 - Goal 20 P.13 leftover: pair `cli_extensions_install.package_fragment`
   (`extension-package-fragment` on `src/cadr-cli/extensions/loader.lisp`).
   Observed `pf_plain` / `pf_hyphen` / `pf_keep` / `pf_empty` exact. n=5

@@ -349,4 +349,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.handle_ui_miss` | 6.190 | 1.521 | 4.070× | 8.00× | measure-only pair 498; `rpc-handle-line` unknown extension_ui_response | invent pause；地板优化另刀 |
 | `cli_extensions_install.unsafe_git` | 0.762 | 0.658 | 1.159× | 8.00× | measure-only pair 499; `unsafe-git-source-p` vs hasUnsafeGitInstallPart (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_extensions_install.git_path` | 1.055 | 0.569 | 1.852× | 8.00× | measure-only pair 500; `git-source-path` vs git URL path slice | invent pause；地板优化另刀 |
+| `cli_extensions_install.quant_label` | 1.033 | 0.827 | 1.249× | 8.00× | measure-only leftover pair 507; `llama-quantization-option-label` vs downloadModel option text | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

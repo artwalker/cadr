@@ -368,6 +368,9 @@ const REPETITIONS = {
 	"cli_extensions_install.package_fragment": 50,
 	"cli_extensions_install.local_system_name": 50,
 	"cli_extensions_install.inline_factory": 50,
+	"cli_extensions_install.gated_approval": 50,
+	"cli_extensions_install.split_args": 50,
+	"cli_extensions_install.quant_label": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -9476,6 +9479,14 @@ function replicaValidExtensionResourceNameP(name) {
 }
 
 
+function replicaLlamaGatedApprovalText(gated) {
+	if (gated && typeof gated === "object" && gated.keyword === "manual") {
+		return "Manual approval is required";
+	}
+	return "Accept the access terms";
+}
+
+
 function replicaLispTrim(input) {
 	const chars = new Set([" ", "\t", "\n", "\r"]);
 	let start = 0;
@@ -9659,6 +9670,86 @@ function runCliExtensionsInlineFactory() {
 		replicaValidInlineExtensionFactoryP({ name: "", factory: noop }) ? 1 : 0,
 		replicaValidInlineExtensionFactoryP({ name: "ext" }) ? 1 : 0,
 		replicaValidInlineExtensionFactoryP({ name: undefined }) ? 1 : 0,
+	];
+}
+
+
+function replicaSplitLlamaCommandArguments(argumentsText) {
+	const trimmed = replicaLispTrim(argumentsText);
+	let separator = -1;
+	for (let index = 0; index < trimmed.length; index += 1) {
+		const character = trimmed[index];
+		if (character === " " || character === "\t") {
+			separator = index;
+			break;
+		}
+	}
+	const command = (separator >= 0 ? trimmed.slice(0, separator) : trimmed).toLowerCase();
+	let rest = "";
+	if (separator >= 0) {
+		rest = trimmed.slice(separator).replace(/^[\t ]+/, "");
+	}
+	return [command, rest];
+}
+
+
+function replicaFormatLlamaBytes(bytes) {
+	if (bytes < 1024) {
+		return `${bytes} B`;
+	}
+	throw new Error("replicaFormatLlamaBytes leftover fixtures stay under 1024");
+}
+
+
+function replicaLlamaQuantizationOptionLabel(entry) {
+	const details = [];
+	if (entry.size != null) {
+		details.push(replicaFormatLlamaBytes(entry.size));
+	}
+	if (entry.name === "Q4_K_M") {
+		details.push("recommended");
+	}
+	if (details.length > 0) {
+		return `${entry.name} · ${details.join(" · ")}`;
+	}
+	return entry.name;
+}
+
+
+function runCliExtensionsGatedApproval() {
+	const txt = replicaLlamaGatedApprovalText;
+	return [
+		txt({ keyword: "manual" }) === "Manual approval is required" ? 1 : 0,
+		txt({ keyword: "auto" }) === "Accept the access terms" ? 1 : 0,
+		txt("manual") === "Accept the access terms" ? 1 : 0,
+		txt(null) === "Accept the access terms" ? 1 : 0,
+	];
+}
+
+
+function runCliExtensionsSplitArgs() {
+	const split = replicaSplitLlamaCommandArguments;
+	const login = split("Login extra");
+	const view = split("  VIEW  foo");
+	const bare = split("status");
+	const tab = split("Load\tmodel id");
+	return [
+		login[0] === "login" && login[1] === "extra" ? 1 : 0,
+		view[0] === "view" && view[1] === "foo" ? 1 : 0,
+		bare[0] === "status" && bare[1] === "" ? 1 : 0,
+		tab[0] === "load" && tab[1] === "model id" ? 1 : 0,
+		4,
+	];
+}
+
+
+function runCliExtensionsQuantLabel() {
+	const lab = replicaLlamaQuantizationOptionLabel;
+	return [
+		lab({ name: "Q8_0" }) === "Q8_0" ? 1 : 0,
+		lab({ name: "Q4_K_M" }) === "Q4_K_M · recommended" ? 1 : 0,
+		lab({ name: "Q5", size: 512 }) === "Q5 · 512 B" ? 1 : 0,
+		lab({ name: "Q4_K_M", size: 256 }) === "Q4_K_M · 256 B · recommended" ? 1 : 0,
 	];
 }
 

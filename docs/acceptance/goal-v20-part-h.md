@@ -6374,6 +6374,50 @@ Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n`
 / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
 fail). Same commit no optimize.
 
+### Pair 505 — `cli_extensions_install` (gated_approval)
+
+| metric | cadr | pi |
+|---|---|---|
+| `gated_approval` | `llama-gated-approval-text` (`src/cadr-cli/extensions/llama/extension.lisp`) | gated-repo approval copy (`packages/coding-agent/src/extensions/llama/index.ts`) |
+
+Leftover of the `cli_extensions_install` hole on `llama/extension.lisp`.
+Timed work is `:manual` vs other gated values — not login, not catalog
+HTTP. Observed `ga_manual` / `ga_auto` / `ga_str` / `ga_nil` are exact.
+First n=5 freeze **0.579×** (0.120 / 0.208 µs) on host `cursor`,
+ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text /
+`execution_env.tmp_*`; this metric did not fail). Same commit no
+optimize.
+
+### Pair 506 — `cli_extensions_install` (split_args)
+
+| metric | cadr | pi |
+|---|---|---|
+| `split_args` | `split-llama-command-arguments` (`src/cadr-cli/extensions/llama/extension.lisp`) | llama command argv split (`packages/coding-agent/src/extensions/llama/index.ts`) |
+
+Leftover sibling of Pair 505 on the same hole. Timed work is trim /
+first-token downcase / remainder left-trim — not `handle-llama-command`,
+not network. Observed `sa_login` / `sa_view` / `sa_bare` / `sa_tab` /
+`sa_n` are exact. First n=5 freeze **0.408×** (0.827 / 2.025 µs) on host
+`cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text /
+`execution_env.tmp_*`; this metric did not fail). Same commit no
+optimize.
+
+### Pair 507 — `cli_extensions_install` (quant_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `quant_label` | `llama-quantization-option-label` (`src/cadr-cli/extensions/llama/extension.lisp`) | downloadModel option text (`packages/coding-agent/src/extensions/llama/index.ts`) |
+
+Leftover sibling of Pairs 505–506 on the same hole. Timed work is name /
+size / Q4_K_M recommended join — not download, not Hugging Face search.
+Observed `ql_name` / `ql_rec` / `ql_bytes` / `ql_both` are exact. First
+n=5 freeze **1.249×** (1.033 / 0.827 µs) on host `cursor`, ceiling 8.0.
+Over-1× booked. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this
+metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
