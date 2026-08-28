@@ -395,6 +395,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_level_label": 50,
 	"cli_selectors.thinking_level_search_text": 50,
 	"cli_selectors.thinking_selector_set_query": 50,
+	"cli_selectors.thinking_selector_key_p": 50,
+	"cli_selectors.thinking_selector_keybindings": 50,
+	"cli_selectors.make_thinking_selector_state": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -22352,6 +22355,87 @@ function runCliSelectorsThinkingLevelSearchText() {
 }
 
 
+const GOAL20_THINKING_DEFAULT_KB = new keybindingsModule.KeybindingsManager(
+	appKeybindingsModule.KEYBINDINGS,
+	{ "app.thinking.save": "ctrl+s", "app.thinking.clearSearchOrCancel": "ctrl+c" },
+);
+const GOAL20_THINKING_CUSTOM_KB = new keybindingsModule.KeybindingsManager(
+	appKeybindingsModule.KEYBINDINGS,
+	{ "app.thinking.save": "ctrl+k" },
+);
+
+
+function thinkingSelectorKeyPEncoded(manager, data, name) {
+	return selectorKeybindingMatchesPi(manager, data, name) ? "true" : "false";
+}
+
+
+function runCliSelectorsThinkingSelectorKeyP() {
+	const manager = GOAL20_THINKING_DEFAULT_KB;
+	const ctrlS = "\x13";
+	const arrowUp = "\x1b[A";
+	const tab = "\t";
+	return {
+		tskp_tab_hit: thinkingSelectorKeyPEncoded(manager, tab, "tui.input.tab"),
+		tskp_tab_miss: thinkingSelectorKeyPEncoded(manager, tab, "tui.select.up"),
+		tskp_up_hit: thinkingSelectorKeyPEncoded(manager, arrowUp, "tui.select.up"),
+		tskp_csi_up: thinkingSelectorKeyPEncoded(manager, "\x1b[1;1A", "tui.select.up"),
+		tskp_save_hit: thinkingSelectorKeyPEncoded(manager, ctrlS, "app.thinking.save"),
+	};
+}
+
+
+function thinkingSelectorKeybindingsPi(state) {
+	return state.keybindings && typeof state.keybindings.getKeys === "function"
+		? state.keybindings
+		: GOAL20_THINKING_DEFAULT_KB;
+}
+
+
+function thinkingSelectorKeybindingsFirstKey(state, name) {
+	const keys = thinkingSelectorKeybindingsPi(state).getKeys(name);
+	return keys.length > 0 ? keys[0] : name;
+}
+
+
+function runCliSelectorsThinkingSelectorKeybindings() {
+	const empty = { keybindings: undefined };
+	const explicit = { keybindings: GOAL20_THINKING_DEFAULT_KB };
+	const custom = { keybindings: GOAL20_THINKING_CUSTOM_KB };
+	return {
+		tskb_nil: thinkingSelectorKeybindingsFirstKey(empty, "app.thinking.save"),
+		tskb_default: thinkingSelectorKeybindingsFirstKey(explicit, "app.thinking.save"),
+		tskb_custom: thinkingSelectorKeybindingsFirstKey(custom, "app.thinking.save"),
+		tskb_cancel: thinkingSelectorKeybindingsFirstKey(
+			empty,
+			"app.thinking.clearSearchOrCancel",
+		),
+		tskb_confirm: thinkingSelectorKeybindingsFirstKey(empty, "tui.select.confirm"),
+	};
+}
+
+
+function encodeMakeThinkingSelectorState(levels, { currentLevel, defaultLevel } = {}) {
+	const state = makeThinkingSelectorState({ levels, currentLevel, defaultLevel });
+	return `${state.selected}|${state.filteredCount}|${thinkingLevelName(thinkingSelectorSelectedLevel(state))}|${thinkingLevelName(state.defaultLevel)}`;
+}
+
+
+function runCliSelectorsMakeThinkingSelectorState() {
+	const levels = ["off", "low", "high"];
+	return {
+		tms_high: encodeMakeThinkingSelectorState(levels, { currentLevel: "high" }),
+		tms_off: encodeMakeThinkingSelectorState(levels, { currentLevel: "off" }),
+		tms_miss: encodeMakeThinkingSelectorState(levels, { currentLevel: "medium" }),
+		tms_empty: encodeMakeThinkingSelectorState([], { currentLevel: "high" }),
+		tms_default: encodeMakeThinkingSelectorState(levels, {
+			currentLevel: "high",
+			defaultLevel: "low",
+		}),
+	};
+}
+
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -22540,6 +22624,12 @@ async function measureCliSelectorsSessionSearch() {
 	const modelSelectorKeyPResults = runCliSelectorsModelSelectorKeyP();
 	const modelSelectorKeybindingsResults = runCliSelectorsModelSelectorKeybindings();
 	const makeModelSelectorStateResults = runCliSelectorsMakeModelSelectorState();
+	const thinkingLevelLabelResults = runCliSelectorsThinkingLevelLabel();
+	const thinkingLevelSearchTextResults = runCliSelectorsThinkingLevelSearchText();
+	const thinkingSelectorSetQueryResults = runCliSelectorsThinkingSelectorSetQuery();
+	const thinkingSelectorKeyPResults = runCliSelectorsThinkingSelectorKeyP();
+	const thinkingSelectorKeybindingsResults = runCliSelectorsThinkingSelectorKeybindings();
+	const makeThinkingSelectorStateResults = runCliSelectorsMakeThinkingSelectorState();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -22889,6 +22979,12 @@ async function measureCliSelectorsSessionSearch() {
 		...modelSelectorKeyPResults,
 		...modelSelectorKeybindingsResults,
 		...makeModelSelectorStateResults,
+		...thinkingLevelLabelResults,
+		...thinkingLevelSearchTextResults,
+		...thinkingSelectorSetQueryResults,
+		...thinkingSelectorKeyPResults,
+		...thinkingSelectorKeybindingsResults,
+		...makeThinkingSelectorStateResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -23592,6 +23688,39 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.make_model_selector_state",
 			() => {
 				return () => runCliSelectorsMakeModelSelectorState();
+			},
+		),
+		thinking_level_label: await collect("cli_selectors.thinking_level_label", () => {
+			return () => runCliSelectorsThinkingLevelLabel();
+		}),
+		thinking_level_search_text: await collect(
+			"cli_selectors.thinking_level_search_text",
+			() => {
+				return () => runCliSelectorsThinkingLevelSearchText();
+			},
+		),
+		thinking_selector_set_query: await collect(
+			"cli_selectors.thinking_selector_set_query",
+			() => {
+				return () => runCliSelectorsThinkingSelectorSetQuery();
+			},
+		),
+		thinking_selector_key_p: await collect(
+			"cli_selectors.thinking_selector_key_p",
+			() => {
+				return () => runCliSelectorsThinkingSelectorKeyP();
+			},
+		),
+		thinking_selector_keybindings: await collect(
+			"cli_selectors.thinking_selector_keybindings",
+			() => {
+				return () => runCliSelectorsThinkingSelectorKeybindings();
+			},
+		),
+		make_thinking_selector_state: await collect(
+			"cli_selectors.make_thinking_selector_state",
+			() => {
+				return () => runCliSelectorsMakeThinkingSelectorState();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -26464,6 +26593,18 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts getKeybindings slot-or-default",
 			"cli_selectors.make_model_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts constructor sort + filter + select current",
+			"cli_selectors.thinking_level_label":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts level label",
+			"cli_selectors.thinking_level_search_text":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts label + description search text",
+			"cli_selectors.thinking_selector_set_query":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts applyFilter from search input",
+			"cli_selectors.thinking_selector_key_p":
+				"packages/tui/src/keybindings.ts KeybindingsManager.matches + CSI modified-arrow canonical compare (thinking-selector-key-p parity)",
+			"cli_selectors.thinking_selector_keybindings":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts getKeybindings slot-or-default",
+			"cli_selectors.make_thinking_selector_state":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts constructor filter + select current",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":

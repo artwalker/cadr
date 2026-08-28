@@ -1125,6 +1125,12 @@ RATIO_CEILINGS = {
   "cli_selectors.model_selector_keybindings": 12.0,
   # Measure-only leftover 600; first freeze 3.037× (21.230 / 6.989 µs).
   "cli_selectors.make_model_selector_state": 8.0,
+  # Measure-only leftover 601; first freeze pending.
+  "cli_selectors.thinking_selector_key_p": 8.0,
+  # Measure-only leftover 602; first freeze pending.
+  "cli_selectors.thinking_selector_keybindings": 8.0,
+  # Measure-only leftover 603; first freeze pending.
+  "cli_selectors.make_thinking_selector_state": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -4268,6 +4274,21 @@ OBSERVED_EXACT = {
         "msmk_scoped",
         "msmk_extra",
         "msmk_one",
+        "tskp_tab_hit",
+        "tskp_tab_miss",
+        "tskp_up_hit",
+        "tskp_csi_up",
+        "tskp_save_hit",
+        "tskb_nil",
+        "tskb_default",
+        "tskb_custom",
+        "tskb_cancel",
+        "tskb_confirm",
+        "tms_high",
+        "tms_off",
+        "tms_miss",
+        "tms_empty",
+        "tms_default",
     ),
     "websocket_stream": (
         "ws_text",

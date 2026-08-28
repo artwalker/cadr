@@ -746,6 +746,12 @@
     ("cli_selectors.model_selector_key_p" . 50)
     ("cli_selectors.model_selector_keybindings" . 50)
     ("cli_selectors.make_model_selector_state" . 50)
+    ("cli_selectors.thinking_level_label" . 50)
+    ("cli_selectors.thinking_level_search_text" . 50)
+    ("cli_selectors.thinking_selector_set_query" . 50)
+    ("cli_selectors.thinking_selector_key_p" . 50)
+    ("cli_selectors.thinking_selector_keybindings" . 50)
+    ("cli_selectors.make_thinking_selector_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -15299,6 +15305,122 @@
    "tsq_nil" (nth 4 set-query)
    "tsq_clear" (nth 5 set-query)))
 
+
+(defparameter *goal20-thinking-custom-keybindings*
+  (cadr-cli::make-thinking-selector-keybindings
+   '(("app.thinking.save" . "ctrl+k"))))
+
+
+(defun make-thinking-selector-key-bench-state (&key keybindings)
+  (cadr-cli::%make-thinking-selector-state
+   :levels (list :off :low :high)
+   :current-level :high
+   :keybindings keybindings))
+
+
+(defun thinking-selector-key-p-encoded (state data name)
+  (if (cadr-cli::thinking-selector-key-p state data name)
+      "true"
+      "false"))
+
+
+(defun run-cli-selectors-thinking-selector-key-p ()
+  (let ((state
+          (make-thinking-selector-key-bench-state
+           :keybindings
+           cadr-cli::*default-thinking-selector-keybindings*))
+        (ctrl-s (string (code-char 19)))
+        (arrow-up (format nil "~C[A" #\Escape))
+        (tab (string #\Tab)))
+    (list
+     (thinking-selector-key-p-encoded
+      state tab "tui.input.tab")
+     (thinking-selector-key-p-encoded
+      state tab "tui.select.up")
+     (thinking-selector-key-p-encoded
+      state arrow-up "tui.select.up")
+     (thinking-selector-key-p-encoded
+      state (csi-modified-arrow 1 #\A) "tui.select.up")
+     (thinking-selector-key-p-encoded
+      state ctrl-s "app.thinking.save"))))
+
+
+(defun thinking-selector-keybindings-first-key (state name)
+  (let* ((manager (cadr-cli::thinking-selector-keybindings state))
+         (keys (cadr-tui:keybinding-keys manager name)))
+    (or (first keys) name)))
+
+
+(defun run-cli-selectors-thinking-selector-keybindings ()
+  (let ((empty (make-thinking-selector-key-bench-state))
+        (explicit
+          (make-thinking-selector-key-bench-state
+           :keybindings
+           cadr-cli::*default-thinking-selector-keybindings*))
+        (custom
+          (make-thinking-selector-key-bench-state
+           :keybindings *goal20-thinking-custom-keybindings*)))
+    (list
+     (thinking-selector-keybindings-first-key empty "app.thinking.save")
+     (thinking-selector-keybindings-first-key explicit "app.thinking.save")
+     (thinking-selector-keybindings-first-key custom "app.thinking.save")
+     (thinking-selector-keybindings-first-key
+      empty "app.thinking.clearSearchOrCancel")
+     (thinking-selector-keybindings-first-key empty "tui.select.confirm"))))
+
+
+(defun encode-make-thinking-selector-state
+    (levels &key current-level default-level)
+  (let ((state
+          (cadr-cli::make-thinking-selector-state
+           :levels levels
+           :current-level current-level
+           :default-level default-level)))
+    (format
+     nil "~D|~D|~A|~A"
+     (cadr-cli::thinking-selector-state-selected state)
+     (cadr-cli::thinking-selector-state-filtered-count state)
+     (thinking-level-name
+      (cadr-cli::thinking-selector-selected-level state))
+     (thinking-level-name
+      (cadr-cli::thinking-selector-state-default-level state)))))
+
+
+(defun run-cli-selectors-make-thinking-selector-state ()
+  (let ((levels (list :off :low :high)))
+    (list
+     (encode-make-thinking-selector-state
+      levels :current-level :high)
+     (encode-make-thinking-selector-state
+      levels :current-level :off)
+     (encode-make-thinking-selector-state
+      levels :current-level :medium)
+     (encode-make-thinking-selector-state
+      '() :current-level :high)
+     (encode-make-thinking-selector-state
+      levels :current-level :high :default-level :low))))
+
+
+(defun thinking-selector-key-bindings-state-observed-pairs
+    (key-p keybindings make-state)
+  (list
+   "tskp_tab_hit" (nth 0 key-p)
+   "tskp_tab_miss" (nth 1 key-p)
+   "tskp_up_hit" (nth 2 key-p)
+   "tskp_csi_up" (nth 3 key-p)
+   "tskp_save_hit" (nth 4 key-p)
+   "tskb_nil" (nth 0 keybindings)
+   "tskb_default" (nth 1 keybindings)
+   "tskb_custom" (nth 2 keybindings)
+   "tskb_cancel" (nth 3 keybindings)
+   "tskb_confirm" (nth 4 keybindings)
+   "tms_high" (nth 0 make-state)
+   "tms_off" (nth 1 make-state)
+   "tms_miss" (nth 2 make-state)
+   "tms_empty" (nth 3 make-state)
+   "tms_default" (nth 4 make-state)))
+
+
 (defun run-cli-selectors-session-format-age ()
   (let ((now *session-format-age-now*))
     (list
@@ -21222,6 +21344,18 @@
           (run-cli-selectors-model-selector-keybindings))
         (leftover-make-ms-state
           (run-cli-selectors-make-model-selector-state))
+        (leftover-thinking-label
+          (run-cli-selectors-thinking-level-label))
+        (leftover-thinking-search
+          (run-cli-selectors-thinking-level-search-text))
+        (leftover-thinking-set-query
+          (run-cli-selectors-thinking-selector-set-query))
+        (leftover-thinking-key-p
+          (run-cli-selectors-thinking-selector-key-p))
+        (leftover-thinking-keybindings
+          (run-cli-selectors-thinking-selector-keybindings))
+        (leftover-make-thinking-state
+          (run-cli-selectors-make-thinking-selector-state))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -21989,6 +22123,10 @@
               leftover-finish-refresh leftover-key-p leftover-binding-label)
              (model-selector-key-bindings-state-observed-pairs
               leftover-ms-key-p leftover-ms-keybindings leftover-make-ms-state)
+             (thinking-selector-observed-pairs
+              leftover-thinking-label leftover-thinking-search leftover-thinking-set-query)
+             (thinking-selector-key-bindings-state-observed-pairs
+              leftover-thinking-key-p leftover-thinking-keybindings leftover-make-thinking-state)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -22860,7 +22998,37 @@
      (collect "cli_selectors.make_model_selector_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-make-model-selector-state)))))))
+                  (run-cli-selectors-make-model-selector-state))))
+     "thinking_level_label"
+     (collect "cli_selectors.thinking_level_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-label))))
+     "thinking_level_search_text"
+     (collect "cli_selectors.thinking_level_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-search-text))))
+     "thinking_selector_set_query"
+     (collect "cli_selectors.thinking_selector_set_query"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-set-query))))
+     "thinking_selector_key_p"
+     (collect "cli_selectors.thinking_selector_key_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-key-p))))
+     "thinking_selector_keybindings"
+     (collect "cli_selectors.thinking_selector_keybindings"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-keybindings))))
+     "make_thinking_selector_state"
+     (collect "cli_selectors.make_thinking_selector_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-thinking-selector-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -25512,6 +25680,18 @@
       "src/cadr-cli/interactive/selectors/models.lisp model-selector-keybindings"
       "cli_selectors.make_model_selector_state"
       "src/cadr-cli/interactive/selectors/models.lisp make-model-selector-state"
+      "cli_selectors.thinking_level_label"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-label"
+      "cli_selectors.thinking_level_search_text"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-search-text"
+      "cli_selectors.thinking_selector_set_query"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-set-query"
+      "cli_selectors.thinking_selector_key_p"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-key-p"
+      "cli_selectors.thinking_selector_keybindings"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-keybindings"
+      "cli_selectors.make_thinking_selector_state"
+      "src/cadr-cli/interactive/selectors/thinking.lisp make-thinking-selector-state"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
