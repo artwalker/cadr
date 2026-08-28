@@ -16,15 +16,33 @@ CLI. Runtime loading of a *user project's* `AGENTS.md` is a product feature
 `src/**/*.lisp` and outward-facing docs in this tree are English. Keep new
 Lisp and this file that way.
 
+## Engineering method (pstack)
+
+Agents in this repository work in **cadr-mode**, which is Lauren Tan's
+pstack (`/poteto-mode`) plus a cadr overlay. Vendored tree:
+`.cursor/pstack/` (MIT, pin `.cursor/pstack/PIN`). Overlay:
+`.cursor/skills/cadr-mode/SKILL.md`. Always-on rule:
+`.cursor/rules/cadr-mode.mdc`. Handoff of the Grok Bot leftover fleet:
+`docs/dev-process/grok-bot-handoff.md`.
+
+Copy the matched playbook into the todo list verbatim. Skip only with
+an explicit `skip:`. cadr standing policy still wins on conflict (no
+agent merges, no silent removal of intentional behavior, baseline-locked
+assertions, `CADR_*` only).
+
+This is how **cadr is developed**. It is not a default user-facing cadr
+skill pack (that would be a product addition vs the pinned baseline).
+
 ## Required reading order
 
 Before editing:
 
 1. `docs/development-policy.md` — standing constraints. They outlive any
    single goal. Changing that file requires user adjudication.
-2. The **current goal file** at the repo root (`goalN.md` or the issued
+2. `.cursor/skills/cadr-mode/SKILL.md` — pstack overlay for this repo.
+3. The **current goal file** at the repo root (`goalN.md` or the issued
    draft). That file is the complete spec for the work in flight.
-3. The five ledgers listed below. A green cell on one ledger never excuses a
+4. The five ledgers listed below. A green cell on one ledger never excuses a
    gap on another.
 
 Goal files cite locations with **full repository paths**
