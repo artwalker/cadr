@@ -456,6 +456,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_finish_refresh": 50,
 	"cli_selectors.scoped_models_selector_key_p": 50,
 	"cli_selectors.scoped_models_binding_label": 50,
+	"cli_selectors.model_selector_key_p": 50,
+	"cli_selectors.model_selector_keybindings": 50,
+	"cli_selectors.make_model_selector_state": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -21243,6 +21246,90 @@ function runCliSelectorsScopedModelsBindingLabel() {
 }
 
 
+function modelSelectorKeyPEncoded(manager, data, name) {
+	return selectorKeybindingMatchesPi(manager, data, name) ? "true" : "false";
+}
+
+
+function runCliSelectorsModelSelectorKeyP() {
+	const manager = GOAL20_SCOPED_MODELS_DEFAULT_KB;
+	const ctrlS = "\x13";
+	const arrowUp = "\x1b[A";
+	const tab = "\t";
+	return {
+		mskp_tab_hit: modelSelectorKeyPEncoded(manager, tab, "tui.input.tab"),
+		mskp_tab_miss: modelSelectorKeyPEncoded(manager, tab, "tui.select.up"),
+		mskp_up_hit: modelSelectorKeyPEncoded(manager, arrowUp, "tui.select.up"),
+		mskp_csi_up: modelSelectorKeyPEncoded(manager, "\x1b[1;1A", "tui.select.up"),
+		mskp_save_hit: modelSelectorKeyPEncoded(manager, ctrlS, "app.models.save"),
+	};
+}
+
+
+function modelSelectorKeybindingsPi(state) {
+	return state.keybindings ?? GOAL20_SCOPED_MODELS_DEFAULT_KB;
+}
+
+
+function modelSelectorKeybindingsFirstKey(state, name) {
+	const keys = modelSelectorKeybindingsPi(state).getKeys(name);
+	return keys.length > 0 ? keys[0] : name;
+}
+
+
+function runCliSelectorsModelSelectorKeybindings() {
+	const empty = { keybindings: undefined };
+	const explicit = { keybindings: GOAL20_SCOPED_MODELS_DEFAULT_KB };
+	const custom = { keybindings: GOAL20_SCOPED_MODELS_CUSTOM_KB };
+	return {
+		mskb_nil: modelSelectorKeybindingsFirstKey(empty, "app.models.save"),
+		mskb_default: modelSelectorKeybindingsFirstKey(explicit, "app.models.save"),
+		mskb_custom: modelSelectorKeybindingsFirstKey(custom, "app.models.save"),
+		mskb_enable: modelSelectorKeybindingsFirstKey(empty, "app.models.enableAll"),
+		mskb_confirm: modelSelectorKeybindingsFirstKey(empty, "tui.select.confirm"),
+	};
+}
+
+
+function encodeMakeModelSelectorState(allModels, { scopedModels = [], current } = {}) {
+	const currentItem = current ?? allModels[0];
+	const currentModel = currentItem.model ?? currentItem;
+	const sorted = sortModelSelectorTestModels(allModels, currentItem);
+	const scoped = [...scopedModels];
+	const scope = scoped.length > 0 ? "scoped" : "all";
+	const table = new Map();
+	for (const item of sorted) {
+		table.set(item, modelSelectorSearchText(item));
+	}
+	for (const item of scoped) {
+		if (!table.has(item)) {
+			table.set(item, modelSelectorSearchText(item));
+		}
+	}
+	const active = scope === "scoped" ? scoped : sorted;
+	const filtered = modelSelectorFilterActiveModels(active, "");
+	const selected = modelSelectorSelectCurrent(filtered, currentModel);
+	return `${scope}|${selected}|${table.size}|${filtered.map((item) => qualifiedModelId(item)).join(",")}`;
+}
+
+
+function runCliSelectorsMakeModelSelectorState() {
+	const models = makeModelSelectorTestModels();
+	const scoped = [models[0], models[1]];
+	const extra = goal20ModelItem({ id: "grok", provider: "xai", name: "Grok" });
+	const one = [models[0]];
+	return {
+		msmk_all: encodeMakeModelSelectorState(models),
+		msmk_last: encodeMakeModelSelectorState(models, { current: models[models.length - 1] }),
+		msmk_scoped: encodeMakeModelSelectorState(models, { scopedModels: scoped }),
+		msmk_extra: encodeMakeModelSelectorState(models, {
+			scopedModels: [models[0], extra],
+		}),
+		msmk_one: encodeMakeModelSelectorState(one),
+	};
+}
+
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -22450,6 +22537,9 @@ async function measureCliSelectorsSessionSearch() {
 	const scopedModelsSelectorFinishRefreshResults = runCliSelectorsScopedModelsSelectorFinishRefresh();
 	const scopedModelsSelectorKeyPResults = runCliSelectorsScopedModelsSelectorKeyP();
 	const scopedModelsBindingLabelResults = runCliSelectorsScopedModelsBindingLabel();
+	const modelSelectorKeyPResults = runCliSelectorsModelSelectorKeyP();
+	const modelSelectorKeybindingsResults = runCliSelectorsModelSelectorKeybindings();
+	const makeModelSelectorStateResults = runCliSelectorsMakeModelSelectorState();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -22796,6 +22886,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorFinishRefreshResults,
 		...scopedModelsSelectorKeyPResults,
 		...scopedModelsBindingLabelResults,
+		...modelSelectorKeyPResults,
+		...modelSelectorKeybindingsResults,
+		...makeModelSelectorStateResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -23484,6 +23577,21 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_binding_label",
 			() => {
 				return () => runCliSelectorsScopedModelsBindingLabel();
+			},
+		),
+		model_selector_key_p: await collect("cli_selectors.model_selector_key_p", () => {
+			return () => runCliSelectorsModelSelectorKeyP();
+		}),
+		model_selector_keybindings: await collect(
+			"cli_selectors.model_selector_keybindings",
+			() => {
+				return () => runCliSelectorsModelSelectorKeybindings();
+			},
+		),
+		make_model_selector_state: await collect(
+			"cli_selectors.make_model_selector_state",
+			() => {
+				return () => runCliSelectorsMakeModelSelectorState();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -26350,6 +26458,12 @@ const result = {
 				"packages/tui/src/keybindings.ts KeybindingsManager.matches + CSI modified-arrow canonical compare (selector-keybinding-matches-p parity)",
 			"cli_selectors.scoped_models_binding_label":
 				"packages/coding-agent/src/core/keybindings.ts KeybindingsManager.getKeys first-or-fallback",
+			"cli_selectors.model_selector_key_p":
+				"packages/tui/src/keybindings.ts KeybindingsManager.matches + CSI modified-arrow canonical compare (model-selector-key-p parity)",
+			"cli_selectors.model_selector_keybindings":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts getKeybindings slot-or-default",
+			"cli_selectors.make_model_selector_state":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts constructor sort + filter + select current",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":

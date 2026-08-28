@@ -9,6 +9,30 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.model_selector_key_p`
+  (`model-selector-key-p` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs
+  `KeybindingsManager.matches` + CSI). Observed `mskp_tab_hit` /
+  `mskp_tab_miss` / `mskp_up_hit` / `mskp_csi_up` / `mskp_save_hit` exact.
+  n=5 **18.605×** (16.140 / 0.868 µs) on host `cursor`, ceiling 30.0
+  first-freeze headroom. Cached `*default-models-selector-keybindings*`; do
+  not time `make-keybindings-manager`. Measure-only leftover (Pair 598).
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.model_selector_keybindings`
+  (`model-selector-keybindings` vs `getKeybindings` slot-or-default).
+  Observed `mskb_nil` / `mskb_default` / `mskb_custom` / `mskb_enable` /
+  `mskb_confirm` exact. n=5 **8.076×** (4.144 / 0.513 µs) on host `cursor`,
+  ceiling 12.0 first-freeze headroom. Measure-only leftover (Pair 599).
+  Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.make_model_selector_state`
+  (`make-model-selector-state` vs constructor sort + filter + select
+  current). Observed `msmk_all` / `msmk_last` / `msmk_scoped` / `msmk_extra`
+  / `msmk_one` exact. n=5 **3.037×** (21.230 / 6.989 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 600). Over-1× booked.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.scoped_models_selector_finish_refresh`
   (`scoped-models-selector-finish-refresh` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs `updateModels` +

@@ -412,4 +412,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.scoped_models_selector_finish_refresh` | 68.310 | 21.063 | 3.243× | 8.00× | measure-only leftover 595; `scoped-models-selector-finish-refresh` vs updateModels+setRefreshStatus | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_key_p` | 22.914 | 1.217 | 18.835× | 30.00× | measure-only leftover 596; `scoped-models-selector-key-p` vs KeybindingsManager.matches; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_binding_label` | 5.542 | 0.339 | 16.362× | 25.00× | measure-only leftover 597; `scoped-models-binding-label` vs getKeys first-or-fallback; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
+| `cli_selectors.model_selector_key_p` | 16.140 | 0.868 | 18.605× | 30.00× | measure-only leftover 598; `model-selector-key-p` vs KeybindingsManager.matches; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
+| `cli_selectors.model_selector_keybindings` | 4.144 | 0.513 | 8.076× | 12.00× | measure-only leftover 599; `model-selector-keybindings` vs getKeybindings slot-or-default; first-freeze headroom 12.0 | invent pause；地板优化另刀 |
+| `cli_selectors.make_model_selector_state` | 21.230 | 6.989 | 3.037× | 8.00× | measure-only leftover 600; `make-model-selector-state` vs constructor sort+filter+select | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

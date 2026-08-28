@@ -743,6 +743,9 @@
     ("cli_selectors.scoped_models_selector_finish_refresh" . 50)
     ("cli_selectors.scoped_models_selector_key_p" . 50)
     ("cli_selectors.scoped_models_binding_label" . 50)
+    ("cli_selectors.model_selector_key_p" . 50)
+    ("cli_selectors.model_selector_keybindings" . 50)
+    ("cli_selectors.make_model_selector_state" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -20672,6 +20675,105 @@
       custom "app.models.save"))))
 
 
+(defun make-model-selector-key-bench-state (&key keybindings)
+  (cadr-cli::%make-model-selector-state
+   :all-models (make-model-selector-test-models)
+   :keybindings keybindings))
+
+
+(defun model-selector-key-p-encoded (state data name)
+  (if (cadr-cli::model-selector-key-p state data name)
+      "true"
+      "false"))
+
+
+(defun run-cli-selectors-model-selector-key-p ()
+  (let ((state (make-model-selector-key-bench-state
+                :keybindings
+                cadr-cli::*default-models-selector-keybindings*))
+        (ctrl-s (string (code-char 19)))
+        (arrow-up (format nil "~C[A" #\Escape))
+        (tab (string #\Tab)))
+    (list
+     (model-selector-key-p-encoded
+      state tab "tui.input.tab")
+     (model-selector-key-p-encoded
+      state tab "tui.select.up")
+     (model-selector-key-p-encoded
+      state arrow-up "tui.select.up")
+     (model-selector-key-p-encoded
+      state (csi-modified-arrow 1 #\A) "tui.select.up")
+     (model-selector-key-p-encoded
+      state ctrl-s "app.models.save"))))
+
+
+(defun model-selector-keybindings-first-key (state name)
+  (let* ((manager (cadr-cli::model-selector-keybindings state))
+         (keys (cadr-tui:keybinding-keys manager name)))
+    (or (first keys) name)))
+
+
+(defun run-cli-selectors-model-selector-keybindings ()
+  (let ((empty (make-model-selector-key-bench-state))
+        (explicit
+          (make-model-selector-key-bench-state
+           :keybindings
+           cadr-cli::*default-models-selector-keybindings*))
+        (custom
+          (make-model-selector-key-bench-state
+           :keybindings *goal20-scoped-models-custom-keybindings*)))
+    (list
+     (model-selector-keybindings-first-key empty "app.models.save")
+     (model-selector-keybindings-first-key explicit "app.models.save")
+     (model-selector-keybindings-first-key custom "app.models.save")
+     (model-selector-keybindings-first-key empty "app.models.enableAll")
+     (model-selector-keybindings-first-key empty "tui.select.confirm"))))
+
+
+(defun encode-make-model-selector-state
+    (models &key scoped-models current-model)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :scoped-models scoped-models
+           :current-model
+           (or current-model (first models)))))
+    (format nil "~A|~D|~D|~A"
+            (string-downcase
+             (symbol-name
+              (cadr-cli::model-selector-state-scope state)))
+            (cadr-cli::model-selector-state-selected state)
+            (let ((table
+                    (cadr-cli::model-selector-state-search-text-table
+                     state)))
+              (if (hash-table-p table)
+                  (hash-table-count table)
+                  0))
+            (format nil "~{~A~^,~}"
+                    (mapcar
+                     #'cadr-cli::qualified-model-id
+                     (cadr-cli::model-selector-visible-models
+                      state))))))
+
+
+(defun run-cli-selectors-make-model-selector-state ()
+  (let* ((models (make-model-selector-test-models))
+         (scoped (list (first models) (second models)))
+         (extra
+           (make-model-selector-search-fixture
+            :id "grok" :provider :xai :name "Grok"))
+         (one (list (first models))))
+    (list
+     (encode-make-model-selector-state models)
+     (encode-make-model-selector-state
+      models :current-model (car (last models)))
+     (encode-make-model-selector-state
+      models :scoped-models scoped)
+     (encode-make-model-selector-state
+      models :scoped-models (list (first models) extra))
+     (encode-make-model-selector-state one))))
+
+
 (defun scoped-models-finish-key-binding-observed-pairs
     (finish-refresh key-p binding-label)
   (list
@@ -20690,6 +20792,26 @@
    "smbl_confirm" (nth 2 binding-label)
    "smbl_fallback" (nth 3 binding-label)
    "smbl_custom" (nth 4 binding-label)))
+
+
+(defun model-selector-key-bindings-state-observed-pairs
+    (key-p keybindings make-state)
+  (list
+   "mskp_tab_hit" (nth 0 key-p)
+   "mskp_tab_miss" (nth 1 key-p)
+   "mskp_up_hit" (nth 2 key-p)
+   "mskp_csi_up" (nth 3 key-p)
+   "mskp_save_hit" (nth 4 key-p)
+   "mskb_nil" (nth 0 keybindings)
+   "mskb_default" (nth 1 keybindings)
+   "mskb_custom" (nth 2 keybindings)
+   "mskb_enable" (nth 3 keybindings)
+   "mskb_confirm" (nth 4 keybindings)
+   "msmk_all" (nth 0 make-state)
+   "msmk_last" (nth 1 make-state)
+   "msmk_scoped" (nth 2 make-state)
+   "msmk_extra" (nth 3 make-state)
+   "msmk_one" (nth 4 make-state)))
 
 
 (defun run-cli-selectors-qualified-model-id ()
@@ -21094,6 +21216,12 @@
           (run-cli-selectors-scoped-models-selector-key-p))
         (leftover-binding-label
           (run-cli-selectors-scoped-models-binding-label))
+        (leftover-ms-key-p
+          (run-cli-selectors-model-selector-key-p))
+        (leftover-ms-keybindings
+          (run-cli-selectors-model-selector-keybindings))
+        (leftover-make-ms-state
+          (run-cli-selectors-make-model-selector-state))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -21859,6 +21987,8 @@
               leftover-refresh-items leftover-sm-clamp leftover-mark-changed)
              (scoped-models-finish-key-binding-observed-pairs
               leftover-finish-refresh leftover-key-p leftover-binding-label)
+             (model-selector-key-bindings-state-observed-pairs
+              leftover-ms-key-p leftover-ms-keybindings leftover-make-ms-state)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -22715,7 +22845,22 @@
      (collect "cli_selectors.scoped_models_binding_label"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-binding-label)))))))
+                  (run-cli-selectors-scoped-models-binding-label))))
+     "model_selector_key_p"
+     (collect "cli_selectors.model_selector_key_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-key-p))))
+     "model_selector_keybindings"
+     (collect "cli_selectors.model_selector_keybindings"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-keybindings))))
+     "make_model_selector_state"
+     (collect "cli_selectors.make_model_selector_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-model-selector-state)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -25361,6 +25506,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-key-p"
       "cli_selectors.scoped_models_binding_label"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-binding-label"
+      "cli_selectors.model_selector_key_p"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-key-p"
+      "cli_selectors.model_selector_keybindings"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-keybindings"
+      "cli_selectors.make_model_selector_state"
+      "src/cadr-cli/interactive/selectors/models.lisp make-model-selector-state"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
