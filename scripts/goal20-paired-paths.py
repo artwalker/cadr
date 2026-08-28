@@ -133,7 +133,7 @@ METRICS = {
         "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step", "extension_authoring_input", "json_array_items", "json_string"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
@@ -528,6 +528,11 @@ RATIO_CEILINGS = {
     "evals_harness.eval_environment": 8.0,
     "evals_harness.prompt_step": 8.0,
     "evals_harness.reload_step": 8.0,
+    # evals_harness leftover trio on suites.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "evals_harness.extension_authoring_input": 8.0,
+    "evals_harness.json_array_items": 8.0,
+    "evals_harness.json_string": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -2030,6 +2035,18 @@ OBSERVED_EXACT = {
         "rs_type",
         "rs_no_content",
         "rs_n",
+        "ei_n",
+        "ei_t0",
+        "ei_t1",
+        "ei_t2",
+        "ei_c0",
+        "ja_vec",
+        "ja_list",
+        "ja_atom",
+        "ja_nil",
+        "js_hit",
+        "js_miss",
+        "js_empty",
     ),
     "ai_crypto_model_data": (
         "schema_version",

@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.extension_authoring_input`
+  (`extension-authoring-input` on `src/cadr-evals/suites.lisp` vs baseline
+  `describeEval` input steps). Types/length only. Observed `ei_n` / `ei_t0` /
+  `ei_t1` / `ei_t2` / `ei_c0` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only
+  leftover (Pair 439). Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.json_array_items`
+  (`json-array-items` on `src/cadr-evals/suites.lisp` vs `Array.isArray`).
+  Observed `ja_vec` / `ja_list` / `ja_atom` / `ja_nil` exact. n=5
+  **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 440). Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.json_string` (`json-string` on
+  `src/cadr-evals/suites.lisp` vs missing/false JSON string accessor).
+  Observed `js_hit` / `js_miss` / `js_empty` exact. n=5 **RATIO_PLACEHOLDER**.
+  Measure-only leftover (Pair 441). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.

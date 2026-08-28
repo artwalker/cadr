@@ -384,6 +384,9 @@
     ("evals_harness.eval_environment" . 50)
     ("evals_harness.prompt_step" . 50)
     ("evals_harness.reload_step" . 50)
+    ("evals_harness.extension_authoring_input" . 50)
+    ("evals_harness.json_array_items" . 50)
+    ("evals_harness.json_string" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -7299,6 +7302,66 @@
      (eval-flag (null (getf step :content)))
      2)))
 
+(defun run-evals-harness-extension-authoring-input ()
+  ;; Leftover on suites.lisp: three-step extension-authoring input
+  ;; vector. Types only — product copy in prompt strings is not
+  ;; an exact key (CADR vs pi).
+  (let ((steps (cadr-evals::extension-authoring-input)))
+    (list
+     (eval-flag (= (length steps) 3))
+     (eval-flag
+      (string=
+       (cadr-ai::json-get (aref steps 0) "type")
+       "prompt"))
+     (eval-flag
+      (string=
+       (cadr-ai::json-get (aref steps 1) "type")
+       "reload"))
+     (eval-flag
+      (string=
+       (cadr-ai::json-get (aref steps 2) "type")
+       "prompt"))
+     (eval-flag
+      (stringp
+       (cadr-ai::json-get (aref steps 0) "content")))
+     5)))
+
+(defun run-evals-harness-json-array-items ()
+  ;; Leftover callee of the extension-authoring judge: vector and
+  ;; list become sequences, atom and NIL do not.
+  (list
+   (eval-flag
+    (= (length
+        (cadr-evals::json-array-items
+         (vector "a" "b")))
+       2))
+   (eval-flag
+    (= (length
+        (cadr-evals::json-array-items
+         '("a" "b")))
+       2))
+   (eval-flag (null (cadr-evals::json-array-items 3)))
+   (eval-flag (null (cadr-evals::json-array-items nil)))
+   4)))
+
+(defun run-evals-harness-json-string ()
+  ;; Leftover of the hello judge: json-get or "". Missing and NIL
+  ;; become empty, a present string is kept.
+  (let ((hit
+          (cadr-ai::json-object "a" "hi"))
+        (empty
+          (cadr-ai::json-object "a" ""))
+        (miss
+          (cadr-ai::json-object "b" "x")))
+    (list
+     (eval-flag
+      (string= (cadr-evals::json-string hit "a") "hi"))
+     (eval-flag
+      (string= (cadr-evals::json-string miss "a") ""))
+     (eval-flag
+      (string= (cadr-evals::json-string empty "a") ""))
+     3)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7318,7 +7381,11 @@
          (result-json (run-evals-harness-result-json))
          (environment (run-evals-harness-eval-environment))
          (prompt-step (run-evals-harness-prompt-step))
-         (reload-step (run-evals-harness-reload-step)))
+         (reload-step (run-evals-harness-reload-step))
+         (extension-authoring-input
+           (run-evals-harness-extension-authoring-input))
+         (json-array-items (run-evals-harness-json-array-items))
+         (json-string (run-evals-harness-json-string)))
     (json-object
      "observed"
      (json-object
@@ -7399,7 +7466,19 @@
       "ps_n" (nth 2 prompt-step)
       "rs_type" (nth 0 reload-step)
       "rs_no_content" (nth 1 reload-step)
-      "rs_n" (nth 2 reload-step))
+      "rs_n" (nth 2 reload-step)
+      "ei_n" (nth 0 extension-authoring-input)
+      "ei_t0" (nth 1 extension-authoring-input)
+      "ei_t1" (nth 2 extension-authoring-input)
+      "ei_t2" (nth 3 extension-authoring-input)
+      "ei_c0" (nth 4 extension-authoring-input)
+      "ja_vec" (nth 0 json-array-items)
+      "ja_list" (nth 1 json-array-items)
+      "ja_atom" (nth 2 json-array-items)
+      "ja_nil" (nth 3 json-array-items)
+      "js_hit" (nth 0 json-string)
+      "js_miss" (nth 1 json-string)
+      "js_empty" (nth 2 json-string))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7470,7 +7549,22 @@
      (collect "evals_harness.reload_step"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-reload-step)))))))
+                  (run-evals-harness-reload-step))))
+     "extension_authoring_input"
+     (collect "evals_harness.extension_authoring_input"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-extension-authoring-input))))
+     "json_array_items"
+     (collect "evals_harness.json_array_items"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-json-array-items))))
+     "json_string"
+     (collect "evals_harness.json_string"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-json-string)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16696,6 +16790,12 @@
       "src/cadr-evals/harness.lisp make-eval-prompt-step"
       "evals_harness.reload_step"
       "src/cadr-evals/harness.lisp make-eval-reload-step"
+      "evals_harness.extension_authoring_input"
+      "src/cadr-evals/suites.lisp extension-authoring-input"
+      "evals_harness.json_array_items"
+      "src/cadr-evals/suites.lisp json-array-items"
+      "evals_harness.json_string"
+      "src/cadr-evals/suites.lisp json-string"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
