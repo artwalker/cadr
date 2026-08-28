@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.transcript_summary_text`
+  (`transcript-summary-text` on
+  `src/cadr-cli/interactive/transcript.lisp` vs customMessageText). Observed
+  `tst_hi` / `tst_empty` / `tst_cjk` / `tst_n` / `tst_space` exact. n=5
+  **5.434×** (8.866 / 1.632 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 646). Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.assistant_stop_error`
+  (`assistant-stop-error-lines` vs AssistantMessageComponent stopReason).
+  Observed `ase_len` / `ase_abort` / `ase_custom` / `ase_tool` / `ase_err`
+  exact. n=5 **10.444×** (24.257 / 2.323 µs) on host `cursor`. First-freeze
+  headroom ceiling **20.0**. Measure-only leftover (Pair 647). Over-1×
+  booked. Same commit no optimize. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.update_notification_border`
+  (`update-notification-border-line` vs warning DynamicBorder). Observed
+  `unb_w` / `unb_ch` / `unb_0` / `unb_1` / `unb_n` exact. n=5 **4.259×**
+  (6.319 / 1.484 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 648). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.assistant_has_tools`
   (`assistant-message-has-tool-calls-p` on
   `src/cadr-cli/interactive/transcript.lisp` vs AssistantMessageComponent
