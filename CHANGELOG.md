@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `oauth_pkce_device.provider_key`
+  (`oauth-callback-provider-key` on `src/cadr-ai/oauth/callback.lisp` vs
+  Anthropic/Radius display-name branches). Observed `pk_anth` / `pk_rad` /
+  `pk_other` / `pk_n` exact. n=5 **0.498×** (0.139 / 0.279 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover sibling of Pairs 310–312.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. No `src/` perf.
+- Goal 20 P.13: pair `oauth_pkce_device.http_status_text`
+  (`oauth-http-status-text` on `src/cadr-ai/oauth/callback.lisp` vs
+  `node:http` `STATUS_CODES`). Observed `st_ok` / `st_bad` / `st_miss` /
+  `st_err` / `st_n` exact. n=5 **0.528×** (0.137 / 0.260 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover sibling of Pair 334.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. No `src/` perf.
+- Goal 20 P.13: pair `oauth_pkce_device.parse_callback_request`
+  (`parse-oauth-callback-request` on `src/cadr-ai/oauth/callback.lisp` vs
+  openai-codex `startLocalOAuthServer` pathname/state/code). Observed
+  `pcr_ok` / `pcr_state` / `pcr_path` / `pcr_code` / `pcr_n` exact. n=5
+  **3.699×** (12.588 / 3.403 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover sibling of Pairs 334–335. Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  No `src/` perf.
 - Goal 20 P.13: pair `evals_harness.prompt_eval_agent` (`prompt-eval-agent` on
   `src/cadr-evals/harness.lisp` vs baseline `promptAgent`). Observed
   `pea_out` / `pea_msgs` / `pea_stop` / `pea_n` exact.

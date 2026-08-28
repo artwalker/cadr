@@ -839,6 +839,48 @@
      "piUs": 2.788,
      "ceiling": 8.0,
      "rc": 1
+    },
+    {
+     "pair": 334,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/callback.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.provider_key",
+     "branch": "cursor/pair-334-336-oauth-callback-leftovers-3839",
+     "ratio": 0.498,
+     "cadrUs": 0.139,
+     "piUs": 0.279,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 335,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/callback.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.http_status_text",
+     "branch": "cursor/pair-334-336-oauth-callback-leftovers-3839",
+     "ratio": 0.528,
+     "cadrUs": 0.137,
+     "piUs": 0.26,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 336,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/callback.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.parse_callback_request",
+     "branch": "cursor/pair-334-336-oauth-callback-leftovers-3839",
+     "ratio": 3.699,
+     "cadrUs": 12.588,
+     "piUs": 3.403,
+     "ceiling": 8.0,
+     "rc": 1
     }
    ],
    "mergeQueue": []
