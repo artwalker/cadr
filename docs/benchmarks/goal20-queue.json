@@ -919,6 +919,42 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 493,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.make_entry",
+   "branch": "cursor/user-bash-leftovers-493-495-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 493-495, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 494,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.append_output",
+   "branch": "cursor/user-bash-leftovers-493-495-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 493-495, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 495,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/interactive/user-bash.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.complete_entry",
+   "branch": "cursor/user-bash-leftovers-493-495-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 493-495, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
   }
  ],
  "mergeQueue": []
