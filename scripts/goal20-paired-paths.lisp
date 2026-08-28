@@ -91,6 +91,9 @@
 ;;;;  72. oauth_pkce_device poll-device-authorization vs pollOAuthDeviceCodeFlow
 ;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
+;;;; 502. cli_extensions_install extension-package-fragment vs loader package-name sanitize
+;;;; 503. cli_extensions_install extension-local-system-name-p vs local system name predicate
+;;;; 504. cli_extensions_install valid-inline-extension-factory-p vs loadExtensionFromFactory input check
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
@@ -370,6 +373,9 @@
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
     ("cli_extensions_install.extension_discovery" . 50)
+    ("cli_extensions_install.package_fragment" . 50)
+    ("cli_extensions_install.local_system_name" . 50)
+    ("cli_extensions_install.inline_factory" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -6754,11 +6760,58 @@
          1
          0))))
 
+(defun run-cli-extensions-package-fragment ()
+  (flet ((frag (text)
+           (cadr-cli::extension-package-fragment text)))
+    (list
+     (if (string= (frag "foo") "FOO") 1 0)
+     (if (string= (frag "a.b") "A-B") 1 0)
+     (if (string= (frag "ab_cd-9") "AB_CD-9") 1 0)
+     (if (string= (frag "") "") 1 0)
+     4)))
+
+(defun run-cli-extensions-local-system-name ()
+  (flet ((flag (name)
+           (if (cadr-cli::extension-local-system-name-p name) 1 0)))
+    (list
+     (flag "pkg.1")
+     (flag "")
+     (flag ".")
+     (flag "..")
+     (flag "a/b")
+     5)))
+
+(defun run-cli-extensions-inline-factory ()
+  (list
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (lambda ()))
+       1
+       0)
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (list :name "ext" :factory (lambda ()) :hidden-p t))
+       1
+       0)
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (list :name "" :factory (lambda ())))
+       1
+       0)
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (list :name "ext"))
+       1
+       0)
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (list :name))
+       1
+       0)))
+
 (defun measure-cli-extensions-install ()
   (let ((url (run-cli-extensions-llama-url))
         (token (run-cli-extensions-hf-token))
         (catalog (run-cli-extensions-llama-catalog))
-        (discovery (run-cli-extensions-extension-discovery)))
+        (discovery (run-cli-extensions-extension-discovery))
+        (fragment (run-cli-extensions-package-fragment))
+        (local-name (run-cli-extensions-local-system-name))
+        (inline (run-cli-extensions-inline-factory)))
     (json-object
      "observed"
      (json-object
@@ -6786,7 +6839,23 @@
       "ed_proj" (nth 4 discovery)
       "ed_glob" (nth 5 discovery)
       "ed_probe" (nth 6 discovery)
-      "ed_miss" (nth 7 discovery))
+      "ed_miss" (nth 7 discovery)
+      "pf_plain" (nth 0 fragment)
+      "pf_hyphen" (nth 1 fragment)
+      "pf_keep" (nth 2 fragment)
+      "pf_empty" (nth 3 fragment)
+      "pf_n" (nth 4 fragment)
+      "ls_ok" (nth 0 local-name)
+      "ls_empty" (nth 1 local-name)
+      "ls_dot" (nth 2 local-name)
+      "ls_dotdot" (nth 3 local-name)
+      "ls_slash" (nth 4 local-name)
+      "ls_n" (nth 5 local-name)
+      "if_fn" (nth 0 inline)
+      "if_plist" (nth 1 inline)
+      "if_empty_name" (nth 2 inline)
+      "if_no_factory" (nth 3 inline)
+      "if_odd" (nth 4 inline))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -6806,7 +6875,22 @@
      (collect "cli_extensions_install.extension_discovery"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-extension-discovery)))))))
+                  (run-cli-extensions-extension-discovery))))
+     "package_fragment"
+     (collect "cli_extensions_install.package_fragment"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-package-fragment))))
+     "local_system_name"
+     (collect "cli_extensions_install.local_system_name"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-local-system-name))))
+     "inline_factory"
+     (collect "cli_extensions_install.inline_factory"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-inline-factory)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -16668,6 +16752,12 @@
       "src/cadr-cli/extensions/llama/provider.lisp llama-provider-set-catalog"
       "cli_extensions_install.extension_discovery"
       "src/cadr-cli/extensions/discovery.lisp discover-extension-sources"
+      "cli_extensions_install.package_fragment"
+      "src/cadr-cli/extensions/loader.lisp extension-package-fragment"
+      "cli_extensions_install.local_system_name"
+      "src/cadr-cli/extensions/loader.lisp extension-local-system-name-p"
+      "cli_extensions_install.inline_factory"
+      "src/cadr-cli/extensions/loader.lisp valid-inline-extension-factory-p"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

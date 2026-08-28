@@ -132,7 +132,7 @@ METRICS = {
         "parse_query",
         "parse_authorization_input",
     ),
-    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
+    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery", "package_fragment", "local_system_name", "inline_factory"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
@@ -490,6 +490,11 @@ RATIO_CEILINGS = {
     # 1.98x (1954.5 / 987.2 us). pi leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_extensions_install.extension_discovery": 8.0,
+    # cli_extensions_install leftover trio on loader.lisp (502-504).
+    # First leftover freeze pending; 8.0 is first-freeze headroom.
+    "cli_extensions_install.package_fragment": 8.0,
+    "cli_extensions_install.local_system_name": 8.0,
+    "cli_extensions_install.inline_factory": 8.0,
     # Frozen from the first Friend-MachineD non-quick evals_harness
     # pair (samples=5): observed 0.88x (8.0 / 9.0 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -1950,6 +1955,22 @@ OBSERVED_EXACT = {
         "ed_glob",
         "ed_probe",
         "ed_miss",
+        "pf_plain",
+        "pf_hyphen",
+        "pf_keep",
+        "pf_empty",
+        "pf_n",
+        "ls_ok",
+        "ls_empty",
+        "ls_dot",
+        "ls_dotdot",
+        "ls_slash",
+        "ls_n",
+        "if_fn",
+        "if_plist",
+        "if_empty_name",
+        "if_no_factory",
+        "if_odd",
     ),
     "evals_harness": (
         "eval_sets",

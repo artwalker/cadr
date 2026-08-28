@@ -221,6 +221,9 @@ const REPETITIONS = {
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
 	"cli_extensions_install.extension_discovery": 50,
+	"cli_extensions_install.package_fragment": 50,
+	"cli_extensions_install.local_system_name": 50,
+	"cli_extensions_install.inline_factory": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -6481,11 +6484,80 @@ function runCliExtensionsExtensionDiscovery() {
 	};
 }
 
+function replicaExtensionPackageFragment(text) {
+	let out = "";
+	for (const character of text) {
+		if (/[A-Za-z0-9]/.test(character) || character === "-" || character === "_") {
+			out += character.toUpperCase();
+		} else {
+			out += "-";
+		}
+	}
+	return out;
+}
+
+function replicaExtensionLocalSystemNameP(name) {
+	if (typeof name !== "string" || name.length === 0) return false;
+	if (name === "." || name === "..") return false;
+	return [...name].every(
+		(character) => /[A-Za-z0-9]/.test(character) || character === "-" || character === "_" || character === ".",
+	);
+}
+
+function replicaValidInlineExtensionFactoryP(input) {
+	if (typeof input === "function") return true;
+	if (!input || typeof input !== "object" || Array.isArray(input)) return false;
+	for (const key of Object.keys(input)) {
+		if (key === "name") {
+			if (typeof input.name !== "string") return false;
+		} else if (key === "factory") {
+			if (typeof input.factory !== "function") return false;
+		} else if (key === "hiddenP") {
+			if (input.hiddenP !== true && input.hiddenP !== false && input.hiddenP != null) {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+	return typeof input.name === "string" && input.name.length > 0 && typeof input.factory === "function";
+}
+
+function runCliExtensionsPackageFragment() {
+	const frag = replicaExtensionPackageFragment;
+	return [
+		frag("foo") === "FOO" ? 1 : 0,
+		frag("a.b") === "A-B" ? 1 : 0,
+		frag("ab_cd-9") === "AB_CD-9" ? 1 : 0,
+		frag("") === "" ? 1 : 0,
+		4,
+	];
+}
+
+function runCliExtensionsLocalSystemName() {
+	const flag = (name) => (replicaExtensionLocalSystemNameP(name) ? 1 : 0);
+	return [flag("pkg.1"), flag(""), flag("."), flag(".."), flag("a/b"), 5];
+}
+
+function runCliExtensionsInlineFactory() {
+	const noop = () => {};
+	return [
+		replicaValidInlineExtensionFactoryP(noop) ? 1 : 0,
+		replicaValidInlineExtensionFactoryP({ name: "ext", factory: noop, hiddenP: true }) ? 1 : 0,
+		replicaValidInlineExtensionFactoryP({ name: "", factory: noop }) ? 1 : 0,
+		replicaValidInlineExtensionFactoryP({ name: "ext" }) ? 1 : 0,
+		replicaValidInlineExtensionFactoryP({ name: undefined }) ? 1 : 0,
+	];
+}
+
 async function measureCliExtensionsInstall() {
 	const url = runCliExtensionsLlamaUrl();
 	const token = await runCliExtensionsHfToken();
 	const catalog = runCliExtensionsLlamaCatalog();
 	const discovery = runCliExtensionsExtensionDiscovery();
+	const fragment = runCliExtensionsPackageFragment();
+	const localName = runCliExtensionsLocalSystemName();
+	const inline = runCliExtensionsInlineFactory();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -6499,7 +6571,37 @@ async function measureCliExtensionsInstall() {
 		extension_discovery: await collect("cli_extensions_install.extension_discovery", () => {
 			return () => runCliExtensionsExtensionDiscovery();
 		}),
-		observed: { ...url, ...token, ...catalog, ...discovery },
+		package_fragment: await collect("cli_extensions_install.package_fragment", () => {
+			return () => runCliExtensionsPackageFragment();
+		}),
+		local_system_name: await collect("cli_extensions_install.local_system_name", () => {
+			return () => runCliExtensionsLocalSystemName();
+		}),
+		inline_factory: await collect("cli_extensions_install.inline_factory", () => {
+			return () => runCliExtensionsInlineFactory();
+		}),
+		observed: {
+			...url,
+			...token,
+			...catalog,
+			...discovery,
+			pf_plain: fragment[0],
+			pf_hyphen: fragment[1],
+			pf_keep: fragment[2],
+			pf_empty: fragment[3],
+			pf_n: fragment[4],
+			ls_ok: localName[0],
+			ls_empty: localName[1],
+			ls_dot: localName[2],
+			ls_dotdot: localName[3],
+			ls_slash: localName[4],
+			ls_n: localName[5],
+			if_fn: inline[0],
+			if_plist: inline[1],
+			if_empty_name: inline[2],
+			if_no_factory: inline[3],
+			if_odd: inline[4],
+		},
 	};
 }
 
@@ -17035,6 +17137,12 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/provider.ts createLlamaProvider.setCatalog",
 			"cli_extensions_install.extension_discovery":
 				"packages/coding-agent/src/core/extensions/loader.ts discoverAndLoadExtensions path discovery",
+			"cli_extensions_install.package_fragment":
+				"packages/coding-agent/src/core/extensions/loader.ts package-name sanitize",
+			"cli_extensions_install.local_system_name":
+				"packages/coding-agent/src/core/extensions/loader.ts local system name predicate",
+			"cli_extensions_install.inline_factory":
+				"packages/coding-agent/src/core/extensions/loader.ts loadExtensionFromFactory input check",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":
