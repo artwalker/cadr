@@ -280,4 +280,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.release_extensions` | 6.187 | 0.293 | 21.13× | 8.00× | measure-only pair 370; `release-eval-extensions`; ratio > named ceiling — gate uses variance/µs floor | invent pause；地板优化另刀 |
 | `evals_harness.agent_tools` | 1.466 | 0.286 | 5.118× | 8.00× | measure-only pair 371; `eval-agent-tools` vs session tools list | invent pause；地板优化另刀 |
 | `evals_harness.extension_paths` | 2.963 | 0.464 | 6.381× | 8.00× | measure-only pair 372; `eval-extension-paths` vs `getExtensionPaths` | invent pause；地板优化另刀 |
+| `grep_tool.make_tool` | 4.152 | 0.415 | 10.006× | 8.00× | measure-only pair 375; `make-grep-tool` vs `createGrepToolDefinition`; printed ratio > named ceiling — gate uses 10 µs variance floor | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

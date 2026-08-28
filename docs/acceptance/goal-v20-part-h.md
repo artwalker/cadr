@@ -4549,6 +4549,51 @@ skipped) — not extension load/reload. Observed `ep_none` / `ep_n` /
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). Same commit no optimize.
 
+### Pair 373 — `grep_tool` (match_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `match_event` | `ripgrep-match-event` (`src/cadr-cli/tools/grep.lisp`) | JSON.parse of rg `--json` match events (`packages/coding-agent/src/core/tools/grep.ts`) |
+
+Leftover sibling of Pair `tool_grep.context_file` (`grep-lines` / execute) on
+`src/cadr-cli/tools/grep.lisp`. Timed work is match-event JSON parse (match /
+begin / invalid) — not `grep-lines`, not context blocks, not execute. Observed
+`rme_match` / `rme_begin` / `rme_bad` / `rme_n` are exact. First n=5 freeze
+**0.954×** (4.205 / 4.407 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+Pair numbers 346–372 belong to other lanes; this cut is 373–375 only.
+
+### Pair 374 — `grep_tool` (line_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `line_text` | `ripgrep-line-text` (`src/cadr-cli/tools/grep.lisp`) | match.lineText CR/LF sanitize (`packages/coding-agent/src/core/tools/grep.ts`) |
+
+Leftover sibling of Pair 373 `match_event` on the same `grep.lisp` leftover
+surface. Timed work is CR/LF strip of match line text (CRLF / LF / plain / CR)
+— not execute. Observed `rlt_crlf` / `rlt_nl` / `rlt_plain` / `rlt_cr` /
+`rlt_n` are exact. First n=5 freeze **0.962×** (0.712 / 0.741 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
+### Pair 375 — `grep_tool` (make_tool)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_tool` | `make-grep-tool` (`src/cadr-cli/tools/grep.lisp`) | `createGrepToolDefinition` (`packages/coding-agent/src/core/tools/grep.ts`) |
+
+Leftover sibling of Pair 373 `match_event` and Pair 374 `line_text` on the
+same `grep.lisp` leftover surface. Timed work is tool name / description /
+required `pattern` — not execute. Observed `gmt_name` / `gmt_desc` /
+`gmt_req` / `gmt_n` are exact. First n=5 freeze **10.006×** (4.152 / 0.415 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Printed ratio is above the named 8.0× ceiling; the gate bound is the 10 µs
+variance floor. Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

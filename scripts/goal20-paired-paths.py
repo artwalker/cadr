@@ -570,6 +570,11 @@ RATIO_CEILINGS = {
     "evals_harness.release_extensions": 8.0,
     "evals_harness.agent_tools": 8.0,
     "evals_harness.extension_paths": 8.0,
+    # grep_tool leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "grep_tool.match_event": 8.0,
+    "grep_tool.line_text": 8.0,
+    "grep_tool.make_tool": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x

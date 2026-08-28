@@ -184,6 +184,9 @@ const REPETITIONS = {
 	"write_tool.ensure_parent": 50,
 	"write_tool.write_utf8": 50,
 	"write_tool.make_tool": 50,
+	"grep_tool.match_event": 50,
+	"grep_tool.line_text": 50,
+	"grep_tool.make_tool": 50,
 	"ls_tool.directory_entry_name": 50,
 	"ls_tool.list_directory": 50,
 	"ls_tool.make_tool": 50,
@@ -3369,6 +3372,104 @@ async function measureWriteTool() {
 		},
 	};
 }
+
+function ripgrepMatchEvent(line) {
+	try {
+		const event = JSON.parse(line);
+		if (event.type === "match") {
+			const filePath = event.data?.path?.text;
+			const lineNumber = event.data?.line_number;
+			if (typeof filePath === "string" && typeof lineNumber === "number") {
+				return {
+					path: filePath,
+					lineNumber,
+					lineText: event.data?.lines?.text,
+				};
+			}
+		}
+	} catch {
+		return null;
+	}
+	return null;
+}
+
+function ripgrepLineText(text) {
+	return text.replace(/\r\n/g, "\n").replace(/\r/g, "").replace(/\n$/, "");
+}
+
+function runGrepMatchEvent() {
+	const matchLine =
+		'{"type":"match","data":{"path":{"text":"a.txt"},"lines":{"text":"hello\\n"},"line_number":3}}';
+	const beginLine = '{"type":"begin","data":{"path":{"text":"a.txt"}}}';
+	const badLine = "not-json";
+	const match = ripgrepMatchEvent(matchLine);
+	const begin = ripgrepMatchEvent(beginLine);
+	const bad = ripgrepMatchEvent(badLine);
+	return {
+		rme_match: match && match.path === "a.txt" && match.lineNumber === 3 ? 1 : 0,
+		rme_begin: begin === null ? 1 : 0,
+		rme_bad: bad === null ? 1 : 0,
+		rme_n: 3,
+	};
+}
+
+function runGrepLineText() {
+	return {
+		rlt_crlf: ripgrepLineText("hello\r\n") === "hello" ? 1 : 0,
+		rlt_nl: ripgrepLineText("hello\n") === "hello" ? 1 : 0,
+		rlt_plain: ripgrepLineText("hello") === "hello" ? 1 : 0,
+		rlt_cr: ripgrepLineText("hello\r") === "hello" ? 1 : 0,
+		rlt_n: 4,
+	};
+}
+
+function grepSchemaRequired(def) {
+	const params = def?.parameters;
+	if (Array.isArray(params?.required)) return params.required;
+	if (Array.isArray(params?.Required)) return params.Required;
+	const properties = params?.properties;
+	if (properties && typeof properties === "object") return Object.keys(properties);
+	return [];
+}
+
+function runGrepMakeTool() {
+	const def = grepModule.createGrepToolDefinition("/tmp");
+	const required = grepSchemaRequired(def);
+	const description = def.description ?? "";
+	return {
+		gmt_name: def.name === "grep" ? 1 : 0,
+		gmt_desc:
+			description.includes("Search file contents for a pattern") &&
+			description.includes("Respects .gitignore")
+				? 1
+				: 0,
+		gmt_req: required.includes("pattern") ? 1 : 0,
+		gmt_n: 3,
+	};
+}
+
+async function measureGrepTool() {
+	const matchObserved = runGrepMatchEvent();
+	const lineObserved = runGrepLineText();
+	const makeObserved = runGrepMakeTool();
+	return {
+		match_event: await collect("grep_tool.match_event", () => {
+			return () => runGrepMatchEvent();
+		}),
+		line_text: await collect("grep_tool.line_text", () => {
+			return () => runGrepLineText();
+		}),
+		make_tool: await collect("grep_tool.make_tool", () => {
+			return () => runGrepMakeTool();
+		}),
+		observed: {
+			...matchObserved,
+			...lineObserved,
+			...makeObserved,
+		},
+	};
+}
+
 const LS_TOOL_CWD = "/tmp/goal20-ls-tool-cwd";
 
 function lsDirectoryEntryName(fullPath) {
@@ -17753,6 +17854,8 @@ process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
 process.stderr.write("goal20 pi paired paths: write_tool\n");
 const writeTool = await measureWriteTool();
+process.stderr.write("goal20 pi paired paths: grep_tool\n");
+const grepTool = await measureGrepTool();
 process.stderr.write("goal20 pi paired paths: ls_tool\n");
 const lsTool = await measureLsTool();
 process.stderr.write("goal20 pi paired paths: tool_manager\n");
@@ -17961,6 +18064,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.writeFile (fs.writeFile utf-8)",
 			"write_tool.make_tool":
 				"packages/coding-agent/src/core/tools/write.ts createWriteToolDefinition",
+			"grep_tool.match_event":
+				"packages/coding-agent/src/core/tools/grep.ts JSON.parse rg --json match event (cadr ripgrep-match-event)",
+			"grep_tool.line_text":
+				"packages/coding-agent/src/core/tools/grep.ts match.lineText CR/LF sanitize (cadr ripgrep-line-text)",
+			"grep_tool.make_tool":
+				"packages/coding-agent/src/core/tools/grep.ts createGrepToolDefinition",
 			"ls_tool.directory_entry_name":
 				"packages/coding-agent/src/core/tools/ls.ts directory suffix (stat isDirectory + '/' ; cadr directory-entry-name)",
 			"ls_tool.list_directory":
@@ -18598,6 +18707,7 @@ const result = {
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
 		write_tool: writeTool,
+		grep_tool: grepTool,
 		ls_tool: lsTool,
 		tool_manager: toolManager,
 		powershell_tool: powershellTool,

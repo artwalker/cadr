@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `grep_tool.match_event` (`ripgrep-match-event` on
+  `src/cadr-cli/tools/grep.lisp` vs baseline JSON.parse of rg `--json` match
+  events). Observed `rme_match` / `rme_begin` / `rme_bad` / `rme_n` exact.
+  n=5 **0.954×** (4.205 / 4.407 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Pairs 373–375.
+- Goal 20 P.13 leftover: pair `grep_tool.line_text` (`ripgrep-line-text` on
+  `src/cadr-cli/tools/grep.lisp` vs baseline match.lineText CR/LF sanitize).
+  Observed `rlt_crlf` / `rlt_nl` / `rlt_plain` / `rlt_cr` / `rlt_n` exact.
+  n=5 **0.962×** (0.712 / 0.741 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13 leftover: pair `grep_tool.make_tool` (`make-grep-tool` on
+  `src/cadr-cli/tools/grep.lisp` vs baseline `createGrepToolDefinition`).
+  Observed `gmt_name` / `gmt_desc` / `gmt_req` / `gmt_n` exact.
+  n=5 **10.006×** (4.152 / 0.415 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Printed ratio is above the named 8.0× ceiling;
+  the gate bound is the 10 µs variance floor. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `evals_harness.release_extensions` /
   `agent_tools` / `extension_paths` (`src/cadr-evals/harness.lisp` vs
   baseline eval session extension cleanup / session tools list /
