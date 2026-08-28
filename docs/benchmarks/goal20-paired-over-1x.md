@@ -332,4 +332,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.sdk_nonempty` | 20.855 | 6.284 | 3.319× | 8.00× | measure-only pair 469; leftover `sdk-nonempty-setting-string` vs `getDefaultProvider` | invent pause；地板优化另刀 |
 | `settings_load.sdk_boolean` | 13.423 | 6.283 | 2.136× | 8.00× | measure-only pair 470; leftover `sdk-settings-boolean` vs `getCompactionEnabled` | invent pause；地板优化另刀 |
 | `settings_load.sdk_tools` | 12.769 | 6.268 | 2.037× | 8.00× | measure-only pair 471; leftover `sdk-settings-enabled-tools` vs `getDefaultTools` | invent pause；地板优化另刀 |
+| `skill_prompt_load.resolve_prompt` | 16.882 | 4.643 | 3.636× | 8.00× | measure-only pair 472; leftover `resolve-system-prompt` vs `resolvePromptInput` | invent pause；地板优化另刀 |
+| `skill_prompt_load.node_read_error` | 10.042 | 3.219 | 3.120× | 8.00× | measure-only pair 473; leftover `node-read-error-message` vs Node fs errno text | invent pause；地板优化另刀 |
+| `skill_prompt_load.prompt_appends` | 6.306 | 1.930 | 3.268× | 8.00× | measure-only pair 474; leftover `resolve-system-prompt-with-appends` vs append join | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

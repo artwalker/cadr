@@ -2708,6 +2708,51 @@
    "piUs": 6.268,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 472,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/system-prompt.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.resolve_prompt",
+   "branch": "cursor/system-prompt-leftovers-472-474-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 472-474, not sequential nextPairNum)",
+   "ratio": 3.636,
+   "cadrUs": 16.882,
+   "piUs": 4.643,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 473,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/system-prompt.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.node_read_error",
+   "branch": "cursor/system-prompt-leftovers-472-474-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 472-474, not sequential nextPairNum)",
+   "ratio": 3.12,
+   "cadrUs": 10.042,
+   "piUs": 3.219,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 474,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/system-prompt.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.prompt_appends",
+   "branch": "cursor/system-prompt-leftovers-472-474-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 472-474, not sequential nextPairNum)",
+   "ratio": 3.268,
+   "cadrUs": 6.306,
+   "piUs": 1.93,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

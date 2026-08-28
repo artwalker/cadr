@@ -148,7 +148,7 @@ METRICS = {
     "websocket_stream": ("stream_roundtrip", "ws_text", "stop_reason", "text_characters", "usage_input", "usage_output"),
     "cli_sdk": ("version_newer", "cache_miss", "cache_waste", "thinking_level", "session_list", "agent_session", "session_services", "model_runtime", "beta", "eq", "older", "newer_flag", "equal_flag", "cm_tok", "cm_idle", "cm_chg", "cm_hit", "sw_tok", "sw_idle", "sw_chg", "sw_hit", "healthy_hit", "empty_hit", "cw_tok", "cw_n", "cw_healthy", "cw_reset", "cw_sw_tok", "cw_sw_n", "cw_nocache", "tl_off", "tl_min", "tl_low", "tl_med", "tl_high", "tl_xhigh", "tl_max", "tl_miss", "sl_n", "sl_id", "sl_empty", "as_ok", "as_model", "as_fb", "ss_ok", "ss_cwd", "ss_snap", "mr_oa", "mr_an", "mr_missp", "mr_gpt", "mr_missm"),
     "provider_registry_defs": ("lookup", "definition_ids", "merge_environment", "runtime_models", "structured_api_key_login", "openai", "anthropic", "google", "unknown", "count", "sorted_digest", "me_oa", "me_gemini", "me_azure", "me_miss", "rm_openai", "rm_anthropic", "rm_google", "rm_unknown", "sl_openai", "sl_anthropic", "sl_google", "sl_bedrock", "sl_vertex", "api_key_strategy", "provider_options", "strip_runtime_options"),
-    "skill_prompt_load": ("build_prompt", "custom_len", "append_len", "ctx_len", "has_cwd", "has_extra", "has_agents"),
+    "skill_prompt_load": ("build_prompt", "custom_len", "append_len", "ctx_len", "has_cwd", "has_extra", "has_agents", "resolve_prompt", "node_read_error", "prompt_appends"),
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth", "count", "baseline", "snippet_count", "read_first", "option_count", "auth_pairs_digest", "vertex_structured", "bedrock_structured", "session_path", "split_command", "path_argument", "legacy_product", "shell_quote", "affirmative"),
     "ai_runtime_faux": ("blocks", "text_len", "text", "think_len", "think"),
     "http_transport": ("parse_url", "https_scheme", "https_host", "https_path", "http_scheme", "http_host", "http_port", "http_path"),
@@ -748,6 +748,13 @@ RATIO_CEILINGS = {
     "settings_load.sdk_nonempty": 8.0,
     "settings_load.sdk_boolean": 8.0,
     "settings_load.sdk_tools": 8.0,
+    # skill_prompt_load leftover trio (samples=5): observed
+    # resolve_prompt 3.64x (16.88 / 4.64 us), node_read_error 3.12x
+    # (10.04 / 3.22 us), prompt_appends 3.27x (6.31 / 1.93 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
+    "skill_prompt_load.resolve_prompt": 8.0,
+    "skill_prompt_load.node_read_error": 8.0,
+    "skill_prompt_load.prompt_appends": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -3397,6 +3404,15 @@ OBSERVED_EXACT = {
         "has_cwd",
         "has_extra",
         "has_agents",
+        "rp_lit",
+        "rp_file",
+        "rp_miss",
+        "nr_eisdir",
+        "nr_eacces",
+        "nr_other",
+        "pa_len",
+        "pa_join",
+        "pa_base",
     ),
     "cli_bootstrap_sessions": (
         "count",

@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `skill_prompt_load.resolve_prompt`
+  (`resolve-system-prompt` on `src/cadr-cli/system-prompt.lisp` vs
+  `resolvePromptInput`). Observed `rp_lit` / `rp_file` / `rp_miss` exact.
+  n=5 **3.636×** (16.882 / 4.643 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 472). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `skill_prompt_load.node_read_error`
+  (`node-read-error-message` on `src/cadr-cli/system-prompt.lisp` vs Node
+  fs errno text). Observed `nr_eisdir` / `nr_eacces` / `nr_other` exact.
+  n=5 **3.120×** (10.042 / 3.219 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 473). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13 leftover: pair `skill_prompt_load.prompt_appends`
+  (`resolve-system-prompt-with-appends` on `src/cadr-cli/system-prompt.lisp`
+  vs appendSystemPrompt join). Observed `pa_len` / `pa_join` / `pa_base`
+  exact. n=5 **3.268×** (6.306 / 1.930 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 474). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `settings_load.sdk_nonempty`
   (`sdk-nonempty-setting-string` on `src/cadr-cli/sdk/settings-service.lisp` vs
   SettingsManager nonempty defaultProvider). Observed `sn_prov` / `sn_empty` /

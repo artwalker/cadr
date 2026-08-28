@@ -63,6 +63,8 @@
 ;;;; 404. provider_registry_defs built-in-provider-options vs Azure/Cloudflare/Google env keys
 ;;;; 405. provider_registry_defs remove-runtime-only-options vs omit apiKey/headers/environment/authType
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
+;;;;      leftover: resolve-system-prompt / node-read-error-message /
+;;;;      resolve-system-prompt-with-appends
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
@@ -706,6 +708,9 @@
     ("core_rest.redacted_types" . 50)
     ("core_rest.threads_join" . 5)
     ("skill_prompt_load.build_prompt" . 50)
+    ("skill_prompt_load.resolve_prompt" . 50)
+    ("skill_prompt_load.node_read_error" . 50)
+    ("skill_prompt_load.prompt_appends" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
     ("cli_bootstrap_sessions.session_path" . 50)
@@ -19826,8 +19831,63 @@
      (if (search "extra" appended) 1 0)
      (if (search "AGENTS.md" with-ctx) 1 0))))
 
+(defun stage-skill-prompt-resolve-file ()
+  (let* ((dir (pathname "/tmp/goal20-skill-prompt-resolve/"))
+         (file (merge-pathnames "prompt.md" dir)))
+    (ensure-directories-exist dir)
+    (with-open-file (out file :direction :output :if-exists :supersede
+                         :if-does-not-exist :create
+                         :element-type 'character)
+      (write-string "from-file" out))
+    (namestring file)))
+
+(defun run-skill-prompt-resolve-prompt (file)
+  (let ((literal (cadr-cli::resolve-system-prompt "hello"))
+        (from-file (cadr-cli::resolve-system-prompt file))
+        (missing (cadr-cli::resolve-system-prompt
+                  "literally-not-a-path-zzz")))
+    (list
+     (length literal)
+     (if (string= from-file "from-file") 1 0)
+     (length missing))))
+
+(defun run-skill-prompt-node-read-error (dir)
+  (list
+   (if (search "EISDIR"
+               (cadr-cli::node-read-error-message dir "x")
+               :test #'char-equal)
+       1
+       0)
+   (if (search "EACCES"
+               (cadr-cli::node-read-error-message
+                "/tmp/missing-eacces"
+                "Permission denied")
+               :test #'char-equal)
+       1
+       0)
+   (if (plusp
+        (length
+         (cadr-cli::node-read-error-message
+          "/tmp/missing-other" "boom")))
+       1
+       0)))
+
+(defun run-skill-prompt-prompt-appends ()
+  (let ((joined
+          (cadr-cli::resolve-system-prompt-with-appends
+           "base" '("one" "two"))))
+    (list
+     (length joined)
+     (if (search (format nil "~%~%") joined) 1 0)
+     (if (eql (search "base" joined) 0) 1 0))))
+
 (defun measure-skill-prompt-build ()
-  (let ((observed (run-skill-prompt-build)))
+  (let* ((file (stage-skill-prompt-resolve-file))
+         (dir "/tmp/goal20-skill-prompt-resolve/")
+         (observed (run-skill-prompt-build))
+         (resolve (run-skill-prompt-resolve-prompt file))
+         (node-err (run-skill-prompt-node-read-error dir))
+         (appends (run-skill-prompt-prompt-appends)))
     (json-object
      "observed"
      (json-object
@@ -19836,12 +19896,36 @@
       "ctx_len" (third observed)
       "has_cwd" (fourth observed)
       "has_extra" (fifth observed)
-      "has_agents" (sixth observed))
+      "has_agents" (sixth observed)
+      "rp_lit" (first resolve)
+      "rp_file" (second resolve)
+      "rp_miss" (third resolve)
+      "nr_eisdir" (first node-err)
+      "nr_eacces" (second node-err)
+      "nr_other" (third node-err)
+      "pa_len" (first appends)
+      "pa_join" (second appends)
+      "pa_base" (third appends))
      "build_prompt"
      (collect "skill_prompt_load.build_prompt"
               (lambda ()
                 (lambda ()
-                  (run-skill-prompt-build)))))))
+                  (run-skill-prompt-build))))
+     "resolve_prompt"
+     (collect "skill_prompt_load.resolve_prompt"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-resolve-prompt file))))
+     "node_read_error"
+     (collect "skill_prompt_load.node_read_error"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-node-read-error dir))))
+     "prompt_appends"
+     (collect "skill_prompt_load.prompt_appends"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-prompt-appends)))))))
 
 (defun run-cli-bootstrap-coding-tools ()
   (let* ((tools (cadr-cli:make-coding-tools "/tmp/proj"))
@@ -21116,6 +21200,12 @@
       "src/cadr-ai/providers/runtime-projection.lisp remove-runtime-only-options"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
+      "skill_prompt_load.resolve_prompt"
+      "src/cadr-cli/system-prompt.lisp resolve-system-prompt"
+      "skill_prompt_load.node_read_error"
+      "src/cadr-cli/system-prompt.lisp node-read-error-message"
+      "skill_prompt_load.prompt_appends"
+      "src/cadr-cli/system-prompt.lisp resolve-system-prompt-with-appends"
       "cli_bootstrap_sessions.coding_tools"
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "cli_bootstrap_sessions.bootstrap_auth"
