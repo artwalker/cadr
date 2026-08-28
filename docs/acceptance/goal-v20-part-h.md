@@ -4686,6 +4686,50 @@ constructed result — not `run-smoke-eval`, not a live provider. Observed
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). cadr leads. Same commit no optimize.
 
+### Pair 394 — `resource_loader` (context_from_dir)
+
+| metric | cadr | pi |
+|---|---|---|
+| `context_from_dir` | `load-context-file-from-dir` (`src/cadr-cli/resource-loader.lisp`) | `loadContextFileFromDir` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of the `resource_loader` hole on `src/cadr-cli/resource-loader.lisp`.
+Timed work is first-wins candidate (`AGENTS.override.md` / `AGENTS.md` /
+`CLAUDE.md`) plus empty-dir miss — not ancestor walk, not `reload-resources`,
+not `dedupe-resources-by-name`. Do not exact file content (cadr returns a
+path; pi also reads). Observed `cfd_agents` / `cfd_empty` / `cfd_claude` /
+`cfd_override` / `cfd_n` are exact. First n=5 freeze **2.413×** (64.741 /
+26.834 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 395 — `resource_loader` (project_context)
+
+| metric | cadr | pi |
+|---|---|---|
+| `project_context` | `load-project-context-files` (`src/cadr-cli/resource-loader.lisp`) | `loadProjectContextFiles` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pair 394 `context_from_dir` on the same `resource_loader`
+hole. Timed work is the exported ancestor+global context-file walk on the
+staged resource cwd/agent — not `reload-resources`. Do not exact file
+content. Observed `pc_n` / `pc_cwd` / `pc_cases` are exact. First n=5 freeze
+**1.913×** (56.791 / 29.679 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 396 — `resource_loader` (nearest_config)
+
+| metric | cadr | pi |
+|---|---|---|
+| `nearest_config` | `nearest-config-file` (`src/cadr-cli/resource-loader.lisp`) | project `SYSTEM.md` `existsSync` in `discoverSystemPromptFile` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pairs 394–395 on the same `resource_loader` hole. Timed
+work is nearest project-config `SYSTEM.md`, missing `APPEND_SYSTEM.md`, and
+missing `NOPE.md` — not agent-dir global fallback, not `reload-resources`.
+Observed `nc_sys` / `nc_append` / `nc_miss` / `nc_n` are exact. First n=5
+freeze **5.401×** (30.226 / 5.596 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -203,6 +203,9 @@ const REPETITIONS = {
 	"settings_load.config_paths": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
+	"resource_loader.context_from_dir": 50,
+	"resource_loader.project_context": 50,
+	"resource_loader.nearest_config": 50,
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
 	"package_manager.package_source": 50,
@@ -2368,17 +2371,119 @@ function runResourceLoaderDedupeByName() {
 	};
 }
 
+const CONTEXT_FROM_DIR_CANDIDATES = [
+	"AGENTS.override.md",
+	"AGENTS.md",
+	"AGENTS.MD",
+	"CLAUDE.md",
+	"CLAUDE.MD",
+];
+
+const leftoverContextAgents = path.join(scratch, "resource-leftover", "agents");
+const leftoverContextEmpty = path.join(scratch, "resource-leftover", "empty");
+const leftoverContextClaude = path.join(scratch, "resource-leftover", "claude");
+const leftoverContextOverride = path.join(scratch, "resource-leftover", "override");
+for (const directory of [
+	leftoverContextAgents,
+	leftoverContextEmpty,
+	leftoverContextClaude,
+	leftoverContextOverride,
+]) {
+	mkdirSync(directory, { recursive: true });
+}
+copyFileSync(path.join(fixtureDirectory, "resource-agents.md"), path.join(leftoverContextAgents, "AGENTS.md"));
+copyFileSync(path.join(fixtureDirectory, "resource-agents.md"), path.join(leftoverContextClaude, "CLAUDE.md"));
+copyFileSync(
+	path.join(fixtureDirectory, "resource-agents.md"),
+	path.join(leftoverContextOverride, "AGENTS.override.md"),
+);
+copyFileSync(path.join(fixtureDirectory, "resource-agents.md"), path.join(leftoverContextOverride, "AGENTS.md"));
+
+function loadContextFileFromDir(dir) {
+	for (const filename of CONTEXT_FROM_DIR_CANDIDATES) {
+		const filePath = path.join(dir, filename);
+		if (!existsSync(filePath)) continue;
+		try {
+			if (!statSync(filePath).isFile()) continue;
+			readFileSync(filePath, "utf-8");
+			return filePath;
+		} catch {
+			// unreadable candidate is skipped, matching loadContextFileFromDir
+		}
+	}
+	return null;
+}
+
+function runResourceLoaderContextFromDir() {
+	const agentsHit = loadContextFileFromDir(leftoverContextAgents);
+	const emptyHit = loadContextFileFromDir(leftoverContextEmpty);
+	const claudeHit = loadContextFileFromDir(leftoverContextClaude);
+	const overrideHit = loadContextFileFromDir(leftoverContextOverride);
+	return {
+		cfd_agents: path.basename(agentsHit ?? "") === "AGENTS.md" ? 1 : 0,
+		cfd_empty: emptyHit ? 0 : 1,
+		cfd_claude: path.basename(claudeHit ?? "") === "CLAUDE.md" ? 1 : 0,
+		cfd_override: path.basename(overrideHit ?? "") === "AGENTS.override.md" ? 1 : 0,
+		cfd_n: 4,
+	};
+}
+
+function runResourceLoaderProjectContext() {
+	const files = resourceLoaderModule.loadProjectContextFiles({
+		cwd: resourceCwdDirectory,
+		agentDir: resourceAgentDirectory,
+	});
+	return {
+		pc_n: files.length,
+		pc_cwd: files.some((entry) => path.basename(entry.path) === "AGENTS.md") ? 1 : 0,
+		pc_cases: 2,
+	};
+}
+
+function nearestConfigFile(configs, name) {
+	for (const directory of configs) {
+		const filePath = path.join(directory, name);
+		if (existsSync(filePath) && statSync(filePath).isFile()) return filePath;
+	}
+	return null;
+}
+
+function runResourceLoaderNearestConfig() {
+	const configs = [path.join(resourceCwdDirectory, ".pi")];
+	const system = nearestConfigFile(configs, "SYSTEM.md");
+	const append = nearestConfigFile(configs, "APPEND_SYSTEM.md");
+	const miss = nearestConfigFile(configs, "NOPE.md");
+	return {
+		nc_sys: path.basename(system ?? "") === "SYSTEM.md" ? 1 : 0,
+		nc_append: append ? 0 : 1,
+		nc_miss: miss ? 0 : 1,
+		nc_n: 3,
+	};
+}
+
 async function measureResourceLoader() {
 	const loader = await runResourceLoader();
 	const skills = loader.getSkills().skills;
 	const prompts = loader.getPrompts().prompts;
 	const dedupe = runResourceLoaderDedupeByName();
+	const contextFromDir = runResourceLoaderContextFromDir();
+	const projectContext = runResourceLoaderProjectContext();
+	const nearestConfig = runResourceLoaderNearestConfig();
 	return {
 		dedupe_by_name: await collect("resource_loader.dedupe_by_name", () => {
 			return () => runResourceLoaderDedupeByName();
 		}),
 		reload: await collect("resource_loader.reload", () => {
 			return () => runResourceLoader();
+		}),
+		context_from_dir: await collect("resource_loader.context_from_dir", () => {
+			return () => runResourceLoaderContextFromDir();
+		}),
+		project_context: await collect("resource_loader.project_context", () => {
+			return () => runResourceLoaderProjectContext();
+		}),
+		nearest_config: await collect("resource_loader.nearest_config", () => {
+			return () => runResourceLoaderNearestConfig();
 		}),
 		observed: {
 			skill_count: skills.length,
@@ -2390,6 +2495,9 @@ async function measureResourceLoader() {
 			context_file_count: loader.getAgentsFiles().agentsFiles.length,
 			system_prompt: loader.getSystemPrompt() ? 1 : 0,
 			...dedupe,
+			...contextFromDir,
+			...projectContext,
+			...nearestConfig,
 		},
 	};
 }
@@ -18340,6 +18448,12 @@ const result = {
 				"packages/coding-agent/src/config.ts getSettingsPath + getAuthPath",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
+			"resource_loader.context_from_dir":
+				"packages/coding-agent/src/core/resource-loader.ts loadContextFileFromDir",
+			"resource_loader.project_context":
+				"packages/coding-agent/src/core/resource-loader.ts loadProjectContextFiles",
+			"resource_loader.nearest_config":
+				"packages/coding-agent/src/core/resource-loader.ts discoverSystemPromptFile project SYSTEM.md existsSync",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"package_manager.manifest_parse":
 				"packages/coding-agent/src/core/pi-manifest.ts readPiManifest",

@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `resource_loader.context_from_dir` /
+  `project_context` / `nearest_config` (`src/cadr-cli/resource-loader.lisp` vs
+  baseline `loadContextFileFromDir` / `loadProjectContextFiles` / project
+  `SYSTEM.md` existsSync). Observed `cfd_*` / `pc_*` / `nc_*` exact. n=5
+  **2.413×** / **1.913×** / **5.401×** (64.741 / 26.834 µs, 56.791 / 29.679 µs,
+  30.226 / 5.596 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not these
+  metrics. All three booked on `docs/benchmarks/goal20-paired-over-1x.md`.
+  Pairs 394–396.
 - Goal 20 P.13: pair `evals_harness.argument_prefix` (`argument-after-prefix`
   on `src/cadr-evals/main.lisp` vs baseline `run-evals.mjs` startsWith+slice).
   Observed `apr_val` / `apr_empty` / `apr_miss` / `apr_model` / `apr_n` exact.

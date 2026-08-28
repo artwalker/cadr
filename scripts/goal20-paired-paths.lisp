@@ -222,6 +222,9 @@
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
 ;;;; 256. package_manager parse-package-source vs DefaultPackageManager.parseSource
 ;;;; 256. resource_loader dedupe-resources-by-name vs skills.ts skillMap
+;;;; 394. resource_loader load-context-file-from-dir vs loadContextFileFromDir
+;;;; 395. resource_loader load-project-context-files vs loadProjectContextFiles
+;;;; 396. resource_loader nearest-config-file vs discoverSystemPromptFile project existsSync
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;; 251. cli_extensions_install discover-extension-sources vs discoverAndLoadExtensions path discovery
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
@@ -371,6 +374,9 @@
     ("settings_load.config_paths" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
+    ("resource_loader.context_from_dir" . 50)
+    ("resource_loader.project_context" . 50)
+    ("resource_loader.nearest_config" . 50)
     ("package_manager.resolve" . 5)
     ("package_manager.manifest_parse" . 50)
     ("package_manager.package_source" . 50)
@@ -3714,6 +3720,89 @@
                    1
                    0)))))))))
 
+;;; Leftover siblings of the resource_loader hole on
+;;; src/cadr-cli/resource-loader.lisp (Pairs 394-396).
+;;; Timed owners: load-context-file-from-dir, load-project-context-files,
+;;; nearest-config-file — not reload-resources or dedupe-resources-by-name.
+
+(defun resource-loader-truth (value)
+  (if value 1 0))
+
+(defun resource-loader-basename (path)
+  (when path
+    (file-namestring path)))
+
+(defun stage-resource-loader-leftover-dirs ()
+  (let* ((root (merge-pathnames "resource-leftover/" *scratch-directory*))
+         (agents (merge-pathnames "agents/" root))
+         (empty (merge-pathnames "empty/" root))
+         (claude (merge-pathnames "claude/" root))
+         (override (merge-pathnames "override/" root)))
+    (ensure-directories-exist agents)
+    (ensure-directories-exist empty)
+    (ensure-directories-exist claude)
+    (ensure-directories-exist override)
+    (copy-resource-fixture
+     "resource-agents.md"
+     (merge-pathnames "AGENTS.md" agents))
+    (copy-resource-fixture
+     "resource-agents.md"
+     (merge-pathnames "CLAUDE.md" claude))
+    (copy-resource-fixture
+     "resource-agents.md"
+     (merge-pathnames "AGENTS.override.md" override))
+    (copy-resource-fixture
+     "resource-agents.md"
+     (merge-pathnames "AGENTS.md" override))
+    (values agents empty claude override)))
+
+(defun run-resource-loader-context-from-dir (agents empty claude override)
+  ;; Candidate first-wins only; not ancestor walk, not reload.
+  (let ((agents-hit (cadr-cli::load-context-file-from-dir agents))
+        (empty-hit (cadr-cli::load-context-file-from-dir empty))
+        (claude-hit (cadr-cli::load-context-file-from-dir claude))
+        (override-hit (cadr-cli::load-context-file-from-dir override)))
+    (list
+     (resource-loader-truth
+      (string= "AGENTS.md" (resource-loader-basename agents-hit)))
+     (resource-loader-truth (null empty-hit))
+     (resource-loader-truth
+      (string= "CLAUDE.md" (resource-loader-basename claude-hit)))
+     (resource-loader-truth
+      (string= "AGENTS.override.md"
+               (resource-loader-basename override-hit)))
+     4)))
+
+(defun run-resource-loader-project-context (cwd agent)
+  ;; Production load-project-context-files; not reload, not file content.
+  (let ((files
+          (cadr-cli::load-project-context-files
+           :cwd cwd
+           :agent-directory agent)))
+    (list
+     (length files)
+     (resource-loader-truth
+      (some
+       (lambda (path)
+         (string= "AGENTS.md" (resource-loader-basename path)))
+       files))
+     2)))
+
+(defun run-resource-loader-nearest-config (cwd)
+  ;; Project-config nearest SYSTEM.md / missing APPEND / missing name.
+  ;; Not agent-dir global fallback, not reload.
+  (let* ((configs (cadr-cli::project-config-directories cwd))
+         (system (cadr-cli::nearest-config-file configs "SYSTEM.md"))
+         (append (cadr-cli::nearest-config-file configs "APPEND_SYSTEM.md"))
+         (miss (cadr-cli::nearest-config-file configs "NOPE.md")))
+    (list
+     (resource-loader-truth
+      (and system
+           (string= "SYSTEM.md" (resource-loader-basename system))))
+     (resource-loader-truth (null append))
+     (resource-loader-truth (null miss))
+     3)))
+
 (defun stage-package-layout ()
   (let* ((agent
            (merge-pathnames "package-agent/" *scratch-directory*))
@@ -3922,6 +4011,16 @@
            (dedupe
              (run-resource-loader-dedupe-by-name
               agent-skill project-skill agent-prompt project-prompt)))
+      (multiple-value-bind (cfd-agents cfd-empty cfd-claude cfd-override)
+          (stage-resource-loader-leftover-dirs)
+        (destructuring-bind
+              (cfd-hit cfd-miss cfd-claude-hit cfd-override-hit cfd-n)
+            (run-resource-loader-context-from-dir
+             cfd-agents cfd-empty cfd-claude cfd-override)
+          (destructuring-bind (pc-n pc-cwd pc-cases)
+              (run-resource-loader-project-context cwd agent)
+            (destructuring-bind (nc-sys nc-append nc-miss nc-n)
+                (run-resource-loader-nearest-config cwd)
       (json-object
        "observed"
        (json-object
@@ -3965,7 +4064,19 @@
         "dbn_skill_project" (nth 2 dedupe)
         "dbn_prompt_count" (nth 3 dedupe)
         "dbn_prompt_collisions" (nth 4 dedupe)
-        "dbn_prompt_project" (nth 5 dedupe))
+        "dbn_prompt_project" (nth 5 dedupe)
+        "cfd_agents" cfd-hit
+        "cfd_empty" cfd-miss
+        "cfd_claude" cfd-claude-hit
+        "cfd_override" cfd-override-hit
+        "cfd_n" cfd-n
+        "pc_n" pc-n
+        "pc_cwd" pc-cwd
+        "pc_cases" pc-cases
+        "nc_sys" nc-sys
+        "nc_append" nc-append
+        "nc_miss" nc-miss
+        "nc_n" nc-n)
        "dedupe_by_name"
        (collect "resource_loader.dedupe_by_name"
                 (lambda ()
@@ -3979,7 +4090,23 @@
                   (lambda ()
                     (run-resource-loader
                      cwd agent project-skill agent-skill
-                     project-prompt agent-prompt))))))))
+                     project-prompt agent-prompt))))
+       "context_from_dir"
+       (collect "resource_loader.context_from_dir"
+                (lambda ()
+                  (lambda ()
+                    (run-resource-loader-context-from-dir
+                     cfd-agents cfd-empty cfd-claude cfd-override))))
+       "project_context"
+       (collect "resource_loader.project_context"
+                (lambda ()
+                  (lambda ()
+                    (run-resource-loader-project-context cwd agent))))
+       "nearest_config"
+       (collect "resource_loader.nearest_config"
+                (lambda ()
+                  (lambda ()
+                    (run-resource-loader-nearest-config cwd))))))))))))
 
 (defun fmq-truth (value)
   (if value 1 0))
@@ -17974,6 +18101,12 @@
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"
       "src/cadr-cli/resource-loader.lisp dedupe-resources-by-name"
+      "resource_loader.context_from_dir"
+      "src/cadr-cli/resource-loader.lisp load-context-file-from-dir"
+      "resource_loader.project_context"
+      "src/cadr-cli/resource-loader.lisp load-project-context-files"
+      "resource_loader.nearest_config"
+      "src/cadr-cli/resource-loader.lisp nearest-config-file"
       "package_manager.resolve"
       "src/cadr-cli/packages/manifest.lisp package-resource-paths"
       "package_manager.manifest_parse"
