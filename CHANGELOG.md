@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_refresh_items`
+  (`scoped-models-selector-refresh-items` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs refresh items). Observed
+  `smref_all` / `smref_gpt` / `smref_miss` / `smref_empty` / `smref_partial`
+  exact. n=5 **2.471×** (33.511 / 13.561 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 592). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_clamp_selected`
+  (`scoped-models-selector-clamp-selected` vs clamp selected). Observed
+  `smcl_high` / `smcl_zero` / `smcl_miss` / `smcl_gpt` / `smcl_empty` exact.
+  n=5 **2.365×** (30.415 / 12.863 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 593). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged. Reuses JS `scopedModelsSelectorClampSelected`.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_mark_changed`
+  (`scoped-models-selector-mark-changed` vs mark changed). Observed
+  `smmc_all` / `smmc_partial` / `smmc_empty` / `smmc_nocb` / `smmc_filter`
+  exact. n=5 **1.359×** (35.327 / 25.989 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 594). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_selectors.scoped_models_selector_rebuild_items`
   (`scoped-models-selector-rebuild-items` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs rebuild items). Observed

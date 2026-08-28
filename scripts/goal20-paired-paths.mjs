@@ -450,6 +450,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_rebuild_items": 50,
 	"cli_selectors.scoped_models_selector_apply_filter": 50,
 	"cli_selectors.scoped_models_selector_visible_items": 50,
+	"cli_selectors.scoped_models_selector_refresh_items": 50,
+	"cli_selectors.scoped_models_selector_clamp_selected": 50,
+	"cli_selectors.scoped_models_selector_mark_changed": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20986,6 +20989,121 @@ function runCliSelectorsScopedModelsSelectorVisibleItems() {
 		smvi_miss: scopedModelsApplyFilterEncoded(models, null, "nope"),
 		smvi_empty: scopedModelsApplyFilterEncoded([], null, ""),
 		smvi_partial: scopedModelsApplyFilterEncoded(models, partial, ""),
+	};
+}
+
+
+function leftoverScopedModelsRefreshItemsEncoded(allModels, enabledIds, query) {
+	const visible = scopedModelsFilterItems(allModels, enabledIds, query);
+	return visible.map((item) => item.fullId).join(",");
+}
+
+
+function runCliSelectorsScopedModelsSelectorRefreshItems() {
+	const models = makeModelSelectorTestModels();
+	const partial = ["google/gemini-2.5-pro", "openai/gpt-4o"];
+	return {
+		smref_all: leftoverScopedModelsRefreshItemsEncoded(models, null, ""),
+		smref_gpt: leftoverScopedModelsRefreshItemsEncoded(models, null, "gpt"),
+		smref_miss: leftoverScopedModelsRefreshItemsEncoded(models, null, "nope"),
+		smref_empty: leftoverScopedModelsRefreshItemsEncoded([], null, ""),
+		smref_partial: leftoverScopedModelsRefreshItemsEncoded(models, partial, ""),
+	};
+}
+
+
+function leftoverScopedModelsClampSelectedEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	query,
+) {
+	const state = {
+		allModels,
+		enabledIds,
+		query,
+		selected,
+		filteredItems: [],
+	};
+	scopedModelsSelectorClampSelected(state);
+	return `${state.selected}|${state.filteredItems.length}`;
+}
+
+
+function runCliSelectorsScopedModelsSelectorClampSelected() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smcl_high: leftoverScopedModelsClampSelectedEncoded(models, null, 99, ""),
+		smcl_zero: leftoverScopedModelsClampSelectedEncoded(models, null, 0, ""),
+		smcl_miss: leftoverScopedModelsClampSelectedEncoded(models, null, 99, "nope"),
+		smcl_gpt: leftoverScopedModelsClampSelectedEncoded(models, null, 99, "gpt"),
+		smcl_empty: leftoverScopedModelsClampSelectedEncoded([], null, 5, ""),
+	};
+}
+
+
+function leftoverScopedModelsEnabledText(enabledIds) {
+	if (enabledIds === null) {
+		return "all";
+	}
+	return enabledIds.join(",");
+}
+
+
+function leftoverScopedModelsMarkChangedEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	query,
+	callbackP,
+) {
+	let count = 0;
+	const state = {
+		allModels,
+		enabledIds,
+		query,
+		selected,
+		filteredItems: [],
+		dirty: false,
+		onChange: callbackP
+			? () => {
+					count += 1;
+				}
+			: undefined,
+	};
+	state.dirty = true;
+	state.items = scopedModelsBuildItems(allModels, enabledIds);
+	state.filteredItems = scopedModelsFilterItems(allModels, enabledIds, query);
+	scopedModelsSelectorClampSelected(state);
+	if (typeof state.onChange === "function") {
+		state.onChange(state.enabledIds);
+	}
+	const dirty = state.dirty ? "1" : "0";
+	return `${dirty}|${state.selected}|${leftoverScopedModelsEnabledText(state.enabledIds)}|${count}`;
+}
+
+
+function runCliSelectorsScopedModelsSelectorMarkChanged() {
+	const models = makeModelSelectorTestModels();
+	const partial = ["google/gemini-2.5-pro", "openai/gpt-4o"];
+	return {
+		smmc_all: leftoverScopedModelsMarkChangedEncoded(models, null, 99, "", true),
+		smmc_partial: leftoverScopedModelsMarkChangedEncoded(
+			models,
+			partial,
+			99,
+			"",
+			true,
+		),
+		smmc_empty: leftoverScopedModelsMarkChangedEncoded(models, [], 99, "", true),
+		smmc_nocb: leftoverScopedModelsMarkChangedEncoded(models, null, 99, "", false),
+		smmc_filter: leftoverScopedModelsMarkChangedEncoded(
+			models,
+			null,
+			99,
+			"gpt",
+			true,
+		),
 	};
 }
 

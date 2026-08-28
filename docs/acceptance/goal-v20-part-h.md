@@ -7387,6 +7387,50 @@ partial enabled). Observed `smvi_all` / `smvi_gpt` / `smvi_miss` /
 `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum`
 left at 328.
 
+### Pair 592 — `cli_selectors` (scoped_models_selector_refresh_items)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_refresh_items` | `scoped-models-selector-refresh-items` (`src/cadr-cli/interactive/selectors/models.lisp`) | refresh items (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 240 on the same `models.lisp` hole. Timed work is
+rebuild then apply-filter (all / gpt / miss / empty models / partial
+enabled) via `%make-scoped-models-selector-state`. Reuses JS
+`scopedModelsFilterItems`. Observed `smref_all` / `smref_gpt` /
+`smref_miss` / `smref_empty` / `smref_partial` are exact. First n=5 freeze
+**2.471×** (33.511 / 13.561 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep`
+/ help text / `execution_env.tmp_*`; this metric did not fail). Over-1×
+booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 593 — `cli_selectors` (scoped_models_selector_clamp_selected)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_clamp_selected` | `scoped-models-selector-clamp-selected` (`src/cadr-cli/interactive/selectors/models.lisp`) | clamp selected (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 592 on the same `models.lisp` hole. Timed work is
+clamp after a high / zero / miss-query / gpt-query / empty-models selected
+index. Reuses JS `scopedModelsSelectorClampSelected` (does not redeclare).
+Observed `smcl_high` / `smcl_zero` / `smcl_miss` / `smcl_gpt` / `smcl_empty`
+are exact. First n=5 freeze **2.365×** (30.415 / 12.863 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same
+commit no optimize. `nextPairNum` left at 328.
+
+### Pair 594 — `cli_selectors` (scoped_models_selector_mark_changed)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_mark_changed` | `scoped-models-selector-mark-changed` (`src/cadr-cli/interactive/selectors/models.lisp`) | mark changed (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pairs 592–593 on the same `models.lisp` hole. Timed
+work is dirty + refresh-items + clamp + notify-change (all / partial /
+empty enabled / no callback / gpt filter). Observed `smmc_all` /
+`smmc_partial` / `smmc_empty` / `smmc_nocb` / `smmc_filter` are exact.
+First n=5 freeze **1.359×** (35.327 / 25.989 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize.
+`nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
