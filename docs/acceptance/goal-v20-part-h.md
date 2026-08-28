@@ -4059,6 +4059,50 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 553 — `cli_bootstrap_sessions` (session_argument_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_argument_path` | `session-argument-path-p` (`src/cadr-cli/bootstrap/sessions.lisp`) | `resolveSessionPath` path test (`packages/coding-agent/src/main.ts` `includes("/") \|\| includes("\\") \|\| endsWith(".jsonl")`) |
+
+Leftover trio on the `cli_bootstrap_sessions` hole for
+`bootstrap/sessions.lisp` (inventory `needs-pair`). Timed work is the
+path-vs-id predicate — not session load, not `--session` flag
+conflicts. Observed `sap_slash` / `sap_backslash` / `sap_jsonl` /
+`sap_id` / `sap_empty` / `sap_json` are exact. First n=5 freeze
+**0.852×** (0.371 / 0.436 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
+fail). Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 554 — `cli_bootstrap_sessions` (split_command)
+
+| metric | cadr | pi |
+|---|---|---|
+| `split_command` | `split-command` (`src/cadr-cli/bootstrap/sessions.lisp`) | interactive-mode slash-command first-space split (`packages/coding-agent/src/modes/interactive/interactive-mode.ts` after `text.trim()`) |
+
+Leftover sibling of Pair 553. Timed work is command/argument split —
+not `/name` mutation, not session switch. Observed `sc_name` /
+`sc_name_arg` / `sc_pad` / `sc_import` / `sc_empty` / `sc_tab` are
+exact. First n=5 freeze **0.568×** (1.339 / 2.356 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes; this metric did not fail). Same commit no optimize.
+`nextPairNum` left at 328.
+
+### Pair 555 — `cli_bootstrap_sessions` (path_command_argument)
+
+| metric | cadr | pi |
+|---|---|---|
+| `path_command_argument` | `path-command-argument` (`src/cadr-cli/bootstrap/sessions.lisp`) | `getPathCommandArgument` (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pairs 553–554. Timed work is quoted/unquoted path
+after `/import` — not JSONL import, not `/export` write. Observed
+`pca_none` / `pca_plain` / `pca_dq` / `pca_sq` / `pca_unclosed` /
+`pca_extra` are exact. First n=5 freeze **0.802×** (0.713 / 0.889 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes; this metric did not fail). Same commit no
+optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

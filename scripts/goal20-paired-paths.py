@@ -1296,13 +1296,16 @@ RATIO_CEILINGS = {
     # (3928.6 / 6134.0 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.bootstrap_auth": 8.0,
     # cli_bootstrap_sessions.session_argument_path leftover 553 (samples=5):
-    # first-freeze headroom 8.0. Ratchet down only.
+    # observed 0.852x (0.371 / 0.436 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "cli_bootstrap_sessions.session_argument_path": 8.0,
     # cli_bootstrap_sessions.split_command leftover 554 (samples=5):
-    # first-freeze headroom 8.0. Ratchet down only.
+    # observed 0.568x (1.339 / 2.356 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "cli_bootstrap_sessions.split_command": 8.0,
     # cli_bootstrap_sessions.path_command_argument leftover 555 (samples=5):
-    # first-freeze headroom 8.0. Ratchet down only.
+    # observed 0.802x (0.713 / 0.889 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "cli_bootstrap_sessions.path_command_argument": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_runtime_faux pair (samples=5): observed 1.76x

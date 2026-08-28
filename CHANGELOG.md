@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.session_argument_path`
+  (`session-argument-path-p` on `src/cadr-cli/bootstrap/sessions.lisp` vs
+  baseline `resolveSessionPath` path test). Observed `sap_slash` /
+  `sap_backslash` / `sap_jsonl` / `sap_id` / `sap_empty` / `sap_json` exact.
+  n=5 **0.852×** (0.371 / 0.436 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 553). Gate rc=1 only from known old holes,
+  not this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.split_command`
+  (`split-command` vs interactive-mode first-space slash-command split).
+  Observed `sc_name` / `sc_name_arg` / `sc_pad` / `sc_import` / `sc_empty` /
+  `sc_tab` exact. n=5 **0.568×** (1.339 / 2.356 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 554). Gate rc=1 only from known
+  old holes, not this metric.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.path_command_argument`
+  (`path-command-argument` vs `getPathCommandArgument`). Observed
+  `pca_none` / `pca_plain` / `pca_dq` / `pca_sq` / `pca_unclosed` /
+  `pca_extra` exact. n=5 **0.802×** (0.713 / 0.889 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 555). Gate rc=1 only from known
+  old holes, not this metric.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
