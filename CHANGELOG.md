@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_support.no_models_help`
+  (`format-no-models-available-message` on `src/cadr-cli/support/model-help.lisp`
+  vs `formatNoModelsAvailableMessage`). Observed `nm_pref` / `nm_login` /
+  `nm_prov` exact. n=5 **27.45×** (244.9 / 8.92 µs) on host `cursor`, ceiling
+  50.0 (same docs-dir sibling as `ai_support.auth_guidance`). Measure-only
+  leftover (Pair 460). Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_support.no_model_selected`
+  (`format-no-model-selected-message` on `src/cadr-cli/support/model-help.lisp`
+  vs `formatNoModelSelectedMessage`). Observed `ns_pref` / `ns_then` / `ns_nl`
+  exact. n=5 **27.67×** (245.4 / 8.87 µs) on host `cursor`, ceiling 50.0.
+  Measure-only leftover (Pair 461). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13 leftover: pair `cli_support.no_api_key`
+  (`format-no-api-key-found-message` on `src/cadr-cli/support/model-help.lisp`
+  vs `formatNoApiKeyFoundMessage`). Observed `nk_oai` / `nk_unk` / `nk_sel`
+  exact. n=5 **27.48×** (480.3 / 17.48 µs) on host `cursor`, ceiling 50.0.
+  Measure-only leftover (Pair 462). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.legacy_product`
   (`legacy-product-name` on `src/cadr-cli/migration.lisp`). Observed `lp_len` /
   `lp_p` / `lp_i` exact. n=5 **1.178×** (0.171 / 0.145 µs) on host `cursor`,

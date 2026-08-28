@@ -322,4 +322,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `find_tool.gitignore_regex` | 0.693 | 0.607 | 1.142× | 8.00× | measure-only pair 450; leftover `gitignore-regex-source` (sub-µs path) | invent pause；地板优化另刀 |
 | `settings_load.provider_symbol` | 0.313 | 0.231 | 1.351× | 8.00× | measure-only pair 454; leftover `provider-symbol` (sub-µs path) | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.legacy_product` | 0.171 | 0.145 | 1.178× | 8.00× | measure-only pair 457; leftover `legacy-product-name` (sub-µs path) | invent pause；地板优化另刀 |
+| `cli_support.no_models_help` | 244.9 | 8.92 | 27.45× | 50.00× | measure-only pair 460; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
+| `cli_support.no_model_selected` | 245.4 | 8.87 | 27.67× | 50.00× | measure-only pair 461; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
+| `cli_support.no_api_key` | 480.3 | 17.48 | 27.48× | 50.00× | measure-only pair 462; leftover CLI wrapper; same ASDF docs-dir as `ai_support.auth_guidance` | invent pause；地板/去 ASDF 另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

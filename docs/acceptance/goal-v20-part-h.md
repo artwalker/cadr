@@ -5755,6 +5755,42 @@ downcase membership in y/yes. Observed `af_y` / `af_yes` / `af_trim` /
 `af_no` are exact. First n=5 freeze **0.584×** (0.371 / 0.635 µs) on host
 `cursor`, ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize.
 
+### Pair 460 — `cli_support` (no_models_help)
+
+| metric | cadr | pi |
+|---|---|---|
+| `no_models_help` | `format-no-models-available-message` (`src/cadr-cli/support/model-help.lisp`) | `formatNoModelsAvailableMessage` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+
+Leftover of the `cli_support` hole on `model-help.lisp`. Timed work is the
+CLI wrapper over the no-models guidance string. Observed `nm_pref` /
+`nm_login` / `nm_prov` are exact. First n=5 freeze **27.45×** (244.9 / 8.92 µs)
+on host `cursor`, ceiling 50.0 (docs-dir sibling of `ai_support.auth_guidance`).
+Gate used `--only-enforce`. Same commit no optimize. Over-1× booked.
+
+### Pair 461 — `cli_support` (no_model_selected)
+
+| metric | cadr | pi |
+|---|---|---|
+| `no_model_selected` | `format-no-model-selected-message` (`src/cadr-cli/support/model-help.lisp`) | `formatNoModelSelectedMessage` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+
+Leftover sibling of Pair 460 on the same hole. Timed work is the CLI wrapper
+over the no-model-selected guidance string. Observed `ns_pref` / `ns_then` /
+`ns_nl` are exact. First n=5 freeze **27.67×** (245.4 / 8.87 µs) on host
+`cursor`, ceiling 50.0. Gate used `--only-enforce`. Same commit no optimize.
+Over-1× booked.
+
+### Pair 462 — `cli_support` (no_api_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `no_api_key` | `format-no-api-key-found-message` (`src/cadr-cli/support/model-help.lisp`) | `formatNoApiKeyFoundMessage` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+
+Leftover sibling of Pairs 460–461 on the same hole. Timed work is the CLI
+wrapper over openai/unknown no-key guidance. Observed `nk_oai` / `nk_unk` /
+`nk_sel` are exact. First n=5 freeze **27.48×** (480.3 / 17.48 µs) on host
+`cursor`, ceiling 50.0. Gate used `--only-enforce`. Same commit no optimize.
+Over-1× booked.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -403,6 +403,9 @@ const REPETITIONS = {
 	"cli_support.user_agent": 50,
 	"cli_support.parse_changelog": 50,
 	"cli_support.experimental": 50,
+	"cli_support.no_models_help": 50,
+	"cli_support.no_model_selected": 50,
+	"cli_support.no_api_key": 50,
 	"cli_interactive_controller.decode_entity": 50,
 	"cli_interactive_controller.wayland": 50,
 	"cli_interactive_controller.cwd_footer": 50,
@@ -11800,6 +11803,34 @@ function runCliSupportParseChangelog() {
 	};
 }
 
+function runCliSupportNoModelsHelp() {
+	const text = authGuidanceModule.formatNoModelsAvailableMessage();
+	return {
+		nm_pref: authPrefix(text, 21),
+		nm_login: text.includes("Use /login") ? 1 : 0,
+		nm_prov: text.includes("providers.md") ? 1 : 0,
+	};
+}
+
+function runCliSupportNoModelSelected() {
+	const text = authGuidanceModule.formatNoModelSelectedMessage();
+	return {
+		ns_pref: authPrefix(text, 18),
+		ns_then: text.includes("Then use /model") ? 1 : 0,
+		ns_nl: text.includes("\n\n") ? 1 : 0,
+	};
+}
+
+function runCliSupportNoApiKey() {
+	const openai = authGuidanceModule.formatNoApiKeyFoundMessage("openai");
+	const unknown = authGuidanceModule.formatNoApiKeyFoundMessage("unknown");
+	return {
+		nk_oai: authPrefix(openai, 28),
+		nk_unk: authPrefix(unknown, 40),
+		nk_sel: unknown.includes("the selected model") ? 1 : 0,
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -11813,6 +11844,9 @@ async function measureCliSupportStripAnsi() {
 	writePairedChangelog();
 	const changelog = runCliSupportParseChangelog();
 	const experimental = runCliSupportExperimental();
+	const noModels = runCliSupportNoModelsHelp();
+	const noSelected = runCliSupportNoModelSelected();
+	const noKey = runCliSupportNoApiKey();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -11847,6 +11881,15 @@ async function measureCliSupportStripAnsi() {
 		experimental: await collect("cli_support.experimental", () => {
 			return () => runCliSupportExperimental();
 		}),
+		no_models_help: await collect("cli_support.no_models_help", () => {
+			return () => runCliSupportNoModelsHelp();
+		}),
+		no_model_selected: await collect("cli_support.no_model_selected", () => {
+			return () => runCliSupportNoModelSelected();
+		}),
+		no_api_key: await collect("cli_support.no_api_key", () => {
+			return () => runCliSupportNoApiKey();
+		}),
 		observed: {
 			...ansi,
 			...paths,
@@ -11859,6 +11902,9 @@ async function measureCliSupportStripAnsi() {
 			...ua,
 			...changelog,
 			...experimental,
+			...noModels,
+			...noSelected,
+			...noKey,
 		},
 	};
 }
@@ -21032,6 +21078,12 @@ const result = {
 				"packages/coding-agent/src/utils/changelog.ts parseChangelog",
 			"cli_support.experimental":
 				"packages/coding-agent/src/core/experimental.ts areExperimentalFeaturesEnabled",
+			"cli_support.no_models_help":
+				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelsAvailableMessage",
+			"cli_support.no_model_selected":
+				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelSelectedMessage",
+			"cli_support.no_api_key":
+				"packages/coding-agent/src/core/auth-guidance.ts formatNoApiKeyFoundMessage",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":

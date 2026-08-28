@@ -539,6 +539,9 @@
     ("cli_support.user_agent" . 50)
     ("cli_support.parse_changelog" . 50)
     ("cli_support.experimental" . 50)
+    ("cli_support.no_models_help" . 50)
+    ("cli_support.no_model_selected" . 50)
+    ("cli_support.no_api_key" . 50)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -12673,6 +12676,28 @@
    (experimental-flag "true")
    (experimental-flag nil)))
 
+(defun run-cli-support-no-models-help ()
+  (let ((text (cadr-cli::format-no-models-available-message)))
+    (list
+     (auth-prefix text 21)
+     (auth-flag text "Use /login")
+     (auth-flag text "providers.md"))))
+
+(defun run-cli-support-no-model-selected ()
+  (let ((text (cadr-cli::format-no-model-selected-message)))
+    (list
+     (auth-prefix text 18)
+     (auth-flag text "Then use /model")
+     (auth-flag text (format nil "~%~%")))))
+
+(defun run-cli-support-no-api-key ()
+  (let ((openai (cadr-cli::format-no-api-key-found-message "openai"))
+        (unknown (cadr-cli::format-no-api-key-found-message "unknown")))
+    (list
+     (auth-prefix openai 28)
+     (auth-prefix unknown 40)
+     (auth-flag unknown "the selected model"))))
+
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
   (let ((ansi (run-cli-support-strip-ansi))
@@ -12685,7 +12710,10 @@
         (git (run-cli-support-git-source))
         (ua (run-cli-support-user-agent))
         (changelog (run-cli-support-parse-changelog))
-        (experimental (run-cli-support-experimental)))
+        (experimental (run-cli-support-experimental))
+        (no-models (run-cli-support-no-models-help))
+        (no-selected (run-cli-support-no-model-selected))
+        (no-key (run-cli-support-no-api-key)))
     (json-object
      "observed"
      (json-object
@@ -12752,7 +12780,16 @@
       "ex_empty" (nth 1 experimental)
       "ex_zero" (nth 2 experimental)
       "ex_true" (nth 3 experimental)
-      "ex_nil" (nth 4 experimental))
+      "ex_nil" (nth 4 experimental)
+      "nm_pref" (nth 0 no-models)
+      "nm_login" (nth 1 no-models)
+      "nm_prov" (nth 2 no-models)
+      "ns_pref" (nth 0 no-selected)
+      "ns_then" (nth 1 no-selected)
+      "ns_nl" (nth 2 no-selected)
+      "nk_oai" (nth 0 no-key)
+      "nk_unk" (nth 1 no-key)
+      "nk_sel" (nth 2 no-key))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -12807,7 +12844,22 @@
      (collect "cli_support.experimental"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-experimental)))))))
+                  (run-cli-support-experimental))))
+     "no_models_help"
+     (collect "cli_support.no_models_help"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-no-models-help))))
+     "no_model_selected"
+     (collect "cli_support.no_model_selected"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-no-model-selected))))
+     "no_api_key"
+     (collect "cli_support.no_api_key"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-no-api-key)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -20518,6 +20570,12 @@
       "src/cadr-cli/support/changelog-share.lisp parse-changelog"
       "cli_support.experimental"
       "src/cadr-cli/support/html.lisp experimental-features-enabled-p"
+      "cli_support.no_models_help"
+      "src/cadr-cli/support/model-help.lisp format-no-models-available-message"
+      "cli_support.no_model_selected"
+      "src/cadr-cli/support/model-help.lisp format-no-model-selected-message"
+      "cli_support.no_api_key"
+      "src/cadr-cli/support/model-help.lisp format-no-api-key-found-message"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"
