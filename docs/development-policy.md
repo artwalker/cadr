@@ -482,7 +482,9 @@ decision, one pin, or one file.
   may touch, paths it must not, commit-message prefix.
 - **Serial integrate**: one merge onto `cadr-migration` at a time,
   `test-cl.sh` on that commit, then the next worktree rebases. Do not
-  merge four speedups and then measure.
+  merge four speedups and then measure. Goal 20 leftover pairing PRs
+  are merged by the Cursor cloud agent (GitHub merge, one PR at a
+  time); see `docs/acceptance/team-dev-platform.md`.
 
 ### 2. Single-writer mutex (never parallel)
 
