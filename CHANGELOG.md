@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `grep_tool.read_utf8` (`read-utf8-file` on
+  `src/cadr-cli/tools/grep.lisp` vs baseline `defaultGrepOperations.readFile`).
+  Observed `gru_ascii` / `gru_empty` / `gru_n` exact.
+  n=5 **0.500×** (101.136 / 202.336 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13 leftover: pair `grep_tool.file_lines` (`ripgrep-file-lines` on
+  `src/cadr-cli/tools/grep.lisp` vs baseline `getFileLines`).
+  Observed `gfl_n` / `gfl_first` / `gfl_cache` / `gfl_count` exact.
+  n=5 **0.644×** (97.236 / 151.098 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13 leftover: pair `grep_tool.context_block` (`ripgrep-context-block`
+  on `src/cadr-cli/tools/grep.lisp` vs baseline `formatBlock`).
+  Observed `gcb_lines` / `gcb_match` / `gcb_missing` / `gcb_n` exact.
+  n=5 **0.598×** (113.423 / 189.556 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. `nextPairNum` stays 328. Does not re-pair
+  `tool_grep.context_file` or PR #48 `match_event` / `line_text` / `make_tool`.
 - Goal 20 P.13 leftover: pair `oauth_pkce_device.json_copy` /
   `interval_seconds` / `device_start` on
   `src/cadr-ai/oauth/providers/openai-device.lisp` vs baseline

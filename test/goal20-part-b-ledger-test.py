@@ -557,6 +557,22 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("emt_n", paired.OBSERVED_EXACT["edit_tool"])
 
 
+    def test_grep_tool_leftover_is_a_recorded_metric(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        self.assertIn("grep_tool.read_utf8", RECORD.METRIC_KEYS)
+        self.assertIn("grep_tool.file_lines", RECORD.METRIC_KEYS)
+        self.assertIn("grep_tool.context_block", RECORD.METRIC_KEYS)
+        self.assertIn("read_utf8", paired.METRICS["grep_tool"])
+        self.assertIn("file_lines", paired.METRICS["grep_tool"])
+        self.assertIn("context_block", paired.METRICS["grep_tool"])
+        self.assertIn("grep_tool.read_utf8", paired.RATIO_CEILINGS)
+        self.assertIn("grep_tool.file_lines", paired.RATIO_CEILINGS)
+        self.assertIn("grep_tool.context_block", paired.RATIO_CEILINGS)
+        self.assertIn("gru_ascii", paired.OBSERVED_EXACT["grep_tool"])
+        self.assertIn("gfl_n", paired.OBSERVED_EXACT["grep_tool"])
+        self.assertIn("gcb_n", paired.OBSERVED_EXACT["grep_tool"])
+
+
     def test_ls_tool_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("ls_tool.directory_entry_name", RECORD.METRIC_KEYS)

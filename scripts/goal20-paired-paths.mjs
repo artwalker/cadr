@@ -296,6 +296,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.json_copy": 50,
 	"oauth_pkce_device.interval_seconds": 50,
 	"oauth_pkce_device.device_start": 50,
+	"grep_tool.read_utf8": 50,
+	"grep_tool.file_lines": 50,
+	"grep_tool.context_block": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -3653,6 +3656,99 @@ function runGrepMakeTool() {
 		gmt_n: 3,
 	};
 }
+
+function grepToolPath(relative) {
+	return path.join(GREP_TOOL_CWD, relative);
+}
+
+
+function ensureGrepToolFixture() {
+	mkdirSync(GREP_TOOL_CWD, { recursive: true });
+	writeFileSync(grepToolPath("ascii.txt"), "hello", "utf8");
+	writeFileSync(grepToolPath("empty.txt"), "", "utf8");
+	writeFileSync(grepToolPath("lines.txt"), "l1\nl2\nl3\nl4\nl5\nl6\nl7", "utf8");
+	return GREP_TOOL_CWD;
+}
+
+
+async function runGrepReadUtf8() {
+	ensureGrepToolFixture();
+	const ascii = await fsReadFile(grepToolPath("ascii.txt"), "utf-8");
+	const empty = await fsReadFile(grepToolPath("empty.txt"), "utf-8");
+	return {
+		gru_ascii: ascii.length,
+		gru_empty: empty.length,
+		gru_n: 2,
+	};
+}
+
+
+async function grepGetFileLines(filePath, cache) {
+	let lines = cache.get(filePath);
+	if (!lines) {
+		try {
+			const content = await fsReadFile(filePath, "utf-8");
+			lines = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+		} catch {
+			lines = [];
+		}
+		cache.set(filePath, lines);
+	}
+	return lines;
+}
+
+
+async function runGrepFileLines() {
+	ensureGrepToolFixture();
+	const filePath = grepToolPath("lines.txt");
+	const cache = new Map();
+	const lines = await grepGetFileLines(filePath, cache);
+	const cached = await grepGetFileLines(filePath, cache);
+	return {
+		gfl_n: lines.length,
+		gfl_first: lines[0] === "l1" ? 1 : 0,
+		gfl_cache: lines === cached ? 1 : 0,
+		gfl_count: 3,
+	};
+}
+
+
+async function grepFormatBlock(filePath, lineNumber, contextValue, relativePath, cache) {
+	const lines = await grepGetFileLines(filePath, cache);
+	if (!lines.length) return [`${relativePath}:${lineNumber}: (unable to read file)`];
+	const block = [];
+	const start = contextValue > 0 ? Math.max(1, lineNumber - contextValue) : lineNumber;
+	const end = contextValue > 0 ? Math.min(lines.length, lineNumber + contextValue) : lineNumber;
+	for (let current = start; current <= end; current += 1) {
+		const lineText = lines[current - 1] ?? "";
+		const sanitized = lineText.replace(/\r/g, "");
+		const truncated = truncateModule.truncateLine(sanitized);
+		const truncatedText = truncated.text;
+		if (current === lineNumber) block.push(`${relativePath}:${current}: ${truncatedText}`);
+		else block.push(`${relativePath}-${current}- ${truncatedText}`);
+	}
+	return block;
+}
+
+
+async function runGrepContextBlock() {
+	ensureGrepToolFixture();
+	const filePath = grepToolPath("lines.txt");
+	const missing = grepToolPath("missing.txt");
+	const cache = new Map();
+	const block = await grepFormatBlock(filePath, 4, 2, "lines.txt", cache);
+	const missingBlock = await grepFormatBlock(missing, 1, 2, "missing.txt", cache);
+	return {
+		gcb_lines: block.length,
+		gcb_match: block[2] && String(block[2]).includes("lines.txt:4:") ? 1 : 0,
+		gcb_missing:
+			missingBlock.length === 1 && String(missingBlock[0]).includes("(unable to read file)")
+				? 1
+				: 0,
+		gcb_n: 3,
+	};
+}
+
 
 async function measureGrepTool() {
 	const matchObserved = runGrepMatchEvent();

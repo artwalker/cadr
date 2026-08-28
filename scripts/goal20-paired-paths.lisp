@@ -5773,6 +5773,91 @@
            (find "pattern" required-list :test #'string=)))
      3)))
 
+(defun grep-tool-leftover-truth (value)
+  (if value 1 0))
+
+(defun grep-tool-path (relative)
+  (merge-pathnames relative
+                   (uiop:ensure-directory-pathname *grep-tool-cwd*)))
+
+
+(defun ensure-grep-tool-fixture ()
+  (let ((root (uiop:ensure-directory-pathname *grep-tool-cwd*)))
+    (ensure-directories-exist root)
+    (with-open-file (out (grep-tool-path "ascii.txt")
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string "hello" out))
+    (with-open-file (out (grep-tool-path "empty.txt")
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (values))
+    ;; No trailing newline: cadr line-table and pi split("\n")
+    ;; both count 7 content lines.
+    (with-open-file (out (grep-tool-path "lines.txt")
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string
+       (format nil "l1~%l2~%l3~%l4~%l5~%l6~%l7")
+       out))
+    *grep-tool-cwd*))
+
+
+(defun run-grep-read-utf8 ()
+  (ensure-grep-tool-fixture)
+  (let* ((ascii (cadr-cli::read-utf8-file (grep-tool-path "ascii.txt")))
+         (empty (cadr-cli::read-utf8-file (grep-tool-path "empty.txt"))))
+    (list (length ascii) (length empty) 2)))
+
+
+(defun run-grep-file-lines ()
+  (ensure-grep-tool-fixture)
+  (let* ((path (grep-tool-path "lines.txt"))
+         (cache (make-hash-table :test #'equal))
+         (table (cadr-cli::ripgrep-file-lines path cache))
+         (n (third table))
+         (source (first table))
+         (starts (second table))
+         (first-line
+           (and (plusp n)
+                (cadr-cli::text-line-ref source starts 0)))
+         (cached (cadr-cli::ripgrep-file-lines path cache)))
+    (list
+     n
+     (grep-tool-leftover-truth (string= first-line "l1"))
+     (grep-tool-leftover-truth (eq table cached))
+     3)))
+
+
+(defun run-grep-context-block ()
+  (ensure-grep-tool-fixture)
+  (let* ((path (grep-tool-path "lines.txt"))
+         (missing (grep-tool-path "missing.txt"))
+         (cache (make-hash-table :test #'equal)))
+    (multiple-value-bind (block truncated-p)
+        (cadr-cli::ripgrep-context-block path 4 2 "lines.txt" cache)
+      (declare (ignore truncated-p))
+      (multiple-value-bind (missing-block missing-truncated-p)
+          (cadr-cli::ripgrep-context-block missing 1 2 "missing.txt")
+        (declare (ignore missing-truncated-p))
+        (list
+         (length block)
+         (grep-tool-leftover-truth
+          (and (>= (length block) 3)
+               (search "lines.txt:4:" (nth 2 block))))
+         (grep-tool-leftover-truth
+          (and (= 1 (length missing-block))
+               (search "(unable to read file)"
+                       (first missing-block))))
+         3)))))
+
+
 (defun measure-grep-tool ()
   (destructuring-bind (rme-match rme-begin rme-bad rme-n)
       (run-grep-match-event)
