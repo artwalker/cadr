@@ -4059,6 +4059,51 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 433 — `tui_select_settings_loaders` (update_display)
+
+| metric | cadr | pi |
+|---|---|---|
+| `update_display` | `loader-component-update-display` (`src/cadr-tui/composition/loaders.lisp`) | `Loader.updateDisplay` (`packages/tui/src/components/loader.ts`) |
+
+Leftover sibling of Pair 39 `filter` on the `tui_select_settings_loaders` hole,
+staggered from in-flight #53 `loader_frames` / `loader_interval` / `loader_step`
+and #61 `make_loader_component` / `set_message` / `set_indicator`. Timed work
+is display rebuild on a stopped two-frame loader — not `loader-component-start`
+/ `stop` / `run` threads. Observed `ud_has_a` / `ud_frames` / `ud_n` are exact
+(1 / 2 / 2). First n=5 freeze **1.225×** (0.282 / 0.230 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1× booked.
+Same commit no optimize. Pair numbers 328–432 belong to other lanes; this cut
+is 433–435 only. `nextPairNum` stays 328.
+
+### Pair 434 — `tui_select_settings_loaders` (make_cancellable_loader)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_cancellable_loader` | `make-cancellable-loader-component` (`src/cadr-tui/composition/loaders.lisp`) | `CancellableLoader` constructor (`packages/tui/src/components/cancellable-loader.ts`) |
+
+Leftover sibling of Pair 433 `update_display` on the same `loaders.lisp` hole.
+Timed work is construct a two-frame cancellable loader with `:start-p nil` /
+`stop()` — not animation threads. Observed `cl_has_a` / `cl_aborted` / `cl_n`
+are exact (1 / 0 / 2). First n=5 freeze **0.205×** (0.600 / 2.934 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
+### Pair 435 — `tui_select_settings_loaders` (cancellation_token_aborted)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cancellation_token_aborted` | `cancellation-token-aborted-p` (`src/cadr-tui/composition/loaders.lisp`) | `CancellableLoader.aborted` (`packages/tui/src/components/cancellable-loader.ts`) |
+
+Leftover sibling of Pair 433 `update_display` and Pair 434
+`make_cancellable_loader` on the same `loaders.lisp` hole. Timed work is the
+aborted predicate after abort — not Escape `handleInput`, not start/stop/run.
+Observed `ct_before` / `ct_after` / `ct_n` are exact (0 / 1 / 2). First n=5
+freeze **0.868×** (0.103 / 0.119 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

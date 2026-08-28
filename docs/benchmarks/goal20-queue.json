@@ -919,6 +919,49 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 433,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.update_display",
+   "branch": "cursor/pair-tui-loaders-leftover-433-435-4fbd",
+   "note": "nextPairNum left at tip 328 (outside 433-435); staggered from #53 frames/interval/step and #61 make/set_message/set_indicator",
+   "ratio": 1.225,
+   "cadrUs": 0.282,
+   "piUs": 0.230,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 434,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.make_cancellable_loader",
+   "branch": "cursor/pair-tui-loaders-leftover-433-435-4fbd",
+   "ratio": 0.205,
+   "cadrUs": 0.600,
+   "piUs": 2.934,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 435,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.cancellation_token_aborted",
+   "branch": "cursor/pair-tui-loaders-leftover-433-435-4fbd",
+   "ratio": 0.868,
+   "cadrUs": 0.103,
+   "piUs": 0.119,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

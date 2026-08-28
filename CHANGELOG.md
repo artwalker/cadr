@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.update_display`
+  (`loader-component-update-display` on `src/cadr-tui/composition/loaders.lisp`
+  vs baseline `Loader.updateDisplay`). Skip start/stop/run threads. Observed
+  `ud_has_a` / `ud_frames` / `ud_n` exact. n=5 **1.225×** (0.282 / 0.230 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 433). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.make_cancellable_loader`
+  (`make-cancellable-loader-component` on `src/cadr-tui/composition/loaders.lisp`
+  vs baseline `CancellableLoader` constructor). Skip start/stop/run threads.
+  Observed `cl_has_a` / `cl_aborted` / `cl_n` exact. n=5 **0.205×**
+  (0.600 / 2.934 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 434). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.cancellation_token_aborted`
+  (`cancellation-token-aborted-p` on `src/cadr-tui/composition/loaders.lisp`
+  vs baseline `CancellableLoader.aborted`). Observed `ct_before` / `ct_after`
+  / `ct_n` exact. n=5 **0.868×** (0.103 / 0.119 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 435). Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
