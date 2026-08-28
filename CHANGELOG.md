@@ -9,9 +9,10 @@ tag/Release step.
 
 ### Changed
 
-- Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
-  PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
-  force-push, and spend stay with Ethan. See
+- Live process: Cursor cloud agents are the standing crew (总控 / 实现 /
+  审 / 合入). Grok Bot is retired. They merge READY Goal 20 leftover
+  pairing PRs into `cadr-migration` (serial; rebase the next PR first).
+  Tags, force-push, and spend stay with Ethan. See
   `docs/acceptance/team-dev-platform.md`.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
