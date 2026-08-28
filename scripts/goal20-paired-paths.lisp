@@ -19013,6 +19013,73 @@
      :provider :google
      :name ""))))
 
+(defun daxnuts-rgb-encode (rgb)
+  (format nil "~D,~D,~D" (first rgb) (second rgb) (third rgb)))
+
+
+(defun run-cli-selectors-daxnuts-parse-image ()
+  ;; Baseline daxnuts.ts parseImage. Samples only; do not exact the blob.
+  (let ((grid (cadr-cli::parse-daxnuts-rgb-grid)))
+    (list
+     (daxnuts-rgb-encode (aref grid 0 0))
+     (daxnuts-rgb-encode (aref grid 0 31))
+     (daxnuts-rgb-encode (aref grid 16 16))
+     (daxnuts-rgb-encode (aref grid 31 31))
+     (write-to-string (array-dimension grid 0))
+     (write-to-string (array-dimension grid 1)))))
+
+
+(defun run-cli-selectors-daxnuts-image-line ()
+  ;; Baseline daxnuts.ts buildImage half-block row. Cached grid, like
+  ;; +daxnuts-rgb-grid+.
+  (let ((line0 (cadr-cli::daxnuts-image-line 0))
+        (line7 (cadr-cli::daxnuts-image-line 7))
+        (line15 (cadr-cli::daxnuts-image-line 15)))
+    (list
+     line0
+     line7
+     line15
+     (write-to-string (length line0))
+     (write-to-string (length line15))
+     (subseq line0 (- (length line0) 4)))))
+
+
+(defun run-cli-selectors-daxnuts-center-line ()
+  ;; Baseline daxnuts.ts render() center(). ASCII + CSI only (visible-width
+  ;; vs regex .length diverge on CJK).
+  (list
+   (cadr-cli::center-component-line "hello" 20)
+   (cadr-cli::center-component-line "x" 10)
+   (cadr-cli::center-component-line "hello" 3)
+   (cadr-cli::center-component-line "" 10)
+   (cadr-cli::center-component-line
+    (format nil "~C[31mhi~C[0m" #\Escape #\Escape)
+    10)
+   (cadr-cli::center-component-line "hi" 80)))
+
+
+(defun daxnuts-observed-pairs (parse image center)
+  (list
+   "dpi_00" (nth 0 parse)
+   "dpi_0x" (nth 1 parse)
+   "dpi_mid" (nth 2 parse)
+   "dpi_last" (nth 3 parse)
+   "dpi_h" (nth 4 parse)
+   "dpi_w" (nth 5 parse)
+   "dil_0" (nth 0 image)
+   "dil_7" (nth 1 image)
+   "dil_15" (nth 2 image)
+   "dil_0_len" (nth 3 image)
+   "dil_15_len" (nth 4 image)
+   "dil_reset" (nth 5 image)
+   "dcl_plain" (nth 0 center)
+   "dcl_odd" (nth 1 center)
+   "dcl_narrow" (nth 2 center)
+   "dcl_empty" (nth 3 center)
+   "dcl_ansi" (nth 4 center)
+   "dcl_wide" (nth 5 center)))
+
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))

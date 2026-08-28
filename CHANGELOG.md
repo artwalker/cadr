@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.daxnuts_parse_image`
+  (`parse-daxnuts-rgb-grid` on `src/cadr-cli/interactive/components/daxnuts.lisp`
+  vs baseline `parseImage`). Observed `dpi_00` / `dpi_0x` / `dpi_mid` /
+  `dpi_last` / `dpi_h` / `dpi_w` exact. n=5 **0.557×** (50.293 / 90.217 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 547). Gate rc=1
+  only from known old holes, not this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.daxnuts_image_line`
+  (`daxnuts-image-line` vs baseline `buildImage` half-block row). Observed
+  `dil_0` / `dil_7` / `dil_15` / `dil_0_len` / `dil_15_len` / `dil_reset`
+  exact. n=5 **2.220×** (36.319 / 16.357 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 548). Gate rc=1 only from known old holes,
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13 leftover: pair `cli_selectors.daxnuts_center_line`
+  (`center-component-line` vs baseline `render()` `center`). Observed
+  `dcl_plain` / `dcl_odd` / `dcl_narrow` / `dcl_empty` / `dcl_ansi` /
+  `dcl_wide` exact. n=5 **0.970×** (0.896 / 0.924 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 549). Gate rc=1 only from known
+  old holes, not this metric.
 - Goal 20 P.13 leftover: pair `cli_extensions_install.llama_context_label` (`llama-context-label` on
   `src/cadr-cli/extensions/llama/ui.lisp` vs baseline `contextLabel`). Observed
   `cl_meta` / `cl_train` / `cl_args` / `cl_small` / `cl_none` / `cl_dashc` exact.

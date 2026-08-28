@@ -407,6 +407,9 @@ const REPETITIONS = {
 	"cli_extensions_install.llama_context_label": 50,
 	"cli_extensions_install.llama_model_description": 50,
 	"cli_extensions_install.llama_compact_count": 50,
+	"cli_selectors.daxnuts_parse_image": 50,
+	"cli_selectors.daxnuts_image_line": 50,
+	"cli_selectors.daxnuts_center_line": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -19661,6 +19664,125 @@ function runCliSelectorsArminGridHeight() {
 		ag_h: replicaArminGridHeight(),
 	};
 }
+
+function daxnutsHex() {
+	if (cachedDaxnutsHex === undefined) {
+		const source = readFileSync(
+			path.join(
+				baselineDirectory,
+				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts",
+			),
+			"utf8",
+		);
+		const match = source.match(/const DAX_HEX =\s*"([0-9a-f]+)"/);
+		if (!match) {
+			throw new Error("baseline daxnuts.ts DAX_HEX not found");
+		}
+		cachedDaxnutsHex = match[1];
+	}
+	return cachedDaxnutsHex;
+}
+
+
+function daxnutsParseImage(hex) {
+	const width = 32;
+	const height = 32;
+	const pixels = [];
+	for (let y = 0; y < height; y++) {
+		const row = [];
+		for (let x = 0; x < width; x++) {
+			const idx = (y * width + x) * 6;
+			const r = parseInt(hex.slice(idx, idx + 2), 16);
+			const g = parseInt(hex.slice(idx + 2, idx + 4), 16);
+			const b = parseInt(hex.slice(idx + 4, idx + 6), 16);
+			row.push([r, g, b]);
+		}
+		pixels.push(row);
+	}
+	return pixels;
+}
+
+
+function daxnutsRgbEncode(rgb) {
+	return `${rgb[0]},${rgb[1]},${rgb[2]}`;
+}
+
+
+function runCliSelectorsDaxnutsParseImage() {
+	const pixels = daxnutsParseImage(daxnutsHex());
+	return {
+		dpi_00: daxnutsRgbEncode(pixels[0][0]),
+		dpi_0x: daxnutsRgbEncode(pixels[0][31]),
+		dpi_mid: daxnutsRgbEncode(pixels[16][16]),
+		dpi_last: daxnutsRgbEncode(pixels[31][31]),
+		dpi_h: String(pixels.length),
+		dpi_w: String(pixels[0].length),
+	};
+}
+
+
+function daxnutsPixelsCached() {
+	if (cachedDaxnutsPixels === undefined) {
+		cachedDaxnutsPixels = daxnutsParseImage(daxnutsHex());
+	}
+	return cachedDaxnutsPixels;
+}
+
+
+function daxnutsRgb(r, g, b, bg = false) {
+	return `\x1b[${bg ? 48 : 38};2;${r};${g};${b}m`;
+}
+
+
+function daxnutsImageLine(row, pixels) {
+	const width = 32;
+	let line = "";
+	const topRow = row * 2;
+	const bottomRow = topRow + 1;
+	for (let x = 0; x < width; x++) {
+		const top = pixels[topRow][x];
+		const bottom = pixels[bottomRow]?.[x] ?? top;
+		line += `${daxnutsRgb(bottom[0], bottom[1], bottom[2])}${daxnutsRgb(top[0], top[1], top[2], true)}▄`;
+	}
+	line += "\x1b[0m";
+	return line;
+}
+
+
+function runCliSelectorsDaxnutsImageLine() {
+	const pixels = daxnutsPixelsCached();
+	const line0 = daxnutsImageLine(0, pixels);
+	const line7 = daxnutsImageLine(7, pixels);
+	const line15 = daxnutsImageLine(15, pixels);
+	return {
+		dil_0: line0,
+		dil_7: line7,
+		dil_15: line15,
+		dil_0_len: String(line0.length),
+		dil_15_len: String(line15.length),
+		dil_reset: line0.slice(-4),
+	};
+}
+
+
+function daxnutsCenter(s, width) {
+	const visible = s.replace(/\x1b\[[0-9;]*m/g, "").length;
+	const left = Math.max(0, Math.floor((width - visible) / 2));
+	return " ".repeat(left) + s;
+}
+
+
+function runCliSelectorsDaxnutsCenterLine() {
+	return {
+		dcl_plain: daxnutsCenter("hello", 20),
+		dcl_odd: daxnutsCenter("x", 10),
+		dcl_narrow: daxnutsCenter("hello", 3),
+		dcl_empty: daxnutsCenter("", 10),
+		dcl_ansi: daxnutsCenter("\x1b[31mhi\x1b[0m", 10),
+		dcl_wide: daxnutsCenter("hi", 80),
+	};
+}
+
 
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();

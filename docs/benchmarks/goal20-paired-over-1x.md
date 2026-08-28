@@ -369,4 +369,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.llama_context_label` | 1.279 | 1.119 | 1.143× | 8.00× | measure-only pair 544; `llama-context-label` vs `contextLabel` | invent pause；地板优化另刀 |
 | `cli_extensions_install.llama_model_description` | 1.450 | 1.283 | 1.130× | 8.00× | measure-only pair 545; `llama-model-description` vs `modelDescription` | invent pause；地板优化另刀 |
 | `cli_extensions_install.llama_compact_count` | 0.968 | 0.641 | 1.511× | 8.00× | measure-only pair 546; `llama-compact-count` vs `compactCount` | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_image_line` | 36.319 | 16.357 | 2.220× | 8.00× | measure-only leftover 548; `daxnuts-image-line` vs `buildImage` half-block row | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
