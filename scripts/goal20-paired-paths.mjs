@@ -2184,74 +2184,51 @@ function runSettingsLoadConfigPaths(agentDir) {
 	}
 }
 
-const SDK_SETTINGS_MISSING = { sentinel: "missing" };
-
 const SDK_SETTINGS_FIXTURE = {
 	defaultProvider: "openai",
 	defaultModel: "",
 	compaction: { enabled: true },
-	tools: ["read", "bash"],
+	defaultTools: ["read", "bash"],
 };
 
-function sdkSettingsValue(settings, key, defaultValue) {
-	if (Object.prototype.hasOwnProperty.call(settings, key)) return settings[key];
-	return arguments.length >= 3 ? defaultValue : null;
+function sdkSettingsFixtureManager() {
+	return settingsModule.SettingsManager.inMemory(SDK_SETTINGS_FIXTURE);
 }
 
-function sdkNonemptySettingString(settings, key) {
-	const value = sdkSettingsValue(settings, key);
+function sdkSettingsEmptyManager() {
+	return settingsModule.SettingsManager.inMemory({});
+}
+
+function sdkNonemptySettingString(value) {
 	return typeof value === "string" && value.length > 0 ? value : null;
 }
 
-function sdkSettingsBoolean(settings, key, defaultValue, nestedKey) {
-	let value = sdkSettingsValue(settings, key, SDK_SETTINGS_MISSING);
-	if (
-		nestedKey &&
-		value &&
-		typeof value === "object" &&
-		!Array.isArray(value) &&
-		value !== SDK_SETTINGS_MISSING
-	) {
-		value = Object.prototype.hasOwnProperty.call(value, nestedKey)
-			? value[nestedKey]
-			: SDK_SETTINGS_MISSING;
-	}
-	if (value === SDK_SETTINGS_MISSING) return defaultValue;
-	return value === true;
-}
-
-function sdkSettingsEnabledTools(settings) {
-	const value = sdkSettingsValue(settings, "tools", null);
-	if (Array.isArray(value)) return [...value];
-	return null;
-}
-
 function runSettingsLoadSdkNonempty() {
-	const manager = SDK_SETTINGS_FIXTURE;
-	const empty = {};
+	const manager = sdkSettingsFixtureManager();
+	const empty = sdkSettingsEmptyManager();
 	return {
-		sn_prov: sdkNonemptySettingString(manager, "defaultProvider") ?? "",
-		sn_empty: sdkNonemptySettingString(manager, "defaultModel") ? 1 : 0,
-		sn_miss: sdkNonemptySettingString(empty, "defaultProvider") ? 1 : 0,
+		sn_prov: sdkNonemptySettingString(manager.getDefaultProvider()) ?? "",
+		sn_empty: sdkNonemptySettingString(manager.getDefaultModel()) ? 1 : 0,
+		sn_miss: sdkNonemptySettingString(empty.getDefaultProvider()) ? 1 : 0,
 	};
 }
 
 function runSettingsLoadSdkBoolean() {
-	const manager = SDK_SETTINGS_FIXTURE;
-	const empty = {};
+	const manager = sdkSettingsFixtureManager();
+	const empty = sdkSettingsEmptyManager();
 	return {
-		sb_on: sdkSettingsBoolean(manager, "compaction", false, "enabled") ? 1 : 0,
-		sb_def: sdkSettingsBoolean(empty, "compaction", true, "enabled") ? 1 : 0,
-		sb_miss: sdkSettingsBoolean(empty, "missing", false) ? 1 : 0,
+		sb_on: manager.getCompactionEnabled() ? 1 : 0,
+		sb_def: empty.getCompactionEnabled() ? 1 : 0,
+		sb_miss: empty.getDefaultProvider() ? 1 : 0,
 	};
 }
 
 function runSettingsLoadSdkTools() {
-	const tools = sdkSettingsEnabledTools(SDK_SETTINGS_FIXTURE);
+	const tools = sdkSettingsFixtureManager().getDefaultTools();
 	return {
 		st_n: tools ? tools.length : 0,
 		st_read: tools && tools[0] === "read" ? 1 : 0,
-		st_none: sdkSettingsEnabledTools({}) == null ? 1 : 0,
+		st_none: sdkSettingsEmptyManager().getDefaultTools() == null ? 1 : 0,
 	};
 }
 
