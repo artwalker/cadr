@@ -755,6 +755,9 @@
     ("cli_selectors.thinking_selector_apply_filter" . 50)
     ("cli_selectors.thinking_selector_clamp_selected" . 50)
     ("cli_selectors.thinking_selector_select_current" . 50)
+    ("cli_selectors.thinking_selector_move" . 50)
+    ("cli_selectors.thinking_selector_handle_raw_input" . 50)
+    ("cli_selectors.thinking_selector_handle_event" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -15537,6 +15540,141 @@
    "tssc_only" (nth 4 select-current)))
 
 
+(defun thinking-filled-selector-state
+    (&key (selected 0) (query "")
+          (keybindings
+           cadr-cli::*default-thinking-selector-keybindings*))
+  (let ((levels (list :off :low :high)))
+    (cadr-cli::%make-thinking-selector-state
+     :levels levels
+     :current-level :high
+     :query query
+     :filtered-levels levels
+     :filter-query ""
+     :filtered-count 3
+     :selected selected
+     :keybindings keybindings)))
+
+
+(defun encode-thinking-selector-move (state)
+  (write-to-string
+   (cadr-cli::thinking-selector-state-selected state)))
+
+
+(defun thinking-selector-move-encoded (selected count delta)
+  (let ((state
+          (cadr-cli::%make-thinking-selector-state
+           :levels (list :off :low :high)
+           :filtered-count count
+           :selected selected)))
+    (cadr-cli::thinking-selector-move state delta)
+    (encode-thinking-selector-move state)))
+
+
+(defun run-cli-selectors-thinking-selector-move ()
+  (list
+   (thinking-selector-move-encoded 0 3 1)
+   (thinking-selector-move-encoded 0 3 -1)
+   (thinking-selector-move-encoded 2 3 1)
+   (thinking-selector-move-encoded 0 3 10)
+   (thinking-selector-move-encoded 5 0 1)))
+
+
+(defun encode-thinking-selector-handle-raw (state action level consumed)
+  (format
+   nil "~A|~D|~A|~A"
+   (if action
+       (string-downcase (symbol-name action))
+       "null")
+   (cadr-cli::thinking-selector-state-selected state)
+   (thinking-level-name level)
+   (if consumed "true" "false")))
+
+
+(defun thinking-selector-handle-raw-encoded (selected data &key query)
+  (let ((state
+          (thinking-filled-selector-state
+           :selected selected :query (or query ""))))
+    (multiple-value-bind (action level consumed)
+        (cadr-cli::thinking-selector-handle-raw-input state data)
+      (encode-thinking-selector-handle-raw
+       state action level consumed))))
+
+
+(defun thinking-selector-raw-key (name)
+  (first
+   (cadr-tui:keybinding-keys
+    cadr-cli::*default-thinking-selector-keybindings*
+    name)))
+
+
+(defun run-cli-selectors-thinking-selector-handle-raw-input ()
+  (list
+   (thinking-selector-handle-raw-encoded
+    0 (thinking-selector-raw-key "tui.select.down"))
+   (thinking-selector-handle-raw-encoded
+    1 (thinking-selector-raw-key "tui.select.up"))
+   (thinking-selector-handle-raw-encoded
+    0 (thinking-selector-raw-key "tui.select.confirm"))
+   (thinking-selector-handle-raw-encoded
+    1 (thinking-selector-raw-key "app.thinking.save"))
+   (thinking-selector-handle-raw-encoded 0 "q")))
+
+
+(defun encode-thinking-selector-handle-event (state action level)
+  (format
+   nil "~A|~D|~A|~D"
+   (if action
+       (string-downcase (symbol-name action))
+       "null")
+   (cadr-cli::thinking-selector-state-selected state)
+   (thinking-level-name level)
+   (length (cadr-cli::thinking-selector-state-query state))))
+
+
+(defun thinking-selector-handle-event-encoded
+    (selected event-kind &key text query)
+  (let* ((state
+           (thinking-filled-selector-state
+            :selected selected :query (or query "")))
+         (event
+           (if text
+               (cadr-tui:make-input-event :kind event-kind :text text)
+               (cadr-tui:make-input-event :kind event-kind))))
+    (multiple-value-bind (action level)
+        (cadr-cli::thinking-selector-handle-event state event)
+      (encode-thinking-selector-handle-event state action level))))
+
+
+(defun run-cli-selectors-thinking-selector-handle-event ()
+  (list
+   (thinking-selector-handle-event-encoded 0 :down)
+   (thinking-selector-handle-event-encoded 0 :enter)
+   (thinking-selector-handle-event-encoded 1 :escape)
+   (thinking-selector-handle-event-encoded 0 :text :text "h")
+   (thinking-selector-handle-event-encoded 0 :tab)))
+
+
+(defun thinking-selector-move-handle-observed-pairs
+    (move handle-raw handle-event)
+  (list
+   "tsmv_down" (nth 0 move)
+   "tsmv_up_wrap" (nth 1 move)
+   "tsmv_down_wrap" (nth 2 move)
+   "tsmv_page" (nth 3 move)
+   "tsmv_empty" (nth 4 move)
+   "tshri_down" (nth 0 handle-raw)
+   "tshri_up" (nth 1 handle-raw)
+   "tshri_enter" (nth 2 handle-raw)
+   "tshri_save" (nth 3 handle-raw)
+   "tshri_nop" (nth 4 handle-raw)
+   "tshe_down" (nth 0 handle-event)
+   "tshe_enter" (nth 1 handle-event)
+   "tshe_esc" (nth 2 handle-event)
+   "tshe_text" (nth 3 handle-event)
+   "tshe_tab" (nth 4 handle-event)))
+
+
 (defun run-cli-selectors-session-format-age ()
   (let ((now *session-format-age-now*))
     (list
@@ -21478,6 +21616,12 @@
           (run-cli-selectors-thinking-selector-clamp-selected))
         (leftover-thinking-select-current
           (run-cli-selectors-thinking-selector-select-current))
+        (leftover-thinking-move
+          (run-cli-selectors-thinking-selector-move))
+        (leftover-thinking-handle-raw
+          (run-cli-selectors-thinking-selector-handle-raw-input))
+        (leftover-thinking-handle-event
+          (run-cli-selectors-thinking-selector-handle-event))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -22251,6 +22395,8 @@
               leftover-thinking-key-p leftover-thinking-keybindings leftover-make-thinking-state)
              (thinking-selector-filter-clamp-select-observed-pairs
               leftover-thinking-apply-filter leftover-thinking-clamp leftover-thinking-select-current)
+             (thinking-selector-move-handle-observed-pairs
+              leftover-thinking-move leftover-thinking-handle-raw leftover-thinking-handle-event)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -23167,7 +23313,22 @@
      (collect "cli_selectors.thinking_selector_select_current"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-thinking-selector-select-current)))))))
+                  (run-cli-selectors-thinking-selector-select-current))))
+     "thinking_selector_move"
+     (collect "cli_selectors.thinking_selector_move"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-move))))
+     "thinking_selector_handle_raw_input"
+     (collect "cli_selectors.thinking_selector_handle_raw_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-raw-input))))
+     "thinking_selector_handle_event"
+     (collect "cli_selectors.thinking_selector_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-handle-event)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -25837,6 +25998,12 @@
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-clamp-selected"
       "cli_selectors.thinking_selector_select_current"
       "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-select-current"
+      "cli_selectors.thinking_selector_move"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-move"
+      "cli_selectors.thinking_selector_handle_raw_input"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-raw-input"
+      "cli_selectors.thinking_selector_handle_event"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-handle-event"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
