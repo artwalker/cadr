@@ -152,6 +152,9 @@ const REPETITIONS = {
 	"cli_settings.output_padding": 50,
 	"agent_conditions.error_probe": 50,
 	"execution_env.exists_remove_temps": 50,
+	"execution_env.absolute_path": 50,
+	"execution_env.join_path": 50,
+	"execution_env.file_info": 50,
 	"file_mutation_queue.with_queue": 50,
 	"file_mutation_queue.queue_key": 50,
 	"file_mutation_queue.lock": 50,
@@ -2032,14 +2035,78 @@ async function runExecutionEnvExistsRemoveTemps(cwd) {
 	}
 }
 
+async function runExecutionEnvAbsolutePath(cwd) {
+	const env = new nodeEnvModule.NodeExecutionEnv({ cwd });
+	const truth = (value) => (value ? 1 : 0);
+	const endsWith = (text, suffix) => typeof text === "string" && text.endsWith(suffix);
+	const rel = unwrapExecutionEnvResult(await env.absolutePath("rel.txt"));
+	const abs = unwrapExecutionEnvResult(await env.absolutePath("/tmp/goal20-ap-abs"));
+	const home = unwrapExecutionEnvResult(await env.absolutePath("~/goal20-ap-home"));
+	const fileUrl = unwrapExecutionEnvResult(await env.absolutePath("file:///tmp/goal20-ap-file"));
+	return {
+		ap_rel: truth(endsWith(rel, "/rel.txt") && rel.startsWith("/")),
+		ap_abs: truth(abs === "/tmp/goal20-ap-abs"),
+		ap_home: truth(endsWith(home, "goal20-ap-home")),
+		ap_file: truth(fileUrl === "/tmp/goal20-ap-file"),
+		ap_n: 4,
+	};
+}
+
+async function runExecutionEnvJoinPath(cwd) {
+	const env = new nodeEnvModule.NodeExecutionEnv({ cwd });
+	const truth = (value) => (value ? 1 : 0);
+	const rel = unwrapExecutionEnvResult(await env.joinPath(["a", "b"]));
+	const abs = unwrapExecutionEnvResult(await env.joinPath(["/tmp/goal20-jp-abs", "x", "y"]));
+	return {
+		jp_rel: truth(typeof rel === "string" && rel.endsWith("a/b")),
+		jp_abs: truth(abs === "/tmp/goal20-jp-abs/x/y"),
+		jp_n: 2,
+	};
+}
+
+async function stageExecutionEnvInfoFile(cwd) {
+	const env = new nodeEnvModule.NodeExecutionEnv({ cwd });
+	unwrapExecutionEnvResult(await env.writeFile("info.txt", "hello"));
+	return env;
+}
+
+async function runExecutionEnvFileInfo(env) {
+	const truth = (value) => (value ? 1 : 0);
+	const info = unwrapExecutionEnvResult(await env.fileInfo("info.txt"));
+	return {
+		fi_name: truth(info.name === "info.txt"),
+		fi_kind: truth(info.kind === "file"),
+		fi_size: info.size,
+		fi_n: 3,
+	};
+}
+
 async function measureExecutionEnv() {
 	const cwd = stageExecutionEnvCwd();
-	const observed = await runExecutionEnvExistsRemoveTemps(cwd);
+	const infoEnv = await stageExecutionEnvInfoFile(cwd);
+	const existsObserved = await runExecutionEnvExistsRemoveTemps(cwd);
+	const absoluteObserved = await runExecutionEnvAbsolutePath(cwd);
+	const joinObserved = await runExecutionEnvJoinPath(cwd);
+	const fileInfoObserved = await runExecutionEnvFileInfo(infoEnv);
 	return {
 		exists_remove_temps: await collect("execution_env.exists_remove_temps", () => {
 			return () => runExecutionEnvExistsRemoveTemps(cwd);
 		}),
-		observed,
+		absolute_path: await collect("execution_env.absolute_path", () => {
+			return () => runExecutionEnvAbsolutePath(cwd);
+		}),
+		join_path: await collect("execution_env.join_path", () => {
+			return () => runExecutionEnvJoinPath(cwd);
+		}),
+		file_info: await collect("execution_env.file_info", () => {
+			return () => runExecutionEnvFileInfo(infoEnv);
+		}),
+		observed: {
+			...existsObserved,
+			...absoluteObserved,
+			...joinObserved,
+			...fileInfoObserved,
+		},
 	};
 }
 
@@ -18711,6 +18778,12 @@ const result = {
 				"packages/agent/src agent error slot/type probe (fixture-aligned harness)",
 			"execution_env.exists_remove_temps":
 				"packages/agent/src/harness/env/nodejs.ts exists/remove/createTempDir/createTempFile",
+			"execution_env.absolute_path":
+				"packages/agent/src/harness/env/nodejs.ts NodeExecutionEnv.absolutePath / resolvePath",
+			"execution_env.join_path":
+				"packages/agent/src/harness/env/nodejs.ts NodeExecutionEnv.joinPath",
+			"execution_env.file_info":
+				"packages/agent/src/harness/env/nodejs.ts NodeExecutionEnv.fileInfo",
 			"file_mutation_queue.with_queue":
 				"packages/coding-agent/src/core/tools/file-mutation-queue.ts withFileMutationQueue",
 			"file_mutation_queue.queue_key":

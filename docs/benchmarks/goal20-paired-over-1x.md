@@ -295,4 +295,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `core_rest.redacted_replace` | 1.464 | 0.433 | 3.383× | 8.00× | measure-only pair 387; `replace-all` vs String.split/join one needle | invent pause；地板优化另刀 |
 | `evals_harness.eval_result` | 0.762 | 0.440 | 1.734× | 8.00× | measure-only pair 376; leftover `make-eval-result` vs SimpleHarnessResult construction; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `evals_harness.root_observer` | 0.362 | 0.162 | 2.239× | 8.00× | measure-only pair 377; leftover `*eval-root-observer*` vs isolated eval root handoff; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `execution_env.absolute_path` | 11.920 | 3.612 | 3.301× | 8.00× | measure-only pair 391; leftover `execution-env-absolute-path` vs `absolutePath` | invent pause；地板优化另刀 |
+| `execution_env.join_path` | 9.267 | 0.918 | 10.091× | 8.00× | measure-only pair 392; leftover `execution-env-join-path` vs `joinPath`; sub-µs pi — variance floor applies | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

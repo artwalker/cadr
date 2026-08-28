@@ -1639,6 +1639,48 @@
    "piUs": 0.254,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 391,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/execution-env.lisp",
+   "measure": "measure-execution-env",
+   "metric": "execution_env.absolute_path",
+   "branch": "cursor/pair-391-393-execution-env-leftovers-494e",
+   "ratio": 3.301,
+   "cadrUs": 11.92,
+   "piUs": 3.612,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 392,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/execution-env.lisp",
+   "measure": "measure-execution-env",
+   "metric": "execution_env.join_path",
+   "branch": "cursor/pair-391-393-execution-env-leftovers-494e",
+   "ratio": 10.091,
+   "cadrUs": 9.267,
+   "piUs": 0.918,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 393,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-agent/execution-env.lisp",
+   "measure": "measure-execution-env",
+   "metric": "execution_env.file_info",
+   "branch": "cursor/pair-391-393-execution-env-leftovers-494e",
+   "ratio": 0.408,
+   "cadrUs": 5.834,
+   "piUs": 14.284,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

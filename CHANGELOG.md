@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `execution_env.absolute_path` /
+  `join_path` / `file_info` (`src/cadr-agent/execution-env.lisp` vs
+  baseline `NodeExecutionEnv.absolutePath` / `joinPath` / `fileInfo`).
+  Observed `ap_*` / `jp_*` / `fi_*` exact. Live `--only-enforce` n=5
+  **3.301×** / **10.091×** / **0.408×** (11.920 / 3.612 µs, 9.267 / 0.918 µs,
+  5.834 / 14.284 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pairs 391–393). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not these metrics. Pairs 391–392 are on the over-1× ledger.
+  No `src/` optimization. Does not touch `file-mutation-queue.lisp`.
+  `nextPairNum` stays 328.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_result` /
   `root_observer` / `model_resolver` (`src/cadr-evals/harness.lisp` vs
   baseline SimpleHarnessResult construction / isolated eval root handoff /

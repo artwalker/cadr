@@ -171,6 +171,9 @@
   "resource_loader.project_context",
   "resource_loader.nearest_config",
   "execution_env.exists_remove_temps",
+  "execution_env.absolute_path",
+  "execution_env.join_path",
+  "execution_env.file_info",
   "session_pipeline.session_load",
   "session_pipeline.context_walk",
   "storage_journal.journal_read",
@@ -801,7 +804,7 @@
   {
    "prefix": "src/cadr-agent/execution-env.lisp",
    "class": "paired",
-   "metrics": ["execution_env.exists_remove_temps"]
+   "metrics": ["execution_env.exists_remove_temps", "execution_env.absolute_path", "execution_env.join_path", "execution_env.file_info"]
   },
   {
    "prefix": "src/cadr-agent/file-mutation-queue.lisp",
