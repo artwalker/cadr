@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.countdown_seconds": 50,
+	"cli_selectors.countdown_tick": 50,
+	"cli_selectors.countdown_render": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,76 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function countdownSeconds(timeoutMs) {
+	return String(Math.ceil(timeoutMs / 1000));
+}
+
+function runCliSelectorsCountdownSeconds() {
+	return {
+		cds_0: countdownSeconds(0),
+		cds_1: countdownSeconds(1),
+		cds_1000: countdownSeconds(1000),
+		cds_1001: countdownSeconds(1001),
+		cds_1500: countdownSeconds(1500),
+		cds_999: countdownSeconds(999),
+	};
+}
+
+function runCliSelectorsCountdownTick() {
+	let ticks = 0;
+	let expires = 0;
+	let renders = 0;
+	let remainingSeconds = Math.ceil(3000 / 1000);
+	ticks += 1;
+	const afterMake = ticks;
+	const tick = () => {
+		remainingSeconds -= 1;
+		ticks += 1;
+		renders += 1;
+		if (remainingSeconds <= 0) {
+			expires += 1;
+		}
+	};
+	tick();
+	tick();
+	tick();
+	return {
+		cdt_make: String(afterMake),
+		cdt_remain: String(remainingSeconds),
+		cdt_expired: remainingSeconds <= 0 ? "1" : "0",
+		cdt_ticks: String(ticks),
+		cdt_expires: String(expires),
+		cdt_renders: String(renders),
+	};
+}
+
+function countdownRenderCount(kind, calls) {
+	let n = 0;
+	const tui =
+		kind === "fn"
+			? {
+					requestRender() {
+						n += 1;
+					},
+				}
+			: undefined;
+	for (let index = 0; index < calls; index += 1) {
+		tui?.requestRender();
+	}
+	return String(n);
+}
+
+function runCliSelectorsCountdownRender() {
+	return {
+		cdr_fn1: countdownRenderCount("fn", 1),
+		cdr_fn2: countdownRenderCount("fn", 2),
+		cdr_nil: countdownRenderCount("nil", 1),
+		cdr_sym: countdownRenderCount("sym", 1),
+		cdr_zero: countdownRenderCount("fn", 0),
+		cdr_fn3: countdownRenderCount("fn", 3),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +14970,9 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const countdownSecondsResults = runCliSelectorsCountdownSeconds();
+	const countdownTickResults = runCliSelectorsCountdownTick();
+	const countdownRenderResults = runCliSelectorsCountdownRender();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15278,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...countdownSecondsResults,
+		...countdownTickResults,
+		...countdownRenderResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15661,6 +15740,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
 			},
 		),
+		countdown_seconds: await collect("cli_selectors.countdown_seconds", () => {
+			return () => runCliSelectorsCountdownSeconds();
+		}),
+		countdown_tick: await collect("cli_selectors.countdown_tick", () => {
+			return () => runCliSelectorsCountdownTick();
+		}),
+		countdown_render: await collect("cli_selectors.countdown_render", () => {
+			return () => runCliSelectorsCountdownRender();
+		}),
 		observed,
 	};
 }
@@ -17393,6 +17481,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.countdown_seconds":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts Math.ceil(timeoutMs / 1000)",
+			"cli_selectors.countdown_tick":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts interval body",
+			"cli_selectors.countdown_render":
+				"packages/coding-agent/src/modes/interactive/components/countdown-timer.ts tui?.requestRender",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

@@ -55,6 +55,9 @@
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
+;;;; 556. cli_selectors countdown remaining seconds vs CountdownTimer Math.ceil
+;;;; 557. cli_selectors countdown-timer-tick vs CountdownTimer interval body
+;;;; 558. cli_selectors countdown-request-render vs tui.requestRender
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
 ;;;;  45. cli_support normalize-path-input vs normalizePath
@@ -576,6 +579,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.countdown_seconds" . 50)
+    ("cli_selectors.countdown_tick" . 50)
+    ("cli_selectors.countdown_render" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13730,13 +13736,95 @@
      "smsper_single" (nth 5 persist))
     (scoped-models-provider-count-observed-pairs provider-count)))
 
-(defun scoped-models-provider-count-observed-pairs (results)
+(defun countdown-observed-pairs (seconds tick render)
   (list
-   "smsprv_all" (nth 0 results)
-   "smsprv_partial" (nth 1 results)
-   "smsprv_unavail" (nth 2 results)
-   "smsprv_empty" (nth 3 results)
-   "smsprv_single" (nth 4 results)))
+   "cds_0" (nth 0 seconds)
+   "cds_1" (nth 1 seconds)
+   "cds_1000" (nth 2 seconds)
+   "cds_1001" (nth 3 seconds)
+   "cds_1500" (nth 4 seconds)
+   "cds_999" (nth 5 seconds)
+   "cdt_make" (nth 0 tick)
+   "cdt_remain" (nth 1 tick)
+   "cdt_expired" (nth 2 tick)
+   "cdt_ticks" (nth 3 tick)
+   "cdt_expires" (nth 4 tick)
+   "cdt_renders" (nth 5 tick)
+   "cdr_fn1" (nth 0 render)
+   "cdr_fn2" (nth 1 render)
+   "cdr_nil" (nth 2 render)
+   "cdr_sym" (nth 3 render)
+   "cdr_zero" (nth 4 render)
+   "cdr_fn3" (nth 5 render)))
+
+(defun make-countdown-bench-timer (timeout-ms ui on-tick on-expire)
+  (cadr-cli::make-countdown-timer
+   timeout-ms ui on-tick on-expire :start-p nil))
+
+(defun countdown-seconds-for (timeout-ms)
+  (cadr-cli::countdown-timer-remaining-seconds
+   (make-countdown-bench-timer
+    timeout-ms
+    (lambda ())
+    (lambda (seconds) (declare (ignore seconds)))
+    (lambda ()))))
+
+(defun run-cli-selectors-countdown-seconds ()
+  (mapcar
+   (lambda (timeout)
+     (write-to-string (countdown-seconds-for timeout)))
+   '(0 1 1000 1001 1500 999)))
+
+(defun run-cli-selectors-countdown-tick ()
+  (let* ((ticks 0)
+         (expires 0)
+         (renders 0)
+         (timer
+           (make-countdown-bench-timer
+            3000
+            (lambda () (incf renders))
+            (lambda (seconds)
+              (declare (ignore seconds))
+              (incf ticks))
+            (lambda () (incf expires))))
+         (after-make ticks))
+    (cadr-cli::countdown-timer-tick timer)
+    (cadr-cli::countdown-timer-tick timer)
+    (cadr-cli::countdown-timer-tick timer)
+    (list
+     (write-to-string after-make)
+     (write-to-string
+      (cadr-cli::countdown-timer-remaining-seconds timer))
+     (if (cadr-cli::countdown-timer-expired-p timer) "1" "0")
+     (write-to-string ticks)
+     (write-to-string expires)
+     (write-to-string renders))))
+
+(defun countdown-render-count (ui-kind calls)
+  (let ((n 0))
+    (let ((ui
+            (case ui-kind
+              (:fn (lambda () (incf n)))
+              (:nil nil)
+              (otherwise :not-a-function))))
+      (let ((timer
+              (make-countdown-bench-timer
+               1000
+               ui
+               (lambda (seconds) (declare (ignore seconds)))
+               (lambda ()))))
+        (dotimes (index calls)
+          (cadr-cli::countdown-request-render timer))))
+    (write-to-string n)))
+
+(defun run-cli-selectors-countdown-render ()
+  (list
+   (countdown-render-count :fn 1)
+   (countdown-render-count :fn 2)
+   (countdown-render-count :nil 1)
+   (countdown-render-count :sym 1)
+   (countdown-render-count :fn 0)
+   (countdown-render-count :fn 3)))
 
 (defun scoped-models-selector-provider-count-encoded (state)
   (write-to-string
@@ -14022,7 +14110,10 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (countdown-seconds (run-cli-selectors-countdown-seconds))
+        (countdown-tick (run-cli-selectors-countdown-tick))
+        (countdown-render (run-cli-selectors-countdown-render)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14846,9 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs)
+             (countdown-observed-pairs
+              countdown-seconds countdown-tick countdown-render)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15496,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "countdown_seconds"
+     (collect "cli_selectors.countdown_seconds"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-seconds))))
+     "countdown_tick"
+     (collect "cli_selectors.countdown_tick"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-tick))))
+     "countdown_render"
+     (collect "cli_selectors.countdown_render"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-countdown-render)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17078,6 +17186,12 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-text"
       "cli_selectors.keybinding_hint"
       "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-hint"
+      "cli_selectors.countdown_seconds"
+      "src/cadr-cli/interactive/components/countdown.lisp make-countdown-timer remaining seconds"
+      "cli_selectors.countdown_tick"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-timer-tick"
+      "cli_selectors.countdown_render"
+      "src/cadr-cli/interactive/components/countdown.lisp countdown-request-render"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
