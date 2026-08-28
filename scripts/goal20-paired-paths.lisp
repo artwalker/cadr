@@ -196,6 +196,9 @@
 ;;;;  80. oauth_pkce_device materialize-cloudflare-url vs resolveCloudflareModel
 ;;;;  81. oauth_pkce_device normalize-radius-gateway vs normalizeRadiusGatewayUrl
 ;;;;  82. cli_interactive_controller clipboard-wayland-p vs isWaylandSession
+;;;; 535. leftover cli_interactive_controller clipboard-command-candidates vs copy argv lists
+;;;; 536. leftover cli_interactive_controller osc52-copy-sequence vs OSC 52 encode
+;;;; 537. leftover cli_interactive_controller copy-to-clipboard vs copyToClipboard (injected)
 ;;;;  83. evals_harness derive-eval-group-key vs deriveEvalGroupKey
 ;;;;  94. evals_harness persist-eval-artifact-references vs persistEvalArtifactReferences
 ;;;; 106. evals_harness format-harness-comparison-report vs formatHarnessComparisonReport
@@ -446,6 +449,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.clipboard_candidates" . 50)
+    ("cli_interactive_controller.osc52_copy" . 50)
+    ("cli_interactive_controller.clipboard_copy" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -9672,13 +9678,125 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defun encode-clipboard-command-candidates (candidates)
+  (format
+   nil "~{~A~^|~}"
+   (mapcar
+    (lambda (argv)
+      (format nil "~{~A~^ ~}" argv))
+    candidates)))
+
+(defun run-cli-interactive-clipboard-candidates ()
+  (list
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates :platform :darwin))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates :platform :windows))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates :platform :linux))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates
+     :platform :linux
+     :termux-p t
+     :wayland-p t
+     :wayland-display-p t
+     :x11-display-p t))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates
+     :platform :linux
+     :wayland-p t
+     :wayland-display-p t))
+   (encode-clipboard-command-candidates
+    (cadr-cli:clipboard-command-candidates
+     :platform :linux
+     :x11-display-p t))))
+
+(defun osc52-copy-sequence-or-empty (text &key (maximum-bytes 100000))
+  (or (cadr-cli:osc52-copy-sequence
+       text :maximum-bytes maximum-bytes)
+      ""))
+
+(defun run-cli-interactive-osc52-copy ()
+  (list
+   (osc52-copy-sequence-or-empty "hello")
+   (osc52-copy-sequence-or-empty "")
+   (osc52-copy-sequence-or-empty "你好")
+   (osc52-copy-sequence-or-empty "oversized" :maximum-bytes 1)
+   (osc52-copy-sequence-or-empty "😀")
+   (osc52-copy-sequence-or-empty "hello" :maximum-bytes 8)))
+
+(defun clipboard-copy-kind-name (kind)
+  (string-downcase (symbol-name kind)))
+
+(defun clipboard-copy-kind
+    (text &key platform remote-p native-setter command-runner
+       termux-p wayland-p wayland-display-p x11-display-p)
+  (clipboard-copy-kind-name
+   (cadr-cli::copy-to-clipboard
+    text
+    :platform platform
+    :remote-p remote-p
+    :termux-p termux-p
+    :wayland-p wayland-p
+    :wayland-display-p wayland-display-p
+    :x11-display-p x11-display-p
+    :native-setter native-setter
+    :command-runner command-runner
+    :output (make-string-output-stream))))
+
+(defun run-cli-interactive-clipboard-copy ()
+  (let ((ok (lambda (argv input)
+              (declare (ignore argv input))
+              t))
+        (fail (lambda (argv input)
+                (declare (ignore argv input))
+                nil))
+        (native (lambda (text)
+                  (declare (ignore text))
+                  nil)))
+    (list
+     (clipboard-copy-kind
+      "hello"
+      :platform :darwin
+      :remote-p nil
+      :native-setter native
+      :command-runner fail)
+     (clipboard-copy-kind
+      "hello"
+      :platform :linux
+      :x11-display-p t
+      :command-runner ok)
+     (clipboard-copy-kind
+      "hello"
+      :platform :darwin
+      :remote-p t
+      :native-setter native
+      :command-runner fail)
+     (clipboard-copy-kind
+      "hello"
+      :platform :linux
+      :command-runner fail)
+     (clipboard-copy-kind
+      "hello"
+      :platform :windows
+      :native-setter native
+      :command-runner fail)
+     (clipboard-copy-kind
+      "hello"
+      :platform :linux
+      :termux-p t
+      :command-runner ok))))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (clipboard-candidates (run-cli-interactive-clipboard-candidates))
+        (osc52-copy (run-cli-interactive-osc52-copy))
+        (clipboard-copy (run-cli-interactive-clipboard-copy)))
     (json-object
      "observed"
      (json-object
@@ -9709,7 +9827,25 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "ccand_darwin" (nth 0 clipboard-candidates)
+      "ccand_win" (nth 1 clipboard-candidates)
+      "ccand_none" (nth 2 clipboard-candidates)
+      "ccand_termux" (nth 3 clipboard-candidates)
+      "ccand_wl" (nth 4 clipboard-candidates)
+      "ccand_x11" (nth 5 clipboard-candidates)
+      "osc_hello" (nth 0 osc52-copy)
+      "osc_empty" (nth 1 osc52-copy)
+      "osc_cjk" (nth 2 osc52-copy)
+      "osc_over" (nth 3 osc52-copy)
+      "osc_emoji" (nth 4 osc52-copy)
+      "osc_bound" (nth 5 osc52-copy)
+      "cc_darwin" (nth 0 clipboard-copy)
+      "cc_linux_shell" (nth 1 clipboard-copy)
+      "cc_remote" (nth 2 clipboard-copy)
+      "cc_osc" (nth 3 clipboard-copy)
+      "cc_win" (nth 4 clipboard-copy)
+      "cc_termux" (nth 5 clipboard-copy))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -9739,7 +9875,22 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "clipboard_candidates"
+     (collect "cli_interactive_controller.clipboard_candidates"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-clipboard-candidates))))
+     "osc52_copy"
+     (collect "cli_interactive_controller.osc52_copy"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-osc52-copy))))
+     "clipboard_copy"
+     (collect "cli_interactive_controller.clipboard_copy"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-clipboard-copy)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -16820,6 +16971,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.clipboard_candidates"
+      "src/cadr-cli/interactive/clipboard.lisp clipboard-command-candidates"
+      "cli_interactive_controller.osc52_copy"
+      "src/cadr-cli/interactive/clipboard.lisp osc52-copy-sequence"
+      "cli_interactive_controller.clipboard_copy"
+      "src/cadr-cli/interactive/clipboard.lisp copy-to-clipboard"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
