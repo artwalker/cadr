@@ -4067,8 +4067,10 @@ commit no optimize.
 
 Leftover of the `cli_support` hole on `file-watcher.lisp`. Timed work is
 the 5000ms retry constant — not poll, not native `fs.watch`. Observed
-`rd_eq` / `rd_ms` / `rd_pos` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
+`rd_eq` / `rd_ms` / `rd_pos` are exact. First n=5 freeze **0.669×**
+(0.067 / 0.101 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
 ### Pair 482 — `cli_support` (close_watcher)
@@ -4079,8 +4081,10 @@ optimize.
 
 Leftover sibling of Pair 481 on the same hole. Timed work is close on a
 null watcher twice — not start-watch, not thread join. Observed `cl_nil`
-/ `cl_twice` / `cl_ok` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce`. Same commit no optimize.
+/ `cl_twice` / `cl_ok` are exact. First n=5 freeze **0.645×** (0.068 /
+0.105 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 483 — `cli_support` (watch_signature)
 
@@ -4091,7 +4095,9 @@ Gate used `--only-enforce`. Same commit no optimize.
 Leftover sibling of Pairs 481–482 on the same hole. Timed work is missing
 vs present path signature shape — not `watchWithErrorHandler`, not
 poll. Observed `sg_miss` / `sg_hit` / `sg_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
+**5.379×** (12.165 / 2.262 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)

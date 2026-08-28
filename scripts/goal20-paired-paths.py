@@ -809,6 +809,10 @@ RATIO_CEILINGS = {
     # 0.05x (0.23 / 4.77 us). cadr leads. 8.0 is
     # first-freeze headroom (microsecond-floor). Ratchet down only.
     "cli_support.experimental": 8.0,
+    # cli_support leftover trio (samples=5): observed
+    # watch_retry_delay 0.67x (0.07 / 0.10 us), close_watcher 0.65x
+    # (0.07 / 0.11 us), watch_signature 5.38x (12.17 / 2.26 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
     "cli_support.watch_retry_delay": 8.0,
     "cli_support.close_watcher": 8.0,
     "cli_support.watch_signature": 8.0,
