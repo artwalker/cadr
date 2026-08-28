@@ -7576,6 +7576,30 @@ Leftover sibling of Pair 604 on the same `thinking.lisp` hole. Timed work is cla
 
 Leftover sibling of Pairs 604–605 on the same `thinking.lisp` hole. Timed work is `position`/`indexOf` of current-level in filtered-levels (high / off / missing medium / empty / only-high). Observed `tssc_high` / `tssc_off` / `tssc_miss` / `tssc_empty` / `tssc_only` are exact. First n=5 freeze **0.854×** (0.981 / 1.149 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 607 — `cli_selectors` (thinking_selector_move)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_move` | `thinking-selector-move` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | wrap selected index (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pairs 604–606 on the same `thinking.lisp` hole. Timed work is `selector-frame-move-index` wrap (down / up-wrap / down-wrap / page / empty). Observed `tsmv_down` / `tsmv_up_wrap` / `tsmv_down_wrap` / `tsmv_page` / `tsmv_empty` are exact. First n=5 freeze **1.353×** (0.637 / 0.471 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 608 — `cli_selectors` (thinking_selector_handle_raw_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_handle_raw_input` | `thinking-selector-handle-raw-input` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | handleInput keybindings (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pair 607 on the same `thinking.lisp` hole. Timed work is raw CSI down/up, CR confirm, ctrl+s persist, and `q` miss on cached `*default-thinking-selector-keybindings*`. Does not time `make-thinking-selector-keybindings`. Observed `tshri_down` / `tshri_up` / `tshri_enter` / `tshri_save` / `tshri_nop` are exact. First n=5 freeze **20.910×** (144.448 / 6.908 µs) on host `cursor`, ceiling 30.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 609 — `cli_selectors` (thinking_selector_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_handle_event` | `thinking-selector-handle-event` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | typed input event dispatch (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pairs 607–608 on the same `thinking.lisp` hole. Timed work is `:down` / `:enter` / `:escape` / `:text "h"` / `:tab` otherwise. Observed `tshe_down` / `tshe_enter` / `tshe_esc` / `tshe_text` / `tshe_tab` are exact. First n=5 freeze **0.834×** (3.312 / 3.974 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
