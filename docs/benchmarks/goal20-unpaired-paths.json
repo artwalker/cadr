@@ -150,6 +150,9 @@
   "cli_settings.reload",
   "cli_settings.enabled_models",
   "cli_settings.block_images",
+  "cli_settings.default_model",
+  "cli_settings.default_provider",
+  "cli_settings.output_padding",
   "settings_load.project_trust",
   "settings_load.config_value",
   "settings_load.http_idle",
@@ -408,7 +411,10 @@
     "cli_settings.create",
     "cli_settings.reload",
     "cli_settings.enabled_models",
-    "cli_settings.block_images"
+    "cli_settings.block_images",
+    "cli_settings.default_model",
+    "cli_settings.default_provider",
+    "cli_settings.output_padding"
    ]
   },
   {

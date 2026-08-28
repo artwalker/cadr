@@ -146,6 +146,9 @@ const REPETITIONS = {
 	"cli_settings.reload": 50,
 	"cli_settings.enabled_models": 50,
 	"cli_settings.block_images": 50,
+	"cli_settings.default_model": 50,
+	"cli_settings.default_provider": 50,
+	"cli_settings.output_padding": 50,
 	"agent_conditions.error_probe": 50,
 	"execution_env.exists_remove_temps": 50,
 	"file_mutation_queue.with_queue": 50,
@@ -1811,6 +1814,38 @@ function runCliSettingsBlockImages(manager) {
 	};
 }
 
+function runCliSettingsDefaultModel(manager) {
+	const fromFixture = manager.getDefaultModel();
+	const missing = settingsModule.SettingsManager.inMemory({}).getDefaultModel();
+	return {
+		dm_fixture: csTruth(fromFixture === "claude-sonnet-4-5"),
+		dm_missing: csTruth(missing === undefined),
+		dm_n: 2,
+	};
+}
+
+function runCliSettingsDefaultProvider(manager) {
+	const fromFixture = manager.getDefaultProvider();
+	const missing = settingsModule.SettingsManager.inMemory({}).getDefaultProvider();
+	return {
+		dp_fixture: csTruth(fromFixture === "anthropic"),
+		dp_missing: csTruth(missing === undefined),
+		dp_n: 2,
+	};
+}
+
+function runCliSettingsOutputPadding(manager) {
+	const defaultPad = manager.getOutputPad();
+	const zero = settingsModule.SettingsManager.inMemory({
+		outputPad: 0,
+	}).getOutputPad();
+	return {
+		op_default: csTruth(defaultPad === 1),
+		op_zero: csTruth(zero === 0),
+		op_n: 2,
+	};
+}
+
 
 function runAgentConditionsErrorProbe() {
 	const bool = (value) => (value ? 1 : 0);
@@ -1966,6 +2001,9 @@ async function measureCliSettings() {
 	const reloadObserved = await runCliSettingsReload(manager);
 	const enabledObserved = runCliSettingsEnabledModels(manager);
 	const blockObserved = runCliSettingsBlockImages(manager);
+	const defaultModelObserved = runCliSettingsDefaultModel(manager);
+	const defaultProviderObserved = runCliSettingsDefaultProvider(manager);
+	const outputPaddingObserved = runCliSettingsOutputPadding(manager);
 	return {
 		create: await collect("cli_settings.create", () => {
 			return () => runCliSettings();
@@ -1979,6 +2017,15 @@ async function measureCliSettings() {
 		block_images: await collect("cli_settings.block_images", () => {
 			return () => runCliSettingsBlockImages(manager);
 		}),
+		default_model: await collect("cli_settings.default_model", () => {
+			return () => runCliSettingsDefaultModel(manager);
+		}),
+		default_provider: await collect("cli_settings.default_provider", () => {
+			return () => runCliSettingsDefaultProvider(manager);
+		}),
+		output_padding: await collect("cli_settings.output_padding", () => {
+			return () => runCliSettingsOutputPadding(manager);
+		}),
 		observed: {
 			theme: manager.getThemeSetting() ?? "",
 			default_model: manager.getDefaultModel() ?? "",
@@ -1990,6 +2037,9 @@ async function measureCliSettings() {
 			...reloadObserved,
 			...enabledObserved,
 			...blockObserved,
+			...defaultModelObserved,
+			...defaultProviderObserved,
+			...outputPaddingObserved,
 		},
 	};
 }
@@ -17095,6 +17145,12 @@ const result = {
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getEnabledModels",
 			"cli_settings.block_images":
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getBlockImages",
+			"cli_settings.default_model":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getDefaultModel",
+			"cli_settings.default_provider":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getDefaultProvider",
+			"cli_settings.output_padding":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getOutputPad",
 			"agent_conditions.error_probe":
 				"packages/agent/src agent error slot/type probe (fixture-aligned harness)",
 			"execution_env.exists_remove_temps":

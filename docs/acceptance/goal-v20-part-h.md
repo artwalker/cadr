@@ -4146,6 +4146,49 @@ not `make-coding-tools` as a CLI bootstrap pair, not execute. Observed
 known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Over-1× booked. Same commit no optimize.
 
+### Pair 352 — `cli_settings` (default_model)
+
+| metric | cadr | pi |
+|---|---|---|
+| `default_model` | `settings-default-model` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getDefaultModel` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 307–309 on the same `cli_settings` hole.
+Timed work is fixture `defaultModel` plus missing-key in-memory —
+not persist, not selector UI. Observed `dm_fixture` / `dm_missing` /
+`dm_n` are exact. First n=5 freeze **7.544×** (15.69 / 2.080 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Over-1× booked. Same commit no optimize.
+
+### Pair 353 — `cli_settings` (default_provider)
+
+| metric | cadr | pi |
+|---|---|---|
+| `default_provider` | `settings-default-provider` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getDefaultProvider` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 352 `default_model` on the same `cli_settings`
+hole. Timed work is fixture `defaultProvider` plus missing-key
+in-memory — not persist, not login UI. Observed `dp_fixture` /
+`dp_missing` / `dp_n` are exact. First n=5 freeze **6.737×** (15.67 /
+2.327 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help
+text; this metric did not fail). Over-1× booked. Same commit no
+optimize.
+
+### Pair 354 — `cli_settings` (output_padding)
+
+| metric | cadr | pi |
+|---|---|---|
+| `output_padding` | `settings-output-padding` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getOutputPad` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 352–353 on the same `cli_settings` hole.
+Timed work is default 1 plus in-memory `outputPad=0` — not TUI
+geometry, not persist. Observed `op_default` / `op_zero` / `op_n`
+are exact. First n=5 freeze **6.289×** (17.54 / 2.788 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did
+not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -260,4 +260,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `tui_theme_overlay.rgb_to_ansi_256` | 2.52 | 1.29 | 1.955× | 8.00× | measure-only pair 319; `rgb-to-ansi-256` vs unexported `rgbTo256`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `tui_theme_overlay.parse_hex_color` | 0.944 | 0.837 | 1.127× | 8.00× | measure-only pair 320; `parse-theme-hex-color` vs unexported `hexToRgb`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `tui_theme_overlay.theme_foreground_ansi` | 5.58 | 0.379 | 14.724× | 8.00× | measure-only pair 321; `theme-foreground-ansi` vs `Theme.getFgAnsi`; **ratio > named ceiling**; sub-µs path — gate uses variance/10µs floor | invent pause；地板/抬天花板另刀 |
+| `cli_settings.default_model` | 15.69 | 2.080 | 7.544× | 8.00× | measure-only pair 352; `settings-default-model` fixture plus missing-key in-memory | invent pause；地板优化另刀 |
+| `cli_settings.default_provider` | 15.67 | 2.327 | 6.737× | 8.00× | measure-only pair 353; `settings-default-provider` fixture plus missing-key in-memory | invent pause；地板优化另刀 |
+| `cli_settings.output_padding` | 17.54 | 2.788 | 6.289× | 8.00× | measure-only pair 354; `settings-output-padding` default 1 plus in-memory `outputPad=0` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
