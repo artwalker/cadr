@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.fit_footer_text` (`fit-footer-text` on
+  `src/cadr-cli/interactive/footer.lisp` vs baseline `truncateToWidth`). Observed
+  `fft_short` / `fft_long` / `fft_cjk` / `fft_empty` / `fft_zero` / `fft_emoji` exact.
+  n=5 **1.038×** (21.385 / 20.600 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 541). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.footer_usage` (`footer-usage-summary` on
+  `src/cadr-cli/interactive/footer.lisp` vs baseline `addUsageToTotals` plus cadr format). Observed
+  `fu_kimi` / `fu_plain` / `fu_zero` / `fu_nocache` / `fu_case` / `fu_cost0` exact.
+  n=5 **2.049×** (7.216 / 3.522 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 542). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.footer_git_paths` (`find-git-footer-paths` on
+  `src/cadr-cli/interactive/footer.lisp` vs baseline `findGitPaths`). Observed
+  `fgp_repo` / `fgp_nested` / `fgp_worktree` / `fgp_common` / `fgp_nohead` / `fgp_none` exact.
+  n=5 **1.649×** (214.734 / 130.225 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 543). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.colorfgbg_index`
   (`colorfgbg-background-index` on
   `src/cadr-cli/interactive/theme.lisp`). Observed `cfg_plain` /

@@ -363,4 +363,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.thinking_level_search_text` | 1.090 | 0.520 | 2.096× | 8.00× | measure-only leftover pair 533; `thinking-level-search-text` vs thinking search text | invent pause；地板优化另刀 |
 | `cli_selectors.thinking_selector_set_query` | 11.827 | 10.942 | 1.081× | 8.00× | measure-only leftover pair 534; `thinking-selector-set-query` vs filter query update | invent pause；地板优化另刀 |
 | `cli_interactive_controller.colorfgbg_index` | 1.430 | 0.891 | 1.605× | 8.00× | measure-only leftover pair 538; `colorfgbg-background-index` vs COLORFGBG parse | invent pause；地板优化另刀 |
+| `cli_interactive_controller.fit_footer_text` | 21.385 | 20.600 | 1.038× | 8.00× | measure-only pair 541; `fit-footer-text` vs `truncateToWidth` | invent pause；地板优化另刀 |
+| `cli_interactive_controller.footer_usage` | 7.216 | 3.522 | 2.049× | 8.00× | measure-only pair 542; `footer-usage-summary` vs `addUsageToTotals` + cadr format | invent pause；地板优化另刀 |
+| `cli_interactive_controller.footer_git_paths` | 214.734 | 130.225 | 1.649× | 8.00× | measure-only pair 543; `find-git-footer-paths` vs `findGitPaths` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

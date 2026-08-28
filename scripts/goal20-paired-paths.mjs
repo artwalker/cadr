@@ -401,6 +401,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.colorfgbg_index": 50,
 	"cli_interactive_controller.rgb_background": 50,
 	"cli_interactive_controller.detect_background": 50,
+	"cli_interactive_controller.fit_footer_text": 50,
+	"cli_interactive_controller.footer_usage": 50,
+	"cli_interactive_controller.footer_git_paths": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -13838,6 +13841,132 @@ function runCliInteractiveDetectBackground() {
 		dbg_empty: detectBackgroundEncoded({ COLORFGBG: "" }),
 		dbg_bad: detectBackgroundEncoded({ COLORFGBG: "nope" }),
 		dbg_pair: detectBackgroundEncoded({ COLORFGBG: "0;15" }),
+	};
+}
+
+
+function footerGitPosix(value) {
+	return String(value).replace(/\/+$/, "");
+}
+
+
+function footerGitRel(root, value) {
+	const relative = path.relative(footerGitPosix(root), footerGitPosix(value));
+	return relative.split(path.sep).join("/");
+}
+
+
+function writeFooterGitText(pathname, contents) {
+	mkdirSync(path.dirname(pathname), { recursive: true });
+	writeFileSync(pathname, contents);
+}
+
+
+function ensureFooterGitFixture() {
+	if (footerGitRoot) return footerGitRoot;
+	const root = path.join(scratch, "footer-git");
+	mkdirSync(path.join(root, "repo", "src", "nested"), { recursive: true });
+	writeFooterGitText(path.join(root, "repo", ".git", "HEAD"), "ref: refs/heads/main\n");
+	mkdirSync(path.join(root, "empty"), { recursive: true });
+	mkdirSync(path.join(root, "nohead", ".git"), { recursive: true });
+	writeFooterGitText(path.join(root, "wt.git", "HEAD"), "ref: refs/heads/wt\n");
+	writeFooterGitText(path.join(root, "wt", ".git"), "gitdir: ../wt.git\n");
+	mkdirSync(path.join(root, "main.git"), { recursive: true });
+	writeFooterGitText(path.join(root, "linked.git", "HEAD"), "ref: refs/heads/link\n");
+	writeFooterGitText(path.join(root, "linked.git", "commondir"), "../main.git\n");
+	writeFooterGitText(path.join(root, "linked", ".git"), "gitdir: ../linked.git\n");
+	footerGitRoot = root;
+	return root;
+}
+
+
+function encodeGitFooterPaths(cwd) {
+	const found = footerDataProviderModule.findGitPaths(cwd);
+	if (!found) return "";
+	const root = realpathSync(footerGitRoot);
+	return [
+		footerGitRel(root, realpathSync(found.repoDir)),
+		footerGitRel(root, realpathSync(found.commonGitDir)),
+		footerGitRel(root, realpathSync(found.headPath)),
+	].join("|");
+}
+
+
+function runCliInteractiveFitFooterText() {
+	return {
+		fft_short: tuiUtilsModule.truncateToWidth("hi", 10),
+		fft_long: tuiUtilsModule.truncateToWidth("abcdefghij", 7),
+		fft_cjk: tuiUtilsModule.truncateToWidth("界".repeat(30), 20),
+		fft_empty: tuiUtilsModule.truncateToWidth("", 8),
+		fft_zero: tuiUtilsModule.truncateToWidth("hello", 0),
+		fft_emoji: tuiUtilsModule.truncateToWidth("🎉 Celebration!", 8),
+	};
+}
+
+
+function formatCadrFooterUsage(totals, provider) {
+	const input = totals.input;
+	const output = totals.output;
+	const cacheRead = totals.cacheRead;
+	const cacheWrite = totals.cacheWrite;
+	const cost = totals.cost;
+	const cacheTotal = input + cacheRead + cacheWrite;
+	const hitRate =
+		cacheRead + cacheWrite > 0 ? (100 * cacheRead) / Math.max(1, cacheTotal) : null;
+	const hit = hitRate === null ? "" : ` CH${hitRate.toFixed(1)}%`;
+	const sub = String(provider ?? "").toLowerCase() === "kimi-coding" ? " (sub)" : "";
+	return `in:${input} out:${output}${hit} $${cost.toFixed(3)}${sub}`;
+}
+
+
+function footerUsageFromList(usages, provider) {
+	const totals = usageTotalsModule.createUsageTotals();
+	for (const usage of usages) {
+		usageTotalsModule.addUsageToTotals(totals, usage);
+	}
+	return formatCadrFooterUsage(totals, provider);
+}
+
+
+function runCliInteractiveFooterUsage() {
+	const kimi = [
+		{
+			input: 100,
+			output: 10,
+			cacheRead: 50,
+			cacheWrite: 50,
+			cost: { total: 0.5 },
+		},
+		{
+			input: 20,
+			output: 5,
+			cacheRead: 0,
+			cacheWrite: 0,
+			cost: { total: 0.75 },
+		},
+	];
+	const nocache = [{ input: 8, output: 2, cacheRead: 0, cacheWrite: 0, cost: { total: 0.125 } }];
+	const zeroCost = [{ input: 1, output: 0, cacheRead: 0, cacheWrite: 0, cost: { total: 0 } }];
+	return {
+		fu_kimi: footerUsageFromList(kimi, "kimi-coding"),
+		fu_plain: footerUsageFromList(kimi, "openai"),
+		fu_zero: footerUsageFromList([], ""),
+		fu_nocache: footerUsageFromList(nocache, "x"),
+		fu_case: footerUsageFromList(kimi, "Kimi-Coding"),
+		fu_cost0: footerUsageFromList(zeroCost, "x"),
+	};
+}
+
+
+function runCliInteractiveFooterGitPaths() {
+	const root = ensureFooterGitFixture();
+	return {
+		fgp_repo: encodeGitFooterPaths(path.join(root, "repo")),
+		fgp_nested: encodeGitFooterPaths(path.join(root, "repo", "src", "nested")),
+		fgp_worktree: encodeGitFooterPaths(path.join(root, "wt")),
+		fgp_common: encodeGitFooterPaths(path.join(root, "linked")),
+		fgp_nohead: encodeGitFooterPaths(path.join(root, "nohead")),
+		fgp_none: encodeGitFooterPaths(path.join(root, "empty")),
 	};
 }
 
