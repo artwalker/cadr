@@ -919,6 +919,51 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 463,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.rpc_images",
+   "branch": "cursor/prompt-bash-leftovers-463-465-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 463-465, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 464,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.rpc_prompt",
+   "branch": "cursor/prompt-bash-leftovers-463-465-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 463-465, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 465,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/prompt-bash.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.bash_result",
+   "branch": "cursor/prompt-bash-leftovers-463-465-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 463-465, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

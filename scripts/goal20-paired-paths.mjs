@@ -252,6 +252,9 @@ const REPETITIONS = {
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
 	"cli_print_rpc.session_stats": 20,
+	"cli_print_rpc.rpc_images": 50,
+	"cli_print_rpc.rpc_prompt": 50,
+	"cli_print_rpc.bash_result": 50,
 	"tui_latex.render": 20,
 	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
@@ -7174,6 +7177,122 @@ function measureCliPrintRpcSessionStatsObserved(stats) {
 	};
 }
 
+function requireRpcObject(value) {
+	if (typeof value !== "object" || value === null || Array.isArray(value)) {
+		throw new Error("RPC frame must be a JSON object");
+	}
+	return value;
+}
+
+function requireRpcString(object, key) {
+	const value = object[key];
+	if (typeof value !== "string") {
+		throw new Error(`RPC field ${key} must be a string`);
+	}
+	return value;
+}
+
+function rpcImagesFromJson(value) {
+	if (!value) return null;
+	if (!Array.isArray(value)) {
+		throw new Error("RPC field images must be an array");
+	}
+	return value.map((entry) => {
+		requireRpcObject(entry);
+		return {
+			mimeType: requireRpcString(entry, "mimeType"),
+			data: requireRpcString(entry, "data"),
+		};
+	});
+}
+
+function rpcPromptMessage(object) {
+	const text = requireRpcString(object, "message");
+	const images = rpcImagesFromJson(object.images);
+	if (images) {
+		return {
+			content: [{ type: "text", text }, ...images],
+		};
+	}
+	return { content: text };
+}
+
+function rpcBashResultJson(content, details, cancelledP = false) {
+	const exitCode = "exitCode" in details ? details.exitCode : null;
+	const text = content ? content[0].text : "";
+	const object = {
+		output: exitCode != null ? stripExitFooter(text, exitCode) : text,
+		exitCode: exitCode == null ? null : exitCode,
+		cancelled: Boolean(cancelledP),
+		truncated: Boolean(details.truncated),
+	};
+	if (details.fullOutputPath) object.fullOutputPath = details.fullOutputPath;
+	return object;
+}
+
+function rpcImagesErrorFlag(value, needle) {
+	try {
+		rpcImagesFromJson(value);
+		return 0;
+	} catch (error) {
+		return String(error.message).includes(needle) ? 1 : 0;
+	}
+}
+
+function runCliPrintRpcImages() {
+	const one = rpcImagesFromJson([{ mimeType: "image/png", data: "QQ==" }]);
+	const two = rpcImagesFromJson([
+		{ mimeType: "image/png", data: "QQ==" },
+		{ mimeType: "image/jpeg", data: "Qg==" },
+	]);
+	return {
+		img_nil: rpcImagesFromJson(null) == null ? 1 : 0,
+		img_n: two.length,
+		img_mime: one[0].mimeType,
+		img_bad: rpcImagesErrorFlag("nope", "must be an array"),
+	};
+}
+
+function runCliPrintRpcPrompt() {
+	const textOnly = rpcPromptMessage({ message: "hello" });
+	const mixed = rpcPromptMessage({
+		message: "see",
+		images: [{ mimeType: "image/png", data: "QQ==" }],
+	});
+	const textContent = textOnly.content;
+	const mixedContent = mixed.content;
+	return {
+		rp_str: typeof textContent === "string" ? 1 : 0,
+		rp_len: typeof textContent === "string" ? textContent.length : 0,
+		rp_parts: Array.isArray(mixedContent) ? mixedContent.length : 0,
+		rp_mime:
+			Array.isArray(mixedContent) && mixedContent[1]?.mimeType
+				? mixedContent[1].mimeType
+				: "",
+	};
+}
+
+function runCliPrintRpcBashResult() {
+	const withFooter = rpcBashResultJson(
+		[{ text: "hello\nProcess exited with code 1" }],
+		{ exitCode: 1 },
+	);
+	const cancelled = rpcBashResultJson(null, {}, true);
+	const truncated = rpcBashResultJson([{ text: "keep" }], {
+		exitCode: 0,
+		truncated: true,
+		fullOutputPath: "/tmp/out",
+	});
+	return {
+		br_out: withFooter.output,
+		br_code: withFooter.exitCode,
+		br_can: cancelled.cancelled ? 1 : 0,
+		br_tr: truncated.truncated ? 1 : 0,
+		br_path: truncated.fullOutputPath ?? "",
+		br_null: cancelled.exitCode == null ? 1 : 0,
+	};
+}
+
 async function measureCliPrintRpc() {
 	const staged = await stageCliPrintRpcSessionStats();
 	try {
@@ -7181,6 +7300,9 @@ async function measureCliPrintRpc() {
 			...measureCliPrintRpcObserved(runCliPrintRpc(), await runCliPrintRpcRead()),
 			...runCliPrintRpcClampThinking(),
 			...measureCliPrintRpcSessionStatsObserved(staged.session.getSessionStats()),
+			...runCliPrintRpcImages(),
+			...runCliPrintRpcPrompt(),
+			...runCliPrintRpcBashResult(),
 		};
 		return {
 			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
@@ -7194,6 +7316,15 @@ async function measureCliPrintRpc() {
 			}),
 			session_stats: await collect("cli_print_rpc.session_stats", () => {
 				return () => staged.session.getSessionStats();
+			}),
+			rpc_images: await collect("cli_print_rpc.rpc_images", () => {
+				return () => runCliPrintRpcImages();
+			}),
+			rpc_prompt: await collect("cli_print_rpc.rpc_prompt", () => {
+				return () => runCliPrintRpcPrompt();
+			}),
+			bash_result: await collect("cli_print_rpc.bash_result", () => {
+				return () => runCliPrintRpcBashResult();
 			}),
 			observed,
 		};
@@ -17096,6 +17227,12 @@ const result = {
 				"packages/ai/src/models.ts clampThinkingLevel",
 			"cli_print_rpc.session_stats":
 				"packages/coding-agent/src/core/agent-session.ts AgentSession.getSessionStats",
+			"cli_print_rpc.rpc_images":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts prompt command.images",
+			"cli_print_rpc.rpc_prompt":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts prompt message+images",
+			"cli_print_rpc.bash_result":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts bash result payload",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",

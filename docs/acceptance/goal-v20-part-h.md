@@ -4059,6 +4059,40 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 463 — `cli_print_rpc` (rpc_images)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rpc_images` | `rpc-images-from-json` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | prompt `command.images` (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover of the `cli_print_rpc` hole on `prompt-bash.lisp`. Timed work is JSON
+image-array parse into image content. Observed `img_nil` / `img_n` /
+`img_mime` / `img_bad` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 464 — `cli_print_rpc` (rpc_prompt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `rpc_prompt` | `rpc-prompt-message` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | prompt message+images (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pair 463 on the same hole. Timed work is user-message
+assembly from RPC text and optional images. Observed `rp_str` / `rp_len` /
+`rp_parts` / `rp_mime` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 465 — `cli_print_rpc` (bash_result)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_result` | `rpc-bash-result-json` (`src/cadr-cli/modes/rpc/prompt-bash.lisp`) | bash result payload (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pairs 463–464 on the same hole. Timed work is RPC bash
+result object assembly (footer strip, exit, cancelled, truncated, path).
+Observed `br_out` / `br_code` / `br_can` / `br_tr` / `br_path` / `br_null`
+are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`.
+Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

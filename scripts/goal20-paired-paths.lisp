@@ -32,6 +32,7 @@
 ;;;;  19. image_runtime image-dimensions vs getImageDimensions
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
 ;;;;      leftover: read-rpc-jsonl-lines vs attachJsonlLineReader
+;;;;      leftover: rpc-images-from-json / rpc-prompt-message / rpc-bash-result-json
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -401,6 +402,9 @@
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
     ("cli_print_rpc.session_stats" . 20)
+    ("cli_print_rpc.rpc_images" . 50)
+    ("cli_print_rpc.rpc_prompt" . 50)
+    ("cli_print_rpc.bash_result" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -8057,6 +8061,87 @@
      (length full-av)
      (length short-av))))
 
+(defun rpc-images-error-flag (value needle)
+  (handler-case
+      (progn
+        (cadr-cli::rpc-images-from-json value)
+        0)
+    (error (condition)
+      (if (search needle (princ-to-string condition))
+          1
+          0))))
+
+(defun run-cli-print-rpc-images ()
+  (let* ((one
+           (cadr-cli::rpc-images-from-json
+            (cadr-ai::json-array
+             (cadr-ai::json-object
+              "mimeType" "image/png"
+              "data" "QQ=="))))
+         (two
+           (cadr-cli::rpc-images-from-json
+            (cadr-ai::json-array
+             (cadr-ai::json-object
+              "mimeType" "image/png"
+              "data" "QQ==")
+             (cadr-ai::json-object
+              "mimeType" "image/jpeg"
+              "data" "Qg==")))))
+    (list
+     (if (null (cadr-cli::rpc-images-from-json nil)) 1 0)
+     (length two)
+     (cadr-ai:image-content-mime-type (first one))
+     (rpc-images-error-flag "nope" "must be an array"))))
+
+(defun run-cli-print-rpc-prompt ()
+  (let* ((text-only
+           (cadr-cli::rpc-prompt-message
+            (cadr-ai::json-object "message" "hello")))
+         (mixed
+           (cadr-cli::rpc-prompt-message
+            (cadr-ai::json-object
+             "message" "see"
+             "images"
+             (cadr-ai::json-array
+              (cadr-ai::json-object
+               "mimeType" "image/png"
+               "data" "QQ==")))))
+         (text-content (cadr-ai:user-message-content text-only))
+         (mixed-content (cadr-ai:user-message-content mixed)))
+    (list
+     (if (stringp text-content) 1 0)
+     (if (stringp text-content) (length text-content) 0)
+     (if (listp mixed-content) (length mixed-content) 0)
+     (if (and (listp mixed-content)
+              (cadr-ai::image-content-p (second mixed-content)))
+         (cadr-ai:image-content-mime-type (second mixed-content))
+         ""))))
+
+(defun run-cli-print-rpc-bash-result ()
+  (let* ((with-footer
+           (cadr-cli::rpc-bash-result-json
+            (list
+             (cadr-ai:make-text-content
+              :text
+              (format nil "hello~%Process exited with code 1")))
+            (list :exit-code 1)))
+         (cancelled
+           (cadr-cli::rpc-bash-result-json nil nil :cancelled-p t))
+         (truncated
+           (cadr-cli::rpc-bash-result-json
+            (list (cadr-ai:make-text-content :text "keep"))
+            (list
+             :exit-code 0
+             :truncated t
+             :full-output-path "/tmp/out"))))
+    (list
+     (cadr-ai::json-get with-footer "output")
+     (cadr-ai::json-get with-footer "exitCode")
+     (if (cadr-ai::json-get cancelled "cancelled") 1 0)
+     (if (cadr-ai::json-get truncated "truncated") 1 0)
+     (or (cadr-ai::json-get truncated "fullOutputPath") "")
+     (if (eq (cadr-ai::json-get cancelled "exitCode") 'null) 1 0))))
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p
@@ -8072,7 +8157,10 @@
            (cadr-agent:load-session (fixture-path "session.jsonl")))
          (stats-obs
            (cli-print-rpc-session-stats-observed
-            (run-cli-print-rpc-session-stats session))))
+            (run-cli-print-rpc-session-stats session)))
+         (images (run-cli-print-rpc-images))
+         (prompt (run-cli-print-rpc-prompt))
+         (bash (run-cli-print-rpc-bash-result)))
     (json-object
      "observed"
      (json-object
@@ -8096,7 +8184,21 @@
       "ss_tool" (nth 2 stats-obs)
       "ss_calls" (nth 3 stats-obs)
       "ss_total" (nth 4 stats-obs)
-      "ss_id" (nth 5 stats-obs))
+      "ss_id" (nth 5 stats-obs)
+      "img_nil" (nth 0 images)
+      "img_n" (nth 1 images)
+      "img_mime" (nth 2 images)
+      "img_bad" (nth 3 images)
+      "rp_str" (nth 0 prompt)
+      "rp_len" (nth 1 prompt)
+      "rp_parts" (nth 2 prompt)
+      "rp_mime" (nth 3 prompt)
+      "br_out" (nth 0 bash)
+      "br_code" (nth 1 bash)
+      "br_can" (nth 2 bash)
+      "br_tr" (nth 3 bash)
+      "br_path" (nth 4 bash)
+      "br_null" (nth 5 bash))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -8116,7 +8218,22 @@
      (collect "cli_print_rpc.session_stats"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-session-stats session)))))))
+                  (run-cli-print-rpc-session-stats session))))
+     "rpc_images"
+     (collect "cli_print_rpc.rpc_images"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-images))))
+     "rpc_prompt"
+     (collect "cli_print_rpc.rpc_prompt"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-prompt))))
+     "bash_result"
+     (collect "cli_print_rpc.bash_result"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-bash-result)))))))
 
 (defparameter *mermaid-lr*
   (format nil "flowchart LR~%  A-->B"))
@@ -16730,6 +16847,12 @@
       "src/cadr-cli/modes/rpc/models.lisp rpc-clamp-thinking-level"
       "cli_print_rpc.session_stats"
       "src/cadr-cli/modes/rpc/sessions.lisp rpc-session-stats"
+      "cli_print_rpc.rpc_images"
+      "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-images-from-json"
+      "cli_print_rpc.rpc_prompt"
+      "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-prompt-message"
+      "cli_print_rpc.bash_result"
+      "src/cadr-cli/modes/rpc/prompt-bash.lisp rpc-bash-result-json"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"
