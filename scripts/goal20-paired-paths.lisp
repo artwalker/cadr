@@ -7342,7 +7342,7 @@
        2))
    (eval-flag (null (cadr-evals::json-array-items 3)))
    (eval-flag (null (cadr-evals::json-array-items nil)))
-   4)))
+   4))
 
 (defun run-evals-harness-json-string ()
   ;; Leftover of the hello judge: json-get or "". Missing and NIL
