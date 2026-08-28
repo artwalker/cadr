@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-28T21:00:38Z) on `cursor`, git `8483e4fbc338`, ratio_gate=`enforced-only:cli_interactive_controller.render_assistant_blocks,cli_interactive_controller.render_version_notification,cli_interactive_controller.render_package_notification`, quick=no, samples=5
+Current: `paired-paths` (2026-08-28T21:16:07Z) on `cursor`, git `c9c4f28a8ce4`, ratio_gate=`enforced-only:cli_interactive_controller.render_tui_entry_uncached,cli_interactive_controller.render_tui_entry,cli_interactive_controller.render_tui_entries`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-28T20:45:50Z) on `cursor`, git `1adce44e0175`, ratio_gate=`enforced-only:cli_interactive_controller.render_assistant_lines,cli_interactive_controller.transform_tui_markdown,cli_interactive_controller.render_transcript_summary`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-28T21:00:38Z) on `cursor`, git `8483e4fbc338`, ratio_gate=`enforced-only:cli_interactive_controller.render_assistant_blocks,cli_interactive_controller.render_version_notification,cli_interactive_controller.render_package_notification`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -902,9 +902,12 @@ Previous: `paired-paths` (2026-08-28T20:45:50Z) on `cursor`, git `1adce44e0175`,
 | `cli_interactive_controller.render_assistant_lines` | 12.3 | 4.5 | 2.73× | 2.73× | 8.00× |
 | `cli_interactive_controller.transform_tui_markdown` | 2.9 | 2.0 | 1.48× | 1.48× | 8.00× |
 | `cli_interactive_controller.render_transcript_summary` | 786.5 | 3.1 | 255.11× | 255.11× | 400.00× |
-| `cli_interactive_controller.render_assistant_blocks` | 54.6 | 10.2 | 5.38× | — | 8.00× |
-| `cli_interactive_controller.render_version_notification` | 304.5 | 4.4 | 69.40× | — | 120.00× |
-| `cli_interactive_controller.render_package_notification` | 217.2 | 4.1 | 52.73× | — | 100.00× |
+| `cli_interactive_controller.render_assistant_blocks` | 54.6 | 10.2 | 5.38× | 5.38× | 8.00× |
+| `cli_interactive_controller.render_version_notification` | 304.5 | 4.4 | 69.40× | 69.40× | 120.00× |
+| `cli_interactive_controller.render_package_notification` | 217.2 | 4.1 | 52.73× | 52.73× | 100.00× |
+| `cli_interactive_controller.render_tui_entry_uncached` | 200.3 | 7.3 | 27.53× | — | 50.00× |
+| `cli_interactive_controller.render_tui_entry` | 102.5 | 6.0 | 17.08× | — | 30.00× |
+| `cli_interactive_controller.render_tui_entries` | 42.7 | 7.7 | 5.53× | — | 8.00× |
 | `cli_selectors.user_message_make` | — | — | — | — | — |
 | `cli_selectors.user_message_move` | — | — | — | — | — |
 | `cli_selectors.user_message_selection` | — | — | — | — | — |
@@ -1962,6 +1965,7 @@ Previous: `paired-paths` (2026-08-28T20:45:50Z) on `cursor`, git `1adce44e0175`,
 | 2026-08-28T20:31:58Z | paired-paths | `dbdac3d81a06` | no | enforced-only:cli_interactive_controller.seed_tui_message,cli_interactive_controller.reset_tui_messages,cli_interactive_controller.render_user_lines | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T20:45:50Z | paired-paths | `1adce44e0175` | no | enforced-only:cli_interactive_controller.render_assistant_lines,cli_interactive_controller.transform_tui_markdown,cli_interactive_controller.render_transcript_summary | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T21:00:38Z | paired-paths | `8483e4fbc338` | no | enforced-only:cli_interactive_controller.render_assistant_blocks,cli_interactive_controller.render_version_notification,cli_interactive_controller.render_package_notification | 1.17× | 1.02× | 1.10× | 0.08× |
+| 2026-08-28T21:16:07Z | paired-paths | `c9c4f28a8ce4` | no | enforced-only:cli_interactive_controller.render_tui_entry_uncached,cli_interactive_controller.render_tui_entry,cli_interactive_controller.render_tui_entries | 1.17× | 1.02× | 1.10× | 0.08× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

@@ -8032,6 +8032,30 @@ Leftover sibling of Pair 661. Timed work is the version-update warning box (`Upd
 
 Leftover sibling of Pairs 661–662. Timed work is the package-update warning box (`Package Updates Available` / package names / `update`). Observed does not exact-match the product slug. Observed `rpn_avail` / `rpn_pkg` / `rpn_run` / `rpn_n` / `rpn_dash` are exact. First n=5 freeze **52.727×** (217.221 / 4.120 µs) on host `cursor`. First-freeze headroom ceiling **100.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 664 — `cli_interactive_controller` (render_tui_entry_uncached)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_tui_entry_uncached` | `render-tui-entry-uncached` (`src/cadr-cli/interactive/transcript.lisp`) | chat-log render entry uncached (`packages/coding-agent/src/modes/interactive/components/chat-log.ts`) |
+
+Leftover sibling of Pairs 661–663 on the same `transcript.lisp` hole. Timed work is user/assistant/error/version-update entry paint plus unknown-type empty. Observed `rteu_user` / `rteu_asst` / `rteu_err` / `rteu_ver` / `rteu_empty` are exact. First n=5 freeze **27.525×** (200.288 / 7.276 µs) on host `cursor`. First-freeze headroom ceiling **50.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 665 — `cli_interactive_controller` (render_tui_entry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_tui_entry` | `render-tui-entry` (`src/cadr-cli/interactive/transcript.lisp`) | chat-log render entry cache (`packages/coding-agent/src/modes/interactive/components/chat-log.ts`) |
+
+Leftover sibling of Pair 664. Timed work is cacheable user paint plus second-call cache hit, error, and version-update. Observed `rte_user` / `rte_n` / `rte_hit` / `rte_err` / `rte_ver` are exact. First n=5 freeze **17.083×** (102.484 / 5.999 µs) on host `cursor`. First-freeze headroom ceiling **30.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 666 — `cli_interactive_controller` (render_tui_entries)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_tui_entries` | `render-tui-entries` (`src/cadr-cli/interactive/transcript.lisp`) | chat-log render entries + user gap (`packages/coding-agent/src/modes/interactive/components/chat-log.ts`) |
+
+Leftover sibling of Pairs 664–665. Timed work is list paint of user+assistant, a user-user gap line, and empty list. Observed `rtes_user` / `rtes_asst` / `rtes_gap` / `rtes_n` / `rtes_empty` are exact. First n=5 freeze **5.530×** (42.711 / 7.723 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

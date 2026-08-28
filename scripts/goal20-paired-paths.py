@@ -991,11 +991,13 @@ RATIO_CEILINGS = {
     # Measure-only leftover 663; first freeze 52.727× (217.221 / 4.120 µs).
     # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_interactive_controller.render_package_notification": 100.0,
-    # Measure-only leftover 664; first freeze pending.
-    "cli_interactive_controller.render_tui_entry_uncached": 8.0,
-    # Measure-only leftover 665; first freeze pending.
-    "cli_interactive_controller.render_tui_entry": 8.0,
-    # Measure-only leftover 666; first freeze pending.
+    # Measure-only leftover 664; first freeze 27.525× (200.288 / 7.276 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.render_tui_entry_uncached": 50.0,
+    # Measure-only leftover 665; first freeze 17.083× (102.484 / 5.999 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.render_tui_entry": 30.0,
+    # Measure-only leftover 666; first freeze 5.530× (42.711 / 7.723 µs).
     "cli_interactive_controller.render_tui_entries": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
