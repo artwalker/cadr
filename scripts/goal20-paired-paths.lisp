@@ -133,6 +133,9 @@
 ;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
 ;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
 ;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
+;;;; 418. evals_harness eval_layout vs isolated eval workspace/agent/sessions join
+;;;; 419. evals_harness system_prompt vs transformSystemPrompt empty rejection
+;;;; 420. evals_harness output_selector vs options.output selector
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -378,6 +381,9 @@
     ("evals_harness.step_value" . 50)
     ("evals_harness.usage" . 50)
     ("evals_harness.result_json" . 50)
+    ("evals_harness.eval_layout" . 50)
+    ("evals_harness.system_prompt" . 50)
+    ("evals_harness.output_selector" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -7252,6 +7258,104 @@
       (eql (cadr-ai::json-get timings "totalMs") 12.5d0))
      5)))
 
+(defun eval-layout-leaf (path)
+  (car (last (pathname-directory
+              (uiop:ensure-directory-pathname path)))))
+
+(defun run-evals-harness-eval-layout ()
+  ;; Isolated eval directory layout from run-coding-agent-eval.
+  ;; Do not exact session parent (cadr: under agent/; pi: under root).
+  (let* ((root
+           (uiop:ensure-directory-pathname
+            (make-pathname
+             :directory '(:absolute "tmp" "cadr-eval-root"))))
+         (cwd
+           (merge-pathnames "workspace/" root))
+         (agent-directory
+           (merge-pathnames "agent/" root))
+         (session-directory
+           (merge-pathnames "sessions/" agent-directory)))
+    (list
+     (eval-flag
+      (string= (eval-layout-leaf cwd) "workspace"))
+     (eval-flag
+      (string= (eval-layout-leaf agent-directory) "agent"))
+     (eval-flag
+      (string= (eval-layout-leaf session-directory) "sessions"))
+     3)))
+
+(defun eval-transformed-system-prompt (transform default-prompt)
+  (let ((system-prompt
+          (if transform
+              (funcall transform default-prompt)
+              default-prompt)))
+    (unless
+        (and (stringp system-prompt)
+             (plusp
+              (length
+               (string-trim
+                '(#\Space #\Tab
+                  #\Newline #\Return)
+                system-prompt))))
+      (error
+       "Transformed eval system prompt must not be empty"))
+    system-prompt))
+
+(defun eval-system-prompt-error-p (transform default-prompt)
+  (handler-case
+      (progn
+        (eval-transformed-system-prompt
+         transform default-prompt)
+        0)
+    (error () 1)))
+
+(defun run-evals-harness-system-prompt ()
+  (list
+   (eval-flag
+    (string=
+     (eval-transformed-system-prompt
+      #'identity "You are cadr.")
+     "You are cadr."))
+   (eval-flag
+    (string=
+     (eval-transformed-system-prompt
+      (lambda (prompt)
+        (concatenate 'string prompt " extra"))
+      "You are cadr.")
+     "You are cadr. extra"))
+   (eval-system-prompt-error-p
+    (constantly "") "You are cadr.")
+   (eval-system-prompt-error-p
+    (constantly "   ") "You are cadr.")
+   4))
+
+(defun eval-selected-output (response selector)
+  (if selector
+      (funcall selector response nil nil)
+      response))
+
+(defun run-evals-harness-output-selector ()
+  (list
+   (eval-flag
+    (string= (eval-selected-output "ok" nil) "ok"))
+   (eval-flag
+    (string=
+     (eval-selected-output
+      "ok"
+      (lambda (response agent manager)
+        (declare (ignore agent manager))
+        response))
+     "ok"))
+   (eval-flag
+    (string=
+     (eval-selected-output
+      "ok"
+      (lambda (response agent manager)
+        (declare (ignore agent manager))
+        (concatenate 'string "sel:" response)))
+     "sel:ok"))
+   3))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7268,7 +7372,10 @@
          (last-assistant (run-evals-harness-last-assistant))
          (step-value (run-evals-harness-step-value))
          (usage (run-evals-harness-usage))
-         (result-json (run-evals-harness-result-json)))
+         (result-json (run-evals-harness-result-json))
+         (eval-layout (run-evals-harness-eval-layout))
+         (system-prompt (run-evals-harness-system-prompt))
+         (output-selector (run-evals-harness-output-selector)))
     (json-object
      "observed"
      (json-object
@@ -7338,7 +7445,20 @@
       "rj_err" (nth 2 result-json)
       "rj_art" (nth 3 result-json)
       "rj_time" (nth 4 result-json)
-      "rj_n" (nth 5 result-json))
+      "rj_n" (nth 5 result-json)
+      "el_ws" (nth 0 eval-layout)
+      "el_agent" (nth 1 eval-layout)
+      "el_sess" (nth 2 eval-layout)
+      "el_n" (nth 3 eval-layout)
+      "sp_id" (nth 0 system-prompt)
+      "sp_map" (nth 1 system-prompt)
+      "sp_empty" (nth 2 system-prompt)
+      "sp_blank" (nth 3 system-prompt)
+      "sp_n" (nth 4 system-prompt)
+      "os_none" (nth 0 output-selector)
+      "os_id" (nth 1 output-selector)
+      "os_map" (nth 2 output-selector)
+      "os_n" (nth 3 output-selector))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7394,7 +7514,22 @@
      (collect "evals_harness.result_json"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-result-json)))))))
+                  (run-evals-harness-result-json))))
+     "eval_layout"
+     (collect "evals_harness.eval_layout"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-eval-layout))))
+     "system_prompt"
+     (collect "evals_harness.system_prompt"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-system-prompt))))
+     "output_selector"
+     (collect "evals_harness.output_selector"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-output-selector)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16614,6 +16749,12 @@
       "src/cadr-evals/harness.lisp eval-usage"
       "evals_harness.result_json"
       "src/cadr-evals/harness.lisp eval-result-json"
+      "evals_harness.eval_layout"
+      "src/cadr-evals/harness.lisp run-coding-agent-eval workspace/agent/sessions layout"
+      "evals_harness.system_prompt"
+      "src/cadr-evals/harness.lisp transform-system-prompt empty rejection"
+      "evals_harness.output_selector"
+      "src/cadr-evals/harness.lisp run-coding-agent-eval selector"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

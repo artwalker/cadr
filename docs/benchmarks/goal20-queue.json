@@ -877,6 +877,33 @@
    "piUs": 0.370,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 418,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.eval_layout",
+   "branch": "cursor/evals-harness-leftovers-418-420-b700"
+  },
+  {
+   "pair": 419,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.system_prompt",
+   "branch": "cursor/evals-harness-leftovers-418-420-b700"
+  },
+  {
+   "pair": 420,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.output_selector",
+   "branch": "cursor/evals-harness-leftovers-418-420-b700"
   }
  ],
  "mergeQueue": []

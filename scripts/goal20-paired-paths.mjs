@@ -232,6 +232,9 @@ const REPETITIONS = {
 	"evals_harness.step_value": 50,
 	"evals_harness.usage": 50,
 	"evals_harness.result_json": 50,
+	"evals_harness.eval_layout": 50,
+	"evals_harness.system_prompt": 50,
+	"evals_harness.output_selector": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5767,6 +5770,76 @@ function runEvalsHarnessResultJson() {
 	};
 }
 
+function evalLayoutLeaf(p) {
+	return path.basename(p);
+}
+
+function runEvalsHarnessEvalLayout() {
+	const root = "/tmp/cadr-eval-root";
+	const cwd = path.join(root, "workspace");
+	const agentDir = path.join(root, "agent");
+	const sessionDirectory = path.join(root, "sessions");
+	return {
+		el_ws: evalLayoutLeaf(cwd) === "workspace" ? 1 : 0,
+		el_agent: evalLayoutLeaf(agentDir) === "agent" ? 1 : 0,
+		el_sess: evalLayoutLeaf(sessionDirectory) === "sessions" ? 1 : 0,
+		el_n: 3,
+	};
+}
+
+function evalTransformedSystemPrompt(transform, defaultPrompt) {
+	const systemPrompt = transform ? transform(defaultPrompt) : defaultPrompt;
+	if (typeof systemPrompt !== "string" || !systemPrompt.trim()) {
+		throw new Error("Transformed eval system prompt must not be empty.");
+	}
+	return systemPrompt;
+}
+
+function evalSystemPromptErrorP(transform, defaultPrompt) {
+	try {
+		evalTransformedSystemPrompt(transform, defaultPrompt);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runEvalsHarnessSystemPrompt() {
+	return {
+		sp_id:
+			evalTransformedSystemPrompt((prompt) => prompt, "You are cadr.") ===
+			"You are cadr."
+				? 1
+				: 0,
+		sp_map:
+			evalTransformedSystemPrompt(
+				(prompt) => `${prompt} extra`,
+				"You are cadr.",
+			) === "You are cadr. extra"
+				? 1
+				: 0,
+		sp_empty: evalSystemPromptErrorP(() => "", "You are cadr."),
+		sp_blank: evalSystemPromptErrorP(() => "   ", "You are cadr."),
+		sp_n: 4,
+	};
+}
+
+function evalSelectedOutput(response, selector) {
+	return selector ? selector(response) : response;
+}
+
+function runEvalsHarnessOutputSelector() {
+	return {
+		os_none: evalSelectedOutput("ok", undefined) === "ok" ? 1 : 0,
+		os_id: evalSelectedOutput("ok", (response) => response) === "ok" ? 1 : 0,
+		os_map:
+			evalSelectedOutput("ok", (response) => `sel:${response}`) === "sel:ok"
+				? 1
+				: 0,
+		os_n: 3,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5784,6 +5857,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessStepValue(),
 		...runEvalsHarnessUsage(),
 		...runEvalsHarnessResultJson(),
+		...runEvalsHarnessEvalLayout(),
+		...runEvalsHarnessSystemPrompt(),
+		...runEvalsHarnessOutputSelector(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5818,6 +5894,15 @@ async function measureEvalsHarness() {
 		}),
 		result_json: await collect("evals_harness.result_json", () => {
 			return () => runEvalsHarnessResultJson();
+		}),
+		eval_layout: await collect("evals_harness.eval_layout", () => {
+			return () => runEvalsHarnessEvalLayout();
+		}),
+		system_prompt: await collect("evals_harness.system_prompt", () => {
+			return () => runEvalsHarnessSystemPrompt();
+		}),
+		output_selector: await collect("evals_harness.output_selector", () => {
+			return () => runEvalsHarnessOutputSelector();
 		}),
 		observed,
 	};
@@ -16994,6 +17079,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts runPiCodingAgent usage object assembly",
 			"evals_harness.result_json":
 				"packages/evals/src/pi-harness.ts SimpleHarnessResult JSON shape",
+			"evals_harness.eval_layout":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent workspace/agent/sessions join",
+			"evals_harness.system_prompt":
+				"packages/evals/src/pi-harness.ts transformSystemPrompt empty rejection",
+			"evals_harness.output_selector":
+				"packages/evals/src/pi-harness.ts options.output selector",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
