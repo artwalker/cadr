@@ -453,6 +453,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_refresh_items": 50,
 	"cli_selectors.scoped_models_selector_clamp_selected": 50,
 	"cli_selectors.scoped_models_selector_mark_changed": 50,
+	"cli_selectors.scoped_models_selector_finish_refresh": 50,
+	"cli_selectors.scoped_models_selector_key_p": 50,
+	"cli_selectors.scoped_models_binding_label": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -21108,6 +21111,138 @@ function runCliSelectorsScopedModelsSelectorMarkChanged() {
 }
 
 
+function leftoverScopedModelsFinishRefreshEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	query,
+	{ refreshModels, newEnabled, status, kind } = {},
+) {
+	const state = {
+		allModels: [...allModels],
+		enabledIds,
+		query: query ?? "",
+		selected,
+		filteredItems: [],
+		refreshStatusMessage: null,
+		refreshStatusKind: "muted",
+	};
+	scopedModelsSelectorClampSelected(state);
+	const selectedId = state.filteredItems[state.selected]?.fullId;
+	if (newEnabled !== undefined) {
+		state.enabledIds = newEnabled === null ? null : [...newEnabled];
+	}
+	state.allModels = [...(refreshModels ?? allModels)];
+	state.filteredItems = scopedModelsFilterItems(
+		state.allModels,
+		state.enabledIds,
+		state.query,
+	);
+	if (selectedId) {
+		const position = state.filteredItems.findIndex((item) => item.fullId === selectedId);
+		if (position >= 0) {
+			state.selected = position;
+		}
+	}
+	state.selected = Math.min(
+		state.selected,
+		Math.max(0, state.filteredItems.length - 1),
+	);
+	state.refreshStatusMessage = status ?? null;
+	state.refreshStatusKind = kind ?? "muted";
+	const ids = state.filteredItems.map((item) => item.fullId).join(",");
+	return `${ids}|${state.selected}|${state.refreshStatusMessage || ""}|${state.refreshStatusKind}|${leftoverScopedModelsEnabledText(state.enabledIds)}`;
+}
+
+
+const GOAL20_SCOPED_MODELS_DEFAULT_KB = new keybindingsModule.KeybindingsManager(
+	appKeybindingsModule.KEYBINDINGS,
+);
+const GOAL20_SCOPED_MODELS_CUSTOM_KB = new keybindingsModule.KeybindingsManager(
+	appKeybindingsModule.KEYBINDINGS,
+	{ "app.models.save": "ctrl+k" },
+);
+
+
+function runCliSelectorsScopedModelsSelectorFinishRefresh() {
+	const models = makeModelSelectorTestModels();
+	const partial = ["google/gemini-2.5-pro", "openai/gpt-4o"];
+	return {
+		smfrf_ok: leftoverScopedModelsFinishRefreshEncoded(models, null, 0, "", {
+			status: "ok",
+			kind: "muted",
+		}),
+		smfrf_success: leftoverScopedModelsFinishRefreshEncoded(models, null, 0, "", {
+			status: "done",
+			kind: "success",
+		}),
+		smfrf_rev: leftoverScopedModelsFinishRefreshEncoded(models, null, 99, "", {
+			refreshModels: [...models].reverse(),
+			status: "rev",
+			kind: "muted",
+		}),
+		smfrf_enabled: leftoverScopedModelsFinishRefreshEncoded(models, null, 0, "", {
+			newEnabled: partial,
+			status: "ids",
+			kind: "warning",
+		}),
+		smfrf_filter: leftoverScopedModelsFinishRefreshEncoded(models, null, 0, "gpt", {
+			status: "filter",
+			kind: "muted",
+		}),
+	};
+}
+
+
+function scopedModelsSelectorKeyPEncoded(manager, data, name) {
+	return selectorKeybindingMatchesPi(manager, data, name) ? "true" : "false";
+}
+
+
+function runCliSelectorsScopedModelsSelectorKeyP() {
+	const manager = GOAL20_SCOPED_MODELS_DEFAULT_KB;
+	const saveData = manager.getKeys("app.models.save")[0];
+	const upData = manager.getKeys("tui.select.up")[0];
+	return {
+		smskp_save_hit: scopedModelsSelectorKeyPEncoded(manager, saveData, "app.models.save"),
+		smskp_save_miss: scopedModelsSelectorKeyPEncoded(
+			manager,
+			saveData,
+			"app.models.enableAll",
+		),
+		smskp_up_hit: scopedModelsSelectorKeyPEncoded(manager, upData, "tui.select.up"),
+		smskp_csi_up: scopedModelsSelectorKeyPEncoded(manager, "\x1b[1;1A", "tui.select.up"),
+		smskp_garbage: scopedModelsSelectorKeyPEncoded(manager, "x", "app.models.save"),
+	};
+}
+
+
+function scopedModelsBindingLabelPi(manager, name) {
+	const keys = manager.getKeys(name);
+	return keys.length > 0 ? keys[0] : name;
+}
+
+
+function runCliSelectorsScopedModelsBindingLabel() {
+	return {
+		smbl_save: scopedModelsBindingLabelPi(GOAL20_SCOPED_MODELS_DEFAULT_KB, "app.models.save"),
+		smbl_enable: scopedModelsBindingLabelPi(
+			GOAL20_SCOPED_MODELS_DEFAULT_KB,
+			"app.models.enableAll",
+		),
+		smbl_confirm: scopedModelsBindingLabelPi(
+			GOAL20_SCOPED_MODELS_DEFAULT_KB,
+			"tui.select.confirm",
+		),
+		smbl_fallback: scopedModelsBindingLabelPi(
+			GOAL20_SCOPED_MODELS_DEFAULT_KB,
+			"app.models.not-a-binding",
+		),
+		smbl_custom: scopedModelsBindingLabelPi(GOAL20_SCOPED_MODELS_CUSTOM_KB, "app.models.save"),
+	};
+}
+
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -22277,6 +22412,44 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const modelSelectorProviderBadgeResults = runCliSelectorsModelSelectorProviderBadge();
+	const scopedModelsCopyEnabledResults = runCliSelectorsScopedModelsCopyEnabled();
+	const moveListItemResults = runCliSelectorsMoveListItem();
+	const sessionScopedModelsResults = runCliSelectorsSessionScopedModels();
+	const scopedModelIdEnabledPResults = runCliSelectorsScopedModelIdEnabledP();
+	const scopedModelsToggleIdResults = runCliSelectorsScopedModelsToggleId();
+	const allKnownModelIdsEnabledPResults = runCliSelectorsAllKnownModelIdsEnabledP();
+	const scopedModelsEnableIdsResults = runCliSelectorsScopedModelsEnableIds();
+	const scopedModelsClearIdsResults = runCliSelectorsScopedModelsClearIds();
+	const scopedModelsEnabledSetResults = runCliSelectorsScopedModelsEnabledSet();
+	const modelEqualPResults = runCliSelectorsModelEqualP();
+	const scopedModelSelectorSearchTextResults = runCliSelectorsScopedModelSelectorSearchText();
+	const modelSelectorActiveModelsResults = runCliSelectorsModelSelectorActiveModels();
+	const modelSelectorClampSelectedResults = runCliSelectorsModelSelectorClampSelected();
+	const modelSelectorSelectCurrentResults = runCliSelectorsModelSelectorSelectCurrent();
+	const sortModelSelectorModelsResults = runCliSelectorsSortModelSelectorModels();
+	const modelSelectorVisibleModelsResults = runCliSelectorsModelSelectorVisibleModels();
+	const modelSelectorVisibleSliceResults = runCliSelectorsModelSelectorVisibleSlice();
+	const modelSelectorRebuildSearchTextTableResults = runCliSelectorsModelSelectorRebuildSearchTextTable();
+	const modelSelectorFilterSearchTextResults = runCliSelectorsModelSelectorFilterSearchText();
+	const modelSelectorFinishRefreshResults = runCliSelectorsModelSelectorFinishRefresh();
+	const scopedModelsSelectorRebuildModelsByIdResults = runCliSelectorsScopedModelsSelectorRebuildModelsById();
+	const scopedModelsModelByIdResults = runCliSelectorsScopedModelsModelById();
+	const scopedModelItemSearchTextResults = runCliSelectorsScopedModelItemSearchText();
+	const scopedModelsSelectorItemsResults = runCliSelectorsScopedModelsSelectorItems();
+	const scopedModelsSelectorCancelResults = runCliSelectorsScopedModelsSelectorCancel();
+	const scopedModelsSelectorSelectedItemResults = runCliSelectorsScopedModelsSelectorSelectedItem();
+	const scopedModelsSelectorSelectIdResults = runCliSelectorsScopedModelsSelectorSelectId();
+	const scopedModelsSelectorNotifyChangeResults = runCliSelectorsScopedModelsSelectorNotifyChange();
+	const scopedModelsSelectorRebuildItemsResults = runCliSelectorsScopedModelsSelectorRebuildItems();
+	const scopedModelsSelectorApplyFilterResults = runCliSelectorsScopedModelsSelectorApplyFilter();
+	const scopedModelsSelectorVisibleItemsResults = runCliSelectorsScopedModelsSelectorVisibleItems();
+	const scopedModelsSelectorRefreshItemsResults = runCliSelectorsScopedModelsSelectorRefreshItems();
+	const scopedModelsSelectorClampSelectedResults = runCliSelectorsScopedModelsSelectorClampSelected();
+	const scopedModelsSelectorMarkChangedResults = runCliSelectorsScopedModelsSelectorMarkChanged();
+	const scopedModelsSelectorFinishRefreshResults = runCliSelectorsScopedModelsSelectorFinishRefresh();
+	const scopedModelsSelectorKeyPResults = runCliSelectorsScopedModelsSelectorKeyP();
+	const scopedModelsBindingLabelResults = runCliSelectorsScopedModelsBindingLabel();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -22585,6 +22758,44 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...modelSelectorProviderBadgeResults,
+		...scopedModelsCopyEnabledResults,
+		...moveListItemResults,
+		...sessionScopedModelsResults,
+		...scopedModelIdEnabledPResults,
+		...scopedModelsToggleIdResults,
+		...allKnownModelIdsEnabledPResults,
+		...scopedModelsEnableIdsResults,
+		...scopedModelsClearIdsResults,
+		...scopedModelsEnabledSetResults,
+		...modelEqualPResults,
+		...scopedModelSelectorSearchTextResults,
+		...modelSelectorActiveModelsResults,
+		...modelSelectorClampSelectedResults,
+		...modelSelectorSelectCurrentResults,
+		...sortModelSelectorModelsResults,
+		...modelSelectorVisibleModelsResults,
+		...modelSelectorVisibleSliceResults,
+		...modelSelectorRebuildSearchTextTableResults,
+		...modelSelectorFilterSearchTextResults,
+		...modelSelectorFinishRefreshResults,
+		...scopedModelsSelectorRebuildModelsByIdResults,
+		...scopedModelsModelByIdResults,
+		...scopedModelItemSearchTextResults,
+		...scopedModelsSelectorItemsResults,
+		...scopedModelsSelectorCancelResults,
+		...scopedModelsSelectorSelectedItemResults,
+		...scopedModelsSelectorSelectIdResults,
+		...scopedModelsSelectorNotifyChangeResults,
+		...scopedModelsSelectorRebuildItemsResults,
+		...scopedModelsSelectorApplyFilterResults,
+		...scopedModelsSelectorVisibleItemsResults,
+		...scopedModelsSelectorRefreshItemsResults,
+		...scopedModelsSelectorClampSelectedResults,
+		...scopedModelsSelectorMarkChangedResults,
+		...scopedModelsSelectorFinishRefreshResults,
+		...scopedModelsSelectorKeyPResults,
+		...scopedModelsBindingLabelResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -23045,6 +23256,234 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		model_selector_provider_badge: await collect(
+			"cli_selectors.model_selector_provider_badge",
+			() => {
+				return () => runCliSelectorsModelSelectorProviderBadge();
+			},
+		),
+		scoped_models_copy_enabled: await collect(
+			"cli_selectors.scoped_models_copy_enabled",
+			() => {
+				return () => runCliSelectorsScopedModelsCopyEnabled();
+			},
+		),
+		move_list_item: await collect(
+			"cli_selectors.move_list_item",
+			() => {
+				return () => runCliSelectorsMoveListItem();
+			},
+		),
+		session_scoped_models: await collect(
+			"cli_selectors.session_scoped_models",
+			() => {
+				return () => runCliSelectorsSessionScopedModels();
+			},
+		),
+		scoped_model_id_enabled_p: await collect(
+			"cli_selectors.scoped_model_id_enabled_p",
+			() => {
+				return () => runCliSelectorsScopedModelIdEnabledP();
+			},
+		),
+		scoped_models_toggle_id: await collect(
+			"cli_selectors.scoped_models_toggle_id",
+			() => {
+				return () => runCliSelectorsScopedModelsToggleId();
+			},
+		),
+		all_known_model_ids_enabled_p: await collect(
+			"cli_selectors.all_known_model_ids_enabled_p",
+			() => {
+				return () => runCliSelectorsAllKnownModelIdsEnabledP();
+			},
+		),
+		scoped_models_enable_ids: await collect(
+			"cli_selectors.scoped_models_enable_ids",
+			() => {
+				return () => runCliSelectorsScopedModelsEnableIds();
+			},
+		),
+		scoped_models_clear_ids: await collect(
+			"cli_selectors.scoped_models_clear_ids",
+			() => {
+				return () => runCliSelectorsScopedModelsClearIds();
+			},
+		),
+		scoped_models_enabled_set: await collect(
+			"cli_selectors.scoped_models_enabled_set",
+			() => {
+				return () => runCliSelectorsScopedModelsEnabledSet();
+			},
+		),
+		model_equal_p: await collect(
+			"cli_selectors.model_equal_p",
+			() => {
+				return () => runCliSelectorsModelEqualP();
+			},
+		),
+		scoped_model_selector_search_text: await collect(
+			"cli_selectors.scoped_model_selector_search_text",
+			() => {
+				return () => runCliSelectorsScopedModelSelectorSearchText();
+			},
+		),
+		model_selector_active_models: await collect(
+			"cli_selectors.model_selector_active_models",
+			() => {
+				return () => runCliSelectorsModelSelectorActiveModels();
+			},
+		),
+		model_selector_clamp_selected: await collect(
+			"cli_selectors.model_selector_clamp_selected",
+			() => {
+				return () => runCliSelectorsModelSelectorClampSelected();
+			},
+		),
+		model_selector_select_current: await collect(
+			"cli_selectors.model_selector_select_current",
+			() => {
+				return () => runCliSelectorsModelSelectorSelectCurrent();
+			},
+		),
+		sort_model_selector_models: await collect(
+			"cli_selectors.sort_model_selector_models",
+			() => {
+				return () => runCliSelectorsSortModelSelectorModels();
+			},
+		),
+		model_selector_visible_models: await collect(
+			"cli_selectors.model_selector_visible_models",
+			() => {
+				return () => runCliSelectorsModelSelectorVisibleModels();
+			},
+		),
+		model_selector_visible_slice: await collect(
+			"cli_selectors.model_selector_visible_slice",
+			() => {
+				return () => runCliSelectorsModelSelectorVisibleSlice();
+			},
+		),
+		model_selector_rebuild_search_text_table: await collect(
+			"cli_selectors.model_selector_rebuild_search_text_table",
+			() => {
+				return () => runCliSelectorsModelSelectorRebuildSearchTextTable();
+			},
+		),
+		model_selector_filter_search_text: await collect(
+			"cli_selectors.model_selector_filter_search_text",
+			() => {
+				return () => runCliSelectorsModelSelectorFilterSearchText();
+			},
+		),
+		model_selector_finish_refresh: await collect(
+			"cli_selectors.model_selector_finish_refresh",
+			() => {
+				return () => runCliSelectorsModelSelectorFinishRefresh();
+			},
+		),
+		scoped_models_selector_rebuild_models_by_id: await collect(
+			"cli_selectors.scoped_models_selector_rebuild_models_by_id",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorRebuildModelsById();
+			},
+		),
+		scoped_models_model_by_id: await collect(
+			"cli_selectors.scoped_models_model_by_id",
+			() => {
+				return () => runCliSelectorsScopedModelsModelById();
+			},
+		),
+		scoped_model_item_search_text: await collect(
+			"cli_selectors.scoped_model_item_search_text",
+			() => {
+				return () => runCliSelectorsScopedModelItemSearchText();
+			},
+		),
+		scoped_models_selector_items: await collect(
+			"cli_selectors.scoped_models_selector_items",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorItems();
+			},
+		),
+		scoped_models_selector_cancel: await collect(
+			"cli_selectors.scoped_models_selector_cancel",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorCancel();
+			},
+		),
+		scoped_models_selector_selected_item: await collect(
+			"cli_selectors.scoped_models_selector_selected_item",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorSelectedItem();
+			},
+		),
+		scoped_models_selector_select_id: await collect(
+			"cli_selectors.scoped_models_selector_select_id",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorSelectId();
+			},
+		),
+		scoped_models_selector_notify_change: await collect(
+			"cli_selectors.scoped_models_selector_notify_change",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorNotifyChange();
+			},
+		),
+		scoped_models_selector_rebuild_items: await collect(
+			"cli_selectors.scoped_models_selector_rebuild_items",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorRebuildItems();
+			},
+		),
+		scoped_models_selector_apply_filter: await collect(
+			"cli_selectors.scoped_models_selector_apply_filter",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorApplyFilter();
+			},
+		),
+		scoped_models_selector_visible_items: await collect(
+			"cli_selectors.scoped_models_selector_visible_items",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorVisibleItems();
+			},
+		),
+		scoped_models_selector_refresh_items: await collect(
+			"cli_selectors.scoped_models_selector_refresh_items",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorRefreshItems();
+			},
+		),
+		scoped_models_selector_clamp_selected: await collect(
+			"cli_selectors.scoped_models_selector_clamp_selected",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorClampSelected();
+			},
+		),
+		scoped_models_selector_mark_changed: await collect(
+			"cli_selectors.scoped_models_selector_mark_changed",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorMarkChanged();
+			},
+		),
+		scoped_models_selector_finish_refresh: await collect(
+			"cli_selectors.scoped_models_selector_finish_refresh",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorFinishRefresh();
+			},
+		),
+		scoped_models_selector_key_p: await collect(
+			"cli_selectors.scoped_models_selector_key_p",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorKeyP();
+			},
+		),
+		scoped_models_binding_label: await collect(
+			"cli_selectors.scoped_models_binding_label",
+			() => {
+				return () => runCliSelectorsScopedModelsBindingLabel();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -25835,6 +26274,82 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.model_selector_provider_badge":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts provider badge",
+			"cli_selectors.scoped_models_copy_enabled":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts copy enabled ids",
+			"cli_selectors.move_list_item":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts moveListItem",
+			"cli_selectors.session_scoped_models":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts session scoped models",
+			"cli_selectors.scoped_model_id_enabled_p":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts isEnabled",
+			"cli_selectors.scoped_models_toggle_id":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggleId",
+			"cli_selectors.all_known_model_ids_enabled_p":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts all known enabled",
+			"cli_selectors.scoped_models_enable_ids":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts enable ids",
+			"cli_selectors.scoped_models_clear_ids":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts clear ids",
+			"cli_selectors.scoped_models_enabled_set":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts enabled set",
+			"cli_selectors.model_equal_p":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts modelsEqual",
+			"cli_selectors.scoped_model_selector_search_text":
+				"packages/coding-agent/src/core/model-selector.ts getModelSelectorSearchText",
+			"cli_selectors.model_selector_active_models":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts active models",
+			"cli_selectors.model_selector_clamp_selected":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts clamp selected",
+			"cli_selectors.model_selector_select_current":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts select current",
+			"cli_selectors.sort_model_selector_models":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts sort models",
+			"cli_selectors.model_selector_visible_models":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts visible models",
+			"cli_selectors.model_selector_visible_slice":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts visible slice",
+			"cli_selectors.model_selector_rebuild_search_text_table":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts rebuild search text table",
+			"cli_selectors.model_selector_filter_search_text":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filter search text",
+			"cli_selectors.model_selector_finish_refresh":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts catalog refresh completion",
+			"cli_selectors.scoped_models_selector_rebuild_models_by_id":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts rebuild modelsById",
+			"cli_selectors.scoped_models_model_by_id":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts modelsById get",
+			"cli_selectors.scoped_model_item_search_text":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts item search text",
+			"cli_selectors.scoped_models_selector_items":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts items after rebuild",
+			"cli_selectors.scoped_models_selector_cancel":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts onCancel",
+			"cli_selectors.scoped_models_selector_selected_item":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts selected visible item",
+			"cli_selectors.scoped_models_selector_select_id":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts select by id",
+			"cli_selectors.scoped_models_selector_notify_change":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts onChange",
+			"cli_selectors.scoped_models_selector_rebuild_items":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts rebuild items",
+			"cli_selectors.scoped_models_selector_apply_filter":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts apply filter",
+			"cli_selectors.scoped_models_selector_visible_items":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts lazy visible items",
+			"cli_selectors.scoped_models_selector_refresh_items":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts refresh items",
+			"cli_selectors.scoped_models_selector_clamp_selected":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts clamp selected",
+			"cli_selectors.scoped_models_selector_mark_changed":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts mark changed",
+			"cli_selectors.scoped_models_selector_finish_refresh":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts updateModels + setRefreshStatus",
+			"cli_selectors.scoped_models_selector_key_p":
+				"packages/tui/src/keybindings.ts KeybindingsManager.matches + CSI modified-arrow canonical compare (selector-keybinding-matches-p parity)",
+			"cli_selectors.scoped_models_binding_label":
+				"packages/coding-agent/src/core/keybindings.ts KeybindingsManager.getKeys first-or-fallback",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
