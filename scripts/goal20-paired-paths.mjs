@@ -22355,12 +22355,16 @@ function runCliSelectorsThinkingLevelSearchText() {
 }
 
 
+const GOAL20_THINKING_DEFINITIONS = {
+	...appKeybindingsModule.KEYBINDINGS,
+	"app.thinking.save": { defaultKeys: "ctrl+s" },
+	"app.thinking.clearSearchOrCancel": { defaultKeys: "ctrl+c" },
+};
 const GOAL20_THINKING_DEFAULT_KB = new keybindingsModule.KeybindingsManager(
-	appKeybindingsModule.KEYBINDINGS,
-	{ "app.thinking.save": "ctrl+s", "app.thinking.clearSearchOrCancel": "ctrl+c" },
+	GOAL20_THINKING_DEFINITIONS,
 );
 const GOAL20_THINKING_CUSTOM_KB = new keybindingsModule.KeybindingsManager(
-	appKeybindingsModule.KEYBINDINGS,
+	GOAL20_THINKING_DEFINITIONS,
 	{ "app.thinking.save": "ctrl+k" },
 );
 
@@ -22417,7 +22421,7 @@ function runCliSelectorsThinkingSelectorKeybindings() {
 
 function encodeMakeThinkingSelectorState(levels, { currentLevel, defaultLevel } = {}) {
 	const state = makeThinkingSelectorState({ levels, currentLevel, defaultLevel });
-	return `${state.selected}|${state.filteredCount}|${thinkingLevelName(thinkingSelectorSelectedLevel(state))}|${thinkingLevelName(state.defaultLevel)}`;
+	return `${levels.length}|${thinkingLevelName(currentLevel)}|${state.selected}|${state.filteredCount}|${thinkingLevelName(thinkingSelectorSelectedLevel(state))}|${thinkingLevelName(state.defaultLevel)}`;
 }
 
 

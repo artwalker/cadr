@@ -15377,7 +15377,9 @@
            :current-level current-level
            :default-level default-level)))
     (format
-     nil "~D|~D|~A|~A"
+     nil "~D|~A|~D|~D|~A|~A"
+     (length (cadr-cli::thinking-selector-state-levels state))
+     (thinking-level-name current-level)
      (cadr-cli::thinking-selector-state-selected state)
      (cadr-cli::thinking-selector-state-filtered-count state)
      (thinking-level-name

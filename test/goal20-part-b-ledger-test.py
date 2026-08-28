@@ -2528,6 +2528,25 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("cli_selectors.daxnuts_center_line", paired.RATIO_CEILINGS)
         self.assertIn("dcl_plain", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("dcl_ansi", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.thinking_selector_key_p", RECORD.METRIC_KEYS)
+        self.assertIn("thinking_selector_key_p", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.thinking_selector_key_p", paired.RATIO_CEILINGS)
+        self.assertIn("tskp_tab_hit", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tskp_save_hit", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.thinking_selector_keybindings", RECORD.METRIC_KEYS)
+        self.assertIn("thinking_selector_keybindings", paired.METRICS["cli_selectors"])
+        self.assertIn(
+            "cli_selectors.thinking_selector_keybindings", paired.RATIO_CEILINGS
+        )
+        self.assertIn("tskb_nil", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tskb_custom", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("cli_selectors.make_thinking_selector_state", RECORD.METRIC_KEYS)
+        self.assertIn("make_thinking_selector_state", paired.METRICS["cli_selectors"])
+        self.assertIn(
+            "cli_selectors.make_thinking_selector_state", paired.RATIO_CEILINGS
+        )
+        self.assertIn("tms_high", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("tms_default", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])
