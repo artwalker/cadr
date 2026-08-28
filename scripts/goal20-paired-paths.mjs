@@ -8667,10 +8667,11 @@ function ensureFooterGitFixture() {
 function encodeGitFooterPaths(cwd) {
 	const found = footerDataProviderModule.findGitPaths(cwd);
 	if (!found) return "";
+	const root = realpathSync(footerGitRoot);
 	return [
-		footerGitRel(footerGitRoot, found.repoDir),
-		footerGitRel(footerGitRoot, found.commonGitDir),
-		footerGitRel(footerGitRoot, found.headPath),
+		footerGitRel(root, realpathSync(found.repoDir)),
+		footerGitRel(root, realpathSync(found.commonGitDir)),
+		footerGitRel(root, realpathSync(found.headPath)),
 	].join("|");
 }
 

@@ -9764,18 +9764,22 @@
   (let ((paths (cadr-cli::find-git-footer-paths cwd)))
     (if (null paths)
         ""
-        (format
-         nil
-         "~A|~A|~A"
-         (footer-git-rel
-          *footer-git-root*
-          (cadr-cli::git-footer-paths-repo-directory paths))
-         (footer-git-rel
-          *footer-git-root*
-          (cadr-cli::git-footer-paths-common-git-directory paths))
-         (footer-git-rel
-          *footer-git-root*
-          (cadr-cli::git-footer-paths-head-path paths))))))
+        (let ((root (truename *footer-git-root*)))
+          (format
+           nil
+           "~A|~A|~A"
+           (footer-git-rel
+            root
+            (truename
+             (cadr-cli::git-footer-paths-repo-directory paths)))
+           (footer-git-rel
+            root
+            (truename
+             (cadr-cli::git-footer-paths-common-git-directory paths)))
+           (footer-git-rel
+            root
+            (truename
+             (cadr-cli::git-footer-paths-head-path paths))))))))
 
 (defun run-cli-interactive-fit-footer-text ()
   ;; Default ellipsis "...". Width 0 is empty. Do not pad.
