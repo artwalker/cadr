@@ -221,6 +221,9 @@ const REPETITIONS = {
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
 	"cli_extensions_install.extension_discovery": 50,
+	"cli_extensions_install.llama_context_label": 50,
+	"cli_extensions_install.llama_model_description": 50,
+	"cli_extensions_install.llama_compact_count": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -6481,11 +6484,113 @@ function runCliExtensionsExtensionDiscovery() {
 	};
 }
 
+// Baseline packages/coding-agent/src/extensions/llama/ui.ts helpers are
+// file-local (not exported). The pi half inlines those functions so the
+// pair stays locked to the baseline, not to cadr.
+function llamaUiContextLabel(model) {
+	const context = model.meta?.n_ctx ?? model.meta?.n_ctx_train;
+	if (context) return context >= 1000 ? `${Math.round(context / 1000)}k` : String(context);
+	const args = model.status.args ?? [];
+	for (let index = 0; index < args.length - 1; index++) {
+		if (args[index] !== "--ctx-size" && args[index] !== "-c" && args[index] !== "-ctx") continue;
+		const value = Number(args[index + 1]);
+		if (Number.isFinite(value) && value > 0)
+			return value >= 1000 ? `${Math.round(value / 1000)}k` : String(value);
+	}
+	return undefined;
+}
+
+function llamaUiModelDescription(model) {
+	const details = [];
+	const loaded = model.status.value === "loaded" || model.status.value === "sleeping";
+	if (loaded) details.push("loaded");
+	else if (model.status.value !== "unloaded") details.push(model.status.value);
+	const context = loaded ? llamaUiContextLabel(model) : undefined;
+	if (context) details.push(`${context} context`);
+	return details.join(" · ");
+}
+
+function llamaUiCompactCount(value) {
+	if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}M`;
+	if (value >= 1_000) return `${(value / 1_000).toFixed(value >= 100_000 ? 0 : 1)}k`;
+	return String(value);
+}
+
+function llamaContextLabelOrEmpty(model) {
+	return llamaUiContextLabel(model) ?? "";
+}
+
+function runCliExtensionsLlamaContextLabel() {
+	return {
+		cl_meta: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "loaded" },
+			meta: { n_ctx: 8192 },
+		}),
+		cl_train: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "loaded" },
+			meta: { n_ctx_train: 2048 },
+		}),
+		cl_args: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "unloaded", args: ["--ctx-size", "4096"] },
+		}),
+		cl_small: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "loaded" },
+			meta: { n_ctx: 512 },
+		}),
+		cl_none: llamaContextLabelOrEmpty({ id: "m", status: { value: "unloaded" } }),
+		cl_dashc: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "loaded", args: ["-c", "1000"] },
+		}),
+	};
+}
+
+function runCliExtensionsLlamaModelDescription() {
+	return {
+		md_loaded: llamaUiModelDescription({
+			id: "m",
+			status: { value: "loaded" },
+			meta: { n_ctx: 8192 },
+		}),
+		md_sleep: llamaUiModelDescription({
+			id: "m",
+			status: { value: "sleeping" },
+			meta: { n_ctx: 4096 },
+		}),
+		md_unload: llamaUiModelDescription({
+			id: "m",
+			status: { value: "unloaded" },
+			meta: { n_ctx: 8192 },
+		}),
+		md_load: llamaUiModelDescription({ id: "m", status: { value: "loading" } }),
+		md_down: llamaUiModelDescription({ id: "m", status: { value: "downloading" } }),
+		md_nocontext: llamaUiModelDescription({ id: "m", status: { value: "loaded" } }),
+	};
+}
+
+function runCliExtensionsLlamaCompactCount() {
+	return {
+		cc_small: llamaUiCompactCount(42),
+		cc_k: llamaUiCompactCount(1500),
+		cc_k0: llamaUiCompactCount(100000),
+		cc_m: llamaUiCompactCount(1500000),
+		cc_m0: llamaUiCompactCount(10000000),
+		cc_999: llamaUiCompactCount(999),
+	};
+}
+
 async function measureCliExtensionsInstall() {
 	const url = runCliExtensionsLlamaUrl();
 	const token = await runCliExtensionsHfToken();
 	const catalog = runCliExtensionsLlamaCatalog();
 	const discovery = runCliExtensionsExtensionDiscovery();
+	const contextLabel = runCliExtensionsLlamaContextLabel();
+	const description = runCliExtensionsLlamaModelDescription();
+	const compact = runCliExtensionsLlamaCompactCount();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -6499,7 +6604,16 @@ async function measureCliExtensionsInstall() {
 		extension_discovery: await collect("cli_extensions_install.extension_discovery", () => {
 			return () => runCliExtensionsExtensionDiscovery();
 		}),
-		observed: { ...url, ...token, ...catalog, ...discovery },
+		llama_context_label: await collect("cli_extensions_install.llama_context_label", () => {
+			return () => runCliExtensionsLlamaContextLabel();
+		}),
+		llama_model_description: await collect("cli_extensions_install.llama_model_description", () => {
+			return () => runCliExtensionsLlamaModelDescription();
+		}),
+		llama_compact_count: await collect("cli_extensions_install.llama_compact_count", () => {
+			return () => runCliExtensionsLlamaCompactCount();
+		}),
+		observed: { ...url, ...token, ...catalog, ...discovery, ...contextLabel, ...description, ...compact },
 	};
 }
 
@@ -17035,6 +17149,12 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/provider.ts createLlamaProvider.setCatalog",
 			"cli_extensions_install.extension_discovery":
 				"packages/coding-agent/src/core/extensions/loader.ts discoverAndLoadExtensions path discovery",
+			"cli_extensions_install.llama_context_label":
+				"packages/coding-agent/src/extensions/llama/ui.ts contextLabel",
+			"cli_extensions_install.llama_model_description":
+				"packages/coding-agent/src/extensions/llama/ui.ts modelDescription",
+			"cli_extensions_install.llama_compact_count":
+				"packages/coding-agent/src/extensions/llama/ui.ts compactCount",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":

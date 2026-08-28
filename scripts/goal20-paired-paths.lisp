@@ -370,6 +370,9 @@
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
     ("cli_extensions_install.extension_discovery" . 50)
+    ("cli_extensions_install.llama_context_label" . 50)
+    ("cli_extensions_install.llama_model_description" . 50)
+    ("cli_extensions_install.llama_compact_count" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -6754,11 +6757,70 @@
          1
          0))))
 
+(defun llama-ui-model
+    (&key (id "m") (status :unloaded) arguments
+          context-window training-context-window)
+  (cadr-cli::make-llama-model-info
+   :id id
+   :status status
+   :arguments arguments
+   :context-window context-window
+   :training-context-window training-context-window))
+
+(defun llama-context-label-or-empty (model)
+  (or (cadr-cli::llama-context-label model) ""))
+
+(defun run-cli-extensions-llama-context-label ()
+  ;; n_ctx / n_ctx_train / --ctx-size / -c. Do not exact non-numeric
+  ;; args (JS Number vs Lisp read-from-string).
+  (list
+   (llama-context-label-or-empty
+    (llama-ui-model :status :loaded :context-window 8192))
+   (llama-context-label-or-empty
+    (llama-ui-model :status :loaded :training-context-window 2048))
+   (llama-context-label-or-empty
+    (llama-ui-model
+     :status :unloaded
+     :arguments '("--ctx-size" "4096")))
+   (llama-context-label-or-empty
+    (llama-ui-model :status :loaded :context-window 512))
+   (llama-context-label-or-empty
+    (llama-ui-model :status :unloaded))
+   (llama-context-label-or-empty
+    (llama-ui-model :status :loaded :arguments '("-c" "1000")))))
+
+(defun run-cli-extensions-llama-model-description ()
+  (list
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :loaded :context-window 8192))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :sleeping :context-window 4096))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :unloaded :context-window 8192))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :loading))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :downloading))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :loaded))))
+
+(defun run-cli-extensions-llama-compact-count ()
+  (list
+   (cadr-cli::llama-compact-count 42)
+   (cadr-cli::llama-compact-count 1500)
+   (cadr-cli::llama-compact-count 100000)
+   (cadr-cli::llama-compact-count 1500000)
+   (cadr-cli::llama-compact-count 10000000)
+   (cadr-cli::llama-compact-count 999)))
+
 (defun measure-cli-extensions-install ()
   (let ((url (run-cli-extensions-llama-url))
         (token (run-cli-extensions-hf-token))
         (catalog (run-cli-extensions-llama-catalog))
-        (discovery (run-cli-extensions-extension-discovery)))
+        (discovery (run-cli-extensions-extension-discovery))
+        (context-label (run-cli-extensions-llama-context-label))
+        (description (run-cli-extensions-llama-model-description))
+        (compact (run-cli-extensions-llama-compact-count)))
     (json-object
      "observed"
      (json-object
@@ -6786,7 +6848,25 @@
       "ed_proj" (nth 4 discovery)
       "ed_glob" (nth 5 discovery)
       "ed_probe" (nth 6 discovery)
-      "ed_miss" (nth 7 discovery))
+      "ed_miss" (nth 7 discovery)
+      "cl_meta" (nth 0 context-label)
+      "cl_train" (nth 1 context-label)
+      "cl_args" (nth 2 context-label)
+      "cl_small" (nth 3 context-label)
+      "cl_none" (nth 4 context-label)
+      "cl_dashc" (nth 5 context-label)
+      "md_loaded" (nth 0 description)
+      "md_sleep" (nth 1 description)
+      "md_unload" (nth 2 description)
+      "md_load" (nth 3 description)
+      "md_down" (nth 4 description)
+      "md_nocontext" (nth 5 description)
+      "cc_small" (nth 0 compact)
+      "cc_k" (nth 1 compact)
+      "cc_k0" (nth 2 compact)
+      "cc_m" (nth 3 compact)
+      "cc_m0" (nth 4 compact)
+      "cc_999" (nth 5 compact))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -6806,7 +6886,22 @@
      (collect "cli_extensions_install.extension_discovery"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-extension-discovery)))))))
+                  (run-cli-extensions-extension-discovery))))
+     "llama_context_label"
+     (collect "cli_extensions_install.llama_context_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-context-label))))
+     "llama_model_description"
+     (collect "cli_extensions_install.llama_model_description"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-model-description))))
+     "llama_compact_count"
+     (collect "cli_extensions_install.llama_compact_count"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-compact-count)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -16668,6 +16763,12 @@
       "src/cadr-cli/extensions/llama/provider.lisp llama-provider-set-catalog"
       "cli_extensions_install.extension_discovery"
       "src/cadr-cli/extensions/discovery.lisp discover-extension-sources"
+      "cli_extensions_install.llama_context_label"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-context-label"
+      "cli_extensions_install.llama_model_description"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-model-description"
+      "cli_extensions_install.llama_compact_count"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-compact-count"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"
