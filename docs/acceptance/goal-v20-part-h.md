@@ -4059,6 +4059,51 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 574 — `cli_selectors` (sort_model_selector_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sort_model_selector_models` | `sort-model-selector-models` (`src/cadr-cli/interactive/selectors/models.lisp`) | current-first then `provider` `localeCompare` (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover on unused helpers in `models.lisp`. Timed work is current-first
+then provider-key sort of unique-provider fixtures — not
+`make-model-selector-state`, not filter. Observed `smsort_first` /
+`smsort_last` / `smsort_mid` / `smsort_rev` / `smsort_single` are exact.
+First n=5 freeze **2.928×** (8.603 / 2.939 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did
+not fail). Over-1× booked. Same commit no optimize. `nextPairNum` left at
+328.
+
+### Pair 575 — `cli_selectors` (model_selector_visible_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_visible_models` | `model-selector-visible-models` (`src/cadr-cli/interactive/selectors/models.lisp`) | `filteredModels` after filter (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pair 574 on the same `models.lisp` hole. Timed work is
+the filtered-models accessor after construct + apply-filter (empty / gpt /
+nope / anth / oogle) — not viewport slice, not sort. Observed `msvm_all` /
+`msvm_gpt` / `msvm_nope` / `msvm_anth` / `msvm_oogle` are exact. First n=5
+freeze **1.879×** (37.867 / 20.148 µs) on host `cursor`, ceiling 8.0. Gate
+used `--only-enforce` (script rc=1 only from known old holes). Over-1×
+booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 576 — `cli_selectors` (model_selector_visible_slice)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_visible_slice` | `model-selector-visible-slice` (`src/cadr-cli/interactive/selectors/models.lisp`) | viewport slice of `filteredModels` (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pairs 574–575 on the same `models.lisp` hole. Distinct
+from already-paired `cli_selectors.visible_slice`
+(`selector-frame-visible-slice`). Timed work is start|total|ids digest at
+max 10 / mid max 3 / gpt filter / nope / max 1. Observed `msvs_all` /
+`msvs_mid` / `msvs_filter` / `msvs_empty` / `msvs_max1` are exact. First
+n=5 freeze **2.710×** (31.486 / 11.617 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes). Over-1×
+booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

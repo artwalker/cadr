@@ -245,6 +245,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.usage` | 2.240 | 1.042 | 2.148× | 8.00× | measure-only pair 332; leftover `eval-usage` vs usage object assembly | invent pause；地板优化另刀 |
 | `evals_harness.result_json` | 1.933 | 0.370 | 5.225× | 8.00× | measure-only pair 333; leftover `eval-result-json` vs SimpleHarnessResult JSON shape | invent pause；地板优化另刀 |
 | `evals_harness.eval_environment` | 0.758 | 0.282 | 2.692× | 8.00× | measure-only pair 346; `eval-environment` getenv+trim leftover (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_selectors.sort_model_selector_models` | 8.603 | 2.939 | 2.928× | 8.00× | measure-only leftover 574; `sort-model-selector-models` vs current-first + provider localeCompare | invent pause；地板优化另刀 |
+| `cli_selectors.model_selector_visible_models` | 37.867 | 20.148 | 1.879× | 8.00× | measure-only leftover 575; `model-selector-visible-models` vs filteredModels after filter | invent pause；地板优化另刀 |
+| `cli_selectors.model_selector_visible_slice` | 31.486 | 11.617 | 2.710× | 8.00× | measure-only leftover 576; `model-selector-visible-slice` vs filteredModels viewport slice | invent pause；地板优化另刀 |
 | `ls_tool.list_directory` | 352.2 | 314.9 | 1.119× | 8.00× | measure-only pair 317; `list-directory` empty/mixed/limit listing | invent pause；地板优化另刀 |
 | `ls_tool.make_tool` | 284.4 | 279.6 | 1.017× | 8.00× | measure-only pair 318; `make-ls-tool` vs `createLsToolDefinition` | invent pause；地板优化另刀 |
 | `cli_settings.enabled_models` | 18.7 | 3.26 | 5.735× | 8.00× | measure-only pair 308; `settings-enabled-models` missing→`:all` plus one in-memory pattern | invent pause；地板优化另刀 |
