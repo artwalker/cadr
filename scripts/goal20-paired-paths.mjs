@@ -425,6 +425,9 @@ const REPETITIONS = {
 	"cli_selectors.user_message_handle_event": 50,
 	"cli_selectors.user_message_handle_raw": 50,
 	"cli_selectors.render_user_message_selector": 50,
+	"cli_selectors.make_models_selector_keybindings": 50,
+	"cli_selectors.make_scoped_models_selector_state": 50,
+	"cli_selectors.render_model_selector": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -21523,6 +21526,100 @@ function runCliSelectorsMakeModelSelectorState() {
 }
 
 
+function modelsSelectorKeybindingsFirstKey(manager, name) {
+	const keys = manager.getKeys(name);
+	return keys.length ? keys[0] : name;
+}
+
+
+function runCliSelectorsMakeModelsSelectorKeybindings() {
+	const def = new keybindingsModule.KeybindingsManager(appKeybindingsModule.KEYBINDINGS);
+	const custom = new keybindingsModule.KeybindingsManager(appKeybindingsModule.KEYBINDINGS, {
+		"app.models.save": "ctrl+k",
+	});
+	return {
+		mmskb_save: modelsSelectorKeybindingsFirstKey(def, "app.models.save"),
+		mmskb_enable: modelsSelectorKeybindingsFirstKey(def, "app.models.enableAll"),
+		mmskb_confirm: modelsSelectorKeybindingsFirstKey(def, "tui.select.confirm"),
+		mmskb_custom: modelsSelectorKeybindingsFirstKey(custom, "app.models.save"),
+		mmskb_reorder: modelsSelectorKeybindingsFirstKey(def, "app.models.reorderUp"),
+	};
+}
+
+
+function encodeMakeScopedModelsSelectorState(
+	allModels,
+	{ enabledIds = null, refreshStatusMessage = "" } = {},
+) {
+	const copied = allModels.slice();
+	const items = scopedModelsBuildItems(copied, enabledIds);
+	const allIds = copied.map(scopedModelsFullId);
+	return `${items.length}|0|${allIds.length}|${leftoverScopedModelsEnabledText(enabledIds)}|${refreshStatusMessage || ""}`;
+}
+
+
+function runCliSelectorsMakeScopedModelsSelectorState() {
+	const models = makeModelSelectorTestModels();
+	const orig = models.slice();
+	const extra = goal20ModelItem({ id: "grok", provider: "xai", name: "Grok" });
+	const copyStateModels = orig.slice();
+	orig.splice(1, orig.length - 1, extra);
+	return {
+		msmksc_all: encodeMakeScopedModelsSelectorState(models),
+		msmksc_partial: encodeMakeScopedModelsSelectorState(models, {
+			enabledIds: ["google/gemini-2.5-pro", "openai/gpt-4o"],
+		}),
+		msmksc_empty: encodeMakeScopedModelsSelectorState([]),
+		msmksc_status: encodeMakeScopedModelsSelectorState(models, {
+			refreshStatusMessage: "Refreshing…",
+		}),
+		msmksc_copy: String(copyStateModels.length),
+	};
+}
+
+
+function leftoverRenderModelSelector(state, width) {
+	const models = state.filteredModels || [];
+	for (const item of models) {
+		const id = item.id ?? item.model?.id ?? "";
+		const provider = item.provider ?? item.model?.provider ?? "";
+		`${id} [${provider}]`;
+	}
+	const current = state.currentModel;
+	const currentId =
+		current && (current.provider != null || current.id != null)
+			? qualifiedModelId(current)
+			: "";
+	return `${state.selectedIndex}|${models.length}|${width}|${state.scope}|${currentId}`;
+}
+
+
+function encodeRenderModelSelector(state, width) {
+	leftoverRenderModelSelector(state, width);
+	const current = state.currentModel;
+	const currentId =
+		current && (current.provider != null || current.id != null)
+			? qualifiedModelId(current)
+			: "";
+	return `${state.selectedIndex}|${state.filteredModels.length}|${width}|${state.scope}|${currentId}`;
+}
+
+
+function runCliSelectorsRenderModelSelector() {
+	const scoped = makeModelSelectorScopedTestModels();
+	return {
+		rms_default: encodeRenderModelSelector(makeModelSelectorUiState(), 80),
+		rms_sel2: encodeRenderModelSelector(makeModelSelectorUiState({ selected: 2 }), 80),
+		rms_scoped: encodeRenderModelSelector(
+			makeModelSelectorUiState({ scopedModels: scoped }),
+			80,
+		),
+		rms_narrow: encodeRenderModelSelector(makeModelSelectorUiState(), 40),
+		rms_miss: encodeRenderModelSelector(makeModelSelectorUiState({ query: "nope" }), 80),
+	};
+}
+
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -24059,6 +24156,11 @@ async function measureCliSelectorsSessionSearch() {
 	const userMessageHandleEventResults = runCliSelectorsUserMessageHandleEvent();
 	const userMessageHandleRawResults = runCliSelectorsUserMessageHandleRaw();
 	const renderUserMessageSelectorResults = runCliSelectorsRenderUserMessageSelector();
+	const makeModelsSelectorKeybindingsResults =
+		runCliSelectorsMakeModelsSelectorKeybindings();
+	const makeScopedModelsSelectorStateResults =
+		runCliSelectorsMakeScopedModelsSelectorState();
+	const renderModelSelectorResults = runCliSelectorsRenderModelSelector();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -24444,6 +24546,9 @@ async function measureCliSelectorsSessionSearch() {
 		...userMessageHandleEventResults,
 		...userMessageHandleRawResults,
 		...renderUserMessageSelectorResults,
+		...makeModelsSelectorKeybindingsResults,
+		...makeScopedModelsSelectorStateResults,
+		...renderModelSelectorResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -25342,6 +25447,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.render_user_message_selector",
 			() => {
 				return () => runCliSelectorsRenderUserMessageSelector();
+			},
+		),
+		make_models_selector_keybindings: await collect(
+			"cli_selectors.make_models_selector_keybindings",
+			() => {
+				return () => runCliSelectorsMakeModelsSelectorKeybindings();
+			},
+		),
+		make_scoped_models_selector_state: await collect(
+			"cli_selectors.make_scoped_models_selector_state",
+			() => {
+				return () => runCliSelectorsMakeScopedModelsSelectorState();
+			},
+		),
+		render_model_selector: await collect(
+			"cli_selectors.render_model_selector",
+			() => {
+				return () => runCliSelectorsRenderModelSelector();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -28280,6 +28403,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (raw key dispatch)",
 			"cli_selectors.render_user_message_selector":
 				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageSelectorComponent layout",
+			"cli_selectors.make_models_selector_keybindings":
+				"packages/coding-agent/src/core/keybindings.ts KEYBINDINGS app.models.* KeybindingsManager constructor",
+			"cli_selectors.make_scoped_models_selector_state":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts ScopedModelsSelectorComponent constructor",
+			"cli_selectors.render_model_selector":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts ModelSelectorComponent layout",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
