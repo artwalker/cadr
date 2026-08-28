@@ -4149,6 +4149,64 @@
      "Themes"))
    4))
 
+(defun package-manager-leftover-truth (value)
+  (if value 1 0))
+
+
+(defun run-package-manager-update-argv ()
+  (let* ((argv '("git" "-C" "/tmp/pkg" "rev-parse" "HEAD"))
+         (wrapped
+          (cadr-cli::package-update-check-process-argv
+           argv
+           "/tmp/cadr-package-update-test.pgid")))
+    (list
+     (package-manager-leftover-truth
+      (string= (first wrapped) "/usr/bin/setsid"))
+     (package-manager-leftover-truth
+      (find "--fork" wrapped :test #'string=))
+     (package-manager-leftover-truth
+      (string= (car (last wrapped)) "HEAD"))
+     (package-manager-leftover-truth
+      (equal (subseq wrapped (- (length wrapped) (length argv))) argv))
+     4)))
+
+
+(defun run-package-manager-update-env ()
+  (let* ((entries (cadr-cli::package-update-check-environment))
+         (prompt-count
+          (count-if
+           (lambda (entry)
+             (uiop:string-prefix-p "GIT_TERMINAL_PROMPT=" entry))
+           entries)))
+    (list
+     (package-manager-leftover-truth
+      (string= (first entries) "GIT_TERMINAL_PROMPT=0"))
+     (package-manager-leftover-truth (= prompt-count 1))
+     2)))
+
+
+(defun run-package-manager-git-object-id ()
+  (let ((oid "0123456789abcdef0123456789abcdef01234567")
+        (upper "0123456789ABCDEF0123456789ABCDEF01234567"))
+    (list
+     (package-manager-leftover-truth
+      (string= (cadr-cli::package-update-git-object-id oid) oid))
+     (package-manager-leftover-truth
+      (string=
+       (cadr-cli::package-update-git-object-id (format nil "~A~%" oid))
+       oid))
+     (package-manager-leftover-truth
+      (string=
+       (cadr-cli::package-update-git-object-id
+        (format nil "~A~Crefs/heads/main~%" oid #\Tab))
+       oid))
+     (package-manager-leftover-truth
+      (string= (cadr-cli::package-update-git-object-id upper) oid))
+     (package-manager-leftover-truth
+      (null (cadr-cli::package-update-git-object-id "notasha")))
+     5)))
+
+
 (defun measure-package-manager ()
   (multiple-value-bind (cwd agent project-config)
       (stage-package-layout)

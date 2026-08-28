@@ -108,7 +108,7 @@ METRICS = {
     "powershell_tool": ("utf8_prefix", "prefix_command", "make_tool", "psu_len", "psu_nl", "psu_try", "psu_utf8", "psu_n", "psc_empty", "psc_date", "psc_write", "psc_n", "pmt_name", "pmt_desc", "pmt_req", "pmt_n"),
     "settings_load": ("project_trust", "config_value", "http_idle", "stored_auth_secrets", "config_paths", "tr_empty", "tr_proj", "rs_empty", "rs_ask", "rs_always", "rs_never", "rs_ov_yes", "rs_ov_no", "cv_lit", "cv_dol", "cv_brace", "cv_esc", "cv_bang", "cv_miss", "cv_mix", "cv_cmd", "ht_30", "ht_1m", "ht_2m", "ht_5m", "ht_off", "sas_missing", "sas_fixture", "sas_oauth", "sas_bad", "sas_fixture_key", "sas_oauth_access", "sas_oauth_refresh", "cp_auth_eq", "cp_cfg_eq", "cp_same_p", "cp_auth_leaf", "cp_cfg_leaf"),
     "resource_loader": ("reload", "dedupe_by_name", "skill_count", "prompt_count", "skill_names", "prompt_names", "skill_from_project", "prompt_from_project", "context_file_count", "system_prompt", "dbn_skill_count", "dbn_skill_collisions", "dbn_skill_project", "dbn_prompt_count", "dbn_prompt_collisions", "dbn_prompt_project", "context_from_dir", "project_context", "nearest_config"),
-    "package_manager": ("resolve", "manifest_parse", "package_source", "package_count", "skill_count", "prompt_count", "theme_count", "extension_count", "manifest_p", "manifest_extensions", "manifest_skills", "manifest_prompts", "manifest_themes", "ps_npm_pin", "ps_npm_rng", "ps_git", "ps_git_pin", "ps_local", "ps_ref_ok", "ps_git_id", "ps_ded_n", "ps_ded_proj", "normalize_pattern", "resource_kinds", "type_label"),
+    "package_manager": ("resolve", "manifest_parse", "package_source", "package_count", "skill_count", "prompt_count", "theme_count", "extension_count", "manifest_p", "manifest_extensions", "manifest_skills", "manifest_prompts", "manifest_themes", "ps_npm_pin", "ps_npm_rng", "ps_git", "ps_git_pin", "ps_local", "ps_ref_ok", "ps_git_id", "ps_ded_n", "ps_ded_proj", "normalize_pattern", "resource_kinds", "type_label", "update_argv", "update_env", "git_object_id"),
     "session_discovery": ("header_probe", "session_list_probe", "file_count", "header_count", "found", "session_id", "most_recent_name", "list_count", "list_id", "list_most_recent_name", "empty_count"),
     "session_export_html": ("to_html", "has_accent", "theme"),
     "protocol_cbor": ("roundtrip", "vector_count", "roundtrip_hex", "match"),
@@ -708,6 +708,11 @@ RATIO_CEILINGS = {
     "package_manager.normalize_pattern": 8.0,
     "package_manager.resource_kinds": 8.0,
     "package_manager.type_label": 8.0,
+    # package_manager leftover trio on update-checks.lisp (samples=5):
+    # first-freeze headroom. Ratchet down only.
+    "package_manager.update_argv": 8.0,
+    "package_manager.update_env": 8.0,
+    "package_manager.git_object_id": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -2138,6 +2143,17 @@ OBSERVED_EXACT = {
         "tl_sk",
         "tl_pr",
         "tl_th",
+        "ua_setsid",
+        "ua_fork",
+        "ua_tail",
+        "ua_rest",
+        "ue_first",
+        "ue_one",
+        "go_plain",
+        "go_nl",
+        "go_ls",
+        "go_upper",
+        "go_bad",
     ),
     "session_discovery": (
         "file_count",

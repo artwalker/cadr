@@ -323,6 +323,9 @@ const REPETITIONS = {
 	"evals_harness.extension_authoring_input": 50,
 	"evals_harness.json_array_items": 50,
 	"evals_harness.json_string": 50,
+	"package_manager.update_argv": 50,
+	"package_manager.update_env": 50,
+	"package_manager.git_object_id": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -4969,6 +4972,86 @@ function runPackageManagerTypeLabel() {
 		tl_th: PACKAGE_RESOURCE_TYPE_LABELS.themes === "Themes" ? 1 : 0,
 	};
 }
+
+function wrapPackageUpdateCheckArgv(argv, groupPath) {
+	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
+		return argv;
+	}
+	return [
+		"/usr/bin/setsid",
+		"--fork",
+		"--wait",
+		"/bin/sh",
+		"-c",
+		"group_path=$1; shift; printf '%s' \"$$\" > \"$group_path\"; exec \"$@\"",
+		"cadr-package-update-check",
+		groupPath,
+		...argv,
+	];
+}
+
+
+function runPackageManagerUpdateArgv() {
+	const argv = ["git", "-C", "/tmp/pkg", "rev-parse", "HEAD"];
+	const wrapped = wrapPackageUpdateCheckArgv(
+		argv,
+		"/tmp/cadr-package-update-test.pgid",
+	);
+	return {
+		ua_setsid: wrapped[0] === "/usr/bin/setsid" ? 1 : 0,
+		ua_fork: wrapped.includes("--fork") ? 1 : 0,
+		ua_tail: wrapped[wrapped.length - 1] === "HEAD" ? 1 : 0,
+		ua_rest:
+			wrapped.slice(wrapped.length - argv.length).join("\0") === argv.join("\0")
+				? 1
+				: 0,
+	};
+}
+
+
+function packageUpdateCheckEnvironment() {
+	const rest = Object.entries(process.env)
+		.filter(([key]) => key !== "GIT_TERMINAL_PROMPT")
+		.map(([key, value]) => `${key}=${value ?? ""}`);
+	return ["GIT_TERMINAL_PROMPT=0", ...rest];
+}
+
+
+function runPackageManagerUpdateEnv() {
+	const entries = packageUpdateCheckEnvironment();
+	const promptCount = entries.filter((entry) =>
+		entry.startsWith("GIT_TERMINAL_PROMPT="),
+	).length;
+	return {
+		ue_first: entries[0] === "GIT_TERMINAL_PROMPT=0" ? 1 : 0,
+		ue_one: promptCount === 1 ? 1 : 0,
+	};
+}
+
+
+function packageUpdateGitObjectId(output) {
+	const trimmed = output.trim();
+	const end = trimmed.search(/[ \t\n\r]/);
+	const objectId = end === -1 ? trimmed : trimmed.slice(0, end);
+	if (objectId.length === 40 && /^[0-9a-fA-F]{40}$/.test(objectId)) {
+		return objectId.toLowerCase();
+	}
+	return null;
+}
+
+
+function runPackageManagerGitObjectId() {
+	const oid = "0123456789abcdef0123456789abcdef01234567";
+	const upper = "0123456789ABCDEF0123456789ABCDEF01234567";
+	return {
+		go_plain: packageUpdateGitObjectId(oid) === oid ? 1 : 0,
+		go_nl: packageUpdateGitObjectId(`${oid}\n`) === oid ? 1 : 0,
+		go_ls: packageUpdateGitObjectId(`${oid}\trefs/heads/main\n`) === oid ? 1 : 0,
+		go_upper: packageUpdateGitObjectId(upper) === oid ? 1 : 0,
+		go_bad: packageUpdateGitObjectId("notasha") === null ? 1 : 0,
+	};
+}
+
 
 async function measurePackageManager() {
 	const manager = makePackageManager();

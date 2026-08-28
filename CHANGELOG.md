@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `package_manager.update_argv`
+  (`package-update-check-process-argv` on `src/cadr-cli/packages/update-checks.lisp`
+  vs baseline git argv wrap). Observed `ua_setsid` / `ua_fork` / `ua_tail` /
+  `ua_rest` exact. n=5 **3.587×** (5.696 / 1.588 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 445). Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `package_manager.update_env`
+  (`package-update-check-environment` on `src/cadr-cli/packages/update-checks.lisp`
+  vs `GIT_TERMINAL_PROMPT=0`). Observed `ue_first` / `ue_one` exact.
+  n=5 **0.108×** (3.829 / 35.512 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 446). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `package_manager.git_object_id`
+  (`package-update-git-object-id` on `src/cadr-cli/packages/update-checks.lisp`
+  vs `getRemoteGitHead` 40-hex extract). Observed `go_plain` / `go_nl` /
+  `go_ls` / `go_upper` / `go_bad` exact. n=5 **1.916×** (2.328 / 1.215 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 447). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `package_manager.normalize_pattern`
   (`config-normalize-pattern-path` on `src/cadr-cli/packages/config-selector.lisp`
   vs baseline `normalizeExactPattern`). Observed `np_dot` / `np_plain` /
