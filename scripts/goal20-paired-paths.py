@@ -999,11 +999,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.render_tui_entry": 30.0,
     # Measure-only leftover 666; first freeze 5.530× (42.711 / 7.723 µs).
     "cli_interactive_controller.render_tui_entries": 8.0,
-    # Measure-only leftover 667; first freeze pending.
+    # Measure-only leftover 667; first freeze 0.199× (0.115 / 0.576 µs). cadr leads.
     "cli_interactive_controller.should_use_tui": 8.0,
-    # Measure-only leftover 668; first freeze pending.
+    # Measure-only leftover 668; first freeze 0.069× (1.472 / 21.323 µs). cadr leads.
     "cli_interactive_controller.tui_command_error": 8.0,
-    # Measure-only leftover 669; first freeze pending.
+    # Measure-only leftover 669; first freeze 0.360× (0.190 / 0.527 µs). cadr leads.
     "cli_interactive_controller.route_tui_submission": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
