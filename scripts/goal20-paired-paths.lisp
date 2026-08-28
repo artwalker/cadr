@@ -13736,6 +13736,14 @@
      "smsper_single" (nth 5 persist))
     (scoped-models-provider-count-observed-pairs provider-count)))
 
+(defun scoped-models-provider-count-observed-pairs (results)
+  (list
+   "smsprv_all" (nth 0 results)
+   "smsprv_partial" (nth 1 results)
+   "smsprv_unavail" (nth 2 results)
+   "smsprv_empty" (nth 3 results)
+   "smsprv_single" (nth 4 results)))
+
 (defun countdown-observed-pairs (seconds tick render)
   (list
    "cds_0" (nth 0 seconds)
