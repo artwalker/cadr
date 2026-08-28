@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_extensions_install.llama_context_label` (`llama-context-label` on
+  `src/cadr-cli/extensions/llama/ui.lisp` vs baseline `contextLabel`). Observed
+  `cl_meta` / `cl_train` / `cl_args` / `cl_small` / `cl_none` / `cl_dashc` exact.
+  n=5 **1.143×** (1.279 / 1.119 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 544). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.llama_model_description` (`llama-model-description` on
+  `src/cadr-cli/extensions/llama/ui.lisp` vs baseline `modelDescription`). Observed
+  `md_loaded` / `md_sleep` / `md_unload` / `md_load` / `md_down` / `md_nocontext` exact.
+  n=5 **1.130×** (1.450 / 1.283 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 545). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.llama_compact_count` (`llama-compact-count` on
+  `src/cadr-cli/extensions/llama/ui.lisp` vs baseline `compactCount`). Observed
+  `cc_small` / `cc_k` / `cc_k0` / `cc_m` / `cc_m0` / `cc_999` exact.
+  n=5 **1.511×** (0.968 / 0.641 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 546). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.fit_footer_text` (`fit-footer-text` on
   `src/cadr-cli/interactive/footer.lisp` vs baseline `truncateToWidth`). Observed
   `fft_short` / `fft_long` / `fft_cjk` / `fft_empty` / `fft_zero` / `fft_emoji` exact.

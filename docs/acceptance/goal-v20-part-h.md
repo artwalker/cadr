@@ -6747,6 +6747,47 @@ without HEAD is empty on both sides). First n=5 freeze **1.649×**
 `--only-enforce` (script rc=1 only from known old holes; this metric did
 not fail). Over-1× booked. Same commit no optimize.
 
+### Pair 544 — `cli_extensions_install` (llama_context_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `llama_context_label` | `llama-context-label` (`src/cadr-cli/extensions/llama/ui.lisp`) | `contextLabel` (`packages/coding-agent/src/extensions/llama/ui.ts`) |
+
+Leftover sibling of the `cli_extensions_install` hole on `llama/ui.lisp`.
+Timed work is n_ctx / n_ctx_train / `--ctx-size`/`-c` format — not
+Hugging Face search, not the framed selector. Observed `cl_meta` /
+`cl_train` / `cl_args` / `cl_small` / `cl_none` / `cl_dashc` are exact.
+First n=5 freeze **1.143×** (1.279 / 1.119 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric
+did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 545 — `cli_extensions_install` (llama_model_description)
+
+| metric | cadr | pi |
+|---|---|---|
+| `llama_model_description` | `llama-model-description` (`src/cadr-cli/extensions/llama/ui.lisp`) | `modelDescription` (`packages/coding-agent/src/extensions/llama/ui.ts`) |
+
+Leftover sibling of Pair 544 on the same file. Timed work is loaded /
+sleeping / status / context join — not TUI render. Observed `md_loaded` /
+`md_sleep` / `md_unload` / `md_load` / `md_down` / `md_nocontext` are exact.
+First n=5 freeze **1.130×** (1.450 / 1.283 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 546 — `cli_extensions_install` (llama_compact_count)
+
+| metric | cadr | pi |
+|---|---|---|
+| `llama_compact_count` | `llama-compact-count` (`src/cadr-cli/extensions/llama/ui.lisp`) | `compactCount` (`packages/coding-agent/src/extensions/llama/ui.ts`) |
+
+Leftover sibling of Pairs 544–545 on the same file. Timed work is 1.2k /
+3M `toFixed` cutoffs — not download UI. Observed `cc_small` / `cc_k` /
+`cc_k0` / `cc_m` / `cc_m0` / `cc_999` are exact. First n=5 freeze
+**1.511×** (0.968 / 0.641 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes; this metric did
+not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

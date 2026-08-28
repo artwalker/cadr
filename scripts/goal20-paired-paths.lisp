@@ -8932,6 +8932,67 @@
          0))))
 
 
+(defun llama-ui-model
+    (&key (id "m") (status :unloaded) arguments
+          context-window training-context-window)
+  (cadr-cli::make-llama-model-info
+   :id id
+   :status status
+   :arguments arguments
+   :context-window context-window
+   :training-context-window training-context-window))
+
+
+(defun llama-context-label-or-empty (model)
+  (or (cadr-cli::llama-context-label model) ""))
+
+
+(defun run-cli-extensions-llama-context-label ()
+  ;; n_ctx / n_ctx_train / --ctx-size / -c. Do not exact non-numeric
+  ;; args (JS Number vs Lisp read-from-string).
+  (list
+   (llama-context-label-or-empty
+    (llama-ui-model :status :loaded :context-window 8192))
+   (llama-context-label-or-empty
+    (llama-ui-model :status :loaded :training-context-window 2048))
+   (llama-context-label-or-empty
+    (llama-ui-model
+     :status :unloaded
+     :arguments '("--ctx-size" "4096")))
+   (llama-context-label-or-empty
+    (llama-ui-model :status :loaded :context-window 512))
+   (llama-context-label-or-empty
+    (llama-ui-model :status :unloaded))
+   (llama-context-label-or-empty
+    (llama-ui-model :status :loaded :arguments '("-c" "1000")))))
+
+
+(defun run-cli-extensions-llama-model-description ()
+  (list
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :loaded :context-window 8192))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :sleeping :context-window 4096))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :unloaded :context-window 8192))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :loading))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :downloading))
+   (cadr-cli::llama-model-description
+    (llama-ui-model :status :loaded))))
+
+
+(defun run-cli-extensions-llama-compact-count ()
+  (list
+   (cadr-cli::llama-compact-count 42)
+   (cadr-cli::llama-compact-count 1500)
+   (cadr-cli::llama-compact-count 100000)
+   (cadr-cli::llama-compact-count 1500000)
+   (cadr-cli::llama-compact-count 10000000)
+   (cadr-cli::llama-compact-count 999)))
+
+
 (defun measure-cli-extensions-install ()
   (let* ((url (run-cli-extensions-llama-url))
          (token (run-cli-extensions-hf-token))

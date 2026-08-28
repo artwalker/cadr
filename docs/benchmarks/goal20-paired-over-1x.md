@@ -366,4 +366,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.fit_footer_text` | 21.385 | 20.600 | 1.038× | 8.00× | measure-only pair 541; `fit-footer-text` vs `truncateToWidth` | invent pause；地板优化另刀 |
 | `cli_interactive_controller.footer_usage` | 7.216 | 3.522 | 2.049× | 8.00× | measure-only pair 542; `footer-usage-summary` vs `addUsageToTotals` + cadr format | invent pause；地板优化另刀 |
 | `cli_interactive_controller.footer_git_paths` | 214.734 | 130.225 | 1.649× | 8.00× | measure-only pair 543; `find-git-footer-paths` vs `findGitPaths` | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_context_label` | 1.279 | 1.119 | 1.143× | 8.00× | measure-only pair 544; `llama-context-label` vs `contextLabel` | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_model_description` | 1.450 | 1.283 | 1.130× | 8.00× | measure-only pair 545; `llama-model-description` vs `modelDescription` | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_compact_count` | 0.968 | 0.641 | 1.511× | 8.00× | measure-only pair 546; `llama-compact-count` vs `compactCount` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -404,6 +404,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.fit_footer_text": 50,
 	"cli_interactive_controller.footer_usage": 50,
 	"cli_interactive_controller.footer_git_paths": 50,
+	"cli_extensions_install.llama_context_label": 50,
+	"cli_extensions_install.llama_model_description": 50,
+	"cli_extensions_install.llama_compact_count": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -9876,6 +9879,109 @@ function runCliExtensionsQuantLabel() {
 		lab({ name: "Q5", size: 512 }) === "Q5 · 512 B" ? 1 : 0,
 		lab({ name: "Q4_K_M", size: 256 }) === "Q4_K_M · 256 B · recommended" ? 1 : 0,
 	];
+}
+
+
+function llamaUiContextLabel(model) {
+	const context = model.meta?.n_ctx ?? model.meta?.n_ctx_train;
+	if (context) return context >= 1000 ? `${Math.round(context / 1000)}k` : String(context);
+	const args = model.status.args ?? [];
+	for (let index = 0; index < args.length - 1; index++) {
+		if (args[index] !== "--ctx-size" && args[index] !== "-c" && args[index] !== "-ctx") continue;
+		const value = Number(args[index + 1]);
+		if (Number.isFinite(value) && value > 0)
+			return value >= 1000 ? `${Math.round(value / 1000)}k` : String(value);
+	}
+	return undefined;
+}
+
+
+function llamaUiModelDescription(model) {
+	const details = [];
+	const loaded = model.status.value === "loaded" || model.status.value === "sleeping";
+	if (loaded) details.push("loaded");
+	else if (model.status.value !== "unloaded") details.push(model.status.value);
+	const context = loaded ? llamaUiContextLabel(model) : undefined;
+	if (context) details.push(`${context} context`);
+	return details.join(" · ");
+}
+
+
+function llamaUiCompactCount(value) {
+	if (value >= 1_000_000) return `${(value / 1_000_000).toFixed(value >= 10_000_000 ? 0 : 1)}M`;
+	if (value >= 1_000) return `${(value / 1_000).toFixed(value >= 100_000 ? 0 : 1)}k`;
+	return String(value);
+}
+
+
+function llamaContextLabelOrEmpty(model) {
+	return llamaUiContextLabel(model) ?? "";
+}
+
+
+function runCliExtensionsLlamaContextLabel() {
+	return {
+		cl_meta: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "loaded" },
+			meta: { n_ctx: 8192 },
+		}),
+		cl_train: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "loaded" },
+			meta: { n_ctx_train: 2048 },
+		}),
+		cl_args: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "unloaded", args: ["--ctx-size", "4096"] },
+		}),
+		cl_small: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "loaded" },
+			meta: { n_ctx: 512 },
+		}),
+		cl_none: llamaContextLabelOrEmpty({ id: "m", status: { value: "unloaded" } }),
+		cl_dashc: llamaContextLabelOrEmpty({
+			id: "m",
+			status: { value: "loaded", args: ["-c", "1000"] },
+		}),
+	};
+}
+
+
+function runCliExtensionsLlamaModelDescription() {
+	return {
+		md_loaded: llamaUiModelDescription({
+			id: "m",
+			status: { value: "loaded" },
+			meta: { n_ctx: 8192 },
+		}),
+		md_sleep: llamaUiModelDescription({
+			id: "m",
+			status: { value: "sleeping" },
+			meta: { n_ctx: 4096 },
+		}),
+		md_unload: llamaUiModelDescription({
+			id: "m",
+			status: { value: "unloaded" },
+			meta: { n_ctx: 8192 },
+		}),
+		md_load: llamaUiModelDescription({ id: "m", status: { value: "loading" } }),
+		md_down: llamaUiModelDescription({ id: "m", status: { value: "downloading" } }),
+		md_nocontext: llamaUiModelDescription({ id: "m", status: { value: "loaded" } }),
+	};
+}
+
+
+function runCliExtensionsLlamaCompactCount() {
+	return {
+		cc_small: llamaUiCompactCount(42),
+		cc_k: llamaUiCompactCount(1500),
+		cc_k0: llamaUiCompactCount(100000),
+		cc_m: llamaUiCompactCount(1500000),
+		cc_m0: llamaUiCompactCount(10000000),
+		cc_999: llamaUiCompactCount(999),
+	};
 }
 
 
