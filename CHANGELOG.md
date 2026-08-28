@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.waitqueue` (`file-mutation-queue-state-waitqueue`
+  on `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.current`
+  Promise). Observed `fmqb_present` / `fmqb_shared` / `fmqb_other` /
+  `fmqb_repeat` / `fmqb_n` exact. n=5 **1.120×** (120.311 / 107.377 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 328). Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. No `src/` perf.
+- Goal 20 P.13: pair `file_mutation_queue.registry` (`*file-mutation-queues*`
+  membership on `src/cadr-agent/file-mutation-queue.lisp` vs baseline
+  `fileMutationQueues.has`). Observed `fmqg_hit` / `fmqg_alias` / `fmqg_miss` /
+  `fmqg_repeat` / `fmqg_n` exact. n=5 **0.779×** (96.436 / 123.778 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 329). Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric. cadr
+  leads. No `src/` perf.
+- Goal 20 P.13: pair `file_mutation_queue.state_p` (`file-mutation-queue-state-p`
+  on `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue-state object
+  predicate). Observed `fmqc_target` / `fmqc_other` / `fmqc_list` / `fmqc_null` /
+  `fmqc_n` exact. n=5 **1.440×** (100.853 / 70.044 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 330). Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. No `src/` perf.
 - Goal 20 P.13 leftover: pair `grep_tool.read_utf8` (`read-utf8-file` on
   `src/cadr-cli/tools/grep.lisp` vs baseline `defaultGrepOperations.readFile`).
   Observed `gru_ascii` / `gru_empty` / `gru_n` exact.

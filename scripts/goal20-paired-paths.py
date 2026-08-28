@@ -96,7 +96,7 @@ METRICS = {
     "cli_settings": ("create", "reload", "enabled_models", "block_images", "default_model", "default_provider", "output_padding", "theme", "compaction_reserve_tokens", "default_project_trust", "http_idle_timeout_ms", "project_trusted", "rl_theme_light", "rl_model", "rl_idle", "rl_n", "em_all", "em_one", "em_n", "bi_default", "bi_blocked", "bi_n"),
     "agent_conditions": ("error_probe", "ac_schema_tool", "ac_schema_ptr", "ac_schema_reason", "ac_tool_name", "ac_tool_id", "ac_sess_path", "ac_sess_line", "ac_sub_schema", "ac_sub_tool", "ac_sub_ext_reg", "ac_sub_ext_exec", "ac_sub_stale", "ac_sub_session", "ac_catch_busy", "ac_catch_shutdown", "ac_catch_turn", "ac_catch_ext_reg", "ac_catch_ext_exec", "ac_catch_stale"),
     "execution_env": ("exists_remove_temps", "ex_missing", "ex_present", "ex_after_rm", "tmp_dir", "tmp_file", "tmp_suffix", "rm_force", "rm_recursive", "absolute_path", "join_path", "file_info"),
-    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket", "fmq_alias_key", "fmq_missing_key", "fmq_other_key", "fmq_fifo_sum", "fmq_other_run", "fmq_clean", "fmqk_alias", "fmqk_missing", "fmqk_other", "fmqk_n", "fmql_alias", "fmql_other", "fmql_missing", "fmql_repeat", "fmql_n", "fmqr_alias", "fmqr_other", "fmqr_pending", "fmqr_ticket", "fmqr_n", "fmqw_serving", "fmqw_pending", "fmqw_other", "fmqw_missing", "fmqw_n", "fmqe_serving", "fmqe_pending", "fmqe_other", "fmqe_missing", "fmqe_n", "fmqs_alias", "fmqs_other", "fmqs_missing", "fmqs_repeat", "fmqs_n", "fmqf_alias", "fmqf_other", "fmqf_fifo", "fmqf_run", "fmqf_n", "fmqm_pending", "fmqm_ticket", "fmqm_serving", "fmqm_other", "fmqm_n", "fmqt_alias", "fmqt_other", "fmqt_missing", "fmqt_repeat", "fmqt_n", "fmqp_shared", "fmqp_other", "fmqp_missing", "fmqp_alias", "fmqp_n", "fmqi_shared", "fmqi_other", "fmqi_missing", "fmqi_alias", "fmqi_n", "fmqv_zero", "fmqv_other", "fmqv_missing", "fmqv_alias", "fmqv_n"),
+    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket", "fmq_alias_key", "fmq_missing_key", "fmq_other_key", "fmq_fifo_sum", "fmq_other_run", "fmq_clean", "fmqk_alias", "fmqk_missing", "fmqk_other", "fmqk_n", "fmql_alias", "fmql_other", "fmql_missing", "fmql_repeat", "fmql_n", "fmqr_alias", "fmqr_other", "fmqr_pending", "fmqr_ticket", "fmqr_n", "fmqw_serving", "fmqw_pending", "fmqw_other", "fmqw_missing", "fmqw_n", "fmqe_serving", "fmqe_pending", "fmqe_other", "fmqe_missing", "fmqe_n", "fmqs_alias", "fmqs_other", "fmqs_missing", "fmqs_repeat", "fmqs_n", "fmqf_alias", "fmqf_other", "fmqf_fifo", "fmqf_run", "fmqf_n", "fmqm_pending", "fmqm_ticket", "fmqm_serving", "fmqm_other", "fmqm_n", "fmqt_alias", "fmqt_other", "fmqt_missing", "fmqt_repeat", "fmqt_n", "fmqp_shared", "fmqp_other", "fmqp_missing", "fmqp_alias", "fmqp_n", "fmqi_shared", "fmqi_other", "fmqi_missing", "fmqi_alias", "fmqi_n", "fmqv_zero", "fmqv_other", "fmqv_missing", "fmqv_alias", "fmqv_n", "waitqueue", "registry", "state_p"),
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus", "he_direct", "he_watch", "he_start", "he_end", "he_second", "heon_off", "heon_keep", "heon_type", "hew_snap", "hew_count", "hew_start", "hew_end", "hes_type", "hes_lane", "hes_run", "hee_type", "hee_lane", "hee_run", "hee_outcome", "hee_abort", "het_start", "het_end", "het_fail", "heb_distinct", "heb_a", "heb_b"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice", "sef_exact", "sef_nl", "sef_no_nl", "sef_plain", "sef_empty", "sef_n", "abs_empty", "abs_abort", "abs_exit", "abs_timeout", "abs_n", "btn_none", "btn_partial", "btn_lines", "btn_bytes", "btn_n"),
     "output_accumulator": ("append", "snapshot", "finish", "oa_append_bytes", "oa_append_trunc", "oa_append_lines", "oa_append_last", "oa_append_n", "oa_snap_bytes", "oa_snap_trunc", "oa_snap_lines", "oa_snap_total", "oa_snap_n", "oa_fin_bytes", "oa_fin_fffd", "oa_fin_last", "oa_fin_trunc", "oa_fin_n"),
@@ -653,6 +653,11 @@ RATIO_CEILINGS = {
     "grep_tool.read_utf8": 8.0,
     "grep_tool.file_lines": 8.0,
     "grep_tool.context_block": 8.0,
+    # file_mutation_queue leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.waitqueue": 8.0,
+    "file_mutation_queue.registry": 8.0,
+    "file_mutation_queue.state_p": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -1793,6 +1798,21 @@ OBSERVED_EXACT = {
         "fmqv_missing",
         "fmqv_alias",
         "fmqv_n",
+        "fmqb_present",
+        "fmqb_shared",
+        "fmqb_other",
+        "fmqb_repeat",
+        "fmqb_n",
+        "fmqg_hit",
+        "fmqg_alias",
+        "fmqg_miss",
+        "fmqg_repeat",
+        "fmqg_n",
+        "fmqc_target",
+        "fmqc_other",
+        "fmqc_list",
+        "fmqc_null",
+        "fmqc_n",
     ),
     "harness_events": (
         "he_direct",

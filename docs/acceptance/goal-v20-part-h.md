@@ -3966,6 +3966,57 @@ Same staged scratch layout as `with_queue`. Observed `fmqv_zero` /
 n=5 freeze **0.985×** (139.5 / 141.7 µs) on host `cursor`, ceiling 8.0.
 Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
 `lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 328 — `file_mutation_queue` (waitqueue)
+
+| metric | cadr | pi |
+|---|---|---|
+| `waitqueue` | `file-mutation-queue-state-waitqueue` (`src/cadr-agent/file-mutation-queue.lisp`) | queue `state.current` Promise after get-or-create (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 304 `pending_count` through Pair 306 `serving_ticket`
+on the same `agent_tool_loop` hole. Timed work is reading the waitqueue /
+`current` Promise after ensure (present, shared symlink alias, distinct
+sibling, repeat lookup) — not `wait-for-file-mutation-turn`, not
+`with-file-mutation-queue`, not write/edit tools. Same staged scratch
+layout as `with_queue`. Observed `fmqb_present` / `fmqb_shared` /
+`fmqb_other` / `fmqb_repeat` / `fmqb_n` are exact. First n=5 freeze
+**1.120×** (120.311 / 107.377 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 329 — `file_mutation_queue` (registry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `registry` | `*file-mutation-queues*` membership (`src/cadr-agent/file-mutation-queue.lisp`) | `fileMutationQueues.has` after get-or-create (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 328 `waitqueue` on the same `agent_tool_loop` hole.
+Timed work is Map/hash membership after ensure (hit, shared alias key, miss
+on a never-ensured path, still present after repeat) — not get-or-create as
+the owner (`ensure_state` / `lock`), not write/edit tools. Same staged
+scratch layout as `with_queue`. Observed `fmqg_hit` / `fmqg_alias` /
+`fmqg_miss` / `fmqg_repeat` / `fmqg_n` are exact. First n=5 freeze
+**0.779×** (96.436 / 123.778 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). cadr leads. Same commit
+no optimize.
+
+### Pair 330 — `file_mutation_queue` (state_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `state_p` | `file-mutation-queue-state-p` (`src/cadr-agent/file-mutation-queue.lisp`) | queue-state object predicate (`packages/coding-agent/src/core/tools/file-mutation-queue.ts`) |
+
+Leftover sibling of Pair 328 `waitqueue` and Pair 329 `registry` on the same
+`agent_tool_loop` hole. Timed work is the object predicate (true for two
+constructed states, false for a list, false for null/nil) — not slot
+accessors, not write/edit tools. Same staged scratch layout as `with_queue`.
+Observed `fmqc_target` / `fmqc_other` / `fmqc_list` / `fmqc_null` / `fmqc_n`
+are exact. First n=5 freeze **1.440×** (100.853 / 70.044 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
 ### Pair 307 — `cli_settings` (reload)
 
 | metric | cadr | pi |
