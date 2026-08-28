@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.clipboard_candidates`
+  (`clipboard-command-candidates` on
+  `src/cadr-cli/interactive/clipboard.lisp`). Observed `ccand_darwin` /
+  `ccand_win` / `ccand_none` / `ccand_termux` / `ccand_wl` / `ccand_x11`
+  exact. n=5 **1.405×** (2.349 / 1.672 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 535). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.osc52_copy`
+  (`osc52-copy-sequence` on
+  `src/cadr-cli/interactive/clipboard.lisp`). Observed `osc_hello` /
+  `osc_empty` / `osc_cjk` / `osc_over` / `osc_emoji` / `osc_bound` exact.
+  n=5 **1.043×** (1.614 / 1.547 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 536). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.clipboard_copy`
+  (`copy-to-clipboard` on
+  `src/cadr-cli/interactive/clipboard.lisp`). Observed `cc_darwin` /
+  `cc_linux_shell` / `cc_remote` / `cc_osc` / `cc_win` / `cc_termux` exact.
+  n=5 **1.137×** (1.911 / 1.680 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 537). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

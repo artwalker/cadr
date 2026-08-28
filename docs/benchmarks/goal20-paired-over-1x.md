@@ -247,6 +247,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.eval_environment` | 0.758 | 0.282 | 2.692× | 8.00× | measure-only pair 346; `eval-environment` getenv+trim leftover (sub-µs variance) | invent pause；地板优化另刀 |
 | `ls_tool.list_directory` | 352.2 | 314.9 | 1.119× | 8.00× | measure-only pair 317; `list-directory` empty/mixed/limit listing | invent pause；地板优化另刀 |
 | `ls_tool.make_tool` | 284.4 | 279.6 | 1.017× | 8.00× | measure-only pair 318; `make-ls-tool` vs `createLsToolDefinition` | invent pause；地板优化另刀 |
+| `cli_interactive_controller.clipboard_candidates` | 2.349 | 1.672 | 1.405× | 8.00× | measure-only leftover pair 535; `clipboard-command-candidates` vs copy argv lists | invent pause；地板优化另刀 |
+| `cli_interactive_controller.osc52_copy` | 1.614 | 1.547 | 1.043× | 8.00× | measure-only leftover pair 536; `osc52-copy-sequence` vs OSC 52 encode | invent pause；地板优化另刀 |
+| `cli_interactive_controller.clipboard_copy` | 1.911 | 1.680 | 1.137× | 8.00× | measure-only leftover pair 537; `copy-to-clipboard` vs injected copyToClipboard | invent pause；地板优化另刀 |
 | `cli_settings.enabled_models` | 18.7 | 3.26 | 5.735× | 8.00× | measure-only pair 308; `settings-enabled-models` missing→`:all` plus one in-memory pattern | invent pause；地板优化另刀 |
 | `cli_settings.block_images` | 19.1 | 3.41 | 5.623× | 8.00× | measure-only pair 309; `settings-block-images-p` default false plus in-memory `images.blockImages` | invent pause；地板优化另刀 |
 
