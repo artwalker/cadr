@@ -4059,6 +4059,51 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 541 — `cli_interactive_controller` (fit_footer_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `fit_footer_text` | `fit-footer-text` (`src/cadr-cli/interactive/footer.lisp`) | `truncateToWidth` (`packages/tui/src/utils.ts`) |
+
+Leftover sibling of Pair `cwd_footer` on the same `footer.lisp` file /
+`cli_interactive_controller` hole. Timed work is default-ellipsis truncate
+— not `format-cwd-for-footer`, not selector `fit_line`. Observed `fft_short`
+/ `fft_long` / `fft_cjk` / `fft_empty` / `fft_zero` / `fft_emoji` are exact.
+First n=5 freeze **1.038×** (21.385 / 20.600 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric
+did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 542 — `cli_interactive_controller` (footer_usage)
+
+| metric | cadr | pi |
+|---|---|---|
+| `footer_usage` | `footer-usage-summary` (`src/cadr-cli/interactive/footer.lisp`) | `addUsageToTotals` (`packages/coding-agent/src/core/usage-totals.ts`) then cadr footer format |
+
+Leftover sibling of Pairs 541 / `cwd_footer` on the same file. Timed work
+is usage-total sum plus cadr's `in:/out:/CH/$/(sub)` format — not
+`formatTokens`, not live FooterComponent render. Observed `fu_kimi` /
+`fu_plain` / `fu_zero` / `fu_nocache` / `fu_case` / `fu_cost0` are exact.
+First n=5 freeze **2.049×** (7.216 / 3.522 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 543 — `cli_interactive_controller` (footer_git_paths)
+
+| metric | cadr | pi |
+|---|---|---|
+| `footer_git_paths` | `find-git-footer-paths` (`src/cadr-cli/interactive/footer.lisp`) | `findGitPaths` (`packages/coding-agent/src/core/footer-data-provider.ts`) |
+
+Leftover sibling of Pairs 541–542 on the same file. Timed work is git
+metadata path walk (regular repo, nested cwd, worktree file, commondir) —
+not `resolve-git-footer-branch`, not watcher/CLOS provider. Observed
+`fgp_repo` / `fgp_nested` / `fgp_worktree` / `fgp_common` / `fgp_nohead` /
+`fgp_none` are exact (relative `repo|commonGit|HEAD`; `.git` directory
+without HEAD is empty on both sides). First n=5 freeze **1.649×**
+(214.734 / 130.225 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes; this metric did
+not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
