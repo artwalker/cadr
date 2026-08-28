@@ -7249,7 +7249,7 @@ function runCliPrintRpcImages() {
 		img_nil: rpcImagesFromJson(null) == null ? 1 : 0,
 		img_n: two.length,
 		img_mime: one[0].mimeType,
-		img_bad: rpcImagesErrorFlag("nope", "must be an array"),
+		img_bad: rpcImagesErrorFlag(1, "must be an array"),
 	};
 }
 

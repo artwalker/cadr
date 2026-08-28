@@ -8091,7 +8091,7 @@
      (if (null (cadr-cli::rpc-images-from-json nil)) 1 0)
      (length two)
      (cadr-ai:image-content-mime-type (first one))
-     (rpc-images-error-flag "nope" "must be an array"))))
+     (rpc-images-error-flag 1 "must be an array"))))
 
 (defun run-cli-print-rpc-prompt ()
   (let* ((text-only
