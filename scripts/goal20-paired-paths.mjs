@@ -428,6 +428,9 @@ const REPETITIONS = {
 	"cli_selectors.make_models_selector_keybindings": 50,
 	"cli_selectors.make_scoped_models_selector_state": 50,
 	"cli_selectors.render_model_selector": 50,
+	"cli_selectors.daxnuts_rgb_at": 50,
+	"cli_selectors.make_daxnuts_component": 50,
+	"cli_selectors.daxnuts_component_tick": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -20120,6 +20123,94 @@ function runCliSelectorsDaxnutsCenterLine() {
 }
 
 
+function leftoverDaxnutsBenchUi() {
+	return {
+		renders: 0,
+		requestRender() {
+			this.renders += 1;
+		},
+	};
+}
+
+
+function leftoverDaxnutsTick(state) {
+	if (state.tick < state.maxTicks) {
+		state.tick += 1;
+		if (state.tick >= state.maxTicks) {
+			state.stopped = true;
+		}
+		state.cachedWidth = 0;
+		state.ui.requestRender();
+	}
+	return state;
+}
+
+
+function leftoverMakeDaxnutsComponentState(ui) {
+	return {
+		ui,
+		tick: 0,
+		maxTicks: 25,
+		interval: null,
+		cachedWidth: 0,
+		stopped: false,
+	};
+}
+
+
+function runCliSelectorsDaxnutsRgbAt() {
+	const pixels = daxnutsPixelsCached();
+	return {
+		dra_00: daxnutsRgbEncode(pixels[0][0]),
+		dra_0x: daxnutsRgbEncode(pixels[0][31]),
+		dra_mid: daxnutsRgbEncode(pixels[16][16]),
+		dra_last: daxnutsRgbEncode(pixels[31][31]),
+		dra_10: daxnutsRgbEncode(pixels[1][0]),
+	};
+}
+
+
+function runCliSelectorsMakeDaxnutsComponent() {
+	const ui = leftoverDaxnutsBenchUi();
+	const first = leftoverMakeDaxnutsComponentState(ui);
+	const second = leftoverMakeDaxnutsComponentState(ui);
+	return {
+		dmc_tick: String(first.tick),
+		dmc_stop: first.stopped ? "1" : "0",
+		dmc_thread: first.interval ? "1" : "0",
+		dmc_cache: first.cachedWidth ? "1" : "0",
+		dmc_second: String(second.tick),
+	};
+}
+
+
+function leftoverDaxnutsTickN(state, n) {
+	for (let i = 0; i < n; i += 1) {
+		leftoverDaxnutsTick(state);
+	}
+	return state;
+}
+
+
+function runCliSelectorsDaxnutsComponentTick() {
+	const ui = leftoverDaxnutsBenchUi();
+	const one = leftoverMakeDaxnutsComponentState(ui);
+	const maxed = leftoverMakeDaxnutsComponentState(ui);
+	const after = leftoverMakeDaxnutsComponentState(ui);
+	leftoverDaxnutsTick(one);
+	leftoverDaxnutsTickN(maxed, 25);
+	leftoverDaxnutsTickN(after, 25);
+	leftoverDaxnutsTick(after);
+	return {
+		dct_one: String(one.tick),
+		dct_max: String(maxed.tick),
+		dct_stop: maxed.stopped ? "1" : "0",
+		dct_after: String(after.tick),
+		dct_renders: String(ui.renders),
+	};
+}
+
+
 function countdownSeconds(timeoutMs) {
 	return String(Math.ceil(timeoutMs / 1000));
 }
@@ -24161,6 +24252,9 @@ async function measureCliSelectorsSessionSearch() {
 	const makeScopedModelsSelectorStateResults =
 		runCliSelectorsMakeScopedModelsSelectorState();
 	const renderModelSelectorResults = runCliSelectorsRenderModelSelector();
+	const daxnutsRgbAtResults = runCliSelectorsDaxnutsRgbAt();
+	const makeDaxnutsComponentResults = runCliSelectorsMakeDaxnutsComponent();
+	const daxnutsComponentTickResults = runCliSelectorsDaxnutsComponentTick();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -24549,6 +24643,9 @@ async function measureCliSelectorsSessionSearch() {
 		...makeModelsSelectorKeybindingsResults,
 		...makeScopedModelsSelectorStateResults,
 		...renderModelSelectorResults,
+		...daxnutsRgbAtResults,
+		...makeDaxnutsComponentResults,
+		...daxnutsComponentTickResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -25465,6 +25562,21 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.render_model_selector",
 			() => {
 				return () => runCliSelectorsRenderModelSelector();
+			},
+		),
+		daxnuts_rgb_at: await collect("cli_selectors.daxnuts_rgb_at", () => {
+			return () => runCliSelectorsDaxnutsRgbAt();
+		}),
+		make_daxnuts_component: await collect(
+			"cli_selectors.make_daxnuts_component",
+			() => {
+				return () => runCliSelectorsMakeDaxnutsComponent();
+			},
+		),
+		daxnuts_component_tick: await collect(
+			"cli_selectors.daxnuts_component_tick",
+			() => {
+				return () => runCliSelectorsDaxnutsComponentTick();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -28409,6 +28521,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts ScopedModelsSelectorComponent constructor",
 			"cli_selectors.render_model_selector":
 				"packages/coding-agent/src/modes/interactive/components/model-selector.ts ModelSelectorComponent layout",
+			"cli_selectors.daxnuts_rgb_at":
+				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts parseImage pixel lookup",
+			"cli_selectors.make_daxnuts_component":
+				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent constructor (no startAnimation)",
+			"cli_selectors.daxnuts_component_tick":
+				"packages/coding-agent/src/modes/interactive/components/daxnuts.ts DaxnutsComponent interval body",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
