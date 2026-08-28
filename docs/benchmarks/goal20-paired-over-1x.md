@@ -433,4 +433,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.login_dialog_show_manual_input` | 5.131 | 3.050 | 1.683× | 8.00× | measure-only leftover 621; `login-dialog-show-manual-input` vs LoginDialogComponent.showManualInput | invent pause；地板优化另刀 |
 | `cli_selectors.login_dialog_show_prompt` | 6.781 | 3.830 | 1.771× | 8.00× | measure-only leftover 622; `login-dialog-show-prompt` vs LoginDialogComponent.showPrompt | invent pause；地板优化另刀 |
 | `cli_selectors.login_dialog_show_info` | 8.766 | 5.594 | 1.567× | 8.00× | measure-only leftover 623; `login-dialog-show-info` vs LoginDialogComponent.showInfo | invent pause；地板优化另刀 |
+| `cli_selectors.login_dialog_complete_input` | 5.722 | 3.482 | 1.643× | 8.00× | measure-only leftover 625; `login-dialog-complete-input` vs replaceInputWithSubmittedText | invent pause；地板优化另刀 |
+| `cli_selectors.login_dialog_handle_event` | 6.392 | 3.325 | 1.923× | 8.00× | measure-only leftover 626; `login-dialog-state-handle-event` vs handleInput | invent pause；地板优化另刀 |
+| `cli_selectors.render_login_dialog` | 135.552 | 4.147 | 32.688× | 50.00× | measure-only leftover 627; `render-login-dialog-state` vs LoginDialogComponent layout; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

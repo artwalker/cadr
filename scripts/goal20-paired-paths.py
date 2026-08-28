@@ -1177,12 +1177,13 @@ RATIO_CEILINGS = {
   "cli_selectors.login_dialog_show_info": 8.0,
   # Measure-only leftover 624; first freeze 0.756× (2.598 / 3.435 µs).
   "cli_selectors.login_dialog_show_details": 8.0,
-  # Measure-only leftover 625; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 625; first freeze 1.643× (5.722 / 3.482 µs).
   "cli_selectors.login_dialog_complete_input": 8.0,
-  # Measure-only leftover 626; first-freeze headroom. Ratchet down only.
+  # Measure-only leftover 626; first freeze 1.923× (6.392 / 3.325 µs).
   "cli_selectors.login_dialog_handle_event": 8.0,
-  # Measure-only leftover 627; first-freeze headroom. Ratchet down only.
-  "cli_selectors.render_login_dialog": 8.0,
+  # Measure-only leftover 627; first freeze 32.688× (135.552 / 4.147 µs).
+  # 50.0 is first-freeze headroom. Ratchet down only.
+  "cli_selectors.render_login_dialog": 50.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x

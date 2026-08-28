@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.login_dialog_complete_input`
+  (`login-dialog-complete-input` on
+  `src/cadr-cli/interactive/selectors/login-dialog.lisp` vs
+  LoginDialogComponent.replaceInputWithSubmittedText). Observed
+  `ldci_manual` / `ldci_prompt` / `ldci_none` / `ldci_blank` / `ldci_auth`
+  exact. n=5 **1.643×** (5.722 / 3.482 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 625). Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.login_dialog_handle_event`
+  (`login-dialog-state-handle-event` vs LoginDialogComponent.handleInput).
+  Observed `ldhe_esc` / `ldhe_cancel` / `ldhe_enter` / `ldhe_type` /
+  `ldhe_down` exact. n=5 **1.923×** (6.392 / 3.325 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 626). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.render_login_dialog`
+  (`render-login-dialog-state` vs LoginDialogComponent layout). Observed
+  `ldrd_wait` / `ldrd_auth` / `ldrd_manual` / `ldrd_prompt` /
+  `ldrd_details` exact. n=5 **32.688×** (135.552 / 4.147 µs) on host
+  `cursor`, ceiling 50.0 first-freeze headroom. Measure-only leftover
+  (Pair 627). Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.login_dialog_show_prompt`
   (`login-dialog-show-prompt` on
   `src/cadr-cli/interactive/selectors/login-dialog.lisp` vs
