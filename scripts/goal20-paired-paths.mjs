@@ -422,6 +422,9 @@ const REPETITIONS = {
 	"cli_selectors.login_dialog_complete_input": 50,
 	"cli_selectors.login_dialog_handle_event": 50,
 	"cli_selectors.render_login_dialog": 50,
+	"cli_selectors.user_message_handle_event": 50,
+	"cli_selectors.user_message_handle_raw": 50,
+	"cli_selectors.render_user_message_selector": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -22150,6 +22153,10 @@ function lispMod(n, m) {
 	return ((n % m) + m) % m;
 }
 
+const GOAL20_USER_MESSAGE_DEFAULT_KB = new keybindingsModule.KeybindingsManager(
+	keybindingsModule.TUI_KEYBINDINGS,
+);
+
 
 function goal20UserMessageItems(...values) {
 	return values.map((value) => ({ label: value, value }));
@@ -22279,6 +22286,153 @@ function runCliSelectorsUserMessageSelection() {
 		ums_wrap: userMessageSelectorSelectionText(moved),
 		ums_miss: userMessageSelectorSelectionText(miss),
 		ums_one: userMessageSelectorSelectionText(one),
+	};
+}
+
+
+function userMessageActionName(action) {
+	return action ? String(action) : "null";
+}
+
+
+function userMessageSelectorHandleEvent(state, eventKind) {
+	switch (eventKind) {
+		case "up":
+			userMessageSelectorMove(state, -1);
+			return { action: "changed", value: null };
+		case "down":
+			userMessageSelectorMove(state, 1);
+			return { action: "changed", value: null };
+		case "enter":
+		case "submit": {
+			const value = userMessageSelectorSelectionText(state);
+			if (value) {
+				return { action: "select", value };
+			}
+			return { action: null, value: null };
+		}
+		case "escape":
+		case "cancel":
+		case "interrupt":
+			return { action: "cancel", value: null };
+		default:
+			return { action: null, value: null };
+	}
+}
+
+
+function encodeUserMessageHandleEvent(state, result) {
+	return [
+		userMessageActionName(result.action),
+		result.value == null || result.value === "" ? "null" : result.value,
+		String(state.selected),
+	].join("|");
+}
+
+
+function userMessageHandleEventEncoded(items, eventKind, extra = {}) {
+	const state = makeUserMessageSelectorState({ items, ...extra });
+	const result = userMessageSelectorHandleEvent(state, eventKind);
+	return encodeUserMessageHandleEvent(state, result);
+}
+
+
+function runCliSelectorsUserMessageHandleEvent() {
+	return {
+		umhe_down: userMessageHandleEventEncoded(goal20UserMessageItems("a", "b", "c"), "down"),
+		umhe_enter: userMessageHandleEventEncoded(goal20UserMessageItems("a", "b"), "enter"),
+		umhe_esc: userMessageHandleEventEncoded(goal20UserMessageItems("a", "b"), "escape"),
+		umhe_text: userMessageHandleEventEncoded(goal20UserMessageItems("a", "b"), "text"),
+		umhe_empty: userMessageHandleEventEncoded([], "enter"),
+	};
+}
+
+
+function userMessageSelectorHandleRawInput(state, data) {
+	const manager = GOAL20_USER_MESSAGE_DEFAULT_KB;
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.up")) {
+		userMessageSelectorMove(state, -1);
+		return { action: "changed", value: null, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.down")) {
+		userMessageSelectorMove(state, 1);
+		return { action: "changed", value: null, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.confirm")) {
+		const value = userMessageSelectorSelectionText(state);
+		return { action: value ? "select" : null, value: value || null, consumed: true };
+	}
+	if (selectorKeybindingMatchesPi(manager, data, "tui.select.cancel")) {
+		return { action: "cancel", value: null, consumed: true };
+	}
+	return { action: null, value: null, consumed: false };
+}
+
+
+function encodeUserMessageHandleRaw(state, result) {
+	return [
+		userMessageActionName(result.action),
+		result.value == null || result.value === "" ? "null" : result.value,
+		String(state.selected),
+		result.consumed ? "true" : "false",
+	].join("|");
+}
+
+
+function userMessageHandleRawEncoded(items, data, extra = {}) {
+	const state = makeUserMessageSelectorState({ items, ...extra });
+	const result = userMessageSelectorHandleRawInput(state, data);
+	return encodeUserMessageHandleRaw(state, result);
+}
+
+
+function runCliSelectorsUserMessageHandleRaw() {
+	const arrowDown = "\x1b[B";
+	const arrowUp = "\x1b[A";
+	const enter = "\r";
+	const escape = "\x1b";
+	return {
+		umhr_down: userMessageHandleRawEncoded(goal20UserMessageItems("a", "b", "c"), arrowDown),
+		umhr_up: userMessageHandleRawEncoded(goal20UserMessageItems("a", "b", "c"), arrowUp),
+		umhr_enter: userMessageHandleRawEncoded(goal20UserMessageItems("a", "b"), enter),
+		umhr_esc: userMessageHandleRawEncoded(goal20UserMessageItems("a", "b"), escape),
+		umhr_nop: userMessageHandleRawEncoded(goal20UserMessageItems("a", "b"), "q"),
+	};
+}
+
+
+function renderUserMessageSelector(state, width) {
+	const items = state.items;
+	if (items.length === 0) {
+		return [`  No user messages found|${width}`];
+	}
+	return items.map((item, index) => {
+		const selectedP = index === state.selected;
+		const text = String(item.label ?? item.value ?? "")
+			.replace(/\n/g, " ")
+			.trim();
+		const message = text.slice(0, Math.max(0, width - 2));
+		return `${selectedP ? "› " : "  "}${message}|  Message ${index + 1} of ${items.length}`;
+	});
+}
+
+
+function encodeRenderUserMessageSelector(items, width, extra = {}) {
+	const state = makeUserMessageSelectorState({ items, ...extra });
+	renderUserMessageSelector(state, width);
+	return `${state.selected}|${state.items.length}|${width}|${userMessageSelectorSelectionText(state)}`;
+}
+
+
+function runCliSelectorsRenderUserMessageSelector() {
+	return {
+		umrd_three: encodeRenderUserMessageSelector(goal20UserMessageItems("a", "b", "c"), 80),
+		umrd_one: encodeRenderUserMessageSelector(goal20UserMessageItems("only"), 80),
+		umrd_empty: encodeRenderUserMessageSelector([], 80),
+		umrd_narrow: encodeRenderUserMessageSelector(goal20UserMessageItems("a", "b", "c"), 40),
+		umrd_hit: encodeRenderUserMessageSelector(goal20UserMessageItems("a", "b", "c"), 80, {
+			initialSelectedValue: "a",
+		}),
 	};
 }
 
@@ -23899,6 +24053,12 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsLoginDialogCompleteInput();
 	const loginDialogHandleEventResults = runCliSelectorsLoginDialogHandleEvent();
 	const renderLoginDialogResults = runCliSelectorsRenderLoginDialog();
+	const userMessageMakeResults = runCliSelectorsUserMessageMake();
+	const userMessageMoveResults = runCliSelectorsUserMessageMove();
+	const userMessageSelectionResults = runCliSelectorsUserMessageSelection();
+	const userMessageHandleEventResults = runCliSelectorsUserMessageHandleEvent();
+	const userMessageHandleRawResults = runCliSelectorsUserMessageHandleRaw();
+	const renderUserMessageSelectorResults = runCliSelectorsRenderUserMessageSelector();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -24278,6 +24438,12 @@ async function measureCliSelectorsSessionSearch() {
 		...loginDialogCompleteInputResults,
 		...loginDialogHandleEventResults,
 		...renderLoginDialogResults,
+		...userMessageMakeResults,
+		...userMessageMoveResults,
+		...userMessageSelectionResults,
+		...userMessageHandleEventResults,
+		...userMessageHandleRawResults,
+		...renderUserMessageSelectorResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -25158,6 +25324,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.render_login_dialog",
 			() => {
 				return () => runCliSelectorsRenderLoginDialog();
+			},
+		),
+		user_message_handle_event: await collect(
+			"cli_selectors.user_message_handle_event",
+			() => {
+				return () => runCliSelectorsUserMessageHandleEvent();
+			},
+		),
+		user_message_handle_raw: await collect(
+			"cli_selectors.user_message_handle_raw",
+			() => {
+				return () => runCliSelectorsUserMessageHandleRaw();
+			},
+		),
+		render_user_message_selector: await collect(
+			"cli_selectors.render_user_message_selector",
+			() => {
+				return () => runCliSelectorsRenderUserMessageSelector();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -28090,6 +28274,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.handleInput",
 			"cli_selectors.render_login_dialog":
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent layout",
+			"cli_selectors.user_message_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (structured events)",
+			"cli_selectors.user_message_handle_raw":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList.handleInput (raw key dispatch)",
+			"cli_selectors.render_user_message_selector":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageSelectorComponent layout",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
