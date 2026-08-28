@@ -237,6 +237,9 @@
 ;;;; 649. cli_interactive_controller theme-message-background-lines vs theme.bg message background
 ;;;; 650. cli_interactive_controller update-notification-text-lines vs warning body text
 ;;;; 651. cli_interactive_controller tui-syntax-highlight vs syntaxHighlight keyword/number
+;;;; 652. cli_interactive_controller assistant-price-known-p vs find-model-metadata presence
+;;;; 653. cli_interactive_controller accumulate-message-usage vs session usage accumulate
+;;;; 654. cli_interactive_controller append-tui-user-message vs parseSkillBlock UserMessageComponent
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -599,6 +602,9 @@
     ("cli_interactive_controller.theme_message_background" . 50)
     ("cli_interactive_controller.update_notification_text" . 50)
     ("cli_interactive_controller.syntax_highlight" . 50)
+    ("cli_interactive_controller.assistant_price_known" . 50)
+    ("cli_interactive_controller.accumulate_usage" . 50)
+    ("cli_interactive_controller.append_user_message" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14432,6 +14438,26 @@
    "syn_json" (nth 4 syntax)))
 
 
+(defun leftover-transcript-price-usage-user-observed-pairs
+    (price-known accumulate-usage append-user)
+  (list
+   "apk_hit" (nth 0 price-known)
+   "apk_miss" (nth 1 price-known)
+   "apk_google" (nth 2 price-known)
+   "apk_empty" (nth 3 price-known)
+   "apk_nil" (nth 4 price-known)
+   "amu_in" (nth 0 accumulate-usage)
+   "amu_out" (nth 1 accumulate-usage)
+   "amu_cache" (nth 2 accumulate-usage)
+   "amu_known" (nth 3 accumulate-usage)
+   "amu_hit" (nth 4 accumulate-usage)
+   "aum_user" (nth 0 append-user)
+   "aum_n" (nth 1 append-user)
+   "aum_skill" (nth 2 append-user)
+   "aum_both" (nth 3 append-user)
+   "aum_text" (nth 4 append-user)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -14905,7 +14931,13 @@
         (leftover-update-notification-text
           (run-cli-interactive-update-notification-text))
         (leftover-syntax-highlight
-          (run-cli-interactive-syntax-highlight)))
+          (run-cli-interactive-syntax-highlight))
+        (leftover-assistant-price-known
+          (run-cli-interactive-assistant-price-known))
+        (leftover-accumulate-usage
+          (run-cli-interactive-accumulate-usage))
+        (leftover-append-user-message
+          (run-cli-interactive-append-user-message)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14980,7 +15012,11 @@
              (leftover-transcript-theme-notify-syntax-observed-pairs
               leftover-theme-message-background
               leftover-update-notification-text
-              leftover-syntax-highlight)))
+              leftover-syntax-highlight)
+             (leftover-transcript-price-usage-user-observed-pairs
+              leftover-assistant-price-known
+              leftover-accumulate-usage
+              leftover-append-user-message)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15100,7 +15136,22 @@
      (collect "cli_interactive_controller.syntax_highlight"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-syntax-highlight)))))))
+                  (run-cli-interactive-syntax-highlight))))
+     "assistant_price_known"
+     (collect "cli_interactive_controller.assistant_price_known"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-assistant-price-known))))
+     "accumulate_usage"
+     (collect "cli_interactive_controller.accumulate_usage"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-accumulate-usage))))
+     "append_user_message"
+     (collect "cli_interactive_controller.append_user_message"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-append-user-message)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -15475,6 +15526,105 @@
      (if (string= keep "(+ 1 2)") 1 0)
      (length keep)
      (if (string= json "{}") 1 0))))
+
+(defun leftover-assistant-price-known-flag (provider model)
+  (if (cadr-cli::assistant-price-known-p
+       (cadr-ai:make-assistant-message
+        :provider provider
+        :model (or model "")))
+      1
+      0))
+
+(defun run-cli-interactive-assistant-price-known ()
+  (leftover-assistant-price-known-flag :deepseek "deepseek-v4-flash")
+  (leftover-assistant-price-known-flag :nope "zz-model")
+  (leftover-assistant-price-known-flag :google "gemini-3.6-flash")
+  (leftover-assistant-price-known-flag :deepseek "")
+  (leftover-assistant-price-known-flag nil "deepseek-v4-flash")
+  (list
+   (leftover-assistant-price-known-flag :deepseek "deepseek-v4-flash")
+   (leftover-assistant-price-known-flag :nope "zz-model")
+   (leftover-assistant-price-known-flag :google "gemini-3.6-flash")
+   (leftover-assistant-price-known-flag :deepseek "")
+   (leftover-assistant-price-known-flag nil "deepseek-v4-flash")))
+
+(defun leftover-usage-fixture-message
+    (&key (provider :deepseek)
+          (model "deepseek-v4-flash")
+          (stop-reason :end-turn))
+  (cadr-ai:make-assistant-message
+   :provider provider
+   :model model
+   :stop-reason stop-reason
+   :usage
+   (cadr-ai:make-usage
+    :input 10
+    :output 5
+    :cache-read 2
+    :cache-write 1
+    :cost (cadr-ai:make-cost :total 1.5d0))))
+
+(defun run-cli-interactive-accumulate-usage ()
+  (let ((state
+          (cadr-cli::make-tui-state
+           :cwd "/tmp/proj"
+           :context-window 1000)))
+    (cadr-cli::accumulate-message-usage
+     state
+     (leftover-usage-fixture-message))
+    (list
+     (cadr-cli::tui-state-input-tokens state)
+     (cadr-cli::tui-state-output-tokens state)
+     (cadr-cli::tui-state-cache-tokens state)
+     (if (cadr-cli::tui-state-cost-known-p state) 1 0)
+     (round
+      (or (cadr-cli::tui-state-latest-cache-hit-rate state)
+          -1d0)))))
+
+(defun leftover-skill-block-text ()
+  (format
+   nil
+   "<skill name=\"foo\" location=\"bar\">~%body~%</skill>~%~%hello"))
+
+(defun leftover-append-user-type-flag (text)
+  (let ((state (cadr-cli::make-tui-state :cwd "/tmp/proj")))
+    (cadr-cli::append-tui-user-message state text)
+    (let ((entries (cadr-cli::tui-state-entries state)))
+      (list
+       (length entries)
+       (if entries
+           (string-downcase
+            (symbol-name
+             (cadr-cli::tui-entry-type (first entries))))
+           "")
+       (copy-seq
+        (or (and entries
+                 (cadr-cli::tui-entry-label (first entries)))
+            ""))
+       (copy-seq
+        (or (and entries
+                 (cadr-cli::tui-entry-text (car (last entries))))
+            ""))))))
+
+(defun run-cli-interactive-append-user-message ()
+  (let ((plain (leftover-append-user-type-flag "hi"))
+        (skill (leftover-append-user-type-flag
+                (leftover-skill-block-text))))
+    (cadr-cli::append-tui-user-message
+     (cadr-cli::make-tui-state :cwd "/tmp/proj")
+     "hi")
+    (cadr-cli::append-tui-user-message
+     (cadr-cli::make-tui-state :cwd "/tmp/proj")
+     (leftover-skill-block-text))
+    (list
+     (if (string= (second plain) "user") 1 0)
+     (first plain)
+     (if (and (string= (second skill) "skill-invocation")
+              (string= (third skill) "foo"))
+         1
+         0)
+     (first skill)
+     (if (string= (fourth skill) "hello") 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -27777,6 +27927,12 @@
       "src/cadr-cli/interactive/transcript.lisp update-notification-text-lines"
       "cli_interactive_controller.syntax_highlight"
       "src/cadr-cli/interactive/transcript.lisp tui-syntax-highlight"
+      "cli_interactive_controller.assistant_price_known"
+      "src/cadr-cli/interactive/transcript.lisp assistant-price-known-p"
+      "cli_interactive_controller.accumulate_usage"
+      "src/cadr-cli/interactive/transcript.lisp accumulate-message-usage"
+      "cli_interactive_controller.append_user_message"
+      "src/cadr-cli/interactive/transcript.lisp append-tui-user-message"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

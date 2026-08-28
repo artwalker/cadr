@@ -593,6 +593,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.theme_message_background": 50,
 	"cli_interactive_controller.update_notification_text": 50,
 	"cli_interactive_controller.syntax_highlight": 50,
+	"cli_interactive_controller.assistant_price_known": 50,
+	"cli_interactive_controller.accumulate_usage": 50,
+	"cli_interactive_controller.append_user_message": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -13805,6 +13808,184 @@ function runCliInteractiveSyntaxHighlight() {
 	};
 }
 
+const leftoverKnownPriceModels = new Set([
+	"deepseek/deepseek-v4-flash",
+	"google/gemini-3.6-flash",
+]);
+
+function leftoverAssistantPriceKnown(message) {
+	try {
+		const provider = message.provider;
+		const model = message.model == null ? "" : String(message.model);
+		if (!provider) {
+			throw new Error("unknown");
+		}
+		const key = `${provider}/${model}`;
+		if (!leftoverKnownPriceModels.has(key)) {
+			throw new Error("unknown");
+		}
+		return 1;
+	} catch {
+		return 0;
+	}
+}
+
+function leftoverAssistantPriceKnownFlag(provider, model) {
+	return leftoverAssistantPriceKnown({ provider, model });
+}
+
+function leftoverAccumulateMessageUsage(state, message) {
+	const usage = message.usage;
+	const input = usage.input;
+	const cacheRead = usage.cacheRead;
+	const cacheWrite = usage.cacheWrite;
+	const promptTotal = input + cacheRead + cacheWrite;
+	const contextTotal =
+		usage.total > 0 ? usage.total : promptTotal + usage.output;
+	state.inputTokens += input;
+	state.outputTokens += usage.output;
+	state.cacheReadTokens += cacheRead;
+	state.cacheWriteTokens += cacheWrite;
+	state.cacheTokens += cacheRead + cacheWrite;
+	state.latestCacheHitRate =
+		promptTotal > 0 ? (100 * cacheRead) / promptTotal : null;
+	if (message.stopReason !== "aborted" && message.stopReason !== "error") {
+		state.contextPercent =
+			state.contextWindow > 0
+				? (100 * contextTotal) / state.contextWindow
+				: null;
+	}
+	if (leftoverAssistantPriceKnown(message)) {
+		state.costKnown = true;
+		state.cost += usage.cost.total;
+	}
+	return state;
+}
+
+function leftoverParseSkillBlock(text) {
+	if (typeof text !== "string") {
+		return null;
+	}
+	const match = text.match(
+		/^<skill name="([^"]+)" location="([^"]+)">\n([\s\S]*?)\n<\/skill>(?:\n\n([\s\S]+))?$/,
+	);
+	if (!match) {
+		return null;
+	}
+	return {
+		name: match[1],
+		location: match[2],
+		content: match[3],
+		userMessage: match[4],
+	};
+}
+
+function leftoverAppendTuiUserMessage(state, text) {
+	const skill = leftoverParseSkillBlock(text);
+	if (skill) {
+		state.entries.push({
+			type: "skill-invocation",
+			label: skill.name,
+			text: skill.content,
+		});
+		if (skill.userMessage) {
+			const trimmed = skill.userMessage.replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
+			if (trimmed.length > 0) {
+				state.entries.push({ type: "user", text: trimmed });
+			}
+		}
+	} else {
+		state.entries.push({ type: "user", text });
+	}
+	return state;
+}
+
+function leftoverSkillBlockText() {
+	return "<skill name=\"foo\" location=\"bar\">\nbody\n</skill>\n\nhello";
+}
+
+function leftoverAppendUserTypeFlag(text) {
+	const state = { entries: [] };
+	leftoverAppendTuiUserMessage(state, text);
+	const entries = state.entries;
+	const first = entries[0];
+	const last = entries[entries.length - 1];
+	return [
+		entries.length,
+		first ? first.type : "",
+		first && first.label ? first.label : "",
+		last && last.text ? last.text : "",
+	];
+}
+
+function runCliInteractiveAssistantPriceKnown() {
+	leftoverAssistantPriceKnownFlag("deepseek", "deepseek-v4-flash");
+	leftoverAssistantPriceKnownFlag("nope", "zz-model");
+	leftoverAssistantPriceKnownFlag("google", "gemini-3.6-flash");
+	leftoverAssistantPriceKnownFlag("deepseek", "");
+	leftoverAssistantPriceKnownFlag(null, "deepseek-v4-flash");
+	return {
+		apk_hit: leftoverAssistantPriceKnownFlag("deepseek", "deepseek-v4-flash"),
+		apk_miss: leftoverAssistantPriceKnownFlag("nope", "zz-model"),
+		apk_google: leftoverAssistantPriceKnownFlag("google", "gemini-3.6-flash"),
+		apk_empty: leftoverAssistantPriceKnownFlag("deepseek", ""),
+		apk_nil: leftoverAssistantPriceKnownFlag(null, "deepseek-v4-flash"),
+	};
+}
+
+function leftoverUsageFixtureMessage(overrides = {}) {
+	return {
+		provider: overrides.provider ?? "deepseek",
+		model: overrides.model ?? "deepseek-v4-flash",
+		stopReason: overrides.stopReason ?? "end-turn",
+		usage: {
+			input: 10,
+			output: 5,
+			cacheRead: 2,
+			cacheWrite: 1,
+			total: 18,
+			cost: { total: 1.5 },
+		},
+	};
+}
+
+function runCliInteractiveAccumulateUsage() {
+	const state = {
+		inputTokens: 0,
+		outputTokens: 0,
+		cacheReadTokens: 0,
+		cacheWriteTokens: 0,
+		cacheTokens: 0,
+		latestCacheHitRate: null,
+		contextWindow: 1000,
+		contextPercent: null,
+		costKnown: false,
+		cost: 0,
+	};
+	leftoverAccumulateMessageUsage(state, leftoverUsageFixtureMessage());
+	return {
+		amu_in: state.inputTokens,
+		amu_out: state.outputTokens,
+		amu_cache: state.cacheTokens,
+		amu_known: state.costKnown ? 1 : 0,
+		amu_hit: Math.round(state.latestCacheHitRate ?? -1),
+	};
+}
+
+function runCliInteractiveAppendUserMessage() {
+	const plain = leftoverAppendUserTypeFlag("hi");
+	const skill = leftoverAppendUserTypeFlag(leftoverSkillBlockText());
+	leftoverAppendTuiUserMessage({ entries: [] }, "hi");
+	leftoverAppendTuiUserMessage({ entries: [] }, leftoverSkillBlockText());
+	return {
+		aum_user: plain[1] === "user" ? 1 : 0,
+		aum_n: plain[0],
+		aum_skill: skill[1] === "skill-invocation" && skill[2] === "foo" ? 1 : 0,
+		aum_both: skill[0],
+		aum_text: skill[3] === "hello" ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -15061,6 +15242,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveThemeMessageBackground(),
 		...runCliInteractiveUpdateNotificationText(),
 		...runCliInteractiveSyntaxHighlight(),
+		...runCliInteractiveAssistantPriceKnown(),
+		...runCliInteractiveAccumulateUsage(),
+		...runCliInteractiveAppendUserMessage(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -15172,6 +15356,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.syntax_highlight",
 			() => {
 				return () => runCliInteractiveSyntaxHighlight();
+			},
+		),
+		assistant_price_known: await collect(
+			"cli_interactive_controller.assistant_price_known",
+			() => {
+				return () => runCliInteractiveAssistantPriceKnown();
+			},
+		),
+		accumulate_usage: await collect(
+			"cli_interactive_controller.accumulate_usage",
+			() => {
+				return () => runCliInteractiveAccumulateUsage();
+			},
+		),
+		append_user_message: await collect(
+			"cli_interactive_controller.append_user_message",
+			() => {
+				return () => runCliInteractiveAppendUserMessage();
 			},
 		),
 		observed,
@@ -29064,6 +29266,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts warning body text",
 			"cli_interactive_controller.syntax_highlight":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts syntaxHighlight keyword/number",
+			"cli_interactive_controller.assistant_price_known":
+				"packages/agent/src/models.ts findModel presence",
+			"cli_interactive_controller.accumulate_usage":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts session usage accumulate",
+			"cli_interactive_controller.append_user_message":
+				"packages/coding-agent/src/core/agent-session.ts parseSkillBlock UserMessageComponent",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
