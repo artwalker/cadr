@@ -1289,8 +1289,10 @@ RATIO_CEILINGS = {
     # cli_bootstrap_sessions.bootstrap_auth pair (samples=5): observed 0.64x
     # (3928.6 / 6134.0 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.bootstrap_auth": 8.0,
-    # Leftover trio on src/cadr-cli/bootstrap/commands.lisp (pairs 484-486).
-    # First-freeze headroom 8.0. Ratchet down only.
+    # Leftover trio on src/cadr-cli/bootstrap/commands.lisp (pairs 484-486):
+    # model_cycle 0.622x (0.632 / 1.017 us), model_scope_line 1.608x
+    # (37.431 / 23.274 us), process_files 0.419x (61.164 / 146.148 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.model_cycle": 8.0,
     "cli_bootstrap_sessions.model_scope_line": 8.0,
     "cli_bootstrap_sessions.process_files": 8.0,

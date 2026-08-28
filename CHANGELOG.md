@@ -13,19 +13,26 @@ tag/Release step.
   (`model-cycle-target-entry` on
   `src/cadr-cli/bootstrap/commands.lisp` vs `_cycleScopedModel` index wrap).
   Observed `mc_fwd` / `mc_bwd` / `mc_wrap` / `mc_miss` / `mc_one` /
-  `mc_empty` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover
-  (Pair 484). `nextPairNum` left unchanged.
+  `mc_empty` exact. n=5 **0.622×** (0.632 / 1.017 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 484). Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.model_scope_line`
   (`model-scope-startup-line` on
   `src/cadr-cli/bootstrap/commands.lisp` vs interactive-mode init
-  `Model scope:` line). Observed `ms_quiet` / `ms_empty` / `ms_text` /
-  `ms_n` / `ms_disabled` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only
-  leftover (Pair 485). `nextPairNum` left unchanged.
+  `Model scope:` line).   Observed `ms_quiet` / `ms_empty` / `ms_text` /
+  `ms_n` / `ms_disabled` exact. n=5 **1.608×** (37.431 / 23.274 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 485). Gate
+  rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.process_files`
   (`process-cli-file-arguments` on
   `src/cadr-cli/bootstrap/commands.lisp` vs `processFileArguments`).
   Observed `pf_hello` / `pf_n` / `pf_img` exact. n=5
-  **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 486).
+  **0.419×** (61.164 / 146.148 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 486). Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric.
   `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,

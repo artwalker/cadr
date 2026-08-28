@@ -4069,7 +4069,9 @@ Leftover of the `cli_bootstrap_sessions` hole on `bootstrap/commands.lisp`.
 Timed work is scoped-entry wrap / missing-current default — not
 session persist, not `cycleModel` emit. Observed `mc_fwd` / `mc_bwd` /
 `mc_wrap` / `mc_miss` / `mc_one` / `mc_empty` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
+**0.622×** (0.632 / 1.017 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
 optimize.
 
 ### Pair 485 — `cli_bootstrap_sessions` (model_scope_line)
@@ -4081,8 +4083,10 @@ optimize.
 Leftover sibling of Pair 484 on the same hole. Timed work is the startup
 scope line (quiet / empty / cycle-hint / unbound) — not TUI mount, not
 theme init. Observed `ms_quiet` / `ms_empty` / `ms_text` / `ms_n` /
-`ms_disabled` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate
-used `--only-enforce`. Same commit no optimize.
+`ms_disabled` are exact. First n=5 freeze **1.608×** (37.431 / 23.274 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
 
 ### Pair 486 — `cli_bootstrap_sessions` (process_files)
 
@@ -4093,8 +4097,10 @@ used `--only-enforce`. Same commit no optimize.
 Leftover sibling of Pairs 484–485 on the same hole. Timed work is one
 text file plus one empty skip — not image resize, not `@file` CLI
 parse. Observed `pf_hello` / `pf_n` / `pf_img` are exact. First n=5
-freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no
-optimize.
+freeze **0.419×** (61.164 / 146.148 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit
+no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
