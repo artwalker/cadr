@@ -169,7 +169,7 @@ METRICS = {
         "structured_api_key_login",
     ),
     "skill_prompt_load": ("build_prompt",),
-    "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
+    "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth", "session_path", "split_command", "path_argument"),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
     "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup"),
@@ -1289,6 +1289,11 @@ RATIO_CEILINGS = {
     # cli_bootstrap_sessions.bootstrap_auth pair (samples=5): observed 0.64x
     # (3928.6 / 6134.0 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.bootstrap_auth": 8.0,
+    # cli_bootstrap_sessions leftover trio on sessions.lisp (samples=5):
+    # first-freeze headroom. Ratchet down only.
+    "cli_bootstrap_sessions.session_path": 8.0,
+    "cli_bootstrap_sessions.split_command": 8.0,
+    "cli_bootstrap_sessions.path_argument": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_runtime_faux pair (samples=5): observed 1.76x
     # (0.27 / 0.15 us). 8.0 is first-freeze headroom
@@ -3062,6 +3067,21 @@ OBSERVED_EXACT = {
         "auth_pairs_digest",
         "vertex_structured",
         "bedrock_structured",
+        "sp_id",
+        "sp_slash",
+        "sp_win",
+        "sp_jsonl",
+        "sp_plain",
+        "sc_cmd",
+        "sc_arg",
+        "sc_only",
+        "sc_noarg",
+        "sc_cmd3",
+        "sc_rest",
+        "pa_plain",
+        "pa_quote",
+        "pa_empty",
+        "pa_miss",
     ),
     "ai_runtime_faux": (
         "text_len",

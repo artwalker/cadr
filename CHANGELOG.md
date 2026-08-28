@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.session_path`
+  (`session-argument-path-p` on `src/cadr-cli/bootstrap/sessions.lisp` vs
+  `resolveSessionPath` path heuristic). Observed `sp_id` / `sp_slash` /
+  `sp_win` / `sp_jsonl` / `sp_plain` exact. n=5 **RATIO_PLACEHOLDER**.
+  Measure-only leftover (Pair 451). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.split_command`
+  (`split-command` on `src/cadr-cli/bootstrap/sessions.lisp`). Observed
+  `sc_cmd` / `sc_arg` / `sc_only` / `sc_noarg` / `sc_cmd3` / `sc_rest` exact.
+  n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 452).
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.path_argument`
+  (`path-command-argument` on `src/cadr-cli/bootstrap/sessions.lisp`).
+  Observed `pa_plain` / `pa_quote` / `pa_empty` / `pa_miss` exact. n=5
+  **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 453).
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
