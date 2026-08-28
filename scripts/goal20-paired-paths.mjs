@@ -335,6 +335,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.legacy_product": 50,
 	"cli_bootstrap_sessions.shell_quote": 50,
 	"cli_bootstrap_sessions.affirmative": 50,
+	"cli_print_rpc.dialog_request": 50,
+	"cli_print_rpc.dialog_result": 50,
+	"cli_print_rpc.dialog_expired": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -10263,6 +10266,91 @@ function runCliPrintRpcBashResult() {
 		br_null: cancelled.exitCode == null ? 1 : 0,
 	};
 }
+
+function rpcDialogRequestObject(methodName, title, extra = {}) {
+	const request = {
+		type: "extension_ui_request",
+		method: methodName,
+		title,
+	};
+	if (extra.message) request.message = extra.message;
+	if (extra.options) request.options = Array.from(extra.options);
+	if (extra.placeholder) request.placeholder = extra.placeholder;
+	if (extra.prefill) request.prefill = extra.prefill;
+	if (extra.timeoutMs != null && extra.timeoutMs !== false) {
+		request.timeout = extra.timeoutMs;
+	}
+	return request;
+}
+
+
+function rpcDialogDefault(_method) {
+	return null;
+}
+
+
+function rpcDialogResult(method, response) {
+	if (response == null || response.cancelled === true) {
+		return rpcDialogDefault(method);
+	}
+	if (method === "confirm") {
+		return response.confirmed === true;
+	}
+	if (method === "select" || method === "input" || method === "editor") {
+		const value = response.value;
+		return typeof value === "string" ? value : null;
+	}
+	return null;
+}
+
+
+function rpcDialogExpiredP(deadline) {
+	if (deadline === null || deadline === undefined || deadline === false) {
+		return false;
+	}
+	return Date.now() >= deadline;
+}
+
+
+function runCliPrintRpcDialogRequest() {
+	const request = rpcDialogRequestObject("select", "Pick", {
+		message: "choose",
+		options: ["a", "b"],
+		placeholder: "type",
+		prefill: "a",
+		timeoutMs: 1500,
+	});
+	return {
+		dr_type: request.type === "extension_ui_request" ? 1 : 0,
+		dr_method: request.method ?? "",
+		dr_msg: request.message ? 1 : 0,
+		dr_opt_n: Array.isArray(request.options) ? request.options.length : 0,
+		dr_ph: request.placeholder ?? "",
+		dr_to: request.timeout ?? 0,
+	};
+}
+
+
+function runCliPrintRpcDialogResult() {
+	const selected = rpcDialogResult("select", { value: "picked" });
+	return {
+		rs_nil: rpcDialogResult("confirm", null) == null ? 1 : 0,
+		rs_can: rpcDialogResult("confirm", { cancelled: true }) == null ? 1 : 0,
+		rs_ok: rpcDialogResult("confirm", { confirmed: true }) === true ? 1 : 0,
+		rs_val: typeof selected === "string" ? selected : "",
+		rs_num: rpcDialogResult("select", { value: 3 }) == null ? 1 : 0,
+	};
+}
+
+
+function runCliPrintRpcDialogExpired() {
+	return {
+		ex_nil: rpcDialogExpiredP(null) ? 1 : 0,
+		ex_zero: rpcDialogExpiredP(0) ? 1 : 0,
+		ex_future: rpcDialogExpiredP(1000000000000000) ? 1 : 0,
+	};
+}
+
 
 async function measureCliPrintRpc() {
 	const staged = await stageCliPrintRpcSessionStats();

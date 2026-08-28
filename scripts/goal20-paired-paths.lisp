@@ -11061,6 +11061,61 @@
      (or (cadr-ai::json-get truncated "fullOutputPath") "")
      (if (eq (cadr-ai::json-get cancelled "exitCode") 'null) 1 0))))
 
+(defun run-cli-print-rpc-dialog-request ()
+  (let ((request
+          (cadr-cli::rpc-dialog-request-object
+           "select" "Pick"
+           :message "choose"
+           :options '("a" "b")
+           :placeholder "type"
+           :prefill "a"
+           :timeout-ms 1500)))
+    (list
+     (if (string= (cadr-ai::json-get request "type")
+                  "extension_ui_request")
+         1
+         0)
+     (or (cadr-ai::json-get request "method") "")
+     (if (cadr-ai::json-get request "message") 1 0)
+     (length (or (cadr-ai::json-get request "options") #()))
+     (or (cadr-ai::json-get request "placeholder") "")
+     (or (cadr-ai::json-get request "timeout") 0))))
+
+
+(defun run-cli-print-rpc-dialog-result ()
+  (let ((nil-result
+          (cadr-cli::rpc-dialog-result :confirm nil))
+        (cancelled
+          (cadr-cli::rpc-dialog-result
+           :confirm
+           (cadr-ai::json-object "cancelled" t)))
+        (confirmed
+          (cadr-cli::rpc-dialog-result
+           :confirm
+           (cadr-ai::json-object "confirmed" t)))
+        (selected
+          (cadr-cli::rpc-dialog-result
+           :select
+           (cadr-ai::json-object "value" "picked")))
+        (numeric
+          (cadr-cli::rpc-dialog-result
+           :select
+           (cadr-ai::json-object "value" 3))))
+    (list
+     (if (null nil-result) 1 0)
+     (if (null cancelled) 1 0)
+     (if (eq confirmed t) 1 0)
+     (if (stringp selected) selected "")
+     (if (null numeric) 1 0))))
+
+
+(defun run-cli-print-rpc-dialog-expired ()
+  (list
+   (if (cadr-cli::rpc-dialog-expired-p nil) 1 0)
+   (if (cadr-cli::rpc-dialog-expired-p 0) 1 0)
+   (if (cadr-cli::rpc-dialog-expired-p 1000000000000000) 1 0)))
+
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p

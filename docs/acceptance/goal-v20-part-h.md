@@ -5828,6 +5828,41 @@ are exact. First n=5 freeze **2.913×** (2.165 / 0.743 µs) on host `cursor`,
 ceiling 8.0. Gate used `--only-enforce`. Same commit no optimize. Over-1×
 booked.
 
+### Pair 466 — `cli_print_rpc` (dialog_request)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dialog_request` | `rpc-dialog-request-object` (`src/cadr-cli/modes/rpc/ui.lisp`) | `createDialogPromise` request object (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover of the `cli_print_rpc` hole on `ui.lisp`. Timed work is extension UI
+request object assembly. Observed `dr_type` / `dr_method` / `dr_msg` /
+`dr_opt_n` / `dr_ph` / `dr_to` are exact. First n=5 freeze **3.471×** (1.129 /
+0.325 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Same
+commit no optimize. Over-1× booked.
+
+### Pair 467 — `cli_print_rpc` (dialog_result)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dialog_result` | `rpc-dialog-result` (`src/cadr-cli/modes/rpc/ui.lisp`) | `createDialogPromise` parseResponse (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pair 466 on the same hole. Timed work is confirm/select
+response parse (cancelled, confirmed, string value). Observed `rs_nil` /
+`rs_can` / `rs_ok` / `rs_val` / `rs_num` are exact. First n=5 freeze **4.257×**
+(1.233 / 0.290 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`.
+Same commit no optimize. Over-1× booked.
+
+### Pair 468 — `cli_print_rpc` (dialog_expired)
+
+| metric | cadr | pi |
+|---|---|---|
+| `dialog_expired` | `rpc-dialog-expired-p` (`src/cadr-cli/modes/rpc/ui.lisp`) | `createDialogPromise` timeout (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pairs 466–467 on the same hole. Timed work is dialog
+deadline comparison. Observed `ex_nil` / `ex_zero` / `ex_future` are exact.
+First n=5 freeze **0.410×** (0.094 / 0.229 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce`. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
