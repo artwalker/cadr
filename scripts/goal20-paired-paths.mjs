@@ -3151,37 +3151,6 @@ function runFindMakeTool() {
 	};
 }
 
-function regexSpecialP(character) {
-	return ".^$+()[]{}|\\".includes(character);
-}
-
-function globRegexSource(pattern) {
-	let source = "^";
-	for (let index = 0; index < pattern.length; index += 1) {
-		const character = pattern[index];
-		if (character === "*") {
-			if (index + 1 < pattern.length && pattern[index + 1] === "*") {
-				index += 1;
-				if (index + 1 < pattern.length && pattern[index + 1] === "/") {
-					index += 1;
-					source += "(?:.*/)?";
-				} else {
-					source += ".*";
-				}
-			} else {
-				source += "[^/]*";
-			}
-		} else if (character === "?") {
-			source += "[^/]";
-		} else if (regexSpecialP(character)) {
-			source += `\\${character}`;
-		} else {
-			source += character;
-		}
-	}
-	return `${source}$`;
-}
-
 function globRegexBody(pattern) {
 	const source = globRegexSource(pattern);
 	return source.slice(1, source.length - 1);
@@ -3209,10 +3178,10 @@ function runFindGlobRegex() {
 
 function runFindGlobSpecial() {
 	return {
-		gs_dot: regexSpecialP(".") ? 1 : 0,
-		gs_star: regexSpecialP("*") ? 0 : 1,
-		gs_pipe: regexSpecialP("|") ? 1 : 0,
-		gs_bs: regexSpecialP("\\") ? 1 : 0,
+		gs_dot: GLOB_SPECIAL.has(".") ? 1 : 0,
+		gs_star: GLOB_SPECIAL.has("*") ? 0 : 1,
+		gs_pipe: GLOB_SPECIAL.has("|") ? 1 : 0,
+		gs_bs: GLOB_SPECIAL.has("\\") ? 1 : 0,
 	};
 }
 
