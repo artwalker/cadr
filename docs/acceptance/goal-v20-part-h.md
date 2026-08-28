@@ -8104,6 +8104,30 @@ Leftover sibling of Pair 670. Timed work is nil/string negatives plus input/dial
 
 Leftover sibling of Pairs 670–671. Timed work is nil/string/list wrap plus non-string skip. Observed `erv_nil` / `erv_hi` / `erv_list` / `erv_num` / `erv_n` are exact. First n=5 freeze **2.452×** (2.505 / 1.022 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 673 — `cli_interactive_controller` (make_framed_select_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_framed_select_state` | `make-framed-select-state` (`src/cadr-cli/interactive/extension-ui.lisp`) | framed select-list constructor (`packages/tui/src/select-list.ts`) |
+
+Leftover sibling on the `extension-ui.lisp` hole. Timed work is title/items plus timeout vs open deadline. Observed `mfs_title` / `mfs_n` / `mfs_a` / `mfs_dead` / `mfs_open` are exact. First n=5 freeze **1.037×** (0.903 / 0.870 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 674 — `cli_interactive_controller` (note_component_render_channel)
+
+| metric | cadr | pi |
+|---|---|---|
+| `note_component_render_channel` | `note-component-render-channel` (`src/cadr-cli/interactive/extension-ui.lisp`) | requestRender inject on render-aware mixin (`packages/tui/src/tui.ts`) |
+
+Leftover sibling of Pair 673. Timed work is nil skip, render-aware inject, and plain dialog pass-through. Observed `ncr_nil` / `ncr_eq` / `ncr_set` / `ncr_plain` / `ncr_ret` are exact. First n=5 freeze **1.278×** (0.357 / 0.279 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 675 — `cli_interactive_controller` (tui_extension_theme_runtime)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tui_extension_theme_runtime` | `tui-extension-theme-runtime` (`src/cadr-cli/interactive/extension-ui.lisp`) | theme fg/bg/bold/italic runtime (`packages/tui/src/theme.ts`) |
+
+Leftover sibling of Pairs 673–674. Timed work is functionp slots plus stripped accent text contains `hi`. Observed `tet_fg` / `tet_bg` / `tet_bold` / `tet_italic` / `tet_hi` are exact. Do not exact-match ANSI or product slug. First n=5 freeze **3.379×** (1.449 / 0.429 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

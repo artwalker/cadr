@@ -473,4 +473,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.extension_dialog_chrome` | 21.804 | 1.528 | 14.268× | 30.00× | measure-only leftover 670; `extension-dialog-chrome` vs dialog chrome border; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.tui_component_protocol` | 0.587 | 0.384 | 1.527× | 8.00× | measure-only leftover 671; `tui-component-protocol-p` vs Component protocol predicate | invent pause；地板优化另刀 |
 | `cli_interactive_controller.extension_render_value_lines` | 2.505 | 1.022 | 2.452× | 8.00× | measure-only leftover 672; `extension-render-value-lines` vs custom value lines | invent pause；地板优化另刀 |
+| `cli_interactive_controller.make_framed_select_state` | 0.903 | 0.870 | 1.037× | 8.00× | measure-only leftover 673; `make-framed-select-state` vs framed select-list constructor | invent pause；地板优化另刀 |
+| `cli_interactive_controller.note_component_render_channel` | 0.357 | 0.279 | 1.278× | 8.00× | measure-only leftover 674; `note-component-render-channel` vs requestRender inject on render-aware mixin | invent pause；地板优化另刀 |
+| `cli_interactive_controller.tui_extension_theme_runtime` | 1.449 | 0.429 | 3.379× | 8.00× | measure-only leftover 675; `tui-extension-theme-runtime` vs theme fg/bg/bold/italic runtime | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

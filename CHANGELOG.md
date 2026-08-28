@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.make_framed_select_state`
+  (`make-framed-select-state` on
+  `src/cadr-cli/interactive/extension-ui.lisp` vs framed select-list
+  constructor). Observed `mfs_title` / `mfs_n` / `mfs_a` / `mfs_dead` /
+  `mfs_open` exact. n=5 **1.037×** (0.903 / 0.870 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 673). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.note_component_render_channel`
+  (`note-component-render-channel` vs requestRender inject on
+  render-aware mixin). Observed `ncr_nil` / `ncr_eq` / `ncr_set` /
+  `ncr_plain` / `ncr_ret` exact. n=5 **1.278×** (0.357 / 0.279 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 674). Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.tui_extension_theme_runtime`
+  (`tui-extension-theme-runtime` vs theme fg/bg/bold/italic runtime).
+  Observed `tet_fg` / `tet_bg` / `tet_bold` / `tet_italic` / `tet_hi`
+  exact. n=5 **3.379×** (1.449 / 0.429 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 675). Over-1× booked. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.extension_dialog_chrome`
   (`extension-dialog-chrome` on
   `src/cadr-cli/interactive/extension-ui.lisp` vs dialog chrome border).
