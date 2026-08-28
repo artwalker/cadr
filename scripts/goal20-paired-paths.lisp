@@ -32,6 +32,7 @@
 ;;;;  19. image_runtime image-dimensions vs getImageDimensions
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
 ;;;;      leftover: read-rpc-jsonl-lines vs attachJsonlLineReader
+;;;;      leftover: parse-queue-mode / rpc-last-assistant-text / rpc-command-list
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -401,6 +402,9 @@
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
     ("cli_print_rpc.session_stats" . 20)
+    ("cli_print_rpc.queue_mode" . 50)
+    ("cli_print_rpc.last_assistant" . 50)
+    ("cli_print_rpc.command_list" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -8057,6 +8061,82 @@
      (length full-av)
      (length short-av))))
 
+(defun run-cli-print-rpc-queue-mode ()
+  (list
+   (if (eq (cadr-cli::parse-queue-mode "all" "steering") :all) 1 0)
+   (if (eq (cadr-cli::parse-queue-mode "one-at-a-time" "follow-up")
+            :one-at-a-time)
+       1
+       0)
+   (if (handler-case
+           (progn
+             (cadr-cli::parse-queue-mode "nope" "steering")
+             0)
+         (error () 1))
+       1
+       0)))
+
+(defun rpc-last-assistant-fixture-agent ()
+  (cadr-agent:make-agent
+   :messages
+   (list
+    (cadr-ai:make-user-message :content "q")
+    (cadr-ai:make-assistant-message
+     :content
+     (list (cadr-ai:make-text-content :text "hello"))))))
+
+(defun run-cli-print-rpc-last-assistant (agent empty)
+  (let ((hit (cadr-cli::rpc-last-assistant-text agent))
+        (miss (cadr-cli::rpc-last-assistant-text empty)))
+    (list
+     (if (string= hit "hello") 1 0)
+     (length (or hit ""))
+     (if miss 1 0))))
+
+(defun rpc-command-list-fixture-state ()
+  (let* ((bundle
+           (cadr-agent::make-extension-bundle
+            :path "/tmp/ext.js"))
+         (command
+           (cadr-agent::make-extension-command-definition
+            :name "foo"
+            :description "d"
+            :bundle bundle))
+         (template
+           (cadr-agent::make-extension-template-definition
+            :name "bar"
+            :description "t"
+            :bundle bundle))
+         (snapshot
+           (cadr-agent::make-extension-snapshot
+            :commands (list command)
+            :templates (list template)))
+         (host
+           (cadr-agent::%make-extension-host
+            :snapshot snapshot))
+         (manager
+           (cadr-cli::%make-cli-extension-manager
+            :host host)))
+    (cadr-cli::%make-rpc-state
+     :extension-manager manager)))
+
+(defun run-cli-print-rpc-command-list (state)
+  (let* ((commands (cadr-cli::rpc-command-list state))
+         (first (and (plusp (length commands)) (aref commands 0)))
+         (second (and (> (length commands) 1) (aref commands 1))))
+    (list
+     (length commands)
+     (if (and first
+              (string= (cadr-ai::json-get first "source") "extension")
+              (string= (cadr-ai::json-get first "name") "foo"))
+         1
+         0)
+     (if (and second
+              (string= (cadr-ai::json-get second "source") "prompt")
+              (string= (cadr-ai::json-get second "name") "bar"))
+         1
+         0))))
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p
@@ -8072,7 +8152,16 @@
            (cadr-agent:load-session (fixture-path "session.jsonl")))
          (stats-obs
            (cli-print-rpc-session-stats-observed
-            (run-cli-print-rpc-session-stats session))))
+            (run-cli-print-rpc-session-stats session)))
+         (queue-mode (run-cli-print-rpc-queue-mode))
+         (assistant-agent (rpc-last-assistant-fixture-agent))
+         (assistant-empty (cadr-agent:make-agent))
+         (last-assistant
+           (run-cli-print-rpc-last-assistant
+            assistant-agent assistant-empty))
+         (command-state (rpc-command-list-fixture-state))
+         (command-list
+           (run-cli-print-rpc-command-list command-state)))
     (json-object
      "observed"
      (json-object
@@ -8096,7 +8185,16 @@
       "ss_tool" (nth 2 stats-obs)
       "ss_calls" (nth 3 stats-obs)
       "ss_total" (nth 4 stats-obs)
-      "ss_id" (nth 5 stats-obs))
+      "ss_id" (nth 5 stats-obs)
+      "qm_all" (nth 0 queue-mode)
+      "qm_one" (nth 1 queue-mode)
+      "qm_bad" (nth 2 queue-mode)
+      "la_hit" (nth 0 last-assistant)
+      "la_len" (nth 1 last-assistant)
+      "la_miss" (nth 2 last-assistant)
+      "cl_n" (nth 0 command-list)
+      "cl_ext" (nth 1 command-list)
+      "cl_prompt" (nth 2 command-list))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -8116,7 +8214,23 @@
      (collect "cli_print_rpc.session_stats"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-session-stats session)))))))
+                  (run-cli-print-rpc-session-stats session))))
+     "queue_mode"
+     (collect "cli_print_rpc.queue_mode"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-queue-mode))))
+     "last_assistant"
+     (collect "cli_print_rpc.last_assistant"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-last-assistant
+                   assistant-agent assistant-empty))))
+     "command_list"
+     (collect "cli_print_rpc.command_list"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-command-list command-state)))))))
 
 (defparameter *mermaid-lr*
   (format nil "flowchart LR~%  A-->B"))
@@ -16730,6 +16844,12 @@
       "src/cadr-cli/modes/rpc/models.lisp rpc-clamp-thinking-level"
       "cli_print_rpc.session_stats"
       "src/cadr-cli/modes/rpc/sessions.lisp rpc-session-stats"
+      "cli_print_rpc.queue_mode"
+      "src/cadr-cli/modes/rpc/commands.lisp parse-queue-mode"
+      "cli_print_rpc.last_assistant"
+      "src/cadr-cli/modes/rpc/commands.lisp rpc-last-assistant-text"
+      "cli_print_rpc.command_list"
+      "src/cadr-cli/modes/rpc/commands.lisp rpc-command-list"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"

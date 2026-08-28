@@ -252,6 +252,9 @@ const REPETITIONS = {
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
 	"cli_print_rpc.session_stats": 20,
+	"cli_print_rpc.queue_mode": 50,
+	"cli_print_rpc.last_assistant": 50,
+	"cli_print_rpc.command_list": 50,
 	"tui_latex.render": 20,
 	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
@@ -7174,6 +7177,95 @@ function measureCliPrintRpcSessionStatsObserved(stats) {
 	};
 }
 
+function parseQueueMode(mode, noun) {
+	if (mode === "all") return "all";
+	if (mode === "one-at-a-time") return "one-at-a-time";
+	throw new Error(`Invalid ${noun} mode: ${mode}`);
+}
+
+function runCliPrintRpcQueueMode() {
+	let bad = 0;
+	try {
+		parseQueueMode("nope", "steering");
+	} catch {
+		bad = 1;
+	}
+	return {
+		qm_all: parseQueueMode("all", "steering") === "all" ? 1 : 0,
+		qm_one: parseQueueMode("one-at-a-time", "follow-up") === "one-at-a-time" ? 1 : 0,
+		qm_bad: bad,
+	};
+}
+
+function getLastAssistantText(messages) {
+	const lastAssistant = messages
+		.slice()
+		.reverse()
+		.find((message) => {
+			if (message.role !== "assistant") return false;
+			if (message.stopReason === "aborted" && message.content.length === 0) return false;
+			return true;
+		});
+	if (!lastAssistant) return undefined;
+	let text = "";
+	for (const content of lastAssistant.content) {
+		if (content.type === "text") text += content.text;
+	}
+	return text.trim() || undefined;
+}
+
+const RPC_LAST_ASSISTANT_MESSAGES = [
+	{ role: "user", content: "q" },
+	{ role: "assistant", content: [{ type: "text", text: "hello" }], stopReason: "stop" },
+];
+
+function runCliPrintRpcLastAssistant() {
+	const hit = getLastAssistantText(RPC_LAST_ASSISTANT_MESSAGES);
+	const miss = getLastAssistantText([]);
+	return {
+		la_hit: hit === "hello" ? 1 : 0,
+		la_len: hit ? hit.length : 0,
+		la_miss: miss ? 1 : 0,
+	};
+}
+
+const RPC_COMMAND_LIST_COMMANDS = [
+	{ name: "foo", description: "d", sourceInfo: { path: "/tmp/ext.js" } },
+];
+const RPC_COMMAND_LIST_TEMPLATES = [
+	{ name: "bar", description: "t", sourceInfo: { path: "/tmp/ext.js" } },
+];
+
+function rpcCommandList(commands, templates) {
+	const out = [];
+	for (const command of commands) {
+		out.push({
+			name: command.name,
+			description: command.description ?? "",
+			source: "extension",
+			sourceInfo: command.sourceInfo,
+		});
+	}
+	for (const template of templates) {
+		out.push({
+			name: template.name,
+			description: template.description ?? "",
+			source: "prompt",
+			sourceInfo: template.sourceInfo,
+		});
+	}
+	return out;
+}
+
+function runCliPrintRpcCommandList() {
+	const commands = rpcCommandList(RPC_COMMAND_LIST_COMMANDS, RPC_COMMAND_LIST_TEMPLATES);
+	return {
+		cl_n: commands.length,
+		cl_ext: commands[0]?.source === "extension" && commands[0]?.name === "foo" ? 1 : 0,
+		cl_prompt: commands[1]?.source === "prompt" && commands[1]?.name === "bar" ? 1 : 0,
+	};
+}
+
 async function measureCliPrintRpc() {
 	const staged = await stageCliPrintRpcSessionStats();
 	try {
@@ -7181,6 +7273,9 @@ async function measureCliPrintRpc() {
 			...measureCliPrintRpcObserved(runCliPrintRpc(), await runCliPrintRpcRead()),
 			...runCliPrintRpcClampThinking(),
 			...measureCliPrintRpcSessionStatsObserved(staged.session.getSessionStats()),
+			...runCliPrintRpcQueueMode(),
+			...runCliPrintRpcLastAssistant(),
+			...runCliPrintRpcCommandList(),
 		};
 		return {
 			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
@@ -7194,6 +7289,15 @@ async function measureCliPrintRpc() {
 			}),
 			session_stats: await collect("cli_print_rpc.session_stats", () => {
 				return () => staged.session.getSessionStats();
+			}),
+			queue_mode: await collect("cli_print_rpc.queue_mode", () => {
+				return () => runCliPrintRpcQueueMode();
+			}),
+			last_assistant: await collect("cli_print_rpc.last_assistant", () => {
+				return () => runCliPrintRpcLastAssistant();
+			}),
+			command_list: await collect("cli_print_rpc.command_list", () => {
+				return () => runCliPrintRpcCommandList();
 			}),
 			observed,
 		};
@@ -17096,6 +17200,12 @@ const result = {
 				"packages/ai/src/models.ts clampThinkingLevel",
 			"cli_print_rpc.session_stats":
 				"packages/coding-agent/src/core/agent-session.ts AgentSession.getSessionStats",
+			"cli_print_rpc.queue_mode":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts steering/follow-up mode strings",
+			"cli_print_rpc.last_assistant":
+				"packages/coding-agent/src/core/agent-session.ts getLastAssistantText",
+			"cli_print_rpc.command_list":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts get_commands extension+prompt walk",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",
