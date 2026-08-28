@@ -235,6 +235,9 @@ const REPETITIONS = {
 	"evals_harness.eval_environment": 50,
 	"evals_harness.prompt_step": 50,
 	"evals_harness.reload_step": 50,
+	"evals_harness.make_reporter": 50,
+	"evals_harness.finite_number": 50,
+	"evals_harness.artifact_metadata": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5818,6 +5821,68 @@ function runEvalsHarnessReloadStep() {
 	};
 }
 
+function makeEvalHarnessReporter({ artifactDirectory, env } = {}) {
+	return {
+		artifactDirectory:
+			artifactDirectory ?? evalEnvironment("PI_EVAL_ARTIFACT_DIR", env ?? {}),
+	};
+}
+
+function runEvalsHarnessMakeReporter() {
+	const explicit = makeEvalHarnessReporter({
+		artifactDirectory: "/tmp/eval-explicit",
+	});
+	const fromEnv = makeEvalHarnessReporter({
+		env: { PI_EVAL_ARTIFACT_DIR: "  /tmp/eval-env  " },
+	});
+	const missing = makeEvalHarnessReporter({ env: {} });
+	return {
+		mr_explicit: explicit.artifactDirectory === "/tmp/eval-explicit" ? 1 : 0,
+		mr_env: fromEnv.artifactDirectory === "/tmp/eval-env" ? 1 : 0,
+		mr_miss: missing.artifactDirectory === undefined ? 1 : 0,
+		mr_n: 3,
+	};
+}
+
+function readFiniteNumber(value) {
+	return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function runEvalsHarnessFiniteNumber() {
+	return {
+		fn_int: readFiniteNumber(3) === 3 ? 1 : 0,
+		fn_float: readFiniteNumber(1.5) === 1.5 ? 1 : 0,
+		fn_nil: readFiniteNumber(undefined) === undefined ? 1 : 0,
+		fn_inf: readFiniteNumber(Number.POSITIVE_INFINITY) === undefined ? 1 : 0,
+		fn_str: readFiniteNumber("x") === undefined ? 1 : 0,
+		fn_n: 5,
+	};
+}
+
+function reporterArtifactMetadata(artifacts) {
+	const snapshot = evalsArtifactsModule.PI_SESSION_SNAPSHOT_ARTIFACT;
+	return Object.fromEntries(
+		Object.entries(artifacts ?? {}).filter(
+			([name]) => name !== "runId" && name !== snapshot,
+		),
+	);
+}
+
+function runEvalsHarnessArtifactMetadata() {
+	const snapshot = evalsArtifactsModule.PI_SESSION_SNAPSHOT_ARTIFACT;
+	const metadata = reporterArtifactMetadata({
+		runId: "run-1",
+		[snapshot]: "{\"type\":\"session\"}\n",
+		custom: "kept",
+	});
+	return {
+		am_keep: metadata.custom === "kept" ? 1 : 0,
+		am_runid: metadata.runId === undefined ? 1 : 0,
+		am_snap: metadata[snapshot] === undefined ? 1 : 0,
+		am_n: Object.keys(metadata).length === 1 ? 1 : 0,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5838,6 +5903,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessEvalEnvironment(),
 		...runEvalsHarnessPromptStep(),
 		...runEvalsHarnessReloadStep(),
+		...runEvalsHarnessMakeReporter(),
+		...runEvalsHarnessFiniteNumber(),
+		...runEvalsHarnessArtifactMetadata(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5881,6 +5949,15 @@ async function measureEvalsHarness() {
 		}),
 		reload_step: await collect("evals_harness.reload_step", () => {
 			return () => runEvalsHarnessReloadStep();
+		}),
+		make_reporter: await collect("evals_harness.make_reporter", () => {
+			return () => runEvalsHarnessMakeReporter();
+		}),
+		finite_number: await collect("evals_harness.finite_number", () => {
+			return () => runEvalsHarnessFiniteNumber();
+		}),
+		artifact_metadata: await collect("evals_harness.artifact_metadata", () => {
+			return () => runEvalsHarnessArtifactMetadata();
 		}),
 		observed,
 	};
@@ -17063,6 +17140,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts runPiCodingAgent prompt step object",
 			"evals_harness.reload_step":
 				"packages/evals/src/pi-harness.ts runPiCodingAgent reload step object",
+			"evals_harness.make_reporter":
+				"packages/evals/src/vitest-evals/reporter.ts EvalHarnessReporter constructor + PI_EVAL_ARTIFACT_DIR trim",
+			"evals_harness.finite_number":
+				"packages/evals/src/vitest-evals/reporter.ts readFiniteNumber",
+			"evals_harness.artifact_metadata":
+				"packages/evals/src/vitest-evals/reporter.ts appendHarnessRunReport metadata filter",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

@@ -133,7 +133,7 @@ METRICS = {
         "parse_authorization_input",
     ),
     "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
-    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step"),
+    "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step", "make_reporter", "finite_number", "artifact_metadata"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
@@ -528,6 +528,11 @@ RATIO_CEILINGS = {
     "evals_harness.eval_environment": 8.0,
     "evals_harness.prompt_step": 8.0,
     "evals_harness.reload_step": 8.0,
+    # evals_harness leftover trio on reporter.lisp (samples=5): first-freeze
+    # default ceiling 8.0. Do not raise.
+    "evals_harness.make_reporter": 8.0,
+    "evals_harness.finite_number": 8.0,
+    "evals_harness.artifact_metadata": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto_model_data pair (samples=5): observed 8.97x
     # (77.3 / 8.6 us). 20.0 follows the session_compact /
@@ -2030,6 +2035,20 @@ OBSERVED_EXACT = {
         "rs_type",
         "rs_no_content",
         "rs_n",
+        "mr_explicit",
+        "mr_env",
+        "mr_miss",
+        "mr_n",
+        "fn_int",
+        "fn_float",
+        "fn_nil",
+        "fn_inf",
+        "fn_str",
+        "fn_n",
+        "am_keep",
+        "am_runid",
+        "am_snap",
+        "am_n",
     ),
     "ai_crypto_model_data": (
         "schema_version",

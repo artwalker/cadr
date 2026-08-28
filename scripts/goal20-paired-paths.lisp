@@ -384,6 +384,9 @@
     ("evals_harness.eval_environment" . 50)
     ("evals_harness.prompt_step" . 50)
     ("evals_harness.reload_step" . 50)
+    ("evals_harness.make_reporter" . 50)
+    ("evals_harness.finite_number" . 50)
+    ("evals_harness.artifact_metadata" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -7299,6 +7302,85 @@
      (eval-flag (null (getf step :content)))
      2)))
 
+(defun run-evals-harness-make-reporter ()
+  ;; Leftover constructor on reporter.lisp: explicit dir, trimmed env
+  ;; fallback (CADR_EVAL_ARTIFACT_DIR), missing env. Not record-case.
+  (let* ((sink (make-broadcast-stream))
+         (explicit
+           (cadr-evals:make-eval-harness-reporter
+            :artifact-directory "/tmp/eval-explicit"
+            :output sink))
+         (from-env
+           (let ((cadr-evals::*eval-environment-function*
+                   (lambda (name)
+                     (when (string= name "CADR_EVAL_ARTIFACT_DIR")
+                       "  /tmp/eval-env  "))))
+             (cadr-evals:make-eval-harness-reporter :output sink)))
+         (missing
+           (let ((cadr-evals::*eval-environment-function*
+                   (constantly nil)))
+             (cadr-evals:make-eval-harness-reporter :output sink))))
+    (list
+     (eval-flag
+      (string=
+       (cadr-evals::eval-harness-reporter-artifact-directory
+        explicit)
+       "/tmp/eval-explicit"))
+     (eval-flag
+      (string=
+       (cadr-evals::eval-harness-reporter-artifact-directory
+        from-env)
+       "/tmp/eval-env"))
+     (eval-flag
+      (null
+       (cadr-evals::eval-harness-reporter-artifact-directory
+        missing)))
+     3)))
+
+(defun run-evals-harness-finite-number ()
+  ;; Leftover callee of case-observation: keep finite numbers, drop
+  ;; nil / inf / non-number. Not the full observation walk.
+  (list
+   (eval-flag
+    (eql (cadr-evals::reporter-finite-number 3) 3))
+   (eval-flag
+    (eql (cadr-evals::reporter-finite-number 1.5d0) 1.5d0))
+   (eval-flag
+    (null (cadr-evals::reporter-finite-number nil)))
+   (eval-flag
+    (null
+     (cadr-evals::reporter-finite-number
+      sb-ext:double-float-positive-infinity)))
+   (eval-flag
+    (null (cadr-evals::reporter-finite-number "x")))
+   5))
+
+(defun run-evals-harness-artifact-metadata ()
+  ;; Leftover of append-reporter-record: drop runId and the session
+  ;; snapshot key, keep custom metadata. Not persist, not JSONL.
+  (let* ((result
+           (cadr-evals::make-eval-result
+            :artifacts
+            (cadr-ai::json-object
+             "runId" "run-1"
+             cadr-evals:+cadr-session-snapshot-artifact+
+             "{\"type\":\"session\"}\n"
+             "custom" "kept")))
+         (metadata
+           (cadr-evals::reporter-artifact-metadata result)))
+    (list
+     (eval-flag
+      (string= (cadr-ai::json-get metadata "custom") "kept"))
+     (eval-flag
+      (null (cadr-ai::json-get metadata "runId")))
+     (eval-flag
+      (null
+       (cadr-ai::json-get
+        metadata
+        cadr-evals:+cadr-session-snapshot-artifact+)))
+     (eval-flag (= (hash-table-count metadata) 1))
+     4)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7318,7 +7400,10 @@
          (result-json (run-evals-harness-result-json))
          (environment (run-evals-harness-eval-environment))
          (prompt-step (run-evals-harness-prompt-step))
-         (reload-step (run-evals-harness-reload-step)))
+         (reload-step (run-evals-harness-reload-step))
+         (make-reporter (run-evals-harness-make-reporter))
+         (finite-number (run-evals-harness-finite-number))
+         (artifact-metadata (run-evals-harness-artifact-metadata)))
     (json-object
      "observed"
      (json-object
@@ -7399,7 +7484,21 @@
       "ps_n" (nth 2 prompt-step)
       "rs_type" (nth 0 reload-step)
       "rs_no_content" (nth 1 reload-step)
-      "rs_n" (nth 2 reload-step))
+      "rs_n" (nth 2 reload-step)
+      "mr_explicit" (nth 0 make-reporter)
+      "mr_env" (nth 1 make-reporter)
+      "mr_miss" (nth 2 make-reporter)
+      "mr_n" (nth 3 make-reporter)
+      "fn_int" (nth 0 finite-number)
+      "fn_float" (nth 1 finite-number)
+      "fn_nil" (nth 2 finite-number)
+      "fn_inf" (nth 3 finite-number)
+      "fn_str" (nth 4 finite-number)
+      "fn_n" (nth 5 finite-number)
+      "am_keep" (nth 0 artifact-metadata)
+      "am_runid" (nth 1 artifact-metadata)
+      "am_snap" (nth 2 artifact-metadata)
+      "am_n" (nth 3 artifact-metadata))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7470,7 +7569,22 @@
      (collect "evals_harness.reload_step"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-reload-step)))))))
+                  (run-evals-harness-reload-step))))
+     "make_reporter"
+     (collect "evals_harness.make_reporter"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-make-reporter))))
+     "finite_number"
+     (collect "evals_harness.finite_number"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-finite-number))))
+     "artifact_metadata"
+     (collect "evals_harness.artifact_metadata"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-artifact-metadata)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16696,6 +16810,12 @@
       "src/cadr-evals/harness.lisp make-eval-prompt-step"
       "evals_harness.reload_step"
       "src/cadr-evals/harness.lisp make-eval-reload-step"
+      "evals_harness.make_reporter"
+      "src/cadr-evals/reporter.lisp make-eval-harness-reporter"
+      "evals_harness.finite_number"
+      "src/cadr-evals/reporter.lisp reporter-finite-number"
+      "evals_harness.artifact_metadata"
+      "src/cadr-evals/reporter.lisp reporter-artifact-metadata"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
