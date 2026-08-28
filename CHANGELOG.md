@@ -171,7 +171,14 @@ tag/Release step.
   n=5 **1.34×** (1.936 / 1.448 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
   (Pair 303). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
   not this metric.
-- Goal 20 P.13: pair `harness_events.make_end` (`make-run-end-event` on
+- Goal 20 P.13 leftover: pair `tui_theme_overlay.rgb_to_ansi_256` /
+  `parse_hex_color` / `theme_foreground_ansi` (`src/cadr-tui/theme.lisp` vs
+  baseline `rgbTo256` / `hexToRgb` / `Theme.getFgAnsi`). Observed `r256_*` /
+  `ph_*` / `tfa_*` exact. n=5 **1.955×** / **1.127×** / **14.724×**
+  (2.52 / 1.29 µs, 0.944 / 0.837 µs, 5.58 / 0.379 µs) on host `cursor`,
+  ceiling 8.0. Measure-only. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not these metrics. Pair 321 is on the 10 µs
+  floor. Over-1× booked. Pairs 319–321.- Goal 20 P.13: pair `harness_events.make_end` (`make-run-end-event` on
   `src/cadr-agent/harness-events.lisp` vs baseline `RunEndEvent` object).
   Observed `hee_type` / `hee_lane` / `hee_run` / `hee_outcome` /
   `hee_abort` exact. n=5 **1.574×** (0.216 / 0.137 µs) on host `cursor`,

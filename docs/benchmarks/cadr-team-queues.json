@@ -4,7 +4,7 @@
   "20": {
    "schemaVersion": 1,
    "paused": false,
-   "nextPairNum": 328,
+   "nextPairNum": 340,
    "lanes": {
     "a": {
      "role": "pairing",
@@ -796,6 +796,33 @@
      "measure": "measure-evals-harness",
      "metric": "evals_harness.last_assistant",
      "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+    },
+    {
+     "pair": 319,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-tui/theme.lisp",
+     "measure": "measure-tui-theme-overlay",
+     "metric": "tui_theme_overlay.rgb_to_ansi_256",
+     "branch": "cursor/goal20-pair-319-321-tui-796d"
+    },
+    {
+     "pair": 320,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-tui/theme.lisp",
+     "measure": "measure-tui-theme-overlay",
+     "metric": "tui_theme_overlay.parse_hex_color",
+     "branch": "cursor/goal20-pair-319-321-tui-796d"
+    },
+    {
+     "pair": 321,
+     "lane": "b",
+     "status": "done",
+     "source": "src/cadr-tui/theme.lisp",
+     "measure": "measure-tui-theme-overlay",
+     "metric": "tui_theme_overlay.theme_foreground_ansi",
+     "branch": "cursor/goal20-pair-319-321-tui-796d"
     }
    ],
    "mergeQueue": []

@@ -4058,7 +4058,49 @@ exact. First n=5 freeze **0.738×** (0.078 / 0.105 µs) on host `cursor`,
 ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
+### Pair 319 — `tui_theme_overlay` (rgb_to_ansi_256)
 
+| metric | cadr | pi |
+|---|---|---|
+| `rgb_to_ansi_256` | `rgb-to-ansi-256` (`src/cadr-tui/theme.lisp`) | `rgbTo256` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`; unexported; harness copy at BASELINE) |
+
+Leftover of the `tui_theme_overlay` hole on `theme.lisp` only. Sibling of
+already-paired `osc11_bg` on `src/cadr-tui/terminal-colors.lisp` (not
+re-paired). Timed work is cube vs gray-ramp mapping for five RGB fixtures
+(red / black / gray / white / accent `#8abeb7`) — not OSC 11, not a TUI
+frame. Observed `r256_red` / `r256_black` / `r256_gray` / `r256_white` /
+`r256_accent` are exact. First n=5 freeze **1.955×** (2.52 / 1.29 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Over-1× booked. Same commit no optimize.
+
+### Pair 320 — `tui_theme_overlay` (parse_hex_color)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_hex_color` | `parse-theme-hex-color` (`src/cadr-tui/theme.lisp`) | `hexToRgb` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`; unexported; harness copy at BASELINE) |
+
+Leftover sibling of Pair 319 on the same `tui_theme_overlay` hole.
+Timed work is `#RRGGBB` parse for `#112233` / `#8abeb7` / `#ffffff` — not
+OSC 11, not theme load. Observed `ph_112233_r` / `ph_112233_g` /
+`ph_112233_b` / `ph_accent_r` / `ph_white_b` are exact. First n=5 freeze
+**1.127×** (0.944 / 0.837 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 321 — `tui_theme_overlay` (theme_foreground_ansi)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_foreground_ansi` | `theme-foreground-ansi` (`src/cadr-tui/theme.lisp`) | `Theme.getFgAnsi` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pairs 319–320 on the same `tui_theme_overlay` hole.
+Timed work is CSI-only foreground for `:accent` / `:text` on a pinned dark
+truecolor theme — not `theme-foreground` text wrap, not OSC 11.
+Observed `tfa_accent_esc` / `tfa_text_esc` / `tfa_n` are exact.
+First n=5 freeze **14.724×** (5.58 / 0.379 µs) on host `cursor`, ceiling
+8.0. Sub-10 µs path — gate uses variance / 10 µs floor, so this ratio did
+not fail `--only-enforce`. Over-1× booked. Same commit no optimize.
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4759,6 +4801,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/terminal-colors.lisp` | 191 | `tui_theme_overlay.osc11_bg` |
 | `src/cadr-tui/terminal-image.lisp` | 686 | `image_runtime.dimensions` |
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/theme.lisp` | 562 | `tui_theme_overlay.rgb_to_ansi_256`, `tui_theme_overlay.parse_hex_color`, `tui_theme_overlay.theme_foreground_ansi` |
 | `src/cadr-tui/undo-stack.lisp` | 20 | `tui_undo_stack.push_pop` |
 | `src/cadr-tui/unicode.lisp` | 1,302 | `render_slicing.slice_ansi_clip`, `render_slicing.slice_plain_clip` |
 | `src/cadr-tui/word-navigation.lisp` | 118 | `tui_word_navigation.step` |
@@ -4814,7 +4857,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `agent_tool_loop` | 7 | 1,292 |
 | `oauth_pkce_device` | 7 | 1,174 |
 | `cli_print_rpc` | 4 | 1,092 |
-| `tui_theme_overlay` | 1 | 562 |
 | `settings_load` | 2 | 479 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |

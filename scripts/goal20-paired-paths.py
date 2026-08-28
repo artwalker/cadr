@@ -142,7 +142,7 @@ METRICS = {
     "tui_latex": ("render", "normalize_output"),
     "tui_mermaid": ("render", "source_box", "transform"),
     "tui_editor_helpers": ("fuzzy_match",),
-    "tui_theme_overlay": ("osc11_bg",),
+    "tui_theme_overlay": ("osc11_bg", "rgb_to_ansi_256", "parse_hex_color", "theme_foreground_ansi"),
     "ai_support": ("estimate_text", "context_overflow", "grammar_delta", "uuid_v7", "auth_guidance"),
     "tui_select_settings_loaders": ("filter",),
     "tui_word_navigation": ("step",),
@@ -643,6 +643,11 @@ RATIO_CEILINGS = {
     # (3.8 / 3.3 us). 8.0 follows the microsecond-floor
     # first-freeze headroom. Ratchet down only.
     "tui_theme_overlay.osc11_bg": 8.0,
+    # tui_theme leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "tui_theme_overlay.rgb_to_ansi_256": 8.0,
+    "tui_theme_overlay.parse_hex_color": 8.0,
+    "tui_theme_overlay.theme_foreground_ansi": 8.0,
     # Frozen from the first Friend-MachineD non-quick ai_support
     # pair (samples=5): observed 3.10x (0.54 / 0.17 us). 8.0 follows
     # the microsecond-floor / agent_proxy variance precedent.
@@ -2179,6 +2184,19 @@ OBSERVED_EXACT = {
         "hex12_r",
         "miss",
         "scheme_dark",
+        "r256_red",
+        "r256_black",
+        "r256_gray",
+        "r256_white",
+        "r256_accent",
+        "ph_112233_r",
+        "ph_112233_g",
+        "ph_112233_b",
+        "ph_accent_r",
+        "ph_white_b",
+        "tfa_accent_esc",
+        "tfa_text_esc",
+        "tfa_n",
     ),
     "ai_support": (
         "empty",
