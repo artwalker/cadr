@@ -225,6 +225,9 @@
 ;;;; 493. cli_interactive_controller make-tui-user-bash-entry vs BashExecutionComponent constructor
 ;;;; 494. cli_interactive_controller append-tui-user-bash-output vs BashExecutionComponent.appendOutput
 ;;;; 495. cli_interactive_controller complete-tui-user-bash-entry vs BashExecutionComponent.setComplete
+;;;; 640. cli_interactive_controller append-tui-user-bash-running vs BashExecutionComponent addChild running
+;;;; 641. cli_interactive_controller complete-tui-user-bash-string vs setComplete exit 0 string
+;;;; 642. cli_interactive_controller stop-tui-user-bash-entry vs loader.stop without setComplete
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -575,6 +578,9 @@
     ("cli_interactive_controller.theme_object_overrides" . 50)
     ("cli_interactive_controller.apply_tui_theme_summary" . 50)
     ("cli_interactive_controller.load_tui_theme_file" . 50)
+    ("cli_interactive_controller.bash_append_running" . 50)
+    ("cli_interactive_controller.bash_complete_string" . 50)
+    ("cli_interactive_controller.bash_stop_entry" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14326,6 +14332,28 @@
    "ltf_empty" (nth 4 load)))
 
 
+(defun leftover-user-bash-running-complete-stop-observed-pairs
+    (running complete-string stop)
+  (list
+   "bar_n" (nth 0 running)
+   "bar_label" (nth 1 running)
+   "bar_run" (nth 2 running)
+   "bar_stream" (nth 3 running)
+   "bar_ex" (nth 4 running)
+   "bar_run2" (nth 5 running)
+   "cs_text" (nth 0 complete-string)
+   "cs_run" (nth 1 complete-string)
+   "cs_stream" (nth 2 complete-string)
+   "cs_exit" (nth 3 complete-string)
+   "cs_cache" (nth 4 complete-string)
+   "cs_empty" (nth 5 complete-string)
+   "st_run" (nth 0 stop)
+   "st_stream" (nth 1 stop)
+   "st_text" (nth 2 stop)
+   "st_cache" (nth 3 stop)
+   "st_exit" (nth 4 stop)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -14775,7 +14803,13 @@
         (leftover-theme-apply
           (run-cli-interactive-apply-tui-theme-summary))
         (leftover-theme-load
-          (run-cli-interactive-load-tui-theme-file)))
+          (run-cli-interactive-load-tui-theme-file))
+        (leftover-bash-running
+          (run-cli-interactive-bash-append-running))
+        (leftover-bash-string
+          (run-cli-interactive-bash-complete-string))
+        (leftover-bash-stop
+          (run-cli-interactive-bash-stop-entry)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14834,7 +14868,11 @@
              (leftover-theme-overrides-apply-load-observed-pairs
               leftover-theme-overrides
               leftover-theme-apply
-              leftover-theme-load)))
+              leftover-theme-load)
+             (leftover-user-bash-running-complete-stop-observed-pairs
+              leftover-bash-running
+              leftover-bash-string
+              leftover-bash-stop)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -14894,7 +14932,22 @@
      (collect "cli_interactive_controller.load_tui_theme_file"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-load-tui-theme-file)))))))
+                  (run-cli-interactive-load-tui-theme-file))))
+     "bash_append_running"
+     (collect "cli_interactive_controller.bash_append_running"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-append-running))))
+     "bash_complete_string"
+     (collect "cli_interactive_controller.bash_complete_string"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-complete-string))))
+     "bash_stop_entry"
+     (collect "cli_interactive_controller.bash_stop_entry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-stop-entry)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -14974,6 +15027,54 @@
        (if (getf ok-opts :running-p) 1 0)
        (or (getf err-opts :exit-code) -1)
        (if (getf err-opts :cancelled-p) 1 0)))))
+
+(defun run-cli-interactive-bash-append-running ()
+  (let ((state (cadr-cli::make-tui-state :cwd "/tmp/proj")))
+    (cadr-cli::append-tui-user-bash-running state "ls" nil)
+    (cadr-cli::append-tui-user-bash-running state "echo hi" t)
+    (let* ((entries (cadr-cli::tui-state-entries state))
+           (first-entry (first entries))
+           (second-entry (second entries))
+           (first-opts (cadr-cli::tui-entry-custom-options first-entry))
+           (second-opts (cadr-cli::tui-entry-custom-options second-entry)))
+      (list
+       (length entries)
+       (copy-seq (or (cadr-cli::tui-entry-label first-entry) ""))
+       (if (getf first-opts :running-p) 1 0)
+       (if (cadr-cli::tui-entry-streaming-p first-entry) 1 0)
+       (if (getf second-opts :exclude-from-context-p) 1 0)
+       (if (getf second-opts :running-p) 1 0)))))
+
+(defun run-cli-interactive-bash-complete-string ()
+  (let* ((state (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+         (ok (cadr-cli::make-tui-user-bash-entry
+              state "ls" nil :running-p t))
+         (empty (cadr-cli::make-tui-user-bash-entry
+                 state "true" t :running-p t)))
+    (cadr-cli::complete-tui-user-bash-string ok "hello")
+    (cadr-cli::complete-tui-user-bash-string empty "")
+    (let ((ok-opts (cadr-cli::tui-entry-custom-options ok)))
+      (list
+       (copy-seq (cadr-cli::tui-entry-text ok))
+       (if (getf ok-opts :running-p) 1 0)
+       (if (cadr-cli::tui-entry-streaming-p ok) 1 0)
+       (or (getf ok-opts :exit-code) -1)
+       (if (cadr-cli::tui-entry-render-cache-valid-p ok) 0 1)
+       (length (cadr-cli::tui-entry-text empty))))))
+
+(defun run-cli-interactive-bash-stop-entry ()
+  (let* ((state (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+         (entry (cadr-cli::make-tui-user-bash-entry
+                 state "sleep" nil :running-p t)))
+    (cadr-cli::append-tui-user-bash-output entry "partial")
+    (cadr-cli::stop-tui-user-bash-entry entry)
+    (let ((opts (cadr-cli::tui-entry-custom-options entry)))
+      (list
+       (if (getf opts :running-p) 1 0)
+       (if (cadr-cli::tui-entry-streaming-p entry) 1 0)
+       (copy-seq (cadr-cli::tui-entry-text entry))
+       (if (cadr-cli::tui-entry-render-cache-valid-p entry) 0 1)
+       (or (getf opts :exit-code) -1)))))
 
 (defun session-search-fixture-records ()
   (list
@@ -27252,6 +27353,12 @@
       "src/cadr-cli/interactive/themes.lisp apply-tui-theme-summary"
       "cli_interactive_controller.load_tui_theme_file"
       "src/cadr-cli/interactive/themes.lisp load-tui-theme-file"
+      "cli_interactive_controller.bash_append_running"
+      "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-running"
+      "cli_interactive_controller.bash_complete_string"
+      "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-string"
+      "cli_interactive_controller.bash_stop_entry"
+      "src/cadr-cli/interactive/user-bash.lisp stop-tui-user-bash-entry"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
