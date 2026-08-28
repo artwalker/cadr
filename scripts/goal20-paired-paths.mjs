@@ -297,6 +297,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.auth_type": 50,
 	"cli_interactive_controller.parse_auto_theme": 50,
 	"cli_interactive_controller.resolve_theme": 50,
+	"cli_interactive_controller.theme_primitive": 50,
+	"cli_interactive_controller.theme_resolve": 50,
+	"cli_interactive_controller.theme_validate": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -8622,6 +8625,229 @@ function runCliInteractiveResolveTheme() {
 	};
 }
 
+function validTuiThemePrimitiveP(value) {
+	return typeof value === "string" || (Number.isInteger(value) && value >= 0 && value <= 255);
+}
+
+function runCliInteractiveThemePrimitive() {
+	return {
+		tp_str: validTuiThemePrimitiveP("x") ? 1 : 0,
+		tp_int: validTuiThemePrimitiveP(0) ? 1 : 0,
+		tp_255: validTuiThemePrimitiveP(255) ? 1 : 0,
+		tp_256: validTuiThemePrimitiveP(256) ? 1 : 0,
+		tp_neg: validTuiThemePrimitiveP(-1) ? 1 : 0,
+		tp_nil: validTuiThemePrimitiveP(null) ? 1 : 0,
+	};
+}
+
+function parseThemeHexColor(text) {
+	if (typeof text !== "string" || text.length !== 7 || text[0] !== "#") {
+		throw new Error("Invalid hex color");
+	}
+	for (let index = 1; index < 7; index += 1) {
+		if (!/[0-9a-fA-F]/.test(text[index])) {
+			throw new Error("Invalid hex color");
+		}
+	}
+}
+
+function resolveTuiThemeValue(value, variables, seen = []) {
+	if (Number.isInteger(value)) {
+		if (value < 0 || value > 255) {
+			throw new Error("Theme color index is outside 0..255");
+		}
+		return value;
+	}
+	if (typeof value !== "string") {
+		throw new Error("Theme color must be a string or integer");
+	}
+	if (value.length === 0) {
+		return "";
+	}
+	if (value[0] === "#") {
+		parseThemeHexColor(value);
+		return value.toLowerCase();
+	}
+	if (seen.includes(value)) {
+		throw new Error("Cyclic theme variable reference");
+	}
+	if (!Object.hasOwn(variables, value)) {
+		throw new Error("Unknown theme variable");
+	}
+	return resolveTuiThemeValue(variables[value], variables, [value, ...seen]);
+}
+
+function themeResolveErrorP(thunk) {
+	try {
+		thunk();
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runCliInteractiveThemeResolve() {
+	const variables = { accent: 7, loop: "loop" };
+	return {
+		tr_int: resolveTuiThemeValue(12, variables),
+		tr_empty: resolveTuiThemeValue("", variables) === "" ? 1 : 0,
+		tr_hex: resolveTuiThemeValue("#FF0000", variables) === "#ff0000" ? 1 : 0,
+		tr_var: resolveTuiThemeValue("accent", variables),
+		tr_cycle: themeResolveErrorP(() => resolveTuiThemeValue("loop", variables)),
+		tr_miss: themeResolveErrorP(() => resolveTuiThemeValue("missing", variables)),
+	};
+}
+
+const GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES = [
+	"accent",
+	"border",
+	"borderAccent",
+	"borderMuted",
+	"success",
+	"error",
+	"warning",
+	"muted",
+	"dim",
+	"text",
+	"thinkingText",
+	"selectedBg",
+	"userMessageBg",
+	"userMessageText",
+	"customMessageBg",
+	"customMessageText",
+	"customMessageLabel",
+	"toolPendingBg",
+	"toolSuccessBg",
+	"toolErrorBg",
+	"toolTitle",
+	"toolOutput",
+	"mdHeading",
+	"mdLink",
+	"mdLinkUrl",
+	"mdCode",
+	"mdCodeBlock",
+	"mdCodeBlockBorder",
+	"mdQuote",
+	"mdQuoteBorder",
+	"mdHr",
+	"mdListBullet",
+	"toolDiffAdded",
+	"toolDiffRemoved",
+	"toolDiffContext",
+	"syntaxComment",
+	"syntaxKeyword",
+	"syntaxFunction",
+	"syntaxVariable",
+	"syntaxString",
+	"syntaxNumber",
+	"syntaxType",
+	"syntaxOperator",
+	"syntaxPunctuation",
+	"thinkingOff",
+	"thinkingMinimal",
+	"thinkingLow",
+	"thinkingMedium",
+	"thinkingHigh",
+	"thinkingXhigh",
+	"bashMode",
+];
+
+const GOAL20_TUI_THEME_OPTIONAL_COLOR_NAMES = [
+	"thinkingMax",
+	"scrollbarThumb",
+	"searchMatchBg",
+	"searchMatchText",
+];
+
+function goal20ThemeRequiredColors() {
+	const colors = {};
+	for (const name of GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES) {
+		colors[name] = 1;
+	}
+	return colors;
+}
+
+function validateTuiThemeObject(object, variables, variablesPresentP, colors, exportObject, exportPresentP) {
+	const allowed = new Set(["$schema", "name", "vars", "colors", "export"]);
+	for (const name of Object.keys(object)) {
+		if (!allowed.has(name)) {
+			throw new Error(`Unknown theme property: ${name}`);
+		}
+	}
+	if (Object.hasOwn(object, "$schema") && typeof object.$schema !== "string") {
+		throw new Error("Theme $schema must be a string");
+	}
+	const name = object.name;
+	if (typeof name !== "string" || name.length === 0 || name.includes("/")) {
+		throw new Error("Theme requires a valid name without '/'");
+	}
+	if (colors === null || typeof colors !== "object" || Array.isArray(colors)) {
+		throw new Error("Theme requires a colors object");
+	}
+	if (variablesPresentP && (variables === null || typeof variables !== "object" || Array.isArray(variables))) {
+		throw new Error("Theme vars must be an object");
+	}
+	for (const value of Object.values(variables)) {
+		if (!validTuiThemePrimitiveP(value)) {
+			throw new Error("Invalid theme variable value");
+		}
+	}
+	const known = new Set([
+		...GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES,
+		...GOAL20_TUI_THEME_OPTIONAL_COLOR_NAMES,
+	]);
+	for (const [colorName, value] of Object.entries(colors)) {
+		if (!known.has(colorName)) {
+			throw new Error(`Unknown theme color token: ${colorName}`);
+		}
+		if (!validTuiThemePrimitiveP(value)) {
+			throw new Error("Invalid theme color value");
+		}
+	}
+	for (const colorName of GOAL20_TUI_THEME_REQUIRED_COLOR_NAMES) {
+		if (!Object.hasOwn(colors, colorName)) {
+			throw new Error(`Missing required theme color token: ${colorName}`);
+		}
+	}
+	if (exportPresentP) {
+		if (exportObject === null || typeof exportObject !== "object" || Array.isArray(exportObject)) {
+			throw new Error("Theme export must be an object");
+		}
+		const exportKnown = new Set(["pageBg", "cardBg", "infoBg"]);
+		for (const [exportName, value] of Object.entries(exportObject)) {
+			if (!exportKnown.has(exportName)) {
+				throw new Error(`Unknown theme export token: ${exportName}`);
+			}
+			if (!validTuiThemePrimitiveP(value)) {
+				throw new Error("Invalid theme export value");
+			}
+		}
+	}
+	return true;
+}
+
+function themeValidateFlag(object, variables, variablesPresentP, colors, exportObject, exportPresentP) {
+	try {
+		validateTuiThemeObject(object, variables, variablesPresentP, colors, exportObject, exportPresentP);
+		return 1;
+	} catch {
+		return 0;
+	}
+}
+
+function runCliInteractiveThemeValidate() {
+	const colors = goal20ThemeRequiredColors();
+	const emptyVars = {};
+	const ok = { name: "ok", colors };
+	const slash = { name: "a/b", colors };
+	const unknown = { name: "ok", colors, foo: 1 };
+	return {
+		tv_ok: themeValidateFlag(ok, emptyVars, false, colors, null, false),
+		tv_slash: themeValidateFlag(slash, emptyVars, false, colors, null, false),
+		tv_unknown: themeValidateFlag(unknown, emptyVars, false, colors, null, false),
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
@@ -8630,6 +8856,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveAuthType(),
 		...runCliInteractiveParseAutoTheme(),
 		...runCliInteractiveResolveTheme(),
+		...runCliInteractiveThemePrimitive(),
+		...runCliInteractiveThemeResolve(),
+		...runCliInteractiveThemeValidate(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -8649,6 +8878,15 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		resolve_theme: await collect("cli_interactive_controller.resolve_theme", () => {
 			return () => runCliInteractiveResolveTheme();
+		}),
+		theme_primitive: await collect("cli_interactive_controller.theme_primitive", () => {
+			return () => runCliInteractiveThemePrimitive();
+		}),
+		theme_resolve: await collect("cli_interactive_controller.theme_resolve", () => {
+			return () => runCliInteractiveThemeResolve();
+		}),
+		theme_validate: await collect("cli_interactive_controller.theme_validate", () => {
+			return () => runCliInteractiveThemeValidate();
 		}),
 		observed,
 	};
@@ -17179,6 +17417,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts parseAutoThemeSetting",
 			"cli_interactive_controller.resolve_theme":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts resolveThemeSetting",
+			"cli_interactive_controller.theme_primitive":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts ColorValueSchema",
+			"cli_interactive_controller.theme_resolve":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts theme color resolve",
+			"cli_interactive_controller.theme_validate":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts ThemeJsonSchema",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

@@ -183,6 +183,9 @@
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
+;;;; 523. cli_interactive_controller valid-tui-theme-primitive-p vs ColorValueSchema
+;;;; 524. cli_interactive_controller resolve-tui-theme-value vs theme color resolve
+;;;; 525. cli_interactive_controller validate-tui-theme-object vs ThemeJsonSchema
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -446,6 +449,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.theme_primitive" . 50)
+    ("cli_interactive_controller.theme_resolve" . 50)
+    ("cli_interactive_controller.theme_validate" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -9672,13 +9678,101 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defun theme-primitive-flag (value)
+  (if (cadr-cli::valid-tui-theme-primitive-p value) 1 0))
+
+(defun run-cli-interactive-theme-primitive ()
+  (list
+   (theme-primitive-flag "x")
+   (theme-primitive-flag 0)
+   (theme-primitive-flag 255)
+   (theme-primitive-flag 256)
+   (theme-primitive-flag -1)
+   (theme-primitive-flag nil)))
+
+(defun theme-resolve-error-p (thunk)
+  (handler-case
+      (progn (funcall thunk) 0)
+    (error () 1)))
+
+(defun run-cli-interactive-theme-resolve ()
+  (let ((variables (make-hash-table :test #'equal)))
+    (setf (gethash "accent" variables) 7)
+    (setf (gethash "loop" variables) "loop")
+    (list
+     (cadr-cli::resolve-tui-theme-value 12 variables)
+     (if (string= (cadr-cli::resolve-tui-theme-value "" variables) "") 1 0)
+     (if
+         (string=
+          (cadr-cli::resolve-tui-theme-value "#FF0000" variables)
+          "#ff0000")
+         1
+         0)
+     (cadr-cli::resolve-tui-theme-value "accent" variables)
+     (theme-resolve-error-p
+      (lambda ()
+        (cadr-cli::resolve-tui-theme-value "loop" variables)))
+     (theme-resolve-error-p
+      (lambda ()
+        (cadr-cli::resolve-tui-theme-value "missing" variables))))))
+
+(defparameter *goal20-tui-theme-required-color-names*
+  '("accent" "border" "borderAccent" "borderMuted" "success" "error"
+    "warning" "muted" "dim" "text" "thinkingText" "selectedBg"
+    "userMessageBg" "userMessageText" "customMessageBg" "customMessageText"
+    "customMessageLabel" "toolPendingBg" "toolSuccessBg" "toolErrorBg"
+    "toolTitle" "toolOutput" "mdHeading" "mdLink" "mdLinkUrl" "mdCode"
+    "mdCodeBlock" "mdCodeBlockBorder" "mdQuote" "mdQuoteBorder" "mdHr"
+    "mdListBullet" "toolDiffAdded" "toolDiffRemoved" "toolDiffContext"
+    "syntaxComment" "syntaxKeyword" "syntaxFunction" "syntaxVariable"
+    "syntaxString" "syntaxNumber" "syntaxType" "syntaxOperator"
+    "syntaxPunctuation" "thinkingOff" "thinkingMinimal" "thinkingLow"
+    "thinkingMedium" "thinkingHigh" "thinkingXhigh" "bashMode"))
+
+(defun goal20-theme-required-colors ()
+  (let ((colors (make-hash-table :test #'equal)))
+    (dolist (name *goal20-tui-theme-required-color-names*)
+      (setf (gethash name colors) 1))
+    colors))
+
+(defun theme-validate-flag (object variables variables-present-p
+                            colors export export-present-p)
+  (handler-case
+      (progn
+        (cadr-cli::validate-tui-theme-object
+         object variables variables-present-p
+         colors export export-present-p)
+        1)
+    (error () 0)))
+
+(defun run-cli-interactive-theme-validate ()
+  (let* ((colors (goal20-theme-required-colors))
+         (empty-vars (make-hash-table :test #'equal))
+         (ok (make-hash-table :test #'equal))
+         (slash (make-hash-table :test #'equal))
+         (unknown (make-hash-table :test #'equal)))
+    (setf (gethash "name" ok) "ok")
+    (setf (gethash "colors" ok) colors)
+    (setf (gethash "name" slash) "a/b")
+    (setf (gethash "colors" slash) colors)
+    (setf (gethash "name" unknown) "ok")
+    (setf (gethash "colors" unknown) colors)
+    (setf (gethash "foo" unknown) 1)
+    (list
+     (theme-validate-flag ok empty-vars nil colors nil nil)
+     (theme-validate-flag slash empty-vars nil colors nil nil)
+     (theme-validate-flag unknown empty-vars nil colors nil nil))))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (theme-primitive (run-cli-interactive-theme-primitive))
+        (theme-resolve (run-cli-interactive-theme-resolve))
+        (theme-validate (run-cli-interactive-theme-validate)))
     (json-object
      "observed"
      (json-object
@@ -9709,7 +9803,22 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "tp_str" (first theme-primitive)
+      "tp_int" (second theme-primitive)
+      "tp_255" (third theme-primitive)
+      "tp_256" (fourth theme-primitive)
+      "tp_neg" (fifth theme-primitive)
+      "tp_nil" (sixth theme-primitive)
+      "tr_int" (first theme-resolve)
+      "tr_empty" (second theme-resolve)
+      "tr_hex" (third theme-resolve)
+      "tr_var" (fourth theme-resolve)
+      "tr_cycle" (fifth theme-resolve)
+      "tr_miss" (sixth theme-resolve)
+      "tv_ok" (first theme-validate)
+      "tv_slash" (second theme-validate)
+      "tv_unknown" (third theme-validate))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -9739,7 +9848,22 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "theme_primitive"
+     (collect "cli_interactive_controller.theme_primitive"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-primitive))))
+     "theme_resolve"
+     (collect "cli_interactive_controller.theme_resolve"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-resolve))))
+     "theme_validate"
+     (collect "cli_interactive_controller.theme_validate"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-validate)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -16820,6 +16944,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.theme_primitive"
+      "src/cadr-cli/interactive/themes.lisp valid-tui-theme-primitive-p"
+      "cli_interactive_controller.theme_resolve"
+      "src/cadr-cli/interactive/themes.lisp resolve-tui-theme-value"
+      "cli_interactive_controller.theme_validate"
+      "src/cadr-cli/interactive/themes.lisp validate-tui-theme-object"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

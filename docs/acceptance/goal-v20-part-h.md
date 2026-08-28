@@ -4059,6 +4059,30 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 523 — `cli_interactive_controller` (theme_primitive)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_primitive` | `valid-tui-theme-primitive-p` (`src/cadr-cli/interactive/themes.lisp`) | `ColorValueSchema` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover of the `cli_interactive_controller` hole on `interactive/themes.lisp`. Timed work is string / 0..255 integer predicate — not file load, not watcher. Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil` are exact. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
+### Pair 524 — `cli_interactive_controller` (theme_resolve)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_resolve` | `resolve-tui-theme-value` (`src/cadr-cli/interactive/themes.lisp`) | theme color resolve (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pair 523 on the same hole. Timed work is integer/empty/hex/var/cycle/miss resolve — not `theme-object-overrides`, not `set-current-theme`. Observed `tr_int` / `tr_empty` / `tr_hex` / `tr_var` / `tr_cycle` / `tr_miss` are exact. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
+### Pair 525 — `cli_interactive_controller` (theme_validate)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_validate` | `validate-tui-theme-object` (`src/cadr-cli/interactive/themes.lisp`) | `ThemeJsonSchema` (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pairs 523–524 on the same hole. Timed work is ok / slash-name / unknown-property validate — not JSON parse, not watcher poll. Observed `tv_ok` / `tv_slash` / `tv_unknown` are exact. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
