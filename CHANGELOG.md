@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.armin_pixel`
+  (`armin-pixel-p` on `src/cadr-cli/interactive/components/armin.lisp`).
+  Observed `ap_blank` / `ap_ink` / `ap_out` exact. Pending first n=5 freeze.
+  Measure-only leftover (Pair 514). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.armin_cell`
+  (`armin-cell` on `src/cadr-cli/interactive/components/armin.lisp`).
+  Observed `ac_space` / `ac_lower` / `ac_upper` / `ac_full` exact.
+  Pending first n=5 freeze. Measure-only leftover (Pair 515).
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.armin_grid_height`
+  (`armin-grid-height` on `src/cadr-cli/interactive/components/armin.lisp`).
+  Observed `ag_h` exact. Pending first n=5 freeze. Measure-only leftover
+  (Pair 516). `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

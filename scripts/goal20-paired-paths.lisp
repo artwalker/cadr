@@ -183,6 +183,9 @@
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
+;;;; 514. cli_selectors armin-pixel-p vs ArminComponent pixel probe
+;;;; 515. cli_selectors armin-cell vs ArminComponent half-block cell
+;;;; 516. cli_selectors armin-grid-height vs ArminComponent grid rows
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -576,6 +579,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.armin_pixel" . 50)
+    ("cli_selectors.armin_cell" . 50)
+    ("cli_selectors.armin_grid_height" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13764,6 +13770,36 @@
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
 
+(defun armin-pixel-flag (x y)
+  (if (cadr-cli::armin-pixel-p x y) 1 0))
+
+(defun run-cli-selectors-armin-pixel ()
+  (list
+   (armin-pixel-flag 0 0)
+   (armin-pixel-flag 8 1)
+   (armin-pixel-flag 0 36)))
+
+(defun run-cli-selectors-armin-cell ()
+  (list
+   (string (cadr-cli::armin-cell 0 0))
+   (string (cadr-cli::armin-cell 8 0))
+   (string (cadr-cli::armin-cell 9 1))
+   (string (cadr-cli::armin-cell 11 2))))
+
+(defun run-cli-selectors-armin-grid-height ()
+  (list (cadr-cli::armin-grid-height)))
+
+(defun armin-observed-pairs (pixel cell height)
+  (list
+   "ap_blank" (nth 0 pixel)
+   "ap_ink" (nth 1 pixel)
+   "ap_out" (nth 2 pixel)
+   "ac_space" (nth 0 cell)
+   "ac_lower" (nth 1 cell)
+   "ac_upper" (nth 2 cell)
+   "ac_full" (nth 3 cell)
+   "ag_h" (nth 0 height)))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -14022,7 +14058,10 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (armin-pixel (run-cli-selectors-armin-pixel))
+        (armin-cell (run-cli-selectors-armin-cell))
+        (armin-grid-height (run-cli-selectors-armin-grid-height)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14794,9 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs)
+             (armin-observed-pairs
+              armin-pixel armin-cell armin-grid-height))))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15444,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "armin_pixel"
+     (collect "cli_selectors.armin_pixel"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-pixel))))
+     "armin_cell"
+     (collect "cli_selectors.armin_cell"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-cell))))
+     "armin_grid_height"
+     (collect "cli_selectors.armin_grid_height"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-armin-grid-height)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17044,6 +17100,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.armin_pixel"
+      "src/cadr-cli/interactive/components/armin.lisp armin-pixel-p"
+      "cli_selectors.armin_cell"
+      "src/cadr-cli/interactive/components/armin.lisp armin-cell"
+      "cli_selectors.armin_grid_height"
+      "src/cadr-cli/interactive/components/armin.lisp armin-grid-height"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

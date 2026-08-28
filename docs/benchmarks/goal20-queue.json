@@ -919,6 +919,51 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 514,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/components/armin.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.armin_pixel",
+   "branch": "cursor/armin-leftovers-514-516-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 514-516, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
+  },
+  {
+   "pair": 515,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/components/armin.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.armin_cell",
+   "branch": "cursor/armin-leftovers-514-516-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 514-516, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
+  },
+  {
+   "pair": 516,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/components/armin.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.armin_grid_height",
+   "branch": "cursor/armin-leftovers-514-516-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 514-516, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
   }
  ],
  "mergeQueue": []
