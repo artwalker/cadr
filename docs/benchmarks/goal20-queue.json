@@ -885,7 +885,12 @@
    "source": "src/cadr-cli/tool-manager.lisp",
    "measure": "measure-tool-manager",
    "metric": "tool_manager.release_asset",
-   "branch": "cursor/pair-409-411-tool-manager-leftovers-766a"
+   "branch": "cursor/pair-409-411-tool-manager-leftovers-766a",
+   "ratio": 1.465,
+   "cadrUs": 1.532,
+   "piUs": 1.046,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 410,
@@ -894,7 +899,12 @@
    "source": "src/cadr-cli/tool-manager.lisp",
    "measure": "measure-tool-manager",
    "metric": "tool_manager.find_binary",
-   "branch": "cursor/pair-409-411-tool-manager-leftovers-766a"
+   "branch": "cursor/pair-409-411-tool-manager-leftovers-766a",
+   "ratio": 1.568,
+   "cadrUs": 339.3,
+   "piUs": 216.5,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 411,
@@ -903,7 +913,12 @@
    "source": "src/cadr-cli/tool-manager.lisp",
    "measure": "measure-tool-manager",
    "metric": "tool_manager.quarantine_native",
-   "branch": "cursor/pair-409-411-tool-manager-leftovers-766a"
+   "branch": "cursor/pair-409-411-tool-manager-leftovers-766a",
+   "ratio": 0.961,
+   "cadrUs": 560.4,
+   "piUs": 583.0,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

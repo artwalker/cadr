@@ -4027,9 +4027,10 @@ Timed work is fd/rg GitHub release asset names for darwin-arm64, linux-x64,
 windows-x64, linux musl/gnu, and darwin-arm64 ripgrep — not download, not
 unpack, not `ensure-tool`. Observed `ra_fd_darwin_arm` / `ra_fd_linux_x64` /
 `ra_fd_win_x64` / `ra_rg_linux_x64` / `ra_rg_linux_arm` / `ra_rg_darwin_arm` /
-`ra_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
-help text; this metric did not fail). Same commit no optimize.
+`ra_n` are exact. First n=5 freeze **1.465×** (1.532 / 1.046 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1× booked.
+Same commit no optimize.
 
 ### Pair 410 — `tool_manager` (find_binary)
 
@@ -4040,9 +4041,10 @@ help text; this metric did not fail). Same commit no optimize.
 Leftover sibling of Pair 409 `release_asset` on the same `tool-manager.lisp`
 hole. Timed work is nested `fd`, root `rg`, and a missing name — not archive
 extract, not chmod. Observed `fb_nested` / `fb_root` / `fb_miss` / `fb_n` are
-exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`
-(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
-metric did not fail). Same commit no optimize.
+exact. First n=5 freeze **1.568×** (339.3 / 216.5 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1× booked.
+Same commit no optimize.
 
 ### Pair 411 — `tool_manager` (quarantine_native)
 
@@ -4055,9 +4057,9 @@ Leftover sibling of Pair 294 `cleanup_quarantine` on the same
 `node_modules` plus a no-op path with no `node_modules` ancestor — not
 `process.report` enumeration on cadr (`:loaded-paths`), not cleanup. Observed
 `qn_restored` / `qn_stashed` / `qn_noop` / `qn_n` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce` (script rc=1 only from known
-old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
-commit no optimize.
+**0.961×** (560.4 / 583.0 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). cadr leads. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

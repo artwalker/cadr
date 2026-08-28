@@ -13,21 +13,23 @@ tag/Release step.
   on `src/cadr-cli/tool-manager.lisp` vs baseline `TOOLS.getAssetName`).
   Observed `ra_fd_darwin_arm` / `ra_fd_linux_x64` / `ra_fd_win_x64` /
   `ra_rg_linux_x64` / `ra_rg_linux_arm` / `ra_rg_darwin_arm` / `ra_n` exact.
-  n=5 **RATIO_PLACEHOLDER** on host `cursor`, ceiling 8.0. Measure-only.
+  n=5 **1.465×** (1.532 / 1.046 µs) on host `cursor`, ceiling 8.0. Measure-only.
   Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not
-  this metric. `nextPairNum` left unchanged.
+  this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `tool_manager.find_binary` (`find-file-recursively`
   on `src/cadr-cli/tool-manager.lisp` vs baseline `findBinaryRecursively`).
   Observed `fb_nested` / `fb_root` / `fb_miss` / `fb_n` exact. n=5
-  **RATIO_PLACEHOLDER** on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
-  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
-  metric. `nextPairNum` left unchanged.
+  **1.568×** (339.3 / 216.5 µs) on host `cursor`, ceiling 8.0. Measure-only.
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not
+  this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `tool_manager.quarantine_native`
   (`quarantine-windows-native-dependencies` on `src/cadr-cli/tool-manager.lisp`
   vs baseline `quarantineWindowsNativeDependencies`). Observed `qn_restored` /
-  `qn_stashed` / `qn_noop` / `qn_n` exact. n=5 **RATIO_PLACEHOLDER** on host
-  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
-  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  `qn_stashed` / `qn_noop` / `qn_n` exact. n=5 **0.961×** (560.4 / 583.0 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
   unchanged.
 
 - Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
