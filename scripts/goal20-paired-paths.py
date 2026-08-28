@@ -132,7 +132,7 @@ METRICS = {
         "parse_query",
         "parse_authorization_input",
     ),
-    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
+    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery", "split_command", "handle_plain", "handle_unknown"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
@@ -490,6 +490,11 @@ RATIO_CEILINGS = {
     # 1.98x (1954.5 / 987.2 us). pi leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_extensions_install.extension_discovery": 8.0,
+    # Leftover trio on src/cadr-cli/extensions/commands.lisp (pairs 487-489).
+    # First-freeze headroom 8.0. Ratchet down only.
+    "cli_extensions_install.split_command": 8.0,
+    "cli_extensions_install.handle_plain": 8.0,
+    "cli_extensions_install.handle_unknown": 8.0,
     # Frozen from the first Friend-MachineD non-quick evals_harness
     # pair (samples=5): observed 0.88x (8.0 / 9.0 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -1950,6 +1955,20 @@ OBSERVED_EXACT = {
         "ed_glob",
         "ed_probe",
         "ed_miss",
+        "sc_reload",
+        "sc_reload_args",
+        "sc_foo",
+        "sc_foo_args",
+        "sc_plain",
+        "sc_plain_args",
+        "sc_blank",
+        "sc_blank_args",
+        "hp_hello",
+        "hp_ws",
+        "hp_blank",
+        "hu_nope",
+        "hu_miss",
+        "hu_n",
     ),
     "evals_harness": (
         "eval_sets",

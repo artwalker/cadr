@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_extensions_install.split_command`
+  (`split-extension-command` on
+  `src/cadr-cli/extensions/commands.lisp` vs `_tryExecuteExtensionCommand`
+  spaceIndex split). Observed `sc_reload` / `sc_foo` / `sc_plain` /
+  `sc_blank` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover
+  (Pair 487). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.handle_plain`
+  (`handle-extension-command` on
+  `src/cadr-cli/extensions/commands.lisp` vs non-slash miss). Observed
+  `hp_hello` / `hp_ws` / `hp_blank` exact. n=5 **RATIO_PLACEHOLDER**.
+  Measure-only leftover (Pair 488). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.handle_unknown`
+  (`handle-extension-command` unknown slash on
+  `src/cadr-cli/extensions/commands.lisp` vs `getCommand` miss). Observed
+  `hu_nope` / `hu_miss` / `hu_n` exact. n=5 **RATIO_PLACEHOLDER**.
+  Measure-only leftover (Pair 489). `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
