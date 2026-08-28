@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.user_message_make`
+  (`make-user-message-selector-state` on
+  `src/cadr-cli/interactive/selectors/fork.lisp`). Observed `umm_empty` /
+  `umm_one` / `umm_two` / `umm_hit` / `umm_miss` / `umm_copy` exact.
+  n=5 **0.530×** (0.760 / 1.434 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 526). cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.user_message_move`
+  (`user-message-selector-move` on
+  `src/cadr-cli/interactive/selectors/fork.lisp`). Observed `umv_empty` /
+  `umv_wrap_fwd` / `umv_back` / `umv_full` / `umv_three_back` /
+  `umv_three_fwd` exact. n=5 **0.526×** (0.826 / 1.572 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 527). cadr leads.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.user_message_selection`
+  (`user-message-selector-selection` on
+  `src/cadr-cli/interactive/selectors/fork.lisp`). Observed `ums_empty` /
+  `ums_last` / `ums_hit` / `ums_wrap` / `ums_miss` / `ums_one` exact.
+  n=5 **0.553×** (0.862 / 1.559 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 528). cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.theme_primitive`
   (`valid-tui-theme-primitive-p` on `src/cadr-cli/interactive/themes.lisp`).
   Observed `tp_str` / `tp_int` / `tp_255` / `tp_256` / `tp_neg` / `tp_nil` exact.

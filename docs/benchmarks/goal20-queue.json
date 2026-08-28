@@ -3518,6 +3518,51 @@
    "piUs": 25.698,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 526,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/fork.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.user_message_make",
+   "branch": "cursor/fork-leftovers-526-528-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 526-528, not sequential nextPairNum)",
+   "ratio": 0.53,
+   "cadrUs": 0.76,
+   "piUs": 1.434,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 527,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/fork.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.user_message_move",
+   "branch": "cursor/fork-leftovers-526-528-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 526-528, not sequential nextPairNum)",
+   "ratio": 0.526,
+   "cadrUs": 0.826,
+   "piUs": 1.572,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 528,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/fork.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.user_message_selection",
+   "branch": "cursor/fork-leftovers-526-528-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 526-528, not sequential nextPairNum)",
+   "ratio": 0.553,
+   "cadrUs": 0.862,
+   "piUs": 1.559,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

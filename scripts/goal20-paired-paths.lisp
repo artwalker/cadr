@@ -590,6 +590,9 @@
     ("cli_selectors.input_line" . 50)
     ("cli_selectors.keybinding_text" . 50)
     ("cli_selectors.keybinding_hint" . 50)
+    ("cli_selectors.user_message_make" . 50)
+    ("cli_selectors.user_message_move" . 50)
+    ("cli_selectors.user_message_selection" . 50)
     ("cli_selectors.session_format_age" . 50)
     ("cli_selectors.session_record_label" . 50)
     ("cli_selectors.session_shorten_path" . 50)
@@ -14424,6 +14427,146 @@
      (cadr-cli::selector-keybinding-hint custom "tui.select.confirm" "save")
      (cadr-cli::selector-keybinding-hint custom "tui.select.cancel" "cancel"))))
 
+(defun goal20-user-message-items (&rest values)
+  (mapcar
+   (lambda (value)
+     (cadr-tui:make-select-item :label value :value value))
+   values))
+
+(defun user-message-selector-selection-text (state)
+  (or (cadr-cli::user-message-selector-selection state) ""))
+
+(defun run-cli-selectors-user-message-make ()
+  (let* ((one (goal20-user-message-items "a"))
+         (two (goal20-user-message-items "a" "b"))
+         (three (goal20-user-message-items "a" "b" "c"))
+         (empty-state
+           (cadr-cli::make-user-message-selector-state
+            :items nil :keybindings :bench))
+         (one-state
+           (cadr-cli::make-user-message-selector-state
+            :items one :keybindings :bench))
+         (two-state
+           (cadr-cli::make-user-message-selector-state
+            :items two :keybindings :bench))
+         (hit-state
+           (cadr-cli::make-user-message-selector-state
+            :items three
+            :initial-selected-value "a"
+            :keybindings :bench))
+         (miss-state
+           (cadr-cli::make-user-message-selector-state
+            :items two
+            :initial-selected-value "z"
+            :keybindings :bench))
+         (orig (goal20-user-message-items "a"))
+         (copy-state
+           (cadr-cli::make-user-message-selector-state
+            :items orig :keybindings :bench)))
+    (setf (cdr orig) (goal20-user-message-items "x"))
+    (list
+     (cadr-cli::user-message-selector-state-selected empty-state)
+     (cadr-cli::user-message-selector-state-selected one-state)
+     (cadr-cli::user-message-selector-state-selected two-state)
+     (cadr-cli::user-message-selector-state-selected hit-state)
+     (cadr-cli::user-message-selector-state-selected miss-state)
+     (length
+      (cadr-cli::user-message-selector-state-items copy-state)))))
+
+(defun run-cli-selectors-user-message-move ()
+  (let ((empty
+          (cadr-cli::make-user-message-selector-state
+           :items nil :keybindings :bench))
+        (two-fwd
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
+        (two-back
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
+        (two-full
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
+        (three-back
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b" "c")
+           :keybindings :bench))
+        (three-fwd
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b" "c")
+           :keybindings :bench)))
+    (cadr-cli::user-message-selector-move empty 1)
+    (cadr-cli::user-message-selector-move two-fwd 1)
+    (cadr-cli::user-message-selector-move two-back -1)
+    (cadr-cli::user-message-selector-move two-full 2)
+    (cadr-cli::user-message-selector-move three-back -1)
+    (cadr-cli::user-message-selector-move three-fwd 1)
+    (list
+     (cadr-cli::user-message-selector-state-selected empty)
+     (cadr-cli::user-message-selector-state-selected two-fwd)
+     (cadr-cli::user-message-selector-state-selected two-back)
+     (cadr-cli::user-message-selector-state-selected two-full)
+     (cadr-cli::user-message-selector-state-selected three-back)
+     (cadr-cli::user-message-selector-state-selected three-fwd))))
+
+(defun run-cli-selectors-user-message-selection ()
+  (let ((empty
+          (cadr-cli::make-user-message-selector-state
+           :items nil :keybindings :bench))
+        (two
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
+        (hit
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b" "c")
+           :initial-selected-value "a"
+           :keybindings :bench))
+        (moved
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b")
+           :keybindings :bench))
+        (miss
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "a" "b")
+           :initial-selected-value "z"
+           :keybindings :bench))
+        (one
+          (cadr-cli::make-user-message-selector-state
+           :items (goal20-user-message-items "only")
+           :keybindings :bench)))
+    (cadr-cli::user-message-selector-move moved 1)
+    (list
+     (user-message-selector-selection-text empty)
+     (user-message-selector-selection-text two)
+     (user-message-selector-selection-text hit)
+     (user-message-selector-selection-text moved)
+     (user-message-selector-selection-text miss)
+     (user-message-selector-selection-text one))))
+
+(defun user-message-selector-observed-pairs (make move selection)
+  (list
+   "umm_empty" (nth 0 make)
+   "umm_one" (nth 1 make)
+   "umm_two" (nth 2 make)
+   "umm_hit" (nth 3 make)
+   "umm_miss" (nth 4 make)
+   "umm_copy" (nth 5 make)
+   "umv_empty" (nth 0 move)
+   "umv_wrap_fwd" (nth 1 move)
+   "umv_back" (nth 2 move)
+   "umv_full" (nth 3 move)
+   "umv_three_back" (nth 4 move)
+   "umv_three_fwd" (nth 5 move)
+   "ums_empty" (nth 0 selection)
+   "ums_last" (nth 1 selection)
+   "ums_hit" (nth 2 selection)
+   "ums_wrap" (nth 3 selection)
+   "ums_miss" (nth 4 selection)
+   "ums_one" (nth 5 selection)))
+
 (defparameter *session-format-age-now* 1700000000000)
 
 (defun run-cli-selectors-session-format-age ()
@@ -18508,7 +18651,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (user-message-make
+          (run-cli-selectors-user-message-make))
+        (user-message-move
+          (run-cli-selectors-user-message-move))
+        (user-message-selection
+          (run-cli-selectors-user-message-selection)))
     (json-object
      "observed"
      (apply #'json-object
@@ -19241,7 +19390,11 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs)
+             (user-message-selector-observed-pairs
+              user-message-make
+              user-message-move
+              user-message-selection)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -19332,6 +19485,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-keybinding-hint))))
+     "user_message_make"
+     (collect "cli_selectors.user_message_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-make))))
+     "user_message_move"
+     (collect "cli_selectors.user_message_move"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-move))))
+     "user_message_selection"
+     (collect "cli_selectors.user_message_selection"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-user-message-selection))))
      "session_format_age"
      (collect "cli_selectors.session_format_age"
               (lambda ()
@@ -22454,6 +22622,12 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-text"
       "cli_selectors.keybinding_hint"
       "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-hint"
+      "cli_selectors.user_message_make"
+      "src/cadr-cli/interactive/selectors/fork.lisp make-user-message-selector-state"
+      "cli_selectors.user_message_move"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-move"
+      "cli_selectors.user_message_selection"
+      "src/cadr-cli/interactive/selectors/fork.lisp user-message-selector-selection"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
