@@ -105,7 +105,7 @@ METRICS = {
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
-    "find_tool": ("pattern_match", "find_files", "make_tool"),
+    "find_tool": ("pattern_match", "find_files", "make_tool", "glob_regex", "glob_special", "gitignore_regex"),
     "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
     "tool_manager": ("get_tool_path", "ensure_tool", "cleanup_quarantine"),
@@ -336,6 +336,11 @@ RATIO_CEILINGS = {
     "find_tool.pattern_match": 8.0,
     "find_tool.find_files": 8.0,
     "find_tool.make_tool": 8.0,
+    # find_tool leftover trio on glob.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only.
+    "find_tool.glob_regex": 8.0,
+    "find_tool.glob_special": 8.0,
+    "find_tool.gitignore_regex": 8.0,
     # write_tool leftover trio (samples=5): first-freeze headroom.
     # Ratchet down only.
     "write_tool.ensure_parent": 8.0,
@@ -1717,6 +1722,17 @@ OBSERVED_EXACT = {
         "fmt_desc",
         "fmt_req",
         "fmt_n",
+        "gr_star",
+        "gr_glob",
+        "gr_q",
+        "gr_dot",
+        "gs_dot",
+        "gs_star",
+        "gs_pipe",
+        "gs_bs",
+        "gi_plain",
+        "gi_anch",
+        "gi_dir",
     ),
     "write_tool": (
         "ep_nested",

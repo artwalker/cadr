@@ -177,6 +177,9 @@ const REPETITIONS = {
 	"find_tool.pattern_match": 50,
 	"find_tool.find_files": 50,
 	"find_tool.make_tool": 50,
+	"find_tool.glob_regex": 50,
+	"find_tool.glob_special": 50,
+	"find_tool.gitignore_regex": 50,
 	"write_tool.ensure_parent": 50,
 	"write_tool.write_utf8": 50,
 	"write_tool.make_tool": 50,
@@ -3148,11 +3151,87 @@ function runFindMakeTool() {
 	};
 }
 
+function regexSpecialP(character) {
+	return ".^$+()[]{}|\\".includes(character);
+}
+
+function globRegexSource(pattern) {
+	let source = "^";
+	for (let index = 0; index < pattern.length; index += 1) {
+		const character = pattern[index];
+		if (character === "*") {
+			if (index + 1 < pattern.length && pattern[index + 1] === "*") {
+				index += 1;
+				if (index + 1 < pattern.length && pattern[index + 1] === "/") {
+					index += 1;
+					source += "(?:.*/)?";
+				} else {
+					source += ".*";
+				}
+			} else {
+				source += "[^/]*";
+			}
+		} else if (character === "?") {
+			source += "[^/]";
+		} else if (regexSpecialP(character)) {
+			source += `\\${character}`;
+		} else {
+			source += character;
+		}
+	}
+	return `${source}$`;
+}
+
+function globRegexBody(pattern) {
+	const source = globRegexSource(pattern);
+	return source.slice(1, source.length - 1);
+}
+
+function gitignoreRegexSource(pattern, anchoredP, directoryOnlyP) {
+	const body = globRegexBody(pattern);
+	if (anchoredP) {
+		return `^${body}${directoryOnlyP ? "/" : "(?:$|/)" }`;
+	}
+	if (directoryOnlyP) {
+		return `(?:^|/)${body}/`;
+	}
+	return `(?:^|/)${body}(?:$|/)`;
+}
+
+function runFindGlobRegex() {
+	return {
+		gr_star: globRegexSource("*") === "^[^/]*$" ? 1 : 0,
+		gr_glob: globRegexSource("**") === "^.*$" ? 1 : 0,
+		gr_q: globRegexSource("?") === "^[^/]$" ? 1 : 0,
+		gr_dot: globRegexSource(".a") === "^\\.a$" ? 1 : 0,
+	};
+}
+
+function runFindGlobSpecial() {
+	return {
+		gs_dot: regexSpecialP(".") ? 1 : 0,
+		gs_star: regexSpecialP("*") ? 0 : 1,
+		gs_pipe: regexSpecialP("|") ? 1 : 0,
+		gs_bs: regexSpecialP("\\") ? 1 : 0,
+	};
+}
+
+function runFindGitignoreRegex() {
+	return {
+		gi_plain: gitignoreRegexSource("foo", false, false) === "(?:^|/)foo(?:$|/)" ? 1 : 0,
+		gi_anch: gitignoreRegexSource("foo", true, true) === "^foo/" ? 1 : 0,
+		gi_dir: gitignoreRegexSource("foo", true, false) === "^foo(?:$|/)" ? 1 : 0,
+	};
+}
+
 async function measureFindTool() {
 	ensureFindToolFixture();
 	const patternObserved = runFindPatternMatch();
 	const filesObserved = runFindFiles();
 	const makeObserved = runFindMakeTool();
+	const globRegexObserved = runFindGlobRegex();
+	const globSpecialObserved = runFindGlobSpecial();
+	const gitignoreObserved = runFindGitignoreRegex();
 	return {
 		pattern_match: await collect("find_tool.pattern_match", () => {
 			return () => runFindPatternMatch();
@@ -3163,10 +3242,22 @@ async function measureFindTool() {
 		make_tool: await collect("find_tool.make_tool", () => {
 			return () => runFindMakeTool();
 		}),
+		glob_regex: await collect("find_tool.glob_regex", () => {
+			return () => runFindGlobRegex();
+		}),
+		glob_special: await collect("find_tool.glob_special", () => {
+			return () => runFindGlobSpecial();
+		}),
+		gitignore_regex: await collect("find_tool.gitignore_regex", () => {
+			return () => runFindGitignoreRegex();
+		}),
 		observed: {
 			...patternObserved,
 			...filesObserved,
 			...makeObserved,
+			...globRegexObserved,
+			...globSpecialObserved,
+			...gitignoreObserved,
 		},
 	};
 }
@@ -16952,6 +17043,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts execute output assembly + relativizeFindResultPath (empty copy / glob results)",
 			"find_tool.make_tool":
 				"packages/coding-agent/src/core/tools/find.ts createFindToolDefinition",
+			"find_tool.glob_regex":
+				"packages/coding-agent/src/core/tools/find.ts glob pattern compile (cadr glob-regex-source)",
+			"find_tool.glob_special":
+				"packages/coding-agent/src/core/tools/find.ts glob regex metacharacters (cadr regex-special-p)",
+			"find_tool.gitignore_regex":
+				"packages/coding-agent/src/core/tools/find.ts gitignore glob compile (cadr gitignore-regex-source)",
 			"write_tool.ensure_parent":
 				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.mkdir (fs.mkdir recursive)",
 			"write_tool.write_utf8":

@@ -919,6 +919,36 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 448,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.glob_regex",
+   "branch": "cursor/glob-leftovers-448-450-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 448-450, not sequential nextPairNum)"
+  },
+  {
+   "pair": 449,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.glob_special",
+   "branch": "cursor/glob-leftovers-448-450-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 448-450, not sequential nextPairNum)"
+  },
+  {
+   "pair": 450,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/tools/glob.lisp",
+   "measure": "measure-find-tool",
+   "metric": "find_tool.gitignore_regex",
+   "branch": "cursor/glob-leftovers-448-450-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 448-450, not sequential nextPairNum)"
   }
  ],
  "mergeQueue": []
