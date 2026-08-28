@@ -101,7 +101,7 @@ METRICS = {
     "cli_settings": ("create", "reload", "enabled_models", "block_images"),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
-    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
+    "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket", "waitqueue", "registry", "state_p"),
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
     "output_accumulator": ("append", "snapshot", "finish"),
@@ -306,6 +306,11 @@ RATIO_CEILINGS = {
     # file_mutation_queue.serving_ticket pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "file_mutation_queue.serving_ticket": 8.0,
+    # file_mutation_queue leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "file_mutation_queue.waitqueue": 8.0,
+    "file_mutation_queue.registry": 8.0,
+    "file_mutation_queue.state_p": 8.0,
     # harness_events.emit pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.emit": 8.0,
@@ -1628,6 +1633,21 @@ OBSERVED_EXACT = {
         "fmqv_missing",
         "fmqv_alias",
         "fmqv_n",
+        "fmqb_present",
+        "fmqb_shared",
+        "fmqb_other",
+        "fmqb_repeat",
+        "fmqb_n",
+        "fmqg_hit",
+        "fmqg_alias",
+        "fmqg_miss",
+        "fmqg_repeat",
+        "fmqg_n",
+        "fmqc_target",
+        "fmqc_other",
+        "fmqc_list",
+        "fmqc_null",
+        "fmqc_n",
     ),
     "harness_events": (
         "he_direct",

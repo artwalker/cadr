@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `file_mutation_queue.waitqueue` (`file-mutation-queue-state-waitqueue`
+  on `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue `state.current`
+  Promise). Observed `fmqb_present` / `fmqb_shared` / `fmqb_other` /
+  `fmqb_repeat` / `fmqb_n` exact. Measure-only leftover (Pair 328). n=5 freeze
+  pending `--only-enforce`. No `src/` perf.
+- Goal 20 P.13: pair `file_mutation_queue.registry` (`*file-mutation-queues*`
+  membership on `src/cadr-agent/file-mutation-queue.lisp` vs baseline
+  `fileMutationQueues.has`). Observed `fmqg_hit` / `fmqg_alias` / `fmqg_miss` /
+  `fmqg_repeat` / `fmqg_n` exact. Measure-only leftover (Pair 329). n=5 freeze
+  pending `--only-enforce`. No `src/` perf.
+- Goal 20 P.13: pair `file_mutation_queue.state_p` (`file-mutation-queue-state-p`
+  on `src/cadr-agent/file-mutation-queue.lisp` vs baseline queue-state object
+  predicate). Observed `fmqc_target` / `fmqc_other` / `fmqc_list` / `fmqc_null` /
+  `fmqc_n` exact. Measure-only leftover (Pair 330). n=5 freeze pending
+  `--only-enforce`. No `src/` perf.
+
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.
