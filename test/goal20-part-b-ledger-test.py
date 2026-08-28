@@ -2106,6 +2106,45 @@ class TestPairedPathRecord(unittest.TestCase):
             "cli_selectors.scoped_models_selector_provider_count",
             paired.RATIO_CEILINGS,
         )
+        self.assertIn(
+            "cli_selectors.scoped_models_selector_refresh_items",
+            RECORD.METRIC_KEYS,
+        )
+        self.assertIn(
+            "scoped_models_selector_refresh_items",
+            paired.METRICS["cli_selectors"],
+        )
+        self.assertIn(
+            "cli_selectors.scoped_models_selector_refresh_items",
+            paired.RATIO_CEILINGS,
+        )
+        self.assertIn(
+            "cli_selectors.scoped_models_selector_clamp_selected",
+            RECORD.METRIC_KEYS,
+        )
+        self.assertIn(
+            "scoped_models_selector_clamp_selected",
+            paired.METRICS["cli_selectors"],
+        )
+        self.assertIn(
+            "cli_selectors.scoped_models_selector_clamp_selected",
+            paired.RATIO_CEILINGS,
+        )
+        self.assertIn(
+            "cli_selectors.scoped_models_selector_mark_changed",
+            RECORD.METRIC_KEYS,
+        )
+        self.assertIn(
+            "scoped_models_selector_mark_changed",
+            paired.METRICS["cli_selectors"],
+        )
+        self.assertIn(
+            "cli_selectors.scoped_models_selector_mark_changed",
+            paired.RATIO_CEILINGS,
+        )
+        self.assertIn("smref_all", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("smcl_high", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("smmc_all", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])

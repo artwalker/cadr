@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.scoped_models_selector_refresh_items": 50,
+	"cli_selectors.scoped_models_selector_clamp_selected": 50,
+	"cli_selectors.scoped_models_selector_mark_changed": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,114 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function leftoverScopedModelsRefreshItemsEncoded(allModels, enabledIds, query) {
+	const visible = scopedModelsFilterItems(allModels, enabledIds, query);
+	return visible.map((item) => item.fullId).join(",");
+}
+
+function runCliSelectorsScopedModelsSelectorRefreshItems() {
+	const models = makeModelSelectorTestModels();
+	const partial = ["google/gemini-2.5-pro", "openai/gpt-4o"];
+	return {
+		smref_all: leftoverScopedModelsRefreshItemsEncoded(models, null, ""),
+		smref_gpt: leftoverScopedModelsRefreshItemsEncoded(models, null, "gpt"),
+		smref_miss: leftoverScopedModelsRefreshItemsEncoded(models, null, "nope"),
+		smref_empty: leftoverScopedModelsRefreshItemsEncoded([], null, ""),
+		smref_partial: leftoverScopedModelsRefreshItemsEncoded(models, partial, ""),
+	};
+}
+
+function leftoverScopedModelsClampSelectedEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	query,
+) {
+	const state = {
+		allModels,
+		enabledIds,
+		query,
+		selected,
+		filteredItems: [],
+	};
+	scopedModelsSelectorClampSelected(state);
+	return `${state.selected}|${state.filteredItems.length}`;
+}
+
+function runCliSelectorsScopedModelsSelectorClampSelected() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smcl_high: leftoverScopedModelsClampSelectedEncoded(models, null, 99, ""),
+		smcl_zero: leftoverScopedModelsClampSelectedEncoded(models, null, 0, ""),
+		smcl_miss: leftoverScopedModelsClampSelectedEncoded(models, null, 99, "nope"),
+		smcl_gpt: leftoverScopedModelsClampSelectedEncoded(models, null, 99, "gpt"),
+		smcl_empty: leftoverScopedModelsClampSelectedEncoded([], null, 5, ""),
+	};
+}
+
+function leftoverScopedModelsEnabledText(enabledIds) {
+	if (enabledIds === null) {
+		return "all";
+	}
+	return enabledIds.join(",");
+}
+
+function leftoverScopedModelsMarkChangedEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	query,
+	callbackP,
+) {
+	let count = 0;
+	const state = {
+		allModels,
+		enabledIds,
+		query,
+		selected,
+		filteredItems: [],
+		dirty: false,
+		onChange: callbackP
+			? () => {
+					count += 1;
+				}
+			: undefined,
+	};
+	state.dirty = true;
+	state.items = scopedModelsBuildItems(allModels, enabledIds);
+	state.filteredItems = scopedModelsFilterItems(allModels, enabledIds, query);
+	scopedModelsSelectorClampSelected(state);
+	if (typeof state.onChange === "function") {
+		state.onChange(state.enabledIds);
+	}
+	const dirty = state.dirty ? "1" : "0";
+	return `${dirty}|${state.selected}|${leftoverScopedModelsEnabledText(state.enabledIds)}|${count}`;
+}
+
+function runCliSelectorsScopedModelsSelectorMarkChanged() {
+	const models = makeModelSelectorTestModels();
+	const partial = ["google/gemini-2.5-pro", "openai/gpt-4o"];
+	return {
+		smmc_all: leftoverScopedModelsMarkChangedEncoded(models, null, 99, "", true),
+		smmc_partial: leftoverScopedModelsMarkChangedEncoded(
+			models,
+			partial,
+			99,
+			"",
+			true,
+		),
+		smmc_empty: leftoverScopedModelsMarkChangedEncoded(models, [], 99, "", true),
+		smmc_nocb: leftoverScopedModelsMarkChangedEncoded(models, null, 99, "", false),
+		smmc_filter: leftoverScopedModelsMarkChangedEncoded(
+			models,
+			null,
+			99,
+			"gpt",
+			true,
+		),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +15008,12 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const scopedModelsSelectorRefreshItemsResults =
+		runCliSelectorsScopedModelsSelectorRefreshItems();
+	const scopedModelsSelectorClampSelectedResults =
+		runCliSelectorsScopedModelsSelectorClampSelected();
+	const scopedModelsSelectorMarkChangedResults =
+		runCliSelectorsScopedModelsSelectorMarkChanged();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15319,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...scopedModelsSelectorRefreshItemsResults,
+		...scopedModelsSelectorClampSelectedResults,
+		...scopedModelsSelectorMarkChangedResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15659,6 +15779,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		scoped_models_selector_refresh_items: await collect(
+			"cli_selectors.scoped_models_selector_refresh_items",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorRefreshItems();
+			},
+		),
+		scoped_models_selector_clamp_selected: await collect(
+			"cli_selectors.scoped_models_selector_clamp_selected",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorClampSelected();
+			},
+		),
+		scoped_models_selector_mark_changed: await collect(
+			"cli_selectors.scoped_models_selector_mark_changed",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorMarkChanged();
 			},
 		),
 		observed,
@@ -17393,6 +17531,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.scoped_models_selector_refresh_items":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts refresh items",
+			"cli_selectors.scoped_models_selector_clamp_selected":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts clamp selected",
+			"cli_selectors.scoped_models_selector_mark_changed":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts mark changed",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

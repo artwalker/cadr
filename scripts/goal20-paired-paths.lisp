@@ -576,6 +576,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.scoped_models_selector_refresh_items" . 50)
+    ("cli_selectors.scoped_models_selector_clamp_selected" . 50)
+    ("cli_selectors.scoped_models_selector_mark_changed" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13764,6 +13767,145 @@
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
 
+(defun make-scoped-models-filter-bench-state
+    (models enabled-ids &key (query ""))
+  (cadr-cli::%make-scoped-models-selector-state
+   :all-models (copy-list models)
+   :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+   :enabled-ids
+   (cadr-cli::scoped-models-copy-enabled enabled-ids)
+   :query (or query "")))
+
+(defun encode-scoped-model-item-ids (items)
+  (format
+   nil
+   "~{~a~^,~}"
+   (mapcar
+    (lambda (item)
+      (let ((id (getf item :id)))
+        (cond
+          ((stringp id) id)
+          ((null id) "")
+          (t (coerce id 'string)))))
+    items)))
+
+(defun encode-scoped-models-enabled (enabled)
+  (cond
+    ((eq enabled :all) "all")
+    ((null enabled) "")
+    (t (format nil "~{~a~^,~}" enabled))))
+
+(defun encode-scoped-models-selector-refresh-items
+    (models enabled-ids query)
+  (let ((state
+          (make-scoped-models-filter-bench-state
+           models enabled-ids :query query)))
+    (cadr-cli::scoped-models-selector-refresh-items state)
+    (encode-scoped-model-item-ids
+     (cadr-cli::scoped-models-selector-state-visible-items
+      state))))
+
+(defun run-cli-selectors-scoped-models-selector-refresh-items ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-refresh-items models :all "")
+     (encode-scoped-models-selector-refresh-items models :all "gpt")
+     (encode-scoped-models-selector-refresh-items models :all "nope")
+     (encode-scoped-models-selector-refresh-items nil :all "")
+     (encode-scoped-models-selector-refresh-items
+      models partial ""))))
+
+(defun encode-scoped-models-selector-clamp-selected
+    (models enabled-ids selected query)
+  (let ((state
+          (make-scoped-models-filter-bench-state
+           models enabled-ids :query query)))
+    (setf
+     (cadr-cli::scoped-models-selector-state-selected state)
+     selected)
+    (cadr-cli::scoped-models-selector-clamp-selected state)
+    (format
+     nil
+     "~D|~D"
+     (cadr-cli::scoped-models-selector-state-selected state)
+     (length
+      (cadr-cli::scoped-models-selector-state-visible-items
+       state)))))
+
+(defun run-cli-selectors-scoped-models-selector-clamp-selected ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (encode-scoped-models-selector-clamp-selected models :all 99 "")
+     (encode-scoped-models-selector-clamp-selected models :all 0 "")
+     (encode-scoped-models-selector-clamp-selected
+      models :all 99 "nope")
+     (encode-scoped-models-selector-clamp-selected
+      models :all 99 "gpt")
+     (encode-scoped-models-selector-clamp-selected nil :all 5 ""))))
+
+(defun encode-scoped-models-selector-mark-changed
+    (models enabled-ids selected query &key callback-p)
+  (let ((count 0)
+        (state
+          (make-scoped-models-filter-bench-state
+           models enabled-ids :query query)))
+    (setf
+     (cadr-cli::scoped-models-selector-state-selected state)
+     selected)
+    (when callback-p
+      (setf
+       (cadr-cli::scoped-models-selector-state-change-callback
+        state)
+       (lambda (enabled)
+         (declare (ignore enabled))
+         (incf count))))
+    (cadr-cli::scoped-models-selector-mark-changed state)
+    (format
+     nil
+     "~A|~D|~A|~D"
+     (if (cadr-cli::scoped-models-selector-state-dirty-p state)
+         "1"
+         "0")
+     (cadr-cli::scoped-models-selector-state-selected state)
+     (encode-scoped-models-enabled
+      (cadr-cli::scoped-models-selector-state-enabled-ids state))
+     count)))
+
+(defun run-cli-selectors-scoped-models-selector-mark-changed ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-mark-changed
+      models :all 99 "" :callback-p t)
+     (encode-scoped-models-selector-mark-changed
+      models partial 99 "" :callback-p t)
+     (encode-scoped-models-selector-mark-changed
+      models '() 99 "" :callback-p t)
+     (encode-scoped-models-selector-mark-changed
+      models :all 99 "" :callback-p nil)
+     (encode-scoped-models-selector-mark-changed
+      models :all 99 "gpt" :callback-p t))))
+
+(defun scoped-models-refresh-clamp-mark-observed-pairs
+    (refresh-items clamp-selected mark-changed)
+  (list
+   "smref_all" (nth 0 refresh-items)
+   "smref_gpt" (nth 1 refresh-items)
+   "smref_miss" (nth 2 refresh-items)
+   "smref_empty" (nth 3 refresh-items)
+   "smref_partial" (nth 4 refresh-items)
+   "smcl_high" (nth 0 clamp-selected)
+   "smcl_zero" (nth 1 clamp-selected)
+   "smcl_miss" (nth 2 clamp-selected)
+   "smcl_gpt" (nth 3 clamp-selected)
+   "smcl_empty" (nth 4 clamp-selected)
+   "smmc_all" (nth 0 mark-changed)
+   "smmc_partial" (nth 1 mark-changed)
+   "smmc_empty" (nth 2 mark-changed)
+   "smmc_nocb" (nth 3 mark-changed)
+   "smmc_filter" (nth 4 mark-changed)))
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -14022,7 +14164,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (refresh-items-obs
+          (run-cli-selectors-scoped-models-selector-refresh-items))
+        (clamp-selected-obs
+          (run-cli-selectors-scoped-models-selector-clamp-selected))
+        (mark-changed-obs
+          (run-cli-selectors-scoped-models-selector-mark-changed)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14903,11 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs)
+             (scoped-models-refresh-clamp-mark-observed-pairs
+              refresh-items-obs
+              clamp-selected-obs
+              mark-changed-obs)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15555,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "scoped_models_selector_refresh_items"
+     (collect "cli_selectors.scoped_models_selector_refresh_items"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-refresh-items))))
+     "scoped_models_selector_clamp_selected"
+     (collect "cli_selectors.scoped_models_selector_clamp_selected"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-clamp-selected))))
+     "scoped_models_selector_mark_changed"
+     (collect "cli_selectors.scoped_models_selector_mark_changed"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-mark-changed)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
