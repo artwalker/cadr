@@ -464,6 +464,9 @@
     ("cli_selectors.input_line" . 50)
     ("cli_selectors.keybinding_text" . 50)
     ("cli_selectors.keybinding_hint" . 50)
+    ("cli_selectors.thinking_level_label" . 50)
+    ("cli_selectors.thinking_level_search_text" . 50)
+    ("cli_selectors.thinking_selector_set_query" . 50)
     ("cli_selectors.session_format_age" . 50)
     ("cli_selectors.session_record_label" . 50)
     ("cli_selectors.session_shorten_path" . 50)
@@ -9973,6 +9976,88 @@
      (cadr-cli::selector-keybinding-hint custom "tui.select.confirm" "save")
      (cadr-cli::selector-keybinding-hint custom "tui.select.cancel" "cancel"))))
 
+(defun thinking-level-name (level)
+  (if level
+      (string-downcase (symbol-name level))
+      ""))
+
+(defun run-cli-selectors-thinking-level-label ()
+  (list
+   (cadr-cli::thinking-level-label :off)
+   (cadr-cli::thinking-level-label :minimal)
+   (cadr-cli::thinking-level-label :xhigh)
+   (cadr-cli::thinking-level-label :max)
+   (cadr-cli::thinking-level-label :low)
+   (cadr-cli::thinking-level-label :bogus)))
+
+(defun run-cli-selectors-thinking-level-search-text ()
+  (list
+   (cadr-cli::thinking-level-search-text :off)
+   (cadr-cli::thinking-level-search-text :minimal)
+   (cadr-cli::thinking-level-search-text :high)
+   (cadr-cli::thinking-level-search-text :xhigh)
+   (cadr-cli::thinking-level-search-text :max)
+   (cadr-cli::thinking-level-search-text :bogus)))
+
+(defun thinking-selector-set-query-encoded (state query)
+  (cadr-cli::thinking-selector-set-query state query)
+  (format
+   nil "~A|~A|~A"
+   (thinking-level-name
+    (cadr-cli::thinking-selector-selected-level state))
+   (cadr-cli::thinking-selector-state-filtered-count state)
+   (length (cadr-cli::thinking-selector-state-query state))))
+
+(defun run-cli-selectors-thinking-selector-set-query ()
+  (let ((levels (list :off :low :high)))
+    (list
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      "")
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      "off")
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      "high")
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      "zzzzz")
+     (thinking-selector-set-query-encoded
+      (cadr-cli::make-thinking-selector-state
+       :levels levels :current-level :high :keybindings :bench)
+      nil)
+     (let ((state
+             (cadr-cli::make-thinking-selector-state
+              :levels levels :current-level :high :keybindings :bench)))
+       (cadr-cli::thinking-selector-set-query state "off")
+       (thinking-selector-set-query-encoded state "")))))
+
+(defun thinking-selector-observed-pairs (label search set-query)
+  (list
+   "tll_off" (nth 0 label)
+   "tll_minimal" (nth 1 label)
+   "tll_xhigh" (nth 2 label)
+   "tll_max" (nth 3 label)
+   "tll_low" (nth 4 label)
+   "tll_bogus" (nth 5 label)
+   "tlst_off" (nth 0 search)
+   "tlst_minimal" (nth 1 search)
+   "tlst_high" (nth 2 search)
+   "tlst_xhigh" (nth 3 search)
+   "tlst_max" (nth 4 search)
+   "tlst_bogus" (nth 5 search)
+   "tsq_empty" (nth 0 set-query)
+   "tsq_off" (nth 1 set-query)
+   "tsq_high" (nth 2 set-query)
+   "tsq_miss" (nth 3 set-query)
+   "tsq_nil" (nth 4 set-query)
+   "tsq_clear" (nth 5 set-query)))
+
 (defparameter *session-format-age-now* 1700000000000)
 
 (defun run-cli-selectors-session-format-age ()
@@ -14022,7 +14107,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (thinking-level-label
+          (run-cli-selectors-thinking-level-label))
+        (thinking-level-search-text
+          (run-cli-selectors-thinking-level-search-text))
+        (thinking-selector-set-query
+          (run-cli-selectors-thinking-selector-set-query)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14846,11 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs)
+             (thinking-selector-observed-pairs
+              thinking-level-label
+              thinking-level-search-text
+              thinking-selector-set-query)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -14846,6 +14941,21 @@
               (lambda ()
                 (lambda ()
                   (run-cli-selectors-keybinding-hint))))
+     "thinking_level_label"
+     (collect "cli_selectors.thinking_level_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-label))))
+     "thinking_level_search_text"
+     (collect "cli_selectors.thinking_level_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-level-search-text))))
+     "thinking_selector_set_query"
+     (collect "cli_selectors.thinking_selector_set_query"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-thinking-selector-set-query))))
      "session_format_age"
      (collect "cli_selectors.session_format_age"
               (lambda ()
@@ -17078,6 +17188,12 @@
       "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-text"
       "cli_selectors.keybinding_hint"
       "src/cadr-cli/interactive/selectors/common.lisp selector-keybinding-hint"
+      "cli_selectors.thinking_level_label"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-label"
+      "cli_selectors.thinking_level_search_text"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-level-search-text"
+      "cli_selectors.thinking_selector_set_query"
+      "src/cadr-cli/interactive/selectors/thinking.lisp thinking-selector-set-query"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
