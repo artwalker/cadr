@@ -57,6 +57,9 @@
 ;;;;  38. cli_interactive_controller decode-highlight-entity vs decodeHtmlEntity
 ;;;;  39. cli_sdk newer-package-version-p vs isNewerPackageVersion
 ;;;;  40. provider_registry_defs list/find vs getBuiltinProviders
+;;;; 403. provider_registry_defs api-key-auth-strategy-entry vs Bedrock/Vertex structured table
+;;;; 404. provider_registry_defs built-in-provider-options vs Azure/Cloudflare/Google env keys
+;;;; 405. provider_registry_defs remove-runtime-only-options vs omit apiKey/headers/environment/authType
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
@@ -652,6 +655,9 @@
     ("provider_registry_defs.merge_environment" . 50)
     ("provider_registry_defs.runtime_models" . 50)
     ("provider_registry_defs.structured_api_key_login" . 50)
+    ("provider_registry_defs.api_key_strategy" . 50)
+    ("provider_registry_defs.provider_options" . 50)
+    ("provider_registry_defs.strip_runtime_options" . 50)
     ("core_rest.cancellation_abort" . 50)
     ("core_rest.redacted_secrets" . 50)
     ("core_rest.threads_cleanup" . 5)
@@ -17840,12 +17846,96 @@
      (flag :amazon-bedrock)
      (flag :google-vertex))))
 
+(defun run-provider-api-key-strategy ()
+  ;; Leftover sibling: table assoc only — not structured-login predicate,
+  ;; not login interaction, not stream.
+  (flet ((structured (strategy)
+           (if (getf (cdr (cadr-ai::api-key-auth-strategy-entry strategy))
+                     :structured-p)
+               1
+               0)))
+    (list
+     (structured :bedrock)
+     (structured :vertex)
+     (structured :environment)
+     (if (cadr-ai::api-key-auth-strategy-entry :no-such-strategy)
+         0
+         1)
+     (if (cadr-ai::api-key-auth-strategy-entry :bedrock)
+         1
+         0))))
+
+(defun run-provider-options ()
+  ;; Leftover sibling: env → azure/cloudflare/google option projection.
+  ;; Fixture alist only; no getenv, no socket.
+  (let ((opts
+          (cadr-ai::built-in-provider-options
+           '(("AZURE_OPENAI_BASE_URL" . "https://azure.example")
+             ("AZURE_OPENAI_RESOURCE_NAME" . "res")
+             ("AZURE_OPENAI_DEPLOYMENT_NAME" . "dep")
+             ("CLOUDFLARE_ACCOUNT_ID" . "cf-acct")
+             ("CLOUDFLARE_GATEWAY_ID" . "cf-gw")
+             ("GOOGLE_CLOUD_PROJECT" . "proj-a")
+             ("GCLOUD_PROJECT" . "proj-b")
+             ("GOOGLE_CLOUD_LOCATION" . "us-central1")))))
+    (list
+     (if (equal (getf opts :azure-base-url) "https://azure.example")
+         1
+         0)
+     (if (equal (getf opts :project) "proj-a")
+         1
+         0)
+     (if (equal (getf opts :location) "us-central1")
+         1
+         0)
+     (if (equal (getf opts :cloudflare-account-id) "cf-acct")
+         1
+         0)
+     (if (equal (getf opts :azure-resource-name) "res")
+         1
+         0))))
+
+(defun run-provider-strip-runtime-options ()
+  ;; Leftover sibling: drop :api-key :headers :environment :auth-type.
+  ;; Not stream-chat / complete-chat.
+  (let* ((mixed
+           (cadr-ai::remove-runtime-only-options
+            '(:api-key "sk"
+              :headers (("h" . "v"))
+              :environment (("k" . "v"))
+              :auth-type :oauth
+              :max-tokens 16
+              :temperature 0.2)))
+         (only-runtime
+           (cadr-ai::remove-runtime-only-options
+            '(:api-key "sk"
+              :headers nil
+              :environment nil
+              :auth-type :oauth))))
+    (list
+     (if (eql (getf mixed :max-tokens) 16)
+         1
+         0)
+     (if (getf mixed :api-key)
+         0
+         1)
+     (/ (length mixed) 2)
+     (if only-runtime
+         0
+         1)
+     (if (eql (getf mixed :temperature) 0.2)
+         1
+         0))))
+
 (defun measure-provider-registry-defs ()
   (let* ((lookup-observed (run-provider-registry-defs))
          (ids-observed (run-provider-definition-ids))
          (merge-observed (run-provider-merge-environment))
          (models-observed (run-provider-runtime-models))
-         (structured-observed (run-provider-structured-api-key-login)))
+         (structured-observed (run-provider-structured-api-key-login))
+         (strategy-observed (run-provider-api-key-strategy))
+         (options-observed (run-provider-options))
+         (strip-observed (run-provider-strip-runtime-options)))
     (json-object
      "observed"
      (json-object
@@ -17867,7 +17957,22 @@
       "sl_anthropic" (second structured-observed)
       "sl_google" (third structured-observed)
       "sl_bedrock" (fourth structured-observed)
-      "sl_vertex" (fifth structured-observed))
+      "sl_vertex" (fifth structured-observed)
+      "as_bedrock" (first strategy-observed)
+      "as_vertex" (second strategy-observed)
+      "as_env" (third strategy-observed)
+      "as_miss" (fourth strategy-observed)
+      "as_hit" (fifth strategy-observed)
+      "po_azure" (first options-observed)
+      "po_project" (second options-observed)
+      "po_location" (third options-observed)
+      "po_cf" (fourth options-observed)
+      "po_res" (fifth options-observed)
+      "sro_keep" (first strip-observed)
+      "sro_drop" (second strip-observed)
+      "sro_n" (third strip-observed)
+      "sro_empty" (fourth strip-observed)
+      "sro_temp" (fifth strip-observed))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
@@ -17892,7 +17997,22 @@
      (collect "provider_registry_defs.structured_api_key_login"
               (lambda ()
                 (lambda ()
-                  (run-provider-structured-api-key-login)))))))
+                  (run-provider-structured-api-key-login))))
+     "api_key_strategy"
+     (collect "provider_registry_defs.api_key_strategy"
+              (lambda ()
+                (lambda ()
+                  (run-provider-api-key-strategy))))
+     "provider_options"
+     (collect "provider_registry_defs.provider_options"
+              (lambda ()
+                (lambda ()
+                  (run-provider-options))))
+     "strip_runtime_options"
+     (collect "provider_registry_defs.strip_runtime_options"
+              (lambda ()
+                (lambda ()
+                  (run-provider-strip-runtime-options)))))))
 
 (defun run-skill-prompt-build ()
   (let* ((cwd "/tmp/proj")
@@ -19056,6 +19176,12 @@
       "src/cadr-ai/providers/runtime-projection.lisp provider-runtime-models"
       "provider_registry_defs.structured_api_key_login"
       "src/cadr-ai/providers/runtime-projection.lisp provider-definition-structured-api-key-login-p"
+      "provider_registry_defs.api_key_strategy"
+      "src/cadr-ai/providers/runtime-projection.lisp api-key-auth-strategy-entry"
+      "provider_registry_defs.provider_options"
+      "src/cadr-ai/providers/runtime-projection.lisp built-in-provider-options"
+      "provider_registry_defs.strip_runtime_options"
+      "src/cadr-ai/providers/runtime-projection.lisp remove-runtime-only-options"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "cli_bootstrap_sessions.coding_tools"
