@@ -3318,9 +3318,11 @@ Leftover sibling of Pair 280–282 on the same `output-accumulator.lisp`
 `agent_tool_loop` hole. Timed work is last-line byte counts after an open
 ASCII line, a newline-closed line, and UTF-8 `é` — not append/snapshot/finish
 as the timed owner, not temp-file spill. Observed `oa_ll_open` / `oa_ll_nl` /
-`oa_ll_utf8` / `oa_ll_n` are exact. Freeze numbers in the follow-up docs
-commit. Same commit no optimize. Pair numbers 283–426 belong to other lanes;
-this cut is 427–429 only.
+`oa_ll_utf8` / `oa_ll_n` are exact. First n=5 freeze **0.341×** (1.761 /
+5.158 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize. Pair numbers 283–426 belong to other
+lanes; this cut is 427–429 only.
 
 ### Pair 428 — `output_accumulator` (needs_file)
 
@@ -3332,8 +3334,11 @@ Leftover sibling of Pair 427 `last_line_bytes` on the same
 `output-accumulator.lisp` hole. Timed work is the spill predicate (empty /
 under ceiling / over bytes / over lines) — not temp-file create/close, not
 truncateTail. Observed `oa_nf_empty` / `oa_nf_under` / `oa_nf_bytes` /
-`oa_nf_lines` / `oa_nf_n` are exact. Freeze numbers in the follow-up docs
-commit. Same commit no optimize.
+`oa_nf_lines` / `oa_nf_n` are exact. First n=5 freeze **2.464×** (50.564 /
+20.524 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 429 — `output_accumulator` (close_temp_file)
 
@@ -3344,8 +3349,10 @@ commit. Same commit no optimize.
 Leftover sibling of Pair 427 `last_line_bytes` and Pair 428 `needs_file` on
 the same `output-accumulator.lisp` hole. Timed work is closing the spill
 stream after a bytes overflow — not append/snapshot/finish. Observed
-`oa_close_path` / `oa_close_stream` / `oa_close_n` are exact. Freeze numbers
-in the follow-up docs commit. Same commit no optimize.
+`oa_close_path` / `oa_close_stream` / `oa_close_n` are exact. First n=5 freeze
+**0.463×** (36.231 / 78.272 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 283 — `harness_events` (on)
 
