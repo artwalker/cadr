@@ -3940,8 +3940,10 @@ Leftover sibling of the `oauth_pkce_device` hole on `src/cadr-ai/oauth/providers
 Timed work is callback URL / `code=` query / trimmed bare code — not loopback
 HTTP, not `login-openrouter-oauth`. Do not exact empty input (Lisp `NIL` vs
 pi `undefined`) or a URL with no query. Observed `ori_url` / `ori_qs` /
-`ori_plain` / `ori_n` are exact. First n=5 freeze numbers land in the freeze
-commit. Gate used `--only-enforce`. Same commit no optimize.
+`ori_plain` / `ori_n` are exact. First n=5 freeze **0.754×** (7.131 / 9.458 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). cadr leads. Same commit no optimize.
 
 ### Pair 437 — `oauth_pkce_device` (openrouter_refresh)
 
@@ -3952,9 +3954,10 @@ commit. Gate used `--only-enforce`. Same commit no optimize.
 Leftover sibling of Pair 436 `openrouter_input` on the same `openrouter.lisp`
 `oauth_pkce_device` hole. Timed work is identity refresh (same object, access
 kept, empty refresh) — not key exchange, not login. Observed `orr_same` /
-`orr_access` / `orr_empty` / `orr_n` are exact. First n=5 freeze numbers
-land in the freeze commit. Gate used `--only-enforce`. Same commit no
-optimize.
+`orr_access` / `orr_empty` / `orr_n` are exact. First n=5 freeze **0.698×**
+(0.210 / 0.301 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). cadr leads. Same commit no optimize.
 
 ### Pair 438 — `oauth_pkce_device` (openrouter_exchange)
 
@@ -3966,8 +3969,10 @@ Leftover sibling of Pairs 436–437 on the same `openrouter.lisp`
 `oauth_pkce_device` hole. Timed work is stubbed-HTTP key exchange (200 with
 `key`, 400 with `error`, 200 missing `key`) — not the loopback listener, not
 runtime login. Observed `ox_ok` / `ox_fail` / `ox_bad` / `ox_n` are exact.
-First n=5 freeze numbers land in the freeze commit. Gate used `--only-enforce`.
-Same commit no optimize.
+First n=5 freeze **1.486×** (10.390 / 6.991 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1×
+booked. Same commit no optimize.
 
 ### Pair 343 — `write_tool` (ensure_parent)
 

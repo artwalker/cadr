@@ -9,13 +9,29 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20 P.13 leftover: pair `oauth_pkce_device.openrouter_input` /
-  `openrouter_refresh` / `openrouter_exchange` on
+- Goal 20 P.13 leftover: pair `oauth_pkce_device.openrouter_input`
+  (`parse-openrouter-authorization-input` on
   `src/cadr-ai/oauth/providers/openrouter.lisp` vs baseline
-  `packages/ai/src/auth/oauth/openrouter.ts` (`parseAuthorizationInput` /
-  `openRouterOAuth.refresh` / `exchangeAuthorizationCode`). Observed
-  `ori_*` / `orr_*` / `ox_*` exact. Measure-only. Pairs 436–438. Freeze
-  numbers in the following docs commit. `nextPairNum` left unchanged.
+  `parseAuthorizationInput` in `packages/ai/src/auth/oauth/openrouter.ts`).
+  Observed `ori_url` / `ori_qs` / `ori_plain` / `ori_n` exact.
+  n=5 **0.754×** (7.131 / 9.458 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 436). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  unchanged.
+- Goal 20 P.13 leftover: pair `oauth_pkce_device.openrouter_refresh`
+  (`refresh-openrouter-oauth-credential` on
+  `src/cadr-ai/oauth/providers/openrouter.lisp` vs baseline
+  `openRouterOAuth.refresh`). Observed `orr_same` / `orr_access` /
+  `orr_empty` / `orr_n` exact. n=5 **0.698×** (0.210 / 0.301 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 437). Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `oauth_pkce_device.openrouter_exchange`
+  (`openrouter-exchange-code` on `src/cadr-ai/oauth/providers/openrouter.lisp`
+  vs baseline `exchangeAuthorizationCode`, stubbed HTTP). Observed `ox_ok` /
+  `ox_fail` / `ox_bad` / `ox_n` exact. n=5 **1.486×** (10.390 / 6.991 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 438). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
