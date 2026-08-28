@@ -9,6 +9,30 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.all_known_model_ids_enabled_p`
+  (`all-known-model-ids-enabled-p` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs enableAll
+  collapse-to-null). Observed `ake_all` / `ake_full` / `ake_partial` /
+  `ake_empty` / `ake_vacuous` / `ake_wrong` exact. n=5 **2.035×**
+  (1.679 / 0.825 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 565). Gate rc=1 only from known old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_enable_ids`
+  (`scoped-models-enable-ids` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs enableAll id union).
+  Observed `smei_all` / `smei_one` / `smei_rest` / `smei_add` / `smei_fill` /
+  `smei_none` exact. n=5 **1.519×** (2.605 / 1.715 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 566). Gate rc=1 only from known
+  old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_clear_ids`
+  (`scoped-models-clear-ids` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs clearAll id subtract).
+  Observed `smci_all_one` / `smci_list` / `smci_all_all` / `smci_empty` /
+  `smci_keep` / `smci_all_none` exact. n=5 **2.015×** (2.931 / 1.455 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 567). Gate rc=1
+  only from known old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

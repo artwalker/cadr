@@ -4059,6 +4059,30 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 565 — `cli_selectors` (all_known_model_ids_enabled_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `all_known_model_ids_enabled_p` | `all-known-model-ids-enabled-p` (`src/cadr-cli/interactive/selectors/models.lisp`) | enableAll collapse-to-null check (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of the `cli_selectors` hole on `models.lisp`. Timed work is the list-length-and-membership collapse check — not `scoped-models-selector-enable-all`, not the selector UI. Observed `ake_all` / `ake_full` / `ake_partial` / `ake_empty` / `ake_vacuous` / `ake_wrong` are exact. First n=5 freeze **2.035×** (1.679 / 0.825 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 566 — `cli_selectors` (scoped_models_enable_ids)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_enable_ids` | `scoped-models-enable-ids` (`src/cadr-cli/interactive/selectors/models.lisp`) | enableAll id union (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 565 on the same `models.lisp` hole. Timed work is union of enabled ids with targets, collapsing to `:all` / `null` when every known id is present — not the selector wrapper. Observed `smei_all` / `smei_one` / `smei_rest` / `smei_add` / `smei_fill` / `smei_none` are exact. First n=5 freeze **1.519×** (2.605 / 1.715 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 567 — `cli_selectors` (scoped_models_clear_ids)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_clear_ids` | `scoped-models-clear-ids` (`src/cadr-cli/interactive/selectors/models.lisp`) | clearAll id subtract (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pairs 565–566 on the same `models.lisp` hole. Timed work is subtract of target ids from `:all` (via `all-ids`) or from an explicit enabled list — not `scoped-models-selector-clear-all`. Observed `smci_all_one` / `smci_list` / `smci_all_all` / `smci_empty` / `smci_keep` / `smci_all_none` are exact. First n=5 freeze **2.015×** (2.931 / 1.455 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes; this metric did not fail). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
