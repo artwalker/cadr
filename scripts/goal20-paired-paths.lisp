@@ -20456,6 +20456,104 @@
      (length images))))
 
 
+(defun bash-parse-fields (line)
+  (multiple-value-bind (command exclude-p present-p)
+      (cadr-cli::parse-user-bash-input line)
+    (list
+     (if command (copy-seq command) "")
+     (if exclude-p 1 0)
+     (if present-p 1 0))))
+
+
+(defun run-cli-bootstrap-parse-bash ()
+  (let ((ls (bash-parse-fields "!ls"))
+        (excl (bash-parse-fields "!!echo hi"))
+        (bang (bash-parse-fields "!"))
+        (ws (bash-parse-fields "  !pwd  "))
+        (plain (bash-parse-fields "hello")))
+    (list
+     (first ls)
+     (second ls)
+     (third ls)
+     (first excl)
+     (second excl)
+     (third excl)
+     (first bang)
+     (third bang)
+     (first ws)
+     (third ws)
+     (third plain)
+     (+ (third ls) (third excl) (third bang) (third ws) (third plain)))))
+
+
+(defun run-cli-bootstrap-response-text ()
+  (let* ((one
+           (cadr-cli::response-text
+            (cadr-ai:make-assistant-message
+             :content (list (cadr-ai:make-text-content :text "hello")))))
+         (two
+           (cadr-cli::response-text
+            (cadr-ai:make-assistant-message
+             :content
+             (list
+              (cadr-ai:make-text-content :text "hello")
+              (cadr-ai:make-thinking-content :thinking "hmm")
+              (cadr-ai:make-text-content :text "world")))))
+         (empty
+           (cadr-cli::response-text
+            (cadr-ai:make-assistant-message :content nil))))
+    (list one two empty (length two))))
+
+
+(defun dispatch-kind-code (kind)
+  (ecase kind
+    (:empty 0)
+    (:bash 1)
+    (:command 2)
+    (:prompt 3)
+    (:unknown-command 4)))
+
+
+(defun dispatch-case (line)
+  (flet ((prompt (text) (length text))
+         (bash (command exclude-p)
+           (declare (ignore exclude-p))
+           (length command))
+         (command-fn (text)
+           (declare (ignore text))
+           (values nil nil))
+         (template-fn (text)
+           (values text nil)))
+    (multiple-value-bind (kind result)
+        (cadr-cli::dispatch-user-input
+         line #'prompt
+         :command-function #'command-fn
+         :template-function #'template-fn
+         :bash-function #'bash)
+      (list
+       (dispatch-kind-code kind)
+       (if (integerp result) result 0)))))
+
+
+(defun run-cli-bootstrap-dispatch-plain ()
+  (let ((empty (dispatch-case ""))
+        (ws (dispatch-case "   "))
+        (plain (dispatch-case "hello"))
+        (slash (dispatch-case "/nope"))
+        (bash (dispatch-case "!ls"))
+        (bang (dispatch-case "!")))
+    (list
+     (first empty)
+     (first ws)
+     (first plain)
+     (second plain)
+     (first slash)
+     (first bash)
+     (second bash)
+     (first bang)
+     6)))
+
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
          (auth-observed (run-cli-bootstrap-auth))
