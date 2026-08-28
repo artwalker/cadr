@@ -576,6 +576,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.session_scoped_models" . 50)
+    ("cli_selectors.scoped_model_id_enabled_p" . 50)
+    ("cli_selectors.scoped_models_toggle_id" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13713,7 +13716,7 @@
       models '("google/gemini-2.5-pro") :persist-callback t))))
 
 (defun scoped-models-selector-tail-observed-pairs
-    (reorder persist provider-count)
+    (reorder persist provider-count session-scoped enabled-p toggle)
   (append
     (list
      "smsror_down" (nth 0 reorder)
@@ -13728,7 +13731,9 @@
      "smsper_empty" (nth 3 persist)
      "smsper_two" (nth 4 persist)
      "smsper_single" (nth 5 persist))
-    (scoped-models-provider-count-observed-pairs provider-count)))
+    (scoped-models-provider-count-observed-pairs provider-count)
+    (session-scoped-leftover-observed-pairs
+     session-scoped enabled-p toggle)))
 
 (defun scoped-models-provider-count-observed-pairs (results)
   (list
@@ -13763,6 +13768,107 @@
       (cadr-cli::make-scoped-models-selector-state
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
+
+(defun session-scoped-leftover-observed-pairs
+    (session-scoped enabled-p toggle)
+  (list
+   "ssm_all" (nth 0 session-scoped)
+   "ssm_partial" (nth 1 session-scoped)
+   "ssm_unavail" (nth 2 session-scoped)
+   "ssm_empty" (nth 3 session-scoped)
+   "ssm_full" (nth 4 session-scoped)
+   "ssm_single" (nth 5 session-scoped)
+   "smie_all" (nth 0 enabled-p)
+   "smie_hit" (nth 1 enabled-p)
+   "smie_miss" (nth 2 enabled-p)
+   "smie_empty" (nth 3 enabled-p)
+   "smie_stale" (nth 4 enabled-p)
+   "smie_all_stale" (nth 5 enabled-p)
+   "smti_from_all" (nth 0 toggle)
+   "smti_remove" (nth 1 toggle)
+   "smti_add" (nth 2 toggle)
+   "smti_empty" (nth 3 toggle)
+   "smti_again" (nth 4 toggle)
+   "smti_unavail" (nth 5 toggle)))
+
+(defun encode-session-scoped-models (models)
+  (if (null models)
+      ""
+      (format nil "~{~a~^,~}"
+              (mapcar #'cadr-cli::qualified-model-id models))))
+
+(defun run-cli-selectors-session-scoped-models ()
+  (let ((models (make-scoped-models-test-models))
+        (all-ids
+          (mapcar #'cadr-cli::qualified-model-id
+                  (make-scoped-models-test-models))))
+    (list
+     (encode-session-scoped-models
+      (cadr-cli::session-scoped-models models :all))
+     (encode-session-scoped-models
+      (cadr-cli::session-scoped-models
+       models '("openai/gpt-4o" "anthropic/claude-sonnet-4")))
+     (encode-session-scoped-models
+      (cadr-cli::session-scoped-models
+       models '("stale/missing" "openai/gpt-4o")))
+     (encode-session-scoped-models
+      (cadr-cli::session-scoped-models models '()))
+     (encode-session-scoped-models
+      (cadr-cli::session-scoped-models models all-ids))
+     (encode-session-scoped-models
+      (cadr-cli::session-scoped-models
+       models '("google/gemini-2.5-pro"))))))
+
+(defun scoped-model-id-enabled-flag (state id)
+  (if (cadr-cli::scoped-model-id-enabled-p state id)
+      "1"
+      "0"))
+
+(defun prepare-cli-selectors-scoped-model-id-enabled-p ()
+  (let* ((models (make-scoped-models-test-models))
+         (all
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models models
+            :enabled-ids :all
+            :keybindings :bench))
+         (partial
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models models
+            :enabled-ids
+            '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+            :keybindings :bench))
+         (empty
+           (cadr-cli::make-scoped-models-selector-state
+            :all-models models
+            :enabled-ids '()
+            :keybindings :bench)))
+    (lambda ()
+      (list
+       (scoped-model-id-enabled-flag all "openai/gpt-4o")
+       (scoped-model-id-enabled-flag partial "openai/gpt-4o")
+       (scoped-model-id-enabled-flag
+        partial "google/gemini-2.5-pro")
+       (scoped-model-id-enabled-flag empty "openai/gpt-4o")
+       (scoped-model-id-enabled-flag partial "stale/missing")
+       (scoped-model-id-enabled-flag all "stale/missing")))))
+
+(defun run-cli-selectors-scoped-model-id-enabled-p ()
+  (funcall (prepare-cli-selectors-scoped-model-id-enabled-p)))
+
+(defun run-cli-selectors-scoped-models-toggle-id ()
+  (mapcar
+   (lambda (pair)
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-toggle-id
+       (first pair) (second pair))))
+   (list
+    (list :all "openai/gpt-4o")
+    (list '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+          "openai/gpt-4o")
+    (list '("openai/gpt-4o") "anthropic/claude-sonnet-4")
+    (list '() "google/gemini-2.5-pro")
+    (list '("openai/gpt-4o") "openai/gpt-4o")
+    (list '("openai/gpt-4o") "stale/missing"))))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list
@@ -14022,7 +14128,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (session-scoped
+          (run-cli-selectors-session-scoped-models))
+        (enabled-p
+          (run-cli-selectors-scoped-model-id-enabled-p))
+        (toggle-id
+          (run-cli-selectors-scoped-models-toggle-id)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14867,10 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs
+              session-scoped
+              enabled-p
+              toggle-id)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15518,20 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "session_scoped_models"
+     (collect "cli_selectors.session_scoped_models"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-scoped-models))))
+     "scoped_model_id_enabled_p"
+     (collect "cli_selectors.scoped_model_id_enabled_p"
+              #'prepare-cli-selectors-scoped-model-id-enabled-p)
+     "scoped_models_toggle_id"
+     (collect "cli_selectors.scoped_models_toggle_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-toggle-id)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17044,6 +17172,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.session_scoped_models"
+      "src/cadr-cli/interactive/selectors/models.lisp session-scoped-models"
+      "cli_selectors.scoped_model_id_enabled_p"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-model-id-enabled-p"
+      "cli_selectors.scoped_models_toggle_id"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-toggle-id"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
