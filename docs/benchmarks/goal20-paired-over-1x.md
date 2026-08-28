@@ -344,4 +344,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.make_entry` | 1.424 | 0.238 | 5.982× | 8.00× | measure-only pair 493; `make-tui-user-bash-entry` vs BashExecutionComponent constructor (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.append_output` | 0.776 | 0.290 | 2.670× | 8.00× | measure-only pair 494; `append-tui-user-bash-output` vs appendOutput concatenate (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.complete_entry` | 0.974 | 0.404 | 2.411× | 8.00× | measure-only pair 495; `complete-tui-user-bash-entry` vs setComplete (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_print_rpc.handle_bad_json` | 5.390 | 4.937 | 1.092× | 8.00× | measure-only pair 496; `rpc-handle-line` JSON.parse catch (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_print_rpc.handle_not_object` | 5.213 | 4.889 | 1.066× | 8.00× | measure-only pair 497; `rpc-handle-line` require-object | invent pause；地板优化另刀 |
+| `cli_print_rpc.handle_ui_miss` | 6.190 | 1.521 | 4.070× | 8.00× | measure-only pair 498; `rpc-handle-line` unknown extension_ui_response | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

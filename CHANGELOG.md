@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_print_rpc.handle_bad_json`
+  (`rpc-handle-line` on `src/cadr-cli/modes/rpc/mode.lisp` vs
+  `handleInputLine` JSON.parse catch). Observed `bj_cmd` / `bj_ok` /
+  `bj_id` / `bj_nl` exact. n=5 **1.092×** (5.390 / 4.937 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 496). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text /
+  `execution_env.tmp_*`), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 P.13 leftover: pair `cli_print_rpc.handle_not_object`
+  (`rpc-handle-line` on `src/cadr-cli/modes/rpc/mode.lisp` vs
+  require-object). Observed `no_cmd` / `no_ok` / `no_id` / `no_nl`
+  exact. n=5 **1.066×** (5.213 / 4.889 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 497). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 P.13 leftover: pair `cli_print_rpc.handle_ui_miss`
+  (`rpc-handle-line` on `src/cadr-cli/modes/rpc/mode.lisp` vs
+  unknown `extension_ui_response`). Observed `um_cmd` / `um_ok` /
+  `um_id` / `um_nl` / `um_unk` exact. n=5 **4.070×** (6.190 / 1.521 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 498).
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum`
+  left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.make_entry`
   (`make-tui-user-bash-entry` on
   `src/cadr-cli/interactive/user-bash.lisp` vs

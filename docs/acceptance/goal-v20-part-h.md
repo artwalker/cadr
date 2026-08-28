@@ -6240,6 +6240,50 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
 old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`;
 this metric did not fail). Same commit no optimize.
 
+### Pair 496 — `cli_print_rpc` (handle_bad_json)
+
+| metric | cadr | pi |
+|---|---|---|
+| `handle_bad_json` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` JSON.parse catch (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover of the `cli_print_rpc` hole on `mode.lisp`. Timed work is
+invalid JSON (`not-json`) through the outer parse failure — not
+`run-rpc-mode`, not a live agent. Observed `bj_cmd` / `bj_ok` / `bj_id`
+/ `bj_nl` are exact. Do not exact full error strings. First n=5 freeze
+**1.092×** (5.390 / 4.937 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
+fail). Same commit no optimize.
+
+### Pair 497 — `cli_print_rpc` (handle_not_object)
+
+| metric | cadr | pi |
+|---|---|---|
+| `handle_not_object` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` require JSON object (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pair 496 on the same hole. Timed work is JSON array
+`[]` rejected as a non-object — not command dispatch. Observed `no_cmd`
+/ `no_ok` / `no_id` / `no_nl` are exact. Do not exact full error
+strings. First n=5 freeze **1.066×** (5.213 / 4.889 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`;
+this metric did not fail). Same commit no optimize.
+
+### Pair 498 — `cli_print_rpc` (handle_ui_miss)
+
+| metric | cadr | pi |
+|---|---|---|
+| `handle_ui_miss` | `rpc-handle-line` (`src/cadr-cli/modes/rpc/mode.lisp`) | `handleInputLine` unknown `extension_ui_response` (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pairs 496–497 on the same hole. Timed work is an
+unknown pending UI id (`missing`) — not dialog resolve, not
+`rpc-shutdown`. Observed `um_cmd` / `um_ok` / `um_id` / `um_nl` /
+`um_unk` are exact. Do not exact full error strings. First n=5 freeze
+**4.070×** (6.190 / 1.521 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
+fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

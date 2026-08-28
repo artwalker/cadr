@@ -11352,6 +11352,90 @@
          0))))
 
 
+(defun rpc-handle-line-raw (line)
+  (let ((out (make-string-output-stream)))
+    (cadr-cli::rpc-handle-line
+     (cadr-cli::%make-rpc-state :output out)
+     line)
+    (get-output-stream-string out)))
+
+
+(defun rpc-handle-line-flags (raw expected-command expected-id)
+  (let* ((newline-p
+           (and (plusp (length raw))
+                (char= #\Newline (char raw (1- (length raw))))))
+         (payload
+           (if newline-p
+               (subseq raw 0 (1- (length raw)))
+               raw))
+         (object
+           (ignore-errors (cadr-ai::parse-json payload)))
+         (command
+           (let ((value
+                   (and object (cadr-ai::json-get object "command"))))
+             (cond
+               ((stringp value) (copy-seq value))
+               ((and (vectorp value) (not (stringp value)))
+                (coerce value 'string))
+               (t ""))))
+         (success
+           (and object (cadr-ai::json-get object "success")))
+         (id
+           (let ((value
+                   (and object (cadr-ai::json-get object "id"))))
+             (cond
+               ((stringp value) (copy-seq value))
+               ((and (vectorp value) (not (stringp value)))
+                (coerce value 'string))
+               (t nil))))
+         (err
+           (let ((value
+                   (and object (cadr-ai::json-get object "error"))))
+             (cond
+               ((stringp value) (copy-seq value))
+               ((and (vectorp value) (not (stringp value)))
+                (coerce value 'string))
+               ((null value) "")
+               (t (princ-to-string value))))))
+    (list
+     (if (string= command expected-command)
+         1
+         0)
+     (if success 1 0)
+     (if (stringp id) 1 0)
+     (if (and expected-id
+              (stringp id)
+              (string= id expected-id))
+         1
+         0)
+     (if newline-p 1 0)
+     (if (search "Unknown extension UI request id" err)
+         1
+         0))))
+
+
+(defun run-cli-print-rpc-handle-bad-json ()
+  (rpc-handle-line-flags
+   (rpc-handle-line-raw "not-json")
+   "parse"
+   nil))
+
+
+(defun run-cli-print-rpc-handle-not-object ()
+  (rpc-handle-line-flags
+   (rpc-handle-line-raw "[]")
+   "parse"
+   nil))
+
+
+(defun run-cli-print-rpc-handle-ui-miss ()
+  (rpc-handle-line-flags
+   (rpc-handle-line-raw
+    "{\"type\":\"extension_ui_response\",\"id\":\"missing\"}")
+   "extension_ui_response"
+   "missing"))
+
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p

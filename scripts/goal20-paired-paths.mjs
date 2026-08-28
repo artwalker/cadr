@@ -359,6 +359,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.parse_bash": 50,
 	"cli_bootstrap_sessions.response_text": 50,
 	"cli_bootstrap_sessions.dispatch_plain": 50,
+	"cli_print_rpc.handle_bad_json": 50,
+	"cli_print_rpc.handle_not_object": 50,
+	"cli_print_rpc.handle_ui_miss": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -10290,6 +10293,108 @@ async function stageCliPrintRpcSessionStats() {
 		noTools: "all",
 	});
 }
+
+function replicaRpcHandleLine(line) {
+	const chunks = [];
+	const output = (obj) => {
+		chunks.push(rpcJsonlModule.serializeJsonLine(obj));
+	};
+	const error = (id, command, message) => {
+		const obj = {
+			type: "response",
+			command,
+			success: false,
+			error: message,
+		};
+		if (id !== undefined && id !== null) {
+			obj.id = id;
+		}
+		return obj;
+	};
+	let parsed;
+	try {
+		parsed = JSON.parse(line);
+	} catch (parseError) {
+		output(
+			error(
+				undefined,
+				"parse",
+				`Failed to parse command: ${
+					parseError instanceof Error ? parseError.message : String(parseError)
+				}`,
+			),
+		);
+		return chunks.join("");
+	}
+	try {
+		if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+			throw new Error("RPC frame must be a JSON object");
+		}
+		if ((parsed.type ?? "") === "extension_ui_response") {
+			const id = parsed.id;
+			if (typeof id !== "string") {
+				throw new Error("RPC field id must be a string");
+			}
+			output(
+				error(id, "extension_ui_response", `Unknown extension UI request id: ${id}`),
+			);
+			return chunks.join("");
+		}
+		throw new Error("unexpected RPC command path");
+	} catch (condition) {
+		output(
+			error(
+				undefined,
+				"parse",
+				`Failed to parse command: ${
+					condition instanceof Error ? condition.message : String(condition)
+				}`,
+			),
+		);
+		return chunks.join("");
+	}
+}
+
+
+function rpcHandleLineFlags(raw, expectedCommand, expectedId) {
+	const newline = raw.endsWith("\n") ? 1 : 0;
+	const payload = newline ? raw.slice(0, -1) : raw;
+	let obj = {};
+	try {
+		obj = JSON.parse(payload);
+	} catch {
+		obj = {};
+	}
+	const err = typeof obj.error === "string" ? obj.error : "";
+	return [
+		obj.command === expectedCommand ? 1 : 0,
+		obj.success ? 1 : 0,
+		typeof obj.id === "string" ? 1 : 0,
+		expectedId && obj.id === expectedId ? 1 : 0,
+		newline,
+		err.includes("Unknown extension UI request id") ? 1 : 0,
+	];
+}
+
+
+function runCliPrintRpcHandleBadJson() {
+	return rpcHandleLineFlags(replicaRpcHandleLine("not-json"), "parse", null);
+}
+
+
+function runCliPrintRpcHandleNotObject() {
+	return rpcHandleLineFlags(replicaRpcHandleLine("[]"), "parse", null);
+}
+
+
+function runCliPrintRpcHandleUiMiss() {
+	return rpcHandleLineFlags(
+		replicaRpcHandleLine('{"type":"extension_ui_response","id":"missing"}'),
+		"extension_ui_response",
+		"missing",
+	);
+}
+
 
 function measureCliPrintRpcSessionStatsObserved(stats) {
 	return {
