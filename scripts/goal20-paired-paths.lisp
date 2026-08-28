@@ -17985,6 +17985,41 @@
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
 
+(defun armin-pixel-flag (x y)
+  (if (cadr-cli::armin-pixel-p x y) 1 0))
+
+
+(defun run-cli-selectors-armin-pixel ()
+  (list
+   (armin-pixel-flag 0 0)
+   (armin-pixel-flag 8 1)
+   (armin-pixel-flag 0 36)))
+
+
+(defun run-cli-selectors-armin-cell ()
+  (list
+   (string (cadr-cli::armin-cell 0 0))
+   (string (cadr-cli::armin-cell 8 0))
+   (string (cadr-cli::armin-cell 9 1))
+   (string (cadr-cli::armin-cell 11 2))))
+
+
+(defun run-cli-selectors-armin-grid-height ()
+  (list (cadr-cli::armin-grid-height)))
+
+
+(defun armin-observed-pairs (pixel cell height)
+  (list
+   "ap_blank" (nth 0 pixel)
+   "ap_ink" (nth 1 pixel)
+   "ap_out" (nth 2 pixel)
+   "ac_space" (nth 0 cell)
+   "ac_lower" (nth 1 cell)
+   "ac_upper" (nth 2 cell)
+   "ac_full" (nth 3 cell)
+   "ag_h" (nth 0 height)))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id

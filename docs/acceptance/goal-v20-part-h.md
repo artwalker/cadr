@@ -6486,6 +6486,30 @@ Leftover sibling of Pair 511 on the same hole. Timed work is trailing `/` `\\` t
 
 Leftover sibling of Pairs 511–512 on the same hole. Timed work is `cadr - [session -] basename` — not OSC sequence, not `run-tui`. Observed `tt_none` / `tt_session` / `tt_esc` / `tt_empty` are exact. Product slug is cadr (identity), not Pi. First n=5 freeze **0.645×** (1.530 / 2.370 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
 
+### Pair 514 — `cli_selectors` (armin_pixel)
+
+| metric | cadr | pi |
+|---|---|---|
+| `armin_pixel` | `armin-pixel-p` (`src/cadr-cli/interactive/components/armin.lisp`) | ArminComponent pixel probe (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
+
+Leftover of the `cli_selectors` hole on `interactive/components/armin.lisp`. Timed work is XBM bit test — not tick, not render. Observed `ap_blank` / `ap_ink` / `ap_out` are exact. First n=5 freeze **0.548×** (0.126 / 0.230 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 515 — `cli_selectors` (armin_cell)
+
+| metric | cadr | pi |
+|---|---|---|
+| `armin_cell` | `armin-cell` (`src/cadr-cli/interactive/components/armin.lisp`) | ArminComponent half-block cell (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
+
+Leftover sibling of Pair 514 on the same hole. Timed work is upper/lower pixel → `█▀▄` / space — not grid copy, not tick. Observed `ac_space` / `ac_lower` / `ac_upper` / `ac_full` are exact. First n=5 freeze **0.444×** (0.307 / 0.691 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 516 — `cli_selectors` (armin_grid_height)
+
+| metric | cadr | pi |
+|---|---|---|
+| `armin_grid_height` | `armin-grid-height` (`src/cadr-cli/interactive/components/armin.lisp`) | ArminComponent grid rows (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
+
+Leftover sibling of Pairs 514–515 on the same hole. Timed work is `ceiling(height/2)` — not make-grid, not tick. Observed `ag_h` is exact. First n=5 freeze **0.870×** (0.081 / 0.093 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

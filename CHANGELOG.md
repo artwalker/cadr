@@ -9,6 +9,23 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.armin_pixel`
+  (`armin-pixel-p` on `src/cadr-cli/interactive/components/armin.lisp`).
+  Observed `ap_blank` / `ap_ink` / `ap_out` exact. n=5 **0.548×**
+  (0.126 / 0.230 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 514). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text / `execution_env.tmp_*`), not this metric. cadr leads.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.armin_cell`
+  (`armin-cell` on `src/cadr-cli/interactive/components/armin.lisp`).
+  Observed `ac_space` / `ac_lower` / `ac_upper` / `ac_full` exact. n=5
+  **0.444×** (0.307 / 0.691 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 515). cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.armin_grid_height`
+  (`armin-grid-height` on `src/cadr-cli/interactive/components/armin.lisp`).
+  Observed `ag_h` exact. n=5 **0.870×** (0.081 / 0.093 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 516). cadr leads.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.sanitize_title`
   (`sanitize-terminal-title-text` on `src/cadr-cli/interactive/controller.lisp`).
   Observed `st_plain` / `st_esc` / `st_bel` / `st_nil` / `st_empty` exact.

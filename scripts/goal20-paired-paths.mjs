@@ -590,6 +590,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.armin_pixel": 50,
+	"cli_selectors.armin_cell": 50,
+	"cli_selectors.armin_grid_height": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -18717,6 +18720,74 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+const ARMIN_WIDTH = 31;
+const ARMIN_HEIGHT = 36;
+const ARMIN_BITS = Uint8Array.from([
+	0xff, 0xff, 0xff, 0x7f, 0xff, 0xf0, 0xff, 0x7f, 0xff, 0xed, 0xff, 0x7f,
+	0xff, 0xdb, 0xff, 0x7f, 0xff, 0xb7, 0xff, 0x7f, 0xff, 0x77, 0xfe, 0x7f,
+	0x3f, 0xf8, 0xfe, 0x7f, 0xdf, 0xff, 0xfe, 0x7f, 0xdf, 0x3f, 0xfc, 0x7f,
+	0x9f, 0xc3, 0xfb, 0x7f, 0x6f, 0xfc, 0xf4, 0x7f, 0xf7, 0x0f, 0xf7, 0x7f,
+	0xf7, 0xff, 0xf7, 0x7f, 0xf7, 0xff, 0xe3, 0x7f, 0xf7, 0x07, 0xe8, 0x7f,
+	0xef, 0xf8, 0x67, 0x70, 0x0f, 0xff, 0xbb, 0x6f, 0xf1, 0x00, 0xd0, 0x5b,
+	0xfd, 0x3f, 0xec, 0x53, 0xc1, 0xff, 0xef, 0x57, 0x9f, 0xfd, 0xee, 0x5f,
+	0x9f, 0xfc, 0xae, 0x5f, 0x1f, 0x78, 0xac, 0x5f, 0x3f, 0x00, 0x50, 0x6c,
+	0x7f, 0x00, 0xdc, 0x77, 0xff, 0xc0, 0x3f, 0x78, 0xff, 0x01, 0xf8, 0x7f,
+	0xff, 0x03, 0x9c, 0x78, 0xff, 0x07, 0x8c, 0x7c, 0xff, 0x0f, 0xce, 0x78,
+	0xff, 0xff, 0xcf, 0x7f, 0xff, 0xff, 0xcf, 0x78, 0xff, 0xff, 0xdf, 0x78,
+	0xff, 0xff, 0xdf, 0x7d, 0xff, 0xff, 0x3f, 0x7e, 0xff, 0xff, 0xff, 0x7f,
+]);
+
+function replicaArminPixelP(x, y) {
+	if (y >= ARMIN_HEIGHT) {
+		return null;
+	}
+	const bytesPerRow = Math.ceil(ARMIN_WIDTH / 8);
+	const byte = ARMIN_BITS[y * bytesPerRow + Math.floor(x / 8)];
+	return (byte & (1 << (x % 8))) === 0;
+}
+
+function replicaArminCell(x, row) {
+	const upper = replicaArminPixelP(x, row * 2);
+	const lower = replicaArminPixelP(x, 1 + row * 2);
+	if (upper && lower) {
+		return "█";
+	}
+	if (upper) {
+		return "▀";
+	}
+	if (lower) {
+		return "▄";
+	}
+	return " ";
+}
+
+function replicaArminGridHeight() {
+	return Math.ceil(ARMIN_HEIGHT / 2);
+}
+
+function runCliSelectorsArminPixel() {
+	return {
+		ap_blank: replicaArminPixelP(0, 0) ? 1 : 0,
+		ap_ink: replicaArminPixelP(8, 1) ? 1 : 0,
+		ap_out: replicaArminPixelP(0, 36) ? 1 : 0,
+	};
+}
+
+function runCliSelectorsArminCell() {
+	return {
+		ac_space: replicaArminCell(0, 0),
+		ac_lower: replicaArminCell(8, 0),
+		ac_upper: replicaArminCell(9, 1),
+		ac_full: replicaArminCell(11, 2),
+	};
+}
+
+function runCliSelectorsArminGridHeight() {
+	return {
+		ag_h: replicaArminGridHeight(),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -19487,6 +19558,9 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const arminPixelResults = runCliSelectorsArminPixel();
+	const arminCellResults = runCliSelectorsArminCell();
+	const arminGridHeightResults = runCliSelectorsArminGridHeight();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -19792,6 +19866,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...arminPixelResults,
+		...arminCellResults,
+		...arminGridHeightResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -20251,6 +20328,15 @@ async function measureCliSelectorsSessionSearch() {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
 			},
 		),
+		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
+			return () => runCliSelectorsArminPixel();
+		}),
+		armin_cell: await collect("cli_selectors.armin_cell", () => {
+			return () => runCliSelectorsArminCell();
+		}),
+		armin_grid_height: await collect("cli_selectors.armin_grid_height", () => {
+			return () => runCliSelectorsArminGridHeight();
+		}),
 		observed,
 	};
 }
@@ -22938,6 +23024,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.armin_pixel":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
+			"cli_selectors.armin_cell":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent half-block cell",
+			"cli_selectors.armin_grid_height":
+				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent grid rows",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
