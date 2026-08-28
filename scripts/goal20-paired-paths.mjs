@@ -297,6 +297,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.auth_type": 50,
 	"cli_interactive_controller.parse_auto_theme": 50,
 	"cli_interactive_controller.resolve_theme": 50,
+	"cli_interactive_controller.tool_session_make": 50,
+	"cli_interactive_controller.tool_session_update": 50,
+	"cli_interactive_controller.tool_session_render": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -8622,6 +8625,90 @@ function runCliInteractiveResolveTheme() {
 	};
 }
 
+function makeToolRenderSession({ name, args, callRenderer, resultRenderer }) {
+	return {
+		name,
+		arguments: args,
+		callRenderer,
+		resultRenderer,
+		state: {},
+		result: undefined,
+		pendingP: true,
+	};
+}
+
+function updateToolRenderSession(session, result, pendingP) {
+	session.result = result;
+	session.pendingP = pendingP != null && pendingP !== false;
+	return session;
+}
+
+function renderToolSession(session) {
+	const call = session.callRenderer
+		? session.callRenderer(session.arguments, session.state)
+		: `${session.name} ${JSON.stringify(session.arguments)}`;
+	const result =
+		!session.pendingP && session.result
+			? session.resultRenderer
+				? session.resultRenderer(session.result, session.arguments, session.state)
+				: String(session.result)
+			: null;
+	return [call, result].filter((line) => line != null && line !== "");
+}
+
+function runCliInteractiveToolSessionMake() {
+	const session = makeToolRenderSession({ name: "read", args: "foo.txt" });
+	return {
+		tsm_name: session.name === "read" ? 1 : 0,
+		tsm_pending: session.pendingP ? 1 : 0,
+		tsm_nil: session.result ? 0 : 1,
+	};
+}
+
+function runCliInteractiveToolSessionUpdate() {
+	const session = makeToolRenderSession({ name: "read", args: "foo.txt" });
+	updateToolRenderSession(session, "ok", true);
+	const ok = session.result === "ok" ? 1 : 0;
+	const kept = session.pendingP ? 1 : 0;
+	updateToolRenderSession(session, "done");
+	return {
+		tsu_result: ok,
+		tsu_pending: kept,
+		tsu_cleared: session.pendingP ? 0 : 1,
+	};
+}
+
+function runCliInteractiveToolSessionRender() {
+	const pending = makeToolRenderSession({ name: "read", args: "foo.txt" });
+	const pendingLines = renderToolSession(pending);
+	const done = makeToolRenderSession({ name: "read", args: "foo.txt" });
+	updateToolRenderSession(done, "ok");
+	const doneLines = renderToolSession(done);
+	const custom = makeToolRenderSession({
+		name: "read",
+		args: "foo.txt",
+		callRenderer: (args) => `CALL:${args}`,
+		resultRenderer: (result) => `RES:${result}`,
+	});
+	updateToolRenderSession(custom, "ok");
+	const customLines = renderToolSession(custom);
+	const empty = makeToolRenderSession({
+		name: "read",
+		args: "foo.txt",
+		callRenderer: () => "",
+	});
+	const emptyLines = renderToolSession(empty);
+	const expectedCall = `read ${JSON.stringify("foo.txt")}`;
+	return {
+		trr_pending_n: pendingLines.length,
+		trr_pending_call: pendingLines[0] === expectedCall ? 1 : 0,
+		trr_done_n: doneLines.length,
+		trr_done_result: doneLines[1] === "ok" ? 1 : 0,
+		trr_custom: customLines[0] === "CALL:foo.txt" && customLines[1] === "RES:ok" ? 1 : 0,
+		trr_empty: emptyLines.length === 0 ? 1 : 0,
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
@@ -8630,6 +8717,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveAuthType(),
 		...runCliInteractiveParseAutoTheme(),
 		...runCliInteractiveResolveTheme(),
+		...runCliInteractiveToolSessionMake(),
+		...runCliInteractiveToolSessionUpdate(),
+		...runCliInteractiveToolSessionRender(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -8649,6 +8739,15 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		resolve_theme: await collect("cli_interactive_controller.resolve_theme", () => {
 			return () => runCliInteractiveResolveTheme();
+		}),
+		tool_session_make: await collect("cli_interactive_controller.tool_session_make", () => {
+			return () => runCliInteractiveToolSessionMake();
+		}),
+		tool_session_update: await collect("cli_interactive_controller.tool_session_update", () => {
+			return () => runCliInteractiveToolSessionUpdate();
+		}),
+		tool_session_render: await collect("cli_interactive_controller.tool_session_render", () => {
+			return () => runCliInteractiveToolSessionRender();
 		}),
 		observed,
 	};
@@ -17179,6 +17278,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts parseAutoThemeSetting",
 			"cli_interactive_controller.resolve_theme":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts resolveThemeSetting",
+			"cli_interactive_controller.tool_session_make":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts ToolExecutionComponent construct",
+			"cli_interactive_controller.tool_session_update":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts result/pending",
+			"cli_interactive_controller.tool_session_render":
+				"packages/coding-agent/src/modes/interactive/components/tool-execution.ts renderCall/renderResult fallback",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

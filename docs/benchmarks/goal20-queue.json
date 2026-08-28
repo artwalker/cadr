@@ -919,6 +919,51 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 520,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/tool-render-session.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.tool_session_make",
+   "branch": "cursor/tool-render-session-leftovers-520-522-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 520-522, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
+  },
+  {
+   "pair": 521,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/tool-render-session.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.tool_session_update",
+   "branch": "cursor/tool-render-session-leftovers-520-522-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 520-522, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
+  },
+  {
+   "pair": 522,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/tool-render-session.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.tool_session_render",
+   "branch": "cursor/tool-render-session-leftovers-520-522-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 520-522, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
   }
  ],
  "mergeQueue": []

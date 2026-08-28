@@ -183,6 +183,9 @@
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
+;;;; 520. cli_interactive_controller make-tool-render-session vs ToolExecutionComponent construct
+;;;; 521. cli_interactive_controller update-tool-render-session vs result/pending
+;;;; 522. cli_interactive_controller render-tool-session vs renderCall/renderResult fallback
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -446,6 +449,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.tool_session_make" . 50)
+    ("cli_interactive_controller.tool_session_update" . 50)
+    ("cli_interactive_controller.tool_session_render" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -9672,13 +9678,95 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defun tool-session-flag (got expected)
+  (if (equal got expected) 1 0))
+
+(defun run-cli-interactive-tool-session-make ()
+  (let ((session
+          (cadr-cli:make-tool-render-session
+           :name "read"
+           :arguments "foo.txt")))
+    (list
+     (tool-session-flag (cadr-cli::tool-render-session-name session) "read")
+     (if (cadr-cli::tool-render-session-pending-p session) 1 0)
+     (if (cadr-cli::tool-render-session-result session) 0 1))))
+
+(defun run-cli-interactive-tool-session-update ()
+  (let ((session
+          (cadr-cli:make-tool-render-session
+           :name "read"
+           :arguments "foo.txt")))
+    (cadr-cli:update-tool-render-session session "ok" :pending-p t)
+    (let ((kept (if (cadr-cli::tool-render-session-pending-p session) 1 0))
+          (ok
+            (tool-session-flag
+             (cadr-cli::tool-render-session-result session)
+             "ok")))
+      (cadr-cli:update-tool-render-session session "done")
+      (list
+       ok
+       kept
+       (if (cadr-cli::tool-render-session-pending-p session) 0 1)))))
+
+(defun run-cli-interactive-tool-session-render ()
+  (let* ((pending
+           (cadr-cli:make-tool-render-session
+            :name "read"
+            :arguments "foo.txt"))
+         (pending-lines (cadr-cli:render-tool-session pending))
+         (done
+           (cadr-cli:make-tool-render-session
+            :name "read"
+            :arguments "foo.txt"))
+         (custom
+           (cadr-cli:make-tool-render-session
+            :name "read"
+            :arguments "foo.txt"
+            :call-renderer
+            (lambda (args state)
+              (declare (ignore state))
+              (concatenate 'string "CALL:" args))
+            :result-renderer
+            (lambda (result args state)
+              (declare (ignore args state))
+              (concatenate 'string "RES:" result))))
+         (empty
+           (cadr-cli:make-tool-render-session
+            :name "read"
+            :arguments "foo.txt"
+            :call-renderer
+            (lambda (args state)
+              (declare (ignore args state))
+              ""))))
+    (cadr-cli:update-tool-render-session done "ok")
+    (cadr-cli:update-tool-render-session custom "ok")
+    (let ((done-lines (cadr-cli:render-tool-session done))
+          (custom-lines (cadr-cli:render-tool-session custom))
+          (empty-lines (cadr-cli:render-tool-session empty))
+          (expected-call (format nil "~A ~S" "read" "foo.txt")))
+      (list
+       (length pending-lines)
+       (tool-session-flag (first pending-lines) expected-call)
+       (length done-lines)
+       (tool-session-flag (second done-lines) "ok")
+       (if
+           (and
+            (string= (first custom-lines) "CALL:foo.txt")
+            (string= (second custom-lines) "RES:ok"))
+           1
+           0)
+       (if empty-lines 0 1)))))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (tool-session-make (run-cli-interactive-tool-session-make))
+        (tool-session-update (run-cli-interactive-tool-session-update))
+        (tool-session-render (run-cli-interactive-tool-session-render)))
     (json-object
      "observed"
      (json-object
@@ -9709,7 +9797,19 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "tsm_name" (first tool-session-make)
+      "tsm_pending" (second tool-session-make)
+      "tsm_nil" (third tool-session-make)
+      "tsu_result" (first tool-session-update)
+      "tsu_pending" (second tool-session-update)
+      "tsu_cleared" (third tool-session-update)
+      "trr_pending_n" (first tool-session-render)
+      "trr_pending_call" (second tool-session-render)
+      "trr_done_n" (third tool-session-render)
+      "trr_done_result" (fourth tool-session-render)
+      "trr_custom" (fifth tool-session-render)
+      "trr_empty" (sixth tool-session-render))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -9739,7 +9839,22 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "tool_session_make"
+     (collect "cli_interactive_controller.tool_session_make"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-make))))
+     "tool_session_update"
+     (collect "cli_interactive_controller.tool_session_update"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-update))))
+     "tool_session_render"
+     (collect "cli_interactive_controller.tool_session_render"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tool-session-render)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -16820,6 +16935,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.tool_session_make"
+      "src/cadr-cli/interactive/tool-render-session.lisp make-tool-render-session"
+      "cli_interactive_controller.tool_session_update"
+      "src/cadr-cli/interactive/tool-render-session.lisp update-tool-render-session"
+      "cli_interactive_controller.tool_session_render"
+      "src/cadr-cli/interactive/tool-render-session.lisp render-tool-session"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

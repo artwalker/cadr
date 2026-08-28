@@ -9,6 +9,20 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_make`
+  (`make-tool-render-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
+  Observed `tsm_name` / `tsm_pending` / `tsm_nil` exact. Pending first n=5 freeze.
+  Measure-only leftover (Pair 520). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_update`
+  (`update-tool-render-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
+  Observed `tsu_result` / `tsu_pending` / `tsu_cleared` exact.
+  Pending first n=5 freeze. Measure-only leftover (Pair 521).
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_render`
+  (`render-tool-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
+  Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` /
+  `trr_done_result` / `trr_custom` / `trr_empty` exact. Pending first n=5 freeze.
+  Measure-only leftover (Pair 522). `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
