@@ -9228,6 +9228,111 @@
      3)))
 
 
+(defun eval-layout-leaf (path)
+  (car (last (pathname-directory
+              (uiop:ensure-directory-pathname path)))))
+
+
+(defun run-evals-harness-eval-layout ()
+  ;; Isolated eval directory layout from run-coding-agent-eval.
+  ;; Do not exact session parent (cadr: under agent/; pi: under root).
+  (let* ((root
+           (uiop:ensure-directory-pathname
+            (make-pathname
+             :directory '(:absolute "tmp" "cadr-eval-root"))))
+         (cwd
+           (merge-pathnames "workspace/" root))
+         (agent-directory
+           (merge-pathnames "agent/" root))
+         (session-directory
+           (merge-pathnames "sessions/" agent-directory)))
+    (list
+     (eval-flag
+      (string= (eval-layout-leaf cwd) "workspace"))
+     (eval-flag
+      (string= (eval-layout-leaf agent-directory) "agent"))
+     (eval-flag
+      (string= (eval-layout-leaf session-directory) "sessions"))
+     3)))
+
+
+(defun eval-transformed-system-prompt (transform default-prompt)
+  (let ((system-prompt
+          (if transform
+              (funcall transform default-prompt)
+              default-prompt)))
+    (unless
+        (and (stringp system-prompt)
+             (plusp
+              (length
+               (string-trim
+                '(#\Space #\Tab
+                  #\Newline #\Return)
+                system-prompt))))
+      (error
+       "Transformed eval system prompt must not be empty"))
+    system-prompt))
+
+
+(defun eval-system-prompt-error-p (transform default-prompt)
+  (handler-case
+      (progn
+        (eval-transformed-system-prompt
+         transform default-prompt)
+        0)
+    (error () 1)))
+
+
+(defun run-evals-harness-system-prompt ()
+  (list
+   (eval-flag
+    (string=
+     (eval-transformed-system-prompt
+      #'identity "You are cadr.")
+     "You are cadr."))
+   (eval-flag
+    (string=
+     (eval-transformed-system-prompt
+      (lambda (prompt)
+        (concatenate 'string prompt " extra"))
+      "You are cadr.")
+     "You are cadr. extra"))
+   (eval-system-prompt-error-p
+    (constantly "") "You are cadr.")
+   (eval-system-prompt-error-p
+    (constantly "   ") "You are cadr.")
+   4))
+
+
+(defun eval-selected-output (response selector)
+  (if selector
+      (funcall selector response nil nil)
+      response))
+
+
+(defun run-evals-harness-output-selector ()
+  (list
+   (eval-flag
+    (string= (eval-selected-output "ok" nil) "ok"))
+   (eval-flag
+    (string=
+     (eval-selected-output
+      "ok"
+      (lambda (response agent manager)
+        (declare (ignore agent manager))
+        response))
+     "ok"))
+   (eval-flag
+    (string=
+     (eval-selected-output
+      "ok"
+      (lambda (response agent manager)
+        (declare (ignore agent manager))
+        (concatenate 'string "sel:" response)))
+     "sel:ok"))
+   3))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))

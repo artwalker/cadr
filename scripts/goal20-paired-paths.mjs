@@ -302,6 +302,9 @@ const REPETITIONS = {
 	"grep_tool.read_utf8": 50,
 	"grep_tool.file_lines": 50,
 	"grep_tool.context_block": 50,
+	"evals_harness.eval_layout": 50,
+	"evals_harness.system_prompt": 50,
+	"evals_harness.output_selector": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -7305,6 +7308,83 @@ function runEvalsHarnessFinish() {
 		rf_cmp: completed.includes("Eval Comparisons") ? 1 : 0,
 		rf_empty: empty.length === 0 ? 1 : 0,
 		rf_n: 3,
+	};
+}
+
+
+function evalLayoutLeaf(p) {
+	return path.basename(p);
+}
+
+
+function runEvalsHarnessEvalLayout() {
+	const root = "/tmp/cadr-eval-root";
+	const cwd = path.join(root, "workspace");
+	const agentDir = path.join(root, "agent");
+	const sessionDirectory = path.join(root, "sessions");
+	return {
+		el_ws: evalLayoutLeaf(cwd) === "workspace" ? 1 : 0,
+		el_agent: evalLayoutLeaf(agentDir) === "agent" ? 1 : 0,
+		el_sess: evalLayoutLeaf(sessionDirectory) === "sessions" ? 1 : 0,
+		el_n: 3,
+	};
+}
+
+
+function evalTransformedSystemPrompt(transform, defaultPrompt) {
+	const systemPrompt = transform ? transform(defaultPrompt) : defaultPrompt;
+	if (typeof systemPrompt !== "string" || !systemPrompt.trim()) {
+		throw new Error("Transformed eval system prompt must not be empty.");
+	}
+	return systemPrompt;
+}
+
+
+function evalSystemPromptErrorP(transform, defaultPrompt) {
+	try {
+		evalTransformedSystemPrompt(transform, defaultPrompt);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+
+function runEvalsHarnessSystemPrompt() {
+	return {
+		sp_id:
+			evalTransformedSystemPrompt((prompt) => prompt, "You are cadr.") ===
+			"You are cadr."
+				? 1
+				: 0,
+		sp_map:
+			evalTransformedSystemPrompt(
+				(prompt) => `${prompt} extra`,
+				"You are cadr.",
+			) === "You are cadr. extra"
+				? 1
+				: 0,
+		sp_empty: evalSystemPromptErrorP(() => "", "You are cadr."),
+		sp_blank: evalSystemPromptErrorP(() => "   ", "You are cadr."),
+		sp_n: 4,
+	};
+}
+
+
+function evalSelectedOutput(response, selector) {
+	return selector ? selector(response) : response;
+}
+
+
+function runEvalsHarnessOutputSelector() {
+	return {
+		os_none: evalSelectedOutput("ok", undefined) === "ok" ? 1 : 0,
+		os_id: evalSelectedOutput("ok", (response) => response) === "ok" ? 1 : 0,
+		os_map:
+			evalSelectedOutput("ok", (response) => `sel:${response}`) === "sel:ok"
+				? 1
+				: 0,
+		os_n: 3,
 	};
 }
 

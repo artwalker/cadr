@@ -1978,6 +1978,48 @@
    "piUs": 70.044,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 418,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.eval_layout",
+   "branch": "cursor/evals-harness-leftovers-418-420-b700",
+   "ratio": 3.071,
+   "cadrUs": 3.297,
+   "piUs": 1.074,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 419,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.system_prompt",
+   "branch": "cursor/evals-harness-leftovers-418-420-b700",
+   "ratio": 0.115,
+   "cadrUs": 0.569,
+   "piUs": 4.934,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 420,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.output_selector",
+   "branch": "cursor/evals-harness-leftovers-418-420-b700",
+   "ratio": 1.007,
+   "cadrUs": 0.189,
+   "piUs": 0.188,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

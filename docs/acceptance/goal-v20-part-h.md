@@ -5218,6 +5218,49 @@ Leftover sibling of Pair 406 `read_utf8` and Pair 407 `file_lines` on the same
 `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
 help text; this metric did not fail). cadr leads. Same commit no optimize.
 
+### Pair 418 — `evals_harness` (eval_layout)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_layout` | `run-coding-agent-eval` workspace/agent/sessions layout (`src/cadr-evals/harness.lisp`) | `runPiCodingAgent` `join(root, "workspace"|"agent"|"sessions")` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of the `evals_harness` hole on `src/cadr-evals/harness.lisp`.
+Timed work is isolated eval directory leaf names (workspace / agent /
+sessions) — not `make-eval-root`, not a live eval run. Do not exact session
+parent (cadr nests sessions under agent/; pi joins sessions on root).
+Observed `el_ws` / `el_agent` / `el_sess` / `el_n` are exact. First n=5 freeze
+**3.071×** (3.297 / 1.074 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 419 — `evals_harness` (system_prompt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `system_prompt` | `transform-system-prompt` empty rejection (`src/cadr-evals/harness.lisp`) | `transformSystemPrompt` empty rejection (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pair 418 `eval_layout` on the same `evals_harness` hole.
+Timed work is identity / suffix transform plus empty and whitespace rejection
+— not `build-system-prompt`, not a live agent. Do not exact error copy.
+Observed `sp_id` / `sp_map` / `sp_empty` / `sp_blank` / `sp_n` are exact.
+First n=5 freeze **0.115×** (0.569 / 4.934 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
+### Pair 420 — `evals_harness` (output_selector)
+
+| metric | cadr | pi |
+|---|---|---|
+| `output_selector` | `run-coding-agent-eval` `:selector` (`src/cadr-evals/harness.lisp`) | `options.output` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pairs 418–419 on the same `evals_harness` hole. Timed
+work is passthrough / identity selector / mapped selector — not prompt, not
+JSON. Observed `os_none` / `os_id` / `os_map` / `os_n` are exact. First n=5
+freeze **1.007×** (0.189 / 0.188 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked (sub-µs). Same commit
+no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
