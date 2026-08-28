@@ -877,6 +877,48 @@
    "piUs": 0.370,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 412,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.status_name",
+   "branch": "cursor/evals-reporter-leftovers-412-414-412b",
+   "ratio": 1.726,
+   "cadrUs": 0.352,
+   "piUs": 0.204,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 413,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.case_observation",
+   "branch": "cursor/evals-reporter-leftovers-412-414-412b",
+   "ratio": 3.069,
+   "cadrUs": 9.383,
+   "piUs": 3.057,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 414,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.finish",
+   "branch": "cursor/evals-reporter-leftovers-412-414-412b",
+   "ratio": 0.701,
+   "cadrUs": 20.345,
+   "piUs": 29.007,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

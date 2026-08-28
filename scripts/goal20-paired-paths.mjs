@@ -232,6 +232,9 @@ const REPETITIONS = {
 	"evals_harness.step_value": 50,
 	"evals_harness.usage": 50,
 	"evals_harness.result_json": 50,
+	"evals_harness.status_name": 50,
+	"evals_harness.case_observation": 50,
+	"evals_harness.finish": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5767,6 +5770,170 @@ function runEvalsHarnessResultJson() {
 	};
 }
 
+function reporterStatusName(status) {
+	return String(status).toLowerCase();
+}
+
+function runEvalsHarnessStatusName() {
+	return {
+		sn_kw: reporterStatusName("passed") === "passed" ? 1 : 0,
+		sn_str: reporterStatusName("FAILED") === "failed" ? 1 : 0,
+		sn_mixed: reporterStatusName("Passed") === "passed" ? 1 : 0,
+		sn_n: 3,
+	};
+}
+
+function readFiniteNumber(value) {
+	return typeof value === "number" && Number.isFinite(value) ? value : undefined;
+}
+
+function parseEvalHarnessIterationArtifact(value) {
+	if (!value || typeof value !== "object") return undefined;
+	const schemaVersion = value.schemaVersion;
+	const evalSet = value.evalSet;
+	const groupKey = value.groupKey;
+	const harness = value.harness;
+	const baseline = value.baseline;
+	const candidates = value.candidates;
+	const repetition = value.repetition;
+	if (
+		schemaVersion === 1 &&
+		typeof evalSet === "string" &&
+		typeof groupKey === "string" &&
+		typeof harness === "string" &&
+		typeof baseline === "string" &&
+		Array.isArray(candidates) &&
+		candidates.every((item) => typeof item === "string") &&
+		typeof repetition === "number"
+	) {
+		return value;
+	}
+	return undefined;
+}
+
+function evalReporterIterationArtifact() {
+	return {
+		schemaVersion: 1,
+		evalSet: "extension authoring",
+		groupKey: '["hello",1]',
+		harness: "without-docs",
+		baseline: "without-docs",
+		candidates: ["with-docs"],
+		repetition: 1,
+	};
+}
+
+function evalReporterCaseFor({ status = "passed", score, errors, iteration } = {}) {
+	const artifacts = {};
+	if (iteration) {
+		artifacts.vitestEvalsHarnessIteration = evalReporterIterationArtifact();
+	}
+	return {
+		status,
+		score,
+		result: {
+			output: "ok",
+			usage: { totalTokens: 10, metadata: { estimatedCostUsd: 0.01 } },
+			timings: { totalMs: 20 },
+			errors: errors ?? [],
+			artifacts,
+		},
+	};
+}
+
+function reporterCaseObservation(testCase) {
+	const run = testCase.result;
+	const iteration = parseEvalHarnessIterationArtifact(
+		run.artifacts?.vitestEvalsHarnessIteration,
+	);
+	if (!iteration) return null;
+	const score = readFiniteNumber(testCase.score);
+	const usage = run.usage;
+	const timings = run.timings;
+	let outcome;
+	if (run.errors && run.errors.length > 0) outcome = "errored";
+	else if (score !== undefined) outcome = "scored";
+	else {
+		const state = testCase.status;
+		outcome = state === "passed" ? "unscored" : state === "failed" ? "errored" : state;
+	}
+	return {
+		evalSet: iteration.evalSet,
+		groupKey: iteration.groupKey,
+		testName: "hello",
+		file: "src/extensions.eval.lisp",
+		harness: iteration.harness,
+		baseline: iteration.baseline,
+		candidates: iteration.candidates,
+		repetition: iteration.repetition,
+		outcome,
+		score,
+		totalTokens: readFiniteNumber(usage?.totalTokens),
+		totalMs: readFiniteNumber(timings?.totalMs),
+		estimatedCostUsd: readFiniteNumber(usage?.metadata?.estimatedCostUsd),
+	};
+}
+
+function runEvalsHarnessCaseObservation() {
+	const scored = reporterCaseObservation(
+		evalReporterCaseFor({ status: "passed", score: 1, iteration: true }),
+	);
+	const errored = reporterCaseObservation(
+		evalReporterCaseFor({
+			status: "passed",
+			score: 1,
+			errors: ["boom"],
+			iteration: true,
+		}),
+	);
+	const unscored = reporterCaseObservation(
+		evalReporterCaseFor({ status: "passed", iteration: true }),
+	);
+	const failed = reporterCaseObservation(
+		evalReporterCaseFor({ status: "failed", iteration: true }),
+	);
+	const missing = reporterCaseObservation(
+		evalReporterCaseFor({ status: "passed", score: 1 }),
+	);
+	return {
+		co_scored:
+			scored?.outcome === "scored" &&
+			scored.score === 1 &&
+			scored.evalSet === "extension authoring"
+				? 1
+				: 0,
+		co_err: errored?.outcome === "errored" ? 1 : 0,
+		co_unscored: unscored?.outcome === "unscored" ? 1 : 0,
+		co_fail: failed?.outcome === "errored" ? 1 : 0,
+		co_miss: missing === null ? 1 : 0,
+		co_n: 5,
+	};
+}
+
+function evalReporterFinish(observations, reason) {
+	if (reason === "interrupted") {
+		return "\nEval comparisons unavailable: test run interrupted.\n";
+	}
+	const formatted = evalsSummaryModule.formatHarnessComparisonReport(
+		evalsSummaryModule.summarizeHarnessComparisons(observations),
+	);
+	return formatted ? `\n${formatted}\n` : "";
+}
+
+function runEvalsHarnessFinish() {
+	const interrupted = evalReporterFinish([], "interrupted");
+	const completed = evalReporterFinish(evalsHarnessObservations(), "completed");
+	const empty = evalReporterFinish([], "completed");
+	return {
+		rf_int: interrupted.includes("Eval comparisons unavailable: test run interrupted.")
+			? 1
+			: 0,
+		rf_cmp: completed.includes("Eval Comparisons") ? 1 : 0,
+		rf_empty: empty.length === 0 ? 1 : 0,
+		rf_n: 3,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5784,6 +5951,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessStepValue(),
 		...runEvalsHarnessUsage(),
 		...runEvalsHarnessResultJson(),
+		...runEvalsHarnessStatusName(),
+		...runEvalsHarnessCaseObservation(),
+		...runEvalsHarnessFinish(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5818,6 +5988,15 @@ async function measureEvalsHarness() {
 		}),
 		result_json: await collect("evals_harness.result_json", () => {
 			return () => runEvalsHarnessResultJson();
+		}),
+		status_name: await collect("evals_harness.status_name", () => {
+			return () => runEvalsHarnessStatusName();
+		}),
+		case_observation: await collect("evals_harness.case_observation", () => {
+			return () => runEvalsHarnessCaseObservation();
+		}),
+		finish: await collect("evals_harness.finish", () => {
+			return () => runEvalsHarnessFinish();
 		}),
 		observed,
 	};
@@ -16994,6 +17173,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts runPiCodingAgent usage object assembly",
 			"evals_harness.result_json":
 				"packages/evals/src/pi-harness.ts SimpleHarnessResult JSON shape",
+			"evals_harness.status_name":
+				"packages/evals/src/vitest-evals/reporter.ts test.result().state lowercasing",
+			"evals_harness.case_observation":
+				"packages/evals/src/vitest-evals/reporter.ts collectHarnessObservations",
+			"evals_harness.finish":
+				"packages/evals/src/vitest-evals/reporter.ts onTestRunEnd",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

@@ -133,6 +133,9 @@
 ;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
 ;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
 ;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
+;;;; 412. evals_harness reporter-status-name vs test.result().state lowercasing
+;;;; 413. evals_harness reporter-case-observation vs collectHarnessObservations
+;;;; 414. evals_harness eval-reporter-finish vs onTestRunEnd
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -378,6 +381,9 @@
     ("evals_harness.step_value" . 50)
     ("evals_harness.usage" . 50)
     ("evals_harness.result_json" . 50)
+    ("evals_harness.status_name" . 50)
+    ("evals_harness.case_observation" . 50)
+    ("evals_harness.finish" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -7252,6 +7258,147 @@
       (eql (cadr-ai::json-get timings "totalMs") 12.5d0))
      5)))
 
+(defun eval-reporter-iteration-artifact ()
+  (cadr-ai::json-object
+   "schemaVersion" 1
+   "evalSet" "extension authoring"
+   "groupKey" "[\"hello\",1]"
+   "harness" "without-docs"
+   "baseline" "without-docs"
+   "candidates" (vector "with-docs")
+   "repetition" 1))
+
+(defun eval-reporter-case-for
+    (&key (status :passed) score errors iteration)
+  (let ((artifacts
+          (make-hash-table :test #'equal)))
+    (when iteration
+      (setf (gethash
+             cadr-evals:+eval-harness-iteration-artifact+
+             artifacts)
+            (eval-reporter-iteration-artifact)))
+    (cadr-evals:make-eval-reporter-case
+     :id "case-1"
+     :file "src/extensions.eval.lisp"
+     :name "hello"
+     :full-name "hello"
+     :status status
+     :harness-name "without-docs"
+     :score score
+     :result
+     (cadr-evals::make-eval-result
+      :output "ok"
+      :usage
+      (cadr-ai::json-object
+       "totalTokens" 10
+       "metadata"
+       (cadr-ai::json-object
+        "estimatedCostUsd" 0.01d0))
+      :timings
+      (cadr-ai::json-object "totalMs" 20)
+      :errors errors
+      :artifacts artifacts))))
+
+(defun run-evals-harness-status-name ()
+  (list
+   (eval-flag
+    (string=
+     (cadr-evals::reporter-status-name :passed)
+     "passed"))
+   (eval-flag
+    (string=
+     (cadr-evals::reporter-status-name "FAILED")
+     "failed"))
+   (eval-flag
+    (string=
+     (cadr-evals::reporter-status-name "Passed")
+     "passed"))
+   3))
+
+(defun eval-observation-outcome-p (case expected)
+  (let ((observation
+          (cadr-evals::reporter-case-observation case)))
+    (and observation
+         (eq (cadr-evals::harness-observation-outcome
+              observation)
+             expected))))
+
+(defun run-evals-harness-case-observation ()
+  (let ((scored
+          (cadr-evals::reporter-case-observation
+           (eval-reporter-case-for
+            :status :passed
+            :score 1
+            :iteration t))))
+    (list
+     (eval-flag
+      (and scored
+           (eq (cadr-evals::harness-observation-outcome scored)
+               :scored)
+           (= (cadr-evals::harness-observation-score scored) 1)
+           (string=
+            (cadr-evals::harness-observation-eval-set scored)
+            "extension authoring")))
+     (eval-flag
+      (eval-observation-outcome-p
+       (eval-reporter-case-for
+        :status :passed
+        :score 1
+        :errors '("boom")
+        :iteration t)
+       :errored))
+     (eval-flag
+      (eval-observation-outcome-p
+       (eval-reporter-case-for
+        :status :passed
+        :iteration t)
+       :unscored))
+     (eval-flag
+      (eval-observation-outcome-p
+       (eval-reporter-case-for
+        :status :failed
+        :iteration t)
+       :errored))
+     (eval-flag
+      (null
+       (cadr-evals::reporter-case-observation
+        (eval-reporter-case-for
+         :status :passed
+         :score 1))))
+     5)))
+
+(defun run-evals-harness-finish ()
+  (let* ((interrupted-out (make-string-output-stream))
+         (completed-out (make-string-output-stream))
+         (empty-out (make-string-output-stream))
+         (interrupted
+           (cadr-evals:make-eval-harness-reporter
+            :output interrupted-out))
+         (completed
+           (cadr-evals:make-eval-harness-reporter
+            :output completed-out))
+         (empty
+           (cadr-evals:make-eval-harness-reporter
+            :output empty-out)))
+    (setf (cadr-evals:eval-harness-reporter-observations completed)
+          (reverse (evals-harness-observations)))
+    (cadr-evals:eval-reporter-finish interrupted :interrupted)
+    (cadr-evals:eval-reporter-finish completed :completed)
+    (cadr-evals:eval-reporter-finish empty :completed)
+    (list
+     (eval-flag
+      (search
+       "Eval comparisons unavailable: test run interrupted."
+       (get-output-stream-string interrupted-out)))
+     (eval-flag
+      (search
+       "Eval Comparisons"
+       (get-output-stream-string completed-out)))
+     (eval-flag
+      (zerop
+       (length (get-output-stream-string empty-out))))
+     3)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7268,7 +7415,10 @@
          (last-assistant (run-evals-harness-last-assistant))
          (step-value (run-evals-harness-step-value))
          (usage (run-evals-harness-usage))
-         (result-json (run-evals-harness-result-json)))
+         (result-json (run-evals-harness-result-json))
+         (status-name (run-evals-harness-status-name))
+         (case-observation (run-evals-harness-case-observation))
+         (finish (run-evals-harness-finish)))
     (json-object
      "observed"
      (json-object
@@ -7338,7 +7488,21 @@
       "rj_err" (nth 2 result-json)
       "rj_art" (nth 3 result-json)
       "rj_time" (nth 4 result-json)
-      "rj_n" (nth 5 result-json))
+      "rj_n" (nth 5 result-json)
+      "sn_kw" (nth 0 status-name)
+      "sn_str" (nth 1 status-name)
+      "sn_mixed" (nth 2 status-name)
+      "sn_n" (nth 3 status-name)
+      "co_scored" (nth 0 case-observation)
+      "co_err" (nth 1 case-observation)
+      "co_unscored" (nth 2 case-observation)
+      "co_fail" (nth 3 case-observation)
+      "co_miss" (nth 4 case-observation)
+      "co_n" (nth 5 case-observation)
+      "rf_int" (nth 0 finish)
+      "rf_cmp" (nth 1 finish)
+      "rf_empty" (nth 2 finish)
+      "rf_n" (nth 3 finish))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7394,7 +7558,22 @@
      (collect "evals_harness.result_json"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-result-json)))))))
+                  (run-evals-harness-result-json))))
+     "status_name"
+     (collect "evals_harness.status_name"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-status-name))))
+     "case_observation"
+     (collect "evals_harness.case_observation"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-case-observation))))
+     "finish"
+     (collect "evals_harness.finish"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-finish)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16614,6 +16793,12 @@
       "src/cadr-evals/harness.lisp eval-usage"
       "evals_harness.result_json"
       "src/cadr-evals/harness.lisp eval-result-json"
+      "evals_harness.status_name"
+      "src/cadr-evals/reporter.lisp reporter-status-name"
+      "evals_harness.case_observation"
+      "src/cadr-evals/reporter.lisp reporter-case-observation"
+      "evals_harness.finish"
+      "src/cadr-evals/reporter.lisp eval-reporter-finish"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
