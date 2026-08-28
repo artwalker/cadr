@@ -22030,7 +22030,7 @@
           (run-cli-selectors-make-api-key-input-state))
         (leftover-make-oauth-state
           (run-cli-selectors-make-oauth-selector-state))
-        (user-message-make)
+        (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
           (run-cli-selectors-user-message-move))
@@ -22811,7 +22811,7 @@
               leftover-trust-saved-p leftover-make-trust-state leftover-trust-render)
              (auth-make-login-api-oauth-observed-pairs
               leftover-make-login-method-state leftover-make-api-key-state leftover-make-oauth-state)
-             (user-message-selector-observed-pairs)
+             (user-message-selector-observed-pairs
               user-message-make
               user-message-move
               user-message-selection)))
