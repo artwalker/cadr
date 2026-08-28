@@ -14796,7 +14796,7 @@
               scoped-models-selector-persist
               provider-count-obs)
              (armin-observed-pairs
-              armin-pixel armin-cell armin-grid-height))))
+              armin-pixel armin-cell armin-grid-height)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
