@@ -293,4 +293,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.error_detail` | 0.838 | 0.364 | 2.301× | 8.00× | measure-only pair 379; `oauth-response-error-detail` vs xai.ts requestFailure detail (sub-µs variance) | invent pause；地板优化另刀 |
 | `oauth_pkce_device.notify_device` | 0.960 | 0.371 | 2.586× | 8.00× | measure-only pair 381; `notify-device-authorization` vs xai.ts interaction.notify device_code (sub-µs variance) | invent pause；地板优化另刀 |
 | `core_rest.redacted_replace` | 1.464 | 0.433 | 3.383× | 8.00× | measure-only pair 387; `replace-all` vs String.split/join one needle | invent pause；地板优化另刀 |
+| `evals_harness.eval_result` | 0.762 | 0.440 | 1.734× | 8.00× | measure-only pair 376; leftover `make-eval-result` vs SimpleHarnessResult construction; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `evals_harness.root_observer` | 0.362 | 0.162 | 2.239× | 8.00× | measure-only pair 377; leftover `*eval-root-observer*` vs isolated eval root handoff; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

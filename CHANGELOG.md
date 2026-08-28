@@ -9,6 +9,15 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.eval_result` /
+  `root_observer` / `model_resolver` (`src/cadr-evals/harness.lisp` vs
+  baseline SimpleHarnessResult construction / isolated eval root handoff /
+  ModelRuntime.getModel stub). Observed `er_*` / `ro_*` / `mr_*` exact.
+  n=5 **1.734×** / **2.239×** / **0.601×** (0.762 / 0.440 µs, 0.362 / 0.162 µs,
+  0.153 / 0.254 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not these
+  metrics. Does not pair `default-eval-model-resolver` (skipped; ~54×).
+  Pairs 376–377 are on the over-1× ledger. Pairs 376–378.
 - Goal 20 P.13 leftover: pair `core_rest.cancellation_predicate`
   (`cancellation-predicate-aborted-p` on `src/cadr-core/cancellation.lisp` vs
   `Boolean(fn())` try/catch). Observed `cp_nil` / `cp_true` / `cp_false` /

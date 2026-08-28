@@ -4870,6 +4870,49 @@ string) — not `redact-secrets` as the timed owner. Observed `ra_hit` /
 metric did not fail). Same commit no optimize. Booked in
 `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 376 — `evals_harness` (eval_result)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_result` | `make-eval-result` (`src/cadr-evals/harness.lisp`) | `SimpleHarnessResult` construction (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of the `evals_harness` hole on `src/cadr-evals/harness.lisp`.
+Timed work is struct construction (empty defaults plus populated events/errors)
+— not `eval-result-json` (queued #36) and not a live eval run. Observed `er_out`
+/ `er_ev` / `er_art` / `er_time` / `er_full_ev` / `er_err` / `er_n` are exact.
+First n=5 freeze **1.734×** (0.762 / 0.440 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked (sub-µs).
+Same commit no optimize.
+
+### Pair 377 — `evals_harness` (root_observer)
+
+| metric | cadr | pi |
+|---|---|---|
+| `root_observer` | `*eval-root-observer*` (`src/cadr-evals/harness.lisp`) | isolated eval root handoff (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pair 376 on the same `evals_harness` hole. Timed work is
+the eval-root observer seam (captured pathname) — not `make-eval-root` (queued
+#38). Observed `ro_seen` / `ro_path` / `ro_name` / `ro_n` are exact. First n=5
+freeze **2.239×** (0.362 / 0.162 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Over-1× booked (sub-µs). Same commit no
+optimize.
+
+### Pair 378 — `evals_harness` (model_resolver)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_resolver` | stubbed `*eval-model-resolver*` (`src/cadr-evals/harness.lisp`) | `ModelRuntime.getModel` stub (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pairs 376–377 on the same `evals_harness` hole. Timed work
+is a stubbed resolver funcall (downcase provider, model id, stream function) —
+not `default-eval-model-resolver` (skipped this cut; first freeze ~54× vs
+ceiling 8.0). Observed `mr_prov` / `mr_model` / `mr_stream` / `mr_n` are exact.
+First n=5 freeze **0.601×** (0.153 / 0.254 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

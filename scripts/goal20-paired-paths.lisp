@@ -8437,6 +8437,67 @@
    4))
 
 
+(defun run-evals-harness-eval-result ()
+  ;; Struct construction only — not eval-result-json (#36) and not
+  ;; default-eval-model-resolver (skipped this cut).
+  (let ((empty (cadr-evals::make-eval-result :output "ok"))
+        (full
+          (cadr-evals::make-eval-result
+           :output "full"
+           :events '(1)
+           :usage (cadr-ai::json-object "n" 1)
+           :errors '("e"))))
+    (list
+     (eval-flag
+      (string= (cadr-evals:eval-result-output empty) "ok"))
+     (eval-flag (null (cadr-evals:eval-result-events empty)))
+     (eval-flag
+      (hash-table-p (cadr-evals:eval-result-artifacts empty)))
+     (eval-flag
+      (hash-table-p (cadr-evals:eval-result-timings empty)))
+     (eval-flag
+      (equal (cadr-evals:eval-result-events full) '(1)))
+     (eval-flag
+      (equal (cadr-evals:eval-result-errors full) '("e")))
+     6)))
+
+
+(defun run-evals-harness-root-observer ()
+  ;; *eval-root-observer* seam only — not make-eval-root (#38).
+  (let* ((root #p"/tmp/cadr-eval-observer-bench/")
+         (seen nil)
+         (cadr-evals::*eval-root-observer*
+           (lambda (path)
+             (setf seen path))))
+    (funcall cadr-evals::*eval-root-observer* root)
+    (list
+     (eval-flag (eq seen root))
+     (eval-flag (pathnamep seen))
+     (eval-flag
+      (search "cadr-eval-observer" (namestring seen)))
+     3)))
+
+
+(defun run-evals-harness-model-resolver ()
+  ;; Stubbed *eval-model-resolver* funcall. Does not call
+  ;; default-eval-model-resolver (~54×; skipped this cut).
+  (let* ((stream #'identity)
+         (cadr-evals::*eval-model-resolver*
+           (lambda (provider model)
+             (values
+              (string-downcase provider)
+              model
+              stream))))
+    (multiple-value-bind (provider model stream-fn)
+        (funcall cadr-evals::*eval-model-resolver*
+                 "OpenAI" "gpt-4o")
+      (list
+       (eval-flag (string= provider "openai"))
+       (eval-flag (string= model "gpt-4o"))
+       (eval-flag (eq stream-fn stream))
+       3))))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))

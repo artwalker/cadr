@@ -1597,6 +1597,48 @@
    "piUs": 0.433,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 376,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.eval_result",
+   "branch": "cursor/evals-harness-leftovers-376-378-6135",
+   "ratio": 1.734,
+   "cadrUs": 0.762,
+   "piUs": 0.44,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 377,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.root_observer",
+   "branch": "cursor/evals-harness-leftovers-376-378-6135",
+   "ratio": 2.239,
+   "cadrUs": 0.362,
+   "piUs": 0.162,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 378,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.model_resolver",
+   "branch": "cursor/evals-harness-leftovers-376-378-6135",
+   "ratio": 0.601,
+   "cadrUs": 0.153,
+   "piUs": 0.254,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
