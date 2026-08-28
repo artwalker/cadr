@@ -2106,6 +2106,18 @@ class TestPairedPathRecord(unittest.TestCase):
             "cli_selectors.scoped_models_selector_provider_count",
             paired.RATIO_CEILINGS,
         )
+        self.assertIn("cli_selectors.scoped_models_enabled_set", RECORD.METRIC_KEYS)
+        self.assertIn("scoped_models_enabled_set", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.scoped_models_enabled_set", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.model_equal_p", RECORD.METRIC_KEYS)
+        self.assertIn("model_equal_p", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.model_equal_p", paired.RATIO_CEILINGS)
+        self.assertIn("cli_selectors.scoped_model_selector_search_text", RECORD.METRIC_KEYS)
+        self.assertIn("scoped_model_selector_search_text", paired.METRICS["cli_selectors"])
+        self.assertIn("cli_selectors.scoped_model_selector_search_text", paired.RATIO_CEILINGS)
+        self.assertIn("smes_sort", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("meq_same", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("smsst_openai", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])

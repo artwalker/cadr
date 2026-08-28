@@ -576,6 +576,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.scoped_models_enabled_set" . 50)
+    ("cli_selectors.model_equal_p" . 50)
+    ("cli_selectors.scoped_model_selector_search_text" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13713,7 +13716,7 @@
       models '("google/gemini-2.5-pro") :persist-callback t))))
 
 (defun scoped-models-selector-tail-observed-pairs
-    (reorder persist provider-count)
+    (reorder persist provider-count enabled-set model-equal search-text)
   (append
     (list
      "smsror_down" (nth 0 reorder)
@@ -13728,7 +13731,9 @@
      "smsper_empty" (nth 3 persist)
      "smsper_two" (nth 4 persist)
      "smsper_single" (nth 5 persist))
-    (scoped-models-provider-count-observed-pairs provider-count)))
+    (scoped-models-provider-count-observed-pairs provider-count)
+    (scoped-set-leftover-observed-pairs
+     enabled-set model-equal search-text)))
 
 (defun scoped-models-provider-count-observed-pairs (results)
   (list
@@ -13763,6 +13768,106 @@
       (cadr-cli::make-scoped-models-selector-state
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
+
+(defun scoped-set-leftover-observed-pairs
+    (enabled-set model-equal search-text)
+  (list
+   "smes_empty" (nth 0 enabled-set)
+   "smes_one" (nth 1 enabled-set)
+   "smes_two" (nth 2 enabled-set)
+   "smes_dup" (nth 3 enabled-set)
+   "smes_sort" (nth 4 enabled-set)
+   "smes_three" (nth 5 enabled-set)
+   "meq_same" (nth 0 model-equal)
+   "meq_diff_id" (nth 1 model-equal)
+   "meq_diff_prov" (nth 2 model-equal)
+   "meq_nil_left" (nth 3 model-equal)
+   "meq_nil_right" (nth 4 model-equal)
+   "meq_both_nil" (nth 5 model-equal)
+   "smsst_openai" (nth 0 search-text)
+   "smsst_anthropic" (nth 1 search-text)
+   "smsst_codex" (nth 2 search-text)
+   "smsst_openrouter" (nth 3 search-text)
+   "smsst_google" (nth 4 search-text)
+   "smsst_noname" (nth 5 search-text)))
+
+(defun encode-scoped-models-enabled-set (enabled)
+  (let ((keys '()))
+    (maphash
+     (lambda (key value)
+       (declare (ignore value))
+       (push key keys))
+     (cadr-cli::scoped-models-enabled-set enabled))
+    (format nil "~{~a~^,~}" (sort keys #'string<))))
+
+(defun run-cli-selectors-scoped-models-enabled-set ()
+  (list
+   (encode-scoped-models-enabled-set '())
+   (encode-scoped-models-enabled-set '("openai/gpt-4o"))
+   (encode-scoped-models-enabled-set
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4"))
+   (encode-scoped-models-enabled-set
+    '("openai/gpt-4o" "openai/gpt-4o"))
+   (encode-scoped-models-enabled-set
+    '("b/id" "a/id"))
+   (encode-scoped-models-enabled-set
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4" "google/gemini-2.5-pro"))))
+
+(defun model-equal-flag (left right)
+  (if (cadr-cli::model-equal-p left right)
+      "1"
+      "0"))
+
+(defun run-cli-selectors-model-equal-p ()
+  (let ((gpt (make-model-selector-search-fixture))
+        (claude
+          (make-model-selector-search-fixture
+           :id "claude-sonnet-4"
+           :provider :anthropic
+           :name "Claude Sonnet 4"))
+        (gpt-again (make-model-selector-search-fixture))
+        (gpt-other-provider
+          (make-model-selector-search-fixture
+           :id "gpt-4o"
+           :provider :openrouter
+           :name "GPT-4o")))
+    (list
+     (model-equal-flag gpt gpt-again)
+     (model-equal-flag gpt claude)
+     (model-equal-flag gpt gpt-other-provider)
+     (model-equal-flag nil gpt)
+     (model-equal-flag gpt nil)
+     (model-equal-flag nil nil))))
+
+(defun run-cli-selectors-scoped-model-selector-search-text ()
+  (list
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "claude-sonnet-4"
+     :provider :anthropic
+     :name "Claude Sonnet 4"))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "gpt-5"
+     :provider :openai-codex
+     :name ""))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "openai/gpt-4o"
+     :provider :openrouter
+     :name "GPT-4o"))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "gemini-2.5-pro"
+     :provider :google
+     :name ""))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "mimo-v2.5"
+     :provider :opencode-go
+     :name nil))))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list
@@ -14022,7 +14127,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (enabled-set
+          (run-cli-selectors-scoped-models-enabled-set))
+        (model-equal
+          (run-cli-selectors-model-equal-p))
+        (scoped-search-text
+          (run-cli-selectors-scoped-model-selector-search-text)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14866,10 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs
+              enabled-set
+              model-equal
+              scoped-search-text)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15517,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "scoped_models_enabled_set"
+     (collect "cli_selectors.scoped_models_enabled_set"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-enabled-set))))
+     "model_equal_p"
+     (collect "cli_selectors.model_equal_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-equal-p))))
+     "scoped_model_selector_search_text"
+     (collect "cli_selectors.scoped_model_selector_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-model-selector-search-text)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17044,6 +17173,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.scoped_models_enabled_set"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-enabled-set"
+      "cli_selectors.model_equal_p"
+      "src/cadr-cli/interactive/selectors/models.lisp model-equal-p"
+      "cli_selectors.scoped_model_selector_search_text"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-model-selector-search-text"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.scoped_models_enabled_set": 50,
+	"cli_selectors.model_equal_p": 50,
+	"cli_selectors.scoped_model_selector_search_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,91 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function encodeScopedModelsEnabledSet(enabled) {
+	return [...new Set(enabled)].sort().join(",");
+}
+
+function runCliSelectorsScopedModelsEnabledSet() {
+	return {
+		smes_empty: encodeScopedModelsEnabledSet([]),
+		smes_one: encodeScopedModelsEnabledSet(["openai/gpt-4o"]),
+		smes_two: encodeScopedModelsEnabledSet([
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+		smes_dup: encodeScopedModelsEnabledSet(["openai/gpt-4o", "openai/gpt-4o"]),
+		smes_sort: encodeScopedModelsEnabledSet(["b/id", "a/id"]),
+		smes_three: encodeScopedModelsEnabledSet([
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+			"google/gemini-2.5-pro",
+		]),
+	};
+}
+
+function modelEqualP(left, right) {
+	if (!left || !right) {
+		return "0";
+	}
+	return left.id === right.id && left.provider === right.provider ? "1" : "0";
+}
+
+function runCliSelectorsModelEqualP() {
+	const gpt = { id: "gpt-4o", provider: "openai", name: "GPT-4o" };
+	const claude = {
+		id: "claude-sonnet-4",
+		provider: "anthropic",
+		name: "Claude Sonnet 4",
+	};
+	const gptAgain = { id: "gpt-4o", provider: "openai", name: "GPT-4o" };
+	const gptOtherProvider = {
+		id: "gpt-4o",
+		provider: "openrouter",
+		name: "GPT-4o",
+	};
+	return {
+		meq_same: modelEqualP(gpt, gptAgain),
+		meq_diff_id: modelEqualP(gpt, claude),
+		meq_diff_prov: modelEqualP(gpt, gptOtherProvider),
+		meq_nil_left: modelEqualP(null, gpt),
+		meq_nil_right: modelEqualP(gpt, null),
+		meq_both_nil: modelEqualP(null, null),
+	};
+}
+
+function runCliSelectorsScopedModelSelectorSearchText() {
+	return {
+		smsst_openai: modelSearchModule.getModelSearchText({
+			id: "gpt-4o",
+			provider: "openai",
+			name: "GPT-4o",
+		}),
+		smsst_anthropic: modelSearchModule.getModelSearchText({
+			id: "claude-sonnet-4",
+			provider: "anthropic",
+			name: "Claude Sonnet 4",
+		}),
+		smsst_codex: modelSearchModule.getModelSearchText({
+			id: "gpt-5",
+			provider: "openai-codex",
+		}),
+		smsst_openrouter: modelSearchModule.getModelSearchText({
+			id: "openai/gpt-4o",
+			provider: "openrouter",
+			name: "GPT-4o",
+		}),
+		smsst_google: modelSearchModule.getModelSearchText({
+			id: "gemini-2.5-pro",
+			provider: "google",
+			name: "",
+		}),
+		smsst_noname: modelSearchModule.getModelSearchText({
+			id: "mimo-v2.5",
+			provider: "opencode-go",
+		}),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +14985,11 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const scopedModelsEnabledSetResults =
+		runCliSelectorsScopedModelsEnabledSet();
+	const modelEqualPResults = runCliSelectorsModelEqualP();
+	const scopedModelSelectorSearchTextResults =
+		runCliSelectorsScopedModelSelectorSearchText();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15295,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...scopedModelsEnabledSetResults,
+		...modelEqualPResults,
+		...scopedModelSelectorSearchTextResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15659,6 +15755,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		scoped_models_enabled_set: await collect(
+			"cli_selectors.scoped_models_enabled_set",
+			() => {
+				return () => runCliSelectorsScopedModelsEnabledSet();
+			},
+		),
+		model_equal_p: await collect(
+			"cli_selectors.model_equal_p",
+			() => {
+				return () => runCliSelectorsModelEqualP();
+			},
+		),
+		scoped_model_selector_search_text: await collect(
+			"cli_selectors.scoped_model_selector_search_text",
+			() => {
+				return () => runCliSelectorsScopedModelSelectorSearchText();
 			},
 		),
 		observed,
@@ -17393,6 +17507,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.scoped_models_enabled_set":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts getSortedIds enabledSet",
+			"cli_selectors.model_equal_p":
+				"packages/ai/src/models.ts modelsAreEqual",
+			"cli_selectors.scoped_model_selector_search_text":
+				"packages/coding-agent/src/modes/interactive/model-search.ts getModelSearchText",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
