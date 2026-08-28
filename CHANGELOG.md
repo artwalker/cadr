@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.login_dialog_make`
+  (`make-login-dialog-state` on
+  `src/cadr-cli/interactive/selectors/login-dialog.lisp`). Observed
+  `ldm_empty_n` / `ldm_named` / `ldm_named_sec` / `ldm_long` / `ldm_input` /
+  `ldm_long_n` exact. n=5 **0.543×** (0.169 / 0.312 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 529). cadr leads.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.login_dialog_auth`
+  (`login-dialog-show-auth` on
+  `src/cadr-cli/interactive/selectors/login-dialog.lisp`). Observed
+  `lda_plain` / `lda_instr` / `lda_empty_instr` / `lda_replace` /
+  `lda_provider` / `lda_n` exact. n=5 **1.039×** (1.925 / 1.853 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 530). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.login_dialog_device`
+  (`login-dialog-show-device-code` on
+  `src/cadr-cli/interactive/selectors/login-dialog.lisp`). Observed
+  `ldd_code` / `ldd_empty` / `ldd_replace` / `ldd_provider` / `ldd_n` /
+  `ldd_hint` exact. n=5 **2.148×** (3.653 / 1.701 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 531). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_selectors.user_message_make`
   (`make-user-message-selector-state` on
   `src/cadr-cli/interactive/selectors/fork.lisp`). Observed `umm_empty` /

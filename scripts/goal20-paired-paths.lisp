@@ -14569,6 +14569,113 @@
 
 (defparameter *session-format-age-now* 1700000000000)
 
+(defun login-dialog-sections-encoded (state)
+  (format
+   nil "~{~A~^|~}"
+   (mapcar
+    (lambda (section)
+      (let ((kind (getf section :kind)))
+        (case kind
+          (:url (format nil "url:~A" (getf section :url)))
+          (:warning (format nil "warn:~A" (getf section :text)))
+          (:dim (format nil "dim:~A" (getf section :text)))
+          (otherwise (string-downcase (symbol-name kind))))))
+            (cadr-cli::login-dialog-state-sections state))))
+
+
+(defun run-cli-selectors-login-dialog-make ()
+  (let ((empty (cadr-cli::make-login-dialog-state ""))
+        (named (cadr-cli::make-login-dialog-state "OpenAI"))
+        (long (cadr-cli::make-login-dialog-state "Anthropic Claude")))
+    (list
+     (length (cadr-cli::login-dialog-state-provider-name empty))
+     (cadr-cli::login-dialog-state-provider-name named)
+     (length (cadr-cli::login-dialog-state-sections named))
+     (cadr-cli::login-dialog-state-provider-name long)
+     (if (cadr-cli::login-dialog-state-input empty) 1 0)
+     (length (cadr-cli::login-dialog-state-provider-name long)))))
+
+
+(defun run-cli-selectors-login-dialog-auth ()
+  (let ((plain
+          (cadr-cli::login-dialog-show-auth
+           (cadr-cli::make-login-dialog-state "OpenAI")
+           "https://example.invalid/auth" nil))
+        (instr
+          (cadr-cli::login-dialog-show-auth
+           (cadr-cli::make-login-dialog-state "OpenAI")
+           "https://example.invalid/auth"
+           "Open the URL"))
+        (empty-instr
+          (cadr-cli::login-dialog-show-auth
+           (cadr-cli::make-login-dialog-state "OpenAI")
+           "https://example.invalid/a"
+           ""))
+        (replace
+          (cadr-cli::login-dialog-show-auth
+           (cadr-cli::login-dialog-show-auth
+            (cadr-cli::make-login-dialog-state "X")
+            "https://old.invalid" "old")
+           "https://new.invalid" nil)))
+    (list
+     (login-dialog-sections-encoded plain)
+     (login-dialog-sections-encoded instr)
+     (login-dialog-sections-encoded empty-instr)
+     (login-dialog-sections-encoded replace)
+     (cadr-cli::login-dialog-state-provider-name instr)
+     (length (cadr-cli::login-dialog-state-sections instr)))))
+
+
+(defun run-cli-selectors-login-dialog-device ()
+  (let ((code
+          (cadr-cli::login-dialog-show-device-code
+           (cadr-cli::make-login-dialog-state "GitHub")
+           "https://github.com/login/device"
+           "ABCD-1234"))
+        (empty-code
+          (cadr-cli::login-dialog-show-device-code
+           (cadr-cli::make-login-dialog-state "GitHub")
+           "https://example.invalid/device"
+           ""))
+        (replace
+          (cadr-cli::login-dialog-show-device-code
+           (cadr-cli::login-dialog-show-auth
+            (cadr-cli::make-login-dialog-state "GitHub")
+            "https://old.invalid" nil)
+           "https://new.invalid/device"
+           "ZZZZ")))
+    (list
+     (login-dialog-sections-encoded code)
+     (login-dialog-sections-encoded empty-code)
+     (login-dialog-sections-encoded replace)
+     (cadr-cli::login-dialog-state-provider-name code)
+     (length (cadr-cli::login-dialog-state-sections code))
+     (if (search "Enter code:" (login-dialog-sections-encoded code))
+         1
+         0))))
+
+
+(defun login-dialog-observed-pairs (make auth device)
+  (list
+   "ldm_empty_n" (nth 0 make)
+   "ldm_named" (nth 1 make)
+   "ldm_named_sec" (nth 2 make)
+   "ldm_long" (nth 3 make)
+   "ldm_input" (nth 4 make)
+   "ldm_long_n" (nth 5 make)
+   "lda_plain" (nth 0 auth)
+   "lda_instr" (nth 1 auth)
+   "lda_empty_instr" (nth 2 auth)
+   "lda_replace" (nth 3 auth)
+   "lda_provider" (nth 4 auth)
+   "lda_n" (nth 5 auth)
+   "ldd_code" (nth 0 device)
+   "ldd_empty" (nth 1 device)
+   "ldd_replace" (nth 2 device)
+   "ldd_provider" (nth 3 device)
+   "ldd_n" (nth 4 device)
+   "ldd_hint" (nth 5 device)))
+
 (defun run-cli-selectors-session-format-age ()
   (let ((now *session-format-age-now*))
     (list

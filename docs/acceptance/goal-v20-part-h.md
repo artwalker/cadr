@@ -6606,6 +6606,30 @@ Leftover sibling of Pair 526 on the same hole. Timed work is wrap-forward / back
 
 Leftover sibling of Pairs 526–527 on the same hole. Timed work is empty/last/initial-hit/wrap/miss/one-item value lookup — not render. Observed `ums_empty` / `ums_last` / `ums_hit` / `ums_wrap` / `ums_miss` / `ums_one` are exact. First n=5 freeze **0.553×** (0.862 / 1.559 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
 
+### Pair 529 — `cli_selectors` (login_dialog_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_dialog_make` | `make-login-dialog-state` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | `LoginDialogComponent` constructor (`packages/coding-agent/src/modes/interactive/components/login-dialog.ts`) |
+
+Leftover trio on `src/cadr-cli/interactive/selectors/login-dialog.lisp` / hole `cli_selectors`. Timed work is empty/named/long provider construction — not render, not handle-event. Observed `ldm_empty_n` / `ldm_named` / `ldm_named_sec` / `ldm_long` / `ldm_input` / `ldm_long_n` are exact. First n=5 freeze **0.543×** (0.169 / 0.312 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 530 — `cli_selectors` (login_dialog_auth)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_dialog_auth` | `login-dialog-show-auth` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | `showAuth` (`packages/coding-agent/src/modes/interactive/components/login-dialog.ts`) |
+
+Leftover sibling of Pair 529 on the same hole. Timed work is plain/instructions/empty-instructions/replace auth sections — not OAuth HTTP, not render. Observed `lda_plain` / `lda_instr` / `lda_empty_instr` / `lda_replace` / `lda_provider` / `lda_n` are exact. First n=5 freeze **1.039×** (1.925 / 1.853 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 531 — `cli_selectors` (login_dialog_device)
+
+| metric | cadr | pi |
+|---|---|---|
+| `login_dialog_device` | `login-dialog-show-device-code` (`src/cadr-cli/interactive/selectors/login-dialog.lisp`) | `showDeviceCode` (`packages/coding-agent/src/modes/interactive/components/login-dialog.ts`) |
+
+Leftover sibling of Pairs 529–530 on the same hole. Timed work is device-code / empty-code / replace sections — not poll, not render. Observed `ldd_code` / `ldd_empty` / `ldd_replace` / `ldd_provider` / `ldd_n` / `ldd_hint` are exact. First n=5 freeze **2.148×** (3.653 / 1.701 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -389,6 +389,9 @@ const REPETITIONS = {
 	"cli_selectors.user_message_make": 50,
 	"cli_selectors.user_message_move": 50,
 	"cli_selectors.user_message_selection": 50,
+	"cli_selectors.login_dialog_make": 50,
+	"cli_selectors.login_dialog_auth": 50,
+	"cli_selectors.login_dialog_device": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -19909,6 +19912,130 @@ function runCliSelectorsUserMessageSelection() {
 		ums_wrap: userMessageSelectorSelectionText(moved),
 		ums_miss: userMessageSelectorSelectionText(miss),
 		ums_one: userMessageSelectorSelectionText(one),
+	};
+}
+
+
+function loginDialogSectionsEncoded(state) {
+	return state.sections
+		.map((section) => {
+			switch (section.kind) {
+				case "url":
+					return `url:${section.url}`;
+				case "warning":
+					return `warn:${section.text}`;
+				case "dim":
+					return `dim:${section.text}`;
+				default:
+					return section.kind;
+			}
+		})
+		.join("|");
+}
+
+
+function makeLoginDialogState(providerName) {
+	return {
+		providerName,
+		sections: [],
+		input: null,
+		cancelFunction: null,
+	};
+}
+
+
+function loginDialogShowAuth(state, url, instructions) {
+	const sections = [{ kind: "blank" }, { kind: "url", url }];
+	if (instructions && instructions.length > 0) {
+		sections.push({ kind: "blank" }, { kind: "warning", text: instructions });
+	}
+	state.sections = sections;
+	return state;
+}
+
+
+function loginDialogShowDeviceCode(state, url, userCode) {
+	state.sections = [
+		{ kind: "blank" },
+		{ kind: "url", url },
+		{ kind: "blank" },
+		{ kind: "warning", text: `Enter code: ${userCode}` },
+	];
+	return state;
+}
+
+
+function runCliSelectorsLoginDialogMake() {
+	const empty = makeLoginDialogState("");
+	const named = makeLoginDialogState("OpenAI");
+	const long = makeLoginDialogState("Anthropic Claude");
+	return {
+		ldm_empty_n: empty.providerName.length,
+		ldm_named: named.providerName,
+		ldm_named_sec: named.sections.length,
+		ldm_long: long.providerName,
+		ldm_input: named.input ? 1 : 0,
+		ldm_long_n: long.providerName.length,
+	};
+}
+
+
+function runCliSelectorsLoginDialogAuth() {
+	const plain = loginDialogShowAuth(
+		makeLoginDialogState("OpenAI"),
+		"https://example.invalid/auth",
+		null,
+	);
+	const instr = loginDialogShowAuth(
+		makeLoginDialogState("OpenAI"),
+		"https://example.invalid/auth",
+		"Open the URL",
+	);
+	const emptyInstr = loginDialogShowAuth(
+		makeLoginDialogState("OpenAI"),
+		"https://example.invalid/a",
+		"",
+	);
+	const replace = loginDialogShowAuth(
+		loginDialogShowAuth(makeLoginDialogState("X"), "https://old.invalid", "old"),
+		"https://new.invalid",
+		null,
+	);
+	return {
+		lda_plain: loginDialogSectionsEncoded(plain),
+		lda_instr: loginDialogSectionsEncoded(instr),
+		lda_empty_instr: loginDialogSectionsEncoded(emptyInstr),
+		lda_replace: loginDialogSectionsEncoded(replace),
+		lda_provider: instr.providerName,
+		lda_n: instr.sections.length,
+	};
+}
+
+
+function runCliSelectorsLoginDialogDevice() {
+	const code = loginDialogShowDeviceCode(
+		makeLoginDialogState("GitHub"),
+		"https://github.com/login/device",
+		"ABCD-1234",
+	);
+	const emptyCode = loginDialogShowDeviceCode(
+		makeLoginDialogState("GitHub"),
+		"https://example.invalid/device",
+		"",
+	);
+	const replace = loginDialogShowDeviceCode(
+		loginDialogShowAuth(makeLoginDialogState("GitHub"), "https://old.invalid", null),
+		"https://new.invalid/device",
+		"ZZZZ",
+	);
+	const encoded = loginDialogSectionsEncoded(code);
+	return {
+		ldd_code: encoded,
+		ldd_empty: loginDialogSectionsEncoded(emptyCode),
+		ldd_replace: loginDialogSectionsEncoded(replace),
+		ldd_provider: code.providerName,
+		ldd_n: code.sections.length,
+		ldd_hint: encoded.includes("Enter code:") ? 1 : 0,
 	};
 }
 
