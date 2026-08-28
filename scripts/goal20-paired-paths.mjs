@@ -49,7 +49,7 @@ import {
 	symlinkSync,
 	unlinkSync,
 } from "node:fs";
-import { mkdir as fsMkdir, realpath, writeFile as fsWriteFile } from "node:fs/promises";
+import { mkdir as fsMkdir, readFile as fsReadFile, writeFile as fsWriteFile } from "node:fs/promises";
 import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
@@ -180,6 +180,9 @@ const REPETITIONS = {
 	"write_tool.ensure_parent": 50,
 	"write_tool.write_utf8": 50,
 	"write_tool.make_tool": 50,
+	"grep_tool.read_utf8": 50,
+	"grep_tool.file_lines": 50,
+	"grep_tool.context_block": 50,
 	"ls_tool.directory_entry_name": 50,
 	"ls_tool.list_directory": 50,
 	"ls_tool.make_tool": 50,
@@ -3282,6 +3285,118 @@ async function measureWriteTool() {
 		},
 	};
 }
+
+const GREP_TOOL_CWD = "/tmp/goal20-grep-tool-cwd";
+
+function grepToolPath(relative) {
+	return path.join(GREP_TOOL_CWD, relative);
+}
+
+function ensureGrepToolFixture() {
+	mkdirSync(GREP_TOOL_CWD, { recursive: true });
+	writeFileSync(grepToolPath("ascii.txt"), "hello", "utf8");
+	writeFileSync(grepToolPath("empty.txt"), "", "utf8");
+	writeFileSync(grepToolPath("lines.txt"), "l1\nl2\nl3\nl4\nl5\nl6\nl7", "utf8");
+	return GREP_TOOL_CWD;
+}
+
+async function runGrepReadUtf8() {
+	ensureGrepToolFixture();
+	const ascii = await fsReadFile(grepToolPath("ascii.txt"), "utf-8");
+	const empty = await fsReadFile(grepToolPath("empty.txt"), "utf-8");
+	return {
+		gru_ascii: ascii.length,
+		gru_empty: empty.length,
+		gru_n: 2,
+	};
+}
+
+async function grepGetFileLines(filePath, cache) {
+	let lines = cache.get(filePath);
+	if (!lines) {
+		try {
+			const content = await fsReadFile(filePath, "utf-8");
+			lines = content.replace(/\r\n/g, "\n").replace(/\r/g, "\n").split("\n");
+		} catch {
+			lines = [];
+		}
+		cache.set(filePath, lines);
+	}
+	return lines;
+}
+
+async function runGrepFileLines() {
+	ensureGrepToolFixture();
+	const filePath = grepToolPath("lines.txt");
+	const cache = new Map();
+	const lines = await grepGetFileLines(filePath, cache);
+	const cached = await grepGetFileLines(filePath, cache);
+	return {
+		gfl_n: lines.length,
+		gfl_first: lines[0] === "l1" ? 1 : 0,
+		gfl_cache: lines === cached ? 1 : 0,
+		gfl_count: 3,
+	};
+}
+
+async function grepFormatBlock(filePath, lineNumber, contextValue, relativePath, cache) {
+	const lines = await grepGetFileLines(filePath, cache);
+	if (!lines.length) return [`${relativePath}:${lineNumber}: (unable to read file)`];
+	const block = [];
+	const start = contextValue > 0 ? Math.max(1, lineNumber - contextValue) : lineNumber;
+	const end = contextValue > 0 ? Math.min(lines.length, lineNumber + contextValue) : lineNumber;
+	for (let current = start; current <= end; current += 1) {
+		const lineText = lines[current - 1] ?? "";
+		const sanitized = lineText.replace(/\r/g, "");
+		const truncated = truncateModule.truncateLine(sanitized);
+		const truncatedText = truncated.text;
+		if (current === lineNumber) block.push(`${relativePath}:${current}: ${truncatedText}`);
+		else block.push(`${relativePath}-${current}- ${truncatedText}`);
+	}
+	return block;
+}
+
+async function runGrepContextBlock() {
+	ensureGrepToolFixture();
+	const filePath = grepToolPath("lines.txt");
+	const missing = grepToolPath("missing.txt");
+	const cache = new Map();
+	const block = await grepFormatBlock(filePath, 4, 2, "lines.txt", cache);
+	const missingBlock = await grepFormatBlock(missing, 1, 2, "missing.txt", cache);
+	return {
+		gcb_lines: block.length,
+		gcb_match: block[2] && String(block[2]).includes("lines.txt:4:") ? 1 : 0,
+		gcb_missing:
+			missingBlock.length === 1 && String(missingBlock[0]).includes("(unable to read file)")
+				? 1
+				: 0,
+		gcb_n: 3,
+	};
+}
+
+async function measureGrepTool() {
+	ensureGrepToolFixture();
+	const utf8Observed = await runGrepReadUtf8();
+	const linesObserved = await runGrepFileLines();
+	const blockObserved = await runGrepContextBlock();
+	return {
+		read_utf8: await collect("grep_tool.read_utf8", () => {
+			return () => runGrepReadUtf8();
+		}),
+		file_lines: await collect("grep_tool.file_lines", () => {
+			return () => runGrepFileLines();
+		}),
+		context_block: await collect("grep_tool.context_block", () => {
+			return () => runGrepContextBlock();
+		}),
+		observed: {
+			...utf8Observed,
+			...linesObserved,
+			...blockObserved,
+		},
+	};
+}
+
 const LS_TOOL_CWD = "/tmp/goal20-ls-tool-cwd";
 
 function lsDirectoryEntryName(fullPath) {
@@ -16555,6 +16670,8 @@ process.stderr.write("goal20 pi paired paths: find_tool\n");
 const findTool = await measureFindTool();
 process.stderr.write("goal20 pi paired paths: write_tool\n");
 const writeTool = await measureWriteTool();
+process.stderr.write("goal20 pi paired paths: grep_tool\n");
+const grepTool = await measureGrepTool();
 process.stderr.write("goal20 pi paired paths: ls_tool\n");
 const lsTool = await measureLsTool();
 process.stderr.write("goal20 pi paired paths: tool_manager\n");
@@ -16757,6 +16874,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.writeFile (fs.writeFile utf-8)",
 			"write_tool.make_tool":
 				"packages/coding-agent/src/core/tools/write.ts createWriteToolDefinition",
+			"grep_tool.read_utf8":
+				"packages/coding-agent/src/core/tools/grep.ts defaultGrepOperations.readFile / fs.readFile utf-8",
+			"grep_tool.file_lines":
+				"packages/coding-agent/src/core/tools/grep.ts getFileLines",
+			"grep_tool.context_block":
+				"packages/coding-agent/src/core/tools/grep.ts formatBlock",
 			"ls_tool.directory_entry_name":
 				"packages/coding-agent/src/core/tools/ls.ts directory suffix (stat isDirectory + '/' ; cadr directory-entry-name)",
 			"ls_tool.list_directory":
@@ -17346,6 +17469,7 @@ const result = {
 		output_accumulator: outputAccumulator,
 		find_tool: findTool,
 		write_tool: writeTool,
+		grep_tool: grepTool,
 		ls_tool: lsTool,
 		tool_manager: toolManager,
 		powershell_tool: powershellTool,

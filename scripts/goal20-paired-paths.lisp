@@ -127,6 +127,9 @@
 ;;;; 343. write_tool ensure-write-parent-directories vs defaultWriteOperations.mkdir
 ;;;; 344. write_tool write-utf8-file vs defaultWriteOperations.writeFile
 ;;;; 345. write_tool make-write-tool vs createWriteToolDefinition
+;;;; 406. grep_tool read-utf8-file vs defaultGrepOperations.readFile
+;;;; 407. grep_tool ripgrep-file-lines vs getFileLines
+;;;; 408. grep_tool ripgrep-context-block vs formatBlock
 ;;;; 292. tool_manager get-tool-path vs getToolPath
 ;;;; 293. tool_manager ensure-tool vs ensureTool (local / offline, no network)
 ;;;; 294. tool_manager cleanup-windows-self-update-quarantine vs cleanupWindowsSelfUpdateQuarantine
@@ -326,6 +329,9 @@
     ("write_tool.ensure_parent" . 50)
     ("write_tool.write_utf8" . 50)
     ("write_tool.make_tool" . 50)
+    ("grep_tool.read_utf8" . 50)
+    ("grep_tool.file_lines" . 50)
+    ("grep_tool.context_block" . 50)
     ("ls_tool.directory_entry_name" . 50)
     ("ls_tool.list_directory" . 50)
     ("ls_tool.make_tool" . 50)
@@ -5320,6 +5326,136 @@
                   (lambda ()
                     (lambda ()
                       (run-write-make-tool)))))))))
+
+;;; ---------------------------------------------------------------------
+;;; Leftover siblings of the tool_grep hole on
+;;; src/cadr-cli/tools/grep.lisp (Pairs 406-408).
+;;; Timed owners: read-utf8-file, ripgrep-file-lines, ripgrep-context-block
+;;; — not grep-lines / execute / spawn, not match-event / line-text /
+;;; make-grep-tool (pairs 373-375 on PR #48).
+;;; ---------------------------------------------------------------------
+
+(defun grep-tool-leftover-truth (value)
+  (if value 1 0))
+
+(defparameter *grep-tool-cwd*
+  (namestring
+   (uiop:ensure-directory-pathname "/tmp/goal20-grep-tool-cwd")))
+
+(defun grep-tool-path (relative)
+  (merge-pathnames relative
+                   (uiop:ensure-directory-pathname *grep-tool-cwd*)))
+
+(defun ensure-grep-tool-fixture ()
+  (let ((root (uiop:ensure-directory-pathname *grep-tool-cwd*)))
+    (ensure-directories-exist root)
+    (with-open-file (out (grep-tool-path "ascii.txt")
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string "hello" out))
+    (with-open-file (out (grep-tool-path "empty.txt")
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (values))
+    ;; No trailing newline: cadr line-table and pi split("\n")
+    ;; both count 7 content lines.
+    (with-open-file (out (grep-tool-path "lines.txt")
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string
+       (format nil "l1~%l2~%l3~%l4~%l5~%l6~%l7")
+       out))
+    *grep-tool-cwd*))
+
+(defun run-grep-read-utf8 ()
+  (ensure-grep-tool-fixture)
+  (let* ((ascii (cadr-cli::read-utf8-file (grep-tool-path "ascii.txt")))
+         (empty (cadr-cli::read-utf8-file (grep-tool-path "empty.txt"))))
+    (list (length ascii) (length empty) 2)))
+
+(defun run-grep-file-lines ()
+  (ensure-grep-tool-fixture)
+  (let* ((path (grep-tool-path "lines.txt"))
+         (cache (make-hash-table :test #'equal))
+         (table (cadr-cli::ripgrep-file-lines path cache))
+         (n (third table))
+         (source (first table))
+         (starts (second table))
+         (first-line
+           (and (plusp n)
+                (cadr-cli::text-line-ref source starts 0)))
+         (cached (cadr-cli::ripgrep-file-lines path cache)))
+    (list
+     n
+     (grep-tool-leftover-truth (string= first-line "l1"))
+     (grep-tool-leftover-truth (eq table cached))
+     3)))
+
+(defun run-grep-context-block ()
+  (ensure-grep-tool-fixture)
+  (let* ((path (grep-tool-path "lines.txt"))
+         (missing (grep-tool-path "missing.txt"))
+         (cache (make-hash-table :test #'equal)))
+    (multiple-value-bind (block truncated-p)
+        (cadr-cli::ripgrep-context-block path 4 2 "lines.txt" cache)
+      (declare (ignore truncated-p))
+      (multiple-value-bind (missing-block missing-truncated-p)
+          (cadr-cli::ripgrep-context-block missing 1 2 "missing.txt")
+        (declare (ignore missing-truncated-p))
+        (list
+         (length block)
+         (grep-tool-leftover-truth
+          (and (>= (length block) 3)
+               (search "lines.txt:4:" (nth 2 block))))
+         (grep-tool-leftover-truth
+          (and (= 1 (length missing-block))
+               (search "(unable to read file)"
+                       (first missing-block))))
+         3)))))
+
+(defun measure-grep-tool ()
+  (ensure-grep-tool-fixture)
+  (destructuring-bind (gru-ascii gru-empty gru-n)
+      (run-grep-read-utf8)
+    (destructuring-bind (gfl-n gfl-first gfl-cache gfl-count)
+        (run-grep-file-lines)
+      (destructuring-bind (gcb-lines gcb-match gcb-missing gcb-n)
+          (run-grep-context-block)
+        (json-object
+         "observed"
+         (json-object
+          "gru_ascii" gru-ascii
+          "gru_empty" gru-empty
+          "gru_n" gru-n
+          "gfl_n" gfl-n
+          "gfl_first" gfl-first
+          "gfl_cache" gfl-cache
+          "gfl_count" gfl-count
+          "gcb_lines" gcb-lines
+          "gcb_match" gcb-match
+          "gcb_missing" gcb-missing
+          "gcb_n" gcb-n)
+         "read_utf8"
+         (collect "grep_tool.read_utf8"
+                  (lambda ()
+                    (lambda ()
+                      (run-grep-read-utf8))))
+         "file_lines"
+         (collect "grep_tool.file_lines"
+                  (lambda ()
+                    (lambda ()
+                      (run-grep-file-lines))))
+         "context_block"
+         (collect "grep_tool.context_block"
+                  (lambda ()
+                    (lambda ()
+                      (run-grep-context-block)))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -16364,6 +16500,12 @@
       "src/cadr-cli/tools/write.lisp write-utf8-file"
       "write_tool.make_tool"
       "src/cadr-cli/tools/write.lisp make-write-tool"
+      "grep_tool.read_utf8"
+      "src/cadr-cli/tools/grep.lisp read-utf8-file"
+      "grep_tool.file_lines"
+      "src/cadr-cli/tools/grep.lisp ripgrep-file-lines"
+      "grep_tool.context_block"
+      "src/cadr-cli/tools/grep.lisp ripgrep-context-block"
       "ls_tool.directory_entry_name"
       "src/cadr-cli/tools/ls.lisp directory-entry-name"
       "ls_tool.list_directory"
@@ -17005,6 +17147,7 @@
                     (bash-tool nil)
                     (find-tool nil)
                     (write-tool nil)
+                    (grep-tool nil)
                     (ls-tool nil)
                     (tool-manager nil)
                     (powershell-tool nil)
@@ -17019,6 +17162,8 @@
               (setf find-tool (measure-find-tool))
               (format *error-output* "goal20 cadr paired paths: write_tool~%")
               (setf write-tool (measure-write-tool))
+              (format *error-output* "goal20 cadr paired paths: grep_tool~%")
+              (setf grep-tool (measure-grep-tool))
               (format *error-output* "goal20 cadr paired paths: ls_tool~%")
               (setf ls-tool (measure-ls-tool))
               (format *error-output* "goal20 cadr paired paths: tool_manager~%")
@@ -17165,6 +17310,7 @@
               "output_accumulator" output-accumulator
               "find_tool" find-tool
               "write_tool" write-tool
+              "grep_tool" grep-tool
               "ls_tool" ls-tool
               "tool_manager" tool-manager
               "powershell_tool" powershell-tool

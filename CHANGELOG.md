@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `grep_tool.read_utf8` / `file_lines` /
+  `context_block` (pairs 406–408) on `src/cadr-cli/tools/grep.lisp` vs
+  baseline `grep.ts` `readFile` / `getFileLines` / `formatBlock`.
+  Observed `gru_*` / `gfl_*` / `gcb_*` exact. Measure-only. Does not
+  re-pair `tool_grep.context_file` or PR #48 `match_event` / `line_text` /
+  `make_tool`. `nextPairNum` stays 328. Freeze numbers follow.
+
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.

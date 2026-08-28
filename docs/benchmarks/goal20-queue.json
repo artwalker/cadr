@@ -835,6 +835,33 @@
    "piUs": 4.343,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 406,
+   "lane": "a",
+   "status": "in_progress",
+   "source": "src/cadr-cli/tools/grep.lisp",
+   "measure": "measure-grep-tool",
+   "metric": "grep_tool.read_utf8",
+   "branch": "cursor/pair-406-408-grep-leftovers-4050"
+  },
+  {
+   "pair": 407,
+   "lane": "a",
+   "status": "in_progress",
+   "source": "src/cadr-cli/tools/grep.lisp",
+   "measure": "measure-grep-tool",
+   "metric": "grep_tool.file_lines",
+   "branch": "cursor/pair-406-408-grep-leftovers-4050"
+  },
+  {
+   "pair": 408,
+   "lane": "a",
+   "status": "in_progress",
+   "source": "src/cadr-cli/tools/grep.lisp",
+   "measure": "measure-grep-tool",
+   "metric": "grep_tool.context_block",
+   "branch": "cursor/pair-406-408-grep-leftovers-4050"
   }
  ],
  "mergeQueue": []

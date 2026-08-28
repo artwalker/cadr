@@ -3973,6 +3973,42 @@ on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
 from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 406 — `grep_tool` (read_utf8)
+
+| metric | cadr | pi |
+|---|---|---|
+| `read_utf8` | `read-utf8-file` (`src/cadr-cli/tools/grep.lisp`) | `defaultGrepOperations.readFile` / `fs.readFile` utf-8 (`packages/coding-agent/src/core/tools/grep.ts`) |
+
+Leftover sibling of the `tool_grep.context_file` hole on `src/cadr-cli/tools/grep.lisp`.
+Timed work is UTF-8 ingest of ASCII `hello` plus empty file — not `grep-lines` /
+ripgrep spawn, not match-event / line-text / make-tool (pairs 373–375 on PR #48).
+Observed `gru_ascii` / `gru_empty` / `gru_n` are exact. First n=5 freeze pending
+on host `cursor`, ceiling 8.0. Measure-only. Pair numbers 406–408 only.
+
+### Pair 407 — `grep_tool` (file_lines)
+
+| metric | cadr | pi |
+|---|---|---|
+| `file_lines` | `ripgrep-file-lines` (`src/cadr-cli/tools/grep.lisp`) | `getFileLines` (`packages/coding-agent/src/core/tools/grep.ts`) |
+
+Leftover sibling of Pair 406 `read_utf8` on the same `grep.lisp` `tool_grep` hole.
+Timed work is the per-file line-table cache (7 content lines, no trailing newline
+so cadr table n and pi `split("\n")` length match) — not execute / spawn.
+Observed `gfl_n` / `gfl_first` / `gfl_cache` / `gfl_count` are exact. First n=5 freeze
+pending on host `cursor`, ceiling 8.0. Measure-only.
+
+### Pair 408 — `grep_tool` (context_block)
+
+| metric | cadr | pi |
+|---|---|---|
+| `context_block` | `ripgrep-context-block` (`src/cadr-cli/tools/grep.lisp`) | `formatBlock` (`packages/coding-agent/src/core/tools/grep.ts`) |
+
+Leftover sibling of Pair 406 `read_utf8` and Pair 407 `file_lines` on the same
+`grep.lisp` `tool_grep` hole. Timed work is context=2 around line 4 plus missing-file
+`(unable to read file)` — not match JSON parse, not `make-grep-tool`. Observed
+`gcb_lines` / `gcb_match` / `gcb_missing` / `gcb_n` are exact. First n=5 freeze
+pending on host `cursor`, ceiling 8.0. Measure-only.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4623,7 +4659,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
-| `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
+| `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file`, `grep_tool.read_utf8`, `grep_tool.file_lines`, `grep_tool.context_block` |
 | `src/cadr-cli/tools/path.lisp` | 333 | `agent_tool_loop.tool_path` |
 | `src/cadr-cli/tools/read.lisp` | 192 | `tool_read.text_file` |
 | `src/cadr-cli/tools/write.lisp` | 70 | `write_tool.ensure_parent`, `write_tool.write_utf8`, `write_tool.make_tool` |
