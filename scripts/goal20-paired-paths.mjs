@@ -605,6 +605,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.render_assistant_blocks": 50,
 	"cli_interactive_controller.render_version_notification": 50,
 	"cli_interactive_controller.render_package_notification": 50,
+	"cli_interactive_controller.render_tui_entry_uncached": 50,
+	"cli_interactive_controller.render_tui_entry": 50,
+	"cli_interactive_controller.render_tui_entries": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -14556,6 +14559,197 @@ function runCliInteractiveRenderPackageNotification() {
 	};
 }
 
+function leftoverTuiEntryRenderCacheableP(entry) {
+	if (!entry || entry.streamingP) {
+		return false;
+	}
+	if (entry.type !== "tool") {
+		return true;
+	}
+	const block = entry.toolBlock;
+	return !!(
+		block &&
+		block.status !== "running" &&
+		!entry.customCallRenderedP &&
+		!entry.customResultRenderedP
+	);
+}
+
+function leftoverRenderTuiEntryUncached(entry, width, options = {}) {
+	const type = entry && entry.type;
+	if (type === "user") {
+		const source = String(entry.text || "");
+		leftoverTransformTuiMarkdown(entry, source, "user", Math.max(1, width - 2));
+		const wrapped = leftoverWrapTextSlice(` ${source}`, width);
+		const bg = leftoverThemeMessageBackgroundLines(wrapped, "user-message-bg");
+		return leftoverWrapTranscriptLinesCopy(bg) || bg;
+	}
+	if (type === "assistant") {
+		let lines = leftoverRenderAssistantBlocks(entry, width, options);
+		if (lines && lines.length && !entry.hasToolCalls) {
+			const wrapped = leftoverWrapTranscriptLinesCopy(lines);
+			if (wrapped) {
+				lines = wrapped;
+			}
+		}
+		return lines && lines.length ? lines : null;
+	}
+	if (type === "error") {
+		const message = `Error: ${entry.text || ""}`;
+		return ["", ...leftoverWrapTextSlice(` ${message}`, width)];
+	}
+	if (type === "version-update") {
+		return leftoverRenderVersionUpdateNotification(entry, width);
+	}
+	return null;
+}
+
+function leftoverRenderTuiEntry(entry, width, options = {}) {
+	const cacheable = leftoverTuiEntryRenderCacheableP(entry);
+	if (
+		cacheable &&
+		entry.renderCacheValidP &&
+		entry.renderCacheWidth === width &&
+		Array.isArray(entry.renderCacheLines)
+	) {
+		return entry.renderCacheLines;
+	}
+	const lines = leftoverRenderTuiEntryUncached(entry, width, options);
+	if (cacheable) {
+		entry.renderCacheValidP = true;
+		entry.renderCacheWidth = width;
+		entry.renderCacheLines = lines;
+	}
+	return lines;
+}
+
+function leftoverRenderTuiEntries(entries, width, options = {}) {
+	if (!entries || entries.length === 0) {
+		return null;
+	}
+	let rendered = [];
+	for (let index = 0; index < entries.length; index += 1) {
+		const entry = entries[index];
+		let lines = leftoverRenderTuiEntry(entry, width, options) || [];
+		if (
+			index > 0 &&
+			(entry.type === "user" ||
+				entry.type === "branch-summary" ||
+				entry.type === "compaction-summary")
+		) {
+			lines = ["", ...lines];
+		}
+		rendered = rendered.concat(lines);
+	}
+	return rendered.length ? rendered : null;
+}
+
+function runCliInteractiveRenderTuiEntryUncached() {
+	const user = { type: "user", text: "hello", markdownCache: [] };
+	const asst = { type: "assistant", text: "hello", markdownCache: [] };
+	const err = { type: "error", text: "boom" };
+	const ver = { type: "version-update", text: "1.2.3" };
+	const unknown = { type: "unknown", text: "x" };
+	const userText = leftoverNotificationJoined(
+		leftoverRenderTuiEntryUncached(user, 80),
+	);
+	const asstText = leftoverNotificationJoined(
+		leftoverRenderTuiEntryUncached(asst, 80),
+	);
+	const errText = leftoverNotificationJoined(
+		leftoverRenderTuiEntryUncached(err, 80),
+	);
+	const verText = leftoverNotificationJoined(
+		leftoverRenderTuiEntryUncached(ver, 80),
+	);
+	const emptyLines = leftoverRenderTuiEntryUncached(unknown, 80);
+	leftoverRenderTuiEntryUncached(
+		{ type: "user", text: "hello", markdownCache: [] },
+		80,
+	);
+	leftoverRenderTuiEntryUncached(
+		{ type: "assistant", text: "hello", markdownCache: [] },
+		80,
+	);
+	leftoverRenderTuiEntryUncached({ type: "error", text: "boom" }, 80);
+	leftoverRenderTuiEntryUncached({ type: "version-update", text: "1.2.3" }, 80);
+	leftoverRenderTuiEntryUncached({ type: "unknown", text: "x" }, 80);
+	return {
+		rteu_user: userText.includes("hello") ? 1 : 0,
+		rteu_asst: asstText.includes("hello") ? 1 : 0,
+		rteu_err: errText.includes("Error:") ? 1 : 0,
+		rteu_ver: verText.includes("Update Available") ? 1 : 0,
+		rteu_empty: !emptyLines || emptyLines.length === 0 ? 1 : 0,
+	};
+}
+
+function runCliInteractiveRenderTuiEntry() {
+	const user = { type: "user", text: "hello", markdownCache: [] };
+	const err = { type: "error", text: "boom" };
+	const ver = { type: "version-update", text: "1.2.3" };
+	const first = leftoverRenderTuiEntry(user, 80);
+	const second = leftoverRenderTuiEntry(user, 80);
+	const userText = leftoverNotificationJoined(first);
+	const errText = leftoverNotificationJoined(leftoverRenderTuiEntry(err, 80));
+	const verText = leftoverNotificationJoined(leftoverRenderTuiEntry(ver, 80));
+	leftoverRenderTuiEntry({ type: "user", text: "hello", markdownCache: [] }, 80);
+	leftoverRenderTuiEntry({ type: "error", text: "boom" }, 80);
+	leftoverRenderTuiEntry({ type: "version-update", text: "1.2.3" }, 80);
+	return {
+		rte_user: userText.includes("hello") ? 1 : 0,
+		rte_n: first && first.length >= 1 ? 1 : 0,
+		rte_hit: first && second && first.length === second.length ? 1 : 0,
+		rte_err: errText.includes("Error:") ? 1 : 0,
+		rte_ver: verText.includes("Update Available") ? 1 : 0,
+	};
+}
+
+function runCliInteractiveRenderTuiEntries() {
+	const user = { type: "user", text: "hello", markdownCache: [] };
+	const asst = { type: "assistant", text: "world", markdownCache: [] };
+	const userB = { type: "user", text: "again", markdownCache: [] };
+	const one = leftoverRenderTuiEntries([user], 80);
+	const two = leftoverRenderTuiEntries(
+		[
+			{ type: "user", text: "hello", markdownCache: [] },
+			{ type: "assistant", text: "world", markdownCache: [] },
+		],
+		80,
+	);
+	const gapped = leftoverRenderTuiEntries(
+		[
+			{ type: "user", text: "hello", markdownCache: [] },
+			{ type: "user", text: "again", markdownCache: [] },
+		],
+		80,
+	);
+	const empty = leftoverRenderTuiEntries([], 80);
+	const twoText = leftoverNotificationJoined(two);
+	leftoverRenderTuiEntries([{ type: "user", text: "hello", markdownCache: [] }], 80);
+	leftoverRenderTuiEntries(
+		[
+			{ type: "user", text: "hello", markdownCache: [] },
+			{ type: "assistant", text: "world", markdownCache: [] },
+		],
+		80,
+	);
+	leftoverRenderTuiEntries(
+		[
+			{ type: "user", text: "hello", markdownCache: [] },
+			{ type: "user", text: "again", markdownCache: [] },
+		],
+		80,
+	);
+	leftoverRenderTuiEntries([], 80);
+	return {
+		rtes_user: twoText.includes("hello") ? 1 : 0,
+		rtes_asst: twoText.includes("world") ? 1 : 0,
+		rtes_gap: gapped && gapped.includes("") ? 1 : 0,
+		rtes_n: two && one && two.length >= one.length ? 1 : 0,
+		rtes_empty: !empty || empty.length === 0 ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -15824,6 +16018,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveRenderAssistantBlocks(),
 		...runCliInteractiveRenderVersionNotification(),
 		...runCliInteractiveRenderPackageNotification(),
+		...runCliInteractiveRenderTuiEntryUncached(),
+		...runCliInteractiveRenderTuiEntry(),
+		...runCliInteractiveRenderTuiEntries(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -16007,6 +16204,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.render_package_notification",
 			() => {
 				return () => runCliInteractiveRenderPackageNotification();
+			},
+		),
+		render_tui_entry_uncached: await collect(
+			"cli_interactive_controller.render_tui_entry_uncached",
+			() => {
+				return () => runCliInteractiveRenderTuiEntryUncached();
+			},
+		),
+		render_tui_entry: await collect(
+			"cli_interactive_controller.render_tui_entry",
+			() => {
+				return () => runCliInteractiveRenderTuiEntry();
+			},
+		),
+		render_tui_entries: await collect(
+			"cli_interactive_controller.render_tui_entries",
+			() => {
+				return () => runCliInteractiveRenderTuiEntries();
 			},
 		),
 		observed,
@@ -29923,6 +30138,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts version warning DynamicBorder",
 			"cli_interactive_controller.render_package_notification":
 				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts package warning DynamicBorder",
+			"cli_interactive_controller.render_tui_entry_uncached":
+				"packages/coding-agent/src/modes/interactive/components/chat-log.ts render entry uncached",
+			"cli_interactive_controller.render_tui_entry":
+				"packages/coding-agent/src/modes/interactive/components/chat-log.ts render entry cache",
+			"cli_interactive_controller.render_tui_entries":
+				"packages/coding-agent/src/modes/interactive/components/chat-log.ts render entries + user gap",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
