@@ -9987,7 +9987,7 @@
           (:warning (format nil "warn:~A" (getf section :text)))
           (:dim (format nil "dim:~A" (getf section :text)))
           (otherwise (string-downcase (symbol-name kind))))))
-    (login-dialog-state-sections state))))
+            (cadr-cli::login-dialog-state-sections state))))
 
 (defun run-cli-selectors-login-dialog-make ()
   (let ((empty (cadr-cli::make-login-dialog-state ""))
