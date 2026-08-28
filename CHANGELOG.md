@@ -30,6 +30,26 @@ tag/Release step.
   exact. n=5 **1.042×** (0.459 / 0.441 µs) on host `cursor`, ceiling
   8.0. Measure-only leftover (Pair 678). Over-1× booked. `nextPairNum`
   left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.runtime_auth_input_handle_event`
+  (`runtime-auth-input-state-handle-event` vs oauth runtime auth
+  handleEvent). Observed `rah_esc` / `rah_int` / `rah_fn` / `rah_sel` /
+  `rah_nop` exact. n=5 **1.135×** (1.040 / 0.916 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 679). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_runtime_auth_input`
+  (`render-runtime-auth-input-state` vs oauth runtime auth render).
+  Observed `rra_hi` / `rra_dash` / `rra_n` / `rra_msg` / `rra_star`
+  exact. n=5 **56.286×** (143.679 / 2.553 µs) on host `cursor`,
+  ceiling 100.0 (first-freeze headroom). Measure-only leftover
+  (Pair 680). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_extension_custom_entry`
+  (`render-extension-custom-entry` vs custom entry render; nil host →
+  nil). Observed `rec_nil` / `rec_w` / `rec_again` / `rec_type` /
+  `rec_msg` exact. n=5 **2.800×** (0.434 / 0.155 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 681). Over-1× booked.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.make_framed_select_state`
   (`make-framed-select-state` on
   `src/cadr-cli/interactive/extension-ui.lisp` vs framed select-list

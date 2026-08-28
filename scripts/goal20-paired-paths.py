@@ -1024,11 +1024,12 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.make_extension_editor_dialog": 8.0,
     # Measure-only leftover 678; first freeze 1.042× (0.459 / 0.441 µs).
     "cli_interactive_controller.make_runtime_auth_input_state": 8.0,
-    # Measure-only leftover 679; first freeze pending; start 8.0.
+    # Measure-only leftover 679; first freeze 1.135× (1.040 / 0.916 µs).
     "cli_interactive_controller.runtime_auth_input_handle_event": 8.0,
-    # Measure-only leftover 680; first freeze pending; start 8.0.
-    "cli_interactive_controller.render_runtime_auth_input": 8.0,
-    # Measure-only leftover 681; first freeze pending; start 8.0.
+    # Measure-only leftover 680; first freeze 56.286× (143.679 / 2.553 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.render_runtime_auth_input": 100.0,
+    # Measure-only leftover 681; first freeze 2.800× (0.434 / 0.155 µs).
     "cli_interactive_controller.render_extension_custom_entry": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.

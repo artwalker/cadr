@@ -8152,6 +8152,30 @@ Leftover sibling of Pair 676. Timed work is title, prefill text, nil prefill emp
 
 Leftover sibling of Pairs 676–677. Timed work is prompt copy, type slot, input prompt, and nil prompt. Do not exact-match redacted print. Observed `rai_type` / `rai_copy` / `rai_in` / `rai_pr` / `rai_nil` are exact. First n=5 freeze **1.042×** (0.459 / 0.441 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 679 — `cli_interactive_controller` (runtime_auth_input_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `runtime_auth_input_handle_event` | `runtime-auth-input-state-handle-event` (`src/cadr-cli/interactive/extension-ui.lisp`) | oauth runtime auth `handleEvent` (`packages/coding-agent/src/modes/interactive/components/oauth.ts`) |
+
+Leftover sibling of Pair 678 on the `extension-ui.lisp` hole. Timed work is escape/interrupt cancel, cancel-function once, enter→select with value, and text nop. Observed `rah_esc` / `rah_int` / `rah_fn` / `rah_sel` / `rah_nop` are exact. First n=5 freeze **1.135×** (1.040 / 0.916 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 680 — `cli_interactive_controller` (render_runtime_auth_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_runtime_auth_input` | `render-runtime-auth-input-state` (`src/cadr-cli/interactive/extension-ui.lisp`) | oauth runtime auth render (`packages/coding-agent/src/modes/interactive/components/oauth.ts`) |
+
+Leftover sibling of Pair 679. Timed work is simple (non-`manual-code`) message render plus secret masking. Do not exact-match ANSI, hints, or product slug. Observed `rra_hi` / `rra_dash` / `rra_n` / `rra_msg` / `rra_star` are exact. First n=5 freeze **56.286×** (143.679 / 2.553 µs) on host `cursor`, ceiling 100.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 681 — `cli_interactive_controller` (render_extension_custom_entry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_extension_custom_entry` | `render-extension-custom-entry` (`src/cadr-cli/interactive/extension-ui.lisp`) | custom entry render nil host (`packages/coding-agent/src/modes/interactive/components/custom-message.ts`) |
+
+Leftover sibling of Pairs 679–680. Timed work is nil host → nil at widths 80/1 plus custom-message. Observed `rec_nil` / `rec_w` / `rec_again` / `rec_type` / `rec_msg` are exact. First n=5 freeze **2.800×** (0.434 / 0.155 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
