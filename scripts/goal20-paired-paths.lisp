@@ -18029,6 +18029,58 @@
        1))))
 
 
+(defun run-core-rest-cancellation-predicate ()
+  ;; Leftover sibling of Pair 322 abort / Pair 361 make: the predicate
+  ;; helper as timed owner. Not abort-cancellation, wait, or aborted-p
+  ;; on a cancellation-state.
+  (list
+   (if (cadr-core:cancellation-predicate-aborted-p nil) 0 1)
+   (if (cadr-core:cancellation-predicate-aborted-p (lambda () t)) 1 0)
+   (if (cadr-core:cancellation-predicate-aborted-p (lambda () nil)) 0 1)
+   (if (cadr-core:cancellation-predicate-aborted-p
+        (lambda () (error "cadr-core-rest-predicate")))
+       0
+       1)))
+
+
+(defun run-core-rest-redacted-register ()
+  ;; Leftover sibling of Pair 323 secrets / Pair 338 types: unexported
+  ;; register-redacted-object-type as timed owner. Bind the registry
+  ;; so production types stay untouched.
+  (let ((cadr-core::*redacted-object-types* nil))
+    (let ((first
+            (cadr-core::register-redacted-object-type
+             'cadr-core::goal20-redacted-a)))
+      (cadr-core::register-redacted-object-type
+       'cadr-core::goal20-redacted-a)
+      (cadr-core::register-redacted-object-type
+       'cadr-core::goal20-redacted-b)
+      (let ((names
+              (mapcar #'symbol-name cadr-core::*redacted-object-types*)))
+        (list
+         (if (eq first 'cadr-core::goal20-redacted-a) 1 0)
+         (if (= (length names) 2) 1 0)
+         (if (equal
+              (sort (copy-list names) #'string<)
+              '("GOAL20-REDACTED-A" "GOAL20-REDACTED-B"))
+             1
+             0))))))
+
+
+(defun run-core-rest-redacted-replace ()
+  ;; Leftover sibling of Pair 323 redact-secrets: unexported replace-all
+  ;; as timed owner. One needle, empty needle, miss.
+  (let* ((source "keep-visible token=sk-live-abc extra")
+         (hit (cadr-core::replace-all source "sk-live-abc" "[REDACTED]"))
+         (miss (cadr-core::replace-all "keep-visible" "zzz" "[REDACTED]"))
+         (empty (cadr-core::replace-all source "" "[REDACTED]")))
+    (list
+     (if (search "sk-live-abc" hit) 0 1)
+     (if (search "[REDACTED]" hit) 1 0)
+     (if (string= miss "keep-visible") 1 0)
+     (if (eq empty source) 1 0))))
+
+
 (defun measure-core-rest ()
   (let ((cancellation (run-core-rest-cancellation))
         (redacted (run-core-rest-redacted))

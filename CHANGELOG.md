@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `core_rest.cancellation_predicate`
+  (`cancellation-predicate-aborted-p` on `src/cadr-core/cancellation.lisp` vs
+  `Boolean(fn())` try/catch). Observed `cp_nil` / `cp_true` / `cp_false` /
+  `cp_err` exact. n=5 **0.106×** (0.296 / 2.788 µs) on host `cursor`,
+  ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. Pairs 385–387.
+- Goal 20 P.13 leftover: pair `core_rest.redacted_register`
+  (`register-redacted-object-type` on `src/cadr-core/redacted-print.lisp` vs
+  array push-if-absent). Observed `rr_new` / `rr_dup` / `rr_sort` exact.
+  n=5 **0.698×** (0.216 / 0.309 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13 leftover: pair `core_rest.redacted_replace` (`replace-all` on
+  `src/cadr-core/redacted-print.lisp` vs String.split/join one needle).
+  Observed `ra_hit` / `ra_mark` / `ra_miss` / `ra_empty` exact. n=5 **3.383×**
+  (1.464 / 0.433 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13: pair `oauth_pkce_device.error_detail` (`oauth-response-error-detail`
   on `src/cadr-ai/oauth/providers/xai.lisp` vs baseline `requestFailure` detail
   in `packages/ai/src/auth/oauth/xai.ts`). Observed `ed_desc` / `ed_error` /

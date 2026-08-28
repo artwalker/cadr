@@ -275,6 +275,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
+	"core_rest.cancellation_predicate": 50,
+	"core_rest.redacted_register": 50,
+	"core_rest.redacted_replace": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -18172,6 +18175,77 @@ function runCoreRestCancellationSet() {
 		cs_set: setOk,
 		cs_clear: cleared.signal.aborted ? 0 : 1,
 		cs_n: 1,
+	};
+}
+
+
+function cancellationPredicateAbortedP(predicate) {
+	if (!predicate) {
+		return false;
+	}
+	try {
+		return Boolean(predicate());
+	} catch {
+		return false;
+	}
+}
+
+
+function runCoreRestCancellationPredicate() {
+	return {
+		cp_nil: cancellationPredicateAbortedP(null) ? 0 : 1,
+		cp_true: cancellationPredicateAbortedP(() => true) ? 1 : 0,
+		cp_false: cancellationPredicateAbortedP(() => false) ? 0 : 1,
+		cp_err: cancellationPredicateAbortedP(() => {
+			throw new Error("cadr-core-rest-predicate");
+		})
+			? 0
+			: 1,
+	};
+}
+
+
+function runCoreRestRedactedRegister() {
+	const types = [];
+	const register = (type) => {
+		if (!types.includes(type)) {
+			types.push(type);
+		}
+		return type;
+	};
+	const first = register("GOAL20-REDACTED-A");
+	register("GOAL20-REDACTED-A");
+	register("GOAL20-REDACTED-B");
+	const sorted = [...types].sort();
+	return {
+		rr_new: first === "GOAL20-REDACTED-A" ? 1 : 0,
+		rr_dup: types.length === 2 ? 1 : 0,
+		rr_sort:
+			sorted[0] === "GOAL20-REDACTED-A" && sorted[1] === "GOAL20-REDACTED-B"
+				? 1
+				: 0,
+	};
+}
+
+
+function replaceAllPi(source, needle, replacement) {
+	if (needle.length === 0) {
+		return source;
+	}
+	return source.split(needle).join(replacement);
+}
+
+
+function runCoreRestRedactedReplace() {
+	const source = "keep-visible token=sk-live-abc extra";
+	const hit = replaceAllPi(source, "sk-live-abc", "[REDACTED]");
+	const miss = replaceAllPi("keep-visible", "zzz", "[REDACTED]");
+	const empty = replaceAllPi(source, "", "[REDACTED]");
+	return {
+		ra_hit: hit.includes("sk-live-abc") ? 0 : 1,
+		ra_mark: hit.includes("[REDACTED]") ? 1 : 0,
+		ra_miss: miss === "keep-visible" ? 1 : 0,
+		ra_empty: empty === source ? 1 : 0,
 	};
 }
 

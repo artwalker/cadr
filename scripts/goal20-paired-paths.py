@@ -152,7 +152,7 @@ METRICS = {
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth", "count", "baseline", "snippet_count", "read_first", "option_count", "auth_pairs_digest", "vertex_structured", "bedrock_structured"),
     "ai_runtime_faux": ("blocks", "text_len", "text", "think_len", "think"),
     "http_transport": ("parse_url", "https_scheme", "https_host", "https_path", "http_scheme", "http_host", "http_port", "http_path"),
-    "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup", "cancellation_wait", "redacted_types", "threads_join", "ca_live", "ca_abort", "ca_clear", "ca_pred", "rd_keep", "rd_secret", "rd_token", "rd_mark", "th_absent", "th_current", "th_joined", "cancellation_make", "cancellation_aborted", "cancellation_set"),
+    "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup", "cancellation_wait", "redacted_types", "threads_join", "ca_live", "ca_abort", "ca_clear", "ca_pred", "rd_keep", "rd_secret", "rd_token", "rd_mark", "th_absent", "th_current", "th_joined", "cancellation_make", "cancellation_aborted", "cancellation_set", "cancellation_predicate", "redacted_register", "redacted_replace"),
     "session_pipeline": ("session_load", "context_walk", "session_leaf_id", "entry_count", "leaf_id", "session_id", "session_name", "context_entry_count", "context_message_count", "context_thinking_level", "context_model"),
     "storage_journal": ("journal_read", "journal_append", "journal_entry_count", "read_file_entry_count", "append_entry_count", "session_entry_count", "written_file_entry_count"),
     "sqlite_session": ("open_walk", "entry_count", "leaf_id", "ingested_entry_count", "session_id", "source_leaf_id"),
@@ -601,6 +601,18 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.error_detail": 8.0,
     "oauth_pkce_device.ensure_success": 8.0,
     "oauth_pkce_device.notify_device": 8.0,
+    # core_rest leftover trio (samples=5): cancellation_predicate observed
+    # 0.106x (0.296 / 2.788 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.cancellation_predicate": 8.0,
+    # core_rest.redacted_register leftover pair (samples=5): observed
+    # 0.698x (0.216 / 0.309 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.redacted_register": 8.0,
+    # core_rest.redacted_replace leftover pair (samples=5): observed
+    # 3.383x (1.464 / 0.433 us). 8.0 is first-freeze headroom.
+    # Ratchet down only.
+    "core_rest.redacted_replace": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -3095,6 +3107,17 @@ OBSERVED_EXACT = {
         "tj_value",
         "tj_done",
         "tj_reason",
+        "cp_nil",
+        "cp_true",
+        "cp_false",
+        "cp_err",
+        "rr_new",
+        "rr_dup",
+        "rr_sort",
+        "ra_hit",
+        "ra_mark",
+        "ra_miss",
+        "ra_empty",
     ),
     "resource_loader": (
         "skill_count",
