@@ -1281,6 +1281,10 @@ RATIO_CEILINGS = {
     # on the custom-prompt path. 3000.0 is first-freeze
     # headroom. Ratchet down only.
     "skill_prompt_load.build_prompt": 3000.0,
+    # skill_prompt_load leftover trio (samples=5): observed
+    # sdk_prompt_input 4.32x (15.18 / 3.51 us), sdk_list_override
+    # 0.36x (0.19 / 0.52 us), sdk_context_files 2.88x (7.56 / 2.62 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
     "skill_prompt_load.sdk_prompt_input": 8.0,
     "skill_prompt_load.sdk_list_override": 8.0,
     "skill_prompt_load.sdk_context_files": 8.0,
