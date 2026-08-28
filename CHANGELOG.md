@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_make`
+  (`make-tool-render-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
+  Observed `tsm_name` / `tsm_pending` / `tsm_nil` exact. n=5 **1.224×**
+  (0.257 / 0.210 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 520). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text / `execution_env.tmp_*`), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_update`
+  (`update-tool-render-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
+  Observed `tsu_result` / `tsu_pending` / `tsu_cleared` exact. n=5
+  **1.151×** (0.266 / 0.231 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 521). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`), not this metric.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_render`
+  (`render-tool-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
+  Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` /
+  `trr_done_result` / `trr_custom` / `trr_empty` exact. n=5 **0.969×**
+  (1.733 / 1.789 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 522). cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.wrap_transcript`
   (`wrap-transcript-lines` on `src/cadr-cli/interactive/transcript.lisp`).
   Observed `wt_nil` / `wt_one_n` / `wt_one_order` / `wt_two_n` /

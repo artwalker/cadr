@@ -6534,6 +6534,30 @@ Leftover sibling of Pair 517 on the same hole. Timed work is pad 0/1 vs other �
 
 Leftover sibling of Pairs 517–518 on the same hole. Timed work is streaming/tool-block/custom-call cache predicate — not `render-tui-entry`, not theme snapshot. Observed `rc_assist` / `rc_stream` / `rc_tool_nil` / `rc_tool_done` / `rc_tool_run` / `rc_custom` are exact. First n=5 freeze **2.515×** (1.461 / 0.581 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
 
+### Pair 520 — `cli_interactive_controller` (tool_session_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tool_session_make` | `make-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | `ToolExecutionComponent` construct (`packages/coding-agent/src/modes/interactive/components/tool-execution.ts`) |
+
+Leftover of the `cli_interactive_controller` hole on `interactive/tool-render-session.lisp`. Timed work is session construct (name, default pending, nil result) — not render, not update. Observed `tsm_name` / `tsm_pending` / `tsm_nil` are exact. First n=5 freeze **1.224×** (0.257 / 0.210 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 521 — `cli_interactive_controller` (tool_session_update)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tool_session_update` | `update-tool-render-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | result/pending (`packages/coding-agent/src/modes/interactive/components/tool-execution.ts`) |
+
+Leftover sibling of Pair 520 on the same hole. Timed work is result write plus pending keep/clear — not renderCall, not construct. Observed `tsu_result` / `tsu_pending` / `tsu_cleared` are exact. First n=5 freeze **1.151×** (0.266 / 0.231 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 522 — `cli_interactive_controller` (tool_session_render)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tool_session_render` | `render-tool-session` (`src/cadr-cli/interactive/tool-render-session.lisp`) | renderCall/renderResult fallback (`packages/coding-agent/src/modes/interactive/components/tool-execution.ts`) |
+
+Leftover sibling of Pairs 520–521 on the same hole. Timed work is pending default call, done default result, custom renderers, empty-line drop — not TUI Box, not images. Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` / `trr_done_result` / `trr_custom` / `trr_empty` are exact. First n=5 freeze **0.969×** (1.733 / 1.789 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

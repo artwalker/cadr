@@ -353,4 +353,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `bash_tool.strip_truncation` | 2.331 | 0.396 | 5.885× | 8.00× | measure-only leftover pair 510; `bash-strip-truncation-footer` vs `[Showing … Full output:]` suffix strip | invent pause；地板优化另刀 |
 | `cli_interactive_controller.wrap_transcript` | 0.601 | 0.599 | 1.003× | 8.00× | measure-only leftover pair 517; `wrap-transcript-lines` OSC 133 wrap (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_cacheable` | 1.461 | 0.581 | 2.515× | 8.00× | measure-only leftover pair 519; `tui-entry-render-cacheable-p` vs TUI entry render cache gate | invent pause；地板优化另刀 |
+| `cli_interactive_controller.tool_session_make` | 0.257 | 0.210 | 1.224× | 8.00× | measure-only leftover pair 520; `make-tool-render-session` construct (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_interactive_controller.tool_session_update` | 0.266 | 0.231 | 1.151× | 8.00× | measure-only leftover pair 521; `update-tool-render-session` result/pending (sub-µs variance) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

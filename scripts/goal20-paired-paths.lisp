@@ -13843,6 +13843,89 @@
      :custom-call-rendered-p t))))
 
 
+(defun tool-session-flag (got expected)
+  (if (equal got expected) 1 0))
+
+
+(defun run-cli-interactive-tool-session-make ()
+  (let ((session
+          (cadr-cli:make-tool-render-session
+           :name "read"
+           :arguments "foo.txt")))
+    (list
+     (tool-session-flag (cadr-cli::tool-render-session-name session) "read")
+     (if (cadr-cli::tool-render-session-pending-p session) 1 0)
+     (if (cadr-cli::tool-render-session-result session) 0 1))))
+
+
+(defun run-cli-interactive-tool-session-update ()
+  (let ((session
+          (cadr-cli:make-tool-render-session
+           :name "read"
+           :arguments "foo.txt")))
+    (cadr-cli:update-tool-render-session session "ok" :pending-p t)
+    (let ((kept (if (cadr-cli::tool-render-session-pending-p session) 1 0))
+          (ok
+            (tool-session-flag
+             (cadr-cli::tool-render-session-result session)
+             "ok")))
+      (cadr-cli:update-tool-render-session session "done")
+      (list
+       ok
+       kept
+       (if (cadr-cli::tool-render-session-pending-p session) 0 1)))))
+
+
+(defun run-cli-interactive-tool-session-render ()
+  (let* ((pending
+           (cadr-cli:make-tool-render-session
+            :name "read"
+            :arguments "foo.txt"))
+         (pending-lines (cadr-cli:render-tool-session pending))
+         (done
+           (cadr-cli:make-tool-render-session
+            :name "read"
+            :arguments "foo.txt"))
+         (custom
+           (cadr-cli:make-tool-render-session
+            :name "read"
+            :arguments "foo.txt"
+            :call-renderer
+            (lambda (args state)
+              (declare (ignore state))
+              (concatenate 'string "CALL:" args))
+            :result-renderer
+            (lambda (result args state)
+              (declare (ignore args state))
+              (concatenate 'string "RES:" result))))
+         (empty
+           (cadr-cli:make-tool-render-session
+            :name "read"
+            :arguments "foo.txt"
+            :call-renderer
+            (lambda (args state)
+              (declare (ignore args state))
+              ""))))
+    (cadr-cli:update-tool-render-session done "ok")
+    (cadr-cli:update-tool-render-session custom "ok")
+    (let ((done-lines (cadr-cli:render-tool-session done))
+          (custom-lines (cadr-cli:render-tool-session custom))
+          (empty-lines (cadr-cli:render-tool-session empty))
+          (expected-call (format nil "~A ~S" "read" "foo.txt")))
+      (list
+       (length pending-lines)
+       (tool-session-flag (first pending-lines) expected-call)
+       (length done-lines)
+       (tool-session-flag (second done-lines) "ok")
+       (if
+           (and
+            (string= (first custom-lines) "CALL:foo.txt")
+            (string= (second custom-lines) "RES:ok"))
+           1
+           0)
+       (if empty-lines 0 1)))))
+
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))

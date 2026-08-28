@@ -380,6 +380,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.wrap_transcript": 50,
 	"cli_interactive_controller.output_padding": 50,
 	"cli_interactive_controller.render_cacheable": 50,
+	"cli_interactive_controller.tool_session_make": 50,
+	"cli_interactive_controller.tool_session_update": 50,
+	"cli_interactive_controller.tool_session_render": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -13291,6 +13294,96 @@ function runCliInteractiveRenderCacheable() {
 			toolBlock: { status: "complete" },
 			customCallRenderedP: true,
 		}),
+	};
+}
+
+
+function makeToolRenderSession({ name, args, callRenderer, resultRenderer }) {
+	return {
+		name,
+		arguments: args,
+		callRenderer,
+		resultRenderer,
+		state: {},
+		result: undefined,
+		pendingP: true,
+	};
+}
+
+
+function updateToolRenderSession(session, result, pendingP) {
+	session.result = result;
+	session.pendingP = pendingP != null && pendingP !== false;
+	return session;
+}
+
+
+function renderToolSession(session) {
+	const call = session.callRenderer
+		? session.callRenderer(session.arguments, session.state)
+		: `${session.name} ${JSON.stringify(session.arguments)}`;
+	const result =
+		!session.pendingP && session.result
+			? session.resultRenderer
+				? session.resultRenderer(session.result, session.arguments, session.state)
+				: String(session.result)
+			: null;
+	return [call, result].filter((line) => line != null && line !== "");
+}
+
+
+function runCliInteractiveToolSessionMake() {
+	const session = makeToolRenderSession({ name: "read", args: "foo.txt" });
+	return {
+		tsm_name: session.name === "read" ? 1 : 0,
+		tsm_pending: session.pendingP ? 1 : 0,
+		tsm_nil: session.result ? 0 : 1,
+	};
+}
+
+
+function runCliInteractiveToolSessionUpdate() {
+	const session = makeToolRenderSession({ name: "read", args: "foo.txt" });
+	updateToolRenderSession(session, "ok", true);
+	const ok = session.result === "ok" ? 1 : 0;
+	const kept = session.pendingP ? 1 : 0;
+	updateToolRenderSession(session, "done");
+	return {
+		tsu_result: ok,
+		tsu_pending: kept,
+		tsu_cleared: session.pendingP ? 0 : 1,
+	};
+}
+
+
+function runCliInteractiveToolSessionRender() {
+	const pending = makeToolRenderSession({ name: "read", args: "foo.txt" });
+	const pendingLines = renderToolSession(pending);
+	const done = makeToolRenderSession({ name: "read", args: "foo.txt" });
+	updateToolRenderSession(done, "ok");
+	const doneLines = renderToolSession(done);
+	const custom = makeToolRenderSession({
+		name: "read",
+		args: "foo.txt",
+		callRenderer: (args) => `CALL:${args}`,
+		resultRenderer: (result) => `RES:${result}`,
+	});
+	updateToolRenderSession(custom, "ok");
+	const customLines = renderToolSession(custom);
+	const empty = makeToolRenderSession({
+		name: "read",
+		args: "foo.txt",
+		callRenderer: () => "",
+	});
+	const emptyLines = renderToolSession(empty);
+	const expectedCall = `read ${JSON.stringify("foo.txt")}`;
+	return {
+		trr_pending_n: pendingLines.length,
+		trr_pending_call: pendingLines[0] === expectedCall ? 1 : 0,
+		trr_done_n: doneLines.length,
+		trr_done_result: doneLines[1] === "ok" ? 1 : 0,
+		trr_custom: customLines[0] === "CALL:foo.txt" && customLines[1] === "RES:ok" ? 1 : 0,
+		trr_empty: emptyLines.length === 0 ? 1 : 0,
 	};
 }
 
