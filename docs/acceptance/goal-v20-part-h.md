@@ -4059,6 +4059,30 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 532 — `cli_selectors` (thinking_level_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_level_label` | `thinking-level-label` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | thinking level label (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover trio on `src/cadr-cli/interactive/selectors/thinking.lisp` / hole `cli_selectors`. Timed work is off/minimal/xhigh/max/low/bogus downcase labels — not render, not keybindings. Observed `tll_off` / `tll_minimal` / `tll_xhigh` / `tll_max` / `tll_low` / `tll_bogus` are exact. First n=5 freeze **0.887×** (0.223 / 0.251 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 533 — `cli_selectors` (thinking_level_search_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_level_search_text` | `thinking-level-search-text` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | thinking level search text (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pair 532 on the same hole. Timed work is label plus `settings-thinking-description` (including unknown → trailing space) — not fuzzy filter, not render. Observed `tlst_off` / `tlst_minimal` / `tlst_high` / `tlst_xhigh` / `tlst_max` / `tlst_bogus` are exact. First n=5 freeze **2.096×** (1.090 / 0.520 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 534 — `cli_selectors` (thinking_selector_set_query)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_set_query` | `thinking-selector-set-query` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | filter query update (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pairs 532–533 on the same hole. Timed work is empty/off/high/miss/nil/clear-after-off query apply — not handle-event, not render. Fixtures pass `:keybindings :bench`. Observed `tsq_empty` / `tsq_off` / `tsq_high` / `tsq_miss` / `tsq_nil` / `tsq_clear` are exact. First n=5 freeze **1.081×** (11.827 / 10.942 µs) on host `cursor`, ceiling 8.0. Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

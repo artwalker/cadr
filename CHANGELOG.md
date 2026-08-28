@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.thinking_level_label`
+  (`thinking-level-label` on
+  `src/cadr-cli/interactive/selectors/thinking.lisp`). Observed `tll_off` /
+  `tll_minimal` / `tll_xhigh` / `tll_max` / `tll_low` / `tll_bogus` exact.
+  n=5 **0.887×** (0.223 / 0.251 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 532). cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.thinking_level_search_text`
+  (`thinking-level-search-text` on
+  `src/cadr-cli/interactive/selectors/thinking.lisp`). Observed `tlst_off` /
+  `tlst_minimal` / `tlst_high` / `tlst_xhigh` / `tlst_max` / `tlst_bogus`
+  exact. n=5 **2.096×** (1.090 / 0.520 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 533). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.thinking_selector_set_query`
+  (`thinking-selector-set-query` on
+  `src/cadr-cli/interactive/selectors/thinking.lisp`). Observed `tsq_empty` /
+  `tsq_off` / `tsq_high` / `tsq_miss` / `tsq_nil` / `tsq_clear` exact.
+  n=5 **1.081×** (11.827 / 10.942 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 534). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
