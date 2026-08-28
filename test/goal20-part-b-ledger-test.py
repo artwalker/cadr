@@ -2566,6 +2566,15 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("auth_pairs_digest", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("vertex_structured", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
         self.assertIn("bedrock_structured", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.session_path", RECORD.METRIC_KEYS)
+        self.assertIn("session_path", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("sp_slash", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.split_command", RECORD.METRIC_KEYS)
+        self.assertIn("split_command", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("sc_cmd", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
+        self.assertIn("cli_bootstrap_sessions.path_argument", RECORD.METRIC_KEYS)
+        self.assertIn("path_argument", paired.METRICS["cli_bootstrap_sessions"])
+        self.assertIn("pa_quote", paired.OBSERVED_EXACT["cli_bootstrap_sessions"])
 
     def test_ai_runtime_faux_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

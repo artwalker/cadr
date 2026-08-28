@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.session_path`
+  (`session-argument-path-p` on `src/cadr-cli/bootstrap/sessions.lisp` vs
+  `resolveSessionPath` path heuristic). Observed `sp_id` / `sp_slash` /
+  `sp_win` / `sp_jsonl` / `sp_plain` exact. n=5 **0.752×** (0.294 / 0.391 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 451).
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.split_command`
+  (`split-command` on `src/cadr-cli/bootstrap/sessions.lisp`). Observed
+  `sc_cmd` / `sc_arg` / `sc_only` / `sc_noarg` / `sc_cmd3` / `sc_rest` exact.
+  n=5 **0.937×** (0.491 / 0.524 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 452).
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.path_argument`
+  (`path-command-argument` on `src/cadr-cli/bootstrap/sessions.lisp`).
+  Observed `pa_plain` / `pa_quote` / `pa_empty` / `pa_miss` exact. n=5
+  **0.598×** (0.379 / 0.633 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 453).
 - Goal 20 P.13 leftover: pair `find_tool.glob_regex` (`glob-regex-source` on
   `src/cadr-cli/tools/glob.lisp` vs glob pattern compile). Observed `gr_star` /
   `gr_glob` / `gr_q` / `gr_dot` exact. n=5 **2.403×** (0.527 / 0.220 µs) on host

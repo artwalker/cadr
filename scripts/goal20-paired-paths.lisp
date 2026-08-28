@@ -698,6 +698,9 @@
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
+    ("cli_bootstrap_sessions.session_path" . 50)
+    ("cli_bootstrap_sessions.split_command" . 50)
+    ("cli_bootstrap_sessions.path_argument" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -19541,9 +19544,53 @@
      (bootstrap-auth-structured-flag options :google-vertex)
      (bootstrap-auth-structured-flag options :amazon-bedrock))))
 
+(defun run-cli-bootstrap-session-path ()
+  (list
+   (if (cadr-cli::session-argument-path-p "abc") 1 0)
+   (if (cadr-cli::session-argument-path-p "foo/bar") 1 0)
+   (if (cadr-cli::session-argument-path-p "a\\b") 1 0)
+   (if (cadr-cli::session-argument-path-p "x.jsonl") 1 0)
+   (if (cadr-cli::session-argument-path-p "jsonl") 1 0)
+   5))
+
+(defun run-cli-bootstrap-split-command ()
+  (multiple-value-bind (cmd arg)
+      (cadr-cli::split-command "list foo")
+    (multiple-value-bind (cmd2 arg2)
+        (cadr-cli::split-command "  only  ")
+      (multiple-value-bind (cmd3 arg3)
+          (cadr-cli::split-command "cmd  arg  extra")
+        (list
+         (if (string= cmd "list") 1 0)
+         (if (string= arg "foo") 1 0)
+         (if (string= cmd2 "only") 1 0)
+         (if (null arg2) 1 0)
+         (if (string= cmd3 "cmd") 1 0)
+         (if (string= arg3 "arg  extra") 1 0)
+         6)))))
+
+(defun run-cli-bootstrap-path-argument ()
+  (list
+   (if (string=
+        (cadr-cli::path-command-argument "/export a.html" "/export")
+        "a.html")
+       1
+       0)
+   (if (string=
+        (cadr-cli::path-command-argument "/export 'b c.html'" "/export")
+        "b c.html")
+       1
+       0)
+   (if (null (cadr-cli::path-command-argument "/export" "/export")) 1 0)
+   (if (null (cadr-cli::path-command-argument "nope" "/export")) 1 0)
+   4))
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
-         (auth-observed (run-cli-bootstrap-auth)))
+         (auth-observed (run-cli-bootstrap-auth))
+         (session-path (run-cli-bootstrap-session-path))
+         (split-command (run-cli-bootstrap-split-command))
+         (path-argument (run-cli-bootstrap-path-argument)))
     (json-object
      "observed"
      (json-object
@@ -19554,7 +19601,22 @@
       "option_count" (first auth-observed)
       "auth_pairs_digest" (second auth-observed)
       "vertex_structured" (third auth-observed)
-      "bedrock_structured" (fourth auth-observed))
+      "bedrock_structured" (fourth auth-observed)
+      "sp_id" (nth 0 session-path)
+      "sp_slash" (nth 1 session-path)
+      "sp_win" (nth 2 session-path)
+      "sp_jsonl" (nth 3 session-path)
+      "sp_plain" (nth 4 session-path)
+      "sc_cmd" (nth 0 split-command)
+      "sc_arg" (nth 1 split-command)
+      "sc_only" (nth 2 split-command)
+      "sc_noarg" (nth 3 split-command)
+      "sc_cmd3" (nth 4 split-command)
+      "sc_rest" (nth 5 split-command)
+      "pa_plain" (nth 0 path-argument)
+      "pa_quote" (nth 1 path-argument)
+      "pa_empty" (nth 2 path-argument)
+      "pa_miss" (nth 3 path-argument))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -19564,7 +19626,22 @@
      (collect "cli_bootstrap_sessions.bootstrap_auth"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-auth)))))))
+                  (run-cli-bootstrap-auth))))
+     "session_path"
+     (collect "cli_bootstrap_sessions.session_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-path))))
+     "split_command"
+     (collect "cli_bootstrap_sessions.split_command"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-split-command))))
+     "path_argument"
+     (collect "cli_bootstrap_sessions.path_argument"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-path-argument)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -20644,6 +20721,12 @@
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "cli_bootstrap_sessions.bootstrap_auth"
       "src/cadr-cli/bootstrap/auth.lisp model-registry-login-options"
+      "cli_bootstrap_sessions.session_path"
+      "src/cadr-cli/bootstrap/sessions.lisp session-argument-path-p"
+      "cli_bootstrap_sessions.split_command"
+      "src/cadr-cli/bootstrap/sessions.lisp split-command"
+      "cli_bootstrap_sessions.path_argument"
+      "src/cadr-cli/bootstrap/sessions.lisp path-command-argument"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

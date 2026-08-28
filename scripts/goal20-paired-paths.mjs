@@ -556,6 +556,9 @@ const REPETITIONS = {
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
+	"cli_bootstrap_sessions.session_path": 50,
+	"cli_bootstrap_sessions.split_command": 50,
+	"cli_bootstrap_sessions.path_argument": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -19748,9 +19751,87 @@ async function runCliBootstrapAuth() {
 	};
 }
 
+function sessionArgumentPathP(argument) {
+	return argument.includes("/") || argument.includes("\\") || argument.endsWith(".jsonl");
+}
+
+function runCliBootstrapSessionPath() {
+	return {
+		sp_id: sessionArgumentPathP("abc") ? 1 : 0,
+		sp_slash: sessionArgumentPathP("foo/bar") ? 1 : 0,
+		sp_win: sessionArgumentPathP("a\\b") ? 1 : 0,
+		sp_jsonl: sessionArgumentPathP("x.jsonl") ? 1 : 0,
+		sp_plain: sessionArgumentPathP("jsonl") ? 1 : 0,
+	};
+}
+
+function splitCommand(line) {
+	const trimmed = line.trim();
+	const separator = trimmed.search(/[ \t]/);
+	if (separator === -1) {
+		return { cmd: trimmed, arg: null };
+	}
+	const argument = trimmed.slice(separator + 1).trim();
+	return {
+		cmd: trimmed.slice(0, separator),
+		arg: argument.length ? argument : null,
+	};
+}
+
+function runCliBootstrapSplitCommand() {
+	const first = splitCommand("list foo");
+	const second = splitCommand("  only  ");
+	const third = splitCommand("cmd  arg  extra");
+	return {
+		sc_cmd: first.cmd === "list" ? 1 : 0,
+		sc_arg: first.arg === "foo" ? 1 : 0,
+		sc_only: second.cmd === "only" ? 1 : 0,
+		sc_noarg: second.arg === null ? 1 : 0,
+		sc_cmd3: third.cmd === "cmd" ? 1 : 0,
+		sc_rest: third.arg === "arg  extra" ? 1 : 0,
+	};
+}
+
+function pathCommandArgument(line, command) {
+	const trimmed = line.trim();
+	if (trimmed.length <= command.length) {
+		return null;
+	}
+	if (!trimmed.startsWith(command)) {
+		return null;
+	}
+	const mark = trimmed[command.length];
+	if (mark !== " " && mark !== "\t") {
+		return null;
+	}
+	const rest = trimmed.slice(command.length + 1).replace(/^[ \t]+/, "");
+	if (!rest.length) {
+		return null;
+	}
+	const quote = rest[0] === "'" || rest[0] === '"' ? rest[0] : null;
+	if (quote) {
+		const end = rest.indexOf(quote, 1);
+		return end === -1 ? null : rest.slice(1, end);
+	}
+	const end = rest.search(/[ \t]/);
+	return end === -1 ? rest : rest.slice(0, end);
+}
+
+function runCliBootstrapPathArgument() {
+	return {
+		pa_plain: pathCommandArgument("/export a.html", "/export") === "a.html" ? 1 : 0,
+		pa_quote: pathCommandArgument("/export 'b c.html'", "/export") === "b c.html" ? 1 : 0,
+		pa_empty: pathCommandArgument("/export", "/export") === null ? 1 : 0,
+		pa_miss: pathCommandArgument("nope", "/export") === null ? 1 : 0,
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
+	const sessionPathObserved = runCliBootstrapSessionPath();
+	const splitCommandObserved = runCliBootstrapSplitCommand();
+	const pathArgumentObserved = runCliBootstrapPathArgument();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -19758,9 +19839,21 @@ async function measureCliBootstrapCodingTools() {
 		bootstrap_auth: await collect("cli_bootstrap_sessions.bootstrap_auth", () => {
 			return () => runCliBootstrapAuth();
 		}),
+		session_path: await collect("cli_bootstrap_sessions.session_path", () => {
+			return () => runCliBootstrapSessionPath();
+		}),
+		split_command: await collect("cli_bootstrap_sessions.split_command", () => {
+			return () => runCliBootstrapSplitCommand();
+		}),
+		path_argument: await collect("cli_bootstrap_sessions.path_argument", () => {
+			return () => runCliBootstrapPathArgument();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
+			...sessionPathObserved,
+			...splitCommandObserved,
+			...pathArgumentObserved,
 		},
 	};
 }
@@ -21081,6 +21174,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"cli_bootstrap_sessions.bootstrap_auth":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
+			"cli_bootstrap_sessions.session_path":
+				"packages/coding-agent/src/main.ts resolveSessionPath path heuristic",
+			"cli_bootstrap_sessions.split_command":
+				"packages/coding-agent/src/cli first-token slash split (cadr split-command)",
+			"cli_bootstrap_sessions.path_argument":
+				"packages/coding-agent/src/cli quoted path after command (cadr path-command-argument)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
