@@ -178,6 +178,9 @@ const REPETITIONS = {
 	"output_accumulator.append": 50,
 	"output_accumulator.snapshot": 50,
 	"output_accumulator.finish": 50,
+	"output_accumulator.last_line_bytes": 50,
+	"output_accumulator.needs_file": 50,
+	"output_accumulator.close_temp_file": 50,
 	"harness_events.on": 50,
 	"harness_events.watch": 50,
 	"harness_events.make_start": 50,
@@ -4410,10 +4413,76 @@ function runOutputAccumulatorFinish() {
 	};
 }
 
+function runOutputAccumulatorLastLineBytes() {
+	const openLine = makeOutputAccumulatorBench();
+	const closedLine = makeOutputAccumulatorBench();
+	const utf8Line = makeOutputAccumulatorBench();
+	openLine.append(Buffer.from([0x68, 0x65, 0x6c, 0x6c, 0x6f]));
+	closedLine.append(Buffer.from([0x68, 0x65, 0x6c, 0x6c, 0x6f, 0x0a]));
+	utf8Line.append(Buffer.from([0xc3, 0xa9]));
+	return {
+		oa_ll_open: openLine.getLastLineBytes(),
+		oa_ll_nl: closedLine.getLastLineBytes(),
+		oa_ll_utf8: utf8Line.getLastLineBytes(),
+		oa_ll_n: 3,
+	};
+}
+
+function makeOutputAccumulatorNeeds() {
+	return new outputAccumulatorModule.OutputAccumulator({
+		maxLines: 2,
+		maxBytes: 16,
+		tempFilePrefix: "oa-needs",
+	});
+}
+
+function oaNeedsFile(accumulator) {
+	return accumulator.shouldUseTempFile() ? 1 : 0;
+}
+
+function runOutputAccumulatorNeedsFile() {
+	const empty = makeOutputAccumulatorNeeds();
+	const under = makeOutputAccumulatorNeeds();
+	const overBytes = makeOutputAccumulatorNeeds();
+	const overLines = makeOutputAccumulatorNeeds();
+	under.append(Buffer.from([0x68, 0x69]));
+	overBytes.append(Buffer.alloc(20, 0x78));
+	overLines.append(Buffer.from([0x61, 0x0a, 0x62, 0x0a, 0x63, 0x0a]));
+	return {
+		oa_nf_empty: oaNeedsFile(empty),
+		oa_nf_under: oaNeedsFile(under),
+		oa_nf_bytes: oaNeedsFile(overBytes),
+		oa_nf_lines: oaNeedsFile(overLines),
+		oa_nf_n: 4,
+	};
+}
+
+async function runOutputAccumulatorCloseTempFile() {
+	const accumulator = new outputAccumulatorModule.OutputAccumulator({
+		maxLines: 50,
+		maxBytes: 16,
+		tempFilePrefix: "oa-close",
+	});
+	accumulator.append(Buffer.alloc(32, 0x78));
+	const path = accumulator.tempFilePath;
+	await accumulator.closeTempFile();
+	const pathOk = path && existsSync(path) ? 1 : 0;
+	const streamClosed = accumulator.tempFileStream ? 0 : 1;
+	if (path && existsSync(path)) unlinkSync(path);
+	return {
+		oa_close_path: pathOk,
+		oa_close_stream: streamClosed,
+		oa_close_n: 1,
+	};
+}
+
 async function measureOutputAccumulator() {
 	const appendObserved = runOutputAccumulatorAppend();
 	const snapshotObserved = runOutputAccumulatorSnapshot();
 	const finishObserved = runOutputAccumulatorFinish();
+	const lastObserved = runOutputAccumulatorLastLineBytes();
+	const needsObserved = runOutputAccumulatorNeedsFile();
+	const closeObserved = await runOutputAccumulatorCloseTempFile();
 	return {
 		append: await collect("output_accumulator.append", () => {
 			return () => runOutputAccumulatorAppend();
@@ -4424,10 +4493,22 @@ async function measureOutputAccumulator() {
 		finish: await collect("output_accumulator.finish", () => {
 			return () => runOutputAccumulatorFinish();
 		}),
+		last_line_bytes: await collect("output_accumulator.last_line_bytes", () => {
+			return () => runOutputAccumulatorLastLineBytes();
+		}),
+		needs_file: await collect("output_accumulator.needs_file", () => {
+			return () => runOutputAccumulatorNeedsFile();
+		}),
+		close_temp_file: await collect("output_accumulator.close_temp_file", () => {
+			return () => runOutputAccumulatorCloseTempFile();
+		}),
 		observed: {
 			...appendObserved,
 			...snapshotObserved,
 			...finishObserved,
+			...lastObserved,
+			...needsObserved,
+			...closeObserved,
 		},
 	};
 }
@@ -19965,6 +20046,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.snapshot",
 			"output_accumulator.finish":
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.finish",
+			"output_accumulator.last_line_bytes":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.getLastLineBytes",
+			"output_accumulator.needs_file":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.shouldUseTempFile",
+			"output_accumulator.close_temp_file":
+				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.closeTempFile",
 			"harness_events.on":
 				"packages/agent/src/harness/events.ts HarnessEventBus.on",
 			"harness_events.watch":

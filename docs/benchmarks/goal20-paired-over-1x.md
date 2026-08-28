@@ -311,4 +311,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.eval_layout` | 3.297 | 1.074 | 3.071× | 8.00× | measure-only pair 418; leftover eval workspace/agent/sessions layout vs path join | invent pause；地板优化另刀 |
 | `evals_harness.output_selector` | 0.189 | 0.188 | 1.007× | 8.00× | measure-only pair 420; leftover `:selector` vs `options.output`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `oauth_pkce_device.openrouter_exchange` | 10.390 | 6.991 | 1.486× | 8.00× | measure-only pair 438; leftover `openrouter-exchange-code` vs `exchangeAuthorizationCode` (stubbed HTTP) | invent pause；地板优化另刀 |
+| `output_accumulator.needs_file` | 50.564 | 20.524 | 2.464× | 8.00× | measure-only pair 428; leftover `needs-file-p` vs `shouldUseTempFile` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -9,6 +9,31 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `output_accumulator.last_line_bytes`
+  (`output-accumulator-last-line-bytes` on
+  `src/cadr-cli/output-accumulator.lisp` vs
+  `OutputAccumulator.getLastLineBytes`). Observed `oa_ll_open` / `oa_ll_nl` /
+  `oa_ll_utf8` / `oa_ll_n` exact. n=5 **0.341×** (1.761 / 5.158 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  unchanged.
+- Goal 20 P.13 leftover: pair `output_accumulator.needs_file`
+  (`output-accumulator-needs-file-p` on
+  `src/cadr-cli/output-accumulator.lisp` vs
+  `OutputAccumulator.shouldUseTempFile`). Observed `oa_nf_empty` /
+  `oa_nf_under` / `oa_nf_bytes` / `oa_nf_lines` / `oa_nf_n` exact. n=5
+  **2.464×** (50.564 / 20.524 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `output_accumulator.close_temp_file`
+  (`output-accumulator-close-temp-file` on
+  `src/cadr-cli/output-accumulator.lisp` vs
+  `OutputAccumulator.closeTempFile`). Observed `oa_close_path` /
+  `oa_close_stream` / `oa_close_n` exact. n=5 **0.463×** (36.231 / 78.272 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum`
+  left unchanged.
 - Goal 20 P.13 leftover: pair `oauth_pkce_device.openrouter_input`
   (`parse-openrouter-authorization-input` on
   `src/cadr-ai/oauth/providers/openrouter.lisp` vs baseline
