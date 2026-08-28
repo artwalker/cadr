@@ -169,7 +169,13 @@ METRICS = {
         "structured_api_key_login",
     ),
     "skill_prompt_load": ("build_prompt",),
-    "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
+    "cli_bootstrap_sessions": (
+        "coding_tools",
+        "bootstrap_auth",
+        "session_argument_path",
+        "split_command",
+        "path_command_argument",
+    ),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
     "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup"),
@@ -1289,6 +1295,15 @@ RATIO_CEILINGS = {
     # cli_bootstrap_sessions.bootstrap_auth pair (samples=5): observed 0.64x
     # (3928.6 / 6134.0 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.bootstrap_auth": 8.0,
+    # cli_bootstrap_sessions.session_argument_path leftover 553 (samples=5):
+    # first-freeze headroom 8.0. Ratchet down only.
+    "cli_bootstrap_sessions.session_argument_path": 8.0,
+    # cli_bootstrap_sessions.split_command leftover 554 (samples=5):
+    # first-freeze headroom 8.0. Ratchet down only.
+    "cli_bootstrap_sessions.split_command": 8.0,
+    # cli_bootstrap_sessions.path_command_argument leftover 555 (samples=5):
+    # first-freeze headroom 8.0. Ratchet down only.
+    "cli_bootstrap_sessions.path_command_argument": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_runtime_faux pair (samples=5): observed 1.76x
     # (0.27 / 0.15 us). 8.0 is first-freeze headroom
@@ -3062,6 +3077,24 @@ OBSERVED_EXACT = {
         "auth_pairs_digest",
         "vertex_structured",
         "bedrock_structured",
+        "sap_slash",
+        "sap_backslash",
+        "sap_jsonl",
+        "sap_id",
+        "sap_empty",
+        "sap_json",
+        "sc_name",
+        "sc_name_arg",
+        "sc_pad",
+        "sc_import",
+        "sc_empty",
+        "sc_tab",
+        "pca_none",
+        "pca_plain",
+        "pca_dq",
+        "pca_sq",
+        "pca_unclosed",
+        "pca_extra",
     ),
     "ai_runtime_faux": (
         "text_len",

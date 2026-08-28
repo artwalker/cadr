@@ -55,6 +55,9 @@
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
+;;;; 553. cli_bootstrap_sessions session-argument-path-p vs resolveSessionPath path test
+;;;; 554. cli_bootstrap_sessions split-command vs interactive-mode first-space split
+;;;; 555. cli_bootstrap_sessions path-command-argument vs getPathCommandArgument
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
 ;;;;  45. cli_support normalize-path-input vs normalizePath
@@ -596,6 +599,9 @@
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
+    ("cli_bootstrap_sessions.session_argument_path" . 50)
+    ("cli_bootstrap_sessions.split_command" . 50)
+    ("cli_bootstrap_sessions.path_command_argument" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -16287,9 +16293,57 @@
      (bootstrap-auth-structured-flag options :google-vertex)
      (bootstrap-auth-structured-flag options :amazon-bedrock))))
 
+(defun run-cli-bootstrap-session-argument-path ()
+  (flet ((flag (argument)
+           (if (cadr-cli::session-argument-path-p argument)
+               "1"
+               "0")))
+    (list
+     (flag "sessions/foo.jsonl")
+     (flag "sessions\\foo.jsonl")
+     (flag "abc.jsonl")
+     (flag "019fabc")
+     (flag "")
+     (flag "file.json"))))
+
+(defun encode-cli-bootstrap-split-command (line)
+  (multiple-value-bind (command argument)
+      (cadr-cli::split-command line)
+    (format nil "~A|~A" (or command "") (or argument ""))))
+
+(defun run-cli-bootstrap-split-command ()
+  (list
+   (encode-cli-bootstrap-split-command "/name")
+   (encode-cli-bootstrap-split-command "/name alice")
+   (encode-cli-bootstrap-split-command "  /name  alice  ")
+   (encode-cli-bootstrap-split-command "/import a.jsonl extra")
+   (encode-cli-bootstrap-split-command "")
+   (encode-cli-bootstrap-split-command
+    (concatenate 'string "/name" (string #\Tab) "alice"))))
+
+(defun encode-cli-bootstrap-path-command-argument (line command)
+  (or (cadr-cli::path-command-argument line command) ""))
+
+(defun run-cli-bootstrap-path-command-argument ()
+  (list
+   (encode-cli-bootstrap-path-command-argument "/import" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import foo.jsonl" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import \"foo bar.jsonl\"" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import 'foo bar.jsonl'" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import \"foo" "/import")
+   (encode-cli-bootstrap-path-command-argument
+    "/import foo.jsonl trailing" "/import")))
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
-         (auth-observed (run-cli-bootstrap-auth)))
+         (auth-observed (run-cli-bootstrap-auth))
+         (path-observed (run-cli-bootstrap-session-argument-path))
+         (split-observed (run-cli-bootstrap-split-command))
+         (pca-observed (run-cli-bootstrap-path-command-argument)))
     (json-object
      "observed"
      (json-object
@@ -16300,7 +16354,25 @@
       "option_count" (first auth-observed)
       "auth_pairs_digest" (second auth-observed)
       "vertex_structured" (third auth-observed)
-      "bedrock_structured" (fourth auth-observed))
+      "bedrock_structured" (fourth auth-observed)
+      "sap_slash" (nth 0 path-observed)
+      "sap_backslash" (nth 1 path-observed)
+      "sap_jsonl" (nth 2 path-observed)
+      "sap_id" (nth 3 path-observed)
+      "sap_empty" (nth 4 path-observed)
+      "sap_json" (nth 5 path-observed)
+      "sc_name" (nth 0 split-observed)
+      "sc_name_arg" (nth 1 split-observed)
+      "sc_pad" (nth 2 split-observed)
+      "sc_import" (nth 3 split-observed)
+      "sc_empty" (nth 4 split-observed)
+      "sc_tab" (nth 5 split-observed)
+      "pca_none" (nth 0 pca-observed)
+      "pca_plain" (nth 1 pca-observed)
+      "pca_dq" (nth 2 pca-observed)
+      "pca_sq" (nth 3 pca-observed)
+      "pca_unclosed" (nth 4 pca-observed)
+      "pca_extra" (nth 5 pca-observed))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -16310,7 +16382,22 @@
      (collect "cli_bootstrap_sessions.bootstrap_auth"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-auth)))))))
+                  (run-cli-bootstrap-auth))))
+     "session_argument_path"
+     (collect "cli_bootstrap_sessions.session_argument_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-argument-path))))
+     "split_command"
+     (collect "cli_bootstrap_sessions.split_command"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-split-command))))
+     "path_command_argument"
+     (collect "cli_bootstrap_sessions.path_command_argument"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-path-command-argument)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -17112,6 +17199,12 @@
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "cli_bootstrap_sessions.bootstrap_auth"
       "src/cadr-cli/bootstrap/auth.lisp model-registry-login-options"
+      "cli_bootstrap_sessions.session_argument_path"
+      "src/cadr-cli/bootstrap/sessions.lisp session-argument-path-p"
+      "cli_bootstrap_sessions.split_command"
+      "src/cadr-cli/bootstrap/sessions.lisp split-command"
+      "cli_bootstrap_sessions.path_command_argument"
+      "src/cadr-cli/bootstrap/sessions.lisp path-command-argument"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
