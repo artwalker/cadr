@@ -919,6 +919,36 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 460,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/model-help.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.no_models_help",
+   "branch": "cursor/model-help-leftovers-460-462-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)"
+  },
+  {
+   "pair": 461,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/model-help.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.no_model_selected",
+   "branch": "cursor/model-help-leftovers-460-462-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)"
+  },
+  {
+   "pair": 462,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/model-help.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.no_api_key",
+   "branch": "cursor/model-help-leftovers-460-462-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 460-462, not sequential nextPairNum)"
   }
  ],
  "mergeQueue": []

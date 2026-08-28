@@ -4059,6 +4059,39 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 460 — `cli_support` (no_models_help)
+
+| metric | cadr | pi |
+|---|---|---|
+| `no_models_help` | `format-no-models-available-message` (`src/cadr-cli/support/model-help.lisp`) | `formatNoModelsAvailableMessage` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+
+Leftover of the `cli_support` hole on `model-help.lisp`. Timed work is the
+CLI wrapper over the no-models guidance string. Observed `nm_pref` /
+`nm_login` / `nm_prov` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
+Gate used `--only-enforce`. Same commit no optimize.
+
+### Pair 461 — `cli_support` (no_model_selected)
+
+| metric | cadr | pi |
+|---|---|---|
+| `no_model_selected` | `format-no-model-selected-message` (`src/cadr-cli/support/model-help.lisp`) | `formatNoModelSelectedMessage` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+
+Leftover sibling of Pair 460 on the same hole. Timed work is the CLI wrapper
+over the no-model-selected guidance string. Observed `ns_pref` / `ns_then` /
+`ns_nl` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
+### Pair 462 — `cli_support` (no_api_key)
+
+| metric | cadr | pi |
+|---|---|---|
+| `no_api_key` | `format-no-api-key-found-message` (`src/cadr-cli/support/model-help.lisp`) | `formatNoApiKeyFoundMessage` (`packages/coding-agent/src/core/auth-guidance.ts`) |
+
+Leftover sibling of Pairs 460–461 on the same hole. Timed work is the CLI
+wrapper over openai/unknown no-key guidance. Observed `nk_oai` / `nk_unk` /
+`nk_sel` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
