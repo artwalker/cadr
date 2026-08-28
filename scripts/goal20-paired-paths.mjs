@@ -199,6 +199,9 @@ const REPETITIONS = {
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
 	"package_manager.package_source": 50,
+	"package_manager.update_argv": 50,
+	"package_manager.update_env": 50,
+	"package_manager.git_object_id": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -3982,6 +3985,80 @@ function runPackageManagerPackageSource() {
 	};
 }
 
+function wrapPackageUpdateCheckArgv(argv, groupPath) {
+	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
+		return argv;
+	}
+	return [
+		"/usr/bin/setsid",
+		"--fork",
+		"--wait",
+		"/bin/sh",
+		"-c",
+		"group_path=$1; shift; printf '%s' \"$$\" > \"$group_path\"; exec \"$@\"",
+		"cadr-package-update-check",
+		groupPath,
+		...argv,
+	];
+}
+
+function runPackageManagerUpdateArgv() {
+	const argv = ["git", "-C", "/tmp/pkg", "rev-parse", "HEAD"];
+	const wrapped = wrapPackageUpdateCheckArgv(
+		argv,
+		"/tmp/cadr-package-update-test.pgid",
+	);
+	return {
+		ua_setsid: wrapped[0] === "/usr/bin/setsid" ? 1 : 0,
+		ua_fork: wrapped.includes("--fork") ? 1 : 0,
+		ua_tail: wrapped[wrapped.length - 1] === "HEAD" ? 1 : 0,
+		ua_rest:
+			wrapped.slice(wrapped.length - argv.length).join("\0") === argv.join("\0")
+				? 1
+				: 0,
+	};
+}
+
+function packageUpdateCheckEnvironment() {
+	const rest = Object.entries(process.env)
+		.filter(([key]) => key !== "GIT_TERMINAL_PROMPT")
+		.map(([key, value]) => `${key}=${value ?? ""}`);
+	return ["GIT_TERMINAL_PROMPT=0", ...rest];
+}
+
+function runPackageManagerUpdateEnv() {
+	const entries = packageUpdateCheckEnvironment();
+	const promptCount = entries.filter((entry) =>
+		entry.startsWith("GIT_TERMINAL_PROMPT="),
+	).length;
+	return {
+		ue_first: entries[0] === "GIT_TERMINAL_PROMPT=0" ? 1 : 0,
+		ue_one: promptCount === 1 ? 1 : 0,
+	};
+}
+
+function packageUpdateGitObjectId(output) {
+	const trimmed = output.trim();
+	const end = trimmed.search(/[ \t\n\r]/);
+	const objectId = end === -1 ? trimmed : trimmed.slice(0, end);
+	if (objectId.length === 40 && /^[0-9a-fA-F]{40}$/.test(objectId)) {
+		return objectId.toLowerCase();
+	}
+	return null;
+}
+
+function runPackageManagerGitObjectId() {
+	const oid = "0123456789abcdef0123456789abcdef01234567";
+	const upper = "0123456789ABCDEF0123456789ABCDEF01234567";
+	return {
+		go_plain: packageUpdateGitObjectId(oid) === oid ? 1 : 0,
+		go_nl: packageUpdateGitObjectId(`${oid}\n`) === oid ? 1 : 0,
+		go_ls: packageUpdateGitObjectId(`${oid}\trefs/heads/main\n`) === oid ? 1 : 0,
+		go_upper: packageUpdateGitObjectId(upper) === oid ? 1 : 0,
+		go_bad: packageUpdateGitObjectId("notasha") === null ? 1 : 0,
+	};
+}
+
 async function measurePackageManager() {
 	const manager = makePackageManager();
 	const resolved = await manager.resolve();
@@ -3989,6 +4066,9 @@ async function measurePackageManager() {
 		entries.filter((entry) => entry.enabled && entry.metadata?.origin === "package").length;
 	const manifestParse = runPackageManagerManifestParse();
 	const packageSource = runPackageManagerPackageSource();
+	const updateArgv = runPackageManagerUpdateArgv();
+	const updateEnv = runPackageManagerUpdateEnv();
+	const gitObjectId = runPackageManagerGitObjectId();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -3999,6 +4079,15 @@ async function measurePackageManager() {
 		package_source: await collect("package_manager.package_source", () => {
 			return () => runPackageManagerPackageSource();
 		}),
+		update_argv: await collect("package_manager.update_argv", () => {
+			return () => runPackageManagerUpdateArgv();
+		}),
+		update_env: await collect("package_manager.update_env", () => {
+			return () => runPackageManagerUpdateEnv();
+		}),
+		git_object_id: await collect("package_manager.git_object_id", () => {
+			return () => runPackageManagerGitObjectId();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -4007,6 +4096,9 @@ async function measurePackageManager() {
 			extension_count: fromPackage(resolved.extensions),
 			...manifestParse,
 			...packageSource,
+			...updateArgv,
+			...updateEnv,
+			...gitObjectId,
 		},
 	};
 }
@@ -16993,6 +17085,12 @@ const result = {
 				"packages/coding-agent/src/core/pi-manifest.ts readPiManifest",
 			"package_manager.package_source":
 				"packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.parseSource + getPackageIdentity + dedupePackages",
+			"package_manager.update_argv":
+				"packages/coding-agent/src/core/package-manager.ts runGitRemoteCommand argv (cadr setsid wrap)",
+			"package_manager.update_env":
+				"packages/coding-agent/src/core/package-manager.ts runGitRemoteCommand GIT_TERMINAL_PROMPT=0",
+			"package_manager.git_object_id":
+				"packages/coding-agent/src/core/package-manager.ts getRemoteGitHead /^([0-9a-f]{40})/",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

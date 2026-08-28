@@ -348,6 +348,9 @@
     ("package_manager.resolve" . 5)
     ("package_manager.manifest_parse" . 50)
     ("package_manager.package_source" . 50)
+    ("package_manager.update_argv" . 50)
+    ("package_manager.update_env" . 50)
+    ("package_manager.git_object_id" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -3738,6 +3741,63 @@
                 1
                 0)))))
 
+(defun package-manager-leftover-truth (value)
+  (if value 1 0))
+
+(defun run-package-manager-update-argv ()
+  ;; Leftover on update-checks.lisp: setsid wrap of git argv — not spawn.
+  (let* ((argv '("git" "-C" "/tmp/pkg" "rev-parse" "HEAD"))
+         (wrapped
+          (cadr-cli::package-update-check-process-argv
+           argv
+           "/tmp/cadr-package-update-test.pgid")))
+    (list
+     (package-manager-leftover-truth
+      (string= (first wrapped) "/usr/bin/setsid"))
+     (package-manager-leftover-truth
+      (find "--fork" wrapped :test #'string=))
+     (package-manager-leftover-truth
+      (string= (car (last wrapped)) "HEAD"))
+     (package-manager-leftover-truth
+      (equal (subseq wrapped (- (length wrapped) (length argv))) argv))
+     4)))
+
+(defun run-package-manager-update-env ()
+  ;; Leftover: inject GIT_TERMINAL_PROMPT=0 and drop prior copies.
+  (let* ((entries (cadr-cli::package-update-check-environment))
+         (prompt-count
+          (count-if
+           (lambda (entry)
+             (uiop:string-prefix-p "GIT_TERMINAL_PROMPT=" entry))
+           entries)))
+    (list
+     (package-manager-leftover-truth
+      (string= (first entries) "GIT_TERMINAL_PROMPT=0"))
+     (package-manager-leftover-truth (= prompt-count 1))
+     2)))
+
+(defun run-package-manager-git-object-id ()
+  ;; Leftover: 40-hex token from rev-parse / ls-remote output.
+  (let ((oid "0123456789abcdef0123456789abcdef01234567")
+        (upper "0123456789ABCDEF0123456789ABCDEF01234567"))
+    (list
+     (package-manager-leftover-truth
+      (string= (cadr-cli::package-update-git-object-id oid) oid))
+     (package-manager-leftover-truth
+      (string=
+       (cadr-cli::package-update-git-object-id (format nil "~A~%" oid))
+       oid))
+     (package-manager-leftover-truth
+      (string=
+       (cadr-cli::package-update-git-object-id
+        (format nil "~A~Crefs/heads/main~%" oid #\Tab))
+       oid))
+     (package-manager-leftover-truth
+      (string= (cadr-cli::package-update-git-object-id upper) oid))
+     (package-manager-leftover-truth
+      (null (cadr-cli::package-update-git-object-id "notasha")))
+     5)))
+
 (defun measure-package-manager ()
   (multiple-value-bind (cwd agent project-config)
       (stage-package-layout)
@@ -3757,7 +3817,10 @@
            (paths
              (run-package-manager manager agent project-config))
            (manifest-parse (run-package-manager-manifest-parse agent))
-           (package-source (run-package-manager-package-source agent)))
+           (package-source (run-package-manager-package-source agent))
+           (update-argv (run-package-manager-update-argv))
+           (update-env (run-package-manager-update-env))
+           (git-object-id (run-package-manager-git-object-id)))
       (json-object
        "observed"
        (json-object
@@ -3779,7 +3842,18 @@
         "ps_ref_ok" (nth 5 package-source)
         "ps_git_id" (nth 6 package-source)
         "ps_ded_n" (nth 7 package-source)
-        "ps_ded_proj" (nth 8 package-source))
+        "ps_ded_proj" (nth 8 package-source)
+        "ua_setsid" (nth 0 update-argv)
+        "ua_fork" (nth 1 update-argv)
+        "ua_tail" (nth 2 update-argv)
+        "ua_rest" (nth 3 update-argv)
+        "ue_first" (nth 0 update-env)
+        "ue_one" (nth 1 update-env)
+        "go_plain" (nth 0 git-object-id)
+        "go_nl" (nth 1 git-object-id)
+        "go_ls" (nth 2 git-object-id)
+        "go_upper" (nth 3 git-object-id)
+        "go_bad" (nth 4 git-object-id))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -3795,7 +3869,22 @@
        (collect "package_manager.package_source"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-package-source agent))))))))
+                    (run-package-manager-package-source agent))))
+       "update_argv"
+       (collect "package_manager.update_argv"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-update-argv))))
+       "update_env"
+       (collect "package_manager.update_env"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-update-env))))
+       "git_object_id"
+       (collect "package_manager.git_object_id"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-git-object-id))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -16624,6 +16713,12 @@
       "src/cadr-cli/packages/manifest.lisp read-package-pi-manifest"
       "package_manager.package_source"
       "src/cadr-cli/packages/source.lisp parse-package-source + package-source-identity + dedupe-package-sources"
+      "package_manager.update_argv"
+      "src/cadr-cli/packages/update-checks.lisp package-update-check-process-argv"
+      "package_manager.update_env"
+      "src/cadr-cli/packages/update-checks.lisp package-update-check-environment"
+      "package_manager.git_object_id"
+      "src/cadr-cli/packages/update-checks.lisp package-update-git-object-id"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"

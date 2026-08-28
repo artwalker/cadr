@@ -919,6 +919,36 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 445,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.update_argv",
+   "branch": "cursor/update-checks-leftovers-445-447-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 445-447, not sequential nextPairNum)"
+  },
+  {
+   "pair": 446,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.update_env",
+   "branch": "cursor/update-checks-leftovers-445-447-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 445-447, not sequential nextPairNum)"
+  },
+  {
+   "pair": 447,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/update-checks.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.git_object_id",
+   "branch": "cursor/update-checks-leftovers-445-447-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 445-447, not sequential nextPairNum)"
   }
  ],
  "mergeQueue": []
