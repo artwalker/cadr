@@ -13867,7 +13867,7 @@
     (make-model-selector-search-fixture
      :id "mimo-v2.5"
      :provider :opencode-go
-     :name nil))))
+     :name ""))))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list

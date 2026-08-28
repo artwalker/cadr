@@ -14211,6 +14211,7 @@ function runCliSelectorsScopedModelSelectorSearchText() {
 		smsst_noname: modelSearchModule.getModelSearchText({
 			id: "mimo-v2.5",
 			provider: "opencode-go",
+			name: "",
 		}),
 	};
 }
