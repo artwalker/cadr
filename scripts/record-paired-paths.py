@@ -10,6 +10,7 @@ section in docs/performance.md. Numbers are never hand-edited.
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import subprocess
 import sys
@@ -18,6 +19,20 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 WRITER = ROOT / "scripts" / "write-performance-ledger.py"
+
+
+def _load_paired_history_mod():
+    spec = importlib.util.spec_from_file_location(
+        "goal20_paired_history", ROOT / "scripts" / "goal20-paired-history.py"
+    )
+    if spec is None or spec.loader is None:
+        raise RuntimeError("cannot import scripts/goal20-paired-history.py")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
+PAIRED_HISTORY = _load_paired_history_mod()
 
 METRIC_KEYS = (
     "cli_dispatch.argv_parse",
@@ -407,37 +422,13 @@ def build_entry(
     }
 
 
-def append_entry(history_path: Path, entry: dict) -> dict:
-    """Append one entry without re-dumping existing JSON bytes."""
-    suffix = "\n  ]\n}\n"
-    if history_path.is_file():
-        raw = history_path.read_text(encoding="utf-8")
-        history = json.loads(raw)
-    else:
-        raw = None
-        history = {"schemaVersion": 1, "entries": []}
-    history.setdefault("schemaVersion", 1)
-    history.setdefault("entries", []).append(entry)
-    history_path.parent.mkdir(parents=True, exist_ok=True)
-    if raw is None:
-        history_path.write_text(
-            json.dumps(history, indent=2, ensure_ascii=False) + "\n",
-            encoding="utf-8",
-        )
-        return history
-    if not raw.endswith(suffix):
-        raise ValueError(
-            f"paired-path history {history_path} is not append-splicable"
-        )
-    dumped = json.dumps(entry, indent=2, ensure_ascii=False)
-    indented = "\n".join(
-        ("  " + line if line else line) for line in dumped.split("\n")
-    )
-    history_path.write_text(
-        raw[: -len(suffix)] + ",\n" + indented + suffix,
-        encoding="utf-8",
-    )
-    return history
+def append_entry(history_path: Path, entry: dict, lane: str | None = None) -> dict:
+    """Append one entry without re-dumping existing JSON bytes.
+
+    When --history is the sharded index, only that lane's shard is rewritten
+    (+N/−0). Concrete files (tests, a single shard) still splice in place.
+    """
+    return PAIRED_HISTORY.append_entry(history_path, entry, lane=lane)
 
 
 def rewrite_ledger(history_path: Path, ledger_path: Path) -> None:

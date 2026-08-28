@@ -8,7 +8,8 @@
 ;;;; scripts/goal20-paired-paths.mjs feeds to pi;
 ;;;; scripts/goal20-paired-paths.py pairs the two reports using the
 ;;;; same_machine hostname compare that goal11-performance-gate.py already
-;;;; uses.
+;;;; uses. History is docs/benchmarks/paired/<lane>.json unioned through
+;;;; docs/benchmarks/goal20-paired-paths.json; this script does not write it.
 ;;;;
 ;;;; Pairs (each one same-input, same-machine, no network):
 ;;;;   1. cli_dispatch      argv parse, help render, --list-models dispatch

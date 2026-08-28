@@ -613,7 +613,8 @@ Latest vs previous: `verify-isolated` (2026-08-15T19:09:32Z) versus `verify-isol
 ## Goal 20 paired paths (script-written)
 
 Produced by `scripts/write-performance-ledger.py` from
-`docs/benchmarks/goal20-paired-paths.json`. Do not edit the table
+`docs/benchmarks/paired/*.json` (unioned via
+`docs/benchmarks/goal20-paired-paths.json`). Do not edit the table
 by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
@@ -1450,18 +1451,18 @@ Previous: `paired-paths` (2026-08-27T19:25:36Z) on `cursor`, git `8c1fc72b060f`,
 | 2026-08-24T10:42:50Z | paired-paths-quick | `37361952bb67` | yes | informational-quick-run | 0.94× | 1.23× | 1.21× | 0.05× |
 | 2026-08-24T10:49:46Z | paired-paths | `37361952bb67` | no | enforced-only:cli_selectors.scoped_models_selector_move | 0.78× | 1.05× | 0.93× | 0.06× |
 | 2026-08-24T10:55:25Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 1.19× | 1.07× | 1.20× | 0.06× |
-| 2026-08-24T11:00:13Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_handle_event | 0.85× | 1.19× | 1.10× | 0.07× |
+| 2026-08-24T10:56:31Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 0.61× | 0.67× | 0.94× | 0.06× |
 | 2026-08-24T10:57:05Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 0.96× | 1.25× | 1.34× | 0.06× |
+| 2026-08-24T10:58:50Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_ui_state | 1.01× | 1.24× | 1.36× | 0.09× |
 | 2026-08-24T10:59:23Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_handle_raw_input | 0.70× | 1.18× | 1.28× | 0.06× |
+| 2026-08-24T11:00:13Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_handle_event | 0.85× | 1.19× | 1.10× | 0.07× |
 | 2026-08-24T11:06:08Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 0.82× | 1.31× | 0.86× | 0.05× |
 | 2026-08-24T11:08:28Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_handle_raw_input | 0.99× | 1.07× | 1.06× | 0.07× |
-| 2026-08-24T10:56:31Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 0.61× | 0.67× | 0.94× | 0.06× |
-| 2026-08-24T10:58:50Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_ui_state | 1.01× | 1.24× | 1.36× | 0.09× |
-| 2026-08-24T12:02:18Z | paired-paths | `d9cc90196e87` | no | enforced-only:cli_selectors.scoped_models_selector_sorted_ids | 0.77× | 1.00× | 1.26× | 0.08× |
-| 2026-08-24T12:10:17Z | paired-paths | `20f17c4e1062` | no | enforced-only:cli_selectors.scoped_models_selector_counts | 0.86× | 0.99× | 1.32× | 0.07× |
 | 2026-08-24T11:37:52Z | paired-paths-quick | `f672ed34a01d` | yes | informational-quick-run | 0.98× | 1.12× | 1.44× | 0.07× |
 | 2026-08-24T11:39:47Z | paired-paths-quick | `f672ed34a01d` | yes | informational-quick-run | 0.67× | 1.05× | 1.15× | 0.07× |
 | 2026-08-24T11:42:19Z | paired-paths | `f672ed34a01d` | no | enforced-only:cli_selectors.scoped_models_selector_toggle_selected | 0.78× | 0.97× | 1.06× | 0.06× |
+| 2026-08-24T12:02:18Z | paired-paths | `d9cc90196e87` | no | enforced-only:cli_selectors.scoped_models_selector_sorted_ids | 0.77× | 1.00× | 1.26× | 0.08× |
+| 2026-08-24T12:10:17Z | paired-paths | `20f17c4e1062` | no | enforced-only:cli_selectors.scoped_models_selector_counts | 0.86× | 0.99× | 1.32× | 0.07× |
 | 2026-08-24T12:53:47Z | paired-paths | `6d6b8b2bef79` | no | enforced-only:cli_selectors.scoped_models_selector_target_ids | 1.22× | 1.11× | 1.09× | 0.06× |
 | 2026-08-24T13:13:47Z | paired-paths | `7f7aa9248114` | no | enforced-only:cli_selectors.scoped_models_selector_enable_all | 0.86× | 1.42× | 0.96× | 0.12× |
 | 2026-08-24T13:14:04Z | paired-paths-quick | `7f7aa9248114` | yes | informational-quick-run | 0.93× | 1.93× | 1.17× | 0.04× |
@@ -1512,23 +1513,23 @@ Previous: `paired-paths` (2026-08-27T19:25:36Z) on `cursor`, git `8c1fc72b060f`,
 | 2026-08-27T13:31:31Z | paired-paths | `47cd597781ca` | no | enforced-only:file_mutation_queue.release_turn | 1.13× | 0.96× | 1.04× | 0.07× |
 | 2026-08-27T13:58:03Z | paired-paths | `084fd0313b60` | no | enforced-only:file_mutation_queue.ensure_state | 1.02× | 0.99× | 1.10× | 0.08× |
 | 2026-08-27T14:40:22Z | paired-paths | `26bcac0c2afc` | no | enforced-only:harness_events.emit | 1.08× | 1.02× | 1.04× | 0.08× |
-| 2026-08-27T14:58:11Z | paired-paths | `868f478630ca` | no | enforced-only:bash_tool.append_status,bash_tool.strip_exit_footer,bash_tool.truncation_notice | 1.08× | 0.96× | 1.04× | 0.08× |
 | 2026-08-27T14:50:51Z | paired-paths | `8fa73fdeb736` | no | enforced-only:output_accumulator.append,output_accumulator.finish,output_accumulator.snapshot | 1.08× | 0.96× | 1.04× | 0.08× |
+| 2026-08-27T14:58:11Z | paired-paths | `868f478630ca` | no | enforced-only:bash_tool.append_status,bash_tool.strip_exit_footer,bash_tool.truncation_notice | 1.08× | 0.96× | 1.04× | 0.08× |
 | 2026-08-27T14:58:38Z | paired-paths | `6c2b5e74cc98` | no | enforced-only:harness_events.make_start,harness_events.on,harness_events.watch | 1.12× | 0.97× | 1.08× | 0.08× |
 | 2026-08-27T15:04:04Z | paired-paths | `910d00c6b5d3` | no | enforced-only:file_mutation_queue.call_with,file_mutation_queue.make_state,file_mutation_queue.state_key | 1.05× | 1.02× | 1.07× | 0.08× |
+| 2026-08-27T15:06:45Z | paired-paths | `1272fbf996ba` | no | enforced-only:image_runtime.openrouter_usage,image_runtime.output_modalities,image_runtime.parse_data_image | 1.10× | 0.93× | 1.01× | 0.07× |
 | 2026-08-27T15:08:55Z | paired-paths | `a0a40bad8024` | no | enforced-only:find_tool.find_files,find_tool.make_tool,find_tool.pattern_match | 1.10× | 0.95× | 1.02× | 0.08× |
 | 2026-08-27T15:17:32Z | paired-paths | `38f7f7914966` | no | enforced-only:tool_manager.cleanup_quarantine,tool_manager.ensure_tool,tool_manager.get_tool_path | 1.07× | 1.01× | 1.05× | 0.08× |
-| 2026-08-27T16:19:37Z | paired-paths | `c38ec665e369` | no | enforced-only:provider_registry_defs.merge_environment,provider_registry_defs.runtime_models,provider_registry_defs.structured_api_key_login | 1.02× | 0.92× | 0.98× | 0.08× |
-| 2026-08-27T15:06:45Z | paired-paths | `1272fbf996ba` | no | enforced-only:image_runtime.openrouter_usage,image_runtime.output_modalities,image_runtime.parse_data_image | 1.10× | 0.93× | 1.01× | 0.07× |
 | 2026-08-27T15:22:48Z | paired-paths | `3cec17069bf1` | no | enforced-only:image_runtime.openrouter_content,image_runtime.output_modalities,image_runtime.parse_data_image | 1.08× | 0.86× | 0.92× | 0.07× |
+| 2026-08-27T16:19:37Z | paired-paths | `c38ec665e369` | no | enforced-only:provider_registry_defs.merge_environment,provider_registry_defs.runtime_models,provider_registry_defs.structured_api_key_login | 1.02× | 0.92× | 0.98× | 0.08× |
 | 2026-08-27T17:44:02Z | paired-paths | `9d3b79e69cc3` | no | enforced-only:harness_events.event_type,harness_events.make_bus,harness_events.make_end | 1.09× | 0.99× | 1.08× | 0.08× |
-| 2026-08-27T17:57:12Z | paired-paths | `2a472cf12c00` | no | enforced-only:powershell_tool.make_tool,powershell_tool.prefix_command,powershell_tool.utf8_prefix | 1.05× | 0.96× | 1.06× | 0.07× |
-| 2026-08-27T18:42:49Z | paired-paths | `303297c6e8e0` | no | enforced-only:ls_tool.directory_entry_name,ls_tool.list_directory,ls_tool.make_tool | 1.24× | 0.98× | 1.14× | 0.09× |
-| 2026-08-27T18:16:01Z | paired-paths | `8fc336e6c123` | no | enforced-only:file_mutation_queue.next_ticket,file_mutation_queue.pending_count,file_mutation_queue.serving_ticket | 1.00× | 0.93× | 0.97× | 0.07× |
-| 2026-08-27T18:09:43Z | paired-paths | `6e41a869bb6c` | no | enforced-only:cli_settings.block_images,cli_settings.enabled_models,cli_settings.reload | 1.08× | 0.98× | 1.08× | 0.08× |
-| 2026-08-27T17:58:38Z | paired-paths | `7af04498b35b` | no | enforced-only:oauth_pkce_device.parse_authorization_input,oauth_pkce_device.parse_query,oauth_pkce_device.percent_decode | 1.13× | 1.05× | 1.09× | 0.07× |
 | 2026-08-27T17:54:37Z | paired-paths | `0ba9822e844c` | no | enforced-only:evals_harness.last_assistant,evals_harness.resolve_selection,evals_harness.transcript | 1.12× | 1.02× | 1.03× | 0.07× |
+| 2026-08-27T17:57:12Z | paired-paths | `2a472cf12c00` | no | enforced-only:powershell_tool.make_tool,powershell_tool.prefix_command,powershell_tool.utf8_prefix | 1.05× | 0.96× | 1.06× | 0.07× |
+| 2026-08-27T17:58:38Z | paired-paths | `7af04498b35b` | no | enforced-only:oauth_pkce_device.parse_authorization_input,oauth_pkce_device.parse_query,oauth_pkce_device.percent_decode | 1.13× | 1.05× | 1.09× | 0.07× |
+| 2026-08-27T18:09:43Z | paired-paths | `6e41a869bb6c` | no | enforced-only:cli_settings.block_images,cli_settings.enabled_models,cli_settings.reload | 1.08× | 0.98× | 1.08× | 0.08× |
+| 2026-08-27T18:16:01Z | paired-paths | `8fc336e6c123` | no | enforced-only:file_mutation_queue.next_ticket,file_mutation_queue.pending_count,file_mutation_queue.serving_ticket | 1.00× | 0.93× | 0.97× | 0.07× |
 | 2026-08-27T18:21:15Z | paired-paths | `7e404558064a` | no | enforced-only:core_rest.cancellation_abort,core_rest.redacted_secrets,core_rest.threads_cleanup | 1.16× | 1.00× | 1.12× | 0.07× |
+| 2026-08-27T18:42:49Z | paired-paths | `303297c6e8e0` | no | enforced-only:ls_tool.directory_entry_name,ls_tool.list_directory,ls_tool.make_tool | 1.24× | 0.98× | 1.14× | 0.09× |
 | 2026-08-27T19:13:42Z | paired-paths | `be74152613f0` | no | enforced-only:write_tool.ensure_parent,write_tool.make_tool,write_tool.write_utf8 | 1.04× | 0.81× | 0.96× | 0.08× |
 | 2026-08-27T19:25:36Z | paired-paths | `8c1fc72b060f` | no | enforced-only:evals_harness.result_json,evals_harness.step_value,evals_harness.usage | 1.07× | 0.99× | 1.11× | 0.08× |
 | 2026-08-27T19:54:58Z | paired-paths | `4aaa4f0c149b` | no | enforced-only:evals_harness.eval_environment,evals_harness.prompt_step,evals_harness.reload_step | 1.15× | 0.84× | 0.90× | 0.08× |

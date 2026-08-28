@@ -16,7 +16,7 @@ usage:
   python3 scripts/goal20-paired-paths.py \
       --cadr /tmp/goal20-cadr.json --pi /tmp/goal20-pi.json \
       [--cadr-journal /tmp/cadr.jsonl --pi-journal /tmp/pi.jsonl] \
-      [--summary-json PATH]
+      [--summary-json PATH] [--history PATH] [--only-enforce GROUP.NAME]
 
 Exit codes: 0 pass, 1 gate failure, 2 unusable report.
 """
@@ -3234,6 +3234,16 @@ def load_goal11_gate():
     return module
 
 
+def load_paired_history_mod():
+    path = PROJECT_DIRECTORY / "scripts/goal20-paired-history.py"
+    spec = importlib.util.spec_from_file_location("goal20_paired_history", path)
+    if spec is None or spec.loader is None:
+        raise ValueError(f"cannot import {path}")
+    module = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(module)
+    return module
+
+
 def load_json(path: str) -> dict:
     with Path(path).open(encoding="utf-8") as stream:
         return json.load(stream)
@@ -3541,12 +3551,22 @@ def main() -> int:
         metavar="GROUP.NAME",
         help="enforce ratio ceilings only for these metrics (repeatable; comma-separated ok)",
     )
+    parser.add_argument(
+        "--history",
+        default=str(PROJECT_DIRECTORY / "docs/benchmarks/goal20-paired-paths.json"),
+        help="sharded paired-path index (union of docs/benchmarks/paired/*.json)",
+    )
     arguments = parser.parse_args()
 
     failures: list[str] = []
     notes: list[str] = []
+    history_entries = 0
     try:
         only_enforce = parse_only_enforce(arguments.only_enforce)
+        history_path = Path(arguments.history)
+        if history_path.is_file():
+            paired_history = load_paired_history_mod().load_paired_history(history_path)
+            history_entries = len(paired_history.get("entries") or [])
         goal11 = load_goal11_gate()
         cadr = load_json(arguments.cadr)
         pi = load_json(arguments.pi)
@@ -3582,6 +3602,7 @@ def main() -> int:
         f"cadr_host={cadr['machine']['machine_instance']}",
         f"pi_host={pi['machine']['hostname']}",
         f"samples={cadr['parameters']['samples']}",
+        f"history_entries={history_entries}",
     ]
 
     if arguments.summary_json:
@@ -3591,6 +3612,7 @@ def main() -> int:
                     "same_machine": host_match,
                     "ratio_gate": status,
                     "only_enforce": sorted(only_enforce) if only_enforce else None,
+                    "history_entries": history_entries,
                     "failures": failures,
                     "ratios": {
                         f"{group}.{name}": (

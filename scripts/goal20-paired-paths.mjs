@@ -10,6 +10,8 @@
 // the cadr half over the *same fixture bytes*, and
 // scripts/goal20-paired-paths.py pairs them using the existing
 // same_machine hostname compare from goal11-performance-gate.py.
+// History is docs/benchmarks/paired/<lane>.json unioned through
+// docs/benchmarks/goal20-paired-paths.json; this script does not write it.
 //
 // Pairs (each one same-input, same-machine, no network):
 //   1. cli_dispatch      argv parse, help render, --list-models dispatch

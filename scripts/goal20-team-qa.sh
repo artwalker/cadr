@@ -37,7 +37,10 @@ if [ "${#GATE_ARGS[@]}" -gt 0 ]; then
 	# shellcheck disable=SC2086
 	"$PROJECT_DIRECTORY/scripts/goal20-paired-paths.sh" --quick "${GATE_ARGS[@]}" --out "$OUT"
 	# Informational quick runs pollute history; restore committed ledger.
-	git restore docs/benchmarks/goal20-paired-paths.json docs/performance.md
+	git restore docs/benchmarks/goal20-paired-paths.json \
+		docs/benchmarks/goal20-ledger.json \
+		docs/benchmarks/paired \
+		docs/performance.md
 fi
 
 echo "goal20 team qa: PASS"

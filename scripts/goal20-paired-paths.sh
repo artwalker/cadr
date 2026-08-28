@@ -101,6 +101,7 @@ python3 "$PROJECT_DIRECTORY/scripts/goal20-paired-paths.py" \
   --cadr-journal "$CADR_JOURNAL" \
   --pi-journal "$PI_JOURNAL" \
   --summary-json "$OUTPUT_DIRECTORY/summary.json" \
+  --history "$PROJECT_DIRECTORY/docs/benchmarks/goal20-paired-paths.json" \
   $GATE_ARGUMENTS
 python3 "$PROJECT_DIRECTORY/scripts/record-paired-paths.py" \
   --summary "$OUTPUT_DIRECTORY/summary.json" \

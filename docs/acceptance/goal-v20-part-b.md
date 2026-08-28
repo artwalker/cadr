@@ -18,7 +18,8 @@ and git.
 ## Paired non-TUI paths
 
 `scripts/goal20-paired-paths.sh` records a passing pair into
-`docs/benchmarks/goal20-paired-paths.json` via
+`docs/benchmarks/goal20-paired-paths.json` (stub; union of
+`docs/benchmarks/paired/<lane>.json`) via
 `scripts/record-paired-paths.py`. The ledger writer regenerates
 `<!-- GOAL20_PAIRED_PATHS_START/END -->` with current vs previous ratios,
 cadr/baseline medians, ceilings, git, machine, `quick`, and `ratio_gate`.

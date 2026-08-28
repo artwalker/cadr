@@ -2,13 +2,15 @@
 """Regenerate the Goal 20 Part B time series in docs/performance.md.
 
 Reads docs/benchmarks/performance-history.json, the adjudicated Part A
-drift bands from docs/benchmarks/goal20-part-a-noise-bands.json, and
-docs/benchmarks/goal20-paired-paths.json. Never hand-edits numbers.
+drift bands from docs/benchmarks/goal20-part-a-noise-bands.json, and the
+Goal 20 paired-path history (stub at docs/benchmarks/goal20-paired-paths.json
+unioned with docs/benchmarks/paired/<lane>.json). Never hand-edits numbers.
 """
 
 from __future__ import annotations
 
 import argparse
+import importlib.util
 import json
 import sys
 from pathlib import Path
@@ -502,7 +504,8 @@ def render_paired_section(history: dict) -> str:
         "## Goal 20 paired paths (script-written)",
         "",
         "Produced by `scripts/write-performance-ledger.py` from",
-        "`docs/benchmarks/goal20-paired-paths.json`. Do not edit the table",
+        "`docs/benchmarks/paired/*.json` (unioned via",
+        "`docs/benchmarks/goal20-paired-paths.json`). Do not edit the table",
         "by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a",
         "booking, not an enforced same-machine full sample. Part O uses a",
         "non-quick run on this host before claiming a ratio moved.",
@@ -633,7 +636,15 @@ def main() -> int:
     )
     paired_count = 0
     if args.paired.is_file():
-        paired = json.loads(args.paired.read_text(encoding="utf-8"))
+        spec = importlib.util.spec_from_file_location(
+            "goal20_paired_history",
+            Path(__file__).resolve().parent / "goal20-paired-history.py",
+        )
+        if spec is None or spec.loader is None:
+            raise RuntimeError("cannot import scripts/goal20-paired-history.py")
+        history_mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(history_mod)
+        paired = history_mod.load_paired_history(args.paired)
         paired_count = len(paired.get("entries") or [])
         regenerated = replace_marked_section(
             regenerated, PAIRED_START, PAIRED_END, render_paired_section(paired)

@@ -32,7 +32,11 @@ goal20)
 		mkdir -p "$OUT"
 		# shellcheck disable=SC2086
 		"$PROJECT_DIRECTORY/scripts/goal20-paired-paths.sh" --quick "$@" --out "$OUT"
-		git -C "$PROJECT_DIRECTORY" restore docs/benchmarks/goal20-paired-paths.json docs/performance.md 2>/dev/null || true
+		git -C "$PROJECT_DIRECTORY" restore \
+			docs/benchmarks/goal20-paired-paths.json \
+			docs/benchmarks/goal20-ledger.json \
+			docs/benchmarks/paired \
+			docs/performance.md 2>/dev/null || true
 	fi
 	;;
 goal21)

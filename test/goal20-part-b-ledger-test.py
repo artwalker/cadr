@@ -2650,5 +2650,111 @@ class TestSelfHistoryStillRenders(unittest.TestCase):
         self.assertEqual(rewritten.count("GOAL20_PERF_HISTORY_START"), 1)
 
 
+PAIRED_HISTORY = load_script(
+    "goal20_paired_history", "goal20-paired-history.py"
+)
+
+
+class TestShardedPairedHistory(unittest.TestCase):
+    def test_committed_index_unions_shards_without_entries_payload(self) -> None:
+        index = json.loads(
+            (ROOT / "docs/benchmarks/goal20-paired-paths.json").read_text(
+                encoding="utf-8"
+            )
+        )
+        self.assertTrue(index.get("sharded"))
+        self.assertNotIn("entries", index)
+        self.assertEqual(
+            set(index["shards"]),
+            {PAIRED_HISTORY.shard_relpath(lane) for lane in PAIRED_HISTORY.LANES},
+        )
+        ledger = PAIRED_HISTORY.load_ledger()
+        self.assertEqual(ledger["nextPairNum"], 328)
+        self.assertEqual(set(ledger.keys()), {"schemaVersion", "nextPairNum"})
+        history = PAIRED_HISTORY.load_paired_history()
+        self.assertEqual(len(history["entries"]), 566)
+        self.assertEqual(history["nextPairNum"], 328)
+        evals = json.loads(
+            (ROOT / "docs/benchmarks/paired/evals.json").read_text(encoding="utf-8")
+        )
+        self.assertEqual(len(evals["entries"]), 4)
+        gates = [entry.get("ratioGate") or "" for entry in evals["entries"]]
+        self.assertTrue(
+            any(
+                "evals_harness.result_json" in gate
+                and "evals_harness.step_value" in gate
+                and "evals_harness.usage" in gate
+                for gate in gates
+            )
+        )
+        self.assertTrue(
+            any(
+                "evals_harness.eval_environment" in gate
+                and "evals_harness.prompt_step" in gate
+                and "evals_harness.reload_step" in gate
+                for gate in gates
+            )
+        )
+
+    def test_append_splices_only_the_lane_shard(self) -> None:
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            shards = root / "paired"
+            shards.mkdir()
+            for lane in PAIRED_HISTORY.LANES:
+                (shards / f"{lane}.json").write_text(
+                    json.dumps({"schemaVersion": 1, "entries": []}, indent=2)
+                    + "\n",
+                    encoding="utf-8",
+                )
+            index = root / "index.json"
+            index.write_text(
+                json.dumps(
+                    {
+                        "schemaVersion": 1,
+                        "sharded": True,
+                        "shards": [str(shards / f"{lane}.json") for lane in PAIRED_HISTORY.LANES],
+                    },
+                    indent=2,
+                )
+                + "\n",
+                encoding="utf-8",
+            )
+            entry = {
+                "recordedAt": "2026-08-28T00:00:00Z",
+                "label": "paired-paths",
+                "gitHead": "c" * 40,
+                "machine": "test-host",
+                "quick": False,
+                "sameMachine": True,
+                "ratioGate": (
+                    "enforced-only:evals_harness.result_json,"
+                    "evals_harness.step_value,evals_harness.usage"
+                ),
+                "samples": 5,
+                "metrics": {},
+                "notes": [],
+            }
+            before = {
+                lane: (shards / f"{lane}.json").read_text(encoding="utf-8")
+                for lane in PAIRED_HISTORY.LANES
+                if lane != "evals"
+            }
+            history = RECORD.append_entry(index, entry)
+            self.assertEqual(len(history["entries"]), 1)
+            self.assertEqual(
+                len(
+                    json.loads((shards / "evals.json").read_text(encoding="utf-8"))[
+                        "entries"
+                    ]
+                ),
+                1,
+            )
+            for lane, text in before.items():
+                self.assertEqual(
+                    (shards / f"{lane}.json").read_text(encoding="utf-8"), text
+                )
+
+
 if __name__ == "__main__":
     unittest.main()
