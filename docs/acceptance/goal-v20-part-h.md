@@ -4068,9 +4068,12 @@ commit no optimize.
 Leftover sibling of Pairs 307–309 on the same `cli_settings` hole. Timed
 work is missing default plus in-memory `"high"` / `"max"` — not
 `reload`, not selector UI, not persist. Observed `dtl_missing` /
-`dtl_high` / `dtl_max` / `dtl_n` are exact. First n=5 freeze pending.
-Gate uses `--only-enforce`. Same commit no optimize. Pair numbers
-328–381 belong to other lanes; this cut is 382–384 only.
+`dtl_high` / `dtl_max` / `dtl_n` are exact. First n=5 freeze **4.014×**
+(20.690 / 5.155 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
+commit no optimize. Pair numbers 328–381 belong to other lanes; this
+cut is 382–384 only.
 
 ### Pair 383 — `cli_settings` (model_thinking_level)
 
@@ -4082,8 +4085,10 @@ Leftover sibling of Pair 382 `default_thinking_level` on the same
 `manager.lisp` hole. Timed work is missing per-model key plus in-memory
 `anthropic/claude-sonnet-4-5` hit / `openai/gpt-4.1` miss — not
 `getDefaultThinkingLevel`, not set. Observed `mtl_missing` / `mtl_hit` /
-`mtl_miss` / `mtl_n` are exact. First n=5 freeze pending. Same commit no
-optimize.
+`mtl_miss` / `mtl_n` are exact. First n=5 freeze **7.018×** (23.982 /
+3.417 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 384 — `cli_settings` (all_model_thinking_levels)
 
@@ -4094,7 +4099,10 @@ optimize.
 Leftover sibling of Pairs 382–383 on the same `manager.lisp` hole. Timed
 work is empty map plus two in-memory keys (`low` / `high`) — not set,
 not remove. Observed `amtl_empty` / `amtl_n2` / `amtl_low` / `amtl_high` /
-`amtl_n` are exact. First n=5 freeze pending. Same commit no optimize.
+`amtl_n` are exact. First n=5 freeze **6.285×** (22.201 / 3.533 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did
+not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

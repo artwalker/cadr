@@ -928,7 +928,12 @@
    "measure": "measure-cli-settings",
    "metric": "cli_settings.default_thinking_level",
    "branch": "cursor/pair-382-384-resource-loader-leftovers-80f7",
-   "note": "nextPairNum left at tip 328 (outside 382-384); 328-381 reserved for other leftover knives"
+   "note": "nextPairNum left at tip 328 (outside 382-384); 328-381 reserved for other leftover knives",
+   "ratio": 4.014,
+   "cadrUs": 20.690,
+   "piUs": 5.155,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 383,
@@ -937,7 +942,12 @@
    "source": "src/cadr-cli/settings/manager.lisp",
    "measure": "measure-cli-settings",
    "metric": "cli_settings.model_thinking_level",
-   "branch": "cursor/pair-382-384-resource-loader-leftovers-80f7"
+   "branch": "cursor/pair-382-384-resource-loader-leftovers-80f7",
+   "ratio": 7.018,
+   "cadrUs": 23.982,
+   "piUs": 3.417,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 384,
@@ -946,7 +956,12 @@
    "source": "src/cadr-cli/settings/manager.lisp",
    "measure": "measure-cli-settings",
    "metric": "cli_settings.all_model_thinking_levels",
-   "branch": "cursor/pair-382-384-resource-loader-leftovers-80f7"
+   "branch": "cursor/pair-382-384-resource-loader-leftovers-80f7",
+   "ratio": 6.285,
+   "cadrUs": 22.201,
+   "piUs": 3.533,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
