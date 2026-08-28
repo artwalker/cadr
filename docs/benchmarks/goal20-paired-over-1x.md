@@ -277,4 +277,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.base64url_value` | 0.736 | 0.273 | 2.692× | 8.00× | measure-only pair 358; `base64url-value` vs RFC 4648 §5 alphabet; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `oauth_pkce_device.base64url_decode` | 2.969 | 0.454 | 6.544× | 8.00× | measure-only pair 359; `base64url-decode` vs `decodeJwt` `atob` | invent pause；地板优化另刀 |
 | `oauth_pkce_device.account_id` | 6.112 | 1.021 | 5.986× | 8.00× | measure-only pair 360; `openai-account-id-from-token` vs `getAccountId` | invent pause；地板优化另刀 |
+| `evals_harness.release_extensions` | 6.187 | 0.293 | 21.13× | 8.00× | measure-only pair 370; `release-eval-extensions`; ratio > named ceiling — gate uses variance/µs floor | invent pause；地板优化另刀 |
+| `evals_harness.agent_tools` | 1.466 | 0.286 | 5.118× | 8.00× | measure-only pair 371; `eval-agent-tools` vs session tools list | invent pause；地板优化另刀 |
+| `evals_harness.extension_paths` | 2.963 | 0.464 | 6.381× | 8.00× | measure-only pair 372; `eval-extension-paths` vs `getExtensionPaths` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

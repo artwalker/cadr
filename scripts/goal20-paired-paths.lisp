@@ -7799,6 +7799,106 @@
      3)))
 
 
+(defun eval-harness-fixture-tools ()
+  (list
+   (cadr-ai:make-tool
+    :name "read"
+    :description "read"
+    :parameters (make-hash-table :test #'equal)
+    :executor
+    (lambda (&rest arguments)
+      (declare (ignore arguments))
+      nil))
+   (cadr-ai:make-tool
+    :name "bash"
+    :description "bash"
+    :parameters (make-hash-table :test #'equal)
+    :executor
+    (lambda (&rest arguments)
+      (declare (ignore arguments))
+      nil))))
+
+
+(defun run-evals-harness-release-extensions ()
+  ;; Nil manager no-op plus host bundle clear — not reload/shutdown.
+  (let* ((nil-out (cadr-evals::release-eval-extensions nil))
+         (host (cadr-agent::make-extension-host))
+         (bundle
+           (cadr-agent::make-extension-bundle
+            :id "v"
+            :path "/tmp/ext-v"))
+         (manager
+           (cadr-cli::%make-cli-extension-manager
+            :cwd (uiop:getcwd)
+            :host host
+            :no-discovery-p t
+            :output (make-broadcast-stream))))
+    (setf (cadr-agent::extension-host-snapshot host)
+          (cadr-agent::make-extension-snapshot
+           :bundles (list bundle)))
+    (let ((mgr-out (cadr-evals::release-eval-extensions manager))
+          (left
+            (cadr-agent::extension-snapshot-bundles
+             (cadr-agent::extension-host-current-snapshot host))))
+      (list
+       (eval-flag (null nil-out))
+       (eval-flag (null mgr-out))
+       (eval-flag (null left))
+       3))))
+
+
+(defun run-evals-harness-agent-tools ()
+  (let* ((empty
+           (cadr-agent:make-agent :auto-compact-p nil :tools nil))
+         (filled
+           (cadr-agent:make-agent
+            :auto-compact-p nil
+            :tools (eval-harness-fixture-tools)))
+         (empty-tools (cadr-evals::eval-agent-tools empty))
+         (filled-tools (cadr-evals::eval-agent-tools filled)))
+    (list
+     (eval-flag (null empty-tools))
+     (length filled-tools)
+     (eval-flag
+      (string= (cadr-ai:tool-name (first filled-tools)) "read"))
+     (eval-flag
+      (string= (cadr-ai:tool-name (second filled-tools)) "bash"))
+     4)))
+
+
+(defun run-evals-harness-extension-paths ()
+  (let* ((none (cadr-agent:make-agent :auto-compact-p nil))
+         (host (cadr-agent::make-extension-host))
+         (visible
+           (cadr-agent::make-extension-bundle
+            :id "v"
+            :path "/tmp/ext-v"
+            :hidden-p nil))
+         (hidden
+           (cadr-agent::make-extension-bundle
+            :id "h"
+            :path "/tmp/ext-h"
+            :hidden-p t))
+         (with-host
+           (cadr-agent:make-agent
+            :auto-compact-p nil
+            :extension-host host)))
+    (setf (cadr-agent::extension-host-snapshot host)
+          (cadr-agent::make-extension-snapshot
+           :bundles (list visible hidden)))
+    (let ((none-paths (cadr-evals::eval-extension-paths none))
+          (paths (cadr-evals::eval-extension-paths with-host)))
+      (list
+       (eval-flag (null none-paths))
+       (length paths)
+       (eval-flag
+        (and (= 1 (length paths))
+             (string= (first paths) "/tmp/ext-v")))
+       (eval-flag
+        (not (find "/tmp/ext-h" paths :test #'string=)))
+       4))))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))

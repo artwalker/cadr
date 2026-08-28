@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.release_extensions` /
+  `agent_tools` / `extension_paths` (`src/cadr-evals/harness.lisp` vs
+  baseline eval session extension cleanup / session tools list /
+  `ExtensionRunner.getExtensionPaths`). Observed `re_*` / `at_*` / `ep_*`
+  exact. n=5 **21.13×** / **5.118×** / **6.381×** (6.187 / 0.293 µs,
+  1.466 / 0.286 µs, 2.963 / 0.464 µs) on host `cursor`, ceiling 8.0.
+  `release_extensions` is above 8.0× but passed on the variance/µs floor.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not these metrics. All three on the over-1× ledger. `nextPairNum`
+  stays 328. Pairs 370–372.
 - Goal 20 P.13 leftover: pair `core_rest.cancellation_make` /
   `cancellation_aborted` / `cancellation_set` (`make-cancellation-state` /
   `cancellation-aborted-p` / `set-cancellation-aborted-p` on

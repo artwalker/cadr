@@ -260,6 +260,9 @@ const REPETITIONS = {
 	"core_rest.cancellation_make": 50,
 	"core_rest.cancellation_aborted": 50,
 	"core_rest.cancellation_set": 50,
+	"evals_harness.release_extensions": 50,
+	"evals_harness.agent_tools": 50,
+	"evals_harness.extension_paths": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -6080,6 +6083,85 @@ function runEvalsHarnessElapsed() {
 		el_past: past >= 0 ? 1 : 0,
 		el_order: past >= now ? 1 : 0,
 		el_n: 3,
+	};
+}
+
+
+function runEvalsHarnessReleaseExtensions() {
+	const none = releaseEvalExtensions(null);
+	const host = {
+		snapshot: { bundles: [{ path: "/tmp/ext-v", hidden: false }] },
+	};
+	const manager = { host };
+	const cleared = releaseEvalExtensions(manager);
+	return {
+		re_nil: none === null ? 1 : 0,
+		re_mgr: cleared === null ? 1 : 0,
+		re_empty: (host.snapshot?.bundles?.length ?? 0) === 0 ? 1 : 0,
+		re_n: 3,
+	};
+}
+
+
+function releaseEvalExtensions(manager) {
+	if (manager?.host) {
+		try {
+			manager.host.snapshot = { bundles: [] };
+		} catch {
+			/* ignore */
+		}
+	}
+	return null;
+}
+
+
+function evalAgentTools(agent) {
+	return agent.tools ?? [];
+}
+
+
+function runEvalsHarnessAgentTools() {
+	const emptyTools = evalAgentTools({ tools: [] });
+	const filledTools = evalAgentTools({
+		tools: [{ name: "read" }, { name: "bash" }],
+	});
+	return {
+		at_empty: emptyTools.length === 0 ? 1 : 0,
+		at_n: filledTools.length,
+		at_read: filledTools[0]?.name === "read" ? 1 : 0,
+		at_bash: filledTools[1]?.name === "bash" ? 1 : 0,
+		at_keys: 4,
+	};
+}
+
+
+function evalExtensionPaths(agent) {
+	const host = agent.extensionHost;
+	if (!host) return [];
+	return (host.snapshot?.bundles ?? [])
+		.filter((bundle) => !bundle.hidden)
+		.map((bundle) => bundle.path);
+}
+
+
+function runEvalsHarnessExtensionPaths() {
+	const nonePaths = evalExtensionPaths({});
+	const paths = evalExtensionPaths({
+		extensionHost: {
+			snapshot: {
+				bundles: [
+					{ path: "/tmp/ext-v", hidden: false },
+					{ path: "/tmp/ext-h", hidden: true },
+				],
+			},
+		},
+	});
+	return {
+		ep_none: nonePaths.length === 0 ? 1 : 0,
+		ep_n: paths.length,
+		ep_path: paths[0] === "/tmp/ext-v" ? 1 : 0,
+		ep_skip: paths.includes("/tmp/ext-h") ? 0 : 1,
+		ep_keys: 4,
 	};
 }
 

@@ -1274,6 +1274,33 @@
    "measure": "measure-core-rest",
    "metric": "core_rest.cancellation_set",
    "branch": "cursor/pair-361-363-core-rest-leftovers-0556"
+  },
+  {
+   "pair": 370,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.release_extensions",
+   "branch": "cursor/evals-harness-leftovers-370-372-1fdc"
+  },
+  {
+   "pair": 371,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.agent_tools",
+   "branch": "cursor/evals-harness-leftovers-370-372-1fdc"
+  },
+  {
+   "pair": 372,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.extension_paths",
+   "branch": "cursor/evals-harness-leftovers-370-372-1fdc"
   }
  ],
  "mergeQueue": []
