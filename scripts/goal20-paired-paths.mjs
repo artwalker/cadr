@@ -49,7 +49,7 @@ import {
 	symlinkSync,
 	unlinkSync,
 } from "node:fs";
-import { mkdir as fsMkdir, readFile as fsReadFile, writeFile as fsWriteFile } from "node:fs/promises";
+import { mkdir as fsMkdir, readFile as fsReadFile, realpath, writeFile as fsWriteFile } from "node:fs/promises";
 import { hostname, homedir, tmpdir } from "node:os";
 import { Readable } from "node:stream";
 import path from "node:path";
