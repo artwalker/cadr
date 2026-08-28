@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_extensions_install.split_command`
+  (`split-extension-command` on
+  `src/cadr-cli/extensions/commands.lisp` vs `_tryExecuteExtensionCommand`
+  spaceIndex split).   Observed `sc_reload` / `sc_foo` / `sc_plain` /
+  `sc_blank` exact. n=5 **0.282×** (0.465 / 1.652 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 487). Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.handle_plain`
+  (`handle-extension-command` on
+  `src/cadr-cli/extensions/commands.lisp` vs non-slash miss). Observed
+  `hp_hello` / `hp_ws` / `hp_blank` exact. n=5 **0.449×** (0.344 /
+  0.766 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 488). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.handle_unknown`
+  (`handle-extension-command` unknown slash on
+  `src/cadr-cli/extensions/commands.lisp` vs `getCommand` miss). Observed
+  `hu_nope` / `hu_miss` / `hu_n` exact. n=5 **0.561×** (0.474 /
+  0.845 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 489). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.model_cycle`
   (`model-cycle-target-entry` on
   `src/cadr-cli/bootstrap/commands.lisp` vs `_cycleScopedModel` index wrap).

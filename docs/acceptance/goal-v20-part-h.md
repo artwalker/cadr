@@ -6112,6 +6112,48 @@ Gate used `--only-enforce` (script rc=1 only from known old holes
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit
 no optimize.
 
+### Pair 487 — `cli_extensions_install` (split_command)
+
+| metric | cadr | pi |
+|---|---|---|
+| `split_command` | `split-extension-command` (`src/cadr-cli/extensions/commands.lisp`) | `_tryExecuteExtensionCommand` spaceIndex split (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover of the `cli_extensions_install` hole on `extensions/commands.lisp`.
+Timed work is command/args split — not reload, not host invoke. Observed
+`sc_reload` / `sc_reload_args` / `sc_foo` / `sc_foo_args` / `sc_plain` /
+`sc_blank` are exact. First n=5 freeze **0.282×** (0.465 / 1.652 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
+
+### Pair 488 — `cli_extensions_install` (handle_plain)
+
+| metric | cadr | pi |
+|---|---|---|
+| `handle_plain` | `handle-extension-command` (`src/cadr-cli/extensions/commands.lisp`) | `_tryExecuteExtensionCommand` non-slash miss (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of Pair 487 on the same hole. Timed work is non-slash
+lines returning nil — not `/reload`, not `invoke-extension-command`.
+Observed `hp_hello` / `hp_ws` / `hp_blank` are exact. First n=5 freeze
+**0.449×** (0.344 / 0.766 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 489 — `cli_extensions_install` (handle_unknown)
+
+| metric | cadr | pi |
+|---|---|---|
+| `handle_unknown` | `handle-extension-command` unknown slash (`src/cadr-cli/extensions/commands.lisp`) | `_tryExecuteExtensionCommand` `getCommand` miss (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of Pairs 487–488 on the same hole. Timed work is
+unknown `/command` lookup returning nil — not handler run, not reload.
+Observed `hu_nope` / `hu_miss` / `hu_n` are exact. First n=5 freeze
+**0.561×** (0.474 / 0.845 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -249,6 +249,9 @@
 ;;;; 396. resource_loader nearest-config-file vs discoverSystemPromptFile project existsSync
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;; 251. cli_extensions_install discover-extension-sources vs discoverAndLoadExtensions path discovery
+;;;; 487. cli_extensions_install split-extension-command vs spaceIndex command/args split
+;;;; 488. cli_extensions_install handle-extension-command plain vs non-slash return
+;;;; 489. cli_extensions_install handle-extension-command unknown slash vs getCommand miss
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
 ;;;; 107. cli_interactive_controller tui-auth-type-label vs formatAuthSelectorProviderType
 ;;;;  86. cli_sdk create-agent-session vs createAgentSession
@@ -451,6 +454,9 @@
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
     ("cli_extensions_install.extension_discovery" . 50)
+    ("cli_extensions_install.split_command" . 50)
+    ("cli_extensions_install.handle_plain" . 50)
+    ("cli_extensions_install.handle_unknown" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -8605,11 +8611,63 @@
          1
          0))))
 
+(defun extension-split-pair (line)
+  (multiple-value-bind (command arguments)
+      (cadr-cli::split-extension-command line)
+    (list command arguments)))
+
+(defun run-cli-extensions-split-command ()
+  (let ((reload (extension-split-pair "/reload"))
+        (foo (extension-split-pair "  /foo   bar baz  "))
+        (plain (extension-split-pair "plain"))
+        (blank (extension-split-pair "   ")))
+    (list
+     (first reload)
+     (second reload)
+     (first foo)
+     (second foo)
+     (first plain)
+     (second plain)
+     (first blank)
+     (second blank))))
+
+(defun extension-handle-flag (line &optional manager)
+  (if (cadr-cli::handle-extension-command line manager)
+      1
+      0))
+
+(defun run-cli-extensions-handle-plain ()
+  (list
+   (extension-handle-flag "hello")
+   (extension-handle-flag "  x y")
+   (extension-handle-flag "")))
+
+(defun cli-extensions-command-manager ()
+  (let ((root
+          (merge-pathnames "ext-commands/" *scratch-directory*)))
+    (ensure-directories-exist root)
+    (cadr-cli::make-cli-extension-manager
+     :cwd root
+     :global-directory
+     (merge-pathnames "global/" root)
+     :no-discovery-p t
+     :output (make-broadcast-stream))))
+
+(defun run-cli-extensions-handle-unknown (manager)
+  (list
+   (extension-handle-flag "/nope args" manager)
+   (extension-handle-flag "/missing" manager)
+   (length "/nope args")))
+
 (defun measure-cli-extensions-install ()
-  (let ((url (run-cli-extensions-llama-url))
-        (token (run-cli-extensions-hf-token))
-        (catalog (run-cli-extensions-llama-catalog))
-        (discovery (run-cli-extensions-extension-discovery)))
+  (let* ((url (run-cli-extensions-llama-url))
+         (token (run-cli-extensions-hf-token))
+         (catalog (run-cli-extensions-llama-catalog))
+         (discovery (run-cli-extensions-extension-discovery))
+         (split (run-cli-extensions-split-command))
+         (plain (run-cli-extensions-handle-plain))
+         (manager (cli-extensions-command-manager))
+         (unknown (run-cli-extensions-handle-unknown manager)))
     (json-object
      "observed"
      (json-object
@@ -8637,7 +8695,21 @@
       "ed_proj" (nth 4 discovery)
       "ed_glob" (nth 5 discovery)
       "ed_probe" (nth 6 discovery)
-      "ed_miss" (nth 7 discovery))
+      "ed_miss" (nth 7 discovery)
+      "sc_reload" (nth 0 split)
+      "sc_reload_args" (nth 1 split)
+      "sc_foo" (nth 2 split)
+      "sc_foo_args" (nth 3 split)
+      "sc_plain" (nth 4 split)
+      "sc_plain_args" (nth 5 split)
+      "sc_blank" (nth 6 split)
+      "sc_blank_args" (nth 7 split)
+      "hp_hello" (nth 0 plain)
+      "hp_ws" (nth 1 plain)
+      "hp_blank" (nth 2 plain)
+      "hu_nope" (nth 0 unknown)
+      "hu_miss" (nth 1 unknown)
+      "hu_n" (nth 2 unknown))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -8657,7 +8729,23 @@
      (collect "cli_extensions_install.extension_discovery"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-extension-discovery)))))))
+                  (run-cli-extensions-extension-discovery))))
+     "split_command"
+     (collect "cli_extensions_install.split_command"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-split-command))))
+     "handle_plain"
+     (collect "cli_extensions_install.handle_plain"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-handle-plain))))
+     "handle_unknown"
+     (collect "cli_extensions_install.handle_unknown"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-handle-unknown
+                   manager)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -21018,6 +21106,12 @@
       "src/cadr-cli/extensions/llama/provider.lisp llama-provider-set-catalog"
       "cli_extensions_install.extension_discovery"
       "src/cadr-cli/extensions/discovery.lisp discover-extension-sources"
+      "cli_extensions_install.split_command"
+      "src/cadr-cli/extensions/commands.lisp split-extension-command"
+      "cli_extensions_install.handle_plain"
+      "src/cadr-cli/extensions/commands.lisp handle-extension-command"
+      "cli_extensions_install.handle_unknown"
+      "src/cadr-cli/extensions/commands.lisp handle-extension-command unknown slash"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"

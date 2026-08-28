@@ -255,6 +255,9 @@ const REPETITIONS = {
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
 	"cli_extensions_install.extension_discovery": 50,
+	"cli_extensions_install.split_command": 50,
+	"cli_extensions_install.handle_plain": 50,
+	"cli_extensions_install.handle_unknown": 50,
 	"evals_harness.summarize": 20,
 	"evals_harness.group_key": 50,
 	"evals_harness.artifact_persist": 3,
@@ -9344,11 +9347,78 @@ function runCliExtensionsExtensionDiscovery() {
 	};
 }
 
+function splitExtensionCommand(line) {
+	const ws = (character) =>
+		character === " " || character === "\t" || character === "\n" || character === "\r";
+	let start = 0;
+	let end = line.length;
+	while (start < end && ws(line[start])) start += 1;
+	while (end > start && ws(line[end - 1])) end -= 1;
+	const trimmed = line.slice(start, end);
+	let separator = -1;
+	for (let index = 0; index < trimmed.length; index += 1) {
+		if (ws(trimmed[index])) {
+			separator = index;
+			break;
+		}
+	}
+	if (separator === -1) return { command: trimmed, arguments: "" };
+	let argStart = separator;
+	while (argStart < trimmed.length && ws(trimmed[argStart])) argStart += 1;
+	return { command: trimmed.slice(0, separator), arguments: trimmed.slice(argStart) };
+}
+
+function runCliExtensionsSplitCommand() {
+	const reload = splitExtensionCommand("/reload");
+	const foo = splitExtensionCommand("  /foo   bar baz  ");
+	const plain = splitExtensionCommand("plain");
+	const blank = splitExtensionCommand("   ");
+	return {
+		sc_reload: reload.command,
+		sc_reload_args: reload.arguments,
+		sc_foo: foo.command,
+		sc_foo_args: foo.arguments,
+		sc_plain: plain.command,
+		sc_plain_args: plain.arguments,
+		sc_blank: blank.command,
+		sc_blank_args: blank.arguments,
+	};
+}
+
+function handleExtensionCommand(line, commands = new Map()) {
+	const { command } = splitExtensionCommand(line);
+	if (command === "/reload") return 1;
+	if (command.length > 0 && command[0] === "/") {
+		return commands.has(command.slice(1)) ? 1 : 0;
+	}
+	return 0;
+}
+
+function runCliExtensionsHandlePlain() {
+	return {
+		hp_hello: handleExtensionCommand("hello"),
+		hp_ws: handleExtensionCommand("  x y"),
+		hp_blank: handleExtensionCommand(""),
+	};
+}
+
+function runCliExtensionsHandleUnknown() {
+	const commands = new Map();
+	return {
+		hu_nope: handleExtensionCommand("/nope args", commands),
+		hu_miss: handleExtensionCommand("/missing", commands),
+		hu_n: "/nope args".length,
+	};
+}
+
 async function measureCliExtensionsInstall() {
 	const url = runCliExtensionsLlamaUrl();
 	const token = await runCliExtensionsHfToken();
 	const catalog = runCliExtensionsLlamaCatalog();
 	const discovery = runCliExtensionsExtensionDiscovery();
+	const split = runCliExtensionsSplitCommand();
+	const plain = runCliExtensionsHandlePlain();
+	const unknown = runCliExtensionsHandleUnknown();
 	return {
 		llama_url: await collect("cli_extensions_install.llama_url", () => {
 			return () => runCliExtensionsLlamaUrl();
@@ -9362,7 +9432,16 @@ async function measureCliExtensionsInstall() {
 		extension_discovery: await collect("cli_extensions_install.extension_discovery", () => {
 			return () => runCliExtensionsExtensionDiscovery();
 		}),
-		observed: { ...url, ...token, ...catalog, ...discovery },
+		split_command: await collect("cli_extensions_install.split_command", () => {
+			return () => runCliExtensionsSplitCommand();
+		}),
+		handle_plain: await collect("cli_extensions_install.handle_plain", () => {
+			return () => runCliExtensionsHandlePlain();
+		}),
+		handle_unknown: await collect("cli_extensions_install.handle_unknown", () => {
+			return () => runCliExtensionsHandleUnknown();
+		}),
+		observed: { ...url, ...token, ...catalog, ...discovery, ...split, ...plain, ...unknown },
 	};
 }
 
@@ -21602,6 +21681,12 @@ const result = {
 				"packages/coding-agent/src/extensions/llama/provider.ts createLlamaProvider.setCatalog",
 			"cli_extensions_install.extension_discovery":
 				"packages/coding-agent/src/core/extensions/loader.ts discoverAndLoadExtensions path discovery",
+			"cli_extensions_install.split_command":
+				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand spaceIndex split",
+			"cli_extensions_install.handle_plain":
+				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand non-slash miss",
+			"cli_extensions_install.handle_unknown":
+				"packages/coding-agent/src/core/agent-session.ts _tryExecuteExtensionCommand getCommand miss",
 			"evals_harness.summarize":
 				"packages/evals/src/vitest-evals/summary.ts summarizeHarnessComparisons",
 			"evals_harness.group_key":
