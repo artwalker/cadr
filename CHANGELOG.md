@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `bash_tool.live_output`
+  (`bash-live-output-for-mode` on `src/cadr-cli/tools/bash.lisp`).
+  Observed `lo_repl` / `lo_tui` / `lo_print` / `lo_rpc` exact. n=5 freeze
+  pending on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 508).
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `bash_tool.strip_status`
+  (`bash-strip-status-footer` on `src/cadr-cli/tools/bash.lisp`). Observed
+  `ss_exact` / `ss_nl` / `ss_plain` / `ss_trim` exact. n=5 freeze pending
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 509).
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `bash_tool.strip_truncation`
+  (`bash-strip-truncation-footer` on `src/cadr-cli/tools/bash.lisp`).
+  Observed `st_none` / `st_footer` / `st_no_full` / `st_plain` exact. n=5
+  freeze pending on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 510). `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

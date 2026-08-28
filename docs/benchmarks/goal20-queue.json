@@ -919,6 +919,42 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 508,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-bash-tool",
+   "metric": "bash_tool.live_output",
+   "branch": "cursor/bash-tool-leftovers-508-510-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 508-510, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 509,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-bash-tool",
+   "metric": "bash_tool.strip_status",
+   "branch": "cursor/bash-tool-leftovers-508-510-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 508-510, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 510,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/tools/bash.lisp",
+   "measure": "measure-bash-tool",
+   "metric": "bash_tool.strip_truncation",
+   "branch": "cursor/bash-tool-leftovers-508-510-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 508-510, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
   }
  ],
  "mergeQueue": []
