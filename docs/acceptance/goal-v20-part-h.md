@@ -8128,6 +8128,30 @@ Leftover sibling of Pair 673. Timed work is nil skip, render-aware inject, and p
 
 Leftover sibling of Pairs 673–674. Timed work is functionp slots plus stripped accent text contains `hi`. Observed `tet_fg` / `tet_bg` / `tet_bold` / `tet_italic` / `tet_hi` are exact. Do not exact-match ANSI or product slug. First n=5 freeze **3.379×** (1.449 / 0.429 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 676 — `cli_interactive_controller` (make_extension_input_dialog)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_extension_input_dialog` | `make-extension-input-dialog` (`src/cadr-cli/interactive/extension-ui.lisp`) | input dialog constructor (`packages/coding-agent/src/modes/interactive/components/extension-editor.ts`) |
+
+Leftover sibling on the `extension-ui.lisp` hole. Timed work is title, protocol-p, single-line input prompt, and empty-title protocol. Observed `eid_t` / `eid_proto` / `eid_in` / `eid_pr` / `eid_empty` are exact. First n=5 freeze **1.099×** (0.496 / 0.451 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 677 — `cli_interactive_controller` (make_extension_editor_dialog)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_extension_editor_dialog` | `make-extension-editor-dialog` (`src/cadr-cli/interactive/extension-ui.lisp`) | editor dialog constructor (`packages/coding-agent/src/modes/interactive/components/extension-editor.ts`) |
+
+Leftover sibling of Pair 676. Timed work is title, prefill text, nil prefill empty, protocol-p, and multiline editor type. Observed `eed_t` / `eed_hi` / `eed_empty` / `eed_proto` / `eed_ed` are exact. First n=5 freeze **4.545×** (1.648 / 0.363 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 678 — `cli_interactive_controller` (make_runtime_auth_input_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_runtime_auth_input_state` | `make-runtime-auth-input-state` (`src/cadr-cli/interactive/extension-ui.lisp`) | runtime auth input constructor (`packages/coding-agent/src/modes/interactive/components/auth-input.ts`) |
+
+Leftover sibling of Pairs 676–677. Timed work is prompt copy, type slot, input prompt, and nil prompt. Do not exact-match redacted print. Observed `rai_type` / `rai_copy` / `rai_in` / `rai_pr` / `rai_nil` are exact. First n=5 freeze **1.042×** (0.459 / 0.441 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

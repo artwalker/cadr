@@ -476,4 +476,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.make_framed_select_state` | 0.903 | 0.870 | 1.037× | 8.00× | measure-only leftover 673; `make-framed-select-state` vs framed select-list constructor | invent pause；地板优化另刀 |
 | `cli_interactive_controller.note_component_render_channel` | 0.357 | 0.279 | 1.278× | 8.00× | measure-only leftover 674; `note-component-render-channel` vs requestRender inject on render-aware mixin | invent pause；地板优化另刀 |
 | `cli_interactive_controller.tui_extension_theme_runtime` | 1.449 | 0.429 | 3.379× | 8.00× | measure-only leftover 675; `tui-extension-theme-runtime` vs theme fg/bg/bold/italic runtime | invent pause；地板优化另刀 |
+| `cli_interactive_controller.make_extension_input_dialog` | 0.496 | 0.451 | 1.099× | 8.00× | measure-only leftover 676; `make-extension-input-dialog` vs input dialog constructor | invent pause；地板优化另刀 |
+| `cli_interactive_controller.make_extension_editor_dialog` | 1.648 | 0.363 | 4.545× | 8.00× | measure-only leftover 677; `make-extension-editor-dialog` vs editor dialog constructor | invent pause；地板优化另刀 |
+| `cli_interactive_controller.make_runtime_auth_input_state` | 0.459 | 0.441 | 1.042× | 8.00× | measure-only leftover 678; `make-runtime-auth-input-state` vs runtime auth input constructor | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
