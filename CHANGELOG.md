@@ -12,21 +12,23 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `package_manager.normalize_pattern`
   (`config-normalize-pattern-path` on `src/cadr-cli/packages/config-selector.lisp`
   vs baseline `normalizeExactPattern`). Observed `np_dot` / `np_plain` /
-  `np_win` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 442).
-  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
-  not this metric. `nextPairNum` left unchanged.
+  `np_win` exact. n=5 **0.650×** (0.444 / 0.683 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 442). Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `package_manager.resource_kinds`
   (`config-resource-kinds` on `src/cadr-cli/packages/config-selector.lisp`
   vs `RESOURCE_TYPES`). Observed `rk_n` / `rk_ext` / `rk_sk` / `rk_pr` /
-  `rk_th` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 443).
-  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
-  not this metric.
+  `rk_th` exact. n=5 **0.756×** (0.117 / 0.155 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 443). Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `package_manager.type_label`
   (`config-resource-type-label` on `src/cadr-cli/packages/config-selector.lisp`
   vs `RESOURCE_TYPE_LABELS`). Observed `tl_ext` / `tl_sk` / `tl_pr` /
-  `tl_th` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 444).
-  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
-  not this metric.
+  `tl_th` exact. n=5 **1.002×** (0.135 / 0.134 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 444). Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
