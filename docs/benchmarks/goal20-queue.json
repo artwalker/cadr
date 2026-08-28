@@ -919,6 +919,51 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 478,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/resource-service.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.sdk_prompt_input",
+   "branch": "cursor/sdk-resource-leftovers-478-480-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 478-480, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 479,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/resource-service.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.sdk_list_override",
+   "branch": "cursor/sdk-resource-leftovers-478-480-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 478-480, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 480,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/sdk/resource-service.lisp",
+   "measure": "measure-skill-prompt-build",
+   "metric": "skill_prompt_load.sdk_context_files",
+   "branch": "cursor/sdk-resource-leftovers-478-480-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 478-480, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

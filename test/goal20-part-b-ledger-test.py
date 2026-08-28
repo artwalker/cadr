@@ -2225,6 +2225,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("custom_len", paired.OBSERVED_EXACT["skill_prompt_load"])
         self.assertIn("has_cwd", paired.OBSERVED_EXACT["skill_prompt_load"])
         self.assertIn("has_agents", paired.OBSERVED_EXACT["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_prompt_input", RECORD.METRIC_KEYS)
+        self.assertIn("sdk_prompt_input", paired.METRICS["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_prompt_input", paired.RATIO_CEILINGS)
+        self.assertIn("si_nil", paired.OBSERVED_EXACT["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_list_override", RECORD.METRIC_KEYS)
+        self.assertIn("sdk_list_override", paired.METRICS["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_list_override", paired.RATIO_CEILINGS)
+        self.assertIn("ov_none", paired.OBSERVED_EXACT["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_context_files", RECORD.METRIC_KEYS)
+        self.assertIn("sdk_context_files", paired.METRICS["skill_prompt_load"])
+        self.assertIn("skill_prompt_load.sdk_context_files", paired.RATIO_CEILINGS)
+        self.assertIn("cf_n", paired.OBSERVED_EXACT["skill_prompt_load"])
 
     def test_cli_bootstrap_sessions_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

@@ -594,6 +594,9 @@
     ("core_rest.redacted_secrets" . 50)
     ("core_rest.threads_cleanup" . 5)
     ("skill_prompt_load.build_prompt" . 50)
+    ("skill_prompt_load.sdk_prompt_input" . 50)
+    ("skill_prompt_load.sdk_list_override" . 50)
+    ("skill_prompt_load.sdk_context_files" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
     ("ai_runtime_faux.blocks" . 50)
@@ -16180,6 +16183,71 @@
                 (lambda ()
                   (run-provider-structured-api-key-login)))))))
 
+(defun skill-prompt-sdk-prompt-file ()
+  (ensure-directories-exist *scratch-directory*)
+  (let ((path
+          (merge-pathnames
+           "sdk-prompt.txt" *scratch-directory*)))
+    (with-open-file
+        (out path
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create)
+      (write-string "hello-file" out))
+    path))
+
+(defun run-skill-prompt-sdk-prompt-input (path)
+  (let ((nil-hit (cadr-cli::sdk-resolve-prompt-input nil))
+        (lit (cadr-cli::sdk-resolve-prompt-input "hello"))
+        (from-file
+          (cadr-cli::sdk-resolve-prompt-input
+           (namestring path))))
+    (list
+     (if nil-hit 1 0)
+     (if (string= lit "hello") 1 0)
+     (if (string= from-file "hello-file") 1 0))))
+
+(defun run-skill-prompt-sdk-list-override ()
+  (multiple-value-bind (items diags)
+      (cadr-cli::sdk-apply-resource-list-override
+       nil '("a") '("d0"))
+    (declare (ignore diags))
+    (multiple-value-bind (items2 diags2)
+        (cadr-cli::sdk-apply-resource-list-override
+         (lambda (items diagnostics)
+           (declare (ignore items diagnostics))
+           (values '("b") '("d1")))
+         '("a") '("d0"))
+      (multiple-value-bind (items3 diags3)
+          (cadr-cli::sdk-apply-resource-list-override
+           (lambda (items diagnostics)
+             (declare (ignore diagnostics))
+             (values items nil))
+           '("a") '("d0"))
+        (declare (ignore items3))
+        (list
+         (if (equal items '("a")) 1 0)
+         (if (and (equal items2 '("b"))
+                  (equal diags2 '("d1")))
+             1
+             0)
+         (if (equal diags3 '("d0")) 1 0))))))
+
+(defun run-skill-prompt-sdk-context-files (path)
+  (let* ((records
+           (cadr-cli::sdk-context-file-records (list path)))
+         (first (first records)))
+    (list
+     (length records)
+     (if (and first
+              (equal (getf first :path) path))
+         1
+         0)
+     (if (and first
+              (string= (getf first :content) "hello-file"))
+         1
+         0))))
+
 (defun run-skill-prompt-build ()
   (let* ((cwd "/tmp/proj")
          (custom
@@ -16213,7 +16281,13 @@
      (if (search "AGENTS.md" with-ctx) 1 0))))
 
 (defun measure-skill-prompt-build ()
-  (let ((observed (run-skill-prompt-build)))
+  (let* ((observed (run-skill-prompt-build))
+         (prompt-file (skill-prompt-sdk-prompt-file))
+         (prompt-input
+           (run-skill-prompt-sdk-prompt-input prompt-file))
+         (list-override (run-skill-prompt-sdk-list-override))
+         (context-files
+           (run-skill-prompt-sdk-context-files prompt-file)))
     (json-object
      "observed"
      (json-object
@@ -16222,12 +16296,36 @@
       "ctx_len" (third observed)
       "has_cwd" (fourth observed)
       "has_extra" (fifth observed)
-      "has_agents" (sixth observed))
+      "has_agents" (sixth observed)
+      "si_nil" (nth 0 prompt-input)
+      "si_lit" (nth 1 prompt-input)
+      "si_file" (nth 2 prompt-input)
+      "ov_none" (nth 0 list-override)
+      "ov_replace" (nth 1 list-override)
+      "ov_keep" (nth 2 list-override)
+      "cf_n" (nth 0 context-files)
+      "cf_path" (nth 1 context-files)
+      "cf_text" (nth 2 context-files))
      "build_prompt"
      (collect "skill_prompt_load.build_prompt"
               (lambda ()
                 (lambda ()
-                  (run-skill-prompt-build)))))))
+                  (run-skill-prompt-build))))
+     "sdk_prompt_input"
+     (collect "skill_prompt_load.sdk_prompt_input"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-sdk-prompt-input prompt-file))))
+     "sdk_list_override"
+     (collect "skill_prompt_load.sdk_list_override"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-sdk-list-override))))
+     "sdk_context_files"
+     (collect "skill_prompt_load.sdk_context_files"
+              (lambda ()
+                (lambda ()
+                  (run-skill-prompt-sdk-context-files prompt-file)))))))
 
 (defun run-cli-bootstrap-coding-tools ()
   (let* ((tools (cadr-cli:make-coding-tools "/tmp/proj"))
@@ -17108,6 +17206,12 @@
       "src/cadr-ai/providers/runtime-projection.lisp provider-definition-structured-api-key-login-p"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
+      "skill_prompt_load.sdk_prompt_input"
+      "src/cadr-cli/sdk/resource-service.lisp sdk-resolve-prompt-input"
+      "skill_prompt_load.sdk_list_override"
+      "src/cadr-cli/sdk/resource-service.lisp sdk-apply-resource-list-override"
+      "skill_prompt_load.sdk_context_files"
+      "src/cadr-cli/sdk/resource-service.lisp sdk-context-file-records"
       "cli_bootstrap_sessions.coding_tools"
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "cli_bootstrap_sessions.bootstrap_auth"

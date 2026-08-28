@@ -445,6 +445,9 @@ const REPETITIONS = {
 	"core_rest.redacted_secrets": 50,
 	"core_rest.threads_cleanup": 5,
 	"skill_prompt_load.build_prompt": 50,
+	"skill_prompt_load.sdk_prompt_input": 50,
+	"skill_prompt_load.sdk_list_override": 50,
+	"skill_prompt_load.sdk_context_files": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
 	"ai_runtime_faux.blocks": 50,
@@ -16338,11 +16341,107 @@ function runSkillPromptBuild() {
 	};
 }
 
+function resolvePromptInput(input) {
+	if (!input) return undefined;
+	if (existsSync(input)) {
+		try {
+			return readFileSync(input, "utf-8");
+		} catch {
+			return input;
+		}
+	}
+	return input;
+}
+
+function skillPromptSdkPromptFile() {
+	const promptPath = path.join(scratch, "sdk-prompt.txt");
+	writeFileSync(promptPath, "hello-file");
+	return promptPath;
+}
+
+function runSkillPromptSdkPromptInput(promptPath) {
+	const nilHit = resolvePromptInput(undefined);
+	const lit = resolvePromptInput("hello");
+	const fromFile = resolvePromptInput(promptPath);
+	return {
+		si_nil: nilHit ? 1 : 0,
+		si_lit: lit === "hello" ? 1 : 0,
+		si_file: fromFile === "hello-file" ? 1 : 0,
+	};
+}
+
+function applyResourceListOverride(fn, items, diagnostics) {
+	if (!fn) return { items, diagnostics };
+	const next = fn(items.slice(), diagnostics.slice());
+	return {
+		items: next.items ?? null,
+		diagnostics: next.diagnostics == null ? diagnostics : next.diagnostics,
+	};
+}
+
+function runSkillPromptSdkListOverride() {
+	const none = applyResourceListOverride(null, ["a"], ["d0"]);
+	const replaced = applyResourceListOverride(
+		() => ({ items: ["b"], diagnostics: ["d1"] }),
+		["a"],
+		["d0"],
+	);
+	const keep = applyResourceListOverride(
+		(items) => ({ items, diagnostics: null }),
+		["a"],
+		["d0"],
+	);
+	return {
+		ov_none: none.items.length === 1 && none.items[0] === "a" ? 1 : 0,
+		ov_replace:
+			replaced.items.length === 1 &&
+			replaced.items[0] === "b" &&
+			replaced.diagnostics.length === 1 &&
+			replaced.diagnostics[0] === "d1"
+				? 1
+				: 0,
+		ov_keep:
+			keep.diagnostics.length === 1 && keep.diagnostics[0] === "d0" ? 1 : 0,
+	};
+}
+
+function contextFileRecords(paths) {
+	return paths.map((filePath) => ({
+		path: filePath,
+		content: readFileSync(filePath, "utf-8"),
+	}));
+}
+
+function runSkillPromptSdkContextFiles(promptPath) {
+	const records = contextFileRecords([promptPath]);
+	const first = records[0];
+	return {
+		cf_n: records.length,
+		cf_path: first?.path === promptPath ? 1 : 0,
+		cf_text: first?.content === "hello-file" ? 1 : 0,
+	};
+}
+
 async function measureSkillPromptBuild() {
-	const observed = runSkillPromptBuild();
+	const promptFile = skillPromptSdkPromptFile();
+	const observed = {
+		...runSkillPromptBuild(),
+		...runSkillPromptSdkPromptInput(promptFile),
+		...runSkillPromptSdkListOverride(),
+		...runSkillPromptSdkContextFiles(promptFile),
+	};
 	return {
 		build_prompt: await collect("skill_prompt_load.build_prompt", () => {
 			return () => runSkillPromptBuild();
+		}),
+		sdk_prompt_input: await collect("skill_prompt_load.sdk_prompt_input", () => {
+			return () => runSkillPromptSdkPromptInput(promptFile);
+		}),
+		sdk_list_override: await collect("skill_prompt_load.sdk_list_override", () => {
+			return () => runSkillPromptSdkListOverride();
+		}),
+		sdk_context_files: await collect("skill_prompt_load.sdk_context_files", () => {
+			return () => runSkillPromptSdkContextFiles(promptFile);
 		}),
 		observed,
 	};
@@ -17456,6 +17555,12 @@ const result = {
 				"packages/ai/src/providers/amazon-bedrock.ts + google-vertex.ts ApiKeyAuth.login select flow",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
+			"skill_prompt_load.sdk_prompt_input":
+				"packages/coding-agent/src/core/resource-loader.ts resolvePromptInput",
+			"skill_prompt_load.sdk_list_override":
+				"packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader skillsOverride apply",
+			"skill_prompt_load.sdk_context_files":
+				"packages/coding-agent/src/core/resource-loader.ts agentsFiles path+content records",
 			"cli_bootstrap_sessions.coding_tools":
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"cli_bootstrap_sessions.bootstrap_auth":
