@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.loader_frames`
+  (`loader-frames` on `src/cadr-tui/composition/loaders.lisp` vs baseline
+  `Loader` `DEFAULT_FRAMES` copy). Observed `lf_default_n` / `lf_default_first`
+  / `lf_custom_n` / `lf_one_n` exact. n=5 **1.051×** (0.200 / 0.190 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.loader_interval`
+  (`loader-interval-seconds` on `src/cadr-tui/composition/loaders.lisp` vs
+  baseline `Loader` `intervalMs` default 80). Observed `li_default` / `li_pos`
+  / `li_zero` / `li_n` exact. n=5 **1.464×** (0.201 / 0.138 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.loader_step`
+  (`loader-component-step` on `src/cadr-tui/composition/loaders.lisp` vs
+  baseline `Loader` animation tick). Skip start/stop/run threads. Observed
+  `ls_initial` / `ls_next` / `ls_wrap` / `ls_n` exact. n=5 **1.543×** (0.339 /
+  0.219 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `resource_loader.context_from_dir` /
   `project_context` / `nearest_config` (`src/cadr-cli/resource-loader.lisp` vs
   baseline `loadContextFileFromDir` / `loadProjectContextFiles` / project

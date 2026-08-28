@@ -308,6 +308,9 @@ const REPETITIONS = {
 	"ai_support.uuid_v7": 50,
 	"ai_support.auth_guidance": 50,
 	"tui_select_settings_loaders.filter": 50,
+	"tui_select_settings_loaders.loader_frames": 50,
+	"tui_select_settings_loaders.loader_interval": 50,
+	"tui_select_settings_loaders.loader_step": 50,
 	"tui_word_navigation.step": 50,
 	"tui_overlay.composite_line": 50,
 	"tui_kill_ring.push_peek": 50,
@@ -844,6 +847,7 @@ const authGuidanceModule = await import(
 const overflowModule = await import(moduleUrl("packages/ai/src/utils/overflow.ts"));
 const grammarModule = await import(moduleUrl("packages/ai/src/api/constrained-sampling.ts"));
 const selectListModule = await import(moduleUrl("packages/tui/src/components/select-list.ts"));
+const loaderModule = await import(moduleUrl("packages/tui/src/components/loader.ts"));
 const wordNavigationModule = await import(moduleUrl("packages/tui/src/word-navigation.ts"));
 const tuiModule = await import(moduleUrl("packages/tui/src/tui.ts"));
 const killRingModule = await import(moduleUrl("packages/tui/src/kill-ring.ts"));
@@ -8954,13 +8958,96 @@ function runTuiSelectList() {
 	};
 }
 
+const LOADER_DEFAULT_FRAMES = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+const LOADER_DEFAULT_INTERVAL_MS = 80;
+
+function loaderFrames(indicatorFrames) {
+	return indicatorFrames !== undefined ? [...indicatorFrames] : [...LOADER_DEFAULT_FRAMES];
+}
+
+function loaderIntervalMs(intervalMs) {
+	return intervalMs && intervalMs > 0 ? intervalMs : LOADER_DEFAULT_INTERVAL_MS;
+}
+
+function runTuiLoaderFrames() {
+	const defaults = loaderFrames(undefined);
+	const custom = loaderFrames(["a", "b"]);
+	const one = loaderFrames(["x"]);
+	return {
+		lf_default_n: defaults.length,
+		lf_default_first: defaults[0] === "⠋" ? 1 : 0,
+		lf_custom_n: custom.length,
+		lf_one_n: one.length,
+	};
+}
+
+function runTuiLoaderInterval() {
+	return {
+		li_default: loaderIntervalMs(undefined),
+		li_pos: loaderIntervalMs(200),
+		li_zero: loaderIntervalMs(0),
+		li_n: 3,
+	};
+}
+
+function makeStoppedBenchLoader() {
+	const ui = { requestRender() {} };
+	const loader = new loaderModule.Loader(ui, (text) => text, (text) => text, "Loading...", {
+		frames: ["a", "b"],
+	});
+	loader.stop();
+	return loader;
+}
+
+function loaderStep(loader) {
+	const frames = loader.frames;
+	loader.currentFrame = (loader.currentFrame + 1) % frames.length;
+	loader.updateDisplay();
+}
+
+function loaderTextHas(loader, needle) {
+	return typeof loader.text === "string" && loader.text.includes(needle) ? 1 : 0;
+}
+
+function runTuiLoaderStep() {
+	const loader = makeStoppedBenchLoader();
+	const initial = loaderTextHas(loader, "a Loading...");
+	loaderStep(loader);
+	const next = loaderTextHas(loader, "b Loading...");
+	loaderStep(loader);
+	return {
+		ls_initial: initial,
+		ls_next: next,
+		ls_wrap: loaderTextHas(loader, "a Loading..."),
+		ls_n: 3,
+	};
+}
+
 async function measureTuiSelectList() {
 	const observed = runTuiSelectList();
+	const frames = runTuiLoaderFrames();
+	const interval = runTuiLoaderInterval();
+	const step = runTuiLoaderStep();
 	return {
 		filter: await collect("tui_select_settings_loaders.filter", () => {
 			return () => runTuiSelectList();
 		}),
-		observed,
+		loader_frames: await collect("tui_select_settings_loaders.loader_frames", () => {
+			return () => runTuiLoaderFrames();
+		}),
+		loader_interval: await collect("tui_select_settings_loaders.loader_interval", () => {
+			return () => runTuiLoaderInterval();
+		}),
+		loader_step: await collect("tui_select_settings_loaders.loader_step", () => {
+			const loader = makeStoppedBenchLoader();
+			return () => loaderStep(loader);
+		}),
+		observed: {
+			...observed,
+			...frames,
+			...interval,
+			...step,
+		},
 	};
 }
 
@@ -18613,6 +18700,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelsAvailableMessage",
 			"tui_select_settings_loaders.filter":
 				"packages/tui/src/components/select-list.ts SelectList.setFilter",
+			"tui_select_settings_loaders.loader_frames":
+				"packages/tui/src/components/loader.ts Loader DEFAULT_FRAMES copy (setIndicator frames)",
+			"tui_select_settings_loaders.loader_interval":
+				"packages/tui/src/components/loader.ts Loader intervalMs default 80 (setIndicator)",
+			"tui_select_settings_loaders.loader_step":
+				"packages/tui/src/components/loader.ts Loader animation tick (currentFrame + updateDisplay)",
 			"tui_word_navigation.step":
 				"packages/tui/src/word-navigation.ts findWordBackward + findWordForward",
 			"tui_overlay.composite_line":

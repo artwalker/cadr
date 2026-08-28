@@ -1470,6 +1470,48 @@
    "piUs": 5.596,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 397,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.loader_frames",
+   "branch": "cursor/pair-tui-loaders-leftovers-397-399-f441",
+   "ratio": 1.051,
+   "cadrUs": 0.2,
+   "piUs": 0.19,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 398,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.loader_interval",
+   "branch": "cursor/pair-tui-loaders-leftovers-397-399-f441",
+   "ratio": 1.464,
+   "cadrUs": 0.201,
+   "piUs": 0.138,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 399,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-tui/composition/loaders.lisp",
+   "measure": "measure-tui-select-list",
+   "metric": "tui_select_settings_loaders.loader_step",
+   "branch": "cursor/pair-tui-loaders-leftovers-397-399-f441",
+   "ratio": 1.543,
+   "cadrUs": 0.339,
+   "piUs": 0.219,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

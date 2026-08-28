@@ -326,6 +326,16 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(select_list), 1)
         self.assertEqual(select_list[0]["class"], "paired")
         self.assertIn("tui_select_settings_loaders.filter", select_list[0]["metrics"])
+        loaders = [
+            row
+            for row in classified["rows"]
+            if row["path"] == "src/cadr-tui/composition/loaders.lisp"
+        ]
+        self.assertEqual(len(loaders), 1)
+        self.assertEqual(loaders[0]["class"], "paired")
+        self.assertIn("tui_select_settings_loaders.loader_frames", loaders[0]["metrics"])
+        self.assertIn("tui_select_settings_loaders.loader_interval", loaders[0]["metrics"])
+        self.assertIn("tui_select_settings_loaders.loader_step", loaders[0]["metrics"])
         word_nav = [
             row
             for row in classified["rows"]

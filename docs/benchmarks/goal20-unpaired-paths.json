@@ -77,6 +77,9 @@
   "ai_support.uuid_v7",
   "ai_support.auth_guidance",
   "tui_select_settings_loaders.filter",
+  "tui_select_settings_loaders.loader_frames",
+  "tui_select_settings_loaders.loader_interval",
+  "tui_select_settings_loaders.loader_step",
   "tui_word_navigation.step",
   "tui_overlay.composite_line",
   "tui_kill_ring.push_peek",
@@ -1938,8 +1941,12 @@
   },
   {
    "prefix": "src/cadr-tui/composition/loaders.lisp",
-   "class": "needs-pair",
-   "hole": "tui_select_settings_loaders"
+   "class": "paired",
+   "metrics": [
+    "tui_select_settings_loaders.loader_frames",
+    "tui_select_settings_loaders.loader_interval",
+    "tui_select_settings_loaders.loader_step"
+   ]
   },
   {
    "prefix": "src/cadr-tui/composition/settings-list.lisp",

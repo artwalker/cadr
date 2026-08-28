@@ -130,7 +130,7 @@ METRICS = {
     "tui_editor_helpers": ("fuzzy_match", "gpt", "id_suffix", "swapped", "miss", "empty"),
     "tui_theme_overlay": ("osc11_bg", "rgb_to_ansi_256", "parse_hex_color", "theme_foreground_ansi", "rgb_r", "rgb_g", "rgb_b", "hex6_r", "hex6_g", "hex6_b", "hex12_r", "miss", "scheme_dark"),
     "ai_support": ("estimate_text", "context_overflow", "grammar_delta", "uuid_v7", "auth_guidance", "empty", "hello", "block", "prompt", "rate", "silent", "length", "d1", "d2", "d3", "started", "closed", "uuid_len", "uuid_hyphens", "uuid_version", "uuid_variant", "uuid_neq", "no_models", "no_selected", "no_key", "no_unknown", "has_login", "has_providers", "has_models"),
-    "tui_select_settings_loaders": ("filter", "he_count", "he_first", "wo_count", "zz_count"),
+    "tui_select_settings_loaders": ("filter", "he_count", "he_first", "wo_count", "zz_count", "loader_frames", "loader_interval", "loader_step"),
     "tui_word_navigation": ("step", "back_from_space", "fwd_from_o", "back_start", "fwd_end"),
     "tui_overlay": ("composite_line", "line_chars", "visible_width", "has_reset"),
     "tui_kill_ring": ("push_peek", "empty_len", "ring_len", "peek_two", "peek_rot", "acc_append", "acc_prepend"),
@@ -592,6 +592,12 @@ RATIO_CEILINGS = {
     "resource_loader.context_from_dir": 8.0,
     "resource_loader.project_context": 8.0,
     "resource_loader.nearest_config": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_select_settings_loaders leftover trio (samples=5):
+    # first-freeze headroom 8.0. Ratchet down only.
+    "tui_select_settings_loaders.loader_frames": 8.0,
+    "tui_select_settings_loaders.loader_interval": 8.0,
+    "tui_select_settings_loaders.loader_step": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -2186,6 +2192,18 @@ OBSERVED_EXACT = {
         "he_first",
         "wo_count",
         "zz_count",
+        "lf_default_n",
+        "lf_default_first",
+        "lf_custom_n",
+        "lf_one_n",
+        "li_default",
+        "li_pos",
+        "li_zero",
+        "li_n",
+        "ls_initial",
+        "ls_next",
+        "ls_wrap",
+        "ls_n",
     ),
     "tui_word_navigation": (
         "back_from_space",

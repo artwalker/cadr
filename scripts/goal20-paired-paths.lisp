@@ -39,6 +39,9 @@
 ;;;;      theme-foreground-ansi vs rgbTo256 / hexToRgb / Theme.getFgAnsi
 ;;;;  24. ai_support estimate-text-tokens vs estimateTextTokens
 ;;;;  25. tui_select_settings_loaders select-list filter vs SelectList.setFilter
+;;;; 397. tui_select_settings_loaders loader-frames vs Loader DEFAULT_FRAMES copy
+;;;; 398. tui_select_settings_loaders loader-interval-seconds vs Loader intervalMs
+;;;; 399. tui_select_settings_loaders loader-component-step vs Loader animation tick
 ;;;;  26. tui_word_navigation find-word-backward/forward vs findWordBackward/Forward
 ;;;;  27. tui_overlay composite-overlay-line vs compositeTuiLine
 ;;;;  28. tui_kill_ring kill-ring-push/peek/rotate vs KillRing
@@ -464,6 +467,9 @@
     ("ai_support.uuid_v7" . 50)
     ("ai_support.auth_guidance" . 50)
     ("tui_select_settings_loaders.filter" . 50)
+    ("tui_select_settings_loaders.loader_frames" . 50)
+    ("tui_select_settings_loaders.loader_interval" . 50)
+    ("tui_select_settings_loaders.loader_step" . 50)
     ("tui_word_navigation.step" . 50)
     ("tui_overlay.composite_line" . 50)
     ("tui_kill_ring.push_peek" . 50)
@@ -9891,20 +9897,95 @@
      (select-list-filter-count list "wo")
      (select-list-filter-count list "zz"))))
 
+(defun loader-interval-ms (seconds)
+  (round (* 1000 (cadr-tui::loader-interval-seconds seconds))))
+
+(defun run-tui-loader-frames ()
+  (let ((default-frames (cadr-tui::loader-frames nil))
+        (custom (cadr-tui::loader-frames '("a" "b")))
+        (one (cadr-tui::loader-frames '("x"))))
+    (list
+     (length default-frames)
+     (if (string= (first default-frames) "⠋") 1 0)
+     (length custom)
+     (length one))))
+
+(defun run-tui-loader-interval ()
+  (list
+   (loader-interval-ms nil)
+   (loader-interval-ms 0.2d0)
+   (loader-interval-ms 0)
+   3))
+
+(defun make-bench-loader ()
+  (cadr-tui:make-loader-component
+   (lambda ()) #'identity #'identity
+   :message "Loading..."
+   :indicator-frames '("a" "b")
+   :start-p nil))
+
+(defun loader-text-has (loader needle)
+  (if (search needle (cadr-tui:text-component-text loader))
+      1
+      0))
+
+(defun run-tui-loader-step ()
+  (let ((loader (make-bench-loader)))
+    (let ((t0 (loader-text-has loader "a Loading...")))
+      (cadr-tui:loader-component-step loader)
+      (let ((t1 (loader-text-has loader "b Loading...")))
+        (cadr-tui:loader-component-step loader)
+        (list
+         t0
+         t1
+         (loader-text-has loader "a Loading...")
+         3)))))
+
 (defun measure-tui-select-list ()
-  (let ((observed (run-tui-select-list)))
+  (let ((observed (run-tui-select-list))
+        (frames (run-tui-loader-frames))
+        (interval (run-tui-loader-interval))
+        (step (run-tui-loader-step)))
     (json-object
      "observed"
      (json-object
       "he_count" (first observed)
       "he_first" (second observed)
       "wo_count" (third observed)
-      "zz_count" (fourth observed))
+      "zz_count" (fourth observed)
+      "lf_default_n" (first frames)
+      "lf_default_first" (second frames)
+      "lf_custom_n" (third frames)
+      "lf_one_n" (fourth frames)
+      "li_default" (first interval)
+      "li_pos" (second interval)
+      "li_zero" (third interval)
+      "li_n" (fourth interval)
+      "ls_initial" (first step)
+      "ls_next" (second step)
+      "ls_wrap" (third step)
+      "ls_n" (fourth step))
      "filter"
      (collect "tui_select_settings_loaders.filter"
               (lambda ()
                 (lambda ()
-                  (run-tui-select-list)))))))
+                  (run-tui-select-list))))
+     "loader_frames"
+     (collect "tui_select_settings_loaders.loader_frames"
+              (lambda ()
+                (lambda ()
+                  (run-tui-loader-frames))))
+     "loader_interval"
+     (collect "tui_select_settings_loaders.loader_interval"
+              (lambda ()
+                (lambda ()
+                  (run-tui-loader-interval))))
+     "loader_step"
+     (collect "tui_select_settings_loaders.loader_step"
+              (lambda ()
+                (let ((loader (make-bench-loader)))
+                  (lambda ()
+                    (cadr-tui:loader-component-step loader))))))))
 
 (defparameter *word-nav-text* "hello world")
 
@@ -18281,6 +18362,12 @@
       "src/cadr-ai/support/release.lisp no-models-available-message"
       "tui_select_settings_loaders.filter"
       "src/cadr-tui/components/select-list.lisp select-list-filtered-items"
+      "tui_select_settings_loaders.loader_frames"
+      "src/cadr-tui/composition/loaders.lisp loader-frames"
+      "tui_select_settings_loaders.loader_interval"
+      "src/cadr-tui/composition/loaders.lisp loader-interval-seconds"
+      "tui_select_settings_loaders.loader_step"
+      "src/cadr-tui/composition/loaders.lisp loader-component-step"
       "tui_word_navigation.step"
       "src/cadr-tui/word-navigation.lisp find-word-backward + find-word-forward"
       "tui_overlay.composite_line"
