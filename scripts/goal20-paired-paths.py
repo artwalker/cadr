@@ -490,8 +490,10 @@ RATIO_CEILINGS = {
     # 1.98x (1954.5 / 987.2 us). pi leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_extensions_install.extension_discovery": 8.0,
-    # Leftover trio on src/cadr-cli/extensions/commands.lisp (pairs 487-489).
-    # First-freeze headroom 8.0. Ratchet down only.
+    # Leftover trio on src/cadr-cli/extensions/commands.lisp (pairs 487-489):
+    # split_command 0.282x (0.465 / 1.652 us), handle_plain 0.449x
+    # (0.344 / 0.766 us), handle_unknown 0.561x (0.474 / 0.845 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
     "cli_extensions_install.split_command": 8.0,
     "cli_extensions_install.handle_plain": 8.0,
     "cli_extensions_install.handle_unknown": 8.0,
