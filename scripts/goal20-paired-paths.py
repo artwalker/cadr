@@ -100,7 +100,7 @@ METRICS = {
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus", "he_direct", "he_watch", "he_start", "he_end", "he_second", "heon_off", "heon_keep", "heon_type", "hew_snap", "hew_count", "hew_start", "hew_end", "hes_type", "hes_lane", "hes_run", "hee_type", "hee_lane", "hee_run", "hee_outcome", "hee_abort", "het_start", "het_end", "het_fail", "heb_distinct", "heb_a", "heb_b"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice", "sef_exact", "sef_nl", "sef_no_nl", "sef_plain", "sef_empty", "sef_n", "abs_empty", "abs_abort", "abs_exit", "abs_timeout", "abs_n", "btn_none", "btn_partial", "btn_lines", "btn_bytes", "btn_n", "live_output", "strip_status", "strip_truncation"),
     "output_accumulator": ("append", "snapshot", "finish", "oa_append_bytes", "oa_append_trunc", "oa_append_lines", "oa_append_last", "oa_append_n", "oa_snap_bytes", "oa_snap_trunc", "oa_snap_lines", "oa_snap_total", "oa_snap_n", "oa_fin_bytes", "oa_fin_fffd", "oa_fin_last", "oa_fin_trunc", "oa_fin_n", "last_line_bytes", "needs_file", "close_temp_file"),
-    "find_tool": ("pattern_match", "find_files", "make_tool", "fpm_star_a", "fpm_star_src", "fpm_star_txt", "fpm_path_src", "fpm_path_root", "fpm_src_star", "fpm_n", "ff_empty", "ff_lisp", "ff_path", "ff_src_star", "ff_n", "fmt_name", "fmt_desc", "fmt_req", "fmt_n", "glob_regex", "glob_special", "gitignore_regex", "glob_scanner", "glob_regex_body", "parse_gitignore_line", "gsc_star", "gsc_miss", "gsc_glob", "gsc_q", "gsc_dot", "grb_star", "grb_glob", "grb_q", "grb_dot", "pgl_empty", "pgl_hash", "pgl_foo", "pgl_bang", "pgl_scan"),
+    "find_tool": ("pattern_match", "find_files", "make_tool", "fpm_star_a", "fpm_star_src", "fpm_star_txt", "fpm_path_src", "fpm_path_root", "fpm_src_star", "fpm_n", "ff_empty", "ff_lisp", "ff_path", "ff_src_star", "ff_n", "fmt_name", "fmt_desc", "fmt_req", "fmt_n", "glob_regex", "glob_special", "gitignore_regex", "glob_scanner", "glob_regex_body", "parse_gitignore_line", "gsc_star", "gsc_miss", "gsc_glob", "gsc_q", "gsc_dot", "grb_star", "grb_glob", "grb_q", "grb_dot", "pgl_empty", "pgl_hash", "pgl_foo", "pgl_bang", "pgl_scan", "ignored_directory", "gitignored", "make_glob_tool", "igd_git", "igd_nm", "igd_src", "igd_hub", "igd_slash", "gig_empty", "gig_hit", "gig_miss", "gig_bang", "gig_out", "mgt_name", "mgt_desc", "mgt_req", "mgt_par", "mgt_n"),
     "grep_tool": ("match_event", "line_text", "make_tool", "read_utf8", "file_lines", "context_block"),
     "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool", "lden_file", "lden_dir", "lden_nested", "lden_n", "ld_empty", "ld_mixed", "ld_first", "ld_limit", "ld_n", "lst_name", "lst_desc", "lst_req", "lst_n"),
@@ -727,6 +727,11 @@ RATIO_CEILINGS = {
     "find_tool.glob_regex_body": 8.0,
     # leftover 690; first freeze 5.556× (7.267 / 1.308 µs).
     "find_tool.parse_gitignore_line": 8.0,
+    # find_tool leftover trio on glob.lisp (samples=5): first-freeze
+    # headroom. Ratchet down only. Measure-only leftover 691–693.
+    "find_tool.ignored_directory": 8.0,
+    "find_tool.gitignored": 8.0,
+    "find_tool.make_glob_tool": 8.0,
     # cli_bootstrap_sessions leftover trio on sessions.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.session_path": 8.0,
@@ -2616,6 +2621,21 @@ OBSERVED_EXACT = {
         "pgl_foo",
         "pgl_bang",
         "pgl_scan",
+        "igd_git",
+        "igd_nm",
+        "igd_src",
+        "igd_hub",
+        "igd_slash",
+        "gig_empty",
+        "gig_hit",
+        "gig_miss",
+        "gig_bang",
+        "gig_out",
+        "mgt_name",
+        "mgt_desc",
+        "mgt_req",
+        "mgt_par",
+        "mgt_n",
     ),
     "grep_tool": (
         "rme_match",

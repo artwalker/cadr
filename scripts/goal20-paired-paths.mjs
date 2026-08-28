@@ -199,6 +199,9 @@ const REPETITIONS = {
 	"find_tool.glob_scanner": 50,
 	"find_tool.glob_regex_body": 50,
 	"find_tool.parse_gitignore_line": 50,
+	"find_tool.ignored_directory": 50,
+	"find_tool.gitignored": 50,
+	"find_tool.make_glob_tool": 50,
 	"write_tool.ensure_parent": 50,
 	"write_tool.write_utf8": 50,
 	"write_tool.make_tool": 50,
@@ -4065,6 +4068,101 @@ function runFindParseGitignoreLine() {
 	};
 }
 
+const LEFTOVER_GITIGNORED_BASE = "/tmp/goal20-gitignored-base/";
+
+function leftoverIgnoredDirectory(directory) {
+	const ensured = directory.endsWith("/") ? directory : `${directory}/`;
+	const parts = ensured.replaceAll("\\", "/").split("/").filter((part) => part.length > 0);
+	const last = parts[parts.length - 1];
+	return last === ".git" || last === "node_modules";
+}
+
+function leftoverIsSubpath(pathStr, base) {
+	const nbase = base.endsWith("/") ? base : `${base}/`;
+	return pathStr === base || pathStr === nbase.slice(0, -1) || pathStr.startsWith(nbase);
+}
+
+function leftoverRelativePosix(pathStr, cwd) {
+	const base = cwd.endsWith("/") ? cwd : `${cwd}/`;
+	if (pathStr.startsWith(base)) {
+		return pathStr.slice(base.length).replaceAll("\\", "/");
+	}
+	if (pathStr === cwd || pathStr === base.slice(0, -1)) {
+		return "";
+	}
+	return pathStr.replaceAll("\\", "/");
+}
+
+function leftoverGitignored(relative, rules) {
+	const pathStr = `${LEFTOVER_GITIGNORED_BASE}${relative}`;
+	let ignoredP = false;
+	for (const rule of rules) {
+		if (!leftoverIsSubpath(pathStr, rule.base)) continue;
+		const rel = leftoverRelativePosix(pathStr, rule.base);
+		if (rule.scanner.test(rel)) ignoredP = !rule.negatedP;
+	}
+	return ignoredP;
+}
+
+function leftoverMakeGlobTool(_cwd) {
+	return {
+		name: "glob",
+		description:
+			"Find files recursively with a glob pattern; follows .gitignore and ignores .git and node_modules.",
+		parameters: { required: ["pattern"] },
+		executionMode: "parallel",
+	};
+}
+
+function runFindIgnoredDirectory() {
+	return {
+		igd_git: leftoverIgnoredDirectory("/tmp/.git") ? 1 : 0,
+		igd_nm: leftoverIgnoredDirectory("/tmp/node_modules") ? 1 : 0,
+		igd_src: leftoverIgnoredDirectory("/tmp/src") ? 0 : 1,
+		igd_hub: leftoverIgnoredDirectory("/tmp/.github") ? 0 : 1,
+		igd_slash: leftoverIgnoredDirectory("/tmp/proj/.git/") ? 1 : 0,
+	};
+}
+
+function runFindGitignored() {
+	const empty = [];
+	const foo = [leftoverParseGitignoreLine("foo", LEFTOVER_GITIGNORED_BASE)].filter(Boolean);
+	const bang = ["foo", "!foo"]
+		.map((line) => leftoverParseGitignoreLine(line, LEFTOVER_GITIGNORED_BASE))
+		.filter(Boolean);
+	const outsidePath = "/var/tmp/goal20-gitignored-outside/foo";
+	let outside = false;
+	for (const rule of foo) {
+		if (!leftoverIsSubpath(outsidePath, rule.base)) continue;
+		const rel = leftoverRelativePosix(outsidePath, rule.base);
+		if (rule.scanner.test(rel)) outside = !rule.negatedP;
+	}
+	return {
+		gig_empty: leftoverGitignored("foo", empty) ? 0 : 1,
+		gig_hit: leftoverGitignored("foo", foo) ? 1 : 0,
+		gig_miss: leftoverGitignored("bar", foo) ? 0 : 1,
+		gig_bang: leftoverGitignored("foo", bang) ? 0 : 1,
+		gig_out: outside ? 0 : 1,
+	};
+}
+
+function runFindMakeGlobTool() {
+	const def = leftoverMakeGlobTool("/tmp");
+	const required = def.parameters?.required ?? [];
+	const description = def.description ?? "";
+	return {
+		mgt_name: def.name === "glob" ? 1 : 0,
+		mgt_desc:
+			description.includes("Find files recursively with a glob pattern") &&
+			description.includes(".gitignore")
+				? 1
+				: 0,
+		mgt_req: required.includes("pattern") ? 1 : 0,
+		mgt_par: def.executionMode === "parallel" ? 1 : 0,
+		mgt_n: 4,
+	};
+}
+
 async function measureFindTool() {
 	ensureFindToolFixture();
 	const patternObserved = runFindPatternMatch();
@@ -4076,6 +4174,9 @@ async function measureFindTool() {
 	const globScannerObserved = runFindGlobScanner();
 	const globRegexBodyObserved = runFindGlobRegexBody();
 	const parseGitignoreObserved = runFindParseGitignoreLine();
+	const ignoredDirectoryObserved = runFindIgnoredDirectory();
+	const gitignoredObserved = runFindGitignored();
+	const makeGlobToolObserved = runFindMakeGlobTool();
 	return {
 		pattern_match: await collect("find_tool.pattern_match", () => {
 			return () => runFindPatternMatch();
@@ -4104,6 +4205,15 @@ async function measureFindTool() {
 		parse_gitignore_line: await collect("find_tool.parse_gitignore_line", () => {
 			return () => runFindParseGitignoreLine();
 		}),
+		ignored_directory: await collect("find_tool.ignored_directory", () => {
+			return () => runFindIgnoredDirectory();
+		}),
+		gitignored: await collect("find_tool.gitignored", () => {
+			return () => runFindGitignored();
+		}),
+		make_glob_tool: await collect("find_tool.make_glob_tool", () => {
+			return () => runFindMakeGlobTool();
+		}),
 		observed: {
 			...patternObserved,
 			...filesObserved,
@@ -4114,6 +4224,9 @@ async function measureFindTool() {
 			...globScannerObserved,
 			...globRegexBodyObserved,
 			...parseGitignoreObserved,
+			...ignoredDirectoryObserved,
+			...gitignoredObserved,
+			...makeGlobToolObserved,
 		},
 	};
 }
@@ -30851,6 +30964,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/find.ts glob regex body (cadr glob-regex-body)",
 			"find_tool.parse_gitignore_line":
 				"packages/coding-agent/src/core/tools/find.ts gitignore line parse (cadr parse-gitignore-line)",
+			"find_tool.ignored_directory":
+				"packages/coding-agent/src/core/tools/find.ts ignored directory names (cadr ignored-directory-p)",
+			"find_tool.gitignored":
+				"packages/coding-agent/src/core/tools/find.ts gitignore rule apply (cadr gitignored-p)",
+			"find_tool.make_glob_tool":
+				"packages/coding-agent/src/core/tools/find.ts glob tool constructor (cadr make-glob-tool)",
 			"write_tool.ensure_parent":
 				"packages/coding-agent/src/core/tools/write.ts defaultWriteOperations.mkdir (fs.mkdir recursive)",
 			"write_tool.write_utf8":
