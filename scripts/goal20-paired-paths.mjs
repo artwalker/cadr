@@ -398,6 +398,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_key_p": 50,
 	"cli_selectors.thinking_selector_keybindings": 50,
 	"cli_selectors.make_thinking_selector_state": 50,
+	"cli_selectors.thinking_selector_apply_filter": 50,
+	"cli_selectors.thinking_selector_clamp_selected": 50,
+	"cli_selectors.thinking_selector_select_current": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -22440,6 +22443,94 @@ function runCliSelectorsMakeThinkingSelectorState() {
 }
 
 
+function thinkingFreshSelectorState(levels = ["off", "low", "high"]) {
+	return {
+		levels: levels.slice(),
+		currentLevel: "high",
+		defaultLevel: null,
+		query: "",
+		filteredLevels: [],
+		filterQuery: null,
+		filteredCount: 0,
+		selected: 0,
+		keybindings: "bench",
+	};
+}
+
+
+function encodeThinkingSelectorApplyFilter(state) {
+	const first = state.filteredLevels[0];
+	return `${state.filteredCount}|${state.filterQuery ?? ""}|${thinkingLevelName(first)}|${state.selected}`;
+}
+
+
+function thinkingSelectorApplyFilterEncoded(state, query) {
+	state.query = query ?? "";
+	thinkingSelectorApplyFilter(state);
+	return encodeThinkingSelectorApplyFilter(state);
+}
+
+
+function runCliSelectorsThinkingSelectorApplyFilter() {
+	const emptyAfterHigh = thinkingFreshSelectorState();
+	thinkingSelectorApplyFilterEncoded(emptyAfterHigh, "high");
+	return {
+		tsaf_high: thinkingSelectorApplyFilterEncoded(thinkingFreshSelectorState(), "high"),
+		tsaf_off: thinkingSelectorApplyFilterEncoded(thinkingFreshSelectorState(), "off"),
+		tsaf_miss: thinkingSelectorApplyFilterEncoded(thinkingFreshSelectorState(), "zzzzz"),
+		tsaf_empty: thinkingSelectorApplyFilterEncoded(emptyAfterHigh, ""),
+		tsaf_low: thinkingSelectorApplyFilterEncoded(thinkingFreshSelectorState(), "low"),
+	};
+}
+
+
+function encodeThinkingSelectorClamp(state) {
+	thinkingSelectorClampSelected(state);
+	return `${state.selected}|${state.filteredCount}`;
+}
+
+
+function runCliSelectorsThinkingSelectorClampSelected() {
+	const st = (count, selected) => ({
+		levels: ["off", "low", "high"],
+		filteredCount: count,
+		selected,
+	});
+	return {
+		tscl_high: encodeThinkingSelectorClamp(st(3, 9)),
+		tscl_zero: encodeThinkingSelectorClamp(st(0, 5)),
+		tscl_ok: encodeThinkingSelectorClamp(st(3, 1)),
+		tscl_last: encodeThinkingSelectorClamp(st(3, 2)),
+		tscl_one: encodeThinkingSelectorClamp(st(1, 0)),
+	};
+}
+
+
+function encodeThinkingSelectorSelectCurrent(state) {
+	thinkingSelectorSelectCurrent(state);
+	return `${state.selected}|${state.filteredLevels.length}|${thinkingLevelName(thinkingSelectorSelectedLevel(state))}`;
+}
+
+
+function runCliSelectorsThinkingSelectorSelectCurrent() {
+	const all = ["off", "low", "high"];
+	const st = (currentLevel, filteredLevels) => ({
+		levels: all.slice(),
+		currentLevel,
+		filteredLevels: filteredLevels.slice(),
+		filteredCount: filteredLevels.length,
+		selected: 0,
+	});
+	return {
+		tssc_high: encodeThinkingSelectorSelectCurrent(st("high", all)),
+		tssc_off: encodeThinkingSelectorSelectCurrent(st("off", all)),
+		tssc_miss: encodeThinkingSelectorSelectCurrent(st("medium", all)),
+		tssc_empty: encodeThinkingSelectorSelectCurrent(st("high", [])),
+		tssc_only: encodeThinkingSelectorSelectCurrent(st("high", ["high"])),
+	};
+}
+
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -22634,6 +22725,9 @@ async function measureCliSelectorsSessionSearch() {
 	const thinkingSelectorKeyPResults = runCliSelectorsThinkingSelectorKeyP();
 	const thinkingSelectorKeybindingsResults = runCliSelectorsThinkingSelectorKeybindings();
 	const makeThinkingSelectorStateResults = runCliSelectorsMakeThinkingSelectorState();
+	const thinkingSelectorApplyFilterResults = runCliSelectorsThinkingSelectorApplyFilter();
+	const thinkingSelectorClampSelectedResults = runCliSelectorsThinkingSelectorClampSelected();
+	const thinkingSelectorSelectCurrentResults = runCliSelectorsThinkingSelectorSelectCurrent();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -22989,6 +23083,9 @@ async function measureCliSelectorsSessionSearch() {
 		...thinkingSelectorKeyPResults,
 		...thinkingSelectorKeybindingsResults,
 		...makeThinkingSelectorStateResults,
+		...thinkingSelectorApplyFilterResults,
+		...thinkingSelectorClampSelectedResults,
+		...thinkingSelectorSelectCurrentResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -23725,6 +23822,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.make_thinking_selector_state",
 			() => {
 				return () => runCliSelectorsMakeThinkingSelectorState();
+			},
+		),
+		thinking_selector_apply_filter: await collect(
+			"cli_selectors.thinking_selector_apply_filter",
+			() => {
+				return () => runCliSelectorsThinkingSelectorApplyFilter();
+			},
+		),
+		thinking_selector_clamp_selected: await collect(
+			"cli_selectors.thinking_selector_clamp_selected",
+			() => {
+				return () => runCliSelectorsThinkingSelectorClampSelected();
+			},
+		),
+		thinking_selector_select_current: await collect(
+			"cli_selectors.thinking_selector_select_current",
+			() => {
+				return () => runCliSelectorsThinkingSelectorSelectCurrent();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -26609,6 +26724,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts getKeybindings slot-or-default",
 			"cli_selectors.make_thinking_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts constructor filter + select current",
+			"cli_selectors.thinking_selector_apply_filter":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts applyFilter",
+			"cli_selectors.thinking_selector_clamp_selected":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts clamp selected index",
+			"cli_selectors.thinking_selector_select_current":
+				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts select current thinking level",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
