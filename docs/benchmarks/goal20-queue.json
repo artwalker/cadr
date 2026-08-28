@@ -919,6 +919,42 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 499,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.unsafe_git",
+   "branch": "cursor/ext-installer-leftovers-499-501-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 499-501, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 500,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.git_path",
+   "branch": "cursor/ext-installer-leftovers-499-501-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 499-501, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 501,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.normalize_git",
+   "branch": "cursor/ext-installer-leftovers-499-501-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 499-501, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
   }
  ],
  "mergeQueue": []

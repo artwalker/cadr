@@ -132,7 +132,7 @@ METRICS = {
         "parse_query",
         "parse_authorization_input",
     ),
-    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery"),
+    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery", "unsafe_git", "git_path", "normalize_git"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step"),
     "ai_crypto_model_data": ("manifest",),
     "ai_crypto": ("hmac",),
@@ -490,6 +490,11 @@ RATIO_CEILINGS = {
     # 1.98x (1954.5 / 987.2 us). pi leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_extensions_install.extension_discovery": 8.0,
+    # cli_extensions_install leftover trio on installer.lisp (499-501).
+    # First leftover freeze pending; 8.0 is first-freeze headroom.
+    "cli_extensions_install.unsafe_git": 8.0,
+    "cli_extensions_install.git_path": 8.0,
+    "cli_extensions_install.normalize_git": 8.0,
     # Frozen from the first Friend-MachineD non-quick evals_harness
     # pair (samples=5): observed 0.88x (8.0 / 9.0 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -1950,6 +1955,23 @@ OBSERVED_EXACT = {
         "ed_glob",
         "ed_probe",
         "ed_miss",
+        "ug_empty",
+        "ug_dash",
+        "ug_null",
+        "ug_bs",
+        "ug_dot",
+        "ug_ok",
+        "ug_n",
+        "gp_https",
+        "gp_scp",
+        "gp_slash",
+        "gp_miss",
+        "gp_n",
+        "ng_https",
+        "ng_git",
+        "ng_file",
+        "ng_empty",
+        "ng_bare",
     ),
     "evals_harness": (
         "eval_sets",

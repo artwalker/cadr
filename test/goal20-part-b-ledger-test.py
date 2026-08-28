@@ -816,6 +816,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("ed_glob", paired.OBSERVED_EXACT["cli_extensions_install"])
         self.assertIn("ed_probe", paired.OBSERVED_EXACT["cli_extensions_install"])
         self.assertIn("ed_miss", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.unsafe_git", RECORD.METRIC_KEYS)
+        self.assertIn("unsafe_git", paired.METRICS["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.unsafe_git", paired.RATIO_CEILINGS)
+        self.assertIn("ug_ok", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.git_path", RECORD.METRIC_KEYS)
+        self.assertIn("git_path", paired.METRICS["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.git_path", paired.RATIO_CEILINGS)
+        self.assertIn("gp_https", paired.OBSERVED_EXACT["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.normalize_git", RECORD.METRIC_KEYS)
+        self.assertIn("normalize_git", paired.METRICS["cli_extensions_install"])
+        self.assertIn("cli_extensions_install.normalize_git", paired.RATIO_CEILINGS)
+        self.assertIn("ng_https", paired.OBSERVED_EXACT["cli_extensions_install"])
 
     def test_evals_harness_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

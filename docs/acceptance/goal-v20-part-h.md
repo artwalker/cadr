@@ -4059,6 +4059,44 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 499 — `cli_extensions_install` (unsafe_git)
+
+| metric | cadr | pi |
+|---|---|---|
+| `unsafe_git` | `unsafe-git-source-p` (`src/cadr-cli/extensions/installer.lisp`) | `hasUnsafeGitInstallPart` (`packages/coding-agent/src/utils/git.ts`) |
+
+Leftover of the `cli_extensions_install` hole on `installer.lisp`. Timed
+work is empty / dash / NUL / backslash / `..` / safe path flags — not
+`git clone`, not `install-extension-package`. Observed `ug_empty` /
+`ug_dash` / `ug_null` / `ug_bs` / `ug_dot` / `ug_ok` / `ug_n` are exact.
+First n=5 freeze pending on host `cursor`, ceiling 8.0. Gate uses
+`--only-enforce`. Same commit no optimize.
+
+### Pair 500 — `cli_extensions_install` (git_path)
+
+| metric | cadr | pi |
+|---|---|---|
+| `git_path` | `git-source-path` (`src/cadr-cli/extensions/installer.lisp`) | `parseGenericGitUrl` path slice (`packages/coding-agent/src/utils/git.ts`) |
+
+Leftover sibling of Pair 499 on the same hole. Timed work is HTTPS /
+`git@` / slash / missing-path extraction — not hosted-git-info, not
+clone. Observed `gp_https` / `gp_scp` / `gp_slash` / `gp_miss` / `gp_n`
+are exact. First n=5 freeze pending on host `cursor`, ceiling 8.0. Gate
+uses `--only-enforce`. Same commit no optimize.
+
+### Pair 501 — `cli_extensions_install` (normalize_git)
+
+| metric | cadr | pi |
+|---|---|---|
+| `normalize_git` | `normalize-git-install-source` (`src/cadr-cli/extensions/installer.lisp`) | `parseGitUrl` + extension name (`packages/coding-agent/src/utils/git.ts`) |
+
+Leftover sibling of Pairs 499–500 on the same hole. Timed work is HTTPS
+success / `git:` prefix / `file://` / empty / bare-host reject — not
+staging, not `reload-cli-extensions`. Observed `ng_https` / `ng_git` /
+`ng_file` / `ng_empty` / `ng_bare` are exact. Do not exact full error
+strings. First n=5 freeze pending on host `cursor`, ceiling 8.0. Gate
+uses `--only-enforce`. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

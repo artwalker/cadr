@@ -91,6 +91,9 @@
 ;;;;  72. oauth_pkce_device poll-device-authorization vs pollOAuthDeviceCodeFlow
 ;;;;  73. cli_extensions_install normalize-llama-server-url vs normalizeLlamaServerUrl
 ;;;;  74. cli_extensions_install find-hugging-face-token vs findHuggingFaceToken
+;;;; 499. cli_extensions_install unsafe-git-source-p vs hasUnsafeGitInstallPart
+;;;; 500. cli_extensions_install git-source-path vs git URL path slice
+;;;; 501. cli_extensions_install normalize-git-install-source vs parseGitUrl + extension name
 ;;;;  75. settings_load resolve-config-value vs resolveConfigValue
 ;;;; 108. settings_load http-idle-timeout-label vs formatHttpIdleTimeoutMs
 ;;;; 249. settings_load stored-auth-secrets vs auth.json key/access/refresh scan
@@ -370,6 +373,9 @@
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
     ("cli_extensions_install.extension_discovery" . 50)
+    ("cli_extensions_install.unsafe_git" . 50)
+    ("cli_extensions_install.git_path" . 50)
+    ("cli_extensions_install.normalize_git" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -6754,11 +6760,78 @@
          1
          0))))
 
+(defun run-cli-extensions-unsafe-git ()
+  (flet ((flag (source)
+           (if (cadr-cli::unsafe-git-source-p source) 1 0)))
+    (list
+     (flag "")
+     (flag "-evil")
+     (flag (format nil "a~Ab" #\Null))
+     (flag "a\\b")
+     (flag "foo/../bar")
+     (flag "user/repo")
+     6)))
+
+(defun git-source-path-text (source)
+  (or (cadr-cli::git-source-path source) ""))
+
+(defun run-cli-extensions-git-path ()
+  (let ((https-path
+          (git-source-path-text
+           "https://github.com/user/repo.git"))
+        (scp-path
+          (git-source-path-text "git@github.com:user/repo"))
+        (slash-path
+          (git-source-path-text "github.com/user/repo"))
+        (miss (git-source-path-text "noslash")))
+    (list
+     (if (string= https-path "user/repo.git") 1 0)
+     (if (string= scp-path "user/repo") 1 0)
+     (if (string= slash-path "user/repo") 1 0)
+     (if (zerop (length miss)) 1 0)
+     4)))
+
+(defun normalize-git-install-flag (input expected-name)
+  (handler-case
+      (multiple-value-bind (source name)
+          (cadr-cli::normalize-git-install-source input)
+        (declare (ignore source))
+        (let ((text
+                (cond
+                  ((stringp name) (copy-seq name))
+                  ((and (vectorp name) (not (stringp name)))
+                   (coerce name 'string))
+                  (t ""))))
+          (if (and expected-name (string= text expected-name))
+              1
+              0)))
+    (error () 0)))
+
+(defun normalize-git-install-error-p (input)
+  (handler-case
+      (progn
+        (cadr-cli::normalize-git-install-source input)
+        0)
+    (error () 1)))
+
+(defun run-cli-extensions-normalize-git ()
+  (list
+   (normalize-git-install-flag
+    "https://github.com/user/repo.git" "repo")
+   (normalize-git-install-flag
+    "git:https://github.com/user/other" "other")
+   (normalize-git-install-error-p "file://tmp/x")
+   (normalize-git-install-error-p "")
+   (normalize-git-install-error-p "github.com/user/repo")))
+
 (defun measure-cli-extensions-install ()
   (let ((url (run-cli-extensions-llama-url))
         (token (run-cli-extensions-hf-token))
         (catalog (run-cli-extensions-llama-catalog))
-        (discovery (run-cli-extensions-extension-discovery)))
+        (discovery (run-cli-extensions-extension-discovery))
+        (unsafe (run-cli-extensions-unsafe-git))
+        (git-path (run-cli-extensions-git-path))
+        (normalize (run-cli-extensions-normalize-git)))
     (json-object
      "observed"
      (json-object
@@ -6786,7 +6859,24 @@
       "ed_proj" (nth 4 discovery)
       "ed_glob" (nth 5 discovery)
       "ed_probe" (nth 6 discovery)
-      "ed_miss" (nth 7 discovery))
+      "ed_miss" (nth 7 discovery)
+      "ug_empty" (nth 0 unsafe)
+      "ug_dash" (nth 1 unsafe)
+      "ug_null" (nth 2 unsafe)
+      "ug_bs" (nth 3 unsafe)
+      "ug_dot" (nth 4 unsafe)
+      "ug_ok" (nth 5 unsafe)
+      "ug_n" (nth 6 unsafe)
+      "gp_https" (nth 0 git-path)
+      "gp_scp" (nth 1 git-path)
+      "gp_slash" (nth 2 git-path)
+      "gp_miss" (nth 3 git-path)
+      "gp_n" (nth 4 git-path)
+      "ng_https" (nth 0 normalize)
+      "ng_git" (nth 1 normalize)
+      "ng_file" (nth 2 normalize)
+      "ng_empty" (nth 3 normalize)
+      "ng_bare" (nth 4 normalize))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -6806,7 +6896,22 @@
      (collect "cli_extensions_install.extension_discovery"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-extension-discovery)))))))
+                  (run-cli-extensions-extension-discovery))))
+     "unsafe_git"
+     (collect "cli_extensions_install.unsafe_git"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-unsafe-git))))
+     "git_path"
+     (collect "cli_extensions_install.git_path"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-git-path))))
+     "normalize_git"
+     (collect "cli_extensions_install.normalize_git"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-normalize-git)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -16668,6 +16773,12 @@
       "src/cadr-cli/extensions/llama/provider.lisp llama-provider-set-catalog"
       "cli_extensions_install.extension_discovery"
       "src/cadr-cli/extensions/discovery.lisp discover-extension-sources"
+      "cli_extensions_install.unsafe_git"
+      "src/cadr-cli/extensions/installer.lisp unsafe-git-source-p"
+      "cli_extensions_install.git_path"
+      "src/cadr-cli/extensions/installer.lisp git-source-path"
+      "cli_extensions_install.normalize_git"
+      "src/cadr-cli/extensions/installer.lisp normalize-git-install-source"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"
