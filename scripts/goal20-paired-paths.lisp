@@ -9532,6 +9532,88 @@
    3))
 
 
+(defun run-evals-harness-make-reporter ()
+  ;; Leftover constructor on reporter.lisp: explicit dir, trimmed env
+  ;; fallback (CADR_EVAL_ARTIFACT_DIR), missing env. Not record-case.
+  (let* ((sink (make-broadcast-stream))
+         (explicit
+           (cadr-evals:make-eval-harness-reporter
+            :artifact-directory "/tmp/eval-explicit"
+            :output sink))
+         (from-env
+           (let ((cadr-evals::*eval-environment-function*
+                   (lambda (name)
+                     (when (string= name "CADR_EVAL_ARTIFACT_DIR")
+                       "  /tmp/eval-env  "))))
+             (cadr-evals:make-eval-harness-reporter :output sink)))
+         (missing
+           (let ((cadr-evals::*eval-environment-function*
+                   (constantly nil)))
+             (cadr-evals:make-eval-harness-reporter :output sink))))
+    (list
+     (eval-flag
+      (string=
+       (cadr-evals::eval-harness-reporter-artifact-directory
+        explicit)
+       "/tmp/eval-explicit"))
+     (eval-flag
+      (string=
+       (cadr-evals::eval-harness-reporter-artifact-directory
+        from-env)
+       "/tmp/eval-env"))
+     (eval-flag
+      (null
+       (cadr-evals::eval-harness-reporter-artifact-directory
+        missing)))
+     3)))
+
+
+(defun run-evals-harness-finite-number ()
+  ;; Leftover callee of case-observation: keep finite numbers, drop
+  ;; nil / inf / non-number. Not the full observation walk.
+  (list
+   (eval-flag
+    (eql (cadr-evals::reporter-finite-number 3) 3))
+   (eval-flag
+    (eql (cadr-evals::reporter-finite-number 1.5d0) 1.5d0))
+   (eval-flag
+    (null (cadr-evals::reporter-finite-number nil)))
+   (eval-flag
+    (null
+     (cadr-evals::reporter-finite-number
+      sb-ext:double-float-positive-infinity)))
+   (eval-flag
+    (null (cadr-evals::reporter-finite-number "x")))
+   5))
+
+
+(defun run-evals-harness-artifact-metadata ()
+  ;; Leftover of append-reporter-record: drop runId and the session
+  ;; snapshot key, keep custom metadata. Not persist, not JSONL.
+  (let* ((result
+           (cadr-evals::make-eval-result
+            :artifacts
+            (cadr-ai::json-object
+             "runId" "run-1"
+             cadr-evals:+cadr-session-snapshot-artifact+
+             "{\"type\":\"session\"}\n"
+             "custom" "kept")))
+         (metadata
+           (cadr-evals::reporter-artifact-metadata result)))
+    (list
+     (eval-flag
+      (string= (cadr-ai::json-get metadata "custom") "kept"))
+     (eval-flag
+      (null (cadr-ai::json-get metadata "runId")))
+     (eval-flag
+      (null
+       (cadr-ai::json-get
+        metadata
+        cadr-evals:+cadr-session-snapshot-artifact+)))
+     (eval-flag (= (hash-table-count metadata) 1))
+     4)))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))

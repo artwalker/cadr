@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.make_reporter` (`make-eval-harness-reporter`
+  on `src/cadr-evals/reporter.lisp` vs baseline `EvalHarnessReporter` constructor plus
+  `PI_EVAL_ARTIFACT_DIR` trim). Observed `mr_explicit` / `mr_env` / `mr_miss` / `mr_n`
+  exact. n=5 **0.917×** (0.346 / 0.377 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 430). Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.finite_number` (`reporter-finite-number`
+  on `src/cadr-evals/reporter.lisp` vs baseline `readFiniteNumber`). Observed
+  `fn_int` / `fn_float` / `fn_nil` / `fn_inf` / `fn_str` / `fn_n` exact.
+  n=5 **0.531×** (0.117 / 0.220 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 431). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.artifact_metadata` (`reporter-artifact-metadata`
+  on `src/cadr-evals/reporter.lisp` vs baseline `appendHarnessRunReport` metadata filter).
+  Observed `am_keep` / `am_runid` / `am_snap` / `am_n` exact.
+  n=5 **1.182×** (1.025 / 0.868 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 432). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `tui_stdin_buffer.flush` (`stdin-buffer-flush`
   on `src/cadr-tui/stdin-buffer.lisp` vs baseline `StdinBuffer.flush`).
   Observed `fl_empty` / `fl_before` / `fl_n` / `fl_seq` / `fl_after` exact.

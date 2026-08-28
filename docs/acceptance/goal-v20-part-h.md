@@ -5438,6 +5438,52 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1×
 booked. Same commit no optimize.
 
+### Pair 430 — `evals_harness` (make_reporter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_reporter` | `make-eval-harness-reporter` (`src/cadr-evals/reporter.lisp`) | `EvalHarnessReporter` constructor + `PI_EVAL_ARTIFACT_DIR` trim (`packages/evals/src/vitest-evals/reporter.ts`) |
+
+Leftover of the `evals_harness` hole on `reporter.lisp`. Timed work is
+explicit artifact directory, trimmed env fallback, and missing env —
+not `eval-reporter-record-case`, not JSONL persist. Do not exact env
+name copy (`CADR_EVAL_*` / `PI_EVAL_*`). Observed `mr_explicit` /
+`mr_env` / `mr_miss` / `mr_n` are exact. First n=5 freeze **0.917×**
+(0.346 / 0.377 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 431 — `evals_harness` (finite_number)
+
+| metric | cadr | pi |
+|---|---|---|
+| `finite_number` | `reporter-finite-number` (`src/cadr-evals/reporter.lisp`) | `readFiniteNumber` (`packages/evals/src/vitest-evals/reporter.ts`) |
+
+Leftover sibling of Pair 430 `make_reporter` on the same `evals_harness`
+hole. Timed work is keep finite int/float and drop nil / inf / non-number
+— not `reporter-case-observation`. Observed `fn_int` / `fn_float` /
+`fn_nil` / `fn_inf` / `fn_str` / `fn_n` are exact. First n=5 freeze
+**0.531×** (0.117 / 0.220 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 432 — `evals_harness` (artifact_metadata)
+
+| metric | cadr | pi |
+|---|---|---|
+| `artifact_metadata` | `reporter-artifact-metadata` (`src/cadr-evals/reporter.lisp`) | metadata filter in `appendHarnessRunReport` (`packages/evals/src/vitest-evals/reporter.ts`) |
+
+Leftover sibling of Pairs 430–431 on the same `evals_harness` hole.
+Timed work is drop `runId` and the session-snapshot artifact key while
+keeping custom metadata — not persist, not `runs.jsonl`. Observed
+`am_keep` / `am_runid` / `am_snap` / `am_n` are exact. First n=5 freeze
+**1.182×** (1.025 / 0.868 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Over-1× booked.
+Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

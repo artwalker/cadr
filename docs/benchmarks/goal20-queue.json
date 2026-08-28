@@ -2157,7 +2157,7 @@
    "metric": "tui_stdin_buffer.clear",
    "branch": "cursor/pair-tui-stdin-leftover-424-426-8d33",
    "ratio": 0.172,
-   "cadrUs": 0.710,
+   "cadrUs": 0.71,
    "piUs": 4.129,
    "ceiling": 8.0,
    "rc": 1
@@ -2173,6 +2173,48 @@
    "ratio": 0.155,
    "cadrUs": 0.715,
    "piUs": 4.615,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 430,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.make_reporter",
+   "branch": "cursor/evals-reporter-leftovers-430-432-124c",
+   "ratio": 0.917,
+   "cadrUs": 0.346,
+   "piUs": 0.377,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 431,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.finite_number",
+   "branch": "cursor/evals-reporter-leftovers-430-432-124c",
+   "ratio": 0.531,
+   "cadrUs": 0.117,
+   "piUs": 0.22,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 432,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.artifact_metadata",
+   "branch": "cursor/evals-reporter-leftovers-430-432-124c",
+   "ratio": 1.182,
+   "cadrUs": 1.025,
+   "piUs": 0.868,
    "ceiling": 8.0,
    "rc": 1
   }
