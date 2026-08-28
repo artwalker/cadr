@@ -18,7 +18,12 @@ Lisp and this file that way.
 
 ## Engineering method (pstack)
 
-Agents in this repository work in **cadr-mode**, which is Lauren Tan's
+This is **Cursor's** method for developing cadr (Cloud Agents, desktop
+Composer, Grok Bot driving Cursor). It is not a cadr product feature
+and must not be loaded by `cadr`, listed as a cadr skill, or shipped
+in `src/`, examples, or user docs.
+
+Cursor agents in this repository work in **cadr-mode**: Lauren Tan's
 pstack (`/poteto-mode`) plus a cadr overlay. Vendored tree:
 `.cursor/pstack/` (MIT, pin `.cursor/pstack/PIN`). Overlay:
 `.cursor/skills/cadr-mode/SKILL.md`. Always-on rule:
@@ -29,9 +34,6 @@ Copy the matched playbook into the todo list verbatim. Skip only with
 an explicit `skip:`. cadr standing policy still wins on conflict (no
 agent merges, no silent removal of intentional behavior, baseline-locked
 assertions, `CADR_*` only).
-
-This is how **cadr is developed**. It is not a default user-facing cadr
-skill pack (that would be a product addition vs the pinned baseline).
 
 ## Required reading order
 

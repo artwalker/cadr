@@ -5,10 +5,10 @@ Author: Lauren Tan (`@poteto`)
 License: MIT (see `LICENSE`)
 Pin: `PIN` (cursor/plugins SHA)
 
-This is the engineering method for **developers of cadr**, not a
-user-facing cadr product pack. Do not rewrite files in this tree to
-look like Lisp. Overlay and cadr-specific playbooks live in
-`.cursor/skills/cadr-mode/`.
+This is Cursor's engineering method for developing cadr. It is not a
+cadr product feature. Do not load it via `./cadr --skills`. Do not
+rewrite files in this tree to look like Lisp. Overlay and cadr-specific
+playbooks live in `.cursor/skills/cadr-mode/`.
 
 Refresh:
 

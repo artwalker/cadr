@@ -3,8 +3,9 @@ description: cadr-mode overlay — pstack method, cadr policy wins
 alwaysApply: true
 ---
 
-Engineering method for this repository is pstack (vendored at
+Cursor's engineering method for developing cadr is pstack (vendored at
 `.cursor/pstack/`) plus the overlay `.cursor/skills/cadr-mode/SKILL.md`.
+Not a cadr product feature; never load these skills into the cadr binary.
 
 On every non-trivial task: read cadr-mode, then the poteto-mode
 Principles index, then match a playbook and copy its steps into the

@@ -1,14 +1,15 @@
 ---
 name: cadr-mode
-description: cadr overlay on pstack / poteto-mode. Default for every non-trivial cadr task, including leftover pairing, ledger work, and taking over Grok Bot or Cloud Agent runs. Read this before poteto-mode when working in this repository.
+description: Cursor overlay on pstack / poteto-mode for developing cadr. Not a cadr product skill. Default for leftover pairing, ledger work, and taking over Grok Bot or Cloud Agent runs. Read this before poteto-mode when working in this repository.
 ---
 
 # cadr-mode
 
-pstack (Lauren Tan / `@poteto`) is the engineering method for agents
-working in this repository. The vendored tree is `.cursor/pstack/`
-(MIT, pin in `.cursor/pstack/PIN`). Cursor skills are symlinked from
-`.cursor/skills/<name>` into that tree.
+pstack (Lauren Tan / `@poteto`) is how **Cursor** develops this
+repository. It is not cadr runtime behavior. The vendored tree is
+`.cursor/pstack/` (MIT, pin in `.cursor/pstack/PIN`). Cursor skills
+are symlinked from `.cursor/skills/<name>` into that tree. Do not pass
+these paths to `./cadr --skills`.
 
 This skill is the overlay. **cadr standing policy wins on conflict.**
 pstack does not authorize merging PRs, changing gates, inventing
@@ -75,19 +76,6 @@ logs. After a disposition or render change, rerun the official
 render-diff invocation in `AGENTS.md`. A leftover-pair knife that only
 appends Goal 20 JSON may skip full verify when the knife contract says
 so; record that `skip:` on the todo.
-
-## Dogfooding cadr itself
-
-Project `.cadr/` is gitignored. To have cadr-the-binary load these
-skills in this repo:
-
-```sh
-./cadr --skills .cursor/pstack/skills --skills .cursor/skills/cadr-mode
-```
-
-Do not un-ignore `.cadr/` for this. Do not ship pstack as a default
-user-facing cadr skill pack (that would be a product addition vs the
-pinned baseline). This tree is for **developers of cadr**.
 
 ## Reply shape
 
