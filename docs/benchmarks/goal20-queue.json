@@ -1385,6 +1385,49 @@
    "piUs": 0.566,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 400,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/main.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.argument_prefix",
+   "branch": "cursor/evals-main-leftovers-400-402-03ad",
+   "note": "nextPairNum left at tip 328 (outside 400-402); reserved leftover knife",
+   "ratio": 0.904,
+   "cadrUs": 0.216,
+   "piUs": 0.239,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 401,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/main.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.parse_arguments",
+   "branch": "cursor/evals-main-leftovers-400-402-03ad",
+   "ratio": 0.134,
+   "cadrUs": 1.186,
+   "piUs": 8.837,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 402,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/main.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.validate_smoke",
+   "branch": "cursor/evals-main-leftovers-400-402-03ad",
+   "ratio": 0.512,
+   "cadrUs": 2.384,
+   "piUs": 4.654,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

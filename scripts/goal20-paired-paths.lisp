@@ -419,6 +419,9 @@
     ("evals_harness.prompt_eval_agent" . 3)
     ("evals_harness.reload_shutdown" . 3)
     ("evals_harness.run_coding_agent_eval" . 3)
+    ("evals_harness.argument_prefix" . 50)
+    ("evals_harness.parse_arguments" . 50)
+    ("evals_harness.validate_smoke" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -8114,6 +8117,95 @@
        4))))
 
 
+(defun run-evals-harness-argument-prefix ()
+  ;; startsWith+slice leftover of packages/evals/scripts/run-evals.mjs.
+  ;; Empty suffix stays unknown: baseline only slices when the argument
+  ;; is longer than the prefix.
+  (list
+   (eval-flag
+    (string=
+     "openai"
+     (cadr-evals::argument-after-prefix
+      "--provider=openai" "--provider=")))
+   (eval-flag
+    (null
+     (cadr-evals::argument-after-prefix
+      "--provider=" "--provider=")))
+   (eval-flag
+    (null
+     (cadr-evals::argument-after-prefix
+      "--model=x" "--provider=")))
+   (eval-flag
+    (string=
+     "m"
+     (cadr-evals::argument-after-prefix
+      "--model=m" "--model=")))
+   4))
+
+
+(defun eval-parse-ok-p (arguments expected-provider expected-model expected-suite)
+  (handler-case
+      (multiple-value-bind (provider model suite)
+          (cadr-evals::parse-eval-arguments (copy-list arguments))
+        (eval-flag
+         (and (equal provider expected-provider)
+              (equal model expected-model)
+              (string= suite expected-suite))))
+    (error () 0)))
+
+
+(defun eval-parse-error-p (arguments)
+  (handler-case
+      (progn
+        (cadr-evals::parse-eval-arguments (copy-list arguments))
+        0)
+    (error () 1)))
+
+
+(defun run-evals-harness-parse-arguments ()
+  ;; Space/equals forms from run-evals.mjs. cadr also owns --suite=
+  ;; (default smoke). Do not exact error copy.
+  (list
+   (eval-parse-ok-p
+    '("--provider" "openai" "--model" "gpt-4o")
+    "openai" "gpt-4o" "smoke")
+   (eval-parse-ok-p
+    '("--provider=openai" "--model=gpt-4o")
+    "openai" "gpt-4o" "smoke")
+   (eval-parse-ok-p
+    '("--provider" "p" "--model=m" "--suite=smoke")
+    "p" "m" "smoke")
+   (eval-parse-error-p '("--provider"))
+   (eval-parse-error-p '("--provider="))
+   (eval-parse-error-p '("nope"))
+   6))
+
+
+(defun eval-smoke-result (output tokens)
+  (cadr-evals::make-eval-result
+   :output output
+   :usage (cadr-ai::json-object "totalTokens" tokens)))
+
+
+(defun eval-validate-smoke-ok-p (output tokens)
+  (handler-case
+      (progn
+        (cadr-evals::validate-smoke-result
+         (eval-smoke-result output tokens))
+        1)
+    (error () 0)))
+
+
+(defun run-evals-harness-validate-smoke ()
+  ;; smoke.eval.ts expect Paris + totalTokens>0. Not a live eval run.
+  (list
+   (eval-validate-smoke-ok-p "Paris" 12)
+   (eval-validate-smoke-ok-p (format nil " Paris~%") 3)
+   (eval-flag (zerop (eval-validate-smoke-ok-p "London" 12)))
+   (eval-flag (zerop (eval-validate-smoke-ok-p "Paris" 0)))
+   4))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -8139,7 +8231,10 @@
          (eval-tools (run-evals-harness-selected-eval-tools))
          (prompt-agent (run-evals-harness-prompt-eval-agent))
          (reload-shutdown (run-evals-harness-reload-shutdown))
-         (coding-eval (run-evals-harness-run-coding-agent-eval)))
+         (coding-eval (run-evals-harness-run-coding-agent-eval))
+         (argument-prefix (run-evals-harness-argument-prefix))
+         (parse-arguments (run-evals-harness-parse-arguments))
+         (validate-smoke (run-evals-harness-validate-smoke)))
     (json-object
      "observed"
      (json-object
@@ -8248,7 +8343,24 @@
       "rca_events" (nth 1 coding-eval)
       "rca_err" (nth 2 coding-eval)
       "rca_ms" (nth 3 coding-eval)
-      "rca_n" (nth 4 coding-eval))
+      "rca_n" (nth 4 coding-eval)
+      "apr_val" (nth 0 argument-prefix)
+      "apr_empty" (nth 1 argument-prefix)
+      "apr_miss" (nth 2 argument-prefix)
+      "apr_model" (nth 3 argument-prefix)
+      "apr_n" (nth 4 argument-prefix)
+      "pa_space" (nth 0 parse-arguments)
+      "pa_eq" (nth 1 parse-arguments)
+      "pa_mix" (nth 2 parse-arguments)
+      "pa_miss" (nth 3 parse-arguments)
+      "pa_empty" (nth 4 parse-arguments)
+      "pa_unknown" (nth 5 parse-arguments)
+      "pa_n" (nth 6 parse-arguments)
+      "vs_ok" (nth 0 validate-smoke)
+      "vs_trim" (nth 1 validate-smoke)
+      "vs_city" (nth 2 validate-smoke)
+      "vs_tok" (nth 3 validate-smoke)
+      "vs_n" (nth 4 validate-smoke))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -8349,7 +8461,22 @@
      (collect "evals_harness.run_coding_agent_eval"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-run-coding-agent-eval)))))))
+                  (run-evals-harness-run-coding-agent-eval))))
+     "argument_prefix"
+     (collect "evals_harness.argument_prefix"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-argument-prefix))))
+     "parse_arguments"
+     (collect "evals_harness.parse_arguments"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-parse-arguments))))
+     "validate_smoke"
+     (collect "evals_harness.validate_smoke"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-validate-smoke)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -17943,6 +18070,12 @@
       "src/cadr-evals/harness.lisp reload-eval-extensions shutdown-eval-agent"
       "evals_harness.run_coding_agent_eval"
       "src/cadr-evals/harness.lisp run-coding-agent-eval"
+      "evals_harness.argument_prefix"
+      "src/cadr-evals/main.lisp argument-prefix"
+      "evals_harness.parse_arguments"
+      "src/cadr-evals/main.lisp parse-arguments"
+      "evals_harness.validate_smoke"
+      "src/cadr-evals/main.lisp validate-smoke-result"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
