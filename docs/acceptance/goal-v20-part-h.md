@@ -4068,9 +4068,10 @@ commit no optimize.
 Leftover of the `package_manager` hole on `update-checks.lisp`. Timed work
 is setsid `--fork --wait` argv construction on POSIX — not spawn, not
 `default-package-update-check-runner`. Observed `ua_setsid` / `ua_fork` /
-`ua_tail` / `ua_rest` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+`ua_tail` / `ua_rest` are exact. First n=5 freeze **3.587×** (5.696 /
+1.588 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 446 — `package_manager` (update_env)
 
@@ -4081,9 +4082,9 @@ Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
 Leftover sibling of Pair 445 on the same `package_manager` hole. Timed work
 is injecting `GIT_TERMINAL_PROMPT=0` and dropping prior copies — not git
 exec. Observed `ue_first` / `ue_one` are exact. First n=5 freeze
-**RATIO_PLACEHOLDER**. Gate used `--only-enforce` (script rc=1 only from
-known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
-Same commit no optimize.
+**0.108×** (3.829 / 35.512 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 447 — `package_manager` (git_object_id)
 
@@ -4094,9 +4095,10 @@ Same commit no optimize.
 Leftover sibling of Pairs 445–446 on the same `package_manager` hole. Timed
 work is trimming the first 40-hex token (rev-parse / ls-remote) — not
 `package-git-update-available-p`. Observed `go_plain` / `go_nl` / `go_ls` /
-`go_upper` / `go_bad` are exact. First n=5 freeze **RATIO_PLACEHOLDER**.
-Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
-`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+`go_upper` / `go_bad` are exact. First n=5 freeze **1.916×** (2.328 /
+1.215 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Over-1× booked. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

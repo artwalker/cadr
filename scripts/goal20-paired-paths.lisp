@@ -3745,7 +3745,6 @@
   (if value 1 0))
 
 (defun run-package-manager-update-argv ()
-  ;; Leftover on update-checks.lisp: setsid wrap of git argv — not spawn.
   (let* ((argv '("git" "-C" "/tmp/pkg" "rev-parse" "HEAD"))
          (wrapped
           (cadr-cli::package-update-check-process-argv
@@ -3763,7 +3762,6 @@
      4)))
 
 (defun run-package-manager-update-env ()
-  ;; Leftover: inject GIT_TERMINAL_PROMPT=0 and drop prior copies.
   (let* ((entries (cadr-cli::package-update-check-environment))
          (prompt-count
           (count-if
@@ -3777,7 +3775,6 @@
      2)))
 
 (defun run-package-manager-git-object-id ()
-  ;; Leftover: 40-hex token from rev-parse / ls-remote output.
   (let ((oid "0123456789abcdef0123456789abcdef01234567")
         (upper "0123456789ABCDEF0123456789ABCDEF01234567"))
     (list

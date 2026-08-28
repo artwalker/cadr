@@ -245,6 +245,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.usage` | 2.240 | 1.042 | 2.148× | 8.00× | measure-only pair 332; leftover `eval-usage` vs usage object assembly | invent pause；地板优化另刀 |
 | `evals_harness.result_json` | 1.933 | 0.370 | 5.225× | 8.00× | measure-only pair 333; leftover `eval-result-json` vs SimpleHarnessResult JSON shape | invent pause；地板优化另刀 |
 | `evals_harness.eval_environment` | 0.758 | 0.282 | 2.692× | 8.00× | measure-only pair 346; `eval-environment` getenv+trim leftover (sub-µs variance) | invent pause；地板优化另刀 |
+| `package_manager.update_argv` | 5.696 | 1.588 | 3.587× | 8.00× | measure-only pair 445; leftover `package-update-check-process-argv` (sub-µs path) | invent pause；地板优化另刀 |
+| `package_manager.git_object_id` | 2.328 | 1.215 | 1.916× | 8.00× | measure-only pair 447; leftover `package-update-git-object-id` (sub-µs path) | invent pause；地板优化另刀 |
 | `ls_tool.list_directory` | 352.2 | 314.9 | 1.119× | 8.00× | measure-only pair 317; `list-directory` empty/mixed/limit listing | invent pause；地板优化另刀 |
 | `ls_tool.make_tool` | 284.4 | 279.6 | 1.017× | 8.00× | measure-only pair 318; `make-ls-tool` vs `createLsToolDefinition` | invent pause；地板优化另刀 |
 | `cli_settings.enabled_models` | 18.7 | 3.26 | 5.735× | 8.00× | measure-only pair 308; `settings-enabled-models` missing→`:all` plus one in-memory pattern | invent pause；地板优化另刀 |
