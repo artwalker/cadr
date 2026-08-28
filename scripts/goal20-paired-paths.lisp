@@ -17241,6 +17241,46 @@
      (length reason))))
 
 
+(defun run-core-rest-cancellation-make ()
+  ;; Leftover sibling of Pair 322 abort / Pair 337 wait: constructor only.
+  ;; Not abort-cancellation or wait-for-cancellation as the timed owner.
+  (let ((state (cadr-core:make-cancellation-state))
+        (with-pred
+          (cadr-core:make-cancellation-state
+           :aborted-function (lambda () nil))))
+    (list
+     (if (typep state 'cadr-core:cancellation-state) 1 0)
+     (if (cadr-core:cancellation-aborted-p state) 0 1)
+     (if (typep with-pred 'cadr-core:cancellation-state) 1 0))))
+
+
+(defun run-core-rest-cancellation-aborted ()
+  ;; Leftover sibling: cancellation-aborted-p as timed owner, not abort/wait.
+  (let ((live (cadr-core:make-cancellation-state))
+        (pred
+          (cadr-core:make-cancellation-state
+           :aborted-function (lambda () t)))
+        (aborted (cadr-core:make-cancellation-state)))
+    (cadr-core:set-cancellation-aborted-p aborted t)
+    (list
+     (if (cadr-core:cancellation-aborted-p live) 0 1)
+     (if (cadr-core:cancellation-aborted-p pred) 1 0)
+     (if (cadr-core:cancellation-aborted-p aborted) 1 0))))
+
+
+(defun run-core-rest-cancellation-set ()
+  ;; Leftover sibling: set-cancellation-aborted-p including clear.
+  ;; Not abort-cancellation as the timed owner.
+  (let ((state (cadr-core:make-cancellation-state)))
+    (cadr-core:set-cancellation-aborted-p state t)
+    (let ((set-ok (if (cadr-core:cancellation-aborted-p state) 1 0)))
+      (cadr-core:set-cancellation-aborted-p state nil)
+      (list
+       set-ok
+       (if (cadr-core:cancellation-aborted-p state) 0 1)
+       1))))
+
+
 (defun measure-core-rest ()
   (let ((cancellation (run-core-rest-cancellation))
         (redacted (run-core-rest-redacted))

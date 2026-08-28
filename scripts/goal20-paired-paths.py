@@ -151,7 +151,7 @@ METRICS = {
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth", "count", "baseline", "snippet_count", "read_first", "option_count", "auth_pairs_digest", "vertex_structured", "bedrock_structured"),
     "ai_runtime_faux": ("blocks", "text_len", "text", "think_len", "think"),
     "http_transport": ("parse_url", "https_scheme", "https_host", "https_path", "http_scheme", "http_host", "http_port", "http_path"),
-    "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup", "cancellation_wait", "redacted_types", "threads_join", "ca_live", "ca_abort", "ca_clear", "ca_pred", "rd_keep", "rd_secret", "rd_token", "rd_mark", "th_absent", "th_current", "th_joined"),
+    "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup", "cancellation_wait", "redacted_types", "threads_join", "ca_live", "ca_abort", "ca_clear", "ca_pred", "rd_keep", "rd_secret", "rd_token", "rd_mark", "th_absent", "th_current", "th_joined", "cancellation_make", "cancellation_aborted", "cancellation_set"),
     "session_pipeline": ("session_load", "context_walk", "session_leaf_id", "entry_count", "leaf_id", "session_id", "session_name", "context_entry_count", "context_message_count", "context_thinking_level", "context_model"),
     "storage_journal": ("journal_read", "journal_append", "journal_entry_count", "read_file_entry_count", "append_entry_count", "session_entry_count", "written_file_entry_count"),
     "sqlite_session": ("open_walk", "entry_count", "leaf_id", "ingested_entry_count", "session_id", "source_leaf_id"),
@@ -555,6 +555,18 @@ RATIO_CEILINGS = {
     # pair: observed 3.028x (1.047 / 0.346 us). 8.0 is first-freeze
     # headroom. Ratchet down only.
     "image_runtime.error_result": 8.0,
+    # core_rest leftover trio (samples=5): cancellation_make observed
+    # 0.972x (0.2446 / 0.2518 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.cancellation_make": 8.0,
+    # core_rest.cancellation_aborted leftover pair (samples=5): observed
+    # 0.0965x (0.6703 / 6.943 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.cancellation_aborted": 8.0,
+    # core_rest.cancellation_set leftover pair (samples=5): observed
+    # 0.148x (0.5152 / 3.478 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "core_rest.cancellation_set": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x

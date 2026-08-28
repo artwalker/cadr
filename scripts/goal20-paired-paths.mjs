@@ -257,6 +257,9 @@ const REPETITIONS = {
 	"evals_harness.content_text": 50,
 	"evals_harness.transcript_event": 50,
 	"evals_harness.elapsed": 50,
+	"core_rest.cancellation_make": 50,
+	"core_rest.cancellation_aborted": 50,
+	"core_rest.cancellation_set": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -17380,6 +17383,44 @@ async function runCoreRestThreadsJoin() {
 			});
 		});
 	});
+}
+
+
+function runCoreRestCancellationMake() {
+	const live = new AbortController();
+	const withPred = new AbortController();
+	return {
+		cm_type: live.signal ? 1 : 0,
+		cm_live: live.signal.aborted ? 0 : 1,
+		cm_pred: withPred.signal ? 1 : 0,
+	};
+}
+
+
+function runCoreRestCancellationAborted() {
+	const live = new AbortController();
+	const pred = new AbortController();
+	pred.abort();
+	const aborted = new AbortController();
+	aborted.abort();
+	return {
+		cab_live: live.signal.aborted ? 0 : 1,
+		cab_pred: pred.signal.aborted ? 1 : 0,
+		cab_abort: aborted.signal.aborted ? 1 : 0,
+	};
+}
+
+
+function runCoreRestCancellationSet() {
+	const state = new AbortController();
+	state.abort();
+	const setOk = state.signal.aborted ? 1 : 0;
+	const cleared = new AbortController();
+	return {
+		cs_set: setOk,
+		cs_clear: cleared.signal.aborted ? 0 : 1,
+		cs_n: 1,
+	};
 }
 
 
