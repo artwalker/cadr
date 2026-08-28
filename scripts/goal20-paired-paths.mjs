@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.scoped_models_selector_rebuild_models_by_id": 50,
+	"cli_selectors.scoped_models_model_by_id": 50,
+	"cli_selectors.scoped_model_item_search_text": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,85 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function scopedModelsRebuildModelsByIdEncoded(allModels) {
+	const table = new Map();
+	for (const item of allModels) {
+		table.set(scopedModelsFullId(item), item);
+	}
+	return [...table.keys()].sort().join(",");
+}
+
+function runCliSelectorsScopedModelsSelectorRebuildModelsById() {
+	const models = makeModelSelectorTestModels();
+	const extra = goal20ModelItem({ id: "grok", provider: "xai", name: "Grok" });
+	return {
+		smrm_all: scopedModelsRebuildModelsByIdEncoded(models),
+		smrm_partial: scopedModelsRebuildModelsByIdEncoded(models),
+		smrm_empty: scopedModelsRebuildModelsByIdEncoded([]),
+		smrm_single: scopedModelsRebuildModelsByIdEncoded([models[0]]),
+		smrm_extra: scopedModelsRebuildModelsByIdEncoded([...models, extra]),
+	};
+}
+
+function scopedModelsModelByIdEncoded(allModels, id) {
+	const table = new Map();
+	for (const item of allModels) {
+		table.set(scopedModelsFullId(item), item);
+	}
+	const found = table.get(id);
+	return found ? scopedModelsFullId(found) : "";
+}
+
+function runCliSelectorsScopedModelsModelById() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smbid_hit: scopedModelsModelByIdEncoded(models, "openai/gpt-4o"),
+		smbid_google: scopedModelsModelByIdEncoded(models, "google/gemini-2.5-pro"),
+		smbid_miss: scopedModelsModelByIdEncoded(models, "stale/missing"),
+		smbid_empty: scopedModelsModelByIdEncoded([], "openai/gpt-4o"),
+		smbid_openrouter: scopedModelsModelByIdEncoded(
+			models,
+			"openrouter/openai/gpt-4o",
+		),
+	};
+}
+
+function encodeScopedModelItemSearchText(item) {
+	if (item.searchText) {
+		return item.searchText;
+	}
+	return scopedModelItemSearchText(item);
+}
+
+function runCliSelectorsScopedModelItemSearchText() {
+	const models = makeModelSelectorTestModels();
+	const gpt = models[0];
+	const claude = models[1];
+	const codex = models[2];
+	return {
+		smist_gpt: encodeScopedModelItemSearchText({
+			fullId: scopedModelsFullId(gpt),
+			model: gpt.model,
+		}),
+		smist_claude: encodeScopedModelItemSearchText({
+			fullId: scopedModelsFullId(claude),
+			model: claude.model,
+		}),
+		smist_codex: encodeScopedModelItemSearchText({
+			fullId: scopedModelsFullId(codex),
+			model: codex.model,
+		}),
+		smist_cached: encodeScopedModelItemSearchText({
+			fullId: scopedModelsFullId(gpt),
+			model: gpt.model,
+			searchText: "cached",
+		}),
+		smist_noid: encodeScopedModelItemSearchText({
+			fullId: "stale/missing",
+		}),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +14979,11 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const scopedModelsSelectorRebuildModelsByIdResults =
+		runCliSelectorsScopedModelsSelectorRebuildModelsById();
+	const scopedModelsModelByIdResults = runCliSelectorsScopedModelsModelById();
+	const scopedModelItemSearchTextResults =
+		runCliSelectorsScopedModelItemSearchText();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15289,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...scopedModelsSelectorRebuildModelsByIdResults,
+		...scopedModelsModelByIdResults,
+		...scopedModelItemSearchTextResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15659,6 +15749,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		scoped_models_selector_rebuild_models_by_id: await collect(
+			"cli_selectors.scoped_models_selector_rebuild_models_by_id",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorRebuildModelsById();
+			},
+		),
+		scoped_models_model_by_id: await collect(
+			"cli_selectors.scoped_models_model_by_id",
+			() => {
+				return () => runCliSelectorsScopedModelsModelById();
+			},
+		),
+		scoped_model_item_search_text: await collect(
+			"cli_selectors.scoped_model_item_search_text",
+			() => {
+				return () => runCliSelectorsScopedModelItemSearchText();
 			},
 		),
 		observed,
@@ -17393,6 +17501,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.scoped_models_selector_rebuild_models_by_id":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts modelsById rebuild",
+			"cli_selectors.scoped_models_model_by_id":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts modelsById lookup",
+			"cli_selectors.scoped_model_item_search_text":
+				"packages/coding-agent/src/modes/interactive/model-search.ts getModelSearchText (scoped item)",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
