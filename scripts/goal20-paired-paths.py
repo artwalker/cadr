@@ -904,7 +904,9 @@ RATIO_CEILINGS = {
     # bash_tool leftover trio on bash.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 694–696.
     "bash_tool.process_deadline": 8.0,
+    # leftover 694; first freeze 0.272× (0.124 / 0.457 µs). cadr leads.
     "bash_tool.user_bash_result": 8.0,
+    # leftover 695; first freeze 2.070× (2.616 / 1.264 µs).
     "bash_tool.normalized_extension": 8.0,
     # First-freeze headroom for leftover
     # cli_interactive_controller.sanitize_title.
