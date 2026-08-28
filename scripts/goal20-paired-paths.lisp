@@ -626,6 +626,9 @@
     ("cli_interactive_controller.render_tui_entry_uncached" . 50)
     ("cli_interactive_controller.render_tui_entry" . 50)
     ("cli_interactive_controller.render_tui_entries" . 50)
+    ("cli_interactive_controller.should_use_tui" . 50)
+    ("cli_interactive_controller.tui_command_error" . 50)
+    ("cli_interactive_controller.route_tui_submission" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14559,6 +14562,26 @@
    "rtes_empty" (nth 4 entries)))
 
 
+(defun leftover-controller-tui-error-route-observed-pairs
+    (should-use-tui command-error route-submit)
+  (list
+   "sut_tty" (nth 0 should-use-tui)
+   "sut_off" (nth 1 should-use-tui)
+   "sut_in" (nth 2 should-use-tui)
+   "sut_out" (nth 3 should-use-tui)
+   "sut_none" (nth 4 should-use-tui)
+   "tce_ok" (nth 0 command-error)
+   "tce_auth" (nth 1 command-error)
+   "tce_err" (nth 2 command-error)
+   "tce_n" (nth 3 command-error)
+   "tce_skip" (nth 4 command-error)
+   "rsub_start" (nth 0 route-submit)
+   "rsub_queue" (nth 1 route-submit)
+   "rsub_busy" (nth 2 route-submit)
+   "rsub_line" (nth 3 route-submit)
+   "rsub_qline" (nth 4 route-submit)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15062,7 +15085,13 @@
         (leftover-render-tui-entry
           (run-cli-interactive-render-tui-entry))
         (leftover-render-tui-entries
-          (run-cli-interactive-render-tui-entries)))
+          (run-cli-interactive-render-tui-entries))
+        (leftover-should-use-tui
+          (run-cli-interactive-should-use-tui))
+        (leftover-tui-command-error
+          (run-cli-interactive-tui-command-error))
+        (leftover-route-tui-submission
+          (run-cli-interactive-route-tui-submission)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15157,7 +15186,11 @@
              (leftover-transcript-tui-entry-observed-pairs
               leftover-render-tui-entry-uncached
               leftover-render-tui-entry
-              leftover-render-tui-entries)))
+              leftover-render-tui-entries)
+             (leftover-controller-tui-error-route-observed-pairs
+              leftover-should-use-tui
+              leftover-tui-command-error
+              leftover-route-tui-submission)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15352,7 +15385,22 @@
      (collect "cli_interactive_controller.render_tui_entries"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-render-tui-entries)))))))
+                  (run-cli-interactive-render-tui-entries))))
+     "should_use_tui"
+     (collect "cli_interactive_controller.should_use_tui"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-should-use-tui))))
+     "tui_command_error"
+     (collect "cli_interactive_controller.tui_command_error"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-tui-command-error))))
+     "route_tui_submission"
+     (collect "cli_interactive_controller.route_tui_submission"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-route-tui-submission)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -16211,6 +16259,119 @@
      (if (find "" gapped :test #'string=) 1 0)
      (if (>= (length two) (length one)) 1 0)
      (if (null empty) 1 0))))
+
+(defun leftover-tty-both (stream direction)
+  (declare (ignore stream direction))
+  t)
+
+(defun leftover-tty-none (stream direction)
+  (declare (ignore stream direction))
+  nil)
+
+(defun leftover-tty-input (stream direction)
+  (declare (ignore stream))
+  (eq direction :input))
+
+(defun leftover-tty-output (stream direction)
+  (declare (ignore stream))
+  (eq direction :output))
+
+(defun run-cli-interactive-should-use-tui ()
+  (list
+   (if
+       (cadr-cli::should-use-tui-p
+        nil
+        :terminal-p-function #'leftover-tty-both)
+       1 0)
+   (if
+       (cadr-cli::should-use-tui-p
+        t
+        :terminal-p-function #'leftover-tty-both)
+       1 0)
+   (if
+       (cadr-cli::should-use-tui-p
+        nil
+        :terminal-p-function #'leftover-tty-input)
+       1 0)
+   (if
+       (cadr-cli::should-use-tui-p
+        nil
+        :terminal-p-function #'leftover-tty-output)
+       1 0)
+   (if
+       (cadr-cli::should-use-tui-p
+        nil
+        :terminal-p-function #'leftover-tty-none)
+       1 0)))
+
+(defun run-cli-interactive-tui-command-error ()
+  (let* ((ok-notices nil)
+         (ok
+           (cadr-cli::call-with-tui-command-error-notice
+            (lambda () 42)
+            (lambda (text)
+              (push text ok-notices))))
+         (auth-notices nil)
+         (auth
+           (cadr-cli::call-with-tui-command-error-notice
+            (lambda ()
+              (error 'cadr-ai:authentication-cancelled))
+            (lambda (text)
+              (push text auth-notices))))
+         (err-notices nil)
+         (err
+           (cadr-cli::call-with-tui-command-error-notice
+            (lambda ()
+              (error "boom"))
+            (lambda (text)
+              (push text err-notices)
+              text))))
+    (cadr-cli::call-with-tui-command-error-notice
+     (lambda () 1)
+     (lambda (text) text))
+    (cadr-cli::call-with-tui-command-error-notice
+     (lambda () (error 'cadr-ai:authentication-cancelled))
+     (lambda (text) text))
+    (cadr-cli::call-with-tui-command-error-notice
+     (lambda () (error "boom"))
+     (lambda (text) text))
+    (list
+     (if (eql ok 42) 1 0)
+     (if (null auth) 1 0)
+     (if (search "boom" (or (first err-notices) "")) 1 0)
+     (if (= (length err-notices) 1) 1 0)
+     (if (null auth-notices) 1 0))))
+
+(defun run-cli-interactive-route-tui-submission ()
+  (let* ((started nil)
+         (queued nil)
+         (start
+           (cadr-cli::route-tui-submission
+            "hi" nil nil
+            (lambda (line)
+              (setf started line))))
+         (queue
+           (cadr-cli::route-tui-submission
+            "x" t
+            (lambda (line)
+              (setf queued line))
+            (lambda (line)
+              (declare (ignore line)))))
+         (busy
+           (cadr-cli::route-tui-submission
+            "y" t nil
+            (lambda (line)
+              (declare (ignore line))))))
+    (cadr-cli::route-tui-submission "hi" nil nil (lambda (line) line))
+    (cadr-cli::route-tui-submission
+     "x" t (lambda (line) line) (lambda (line) line))
+    (cadr-cli::route-tui-submission "y" t nil (lambda (line) line))
+    (list
+     (if (eq start :started) 1 0)
+     (if (eq queue :queued) 1 0)
+     (if (null busy) 1 0)
+     (if (string= started "hi") 1 0)
+     (if (string= queued "x") 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -28543,6 +28704,12 @@
       "src/cadr-cli/interactive/transcript.lisp render-tui-entry"
       "cli_interactive_controller.render_tui_entries"
       "src/cadr-cli/interactive/transcript.lisp render-tui-entries"
+      "cli_interactive_controller.should_use_tui"
+      "src/cadr-cli/interactive/controller.lisp should-use-tui-p"
+      "cli_interactive_controller.tui_command_error"
+      "src/cadr-cli/interactive/controller.lisp call-with-tui-command-error-notice"
+      "cli_interactive_controller.route_tui_submission"
+      "src/cadr-cli/interactive/controller.lisp route-tui-submission"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

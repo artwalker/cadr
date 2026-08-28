@@ -608,6 +608,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.render_tui_entry_uncached": 50,
 	"cli_interactive_controller.render_tui_entry": 50,
 	"cli_interactive_controller.render_tui_entries": 50,
+	"cli_interactive_controller.should_use_tui": 50,
+	"cli_interactive_controller.tui_command_error": 50,
+	"cli_interactive_controller.route_tui_submission": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -14750,6 +14753,160 @@ function runCliInteractiveRenderTuiEntries() {
 	};
 }
 
+function leftoverShouldUseTuiP(noTuiP, terminalP) {
+	return !noTuiP && terminalP(null, "input") && terminalP(null, "output");
+}
+
+function leftoverTtyBoth(_stream, _direction) {
+	return true;
+}
+
+function leftoverTtyNone(_stream, _direction) {
+	return false;
+}
+
+function leftoverTtyInput(_stream, direction) {
+	return direction === "input";
+}
+
+function leftoverTtyOutput(_stream, direction) {
+	return direction === "output";
+}
+
+function runCliInteractiveShouldUseTui() {
+	const tty = leftoverShouldUseTuiP(false, leftoverTtyBoth) ? 1 : 0;
+	const off = leftoverShouldUseTuiP(true, leftoverTtyBoth) ? 1 : 0;
+	const inputOnly = leftoverShouldUseTuiP(false, leftoverTtyInput) ? 1 : 0;
+	const outputOnly = leftoverShouldUseTuiP(false, leftoverTtyOutput) ? 1 : 0;
+	const none = leftoverShouldUseTuiP(false, leftoverTtyNone) ? 1 : 0;
+	leftoverShouldUseTuiP(false, leftoverTtyBoth);
+	leftoverShouldUseTuiP(true, leftoverTtyBoth);
+	leftoverShouldUseTuiP(false, leftoverTtyInput);
+	leftoverShouldUseTuiP(false, leftoverTtyOutput);
+	leftoverShouldUseTuiP(false, leftoverTtyNone);
+	return {
+		sut_tty: tty,
+		sut_off: off,
+		sut_in: inputOnly,
+		sut_out: outputOnly,
+		sut_none: none,
+	};
+}
+
+function leftoverCallWithTuiCommandErrorNotice(fn, notice) {
+	try {
+		return fn();
+	} catch (error) {
+		if (error && error.name === "AuthenticationCancelled") {
+			return null;
+		}
+		const text = error && error.message != null ? String(error.message) : String(error);
+		return notice(text);
+	}
+}
+
+function leftoverAuthenticationCancelled() {
+	const error = new Error("cancelled");
+	error.name = "AuthenticationCancelled";
+	return error;
+}
+
+function runCliInteractiveTuiCommandError() {
+	const okNotices = [];
+	const ok = leftoverCallWithTuiCommandErrorNotice(
+		() => 42,
+		(text) => {
+			okNotices.push(text);
+		},
+	);
+	const authNotices = [];
+	const auth = leftoverCallWithTuiCommandErrorNotice(
+		() => {
+			throw leftoverAuthenticationCancelled();
+		},
+		(text) => {
+			authNotices.push(text);
+		},
+	);
+	const errNotices = [];
+	leftoverCallWithTuiCommandErrorNotice(
+		() => {
+			throw new Error("boom");
+		},
+		(text) => {
+			errNotices.push(text);
+			return text;
+		},
+	);
+	leftoverCallWithTuiCommandErrorNotice(
+		() => 1,
+		(text) => text,
+	);
+	leftoverCallWithTuiCommandErrorNotice(
+		() => {
+			throw leftoverAuthenticationCancelled();
+		},
+		(text) => text,
+	);
+	leftoverCallWithTuiCommandErrorNotice(
+		() => {
+			throw new Error("boom");
+		},
+		(text) => text,
+	);
+	return {
+		tce_ok: ok === 42 ? 1 : 0,
+		tce_auth: auth == null ? 1 : 0,
+		tce_err: String(errNotices[0] || "").includes("boom") ? 1 : 0,
+		tce_n: errNotices.length === 1 ? 1 : 0,
+		tce_skip: authNotices.length === 0 ? 1 : 0,
+	};
+}
+
+function leftoverRouteTuiSubmission(line, busyP, busyInput, start) {
+	if (busyP) {
+		if (busyInput) {
+			busyInput(line);
+			return "queued";
+		}
+		return null;
+	}
+	start(line);
+	return "started";
+}
+
+function runCliInteractiveRouteTuiSubmission() {
+	let started = "";
+	let queued = "";
+	const start = leftoverRouteTuiSubmission("hi", false, null, (line) => {
+		started = line;
+	});
+	const queue = leftoverRouteTuiSubmission(
+		"x",
+		true,
+		(line) => {
+			queued = line;
+		},
+		() => {},
+	);
+	const busy = leftoverRouteTuiSubmission("y", true, null, () => {});
+	leftoverRouteTuiSubmission("hi", false, null, (line) => line);
+	leftoverRouteTuiSubmission(
+		"x",
+		true,
+		(line) => line,
+		(line) => line,
+	);
+	leftoverRouteTuiSubmission("y", true, null, (line) => line);
+	return {
+		rsub_start: start === "started" ? 1 : 0,
+		rsub_queue: queue === "queued" ? 1 : 0,
+		rsub_busy: busy == null ? 1 : 0,
+		rsub_line: started === "hi" ? 1 : 0,
+		rsub_qline: queued === "x" ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -16021,6 +16178,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveRenderTuiEntryUncached(),
 		...runCliInteractiveRenderTuiEntry(),
 		...runCliInteractiveRenderTuiEntries(),
+		...runCliInteractiveShouldUseTui(),
+		...runCliInteractiveTuiCommandError(),
+		...runCliInteractiveRouteTuiSubmission(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -16222,6 +16382,21 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.render_tui_entries",
 			() => {
 				return () => runCliInteractiveRenderTuiEntries();
+			},
+		),
+		should_use_tui: await collect("cli_interactive_controller.should_use_tui", () => {
+			return () => runCliInteractiveShouldUseTui();
+		}),
+		tui_command_error: await collect(
+			"cli_interactive_controller.tui_command_error",
+			() => {
+				return () => runCliInteractiveTuiCommandError();
+			},
+		),
+		route_tui_submission: await collect(
+			"cli_interactive_controller.route_tui_submission",
+			() => {
+				return () => runCliInteractiveRouteTuiSubmission();
 			},
 		),
 		observed,
@@ -30144,6 +30319,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/chat-log.ts render entry cache",
 			"cli_interactive_controller.render_tui_entries":
 				"packages/coding-agent/src/modes/interactive/components/chat-log.ts render entries + user gap",
+			"cli_interactive_controller.should_use_tui":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts shouldUseTui stdin/stdout isTTY",
+			"cli_interactive_controller.tui_command_error":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts command error notice skip auth cancel",
+			"cli_interactive_controller.route_tui_submission":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts busy submit queue vs start",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
