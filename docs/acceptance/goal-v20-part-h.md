@@ -5527,6 +5527,48 @@ Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
 `lc_sleep` / help text; this metric did not fail). Over-1× booked. Same
 commit no optimize.
 
+### Pair 442 — `package_manager` (normalize_pattern)
+
+| metric | cadr | pi |
+|---|---|---|
+| `normalize_pattern` | `config-normalize-pattern-path` (`src/cadr-cli/packages/config-selector.lisp`) | `normalizeExactPattern` (`packages/coding-agent/src/core/package-manager.ts`) |
+
+Leftover of the `package_manager` hole on `config-selector.lisp`. Timed work
+is `./` and `.\` prefix strip plus slash fold — not resolve, not
+`config-glob-regex`. Observed `np_dot` / `np_plain` / `np_win` are exact.
+First n=5 freeze **0.650×** (0.444 / 0.683 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 443 — `package_manager` (resource_kinds)
+
+| metric | cadr | pi |
+|---|---|---|
+| `resource_kinds` | `config-resource-kinds` (`src/cadr-cli/packages/config-selector.lisp`) | `RESOURCE_TYPES` (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 442 on the same `package_manager` hole. Timed work
+is the four-kind extensions/skills/prompts/themes table — not selector
+render, not package resolve. Observed `rk_n` / `rk_ext` / `rk_sk` /
+`rk_pr` / `rk_th` are exact. First n=5 freeze **0.756×** (0.117 / 0.155 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
+
+### Pair 444 — `package_manager` (type_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `type_label` | `config-resource-type-label` (`src/cadr-cli/packages/config-selector.lisp`) | `RESOURCE_TYPE_LABELS` (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 442–443 on the same `package_manager` hole. Timed
+work is the four display labels Extensions/Skills/Prompts/Themes — not
+`config-resource-display-name`. Observed `tl_ext` / `tl_sk` / `tl_pr` /
+`tl_th` are exact. First n=5 freeze **1.002×** (0.135 / 0.134 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

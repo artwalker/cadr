@@ -414,6 +414,9 @@
     ("package_manager.resolve" . 5)
     ("package_manager.manifest_parse" . 50)
     ("package_manager.package_source" . 50)
+    ("package_manager.normalize_pattern" . 50)
+    ("package_manager.resource_kinds" . 50)
+    ("package_manager.type_label" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4095,6 +4098,57 @@
                 1
                 0)))))
 
+(defun package-manager-truth (value)
+  (if value 1 0))
+
+(defun run-package-manager-normalize-pattern ()
+  ;; Leftover on config-selector.lisp: ./ and .\ prefix strip plus
+  ;; slash fold. Fixtures avoid mid-string backslash (Linux path.sep).
+  (list
+   (package-manager-truth
+    (string=
+     (cadr-cli::config-normalize-pattern-path "./foo")
+     "foo"))
+   (package-manager-truth
+    (string=
+     (cadr-cli::config-normalize-pattern-path "bar")
+     "bar"))
+   (package-manager-truth
+    (string=
+     (cadr-cli::config-normalize-pattern-path ".\\baz")
+     "baz"))
+   3))
+
+(defun run-package-manager-resource-kinds ()
+  (let ((kinds (cadr-cli::config-resource-kinds)))
+    (list
+     (package-manager-truth (= (length kinds) 4))
+     (package-manager-truth (eq (nth 0 kinds) :extensions))
+     (package-manager-truth (eq (nth 1 kinds) :skills))
+     (package-manager-truth (eq (nth 2 kinds) :prompts))
+     (package-manager-truth (eq (nth 3 kinds) :themes))
+     5)))
+
+(defun run-package-manager-type-label ()
+  (list
+   (package-manager-truth
+    (string=
+     (cadr-cli::config-resource-type-label :extensions)
+     "Extensions"))
+   (package-manager-truth
+    (string=
+     (cadr-cli::config-resource-type-label :skills)
+     "Skills"))
+   (package-manager-truth
+    (string=
+     (cadr-cli::config-resource-type-label :prompts)
+     "Prompts"))
+   (package-manager-truth
+    (string=
+     (cadr-cli::config-resource-type-label :themes)
+     "Themes"))
+   4))
+
 (defun measure-package-manager ()
   (multiple-value-bind (cwd agent project-config)
       (stage-package-layout)
@@ -4114,7 +4168,10 @@
            (paths
              (run-package-manager manager agent project-config))
            (manifest-parse (run-package-manager-manifest-parse agent))
-           (package-source (run-package-manager-package-source agent)))
+           (package-source (run-package-manager-package-source agent))
+           (normalize-pattern (run-package-manager-normalize-pattern))
+           (resource-kinds (run-package-manager-resource-kinds))
+           (type-label (run-package-manager-type-label)))
       (json-object
        "observed"
        (json-object
@@ -4136,7 +4193,19 @@
         "ps_ref_ok" (nth 5 package-source)
         "ps_git_id" (nth 6 package-source)
         "ps_ded_n" (nth 7 package-source)
-        "ps_ded_proj" (nth 8 package-source))
+        "ps_ded_proj" (nth 8 package-source)
+        "np_dot" (nth 0 normalize-pattern)
+        "np_plain" (nth 1 normalize-pattern)
+        "np_win" (nth 2 normalize-pattern)
+        "rk_n" (nth 0 resource-kinds)
+        "rk_ext" (nth 1 resource-kinds)
+        "rk_sk" (nth 2 resource-kinds)
+        "rk_pr" (nth 3 resource-kinds)
+        "rk_th" (nth 4 resource-kinds)
+        "tl_ext" (nth 0 type-label)
+        "tl_sk" (nth 1 type-label)
+        "tl_pr" (nth 2 type-label)
+        "tl_th" (nth 3 type-label))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -4152,7 +4221,22 @@
        (collect "package_manager.package_source"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-package-source agent))))))))
+                    (run-package-manager-package-source agent))))
+       "normalize_pattern"
+       (collect "package_manager.normalize_pattern"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-normalize-pattern))))
+       "resource_kinds"
+       (collect "package_manager.resource_kinds"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-resource-kinds))))
+       "type_label"
+       (collect "package_manager.type_label"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-type-label))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -19878,6 +19962,12 @@
       "src/cadr-cli/packages/manifest.lisp read-package-pi-manifest"
       "package_manager.package_source"
       "src/cadr-cli/packages/source.lisp parse-package-source + package-source-identity + dedupe-package-sources"
+      "package_manager.normalize_pattern"
+      "src/cadr-cli/packages/config-selector.lisp config-normalize-pattern-path"
+      "package_manager.resource_kinds"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-kinds"
+      "package_manager.type_label"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-type-label"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"

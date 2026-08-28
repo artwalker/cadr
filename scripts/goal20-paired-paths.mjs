@@ -221,6 +221,9 @@ const REPETITIONS = {
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
 	"package_manager.package_source": 50,
+	"package_manager.normalize_pattern": 50,
+	"package_manager.resource_kinds": 50,
+	"package_manager.type_label": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -4919,6 +4922,54 @@ function runPackageManagerPackageSource() {
 	};
 }
 
+function toPosixPath(value) {
+	return value.split(path.sep).join("/");
+}
+
+function normalizeExactPattern(pattern) {
+	const normalized =
+		pattern.startsWith("./") || pattern.startsWith(".\\")
+			? pattern.slice(2)
+			: pattern;
+	return toPosixPath(normalized);
+}
+
+function runPackageManagerNormalizePattern() {
+	return {
+		np_dot: normalizeExactPattern("./foo") === "foo" ? 1 : 0,
+		np_plain: normalizeExactPattern("bar") === "bar" ? 1 : 0,
+		np_win: normalizeExactPattern(".\\baz") === "baz" ? 1 : 0,
+	};
+}
+
+const PACKAGE_RESOURCE_TYPES = ["extensions", "skills", "prompts", "themes"];
+
+const PACKAGE_RESOURCE_TYPE_LABELS = {
+	extensions: "Extensions",
+	skills: "Skills",
+	prompts: "Prompts",
+	themes: "Themes",
+};
+
+function runPackageManagerResourceKinds() {
+	return {
+		rk_n: PACKAGE_RESOURCE_TYPES.length === 4 ? 1 : 0,
+		rk_ext: PACKAGE_RESOURCE_TYPES[0] === "extensions" ? 1 : 0,
+		rk_sk: PACKAGE_RESOURCE_TYPES[1] === "skills" ? 1 : 0,
+		rk_pr: PACKAGE_RESOURCE_TYPES[2] === "prompts" ? 1 : 0,
+		rk_th: PACKAGE_RESOURCE_TYPES[3] === "themes" ? 1 : 0,
+	};
+}
+
+function runPackageManagerTypeLabel() {
+	return {
+		tl_ext: PACKAGE_RESOURCE_TYPE_LABELS.extensions === "Extensions" ? 1 : 0,
+		tl_sk: PACKAGE_RESOURCE_TYPE_LABELS.skills === "Skills" ? 1 : 0,
+		tl_pr: PACKAGE_RESOURCE_TYPE_LABELS.prompts === "Prompts" ? 1 : 0,
+		tl_th: PACKAGE_RESOURCE_TYPE_LABELS.themes === "Themes" ? 1 : 0,
+	};
+}
+
 async function measurePackageManager() {
 	const manager = makePackageManager();
 	const resolved = await manager.resolve();
@@ -4926,6 +4977,9 @@ async function measurePackageManager() {
 		entries.filter((entry) => entry.enabled && entry.metadata?.origin === "package").length;
 	const manifestParse = runPackageManagerManifestParse();
 	const packageSource = runPackageManagerPackageSource();
+	const normalizePattern = runPackageManagerNormalizePattern();
+	const resourceKinds = runPackageManagerResourceKinds();
+	const typeLabel = runPackageManagerTypeLabel();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -4936,6 +4990,15 @@ async function measurePackageManager() {
 		package_source: await collect("package_manager.package_source", () => {
 			return () => runPackageManagerPackageSource();
 		}),
+		normalize_pattern: await collect("package_manager.normalize_pattern", () => {
+			return () => runPackageManagerNormalizePattern();
+		}),
+		resource_kinds: await collect("package_manager.resource_kinds", () => {
+			return () => runPackageManagerResourceKinds();
+		}),
+		type_label: await collect("package_manager.type_label", () => {
+			return () => runPackageManagerTypeLabel();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -4944,6 +5007,9 @@ async function measurePackageManager() {
 			extension_count: fromPackage(resolved.extensions),
 			...manifestParse,
 			...packageSource,
+			...normalizePattern,
+			...resourceKinds,
+			...typeLabel,
 		},
 	};
 }
@@ -20345,6 +20411,12 @@ const result = {
 				"packages/coding-agent/src/core/pi-manifest.ts readPiManifest",
 			"package_manager.package_source":
 				"packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.parseSource + getPackageIdentity + dedupePackages",
+			"package_manager.normalize_pattern":
+				"packages/coding-agent/src/core/package-manager.ts normalizeExactPattern",
+			"package_manager.resource_kinds":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts RESOURCE_TYPES",
+			"package_manager.type_label":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts RESOURCE_TYPE_LABELS",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

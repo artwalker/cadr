@@ -315,4 +315,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.artifact_metadata` | 1.025 | 0.868 | 1.182× | 8.00× | measure-only pair 432; leftover `reporter-artifact-metadata` vs `appendHarnessRunReport` metadata filter | invent pause；地板优化另刀 |
 | `evals_harness.extension_authoring_input` | 1.148 | 0.246 | 4.662× | 8.00× | measure-only pair 439; `extension-authoring-input` types/length leftover (sub-µs variance) | invent pause；地板优化另刀 |
 | `evals_harness.json_string` | 0.902 | 0.180 | 5.012× | 8.00× | measure-only pair 441; `json-string` leftover vs missing/false JSON accessor (sub-µs variance) | invent pause；地板优化另刀 |
+| `package_manager.type_label` | 0.135 | 0.134 | 1.002× | 8.00× | measure-only pair 444; `config-resource-type-label` leftover (sub-µs variance) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
