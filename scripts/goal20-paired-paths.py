@@ -931,11 +931,11 @@ RATIO_CEILINGS = {
     # First-freeze headroom for leftover cli_interactive_controller.theme_validate.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_interactive_controller.theme_validate": 8.0,
-    # Measure-only leftover 637; first freeze recorded after n=5.
+    # Measure-only leftover 637; first freeze 0.651× (22.839 / 35.090 µs).
     "cli_interactive_controller.theme_object_overrides": 8.0,
-    # Measure-only leftover 638; first freeze recorded after n=5.
+    # Measure-only leftover 638; first freeze 3.211× (52.489 / 16.348 µs).
     "cli_interactive_controller.apply_tui_theme_summary": 8.0,
-    # Measure-only leftover 639; first freeze recorded after n=5.
+    # Measure-only leftover 639; first freeze 2.383× (233.265 / 97.883 µs).
     "cli_interactive_controller.load_tui_theme_file": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
