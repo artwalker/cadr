@@ -7528,6 +7528,30 @@ single model). Passes cached default keybindings; does not time
 `--only-enforce`. Over-1× booked. Same commit no optimize.
 `nextPairNum` left at 328.
 
+### Pair 601 — `cli_selectors` (thinking_selector_key_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_key_p` | `thinking-selector-key-p` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | `KeybindingsManager.matches` + CSI modified-arrow canonical compare (`packages/tui/src/keybindings.ts`) |
+
+Leftover trio on `src/cadr-cli/interactive/selectors/thinking.lisp` / hole `cli_selectors`. Timed work is `selector-keybinding-matches-p` on cached `*default-thinking-selector-keybindings*` (tab hit / miss, up-arrow hit, CSI `1;1A` up, ctrl+s save). Does not time `make-thinking-selector-keybindings`. Pi `KEYBINDINGS` lacks `app.thinking.save`; the harness spreads those definitions into the manager. Observed `tskp_tab_hit` / `tskp_tab_miss` / `tskp_up_hit` / `tskp_csi_up` / `tskp_save_hit` are exact. First n=5 freeze **19.196×** (15.469 / 0.806 µs) on host `cursor`, ceiling 30.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 602 — `cli_selectors` (thinking_selector_keybindings)
+
+| metric | cadr | pi |
+|---|---|---|
+| `thinking_selector_keybindings` | `thinking-selector-keybindings` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | `getKeybindings` slot-or-default (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pair 601 on the same `thinking.lisp` hole. Timed work is the cached manager slot-or-default, then first bound key (nil slot / explicit default / custom `ctrl+k` / clearSearchOrCancel / confirm). Does not time `make-thinking-selector-keybindings`. Observed `tskb_nil` / `tskb_default` / `tskb_custom` / `tskb_cancel` / `tskb_confirm` are exact. First n=5 freeze **5.685×** (3.014 / 0.530 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 603 — `cli_selectors` (make_thinking_selector_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_thinking_selector_state` | `make-thinking-selector-state` (`src/cadr-cli/interactive/selectors/thinking.lisp`) | constructor filter + select current (`packages/coding-agent/src/modes/interactive/components/thinking-selector.ts`) |
+
+Leftover sibling of Pairs 601–602 on the same `thinking.lisp` hole. Timed work is `%make-thinking-selector-state` plus `thinking-selector-apply-filter` plus `thinking-selector-select-current` (high / off / missing medium / empty levels / default-level). Initial empty query equals `(or filter-query "")`, so apply-filter no-ops and filtered-count stays 0 on both harness sides. Observed encode is `levels-n|current|selected|filtered-count|selected-level|default`. Observed `tms_high` / `tms_off` / `tms_miss` / `tms_empty` / `tms_default` are exact. First n=5 freeze **0.638×** (1.623 / 2.545 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328. Also restores dropped leftover collect wiring for thinking.lisp slugs 532–534.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

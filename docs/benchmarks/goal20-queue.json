@@ -4639,6 +4639,51 @@
    "piUs": 6.989,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 601,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.thinking_selector_key_p",
+   "branch": "cursor/thinking-key-p-keybindings-make-state-leftovers-601-603-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 601",
+   "ratio": 19.196,
+   "cadrUs": 15.469,
+   "piUs": 0.806,
+   "ceiling": 30.0,
+   "rc": 2
+  },
+  {
+   "pair": 602,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.thinking_selector_keybindings",
+   "branch": "cursor/thinking-key-p-keybindings-make-state-leftovers-601-603-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 602",
+   "ratio": 5.685,
+   "cadrUs": 3.014,
+   "piUs": 0.53,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 603,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/thinking.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.make_thinking_selector_state",
+   "branch": "cursor/thinking-key-p-keybindings-make-state-leftovers-601-603-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 603",
+   "ratio": 0.638,
+   "cadrUs": 1.623,
+   "piUs": 2.545,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

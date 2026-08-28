@@ -1125,11 +1125,12 @@ RATIO_CEILINGS = {
   "cli_selectors.model_selector_keybindings": 12.0,
   # Measure-only leftover 600; first freeze 3.037× (21.230 / 6.989 µs).
   "cli_selectors.make_model_selector_state": 8.0,
-  # Measure-only leftover 601; first freeze pending.
-  "cli_selectors.thinking_selector_key_p": 8.0,
-  # Measure-only leftover 602; first freeze pending.
+  # Measure-only leftover 601; first freeze 19.196× (15.469 / 0.806 µs).
+  # 30.0 is first-freeze headroom. Ratchet down only.
+  "cli_selectors.thinking_selector_key_p": 30.0,
+  # Measure-only leftover 602; first freeze 5.685× (3.014 / 0.530 µs).
   "cli_selectors.thinking_selector_keybindings": 8.0,
-  # Measure-only leftover 603; first freeze pending.
+  # Measure-only leftover 603; first freeze 0.638× (1.623 / 2.545 µs). cadr leads.
   "cli_selectors.make_thinking_selector_state": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick

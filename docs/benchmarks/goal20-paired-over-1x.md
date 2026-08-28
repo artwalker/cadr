@@ -415,4 +415,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.model_selector_key_p` | 16.140 | 0.868 | 18.605× | 30.00× | measure-only leftover 598; `model-selector-key-p` vs KeybindingsManager.matches; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
 | `cli_selectors.model_selector_keybindings` | 4.144 | 0.513 | 8.076× | 12.00× | measure-only leftover 599; `model-selector-keybindings` vs getKeybindings slot-or-default; first-freeze headroom 12.0 | invent pause；地板优化另刀 |
 | `cli_selectors.make_model_selector_state` | 21.230 | 6.989 | 3.037× | 8.00× | measure-only leftover 600; `make-model-selector-state` vs constructor sort+filter+select | invent pause；地板优化另刀 |
+| `cli_selectors.thinking_selector_key_p` | 15.469 | 0.806 | 19.196× | 30.00× | measure-only leftover 601; `thinking-selector-key-p` vs KeybindingsManager.matches; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
+| `cli_selectors.thinking_selector_keybindings` | 3.014 | 0.530 | 5.685× | 8.00× | measure-only leftover 602; `thinking-selector-keybindings` vs getKeybindings slot-or-default | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

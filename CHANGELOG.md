@@ -9,6 +9,32 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_key_p`
+  (`thinking-selector-key-p` on
+  `src/cadr-cli/interactive/selectors/thinking.lisp` vs
+  `KeybindingsManager.matches` + CSI). Observed `tskp_tab_hit` /
+  `tskp_tab_miss` / `tskp_up_hit` / `tskp_csi_up` / `tskp_save_hit` exact.
+  n=5 **19.196×** (15.469 / 0.806 µs) on host `cursor`, ceiling 30.0
+  first-freeze headroom. Cached `*default-thinking-selector-keybindings*`;
+  do not time `make-thinking-selector-keybindings`. Measure-only leftover
+  (Pair 601). Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.thinking_selector_keybindings`
+  (`thinking-selector-keybindings` vs `getKeybindings` slot-or-default).
+  Observed `tskb_nil` / `tskb_default` / `tskb_custom` / `tskb_cancel` /
+  `tskb_confirm` exact. n=5 **5.685×** (3.014 / 0.530 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 602). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.make_thinking_selector_state`
+  (`make-thinking-selector-state` vs constructor filter + select current).
+  Observed `tms_high` / `tms_off` / `tms_miss` / `tms_empty` / `tms_default`
+  exact. n=5 **0.638×** (1.623 / 2.545 µs) on host `cursor`, ceiling 8.0.
+  cadr leads. Measure-only leftover (Pair 603). `nextPairNum` left
+  unchanged. Also restores dropped leftover collect wiring for thinking.lisp
+  slugs 532–534.
+
 - Goal 20 leftover: pair `cli_selectors.model_selector_key_p`
   (`model-selector-key-p` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs
