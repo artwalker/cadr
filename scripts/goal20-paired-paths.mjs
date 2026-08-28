@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.model_selector_rebuild_search_text_table": 50,
+	"cli_selectors.model_selector_filter_search_text": 50,
+	"cli_selectors.model_selector_finish_refresh": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,169 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function encodeModelSelectorSearchTextTable(allModels, scopedModels) {
+	const table = new Map();
+	const texts = [];
+	for (const item of allModels) {
+		const text = modelSelectorSearchText(item);
+		table.set(item, text);
+		texts.push(text);
+	}
+	for (const item of scopedModels) {
+		if (!table.has(item)) {
+			const text = modelSelectorSearchText(item);
+			table.set(item, text);
+			texts.push(text);
+		}
+	}
+	return `${table.size}|${texts.join(";")}`;
+}
+
+function runCliSelectorsModelSelectorRebuildSearchTextTable() {
+	const models = makeModelSelectorTestModels();
+	const extra = goal20ModelItem({ id: "grok", provider: "xai", name: "Grok" });
+	const scopedOnly = makeModelSelectorScopedTestModels();
+	return {
+		msrst_all: encodeModelSelectorSearchTextTable(models, []),
+		msrst_overlap: encodeModelSelectorSearchTextTable(models, [
+			models[0],
+			models[1],
+		]),
+		msrst_extra: encodeModelSelectorSearchTextTable(models, [extra]),
+		msrst_empty: encodeModelSelectorSearchTextTable([], []),
+		msrst_scoped_only: encodeModelSelectorSearchTextTable([], scopedOnly),
+	};
+}
+
+function encodeModelSelectorFilterSearchText(allModels, scopedModels, lookup) {
+	const table = new Map();
+	for (const item of allModels) {
+		table.set(item, modelSelectorSearchText(item));
+	}
+	for (const item of scopedModels) {
+		if (!table.has(item)) {
+			table.set(item, modelSelectorSearchText(item));
+		}
+	}
+	return table.get(lookup) ?? modelSelectorSearchText(lookup);
+}
+
+function runCliSelectorsModelSelectorFilterSearchText() {
+	const models = makeModelSelectorTestModels();
+	const extra = goal20ModelItem({ id: "grok", provider: "xai", name: "Grok" });
+	const miss = goal20ModelItem({ id: "mimo", provider: "xiaomi", name: "" });
+	return {
+		msfst_hit: encodeModelSelectorFilterSearchText(models, [], models[0]),
+		msfst_last: encodeModelSelectorFilterSearchText(
+			models,
+			[],
+			models[models.length - 1],
+		),
+		msfst_extra: encodeModelSelectorFilterSearchText(models, [extra], extra),
+		msfst_miss: encodeModelSelectorFilterSearchText(models, [], miss),
+		msfst_empty: encodeModelSelectorFilterSearchText([], [], miss),
+	};
+}
+
+function makeModelSelectorRefreshState(allModels) {
+	const current = allModels[0];
+	const sorted = sortModelSelectorTestModels(allModels, current);
+	return {
+		allModels: sorted,
+		scopedModels: [],
+		currentModel: current,
+		scope: "all",
+		query: "",
+		filterQuery: "",
+		filterScope: "all",
+		filteredModels: sorted,
+		selectedIndex: modelSelectorSelectCurrent(sorted, current),
+		refreshStatusMessage: undefined,
+		refreshStatusKind: "muted",
+		errorMessage: undefined,
+	};
+}
+
+function modelSelectorFinishRefreshPi(
+	state,
+	models,
+	{ statusMessage, statusKind, errorMessage } = {},
+) {
+	state.allModels = sortModelSelectorTestModels(models, state.currentModel);
+	state.refreshStatusMessage = statusMessage;
+	state.refreshStatusKind = statusKind ?? "muted";
+	state.errorMessage = errorMessage;
+	const lastQuery = state.filterQuery ?? "";
+	if (!(state.query === lastQuery && state.scope === state.filterScope)) {
+		const active =
+			state.scope === "scoped" ? state.scopedModels : state.allModels;
+		state.filteredModels = modelSelectorFilterActiveModels(
+			active,
+			state.query,
+		);
+		state.filterQuery = state.query;
+		state.filterScope = state.scope;
+	}
+	const idx = state.filteredModels.findIndex(
+		(item) =>
+			item.id === state.currentModel.id &&
+			item.provider === state.currentModel.provider,
+	);
+	let selected = idx >= 0 ? idx : 0;
+	const count = state.filteredModels.length;
+	if (count === 0) selected = 0;
+	else selected = Math.min(selected, count - 1);
+	state.selectedIndex = selected;
+}
+
+function encodeModelSelectorFinishRefresh(state) {
+	const ids = state.filteredModels.map((item) => qualifiedModelId(item)).join(",");
+	return `${ids}|${state.selectedIndex}|${state.refreshStatusMessage ?? ""}|${state.errorMessage ?? ""}|${state.refreshStatusKind ?? "muted"}`;
+}
+
+function encodeModelSelectorFinishRefreshCase(
+	models,
+	{ refreshModels, status, error, kind, query } = {},
+) {
+	const state = makeModelSelectorRefreshState(models);
+	if (query) {
+		state.query = query;
+		state.filteredModels = modelSelectorFilterActiveModels(
+			state.allModels,
+			query,
+		);
+		state.filterQuery = query;
+		state.filterScope = state.scope;
+		state.selectedIndex = 0;
+	}
+	modelSelectorFinishRefreshPi(state, refreshModels ?? models, {
+		statusMessage: status,
+		statusKind: kind,
+		errorMessage: error,
+	});
+	return encodeModelSelectorFinishRefresh(state);
+}
+
+function runCliSelectorsModelSelectorFinishRefresh() {
+	const models = makeModelSelectorTestModels();
+	return {
+		msfr_ok: encodeModelSelectorFinishRefreshCase(models, { status: "ok" }),
+		msfr_err: encodeModelSelectorFinishRefreshCase(models, { error: "fail" }),
+		msfr_kind: encodeModelSelectorFinishRefreshCase(models, {
+			status: "note",
+			kind: "accent",
+		}),
+		msfr_rev: encodeModelSelectorFinishRefreshCase(models, {
+			refreshModels: [...models].reverse(),
+			status: "rev",
+		}),
+		msfr_query: encodeModelSelectorFinishRefreshCase(models, {
+			query: "gpt",
+			status: "done",
+		}),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +15063,12 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const modelSelectorRebuildSearchTextTableResults =
+		runCliSelectorsModelSelectorRebuildSearchTextTable();
+	const modelSelectorFilterSearchTextResults =
+		runCliSelectorsModelSelectorFilterSearchText();
+	const modelSelectorFinishRefreshResults =
+		runCliSelectorsModelSelectorFinishRefresh();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15374,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...modelSelectorRebuildSearchTextTableResults,
+		...modelSelectorFilterSearchTextResults,
+		...modelSelectorFinishRefreshResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15659,6 +15834,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		model_selector_rebuild_search_text_table: await collect(
+			"cli_selectors.model_selector_rebuild_search_text_table",
+			() => {
+				return () => runCliSelectorsModelSelectorRebuildSearchTextTable();
+			},
+		),
+		model_selector_filter_search_text: await collect(
+			"cli_selectors.model_selector_filter_search_text",
+			() => {
+				return () => runCliSelectorsModelSelectorFilterSearchText();
+			},
+		),
+		model_selector_finish_refresh: await collect(
+			"cli_selectors.model_selector_finish_refresh",
+			() => {
+				return () => runCliSelectorsModelSelectorFinishRefresh();
 			},
 		),
 		observed,
@@ -17393,6 +17586,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.model_selector_rebuild_search_text_table":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts search-text table rebuild",
+			"cli_selectors.model_selector_filter_search_text":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts search-text table lookup",
+			"cli_selectors.model_selector_finish_refresh":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts catalog refresh completion",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",

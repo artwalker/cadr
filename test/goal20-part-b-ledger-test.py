@@ -2106,6 +2106,42 @@ class TestPairedPathRecord(unittest.TestCase):
             "cli_selectors.scoped_models_selector_provider_count",
             paired.RATIO_CEILINGS,
         )
+        self.assertIn(
+            "cli_selectors.model_selector_rebuild_search_text_table",
+            RECORD.METRIC_KEYS,
+        )
+        self.assertIn(
+            "model_selector_rebuild_search_text_table",
+            paired.METRICS["cli_selectors"],
+        )
+        self.assertIn(
+            "cli_selectors.model_selector_rebuild_search_text_table",
+            paired.RATIO_CEILINGS,
+        )
+        self.assertIn(
+            "cli_selectors.model_selector_filter_search_text",
+            RECORD.METRIC_KEYS,
+        )
+        self.assertIn(
+            "model_selector_filter_search_text",
+            paired.METRICS["cli_selectors"],
+        )
+        self.assertIn(
+            "cli_selectors.model_selector_filter_search_text",
+            paired.RATIO_CEILINGS,
+        )
+        self.assertIn(
+            "cli_selectors.model_selector_finish_refresh",
+            RECORD.METRIC_KEYS,
+        )
+        self.assertIn(
+            "model_selector_finish_refresh",
+            paired.METRICS["cli_selectors"],
+        )
+        self.assertIn(
+            "cli_selectors.model_selector_finish_refresh",
+            paired.RATIO_CEILINGS,
+        )
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])
