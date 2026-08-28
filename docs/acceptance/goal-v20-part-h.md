@@ -4068,9 +4068,11 @@ commit no optimize.
 Leftover of the `agent_tool_loop` hole on `tools/bash.lisp` after the
 `bash_tool` strip/append/notice trio. Timed work is `:repl` / `:tui` /
 otherwise stream routing — not execute, not spawn. Observed `lo_repl` /
-`lo_tui` / `lo_print` / `lo_rpc` are exact. First n=5 freeze pending on
-host `cursor`, ceiling 8.0. Gate uses `--only-enforce`. Same commit no
-optimize.
+`lo_tui` / `lo_print` / `lo_rpc` are exact. First n=5 freeze **0.479×**
+(0.105 / 0.218 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
+fail). Same commit no optimize.
 
 ### Pair 509 — `bash_tool` (strip_status)
 
@@ -4081,8 +4083,10 @@ optimize.
 Leftover sibling of Pair 508 on the same hole. Timed work is exact /
 suffix / whitespace-trim strip — not `append-bash-status`, not execute.
 Observed `ss_exact` / `ss_nl` / `ss_plain` / `ss_trim` are exact. First
-n=5 freeze pending on host `cursor`, ceiling 8.0. Gate uses
-`--only-enforce`. Same commit no optimize.
+n=5 freeze **0.773×** (0.417 / 0.540 µs) on host `cursor`, ceiling 8.0.
+cadr leads. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this
+metric did not fail). Same commit no optimize.
 
 ### Pair 510 — `bash_tool` (strip_truncation)
 
@@ -4093,9 +4097,11 @@ n=5 freeze pending on host `cursor`, ceiling 8.0. Gate uses
 Leftover sibling of Pairs 508–509 on the same hole. Timed work is
 from-end `\n\n[` plus `Full output: ` strip — not truncation-notice
 construction, not execute. Observed `st_none` / `st_footer` /
-`st_no_full` / `st_plain` are exact. First n=5 freeze pending on host
-`cursor`, ceiling 8.0. Gate uses `--only-enforce`. Same commit no
-optimize.
+`st_no_full` / `st_plain` are exact. First n=5 freeze **5.885×** (2.331 /
+0.396 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
+fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

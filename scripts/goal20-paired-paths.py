@@ -314,10 +314,20 @@ RATIO_CEILINGS = {
     "bash_tool.strip_exit_footer": 8.0,
     "bash_tool.append_status": 8.0,
     "bash_tool.truncation_notice": 8.0,
-    # bash_tool leftover trio on tools/bash.lisp (508-510).
-    # First leftover freeze pending; 8.0 is first-freeze headroom.
+    # Frozen from the first Friend-MachineD leftover
+    # bash_tool.live_output pair (samples=5): observed
+    # 0.479x (0.105 / 0.218 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "bash_tool.live_output": 8.0,
+    # Frozen from the first Friend-MachineD leftover
+    # bash_tool.strip_status pair (samples=5): observed
+    # 0.773x (0.417 / 0.540 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "bash_tool.strip_status": 8.0,
+    # Frozen from the first Friend-MachineD leftover
+    # bash_tool.strip_truncation pair (samples=5): observed
+    # 5.885x (2.331 / 0.396 us). pi leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "bash_tool.strip_truncation": 8.0,
     "output_accumulator.append": 8.0,
     "output_accumulator.snapshot": 8.0,
