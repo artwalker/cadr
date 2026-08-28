@@ -19179,6 +19179,73 @@
    "ag_h" (nth 0 height)))
 
 
+(defun models-leftover-observed-pairs (badge copy moved)
+  (list
+   "mspb_openai" (nth 0 badge)
+   "mspb_anthropic" (nth 1 badge)
+   "mspb_codex" (nth 2 badge)
+   "mspb_google" (nth 3 badge)
+   "mspb_openrouter" (nth 4 badge)
+   "mspb_hit" (nth 5 badge)
+   "smce_all" (nth 0 copy)
+   "smce_two" (nth 1 copy)
+   "smce_empty" (nth 2 copy)
+   "smce_one" (nth 3 copy)
+   "smce_three" (nth 4 copy)
+   "smce_unavail" (nth 5 copy)
+   "mli_swap" (nth 0 moved)
+   "mli_ends" (nth 1 moved)
+   "mli_neg" (nth 2 moved)
+   "mli_over" (nth 3 moved)
+   "mli_same" (nth 4 moved)
+   "mli_empty" (nth 5 moved)))
+
+
+(defun encode-moved-list-item (items)
+  (format nil "~{~a~^,~}" items))
+
+
+(defun run-cli-selectors-model-selector-provider-badge ()
+  (list
+   (cadr-cli::model-selector-provider-badge :openai)
+   (cadr-cli::model-selector-provider-badge :anthropic)
+   (cadr-cli::model-selector-provider-badge :openai-codex)
+   (cadr-cli::model-selector-provider-badge :google)
+   (cadr-cli::model-selector-provider-badge :openrouter)
+   (cadr-cli::model-selector-provider-badge :openai)))
+
+
+(defun run-cli-selectors-scoped-models-copy-enabled ()
+  (mapcar
+   (lambda (enabled)
+     (encode-scoped-models-enabled-ids
+      (cadr-cli::scoped-models-copy-enabled enabled)))
+   (list
+    :all
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4")
+    '()
+    '("google/gemini-2.5-pro")
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4" "google/gemini-2.5-pro")
+    '("stale/missing" "openai/gpt-4o"))))
+
+
+(defun run-cli-selectors-move-list-item ()
+  (let ((items '("a" "b" "c" "d")))
+    (list
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 1 2))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 0 3))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 1 -1))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 1 4))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item items 2 2))
+     (encode-moved-list-item
+      (cadr-cli::move-list-item '() 0 1)))))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id

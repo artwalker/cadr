@@ -6964,6 +6964,49 @@ Leftover sibling of Pairs 556–557. Function UI vs missing UI — not
 did not fail). Booked over-1×. Same commit no optimize. `nextPairNum`
 left at 328.
 
+### Pair 559 — `cli_selectors` (model_selector_provider_badge)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_provider_badge` | `model-selector-provider-badge` (`src/cadr-cli/interactive/selectors/models.lisp`) | `` [`${item.provider}`] `` (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover trio on unused helpers in `models.lisp` (inventory `needs-pair`).
+Timed work is the `[provider]` badge string — not selector render, not
+keybindings. Observed `mspb_openai` / `mspb_anthropic` / `mspb_codex` /
+`mspb_google` / `mspb_openrouter` / `mspb_hit` are exact. First n=5
+freeze **0.307×** (0.126 / 0.411 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric
+did not fail). Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 560 — `cli_selectors` (scoped_models_copy_enabled)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_copy_enabled` | `scoped-models-copy-enabled` (`src/cadr-cli/interactive/selectors/models.lisp`) | `enabledModelIds === null ? null : [...enabledModelIds]` (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 559. Timed work is `:all`/list copy — not
+persist, not reorder. Observed `smce_all` / `smce_two` / `smce_empty` /
+`smce_one` / `smce_three` / `smce_unavail` are exact. First n=5 freeze
+**1.960×** (1.074 / 0.548 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes; this metric
+did not fail). Booked over-1×. Same commit no optimize. `nextPairNum`
+left at 328.
+
+### Pair 561 — `cli_selectors` (move_list_item)
+
+| metric | cadr | pi |
+|---|---|---|
+| `move_list_item` | `move-list-item` (`src/cadr-cli/interactive/selectors/models.lisp`) | `move()` index swap (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pairs 559–560. Timed work is copy-and-swap by
+index — not `scoped-models-selector-reorder`. Observed `mli_swap` /
+`mli_ends` / `mli_neg` / `mli_over` / `mli_same` / `mli_empty` are exact.
+First n=5 freeze **1.357×** (1.317 / 0.971 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes; this metric did not fail). Booked over-1×. Same commit no
+optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

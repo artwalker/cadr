@@ -418,6 +418,9 @@ const REPETITIONS = {
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
+	"cli_selectors.model_selector_provider_badge": 50,
+	"cli_selectors.scoped_models_copy_enabled": 50,
+	"cli_selectors.move_list_item": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -19954,6 +19957,85 @@ function runCliSelectorsCountdownRender() {
 		cdr_sym: countdownRenderCount("sym", 1),
 		cdr_zero: countdownRenderCount("fn", 0),
 		cdr_fn3: countdownRenderCount("fn", 3),
+	};
+}
+
+
+function modelSelectorProviderBadge(provider) {
+	return `[${String(provider).toLowerCase()}]`;
+}
+
+
+function runCliSelectorsModelSelectorProviderBadge() {
+	return {
+		mspb_openai: modelSelectorProviderBadge("openai"),
+		mspb_anthropic: modelSelectorProviderBadge("anthropic"),
+		mspb_codex: modelSelectorProviderBadge("openai-codex"),
+		mspb_google: modelSelectorProviderBadge("google"),
+		mspb_openrouter: modelSelectorProviderBadge("openrouter"),
+		mspb_hit: modelSelectorProviderBadge("openai"),
+	};
+}
+
+
+function scopedModelsCopyEnabled(enabledIds) {
+	return enabledIds === null ? null : [...enabledIds];
+}
+
+
+function encodeScopedModelsCopyEnabled(enabledIds) {
+	const copied = scopedModelsCopyEnabled(enabledIds);
+	if (copied === null) return "all";
+	return copied.join(",");
+}
+
+
+function runCliSelectorsScopedModelsCopyEnabled() {
+	return {
+		smce_all: encodeScopedModelsCopyEnabled(null),
+		smce_two: encodeScopedModelsCopyEnabled([
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+		smce_empty: encodeScopedModelsCopyEnabled([]),
+		smce_one: encodeScopedModelsCopyEnabled(["google/gemini-2.5-pro"]),
+		smce_three: encodeScopedModelsCopyEnabled([
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+			"google/gemini-2.5-pro",
+		]),
+		smce_unavail: encodeScopedModelsCopyEnabled([
+			"stale/missing",
+			"openai/gpt-4o",
+		]),
+	};
+}
+
+
+function moveListItem(items, index, newIndex) {
+	if (newIndex < 0 || newIndex >= items.length) return items.slice();
+	const result = items.slice();
+	const swapped = result[index];
+	result[index] = result[newIndex];
+	result[newIndex] = swapped;
+	return result;
+}
+
+
+function encodeMovedListItem(items) {
+	return items.join(",");
+}
+
+
+function runCliSelectorsMoveListItem() {
+	const items = ["a", "b", "c", "d"];
+	return {
+		mli_swap: encodeMovedListItem(moveListItem(items, 1, 2)),
+		mli_ends: encodeMovedListItem(moveListItem(items, 0, 3)),
+		mli_neg: encodeMovedListItem(moveListItem(items, 1, -1)),
+		mli_over: encodeMovedListItem(moveListItem(items, 1, 4)),
+		mli_same: encodeMovedListItem(moveListItem(items, 2, 2)),
+		mli_empty: encodeMovedListItem(moveListItem([], 0, 1)),
 	};
 }
 
