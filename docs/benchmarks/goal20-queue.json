@@ -4549,6 +4549,51 @@
    "piUs": 25.989,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 595,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.scoped_models_selector_finish_refresh",
+   "branch": "cursor/finish-refresh-key-binding-leftovers-595-597-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 595",
+   "ratio": 3.243,
+   "cadrUs": 68.31,
+   "piUs": 21.063,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 596,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.scoped_models_selector_key_p",
+   "branch": "cursor/finish-refresh-key-binding-leftovers-595-597-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 596",
+   "ratio": 18.835,
+   "cadrUs": 22.914,
+   "piUs": 1.217,
+   "ceiling": 30.0,
+   "rc": 2
+  },
+  {
+   "pair": 597,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/selectors/models.lisp",
+   "measure": "measure-cli-selectors-session-search",
+   "metric": "cli_selectors.scoped_models_binding_label",
+   "branch": "cursor/finish-refresh-key-binding-leftovers-595-597-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 597",
+   "ratio": 16.362,
+   "cadrUs": 5.542,
+   "piUs": 0.339,
+   "ceiling": 25.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

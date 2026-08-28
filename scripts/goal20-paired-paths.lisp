@@ -705,6 +705,44 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.model_selector_provider_badge" . 50)
+    ("cli_selectors.scoped_models_copy_enabled" . 50)
+    ("cli_selectors.move_list_item" . 50)
+    ("cli_selectors.session_scoped_models" . 50)
+    ("cli_selectors.scoped_model_id_enabled_p" . 50)
+    ("cli_selectors.scoped_models_toggle_id" . 50)
+    ("cli_selectors.all_known_model_ids_enabled_p" . 50)
+    ("cli_selectors.scoped_models_enable_ids" . 50)
+    ("cli_selectors.scoped_models_clear_ids" . 50)
+    ("cli_selectors.scoped_models_enabled_set" . 50)
+    ("cli_selectors.model_equal_p" . 50)
+    ("cli_selectors.scoped_model_selector_search_text" . 50)
+    ("cli_selectors.model_selector_active_models" . 50)
+    ("cli_selectors.model_selector_clamp_selected" . 50)
+    ("cli_selectors.model_selector_select_current" . 50)
+    ("cli_selectors.sort_model_selector_models" . 50)
+    ("cli_selectors.model_selector_visible_models" . 50)
+    ("cli_selectors.model_selector_visible_slice" . 50)
+    ("cli_selectors.model_selector_rebuild_search_text_table" . 50)
+    ("cli_selectors.model_selector_filter_search_text" . 50)
+    ("cli_selectors.model_selector_finish_refresh" . 50)
+    ("cli_selectors.scoped_models_selector_rebuild_models_by_id" . 50)
+    ("cli_selectors.scoped_models_model_by_id" . 50)
+    ("cli_selectors.scoped_model_item_search_text" . 50)
+    ("cli_selectors.scoped_models_selector_items" . 50)
+    ("cli_selectors.scoped_models_selector_cancel" . 50)
+    ("cli_selectors.scoped_models_selector_selected_item" . 50)
+    ("cli_selectors.scoped_models_selector_select_id" . 50)
+    ("cli_selectors.scoped_models_selector_notify_change" . 50)
+    ("cli_selectors.scoped_models_selector_rebuild_items" . 50)
+    ("cli_selectors.scoped_models_selector_apply_filter" . 50)
+    ("cli_selectors.scoped_models_selector_visible_items" . 50)
+    ("cli_selectors.scoped_models_selector_refresh_items" . 50)
+    ("cli_selectors.scoped_models_selector_clamp_selected" . 50)
+    ("cli_selectors.scoped_models_selector_mark_changed" . 50)
+    ("cli_selectors.scoped_models_selector_finish_refresh" . 50)
+    ("cli_selectors.scoped_models_selector_key_p" . 50)
+    ("cli_selectors.scoped_models_binding_label" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -20488,6 +20526,172 @@
    "smmc_filter" (nth 4 mark-changed)))
 
 
+(defparameter *goal20-scoped-models-custom-keybindings*
+  (cadr-cli::make-models-selector-keybindings
+   '(("app.models.save" . "ctrl+k"))))
+
+
+(defun encode-scoped-models-selector-finish-refresh
+    (models enabled-ids selected query
+     &key refresh-models new-enabled status kind)
+  (let ((state
+          (make-scoped-models-filter-bench-state
+           models enabled-ids :query query)))
+    (setf
+     (cadr-cli::scoped-models-selector-state-selected state)
+     selected)
+    (cadr-cli::scoped-models-selector-clamp-selected state)
+    (if (eq new-enabled :omit)
+        (cadr-cli::scoped-models-selector-finish-refresh
+         state
+         (or refresh-models models)
+         :status-message status
+         :status-kind kind)
+        (cadr-cli::scoped-models-selector-finish-refresh
+         state
+         (or refresh-models models)
+         :enabled-ids new-enabled
+         :status-message status
+         :status-kind kind))
+    (format
+     nil
+     "~A|~D|~A|~A|~A"
+     (encode-scoped-model-item-ids
+      (cadr-cli::scoped-models-selector-visible-items state))
+     (cadr-cli::scoped-models-selector-state-selected state)
+     (or
+      (cadr-cli::scoped-models-selector-state-refresh-status-message
+       state)
+      "")
+     (string-downcase
+      (symbol-name
+       (or
+        (cadr-cli::scoped-models-selector-state-refresh-status-kind
+         state)
+        :muted)))
+     (encode-scoped-models-enabled
+      (cadr-cli::scoped-models-selector-state-enabled-ids state)))))
+
+
+(defun run-cli-selectors-scoped-models-selector-finish-refresh ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-finish-refresh
+      models :all 0 ""
+      :new-enabled :omit
+      :status "ok"
+      :kind :muted)
+     (encode-scoped-models-selector-finish-refresh
+      models :all 0 ""
+      :new-enabled :omit
+      :status "done"
+      :kind :success)
+     (encode-scoped-models-selector-finish-refresh
+      models :all 99 ""
+      :refresh-models (reverse models)
+      :new-enabled :omit
+      :status "rev"
+      :kind :muted)
+     (encode-scoped-models-selector-finish-refresh
+      models :all 0 ""
+      :new-enabled partial
+      :status "ids"
+      :kind :warning)
+     (encode-scoped-models-selector-finish-refresh
+      models :all 0 "gpt"
+      :new-enabled :omit
+      :status "filter"
+      :kind :muted))))
+
+
+(defun make-scoped-models-key-bench-state
+    (models enabled-ids &key (query "") keybindings)
+  (cadr-cli::%make-scoped-models-selector-state
+   :all-models (copy-list models)
+   :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+   :enabled-ids
+   (cadr-cli::scoped-models-copy-enabled enabled-ids)
+   :query (or query "")
+   :keybindings
+   (or keybindings
+       cadr-cli::*default-models-selector-keybindings*)))
+
+
+(defun scoped-models-selector-key-data (state key-name)
+  (first
+   (cadr-tui:keybinding-keys
+    (cadr-cli::scoped-models-selector-state-keybindings state)
+    key-name)))
+
+
+(defun scoped-models-selector-key-p-encoded (state data name)
+  (if (cadr-cli::scoped-models-selector-key-p state data name)
+      "true"
+      "false"))
+
+
+(defun run-cli-selectors-scoped-models-selector-key-p ()
+  (let ((state
+          (make-scoped-models-key-bench-state
+           (make-scoped-models-test-models) :all))
+        (ctrl-s (string (code-char 19)))
+        (arrow-up (format nil "~C[A" #\Escape)))
+    (list
+     (scoped-models-selector-key-p-encoded
+      state ctrl-s "app.models.save")
+     (scoped-models-selector-key-p-encoded
+      state ctrl-s "app.models.enableAll")
+     (scoped-models-selector-key-p-encoded
+      state arrow-up "tui.select.up")
+     (scoped-models-selector-key-p-encoded
+      state (csi-modified-arrow 1 #\A) "tui.select.up")
+     (scoped-models-selector-key-p-encoded
+      state "x" "app.models.save"))))
+
+
+(defun run-cli-selectors-scoped-models-binding-label ()
+  (let ((default
+          (make-scoped-models-key-bench-state
+           (make-scoped-models-test-models) :all))
+        (custom
+          (make-scoped-models-key-bench-state
+           (make-scoped-models-test-models)
+           :all
+           :keybindings *goal20-scoped-models-custom-keybindings*)))
+    (list
+     (cadr-cli::scoped-models-binding-label
+      default "app.models.save")
+     (cadr-cli::scoped-models-binding-label
+      default "app.models.enableAll")
+     (cadr-cli::scoped-models-binding-label
+      default "tui.select.confirm")
+     (cadr-cli::scoped-models-binding-label
+      default "app.models.not-a-binding")
+     (cadr-cli::scoped-models-binding-label
+      custom "app.models.save"))))
+
+
+(defun scoped-models-finish-key-binding-observed-pairs
+    (finish-refresh key-p binding-label)
+  (list
+   "smfrf_ok" (nth 0 finish-refresh)
+   "smfrf_success" (nth 1 finish-refresh)
+   "smfrf_rev" (nth 2 finish-refresh)
+   "smfrf_enabled" (nth 3 finish-refresh)
+   "smfrf_filter" (nth 4 finish-refresh)
+   "smskp_save_hit" (nth 0 key-p)
+   "smskp_save_miss" (nth 1 key-p)
+   "smskp_up_hit" (nth 2 key-p)
+   "smskp_csi_up" (nth 3 key-p)
+   "smskp_garbage" (nth 4 key-p)
+   "smbl_save" (nth 0 binding-label)
+   "smbl_enable" (nth 1 binding-label)
+   "smbl_confirm" (nth 2 binding-label)
+   "smbl_fallback" (nth 3 binding-label)
+   "smbl_custom" (nth 4 binding-label)))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
@@ -20814,6 +21018,82 @@
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
           (run-cli-selectors-scoped-models-selector-provider-count))
+        (leftover-badge
+          (run-cli-selectors-model-selector-provider-badge))
+        (leftover-copy
+          (run-cli-selectors-scoped-models-copy-enabled))
+        (leftover-moved
+          (run-cli-selectors-move-list-item))
+        (leftover-session-scoped
+          (run-cli-selectors-session-scoped-models))
+        (leftover-enabled-p
+          (run-cli-selectors-scoped-model-id-enabled-p))
+        (leftover-toggle
+          (run-cli-selectors-scoped-models-toggle-id))
+        (leftover-all-known
+          (run-cli-selectors-all-known-model-ids-enabled-p))
+        (leftover-enable-ids
+          (run-cli-selectors-scoped-models-enable-ids))
+        (leftover-clear-ids
+          (run-cli-selectors-scoped-models-clear-ids))
+        (leftover-enabled-set
+          (run-cli-selectors-scoped-models-enabled-set))
+        (leftover-model-equal
+          (run-cli-selectors-model-equal-p))
+        (leftover-search-text
+          (run-cli-selectors-scoped-model-selector-search-text))
+        (leftover-active
+          (run-cli-selectors-model-selector-active-models))
+        (leftover-ms-clamp
+          (run-cli-selectors-model-selector-clamp-selected))
+        (leftover-select-current
+          (run-cli-selectors-model-selector-select-current))
+        (leftover-sort
+          (run-cli-selectors-sort-model-selector-models))
+        (leftover-visible-models
+          (run-cli-selectors-model-selector-visible-models))
+        (leftover-visible-slice
+          (run-cli-selectors-model-selector-visible-slice))
+        (leftover-rebuild-search
+          (run-cli-selectors-model-selector-rebuild-search-text-table))
+        (leftover-filter-search
+          (run-cli-selectors-model-selector-filter-search-text))
+        (leftover-ms-finish
+          (run-cli-selectors-model-selector-finish-refresh))
+        (leftover-rebuild-by-id
+          (run-cli-selectors-scoped-models-selector-rebuild-models-by-id))
+        (leftover-model-by-id
+          (run-cli-selectors-scoped-models-model-by-id))
+        (leftover-item-search
+          (run-cli-selectors-scoped-model-item-search-text))
+        (leftover-items
+          (run-cli-selectors-scoped-models-selector-items))
+        (leftover-cancel
+          (run-cli-selectors-scoped-models-selector-cancel))
+        (leftover-selected-item
+          (run-cli-selectors-scoped-models-selector-selected-item))
+        (leftover-select-id
+          (run-cli-selectors-scoped-models-selector-select-id))
+        (leftover-notify
+          (run-cli-selectors-scoped-models-selector-notify-change))
+        (leftover-rebuild-items
+          (run-cli-selectors-scoped-models-selector-rebuild-items))
+        (leftover-apply-filter
+          (run-cli-selectors-scoped-models-selector-apply-filter))
+        (leftover-visible-items
+          (run-cli-selectors-scoped-models-selector-visible-items))
+        (leftover-refresh-items
+          (run-cli-selectors-scoped-models-selector-refresh-items))
+        (leftover-sm-clamp
+          (run-cli-selectors-scoped-models-selector-clamp-selected))
+        (leftover-mark-changed
+          (run-cli-selectors-scoped-models-selector-mark-changed))
+        (leftover-finish-refresh
+          (run-cli-selectors-scoped-models-selector-finish-refresh))
+        (leftover-key-p
+          (run-cli-selectors-scoped-models-selector-key-p))
+        (leftover-binding-label
+          (run-cli-selectors-scoped-models-binding-label))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -21553,6 +21833,32 @@
               scoped-models-selector-reorder
               scoped-models-selector-persist
               provider-count-obs)
+             (models-leftover-observed-pairs
+              leftover-badge leftover-copy leftover-moved)
+             (session-scoped-leftover-observed-pairs
+              leftover-session-scoped leftover-enabled-p leftover-toggle)
+             (scoped-enable-leftover-observed-pairs
+              leftover-all-known leftover-enable-ids leftover-clear-ids)
+             (scoped-set-leftover-observed-pairs
+              leftover-enabled-set leftover-model-equal leftover-search-text)
+             (model-selector-active-clamp-observed-pairs
+              leftover-active leftover-ms-clamp leftover-select-current)
+             (sort-slice-observed-pairs
+              leftover-sort leftover-visible-models leftover-visible-slice)
+             (refresh-search-observed-pairs
+              leftover-rebuild-search leftover-filter-search leftover-ms-finish)
+             (models-by-id-observed-pairs
+              leftover-rebuild-by-id leftover-model-by-id leftover-item-search)
+             (scoped-models-copy-items-cancel-observed-pairs
+              leftover-copy leftover-items leftover-cancel)
+             (scoped-models-selected-notify-observed-pairs
+              leftover-selected-item leftover-select-id leftover-notify)
+             (scoped-models-rebuild-filter-visible-observed-pairs
+              leftover-rebuild-items leftover-apply-filter leftover-visible-items)
+             (scoped-models-refresh-clamp-mark-observed-pairs
+              leftover-refresh-items leftover-sm-clamp leftover-mark-changed)
+             (scoped-models-finish-key-binding-observed-pairs
+              leftover-finish-refresh leftover-key-p leftover-binding-label)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -22219,7 +22525,197 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "model_selector_provider_badge"
+     (collect "cli_selectors.model_selector_provider_badge"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-provider-badge))))
+     "scoped_models_copy_enabled"
+     (collect "cli_selectors.scoped_models_copy_enabled"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-copy-enabled))))
+     "move_list_item"
+     (collect "cli_selectors.move_list_item"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-move-list-item))))
+     "session_scoped_models"
+     (collect "cli_selectors.session_scoped_models"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-session-scoped-models))))
+     "scoped_model_id_enabled_p"
+     (collect "cli_selectors.scoped_model_id_enabled_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-model-id-enabled-p))))
+     "scoped_models_toggle_id"
+     (collect "cli_selectors.scoped_models_toggle_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-toggle-id))))
+     "all_known_model_ids_enabled_p"
+     (collect "cli_selectors.all_known_model_ids_enabled_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-all-known-model-ids-enabled-p))))
+     "scoped_models_enable_ids"
+     (collect "cli_selectors.scoped_models_enable_ids"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-enable-ids))))
+     "scoped_models_clear_ids"
+     (collect "cli_selectors.scoped_models_clear_ids"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-clear-ids))))
+     "scoped_models_enabled_set"
+     (collect "cli_selectors.scoped_models_enabled_set"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-enabled-set))))
+     "model_equal_p"
+     (collect "cli_selectors.model_equal_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-equal-p))))
+     "scoped_model_selector_search_text"
+     (collect "cli_selectors.scoped_model_selector_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-model-selector-search-text))))
+     "model_selector_active_models"
+     (collect "cli_selectors.model_selector_active_models"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-active-models))))
+     "model_selector_clamp_selected"
+     (collect "cli_selectors.model_selector_clamp_selected"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-clamp-selected))))
+     "model_selector_select_current"
+     (collect "cli_selectors.model_selector_select_current"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-select-current))))
+     "sort_model_selector_models"
+     (collect "cli_selectors.sort_model_selector_models"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-sort-model-selector-models))))
+     "model_selector_visible_models"
+     (collect "cli_selectors.model_selector_visible_models"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-visible-models))))
+     "model_selector_visible_slice"
+     (collect "cli_selectors.model_selector_visible_slice"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-visible-slice))))
+     "model_selector_rebuild_search_text_table"
+     (collect "cli_selectors.model_selector_rebuild_search_text_table"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-rebuild-search-text-table))))
+     "model_selector_filter_search_text"
+     (collect "cli_selectors.model_selector_filter_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-filter-search-text))))
+     "model_selector_finish_refresh"
+     (collect "cli_selectors.model_selector_finish_refresh"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-finish-refresh))))
+     "scoped_models_selector_rebuild_models_by_id"
+     (collect "cli_selectors.scoped_models_selector_rebuild_models_by_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-rebuild-models-by-id))))
+     "scoped_models_model_by_id"
+     (collect "cli_selectors.scoped_models_model_by_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-model-by-id))))
+     "scoped_model_item_search_text"
+     (collect "cli_selectors.scoped_model_item_search_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-model-item-search-text))))
+     "scoped_models_selector_items"
+     (collect "cli_selectors.scoped_models_selector_items"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-items))))
+     "scoped_models_selector_cancel"
+     (collect "cli_selectors.scoped_models_selector_cancel"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-cancel))))
+     "scoped_models_selector_selected_item"
+     (collect "cli_selectors.scoped_models_selector_selected_item"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-selected-item))))
+     "scoped_models_selector_select_id"
+     (collect "cli_selectors.scoped_models_selector_select_id"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-select-id))))
+     "scoped_models_selector_notify_change"
+     (collect "cli_selectors.scoped_models_selector_notify_change"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-notify-change))))
+     "scoped_models_selector_rebuild_items"
+     (collect "cli_selectors.scoped_models_selector_rebuild_items"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-rebuild-items))))
+     "scoped_models_selector_apply_filter"
+     (collect "cli_selectors.scoped_models_selector_apply_filter"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-apply-filter))))
+     "scoped_models_selector_visible_items"
+     (collect "cli_selectors.scoped_models_selector_visible_items"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-visible-items))))
+     "scoped_models_selector_refresh_items"
+     (collect "cli_selectors.scoped_models_selector_refresh_items"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-refresh-items))))
+     "scoped_models_selector_clamp_selected"
+     (collect "cli_selectors.scoped_models_selector_clamp_selected"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-clamp-selected))))
+     "scoped_models_selector_mark_changed"
+     (collect "cli_selectors.scoped_models_selector_mark_changed"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-mark-changed))))
+     "scoped_models_selector_finish_refresh"
+     (collect "cli_selectors.scoped_models_selector_finish_refresh"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-finish-refresh))))
+     "scoped_models_selector_key_p"
+     (collect "cli_selectors.scoped_models_selector_key_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-selector-key-p))))
+     "scoped_models_binding_label"
+     (collect "cli_selectors.scoped_models_binding_label"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-scoped-models-binding-label)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -24789,6 +25285,82 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.model_selector_provider_badge"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-provider-badge"
+      "cli_selectors.scoped_models_copy_enabled"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-copy-enabled"
+      "cli_selectors.move_list_item"
+      "src/cadr-cli/interactive/selectors/models.lisp move-list-item"
+      "cli_selectors.session_scoped_models"
+      "src/cadr-cli/interactive/selectors/models.lisp session-scoped-models"
+      "cli_selectors.scoped_model_id_enabled_p"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-model-id-enabled-p"
+      "cli_selectors.scoped_models_toggle_id"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-toggle-id"
+      "cli_selectors.all_known_model_ids_enabled_p"
+      "src/cadr-cli/interactive/selectors/models.lisp all-known-model-ids-enabled-p"
+      "cli_selectors.scoped_models_enable_ids"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-enable-ids"
+      "cli_selectors.scoped_models_clear_ids"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-clear-ids"
+      "cli_selectors.scoped_models_enabled_set"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-enabled-set"
+      "cli_selectors.model_equal_p"
+      "src/cadr-cli/interactive/selectors/models.lisp model-equal-p"
+      "cli_selectors.scoped_model_selector_search_text"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-model-selector-search-text"
+      "cli_selectors.model_selector_active_models"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-active-models"
+      "cli_selectors.model_selector_clamp_selected"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-clamp-selected"
+      "cli_selectors.model_selector_select_current"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-select-current"
+      "cli_selectors.sort_model_selector_models"
+      "src/cadr-cli/interactive/selectors/models.lisp sort-model-selector-models"
+      "cli_selectors.model_selector_visible_models"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-visible-models"
+      "cli_selectors.model_selector_visible_slice"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-visible-slice"
+      "cli_selectors.model_selector_rebuild_search_text_table"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-rebuild-search-text-table"
+      "cli_selectors.model_selector_filter_search_text"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-filter-search-text"
+      "cli_selectors.model_selector_finish_refresh"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-finish-refresh"
+      "cli_selectors.scoped_models_selector_rebuild_models_by_id"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-rebuild-models-by-id"
+      "cli_selectors.scoped_models_model_by_id"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-model-by-id"
+      "cli_selectors.scoped_model_item_search_text"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-model-item-search-text"
+      "cli_selectors.scoped_models_selector_items"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-items"
+      "cli_selectors.scoped_models_selector_cancel"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-cancel"
+      "cli_selectors.scoped_models_selector_selected_item"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-selected-item"
+      "cli_selectors.scoped_models_selector_select_id"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-select-id"
+      "cli_selectors.scoped_models_selector_notify_change"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-notify-change"
+      "cli_selectors.scoped_models_selector_rebuild_items"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-rebuild-items"
+      "cli_selectors.scoped_models_selector_apply_filter"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-apply-filter"
+      "cli_selectors.scoped_models_selector_visible_items"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-visible-items"
+      "cli_selectors.scoped_models_selector_refresh_items"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-refresh-items"
+      "cli_selectors.scoped_models_selector_clamp_selected"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-clamp-selected"
+      "cli_selectors.scoped_models_selector_mark_changed"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-mark-changed"
+      "cli_selectors.scoped_models_selector_finish_refresh"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-finish-refresh"
+      "cli_selectors.scoped_models_selector_key_p"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-key-p"
+      "cli_selectors.scoped_models_binding_label"
+      "src/cadr-cli/interactive/selectors/models.lisp scoped-models-binding-label"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"

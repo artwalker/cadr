@@ -7431,6 +7431,55 @@ First n=5 freeze **1.359×** (35.327 / 25.989 µs) on host `cursor`, ceiling
 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize.
 `nextPairNum` left at 328.
 
+### Pair 595 — `cli_selectors` (scoped_models_selector_finish_refresh)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_finish_refresh` | `scoped-models-selector-finish-refresh` (`src/cadr-cli/interactive/selectors/models.lisp`) | `updateModels` + `setRefreshStatus` (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 594 on the same `models.lisp` hole. Timed work is
+catalog reload with selection preserved by id, optional enabled-ids replace,
+and terminal refresh status (ok / success / reversed models / partial
+enabled / gpt filter) via `%make-scoped-models-selector-state`. Reuses JS
+`scopedModelsFilterItems` / `scopedModelsSelectorClampSelected`. Observed
+`smfrf_ok` / `smfrf_success` / `smfrf_rev` / `smfrf_enabled` / `smfrf_filter`
+are exact. First n=5 freeze **3.243×** (68.310 / 21.063 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report
+`parsed_provider` from METRICS observed-key pollution; this metric did not
+fail observed-exact). Over-1× booked. Same commit no optimize.
+`nextPairNum` left at 328.
+
+### Pair 596 — `cli_selectors` (scoped_models_selector_key_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_key_p` | `scoped-models-selector-key-p` (`src/cadr-cli/interactive/selectors/models.lisp`) | `KeybindingsManager.matches` + CSI modified-arrow canonical compare (`packages/tui/src/keybindings.ts`) |
+
+Leftover sibling of Pair 595 on the same `models.lisp` hole. Timed work is
+`selector-keybinding-matches-p` on cached
+`*default-models-selector-keybindings*` (ctrl+s save hit / miss, up-arrow
+hit, CSI `1;1A` up, garbage). Does not time `make-keybindings-manager`.
+Observed `smskp_save_hit` / `smskp_save_miss` / `smskp_up_hit` /
+`smskp_csi_up` / `smskp_garbage` are exact. First n=5 freeze **18.835×**
+(22.914 / 1.217 µs) on host `cursor`, ceiling 30.0 first-freeze headroom.
+Gate used `--only-enforce`. Over-1× booked. Same commit no optimize.
+`nextPairNum` left at 328.
+
+### Pair 597 — `cli_selectors` (scoped_models_binding_label)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_binding_label` | `scoped-models-binding-label` (`src/cadr-cli/interactive/selectors/models.lisp`) | `KeybindingsManager.getKeys` first-or-fallback (`packages/coding-agent/src/core/keybindings.ts`) |
+
+Leftover sibling of Pairs 595–596 on the same `models.lisp` hole. Timed
+work is first bound key or the binding name (save / enableAll / confirm /
+missing name / custom `ctrl+k`). Cached default and custom managers; does
+not time `make-keybindings-manager`. Observed `smbl_save` / `smbl_enable` /
+`smbl_confirm` / `smbl_fallback` / `smbl_custom` are exact. First n=5 freeze
+**16.362×** (5.542 / 0.339 µs) on host `cursor`, ceiling 25.0 first-freeze
+headroom. Gate used `--only-enforce`. Over-1× booked. Same commit no
+optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
