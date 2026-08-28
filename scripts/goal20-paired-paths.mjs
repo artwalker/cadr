@@ -438,6 +438,9 @@ const REPETITIONS = {
 	"provider_registry_defs.merge_environment": 50,
 	"provider_registry_defs.runtime_models": 50,
 	"provider_registry_defs.structured_api_key_login": 50,
+	"provider_registry_defs.api_key_strategy": 50,
+	"provider_registry_defs.provider_options": 50,
+	"provider_registry_defs.strip_runtime_options": 50,
 	"core_rest.cancellation_abort": 50,
 	"core_rest.redacted_secrets": 50,
 	"core_rest.threads_cleanup": 5,
@@ -16210,12 +16213,109 @@ function runProviderStructuredApiKeyLogin() {
 	};
 }
 
+const API_KEY_AUTH_STRATEGY_TABLE = {
+	bedrock: { structuredP: true },
+	vertex: { structuredP: true },
+	environment: { structuredP: false },
+};
+
+function apiKeyAuthStrategyEntry(strategy) {
+	return Object.hasOwn(API_KEY_AUTH_STRATEGY_TABLE, strategy)
+		? API_KEY_AUTH_STRATEGY_TABLE[strategy]
+		: null;
+}
+
+function runProviderApiKeyStrategy() {
+	const bedrock = apiKeyAuthStrategyEntry("bedrock");
+	const vertex = apiKeyAuthStrategyEntry("vertex");
+	const environment = apiKeyAuthStrategyEntry("environment");
+	const missing = apiKeyAuthStrategyEntry("no-such-strategy");
+	return {
+		as_bedrock: bedrock?.structuredP ? 1 : 0,
+		as_vertex: vertex?.structuredP ? 1 : 0,
+		as_env: environment?.structuredP ? 1 : 0,
+		as_miss: missing == null ? 1 : 0,
+		as_hit: bedrock ? 1 : 0,
+	};
+}
+
+function builtInProviderOptions(environment) {
+	const value = (name) => environment[name];
+	return {
+		azureBaseUrl: value("AZURE_OPENAI_BASE_URL"),
+		azureResourceName: value("AZURE_OPENAI_RESOURCE_NAME"),
+		azureDeploymentName: value("AZURE_OPENAI_DEPLOYMENT_NAME"),
+		cloudflareAccountId: value("CLOUDFLARE_ACCOUNT_ID"),
+		cloudflareGatewayId: value("CLOUDFLARE_GATEWAY_ID"),
+		project: value("GOOGLE_CLOUD_PROJECT") || value("GCLOUD_PROJECT"),
+		location: value("GOOGLE_CLOUD_LOCATION"),
+	};
+}
+
+function runProviderOptions() {
+	const options = builtInProviderOptions({
+		AZURE_OPENAI_BASE_URL: "https://azure.example",
+		AZURE_OPENAI_RESOURCE_NAME: "res",
+		AZURE_OPENAI_DEPLOYMENT_NAME: "dep",
+		CLOUDFLARE_ACCOUNT_ID: "cf-acct",
+		CLOUDFLARE_GATEWAY_ID: "cf-gw",
+		GOOGLE_CLOUD_PROJECT: "proj-a",
+		GCLOUD_PROJECT: "proj-b",
+		GOOGLE_CLOUD_LOCATION: "us-central1",
+	});
+	return {
+		po_azure: options.azureBaseUrl === "https://azure.example" ? 1 : 0,
+		po_project: options.project === "proj-a" ? 1 : 0,
+		po_location: options.location === "us-central1" ? 1 : 0,
+		po_cf: options.cloudflareAccountId === "cf-acct" ? 1 : 0,
+		po_res: options.azureResourceName === "res" ? 1 : 0,
+	};
+}
+
+function removeRuntimeOnlyOptions(options) {
+	const drop = new Set(["apiKey", "headers", "environment", "authType"]);
+	const rest = {};
+	for (const [key, value] of Object.entries(options)) {
+		if (!drop.has(key)) {
+			rest[key] = value;
+		}
+	}
+	return rest;
+}
+
+function runProviderStripRuntimeOptions() {
+	const mixed = removeRuntimeOnlyOptions({
+		apiKey: "sk",
+		headers: { h: "v" },
+		environment: { k: "v" },
+		authType: "oauth",
+		maxTokens: 16,
+		temperature: 0.2,
+	});
+	const onlyRuntime = removeRuntimeOnlyOptions({
+		apiKey: "sk",
+		headers: null,
+		environment: null,
+		authType: "oauth",
+	});
+	return {
+		sro_keep: mixed.maxTokens === 16 ? 1 : 0,
+		sro_drop: mixed.apiKey === undefined ? 1 : 0,
+		sro_n: Object.keys(mixed).length,
+		sro_empty: Object.keys(onlyRuntime).length === 0 ? 1 : 0,
+		sro_temp: mixed.temperature === 0.2 ? 1 : 0,
+	};
+}
+
 async function measureProviderRegistryDefs() {
 	const lookupObserved = runProviderRegistryDefs();
 	const idsObserved = runProviderDefinitionIds();
 	const mergeObserved = runProviderMergeEnvironment();
 	const modelsObserved = runProviderRuntimeModels();
 	const structuredObserved = runProviderStructuredApiKeyLogin();
+	const strategyObserved = runProviderApiKeyStrategy();
+	const optionsObserved = runProviderOptions();
+	const stripObserved = runProviderStripRuntimeOptions();
 	return {
 		lookup: await collect("provider_registry_defs.lookup", () => {
 			return () => runProviderRegistryDefs();
@@ -16235,6 +16335,18 @@ async function measureProviderRegistryDefs() {
 				return () => runProviderStructuredApiKeyLogin();
 			},
 		),
+		api_key_strategy: await collect("provider_registry_defs.api_key_strategy", () => {
+			return () => runProviderApiKeyStrategy();
+		}),
+		provider_options: await collect("provider_registry_defs.provider_options", () => {
+			return () => runProviderOptions();
+		}),
+		strip_runtime_options: await collect(
+			"provider_registry_defs.strip_runtime_options",
+			() => {
+				return () => runProviderStripRuntimeOptions();
+			},
+		),
 		observed: {
 			...lookupObserved,
 			count: idsObserved.count,
@@ -16242,6 +16354,9 @@ async function measureProviderRegistryDefs() {
 			...mergeObserved,
 			...modelsObserved,
 			...structuredObserved,
+			...strategyObserved,
+			...optionsObserved,
+			...stripObserved,
 		},
 	};
 }
@@ -17385,6 +17500,12 @@ const result = {
 				"packages/ai/src/providers/all.ts getBuiltinModels",
 			"provider_registry_defs.structured_api_key_login":
 				"packages/ai/src/providers/amazon-bedrock.ts + google-vertex.ts ApiKeyAuth.login select flow",
+			"provider_registry_defs.api_key_strategy":
+				"packages/ai/src/providers/amazon-bedrock.ts + google-vertex.ts structured ApiKeyAuth table (environment default)",
+			"provider_registry_defs.provider_options":
+				"AZURE_OPENAI_* / CLOUDFLARE_* / GOOGLE_CLOUD_* option projection (built-in-provider-options counterpart)",
+			"provider_registry_defs.strip_runtime_options":
+				"omit apiKey/headers/environment/authType before stream/complete (remove-runtime-only-options counterpart)",
 			"skill_prompt_load.build_prompt":
 				"packages/coding-agent/src/core/system-prompt.ts buildSystemPrompt",
 			"cli_bootstrap_sessions.coding_tools":

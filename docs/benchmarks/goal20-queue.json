@@ -877,6 +877,34 @@
    "piUs": 0.370,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 403,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.api_key_strategy",
+   "branch": "cursor/pair-403-405-runtime-projection-ff1b",
+   "note": "nextPairNum left at tip 328 (outside 403-405); 328-402 reserved for other leftover knives"
+  },
+  {
+   "pair": 404,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.provider_options",
+   "branch": "cursor/pair-403-405-runtime-projection-ff1b"
+  },
+  {
+   "pair": 405,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.strip_runtime_options",
+   "branch": "cursor/pair-403-405-runtime-projection-ff1b"
   }
  ],
  "mergeQueue": []

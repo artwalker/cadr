@@ -167,6 +167,9 @@ METRICS = {
         "merge_environment",
         "runtime_models",
         "structured_api_key_login",
+        "api_key_strategy",
+        "provider_options",
+        "strip_runtime_options",
     ),
     "skill_prompt_load": ("build_prompt",),
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
@@ -1259,6 +1262,15 @@ RATIO_CEILINGS = {
     # (0.176 / 211.2 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "provider_registry_defs.structured_api_key_login": 8.0,
+    # provider_registry_defs.api_key_strategy pair (samples=5): first-freeze
+    # headroom 8.0. Observed filled after n=5. Ratchet down only.
+    "provider_registry_defs.api_key_strategy": 8.0,
+    # provider_registry_defs.provider_options pair (samples=5): first-freeze
+    # headroom 8.0. Observed filled after n=5. Ratchet down only.
+    "provider_registry_defs.provider_options": 8.0,
+    # provider_registry_defs.strip_runtime_options pair (samples=5): first-freeze
+    # headroom 8.0. Observed filled after n=5. Ratchet down only.
+    "provider_registry_defs.strip_runtime_options": 8.0,
     # core_rest.cancellation_abort pair (samples=5): observed 0.0712x
     # (0.579 / 8.130 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
@@ -3028,6 +3040,21 @@ OBSERVED_EXACT = {
         "sl_google",
         "sl_bedrock",
         "sl_vertex",
+        "as_bedrock",
+        "as_vertex",
+        "as_env",
+        "as_miss",
+        "as_hit",
+        "po_azure",
+        "po_project",
+        "po_location",
+        "po_cf",
+        "po_res",
+        "sro_keep",
+        "sro_drop",
+        "sro_n",
+        "sro_empty",
+        "sro_temp",
     ),
     "skill_prompt_load": (
         "custom_len",
