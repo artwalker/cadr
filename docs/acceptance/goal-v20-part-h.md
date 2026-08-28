@@ -4059,6 +4059,50 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 580 — `cli_selectors` (scoped_models_selector_rebuild_models_by_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_rebuild_models_by_id` | `scoped-models-selector-rebuild-models-by-id` (`src/cadr-cli/interactive/selectors/models.lisp`) | `modelsById` rebuild (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover on unused helpers in `models.lisp`. Timed work is hash/Map fill of
+qualified ids (all, partial enabled copy, empty, single, extra grok) —
+constructor uses `%make-scoped-models-selector-state` so keybindings are
+not on the path. Observed `smrm_all` / `smrm_partial` / `smrm_empty` /
+`smrm_single` / `smrm_extra` are exact. First n=5 freeze **2.096×**
+(10.000 / 4.771 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail).
+Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 581 — `cli_selectors` (scoped_models_model_by_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_model_by_id` | `scoped-models-model-by-id` (`src/cadr-cli/interactive/selectors/models.lisp`) | `modelsById` lookup (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 580 on the same `models.lisp` hole. Timed work is
+hit / google / miss / empty-table / openrouter id — not rebuild pairing
+as the named metric. Observed `smbid_hit` / `smbid_google` / `smbid_miss`
+/ `smbid_empty` / `smbid_openrouter` are exact. First n=5 freeze **3.185×**
+(9.193 / 2.886 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum`
+left at 328.
+
+### Pair 582 — `cli_selectors` (scoped_model_item_search_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_model_item_search_text` | `scoped-model-item-search-text` (`src/cadr-cli/interactive/selectors/models.lisp`) | `getModelSearchText` on a scoped item (`packages/coding-agent/src/modes/interactive/model-search.ts`) |
+
+Leftover sibling of Pairs 580–581 on the same `models.lisp` hole. Timed
+work is gpt / claude / codex / cached `:search-text` / no-model id —
+reuses JS `scopedModelItemSearchText`. Observed `smist_gpt` /
+`smist_claude` / `smist_codex` / `smist_cached` / `smist_noid` are exact.
+First n=5 freeze **3.735×** (2.879 / 0.771 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize.
+`nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

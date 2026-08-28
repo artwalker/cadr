@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_rebuild_models_by_id`
+  (`scoped-models-selector-rebuild-models-by-id` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs `modelsById` rebuild).
+  Observed `smrm_all` / `smrm_partial` / `smrm_empty` / `smrm_single` /
+  `smrm_extra` exact. n=5 **2.096×** (10.000 / 4.771 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 580). Gate rc=1 only from known
+  old holes. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_model_by_id`
+  (`scoped-models-model-by-id` vs `modelsById` lookup). Observed
+  `smbid_hit` / `smbid_google` / `smbid_miss` / `smbid_empty` /
+  `smbid_openrouter` exact. n=5 **3.185×** (9.193 / 2.886 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 581). Gate rc=1 only
+  from known old holes. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_model_item_search_text`
+  (`scoped-model-item-search-text` vs `getModelSearchText` on a scoped
+  item). Observed `smist_gpt` / `smist_claude` / `smist_codex` /
+  `smist_cached` / `smist_noid` exact. n=5 **3.735×** (2.879 / 0.771 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 582). Gate
+  rc=1 only from known old holes. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

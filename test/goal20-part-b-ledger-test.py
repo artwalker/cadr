@@ -2142,6 +2142,9 @@ class TestPairedPathRecord(unittest.TestCase):
             "cli_selectors.scoped_model_item_search_text",
             paired.RATIO_CEILINGS,
         )
+        self.assertIn("smrm_all", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("smbid_hit", paired.OBSERVED_EXACT["cli_selectors"])
+        self.assertIn("smist_gpt", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("09:07", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("3/28 14:32", paired.OBSERVED_EXACT["cli_selectors"])
         self.assertIn("25/12/31 23:59", paired.OBSERVED_EXACT["cli_selectors"])
@@ -2539,6 +2542,9 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_bootstrap_sessions.bootstrap_auth`", section)
             self.assertIn("`ai_runtime_faux.blocks`", section)
             self.assertIn("`http_transport.parse_url`", section)
+            self.assertIn("`cli_selectors.scoped_models_selector_rebuild_models_by_id`", section)
+            self.assertIn("`cli_selectors.scoped_models_model_by_id`", section)
+            self.assertIn("`cli_selectors.scoped_model_item_search_text`", section)
             self.assertIn("1.50×", section)
             self.assertIn("Previous:", section)
             self.assertIn("paired-paths-quick", section)
