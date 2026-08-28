@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.framed_select_title`
+  (`framed-select-title` on `src/cadr-cli/interactive/extension-ui.lisp` vs
+  baseline ExtensionSelector countdown title). Observed `fst_plain` /
+  `fst_ceil` / `fst_exact` / `fst_zero` / `fst_neg` / `fst_empty` exact.
+  n=5 **1.406×** (0.775 / 0.551 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 550). Gate rc=1 only from known old holes,
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.extension_overlay_options`
+  (`extension-overlay-options` vs `showExtensionCustom` resolveOptions).
+  Observed `eoo_nil` / `eoo_static` / `eoo_fn` / `eoo_pct` / `eoo_zero` /
+  `eoo_width` exact. n=5 **2.114×** (1.270 / 0.601 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 551). Gate rc=1 only from known
+  old holes, not this metric. Booked over-1×.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.extension_custom_ui_visible`
+  (`extension-custom-ui-visible-p` vs overlay hidden/visible flags). Observed
+  `ecu_default` / `ecu_width` / `ecu_vis_nil` / `ecu_visp_nil` / `ecu_vis_t` /
+  `ecu_fn_nil` exact. n=5 **1.866×** (1.027 / 0.551 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 552). Gate rc=1 only from known
+  old holes, not this metric. Booked over-1×.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
