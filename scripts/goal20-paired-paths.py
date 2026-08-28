@@ -970,11 +970,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.accumulate_usage": 8.0,
     # Measure-only leftover 654; first freeze 4.205× (5.050 / 1.201 µs).
     "cli_interactive_controller.append_user_message": 8.0,
-    # Measure-only leftover 655; first freeze pending.
+    # Measure-only leftover 655; first freeze 0.469× (4.095 / 8.722 µs).
     "cli_interactive_controller.seed_tui_message": 8.0,
-    # Measure-only leftover 656; first freeze pending.
+    # Measure-only leftover 656; first freeze 1.296× (2.035 / 1.570 µs).
     "cli_interactive_controller.reset_tui_messages": 8.0,
-    # Measure-only leftover 657; first freeze pending.
+    # Measure-only leftover 657; first freeze 2.567× (3.956 / 1.541 µs).
     "cli_interactive_controller.render_user_lines": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.

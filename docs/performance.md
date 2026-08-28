@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-28T20:16:27Z) on `cursor`, git `204fc956bdc0`, ratio_gate=`enforced-only:cli_interactive_controller.assistant_price_known,cli_interactive_controller.accumulate_usage,cli_interactive_controller.append_user_message`, quick=no, samples=5
+Current: `paired-paths` (2026-08-28T20:31:58Z) on `cursor`, git `dbdac3d81a06`, ratio_gate=`enforced-only:cli_interactive_controller.seed_tui_message,cli_interactive_controller.reset_tui_messages,cli_interactive_controller.render_user_lines`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-28T20:05:06Z) on `cursor`, git `998199d481ed`, ratio_gate=`enforced-only:cli_interactive_controller.theme_message_background,cli_interactive_controller.update_notification_text,cli_interactive_controller.syntax_highlight`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-28T20:16:27Z) on `cursor`, git `204fc956bdc0`, ratio_gate=`enforced-only:cli_interactive_controller.assistant_price_known,cli_interactive_controller.accumulate_usage,cli_interactive_controller.append_user_message`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -893,9 +893,12 @@ Previous: `paired-paths` (2026-08-28T20:05:06Z) on `cursor`, git `998199d481ed`,
 | `cli_interactive_controller.theme_message_background` | 8.6 | 1.6 | 5.46× | 5.46× | 8.00× |
 | `cli_interactive_controller.update_notification_text` | 59.2 | 2.0 | 29.10× | 29.10× | 50.00× |
 | `cli_interactive_controller.syntax_highlight` | 13.2 | 1.1 | 12.18× | 12.18× | 20.00× |
-| `cli_interactive_controller.assistant_price_known` | 4.5 | 18.7 | 0.24× | — | 8.00× |
-| `cli_interactive_controller.accumulate_usage` | 0.8 | 0.7 | 1.19× | — | 8.00× |
-| `cli_interactive_controller.append_user_message` | 5.1 | 1.2 | 4.21× | — | 8.00× |
+| `cli_interactive_controller.assistant_price_known` | 4.5 | 18.7 | 0.24× | 0.24× | 8.00× |
+| `cli_interactive_controller.accumulate_usage` | 0.8 | 0.7 | 1.19× | 1.19× | 8.00× |
+| `cli_interactive_controller.append_user_message` | 5.1 | 1.2 | 4.21× | 4.21× | 8.00× |
+| `cli_interactive_controller.seed_tui_message` | 4.1 | 8.7 | 0.47× | — | 8.00× |
+| `cli_interactive_controller.reset_tui_messages` | 2.0 | 1.6 | 1.30× | — | 8.00× |
+| `cli_interactive_controller.render_user_lines` | 4.0 | 1.5 | 2.57× | — | 8.00× |
 | `cli_selectors.user_message_make` | — | — | — | — | — |
 | `cli_selectors.user_message_move` | — | — | — | — | — |
 | `cli_selectors.user_message_selection` | — | — | — | — | — |
@@ -1950,6 +1953,7 @@ Previous: `paired-paths` (2026-08-28T20:05:06Z) on `cursor`, git `998199d481ed`,
 | 2026-08-28T19:57:37Z | paired-paths | `12c61285c5cf` | no | enforced-only:cli_interactive_controller.transcript_summary_text,cli_interactive_controller.assistant_stop_error,cli_interactive_controller.update_notification_border | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T20:05:06Z | paired-paths | `998199d481ed` | no | enforced-only:cli_interactive_controller.theme_message_background,cli_interactive_controller.update_notification_text,cli_interactive_controller.syntax_highlight | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T20:16:27Z | paired-paths | `204fc956bdc0` | no | enforced-only:cli_interactive_controller.assistant_price_known,cli_interactive_controller.accumulate_usage,cli_interactive_controller.append_user_message | 1.17× | 1.02× | 1.10× | 0.08× |
+| 2026-08-28T20:31:58Z | paired-paths | `dbdac3d81a06` | no | enforced-only:cli_interactive_controller.seed_tui_message,cli_interactive_controller.reset_tui_messages,cli_interactive_controller.render_user_lines | 1.17× | 1.02× | 1.10× | 0.08× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

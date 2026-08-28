@@ -459,4 +459,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.syntax_highlight` | 13.174 | 1.081 | 12.184× | 20.00× | measure-only leftover 651; `tui-syntax-highlight` vs syntaxHighlight; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.accumulate_usage` | 0.775 | 0.652 | 1.188× | 8.00× | measure-only leftover 653; `accumulate-message-usage` vs session usage accumulate | invent pause；地板优化另刀 |
 | `cli_interactive_controller.append_user_message` | 5.050 | 1.201 | 4.205× | 8.00× | measure-only leftover 654; `append-tui-user-message` vs parseSkillBlock UserMessageComponent | invent pause；地板优化另刀 |
+| `cli_interactive_controller.reset_tui_messages` | 2.035 | 1.570 | 1.296× | 8.00× | measure-only leftover 656; `reset-tui-messages` vs chatContainer reset + usage preserve | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_user_lines` | 3.956 | 1.541 | 2.567× | 8.00× | measure-only leftover 657; `render-user-message-lines` vs UserMessageComponent wrap + OSC 133 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
