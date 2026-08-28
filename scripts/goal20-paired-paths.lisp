@@ -572,6 +572,9 @@
     ("cli_interactive_controller.make_entry" . 50)
     ("cli_interactive_controller.append_output" . 50)
     ("cli_interactive_controller.complete_entry" . 50)
+    ("cli_interactive_controller.theme_object_overrides" . 50)
+    ("cli_interactive_controller.apply_tui_theme_summary" . 50)
+    ("cli_interactive_controller.load_tui_theme_file" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14148,6 +14151,181 @@
      (theme-validate-flag unknown empty-vars nil colors nil nil))))
 
 
+(defun leftover-goal20-filled-theme-colors ()
+  (let ((colors (make-hash-table :test #'equal)))
+    (dolist (entry cadr-cli::+tui-theme-json-color-map+)
+      (let ((name (car entry)))
+        (unless
+            (member
+             name
+             '("thinkingMax" "scrollbarThumb"
+               "searchMatchBg" "searchMatchText")
+             :test #'string=)
+          (setf (gethash name colors) 7))))
+    (setf (gethash "accent" colors) 9)
+    (setf (gethash "selectedBg" colors) 4)
+    (setf (gethash "text" colors) 15)
+    (setf (gethash "thinkingXhigh" colors) 12)
+    colors))
+
+
+(defun leftover-goal20-theme-object ()
+  (let ((object (make-hash-table :test #'equal))
+        (colors (leftover-goal20-filled-theme-colors)))
+    (setf (gethash "name" object) "ok")
+    (setf (gethash "colors" object) colors)
+    object))
+
+
+(defun leftover-theme-override-encode (overrides key)
+  (let ((entry (assoc key overrides)))
+    (if entry
+        (write-to-string (cdr entry))
+        "")))
+
+
+(defun leftover-theme-apply-ok-p (value)
+  (if value "1" "0"))
+
+
+(defun leftover-theme-current-name ()
+  (string-downcase
+   (symbol-name
+    (cadr-tui::terminal-theme-name
+     (cadr-tui:current-theme)))))
+
+
+(defun run-cli-interactive-theme-object-overrides ()
+  (let* ((object (leftover-goal20-theme-object))
+         (overrides (cadr-cli::theme-object-overrides object))
+         (nil-overrides (cadr-cli::theme-object-overrides nil)))
+    (list
+     (write-to-string (length overrides))
+     (leftover-theme-override-encode overrides :accent)
+     (leftover-theme-override-encode overrides :thinking-max)
+     (leftover-theme-override-encode overrides :scrollbar-thumb)
+     (leftover-theme-apply-ok-p nil-overrides))))
+
+
+(defun leftover-theme-bad-object ()
+  (let ((object (make-hash-table :test #'equal)))
+    (setf (gethash "name" object) "a/b")
+    object))
+
+
+(defun run-cli-interactive-apply-tui-theme-summary ()
+  (let* ((object (leftover-goal20-theme-object))
+         (dark
+           (cadr-cli::apply-tui-theme-summary
+            "dark" :background :dark))
+         (light
+           (cadr-cli::apply-tui-theme-summary
+            "light" :background :dark))
+         (obj
+           (cadr-cli::apply-tui-theme-summary
+            (list :name "ok" :object object)
+            :background :dark))
+         (bad
+           (cadr-cli::apply-tui-theme-summary
+            (list :name "ok" :object (leftover-theme-bad-object))
+            :background :dark
+            :keep-current-on-error-p t)))
+    (list
+     (leftover-theme-apply-ok-p dark)
+     (leftover-theme-apply-ok-p light)
+     (leftover-theme-apply-ok-p obj)
+     (leftover-theme-apply-ok-p bad)
+     (leftover-theme-current-name))))
+
+
+(defun leftover-theme-fixture-root ()
+  (let ((root
+          (merge-pathnames
+           "theme-leftover/" *scratch-directory*)))
+    (ensure-directories-exist root)
+    root))
+
+
+(defun leftover-theme-write-file (name contents)
+  (let ((path
+          (merge-pathnames
+           name (leftover-theme-fixture-root))))
+    (with-open-file
+        (out path :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create
+             :external-format :utf-8)
+      (write-string contents out))
+    path))
+
+
+(defun leftover-theme-ok-json ()
+  (with-output-to-string (out)
+    (write-string "{\"name\":\"ok\",\"colors\":{" out)
+    (let ((first t)
+          (colors (leftover-goal20-filled-theme-colors)))
+      (maphash
+       (lambda (name value)
+         (unless first (write-string "," out))
+         (setf first nil)
+         (format out "~S:~A" name value))
+       colors))
+    (write-string "}}" out)))
+
+
+(defun leftover-theme-load-name (summary)
+  (if summary
+      (or (getf summary :name) "")
+      "0"))
+
+
+(defun leftover-theme-load-ok-p (summary)
+  (if (and summary (getf summary :object)) "1" "0"))
+
+
+(defun run-cli-interactive-load-tui-theme-file ()
+  (let* ((ok-path
+           (leftover-theme-write-file
+            "ok.json" (leftover-theme-ok-json)))
+         (miss-path
+           (merge-pathnames
+            "missing.json" (leftover-theme-fixture-root)))
+         (bad-path
+           (leftover-theme-write-file "bad.json" "{"))
+         (empty-path
+           (leftover-theme-write-file "empty.json" ""))
+         (ok (cadr-cli::load-tui-theme-file ok-path)))
+    (list
+     (leftover-theme-load-name ok)
+     (leftover-theme-load-ok-p ok)
+     (leftover-theme-load-ok-p
+      (cadr-cli::load-tui-theme-file miss-path))
+     (leftover-theme-load-ok-p
+      (cadr-cli::load-tui-theme-file bad-path))
+     (leftover-theme-load-ok-p
+      (cadr-cli::load-tui-theme-file empty-path)))))
+
+
+(defun leftover-theme-overrides-apply-load-observed-pairs
+    (overrides apply load)
+  (list
+   "too_n" (nth 0 overrides)
+   "too_accent" (nth 1 overrides)
+   "too_tmax" (nth 2 overrides)
+   "too_scroll" (nth 3 overrides)
+   "too_nil" (nth 4 overrides)
+   "tas_dark" (nth 0 apply)
+   "tas_light" (nth 1 apply)
+   "tas_obj" (nth 2 apply)
+   "tas_bad" (nth 3 apply)
+   "tas_name" (nth 4 apply)
+   "ltf_name" (nth 0 load)
+   "ltf_ok" (nth 1 load)
+   "ltf_miss" (nth 2 load)
+   "ltf_bad" (nth 3 load)
+   "ltf_empty" (nth 4 load)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -14591,10 +14769,18 @@
         (resolve-theme (run-cli-interactive-resolve-theme))
         (make-entry (run-cli-interactive-bash-make-entry))
         (append-output (run-cli-interactive-bash-append-output))
-        (complete-entry (run-cli-interactive-bash-complete-entry)))
+        (complete-entry (run-cli-interactive-bash-complete-entry))
+        (leftover-theme-overrides
+          (run-cli-interactive-theme-object-overrides))
+        (leftover-theme-apply
+          (run-cli-interactive-apply-tui-theme-summary))
+        (leftover-theme-load
+          (run-cli-interactive-load-tui-theme-file)))
     (json-object
      "observed"
-     (json-object
+     (apply #'json-object
+            (append
+             (list
       "amp" (first observed)
       "lt" (second observed)
       "gt" (third observed)
@@ -14645,6 +14831,10 @@
       "ce_run" (nth 7 complete-entry)
       "ce_err" (nth 8 complete-entry)
       "ce_err_cancel" (nth 9 complete-entry))
+             (leftover-theme-overrides-apply-load-observed-pairs
+              leftover-theme-overrides
+              leftover-theme-apply
+              leftover-theme-load)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -14689,7 +14879,22 @@
      (collect "cli_interactive_controller.complete_entry"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-bash-complete-entry)))))))
+                  (run-cli-interactive-bash-complete-entry))))
+     "theme_object_overrides"
+     (collect "cli_interactive_controller.theme_object_overrides"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-theme-object-overrides))))
+     "apply_tui_theme_summary"
+     (collect "cli_interactive_controller.apply_tui_theme_summary"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-apply-tui-theme-summary))))
+     "load_tui_theme_file"
+     (collect "cli_interactive_controller.load_tui_theme_file"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-load-tui-theme-file)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -27041,6 +27246,12 @@
       "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-output"
       "cli_interactive_controller.complete_entry"
       "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-entry"
+      "cli_interactive_controller.theme_object_overrides"
+      "src/cadr-cli/interactive/themes.lisp theme-object-overrides"
+      "cli_interactive_controller.apply_tui_theme_summary"
+      "src/cadr-cli/interactive/themes.lisp apply-tui-theme-summary"
+      "cli_interactive_controller.load_tui_theme_file"
+      "src/cadr-cli/interactive/themes.lisp load-tui-theme-file"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
