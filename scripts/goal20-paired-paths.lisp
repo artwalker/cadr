@@ -70,6 +70,9 @@
 ;;;; 298. image_runtime image-output-modalities vs buildParams modalities
 ;;;; 299. image_runtime openrouter-image-content vs buildParams content parts
 ;;;; 300. image_runtime parse-data-image vs generateImages data-URL parse
+;;;; 367. image_runtime openrouter-image-usage vs parseUsage
+;;;; 368. image_runtime parse-openrouter-images vs generateImages response parse
+;;;; 369. image_runtime image-error-result vs generateImages catch error result
 ;;;;  53. ai_support uuid-v7 vs uuidv7
 ;;;;  54. ai_capabilities split-deferred-tools vs splitDeferredTools
 ;;;;  55. ai_support no-models/no-key vs formatNoModelsAvailableMessage
@@ -423,6 +426,9 @@
     ("image_runtime.output_modalities" . 50)
     ("image_runtime.openrouter_content" . 50)
     ("image_runtime.parse_data_image" . 50)
+    ("image_runtime.openrouter_usage" . 50)
+    ("image_runtime.parse_openrouter_images" . 50)
+    ("image_runtime.error_result" . 50)
     ("cli_print_rpc.jsonl_line" . 50)
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
@@ -8444,6 +8450,116 @@
          1
          0))))
 
+(defun image-usage-raw (prompt output cached cache-write)
+  (cadr-ai::json-object
+   "prompt_tokens" prompt
+   "completion_tokens" output
+   "prompt_tokens_details"
+   (cadr-ai::json-object
+    "cached_tokens" cached
+    "cache_write_tokens" cache-write)))
+
+(defun image-usage-counts (usage)
+  (list (cadr-ai:usage-input usage)
+        (cadr-ai:usage-output usage)
+        (cadr-ai:usage-cache-read usage)
+        (cadr-ai:usage-cache-write usage)))
+
+(defun run-image-runtime-openrouter-usage ()
+  (ensure-image-openrouter-models)
+  (append
+   (image-usage-counts
+    (cadr-ai::openrouter-image-usage
+     (image-usage-raw 12 34 0 0)
+     *image-modality-gemini*))
+   (image-usage-counts
+    (cadr-ai::openrouter-image-usage
+     (image-usage-raw 100 8 40 10)
+     *image-modality-gemini*))))
+
+(defun image-openrouter-response ()
+  (cadr-ai::json-object
+   "id" "img-1"
+   "usage" (image-usage-raw 12 34 0 0)
+   "choices"
+   (vector
+    (cadr-ai::json-object
+     "message"
+     (cadr-ai::json-object
+      "content" "Here is your image."
+      "images"
+      (vector
+       (cadr-ai::json-object
+        "image_url"
+        "data:image/png;base64,ZmFrZS1wbmc=")))))))
+
+(defun run-image-runtime-parse-openrouter-images ()
+  (ensure-image-openrouter-models)
+  (let* ((result
+           (cadr-ai::parse-openrouter-images
+            *image-modality-gemini*
+            (image-openrouter-response)))
+         (output (cadr-ai:assistant-images-output result))
+         (text (first output))
+         (image (second output))
+         (usage (cadr-ai:assistant-images-usage result)))
+    (list
+     (or (cadr-ai:assistant-images-response-id result) "")
+     (if (typep text 'cadr-ai:text-content)
+         (cadr-ai:text-content-text text)
+         "")
+     (length output)
+     (if (typep image 'cadr-ai:image-content)
+         (cadr-ai:image-content-mime-type image)
+         "")
+     (if (typep image 'cadr-ai:image-content)
+         (cadr-ai:image-content-data image)
+         "")
+     (if usage (cadr-ai:usage-input usage) -1)
+     (if usage (cadr-ai:usage-output usage) -1))))
+
+(defun image-error-stop-flag (result expected)
+  (if (eq (cadr-ai:assistant-images-stop-reason result) expected)
+      1
+      0))
+
+(defun run-image-runtime-error-result ()
+  (ensure-image-openrouter-models)
+  (let* ((model *image-modality-flux*)
+         (auth
+           (cadr-ai::image-error-result
+            model
+            (make-condition
+             'cadr-ai:authentication-error
+             :message "No API key for provider: openrouter")
+            nil))
+         (aborted
+           (cadr-ai::image-error-result
+            model
+            (make-condition
+             'cadr-ai:request-aborted
+             :message "Request was aborted")
+            nil))
+         (flagged
+           (cadr-ai::image-error-result
+            model
+            (make-condition
+             'cadr-ai:authentication-error
+             :message "No API key for provider: openrouter")
+            (lambda () t))))
+    (list
+     (image-error-stop-flag auth :error)
+     (if (search
+          "No API key"
+          (or (cadr-ai:assistant-images-error-message auth) ""))
+         1
+         0)
+     (image-error-stop-flag aborted :aborted)
+     (image-error-stop-flag flagged :aborted)
+     (if (eq (cadr-ai:assistant-images-provider auth) :openrouter)
+         1
+         0))))
+
 (defun measure-image-runtime ()
   (ensure-image-openrouter-models)
   (let ((dims (run-image-runtime))
@@ -8453,7 +8569,10 @@
         (api (run-image-runtime-api-provider))
         (modalities (run-image-runtime-output-modalities))
         (content (run-image-runtime-openrouter-content))
-        (parsed (run-image-runtime-parse-data-image)))
+        (parsed (run-image-runtime-parse-data-image))
+        (usage (run-image-runtime-openrouter-usage))
+        (parsed-images (run-image-runtime-parse-openrouter-images))
+        (errors (run-image-runtime-error-result)))
     (json-object
      "observed"
      (json-object
@@ -8488,7 +8607,27 @@
       "pd_ok_data" (second parsed)
       "pd_ok" (third parsed)
       "pd_miss" (fourth parsed)
-      "pd_plain" (fifth parsed))
+      "pd_plain" (fifth parsed)
+      "us_in" (first usage)
+      "us_out" (second usage)
+      "us_cr" (third usage)
+      "us_cw" (fourth usage)
+      "us_in2" (fifth usage)
+      "us_out2" (sixth usage)
+      "us_cr2" (seventh usage)
+      "us_cw2" (nth 7 usage)
+      "poi_id" (first parsed-images)
+      "poi_text" (second parsed-images)
+      "poi_n" (third parsed-images)
+      "poi_mime" (fourth parsed-images)
+      "poi_data" (fifth parsed-images)
+      "poi_in" (sixth parsed-images)
+      "poi_out" (seventh parsed-images)
+      "er_auth" (first errors)
+      "er_hit" (second errors)
+      "er_abort" (third errors)
+      "er_flag" (fourth errors)
+      "er_prov" (fifth errors))
      "dimensions"
      (collect "image_runtime.dimensions"
               (lambda ()
@@ -8528,7 +8667,22 @@
      (collect "image_runtime.parse_data_image"
               (lambda ()
                 (lambda ()
-                  (run-image-runtime-parse-data-image)))))))
+                  (run-image-runtime-parse-data-image))))
+     "openrouter_usage"
+     (collect "image_runtime.openrouter_usage"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-openrouter-usage))))
+     "parse_openrouter_images"
+     (collect "image_runtime.parse_openrouter_images"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-parse-openrouter-images))))
+     "error_result"
+     (collect "image_runtime.error_result"
+              (lambda ()
+                (lambda ()
+                  (run-image-runtime-error-result)))))))
 
 (defun rpc-jsonl-object ()
   (cadr-ai::json-object
@@ -17454,6 +17608,12 @@
       "src/cadr-ai/images.lisp openrouter-image-content"
       "image_runtime.parse_data_image"
       "src/cadr-ai/images.lisp parse-data-image"
+      "image_runtime.openrouter_usage"
+      "src/cadr-ai/images.lisp openrouter-image-usage"
+      "image_runtime.parse_openrouter_images"
+      "src/cadr-ai/images.lisp parse-openrouter-images"
+      "image_runtime.error_result"
+      "src/cadr-ai/images.lisp image-error-result"
       "cli_print_rpc.jsonl_line"
       "src/cadr-cli/modes/print.lisp write-json-line"
       "cli_print_rpc.jsonl_read"

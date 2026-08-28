@@ -270,6 +270,9 @@ const REPETITIONS = {
 	"image_runtime.output_modalities": 50,
 	"image_runtime.openrouter_content": 50,
 	"image_runtime.parse_data_image": 50,
+	"image_runtime.openrouter_usage": 50,
+	"image_runtime.parse_openrouter_images": 50,
+	"image_runtime.error_result": 50,
 	"cli_print_rpc.jsonl_line": 50,
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
@@ -7489,6 +7492,168 @@ function runImageRuntimeOpenrouterContent() {
 	};
 }
 
+function parseOpenRouterImageUsage(rawUsage, model) {
+	const promptTokens = rawUsage.prompt_tokens || 0;
+	const reportedCachedTokens = rawUsage.prompt_tokens_details?.cached_tokens || 0;
+	const cacheWriteTokens = rawUsage.prompt_tokens_details?.cache_write_tokens || 0;
+	const cacheReadTokens =
+		cacheWriteTokens > 0
+			? Math.max(0, reportedCachedTokens - cacheWriteTokens)
+			: reportedCachedTokens;
+	const input = Math.max(0, promptTokens - cacheReadTokens - cacheWriteTokens);
+	const output = rawUsage.completion_tokens || 0;
+	void model;
+	return {
+		input,
+		output,
+		cacheRead: cacheReadTokens,
+		cacheWrite: cacheWriteTokens,
+	};
+}
+
+function runImageRuntimeOpenrouterUsage() {
+	ensureImageOpenrouterModels();
+	const first = parseOpenRouterImageUsage(
+		{
+			prompt_tokens: 12,
+			completion_tokens: 34,
+			prompt_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
+		},
+		imageModalityGemini,
+	);
+	const second = parseOpenRouterImageUsage(
+		{
+			prompt_tokens: 100,
+			completion_tokens: 8,
+			prompt_tokens_details: { cached_tokens: 40, cache_write_tokens: 10 },
+		},
+		imageModalityGemini,
+	);
+	return {
+		us_in: first.input,
+		us_out: first.output,
+		us_cr: first.cacheRead,
+		us_cw: first.cacheWrite,
+		us_in2: second.input,
+		us_out2: second.output,
+		us_cr2: second.cacheRead,
+		us_cw2: second.cacheWrite,
+	};
+}
+
+function imageOpenrouterResponse() {
+	return {
+		id: "img-1",
+		usage: {
+			prompt_tokens: 12,
+			completion_tokens: 34,
+			prompt_tokens_details: { cached_tokens: 0, cache_write_tokens: 0 },
+		},
+		choices: [
+			{
+				message: {
+					content: "Here is your image.",
+					images: [
+						{
+							image_url: "data:image/png;base64,ZmFrZS1wbmc=",
+						},
+					],
+				},
+			},
+		],
+	};
+}
+
+function parseOpenRouterImages(model, response) {
+	const result = {
+		responseId: response.id ?? "",
+		output: [],
+		usage: null,
+		provider: model.provider,
+	};
+	if (response.usage) {
+		result.usage = parseOpenRouterImageUsage(response.usage, model);
+	}
+	const choices = response.choices;
+	const choice =
+		Array.isArray(choices) && choices.length > 0 ? choices[0] : null;
+	const message = choice?.message;
+	const text = message?.content;
+	const images = message?.images;
+	if (typeof text === "string" && text.length > 0) {
+		result.output.push({ type: "text", text });
+	}
+	if (Array.isArray(images)) {
+		for (const image of images) {
+			const raw = image.image_url;
+			const url = typeof raw === "string" ? raw : raw?.url;
+			const parsed = parseDataImage(url);
+			if (parsed) {
+				result.output.push({
+					type: "image",
+					mimeType: parsed.mimeType,
+					data: parsed.data,
+				});
+			}
+		}
+	}
+	return result;
+}
+
+function runImageRuntimeParseOpenrouterImages() {
+	ensureImageOpenrouterModels();
+	const result = parseOpenRouterImages(
+		imageModalityGemini,
+		imageOpenrouterResponse(),
+	);
+	const text = result.output[0];
+	const image = result.output[1];
+	return {
+		poi_id: result.responseId || "",
+		poi_text: text?.type === "text" ? text.text : "",
+		poi_n: result.output.length,
+		poi_mime: image?.type === "image" ? image.mimeType : "",
+		poi_data: image?.type === "image" ? image.data : "",
+		poi_in: result.usage ? result.usage.input : -1,
+		poi_out: result.usage ? result.usage.output : -1,
+	};
+}
+
+function imageErrorResult(model, condition, abortP) {
+	const aborted = (abortP && abortP()) || condition.aborted;
+	return {
+		stopReason: aborted ? "aborted" : "error",
+		errorMessage: condition.message,
+		provider: model.provider,
+	};
+}
+
+function runImageRuntimeErrorResult() {
+	ensureImageOpenrouterModels();
+	const auth = imageErrorResult(
+		imageModalityFlux,
+		{ aborted: false, message: "No API key for provider: openrouter" },
+		null,
+	);
+	const aborted = imageErrorResult(
+		imageModalityFlux,
+		{ aborted: true, message: "Request was aborted" },
+		null,
+	);
+	const flagged = imageErrorResult(
+		imageModalityFlux,
+		{ aborted: false, message: "No API key for provider: openrouter" },
+		() => true,
+	);
+	return {
+		er_auth: auth.stopReason === "error" ? 1 : 0,
+		er_hit: auth.errorMessage.includes("No API key") ? 1 : 0,
+		er_abort: aborted.stopReason === "aborted" ? 1 : 0,
+		er_flag: flagged.stopReason === "aborted" ? 1 : 0,
+		er_prov: auth.provider === "openrouter" ? 1 : 0,
+	};
+}
+
 async function measureImageRuntime() {
 	ensureImageOpenrouterModels();
 	const dims = runImageRuntime();
@@ -7499,6 +7664,9 @@ async function measureImageRuntime() {
 	const modalities = runImageRuntimeOutputModalities();
 	const content = runImageRuntimeOpenrouterContent();
 	const parsed = runImageRuntimeParseDataImage();
+	const usage = runImageRuntimeOpenrouterUsage();
+	const parsedImages = runImageRuntimeParseOpenrouterImages();
+	const errors = runImageRuntimeErrorResult();
 	return {
 		dimensions: await collect("image_runtime.dimensions", () => {
 			return () => runImageRuntime();
@@ -7524,6 +7692,18 @@ async function measureImageRuntime() {
 		parse_data_image: await collect("image_runtime.parse_data_image", () => {
 			return () => runImageRuntimeParseDataImage();
 		}),
+		openrouter_usage: await collect("image_runtime.openrouter_usage", () => {
+			return () => runImageRuntimeOpenrouterUsage();
+		}),
+		parse_openrouter_images: await collect(
+			"image_runtime.parse_openrouter_images",
+			() => {
+				return () => runImageRuntimeParseOpenrouterImages();
+			},
+		),
+		error_result: await collect("image_runtime.error_result", () => {
+			return () => runImageRuntimeErrorResult();
+		}),
 		observed: {
 			...dims,
 			...mime,
@@ -7533,6 +7713,9 @@ async function measureImageRuntime() {
 			...modalities,
 			...content,
 			...parsed,
+			...usage,
+			...parsedImages,
+			...errors,
 		},
 	};
 }
@@ -17803,6 +17986,12 @@ const result = {
 				"packages/ai/src/api/openrouter-images.ts buildParams content parts",
 			"image_runtime.parse_data_image":
 				"packages/ai/src/api/openrouter-images.ts generateImages data-URL parse",
+			"image_runtime.openrouter_usage":
+				"packages/ai/src/api/openrouter-images.ts parseUsage",
+			"image_runtime.parse_openrouter_images":
+				"packages/ai/src/api/openrouter-images.ts generateImages response parse",
+			"image_runtime.error_result":
+				"packages/ai/src/api/openrouter-images.ts generateImages catch error result",
 			"cli_print_rpc.jsonl_line":
 				"packages/coding-agent/src/modes/rpc/jsonl.ts serializeJsonLine",
 			"cli_print_rpc.jsonl_read":

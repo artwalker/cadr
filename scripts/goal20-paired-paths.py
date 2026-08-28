@@ -122,7 +122,7 @@ METRICS = {
     "ai_crypto_model_data": ("manifest", "schema_version", "structure_hash", "generated_at", "file_count", "openai_json_hash", "anthropic_json_hash"),
     "ai_crypto": ("hmac", "fox", "empty", "long"),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection", "exact_id", "exact_provider", "bare_id", "partial_id", "scoped_id", "scoped_thinking", "miss", "ac_skip", "ac_api", "ac_api_prov", "ac_bearer", "ac_exp", "ac_check", "ac_json", "ac_cred", "ac_noref", "ac_chk_prov", "ac_min_api", "ac_unknown", "ac_help", "ac_help2", "ls_xai", "ls_nodef", "ls_defun", "ls_ok", "ls_fail", "ls_nomodels_sub", "ls_nodef_sub"),
-    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image", "png_width", "png_height", "gif_width", "gif_height", "miss", "png_mime", "jpeg_mime", "gif_mime", "webp_mime", "miss_mime", "gemini", "flux", "unknown", "note_resized", "note_half", "note_plain", "api_fixture", "api_unknown", "om_gemini_n", "om_gemini_text", "om_flux_n", "om_flux_text", "oc_text_type", "oc_text", "oc_img_type", "oc_img_url", "oc_ok", "pd_ok_mime", "pd_ok_data", "pd_ok", "pd_miss", "pd_plain"),
+    "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image", "png_width", "png_height", "gif_width", "gif_height", "miss", "png_mime", "jpeg_mime", "gif_mime", "webp_mime", "miss_mime", "gemini", "flux", "unknown", "note_resized", "note_half", "note_plain", "api_fixture", "api_unknown", "om_gemini_n", "om_gemini_text", "om_flux_n", "om_flux_text", "oc_text_type", "oc_text", "oc_img_type", "oc_img_url", "oc_ok", "pd_ok_mime", "pd_ok_data", "pd_ok", "pd_miss", "pd_plain", "us_in", "us_out", "us_cr", "us_cw", "us_in2", "us_out2", "us_cr2", "us_cw2", "poi_id", "poi_text", "poi_n", "poi_mime", "poi_data", "poi_in", "poi_out", "er_auth", "er_hit", "er_abort", "er_flag", "er_prov"),
     "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats", "line_chars", "newline", "payload", "line_count", "first", "second", "last_line", "tl_off", "tl_high", "tl_xh", "tl_max", "tl_xh_down", "tl_unk", "tl_full_n", "tl_short_n", "ss_user", "ss_asst", "ss_tool", "ss_calls", "ss_total", "ss_id"),
     "tui_latex": ("render", "normalize_output", "e_mc2", "frac_inline", "greek", "frac_display_newlines", "unknown_miss", "empty", "alpha", "frac", "script", "operator", "marker_edge"),
     "tui_mermaid": ("render", "source_box", "transform", "mm_lr_w", "mm_lr_first", "mm_lr_rows", "mm_empty", "mm_unk", "mm_cjk_w", "sb_wide_w", "sb_wide_first", "sb_narrow_rows", "sb_empty_w", "tf_ok", "tf_art", "tf_off", "tf_think", "tf_wide", "tf_len"),
@@ -151,7 +151,7 @@ METRICS = {
     "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth", "count", "baseline", "snippet_count", "read_first", "option_count", "auth_pairs_digest", "vertex_structured", "bedrock_structured"),
     "ai_runtime_faux": ("blocks", "text_len", "text", "think_len", "think"),
     "http_transport": ("parse_url", "https_scheme", "https_host", "https_path", "http_scheme", "http_host", "http_port", "http_path"),
-    "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup", "cancellation_wait", "redacted_types", "threads_join"),
+    "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup", "cancellation_wait", "redacted_types", "threads_join", "ca_live", "ca_abort", "ca_clear", "ca_pred", "rd_keep", "rd_secret", "rd_token", "rd_mark", "th_absent", "th_current", "th_joined"),
     "session_pipeline": ("session_load", "context_walk", "session_leaf_id", "entry_count", "leaf_id", "session_id", "session_name", "context_entry_count", "context_message_count", "context_thinking_level", "context_model"),
     "storage_journal": ("journal_read", "journal_append", "journal_entry_count", "read_file_entry_count", "append_entry_count", "session_entry_count", "written_file_entry_count"),
     "sqlite_session": ("open_walk", "entry_count", "leaf_id", "ingested_entry_count", "session_id", "source_leaf_id"),
@@ -543,6 +543,18 @@ RATIO_CEILINGS = {
     "evals_harness.content_text": 8.0,
     "evals_harness.transcript_event": 8.0,
     "evals_harness.elapsed": 8.0,
+    # Frozen from the first n=5 image_runtime.openrouter_usage leftover
+    # pair: observed 4.218x (2.167 / 0.514 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "image_runtime.openrouter_usage": 8.0,
+    # Frozen from the first n=5 image_runtime.parse_openrouter_images leftover
+    # pair: observed 2.986x (3.188 / 1.068 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "image_runtime.parse_openrouter_images": 8.0,
+    # Frozen from the first n=5 image_runtime.error_result leftover
+    # pair: observed 3.028x (1.047 / 0.346 us). 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "image_runtime.error_result": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -1989,40 +2001,7 @@ OBSERVED_EXACT = {
         "ls_nomodels_sub",
         "ls_nodef_sub",
     ),
-    "image_runtime": (
-        "png_width",
-        "png_height",
-        "gif_width",
-        "gif_height",
-        "miss",
-        "png_mime",
-        "jpeg_mime",
-        "gif_mime",
-        "webp_mime",
-        "miss_mime",
-        "gemini",
-        "flux",
-        "unknown",
-        "note_resized",
-        "note_half",
-        "note_plain",
-        "api_fixture",
-        "api_unknown",
-        "om_gemini_n",
-        "om_gemini_text",
-        "om_flux_n",
-        "om_flux_text",
-        "oc_text_type",
-        "oc_text",
-        "oc_img_type",
-        "oc_img_url",
-        "oc_ok",
-        "pd_ok_mime",
-        "pd_ok_data",
-        "pd_ok",
-        "pd_miss",
-        "pd_plain",
-    ),
+    "image_runtime": ("png_width", "png_height", "gif_width", "gif_height", "miss", "png_mime", "jpeg_mime", "gif_mime", "webp_mime", "miss_mime", "gemini", "flux", "unknown", "note_resized", "note_half", "note_plain", "api_fixture", "api_unknown", "om_gemini_n", "om_gemini_text", "om_flux_n", "om_flux_text", "oc_text_type", "oc_text", "oc_img_type", "oc_img_url", "oc_ok", "pd_ok_mime", "pd_ok_data", "pd_ok", "pd_miss", "pd_plain", "us_in", "us_out", "us_cr", "us_cw", "us_in2", "us_out2", "us_cr2", "us_cw2", "poi_id", "poi_text", "poi_n", "poi_mime", "poi_data", "poi_in", "poi_out", "er_auth", "er_hit", "er_abort", "er_flag", "er_prov"),
     "cli_print_rpc": (
         "line_chars",
         "newline",

@@ -26,6 +26,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `image_runtime.api_provider` | 0.23 | 0.21 | 1.09× | 8.00× | measure-only pair `7823f9c15`; fixture registry lookup; sub-µs variance | invent pause；地板优化另刀 |
 | `image_runtime.openrouter_content` | 1.367 | 0.409 | 3.34× | 8.00× | measure-only pair 299; OpenRouter content parts on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
 | `image_runtime.parse_data_image` | 0.555 | 0.387 | 1.43× | 8.00× | measure-only pair 300; data-URL parse on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
+| `image_runtime.openrouter_usage` | 2.167 | 0.514 | 4.22× | 8.00× | measure-only pair 367; OpenRouter usage parse on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
+| `image_runtime.parse_openrouter_images` | 3.188 | 1.068 | 2.99× | 8.00× | measure-only pair 368; OpenRouter image response parse on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
+| `image_runtime.error_result` | 1.047 | 0.346 | 3.03× | 8.00× | measure-only pair 369; image error/abort mapping on `src/cadr-ai/images.lisp` | invent pause；地板优化另刀 |
 | `cli_print_rpc.jsonl_line` | 3.3 | 0.25 | 13.21× | 8.00× | measure-only pair `7178273d6`; **ratio > named ceiling**; sub-µs path — gate uses variance/10µs floor | invent pause；地板/抬天花板另刀 |
 | `tui_latex.render` | 64.4 | 25.8 | 2.49× | 3.00× | measure-only pair `d73577497` | invent pause；地板优化另刀 |
 | `tui_theme_overlay.osc11_bg` | 3.8 | 3.3 | 1.16× | 8.00× | measure-only pair `5f8210ae6` | invent pause；地板优化另刀 |
