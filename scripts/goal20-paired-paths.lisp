@@ -9498,7 +9498,7 @@
 
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
-  (let ((ansi (run-cli-support-strip-ansi))
+  (let* ((ansi (run-cli-support-strip-ansi))
         (paths (run-cli-support-normalize-path))
         (timings (run-cli-support-timings))
         (bus (run-cli-support-event-bus))
