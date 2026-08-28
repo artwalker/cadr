@@ -137,7 +137,7 @@ METRICS = {
     "tui_undo_stack": ("push_pop", "empty_len", "after_two", "pop_n", "after_pop", "clone_n", "after_clear"),
     "tui_autocomplete": ("suggest_apply", "slash_count", "slash_help", "slash_hello", "slash_prefix", "quote_count", "quote_first_len", "force_count", "force_hello", "force_help", "at_count", "apply_col", "apply_len"),
     "tui_keybindings": ("resolve_match", "left_count", "left_ctrl_b", "hist_count", "enter_submit", "tab_tab", "enter_undo", "conflict_count", "conflict_key_len"),
-    "tui_stdin_buffer": ("process", "hello_count", "leftover", "up_len", "paste_len", "tail_count"),
+    "tui_stdin_buffer": ("process", "hello_count", "leftover", "up_len", "paste_len", "tail_count", "flush", "clear", "contents"),
     "tui_input_component": ("edit", "after_insert", "after_bs", "after_kill", "after_yank", "last_code"),
     "tui_native_modifiers": ("pressed", "shift", "control", "option", "command"),
     "tui_settings_list": ("apply_filter", "he_count", "he_hello", "he_help", "wo_count", "zz_count", "he_selected"),
@@ -678,6 +678,21 @@ RATIO_CEILINGS = {
     "output_accumulator.last_line_bytes": 8.0,
     "output_accumulator.needs_file": 8.0,
     "output_accumulator.close_temp_file": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_stdin_buffer.flush leftover pair (samples=5): observed
+    # 0.14x (0.392 / 2.818 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "tui_stdin_buffer.flush": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_stdin_buffer.clear leftover pair (samples=5): observed
+    # 0.17x (0.710 / 4.129 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "tui_stdin_buffer.clear": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_stdin_buffer.contents leftover pair (samples=5): observed
+    # 0.15x (0.715 / 4.615 us). cadr leads. 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "tui_stdin_buffer.contents": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -2425,6 +2440,20 @@ OBSERVED_EXACT = {
         "up_len",
         "paste_len",
         "tail_count",
+        "fl_empty",
+        "fl_before",
+        "fl_n",
+        "fl_seq",
+        "fl_after",
+        "cl_before",
+        "cl_after",
+        "cl_hello",
+        "cl_final",
+        "ct_empty",
+        "ct_csi",
+        "ct_done",
+        "ct_again",
+        "ct_n",
     ),
     "tui_input_component": (
         "after_insert",

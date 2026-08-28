@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `tui_stdin_buffer.flush` (`stdin-buffer-flush`
+  on `src/cadr-tui/stdin-buffer.lisp` vs baseline `StdinBuffer.flush`).
+  Observed `fl_empty` / `fl_before` / `fl_n` / `fl_seq` / `fl_after` exact.
+  n=5 **0.139×** (0.392 / 2.818 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Pairs 424–426. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `tui_stdin_buffer.clear` (`stdin-buffer-clear`
+  on `src/cadr-tui/stdin-buffer.lisp` vs baseline `StdinBuffer.clear`).
+  Observed `cl_before` / `cl_after` / `cl_hello` / `cl_final` exact.
+  n=5 **0.172×** (0.710 / 4.129 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13 leftover: pair `tui_stdin_buffer.contents`
+  (`stdin-buffer-contents` on `src/cadr-tui/stdin-buffer.lisp` vs baseline
+  `StdinBuffer.getBuffer`). Observed `ct_empty` / `ct_csi` / `ct_done` /
+  `ct_again` / `ct_n` exact. n=5 **0.155×** (0.715 / 4.615 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `output_accumulator.last_line_bytes`
   (`output-accumulator-last-line-bytes` on
   `src/cadr-cli/output-accumulator.lisp` vs

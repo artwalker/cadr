@@ -680,6 +680,48 @@ TUI frame. Observed `hello_count` / `leftover` /
 `needs-pair`. First Friend-MachineD freeze **0.33×**
 (2.3 / 6.9 µs), ceiling 8.0. Same commit no optimize.
 
+### Pair 424 — `tui_stdin_buffer` (flush)
+
+| metric | cadr | pi |
+|---|---|---|
+| `flush` | `stdin-buffer-flush` (`src/cadr-tui/stdin-buffer.lisp`) | `StdinBuffer.flush` (`packages/tui/src/stdin-buffer.ts`) |
+
+Leftover sibling of Pair 46 `process` on the same `stdin-buffer.lisp` file.
+Timed work is empty flush plus incomplete CSI `ESC[` flush — not `process`.
+Observed `fl_empty` / `fl_before` / `fl_n` / `fl_seq` / `fl_after` are
+exact (0 / 2 / 1 / 2 / 0). First n=5 freeze **0.139×** (0.392 / 2.818 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 425 — `tui_stdin_buffer` (clear)
+
+| metric | cadr | pi |
+|---|---|---|
+| `clear` | `stdin-buffer-clear` (`src/cadr-tui/stdin-buffer.lisp`) | `StdinBuffer.clear` (`packages/tui/src/stdin-buffer.ts`) |
+
+Leftover sibling of Pairs 46/424 on the same `stdin-buffer.lisp` file.
+Timed work is leftover CSI then `clear` then `hello` — not `process`.
+Observed `cl_before` / `cl_after` / `cl_hello` / `cl_final` are exact
+(2 / 0 / 5 / 0). First n=5 freeze **0.172×** (0.710 / 4.129 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 426 — `tui_stdin_buffer` (contents)
+
+| metric | cadr | pi |
+|---|---|---|
+| `contents` | `stdin-buffer-contents` (`src/cadr-tui/stdin-buffer.lisp`) | `StdinBuffer.getBuffer` (`packages/tui/src/stdin-buffer.ts`) |
+
+Leftover sibling of Pairs 46/424–425 on the same `stdin-buffer.lisp` file.
+Timed work is empty / incomplete CSI / complete `A` / leftover peek — not
+`process`. Observed `ct_empty` / `ct_csi` / `ct_done` / `ct_again` / `ct_n`
+are exact (0 / 2 / 0 / 2 / 4). First n=5 freeze **0.155×** (0.715 / 4.615 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
 ### Pair 47 — `tui_input_component`
 
 | metric | cadr | pi |
@@ -6142,7 +6184,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/renderer/main-screen.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 78 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/stdin-buffer.lisp` | 232 | `tui_stdin_buffer.process` |
+| `src/cadr-tui/stdin-buffer.lisp` | 232 | `tui_stdin_buffer.process`, `tui_stdin_buffer.flush`, `tui_stdin_buffer.clear`, `tui_stdin_buffer.contents` |
 | `src/cadr-tui/terminal-colors.lisp` | 191 | `tui_theme_overlay.osc11_bg` |
 | `src/cadr-tui/terminal-image.lisp` | 686 | `image_runtime.dimensions` |
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

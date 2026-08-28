@@ -49,6 +49,7 @@
 ;;;;  30. tui_autocomplete get-suggestions + apply vs CombinedAutocompleteProvider
 ;;;;  31. tui_keybindings make-keybindings-manager vs KeybindingsManager / getKeybindings
 ;;;;  32. tui_stdin_buffer stdin-buffer-process vs StdinBuffer.process
+;;;;      leftover: flush / clear / contents vs StdinBuffer.flush / clear / getBuffer
 ;;;;  33. tui_input_component handle-event vs Input.handleInput
 ;;;;  34. tui_native_modifiers is-native-modifier-pressed vs isNativeModifierPressed
 ;;;;  35. tui_settings_list apply-filter vs SettingsList.applyFilter
@@ -507,6 +508,9 @@
     ("tui_autocomplete.suggest_apply" . 50)
     ("tui_keybindings.resolve_match" . 50)
     ("tui_stdin_buffer.process" . 50)
+    ("tui_stdin_buffer.flush" . 50)
+    ("tui_stdin_buffer.clear" . 50)
+    ("tui_stdin_buffer.contents" . 50)
     ("tui_input_component.edit" . 50)
     ("tui_native_modifiers.pressed" . 50)
     ("tui_settings_list.apply_filter" . 50)
@@ -11559,8 +11563,64 @@
              (length (or (first paste-seq) ""))
              (length tail-seq))))))))
 
+(defun stdin-buffer-flush-len (result)
+  (length (or result '())))
+
+(defun run-tui-stdin-buffer-flush ()
+  (let ((empty (cadr-tui:make-stdin-buffer))
+        (buffer (cadr-tui:make-stdin-buffer)))
+    (let ((empty-n
+            (stdin-buffer-flush-len
+             (cadr-tui:stdin-buffer-flush empty))))
+      (cadr-tui:stdin-buffer-process
+       buffer (format nil "~C[" #\Escape))
+      (let* ((before
+               (length (cadr-tui:stdin-buffer-contents buffer)))
+             (flushed (cadr-tui:stdin-buffer-flush buffer))
+             (after
+               (length (cadr-tui:stdin-buffer-contents buffer))))
+        (list empty-n before (stdin-buffer-flush-len flushed)
+              (length (or (first flushed) "")) after)))))
+
+(defun run-tui-stdin-buffer-clear ()
+  (let ((buffer (cadr-tui:make-stdin-buffer)))
+    (cadr-tui:stdin-buffer-process
+     buffer (format nil "~C[" #\Escape))
+    (let ((before
+            (length (cadr-tui:stdin-buffer-contents buffer))))
+      (cadr-tui:stdin-buffer-clear buffer)
+      (let ((after
+              (length (cadr-tui:stdin-buffer-contents buffer))))
+        (multiple-value-bind (hello)
+            (cadr-tui:stdin-buffer-process buffer "hello")
+          (cadr-tui:stdin-buffer-clear buffer)
+          (list before after (length hello)
+                (length
+                 (cadr-tui:stdin-buffer-contents buffer))))))))
+
+(defun run-tui-stdin-buffer-contents ()
+  (let ((empty (cadr-tui:make-stdin-buffer))
+        (buffer (cadr-tui:make-stdin-buffer)))
+    (let ((empty-n
+            (length (cadr-tui:stdin-buffer-contents empty))))
+      (cadr-tui:stdin-buffer-process
+       buffer (format nil "~C[" #\Escape))
+      (let ((csi
+              (length (cadr-tui:stdin-buffer-contents buffer))))
+        (cadr-tui:stdin-buffer-process buffer "A")
+        (let ((done
+                (length (cadr-tui:stdin-buffer-contents buffer))))
+          (cadr-tui:stdin-buffer-process
+           buffer (format nil "~C[" #\Escape))
+          (list empty-n csi done
+                (length (cadr-tui:stdin-buffer-contents buffer))
+                4))))))
+
 (defun measure-tui-stdin-buffer ()
-  (let ((observed (run-tui-stdin-buffer)))
+  (let ((observed (run-tui-stdin-buffer))
+        (flush (run-tui-stdin-buffer-flush))
+        (cleared (run-tui-stdin-buffer-clear))
+        (contents (run-tui-stdin-buffer-contents)))
     (json-object
      "observed"
      (json-object
@@ -11568,12 +11628,41 @@
       "leftover" (second observed)
       "up_len" (third observed)
       "paste_len" (fourth observed)
-      "tail_count" (fifth observed))
+      "tail_count" (fifth observed)
+      "fl_empty" (first flush)
+      "fl_before" (second flush)
+      "fl_n" (third flush)
+      "fl_seq" (fourth flush)
+      "fl_after" (fifth flush)
+      "cl_before" (first cleared)
+      "cl_after" (second cleared)
+      "cl_hello" (third cleared)
+      "cl_final" (fourth cleared)
+      "ct_empty" (first contents)
+      "ct_csi" (second contents)
+      "ct_done" (third contents)
+      "ct_again" (fourth contents)
+      "ct_n" (fifth contents))
      "process"
      (collect "tui_stdin_buffer.process"
               (lambda ()
                 (lambda ()
-                  (run-tui-stdin-buffer)))))))
+                  (run-tui-stdin-buffer))))
+     "flush"
+     (collect "tui_stdin_buffer.flush"
+              (lambda ()
+                (lambda ()
+                  (run-tui-stdin-buffer-flush))))
+     "clear"
+     (collect "tui_stdin_buffer.clear"
+              (lambda ()
+                (lambda ()
+                  (run-tui-stdin-buffer-clear))))
+     "contents"
+     (collect "tui_stdin_buffer.contents"
+              (lambda ()
+                (lambda ()
+                  (run-tui-stdin-buffer-contents)))))))
 
 (defun feed-single-line-text (input text)
   (loop for ch across text
@@ -19832,6 +19921,12 @@
       "src/cadr-tui/keybindings.lisp make-keybindings-manager + keybinding-keys + keybinding-matches-p"
       "tui_stdin_buffer.process"
       "src/cadr-tui/stdin-buffer.lisp stdin-buffer-process"
+      "tui_stdin_buffer.flush"
+      "src/cadr-tui/stdin-buffer.lisp stdin-buffer-flush"
+      "tui_stdin_buffer.clear"
+      "src/cadr-tui/stdin-buffer.lisp stdin-buffer-clear"
+      "tui_stdin_buffer.contents"
+      "src/cadr-tui/stdin-buffer.lisp stdin-buffer-contents"
       "tui_input_component.edit"
       "src/cadr-tui/input-component.lisp single-line-input-handle-event"
       "tui_native_modifiers.pressed"
