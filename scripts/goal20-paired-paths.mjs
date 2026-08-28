@@ -407,6 +407,9 @@ const REPETITIONS = {
 	"cli_selectors.thinking_selector_selected_level": 50,
 	"cli_selectors.thinking_level_description_line": 50,
 	"cli_selectors.render_thinking_selector": 50,
+	"cli_selectors.trust_option_saved_p": 50,
+	"cli_selectors.make_trust_selector_state": 50,
+	"cli_selectors.render_trust_selector": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -22840,6 +22843,120 @@ function runCliSelectorsRenderThinkingSelector() {
 }
 
 
+function trustOptionSavedP(option, savedEntry) {
+	return Boolean(
+		savedEntry &&
+			option.savedPath !== undefined &&
+			Boolean(savedEntry.decision) === Boolean(option.trusted) &&
+			savedEntry.path === option.savedPath,
+	);
+}
+
+
+function runCliSelectorsTrustOptionSavedP() {
+	const { child, parent } = stageProjectTrustOptionsFixtures();
+	const options = trustManagerModule.getProjectTrustOptions(child);
+	const trust = options[0];
+	const parentOption = options[1];
+	const distrust = options[2];
+	return {
+		tosp_nil: trustOptionSavedP(trust, null) ? "true" : "false",
+		tosp_trust: trustOptionSavedP(trust, { path: child, decision: true })
+			? "true"
+			: "false",
+		tosp_parent: trustOptionSavedP(parentOption, { path: parent, decision: true })
+			? "true"
+			: "false",
+		tosp_mismatch: trustOptionSavedP(trust, { path: child, decision: false })
+			? "true"
+			: "false",
+		tosp_distrust: trustOptionSavedP(distrust, { path: child, decision: false })
+			? "true"
+			: "false",
+	};
+}
+
+
+function makeTrustSelectorState(cwd, { savedEntry = null, projectTrusted = false } = {}) {
+	const options = trustManagerModule.getProjectTrustOptions(cwd);
+	const savedPosition = options.findIndex((option) => trustOptionSavedP(option, savedEntry));
+	return {
+		cwd,
+		savedEntry,
+		projectTrusted: Boolean(projectTrusted),
+		options,
+		selected: savedPosition >= 0 ? savedPosition : 0,
+	};
+}
+
+
+function encodeMakeTrustSelectorState(cwd, extra = {}) {
+	const state = makeTrustSelectorState(cwd, extra);
+	return `${state.selected}|${state.options.length}|${state.projectTrusted ? "true" : "false"}`;
+}
+
+
+function runCliSelectorsMakeTrustSelectorState() {
+	const { child, parent, single } = stageProjectTrustOptionsFixtures();
+	return {
+		mtss_child: encodeMakeTrustSelectorState(child),
+		mtss_saved: encodeMakeTrustSelectorState(child, {
+			savedEntry: { path: child, decision: true },
+			projectTrusted: true,
+		}),
+		mtss_inherited: encodeMakeTrustSelectorState(child, {
+			savedEntry: { path: parent, decision: true },
+			projectTrusted: true,
+		}),
+		mtss_distrust: encodeMakeTrustSelectorState(child, {
+			savedEntry: { path: child, decision: false },
+			projectTrusted: false,
+		}),
+		mtss_single: encodeMakeTrustSelectorState(single),
+	};
+}
+
+
+function renderTrustSelector(state, width) {
+	const body = state.options.map((option, index) => {
+		const selectedP = index === state.selected;
+		const savedP = trustOptionSavedP(option, state.savedEntry);
+		return `${selectedP ? "→ " : "  "}${option.label}${savedP ? " ✓" : ""}`;
+	});
+	const session = state.projectTrusted ? "trusted" : "untrusted";
+	const decision = encodeTrustDecisionDescription(state.cwd, state.savedEntry);
+	return `Project trust|${decision}|${session}|${body.join(";")}|${width}`;
+}
+
+
+function encodeRenderTrustSelector(cwd, width, extra = {}) {
+	const state = makeTrustSelectorState(cwd, extra);
+	renderTrustSelector(state, width);
+	return `${state.selected}|${state.options.length}|${width}|${state.projectTrusted ? "true" : "false"}|${encodeTrustDecisionDescription(cwd, state.savedEntry)}`;
+}
+
+
+function runCliSelectorsRenderTrustSelector() {
+	const { child, parent, single } = stageProjectTrustOptionsFixtures();
+	return {
+		rtrs_default: encodeRenderTrustSelector(child, 40),
+		rtrs_saved: encodeRenderTrustSelector(child, 40, {
+			savedEntry: { path: child, decision: true },
+			projectTrusted: true,
+		}),
+		rtrs_inherited: encodeRenderTrustSelector(child, 40, {
+			savedEntry: { path: parent, decision: true },
+			projectTrusted: true,
+		}),
+		rtrs_distrust: encodeRenderTrustSelector(child, 40, {
+			savedEntry: { path: child, decision: false },
+			projectTrusted: false,
+		}),
+		rtrs_single: encodeRenderTrustSelector(single, 80),
+	};
+}
+
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -23043,6 +23160,9 @@ async function measureCliSelectorsSessionSearch() {
 	const thinkingSelectorSelectedLevelResults = runCliSelectorsThinkingSelectorSelectedLevel();
 	const thinkingLevelDescriptionLineResults = runCliSelectorsThinkingLevelDescriptionLine();
 	const renderThinkingSelectorResults = runCliSelectorsRenderThinkingSelector();
+	const trustOptionSavedPResults = runCliSelectorsTrustOptionSavedP();
+	const makeTrustSelectorStateResults = runCliSelectorsMakeTrustSelectorState();
+	const renderTrustSelectorResults = runCliSelectorsRenderTrustSelector();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -23407,6 +23527,9 @@ async function measureCliSelectorsSessionSearch() {
 		...thinkingSelectorSelectedLevelResults,
 		...thinkingLevelDescriptionLineResults,
 		...renderThinkingSelectorResults,
+		...trustOptionSavedPResults,
+		...makeTrustSelectorStateResults,
+		...renderTrustSelectorResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -24197,6 +24320,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.render_thinking_selector",
 			() => {
 				return () => runCliSelectorsRenderThinkingSelector();
+			},
+		),
+		trust_option_saved_p: await collect(
+			"cli_selectors.trust_option_saved_p",
+			() => {
+				return () => runCliSelectorsTrustOptionSavedP();
+			},
+		),
+		make_trust_selector_state: await collect(
+			"cli_selectors.make_trust_selector_state",
+			() => {
+				return () => runCliSelectorsMakeTrustSelectorState();
+			},
+		),
+		render_trust_selector: await collect(
+			"cli_selectors.render_trust_selector",
+			() => {
+				return () => runCliSelectorsRenderTrustSelector();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -27099,6 +27240,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts LEVEL_DESCRIPTIONS · default suffix",
 			"cli_selectors.render_thinking_selector":
 				"packages/coding-agent/src/modes/interactive/components/thinking-selector.ts ThinkingSelectorComponent layout",
+			"cli_selectors.trust_option_saved_p":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts isSavedOption",
+			"cli_selectors.make_trust_selector_state":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent constructor",
+			"cli_selectors.render_trust_selector":
+				"packages/coding-agent/src/modes/interactive/components/trust-selector.ts TrustSelectorComponent layout",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":
