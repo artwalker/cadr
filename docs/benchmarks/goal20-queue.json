@@ -919,6 +919,42 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 496,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/modes/rpc/mode.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.handle_bad_json",
+   "branch": "cursor/rpc-mode-leftovers-496-498-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 496-498, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 497,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/modes/rpc/mode.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.handle_not_object",
+   "branch": "cursor/rpc-mode-leftovers-496-498-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 496-498, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 498,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/modes/rpc/mode.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.handle_ui_miss",
+   "branch": "cursor/rpc-mode-leftovers-496-498-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 496-498, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
   }
  ],
  "mergeQueue": []

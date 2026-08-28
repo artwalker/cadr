@@ -32,6 +32,9 @@
 ;;;;  19. image_runtime image-dimensions vs getImageDimensions
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
 ;;;;      leftover: read-rpc-jsonl-lines vs attachJsonlLineReader
+;;;; 496. cli_print_rpc rpc-handle-line bad JSON vs handleInputLine JSON.parse catch
+;;;; 497. cli_print_rpc rpc-handle-line non-object vs require-rpc-object
+;;;; 498. cli_print_rpc rpc-handle-line unknown UI id vs handleInputLine extension_ui_response
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -401,6 +404,9 @@
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
     ("cli_print_rpc.session_stats" . 20)
+    ("cli_print_rpc.handle_bad_json" . 50)
+    ("cli_print_rpc.handle_not_object" . 50)
+    ("cli_print_rpc.handle_ui_miss" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -8057,6 +8063,85 @@
      (length full-av)
      (length short-av))))
 
+(defun rpc-handle-line-raw (line)
+  (let ((out (make-string-output-stream)))
+    (cadr-cli::rpc-handle-line
+     (cadr-cli::%make-rpc-state :output out)
+     line)
+    (get-output-stream-string out)))
+
+(defun rpc-handle-line-flags (raw expected-command expected-id)
+  (let* ((newline-p
+           (and (plusp (length raw))
+                (char= #\Newline (char raw (1- (length raw))))))
+         (payload
+           (if newline-p
+               (subseq raw 0 (1- (length raw)))
+               raw))
+         (object
+           (ignore-errors (cadr-ai::parse-json payload)))
+         (command
+           (let ((value
+                   (and object (cadr-ai::json-get object "command"))))
+             (cond
+               ((stringp value) (copy-seq value))
+               ((and (vectorp value) (not (stringp value)))
+                (coerce value 'string))
+               (t ""))))
+         (success
+           (and object (cadr-ai::json-get object "success")))
+         (id
+           (let ((value
+                   (and object (cadr-ai::json-get object "id"))))
+             (cond
+               ((stringp value) (copy-seq value))
+               ((and (vectorp value) (not (stringp value)))
+                (coerce value 'string))
+               (t nil))))
+         (err
+           (let ((value
+                   (and object (cadr-ai::json-get object "error"))))
+             (cond
+               ((stringp value) (copy-seq value))
+               ((and (vectorp value) (not (stringp value)))
+                (coerce value 'string))
+               ((null value) "")
+               (t (princ-to-string value))))))
+    (list
+     (if (string= command expected-command)
+         1
+         0)
+     (if success 1 0)
+     (if (stringp id) 1 0)
+     (if (and expected-id
+              (stringp id)
+              (string= id expected-id))
+         1
+         0)
+     (if newline-p 1 0)
+     (if (search "Unknown extension UI request id" err)
+         1
+         0))))
+
+(defun run-cli-print-rpc-handle-bad-json ()
+  (rpc-handle-line-flags
+   (rpc-handle-line-raw "not-json")
+   "parse"
+   nil))
+
+(defun run-cli-print-rpc-handle-not-object ()
+  (rpc-handle-line-flags
+   (rpc-handle-line-raw "[]")
+   "parse"
+   nil))
+
+(defun run-cli-print-rpc-handle-ui-miss ()
+  (rpc-handle-line-flags
+   (rpc-handle-line-raw
+    "{\"type\":\"extension_ui_response\",\"id\":\"missing\"}")
+   "extension_ui_response"
+   "missing"))
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p
@@ -8072,7 +8157,10 @@
            (cadr-agent:load-session (fixture-path "session.jsonl")))
          (stats-obs
            (cli-print-rpc-session-stats-observed
-            (run-cli-print-rpc-session-stats session))))
+            (run-cli-print-rpc-session-stats session)))
+         (bad-json (run-cli-print-rpc-handle-bad-json))
+         (not-object (run-cli-print-rpc-handle-not-object))
+         (ui-miss (run-cli-print-rpc-handle-ui-miss)))
     (json-object
      "observed"
      (json-object
@@ -8096,7 +8184,20 @@
       "ss_tool" (nth 2 stats-obs)
       "ss_calls" (nth 3 stats-obs)
       "ss_total" (nth 4 stats-obs)
-      "ss_id" (nth 5 stats-obs))
+      "ss_id" (nth 5 stats-obs)
+      "bj_cmd" (nth 0 bad-json)
+      "bj_ok" (nth 1 bad-json)
+      "bj_id" (nth 2 bad-json)
+      "bj_nl" (nth 4 bad-json)
+      "no_cmd" (nth 0 not-object)
+      "no_ok" (nth 1 not-object)
+      "no_id" (nth 2 not-object)
+      "no_nl" (nth 4 not-object)
+      "um_cmd" (nth 0 ui-miss)
+      "um_ok" (nth 1 ui-miss)
+      "um_id" (nth 3 ui-miss)
+      "um_nl" (nth 4 ui-miss)
+      "um_unk" (nth 5 ui-miss))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -8116,7 +8217,22 @@
      (collect "cli_print_rpc.session_stats"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-session-stats session)))))))
+                  (run-cli-print-rpc-session-stats session))))
+     "handle_bad_json"
+     (collect "cli_print_rpc.handle_bad_json"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-bad-json))))
+     "handle_not_object"
+     (collect "cli_print_rpc.handle_not_object"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-not-object))))
+     "handle_ui_miss"
+     (collect "cli_print_rpc.handle_ui_miss"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-handle-ui-miss)))))))
 
 (defparameter *mermaid-lr*
   (format nil "flowchart LR~%  A-->B"))
@@ -16730,6 +16846,12 @@
       "src/cadr-cli/modes/rpc/models.lisp rpc-clamp-thinking-level"
       "cli_print_rpc.session_stats"
       "src/cadr-cli/modes/rpc/sessions.lisp rpc-session-stats"
+      "cli_print_rpc.handle_bad_json"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line JSON.parse catch"
+      "cli_print_rpc.handle_not_object"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line require-rpc-object"
+      "cli_print_rpc.handle_ui_miss"
+      "src/cadr-cli/modes/rpc/mode.lisp rpc-handle-line unknown extension_ui_response"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"

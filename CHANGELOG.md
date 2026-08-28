@@ -9,6 +9,23 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_print_rpc.handle_bad_json`
+  (`rpc-handle-line` on `src/cadr-cli/modes/rpc/mode.lisp` vs
+  `handleInputLine` JSON.parse catch). Observed `bj_cmd` / `bj_ok` /
+  `bj_id` / `bj_nl` exact. n=5 freeze pending on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 496). `nextPairNum` left
+  unchanged.
+- Goal 20 P.13 leftover: pair `cli_print_rpc.handle_not_object`
+  (`rpc-handle-line` on `src/cadr-cli/modes/rpc/mode.lisp` vs
+  require-object). Observed `no_cmd` / `no_ok` / `no_id` / `no_nl`
+  exact. n=5 freeze pending on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 497). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_print_rpc.handle_ui_miss`
+  (`rpc-handle-line` on `src/cadr-cli/modes/rpc/mode.lisp` vs
+  unknown `extension_ui_response`). Observed `um_cmd` / `um_ok` /
+  `um_id` / `um_nl` / `um_unk` exact. n=5 freeze pending on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 498).
+  `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

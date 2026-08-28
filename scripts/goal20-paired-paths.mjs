@@ -252,6 +252,9 @@ const REPETITIONS = {
 	"cli_print_rpc.jsonl_read": 50,
 	"cli_print_rpc.clamp_thinking": 50,
 	"cli_print_rpc.session_stats": 20,
+	"cli_print_rpc.handle_bad_json": 50,
+	"cli_print_rpc.handle_not_object": 50,
+	"cli_print_rpc.handle_ui_miss": 50,
 	"tui_latex.render": 20,
 	"tui_latex.normalize_output": 20,
 	"tui_mermaid.render": 20,
@@ -7163,6 +7166,103 @@ async function stageCliPrintRpcSessionStats() {
 	});
 }
 
+function replicaRpcHandleLine(line) {
+	const chunks = [];
+	const output = (obj) => {
+		chunks.push(rpcJsonlModule.serializeJsonLine(obj));
+	};
+	const error = (id, command, message) => {
+		const obj = {
+			type: "response",
+			command,
+			success: false,
+			error: message,
+		};
+		if (id !== undefined && id !== null) {
+			obj.id = id;
+		}
+		return obj;
+	};
+	let parsed;
+	try {
+		parsed = JSON.parse(line);
+	} catch (parseError) {
+		output(
+			error(
+				undefined,
+				"parse",
+				`Failed to parse command: ${
+					parseError instanceof Error ? parseError.message : String(parseError)
+				}`,
+			),
+		);
+		return chunks.join("");
+	}
+	try {
+		if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+			throw new Error("RPC frame must be a JSON object");
+		}
+		if ((parsed.type ?? "") === "extension_ui_response") {
+			const id = parsed.id;
+			if (typeof id !== "string") {
+				throw new Error("RPC field id must be a string");
+			}
+			output(
+				error(id, "extension_ui_response", `Unknown extension UI request id: ${id}`),
+			);
+			return chunks.join("");
+		}
+		throw new Error("unexpected RPC command path");
+	} catch (condition) {
+		output(
+			error(
+				undefined,
+				"parse",
+				`Failed to parse command: ${
+					condition instanceof Error ? condition.message : String(condition)
+				}`,
+			),
+		);
+		return chunks.join("");
+	}
+}
+
+function rpcHandleLineFlags(raw, expectedCommand, expectedId) {
+	const newline = raw.endsWith("\n") ? 1 : 0;
+	const payload = newline ? raw.slice(0, -1) : raw;
+	let obj = {};
+	try {
+		obj = JSON.parse(payload);
+	} catch {
+		obj = {};
+	}
+	const err = typeof obj.error === "string" ? obj.error : "";
+	return [
+		obj.command === expectedCommand ? 1 : 0,
+		obj.success ? 1 : 0,
+		typeof obj.id === "string" ? 1 : 0,
+		expectedId && obj.id === expectedId ? 1 : 0,
+		newline,
+		err.includes("Unknown extension UI request id") ? 1 : 0,
+	];
+}
+
+function runCliPrintRpcHandleBadJson() {
+	return rpcHandleLineFlags(replicaRpcHandleLine("not-json"), "parse", null);
+}
+
+function runCliPrintRpcHandleNotObject() {
+	return rpcHandleLineFlags(replicaRpcHandleLine("[]"), "parse", null);
+}
+
+function runCliPrintRpcHandleUiMiss() {
+	return rpcHandleLineFlags(
+		replicaRpcHandleLine('{"type":"extension_ui_response","id":"missing"}'),
+		"extension_ui_response",
+		"missing",
+	);
+}
+
 function measureCliPrintRpcSessionStatsObserved(stats) {
 	return {
 		ss_user: stats.userMessages,
@@ -7177,10 +7277,26 @@ function measureCliPrintRpcSessionStatsObserved(stats) {
 async function measureCliPrintRpc() {
 	const staged = await stageCliPrintRpcSessionStats();
 	try {
+		const badJson = runCliPrintRpcHandleBadJson();
+		const notObject = runCliPrintRpcHandleNotObject();
+		const uiMiss = runCliPrintRpcHandleUiMiss();
 		const observed = {
 			...measureCliPrintRpcObserved(runCliPrintRpc(), await runCliPrintRpcRead()),
 			...runCliPrintRpcClampThinking(),
 			...measureCliPrintRpcSessionStatsObserved(staged.session.getSessionStats()),
+			bj_cmd: badJson[0],
+			bj_ok: badJson[1],
+			bj_id: badJson[2],
+			bj_nl: badJson[4],
+			no_cmd: notObject[0],
+			no_ok: notObject[1],
+			no_id: notObject[2],
+			no_nl: notObject[4],
+			um_cmd: uiMiss[0],
+			um_ok: uiMiss[1],
+			um_id: uiMiss[3],
+			um_nl: uiMiss[4],
+			um_unk: uiMiss[5],
 		};
 		return {
 			jsonl_line: await collect("cli_print_rpc.jsonl_line", () => {
@@ -7194,6 +7310,15 @@ async function measureCliPrintRpc() {
 			}),
 			session_stats: await collect("cli_print_rpc.session_stats", () => {
 				return () => staged.session.getSessionStats();
+			}),
+			handle_bad_json: await collect("cli_print_rpc.handle_bad_json", () => {
+				return () => runCliPrintRpcHandleBadJson();
+			}),
+			handle_not_object: await collect("cli_print_rpc.handle_not_object", () => {
+				return () => runCliPrintRpcHandleNotObject();
+			}),
+			handle_ui_miss: await collect("cli_print_rpc.handle_ui_miss", () => {
+				return () => runCliPrintRpcHandleUiMiss();
 			}),
 			observed,
 		};
@@ -17096,6 +17221,12 @@ const result = {
 				"packages/ai/src/models.ts clampThinkingLevel",
 			"cli_print_rpc.session_stats":
 				"packages/coding-agent/src/core/agent-session.ts AgentSession.getSessionStats",
+			"cli_print_rpc.handle_bad_json":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine JSON.parse catch",
+			"cli_print_rpc.handle_not_object":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine require object",
+			"cli_print_rpc.handle_ui_miss":
+				"packages/coding-agent/src/modes/rpc/rpc-mode.ts handleInputLine unknown extension_ui_response",
 			"tui_latex.render": "packages/tui/src/latex.ts renderLatex",
 			"tui_latex.normalize_output":
 				"packages/tui/src/latex.ts normalizeOutput",
