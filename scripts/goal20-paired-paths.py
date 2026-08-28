@@ -964,11 +964,11 @@ RATIO_CEILINGS = {
     # Measure-only leftover 651; first freeze 12.184× (13.174 / 1.081 µs).
     # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_interactive_controller.syntax_highlight": 20.0,
-    # Measure-only leftover 652; first freeze pending.
+    # Measure-only leftover 652; first freeze 0.240× (4.477 / 18.674 µs).
     "cli_interactive_controller.assistant_price_known": 8.0,
-    # Measure-only leftover 653; first freeze pending.
+    # Measure-only leftover 653; first freeze 1.188× (0.775 / 0.652 µs).
     "cli_interactive_controller.accumulate_usage": 8.0,
-    # Measure-only leftover 654; first freeze pending.
+    # Measure-only leftover 654; first freeze 4.205× (5.050 / 1.201 µs).
     "cli_interactive_controller.append_user_message": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
