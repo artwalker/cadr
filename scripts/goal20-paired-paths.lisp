@@ -183,6 +183,9 @@
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
+;;;; 550. cli_interactive_controller framed-select-title vs ExtensionSelector countdown title
+;;;; 551. cli_interactive_controller extension-overlay-options vs showExtensionCustom resolveOptions
+;;;; 552. cli_interactive_controller extension-custom-ui-visible-p vs OverlayHandle isHidden + OverlayOptions.visible
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -446,6 +449,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.framed_select_title" . 50)
+    ("cli_interactive_controller.extension_overlay_options" . 50)
+    ("cli_interactive_controller.extension_custom_ui_visible" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -9672,13 +9678,105 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defun framed-select-title-encoded (title deadline now)
+  (cadr-cli::framed-select-title
+   (cadr-cli::%make-framed-select-state
+    :title title
+    :deadline deadline)
+   now))
+
+(defun run-cli-interactive-framed-select-title ()
+  ;; Baseline ExtensionSelectorComponent countdown:
+  ;; `${baseTitle} (${Math.ceil(remaining)}s)`. Message is cadr-only; omit it.
+  (list
+   (framed-select-title-encoded "Pick" nil 0d0)
+   (framed-select-title-encoded "Pick" 10.1d0 8.0d0)
+   (framed-select-title-encoded "Pick" 10.0d0 8.0d0)
+   (framed-select-title-encoded "Pick" 8.0d0 8.0d0)
+   (framed-select-title-encoded "Pick" 7.0d0 8.0d0)
+   (framed-select-title-encoded "" 5.5d0 4.0d0)))
+
+(defun overlay-options-encode (options)
+  (if (null options)
+      ""
+      (let ((anchor (getf options :anchor)))
+        (format
+         nil "w:~A|a:~A|ox:~A"
+         (or (getf options :width) "")
+         (if anchor
+             (string-downcase
+              (if (symbolp anchor)
+                  (symbol-name anchor)
+                  (string anchor)))
+             "")
+         (let ((offset (getf options :offset-x)))
+           (if offset offset 0))))))
+
+(defun run-cli-interactive-extension-overlay-options ()
+  ;; Baseline showExtensionCustom resolveOptions: static object, function, or missing.
+  (list
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state)))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options '(:width 50 :anchor :center :offset-x 2))))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options
+      (lambda ()
+        '(:width 40 :anchor :right-center :offset-x -1)))))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options '(:width "50%"))))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options '(:width 0 :anchor :center :offset-x 0))))
+   (overlay-options-encode
+    (cadr-cli::extension-overlay-options
+     (cadr-cli::make-extension-custom-ui-state
+      :overlay-options '(:width 10))))))
+
+(defun extension-custom-ui-visible-encoded (state)
+  (if (cadr-cli::extension-custom-ui-visible-p state) "1" "0"))
+
+(defun run-cli-interactive-extension-custom-ui-visible ()
+  ;; Handle is nil (no OverlayHandle). Pair explicit visible/visible-p flags,
+  ;; not the size callback (cadr does not call OverlayOptions.visible).
+  (list
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options '(:width 50)))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options '(:visible nil)))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options '(:visible-p nil)))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options '(:visible t)))
+   (extension-custom-ui-visible-encoded
+    (cadr-cli::make-extension-custom-ui-state
+     :overlay-options (lambda () nil)))))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (framed-select-title (run-cli-interactive-framed-select-title))
+        (overlay-options (run-cli-interactive-extension-overlay-options))
+        (custom-ui-visible
+          (run-cli-interactive-extension-custom-ui-visible)))
     (json-object
      "observed"
      (json-object
@@ -9709,7 +9807,25 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "fst_plain" (nth 0 framed-select-title)
+      "fst_ceil" (nth 1 framed-select-title)
+      "fst_exact" (nth 2 framed-select-title)
+      "fst_zero" (nth 3 framed-select-title)
+      "fst_neg" (nth 4 framed-select-title)
+      "fst_empty" (nth 5 framed-select-title)
+      "eoo_nil" (nth 0 overlay-options)
+      "eoo_static" (nth 1 overlay-options)
+      "eoo_fn" (nth 2 overlay-options)
+      "eoo_pct" (nth 3 overlay-options)
+      "eoo_zero" (nth 4 overlay-options)
+      "eoo_width" (nth 5 overlay-options)
+      "ecu_default" (nth 0 custom-ui-visible)
+      "ecu_width" (nth 1 custom-ui-visible)
+      "ecu_vis_nil" (nth 2 custom-ui-visible)
+      "ecu_visp_nil" (nth 3 custom-ui-visible)
+      "ecu_vis_t" (nth 4 custom-ui-visible)
+      "ecu_fn_nil" (nth 5 custom-ui-visible))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -9739,7 +9855,22 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "framed_select_title"
+     (collect "cli_interactive_controller.framed_select_title"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-framed-select-title))))
+     "extension_overlay_options"
+     (collect "cli_interactive_controller.extension_overlay_options"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-extension-overlay-options))))
+     "extension_custom_ui_visible"
+     (collect "cli_interactive_controller.extension_custom_ui_visible"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-extension-custom-ui-visible)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -16820,6 +16951,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.framed_select_title"
+      "src/cadr-cli/interactive/extension-ui.lisp framed-select-title"
+      "cli_interactive_controller.extension_overlay_options"
+      "src/cadr-cli/interactive/extension-ui.lisp extension-overlay-options"
+      "cli_interactive_controller.extension_custom_ui_visible"
+      "src/cadr-cli/interactive/extension-ui.lisp extension-custom-ui-visible-p"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

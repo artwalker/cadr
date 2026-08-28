@@ -1370,6 +1370,39 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("rts_fixed", paired.OBSERVED_EXACT["cli_interactive_controller"])
         self.assertIn("rts_bad", paired.OBSERVED_EXACT["cli_interactive_controller"])
         self.assertIn("rts_nil", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("cli_interactive_controller.framed_select_title", RECORD.METRIC_KEYS)
+        self.assertIn("framed_select_title", paired.METRICS["cli_interactive_controller"])
+        self.assertIn(
+            "cli_interactive_controller.framed_select_title", paired.RATIO_CEILINGS
+        )
+        self.assertIn("fst_plain", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("fst_ceil", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn(
+            "cli_interactive_controller.extension_overlay_options", RECORD.METRIC_KEYS
+        )
+        self.assertIn(
+            "extension_overlay_options", paired.METRICS["cli_interactive_controller"]
+        )
+        self.assertIn(
+            "cli_interactive_controller.extension_overlay_options",
+            paired.RATIO_CEILINGS,
+        )
+        self.assertIn("eoo_static", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("eoo_fn", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn(
+            "cli_interactive_controller.extension_custom_ui_visible",
+            RECORD.METRIC_KEYS,
+        )
+        self.assertIn(
+            "extension_custom_ui_visible",
+            paired.METRICS["cli_interactive_controller"],
+        )
+        self.assertIn(
+            "cli_interactive_controller.extension_custom_ui_visible",
+            paired.RATIO_CEILINGS,
+        )
+        self.assertIn("ecu_default", paired.OBSERVED_EXACT["cli_interactive_controller"])
+        self.assertIn("ecu_vis_nil", paired.OBSERVED_EXACT["cli_interactive_controller"])
         self.assertIn("cli_selectors.session_search", RECORD.METRIC_KEYS)
         self.assertIn("session_search", paired.METRICS["cli_selectors"])
         self.assertIn("cli_selectors.session_search", paired.RATIO_CEILINGS)
