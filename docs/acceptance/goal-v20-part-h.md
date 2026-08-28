@@ -7299,6 +7299,50 @@ not handle-event escape. Observed `smsc_once` / `smsc_twice` / `smsc_none`
 `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum`
 left at 328.
 
+### Pair 586 — `cli_selectors` (scoped_models_selector_selected_item)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_selected_item` | `scoped-models-selector-selected-item` (`src/cadr-cli/interactive/selectors/models.lisp`) | selected visible item (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover on unused helpers in `models.lisp`. Timed work is selected item id
+(first / mid / out-of-range / empty / gpt filter) after
+`%make-scoped-models-selector-state` + refresh-items. Reuses JS
+`scopedModelsFilterItems`. Observed `smsel_first` / `smsel_mid` /
+`smsel_oob` / `smsel_empty` / `smsel_gpt` are exact. First n=5 freeze
+**3.417×** (26.636 / 7.796 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail).
+Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 587 — `cli_selectors` (scoped_models_selector_select_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_select_id` | `scoped-models-selector-select-id` (`src/cadr-cli/interactive/selectors/models.lisp`) | select by qualified id (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 586 on the same `models.lisp` hole. Timed work is
+select-id then selected index (first / last / miss keeps 3 / empty /
+gpt filter). Observed `smsid_first` / `smsid_last` / `smsid_miss` /
+`smsid_empty` / `smsid_gpt` are exact. First n=5 freeze **3.323×**
+(26.954 / 8.112 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum`
+left at 328.
+
+### Pair 588 — `cli_selectors` (scoped_models_selector_notify_change)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_notify_change` | `scoped-models-selector-notify-change` (`src/cadr-cli/interactive/selectors/models.lisp`) | `onChange` (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pairs 586–587 on the same `models.lisp` hole. Timed
+work is change-callback payload|count (`:all` / partial / missing /
+twice / empty list) — not mark-changed, not persist. Observed `smnc_all`
+/ `smnc_partial` / `smnc_none` / `smnc_twice` / `smnc_empty` are exact.
+First n=5 freeze **1.745×** (1.398 / 0.801 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize.
+`nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

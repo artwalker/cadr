@@ -20143,6 +20143,118 @@
    "smsc_zero" (nth 4 cancel)))
 
 
+(defun make-scoped-models-select-bench-state
+    (models enabled-ids &key (selected 0) (query ""))
+  (let ((state
+          (cadr-cli::%make-scoped-models-selector-state
+           :all-models (copy-list models)
+           :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+           :enabled-ids
+           (cadr-cli::scoped-models-copy-enabled enabled-ids)
+           :selected selected
+           :query (or query ""))))
+    (cadr-cli::scoped-models-selector-refresh-items state)
+    state))
+
+
+(defun encode-scoped-models-selector-selected-item
+    (models enabled-ids selected &key query)
+  (let* ((state
+           (make-scoped-models-select-bench-state
+            models enabled-ids :selected selected :query query))
+         (item (cadr-cli::scoped-models-selector-selected-item state))
+         (id (and item (getf item :id))))
+    (cond
+      ((stringp id) id)
+      ((null id) "")
+      (t (coerce id 'string)))))
+
+
+(defun run-cli-selectors-scoped-models-selector-selected-item ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (encode-scoped-models-selector-selected-item models :all 0)
+     (encode-scoped-models-selector-selected-item models :all 2)
+     (encode-scoped-models-selector-selected-item models :all 99)
+     (encode-scoped-models-selector-selected-item nil :all 0)
+     (encode-scoped-models-selector-selected-item
+      models :all 0 :query "gpt"))))
+
+
+(defun encode-scoped-models-selector-select-id
+    (models enabled-ids selected id &key query)
+  (let ((state
+          (make-scoped-models-select-bench-state
+           models enabled-ids :selected selected :query query)))
+    (cadr-cli::scoped-models-selector-select-id state id)
+    (write-to-string
+     (cadr-cli::scoped-models-selector-state-selected state))))
+
+
+(defun run-cli-selectors-scoped-models-selector-select-id ()
+  (let ((models (make-scoped-models-test-models)))
+    (list
+     (encode-scoped-models-selector-select-id
+      models :all 2 "openai/gpt-4o")
+     (encode-scoped-models-selector-select-id
+      models :all 0 "google/gemini-2.5-pro")
+     (encode-scoped-models-selector-select-id
+      models :all 3 "stale/missing")
+     (encode-scoped-models-selector-select-id
+      nil :all 0 "openai/gpt-4o")
+     (encode-scoped-models-selector-select-id
+      models :all 0 "openai/gpt-4o" :query "gpt"))))
+
+
+(defun scoped-models-selector-notify-change-encoded
+    (enabled-ids callback-p &optional (times 1))
+  (let* ((payload "")
+         (n 0)
+         (state
+           (cadr-cli::%make-scoped-models-selector-state
+            :enabled-ids
+            (cadr-cli::scoped-models-copy-enabled enabled-ids)
+            :change-callback
+            (when callback-p
+              (lambda (ids)
+                (incf n)
+                (setf payload
+                      (encode-scoped-models-enabled-ids ids)))))))
+    (dotimes (i times)
+      (cadr-cli::scoped-models-selector-notify-change state))
+    (format nil "~a|~D" payload n)))
+
+
+(defun run-cli-selectors-scoped-models-selector-notify-change ()
+  (list
+   (scoped-models-selector-notify-change-encoded :all t 1)
+   (scoped-models-selector-notify-change-encoded
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4") t 1)
+   (scoped-models-selector-notify-change-encoded :all nil 1)
+   (scoped-models-selector-notify-change-encoded :all t 2)
+   (scoped-models-selector-notify-change-encoded '() t 1)))
+
+
+(defun scoped-models-selected-notify-observed-pairs
+    (selected-item select-id notify)
+  (list
+   "smsel_first" (nth 0 selected-item)
+   "smsel_mid" (nth 1 selected-item)
+   "smsel_oob" (nth 2 selected-item)
+   "smsel_empty" (nth 3 selected-item)
+   "smsel_gpt" (nth 4 selected-item)
+   "smsid_first" (nth 0 select-id)
+   "smsid_last" (nth 1 select-id)
+   "smsid_miss" (nth 2 select-id)
+   "smsid_empty" (nth 3 select-id)
+   "smsid_gpt" (nth 4 select-id)
+   "smnc_all" (nth 0 notify)
+   "smnc_partial" (nth 1 notify)
+   "smnc_none" (nth 2 notify)
+   "smnc_twice" (nth 3 notify)
+   "smnc_empty" (nth 4 notify)))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id

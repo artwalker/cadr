@@ -400,4 +400,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.model_selector_finish_refresh` | 46.658 | 10.907 | 4.278× | 8.00× | measure-only leftover 579; `model-selector-finish-refresh` vs catalog refresh completion | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_items` | 26.959 | 6.435 | 4.189× | 8.00× | measure-only leftover 584; `scoped-models-selector-items` vs items after rebuild | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_cancel` | 0.667 | 0.382 | 1.746× | 8.00× | measure-only leftover 585; `scoped-models-selector-cancel` vs `onCancel` | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_selected_item` | 26.636 | 7.796 | 3.417× | 8.00× | measure-only leftover 586; `scoped-models-selector-selected-item` vs selected visible item | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_select_id` | 26.954 | 8.112 | 3.323× | 8.00× | measure-only leftover 587; `scoped-models-selector-select-id` vs select by id | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_notify_change` | 1.398 | 0.801 | 1.745× | 8.00× | measure-only leftover 588; `scoped-models-selector-notify-change` vs `onChange` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
