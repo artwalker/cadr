@@ -439,6 +439,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.auth_type": 50,
 	"cli_interactive_controller.parse_auto_theme": 50,
 	"cli_interactive_controller.resolve_theme": 50,
+	"cli_interactive_controller.make_entry": 50,
+	"cli_interactive_controller.append_output": 50,
+	"cli_interactive_controller.complete_entry": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -12490,6 +12493,107 @@ function runCliInteractiveResolveTheme() {
 	};
 }
 
+function makeTuiUserBashEntry(command, exclude, running, expanded = false) {
+	return {
+		type: "bash-execution",
+		label: command,
+		text: "",
+		expanded: expanded ? 1 : 0,
+		streaming: running ? 1 : 0,
+		running: running ? 1 : 0,
+		exclude: exclude ? 1 : 0,
+		cacheValid: 0,
+		exitCode: 0,
+		cancelled: 0,
+		truncated: 0,
+		fullOutputPath: "",
+	};
+}
+
+function runCliInteractiveBashMakeEntry() {
+	const run = makeTuiUserBashEntry("ls", false, true, false);
+	const excl = makeTuiUserBashEntry("echo hi", true, false, false);
+	const exp = makeTuiUserBashEntry("pwd", false, false, true);
+	return {
+		me_type: run.type === "bash-execution" ? 1 : 0,
+		me_label: run.label,
+		me_run: run.running,
+		me_ex: excl.exclude,
+		me_idle: excl.running,
+		me_stream: run.streaming,
+		me_exp: exp.expanded,
+		me_n: 3,
+	};
+}
+
+function appendTuiUserBashOutput(entry, chunk) {
+	if (entry && typeof chunk === "string" && chunk.length > 0) {
+		entry.text += chunk;
+		entry.cacheValid = 0;
+	}
+	return entry;
+}
+
+function runCliInteractiveBashAppendOutput() {
+	const entry = makeTuiUserBashEntry("cat", false, true, false);
+	appendTuiUserBashOutput(entry, "hello");
+	appendTuiUserBashOutput(entry, " world");
+	const before = entry.text.length;
+	appendTuiUserBashOutput(entry, "");
+	return {
+		ao_text: entry.text,
+		ao_n: entry.text.length,
+		ao_skip: before === entry.text.length ? 1 : 0,
+		ao_cache: entry.cacheValid ? 0 : 1,
+	};
+}
+
+function completeTuiUserBashEntry(entry, result) {
+	entry.text = result.output;
+	entry.streaming = 0;
+	entry.running = 0;
+	entry.exitCode = result.exitCode;
+	entry.cancelled = result.cancelled ? 1 : 0;
+	entry.truncated = result.truncated ? 1 : 0;
+	entry.fullOutputPath = result.fullOutputPath || "";
+	entry.exclude = result.exclude ? 1 : 0;
+	entry.cacheValid = 0;
+	return entry;
+}
+
+function runCliInteractiveBashCompleteEntry() {
+	const ok = makeTuiUserBashEntry("ls", true, true, false);
+	const err = makeTuiUserBashEntry("false", false, true, false);
+	completeTuiUserBashEntry(ok, {
+		output: "ok",
+		exitCode: 0,
+		cancelled: false,
+		truncated: true,
+		fullOutputPath: "/tmp/full.txt",
+		exclude: true,
+	});
+	completeTuiUserBashEntry(err, {
+		output: "no",
+		exitCode: 2,
+		cancelled: true,
+		truncated: false,
+		fullOutputPath: "",
+		exclude: false,
+	});
+	return {
+		ce_text: ok.text,
+		ce_exit: ok.exitCode,
+		ce_cancel: ok.cancelled,
+		ce_trunc: ok.truncated,
+		ce_path: ok.fullOutputPath,
+		ce_ex: ok.exclude,
+		ce_stream: ok.streaming,
+		ce_run: ok.running,
+		ce_err: err.exitCode,
+		ce_err_cancel: err.cancelled,
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
@@ -12498,6 +12602,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveAuthType(),
 		...runCliInteractiveParseAutoTheme(),
 		...runCliInteractiveResolveTheme(),
+		...runCliInteractiveBashMakeEntry(),
+		...runCliInteractiveBashAppendOutput(),
+		...runCliInteractiveBashCompleteEntry(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -12517,6 +12624,15 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		resolve_theme: await collect("cli_interactive_controller.resolve_theme", () => {
 			return () => runCliInteractiveResolveTheme();
+		}),
+		make_entry: await collect("cli_interactive_controller.make_entry", () => {
+			return () => runCliInteractiveBashMakeEntry();
+		}),
+		append_output: await collect("cli_interactive_controller.append_output", () => {
+			return () => runCliInteractiveBashAppendOutput();
+		}),
+		complete_entry: await collect("cli_interactive_controller.complete_entry", () => {
+			return () => runCliInteractiveBashCompleteEntry();
 		}),
 		observed,
 	};
@@ -21990,6 +22106,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts parseAutoThemeSetting",
 			"cli_interactive_controller.resolve_theme":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts resolveThemeSetting",
+			"cli_interactive_controller.make_entry":
+				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts BashExecutionComponent constructor",
+			"cli_interactive_controller.append_output":
+				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts BashExecutionComponent.appendOutput",
+			"cli_interactive_controller.complete_entry":
+				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts BashExecutionComponent.setComplete",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

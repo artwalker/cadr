@@ -6198,6 +6198,48 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
 old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`;
 this metric did not fail). Same commit no optimize.
 
+### Pair 493 — `cli_interactive_controller` (make_entry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_entry` | `make-tui-user-bash-entry` (`src/cadr-cli/interactive/user-bash.lisp`) | `BashExecutionComponent` constructor (`packages/coding-agent/src/modes/interactive/components/bash-execution.ts`) |
+
+Leftover of the `cli_interactive_controller` hole on `user-bash.lisp`.
+Timed work is entry construction — not bash execution, not TUI render.
+Observed `me_type` / `me_label` / `me_run` / `me_ex` / `me_n` are exact.
+First n=5 freeze **5.982×** (1.424 / 0.238 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`;
+this metric did not fail). Same commit no optimize.
+
+### Pair 494 — `cli_interactive_controller` (append_output)
+
+| metric | cadr | pi |
+|---|---|---|
+| `append_output` | `append-tui-user-bash-output` (`src/cadr-cli/interactive/user-bash.lisp`) | `BashExecutionComponent.appendOutput` (`packages/coding-agent/src/modes/interactive/components/bash-execution.ts`) |
+
+Leftover sibling of Pair 493 on the same hole. Timed work is chunk
+concatenate — not ANSI strip, not `updateDisplay`. Observed `ao_text` /
+`ao_n` / `ao_skip` / `ao_cache` are exact. First n=5 freeze **2.670×**
+(0.776 / 0.290 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
+fail). Same commit no optimize.
+
+### Pair 495 — `cli_interactive_controller` (complete_entry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `complete_entry` | `complete-tui-user-bash-entry` (`src/cadr-cli/interactive/user-bash.lisp`) | `BashExecutionComponent.setComplete` (`packages/coding-agent/src/modes/interactive/components/bash-execution.ts`) |
+
+Leftover sibling of Pairs 493–494 on the same hole. Timed work is
+result fields onto the entry — not loader stop, not render. Observed
+`ce_text` / `ce_exit` / `ce_trunc` / `ce_path` / `ce_err` are exact.
+First n=5 freeze **2.411×** (0.974 / 0.404 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`;
+this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

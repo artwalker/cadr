@@ -341,4 +341,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_support.watch_signature` | 12.165 | 2.262 | 5.379× | 8.00× | measure-only leftover pair 483; `watched-path-signature` vs `statSync` presence | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.model_scope_line` | 37.431 | 23.274 | 1.608× | 8.00× | measure-only leftover pair 485; `model-scope-startup-line` vs interactive-mode init line | invent pause；地板优化另刀 |
 | `cli_bootstrap_sessions.response_text` | 0.939 | 0.714 | 1.314× | 8.00× | measure-only pair 491; `response-text` vs `textParts.join` (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_interactive_controller.make_entry` | 1.424 | 0.238 | 5.982× | 8.00× | measure-only pair 493; `make-tui-user-bash-entry` vs BashExecutionComponent constructor (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_interactive_controller.append_output` | 0.776 | 0.290 | 2.670× | 8.00× | measure-only pair 494; `append-tui-user-bash-output` vs appendOutput concatenate (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_interactive_controller.complete_entry` | 0.974 | 0.404 | 2.411× | 8.00× | measure-only pair 495; `complete-tui-user-bash-entry` vs setComplete (sub-µs variance) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -219,6 +219,9 @@
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
+;;;; 493. cli_interactive_controller make-tui-user-bash-entry vs BashExecutionComponent constructor
+;;;; 494. cli_interactive_controller append-tui-user-bash-output vs BashExecutionComponent.appendOutput
+;;;; 495. cli_interactive_controller complete-tui-user-bash-entry vs BashExecutionComponent.setComplete
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -560,6 +563,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.make_entry" . 50)
+    ("cli_interactive_controller.append_output" . 50)
+    ("cli_interactive_controller.complete_entry" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -13396,7 +13402,10 @@
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (make-entry (run-cli-interactive-bash-make-entry))
+        (append-output (run-cli-interactive-bash-append-output))
+        (complete-entry (run-cli-interactive-bash-complete-entry)))
     (json-object
      "observed"
      (json-object
@@ -13427,7 +13436,29 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "me_type" (nth 0 make-entry)
+      "me_label" (nth 1 make-entry)
+      "me_run" (nth 2 make-entry)
+      "me_ex" (nth 3 make-entry)
+      "me_idle" (nth 4 make-entry)
+      "me_stream" (nth 5 make-entry)
+      "me_exp" (nth 6 make-entry)
+      "me_n" (nth 7 make-entry)
+      "ao_text" (nth 0 append-output)
+      "ao_n" (nth 1 append-output)
+      "ao_skip" (nth 2 append-output)
+      "ao_cache" (nth 3 append-output)
+      "ce_text" (nth 0 complete-entry)
+      "ce_exit" (nth 1 complete-entry)
+      "ce_cancel" (nth 2 complete-entry)
+      "ce_trunc" (nth 3 complete-entry)
+      "ce_path" (nth 4 complete-entry)
+      "ce_ex" (nth 5 complete-entry)
+      "ce_stream" (nth 6 complete-entry)
+      "ce_run" (nth 7 complete-entry)
+      "ce_err" (nth 8 complete-entry)
+      "ce_err_cancel" (nth 9 complete-entry))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -13457,7 +13488,101 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "make_entry"
+     (collect "cli_interactive_controller.make_entry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-make-entry))))
+     "append_output"
+     (collect "cli_interactive_controller.append_output"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-append-output))))
+     "complete_entry"
+     (collect "cli_interactive_controller.complete_entry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-bash-complete-entry)))))))
+
+(defun bash-entry-fields (entry)
+  (let ((options (cadr-cli::tui-entry-custom-options entry)))
+    (list
+     (if (eq (cadr-cli::tui-entry-type entry) :bash-execution) 1 0)
+     (copy-seq (or (cadr-cli::tui-entry-label entry) ""))
+     (if (getf options :running-p) 1 0)
+     (if (getf options :exclude-from-context-p) 1 0)
+     (if (cadr-cli::tui-entry-streaming-p entry) 1 0)
+     (if (cadr-cli::tui-entry-expanded-p entry) 1 0))))
+
+(defun run-cli-interactive-bash-make-entry ()
+  (let* ((state (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+         (run (cadr-cli::make-tui-user-bash-entry
+               state "ls" nil :running-p t))
+         (excl (cadr-cli::make-tui-user-bash-entry state "echo hi" t))
+         (expanded-state (cadr-cli::make-tui-state :cwd "/tmp/proj")))
+    (setf (cadr-cli::tui-state-tools-expanded-p expanded-state) t)
+    (let ((exp (cadr-cli::make-tui-user-bash-entry
+                expanded-state "pwd" nil)))
+      (list
+       (first (bash-entry-fields run))
+       (second (bash-entry-fields run))
+       (third (bash-entry-fields run))
+       (fourth (bash-entry-fields excl))
+       (third (bash-entry-fields excl))
+       (fifth (bash-entry-fields run))
+       (sixth (bash-entry-fields exp))
+       3))))
+
+(defun run-cli-interactive-bash-append-output ()
+  (let* ((state (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+         (entry (cadr-cli::make-tui-user-bash-entry
+                 state "cat" nil :running-p t)))
+    (cadr-cli::append-tui-user-bash-output entry "hello")
+    (cadr-cli::append-tui-user-bash-output entry " world")
+    (let ((before (length (cadr-cli::tui-entry-text entry))))
+      (cadr-cli::append-tui-user-bash-output entry "")
+      (list
+       (copy-seq (cadr-cli::tui-entry-text entry))
+       (length (cadr-cli::tui-entry-text entry))
+       (if (= before (length (cadr-cli::tui-entry-text entry))) 1 0)
+       (if (cadr-cli::tui-entry-render-cache-valid-p entry) 0 1)))))
+
+(defun run-cli-interactive-bash-complete-entry ()
+  (let* ((state (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+         (ok (cadr-cli::make-tui-user-bash-entry
+              state "ls" t :running-p t))
+         (err (cadr-cli::make-tui-user-bash-entry
+               state "false" nil :running-p t)))
+    (cadr-cli::complete-tui-user-bash-entry
+     ok
+     (cadr-cli::make-user-bash-result
+      :command "ls"
+      :output "ok"
+      :exit-code 0
+      :truncated-p t
+      :full-output-path "/tmp/full.txt"
+      :exclude-from-context-p t))
+    (cadr-cli::complete-tui-user-bash-entry
+     err
+     (cadr-cli::make-user-bash-result
+      :command "false"
+      :output "no"
+      :exit-code 2
+      :cancelled-p t))
+    (let ((ok-opts (cadr-cli::tui-entry-custom-options ok))
+          (err-opts (cadr-cli::tui-entry-custom-options err)))
+      (list
+       (copy-seq (cadr-cli::tui-entry-text ok))
+       (or (getf ok-opts :exit-code) -1)
+       (if (getf ok-opts :cancelled-p) 1 0)
+       (if (getf ok-opts :truncated-p) 1 0)
+       (copy-seq (or (getf ok-opts :full-output-path) ""))
+       (if (getf ok-opts :exclude-from-context-p) 1 0)
+       (if (cadr-cli::tui-entry-streaming-p ok) 1 0)
+       (if (getf ok-opts :running-p) 1 0)
+       (or (getf err-opts :exit-code) -1)
+       (if (getf err-opts :cancelled-p) 1 0)))))
 
 (defun session-search-fixture-records ()
   (list
@@ -21416,6 +21541,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.make_entry"
+      "src/cadr-cli/interactive/user-bash.lisp make-tui-user-bash-entry"
+      "cli_interactive_controller.append_output"
+      "src/cadr-cli/interactive/user-bash.lisp append-tui-user-bash-output"
+      "cli_interactive_controller.complete_entry"
+      "src/cadr-cli/interactive/user-bash.lisp complete-tui-user-bash-entry"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
