@@ -6982,6 +6982,104 @@
    3))
 
 
+(defun oauth-error-detail-flag (object expected)
+  (equal (cadr-ai::oauth-response-error-detail object) expected))
+
+
+(defun run-oauth-pkce-device-error-detail ()
+  ;; Overlap with xai.ts requestFailure: string error / error_description
+  ;; only. Do not exact both fields (Lisp prefers description; pi joins
+  ;; "error: description") or nested error objects / message.
+  (list
+   (if (oauth-error-detail-flag
+        (cadr-ai::json-object "error_description" "bad desc")
+        "bad desc")
+       1
+       0)
+   (if (oauth-error-detail-flag
+        (cadr-ai::json-object "error" "access_denied")
+        "access_denied")
+       1
+       0)
+   2))
+
+
+(defun oauth-ensure-success-ok-p (status)
+  (handler-case
+      (progn
+        (cadr-ai::ensure-oauth-response-success
+         "xAI" "device authorization"
+         (cadr-ai::json-object "ok" t)
+         status)
+        1)
+    (error () 0)))
+
+
+(defun oauth-ensure-success-fail-p (status)
+  (handler-case
+      (progn
+        (cadr-ai::ensure-oauth-response-success
+         "xAI" "token refresh"
+         (cadr-ai::json-object "error_description" "nope")
+         status)
+        0)
+    (error () 1)))
+
+
+(defun run-oauth-pkce-device-ensure-success ()
+  ;; 200-299 success vs 400 throw. Do not exact formatted messages
+  ;; (cadr interpolates provider+action; pi hard-codes "xAI OAuth").
+  (list
+   (oauth-ensure-success-ok-p 200)
+   (oauth-ensure-success-ok-p 201)
+   (oauth-ensure-success-fail-p 400)
+   3))
+
+
+(defun oauth-notify-device-event (device)
+  (let ((captured nil))
+    (cadr-ai::notify-device-authorization
+     (cadr-ai::make-runtime-auth-interaction
+      :notify-function (lambda (event) (setf captured event)))
+     device)
+    captured))
+
+
+(defun oauth-notify-device-flag (device expected-code expected-uri)
+  (let ((event (oauth-notify-device-event device)))
+    (if (and (eq (getf event :type) :device-code)
+             (equal (getf event :user-code) expected-code)
+             (equal (getf event :verification-uri) expected-uri))
+        1
+        0)))
+
+
+(defun run-oauth-pkce-device-notify-device ()
+  ;; Complete URI preferred over the plain verification URI. Do not exact
+  ;; interval slot names (:interval vs intervalSeconds).
+  (list
+   (oauth-notify-device-flag
+    (list :device-code "d"
+          :user-code "ABCD-EFGH"
+          :verification-uri "https://auth.x.ai/a"
+          :verification-uri-complete "https://auth.x.ai/a?c=1"
+          :interval 5
+          :expires-in 900)
+    "ABCD-EFGH" "https://auth.x.ai/a?c=1")
+   (oauth-notify-device-flag
+    (list :device-code "d"
+          :user-code "ABCD-EFGH"
+          :verification-uri "https://auth.x.ai/a"
+          :interval 5
+          :expires-in 900)
+    "ABCD-EFGH" "https://auth.x.ai/a")
+   (oauth-notify-device-flag
+    (list :user-code "WXYZ"
+          :verification-uri "https://auth.x.ai/b")
+    "WXYZ" "https://auth.x.ai/b")
+   3))
+
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))

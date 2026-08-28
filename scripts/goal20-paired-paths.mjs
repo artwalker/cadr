@@ -272,6 +272,9 @@ const REPETITIONS = {
 	"evals_harness.argument_prefix": 50,
 	"evals_harness.parse_arguments": 50,
 	"evals_harness.validate_smoke": 50,
+	"oauth_pkce_device.error_detail": 50,
+	"oauth_pkce_device.ensure_success": 50,
+	"oauth_pkce_device.notify_device": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -7185,6 +7188,137 @@ function runOauthPkceDeviceAccountId() {
 		aid_miss: accountIdFlag("e30.e30.sig", null),
 		aid_bad: accountIdFlag("not-a-jwt", null),
 		aid_n: 3,
+	};
+}
+
+
+function requestFailureDetail(body) {
+	const error = typeof body.error === "string" ? body.error : undefined;
+	const description =
+		typeof body.error_description === "string" ? body.error_description : undefined;
+	return [error, description].filter(Boolean).join(": ");
+}
+
+
+function runOauthPkceDeviceErrorDetail() {
+	return {
+		ed_desc: requestFailureDetail({ error_description: "bad desc" }) === "bad desc" ? 1 : 0,
+		ed_error: requestFailureDetail({ error: "access_denied" }) === "access_denied" ? 1 : 0,
+		ed_n: 2,
+	};
+}
+
+
+function requestFailure(action, response) {
+	const detail = requestFailureDetail(response.body);
+	return new Error(
+		`xAI OAuth ${action} failed (HTTP ${response.status})${detail ? `: ${detail}` : ""}`,
+	);
+}
+
+
+function ensureOauthResponseSuccess(action, response) {
+	if (!response.ok) {
+		throw requestFailure(action, response);
+	}
+	return response.body;
+}
+
+
+function runOauthPkceDeviceEnsureSuccess() {
+	const okBody = { ok: true };
+	const fail = { ok: false, status: 400, body: { error_description: "nope" } };
+	let created = 0;
+	let failed = 0;
+	try {
+		ensureOauthResponseSuccess("device authorization", {
+			ok: true,
+			status: 200,
+			body: okBody,
+		});
+		created = 1;
+	} catch {
+		created = 0;
+	}
+	let created201 = 0;
+	try {
+		ensureOauthResponseSuccess("device authorization", {
+			ok: true,
+			status: 201,
+			body: okBody,
+		});
+		created201 = 1;
+	} catch {
+		created201 = 0;
+	}
+	try {
+		ensureOauthResponseSuccess("token refresh", fail);
+		failed = 0;
+	} catch {
+		failed = 1;
+	}
+	return {
+		es_ok: created,
+		es_created: created201,
+		es_fail: failed,
+		es_n: 3,
+	};
+}
+
+
+function notifyDeviceEvent(device) {
+	return {
+		type: "device_code",
+		userCode: device.userCode,
+		verificationUri: device.verificationUriComplete ?? device.verificationUri,
+		intervalSeconds: device.intervalSeconds,
+		expiresInSeconds: device.expiresInSeconds,
+	};
+}
+
+
+function notifyDeviceFlag(device, expectedCode, expectedUri) {
+	const event = notifyDeviceEvent(device);
+	return event.type === "device_code" &&
+		event.userCode === expectedCode &&
+		event.verificationUri === expectedUri
+		? 1
+		: 0;
+}
+
+
+function runOauthPkceDeviceNotifyDevice() {
+	return {
+		nd_complete: notifyDeviceFlag(
+			{
+				userCode: "ABCD-EFGH",
+				verificationUri: "https://auth.x.ai/a",
+				verificationUriComplete: "https://auth.x.ai/a?c=1",
+				intervalSeconds: 5,
+				expiresInSeconds: 900,
+			},
+			"ABCD-EFGH",
+			"https://auth.x.ai/a?c=1",
+		),
+		nd_plain: notifyDeviceFlag(
+			{
+				userCode: "ABCD-EFGH",
+				verificationUri: "https://auth.x.ai/a",
+				intervalSeconds: 5,
+				expiresInSeconds: 900,
+			},
+			"ABCD-EFGH",
+			"https://auth.x.ai/a",
+		),
+		nd_code: notifyDeviceFlag(
+			{
+				userCode: "WXYZ",
+				verificationUri: "https://auth.x.ai/b",
+			},
+			"WXYZ",
+			"https://auth.x.ai/b",
+		),
+		nd_n: 3,
 	};
 }
 

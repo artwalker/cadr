@@ -4775,6 +4775,54 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
 `lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
 optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 379 — `oauth_pkce_device` (error_detail)
+
+| metric | cadr | pi |
+|---|---|---|
+| `error_detail` | `oauth-response-error-detail` (`src/cadr-ai/oauth/providers/xai.lisp`) | `requestFailure` body `error` / `error_description` (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover sibling of the `oauth_pkce_device` hole on `src/cadr-ai/oauth/providers/xai.lisp`.
+Timed work is JSON error-detail extraction (description-only / string `error`)
+— not HTTP, not `login-xai-oauth`. Do not exact both fields present (Lisp
+prefers description; pi joins `"error: description"`) or nested `error`
+objects / `message`. Observed `ed_desc` / `ed_error` / `ed_n` are exact.
+First n=5 freeze **2.301×** (0.838 / 0.364 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+Over-1× booked. Pair numbers 328–378 belong to other lanes; this cut is
+379–381 only.
+
+### Pair 380 — `oauth_pkce_device` (ensure_success)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ensure_success` | `ensure-oauth-response-success` (`src/cadr-ai/oauth/providers/xai.lisp`) | `if (!response.ok) throw requestFailure` (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover sibling of Pair 379 `error_detail` on the same `oauth_pkce_device`
+hole. Timed work is 200/201 success vs HTTP 400 throw — not socket POST.
+Do not exact formatted messages (cadr interpolates provider+action; pi
+hard-codes `xAI OAuth`). Observed `es_ok` / `es_created` / `es_fail` /
+`es_n` are exact. First n=5 freeze **0.701×** (1.779 / 2.538 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+cadr leads. Same commit no optimize.
+
+### Pair 381 — `oauth_pkce_device` (notify_device)
+
+| metric | cadr | pi |
+|---|---|---|
+| `notify_device` | `notify-device-authorization` (`src/cadr-ai/oauth/providers/xai.lisp`) | `interaction.notify` `device_code` (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover sibling of Pair 379 `error_detail` and Pair 380 `ensure_success`
+on the same `oauth_pkce_device` hole. Timed work is device-code notify
+payload (complete URI preferred / plain URI / user-code) — not poll, not
+login. Do not exact interval slot names (`:interval` vs `intervalSeconds`).
+Observed `nd_complete` / `nd_plain` / `nd_code` / `nd_n` are exact. First
+n=5 freeze **2.586×** (0.960 / 0.371 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+Over-1× booked.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

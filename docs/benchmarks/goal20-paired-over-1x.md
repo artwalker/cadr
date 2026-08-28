@@ -290,4 +290,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `tui_select_settings_loaders.loader_frames` | 0.200 | 0.190 | 1.051× | 8.00× | measure-only pair 397; `loader-frames` vs Loader DEFAULT_FRAMES copy (sub-µs — variance floor applies) | invent pause；地板优化另刀 |
 | `tui_select_settings_loaders.loader_interval` | 0.201 | 0.138 | 1.464× | 8.00× | measure-only pair 398; `loader-interval-seconds` vs Loader intervalMs (sub-µs — variance floor applies) | invent pause；地板优化另刀 |
 | `tui_select_settings_loaders.loader_step` | 0.339 | 0.219 | 1.543× | 8.00× | measure-only pair 399; `loader-component-step` vs Loader animation tick (sub-µs — variance floor applies) | invent pause；地板优化另刀 |
+| `oauth_pkce_device.error_detail` | 0.838 | 0.364 | 2.301× | 8.00× | measure-only pair 379; `oauth-response-error-detail` vs xai.ts requestFailure detail (sub-µs variance) | invent pause；地板优化另刀 |
+| `oauth_pkce_device.notify_device` | 0.960 | 0.371 | 2.586× | 8.00× | measure-only pair 381; `notify-device-authorization` vs xai.ts interaction.notify device_code (sub-µs variance) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `oauth_pkce_device.error_detail` (`oauth-response-error-detail`
+  on `src/cadr-ai/oauth/providers/xai.lisp` vs baseline `requestFailure` detail
+  in `packages/ai/src/auth/oauth/xai.ts`). Observed `ed_desc` / `ed_error` /
+  `ed_n` exact. n=5 **2.301×** (0.838 / 0.364 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover sibling. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. No `src/` perf. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. Pairs 379–381.
+- Goal 20 P.13: pair `oauth_pkce_device.ensure_success`
+  (`ensure-oauth-response-success` on `src/cadr-ai/oauth/providers/xai.lisp`
+  vs baseline `!ok` throw `requestFailure`). Observed `es_ok` / `es_created`
+  / `es_fail` / `es_n` exact. n=5 **0.701×** (1.779 / 2.538 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover sibling. Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric. No
+  `src/` perf.
+- Goal 20 P.13: pair `oauth_pkce_device.notify_device`
+  (`notify-device-authorization` on `src/cadr-ai/oauth/providers/xai.lisp`
+  vs baseline `interaction.notify` device_code). Observed `nd_complete` /
+  `nd_plain` / `nd_code` / `nd_n` exact. n=5 **2.586×** (0.960 / 0.371 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover sibling. Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+  No `src/` perf. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `tui_select_settings_loaders.loader_frames`
   (`loader-frames` on `src/cadr-tui/composition/loaders.lisp` vs baseline
   `Loader` `DEFAULT_FRAMES` copy). Observed `lf_default_n` / `lf_default_first`
