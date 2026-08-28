@@ -576,6 +576,9 @@
     ("cli_selectors.scoped_models_selector_reorder" . 50)
     ("cli_selectors.scoped_models_selector_persist" . 50)
     ("cli_selectors.scoped_models_selector_provider_count" . 50)
+    ("cli_selectors.model_selector_active_models" . 50)
+    ("cli_selectors.model_selector_clamp_selected" . 50)
+    ("cli_selectors.model_selector_select_current" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -13713,7 +13716,7 @@
       models '("google/gemini-2.5-pro") :persist-callback t))))
 
 (defun scoped-models-selector-tail-observed-pairs
-    (reorder persist provider-count)
+    (reorder persist provider-count active-models clamp-selected select-current)
   (append
     (list
      "smsror_down" (nth 0 reorder)
@@ -13728,7 +13731,9 @@
      "smsper_empty" (nth 3 persist)
      "smsper_two" (nth 4 persist)
      "smsper_single" (nth 5 persist))
-    (scoped-models-provider-count-observed-pairs provider-count)))
+    (scoped-models-provider-count-observed-pairs provider-count)
+    (model-selector-active-clamp-observed-pairs
+     active-models clamp-selected select-current)))
 
 (defun scoped-models-provider-count-observed-pairs (results)
   (list
@@ -13763,6 +13768,127 @@
       (cadr-cli::make-scoped-models-selector-state
        :all-models models
        :enabled-ids '("google/gemini-2.5-pro"))))))
+
+(defun model-selector-active-clamp-observed-pairs
+    (active-models clamp-selected select-current)
+  (list
+   "msa_all" (nth 0 active-models)
+   "msa_scoped" (nth 1 active-models)
+   "msa_empty" (nth 2 active-models)
+   "msa_one" (nth 3 active-models)
+   "msa_force_all" (nth 4 active-models)
+   "msa_force_scoped" (nth 5 active-models)
+   "msc_ok" (nth 0 clamp-selected)
+   "msc_high" (nth 1 clamp-selected)
+   "msc_zero" (nth 2 clamp-selected)
+   "msc_one" (nth 3 clamp-selected)
+   "msc_keep" (nth 4 clamp-selected)
+   "msc_filter" (nth 5 clamp-selected)
+   "msel_hit" (nth 0 select-current)
+   "msel_first" (nth 1 select-current)
+   "msel_last" (nth 2 select-current)
+   "msel_miss" (nth 3 select-current)
+   "msel_nil" (nth 4 select-current)
+   "msel_empty" (nth 5 select-current)))
+
+(defun encode-model-selector-active-models (state)
+  (format nil "~{~a~^,~}"
+          (mapcar
+           #'cadr-cli::qualified-model-id
+           (cadr-cli::model-selector-active-models state))))
+
+(defun make-model-selector-active-bench
+    (models &key scoped-models scope)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :scoped-models scoped-models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (when scope
+      (setf (cadr-cli::model-selector-state-scope state) scope))
+    (encode-model-selector-active-models state)))
+
+(defun run-cli-selectors-model-selector-active-models ()
+  (let* ((models (make-model-selector-test-models))
+         (scoped (list (first models) (second models)))
+         (one (list (first models))))
+    (list
+     (make-model-selector-active-bench models)
+     (make-model-selector-active-bench models :scoped-models scoped)
+     (make-model-selector-active-bench '())
+     (make-model-selector-active-bench one)
+     (make-model-selector-active-bench
+      models :scoped-models scoped :scope :all)
+     (let ((state
+             (cadr-cli::make-model-selector-state
+              :all-models models
+              :current-model (first models)
+              :keybindings :bench)))
+       (setf (cadr-cli::model-selector-state-all-models state) models)
+       (setf (cadr-cli::model-selector-state-scoped-models state) scoped)
+       (setf (cadr-cli::model-selector-state-scope state) :scoped)
+       (encode-model-selector-active-models state)))))
+
+(defun model-selector-clamp-selected-encoded
+    (models selected &key query)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (setf (cadr-cli::model-selector-state-query state) (or query ""))
+    (setf (cadr-cli::model-selector-state-filter-query state) nil)
+    (cadr-cli::model-selector-apply-filter state)
+    (setf (cadr-cli::model-selector-state-selected state) selected)
+    (cadr-cli::model-selector-clamp-selected state)
+    (write-to-string
+     (cadr-cli::model-selector-state-selected state))))
+
+(defun run-cli-selectors-model-selector-clamp-selected ()
+  (let ((models (make-model-selector-test-models))
+        (one (list (first (make-model-selector-test-models)))))
+    (list
+     (model-selector-clamp-selected-encoded models 1)
+     (model-selector-clamp-selected-encoded models 99)
+     (model-selector-clamp-selected-encoded '() 7)
+     (model-selector-clamp-selected-encoded one 3)
+     (model-selector-clamp-selected-encoded models 0)
+     (model-selector-clamp-selected-encoded models 4 :query "gpt"))))
+
+(defun model-selector-select-current-encoded
+    (models current)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (setf (cadr-cli::model-selector-state-query state) "")
+    (setf (cadr-cli::model-selector-state-filter-query state) nil)
+    (cadr-cli::model-selector-apply-filter state)
+    (setf (cadr-cli::model-selector-state-current-model state) current)
+    (cadr-cli::model-selector-select-current state)
+    (write-to-string
+     (cadr-cli::model-selector-state-selected state))))
+
+(defun run-cli-selectors-model-selector-select-current ()
+  (let ((models (make-model-selector-test-models))
+        (outsider
+          (make-model-selector-search-fixture
+           :id "missing-model"
+           :provider :openai
+           :name "Missing")))
+    (list
+     (model-selector-select-current-encoded models (second models))
+     (model-selector-select-current-encoded models (first models))
+     (model-selector-select-current-encoded
+      models (car (last models)))
+     (model-selector-select-current-encoded models outsider)
+     (model-selector-select-current-encoded models nil)
+     (model-selector-select-current-encoded '() (first models)))))
 
 (defun run-cli-selectors-qualified-model-id ()
   (list
@@ -14022,7 +14148,13 @@
         (scoped-models-selector-persist
           (run-cli-selectors-scoped-models-selector-persist))
         (provider-count-obs
-          (run-cli-selectors-scoped-models-selector-provider-count)))
+          (run-cli-selectors-scoped-models-selector-provider-count))
+        (active-models
+          (run-cli-selectors-model-selector-active-models))
+        (clamp-selected
+          (run-cli-selectors-model-selector-clamp-selected))
+        (select-current
+          (run-cli-selectors-model-selector-select-current)))
     (json-object
      "observed"
      (apply #'json-object
@@ -14755,7 +14887,10 @@
              (scoped-models-selector-tail-observed-pairs
               scoped-models-selector-reorder
               scoped-models-selector-persist
-              provider-count-obs)))
+              provider-count-obs
+              active-models
+              clamp-selected
+              select-current)))
      "session_search"
      (collect "cli_selectors.session_search"
               (lambda ()
@@ -15403,7 +15538,22 @@
      (collect "cli_selectors.scoped_models_selector_provider_count"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-scoped-models-selector-provider-count)))))))
+                  (run-cli-selectors-scoped-models-selector-provider-count))))
+     "model_selector_active_models"
+     (collect "cli_selectors.model_selector_active_models"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-active-models))))
+     "model_selector_clamp_selected"
+     (collect "cli_selectors.model_selector_clamp_selected"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-clamp-selected))))
+     "model_selector_select_current"
+     (collect "cli_selectors.model_selector_select_current"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-model-selector-select-current)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -17044,6 +17194,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-reorder"
       "cli_selectors.scoped_models_selector_persist"
       "src/cadr-cli/interactive/selectors/models.lisp scoped-models-selector-persist"
+      "cli_selectors.model_selector_active_models"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-active-models"
+      "cli_selectors.model_selector_clamp_selected"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-clamp-selected"
+      "cli_selectors.model_selector_select_current"
+      "src/cadr-cli/interactive/selectors/models.lisp model-selector-select-current"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
