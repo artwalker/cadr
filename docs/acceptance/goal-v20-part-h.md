@@ -4069,8 +4069,10 @@ Leftover of the `cli_extensions_install` hole on `loader.lisp`. Timed
 work is alphanumeric / hyphen / underscore keep plus other-char hyphen
 — not ASDF load, not `reload-cli-extensions`. Observed `pf_plain` /
 `pf_hyphen` / `pf_keep` / `pf_empty` / `pf_n` are exact. First n=5
-freeze pending on host `cursor`, ceiling 8.0. Gate uses `--only-enforce`.
-Same commit no optimize.
+freeze **0.351×** (0.468 / 1.334 µs) on host `cursor`, ceiling 8.0. cadr
+leads. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did
+not fail). Same commit no optimize.
 
 ### Pair 503 — `cli_extensions_install` (local_system_name)
 
@@ -4082,8 +4084,10 @@ Leftover sibling of Pair 502 on the same hole. Timed work is name
 accept / empty / `.` / `..` / slash reject — not
 `read-extension-local-systems`, not network. Observed `ls_ok` /
 `ls_empty` / `ls_dot` / `ls_dotdot` / `ls_slash` / `ls_n` are exact.
-First n=5 freeze pending on host `cursor`, ceiling 8.0. Gate uses
-`--only-enforce`. Same commit no optimize.
+First n=5 freeze **0.273×** (0.192 / 0.704 µs) on host `cursor`, ceiling
+8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this
+metric did not fail). Same commit no optimize.
 
 ### Pair 504 — `cli_extensions_install` (inline_factory)
 
@@ -4095,8 +4099,10 @@ Leftover sibling of Pairs 502–503 on the same hole. Timed work is
 function / named plist / empty name / missing factory / odd list — not
 factory invoke, not host load. Observed `if_fn` / `if_plist` /
 `if_empty_name` / `if_no_factory` / `if_odd` are exact. First n=5 freeze
-pending on host `cursor`, ceiling 8.0. Gate uses `--only-enforce`. Same
-commit no optimize.
+**0.260×** (0.188 / 0.725 µs) on host `cursor`, ceiling 8.0. cadr leads.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n`
+/ `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not
+fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

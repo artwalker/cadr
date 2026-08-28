@@ -490,10 +490,20 @@ RATIO_CEILINGS = {
     # 1.98x (1954.5 / 987.2 us). pi leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_extensions_install.extension_discovery": 8.0,
-    # cli_extensions_install leftover trio on loader.lisp (502-504).
-    # First leftover freeze pending; 8.0 is first-freeze headroom.
+    # Frozen from the first Friend-MachineD leftover
+    # cli_extensions_install.package_fragment pair (samples=5): observed
+    # 0.351x (0.468 / 1.334 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "cli_extensions_install.package_fragment": 8.0,
+    # Frozen from the first Friend-MachineD leftover
+    # cli_extensions_install.local_system_name pair (samples=5): observed
+    # 0.273x (0.192 / 0.704 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "cli_extensions_install.local_system_name": 8.0,
+    # Frozen from the first Friend-MachineD leftover
+    # cli_extensions_install.inline_factory pair (samples=5): observed
+    # 0.260x (0.188 / 0.725 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "cli_extensions_install.inline_factory": 8.0,
     # Frozen from the first Friend-MachineD non-quick evals_harness
     # pair (samples=5): observed 0.88x (8.0 / 9.0 us). cadr leads.
