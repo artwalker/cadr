@@ -908,6 +908,49 @@
      "measure": "measure-core-rest",
      "metric": "core_rest.threads_join",
      "branch": "cursor/pair-337-339-core-rest-leftovers-5e64"
+    },
+    {
+     "pair": 358,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/openai-anthropic.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.base64url_value",
+     "branch": "cursor/pair-358-360-oauth-openai-anthropic-ff5f",
+     "note": "nextPairNum left at tip 328 (outside 358-360)",
+     "ratio": 2.692,
+     "cadrUs": 0.736,
+     "piUs": 0.273,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 359,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/openai-anthropic.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.base64url_decode",
+     "branch": "cursor/pair-358-360-oauth-openai-anthropic-ff5f",
+     "ratio": 6.544,
+     "cadrUs": 2.969,
+     "piUs": 0.454,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 360,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/openai-anthropic.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.account_id",
+     "branch": "cursor/pair-358-360-oauth-openai-anthropic-ff5f",
+     "ratio": 5.986,
+     "cadrUs": 6.112,
+     "piUs": 1.021,
+     "ceiling": 8.0,
+     "rc": 1
     }
    ],
    "mergeQueue": []

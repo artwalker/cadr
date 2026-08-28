@@ -9,6 +9,14 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `oauth_pkce_device.base64url_value` /
+  `base64url_decode` / `account_id` (`src/cadr-ai/oauth/openai-anthropic.lisp`
+  vs baseline RFC 4648 §5 alphabet / `decodeJwt` `atob` / `getAccountId`).
+  Observed `bv_*` / `bd_*` / `aid_*` exact. n=5 **2.692×** / **6.544×** /
+  **5.986×** (0.736 / 0.273 µs, 2.969 / 0.454 µs, 6.112 / 1.021 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not these metrics. Pairs 358–360 are on
+  the over-1× ledger. No `src/` perf. Pairs 358–360.
 - Goal 20 P.13 leftover: pair `core_rest.cancellation_wait` /
   `redacted_types` / `threads_join` (`wait-for-cancellation` /
   `redacted-object-types` / `join-active-thread` on `src/cadr-core/` vs

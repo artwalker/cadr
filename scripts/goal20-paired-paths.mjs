@@ -251,7 +251,10 @@ const REPETITIONS = {
 	"core_rest.cancellation_wait": 50,
 	"core_rest.redacted_types": 50,
 	"core_rest.threads_join": 5,
-	"ai_crypto_model_data.manifest": 50,
+		"oauth_pkce_device.base64url_value": 50,
+	"oauth_pkce_device.base64url_decode": 50,
+	"oauth_pkce_device.account_id": 50,
+"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
 	"cli_models_rest.auth_command": 50,
@@ -6504,6 +6507,91 @@ function runOauthPkceDeviceParseCallbackRequest() {
 		pcr_n: 4,
 	};
 }
+
+function base64urlValueFlag(character, expected) {
+	try {
+		return OAUTH_BASE64URL_ALPHABET.indexOf(character) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+
+function runOauthPkceDeviceBase64urlValue() {
+	return {
+		bv_A: base64urlValueFlag("A", 0),
+		bv_a: base64urlValueFlag("a", 26),
+		bv_0: base64urlValueFlag("0", 52),
+		bv_dash: base64urlValueFlag("-", 62),
+		bv_us: base64urlValueFlag("_", 63),
+		bv_n: 5,
+	};
+}
+
+
+function base64urlDecodeFlag(encoded, expected) {
+	try {
+		return atob(encoded) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+
+function runOauthPkceDeviceBase64urlDecode() {
+	return {
+		bd_obj: base64urlDecodeFlag("e30", "{}"),
+		bd_foo: base64urlDecodeFlag("Zm9v", "foo"),
+		bd_acct: base64urlDecodeFlag(
+			OAUTH_ACCOUNT_ID_PAYLOAD,
+			'{"https://api.openai.com/auth":{"chatgpt_account_id":"acct"}}',
+		),
+		bd_n: 3,
+	};
+}
+
+// Baseline openai-codex.ts decodeJwt / getAccountId are unexported; keep the
+// production body so the timed work is the same function.
+
+function decodeJwt(token) {
+	try {
+		const parts = token.split(".");
+		if (parts.length !== 3) return null;
+		const payload = parts[1] ?? "";
+		const decoded = atob(payload);
+		return JSON.parse(decoded);
+	} catch {
+		return null;
+	}
+}
+
+
+function getAccountId(accessToken) {
+	const payload = decodeJwt(accessToken);
+	const auth = payload?.[JWT_CLAIM_PATH];
+	const accountId = auth?.chatgpt_account_id;
+	return typeof accountId === "string" && accountId.length > 0 ? accountId : null;
+}
+
+
+function accountIdFlag(token, expected) {
+	try {
+		return getAccountId(token) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+
+function runOauthPkceDeviceAccountId() {
+	return {
+		aid_ok: accountIdFlag(OAUTH_ACCOUNT_ID_TOKEN, "acct"),
+		aid_miss: accountIdFlag("e30.e30.sig", null),
+		aid_bad: accountIdFlag("not-a-jwt", null),
+		aid_n: 3,
+	};
+}
+
 
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();

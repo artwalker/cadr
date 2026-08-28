@@ -6564,6 +6564,67 @@
     "/auth/callback" "expected" "OpenAI" 400)
    4))
 
+(defun oauth-base64url-value-flag (character expected)
+  (handler-case
+      (if (eql (cadr-ai::base64url-value character) expected)
+          1
+          0)
+    (error () 0)))
+
+
+(defun run-oauth-pkce-device-base64url-value ()
+  ;; RFC 4648 §5 alphabet only. Do not exact characters outside
+  ;; A-Za-z0-9-_ (Lisp NIL vs JS indexOf -1).
+  (list
+   (oauth-base64url-value-flag #\A 0)
+   (oauth-base64url-value-flag #\a 26)
+   (oauth-base64url-value-flag #\0 52)
+   (oauth-base64url-value-flag #\- 62)
+   (oauth-base64url-value-flag #\_ 63)
+   5))
+
+
+(defun oauth-base64url-decode-flag (encoded expected)
+  (handler-case
+      (if (string=
+           (cadr-ai::utf8-string (cadr-ai::base64url-decode encoded))
+           expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-base64url-decode ()
+  ;; Alphabet-only unpadded strings that Node atob and cadr
+  ;; base64url-decode both accept. Do not exact +/ padding, or -_
+  ;; (pi decodeJwt uses atob, not base64url).
+  (list
+   (oauth-base64url-decode-flag "e30" "{}")
+   (oauth-base64url-decode-flag "Zm9v" "foo")
+   (oauth-base64url-decode-flag
+    +oauth-account-id-payload+
+    "{\"https://api.openai.com/auth\":{\"chatgpt_account_id\":\"acct\"}}")
+   3))
+
+
+(defun oauth-account-id-flag (token expected)
+  (handler-case
+      (if (equal (cadr-ai::openai-account-id-from-token token) expected)
+          1
+          0)
+    (error () 0)))
+
+
+(defun run-oauth-pkce-device-account-id ()
+  ;; Three-part JWT only. Do not exact two-part tokens (pi decodeJwt
+  ;; requires length 3; cadr splits and may still decode). Do not exact
+  ;; empty chatgpt_account_id (pi requires length > 0).
+  (list
+   (oauth-account-id-flag +oauth-account-id-token+ "acct")
+   (oauth-account-id-flag "e30.e30.sig" nil)
+   (oauth-account-id-flag "not-a-jwt" nil)
+   3))
+
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))

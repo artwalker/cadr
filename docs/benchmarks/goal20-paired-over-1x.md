@@ -269,4 +269,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `oauth_pkce_device.parse_callback_request` | 12.588 | 3.403 | 3.699× | 8.00× | measure-only pair 336; `parse-oauth-callback-request` vs openai-codex loopback pathname/state/code | invent pause；地板优化另刀 |
 | `core_rest.cancellation_wait` | 53.40 | 8.840 | 6.041× | 8.00× | measure-only pair 337; leftover `wait-for-cancellation` vs Atomics.wait timeout + aborted AbortSignal | invent pause；地板优化另刀 |
 | `core_rest.redacted_types` | 2.375 | 0.528 | 4.494× | 8.00× | measure-only pair 338; leftover `redacted-object-types` vs sorted type-list copy; not redact-secrets | invent pause；地板优化另刀 |
+| `oauth_pkce_device.base64url_value` | 0.736 | 0.273 | 2.692× | 8.00× | measure-only pair 358; `base64url-value` vs RFC 4648 §5 alphabet; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `oauth_pkce_device.base64url_decode` | 2.969 | 0.454 | 6.544× | 8.00× | measure-only pair 359; `base64url-decode` vs `decodeJwt` `atob` | invent pause；地板优化另刀 |
+| `oauth_pkce_device.account_id` | 6.112 | 1.021 | 5.986× | 8.00× | measure-only pair 360; `openai-account-id-from-token` vs `getAccountId` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
