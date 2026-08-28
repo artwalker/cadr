@@ -12,16 +12,26 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_layout` (isolated eval
   workspace/agent/sessions layout on `src/cadr-evals/harness.lisp` vs
   `runPiCodingAgent` path join). Observed `el_ws` / `el_agent` / `el_sess` /
-  `el_n` exact. Measure-only. `nextPairNum` left unchanged. Pair 418.
+  `el_n` exact. n=5 **3.071×** (3.297 / 1.074 µs) on host `cursor`,
+  ceiling 8.0. Measure-only. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+  Pair 418.
 - Goal 20 P.13 leftover: pair `evals_harness.system_prompt`
   (`transform-system-prompt` empty rejection on `src/cadr-evals/harness.lisp`
   vs `transformSystemPrompt`). Observed `sp_id` / `sp_map` / `sp_empty` /
-  `sp_blank` / `sp_n` exact. Measure-only. `nextPairNum` left unchanged.
-  Pair 419.
+  `sp_blank` / `sp_n` exact. n=5 **0.115×** (0.569 / 4.934 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  unchanged. Pair 419.
 - Goal 20 P.13 leftover: pair `evals_harness.output_selector`
   (`run-coding-agent-eval` `:selector` on `src/cadr-evals/harness.lisp` vs
   `options.output`). Observed `os_none` / `os_id` / `os_map` / `os_n` exact.
-  Measure-only. `nextPairNum` left unchanged. Pair 420.
+  n=5 **1.007×** (0.189 / 0.188 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+  Pair 420.
 - Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
   `src/cadr-evals/harness.lisp` vs baseline step property access).
   Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.
