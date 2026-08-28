@@ -169,7 +169,7 @@ METRICS = {
         "structured_api_key_login",
     ),
     "skill_prompt_load": ("build_prompt",),
-    "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth"),
+    "cli_bootstrap_sessions": ("coding_tools", "bootstrap_auth", "model_cycle", "model_scope_line", "process_files"),
     "ai_runtime_faux": ("blocks",),
     "http_transport": ("parse_url",),
     "core_rest": ("cancellation_abort", "redacted_secrets", "threads_cleanup"),
@@ -1289,6 +1289,11 @@ RATIO_CEILINGS = {
     # cli_bootstrap_sessions.bootstrap_auth pair (samples=5): observed 0.64x
     # (3928.6 / 6134.0 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.bootstrap_auth": 8.0,
+    # Leftover trio on src/cadr-cli/bootstrap/commands.lisp (pairs 484-486).
+    # First-freeze headroom 8.0. Ratchet down only.
+    "cli_bootstrap_sessions.model_cycle": 8.0,
+    "cli_bootstrap_sessions.model_scope_line": 8.0,
+    "cli_bootstrap_sessions.process_files": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_runtime_faux pair (samples=5): observed 1.76x
     # (0.27 / 0.15 us). 8.0 is first-freeze headroom
@@ -3062,6 +3067,20 @@ OBSERVED_EXACT = {
         "auth_pairs_digest",
         "vertex_structured",
         "bedrock_structured",
+        "mc_fwd",
+        "mc_bwd",
+        "mc_wrap",
+        "mc_miss",
+        "mc_one",
+        "mc_empty",
+        "ms_quiet",
+        "ms_empty",
+        "ms_text",
+        "ms_n",
+        "ms_disabled",
+        "pf_hello",
+        "pf_n",
+        "pf_img",
     ),
     "ai_runtime_faux": (
         "text_len",

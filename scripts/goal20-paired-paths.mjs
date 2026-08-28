@@ -447,6 +447,9 @@ const REPETITIONS = {
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
+	"cli_bootstrap_sessions.model_cycle": 50,
+	"cli_bootstrap_sessions.model_scope_line": 50,
+	"cli_bootstrap_sessions.process_files": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -861,6 +864,9 @@ const builtinProvidersModule = await import(moduleUrl("packages/ai/src/providers
 const providerEnvModule = await import(moduleUrl("packages/ai/src/utils/provider-env.ts"));
 const systemPromptModule = await import(moduleUrl("packages/coding-agent/src/core/system-prompt.ts"));
 const codingToolsModule = await import(moduleUrl("packages/coding-agent/src/core/tools/index.ts"));
+const fileProcessorModule = await import(
+	moduleUrl("packages/coding-agent/src/cli/file-processor.ts"),
+);
 const fauxProviderModule = await import(moduleUrl("packages/ai/src/providers/faux.ts"));
 const agentModule = await import(moduleUrl("packages/agent/src/agent.ts"));
 const { createRequire } = await import("node:module");
@@ -16412,9 +16418,122 @@ async function runCliBootstrapAuth() {
 	};
 }
 
+function bootstrapCycleModel(id) {
+	return { id, provider: "faux", api: "faux" };
+}
+
+function bootstrapCycleEntries() {
+	return [
+		{ model: bootstrapCycleModel("one"), thinkingLevel: undefined },
+		{ model: bootstrapCycleModel("two"), thinkingLevel: "high" },
+		{ model: bootstrapCycleModel("three"), thinkingLevel: "off" },
+	];
+}
+
+function modelsMatchPi(left, right) {
+	return left?.id === right?.id && left?.provider === right?.provider;
+}
+
+function cycleScopedTarget(entries, current, direction) {
+	if (entries.length <= 1) return undefined;
+	let currentIndex = entries.findIndex((entry) => modelsMatchPi(entry.model, current));
+	if (currentIndex === -1) currentIndex = 0;
+	const len = entries.length;
+	const nextIndex =
+		direction === "forward" ? (currentIndex + 1) % len : (currentIndex - 1 + len) % len;
+	return entries[nextIndex];
+}
+
+function bootstrapCycleId(entries, current, direction) {
+	const entry = cycleScopedTarget(entries, current, direction);
+	return entry ? entry.model.id : "";
+}
+
+function runCliBootstrapModelCycle() {
+	const entries = bootstrapCycleEntries();
+	const one = entries[0].model;
+	const three = entries[2].model;
+	const missing = bootstrapCycleModel("missing");
+	return {
+		mc_fwd: bootstrapCycleId(entries, one, "forward"),
+		mc_bwd: bootstrapCycleId(entries, one, "backward"),
+		mc_wrap: bootstrapCycleId(entries, three, "forward"),
+		mc_miss: bootstrapCycleId(entries, missing, "forward"),
+		mc_one: cycleScopedTarget([entries[0]], one, "forward") ? 0 : 1,
+		mc_empty: cycleScopedTarget([], one, "forward") ? 0 : 1,
+	};
+}
+
+function modelScopeStartupLine(scopedModels, keybindings, { verbose = false, quietStartup = false } = {}) {
+	if (scopedModels.length > 0 && (verbose || !quietStartup)) {
+		const modelList = scopedModels
+			.map((entry) => {
+				const thinkingStr = entry.thinkingLevel ? `:${entry.thinkingLevel}` : "";
+				return `${entry.model.id}${thinkingStr}`;
+			})
+			.join(", ");
+		const cycleKeys = keybindings.getKeys("app.model.cycleForward");
+		const cycleHint =
+			cycleKeys.length > 0
+				? themeModule.theme.fg(
+						"muted",
+						` (${keybindingHintsModule.formatKeyText(cycleKeys.join("/"), { capitalize: true })} to cycle)`,
+					)
+				: "";
+		return themeModule.theme.fg("dim", `Model scope: ${modelList}${cycleHint}`);
+	}
+	return undefined;
+}
+
+function runCliBootstrapModelScope() {
+	const entries = [
+		{ model: bootstrapCycleModel("faux-1"), thinkingLevel: undefined },
+		{ model: bootstrapCycleModel("other-1"), thinkingLevel: "high" },
+	];
+	const manager = new keybindingsModule.KeybindingsManager(appKeybindingsModule.KEYBINDINGS);
+	const disabled = new keybindingsModule.KeybindingsManager(appKeybindingsModule.KEYBINDINGS, {
+		"app.model.cycleForward": [],
+	});
+	const shown = modelScopeStartupLine(entries, manager);
+	const quiet = modelScopeStartupLine(entries, manager, { quietStartup: true });
+	const empty = modelScopeStartupLine([], manager, { verbose: true });
+	const noHint = modelScopeStartupLine(entries, disabled, { verbose: true });
+	const shownText = shown ? ansiModule.stripAnsi(shown) : "";
+	return {
+		ms_quiet: quiet ? 0 : 1,
+		ms_empty: empty ? 0 : 1,
+		ms_text: shownText,
+		ms_n: [...shownText].length,
+		ms_disabled: noHint ? ansiModule.stripAnsi(noHint) : "",
+	};
+}
+
+function writeCliBootstrapProcessFiles() {
+	const root = path.join(scratch, "bootstrap-files");
+	mkdirSync(root, { recursive: true });
+	const hello = path.join(root, "hello.txt");
+	const empty = path.join(root, "empty.txt");
+	writeFileSync(hello, "goal20-hello");
+	writeFileSync(empty, "");
+	return { hello, empty };
+}
+
+async function runCliBootstrapProcessFiles(hello, empty) {
+	const { text, images } = await fileProcessorModule.processFileArguments([hello, empty]);
+	return {
+		pf_hello: text.includes("goal20-hello") ? 1 : 0,
+		pf_n: (text.match(/<file name=/g) || []).length,
+		pf_img: images.length,
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
+	const cycleObserved = runCliBootstrapModelCycle();
+	const scopeObserved = runCliBootstrapModelScope();
+	const { hello, empty } = writeCliBootstrapProcessFiles();
+	const filesObserved = await runCliBootstrapProcessFiles(hello, empty);
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -16422,9 +16541,21 @@ async function measureCliBootstrapCodingTools() {
 		bootstrap_auth: await collect("cli_bootstrap_sessions.bootstrap_auth", () => {
 			return () => runCliBootstrapAuth();
 		}),
+		model_cycle: await collect("cli_bootstrap_sessions.model_cycle", () => {
+			return () => runCliBootstrapModelCycle();
+		}),
+		model_scope_line: await collect("cli_bootstrap_sessions.model_scope_line", () => {
+			return () => runCliBootstrapModelScope();
+		}),
+		process_files: await collect("cli_bootstrap_sessions.process_files", () => {
+			return () => runCliBootstrapProcessFiles(hello, empty);
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
+			...cycleObserved,
+			...scopeObserved,
+			...filesObserved,
 		},
 	};
 }
@@ -17460,6 +17591,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"cli_bootstrap_sessions.bootstrap_auth":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
+			"cli_bootstrap_sessions.model_cycle":
+				"packages/coding-agent/src/core/agent-session.ts _cycleScopedModel index wrap",
+			"cli_bootstrap_sessions.model_scope_line":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts init Model scope line",
+			"cli_bootstrap_sessions.process_files":
+				"packages/coding-agent/src/cli/file-processor.ts processFileArguments",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

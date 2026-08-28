@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.model_cycle`
+  (`model-cycle-target-entry` on
+  `src/cadr-cli/bootstrap/commands.lisp` vs `_cycleScopedModel` index wrap).
+  Observed `mc_fwd` / `mc_bwd` / `mc_wrap` / `mc_miss` / `mc_one` /
+  `mc_empty` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover
+  (Pair 484). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.model_scope_line`
+  (`model-scope-startup-line` on
+  `src/cadr-cli/bootstrap/commands.lisp` vs interactive-mode init
+  `Model scope:` line). Observed `ms_quiet` / `ms_empty` / `ms_text` /
+  `ms_n` / `ms_disabled` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only
+  leftover (Pair 485). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.process_files`
+  (`process-cli-file-arguments` on
+  `src/cadr-cli/bootstrap/commands.lisp` vs `processFileArguments`).
+  Observed `pf_hello` / `pf_n` / `pf_img` exact. n=5
+  **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 486).
+  `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

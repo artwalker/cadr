@@ -55,6 +55,9 @@
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
+;;;; 484. cli_bootstrap_sessions model-cycle-target-entry vs _cycleScopedModel index
+;;;; 485. cli_bootstrap_sessions model-scope-startup-line vs interactive-mode init line
+;;;; 486. cli_bootstrap_sessions process-cli-file-arguments vs processFileArguments
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
 ;;;;  45. cli_support normalize-path-input vs normalizePath
@@ -596,6 +599,9 @@
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
+    ("cli_bootstrap_sessions.model_cycle" . 50)
+    ("cli_bootstrap_sessions.model_scope_line" . 50)
+    ("cli_bootstrap_sessions.process_files" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -16287,9 +16293,130 @@
      (bootstrap-auth-structured-flag options :google-vertex)
      (bootstrap-auth-structured-flag options :amazon-bedrock))))
 
+(defun bootstrap-cycle-model (id)
+  (cadr-ai:make-model :id id :provider :faux :api :faux))
+
+(defun bootstrap-cycle-entries ()
+  (list
+   (list :model (bootstrap-cycle-model "one") :thinking nil)
+   (list :model (bootstrap-cycle-model "two") :thinking :high)
+   (list :model (bootstrap-cycle-model "three") :thinking :off)))
+
+(defun bootstrap-cycle-id (entries current direction)
+  (let ((entry
+          (cadr-cli::model-cycle-target-entry
+           entries current direction)))
+    (if entry
+        (cadr-ai:model-id (getf entry :model))
+        "")))
+
+(defun run-cli-bootstrap-model-cycle ()
+  (let* ((entries (bootstrap-cycle-entries))
+         (one (getf (first entries) :model))
+         (three (getf (third entries) :model))
+         (missing (bootstrap-cycle-model "missing")))
+    (list
+     (bootstrap-cycle-id entries one :forward)
+     (bootstrap-cycle-id entries one :backward)
+     (bootstrap-cycle-id entries three :forward)
+     (bootstrap-cycle-id entries missing :forward)
+     (if (cadr-cli::model-cycle-target-entry
+          (list (first entries)) one :forward)
+         0
+         1)
+     (if (cadr-cli::model-cycle-target-entry nil one :forward)
+         0
+         1))))
+
+(defun bootstrap-scope-entries ()
+  (list
+   (list :model (bootstrap-cycle-model "faux-1") :thinking nil)
+   (list :model (bootstrap-cycle-model "other-1") :thinking :high)))
+
+(defun bootstrap-scope-stripped (line)
+  (if line
+      (coerce (cadr-tui:strip-terminal-sequences line) 'string)
+      ""))
+
+(defun run-cli-bootstrap-model-scope ()
+  (let* ((entries (bootstrap-scope-entries))
+         (manager (cadr-tui:make-keybindings-manager))
+         (disabled
+           (cadr-tui:make-keybindings-manager
+            :user-bindings
+            '(("app.model.cycleForward" . nil))))
+         (shown
+           (cadr-cli::model-scope-startup-line
+            entries manager
+            :verbose-p nil :quiet-startup-p nil))
+         (quiet
+           (cadr-cli::model-scope-startup-line
+            entries manager
+            :verbose-p nil :quiet-startup-p t))
+         (empty
+           (cadr-cli::model-scope-startup-line
+            nil manager
+            :verbose-p t :quiet-startup-p nil))
+         (no-hint
+           (cadr-cli::model-scope-startup-line
+            entries disabled
+            :verbose-p t :quiet-startup-p nil))
+         (shown-text (bootstrap-scope-stripped shown)))
+    (list
+     (if quiet 0 1)
+     (if empty 0 1)
+     shown-text
+     (length shown-text)
+     (bootstrap-scope-stripped no-hint))))
+
+(defun count-file-name-tags (text)
+  (loop with start = 0
+        with n = 0
+        for pos = (search "<file name=" text :start2 start)
+        while pos
+        do (incf n)
+           (setf start (+ pos 11))
+        finally (return n)))
+
+(defun cli-bootstrap-process-file-paths ()
+  (let* ((root
+           (merge-pathnames "bootstrap-files/" *scratch-directory*))
+         (hello (merge-pathnames "hello.txt" root))
+         (empty (merge-pathnames "empty.txt" root)))
+    (ensure-directories-exist hello)
+    (with-open-file (out hello
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8)
+      (write-string "goal20-hello" out))
+    (with-open-file (out empty
+                         :direction :output
+                         :if-exists :supersede
+                         :if-does-not-exist :create
+                         :external-format :utf-8))
+    (list hello empty)))
+
+(defun run-cli-bootstrap-process-files (hello empty)
+  (multiple-value-bind (text images)
+      (cadr-cli::process-cli-file-arguments
+       (list (namestring hello) (namestring empty))
+       (uiop:pathname-directory-pathname hello))
+    (list
+     (if (search "goal20-hello" text) 1 0)
+     (count-file-name-tags text)
+     (length images))))
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
-         (auth-observed (run-cli-bootstrap-auth)))
+         (auth-observed (run-cli-bootstrap-auth))
+         (cycle-observed (run-cli-bootstrap-model-cycle))
+         (scope-observed (run-cli-bootstrap-model-scope))
+         (file-paths (cli-bootstrap-process-file-paths))
+         (hello (first file-paths))
+         (empty (second file-paths))
+         (files-observed
+           (run-cli-bootstrap-process-files hello empty)))
     (json-object
      "observed"
      (json-object
@@ -16300,7 +16427,21 @@
       "option_count" (first auth-observed)
       "auth_pairs_digest" (second auth-observed)
       "vertex_structured" (third auth-observed)
-      "bedrock_structured" (fourth auth-observed))
+      "bedrock_structured" (fourth auth-observed)
+      "mc_fwd" (nth 0 cycle-observed)
+      "mc_bwd" (nth 1 cycle-observed)
+      "mc_wrap" (nth 2 cycle-observed)
+      "mc_miss" (nth 3 cycle-observed)
+      "mc_one" (nth 4 cycle-observed)
+      "mc_empty" (nth 5 cycle-observed)
+      "ms_quiet" (nth 0 scope-observed)
+      "ms_empty" (nth 1 scope-observed)
+      "ms_text" (nth 2 scope-observed)
+      "ms_n" (nth 3 scope-observed)
+      "ms_disabled" (nth 4 scope-observed)
+      "pf_hello" (nth 0 files-observed)
+      "pf_n" (nth 1 files-observed)
+      "pf_img" (nth 2 files-observed))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -16310,7 +16451,23 @@
      (collect "cli_bootstrap_sessions.bootstrap_auth"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-auth)))))))
+                  (run-cli-bootstrap-auth))))
+     "model_cycle"
+     (collect "cli_bootstrap_sessions.model_cycle"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-model-cycle))))
+     "model_scope_line"
+     (collect "cli_bootstrap_sessions.model_scope_line"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-model-scope))))
+     "process_files"
+     (collect "cli_bootstrap_sessions.process_files"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-process-files
+                   hello empty)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -17112,6 +17269,12 @@
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "cli_bootstrap_sessions.bootstrap_auth"
       "src/cadr-cli/bootstrap/auth.lisp model-registry-login-options"
+      "cli_bootstrap_sessions.model_cycle"
+      "src/cadr-cli/bootstrap/commands.lisp model-cycle-target-entry"
+      "cli_bootstrap_sessions.model_scope_line"
+      "src/cadr-cli/bootstrap/commands.lisp model-scope-startup-line"
+      "cli_bootstrap_sessions.process_files"
+      "src/cadr-cli/bootstrap/commands.lisp process-cli-file-arguments"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
