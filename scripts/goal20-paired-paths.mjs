@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.scoped_models_selector_selected_item": 50,
+	"cli_selectors.scoped_models_selector_select_id": 50,
+	"cli_selectors.scoped_models_selector_notify_change": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,112 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function scopedModelsSelectorSelectedItemEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	query = "",
+) {
+	const items = scopedModelsFilterItems(allModels, enabledIds, query);
+	const item = items[selected];
+	return item ? item.fullId : "";
+}
+
+function runCliSelectorsScopedModelsSelectorSelectedItem() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsel_first: scopedModelsSelectorSelectedItemEncoded(models, null, 0),
+		smsel_mid: scopedModelsSelectorSelectedItemEncoded(models, null, 2),
+		smsel_oob: scopedModelsSelectorSelectedItemEncoded(models, null, 99),
+		smsel_empty: scopedModelsSelectorSelectedItemEncoded([], null, 0),
+		smsel_gpt: scopedModelsSelectorSelectedItemEncoded(models, null, 0, "gpt"),
+	};
+}
+
+function scopedModelsSelectorSelectIdEncoded(
+	allModels,
+	enabledIds,
+	selected,
+	id,
+	query = "",
+) {
+	const items = scopedModelsFilterItems(allModels, enabledIds, query);
+	const position = items.findIndex((item) => item.fullId === id);
+	return String(position >= 0 ? position : selected);
+}
+
+function runCliSelectorsScopedModelsSelectorSelectId() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsid_first: scopedModelsSelectorSelectIdEncoded(
+			models,
+			null,
+			2,
+			"openai/gpt-4o",
+		),
+		smsid_last: scopedModelsSelectorSelectIdEncoded(
+			models,
+			null,
+			0,
+			"google/gemini-2.5-pro",
+		),
+		smsid_miss: scopedModelsSelectorSelectIdEncoded(
+			models,
+			null,
+			3,
+			"stale/missing",
+		),
+		smsid_empty: scopedModelsSelectorSelectIdEncoded(
+			[],
+			null,
+			0,
+			"openai/gpt-4o",
+		),
+		smsid_gpt: scopedModelsSelectorSelectIdEncoded(
+			models,
+			null,
+			0,
+			"openai/gpt-4o",
+			"gpt",
+		),
+	};
+}
+
+function scopedModelsSelectorNotifyChangeEncoded(
+	enabledIds,
+	withCallback,
+	times = 1,
+) {
+	let payload = "";
+	let n = 0;
+	const onChange = withCallback
+		? (ids) => {
+				n += 1;
+				payload = ids === null ? "all" : ids.join(",");
+			}
+		: undefined;
+	for (let i = 0; i < times; i++) {
+		if (onChange) {
+			onChange(enabledIds === null ? null : [...enabledIds]);
+		}
+	}
+	return `${payload}|${n}`;
+}
+
+function runCliSelectorsScopedModelsSelectorNotifyChange() {
+	return {
+		smnc_all: scopedModelsSelectorNotifyChangeEncoded(null, true, 1),
+		smnc_partial: scopedModelsSelectorNotifyChangeEncoded(
+			["openai/gpt-4o", "anthropic/claude-sonnet-4"],
+			true,
+			1,
+		),
+		smnc_none: scopedModelsSelectorNotifyChangeEncoded(null, false, 1),
+		smnc_twice: scopedModelsSelectorNotifyChangeEncoded(null, true, 2),
+		smnc_empty: scopedModelsSelectorNotifyChangeEncoded([], true, 1),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +15006,12 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const scopedModelsSelectorSelectedItemResults =
+		runCliSelectorsScopedModelsSelectorSelectedItem();
+	const scopedModelsSelectorSelectIdResults =
+		runCliSelectorsScopedModelsSelectorSelectId();
+	const scopedModelsSelectorNotifyChangeResults =
+		runCliSelectorsScopedModelsSelectorNotifyChange();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15317,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...scopedModelsSelectorSelectedItemResults,
+		...scopedModelsSelectorSelectIdResults,
+		...scopedModelsSelectorNotifyChangeResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15659,6 +15777,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		scoped_models_selector_selected_item: await collect(
+			"cli_selectors.scoped_models_selector_selected_item",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorSelectedItem();
+			},
+		),
+		scoped_models_selector_select_id: await collect(
+			"cli_selectors.scoped_models_selector_select_id",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorSelectId();
+			},
+		),
+		scoped_models_selector_notify_change: await collect(
+			"cli_selectors.scoped_models_selector_notify_change",
+			() => {
+				return () => runCliSelectorsScopedModelsSelectorNotifyChange();
 			},
 		),
 		observed,
@@ -17393,6 +17529,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.scoped_models_selector_selected_item":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts selected item",
+			"cli_selectors.scoped_models_selector_select_id":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts select by id",
+			"cli_selectors.scoped_models_selector_notify_change":
+				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts onChange",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
