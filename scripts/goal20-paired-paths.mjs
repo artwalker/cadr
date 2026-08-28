@@ -315,6 +315,9 @@ const REPETITIONS = {
 	"cli_selectors.input_line": 50,
 	"cli_selectors.keybinding_text": 50,
 	"cli_selectors.keybinding_hint": 50,
+	"cli_selectors.user_message_make": 50,
+	"cli_selectors.user_message_move": 50,
+	"cli_selectors.user_message_selection": 50,
 	"cli_selectors.session_format_age": 50,
 	"cli_selectors.session_record_label": 50,
 	"cli_selectors.session_shorten_path": 50,
@@ -14750,6 +14753,138 @@ function runCliSelectorsKeybindingHint() {
 	];
 }
 
+function lispMod(n, m) {
+	if (m <= 0) {
+		return 0;
+	}
+	return ((n % m) + m) % m;
+}
+
+function goal20UserMessageItems(...values) {
+	return values.map((value) => ({ label: value, value }));
+}
+
+function makeUserMessageSelectorState({ items = [], initialSelectedValue, maxVisible = 10 } = {}) {
+	let initial = null;
+	if (initialSelectedValue != null) {
+		const idx = items.findIndex((item) => item.value === initialSelectedValue);
+		if (idx >= 0) {
+			initial = idx;
+		}
+	}
+	const selected = initial !== null ? initial : Math.max(0, items.length - 1);
+	return {
+		items: items.slice(),
+		selected,
+		maxVisible: Math.max(1, maxVisible),
+	};
+}
+
+function userMessageSelectorMove(state, delta) {
+	const count = state.items.length;
+	state.selected = lispMod(state.selected + delta, count > 0 ? count : 0);
+	if (count <= 0) {
+		state.selected = 0;
+	}
+	return state;
+}
+
+function userMessageSelectorSelectionText(state) {
+	const item = state.items[state.selected];
+	return item ? item.value : "";
+}
+
+function runCliSelectorsUserMessageMake() {
+	const one = goal20UserMessageItems("a");
+	const two = goal20UserMessageItems("a", "b");
+	const three = goal20UserMessageItems("a", "b", "c");
+	const emptyState = makeUserMessageSelectorState({ items: [] });
+	const oneState = makeUserMessageSelectorState({ items: one });
+	const twoState = makeUserMessageSelectorState({ items: two });
+	const hitState = makeUserMessageSelectorState({
+		items: three,
+		initialSelectedValue: "a",
+	});
+	const missState = makeUserMessageSelectorState({
+		items: two,
+		initialSelectedValue: "z",
+	});
+	const orig = goal20UserMessageItems("a");
+	const copyState = makeUserMessageSelectorState({ items: orig });
+	orig.push(...goal20UserMessageItems("x"));
+	return {
+		umm_empty: emptyState.selected,
+		umm_one: oneState.selected,
+		umm_two: twoState.selected,
+		umm_hit: hitState.selected,
+		umm_miss: missState.selected,
+		umm_copy: copyState.items.length,
+	};
+}
+
+function runCliSelectorsUserMessageMove() {
+	const empty = makeUserMessageSelectorState({ items: [] });
+	const twoFwd = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b"),
+	});
+	const twoBack = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b"),
+	});
+	const twoFull = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b"),
+	});
+	const threeBack = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b", "c"),
+	});
+	const threeFwd = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b", "c"),
+	});
+	userMessageSelectorMove(empty, 1);
+	userMessageSelectorMove(twoFwd, 1);
+	userMessageSelectorMove(twoBack, -1);
+	userMessageSelectorMove(twoFull, 2);
+	userMessageSelectorMove(threeBack, -1);
+	userMessageSelectorMove(threeFwd, 1);
+	return {
+		umv_empty: empty.selected,
+		umv_wrap_fwd: twoFwd.selected,
+		umv_back: twoBack.selected,
+		umv_full: twoFull.selected,
+		umv_three_back: threeBack.selected,
+		umv_three_fwd: threeFwd.selected,
+	};
+}
+
+function runCliSelectorsUserMessageSelection() {
+	const empty = makeUserMessageSelectorState({ items: [] });
+	const two = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b"),
+	});
+	const hit = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b", "c"),
+		initialSelectedValue: "a",
+	});
+	const moved = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b"),
+	});
+	const miss = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("a", "b"),
+		initialSelectedValue: "z",
+	});
+	const one = makeUserMessageSelectorState({
+		items: goal20UserMessageItems("only"),
+	});
+	userMessageSelectorMove(moved, 1);
+	return {
+		ums_empty: userMessageSelectorSelectionText(empty),
+		ums_last: userMessageSelectorSelectionText(two),
+		ums_hit: userMessageSelectorSelectionText(hit),
+		ums_wrap: userMessageSelectorSelectionText(moved),
+		ums_miss: userMessageSelectorSelectionText(miss),
+		ums_one: userMessageSelectorSelectionText(one),
+	};
+}
+
 async function measureCliSelectorsSessionSearch() {
 	const visibleSlice = runCliSelectorsVisibleSlice();
 	const moveIndexResults = runCliSelectorsMoveIndex();
@@ -14765,6 +14900,9 @@ async function measureCliSelectorsSessionSearch() {
 	const inputLineResults = runCliSelectorsInputLine();
 	const keybindingTextResults = runCliSelectorsKeybindingText();
 	const keybindingHintResults = runCliSelectorsKeybindingHint();
+	const userMessageMakeResults = runCliSelectorsUserMessageMake();
+	const userMessageMoveResults = runCliSelectorsUserMessageMove();
+	const userMessageSelectionResults = runCliSelectorsUserMessageSelection();
 	const sessionFormatAgeResults = runCliSelectorsSessionFormatAge();
 	const sessionRecordLabelResults = runCliSelectorsSessionRecordLabel();
 	const sessionShortenPathResults = runCliSelectorsSessionShortenPath();
@@ -15202,6 +15340,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...userMessageMakeResults,
+		...userMessageMoveResults,
+		...userMessageSelectionResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15257,6 +15398,15 @@ async function measureCliSelectorsSessionSearch() {
 		}),
 		keybinding_hint: await collect("cli_selectors.keybinding_hint", () => {
 			return () => runCliSelectorsKeybindingHint();
+		}),
+		user_message_make: await collect("cli_selectors.user_message_make", () => {
+			return () => runCliSelectorsUserMessageMake();
+		}),
+		user_message_move: await collect("cli_selectors.user_message_move", () => {
+			return () => runCliSelectorsUserMessageMove();
+		}),
+		user_message_selection: await collect("cli_selectors.user_message_selection", () => {
+			return () => runCliSelectorsUserMessageSelection();
 		}),
 		session_format_age: await collect("cli_selectors.session_format_age", () => {
 			return () => runCliSelectorsSessionFormatAge();
@@ -17426,6 +17576,12 @@ const result = {
 				"packages/tui/src/keybindings.ts KeybindingsManager.getKeys join",
 			"cli_selectors.keybinding_hint":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts rawKeyHint",
+			"cli_selectors.user_message_make":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts UserMessageList constructor",
+			"cli_selectors.user_message_move":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts selectedIndex wrap",
+			"cli_selectors.user_message_selection":
+				"packages/coding-agent/src/modes/interactive/components/user-message-selector.ts selected item value",
 			"websocket_stream.stream_roundtrip":
 				"packages/ai/src/api/openai-codex-responses.ts stream (websocket)",
 			"cli_sdk.version_newer":
