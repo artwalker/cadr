@@ -1200,11 +1200,11 @@ RATIO_CEILINGS = {
   # Measure-only leftover 633; first freeze 26.593× (247.317 / 9.300 µs).
   # 50.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.render_model_selector": 50.0,
-  # Measure-only leftover 634; first freeze recorded after n=5.
+  # Measure-only leftover 634; first freeze 1.831× (0.910 / 0.497 µs).
   "cli_selectors.daxnuts_rgb_at": 8.0,
-  # Measure-only leftover 635; first freeze recorded after n=5.
+  # Measure-only leftover 635; first freeze 3.472× (0.688 / 0.198 µs).
   "cli_selectors.make_daxnuts_component": 8.0,
-  # Measure-only leftover 636; first freeze recorded after n=5.
+  # Measure-only leftover 636; first freeze 1.119× (3.787 / 3.384 µs).
   "cli_selectors.daxnuts_component_tick": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick

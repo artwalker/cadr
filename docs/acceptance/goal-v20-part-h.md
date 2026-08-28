@@ -7792,6 +7792,30 @@ Leftover sibling of Pair 631. Timed work is constructor copy/isolation (all / pa
 
 Leftover sibling of Pairs 631–632. Timed work is selector-frame layout (default / selected-2 / scoped / narrow / miss query). Observed `rms_default` / `rms_sel2` / `rms_scoped` / `rms_narrow` / `rms_miss` are exact. First n=5 freeze **26.593×** (247.317 / 9.300 µs) on host `cursor`, ceiling 50.0 first-freeze headroom. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 634 — `cli_selectors` (daxnuts_rgb_at)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_rgb_at` | `daxnuts-rgb-at` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | parseImage pixel lookup (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling on the `daxnuts.lisp` hole after Pairs 547–549 (parse/image-line/center). Timed work is five grid probes ((0,0) / (0,31) / (16,16) / (31,31) / (1,0)). Observed `dra_00` / `dra_0x` / `dra_mid` / `dra_last` / `dra_10` are exact. First n=5 freeze **1.831×** (0.910 / 0.497 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 635 — `cli_selectors` (make_daxnuts_component)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_daxnuts_component` | `make-daxnuts-component` (`src/cadr-cli/interactive/components/daxnuts.lisp`, `:start-p nil`) | DaxnutsComponent constructor without `startAnimation` (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of Pair 634. Timed work is constructor isolation without the animation thread (tick / stopped / thread / cache / second instance). Observed `dmc_tick` / `dmc_stop` / `dmc_thread` / `dmc_cache` / `dmc_second` are exact. First n=5 freeze **3.472×** (0.688 / 0.198 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 636 — `cli_selectors` (daxnuts_component_tick)
+
+| metric | cadr | pi |
+|---|---|---|
+| `daxnuts_component_tick` | `daxnuts-component-tick` (`src/cadr-cli/interactive/components/daxnuts.lisp`) | DaxnutsComponent interval body (`packages/coding-agent/src/modes/interactive/components/daxnuts.ts`) |
+
+Leftover sibling of Pairs 634–635. Timed work is one tick / 25 ticks to max / stop flag / no-op after max / shared render count. Observed `dct_one` / `dct_max` / `dct_stop` / `dct_after` / `dct_renders` are exact (renders=51). First n=5 freeze **1.119×** (3.787 / 3.384 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

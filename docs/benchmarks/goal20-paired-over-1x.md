@@ -441,4 +441,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.make_models_selector_keybindings` | 32.105 | 21.468 | 1.496× | 8.00× | measure-only leftover 631; `make-models-selector-keybindings` vs KEYBINDINGS app.models.* constructor | invent pause；地板优化另刀 |
 | `cli_selectors.make_scoped_models_selector_state` | 97.005 | 4.620 | 20.997× | 40.00× | measure-only leftover 632; `make-scoped-models-selector-state` vs ScopedModelsSelectorComponent constructor; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
 | `cli_selectors.render_model_selector` | 247.317 | 9.300 | 26.593× | 50.00× | measure-only leftover 633; `render-model-selector` vs ModelSelectorComponent layout; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_rgb_at` | 0.910 | 0.497 | 1.831× | 8.00× | measure-only leftover 634; `daxnuts-rgb-at` vs parseImage pixel lookup | invent pause；地板优化另刀 |
+| `cli_selectors.make_daxnuts_component` | 0.688 | 0.198 | 3.472× | 8.00× | measure-only leftover 635; `make-daxnuts-component` vs DaxnutsComponent constructor (no startAnimation) | invent pause；地板优化另刀 |
+| `cli_selectors.daxnuts_component_tick` | 3.787 | 3.384 | 1.119× | 8.00× | measure-only leftover 636; `daxnuts-component-tick` vs DaxnutsComponent interval body | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
