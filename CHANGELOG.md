@@ -9,6 +9,31 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_finish_refresh`
+  (`scoped-models-selector-finish-refresh` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs `updateModels` +
+  `setRefreshStatus`). Observed `smfrf_ok` / `smfrf_success` / `smfrf_rev` /
+  `smfrf_enabled` / `smfrf_filter` exact. n=5 **3.243×** (68.310 / 21.063 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 595). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_key_p`
+  (`scoped-models-selector-key-p` vs `KeybindingsManager.matches`). Observed
+  `smskp_save_hit` / `smskp_save_miss` / `smskp_up_hit` / `smskp_csi_up` /
+  `smskp_garbage` exact. n=5 **18.835×** (22.914 / 1.217 µs) on host
+  `cursor`, ceiling 30.0 first-freeze headroom. Cached
+  `*default-models-selector-keybindings*`; do not time
+  `make-keybindings-manager`. Measure-only leftover (Pair 596). Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_binding_label`
+  (`scoped-models-binding-label` vs `getKeys` first-or-fallback). Observed
+  `smbl_save` / `smbl_enable` / `smbl_confirm` / `smbl_fallback` /
+  `smbl_custom` exact. n=5 **16.362×** (5.542 / 0.339 µs) on host `cursor`,
+  ceiling 25.0 first-freeze headroom. Measure-only leftover (Pair 597).
+  Over-1× booked. `nextPairNum` left unchanged. Also restores dropped leftover
+  collect wiring for models.lisp slugs 559–594.
+
 - Goal 20 leftover: pair `cli_selectors.scoped_models_selector_refresh_items`
   (`scoped-models-selector-refresh-items` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs refresh items). Observed

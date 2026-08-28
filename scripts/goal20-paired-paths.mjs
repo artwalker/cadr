@@ -21201,16 +21201,16 @@ function scopedModelsSelectorKeyPEncoded(manager, data, name) {
 
 function runCliSelectorsScopedModelsSelectorKeyP() {
 	const manager = GOAL20_SCOPED_MODELS_DEFAULT_KB;
-	const saveData = manager.getKeys("app.models.save")[0];
-	const upData = manager.getKeys("tui.select.up")[0];
+	const ctrlS = "\x13";
+	const arrowUp = "\x1b[A";
 	return {
-		smskp_save_hit: scopedModelsSelectorKeyPEncoded(manager, saveData, "app.models.save"),
+		smskp_save_hit: scopedModelsSelectorKeyPEncoded(manager, ctrlS, "app.models.save"),
 		smskp_save_miss: scopedModelsSelectorKeyPEncoded(
 			manager,
-			saveData,
+			ctrlS,
 			"app.models.enableAll",
 		),
-		smskp_up_hit: scopedModelsSelectorKeyPEncoded(manager, upData, "tui.select.up"),
+		smskp_up_hit: scopedModelsSelectorKeyPEncoded(manager, arrowUp, "tui.select.up"),
 		smskp_csi_up: scopedModelsSelectorKeyPEncoded(manager, "\x1b[1;1A", "tui.select.up"),
 		smskp_garbage: scopedModelsSelectorKeyPEncoded(manager, "x", "app.models.save"),
 	};

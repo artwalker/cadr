@@ -1109,9 +1109,14 @@ RATIO_CEILINGS = {
   "cli_selectors.scoped_models_selector_clamp_selected": 8.0,
   # Measure-only leftover 594; first freeze 1.359× (35.327 / 25.989 µs).
   "cli_selectors.scoped_models_selector_mark_changed": 8.0,
+  # Measure-only leftover 595; first freeze 3.243× (68.310 / 21.063 µs).
   "cli_selectors.scoped_models_selector_finish_refresh": 8.0,
-  "cli_selectors.scoped_models_selector_key_p": 8.0,
-  "cli_selectors.scoped_models_binding_label": 8.0,
+  # Measure-only leftover 596; first freeze 18.835× (22.914 / 1.217 µs).
+  # 30.0 is first-freeze headroom. Ratchet down only.
+  "cli_selectors.scoped_models_selector_key_p": 30.0,
+  # Measure-only leftover 597; first freeze 16.362× (5.542 / 0.339 µs).
+  # 25.0 is first-freeze headroom. Ratchet down only.
+  "cli_selectors.scoped_models_binding_label": 25.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x

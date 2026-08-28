@@ -409,4 +409,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.scoped_models_selector_refresh_items` | 33.511 | 13.561 | 2.471× | 8.00× | measure-only leftover 592; `scoped-models-selector-refresh-items` vs refresh items | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_clamp_selected` | 30.415 | 12.863 | 2.365× | 8.00× | measure-only leftover 593; `scoped-models-selector-clamp-selected` vs clamp selected | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_mark_changed` | 35.327 | 25.989 | 1.359× | 8.00× | measure-only leftover 594; `scoped-models-selector-mark-changed` vs mark changed | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_finish_refresh` | 68.310 | 21.063 | 3.243× | 8.00× | measure-only leftover 595; `scoped-models-selector-finish-refresh` vs updateModels+setRefreshStatus | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_key_p` | 22.914 | 1.217 | 18.835× | 30.00× | measure-only leftover 596; `scoped-models-selector-key-p` vs KeybindingsManager.matches; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_binding_label` | 5.542 | 0.339 | 16.362× | 25.00× | measure-only leftover 597; `scoped-models-binding-label` vs getKeys first-or-fallback; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

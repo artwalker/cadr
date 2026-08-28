@@ -20634,20 +20634,16 @@
 (defun run-cli-selectors-scoped-models-selector-key-p ()
   (let ((state
           (make-scoped-models-key-bench-state
-           (make-scoped-models-test-models) :all)))
+           (make-scoped-models-test-models) :all))
+        (ctrl-s (string (code-char 19)))
+        (arrow-up (format nil "~C[A" #\Escape)))
     (list
      (scoped-models-selector-key-p-encoded
-      state
-      (scoped-models-selector-key-data state "app.models.save")
-      "app.models.save")
+      state ctrl-s "app.models.save")
      (scoped-models-selector-key-p-encoded
-      state
-      (scoped-models-selector-key-data state "app.models.save")
-      "app.models.enableAll")
+      state ctrl-s "app.models.enableAll")
      (scoped-models-selector-key-p-encoded
-      state
-      (scoped-models-selector-key-data state "tui.select.up")
-      "tui.select.up")
+      state arrow-up "tui.select.up")
      (scoped-models-selector-key-p-encoded
       state (csi-modified-arrow 1 #\A) "tui.select.up")
      (scoped-models-selector-key-p-encoded
