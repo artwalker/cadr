@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-28T22:18:46Z) on `cursor`, git `6dfe606f54d2`, ratio_gate=`enforced-only:cli_interactive_controller.runtime_auth_input_handle_event,cli_interactive_controller.render_runtime_auth_input,cli_interactive_controller.render_extension_custom_entry`, quick=no, samples=5
+Current: `paired-paths` (2026-08-28T22:26:09Z) on `cursor`, git `733a11b0d56b`, ratio_gate=`enforced-only:cli_interactive_controller.render_framed_select_state,cli_interactive_controller.framed_select_state_handle_event,cli_interactive_controller.framed_select_state_handle_raw_input`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-28T22:02:47Z) on `cursor`, git `887ffcf30130`, ratio_gate=`enforced-only:cli_interactive_controller.make_extension_input_dialog,cli_interactive_controller.make_extension_editor_dialog,cli_interactive_controller.make_runtime_auth_input_state`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-28T22:18:46Z) on `cursor`, git `6dfe606f54d2`, ratio_gate=`enforced-only:cli_interactive_controller.runtime_auth_input_handle_event,cli_interactive_controller.render_runtime_auth_input,cli_interactive_controller.render_extension_custom_entry`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -920,9 +920,12 @@ Previous: `paired-paths` (2026-08-28T22:02:47Z) on `cursor`, git `887ffcf30130`,
 | `cli_interactive_controller.make_extension_input_dialog` | 0.5 | 0.5 | 1.10× | 1.10× | 8.00× |
 | `cli_interactive_controller.make_extension_editor_dialog` | 1.6 | 0.4 | 4.55× | 4.55× | 8.00× |
 | `cli_interactive_controller.make_runtime_auth_input_state` | 0.5 | 0.4 | 1.04× | 1.04× | 8.00× |
-| `cli_interactive_controller.runtime_auth_input_handle_event` | 1.0 | 0.9 | 1.14× | — | 8.00× |
-| `cli_interactive_controller.render_runtime_auth_input` | 143.7 | 2.6 | 56.29× | — | 100.00× |
-| `cli_interactive_controller.render_extension_custom_entry` | 0.4 | 0.2 | 2.80× | — | 8.00× |
+| `cli_interactive_controller.runtime_auth_input_handle_event` | 1.0 | 0.9 | 1.14× | 1.14× | 8.00× |
+| `cli_interactive_controller.render_runtime_auth_input` | 143.7 | 2.6 | 56.29× | 56.29× | 100.00× |
+| `cli_interactive_controller.render_extension_custom_entry` | 0.4 | 0.2 | 2.80× | 2.80× | 8.00× |
+| `cli_interactive_controller.render_framed_select_state` | 230.3 | 2.3 | 101.60× | — | 180.00× |
+| `cli_interactive_controller.framed_select_state_handle_event` | 1.3 | 1.0 | 1.25× | — | 8.00× |
+| `cli_interactive_controller.framed_select_state_handle_raw_input` | 87.4 | 1.0 | 91.67× | — | 160.00× |
 | `cli_selectors.user_message_make` | — | — | — | — | — |
 | `cli_selectors.user_message_move` | — | — | — | — | — |
 | `cli_selectors.user_message_selection` | — | — | — | — | — |
@@ -1986,6 +1989,7 @@ Previous: `paired-paths` (2026-08-28T22:02:47Z) on `cursor`, git `887ffcf30130`,
 | 2026-08-28T21:51:20Z | paired-paths | `0c3ce100315b` | no | enforced-only:cli_interactive_controller.make_framed_select_state,cli_interactive_controller.note_component_render_channel,cli_interactive_controller.tui_extension_theme_runtime | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T22:02:47Z | paired-paths | `887ffcf30130` | no | enforced-only:cli_interactive_controller.make_extension_input_dialog,cli_interactive_controller.make_extension_editor_dialog,cli_interactive_controller.make_runtime_auth_input_state | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T22:18:46Z | paired-paths | `6dfe606f54d2` | no | enforced-only:cli_interactive_controller.runtime_auth_input_handle_event,cli_interactive_controller.render_runtime_auth_input,cli_interactive_controller.render_extension_custom_entry | 1.17× | 1.02× | 1.10× | 0.08× |
+| 2026-08-28T22:26:09Z | paired-paths | `733a11b0d56b` | no | enforced-only:cli_interactive_controller.render_framed_select_state,cli_interactive_controller.framed_select_state_handle_event,cli_interactive_controller.framed_select_state_handle_raw_input | 1.17× | 1.02× | 1.10× | 0.08× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

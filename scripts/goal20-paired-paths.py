@@ -1031,12 +1031,14 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.render_runtime_auth_input": 100.0,
     # Measure-only leftover 681; first freeze 2.800× (0.434 / 0.155 µs).
     "cli_interactive_controller.render_extension_custom_entry": 8.0,
-    # Measure-only leftover 682; first freeze pending; start 8.0.
-    "cli_interactive_controller.render_framed_select_state": 8.0,
-    # Measure-only leftover 683; first freeze pending; start 8.0.
+    # Measure-only leftover 682; first freeze 101.599× (230.310 / 2.267 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.render_framed_select_state": 180.0,
+    # Measure-only leftover 683; first freeze 1.252× (1.259 / 1.006 µs).
     "cli_interactive_controller.framed_select_state_handle_event": 8.0,
-    # Measure-only leftover 684; first freeze pending; start 8.0.
-    "cli_interactive_controller.framed_select_state_handle_raw_input": 8.0,
+    # Measure-only leftover 684; first freeze 91.669× (87.360 / 0.953 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.framed_select_state_handle_raw_input": 160.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.user_message_make": 8.0,
