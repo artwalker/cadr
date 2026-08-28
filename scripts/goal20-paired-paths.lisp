@@ -19554,6 +19554,135 @@
      :name ""))))
 
 
+(defun model-selector-active-clamp-observed-pairs
+    (active-models clamp-selected select-current)
+  (list
+   "msa_all" (nth 0 active-models)
+   "msa_scoped" (nth 1 active-models)
+   "msa_empty" (nth 2 active-models)
+   "msa_one" (nth 3 active-models)
+   "msa_force_all" (nth 4 active-models)
+   "msa_force_scoped" (nth 5 active-models)
+   "msc_ok" (nth 0 clamp-selected)
+   "msc_high" (nth 1 clamp-selected)
+   "msc_zero" (nth 2 clamp-selected)
+   "msc_one" (nth 3 clamp-selected)
+   "msc_keep" (nth 4 clamp-selected)
+   "msc_filter" (nth 5 clamp-selected)
+   "msel_hit" (nth 0 select-current)
+   "msel_first" (nth 1 select-current)
+   "msel_last" (nth 2 select-current)
+   "msel_miss" (nth 3 select-current)
+   "msel_nil" (nth 4 select-current)
+   "msel_empty" (nth 5 select-current)))
+
+
+(defun encode-model-selector-active-models (state)
+  (format nil "~{~a~^,~}"
+          (mapcar
+           #'cadr-cli::qualified-model-id
+           (cadr-cli::model-selector-active-models state))))
+
+
+(defun make-model-selector-active-bench
+    (models &key scoped-models scope)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :scoped-models scoped-models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (when scope
+      (setf (cadr-cli::model-selector-state-scope state) scope))
+    (encode-model-selector-active-models state)))
+
+
+(defun run-cli-selectors-model-selector-active-models ()
+  (let* ((models (make-model-selector-test-models))
+         (scoped (list (first models) (second models)))
+         (one (list (first models))))
+    (list
+     (make-model-selector-active-bench models)
+     (make-model-selector-active-bench models :scoped-models scoped)
+     (make-model-selector-active-bench '())
+     (make-model-selector-active-bench one)
+     (make-model-selector-active-bench
+      models :scoped-models scoped :scope :all)
+     (let ((state
+             (cadr-cli::make-model-selector-state
+              :all-models models
+              :current-model (first models)
+              :keybindings :bench)))
+       (setf (cadr-cli::model-selector-state-all-models state) models)
+       (setf (cadr-cli::model-selector-state-scoped-models state) scoped)
+       (setf (cadr-cli::model-selector-state-scope state) :scoped)
+       (encode-model-selector-active-models state)))))
+
+
+(defun model-selector-clamp-selected-encoded
+    (models selected &key query)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (setf (cadr-cli::model-selector-state-query state) (or query ""))
+    (setf (cadr-cli::model-selector-state-filter-query state) "force-refresh")
+    (cadr-cli::model-selector-apply-filter state)
+    (setf (cadr-cli::model-selector-state-selected state) selected)
+    (cadr-cli::model-selector-clamp-selected state)
+    (write-to-string
+     (cadr-cli::model-selector-state-selected state))))
+
+
+(defun run-cli-selectors-model-selector-clamp-selected ()
+  (let ((models (make-model-selector-test-models))
+        (one (list (first (make-model-selector-test-models)))))
+    (list
+     (model-selector-clamp-selected-encoded models 1)
+     (model-selector-clamp-selected-encoded models 99)
+     (model-selector-clamp-selected-encoded '() 7)
+     (model-selector-clamp-selected-encoded one 3)
+     (model-selector-clamp-selected-encoded models 0)
+     (model-selector-clamp-selected-encoded models 4 :query "gpt"))))
+
+
+(defun model-selector-select-current-encoded
+    (models current)
+  (let ((state
+          (cadr-cli::make-model-selector-state
+           :all-models models
+           :current-model (first models)
+           :keybindings :bench)))
+    (setf (cadr-cli::model-selector-state-all-models state) models)
+    (setf (cadr-cli::model-selector-state-query state) "")
+    (setf (cadr-cli::model-selector-state-filter-query state) "force-refresh")
+    (cadr-cli::model-selector-apply-filter state)
+    (setf (cadr-cli::model-selector-state-current-model state) current)
+    (cadr-cli::model-selector-select-current state)
+    (write-to-string
+     (cadr-cli::model-selector-state-selected state))))
+
+
+(defun run-cli-selectors-model-selector-select-current ()
+  (let ((models (make-model-selector-test-models))
+        (outsider
+          (make-model-selector-search-fixture
+           :id "missing-model"
+           :provider :openai
+           :name "Missing")))
+    (list
+     (model-selector-select-current-encoded models (second models))
+     (model-selector-select-current-encoded models (first models))
+     (model-selector-select-current-encoded
+      models (car (last models)))
+     (model-selector-select-current-encoded models outsider)
+     (model-selector-select-current-encoded models nil)
+     (model-selector-select-current-encoded '() (first models)))))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id

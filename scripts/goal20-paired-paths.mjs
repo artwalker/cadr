@@ -430,6 +430,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_enabled_set": 50,
 	"cli_selectors.model_equal_p": 50,
 	"cli_selectors.scoped_model_selector_search_text": 50,
+	"cli_selectors.model_selector_active_models": 50,
+	"cli_selectors.model_selector_clamp_selected": 50,
+	"cli_selectors.model_selector_select_current": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20304,6 +20307,120 @@ function runCliSelectorsScopedModelSelectorSearchText() {
 			provider: "opencode-go",
 			name: "",
 		}),
+	};
+}
+
+
+function encodeModelSelectorActiveModels(models) {
+	return models.map((item) => qualifiedModelId(item)).join(",");
+}
+
+
+function modelSelectorActiveModels(state) {
+	return state.scope === "scoped" ? state.scopedModels : state.allModels;
+}
+
+
+function makeModelSelectorActiveBench(models, { scopedModels, scope } = {}) {
+	const state = {
+		allModels: models,
+		scopedModels: scopedModels ?? [],
+		scope: scope ?? (scopedModels && scopedModels.length ? "scoped" : "all"),
+	};
+	if (scope) {
+		state.scope = scope;
+	}
+	return encodeModelSelectorActiveModels(modelSelectorActiveModels(state));
+}
+
+
+function runCliSelectorsModelSelectorActiveModels() {
+	const models = makeModelSelectorTestModels();
+	const scoped = [models[0], models[1]];
+	const one = [models[0]];
+	const forcedScoped = {
+		allModels: models,
+		scopedModels: scoped,
+		scope: "scoped",
+	};
+	return {
+		msa_all: makeModelSelectorActiveBench(models),
+		msa_scoped: makeModelSelectorActiveBench(models, { scopedModels: scoped }),
+		msa_empty: makeModelSelectorActiveBench([]),
+		msa_one: makeModelSelectorActiveBench(one),
+		msa_force_all: makeModelSelectorActiveBench(models, {
+			scopedModels: scoped,
+			scope: "all",
+		}),
+		msa_force_scoped: encodeModelSelectorActiveModels(
+			modelSelectorActiveModels(forcedScoped),
+		),
+	};
+}
+
+
+function modelSelectorClampSelected(state) {
+	const count = state.filteredCount;
+	state.selected = count === 0 ? 0 : Math.min(state.selected, count - 1);
+	return state;
+}
+
+
+function modelSelectorClampSelectedEncoded(models, selected, query = "") {
+	const filtered = query
+		? fuzzyModule.fuzzyFilter(models, query, ({ id, provider, model }) =>
+				modelSearchModule.getModelSelectorSearchText({
+					id,
+					provider,
+					name: model.name,
+				}),
+			)
+		: models;
+	const state = {
+		selected,
+		filteredCount: filtered.length,
+	};
+	modelSelectorClampSelected(state);
+	return String(state.selected);
+}
+
+
+function runCliSelectorsModelSelectorClampSelected() {
+	const models = makeModelSelectorTestModels();
+	const one = [models[0]];
+	return {
+		msc_ok: modelSelectorClampSelectedEncoded(models, 1),
+		msc_high: modelSelectorClampSelectedEncoded(models, 99),
+		msc_zero: modelSelectorClampSelectedEncoded([], 7),
+		msc_one: modelSelectorClampSelectedEncoded(one, 3),
+		msc_keep: modelSelectorClampSelectedEncoded(models, 0),
+		msc_filter: modelSelectorClampSelectedEncoded(models, 4, "gpt"),
+	};
+}
+
+
+function modelSelectorSelectCurrentEncoded(models, current) {
+	if (!current) {
+		return "0";
+	}
+	return String(modelSelectorSelectCurrent(models, current.model));
+}
+
+
+function runCliSelectorsModelSelectorSelectCurrent() {
+	const models = makeModelSelectorTestModels();
+	const outsider = goal20ModelItem({
+		id: "missing-model",
+		provider: "openai",
+		name: "Missing",
+	});
+	return {
+		msel_hit: modelSelectorSelectCurrentEncoded(models, models[1]),
+		msel_first: modelSelectorSelectCurrentEncoded(models, models[0]),
+		msel_last: modelSelectorSelectCurrentEncoded(models, models[models.length - 1]),
+		msel_miss: modelSelectorSelectCurrentEncoded(models, outsider),
+		msel_nil: modelSelectorSelectCurrentEncoded(models, null),
+		msel_empty: modelSelectorSelectCurrentEncoded([], models[0]),
 	};
 }
 
