@@ -438,4 +438,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.render_login_dialog` | 135.552 | 4.147 | 32.688× | 50.00× | measure-only leftover 627; `render-login-dialog-state` vs LoginDialogComponent layout; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 | `cli_selectors.user_message_handle_raw` | 85.983 | 5.433 | 15.827× | 30.00× | measure-only leftover 629; `user-message-selector-handle-raw-input` vs UserMessageList.handleInput; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
 | `cli_selectors.render_user_message_selector` | 265.302 | 4.081 | 65.009× | 100.00× | measure-only leftover 630; `render-user-message-selector` vs UserMessageSelectorComponent layout; first-freeze headroom 100.0 | invent pause；地板优化另刀 |
+| `cli_selectors.make_models_selector_keybindings` | 32.105 | 21.468 | 1.496× | 8.00× | measure-only leftover 631; `make-models-selector-keybindings` vs KEYBINDINGS app.models.* constructor | invent pause；地板优化另刀 |
+| `cli_selectors.make_scoped_models_selector_state` | 97.005 | 4.620 | 20.997× | 40.00× | measure-only leftover 632; `make-scoped-models-selector-state` vs ScopedModelsSelectorComponent constructor; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
+| `cli_selectors.render_model_selector` | 247.317 | 9.300 | 26.593× | 50.00× | measure-only leftover 633; `render-model-selector` vs ModelSelectorComponent layout; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
