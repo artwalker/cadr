@@ -5945,6 +5945,47 @@ append list joined with blank lines. Observed `pa_len` / `pa_join` /
 known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Same commit no optimize.
 
+### Pair 475 — `cli_print_rpc` (queue_mode)
+
+| metric | cadr | pi |
+|---|---|---|
+| `queue_mode` | `parse-queue-mode` (`src/cadr-cli/modes/rpc/commands.lisp`) | steering/follow-up mode strings (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover of the `cli_print_rpc` hole on `commands.lisp`. Timed work is
+`all` / `one-at-a-time` / invalid mode parse — not session set. Observed
+`qm_all` / `qm_one` / `qm_bad` are exact. First n=5 freeze **0.116×**
+(0.316 / 2.720 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
+
+### Pair 476 — `cli_print_rpc` (last_assistant)
+
+| metric | cadr | pi |
+|---|---|---|
+| `last_assistant` | `rpc-last-assistant-text` (`src/cadr-cli/modes/rpc/commands.lisp`) | `getLastAssistantText` (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of Pair 475 on the same hole. Timed work is last assistant
+text extract on a fixture message list — not prompt. Observed `la_hit` /
+`la_len` / `la_miss` are exact. First n=5 freeze **0.713×** (0.285 /
+0.400 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 477 — `cli_print_rpc` (command_list)
+
+| metric | cadr | pi |
+|---|---|---|
+| `command_list` | `rpc-command-list` (`src/cadr-cli/modes/rpc/commands.lisp`) | `get_commands` extension+prompt walk (`packages/coding-agent/src/modes/rpc/rpc-mode.ts`) |
+
+Leftover sibling of Pairs 475–476 on the same hole. Timed work is slash
+command JSON from one extension command plus one prompt template — not
+skills, not invoke. Observed `cl_n` / `cl_ext` / `cl_prompt` are exact.
+First n=5 freeze **4.151×** (1.490 / 0.359 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit
+no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

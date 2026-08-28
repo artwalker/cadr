@@ -341,6 +341,9 @@ const REPETITIONS = {
 	"settings_load.sdk_nonempty": 50,
 	"settings_load.sdk_boolean": 50,
 	"settings_load.sdk_tools": 50,
+	"cli_print_rpc.queue_mode": 50,
+	"cli_print_rpc.last_assistant": 50,
+	"cli_print_rpc.command_list": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -10402,6 +10405,87 @@ function runCliPrintRpcDialogExpired() {
 		ex_nil: rpcDialogExpiredP(null) ? 1 : 0,
 		ex_zero: rpcDialogExpiredP(0) ? 1 : 0,
 		ex_future: rpcDialogExpiredP(1000000000000000) ? 1 : 0,
+	};
+}
+
+
+function parseQueueMode(mode, noun) {
+	if (mode === "all") return "all";
+	if (mode === "one-at-a-time") return "one-at-a-time";
+	throw new Error(`Invalid ${noun} mode: ${mode}`);
+}
+
+
+function runCliPrintRpcQueueMode() {
+	let bad = 0;
+	try {
+		parseQueueMode("nope", "steering");
+	} catch {
+		bad = 1;
+	}
+	return {
+		qm_all: parseQueueMode("all", "steering") === "all" ? 1 : 0,
+		qm_one: parseQueueMode("one-at-a-time", "follow-up") === "one-at-a-time" ? 1 : 0,
+		qm_bad: bad,
+	};
+}
+
+
+function getLastAssistantText(messages) {
+	const lastAssistant = messages
+		.slice()
+		.reverse()
+		.find((message) => {
+			if (message.role !== "assistant") return false;
+			if (message.stopReason === "aborted" && message.content.length === 0) return false;
+			return true;
+		});
+	if (!lastAssistant) return undefined;
+	let text = "";
+	for (const content of lastAssistant.content) {
+		if (content.type === "text") text += content.text;
+	}
+	return text.trim() || undefined;
+}
+
+function runCliPrintRpcLastAssistant() {
+	const hit = getLastAssistantText(RPC_LAST_ASSISTANT_MESSAGES);
+	const miss = getLastAssistantText([]);
+	return {
+		la_hit: hit === "hello" ? 1 : 0,
+		la_len: hit ? hit.length : 0,
+		la_miss: miss ? 1 : 0,
+	};
+}
+
+function rpcCommandList(commands, templates) {
+	const out = [];
+	for (const command of commands) {
+		out.push({
+			name: command.name,
+			description: command.description ?? "",
+			source: "extension",
+			sourceInfo: command.sourceInfo,
+		});
+	}
+	for (const template of templates) {
+		out.push({
+			name: template.name,
+			description: template.description ?? "",
+			source: "prompt",
+			sourceInfo: template.sourceInfo,
+		});
+	}
+	return out;
+}
+
+
+function runCliPrintRpcCommandList() {
+	const commands = rpcCommandList(RPC_COMMAND_LIST_COMMANDS, RPC_COMMAND_LIST_TEMPLATES);
+	return {
+		cl_n: commands.length,
+		cl_ext: commands[0]?.source === "extension" && commands[0]?.name === "foo" ? 1 : 0,
+		cl_prompt: commands[1]?.source === "prompt" && commands[1]?.name === "bar" ? 1 : 0,
 	};
 }
 

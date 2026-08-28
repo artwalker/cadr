@@ -11177,6 +11177,87 @@
    (if (cadr-cli::rpc-dialog-expired-p 1000000000000000) 1 0)))
 
 
+(defun run-cli-print-rpc-queue-mode ()
+  (list
+   (if (eq (cadr-cli::parse-queue-mode "all" "steering") :all) 1 0)
+   (if (eq (cadr-cli::parse-queue-mode "one-at-a-time" "follow-up")
+            :one-at-a-time)
+       1
+       0)
+   (if (handler-case
+           (progn
+             (cadr-cli::parse-queue-mode "nope" "steering")
+             0)
+         (error () 1))
+       1
+       0)))
+
+
+(defun rpc-last-assistant-fixture-agent ()
+  (cadr-agent:make-agent
+   :messages
+   (list
+    (cadr-ai:make-user-message :content "q")
+    (cadr-ai:make-assistant-message
+     :content
+     (list (cadr-ai:make-text-content :text "hello"))))))
+
+
+(defun run-cli-print-rpc-last-assistant (agent empty)
+  (let ((hit (cadr-cli::rpc-last-assistant-text agent))
+        (miss (cadr-cli::rpc-last-assistant-text empty)))
+    (list
+     (if (string= hit "hello") 1 0)
+     (length (or hit ""))
+     (if miss 1 0))))
+
+
+(defun rpc-command-list-fixture-state ()
+  (let* ((bundle
+           (cadr-agent::make-extension-bundle
+            :path "/tmp/ext.js"))
+         (command
+           (cadr-agent::make-extension-command-definition
+            :name "foo"
+            :description "d"
+            :bundle bundle))
+         (template
+           (cadr-agent::make-extension-template-definition
+            :name "bar"
+            :description "t"
+            :bundle bundle))
+         (snapshot
+           (cadr-agent::make-extension-snapshot
+            :commands (list command)
+            :templates (list template)))
+         (host
+           (cadr-agent::%make-extension-host
+            :snapshot snapshot))
+         (manager
+           (cadr-cli::%make-cli-extension-manager
+            :host host)))
+    (cadr-cli::%make-rpc-state
+     :extension-manager manager)))
+
+
+(defun run-cli-print-rpc-command-list (state)
+  (let* ((commands (cadr-cli::rpc-command-list state))
+         (first (and (plusp (length commands)) (aref commands 0)))
+         (second (and (> (length commands) 1) (aref commands 1))))
+    (list
+     (length commands)
+     (if (and first
+              (string= (cadr-ai::json-get first "source") "extension")
+              (string= (cadr-ai::json-get first "name") "foo"))
+         1
+         0)
+     (if (and second
+              (string= (cadr-ai::json-get second "source") "prompt")
+              (string= (cadr-ai::json-get second "name") "bar"))
+         1
+         0))))
+
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p
