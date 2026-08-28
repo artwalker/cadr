@@ -11,19 +11,31 @@ Three Grok Bot agents. None of them is a local tmux pane.
 | Role | What it does | What it does not do |
 |------|----------------|---------------------|
 | **总控** | Coordinates only: queue, briefs, pass/fail of a round, what to send next | Edit the repo, open PRs, merge |
-| **实现** | Turns accepted work into a Cursor Ultra cloud-agent run on GitHub | Merge, tag, release, force-push, spend |
+| **实现** | Turns accepted work into a Cursor Ultra cloud-agent run on GitHub | Merge GitHub itself, tag, release, force-push, spend |
 | **审** | Verdict: pass / change / stop | Write code |
 
 Code changes go through a **Cursor cloud agent** on GitHub `artwalker/cadr`.
-The agent starts from `cadr-migration` and returns a **branch + PR**.
+The agent starts from `cadr-migration` and returns a **branch + PR**. For
+Goal 20 leftover pairing, that same cloud agent **verifies the READY PR
+and merges it** into `cadr-migration` (serial; see below). Grok Bot 实现
+does not click merge; the cloud agent does.
 
 ## Source of truth
 
 GitHub `cadr-migration` is the source of truth for cloud agents. A local WSL
 checkout or worktree is not.
 
-Merge into `cadr-migration`, tags, releases, force-push, and spend require
-**Ethan**.
+**Cursor cloud agents** merge READY Goal 20 pairing PRs into
+`cadr-migration` after the freeze record is on the PR (n=5 Friend-MachineD
+`--only-enforce`, observed exact, ledger test, Part H, over-1× if ratio>1).
+Do it **one PR at a time**: leftover PRs all patch the same harness files.
+Rebase the next PR onto the new tip before merging it. After a source
+file's leftover slugs are on tip, refresh inventory
+(`python3 scripts/goal20-unpaired-paths.py --write && --check`). Do not
+announce Goal 20 complete. Do not mark G.17 `met`. Do not bump
+`nextPairNum` for leftover IDs.
+
+Tags, releases, force-push, and spend still require **Ethan**.
 
 ## Cloud-agent output
 

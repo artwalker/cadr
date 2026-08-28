@@ -9,6 +9,10 @@ tag/Release step.
 
 ### Changed
 
+- Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
+  PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
+  force-push, and spend stay with Ethan. See
+  `docs/acceptance/team-dev-platform.md`.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.

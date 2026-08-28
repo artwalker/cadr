@@ -3,13 +3,23 @@
 > **Process (live):** [`team-dev-platform.md`](team-dev-platform.md) — three
 > Grok Bot agents plus a Cursor cloud agent on GitHub `artwalker/cadr`.
 > The tmux / worktree / `goal20-director-merge.sh` crew below is the Goal 20
-> pairing record; it is not how cadr is developed now.
+> pairing record; it is not how cadr is developed now. **Live merge** of
+> READY leftover pairing PRs is a Cursor cloud-agent duty (serial onto
+> `cadr-migration`), not a local director pane and not Grok Bot 实现.
 
 **读者：** 开发 Cursor 实例（执行方）。**顾问实例：** 只审阅 digest、回答问题，不写 `src/`。
 
 **规格：** `goal20-draft.md`。**验收：** `docs/acceptance/goal-v20-part-*.md`，Part H 配对台账 `docs/acceptance/goal-v20-part-h.md`。
 
 **禁止：** 宣布 Goal 20 完成；标 G.17 `met`；**同一提交**里既测量又改 `src/` 优化；把顾问稿混进 pairing 提交。
+
+**Live cloud-agent merge (Goal 20 leftover PRs):** after a trio is READY
+(freeze recorded on the PR), the Cursor cloud agent merges that PR into
+`cadr-migration` itself — GitHub merge, **one PR at a time**, rebase the
+next leftover onto the new tip first. Harness files conflict if two
+leftover PRs land in parallel. Post-merge: ledger test; when that source
+file's leftover slugs are on tip, `goal20-unpaired-paths.py --write &&
+--check`. Tags / force-push / spend stay with Ethan.
 
 ## G21 前置
 
