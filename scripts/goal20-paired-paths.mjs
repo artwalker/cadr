@@ -293,6 +293,9 @@ const REPETITIONS = {
 	"evals_harness.status_name": 50,
 	"evals_harness.case_observation": 50,
 	"evals_harness.finish": 50,
+	"oauth_pkce_device.json_copy": 50,
+	"oauth_pkce_device.interval_seconds": 50,
+	"oauth_pkce_device.device_start": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -7812,6 +7815,173 @@ function runOauthPkceDeviceNotifyDevice() {
 			"https://auth.x.ai/b",
 		),
 		nd_n: 3,
+	};
+}
+
+
+function oauthResponseJsonCopy(object) {
+	if (
+		object &&
+		typeof object === "object" &&
+		!Array.isArray(object) &&
+		Object.keys(object).length > 0
+	) {
+		return JSON.stringify(object);
+	}
+	return "";
+}
+
+
+function oauthJsonCopyFlag(object, expectedEmpty, expectedNeedle) {
+	try {
+		const copied = oauthResponseJsonCopy(object);
+		if (expectedEmpty) return copied.length === 0 ? 1 : 0;
+		return copied.length > 0 && copied.includes(expectedNeedle) ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+
+function runOauthPkceDeviceJsonCopy() {
+	return {
+		jc_empty: oauthJsonCopyFlag({}, true, null),
+		jc_ok: oauthJsonCopyFlag({ error: "boom" }, false, "boom"),
+		jc_nil: oauthJsonCopyFlag(null, true, null),
+		jc_n: 3,
+	};
+}
+
+
+function openaiDeviceIntervalSeconds(json) {
+	const intervalSeconds =
+		typeof json?.interval === "string" ? Number(json.interval.trim()) : json?.interval;
+	if (
+		typeof intervalSeconds !== "number" ||
+		!Number.isFinite(intervalSeconds) ||
+		intervalSeconds < 0
+	) {
+		throw new Error(`Invalid OpenAI Codex device code response: ${JSON.stringify(json)}`);
+	}
+	return intervalSeconds;
+}
+
+
+function oauthIntervalOkFlag(json, expected) {
+	try {
+		return openaiDeviceIntervalSeconds(json) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+
+function oauthIntervalErrorFlag(json) {
+	try {
+		openaiDeviceIntervalSeconds(json);
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+
+function runOauthPkceDeviceIntervalSeconds() {
+	return {
+		iv_num: oauthIntervalOkFlag({ interval: 5 }, 5),
+		iv_str: oauthIntervalOkFlag({ interval: " 5 " }, 5),
+		iv_zero: oauthIntervalOkFlag({ interval: 0 }, 0),
+		iv_neg: oauthIntervalErrorFlag({ interval: -1 }),
+		iv_bad: oauthIntervalErrorFlag({ interval: "nope" }),
+		iv_n: 5,
+	};
+}
+
+
+function startOpenAICodexDeviceAuthFromResponse(response) {
+	JSON.stringify({ client_id: "app_EMoamEEZ73f0CkXaXp7hrann" });
+	if (!response.ok) {
+		if (response.status === 404) {
+			throw new Error(
+				"OpenAI Codex device code login is not enabled for this server. Use browser login or verify the server URL.",
+			);
+		}
+		const responseBody = response.text || "";
+		throw new Error(
+			`OpenAI Codex device code request failed with status ${response.status}${responseBody ? `: ${responseBody}` : ""}`,
+		);
+	}
+	const json = response.json;
+	const intervalSeconds =
+		typeof json?.interval === "string" ? Number(json.interval.trim()) : json?.interval;
+	if (
+		!json?.device_auth_id ||
+		!json.user_code ||
+		typeof intervalSeconds !== "number" ||
+		!Number.isFinite(intervalSeconds) ||
+		intervalSeconds < 0
+	) {
+		throw new Error(`Invalid OpenAI Codex device code response: ${JSON.stringify(json)}`);
+	}
+	return {
+		deviceAuthId: json.device_auth_id,
+		userCode: json.user_code,
+		intervalSeconds,
+	};
+}
+
+
+function oauthDeviceStartOkFlag() {
+	try {
+		const device = startOpenAICodexDeviceAuthFromResponse({
+			ok: true,
+			status: 200,
+			json: { device_auth_id: "dev-1", user_code: "ABCD", interval: 5 },
+		});
+		return device.deviceAuthId === "dev-1" &&
+			device.userCode === "ABCD" &&
+			device.intervalSeconds === 5
+			? 1
+			: 0;
+	} catch {
+		return 0;
+	}
+}
+
+
+function oauthDeviceStartErrorFlag(response, needle) {
+	try {
+		startOpenAICodexDeviceAuthFromResponse(response);
+		return 0;
+	} catch (error) {
+		const message = error instanceof Error ? error.message : String(error);
+		return message.includes(needle) ? 1 : 0;
+	}
+}
+
+
+function runOauthPkceDeviceDeviceStart() {
+	return {
+		ds_ok: oauthDeviceStartOkFlag(),
+		ds_404: oauthDeviceStartErrorFlag({ ok: false, status: 404, json: {} }, "not enabled"),
+		ds_fail: oauthDeviceStartErrorFlag(
+			{
+				ok: false,
+				status: 500,
+				json: { error: "boom" },
+				text: JSON.stringify({ error: "boom" }),
+			},
+			"boom",
+		),
+		ds_bad: oauthDeviceStartErrorFlag(
+			{
+				ok: true,
+				status: 200,
+				json: { device_auth_id: "dev-1", interval: 5 },
+			},
+			"Invalid OpenAI Codex device code response",
+		),
+		ds_n: 4,
 	};
 }
 

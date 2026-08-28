@@ -7327,6 +7327,119 @@
    3))
 
 
+(defun oauth-json-copy-flag (object expected-empty expected-needle)
+  (handler-case
+      (let ((copied (cadr-ai::oauth-response-json-copy object)))
+        (if expected-empty
+            (if (zerop (length copied)) 1 0)
+            (if (and (plusp (length copied))
+                     (search expected-needle copied))
+                1
+                0)))
+    (error () 0)))
+
+
+(defun run-oauth-pkce-device-json-copy ()
+  (list
+   (oauth-json-copy-flag (cadr-ai::json-object) t nil)
+   (oauth-json-copy-flag
+    (cadr-ai::json-object "error" "boom")
+    nil
+    "boom")
+   (oauth-json-copy-flag nil t nil)
+   3))
+
+
+(defun oauth-interval-ok-flag (object expected)
+  (handler-case
+      (if (= (cadr-ai::openai-device-interval-seconds object) expected)
+          1
+          0)
+    (error () 0)))
+
+
+(defun oauth-interval-error-flag (object)
+  (handler-case
+      (progn
+        (cadr-ai::openai-device-interval-seconds object)
+        0)
+    (error () 1)))
+
+
+(defun run-oauth-pkce-device-interval-seconds ()
+  (list
+   (oauth-interval-ok-flag (cadr-ai::json-object "interval" 5) 5)
+   (oauth-interval-ok-flag (cadr-ai::json-object "interval" " 5 ") 5)
+   (oauth-interval-ok-flag (cadr-ai::json-object "interval" 0) 0)
+   (oauth-interval-error-flag (cadr-ai::json-object "interval" -1))
+   (oauth-interval-error-flag (cadr-ai::json-object "interval" "nope"))
+   5))
+
+
+(defun with-oauth-flow-stub (status object thunk)
+  (let ((cadr-ai::*oauth-flow-request-function*
+          (lambda (url &key method headers content connect-timeout read-timeout)
+            (declare (ignore url method headers content
+                             connect-timeout read-timeout))
+            (values object status nil))))
+    (funcall thunk)))
+
+
+(defun oauth-device-start-ok-flag ()
+  (handler-case
+      (let ((device
+              (with-oauth-flow-stub
+               200
+               (cadr-ai::json-object
+                "device_auth_id" "dev-1"
+                "user_code" "ABCD"
+                "interval" 5)
+               (lambda ()
+                 (cadr-ai::start-openai-codex-device-authorization)))))
+        (if (and (string= (getf device :device-auth-id) "dev-1")
+                 (string= (getf device :user-code) "ABCD")
+                 (= (getf device :interval) 5))
+            1
+            0))
+    (error () 0)))
+
+
+(defun oauth-device-start-error-flag (status object needle)
+  (handler-case
+      (progn
+        (with-oauth-flow-stub
+         status
+         object
+         (lambda ()
+           (cadr-ai::start-openai-codex-device-authorization)))
+        0)
+    (cadr-ai:authentication-error (condition)
+      (if (search needle (cadr-ai::cadr-error-message condition))
+          1
+          0))
+    (error () 0)))
+
+
+(defun run-oauth-pkce-device-device-start ()
+  (list
+   (oauth-device-start-ok-flag)
+   (oauth-device-start-error-flag
+    404
+    (cadr-ai::json-object)
+    "not enabled")
+   (oauth-device-start-error-flag
+    500
+    (cadr-ai::json-object "error" "boom")
+    "boom")
+   (oauth-device-start-error-flag
+    200
+    (cadr-ai::json-object
+     "device_auth_id" "dev-1"
+     "interval" 5)
+    "Invalid OpenAI Codex device code response")
+   4))
+
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))

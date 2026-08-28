@@ -9,6 +9,16 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `oauth_pkce_device.json_copy` /
+  `interval_seconds` / `device_start` on
+  `src/cadr-ai/oauth/providers/openai-device.lisp` vs baseline
+  `startOpenAICodexDeviceAuth` error-body copy / interval parse / device start
+  (`packages/ai/src/auth/oauth/openai-codex.ts`). Observed `jc_*` / `iv_*` /
+  `ds_*` exact. n=5 **2.191×** / **0.711×** / **1.116×** (0.936 / 0.427 µs,
+  3.764 / 5.293 µs, 8.710 / 7.805 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not these metrics. Pairs 421 and 423 booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `evals_harness.status_name` (`reporter-status-name`
   on `src/cadr-evals/reporter.lisp` vs baseline `test.result().state`
   lowercasing). Observed `sn_kw` / `sn_str` / `sn_mixed` / `sn_n` exact.

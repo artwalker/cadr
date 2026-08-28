@@ -303,4 +303,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `tui_select_settings_loaders.set_message` | 0.244 | 0.192 | 1.269× | 8.00× | measure-only pair 416; leftover `loader-component-set-message` vs `Loader.setMessage` (sub-µs variance) | invent pause；地板优化另刀 |
 | `evals_harness.status_name` | 0.352 | 0.204 | 1.726× | 8.00× | measure-only pair 412; leftover `reporter-status-name` vs status lowercasing (sub-µs variance) | invent pause；地板优化另刀 |
 | `evals_harness.case_observation` | 9.383 | 3.057 | 3.069× | 8.00× | measure-only pair 413; leftover `reporter-case-observation` vs collectHarnessObservations | invent pause；地板优化另刀 |
+| `oauth_pkce_device.json_copy` | 0.936 | 0.427 | 2.191× | 8.00× | measure-only pair 421; `oauth-response-json-copy` vs JSON.stringify error-body copy | invent pause；地板优化另刀 |
+| `oauth_pkce_device.device_start` | 8.710 | 7.805 | 1.116× | 8.00× | measure-only pair 423; stubbed `start-openai-codex-device-authorization` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

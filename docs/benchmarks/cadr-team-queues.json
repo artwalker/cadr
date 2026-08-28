@@ -1248,6 +1248,49 @@
      "piUs": 2.131,
      "ceiling": 8.0,
      "rc": 1
+    },
+    {
+     "pair": 421,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.json_copy",
+     "branch": "cursor/pair-421-423-oauth-openai-device-0de9",
+     "ratio": 2.191,
+     "cadrUs": 0.936,
+     "piUs": 0.427,
+     "ceiling": 8.0,
+     "rc": 1,
+     "note": "nextPairNum left at tip 328; leftover knife 421-423"
+    },
+    {
+     "pair": 422,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.interval_seconds",
+     "branch": "cursor/pair-421-423-oauth-openai-device-0de9",
+     "ratio": 0.711,
+     "cadrUs": 3.764,
+     "piUs": 5.293,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 423,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.device_start",
+     "branch": "cursor/pair-421-423-oauth-openai-device-0de9",
+     "ratio": 1.116,
+     "cadrUs": 8.71,
+     "piUs": 7.805,
+     "ceiling": 8.0,
+     "rc": 1
     }
    ],
    "mergeQueue": []
