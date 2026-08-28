@@ -919,6 +919,51 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 466,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.dialog_request",
+   "branch": "cursor/rpc-ui-leftovers-466-468-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 466-468, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 467,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.dialog_result",
+   "branch": "cursor/rpc-ui-leftovers-466-468-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 466-468, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 468,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/modes/rpc/ui.lisp",
+   "measure": "measure-cli-print-rpc",
+   "metric": "cli_print_rpc.dialog_expired",
+   "branch": "cursor/rpc-ui-leftovers-466-468-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 466-468, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

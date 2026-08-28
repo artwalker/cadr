@@ -138,7 +138,7 @@ METRICS = {
     "ai_crypto": ("hmac",),
     "cli_models_rest": ("pattern_match", "auth_command", "login_selection"),
     "image_runtime": ("dimensions", "mime_type", "lookup", "dimension_note", "api_provider", "output_modalities", "openrouter_content", "parse_data_image"),
-    "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats"),
+    "cli_print_rpc": ("jsonl_line", "jsonl_read", "clamp_thinking", "session_stats", "dialog_request", "dialog_result", "dialog_expired"),
     "tui_latex": ("render", "normalize_output"),
     "tui_mermaid": ("render", "source_box", "transform"),
     "tui_editor_helpers": ("fuzzy_match",),
@@ -609,6 +609,9 @@ RATIO_CEILINGS = {
     # 0.19x (13.16 / 70.76 us). cadr leads. 8.0 is
     # first-freeze headroom. Ratchet down only.
     "cli_print_rpc.session_stats": 8.0,
+    "cli_print_rpc.dialog_request": 8.0,
+    "cli_print_rpc.dialog_result": 8.0,
+    "cli_print_rpc.dialog_expired": 8.0,
     # Frozen from the first Friend-MachineD non-quick tui_latex pair
     # (samples=5): observed 2.49x (64.4 / 25.8 us). 3.0 follows the
     # argv_parse / tool_grep headroom precedent. Ratchet down only.
@@ -2130,6 +2133,20 @@ OBSERVED_EXACT = {
         "ss_calls",
         "ss_total",
         "ss_id",
+        "dr_type",
+        "dr_method",
+        "dr_msg",
+        "dr_opt_n",
+        "dr_ph",
+        "dr_to",
+        "rs_nil",
+        "rs_can",
+        "rs_ok",
+        "rs_val",
+        "rs_num",
+        "ex_nil",
+        "ex_zero",
+        "ex_future",
     ),
     "tui_latex": (
         "e_mc2",

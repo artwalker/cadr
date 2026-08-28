@@ -32,6 +32,7 @@
 ;;;;  19. image_runtime image-dimensions vs getImageDimensions
 ;;;;  20. cli_print_rpc write-json-line vs serializeJsonLine
 ;;;;      leftover: read-rpc-jsonl-lines vs attachJsonlLineReader
+;;;;      leftover: rpc-dialog-request-object / rpc-dialog-result / rpc-dialog-expired-p
 ;;;;  21. tui_latex render-latex vs renderLatex
 ;;;;  22. tui_editor_helpers fuzzy-match vs fuzzyMatch
 ;;;;  23. tui_theme_overlay parse-osc-11-background-color vs parseOsc11BackgroundColor
@@ -401,6 +402,9 @@
     ("cli_print_rpc.jsonl_read" . 50)
     ("cli_print_rpc.clamp_thinking" . 50)
     ("cli_print_rpc.session_stats" . 20)
+    ("cli_print_rpc.dialog_request" . 50)
+    ("cli_print_rpc.dialog_result" . 50)
+    ("cli_print_rpc.dialog_expired" . 50)
     ("tui_latex.render" . 20)
     ("tui_latex.normalize_output" . 20)
     ("tui_mermaid.render" . 20)
@@ -8057,6 +8061,58 @@
      (length full-av)
      (length short-av))))
 
+(defun run-cli-print-rpc-dialog-request ()
+  (let ((request
+          (cadr-cli::rpc-dialog-request-object
+           "select" "Pick"
+           :message "choose"
+           :options '("a" "b")
+           :placeholder "type"
+           :prefill "a"
+           :timeout-ms 1500)))
+    (list
+     (if (string= (cadr-ai::json-get request "type")
+                  "extension_ui_request")
+         1
+         0)
+     (or (cadr-ai::json-get request "method") "")
+     (if (cadr-ai::json-get request "message") 1 0)
+     (length (or (cadr-ai::json-get request "options") #()))
+     (or (cadr-ai::json-get request "placeholder") "")
+     (or (cadr-ai::json-get request "timeout") 0))))
+
+(defun run-cli-print-rpc-dialog-result ()
+  (let ((nil-result
+          (cadr-cli::rpc-dialog-result :confirm nil))
+        (cancelled
+          (cadr-cli::rpc-dialog-result
+           :confirm
+           (cadr-ai::json-object "cancelled" t)))
+        (confirmed
+          (cadr-cli::rpc-dialog-result
+           :confirm
+           (cadr-ai::json-object "confirmed" t)))
+        (selected
+          (cadr-cli::rpc-dialog-result
+           :select
+           (cadr-ai::json-object "value" "picked")))
+        (numeric
+          (cadr-cli::rpc-dialog-result
+           :select
+           (cadr-ai::json-object "value" 3))))
+    (list
+     (if (null nil-result) 1 0)
+     (if (null cancelled) 1 0)
+     (if (eq confirmed t) 1 0)
+     (if (stringp selected) selected "")
+     (if (null numeric) 1 0))))
+
+(defun run-cli-print-rpc-dialog-expired ()
+  (list
+   (if (cadr-cli::rpc-dialog-expired-p nil) 1 0)
+   (if (cadr-cli::rpc-dialog-expired-p 0) 1 0)
+   (if (cadr-cli::rpc-dialog-expired-p 1000000000000000) 1 0)))
+
 (defun measure-cli-print-rpc ()
   (let* ((line (run-cli-print-rpc))
          (newline-p
@@ -8072,7 +8128,10 @@
            (cadr-agent:load-session (fixture-path "session.jsonl")))
          (stats-obs
            (cli-print-rpc-session-stats-observed
-            (run-cli-print-rpc-session-stats session))))
+            (run-cli-print-rpc-session-stats session)))
+         (dialog-request (run-cli-print-rpc-dialog-request))
+         (dialog-result (run-cli-print-rpc-dialog-result))
+         (dialog-expired (run-cli-print-rpc-dialog-expired)))
     (json-object
      "observed"
      (json-object
@@ -8096,7 +8155,21 @@
       "ss_tool" (nth 2 stats-obs)
       "ss_calls" (nth 3 stats-obs)
       "ss_total" (nth 4 stats-obs)
-      "ss_id" (nth 5 stats-obs))
+      "ss_id" (nth 5 stats-obs)
+      "dr_type" (nth 0 dialog-request)
+      "dr_method" (nth 1 dialog-request)
+      "dr_msg" (nth 2 dialog-request)
+      "dr_opt_n" (nth 3 dialog-request)
+      "dr_ph" (nth 4 dialog-request)
+      "dr_to" (nth 5 dialog-request)
+      "rs_nil" (nth 0 dialog-result)
+      "rs_can" (nth 1 dialog-result)
+      "rs_ok" (nth 2 dialog-result)
+      "rs_val" (nth 3 dialog-result)
+      "rs_num" (nth 4 dialog-result)
+      "ex_nil" (nth 0 dialog-expired)
+      "ex_zero" (nth 1 dialog-expired)
+      "ex_future" (nth 2 dialog-expired))
      "jsonl_line"
      (collect "cli_print_rpc.jsonl_line"
               (lambda ()
@@ -8116,7 +8189,22 @@
      (collect "cli_print_rpc.session_stats"
               (lambda ()
                 (lambda ()
-                  (run-cli-print-rpc-session-stats session)))))))
+                  (run-cli-print-rpc-session-stats session))))
+     "dialog_request"
+     (collect "cli_print_rpc.dialog_request"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-dialog-request))))
+     "dialog_result"
+     (collect "cli_print_rpc.dialog_result"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-dialog-result))))
+     "dialog_expired"
+     (collect "cli_print_rpc.dialog_expired"
+              (lambda ()
+                (lambda ()
+                  (run-cli-print-rpc-dialog-expired)))))))
 
 (defparameter *mermaid-lr*
   (format nil "flowchart LR~%  A-->B"))
@@ -16730,6 +16818,12 @@
       "src/cadr-cli/modes/rpc/models.lisp rpc-clamp-thinking-level"
       "cli_print_rpc.session_stats"
       "src/cadr-cli/modes/rpc/sessions.lisp rpc-session-stats"
+      "cli_print_rpc.dialog_request"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-request-object"
+      "cli_print_rpc.dialog_result"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-result"
+      "cli_print_rpc.dialog_expired"
+      "src/cadr-cli/modes/rpc/ui.lisp rpc-dialog-expired-p"
       "tui_latex.render"
       "src/cadr-tui/latex.lisp render-latex"
       "tui_latex.normalize_output"
