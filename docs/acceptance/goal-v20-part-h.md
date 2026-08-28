@@ -7343,6 +7343,50 @@ First n=5 freeze **1.745×** (1.398 / 0.801 µs) on host `cursor`, ceiling
 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize.
 `nextPairNum` left at 328.
 
+### Pair 589 — `cli_selectors` (scoped_models_selector_rebuild_items)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_rebuild_items` | `scoped-models-selector-rebuild-items` (`src/cadr-cli/interactive/selectors/models.lisp`) | rebuild items (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover on unused helpers in `models.lisp`. Timed work is rebuild-items then
+item ids (all / partial / empty-enabled / empty models / single) through
+`%make-scoped-models-selector-state`. Reuses JS `scopedModelsBuildItems`.
+Observed `smri_all` / `smri_partial` / `smri_none` / `smri_empty` /
+`smri_single` are exact. First n=5 freeze **4.448×** (27.154 / 6.105 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text /
+`execution_env.tmp_*`; this metric did not fail). Over-1× booked. Same
+commit no optimize. `nextPairNum` left at 328.
+
+### Pair 590 — `cli_selectors` (scoped_models_selector_apply_filter)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_apply_filter` | `scoped-models-selector-apply-filter` (`src/cadr-cli/interactive/selectors/models.lisp`) | apply filter (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pair 589 on the same `models.lisp` hole. Timed work is
+rebuild then apply-filter visible ids (empty query / gpt / miss / partial
++ gpt / empty models). Reuses JS `scopedModelsFilterItems`. Observed
+`smaf_all` / `smaf_gpt` / `smaf_miss` / `smaf_partial` / `smaf_empty` are
+exact. First n=5 freeze **1.464×** (34.896 / 23.842 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no
+optimize. `nextPairNum` left at 328.
+
+### Pair 591 — `cli_selectors` (scoped_models_selector_visible_items)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scoped_models_selector_visible_items` | `scoped-models-selector-visible-items` (`src/cadr-cli/interactive/selectors/models.lisp`) | visible items (`packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts`) |
+
+Leftover sibling of Pairs 589–590 on the same `models.lisp` hole. Timed
+work is the lazy visible-items getter (all / gpt / miss / empty models /
+partial enabled). Observed `smvi_all` / `smvi_gpt` / `smvi_miss` /
+`smvi_empty` / `smvi_partial` are exact. First n=5 freeze **2.422×**
+(32.039 / 13.230 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum`
+left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

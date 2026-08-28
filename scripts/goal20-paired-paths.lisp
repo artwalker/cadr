@@ -20255,6 +20255,114 @@
    "smnc_empty" (nth 4 notify)))
 
 
+(defun make-scoped-models-filter-bench-state
+    (models enabled-ids &key (query ""))
+  (cadr-cli::%make-scoped-models-selector-state
+   :all-models (copy-list models)
+   :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+   :enabled-ids
+   (cadr-cli::scoped-models-copy-enabled enabled-ids)
+   :query (or query "")))
+
+
+(defun encode-scoped-model-item-ids (items)
+  (format
+   nil
+   "~{~a~^,~}"
+   (mapcar
+    (lambda (item)
+      (let ((id (getf item :id)))
+        (cond
+          ((stringp id) id)
+          ((null id) "")
+          (t (coerce id 'string)))))
+    items)))
+
+
+(defun encode-scoped-models-selector-rebuild-items (models enabled-ids)
+  (let ((state
+          (make-scoped-models-filter-bench-state models enabled-ids)))
+    (cadr-cli::scoped-models-selector-rebuild-items state)
+    (encode-scoped-model-item-ids
+     (cadr-cli::scoped-models-selector-state-items state))))
+
+
+(defun run-cli-selectors-scoped-models-selector-rebuild-items ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-rebuild-items models :all)
+     (encode-scoped-models-selector-rebuild-items models partial)
+     (encode-scoped-models-selector-rebuild-items models '())
+     (encode-scoped-models-selector-rebuild-items nil :all)
+     (encode-scoped-models-selector-rebuild-items
+      models '("anthropic/claude-sonnet-4")))))
+
+
+(defun encode-scoped-models-selector-apply-filter
+    (models enabled-ids query)
+  (let ((state
+          (make-scoped-models-filter-bench-state
+           models enabled-ids :query query)))
+    (cadr-cli::scoped-models-selector-rebuild-items state)
+    (cadr-cli::scoped-models-selector-apply-filter state)
+    (encode-scoped-model-item-ids
+     (cadr-cli::scoped-models-selector-state-visible-items
+      state))))
+
+
+(defun run-cli-selectors-scoped-models-selector-apply-filter ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-apply-filter models :all "")
+     (encode-scoped-models-selector-apply-filter models :all "gpt")
+     (encode-scoped-models-selector-apply-filter models :all "nope")
+     (encode-scoped-models-selector-apply-filter models partial "gpt")
+     (encode-scoped-models-selector-apply-filter nil :all ""))))
+
+
+(defun encode-scoped-models-selector-visible-items
+    (models enabled-ids query)
+  (let ((state
+          (make-scoped-models-filter-bench-state
+           models enabled-ids :query query)))
+    (encode-scoped-model-item-ids
+     (cadr-cli::scoped-models-selector-visible-items state))))
+
+
+(defun run-cli-selectors-scoped-models-selector-visible-items ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-visible-items models :all "")
+     (encode-scoped-models-selector-visible-items models :all "gpt")
+     (encode-scoped-models-selector-visible-items models :all "nope")
+     (encode-scoped-models-selector-visible-items nil :all "")
+     (encode-scoped-models-selector-visible-items
+      models partial ""))))
+
+
+(defun scoped-models-rebuild-filter-visible-observed-pairs
+    (rebuild-items apply-filter visible-items)
+  (list
+   "smri_all" (nth 0 rebuild-items)
+   "smri_partial" (nth 1 rebuild-items)
+   "smri_none" (nth 2 rebuild-items)
+   "smri_empty" (nth 3 rebuild-items)
+   "smri_single" (nth 4 rebuild-items)
+   "smaf_all" (nth 0 apply-filter)
+   "smaf_gpt" (nth 1 apply-filter)
+   "smaf_miss" (nth 2 apply-filter)
+   "smaf_partial" (nth 3 apply-filter)
+   "smaf_empty" (nth 4 apply-filter)
+   "smvi_all" (nth 0 visible-items)
+   "smvi_gpt" (nth 1 visible-items)
+   "smvi_miss" (nth 2 visible-items)
+   "smvi_empty" (nth 3 visible-items)
+   "smvi_partial" (nth 4 visible-items)))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id

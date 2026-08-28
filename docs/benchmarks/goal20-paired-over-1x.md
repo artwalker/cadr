@@ -403,4 +403,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.scoped_models_selector_selected_item` | 26.636 | 7.796 | 3.417× | 8.00× | measure-only leftover 586; `scoped-models-selector-selected-item` vs selected visible item | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_select_id` | 26.954 | 8.112 | 3.323× | 8.00× | measure-only leftover 587; `scoped-models-selector-select-id` vs select by id | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_notify_change` | 1.398 | 0.801 | 1.745× | 8.00× | measure-only leftover 588; `scoped-models-selector-notify-change` vs `onChange` | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_rebuild_items` | 27.154 | 6.105 | 4.448× | 8.00× | measure-only leftover 589; `scoped-models-selector-rebuild-items` vs rebuild items | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_apply_filter` | 34.896 | 23.842 | 1.464× | 8.00× | measure-only leftover 590; `scoped-models-selector-apply-filter` vs apply filter | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_visible_items` | 32.039 | 13.230 | 2.422× | 8.00× | measure-only leftover 591; `scoped-models-selector-visible-items` vs lazy visible items | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -447,6 +447,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_selected_item": 50,
 	"cli_selectors.scoped_models_selector_select_id": 50,
 	"cli_selectors.scoped_models_selector_notify_change": 50,
+	"cli_selectors.scoped_models_selector_rebuild_items": 50,
+	"cli_selectors.scoped_models_selector_apply_filter": 50,
+	"cli_selectors.scoped_models_selector_visible_items": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20926,6 +20929,63 @@ function runCliSelectorsScopedModelsSelectorNotifyChange() {
 		smnc_none: scopedModelsSelectorNotifyChangeEncoded(null, false, 1),
 		smnc_twice: scopedModelsSelectorNotifyChangeEncoded(null, true, 2),
 		smnc_empty: scopedModelsSelectorNotifyChangeEncoded([], true, 1),
+	};
+}
+
+
+function scopedModelsRebuildItemsEncoded(allModels, enabledIds) {
+	return scopedModelsBuildItems(allModels, enabledIds)
+		.map((item) => item.fullId)
+		.join(",");
+}
+
+
+function runCliSelectorsScopedModelsSelectorRebuildItems() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smri_all: scopedModelsRebuildItemsEncoded(models, null),
+		smri_partial: scopedModelsRebuildItemsEncoded(models, [
+			"google/gemini-2.5-pro",
+			"openai/gpt-4o",
+		]),
+		smri_none: scopedModelsRebuildItemsEncoded(models, []),
+		smri_empty: scopedModelsRebuildItemsEncoded([], null),
+		smri_single: scopedModelsRebuildItemsEncoded(models, [
+			"anthropic/claude-sonnet-4",
+		]),
+	};
+}
+
+
+function scopedModelsApplyFilterEncoded(allModels, enabledIds, query) {
+	return scopedModelsFilterItems(allModels, enabledIds, query)
+		.map((item) => item.fullId)
+		.join(",");
+}
+
+
+function runCliSelectorsScopedModelsSelectorApplyFilter() {
+	const models = makeModelSelectorTestModels();
+	const partial = ["google/gemini-2.5-pro", "openai/gpt-4o"];
+	return {
+		smaf_all: scopedModelsApplyFilterEncoded(models, null, ""),
+		smaf_gpt: scopedModelsApplyFilterEncoded(models, null, "gpt"),
+		smaf_miss: scopedModelsApplyFilterEncoded(models, null, "nope"),
+		smaf_partial: scopedModelsApplyFilterEncoded(models, partial, "gpt"),
+		smaf_empty: scopedModelsApplyFilterEncoded([], null, ""),
+	};
+}
+
+
+function runCliSelectorsScopedModelsSelectorVisibleItems() {
+	const models = makeModelSelectorTestModels();
+	const partial = ["google/gemini-2.5-pro", "openai/gpt-4o"];
+	return {
+		smvi_all: scopedModelsApplyFilterEncoded(models, null, ""),
+		smvi_gpt: scopedModelsApplyFilterEncoded(models, null, "gpt"),
+		smvi_miss: scopedModelsApplyFilterEncoded(models, null, "nope"),
+		smvi_empty: scopedModelsApplyFilterEncoded([], null, ""),
+		smvi_partial: scopedModelsApplyFilterEncoded(models, partial, ""),
 	};
 }
 
