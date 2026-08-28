@@ -9,7 +9,27 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.make_loader_component`
+  (`make-loader-component` on `src/cadr-tui/composition/loaders.lisp` vs baseline
+  `Loader` constructor). Skip start/stop/run threads. Observed `ml_has_a` /
+  `ml_frames` / `ml_n` exact. n=5 **0.182×** (0.402 / 2.207 µs) on host
+  `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  unchanged.
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.set_message`
+  (`loader-component-set-message` on `src/cadr-tui/composition/loaders.lisp` vs
+  baseline `Loader.setMessage`). Observed `sm_working` / `sm_kept_a` / `sm_n`
+  exact. n=5 **1.269×** (0.244 / 0.192 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `tui_select_settings_loaders.set_indicator`
+  (`loader-component-set-indicator` on `src/cadr-tui/composition/loaders.lisp`
+  vs baseline `Loader.setIndicator`). Skip start/stop/run threads. Observed
+  `si_has_x` / `si_frames` / `si_n` exact. n=5 **0.201×** (0.341 / 1.700 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
+  unchanged.
   `src/cadr-evals/harness.lisp` vs baseline step property access).
   Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.
   n=5 **3.693×** (0.774 / 0.210 µs) on host `cursor`, ceiling 8.0.

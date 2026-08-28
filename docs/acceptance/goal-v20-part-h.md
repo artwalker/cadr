@@ -4016,6 +4016,50 @@ work is result object JSON (output / events / errors / artifacts / timings)
 (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
 this metric did not fail). Same commit no optimize.
 
+### Pair 415 — `tui_select_settings_loaders` (make_loader_component)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_loader_component` | `make-loader-component` (`src/cadr-tui/composition/loaders.lisp`) | `Loader` constructor (`packages/tui/src/components/loader.ts`) |
+
+Leftover sibling of Pair 39 `filter` on the `tui_select_settings_loaders` hole,
+staggered from in-flight #53 `loader_frames` / `loader_interval` / `loader_step`.
+Timed work is construct a two-frame loader with `:start-p nil` / `stop()` —
+not `loader-component-start` / `stop` / `run` threads. Observed `ml_has_a` /
+`ml_frames` / `ml_n` are exact (1 / 2 / 2). First n=5 freeze **0.182×**
+(0.402 / 2.207 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Same commit no optimize. Pair numbers 328–414 belong to
+other lanes; this cut is 415–417 only. `nextPairNum` stays 328.
+
+### Pair 416 — `tui_select_settings_loaders` (set_message)
+
+| metric | cadr | pi |
+|---|---|---|
+| `set_message` | `loader-component-set-message` (`src/cadr-tui/composition/loaders.lisp`) | `Loader.setMessage` (`packages/tui/src/components/loader.ts`) |
+
+Leftover sibling of Pair 415 `make_loader_component` on the same `loaders.lisp`
+hole. Timed work is message update + display on a stopped two-frame loader —
+not start/stop/run. Observed `sm_working` / `sm_kept_a` / `sm_n` are exact
+(1 / 1 / 2). First n=5 freeze **1.269×** (0.244 / 0.192 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+
+### Pair 417 — `tui_select_settings_loaders` (set_indicator)
+
+| metric | cadr | pi |
+|---|---|---|
+| `set_indicator` | `loader-component-set-indicator` (`src/cadr-tui/composition/loaders.lisp`) | `Loader.setIndicator` (`packages/tui/src/components/loader.ts`) |
+
+Leftover sibling of Pair 415 `make_loader_component` and Pair 416 `set_message`
+on the same `loaders.lisp` hole. Timed work is frames/interval replace with
+`:start-p nil` / `stop()` after — not animation threads. Observed `si_has_x` /
+`si_frames` / `si_n` are exact (1 / 2 / 2). First n=5 freeze **0.201×**
+(0.341 / 1.700 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
