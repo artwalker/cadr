@@ -4059,6 +4059,50 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 556 — `cli_selectors` (countdown_seconds)
+
+| metric | cadr | pi |
+|---|---|---|
+| `countdown_seconds` | `make-countdown-timer` remaining seconds (`src/cadr-cli/interactive/components/countdown.lisp`, `:start-p nil`) | `Math.ceil(timeoutMs / 1000)` (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
+
+Leftover trio on the `cli_selectors` hole for `countdown.lisp`
+(inventory `needs-pair`). Timed work is ceiling seconds from timeout —
+not `setInterval`, not SBCL threads. Observed `cds_0` / `cds_1` /
+`cds_1000` / `cds_1001` / `cds_1500` / `cds_999` are exact. First n=5
+freeze **2.292×** (0.768 / 0.335 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric
+did not fail). Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 557 — `cli_selectors` (countdown_tick)
+
+| metric | cadr | pi |
+|---|---|---|
+| `countdown_tick` | `countdown-timer-tick` (`src/cadr-cli/interactive/components/countdown.lisp`) | CountdownTimer interval body (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
+
+Leftover sibling of Pair 556. Timed work is one remaining-second step
+plus expire at 0 — not `sleep`, not `countdown-timer-run`. Observed
+`cdt_make` / `cdt_remain` / `cdt_expired` / `cdt_ticks` / `cdt_expires` /
+`cdt_renders` are exact. First n=5 freeze **3.006×** (0.700 / 0.233 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes; this metric did not fail). Booked over-1×.
+Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 558 — `cli_selectors` (countdown_render)
+
+| metric | cadr | pi |
+|---|---|---|
+| `countdown_render` | `countdown-request-render` (`src/cadr-cli/interactive/components/countdown.lisp`) | `tui?.requestRender()` (`packages/coding-agent/src/modes/interactive/components/countdown-timer.ts`) |
+
+Leftover sibling of Pairs 556–557. Function UI vs missing UI — not
+`tui-root` request-render. Observed `cdr_fn1` / `cdr_fn2` / `cdr_nil` /
+`cdr_sym` / `cdr_zero` / `cdr_fn3` are exact. First n=5 freeze **1.928×**
+(0.892 / 0.463 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes; this metric
+did not fail). Booked over-1×. Same commit no optimize. `nextPairNum`
+left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
