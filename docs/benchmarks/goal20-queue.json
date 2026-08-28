@@ -2438,6 +2438,51 @@
    "piUs": 0.633,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 454,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.provider_symbol",
+   "branch": "cursor/config-leftovers-454-456-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 454-456, not sequential nextPairNum)",
+   "ratio": 1.351,
+   "cadrUs": 0.313,
+   "piUs": 0.231,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 455,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.parse_auth_provider",
+   "branch": "cursor/config-leftovers-454-456-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 454-456, not sequential nextPairNum)",
+   "ratio": 0.365,
+   "cadrUs": 0.846,
+   "piUs": 2.314,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 456,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.split_command_line",
+   "branch": "cursor/config-leftovers-454-456-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 454-456, not sequential nextPairNum)",
+   "ratio": 0.967,
+   "cadrUs": 0.939,
+   "piUs": 0.971,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

@@ -216,6 +216,9 @@ const REPETITIONS = {
 	"settings_load.http_idle": 50,
 	"settings_load.stored_auth_secrets": 50,
 	"settings_load.config_paths": 50,
+	"settings_load.provider_symbol": 50,
+	"settings_load.parse_auth_provider": 50,
+	"settings_load.split_command_line": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -2405,6 +2408,77 @@ function runSettingsLoadConfigPaths(agentDir) {
 	}
 }
 
+function settingsLoadProviderSymbol(name) {
+	return String(name).toUpperCase();
+}
+
+function settingsLoadParseAuthProvider(value) {
+	if (value == null) {
+		throw new Error("OAuth provider must be openai or anthropic");
+	}
+	const provider = String(value).toLowerCase();
+	if (provider === "openai" || provider === "openai-codex") {
+		return "openai-codex";
+	}
+	if (provider === "anthropic") {
+		return "anthropic";
+	}
+	throw new Error("OAuth provider must be openai or anthropic");
+}
+
+function settingsLoadSplitCommandLine(line) {
+	return String(line)
+		.replace(/^[ \t]+/, "")
+		.replace(/[ \t]+$/, "")
+		.split(/[ \t]+/)
+		.filter((part) => part.length > 0);
+}
+
+function runSettingsLoadProviderSymbol() {
+	return {
+		ps_openai: settingsLoadProviderSymbol("openai") === "OPENAI" ? 1 : 0,
+		ps_mixed: settingsLoadProviderSymbol("OpenAI") === "OPENAI" ? 1 : 0,
+		ps_hyphen: settingsLoadProviderSymbol("openai-codex") === "OPENAI-CODEX" ? 1 : 0,
+	};
+}
+
+function settingsLoadParseAuthOk(value, expected) {
+	try {
+		return settingsLoadParseAuthProvider(value) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function settingsLoadParseAuthBad(value) {
+	try {
+		settingsLoadParseAuthProvider(value);
+		return 0;
+	} catch (error) {
+		return error instanceof Error &&
+			error.message === "OAuth provider must be openai or anthropic"
+			? 1
+			: 0;
+	}
+}
+
+function runSettingsLoadParseAuthProvider() {
+	return {
+		pap_openai: settingsLoadParseAuthOk("openai", "openai-codex"),
+		pap_anth: settingsLoadParseAuthOk("anthropic", "anthropic"),
+		pap_codex: settingsLoadParseAuthOk("openai-codex", "openai-codex"),
+		pap_bad: settingsLoadParseAuthBad("google"),
+	};
+}
+
+function runSettingsLoadSplitCommandLine() {
+	return {
+		scl_two: settingsLoadSplitCommandLine("foo bar").length,
+		scl_trim: settingsLoadSplitCommandLine("  a\tb  ").length,
+		scl_empty: settingsLoadSplitCommandLine("   ").length,
+	};
+}
+
 async function measureSettingsLoad() {
 	const configPathsAgent = stageSettingsLoadConfigPaths();
 	const { empty, project, agent } = stageSettingsLoadTrust();
@@ -2414,6 +2488,9 @@ async function measureSettingsLoad() {
 	const idle = runSettingsLoadHttpIdle();
 	const storedAuth = runSettingsLoadStoredAuthSecrets(missingPath, fixturePath, oauthPath, badPath);
 	const configPaths = runSettingsLoadConfigPaths(configPathsAgent);
+	const providerSymbol = runSettingsLoadProviderSymbol();
+	const parseAuth = runSettingsLoadParseAuthProvider();
+	const splitLine = runSettingsLoadSplitCommandLine();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -2430,7 +2507,25 @@ async function measureSettingsLoad() {
 		config_paths: await collect("settings_load.config_paths", () => {
 			return () => runSettingsLoadConfigPaths(configPathsAgent);
 		}),
-		observed: { ...trust, ...config, ...idle, ...storedAuth, ...configPaths },
+		provider_symbol: await collect("settings_load.provider_symbol", () => {
+			return () => runSettingsLoadProviderSymbol();
+		}),
+		parse_auth_provider: await collect("settings_load.parse_auth_provider", () => {
+			return () => runSettingsLoadParseAuthProvider();
+		}),
+		split_command_line: await collect("settings_load.split_command_line", () => {
+			return () => runSettingsLoadSplitCommandLine();
+		}),
+		observed: {
+			...trust,
+			...config,
+			...idle,
+			...storedAuth,
+			...configPaths,
+			...providerSymbol,
+			...parseAuth,
+			...splitLine,
+		},
 	};
 }
 
@@ -20640,6 +20735,12 @@ const result = {
 				"packages/coding-agent/src/config.ts getAuthPath (auth.json key/access/refresh scan)",
 			"settings_load.config_paths":
 				"packages/coding-agent/src/config.ts getSettingsPath + getAuthPath",
+			"settings_load.provider_symbol":
+				"packages/coding-agent/src/config.ts provider name intern (upcase keyword)",
+			"settings_load.parse_auth_provider":
+				"packages/coding-agent/src/cli/args.ts OAuth provider must be openai or anthropic",
+			"settings_load.split_command_line":
+				"packages/coding-agent/src/cli space/tab command-line split",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":

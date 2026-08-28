@@ -9,6 +9,23 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `settings_load.provider_symbol` (`provider-symbol` on
+  `src/cadr-cli/config.lisp` vs upcase keyword intern). Observed `ps_openai` /
+  `ps_mixed` / `ps_hyphen` exact. n=5 **1.351×** (0.313 / 0.231 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 454). Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `settings_load.parse_auth_provider`
+  (`parse-auth-provider` on `src/cadr-cli/config.lisp` vs openai/anthropic OAuth
+  identity). Observed `pap_openai` / `pap_anth` / `pap_codex` / `pap_bad` exact.
+  n=5 **0.365×** (0.846 / 2.314 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 455). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric.
+- Goal 20 P.13 leftover: pair `settings_load.split_command_line`
+  (`split-command-line` on `src/cadr-cli/config.lisp` vs space/tab split). Observed
+  `scl_two` / `scl_trim` / `scl_empty` exact. n=5 **0.967×** (0.939 / 0.971 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 456). Gate rc=1 only
+  from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.session_path`
   (`session-argument-path-p` on `src/cadr-cli/bootstrap/sessions.lisp` vs
   `resolveSessionPath` path heuristic). Observed `sp_id` / `sp_slash` /

@@ -409,6 +409,9 @@
     ("settings_load.http_idle" . 50)
     ("settings_load.stored_auth_secrets" . 50)
     ("settings_load.config_paths" . 50)
+    ("settings_load.provider_symbol" . 50)
+    ("settings_load.parse_auth_provider" . 50)
+    ("settings_load.split_command_line" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -3695,6 +3698,52 @@
           (sb-posix:setenv "CADR_CODING_AGENT_DIR" previous 1)
           (sb-posix:unsetenv "CADR_CODING_AGENT_DIR")))))
 
+(defun run-settings-load-provider-symbol ()
+  (list
+   (if (string= (symbol-name (cadr-cli::provider-symbol "openai")) "OPENAI")
+       1
+       0)
+   (if (string= (symbol-name (cadr-cli::provider-symbol "OpenAI")) "OPENAI")
+       1
+       0)
+   (if (string=
+        (symbol-name (cadr-cli::provider-symbol "openai-codex"))
+        "OPENAI-CODEX")
+       1
+       0)))
+
+(defun settings-load-parse-auth-ok (value expected)
+  (handler-case
+      (if (eq (cadr-cli::parse-auth-provider value) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun settings-load-parse-auth-bad (value)
+  (handler-case
+      (progn
+        (cadr-cli::parse-auth-provider value)
+        0)
+    (cadr-ai:configuration-error (condition)
+      (if (string= (cadr-ai:cadr-error-message condition)
+                   "OAuth provider must be openai or anthropic")
+          1
+          0))
+    (error () 0)))
+
+(defun run-settings-load-parse-auth-provider ()
+  (list
+   (settings-load-parse-auth-ok "openai" :openai-codex)
+   (settings-load-parse-auth-ok "anthropic" :anthropic)
+   (settings-load-parse-auth-ok "openai-codex" :openai-codex)
+   (settings-load-parse-auth-bad "google")))
+
+(defun run-settings-load-split-command-line ()
+  (list
+   (length (cadr-cli::split-command-line "foo bar"))
+   (length (cadr-cli::split-command-line (format nil "  a~Cb  " #\Tab)))
+   (length (cadr-cli::split-command-line "   "))))
+
 (defun measure-settings-load ()
   (let ((config-paths-agent (stage-settings-load-config-paths)))
     (destructuring-bind (empty project store-path)
@@ -3709,7 +3758,10 @@
                 (run-settings-load-stored-auth-secrets
                  missing-path fixture-path oauth-path bad-path))
               (config-paths
-                (run-settings-load-config-paths config-paths-agent)))
+                (run-settings-load-config-paths config-paths-agent))
+              (provider-symbol (run-settings-load-provider-symbol))
+              (parse-auth (run-settings-load-parse-auth-provider))
+              (split-line (run-settings-load-split-command-line)))
         (json-object
          "observed"
          (json-object
@@ -3745,7 +3797,17 @@
           "cp_cfg_eq" (nth 1 config-paths)
           "cp_same_p" (nth 2 config-paths)
           "cp_auth_leaf" (nth 3 config-paths)
-          "cp_cfg_leaf" (nth 4 config-paths))
+          "cp_cfg_leaf" (nth 4 config-paths)
+          "ps_openai" (nth 0 provider-symbol)
+          "ps_mixed" (nth 1 provider-symbol)
+          "ps_hyphen" (nth 2 provider-symbol)
+          "pap_openai" (nth 0 parse-auth)
+          "pap_anth" (nth 1 parse-auth)
+          "pap_codex" (nth 2 parse-auth)
+          "pap_bad" (nth 3 parse-auth)
+          "scl_two" (nth 0 split-line)
+          "scl_trim" (nth 1 split-line)
+          "scl_empty" (nth 2 split-line))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -3773,7 +3835,22 @@
                   (lambda ()
                     (lambda ()
                       (run-settings-load-config-paths
-                       config-paths-agent))))))))))
+                       config-paths-agent))))
+         "provider_symbol"
+         (collect "settings_load.provider_symbol"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-provider-symbol))))
+         "parse_auth_provider"
+         (collect "settings_load.parse_auth_provider"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-parse-auth-provider))))
+         "split_command_line"
+         (collect "settings_load.split_command_line"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-split-command-line))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -20157,6 +20234,12 @@
       "src/cadr-cli/config.lisp stored-auth-secrets"
       "settings_load.config_paths"
       "src/cadr-cli/config.lisp default-config-path + default-auth-path"
+      "settings_load.provider_symbol"
+      "src/cadr-cli/config.lisp provider-symbol"
+      "settings_load.parse_auth_provider"
+      "src/cadr-cli/config.lisp parse-auth-provider"
+      "settings_load.split_command_line"
+      "src/cadr-cli/config.lisp split-command-line"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"
