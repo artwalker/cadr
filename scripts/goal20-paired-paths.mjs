@@ -620,6 +620,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.make_extension_input_dialog": 50,
 	"cli_interactive_controller.make_extension_editor_dialog": 50,
 	"cli_interactive_controller.make_runtime_auth_input_state": 50,
+	"cli_interactive_controller.runtime_auth_input_handle_event": 50,
+	"cli_interactive_controller.render_runtime_auth_input": 50,
+	"cli_interactive_controller.render_extension_custom_entry": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -15147,6 +15150,142 @@ function runCliInteractiveMakeRuntimeAuthInputState() {
 	};
 }
 
+function leftoverRuntimeAuthHandleEvent(state, event) {
+	const kind = event && event.kind;
+	if (
+		kind === "escape" ||
+		kind === "cancel" ||
+		kind === "clear" ||
+		kind === "interrupt" ||
+		kind === "eof"
+	) {
+		const cancel = state.prompt && state.prompt.cancelFunction;
+		if (typeof cancel === "function") {
+			try {
+				cancel();
+			} catch (_err) {
+				/* ignore */
+			}
+		}
+		return { action: "cancel", value: null };
+	}
+	if (kind === "enter") {
+		return {
+			action: "select",
+			value: state.input && state.input.value,
+		};
+	}
+	if (kind === "text") {
+		if (state.input) {
+			state.input.value = `${state.input.value || ""}${event.text || ""}`;
+		}
+		return { action: null, value: null };
+	}
+	return { action: null, value: null };
+}
+
+function runCliInteractiveRuntimeAuthInputHandleEvent() {
+	let called = 0;
+	const prompt = {
+		type: "oauth",
+		cancelFunction: () => {
+			called += 1;
+		},
+	};
+	const st = leftoverMakeRuntimeAuthInputState(prompt);
+	const sel = leftoverMakeRuntimeAuthInputState({ type: "oauth" });
+	const nop = leftoverMakeRuntimeAuthInputState({ type: "oauth" });
+	sel.input.value = "hi";
+	leftoverRuntimeAuthHandleEvent(st, { kind: "escape" });
+	leftoverRuntimeAuthHandleEvent(
+		leftoverMakeRuntimeAuthInputState({ type: "oauth" }),
+		{ kind: "interrupt" },
+	);
+	const selResult = leftoverRuntimeAuthHandleEvent(sel, { kind: "enter" });
+	const nopResult = leftoverRuntimeAuthHandleEvent(nop, {
+		kind: "text",
+		text: "x",
+	});
+	return {
+		rah_esc:
+			leftoverRuntimeAuthHandleEvent(
+				leftoverMakeRuntimeAuthInputState({ type: "oauth" }),
+				{ kind: "escape" },
+			).action === "cancel"
+				? 1
+				: 0,
+		rah_int:
+			leftoverRuntimeAuthHandleEvent(
+				leftoverMakeRuntimeAuthInputState({ type: "oauth" }),
+				{ kind: "interrupt" },
+			).action === "cancel"
+				? 1
+				: 0,
+		rah_fn: called === 1 ? 1 : 0,
+		rah_sel: selResult.action === "select" && selResult.value === "hi" ? 1 : 0,
+		rah_nop: nopResult.action == null ? 1 : 0,
+	};
+}
+
+function leftoverRenderRuntimeAuthInput(state, width) {
+	const message = (state.prompt && state.prompt.message) || "";
+	const secret = state.prompt && state.prompt.type === "secret";
+	const value = (state.input && state.input.value) || "";
+	const border = leftoverUpdateNotificationBorderLine(width);
+	const title = leftoverThemeForeground(message);
+	const body = leftoverThemeForeground(
+		secret ? "*".repeat(value.length) : (state.input && state.input.prompt) || "> ",
+	);
+	return [border, title, body, leftoverThemeForeground("cancel"), border];
+}
+
+function runCliInteractiveRenderRuntimeAuthInput() {
+	const st = leftoverMakeRuntimeAuthInputState({
+		type: "oauth",
+		message: "Hello",
+	});
+	const secret = leftoverMakeRuntimeAuthInputState({
+		type: "secret",
+		message: "Hello",
+	});
+	secret.input.value = "ab";
+	const lines = leftoverRenderRuntimeAuthInput(st, 40);
+	const text = leftoverNotificationJoined(lines);
+	const secretLines = leftoverRenderRuntimeAuthInput(secret, 40);
+	const secretText = leftoverNotificationJoined(secretLines);
+	leftoverRenderRuntimeAuthInput(st, 40);
+	leftoverRenderRuntimeAuthInput(secret, 20);
+	return {
+		rra_hi: text.includes("Hello") ? 1 : 0,
+		rra_dash: text.includes("─") ? 1 : 0,
+		rra_n: lines.length >= 3 ? 1 : 0,
+		rra_msg: secretText.includes("Hello") ? 1 : 0,
+		rra_star: secretText.includes("*") ? 1 : 0,
+	};
+}
+
+function leftoverRenderExtensionCustomEntry(_entry, _width, host) {
+	if (host == null) {
+		return null;
+	}
+	return leftoverExtensionRenderValueLines("x", 80);
+}
+
+function runCliInteractiveRenderExtensionCustomEntry() {
+	const entry = { type: "custom-entry" };
+	const msg = { type: "custom-message" };
+	leftoverRenderExtensionCustomEntry(entry, 80, null);
+	leftoverRenderExtensionCustomEntry(entry, 1, null);
+	leftoverRenderExtensionCustomEntry(msg, 80, null);
+	return {
+		rec_nil: leftoverRenderExtensionCustomEntry(entry, 80, null) == null ? 1 : 0,
+		rec_w: leftoverRenderExtensionCustomEntry(entry, 1, null) == null ? 1 : 0,
+		rec_again: leftoverRenderExtensionCustomEntry(entry, 80, null) == null ? 1 : 0,
+		rec_type: entry.type === "custom-entry" ? 1 : 0,
+		rec_msg: leftoverRenderExtensionCustomEntry(msg, 80, null) == null ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -16430,6 +16569,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveMakeExtensionInputDialog(),
 		...runCliInteractiveMakeExtensionEditorDialog(),
 		...runCliInteractiveMakeRuntimeAuthInputState(),
+		...runCliInteractiveRuntimeAuthInputHandleEvent(),
+		...runCliInteractiveRenderRuntimeAuthInput(),
+		...runCliInteractiveRenderExtensionCustomEntry(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -16700,6 +16842,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.make_runtime_auth_input_state",
 			() => {
 				return () => runCliInteractiveMakeRuntimeAuthInputState();
+			},
+		),
+		runtime_auth_input_handle_event: await collect(
+			"cli_interactive_controller.runtime_auth_input_handle_event",
+			() => {
+				return () => runCliInteractiveRuntimeAuthInputHandleEvent();
+			},
+		),
+		render_runtime_auth_input: await collect(
+			"cli_interactive_controller.render_runtime_auth_input",
+			() => {
+				return () => runCliInteractiveRenderRuntimeAuthInput();
+			},
+		),
+		render_extension_custom_entry: await collect(
+			"cli_interactive_controller.render_extension_custom_entry",
+			() => {
+				return () => runCliInteractiveRenderExtensionCustomEntry();
 			},
 		),
 		observed,
@@ -30646,6 +30806,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/extension-editor.ts editor dialog constructor",
 			"cli_interactive_controller.make_runtime_auth_input_state":
 				"packages/coding-agent/src/modes/interactive/components/auth-input.ts runtime auth input constructor",
+			"cli_interactive_controller.runtime_auth_input_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/oauth.ts runtime auth input handleEvent",
+			"cli_interactive_controller.render_runtime_auth_input":
+				"packages/coding-agent/src/modes/interactive/components/oauth.ts runtime auth input render",
+			"cli_interactive_controller.render_extension_custom_entry":
+				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom entry render nil host",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

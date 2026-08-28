@@ -638,6 +638,9 @@
     ("cli_interactive_controller.make_extension_input_dialog" . 50)
     ("cli_interactive_controller.make_extension_editor_dialog" . 50)
     ("cli_interactive_controller.make_runtime_auth_input_state" . 50)
+    ("cli_interactive_controller.runtime_auth_input_handle_event" . 50)
+    ("cli_interactive_controller.render_runtime_auth_input" . 50)
+    ("cli_interactive_controller.render_extension_custom_entry" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14651,6 +14654,26 @@
    "rai_nil" (nth 4 auth-state)))
 
 
+(defun leftover-extension-ui-auth-handle-render-entry-observed-pairs
+    (handle-event render-auth custom-entry)
+  (list
+   "rah_esc" (nth 0 handle-event)
+   "rah_int" (nth 1 handle-event)
+   "rah_fn" (nth 2 handle-event)
+   "rah_sel" (nth 3 handle-event)
+   "rah_nop" (nth 4 handle-event)
+   "rra_hi" (nth 0 render-auth)
+   "rra_dash" (nth 1 render-auth)
+   "rra_n" (nth 2 render-auth)
+   "rra_msg" (nth 3 render-auth)
+   "rra_star" (nth 4 render-auth)
+   "rec_nil" (nth 0 custom-entry)
+   "rec_w" (nth 1 custom-entry)
+   "rec_again" (nth 2 custom-entry)
+   "rec_type" (nth 3 custom-entry)
+   "rec_msg" (nth 4 custom-entry)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15178,7 +15201,13 @@
         (leftover-make-extension-editor-dialog
           (run-cli-interactive-make-extension-editor-dialog))
         (leftover-make-runtime-auth-input-state
-          (run-cli-interactive-make-runtime-auth-input-state)))
+          (run-cli-interactive-make-runtime-auth-input-state))
+        (leftover-runtime-auth-input-handle-event
+          (run-cli-interactive-runtime-auth-input-handle-event))
+        (leftover-render-runtime-auth-input
+          (run-cli-interactive-render-runtime-auth-input))
+        (leftover-render-extension-custom-entry
+          (run-cli-interactive-render-extension-custom-entry)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15289,7 +15318,11 @@
              (leftover-extension-ui-input-editor-auth-observed-pairs
               leftover-make-extension-input-dialog
               leftover-make-extension-editor-dialog
-              leftover-make-runtime-auth-input-state)))
+              leftover-make-runtime-auth-input-state)
+             (leftover-extension-ui-auth-handle-render-entry-observed-pairs
+              leftover-runtime-auth-input-handle-event
+              leftover-render-runtime-auth-input
+              leftover-render-extension-custom-entry)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15544,7 +15577,22 @@
      (collect "cli_interactive_controller.make_runtime_auth_input_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-make-runtime-auth-input-state)))))))
+                  (run-cli-interactive-make-runtime-auth-input-state))))
+     "runtime_auth_input_handle_event"
+     (collect "cli_interactive_controller.runtime_auth_input_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-runtime-auth-input-handle-event))))
+     "render_runtime_auth_input"
+     (collect "cli_interactive_controller.render_runtime_auth_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-runtime-auth-input))))
+     "render_extension_custom_entry"
+     (collect "cli_interactive_controller.render_extension_custom_entry"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-extension-custom-entry)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -16688,6 +16736,107 @@
           (getf
            (cadr-cli::runtime-auth-input-state-prompt empty)
            :type))
+         1 0))))
+
+(defun leftover-runtime-auth-handle-action (state kind)
+  (nth-value
+   0
+   (cadr-cli::runtime-auth-input-state-handle-event
+    state
+    (cadr-tui:make-input-event :kind kind))))
+
+(defun run-cli-interactive-runtime-auth-input-handle-event ()
+  (let* ((called 0)
+         (prompt
+           (list
+            :type :oauth
+            :cancel-function
+            (lambda () (incf called))))
+         (st (cadr-cli::make-runtime-auth-input-state prompt))
+         (sel (cadr-cli::make-runtime-auth-input-state
+               (list :type :oauth)))
+         (nop (cadr-cli::make-runtime-auth-input-state
+               (list :type :oauth))))
+    (cadr-tui:single-line-input-set-value
+     (cadr-cli::runtime-auth-input-state-input sel)
+     "hi")
+    (leftover-runtime-auth-handle-action st :escape)
+    (leftover-runtime-auth-handle-action
+     (cadr-cli::make-runtime-auth-input-state (list :type :oauth))
+     :interrupt)
+    (multiple-value-bind (sel-action sel-value)
+        (cadr-cli::runtime-auth-input-state-handle-event
+         sel
+         (cadr-tui:make-input-event :kind :enter))
+      (multiple-value-bind (nop-action nop-value)
+          (cadr-cli::runtime-auth-input-state-handle-event
+           nop
+           (cadr-tui:make-input-event :kind :text :text "x"))
+        (declare (ignore nop-value))
+        (list
+         (if (eq (leftover-runtime-auth-handle-action
+                  (cadr-cli::make-runtime-auth-input-state
+                   (list :type :oauth))
+                  :escape)
+                 :cancel)
+             1 0)
+         (if (eq (leftover-runtime-auth-handle-action
+                  (cadr-cli::make-runtime-auth-input-state
+                   (list :type :oauth))
+                  :interrupt)
+                 :cancel)
+             1 0)
+         (if (= called 1) 1 0)
+         (if (and (eq sel-action :select) (equal "hi" sel-value))
+             1 0)
+         (if (null nop-action) 1 0))))))
+
+(defun run-cli-interactive-render-runtime-auth-input ()
+  (let* ((st
+           (cadr-cli::make-runtime-auth-input-state
+            (list :type :oauth :message "Hello")))
+         (secret
+           (cadr-cli::make-runtime-auth-input-state
+            (list :type :secret :message "Hello"))))
+    (cadr-tui:single-line-input-set-value
+     (cadr-cli::runtime-auth-input-state-input secret)
+     "ab")
+    (multiple-value-bind (lines row column)
+        (cadr-cli::render-runtime-auth-input-state st 40)
+      (declare (ignore row column))
+      (let* ((text (leftover-notification-joined lines))
+             (secret-lines
+               (cadr-cli::render-runtime-auth-input-state secret 40))
+             (secret-text
+               (leftover-notification-joined secret-lines)))
+        (cadr-cli::render-runtime-auth-input-state st 40)
+        (cadr-cli::render-runtime-auth-input-state secret 20)
+        (list
+         (if (search "Hello" text) 1 0)
+         (if (search "─" text) 1 0)
+         (if (>= (length lines) 3) 1 0)
+         (if (search "Hello" secret-text) 1 0)
+         (if (search "*" secret-text) 1 0))))))
+
+(defun run-cli-interactive-render-extension-custom-entry ()
+  (let ((entry (cadr-cli::make-tui-entry :type :custom-entry))
+        (msg (cadr-cli::make-tui-entry :type :custom-message)))
+    (cadr-cli::render-extension-custom-entry entry 80 nil)
+    (cadr-cli::render-extension-custom-entry entry 1 nil)
+    (cadr-cli::render-extension-custom-entry msg 80 nil)
+    (list
+     (if (null
+          (cadr-cli::render-extension-custom-entry entry 80 nil))
+         1 0)
+     (if (null
+          (cadr-cli::render-extension-custom-entry entry 1 nil))
+         1 0)
+     (if (null
+          (cadr-cli::render-extension-custom-entry entry 80 nil))
+         1 0)
+     (if (eq :custom-entry (cadr-cli::tui-entry-type entry)) 1 0)
+     (if (null
+          (cadr-cli::render-extension-custom-entry msg 80 nil))
          1 0))))
 
 (defun session-search-fixture-records ()
@@ -29045,6 +29194,12 @@
       "src/cadr-cli/interactive/extension-ui.lisp make-extension-editor-dialog"
       "cli_interactive_controller.make_runtime_auth_input_state"
       "src/cadr-cli/interactive/extension-ui.lisp make-runtime-auth-input-state"
+      "cli_interactive_controller.runtime_auth_input_handle_event"
+      "src/cadr-cli/interactive/extension-ui.lisp runtime-auth-input-state-handle-event"
+      "cli_interactive_controller.render_runtime_auth_input"
+      "src/cadr-cli/interactive/extension-ui.lisp render-runtime-auth-input-state"
+      "cli_interactive_controller.render_extension_custom_entry"
+      "src/cadr-cli/interactive/extension-ui.lisp render-extension-custom-entry"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
