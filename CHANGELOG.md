@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
+  `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
+  trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
+  n=5 **2.692×** (0.758 / 0.282 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 346). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.prompt_step` (`make-eval-prompt-step` on
+  `src/cadr-evals/harness.lisp` vs baseline prompt step object). Observed
+  `ps_type` / `ps_content` / `ps_n` exact.
+  n=5 **0.956×** (0.109 / 0.114 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 347). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.reload_step` (`make-eval-reload-step` on
+  `src/cadr-evals/harness.lisp` vs baseline reload step object). Observed
+  `rs_type` / `rs_no_content` / `rs_n` exact.
+  n=5 **0.738×** (0.078 / 0.105 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 348). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
 - Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
   `src/cadr-evals/harness.lisp` vs baseline step property access).
   Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.
