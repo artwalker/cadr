@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.make_login_method_selector_state`
+  (`make-login-method-selector-state` on
+  `src/cadr-cli/interactive/selectors/auth.lisp` vs ExtensionSelectorComponent
+  constructor). Observed `mlms_default` / `mlms_title` / `mlms_custom` /
+  `mlms_one` / `mlms_three` exact. n=5 **1.143×** (2.654 / 2.323 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 616). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.make_api_key_input_state`
+  (`make-api-key-input-state` vs login-dialog api key Input constructor).
+  Observed `makis_anth` / `makis_openai` / `makis_google` / `makis_oauth_opt` /
+  `makis_named` exact. n=5 **1.803×** (2.203 / 1.222 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 617). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.make_oauth_selector_state`
+  (`make-oauth-selector-state` vs OauthSelectorComponent constructor).
+  Observed `moss_default` / `moss_filter` / `moss_miss` / `moss_logout_empty` /
+  `moss_logout` exact. Cached keybindings. n=5 **1.204×** (7.245 / 6.020 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 618). Over-1×
+  booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.trust_option_saved_p`
   (`trust-option-saved-p` on
   `src/cadr-cli/interactive/selectors/trust.lisp` vs isSavedOption). Observed

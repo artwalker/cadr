@@ -1159,11 +1159,11 @@ RATIO_CEILINGS = {
   # Measure-only leftover 615; first freeze 8.798× (1074.462 / 122.128 µs).
   # 15.0 is first-freeze headroom. Ratchet down only.
   "cli_selectors.render_trust_selector": 15.0,
-  # Measure-only leftover 616; first freeze pending. 8.0 is first-freeze headroom.
+  # Measure-only leftover 616; first freeze 1.143× (2.654 / 2.323 µs).
   "cli_selectors.make_login_method_selector_state": 8.0,
-  # Measure-only leftover 617; first freeze pending. 8.0 is first-freeze headroom.
+  # Measure-only leftover 617; first freeze 1.803× (2.203 / 1.222 µs).
   "cli_selectors.make_api_key_input_state": 8.0,
-  # Measure-only leftover 618; first freeze pending. 8.0 is first-freeze headroom.
+  # Measure-only leftover 618; first freeze 1.204× (7.245 / 6.020 µs).
   "cli_selectors.make_oauth_selector_state": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
