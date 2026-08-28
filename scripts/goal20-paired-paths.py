@@ -937,11 +937,11 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.apply_tui_theme_summary": 8.0,
     # Measure-only leftover 639; first freeze 2.383× (233.265 / 97.883 µs).
     "cli_interactive_controller.load_tui_theme_file": 8.0,
-    # Measure-only leftover 640; first freeze recorded after n=5.
+    # Measure-only leftover 640; first freeze 2.059× (0.735 / 0.357 µs).
     "cli_interactive_controller.bash_append_running": 8.0,
-    # Measure-only leftover 641; first freeze recorded after n=5.
+    # Measure-only leftover 641; first freeze 2.719× (0.745 / 0.274 µs).
     "cli_interactive_controller.bash_complete_string": 8.0,
-    # Measure-only leftover 642; first freeze recorded after n=5.
+    # Measure-only leftover 642; first freeze 2.843× (0.621 / 0.219 µs).
     "cli_interactive_controller.bash_stop_entry": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.

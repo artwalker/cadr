@@ -7840,6 +7840,30 @@ Leftover sibling of Pair 637. Timed work is named dark/light apply, object apply
 
 Leftover sibling of Pairs 637–638. Timed work is JSON load of a valid file / missing / truncated / empty (name / ok / miss / bad / empty). Observed `ltf_name` / `ltf_ok` / `ltf_miss` / `ltf_bad` / `ltf_empty` are exact. First n=5 freeze **2.383×** (233.265 / 97.883 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 640 — `cli_interactive_controller` (bash_append_running)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_append_running` | `append-tui-user-bash-running` (`src/cadr-cli/interactive/user-bash.lisp`) | BashExecutionComponent addChild running (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pairs 493–495 on the same `user-bash.lisp` hole. Timed work is two running appends (`ls` idle-exclude / `echo hi` exclude) plus entry count / label / running / streaming / exclude. Observed `bar_n` / `bar_label` / `bar_run` / `bar_stream` / `bar_ex` / `bar_run2` are exact. First n=5 freeze **2.059×** (0.735 / 0.357 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 641 — `cli_interactive_controller` (bash_complete_string)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_complete_string` | `complete-tui-user-bash-string` (`src/cadr-cli/interactive/user-bash.lisp`) | setComplete exit 0 string (`packages/coding-agent/src/modes/interactive/components/bash-execution.ts`) |
+
+Leftover sibling of Pair 640. Timed work is string complete (`hello`) plus empty-string complete (text / running / streaming / exit 0 / cache invalid / empty length). Observed `cs_text` / `cs_run` / `cs_stream` / `cs_exit` / `cs_cache` / `cs_empty` are exact. First n=5 freeze **2.719×** (0.745 / 0.274 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 642 — `cli_interactive_controller` (bash_stop_entry)
+
+| metric | cadr | pi |
+|---|---|---|
+| `bash_stop_entry` | `stop-tui-user-bash-entry` (`src/cadr-cli/interactive/user-bash.lisp`) | loader.stop without setComplete (`packages/coding-agent/src/modes/interactive/components/bash-execution.ts`) |
+
+Leftover sibling of Pairs 640–641. Timed work is stop after a partial append (running / streaming / text kept / cache invalid / missing exit). Observed `st_run` / `st_stream` / `st_text` / `st_cache` / `st_exit` are exact. First n=5 freeze **2.843×** (0.621 / 0.219 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

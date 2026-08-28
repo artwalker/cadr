@@ -446,4 +446,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.daxnuts_component_tick` | 3.787 | 3.384 | 1.119× | 8.00× | measure-only leftover 636; `daxnuts-component-tick` vs DaxnutsComponent interval body | invent pause；地板优化另刀 |
 | `cli_interactive_controller.apply_tui_theme_summary` | 52.489 | 16.348 | 3.211× | 8.00× | measure-only leftover 638; `apply-tui-theme-summary` vs setTheme | invent pause；地板优化另刀 |
 | `cli_interactive_controller.load_tui_theme_file` | 233.265 | 97.883 | 2.383× | 8.00× | measure-only leftover 639; `load-tui-theme-file` vs loadThemeFromPath | invent pause；地板优化另刀 |
+| `cli_interactive_controller.bash_append_running` | 0.735 | 0.357 | 2.059× | 8.00× | measure-only leftover 640; `append-tui-user-bash-running` vs BashExecutionComponent addChild running | invent pause；地板优化另刀 |
+| `cli_interactive_controller.bash_complete_string` | 0.745 | 0.274 | 2.719× | 8.00× | measure-only leftover 641; `complete-tui-user-bash-string` vs setComplete exit 0 string | invent pause；地板优化另刀 |
+| `cli_interactive_controller.bash_stop_entry` | 0.621 | 0.219 | 2.843× | 8.00× | measure-only leftover 642; `stop-tui-user-bash-entry` vs loader.stop without setComplete | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
