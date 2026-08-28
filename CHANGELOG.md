@@ -9,6 +9,31 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `evals_harness.make_eval_root` (`make-eval-root` on
+  `src/cadr-evals/harness.lisp` vs baseline isolated eval directory). Observed
+  `mer_exists` / `mer_prefix` / `mer_no_ws` / `mer_n` exact.
+  n=5 **1.672×** (73.6 / 44.0 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 349). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13: pair `evals_harness.normalize_step_type` (`normalize-step-type` on
+  `src/cadr-evals/harness.lisp` vs baseline step type coercion). Observed
+  `nst_kw` / `nst_sym` / `nst_str` / `nst_bad` / `nst_n` exact.
+  n=5 **1.003×** (0.256 / 0.255 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 350). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13: pair `evals_harness.selected_eval_tools` (`selected-eval-tools` on
+  `src/cadr-evals/harness.lisp` vs baseline coding-tool selection). Observed
+  `set_n` / `set_names` / `set_all` / `set_filt_n` / `set_no_bash` / `set_cases` exact.
+  n=5 **1.506×** (19.9 / 13.2 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 351). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13: pair `harness_events.make_end` (`make-run-end-event` on
+  `src/cadr-agent/harness-events.lisp` vs baseline `RunEndEvent` object).
+  Observed `hee_type` / `hee_lane` / `hee_run` / `hee_outcome` /
+  `hee_abort` exact. n=5 **1.574×** (0.216 / 0.137 µs) on host `cursor`,
+  ceiling 8.0. Measure-only. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
@@ -97,7 +122,6 @@ tag/Release step.
   `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old holes
   (`lc_n` / `lc_sleep` / help text), not these metrics. Pairs 326–327 are on
   the over-1× ledger. Pairs 325–327.
-
 - Goal 20 P.13: pair `oauth_pkce_device.percent_decode` (`percent-decode` on
   `src/cadr-ai/oauth/callback.lisp` vs baseline URLSearchParams percent-decode
   in `packages/ai/src/auth/oauth/openai-codex.ts`). Observed `pd_plain` /
@@ -136,7 +160,6 @@ tag/Release step.
   `fmqv_n` exact. n=5 **0.985×** (139.5 / 141.7 µs) on host `cursor`, ceiling 8.0.
   Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
   help text), not this metric.
-
 - Goal 20 P.13: pair `ls_tool.directory_entry_name` (`directory-entry-name` on
   `src/cadr-cli/tools/ls.lisp` vs baseline directory suffix in
   `packages/coding-agent/src/core/tools/ls.ts`). Observed `lden_file` /

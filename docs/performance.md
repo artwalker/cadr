@@ -618,359 +618,361 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-27T19:54:58Z) on `cursor`, git `4aaa4f0c149b`, ratio_gate=`enforced-only:evals_harness.eval_environment,evals_harness.prompt_step,evals_harness.reload_step`, quick=no, samples=5
+Current: `paired-paths` (2026-08-27T20:15:52Z) on `cursor`, git `46cdef89216a`, ratio_gate=`enforced-only:evals_harness.make_eval_root,evals_harness.normalize_step_type,evals_harness.selected_eval_tools`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-27T19:25:36Z) on `cursor`, git `8c1fc72b060f`, ratio_gate=`enforced-only:evals_harness.result_json,evals_harness.step_value,evals_harness.usage`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-27T19:54:58Z) on `cursor`, git `4aaa4f0c149b`, ratio_gate=`enforced-only:evals_harness.eval_environment,evals_harness.prompt_step,evals_harness.reload_step`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
-| `cli_dispatch.argv_parse` | 2.3 | 3.1 | 0.74× | 0.79× | 3.00× |
-| `cli_dispatch.help_render` | 0.0 | 1.1 | 0.04× | 0.04× | 6.00× |
-| `cli_dispatch.list_models_registry` | 1,695.9 | 2,435.4 | 0.70× | 0.66× | 1.50× |
-| `cli_dispatch.list_models_render` | 56.9 | 739.4 | 0.08× | 0.08× | 4.00× |
-| `provider_stream.stream_roundtrip` | 1,591.0 | 4,057.4 | 0.39× | 0.40× | 2.50× |
-| `provider_anthropic.stream_roundtrip` | 1,100.9 | 1,768.1 | 0.62× | 0.62× | 1.50× |
-| `provider_google.stream_roundtrip` | 2,113.6 | 5,034.2 | 0.42× | 0.42× | 1.50× |
-| `provider_bedrock.stream_roundtrip` | 4,156.8 | 5,108.8 | 0.81× | 0.83× | 1.50× |
-| `provider_mistral.stream_roundtrip` | 1,642.3 | 1,475.9 | 1.11× | 1.09× | 3.00× |
-| `provider_openai_responses.stream_roundtrip` | 1,022.6 | 3,559.0 | 0.29× | 0.29× | 1.50× |
-| `provider_azure_openai.stream_roundtrip` | 1,023.9 | 3,340.0 | 0.31× | 0.30× | 1.50× |
-| `provider_vertex.stream_roundtrip` | 2,162.5 | 4,839.7 | 0.45× | 0.44× | 1.50× |
-| `provider_codex.stream_roundtrip` | 1,036.7 | 1,111.9 | 0.93× | 0.90× | 1.50× |
-| `provider_pi_messages.stream_roundtrip` | 789.1 | 666.6 | 1.18× | 1.16× | 1.50× |
-| `cli_settings.create` | 72.0 | 161.6 | 0.45× | 0.43× | 1.50× |
-| `cli_settings.reload` | — | — | — | — | — |
-| `cli_settings.enabled_models` | — | — | — | — | — |
-| `cli_settings.block_images` | — | — | — | — | — |
-| `agent_conditions.error_probe` | 2.5 | 43.3 | 0.06× | 0.06× | 8.00× |
-| `execution_env.exists_remove_temps` | 333.7 | 721.7 | 0.46× | 0.40× | 8.00× |
-| `file_mutation_queue.with_queue` | 223.8 | 260.7 | 0.86× | 0.65× | 8.00× |
-| `file_mutation_queue.queue_key` | 128.5 | 146.0 | 0.88× | 0.79× | 8.00× |
-| `file_mutation_queue.lock` | 112.0 | 151.5 | 0.74× | 0.90× | 8.00× |
-| `file_mutation_queue.register` | 108.9 | 160.9 | 0.68× | 1.23× | 8.00× |
-| `file_mutation_queue.wait_turn` | 120.2 | 126.2 | 0.95× | 1.34× | 8.00× |
-| `file_mutation_queue.release_turn` | 115.1 | 151.7 | 0.76× | 1.21× | 8.00× |
-| `file_mutation_queue.ensure_state` | 107.8 | 129.4 | 0.83× | 1.31× | 8.00× |
-| `file_mutation_queue.call_with` | 125.8 | 222.7 | 0.56× | 0.95× | 8.00× |
-| `file_mutation_queue.make_state` | 112.4 | 64.0 | 1.76× | 1.53× | 8.00× |
-| `file_mutation_queue.state_key` | 149.8 | 131.9 | 1.14× | 1.07× | 8.00× |
-| `file_mutation_queue.pending_count` | — | — | — | — | — |
-| `file_mutation_queue.next_ticket` | — | — | — | — | — |
-| `file_mutation_queue.serving_ticket` | — | — | — | — | — |
-| `harness_events.emit` | 0.7 | 2.9 | 0.26× | 0.24× | 8.00× |
-| `bash_tool.strip_exit_footer` | 1.0 | 0.5 | 1.98× | 1.82× | 8.00× |
-| `bash_tool.append_status` | 1.1 | 0.4 | 2.94× | 2.80× | 8.00× |
-| `bash_tool.truncation_notice` | 2.8 | 0.8 | 3.58× | 3.30× | 8.00× |
-| `output_accumulator.append` | 3.3 | 4.4 | 0.73× | 0.68× | 8.00× |
-| `output_accumulator.snapshot` | 3.3 | 4.4 | 0.75× | 0.69× | 8.00× |
-| `output_accumulator.finish` | 1.7 | 2.6 | 0.67× | 0.64× | 8.00× |
-| `harness_events.on` | 0.6 | 1.9 | 0.31× | 0.27× | 8.00× |
-| `harness_events.watch` | 0.6 | 2.3 | 0.25× | 0.23× | 8.00× |
-| `harness_events.make_start` | 0.1 | 0.1 | 1.50× | 1.27× | 8.00× |
-| `harness_events.make_end` | 0.2 | 0.1 | 1.52× | 1.35× | 8.00× |
-| `harness_events.event_type` | 0.2 | 0.1 | 1.42× | 1.26× | 8.00× |
-| `harness_events.make_bus` | 0.3 | 0.2 | 1.36× | 1.23× | 8.00× |
-| `find_tool.pattern_match` | 30.4 | 4.5 | 6.77× | 6.95× | 8.00× |
-| `find_tool.find_files` | 647.2 | 205.5 | 3.15× | 3.34× | 8.00× |
-| `find_tool.make_tool` | 209.1 | 92.0 | 2.27× | 1.54× | 8.00× |
+| `cli_dispatch.argv_parse` | 2.4 | 3.4 | 0.70× | 0.74× | 3.00× |
+| `cli_dispatch.help_render` | 0.0 | 1.2 | 0.04× | 0.04× | 6.00× |
+| `cli_dispatch.list_models_registry` | 1,778.3 | 2,651.3 | 0.67× | 0.70× | 1.50× |
+| `cli_dispatch.list_models_render` | 57.4 | 794.8 | 0.07× | 0.08× | 4.00× |
+| `provider_stream.stream_roundtrip` | 1,626.4 | 4,073.1 | 0.40× | 0.39× | 2.50× |
+| `provider_anthropic.stream_roundtrip` | 1,106.7 | 1,968.3 | 0.56× | 0.62× | 1.50× |
+| `provider_google.stream_roundtrip` | 2,126.7 | 5,252.8 | 0.40× | 0.42× | 1.50× |
+| `provider_bedrock.stream_roundtrip` | 4,324.8 | 5,316.9 | 0.81× | 0.81× | 1.50× |
+| `provider_mistral.stream_roundtrip` | 1,660.6 | 1,509.0 | 1.10× | 1.11× | 3.00× |
+| `provider_openai_responses.stream_roundtrip` | 1,024.2 | 3,486.8 | 0.29× | 0.29× | 1.50× |
+| `provider_azure_openai.stream_roundtrip` | 1,029.5 | 3,500.6 | 0.29× | 0.31× | 1.50× |
+| `provider_vertex.stream_roundtrip` | 2,174.3 | 5,011.0 | 0.43× | 0.45× | 1.50× |
+| `provider_codex.stream_roundtrip` | 1,048.4 | 1,235.4 | 0.85× | 0.93× | 1.50× |
+| `provider_pi_messages.stream_roundtrip` | 798.0 | 705.6 | 1.13× | 1.18× | 1.50× |
+| `cli_settings.create` | 74.6 | 185.2 | 0.40× | 0.45× | 1.50× |
+| `cli_settings.reload` | 85.9 | 175.9 | 0.49× | — | 8.00× |
+| `cli_settings.enabled_models` | 18.4 | 3.2 | 5.80× | — | 8.00× |
+| `cli_settings.block_images` | 19.2 | 3.3 | 5.77× | — | 8.00× |
+| `agent_conditions.error_probe` | 2.6 | 48.8 | 0.05× | 0.06× | 8.00× |
+| `execution_env.exists_remove_temps` | 342.2 | 777.1 | 0.44× | 0.46× | 8.00× |
+| `file_mutation_queue.with_queue` | 227.7 | 338.1 | 0.67× | 0.86× | 8.00× |
+| `file_mutation_queue.queue_key` | 153.1 | 159.4 | 0.96× | 0.88× | 8.00× |
+| `file_mutation_queue.lock` | 159.0 | 172.9 | 0.92× | 0.74× | 8.00× |
+| `file_mutation_queue.register` | 134.5 | 153.9 | 0.87× | 0.68× | 8.00× |
+| `file_mutation_queue.wait_turn` | 110.2 | 154.6 | 0.71× | 0.95× | 8.00× |
+| `file_mutation_queue.release_turn` | 117.3 | 148.6 | 0.79× | 0.76× | 8.00× |
+| `file_mutation_queue.ensure_state` | 100.1 | 157.9 | 0.63× | 0.83× | 8.00× |
+| `file_mutation_queue.call_with` | 120.7 | 245.8 | 0.49× | 0.56× | 8.00× |
+| `file_mutation_queue.make_state` | 93.7 | 92.8 | 1.01× | 1.76× | 8.00× |
+| `file_mutation_queue.state_key` | 136.6 | 154.2 | 0.89× | 1.14× | 8.00× |
+| `file_mutation_queue.pending_count` | 97.8 | 157.6 | 0.62× | — | 8.00× |
+| `file_mutation_queue.next_ticket` | 110.2 | 175.9 | 0.63× | — | 8.00× |
+| `file_mutation_queue.serving_ticket` | 118.6 | 154.3 | 0.77× | — | 8.00× |
+| `harness_events.emit` | 0.8 | 2.7 | 0.28× | 0.26× | 8.00× |
+| `bash_tool.strip_exit_footer` | 1.0 | 0.5 | 1.91× | 1.98× | 8.00× |
+| `bash_tool.append_status` | 1.1 | 0.4 | 2.64× | 2.94× | 8.00× |
+| `bash_tool.truncation_notice` | 2.8 | 1.0 | 2.93× | 3.58× | 8.00× |
+| `output_accumulator.append` | 3.3 | 5.6 | 0.59× | 0.73× | 8.00× |
+| `output_accumulator.snapshot` | 3.3 | 4.9 | 0.68× | 0.75× | 8.00× |
+| `output_accumulator.finish` | 1.8 | 2.8 | 0.65× | 0.67× | 8.00× |
+| `harness_events.on` | 0.6 | 1.9 | 0.32× | 0.31× | 8.00× |
+| `harness_events.watch` | 0.6 | 2.3 | 0.25× | 0.25× | 8.00× |
+| `harness_events.make_start` | 0.1 | 0.1 | 1.19× | 1.50× | 8.00× |
+| `harness_events.make_end` | 0.2 | 0.2 | 1.24× | 1.52× | 8.00× |
+| `harness_events.event_type` | 0.2 | 0.2 | 1.14× | 1.42× | 8.00× |
+| `harness_events.make_bus` | 0.3 | 0.3 | 1.09× | 1.36× | 8.00× |
+| `find_tool.pattern_match` | 31.2 | 4.4 | 7.04× | 6.77× | 8.00× |
+| `find_tool.find_files` | 640.3 | 255.6 | 2.50× | 3.15× | 8.00× |
+| `find_tool.make_tool` | 160.8 | 103.9 | 1.55× | 2.27× | 8.00× |
 | `write_tool.ensure_parent` | — | — | — | — | — |
 | `write_tool.write_utf8` | — | — | — | — | — |
 | `write_tool.make_tool` | — | — | — | — | — |
-| `ls_tool.directory_entry_name` | 4.6 | 4.6 | 0.99× | — | 8.00× |
-| `ls_tool.list_directory` | 361.3 | 202.8 | 1.78× | — | 8.00× |
-| `ls_tool.make_tool` | 240.1 | 180.7 | 1.33× | — | 8.00× |
-| `tool_manager.get_tool_path` | 103.6 | 8,188.3 | 0.01× | 0.01× | 8.00× |
-| `tool_manager.ensure_tool` | 63.7 | 5,504.4 | 0.01× | 0.01× | 8.00× |
-| `tool_manager.cleanup_quarantine` | 122.7 | 85.5 | 1.43× | 1.33× | 8.00× |
-| `powershell_tool.utf8_prefix` | 0.7 | 0.2 | 4.26× | — | 8.00× |
-| `powershell_tool.prefix_command` | 0.5 | 0.4 | 1.35× | — | 8.00× |
-| `powershell_tool.make_tool` | 2.0 | 1.7 | 1.17× | — | 8.00× |
-| `settings_load.project_trust` | 191.0 | 312.2 | 0.61× | 0.63× | 8.00× |
-| `settings_load.config_value` | 1.8 | 4.3 | 0.41× | 0.40× | 8.00× |
-| `settings_load.http_idle` | 0.1 | 0.6 | 0.23× | 0.21× | 8.00× |
-| `settings_load.stored_auth_secrets` | 121.1 | 34.2 | 3.54× | 3.74× | 8.00× |
-| `settings_load.config_paths` | 8.1 | 3.9 | 2.09× | 2.00× | 8.00× |
-| `resource_loader.reload` | 306.7 | 578.6 | 0.53× | 0.51× | 1.50× |
-| `resource_loader.dedupe_by_name` | 114.0 | 224.2 | 0.51× | 0.50× | 8.00× |
-| `package_manager.resolve` | 112.4 | 102.0 | 1.10× | 1.27× | 1.50× |
-| `package_manager.manifest_parse` | 20.6 | 5.3 | 3.86× | 4.12× | 8.00× |
-| `package_manager.package_source` | 13.5 | 310.5 | 0.04× | 0.05× | 8.00× |
-| `session_discovery.header_probe` | 589.7 | 546.6 | 1.08× | 1.09× | 8.00× |
-| `session_discovery.session_list_probe` | 49,551.0 | 52,874.3 | 0.94× | 0.97× | 8.00× |
-| `session_export_html.to_html` | 21,002.4 | 4,066.1 | 5.17× | 4.59× | 20.00× |
-| `protocol_cbor.roundtrip` | 9.2 | 32.9 | 0.28× | 0.27× | 1.50× |
-| `agent_schema.validate_ok_fail` | 29.1 | 40.3 | 0.72× | 0.70× | 1.50× |
-| `harness_storage.open_walk` | 8,720.7 | 5,790.4 | 1.51× | 1.49× | 8.00× |
-| `protocol_codec.roundtrip` | 7.0 | 65.6 | 0.11× | 0.11× | 1.50× |
-| `agent_proxy.stream_roundtrip` | 13.6 | 16.0 | 0.85× | 0.85× | 1.50× |
-| `oauth_pkce.challenge_urls` | 41.0 | 29.7 | 1.38× | 1.37× | 1.50× |
-| `oauth_pkce_device.poll` | 0.6 | 12.9 | 0.05× | 0.05× | 8.00× |
-| `oauth_pkce_device.auth_json` | 141.7 | 72.8 | 1.95× | 2.73× | 8.00× |
-| `oauth_pkce_device.copilot_url` | 1.6 | 1.7 | 0.97× | 0.94× | 8.00× |
-| `oauth_pkce_device.cloudflare_url` | 8.1 | 1.6 | 5.10× | 5.08× | 8.00× |
-| `oauth_pkce_device.radius_gateway` | 0.3 | 0.5 | 0.50× | 0.50× | 8.00× |
-| `oauth_pkce_device.copilot_auth` | 2.2 | 1.9 | 1.15× | 1.13× | 8.00× |
+| `ls_tool.directory_entry_name` | 4.6 | 5.8 | 0.80× | 0.99× | 8.00× |
+| `ls_tool.list_directory` | 381.8 | 294.4 | 1.30× | 1.78× | 8.00× |
+| `ls_tool.make_tool` | 269.6 | 249.0 | 1.08× | 1.33× | 8.00× |
+| `tool_manager.get_tool_path` | 106.8 | 8,872.8 | 0.01× | 0.01× | 8.00× |
+| `tool_manager.ensure_tool` | 65.8 | 6,010.2 | 0.01× | 0.01× | 8.00× |
+| `tool_manager.cleanup_quarantine` | 120.9 | 91.9 | 1.32× | 1.43× | 8.00× |
+| `powershell_tool.utf8_prefix` | 0.7 | 0.2 | 3.40× | 4.26× | 8.00× |
+| `powershell_tool.prefix_command` | 0.5 | 0.4 | 1.28× | 1.35× | 8.00× |
+| `powershell_tool.make_tool` | 2.0 | 1.6 | 1.23× | 1.17× | 8.00× |
+| `settings_load.project_trust` | 191.9 | 351.7 | 0.55× | 0.61× | 8.00× |
+| `settings_load.config_value` | 1.8 | 4.6 | 0.39× | 0.41× | 8.00× |
+| `settings_load.http_idle` | 0.1 | 0.7 | 0.22× | 0.23× | 8.00× |
+| `settings_load.stored_auth_secrets` | 123.1 | 34.0 | 3.63× | 3.54× | 8.00× |
+| `settings_load.config_paths` | 8.1 | 5.2 | 1.56× | 2.09× | 8.00× |
+| `resource_loader.reload` | 294.7 | 843.7 | 0.35× | 0.53× | 1.50× |
+| `resource_loader.dedupe_by_name` | 113.7 | 259.0 | 0.44× | 0.51× | 8.00× |
+| `package_manager.resolve` | 112.5 | 88.8 | 1.27× | 1.10× | 1.50× |
+| `package_manager.manifest_parse` | 21.1 | 5.0 | 4.22× | 3.86× | 8.00× |
+| `package_manager.package_source` | 13.6 | 289.5 | 0.05× | 0.04× | 8.00× |
+| `session_discovery.header_probe` | 604.6 | 546.1 | 1.11× | 1.08× | 8.00× |
+| `session_discovery.session_list_probe` | 53,093.4 | 54,066.0 | 0.98× | 0.94× | 8.00× |
+| `session_export_html.to_html` | 21,267.1 | 4,196.6 | 5.07× | 5.17× | 20.00× |
+| `protocol_cbor.roundtrip` | 9.4 | 32.5 | 0.29× | 0.28× | 1.50× |
+| `agent_schema.validate_ok_fail` | 29.2 | 43.9 | 0.66× | 0.72× | 1.50× |
+| `harness_storage.open_walk` | 9,744.8 | 5,748.8 | 1.70× | 1.51× | 8.00× |
+| `protocol_codec.roundtrip` | 7.3 | 64.4 | 0.11× | 0.11× | 1.50× |
+| `agent_proxy.stream_roundtrip` | 14.0 | 16.5 | 0.85× | 0.85× | 1.50× |
+| `oauth_pkce.challenge_urls` | 42.2 | 32.2 | 1.31× | 1.38× | 1.50× |
+| `oauth_pkce_device.poll` | 0.7 | 12.8 | 0.05× | 0.05× | 8.00× |
+| `oauth_pkce_device.auth_json` | 236.6 | 82.1 | 2.88× | 1.95× | 8.00× |
+| `oauth_pkce_device.copilot_url` | 1.7 | 2.1 | 0.81× | 0.97× | 8.00× |
+| `oauth_pkce_device.cloudflare_url` | 8.1 | 2.2 | 3.76× | 5.10× | 8.00× |
+| `oauth_pkce_device.radius_gateway` | 0.3 | 0.6 | 0.44× | 0.50× | 8.00× |
+| `oauth_pkce_device.copilot_auth` | 2.3 | 2.1 | 1.08× | 1.15× | 8.00× |
 | `oauth_pkce_device.percent_decode` | — | — | — | — | — |
 | `oauth_pkce_device.parse_query` | — | — | — | — | — |
 | `oauth_pkce_device.parse_authorization_input` | — | — | — | — | — |
-| `cli_extensions_install.llama_url` | 3.2 | 10.5 | 0.31× | 0.31× | 8.00× |
-| `cli_extensions_install.hf_token` | 218.4 | 224.7 | 0.97× | 0.86× | 8.00× |
-| `cli_extensions_install.llama_catalog` | 3.2 | 13.8 | 0.23× | 0.22× | 8.00× |
-| `cli_extensions_install.extension_discovery` | 487.2 | 227.4 | 2.14× | 2.59× | 8.00× |
-| `evals_harness.summarize` | 4.8 | 8.6 | 0.56× | 0.54× | 1.50× |
-| `evals_harness.group_key` | 3.2 | 1.2 | 2.63× | 2.68× | 8.00× |
-| `evals_harness.artifact_persist` | 437.1 | 196.8 | 2.22× | 1.92× | 8.00× |
-| `evals_harness.format` | 13.9 | 22.8 | 0.61× | 0.61× | 8.00× |
-| `evals_harness.normalize_steps` | 0.5 | 6.7 | 0.08× | 0.08× | 8.00× |
+| `cli_extensions_install.llama_url` | 3.3 | 10.7 | 0.31× | 0.31× | 8.00× |
+| `cli_extensions_install.hf_token` | 213.4 | 265.2 | 0.80× | 0.97× | 8.00× |
+| `cli_extensions_install.llama_catalog` | 3.2 | 14.6 | 0.22× | 0.23× | 8.00× |
+| `cli_extensions_install.extension_discovery` | 504.5 | 246.4 | 2.05× | 2.14× | 8.00× |
+| `evals_harness.summarize` | 5.0 | 10.5 | 0.48× | 0.56× | 1.50× |
+| `evals_harness.group_key` | 3.3 | 1.5 | 2.27× | 2.63× | 8.00× |
+| `evals_harness.artifact_persist` | 423.6 | 237.6 | 1.78× | 2.22× | 8.00× |
+| `evals_harness.format` | 14.5 | 22.7 | 0.64× | 0.61× | 8.00× |
+| `evals_harness.normalize_steps` | 0.5 | 6.6 | 0.08× | 0.08× | 8.00× |
 | `evals_harness.resolve_selection` | — | — | — | — | — |
 | `evals_harness.transcript` | — | — | — | — | — |
 | `evals_harness.last_assistant` | — | — | — | — | — |
-| `evals_harness.step_value` | — | — | — | 3.69× | — |
-| `evals_harness.usage` | — | — | — | 2.15× | — |
-| `evals_harness.result_json` | — | — | — | 5.23× | — |
-| `evals_harness.eval_environment` | 0.8 | 0.3 | 2.69× | — | 8.00× |
-| `evals_harness.prompt_step` | 0.1 | 0.1 | 0.96× | — | 8.00× |
-| `evals_harness.reload_step` | 0.1 | 0.1 | 0.74× | — | 8.00× |
-| `ai_crypto_model_data.manifest` | 87.5 | 7.0 | 12.47× | 12.67× | 20.00× |
-| `ai_crypto.hmac` | 163.5 | 7.2 | 22.58× | 22.38× | 30.00× |
-| `cli_models_rest.pattern_match` | 29.1 | 18.3 | 1.59× | 1.58× | 3.00× |
-| `cli_models_rest.auth_command` | 2.6 | 8.1 | 0.32× | 0.32× | 8.00× |
-| `cli_models_rest.login_selection` | 3.5 | 3.8 | 0.91× | 0.91× | 8.00× |
-| `image_runtime.dimensions` | 5.9 | 1.5 | 3.85× | 4.27× | 8.00× |
-| `image_runtime.mime_type` | 5.4 | 2.9 | 1.86× | 1.76× | 8.00× |
-| `image_runtime.lookup` | 1.0 | 0.3 | 3.61× | 3.64× | 8.00× |
-| `image_runtime.dimension_note` | 2.9 | 0.7 | 4.13× | 4.10× | 8.00× |
-| `image_runtime.api_provider` | 0.1 | 0.2 | 0.56× | 0.57× | 8.00× |
+| `evals_harness.step_value` | — | — | — | — | — |
+| `evals_harness.usage` | — | — | — | — | — |
+| `evals_harness.result_json` | — | — | — | — | — |
+| `evals_harness.eval_environment` | — | — | — | 2.69× | — |
+| `evals_harness.prompt_step` | — | — | — | 0.96× | — |
+| `evals_harness.reload_step` | — | — | — | 0.74× | — |
+| `evals_harness.make_eval_root` | 73.6 | 44.0 | 1.67× | — | 8.00× |
+| `evals_harness.normalize_step_type` | 0.3 | 0.3 | 1.00× | — | 8.00× |
+| `evals_harness.selected_eval_tools` | 19.9 | 13.2 | 1.51× | — | 8.00× |
+| `ai_crypto_model_data.manifest` | 85.6 | 8.0 | 10.68× | 12.47× | 20.00× |
+| `ai_crypto.hmac` | 153.7 | 7.8 | 19.59× | 22.58× | 30.00× |
+| `cli_models_rest.pattern_match` | 29.2 | 19.2 | 1.52× | 1.59× | 3.00× |
+| `cli_models_rest.auth_command` | 2.7 | 9.6 | 0.28× | 0.32× | 8.00× |
+| `cli_models_rest.login_selection` | 3.6 | 3.9 | 0.94× | 0.91× | 8.00× |
+| `image_runtime.dimensions` | 6.1 | 1.4 | 4.23× | 3.85× | 8.00× |
+| `image_runtime.mime_type` | 5.4 | 3.1 | 1.73× | 1.86× | 8.00× |
+| `image_runtime.lookup` | 1.0 | 0.3 | 3.65× | 3.61× | 8.00× |
+| `image_runtime.dimension_note` | 3.0 | 0.8 | 3.86× | 4.13× | 8.00× |
+| `image_runtime.api_provider` | 0.1 | 0.2 | 0.54× | 0.56× | 8.00× |
 | `image_runtime.output_modalities` | 0.2 | 0.2 | 0.92× | 0.92× | 8.00× |
-| `image_runtime.openrouter_content` | 1.3 | 0.3 | 5.09× | 5.28× | 8.00× |
-| `image_runtime.parse_data_image` | 0.5 | 0.3 | 1.65× | 1.69× | 8.00× |
-| `cli_print_rpc.jsonl_line` | 2.0 | 0.3 | 6.93× | 7.01× | 8.00× |
-| `cli_print_rpc.jsonl_read` | 0.4 | 12.3 | 0.03× | 0.03× | 8.00× |
-| `cli_print_rpc.clamp_thinking` | 1.0 | 2.5 | 0.40× | 0.38× | 8.00× |
-| `cli_print_rpc.session_stats` | 10.4 | 83.2 | 0.12× | 0.13× | 8.00× |
-| `tui_latex.render` | 52.2 | 23.9 | 2.18× | 2.19× | 3.00× |
-| `tui_latex.normalize_output` | 5.2 | 4.0 | 1.29× | 1.24× | 20.00× |
-| `tui_mermaid.render` | 56.5 | 130.7 | 0.43× | 0.41× | 8.00× |
-| `tui_mermaid.source_box` | 52.5 | 141.9 | 0.37× | 0.45× | 8.00× |
-| `tui_mermaid.transform` | 51.4 | 119.0 | 0.43× | 0.51× | 8.00× |
-| `tui_editor_helpers.fuzzy_match` | 1.2 | 3.5 | 0.33× | 0.33× | 8.00× |
-| `tui_theme_overlay.osc11_bg` | 3.7 | 3.1 | 1.21× | 1.22× | 8.00× |
+| `image_runtime.openrouter_content` | 1.4 | 0.3 | 5.22× | 5.09× | 8.00× |
+| `image_runtime.parse_data_image` | 0.6 | 0.3 | 1.62× | 1.65× | 8.00× |
+| `cli_print_rpc.jsonl_line` | 2.3 | 0.3 | 7.40× | 6.93× | 8.00× |
+| `cli_print_rpc.jsonl_read` | 0.4 | 9.0 | 0.05× | 0.03× | 8.00× |
+| `cli_print_rpc.clamp_thinking` | 1.0 | 2.6 | 0.40× | 0.40× | 8.00× |
+| `cli_print_rpc.session_stats` | 10.4 | 92.2 | 0.11× | 0.12× | 8.00× |
+| `tui_latex.render` | 52.0 | 24.6 | 2.12× | 2.18× | 3.00× |
+| `tui_latex.normalize_output` | 5.2 | 4.5 | 1.17× | 1.29× | 20.00× |
+| `tui_mermaid.render` | 57.4 | 148.4 | 0.39× | 0.43× | 8.00× |
+| `tui_mermaid.source_box` | 53.5 | 145.6 | 0.37× | 0.37× | 8.00× |
+| `tui_mermaid.transform` | 52.0 | 127.5 | 0.41× | 0.43× | 8.00× |
+| `tui_editor_helpers.fuzzy_match` | 1.2 | 3.5 | 0.34× | 0.33× | 8.00× |
+| `tui_theme_overlay.osc11_bg` | 3.7 | 3.1 | 1.20× | 1.21× | 8.00× |
 | `tui_theme_overlay.rgb_to_ansi_256` | — | — | — | — | — |
 | `tui_theme_overlay.parse_hex_color` | — | — | — | — | — |
 | `tui_theme_overlay.theme_foreground_ansi` | — | — | — | — | — |
-| `ai_support.estimate_text` | 0.4 | 0.2 | 2.74× | 2.54× | 8.00× |
-| `ai_support.context_overflow` | 1.4 | 1.5 | 1.00× | 0.98× | 8.00× |
-| `ai_support.grammar_delta` | 1.0 | 0.8 | 1.33× | 1.31× | 8.00× |
-| `ai_support.uuid_v7` | 2.3 | 8.7 | 0.26× | 0.26× | 8.00× |
-| `ai_support.auth_guidance` | 952.3 | 35.6 | 26.75× | 27.88× | 50.00× |
-| `tui_select_settings_loaders.filter` | 0.8 | 1.1 | 0.72× | 0.74× | 8.00× |
-| `tui_word_navigation.step` | 0.8 | 5.2 | 0.16× | 0.16× | 8.00× |
-| `tui_overlay.composite_line` | 18.4 | 21.9 | 0.84× | 0.85× | 8.00× |
-| `tui_kill_ring.push_peek` | 0.3 | 0.9 | 0.36× | 0.37× | 8.00× |
-| `tui_undo_stack.push_pop` | 0.2 | 2.3 | 0.11× | 0.10× | 8.00× |
-| `tui_autocomplete.suggest_apply` | 72.6 | 18.1 | 4.01× | 4.01× | 8.00× |
-| `tui_keybindings.resolve_match` | 24.5 | 17.3 | 1.41× | 1.41× | 8.00× |
-| `tui_stdin_buffer.process` | 1.5 | 7.0 | 0.22× | 0.23× | 8.00× |
-| `tui_input_component.edit` | 4.5 | 119.0 | 0.04× | 0.05× | 8.00× |
-| `tui_native_modifiers.pressed` | 1.4 | 0.2 | 7.21× | 7.25× | 8.00× |
-| `tui_settings_list.apply_filter` | 4.4 | 9.7 | 0.45× | 0.47× | 8.00× |
-| `ai_capabilities.short_hash` | 1.0 | 1.3 | 0.77× | 0.73× | 8.00× |
-| `ai_capabilities.deferred_tools` | 3.1 | 2.7 | 1.16× | 1.14× | 8.00× |
-| `ai_capabilities.event_stream` | 1.1 | 1.4 | 0.77× | 0.88× | 8.00× |
-| `ai_capabilities.http_proxy` | 4.6 | 11.2 | 0.41× | 0.41× | 8.00× |
+| `ai_support.estimate_text` | 0.4 | 0.2 | 2.35× | 2.74× | 8.00× |
+| `ai_support.context_overflow` | 1.5 | 1.6 | 0.93× | 1.00× | 8.00× |
+| `ai_support.grammar_delta` | 1.0 | 0.8 | 1.30× | 1.33× | 8.00× |
+| `ai_support.uuid_v7` | 2.3 | 10.2 | 0.23× | 0.26× | 8.00× |
+| `ai_support.auth_guidance` | 973.8 | 32.6 | 29.86× | 26.75× | 50.00× |
+| `tui_select_settings_loaders.filter` | 0.8 | 1.3 | 0.66× | 0.72× | 8.00× |
+| `tui_word_navigation.step` | 0.8 | 6.0 | 0.14× | 0.16× | 8.00× |
+| `tui_overlay.composite_line` | 18.8 | 22.1 | 0.85× | 0.84× | 8.00× |
+| `tui_kill_ring.push_peek` | 0.3 | 1.1 | 0.31× | 0.36× | 8.00× |
+| `tui_undo_stack.push_pop` | 0.3 | 2.5 | 0.10× | 0.11× | 8.00× |
+| `tui_autocomplete.suggest_apply` | 73.1 | 18.7 | 3.91× | 4.01× | 8.00× |
+| `tui_keybindings.resolve_match` | 24.5 | 15.2 | 1.61× | 1.41× | 8.00× |
+| `tui_stdin_buffer.process` | 1.5 | 6.7 | 0.22× | 0.22× | 8.00× |
+| `tui_input_component.edit` | 4.5 | 94.5 | 0.05× | 0.04× | 8.00× |
+| `tui_native_modifiers.pressed` | 1.4 | 0.2 | 6.61× | 7.21× | 8.00× |
+| `tui_settings_list.apply_filter` | 4.3 | 9.5 | 0.46× | 0.45× | 8.00× |
+| `ai_capabilities.short_hash` | 1.0 | 1.4 | 0.77× | 0.77× | 8.00× |
+| `ai_capabilities.deferred_tools` | 3.3 | 2.9 | 1.15× | 1.16× | 8.00× |
+| `ai_capabilities.event_stream` | 1.2 | 1.6 | 0.72× | 0.77× | 8.00× |
+| `ai_capabilities.http_proxy` | 4.8 | 11.6 | 0.41× | 0.41× | 8.00× |
 | `ai_capabilities.session_resources` | 1.1 | 9.1 | 0.12× | 0.12× | 8.00× |
-| `cli_support.strip_ansi` | 0.9 | 0.5 | 1.74× | 1.72× | 8.00× |
-| `cli_support.normalize_path` | 3.5 | 1.5 | 2.35× | 2.33× | 8.00× |
-| `cli_support.timings` | 4.0 | 2.9 | 1.41× | 1.47× | 8.00× |
-| `cli_support.event_bus` | 1.8 | 7.1 | 0.26× | 0.27× | 8.00× |
-| `cli_support.attribution_headers` | 2.1 | 8.0 | 0.26× | 0.26× | 8.00× |
-| `cli_support.shell_config` | 11.9 | 7.0 | 1.70× | 1.79× | 8.00× |
-| `cli_support.sanitize_output` | 0.7 | 1.7 | 0.44× | 0.44× | 8.00× |
-| `cli_support.git_source` | 19.9 | 54.6 | 0.36× | 0.37× | 8.00× |
-| `cli_support.user_agent` | 1.0 | 0.5 | 2.15× | 2.15× | 8.00× |
-| `cli_support.parse_changelog` | 19.3 | 7.0 | 2.76× | 2.97× | 8.00× |
-| `cli_support.experimental` | 0.1 | 4.8 | 0.03× | 0.02× | 8.00× |
-| `cli_interactive_controller.decode_entity` | 0.4 | 0.5 | 0.82× | 0.84× | 8.00× |
-| `cli_interactive_controller.wayland` | 0.2 | 0.3 | 0.68× | 0.73× | 8.00× |
-| `cli_interactive_controller.cwd_footer` | 0.5 | 3.1 | 0.16× | 0.16× | 8.00× |
-| `cli_interactive_controller.auth_type` | 0.1 | 0.2 | 0.71× | 0.72× | 8.00× |
-| `cli_interactive_controller.parse_auto_theme` | 0.8 | 0.7 | 1.06× | 1.04× | 8.00× |
-| `cli_interactive_controller.resolve_theme` | 0.5 | 0.8 | 0.66× | 0.67× | 8.00× |
-| `cli_selectors.session_search` | 34.6 | 15.4 | 2.25× | 1.97× | 8.00× |
-| `cli_selectors.key_text` | 5.5 | 2.3 | 2.41× | 2.49× | 8.00× |
-| `cli_selectors.fuzzy_filter` | 5.2 | 12.7 | 0.41× | 0.41× | 8.00× |
-| `cli_selectors.delete_query` | 1.2 | 10.0 | 0.12× | 0.12× | 8.00× |
-| `cli_selectors.visible_slice` | 1.1 | 1.1 | 0.97× | 0.95× | 8.00× |
-| `cli_selectors.move_index` | 0.2 | 0.5 | 0.33× | 0.33× | 8.00× |
-| `cli_selectors.align_left_right` | 15.8 | 3.5 | 4.46× | 4.53× | 8.00× |
-| `cli_selectors.fit_line` | 8.0 | 10.0 | 0.80× | 0.81× | 8.00× |
-| `cli_selectors.border_line` | 8.3 | 2.0 | 4.12× | 4.35× | 8.00× |
-| `cli_selectors.selected_line` | 17.7 | 10.8 | 1.64× | 1.62× | 8.00× |
-| `cli_selectors.muted_line` | 18.4 | 35.6 | 0.52× | 0.54× | 8.00× |
-| `cli_selectors.dim_line` | 17.1 | 28.0 | 0.61× | 0.64× | 8.00× |
-| `cli_selectors.modified_cursor_key` | 30.4 | 3.9 | 7.69× | 7.28× | 20.00× |
-| `cli_selectors.title_line` | 33.8 | 58.9 | 0.57× | 0.47× | 8.00× |
-| `cli_selectors.overlay_title_line` | 34.2 | 129.0 | 0.27× | 0.44× | 8.00× |
-| `cli_selectors.input_line` | 38.3 | 251.7 | 0.15× | 0.17× | 8.00× |
-| `cli_selectors.keybinding_text` | 32.4 | 24.1 | 1.34× | 1.34× | 8.00× |
-| `cli_selectors.keybinding_hint` | 57.2 | 24.9 | 2.29× | 2.93× | 8.00× |
-| `cli_selectors.session_format_age` | 0.4 | 0.7 | 0.54× | 0.52× | 8.00× |
-| `cli_selectors.session_record_label` | 1.3 | 1.2 | 1.07× | 1.05× | 8.00× |
-| `cli_selectors.session_shorten_path` | 4.3 | 0.7 | 5.86× | 6.07× | 8.00× |
-| `cli_selectors.session_quoted_search` | 8.7 | 4.3 | 2.02× | 1.93× | 8.00× |
-| `cli_selectors.session_thread_records` | 67.2 | 4.4 | 15.39× | 15.91× | 30.00× |
-| `cli_selectors.session_binding_label` | 32.4 | 27.7 | 1.17× | 1.62× | 8.00× |
-| `cli_selectors.session_same_path` | 11.9 | 24.1 | 0.50× | 0.49× | 8.00× |
-| `cli_selectors.session_quoted_p` | 0.1 | 0.3 | 0.40× | 0.40× | 8.00× |
-| `cli_selectors.session_named_p` | 0.3 | 0.3 | 0.98× | 1.00× | 8.00× |
-| `cli_selectors.settings_thinking_description` | 0.1 | 0.4 | 0.34× | 0.35× | 8.00× |
-| `cli_selectors.settings_display_value` | 0.3 | 0.2 | 1.71× | 1.75× | 8.00× |
-| `cli_selectors.settings_automatic_theme_setting` | 0.2 | 0.2 | 1.32× | 1.29× | 8.00× |
-| `cli_selectors.settings_active_automatic_theme` | 0.1 | 0.1 | 0.59× | 0.63× | 8.00× |
-| `cli_selectors.settings_cycle` | 1.3 | 0.3 | 3.95× | 3.89× | 8.00× |
-| `cli_selectors.settings_apply_filter` | 5.9 | 4.8 | 1.23× | 1.22× | 8.00× |
-| `cli_selectors.tree_entry_filtered` | 0.2 | 0.7 | 0.35× | 0.35× | 8.00× |
-| `cli_selectors.tree_query_matches` | 4.5 | 2.8 | 1.58× | 1.64× | 8.00× |
-| `cli_selectors.tree_entry_search_text` | 1.2 | 1.3 | 0.96× | 0.94× | 8.00× |
-| `cli_selectors.tree_settings_entry_p` | 0.1 | 0.3 | 0.44× | 0.47× | 8.00× |
-| `cli_selectors.tree_normalize_display_text` | 2.9 | 0.6 | 5.24× | 5.27× | 8.00× |
-| `cli_selectors.tree_status_labels` | 2.2 | 0.3 | 7.74× | 7.31× | 8.00× |
-| `cli_selectors.tree_shorten_path` | 1.5 | 1.4 | 1.09× | 1.09× | 8.00× |
-| `cli_selectors.tree_foldable_p` | 2.3 | 1.2 | 1.87× | 1.89× | 8.00× |
-| `cli_selectors.tree_tool_argument` | 1.7 | 0.3 | 5.50× | 5.59× | 8.00× |
-| `cli_selectors.tree_cycle_filter` | 2.8 | 0.3 | 8.81× | 8.74× | 8.00× |
-| `cli_selectors.tree_format_label_timestamp` | 7.2 | 4.9 | 1.46× | 1.43× | 8.00× |
-| `cli_selectors.tree_format_tool_call` | 11.0 | 2.5 | 4.41× | 4.39× | 8.00× |
-| `cli_selectors.tree_entry_display_text` | 22.0 | 2.9 | 7.48× | 6.98× | 8.00× |
-| `cli_selectors.tree_prefix` | 2.7 | 4.3 | 0.63× | 0.61× | 8.00× |
-| `cli_selectors.tree_visual_nodes` | 12.3 | 14.4 | 0.85× | 0.86× | 8.00× |
-| `cli_selectors.tree_horizontal_viewport` | 52.8 | 75.6 | 0.70× | 0.73× | 8.00× |
-| `cli_selectors.tree_help_keys` | 117.3 | 47.5 | 2.47× | 3.47× | 8.00× |
-| `cli_selectors.tree_help_key` | 33.3 | 22.7 | 1.47× | 1.56× | 8.00× |
-| `cli_selectors.tree_app_key_p` | 55.8 | 81.7 | 0.68× | 0.67× | 8.00× |
-| `cli_selectors.tree_help_lines` | 817.3 | 241.8 | 3.38× | 3.44× | 8.00× |
-| `cli_selectors.tree_active_path` | 7.9 | 4.1 | 1.91× | 1.86× | 8.00× |
-| `cli_selectors.tree_nearest_visible_id` | 8.8 | 4.2 | 2.08× | 1.77× | 8.00× |
-| `cli_selectors.tree_prioritize_active` | 11.6 | 7.2 | 1.62× | 1.36× | 8.00× |
-| `cli_selectors.tree_entry_map` | 8.8 | 5.2 | 1.69× | 1.65× | 8.00× |
-| `cli_selectors.tree_order_entries` | 27.8 | 19.6 | 1.42× | 1.36× | 8.00× |
-| `cli_selectors.tree_iso_timestamp` | 4.6 | 3.9 | 1.16× | 1.16× | 8.00× |
-| `cli_selectors.tree_rebuild_visible_maps` | 31.2 | 25.7 | 1.21× | 1.18× | 8.00× |
-| `cli_selectors.tree_apply_filter` | 54.0 | 16.3 | 3.32× | 3.10× | 8.00× |
-| `cli_selectors.tree_render_lines` | 749.9 | 1,113.1 | 0.67× | 0.71× | 8.00× |
-| `cli_selectors.tree_move` | 216.9 | 112.9 | 1.92× | 1.96× | 8.00× |
-| `cli_selectors.tree_fold_or_up` | 219.4 | 112.5 | 1.95× | 2.27× | 8.00× |
-| `cli_selectors.tree_unfold_or_down` | 246.3 | 119.7 | 2.06× | 2.37× | 8.00× |
-| `cli_selectors.tree_branch_segment_id` | 202.2 | 109.7 | 1.84× | 2.30× | 8.00× |
-| `cli_selectors.tree_set_query` | 64.6 | 105.7 | 0.61× | 0.75× | 8.00× |
-| `cli_selectors.tree_set_filter` | 55.5 | 97.9 | 0.57× | 0.65× | 8.00× |
-| `cli_selectors.tree_copy_selected` | 118.8 | 39.5 | 3.01× | 3.43× | 8.00× |
-| `cli_selectors.tree_toggle_label_timestamps` | 2.7 | 41.2 | 0.07× | 0.08× | 8.00× |
-| `cli_selectors.tree_start_label_edit` | 119.6 | 95.3 | 1.26× | 1.27× | 8.00× |
-| `cli_selectors.tree_confirm_label` | 179.2 | 77.1 | 2.32× | 2.43× | 8.00× |
-| `cli_selectors.tree_cancel_label` | 143.3 | 46.7 | 3.07× | 2.06× | 8.00× |
-| `cli_selectors.tree_handle_raw_input` | 617.4 | 166.8 | 3.70× | 3.76× | 8.00× |
-| `cli_selectors.tree_handle_event` | 160.8 | 188.8 | 0.85× | 0.94× | 8.00× |
-| `cli_selectors.tree_handle_label_event` | 127.8 | 156.7 | 0.82× | 0.81× | 8.00× |
-| `cli_selectors.tree_selected_entry` | 144.3 | 33.8 | 4.26× | 4.31× | 8.00× |
-| `cli_selectors.tree_selected_id` | 141.4 | 54.5 | 2.59× | 3.27× | 8.00× |
-| `cli_selectors.tree_select_id` | 145.5 | 36.4 | 4.00× | 3.90× | 8.00× |
-| `cli_selectors.tree_visible_ids` | 56.7 | 10.7 | 5.30× | 5.15× | 8.00× |
-| `cli_selectors.project_trust_options` | 41.9 | 28.8 | 1.45× | 1.47× | 8.00× |
-| `cli_selectors.trust_selector_selection` | 152.0 | 26.3 | 5.77× | 5.81× | 8.00× |
-| `cli_selectors.trust_decision_description` | 96.4 | 34.6 | 2.78× | 2.77× | 8.00× |
-| `cli_selectors.trust_selector_move` | 201.0 | 72.3 | 2.78× | 2.78× | 8.00× |
-| `cli_selectors.trust_selector_handle_event` | 208.0 | 74.0 | 2.81× | 2.81× | 8.00× |
-| `cli_selectors.trust_selector_handle_raw_input` | 438.7 | 145.2 | 3.02× | 3.02× | 8.00× |
-| `cli_selectors.trust_selector_ui_state` | 248.2 | 87.2 | 2.85× | 2.66× | 8.00× |
-| `cli_selectors.oauth_option_status_label` | 1.3 | 1.0 | 1.40× | 1.35× | 8.00× |
-| `cli_selectors.oauth_option_status_rendered` | 13.8 | 1.8 | 7.81× | 7.72× | 15.00× |
-| `cli_selectors.credential_entry_auth_type` | 0.4 | 0.3 | 1.21× | 1.18× | 8.00× |
-| `cli_selectors.oauth_environment_source_p` | 0.8 | 0.4 | 1.99× | 2.00× | 8.00× |
-| `cli_selectors.oauth_selector_selection` | 74.2 | 4.7 | 15.85× | 15.64× | 8.00× |
-| `cli_selectors.oauth_selector_apply_filter` | 79.9 | 9.0 | 8.91× | 8.79× | 8.00× |
-| `cli_selectors.oauth_selector_handle_event` | 89.6 | 9.2 | 9.70× | 9.38× | 8.00× |
-| `cli_selectors.oauth_selector_handle_raw_input` | 442.2 | 74.5 | 5.94× | 5.81× | 8.00× |
-| `cli_selectors.oauth_selector_search_text` | 1.2 | 0.5 | 2.18× | 2.28× | 8.00× |
-| `cli_selectors.login_auth_type_route` | 2.5 | 1.1 | 2.37× | 2.40× | 8.00× |
-| `cli_selectors.login_provider_options` | 8.3 | 7.1 | 1.17× | 1.23× | 8.00× |
-| `cli_selectors.logout_provider_options` | 7.2 | 4.1 | 1.73× | 1.75× | 8.00× |
-| `cli_selectors.login_method_selector_handle_event` | 2.7 | 2.7 | 0.99× | 1.06× | 8.00× |
-| `cli_selectors.oauth_selector_move` | 74.1 | 2.5 | 29.09× | 23.85× | 50.00× |
-| `cli_selectors.api_key_input_state_handle_event` | 5.1 | 4.5 | 1.14× | 1.08× | 8.00× |
-| `cli_selectors.login_method_selector_ui_state` | 508.1 | 52.4 | 9.70× | 10.16× | 12.00× |
-| `cli_selectors.api_key_input_ui_state` | 258.6 | 46.4 | 5.57× | 5.61× | 8.00× |
-| `cli_selectors.oauth_selector_ui_state` | 290.7 | 14.2 | 20.50× | 20.64× | 35.00× |
-| `cli_selectors.model_selector_search_text` | 3.6 | 0.7 | 5.42× | 6.03× | 8.00× |
-| `cli_selectors.qualified_model_id` | 1.6 | 0.3 | 5.55× | 5.54× | 8.00× |
-| `cli_selectors.model_selector_apply_filter` | 36.5 | 19.2 | 1.90× | 1.81× | 8.00× |
-| `cli_selectors.model_selector_move` | 24.5 | 5.6 | 4.38× | 4.42× | 20.00× |
-| `cli_selectors.model_selector_handle_event` | 36.4 | 21.7 | 1.68× | 1.73× | 8.00× |
-| `cli_selectors.model_selector_handle_raw_input` | 500.3 | 81.3 | 6.15× | 6.46× | 8.00× |
-| `cli_selectors.model_selector_set_query` | 38.7 | 36.0 | 1.08× | 1.08× | 8.00× |
-| `cli_selectors.model_selector_selected_model` | 39.7 | 15.5 | 2.57× | 2.58× | 12.00× |
-| `cli_selectors.model_selector_toggle_scope` | 41.5 | 16.7 | 2.49× | 2.57× | 8.00× |
-| `cli_selectors.model_selector_ui_state` | 423.9 | 28.9 | 14.67× | 14.99× | 35.00× |
-| `cli_selectors.scoped_models_selector_set_query` | 128.9 | 36.4 | 3.54× | 3.77× | 8.00× |
-| `cli_selectors.scoped_models_selector_move` | 112.0 | 8.9 | 12.59× | 12.88× | 20.00× |
-| `cli_selectors.scoped_models_selector_handle_event` | 146.0 | 25.4 | 5.75× | 5.92× | 12.00× |
-| `cli_selectors.scoped_models_selector_handle_raw_input` | 896.9 | 139.1 | 6.45× | 6.56× | 8.00× |
-| `cli_selectors.scoped_models_selector_ui_state` | 986.1 | 37.3 | 26.44× | 25.97× | 35.00× |
-| `cli_selectors.scoped_models_selector_sorted_ids` | 106.9 | 4.4 | 24.11× | 25.43× | 50.00× |
-| `cli_selectors.scoped_models_selector_counts` | 104.3 | 3.8 | 27.79× | 28.63× | 55.00× |
-| `cli_selectors.scoped_models_selector_toggle_selected` | 167.1 | 52.5 | 3.19× | 3.17× | 8.00× |
-| `cli_selectors.scoped_models_selector_target_ids` | 116.7 | 21.8 | 5.35× | 5.58× | 8.00× |
-| `cli_selectors.scoped_models_selector_enable_all` | 166.7 | 15.0 | 11.14× | 11.49× | 25.00× |
-| `cli_selectors.scoped_models_selector_toggle_provider` | 171.0 | 59.3 | 2.88× | 2.92× | 8.00× |
-| `cli_selectors.scoped_models_selector_clear_all` | 166.4 | 12.6 | 13.24× | 13.80× | 25.00× |
-| `cli_selectors.scoped_models_selector_reorder` | 162.7 | 48.1 | 3.38× | 3.47× | 8.00× |
-| `cli_selectors.scoped_models_selector_persist` | 124.3 | 8.1 | 15.38× | 15.90× | 25.00× |
-| `cli_selectors.scoped_models_selector_provider_count` | 109.0 | 3.1 | 35.22× | 35.75× | 50.00× |
-| `websocket_stream.stream_roundtrip` | 43,826.3 | 59.8 | 733.24× | 642.93× | 800.00× |
-| `cli_sdk.version_newer` | 2.9 | 12.0 | 0.24× | 0.25× | 8.00× |
-| `cli_sdk.cache_miss` | 1.7 | 4.7 | 0.35× | 0.34× | 8.00× |
-| `cli_sdk.cache_waste` | 2.7 | 6.6 | 0.40× | 0.38× | 8.00× |
-| `cli_sdk.thinking_level` | 0.6 | 0.2 | 2.46× | 2.39× | 8.00× |
-| `cli_sdk.session_list` | 11,070.4 | 6,742.1 | 1.64× | 1.83× | 8.00× |
-| `cli_sdk.agent_session` | 2,249.1 | 3,029.9 | 0.74× | 0.64× | 8.00× |
-| `cli_sdk.session_services` | 1,788.6 | 3,894.6 | 0.46× | 0.46× | 8.00× |
-| `cli_sdk.model_runtime` | 1,678.9 | 2,247.4 | 0.75× | 0.72× | 8.00× |
-| `provider_registry_defs.lookup` | 0.6 | 0.2 | 2.52× | 2.65× | 8.00× |
-| `provider_registry_defs.definition_ids` | 207.0 | 3.1 | 66.25× | 67.73× | 125.00× |
-| `provider_registry_defs.merge_environment` | 0.3 | 2.8 | 0.12× | 0.12× | 8.00× |
-| `provider_registry_defs.runtime_models` | 17.9 | 4.8 | 3.71× | 3.76× | 8.00× |
-| `provider_registry_defs.structured_api_key_login` | 0.2 | 212.9 | 0.00× | 0.00× | 8.00× |
+| `cli_support.strip_ansi` | 1.0 | 0.6 | 1.68× | 1.74× | 8.00× |
+| `cli_support.normalize_path` | 3.5 | 1.6 | 2.13× | 2.35× | 8.00× |
+| `cli_support.timings` | 4.2 | 3.2 | 1.29× | 1.41× | 8.00× |
+| `cli_support.event_bus` | 1.9 | 7.0 | 0.27× | 0.26× | 8.00× |
+| `cli_support.attribution_headers` | 2.1 | 8.1 | 0.27× | 0.26× | 8.00× |
+| `cli_support.shell_config` | 11.6 | 6.5 | 1.79× | 1.70× | 8.00× |
+| `cli_support.sanitize_output` | 0.8 | 1.8 | 0.43× | 0.44× | 8.00× |
+| `cli_support.git_source` | 20.1 | 54.2 | 0.37× | 0.36× | 8.00× |
+| `cli_support.user_agent` | 1.1 | 0.5 | 2.34× | 2.15× | 8.00× |
+| `cli_support.parse_changelog` | 19.2 | 6.5 | 2.94× | 2.76× | 8.00× |
+| `cli_support.experimental` | 0.1 | 5.6 | 0.02× | 0.03× | 8.00× |
+| `cli_interactive_controller.decode_entity` | 0.4 | 0.6 | 0.82× | 0.82× | 8.00× |
+| `cli_interactive_controller.wayland` | 0.2 | 0.3 | 0.68× | 0.68× | 8.00× |
+| `cli_interactive_controller.cwd_footer` | 0.5 | 3.2 | 0.17× | 0.16× | 8.00× |
+| `cli_interactive_controller.auth_type` | 0.1 | 0.2 | 0.72× | 0.71× | 8.00× |
+| `cli_interactive_controller.parse_auto_theme` | 0.8 | 0.7 | 1.12× | 1.06× | 8.00× |
+| `cli_interactive_controller.resolve_theme` | 0.5 | 0.8 | 0.70× | 0.66× | 8.00× |
+| `cli_selectors.session_search` | 36.1 | 16.4 | 2.21× | 2.25× | 8.00× |
+| `cli_selectors.key_text` | 5.5 | 2.3 | 2.37× | 2.41× | 8.00× |
+| `cli_selectors.fuzzy_filter` | 5.2 | 12.4 | 0.42× | 0.41× | 8.00× |
+| `cli_selectors.delete_query` | 1.2 | 10.3 | 0.12× | 0.12× | 8.00× |
+| `cli_selectors.visible_slice` | 1.2 | 1.2 | 1.08× | 0.97× | 8.00× |
+| `cli_selectors.move_index` | 0.1 | 0.5 | 0.33× | 0.33× | 8.00× |
+| `cli_selectors.align_left_right` | 16.2 | 3.9 | 4.16× | 4.46× | 8.00× |
+| `cli_selectors.fit_line` | 8.2 | 10.9 | 0.75× | 0.80× | 8.00× |
+| `cli_selectors.border_line` | 8.8 | 2.4 | 3.66× | 4.12× | 8.00× |
+| `cli_selectors.selected_line` | 18.0 | 10.8 | 1.67× | 1.64× | 8.00× |
+| `cli_selectors.muted_line` | 18.9 | 37.7 | 0.50× | 0.52× | 8.00× |
+| `cli_selectors.dim_line` | 17.4 | 29.6 | 0.59× | 0.61× | 8.00× |
+| `cli_selectors.modified_cursor_key` | 31.2 | 4.2 | 7.45× | 7.69× | 20.00× |
+| `cli_selectors.title_line` | 34.7 | 62.6 | 0.55× | 0.57× | 8.00× |
+| `cli_selectors.overlay_title_line` | 34.9 | 124.7 | 0.28× | 0.27× | 8.00× |
+| `cli_selectors.input_line` | 38.7 | 252.7 | 0.15× | 0.15× | 8.00× |
+| `cli_selectors.keybinding_text` | 33.1 | 24.9 | 1.33× | 1.34× | 8.00× |
+| `cli_selectors.keybinding_hint` | 58.5 | 25.3 | 2.31× | 2.29× | 8.00× |
+| `cli_selectors.session_format_age` | 0.4 | 0.7 | 0.53× | 0.54× | 8.00× |
+| `cli_selectors.session_record_label` | 1.3 | 1.2 | 1.07× | 1.07× | 8.00× |
+| `cli_selectors.session_shorten_path` | 4.4 | 0.9 | 5.13× | 5.86× | 8.00× |
+| `cli_selectors.session_quoted_search` | 8.9 | 4.2 | 2.11× | 2.02× | 8.00× |
+| `cli_selectors.session_thread_records` | 66.1 | 4.5 | 14.65× | 15.39× | 30.00× |
+| `cli_selectors.session_binding_label` | 32.8 | 27.9 | 1.18× | 1.17× | 8.00× |
+| `cli_selectors.session_same_path` | 11.8 | 24.8 | 0.48× | 0.50× | 8.00× |
+| `cli_selectors.session_quoted_p` | 0.2 | 0.3 | 0.51× | 0.40× | 8.00× |
+| `cli_selectors.session_named_p` | 0.4 | 0.3 | 1.38× | 0.98× | 8.00× |
+| `cli_selectors.settings_thinking_description` | 0.2 | 0.3 | 0.56× | 0.34× | 8.00× |
+| `cli_selectors.settings_display_value` | 0.5 | 0.2 | 2.59× | 1.71× | 8.00× |
+| `cli_selectors.settings_automatic_theme_setting` | 0.3 | 0.2 | 1.84× | 1.32× | 8.00× |
+| `cli_selectors.settings_active_automatic_theme` | 0.1 | 0.1 | 0.65× | 0.59× | 8.00× |
+| `cli_selectors.settings_cycle` | 1.4 | 0.3 | 4.25× | 3.95× | 8.00× |
+| `cli_selectors.settings_apply_filter` | 6.4 | 5.1 | 1.24× | 1.23× | 8.00× |
+| `cli_selectors.tree_entry_filtered` | 0.3 | 0.6 | 0.46× | 0.35× | 8.00× |
+| `cli_selectors.tree_query_matches` | 4.9 | 2.9 | 1.68× | 1.58× | 8.00× |
+| `cli_selectors.tree_entry_search_text` | 1.3 | 1.3 | 1.00× | 0.96× | 8.00× |
+| `cli_selectors.tree_settings_entry_p` | 0.1 | 0.3 | 0.50× | 0.44× | 8.00× |
+| `cli_selectors.tree_normalize_display_text` | 3.1 | 0.6 | 5.68× | 5.24× | 8.00× |
+| `cli_selectors.tree_status_labels` | 2.6 | 0.3 | 8.87× | 7.74× | 8.00× |
+| `cli_selectors.tree_shorten_path` | 1.7 | 1.4 | 1.17× | 1.09× | 8.00× |
+| `cli_selectors.tree_foldable_p` | 2.6 | 1.2 | 2.12× | 1.87× | 8.00× |
+| `cli_selectors.tree_tool_argument` | 1.9 | 0.3 | 6.17× | 5.50× | 8.00× |
+| `cli_selectors.tree_cycle_filter` | 3.1 | 0.3 | 9.89× | 8.81× | 8.00× |
+| `cli_selectors.tree_format_label_timestamp` | 7.4 | 5.0 | 1.48× | 1.46× | 8.00× |
+| `cli_selectors.tree_format_tool_call` | 11.1 | 2.5 | 4.46× | 4.41× | 8.00× |
+| `cli_selectors.tree_entry_display_text` | 22.3 | 3.2 | 6.96× | 7.48× | 8.00× |
+| `cli_selectors.tree_prefix` | 2.8 | 4.8 | 0.59× | 0.63× | 8.00× |
+| `cli_selectors.tree_visual_nodes` | 12.6 | 14.5 | 0.87× | 0.85× | 8.00× |
+| `cli_selectors.tree_horizontal_viewport` | 53.8 | 77.9 | 0.69× | 0.70× | 8.00× |
+| `cli_selectors.tree_help_keys` | 118.6 | 45.4 | 2.61× | 2.47× | 8.00× |
+| `cli_selectors.tree_help_key` | 33.4 | 21.2 | 1.57× | 1.47× | 8.00× |
+| `cli_selectors.tree_app_key_p` | 56.6 | 83.7 | 0.68× | 0.68× | 8.00× |
+| `cli_selectors.tree_help_lines` | 848.7 | 247.8 | 3.42× | 3.38× | 8.00× |
+| `cli_selectors.tree_active_path` | 8.3 | 4.0 | 2.05× | 1.91× | 8.00× |
+| `cli_selectors.tree_nearest_visible_id` | 9.1 | 4.4 | 2.07× | 2.08× | 8.00× |
+| `cli_selectors.tree_prioritize_active` | 11.9 | 7.3 | 1.63× | 1.62× | 8.00× |
+| `cli_selectors.tree_entry_map` | 9.1 | 5.0 | 1.81× | 1.69× | 8.00× |
+| `cli_selectors.tree_order_entries` | 28.7 | 19.5 | 1.47× | 1.42× | 8.00× |
+| `cli_selectors.tree_iso_timestamp` | 4.7 | 4.0 | 1.16× | 1.16× | 8.00× |
+| `cli_selectors.tree_rebuild_visible_maps` | 31.4 | 25.9 | 1.21× | 1.21× | 8.00× |
+| `cli_selectors.tree_apply_filter` | 54.4 | 16.9 | 3.22× | 3.32× | 8.00× |
+| `cli_selectors.tree_render_lines` | 770.9 | 1,200.1 | 0.64× | 0.67× | 8.00× |
+| `cli_selectors.tree_move` | 224.8 | 116.2 | 1.93× | 1.92× | 8.00× |
+| `cli_selectors.tree_fold_or_up` | 227.0 | 108.2 | 2.10× | 1.95× | 8.00× |
+| `cli_selectors.tree_unfold_or_down` | 256.0 | 116.9 | 2.19× | 2.06× | 8.00× |
+| `cli_selectors.tree_branch_segment_id` | 209.0 | 115.4 | 1.81× | 1.84× | 8.00× |
+| `cli_selectors.tree_set_query` | 67.4 | 94.6 | 0.71× | 0.61× | 8.00× |
+| `cli_selectors.tree_set_filter` | 57.9 | 96.4 | 0.60× | 0.57× | 8.00× |
+| `cli_selectors.tree_copy_selected` | 125.3 | 38.6 | 3.24× | 3.01× | 8.00× |
+| `cli_selectors.tree_toggle_label_timestamps` | 3.0 | 54.3 | 0.06× | 0.07× | 8.00× |
+| `cli_selectors.tree_start_label_edit` | 124.5 | 92.4 | 1.35× | 1.26× | 8.00× |
+| `cli_selectors.tree_confirm_label` | 185.9 | 101.1 | 1.84× | 2.32× | 8.00× |
+| `cli_selectors.tree_cancel_label` | 148.5 | 95.2 | 1.56× | 3.07× | 8.00× |
+| `cli_selectors.tree_handle_raw_input` | 633.6 | 193.9 | 3.27× | 3.70× | 8.00× |
+| `cli_selectors.tree_handle_event` | 161.7 | 231.2 | 0.70× | 0.85× | 8.00× |
+| `cli_selectors.tree_handle_label_event` | 128.6 | 190.0 | 0.68× | 0.82× | 8.00× |
+| `cli_selectors.tree_selected_entry` | 163.5 | 42.5 | 3.85× | 4.26× | 8.00× |
+| `cli_selectors.tree_selected_id` | 143.2 | 37.4 | 3.83× | 2.59× | 8.00× |
+| `cli_selectors.tree_select_id` | 147.4 | 36.5 | 4.04× | 4.00× | 8.00× |
+| `cli_selectors.tree_visible_ids` | 57.7 | 12.6 | 4.58× | 5.30× | 8.00× |
+| `cli_selectors.project_trust_options` | 42.8 | 28.1 | 1.52× | 1.45× | 8.00× |
+| `cli_selectors.trust_selector_selection` | 160.1 | 25.9 | 6.17× | 5.77× | 8.00× |
+| `cli_selectors.trust_decision_description` | 100.3 | 34.7 | 2.89× | 2.78× | 8.00× |
+| `cli_selectors.trust_selector_move` | 210.4 | 81.2 | 2.59× | 2.78× | 8.00× |
+| `cli_selectors.trust_selector_handle_event` | 220.3 | 75.5 | 2.92× | 2.81× | 8.00× |
+| `cli_selectors.trust_selector_handle_raw_input` | 481.3 | 149.5 | 3.22× | 3.02× | 8.00× |
+| `cli_selectors.trust_selector_ui_state` | 266.1 | 87.9 | 3.03× | 2.85× | 8.00× |
+| `cli_selectors.oauth_option_status_label` | 1.7 | 1.2 | 1.42× | 1.40× | 8.00× |
+| `cli_selectors.oauth_option_status_rendered` | 15.2 | 2.3 | 6.75× | 7.81× | 15.00× |
+| `cli_selectors.credential_entry_auth_type` | 0.5 | 0.3 | 1.48× | 1.21× | 8.00× |
+| `cli_selectors.oauth_environment_source_p` | 0.8 | 0.4 | 2.12× | 1.99× | 8.00× |
+| `cli_selectors.oauth_selector_selection` | 77.7 | 4.7 | 16.46× | 15.85× | 8.00× |
+| `cli_selectors.oauth_selector_apply_filter` | 83.0 | 8.9 | 9.31× | 8.91× | 8.00× |
+| `cli_selectors.oauth_selector_handle_event` | 91.2 | 9.9 | 9.22× | 9.70× | 8.00× |
+| `cli_selectors.oauth_selector_handle_raw_input` | 460.3 | 76.7 | 6.00× | 5.94× | 8.00× |
+| `cli_selectors.oauth_selector_search_text` | 1.3 | 0.5 | 2.42× | 2.18× | 8.00× |
+| `cli_selectors.login_auth_type_route` | 2.6 | 1.1 | 2.50× | 2.37× | 8.00× |
+| `cli_selectors.login_provider_options` | 8.8 | 7.1 | 1.25× | 1.17× | 8.00× |
+| `cli_selectors.logout_provider_options` | 7.4 | 4.1 | 1.80× | 1.73× | 8.00× |
+| `cli_selectors.login_method_selector_handle_event` | 2.9 | 3.2 | 0.89× | 0.99× | 8.00× |
+| `cli_selectors.oauth_selector_move` | 75.8 | 2.5 | 29.80× | 29.09× | 50.00× |
+| `cli_selectors.api_key_input_state_handle_event` | 5.3 | 5.3 | 1.00× | 1.14× | 8.00× |
+| `cli_selectors.login_method_selector_ui_state` | 524.2 | 52.2 | 10.05× | 9.70× | 12.00× |
+| `cli_selectors.api_key_input_ui_state` | 266.5 | 45.7 | 5.83× | 5.57× | 8.00× |
+| `cli_selectors.oauth_selector_ui_state` | 297.0 | 14.0 | 21.24× | 20.50× | 35.00× |
+| `cli_selectors.model_selector_search_text` | 3.8 | 0.6 | 5.96× | 5.42× | 8.00× |
+| `cli_selectors.qualified_model_id` | 1.7 | 0.3 | 6.08× | 5.55× | 8.00× |
+| `cli_selectors.model_selector_apply_filter` | 37.4 | 19.7 | 1.90× | 1.90× | 8.00× |
+| `cli_selectors.model_selector_move` | 25.1 | 5.7 | 4.42× | 4.38× | 20.00× |
+| `cli_selectors.model_selector_handle_event` | 37.3 | 21.8 | 1.71× | 1.68× | 8.00× |
+| `cli_selectors.model_selector_handle_raw_input` | 523.4 | 81.7 | 6.41× | 6.15× | 8.00× |
+| `cli_selectors.model_selector_set_query` | 39.6 | 37.1 | 1.07× | 1.08× | 8.00× |
+| `cli_selectors.model_selector_selected_model` | 40.4 | 15.8 | 2.56× | 2.57× | 12.00× |
+| `cli_selectors.model_selector_toggle_scope` | 42.8 | 18.3 | 2.34× | 2.49× | 8.00× |
+| `cli_selectors.model_selector_ui_state` | 433.1 | 28.7 | 15.07× | 14.67× | 35.00× |
+| `cli_selectors.scoped_models_selector_set_query` | 178.5 | 36.6 | 4.88× | 3.54× | 8.00× |
+| `cli_selectors.scoped_models_selector_move` | 114.7 | 8.7 | 13.24× | 12.59× | 20.00× |
+| `cli_selectors.scoped_models_selector_handle_event` | 149.6 | 26.2 | 5.71× | 5.75× | 12.00× |
+| `cli_selectors.scoped_models_selector_handle_raw_input` | 917.6 | 144.9 | 6.33× | 6.45× | 8.00× |
+| `cli_selectors.scoped_models_selector_ui_state` | 1,013.9 | 37.7 | 26.90× | 26.44× | 35.00× |
+| `cli_selectors.scoped_models_selector_sorted_ids` | 109.4 | 4.4 | 25.11× | 24.11× | 50.00× |
+| `cli_selectors.scoped_models_selector_counts` | 104.8 | 3.6 | 28.85× | 27.79× | 55.00× |
+| `cli_selectors.scoped_models_selector_toggle_selected` | 172.0 | 55.2 | 3.12× | 3.19× | 8.00× |
+| `cli_selectors.scoped_models_selector_target_ids` | 119.6 | 21.4 | 5.58× | 5.35× | 8.00× |
+| `cli_selectors.scoped_models_selector_enable_all` | 168.6 | 14.5 | 11.61× | 11.14× | 25.00× |
+| `cli_selectors.scoped_models_selector_toggle_provider` | 174.3 | 68.3 | 2.55× | 2.88× | 8.00× |
+| `cli_selectors.scoped_models_selector_clear_all` | 169.8 | 12.3 | 13.81× | 13.24× | 25.00× |
+| `cli_selectors.scoped_models_selector_reorder` | 165.6 | 47.1 | 3.52× | 3.38× | 8.00× |
+| `cli_selectors.scoped_models_selector_persist` | 127.4 | 7.8 | 16.26× | 15.38× | 25.00× |
+| `cli_selectors.scoped_models_selector_provider_count` | 114.3 | 3.4 | 33.24× | 35.22× | 50.00× |
+| `websocket_stream.stream_roundtrip` | 44,009.9 | 59.8 | 735.89× | 733.24× | 800.00× |
+| `cli_sdk.version_newer` | 2.9 | 12.1 | 0.24× | 0.24× | 8.00× |
+| `cli_sdk.cache_miss` | 1.7 | 4.8 | 0.35× | 0.35× | 8.00× |
+| `cli_sdk.cache_waste` | 2.8 | 7.3 | 0.38× | 0.40× | 8.00× |
+| `cli_sdk.thinking_level` | 0.6 | 0.2 | 2.48× | 2.46× | 8.00× |
+| `cli_sdk.session_list` | 11,417.3 | 6,111.9 | 1.87× | 1.64× | 8.00× |
+| `cli_sdk.agent_session` | 2,294.3 | 3,216.9 | 0.71× | 0.74× | 8.00× |
+| `cli_sdk.session_services` | 1,812.1 | 4,044.5 | 0.45× | 0.46× | 8.00× |
+| `cli_sdk.model_runtime` | 1,814.4 | 2,312.3 | 0.78× | 0.75× | 8.00× |
+| `provider_registry_defs.lookup` | 0.7 | 0.3 | 2.34× | 2.52× | 8.00× |
+| `provider_registry_defs.definition_ids` | 216.3 | 3.5 | 62.47× | 66.25× | 125.00× |
+| `provider_registry_defs.merge_environment` | 0.4 | 2.8 | 0.13× | 0.12× | 8.00× |
+| `provider_registry_defs.runtime_models` | 18.0 | 4.9 | 3.68× | 3.71× | 8.00× |
+| `provider_registry_defs.structured_api_key_login` | 0.2 | 213.1 | 0.00× | 0.00× | 8.00× |
 | `core_rest.cancellation_abort` | — | — | — | — | — |
 | `core_rest.redacted_secrets` | — | — | — | — | — |
 | `core_rest.threads_cleanup` | — | — | — | — | — |
-| `skill_prompt_load.build_prompt` | 1,028.4 | 1.3 | 774.54× | 805.28× | 3000.00× |
-| `cli_bootstrap_sessions.coding_tools` | 6.7 | 4.4 | 1.51× | 1.75× | 8.00× |
-| `cli_bootstrap_sessions.bootstrap_auth` | 2,007.7 | 2,316.3 | 0.87× | 0.85× | 8.00× |
-| `ai_runtime_faux.blocks` | 0.1 | 0.2 | 0.80× | 0.86× | 8.00× |
-| `http_transport.parse_url` | 0.8 | 0.8 | 0.92× | 0.90× | 8.00× |
-| `session_pipeline.session_load` | 1,520.3 | 1,689.7 | 0.90× | 1.11× | 9.00× |
-| `session_pipeline.context_walk` | 1.6 | 93.6 | 0.02× | 0.02× | 2.00× |
-| `session_pipeline.session_leaf_id` | 0.0 | 0.1 | 0.32× | 0.24× | 8.00× |
-| `storage_journal.journal_read` | 1,291.8 | 1,532.7 | 0.84× | 0.99× | 8.00× |
-| `storage_journal.journal_append` | 1,048.5 | 908.3 | 1.15× | 1.07× | 12.00× |
-| `storage_journal.journal_entry_count` | 0.2 | 1.4 | 0.11× | 0.07× | 8.00× |
-| `sqlite_session.open_walk` | 4,424.6 | 8,408.0 | 0.53× | 0.54× | 1.50× |
-| `tool_read.text_file` | 1,024.6 | 3,159.7 | 0.32× | 0.36× | 8.00× |
-| `tool_grep.context_file` | 10,227.7 | 9,786.8 | 1.05× | 0.95× | 3.00× |
-| `agent_tool_loop.roundtrip` | 30.6 | 166.5 | 0.18× | 0.22× | 1.50× |
-| `agent_tool_loop.tool_path` | 10.8 | 5.3 | 2.06× | 2.18× | 8.00× |
-| `agent_tool_loop.line_ending` | 0.5 | 0.4 | 1.21× | 1.14× | 8.00× |
-| `agent_tool_loop.tool_result_digest` | 118.7 | 1.7 | 69.31× | 79.20× | 125.00× |
-| `agent_tool_loop.runtime` | 5.2 | 1.4 | 3.66× | 4.08× | 8.00× |
-| `session_compact.compact` | 20.7 | 29.2 | 0.71× | 0.47× | 20.00× |
-| `session_compact.branch_summarize` | 22.1 | 21.4 | 1.03× | 1.11× | 20.00× |
-| `session_compact.prepare_branch_entries` | 10.6 | 4.3 | 2.50× | 2.31× | 20.00× |
-| `text_truncation.truncate_middle` | 852.9 | 7,960.8 | 0.11× | 0.10× | 8.00× |
+| `skill_prompt_load.build_prompt` | 1,059.8 | 1.3 | 806.73× | 774.54× | 3000.00× |
+| `cli_bootstrap_sessions.coding_tools` | 7.1 | 4.4 | 1.62× | 1.51× | 8.00× |
+| `cli_bootstrap_sessions.bootstrap_auth` | 2,139.7 | 2,326.4 | 0.92× | 0.87× | 8.00× |
+| `ai_runtime_faux.blocks` | 0.2 | 0.2 | 0.93× | 0.80× | 8.00× |
+| `http_transport.parse_url` | 0.8 | 0.9 | 0.98× | 0.92× | 8.00× |
+| `session_pipeline.session_load` | 1,589.5 | 1,696.7 | 0.94× | 0.90× | 9.00× |
+| `session_pipeline.context_walk` | 1.7 | 104.5 | 0.02× | 0.02× | 2.00× |
+| `session_pipeline.session_leaf_id` | 0.0 | 0.1 | 0.30× | 0.32× | 8.00× |
+| `storage_journal.journal_read` | 1,318.3 | 1,543.6 | 0.85× | 0.84× | 8.00× |
+| `storage_journal.journal_append` | 1,050.5 | 1,013.4 | 1.04× | 1.15× | 12.00× |
+| `storage_journal.journal_entry_count` | 0.2 | 1.8 | 0.09× | 0.11× | 8.00× |
+| `sqlite_session.open_walk` | 4,532.7 | 7,841.3 | 0.58× | 0.53× | 1.50× |
+| `tool_read.text_file` | 1,012.9 | 3,212.6 | 0.32× | 0.32× | 8.00× |
+| `tool_grep.context_file` | 10,512.7 | 10,439.6 | 1.01× | 1.05× | 3.00× |
+| `agent_tool_loop.roundtrip` | 30.3 | 154.0 | 0.20× | 0.18× | 1.50× |
+| `agent_tool_loop.tool_path` | 10.8 | 5.6 | 1.93× | 2.06× | 8.00× |
+| `agent_tool_loop.line_ending` | 0.5 | 0.4 | 1.23× | 1.21× | 8.00× |
+| `agent_tool_loop.tool_result_digest` | 120.0 | 2.9 | 41.09× | 69.31× | 125.00× |
+| `agent_tool_loop.runtime` | 5.2 | 1.6 | 3.17× | 3.66× | 8.00× |
+| `session_compact.compact` | 20.6 | 52.9 | 0.39× | 0.71× | 20.00× |
+| `session_compact.branch_summarize` | 22.7 | 19.9 | 1.14× | 1.03× | 20.00× |
+| `session_compact.prepare_branch_entries` | 10.5 | 5.5 | 1.91× | 2.50× | 20.00× |
+| `text_truncation.truncate_middle` | 850.7 | 8,447.7 | 0.10× | 0.11× | 8.00× |
 
 | recordedAt (UTC) | label | git | quick | ratio_gate | append | read | load | list_models_render |
 |---|---|---|---|---|---:|---:|---:|---:|
 | 2026-08-14T12:23:00Z | paired-paths-quick | `ad8e541b9232` | yes | informational-quick-run | 7.67× | 4.29× | 3.70× | 2.01× |
-| 2026-08-14T16:41:33Z | paired-paths | `c287896cec9e` | no | enforced | 8.45× | 5.39× | 4.98× | 2.99× |
 | 2026-08-14T16:48:03Z | paired-paths | `c287896cec9e` | no | enforced | 2.15× | 5.05× | 5.79× | 2.91× |
 | 2026-08-14T17:38:30Z | paired-paths | `6211fff2f2d7` | no | enforced | 1.90× | 5.42× | 6.71× | 2.78× |
 | 2026-08-14T21:24:07Z | paired-paths | `34f771b392d1` | no | enforced | 2.20× | 3.92× | 4.48× | 2.91× |
@@ -1019,26 +1021,14 @@ Previous: `paired-paths` (2026-08-27T19:25:36Z) on `cursor`, git `8c1fc72b060f`,
 | 2026-08-19T19:22:30Z | paired-paths | `d939b3bd4b90` | no | enforced | 0.79× | 1.90× | 2.05× | 0.07× |
 | 2026-08-20T02:01:48Z | paired-paths | `e2a4dfad621a` | no | enforced | 0.96× | 1.97× | 2.09× | 0.07× |
 | 2026-08-20T02:15:51Z | paired-paths | `9a9a96d73019` | no | enforced | 0.81× | 1.65× | 1.85× | 0.07× |
-| 2026-08-20T02:32:58Z | paired-paths | `93f2dd72d14d` | no | enforced | 0.92× | 1.69× | 1.81× | 0.07× |
-| 2026-08-20T02:34:20Z | paired-paths | `93f2dd72d14d` | no | enforced | 0.87× | 1.54× | 1.86× | 0.07× |
 | 2026-08-20T02:35:14Z | paired-paths | `93f2dd72d14d` | no | enforced | 0.87× | 1.54× | 1.86× | 0.07× |
-| 2026-08-20T03:02:27Z | paired-paths-quick | `d764ffbceda6` | yes | informational-quick-run | 1.01× | 1.85× | 1.84× | 0.07× |
 | 2026-08-20T03:03:42Z | paired-paths | `d764ffbceda6` | no | enforced | 0.84× | 1.78× | 1.50× | 0.06× |
 | 2026-08-20T03:28:17Z | paired-paths | `a7a31ae8c9f7` | no | enforced | 0.83× | 1.61× | 1.59× | 0.06× |
 | 2026-08-20T03:49:44Z | paired-paths | `66b7403b6db4` | no | enforced | 0.84× | 2.04× | 1.37× | 0.07× |
-| 2026-08-20T04:10:56Z | paired-paths | `3dbe024dbc32` | no | enforced | 0.53× | 2.17× | 2.05× | 0.07× |
 | 2026-08-20T04:12:32Z | paired-paths | `3dbe024dbc32` | no | enforced | 0.93× | 1.57× | 1.55× | 0.06× |
-| 2026-08-20T04:32:46Z | paired-paths-quick | `a21baf11c6cf` | yes | informational-quick-run | 0.92× | 2.42× | 1.07× | 0.05× |
-| 2026-08-20T04:33:21Z | paired-paths | `a21baf11c6cf` | no | enforced | 0.90× | 1.65× | 1.66× | 0.06× |
 | 2026-08-20T04:34:08Z | paired-paths | `a21baf11c6cf` | no | enforced | 0.90× | 1.65× | 1.66× | 0.06× |
-| 2026-08-20T04:58:28Z | paired-paths-quick | `3c4567dde056` | yes | informational-quick-run | 0.76× | 1.51× | 1.73× | 0.05× |
-| 2026-08-20T04:59:14Z | paired-paths | `3c4567dde056` | no | enforced | 0.87× | 2.05× | 2.03× | 0.07× |
 | 2026-08-20T04:59:50Z | paired-paths | `3c4567dde056` | no | enforced | 0.87× | 2.05× | 2.03× | 0.07× |
-| 2026-08-20T05:15:57Z | paired-paths-quick | `b4eb4e274d27` | yes | informational-quick-run | 0.75× | 1.57× | 1.69× | 0.06× |
-| 2026-08-20T05:16:33Z | paired-paths | `b4eb4e274d27` | no | enforced | 0.83× | 1.85× | 2.12× | 0.07× |
 | 2026-08-20T05:17:10Z | paired-paths | `b4eb4e274d27` | no | enforced | 0.83× | 1.85× | 2.12× | 0.07× |
-| 2026-08-20T05:35:42Z | paired-paths-quick | `1070bef14ac5` | yes | informational-quick-run | 0.60× | 1.70× | 0.52× | 0.06× |
-| 2026-08-20T05:36:26Z | paired-paths | `1070bef14ac5` | no | enforced | 0.95× | 1.46× | 2.17× | 0.06× |
 | 2026-08-20T05:39:57Z | paired-paths | `1070bef14ac5` | no | enforced | 0.95× | 1.46× | 2.17× | 0.06× |
 | 2026-08-20T06:02:26Z | paired-paths | `1a12057c3f7d` | no | enforced | 0.89× | 1.97× | 1.91× | 0.08× |
 | 2026-08-20T06:24:43Z | paired-paths | `a54c022f088a` | no | enforced | 0.64× | 1.37× | 1.79× | 0.08× |
@@ -1156,330 +1146,135 @@ Previous: `paired-paths` (2026-08-27T19:25:36Z) on `cursor`, git `8c1fc72b060f`,
 | 2026-08-22T04:59:02Z | paired-paths | `23ba2b271727` | no | enforced | 0.71× | 0.98× | 1.20× | 0.08× |
 | 2026-08-22T05:10:19Z | paired-paths | `39ff7f5c4053` | no | enforced | 0.90× | 1.00× | 0.94× | 0.07× |
 | 2026-08-22T05:19:54Z | paired-paths | `450b13948bd3` | no | enforced | 0.89× | 0.96× | 1.04× | 0.07× |
-| 2026-08-22T05:35:06Z | paired-paths-quick | `9b37f5914d48` | yes | informational-quick-run | 1.14× | 1.10× | 1.08× | 0.04× |
 | 2026-08-22T05:35:47Z | paired-paths | `9b37f5914d48` | no | enforced | 0.72× | 1.02× | 1.15× | 0.06× |
-| 2026-08-22T05:49:54Z | paired-paths-quick | `7c9e733a6577` | yes | informational-quick-run | 1.14× | 0.93× | 0.92× | 0.06× |
 | 2026-08-22T05:51:20Z | paired-paths | `7c9e733a6577` | no | enforced | 0.86× | 0.78× | 1.10× | 0.08× |
-| 2026-08-22T06:34:09Z | paired-paths-quick | `2d0f5259d29a` | yes | informational-quick-run | 0.44× | 0.87× | 1.30× | 0.04× |
 | 2026-08-22T06:35:49Z | paired-paths | `2d0f5259d29a` | no | enforced | 0.58× | 0.84× | 0.69× | 0.07× |
-| 2026-08-22T06:59:36Z | paired-paths-quick | `626beef4f18d` | yes | informational-quick-run | 1.26× | 1.00× | 1.75× | 0.09× |
 | 2026-08-22T07:01:13Z | paired-paths | `626beef4f18d` | no | enforced | 0.86× | 0.93× | 1.16× | 0.07× |
 | 2026-08-22T07:30:08Z | paired-paths-quick | `5496438807a3` | yes | informational-quick-run | 0.90× | 1.80× | 0.83× | 0.06× |
-| 2026-08-22T07:48:57Z | paired-paths-quick | `1445967bf893` | yes | informational-quick-run | 0.31× | 0.62× | 0.35× | 0.04× |
 | 2026-08-22T07:50:34Z | paired-paths | `1445967bf893` | no | enforced | 0.57× | 0.28× | 0.46× | 0.06× |
-| 2026-08-22T08:08:52Z | paired-paths-quick | `6c2f97c613e7` | yes | informational-quick-run | 0.46× | 1.07× | 0.90× | 0.04× |
 | 2026-08-22T08:15:04Z | paired-paths | `6c2f97c613e7` | no | enforced | 0.99× | 1.19× | 1.28× | 0.06× |
-| 2026-08-22T09:08:12Z | paired-paths-quick | `b9f09ce89ed4` | yes | informational-quick-run | 0.76× | 1.60× | 1.06× | 0.05× |
 | 2026-08-22T09:09:47Z | paired-paths | `b9f09ce89ed4` | no | enforced | 0.43× | 0.83× | 1.11× | 0.06× |
 | 2026-08-22T09:20:39Z | paired-paths | `1ff03a4d1da9` | no | enforced | 0.64× | 0.89× | 1.11× | 0.06× |
 | 2026-08-22T09:52:46Z | paired-paths | `6149f90b51c7` | no | enforced | 0.95× | 0.96× | 1.06× | 0.06× |
 | 2026-08-22T10:01:54Z | paired-paths | `303787aab7d3` | no | enforced | 0.68× | 1.08× | 1.60× | 0.06× |
-| 2026-08-22T10:14:51Z | paired-paths-quick | `1e806dc2bba1` | yes | informational-quick-run | 0.52× | 0.58× | 0.32× | 0.03× |
 | 2026-08-22T10:20:18Z | paired-paths | `1e806dc2bba1` | no | enforced | 0.81× | 1.05× | 1.20× | 0.08× |
-| 2026-08-22T10:36:56Z | paired-paths-quick | `f5a3f5bfa340` | yes | informational-quick-run | 1.22× | 1.35× | 1.27× | 0.07× |
 | 2026-08-22T10:41:11Z | paired-paths | `f5a3f5bfa340` | no | enforced | 1.03× | 1.19× | 1.23× | 0.07× |
-| 2026-08-22T11:12:45Z | paired-paths-quick | `d55e1140dffd` | yes | informational-quick-run | 0.97× | 1.01× | 0.99× | 0.08× |
 | 2026-08-22T11:15:40Z | paired-paths | `d55e1140dffd` | no | enforced | 1.15× | 1.26× | 1.20× | 0.08× |
-| 2026-08-22T11:23:00Z | paired-paths-quick | `408e72600a47` | yes | informational-quick-run | 0.94× | 0.66× | 0.38× | 0.07× |
 | 2026-08-22T11:24:28Z | paired-paths | `408e72600a47` | no | enforced | 0.61× | 1.17× | 1.23× | 0.07× |
-| 2026-08-22T11:38:39Z | paired-paths-quick | `a2e744178709` | yes | informational-quick-run | 1.15× | 1.05× | 1.02× | 0.07× |
 | 2026-08-22T11:40:01Z | paired-paths | `a2e744178709` | no | enforced | 1.15× | 1.17× | 1.19× | 0.07× |
-| 2026-08-22T11:53:16Z | paired-paths-quick | `f488a2478a8d` | yes | informational-quick-run | 0.97× | 1.12× | 0.89× | 0.07× |
 | 2026-08-22T11:54:35Z | paired-paths | `f488a2478a8d` | no | enforced | 0.87× | 1.06× | 1.01× | 0.07× |
-| 2026-08-22T12:12:59Z | paired-paths-quick | `791289e2c6b7` | yes | informational-quick-run | 0.66× | 0.54× | 1.44× | 0.07× |
 | 2026-08-22T12:15:45Z | paired-paths | `791289e2c6b7` | no | enforced | 1.01× | 1.04× | 0.97× | 0.06× |
 | 2026-08-22T13:36:02Z | paired-paths | `93b63f28c0af` | no | enforced | 0.76× | 0.72× | 0.50× | 0.09× |
 | 2026-08-22T14:31:35Z | paired-paths | `3f1b9d931463` | no | enforced | 0.80× | 0.88× | 0.94× | 0.07× |
 | 2026-08-22T14:53:52Z | paired-paths | `60e970a988e5` | no | enforced | 1.22× | 0.56× | 0.54× | 0.08× |
-| 2026-08-22T15:30:29Z | paired-paths-quick | `0f8e300f1202` | yes | informational-quick-run | 0.50× | 0.88× | 0.92× | 0.04× |
 | 2026-08-22T15:38:30Z | paired-paths | `0f8e300f1202` | no | enforced | 0.56× | 0.72× | 0.79× | 0.05× |
-| 2026-08-22T16:20:27Z | paired-paths-quick | `24e908703b79` | yes | informational-quick-run | 1.12× | 1.10× | 0.94× | 0.06× |
 | 2026-08-22T16:23:43Z | paired-paths | `24e908703b79` | no | enforced | 1.01× | 1.09× | 1.11× | 0.07× |
-| 2026-08-22T16:42:36Z | paired-paths-quick | `9d7daa1794ac` | yes | informational-quick-run | 1.48× | 1.16× | 1.80× | 0.05× |
 | 2026-08-22T17:09:53Z | paired-paths | `9d7daa1794ac` | no | enforced | 0.91× | 1.29× | 1.16× | 0.08× |
-| 2026-08-22T17:18:19Z | paired-paths-quick | `2022c67d5b4c` | yes | informational-quick-run | 0.56× | 0.31× | 0.30× | 0.06× |
-| 2026-08-22T17:28:39Z | paired-paths | `2022c67d5b4c` | no | enforced | 0.85× | 1.25× | 1.09× | 0.06× |
-| 2026-08-22T17:31:21Z | paired-paths | `2022c67d5b4c` | no | enforced | 0.64× | 1.10× | 1.17× | 0.07× |
-| 2026-08-22T17:35:16Z | paired-paths | `2022c67d5b4c` | no | enforced | 1.05× | 1.31× | 1.10× | 0.08× |
 | 2026-08-22T17:36:29Z | paired-paths | `2022c67d5b4c` | no | enforced | 1.01× | 1.18× | 1.01× | 0.08× |
-| 2026-08-22T17:44:34Z | paired-paths-quick | `41d05cf0bada` | yes | informational-quick-run | 0.84× | 1.13× | 1.07× | 0.07× |
-| 2026-08-22T17:47:23Z | paired-paths | `41d05cf0bada` | no | enforced | 0.92× | 1.14× | 1.02× | 0.07× |
-| 2026-08-22T17:48:35Z | paired-paths | `41d05cf0bada` | no | enforced | 0.85× | 1.05× | 1.21× | 0.07× |
-| 2026-08-22T17:49:47Z | paired-paths | `41d05cf0bada` | no | enforced | 0.94× | 1.04× | 1.20× | 0.08× |
-| 2026-08-22T17:51:02Z | paired-paths | `41d05cf0bada` | no | enforced | 1.03× | 1.16× | 0.96× | 0.08× |
-| 2026-08-22T17:52:15Z | paired-paths | `41d05cf0bada` | no | enforced | 0.79× | 1.16× | 1.05× | 0.08× |
-| 2026-08-22T17:53:27Z | paired-paths | `41d05cf0bada` | no | enforced | 0.94× | 0.81× | 1.23× | 0.07× |
-| 2026-08-22T17:54:40Z | paired-paths | `41d05cf0bada` | no | enforced | 0.96× | 1.13× | 1.24× | 0.07× |
 | 2026-08-22T17:57:04Z | paired-paths | `41d05cf0bada` | no | enforced | 0.80× | 1.14× | 1.10× | 0.08× |
-| 2026-08-22T18:04:56Z | paired-paths-quick | `30775cdab1aa` | yes | informational-quick-run | 0.96× | 1.55× | 0.76× | 0.05× |
-| 2026-08-22T18:06:21Z | paired-paths | `30775cdab1aa` | no | enforced | 0.86× | 0.96× | 1.24× | 0.06× |
-| 2026-08-22T18:08:56Z | paired-paths | `30775cdab1aa` | no | enforced | 0.87× | 1.10× | 1.44× | 0.07× |
-| 2026-08-22T18:11:32Z | paired-paths | `30775cdab1aa` | no | enforced | 0.88× | 1.09× | 1.09× | 0.07× |
-| 2026-08-22T18:12:48Z | paired-paths | `30775cdab1aa` | no | enforced | 0.75× | 1.06× | 1.22× | 0.07× |
-| 2026-08-22T18:14:05Z | paired-paths | `30775cdab1aa` | no | enforced | 0.94× | 0.99× | 0.94× | 0.08× |
-| 2026-08-22T18:15:23Z | paired-paths | `30775cdab1aa` | no | enforced | 1.10× | 1.13× | 1.27× | 0.08× |
 | 2026-08-22T18:16:39Z | paired-paths | `30775cdab1aa` | no | enforced | 1.02× | 1.14× | 1.15× | 0.07× |
-| 2026-08-22T18:21:22Z | paired-paths-quick | `275461548d7f` | yes | informational-quick-run | 0.70× | 0.85× | 0.96× | 0.08× |
-| 2026-08-22T18:22:46Z | paired-paths | `275461548d7f` | no | enforced | 0.77× | 0.74× | 0.99× | 0.07× |
-| 2026-08-22T18:24:02Z | paired-paths | `275461548d7f` | no | enforced | 0.96× | 1.12× | 1.15× | 0.08× |
-| 2026-08-22T18:25:17Z | paired-paths | `275461548d7f` | no | enforced | 0.76× | 0.82× | 1.17× | 0.07× |
-| 2026-08-22T18:26:34Z | paired-paths | `275461548d7f` | no | enforced | 0.79× | 1.50× | 1.19× | 0.08× |
-| 2026-08-22T18:27:49Z | paired-paths | `275461548d7f` | no | enforced | 0.82× | 1.12× | 1.32× | 0.07× |
-| 2026-08-22T18:29:05Z | paired-paths | `275461548d7f` | no | enforced | 0.82× | 1.17× | 1.19× | 0.07× |
-| 2026-08-22T18:30:21Z | paired-paths | `275461548d7f` | no | enforced | 0.86× | 1.00× | 1.18× | 0.10× |
-| 2026-08-22T18:31:37Z | paired-paths | `275461548d7f` | no | enforced | 1.00× | 0.79× | 1.11× | 0.07× |
-| 2026-08-22T18:32:53Z | paired-paths | `275461548d7f` | no | enforced | 0.95× | 0.92× | 1.05× | 0.07× |
 | 2026-08-22T18:34:09Z | paired-paths | `275461548d7f` | no | enforced | 0.82× | 1.05× | 1.14× | 0.07× |
-| 2026-08-22T18:38:31Z | paired-paths-quick | `a0f73c4f700a` | yes | informational-quick-run | 0.81× | 1.15× | 1.23× | 0.07× |
-| 2026-08-22T18:41:09Z | paired-paths | `a0f73c4f700a` | no | enforced | 0.71× | 0.88× | 1.14× | 0.07× |
-| 2026-08-22T18:42:24Z | paired-paths | `a0f73c4f700a` | no | enforced | 0.82× | 0.70× | 1.17× | 0.07× |
-| 2026-08-22T18:43:41Z | paired-paths | `a0f73c4f700a` | no | enforced | 0.82× | 1.14× | 1.23× | 0.07× |
-| 2026-08-22T18:44:56Z | paired-paths | `a0f73c4f700a` | no | enforced | 0.99× | 1.14× | 1.24× | 0.08× |
-| 2026-08-22T18:46:12Z | paired-paths | `a0f73c4f700a` | no | enforced | 0.81× | 1.09× | 1.22× | 0.07× |
-| 2026-08-22T18:48:43Z | paired-paths | `a0f73c4f700a` | no | enforced | 0.81× | 1.20× | 1.02× | 0.07× |
-| 2026-08-22T18:49:59Z | paired-paths | `a0f73c4f700a` | no | enforced | 1.06× | 1.16× | 1.25× | 0.07× |
 | 2026-08-22T18:51:15Z | paired-paths | `a0f73c4f700a` | no | enforced | 1.08× | 1.15× | 0.92× | 0.07× |
-| 2026-08-22T18:54:59Z | paired-paths-quick | `057a45af63a2` | yes | informational-quick-run | 0.69× | 1.03× | 0.81× | 0.06× |
 | 2026-08-22T18:56:16Z | paired-paths | `057a45af63a2` | no | enforced | 0.83× | 0.99× | 1.15× | 0.07× |
-| 2026-08-22T19:01:38Z | paired-paths-quick | `e4918c77cac1` | yes | informational-quick-run | 0.84× | 1.12× | 1.04× | 0.06× |
-| 2026-08-22T19:02:16Z | paired-paths-quick | `e4918c77cac1` | yes | informational-quick-run | 0.78× | 1.06× | 1.05× | 0.05× |
 | 2026-08-22T19:03:40Z | paired-paths | `e4918c77cac1` | no | enforced | 1.10× | 1.06× | 1.14× | 0.08× |
-| 2026-08-22T19:06:45Z | paired-paths-quick | `7028964c0b13` | yes | informational-quick-run | 1.02× | 1.07× | 1.28× | 0.05× |
 | 2026-08-22T19:08:07Z | paired-paths | `7028964c0b13` | no | enforced | 0.55× | 0.82× | 0.74× | 0.08× |
-| 2026-08-22T19:11:39Z | paired-paths-quick | `d6a780cc8b8d` | yes | informational-quick-run | 0.69× | 0.88× | 0.81× | 0.06× |
 | 2026-08-22T19:14:20Z | paired-paths | `d6a780cc8b8d` | no | enforced | 0.96× | 1.17× | 1.01× | 0.07× |
-| 2026-08-22T19:17:58Z | paired-paths-quick | `506fc7f91a51` | yes | informational-quick-run | 0.80× | 1.07× | 1.15× | 0.10× |
 | 2026-08-22T19:19:20Z | paired-paths | `506fc7f91a51` | no | enforced | 0.93× | 1.15× | 1.17× | 0.07× |
-| 2026-08-22T19:23:16Z | paired-paths-quick | `849f344192fc` | yes | informational-quick-run | 0.52× | 0.73× | 1.11× | 0.05× |
 | 2026-08-22T19:27:29Z | paired-paths | `849f344192fc` | no | enforced | 0.97× | 1.06× | 1.21× | 0.07× |
-| 2026-08-22T19:31:06Z | paired-paths-quick | `60ce923b870d` | yes | informational-quick-run | 0.88× | 1.12× | 0.96× | 0.05× |
 | 2026-08-22T19:33:49Z | paired-paths | `60ce923b870d` | no | enforced | 0.93× | 1.08× | 1.23× | 0.08× |
-| 2026-08-23T01:00:53Z | paired-paths-quick | `e5fe44287647` | yes | informational-quick-run | 1.05× | 1.41× | 1.20× | 0.05× |
 | 2026-08-23T01:02:25Z | paired-paths | `e5fe44287647` | no | enforced | 0.67× | 1.23× | 1.22× | 0.08× |
 | 2026-08-23T01:10:46Z | paired-paths | `343d7b016c0c` | no | enforced | 0.91× | 0.93× | 0.95× | 0.08× |
-| 2026-08-23T01:23:24Z | paired-paths-quick | `7086578fc190` | yes | informational-quick-run | 0.80× | 0.88× | 0.87× | 0.03× |
-| 2026-08-23T01:27:36Z | paired-paths-quick | `7086578fc190` | yes | informational-quick-run | 0.86× | 1.09× | 1.09× | 0.06× |
-| 2026-08-23T01:30:28Z | paired-paths-quick | `7086578fc190` | yes | informational-quick-run | 0.61× | 0.79× | 1.30× | 0.04× |
 | 2026-08-23T01:32:07Z | paired-paths | `7086578fc190` | no | enforced | 1.00× | 1.06× | 1.39× | 0.08× |
-| 2026-08-23T01:41:05Z | paired-paths-quick | `d815a2f9114c` | yes | informational-quick-run | 0.62× | 0.63× | 0.34× | 0.04× |
 | 2026-08-23T01:42:53Z | paired-paths | `d815a2f9114c` | no | enforced | 0.79× | 0.88× | 1.04× | 0.06× |
 | 2026-08-23T01:48:11Z | paired-paths-quick | `de5c850ff743` | yes | informational-quick-run | 0.70× | 1.12× | 0.84× | 0.09× |
 | 2026-08-23T01:49:44Z | paired-paths | `12c9ccdd484f` | no | enforced | 0.76× | 1.11× | 1.08× | 0.08× |
-| 2026-08-23T01:57:18Z | paired-paths-quick | `4d6624f0386e` | yes | informational-quick-run | 0.84× | 0.84× | 0.95× | 0.05× |
-| 2026-08-23T01:59:32Z | paired-paths | `4d6624f0386e` | no | enforced | 0.85× | 1.24× | 1.28× | 0.07× |
 | 2026-08-23T02:04:00Z | paired-paths-quick | `4d6624f0386e` | yes | informational-quick-run | 0.83× | 0.99× | 0.89× | 0.05× |
-| 2026-08-23T02:12:51Z | paired-paths-quick | `841211d614c1` | yes | informational-quick-run | 0.50× | 0.74× | 0.34× | 0.04× |
-| 2026-08-23T02:14:39Z | paired-paths | `841211d614c1` | no | enforced | 0.74× | 1.09× | 1.37× | 0.07× |
-| 2026-08-23T04:46:17Z | paired-paths-quick | `841211d614c1` | yes | informational-quick-run | 0.71× | 1.00× | 1.04× | 0.06× |
 | 2026-08-23T04:49:14Z | paired-paths | `841211d614c1` | no | enforced | 0.80× | 1.13× | 1.46× | 0.07× |
-| 2026-08-23T05:11:21Z | paired-paths-quick | `6a692d738f78` | yes | informational-quick-run | 0.95× | 1.17× | 1.12× | 0.08× |
 | 2026-08-23T05:12:44Z | paired-paths | `6a692d738f78` | no | enforced | 0.77× | 0.79× | 1.23× | 0.08× |
-| 2026-08-23T05:22:30Z | paired-paths-quick | `5a36c50666cb` | yes | informational-quick-run | 0.86× | 1.18× | 0.96× | 0.05× |
 | 2026-08-23T05:24:15Z | paired-paths | `5a36c50666cb` | no | enforced | 0.87× | 0.93× | 0.69× | 0.07× |
-| 2026-08-23T05:35:02Z | paired-paths-quick | `0005f4fc2a7c` | yes | informational-quick-run | 0.85× | 1.02× | 1.00× | 0.05× |
 | 2026-08-23T05:36:40Z | paired-paths | `0005f4fc2a7c` | no | enforced | 0.87× | 1.12× | 1.13× | 0.08× |
-| 2026-08-23T05:49:00Z | paired-paths-quick | `c0970cfe4f4c` | yes | informational-quick-run | 0.68× | 0.75× | 0.81× | 0.06× |
 | 2026-08-23T05:50:55Z | paired-paths | `c0970cfe4f4c` | no | enforced | 0.78× | 0.79× | 0.79× | 0.06× |
-| 2026-08-23T06:07:40Z | paired-paths-quick | `901cdf679cff` | yes | informational-quick-run | 0.83× | 1.05× | 1.27× | 0.05× |
 | 2026-08-23T06:10:32Z | paired-paths | `901cdf679cff` | no | enforced | 0.87× | 0.93× | 1.11× | 0.08× |
-| 2026-08-23T06:22:41Z | paired-paths-quick | `575809885184` | yes | informational-quick-run | 0.56× | 0.77× | 0.76× | 0.08× |
 | 2026-08-23T06:25:41Z | paired-paths | `575809885184` | no | enforced | 1.05× | 1.11× | 0.97× | 0.06× |
-| 2026-08-23T08:15:30Z | paired-paths-quick | `e5e1b2a6ff10` | yes | informational-quick-run | 0.95× | 1.03× | 1.26× | 0.05× |
 | 2026-08-23T08:17:16Z | paired-paths | `e5e1b2a6ff10` | no | enforced | 0.81× | 0.97× | 1.02× | 0.07× |
-| 2026-08-23T08:30:33Z | paired-paths-quick | `6f63c3a1469a` | yes | informational-quick-run | 1.17× | 0.95× | 1.13× | 0.05× |
 | 2026-08-23T08:31:54Z | paired-paths | `6f63c3a1469a` | no | enforced | 0.92× | 0.93× | 1.12× | 0.08× |
-| 2026-08-23T08:46:25Z | paired-paths-quick | `82c31ce75863` | yes | informational-quick-run | 0.82× | 0.99× | 0.98× | 0.06× |
 | 2026-08-23T08:48:05Z | paired-paths | `82c31ce75863` | no | enforced | 0.79× | 0.73× | 1.01× | 0.06× |
-| 2026-08-23T08:58:12Z | paired-paths-quick | `85fd9e4736ad` | yes | informational-quick-run | 0.68× | 0.80× | 0.97× | 0.05× |
 | 2026-08-23T08:59:51Z | paired-paths | `85fd9e4736ad` | no | enforced | 0.70× | 1.04× | 0.96× | 0.08× |
-| 2026-08-23T09:09:45Z | paired-paths-quick | `44e7c3a574f2` | yes | informational-quick-run | 0.50× | 0.54× | 0.87× | 0.04× |
 | 2026-08-23T09:12:54Z | paired-paths | `44e7c3a574f2` | no | enforced | 0.89× | 0.99× | 1.03× | 0.06× |
-| 2026-08-23T09:23:27Z | paired-paths-quick | `91cb9d5e2fd4` | yes | informational-quick-run | 0.88× | 1.50× | 1.05× | 0.07× |
 | 2026-08-23T09:25:03Z | paired-paths | `91cb9d5e2fd4` | no | enforced | 0.82× | 0.83× | 0.91× | 0.06× |
-| 2026-08-23T09:35:12Z | paired-paths-quick | `f1d6525fb150` | yes | informational-quick-run | 0.83× | 0.82× | 0.94× | 0.04× |
 | 2026-08-23T09:36:50Z | paired-paths | `f1d6525fb150` | no | enforced | 1.00× | 0.99× | 1.17× | 0.08× |
-| 2026-08-23T09:47:23Z | paired-paths-quick | `d4c79a3f4822` | yes | informational-quick-run | 0.73× | 0.82× | 0.96× | 0.05× |
 | 2026-08-23T09:49:03Z | paired-paths | `d4c79a3f4822` | no | enforced | 0.83× | 0.95× | 1.02× | 0.07× |
-| 2026-08-23T09:57:55Z | paired-paths-quick | `48487cff2aa0` | yes | informational-quick-run | 0.77× | 1.34× | 0.93× | 0.06× |
 | 2026-08-23T09:59:37Z | paired-paths | `48487cff2aa0` | no | enforced | 0.65× | 0.84× | 0.72× | 0.06× |
-| 2026-08-23T10:07:34Z | paired-paths-quick | `b26a47450389` | yes | informational-quick-run | 0.71× | 1.02× | 1.00× | 0.05× |
-| 2026-08-23T10:11:33Z | paired-paths-quick | `b26a47450389` | yes | informational-quick-run | 0.77× | 1.22× | 0.82× | 0.05× |
 | 2026-08-23T10:13:12Z | paired-paths | `b26a47450389` | no | enforced | 0.79× | 1.16× | 0.86× | 0.07× |
-| 2026-08-23T10:20:44Z | paired-paths-quick | `9f15e96467a1` | yes | informational-quick-run | 0.82× | 0.99× | 1.08× | 0.05× |
 | 2026-08-23T10:22:23Z | paired-paths | `9f15e96467a1` | no | enforced | 0.80× | 1.01× | 1.39× | 0.07× |
-| 2026-08-23T10:31:33Z | paired-paths-quick | `0c1a446efdeb` | yes | informational-quick-run | 1.00× | 1.22× | 1.05× | 0.05× |
 | 2026-08-23T10:34:40Z | paired-paths | `0c1a446efdeb` | no | enforced | 0.87× | 0.84× | 0.97× | 0.06× |
-| 2026-08-23T10:42:17Z | paired-paths-quick | `b2e272d4f63b` | yes | informational-quick-run | 0.77× | 1.51× | 1.11× | 0.06× |
 | 2026-08-23T10:45:29Z | paired-paths | `b2e272d4f63b` | no | enforced | 0.89× | 0.83× | 1.00× | 0.07× |
-| 2026-08-23T10:53:20Z | paired-paths-quick | `2da869e14512` | yes | informational-quick-run | 0.74× | 0.80× | 0.99× | 0.05× |
 | 2026-08-23T10:56:25Z | paired-paths | `2da869e14512` | no | enforced | 0.87× | 1.00× | 0.98× | 0.07× |
-| 2026-08-23T11:06:00Z | paired-paths-quick | `dd7538562ecc` | yes | informational-quick-run | 0.93× | 1.18× | 1.02× | 0.07× |
 | 2026-08-23T11:07:31Z | paired-paths | `dd7538562ecc` | no | enforced | 0.92× | 1.03× | 1.09× | 0.08× |
-| 2026-08-23T11:16:18Z | paired-paths-quick | `24d8ee9d824f` | yes | informational-quick-run | 0.85× | 1.16× | 0.96× | 0.06× |
 | 2026-08-23T11:17:49Z | paired-paths | `24d8ee9d824f` | no | enforced | 0.81× | 1.13× | 1.03× | 0.07× |
-| 2026-08-23T11:34:40Z | paired-paths-quick | `dbe63c9f58fd` | yes | informational-quick-run | 0.80× | 1.25× | 0.95× | 0.05× |
 | 2026-08-23T11:36:25Z | paired-paths | `dbe63c9f58fd` | no | enforced | 0.86× | 1.01× | 0.96× | 0.07× |
-| 2026-08-23T11:46:34Z | paired-paths-quick | `9f7eb431c853` | yes | informational-quick-run | 0.84× | 1.05× | 0.69× | 0.05× |
 | 2026-08-23T11:48:19Z | paired-paths | `9f7eb431c853` | no | enforced | 0.80× | 0.98× | 1.13× | 0.07× |
-| 2026-08-23T11:58:38Z | paired-paths-quick | `40fe51b0a0fe` | yes | informational-quick-run | 0.52× | 0.56× | 0.82× | 0.05× |
 | 2026-08-23T12:00:25Z | paired-paths | `40fe51b0a0fe` | no | enforced | 0.77× | 1.25× | 0.95× | 0.05× |
-| 2026-08-23T12:16:56Z | paired-paths-quick | `831a972441b3` | yes | informational-quick-run | 0.98× | 0.99× | 0.59× | 0.04× |
 | 2026-08-23T12:34:34Z | paired-paths | `831a972441b3` | no | enforced | 0.97× | 1.02× | 1.39× | 0.06× |
-| 2026-08-23T12:51:33Z | paired-paths-quick | `bbdd183e54f7` | yes | informational-quick-run | 0.62× | 0.73× | 0.85× | 0.07× |
 | 2026-08-23T12:57:18Z | paired-paths | `bbdd183e54f7` | no | enforced | 0.60× | 0.81× | 0.69× | 0.06× |
-| 2026-08-23T13:13:35Z | paired-paths-quick | `170863c257a7` | yes | informational-quick-run | 0.33× | 0.67× | 0.58× | 0.06× |
 | 2026-08-23T13:19:39Z | paired-paths | `170863c257a7` | no | enforced | 1.04× | 1.10× | 0.73× | 0.08× |
-| 2026-08-23T13:34:24Z | paired-paths-quick | `4030bea69da9` | yes | informational-quick-run | 0.64× | 0.96× | 0.74× | 0.07× |
 | 2026-08-23T13:36:18Z | paired-paths | `4030bea69da9` | no | enforced | 0.74× | 0.94× | 1.25× | 0.07× |
-| 2026-08-23T13:53:30Z | paired-paths-quick | `373c8fd45952` | yes | informational-quick-run | 1.52× | 0.86× | 0.77× | 0.07× |
 | 2026-08-23T14:01:08Z | paired-paths | `373c8fd45952` | no | enforced | 0.98× | 1.16× | 1.16× | 0.06× |
-| 2026-08-23T14:17:16Z | paired-paths-quick | `b4f298143839` | yes | informational-quick-run | 0.85× | 0.82× | 1.02× | 0.06× |
 | 2026-08-23T14:21:27Z | paired-paths | `b4f298143839` | no | enforced | 0.80× | 1.03× | 1.20× | 0.07× |
-| 2026-08-23T14:52:22Z | paired-paths-quick | `df1b70d9a0fa` | yes | informational-quick-run | 0.82× | 0.19× | 0.74× | 0.05× |
 | 2026-08-23T14:56:18Z | paired-paths | `df1b70d9a0fa` | no | enforced | 0.92× | 0.90× | 0.95× | 0.06× |
-| 2026-08-23T15:29:36Z | paired-paths-quick | `28a2710c95a7` | yes | informational-quick-run | 0.98× | 1.32× | 0.97× | 0.05× |
 | 2026-08-23T15:31:21Z | paired-paths | `28a2710c95a7` | no | enforced | 0.85× | 1.11× | 1.14× | 0.08× |
-| 2026-08-23T15:48:03Z | paired-paths-quick | `474c0d2d345e` | yes | informational-quick-run | 0.79× | 0.96× | 0.98× | 0.05× |
 | 2026-08-23T15:53:12Z | paired-paths | `474c0d2d345e` | no | enforced | 0.64× | 0.97× | 0.99× | 0.08× |
-| 2026-08-23T16:12:08Z | paired-paths-quick | `492c0b45297c` | yes | informational-quick-run | 0.44× | 0.20× | 0.90× | 0.05× |
 | 2026-08-23T16:13:51Z | paired-paths | `492c0b45297c` | no | enforced | 0.78× | 0.95× | 0.90× | 0.07× |
-| 2026-08-23T16:34:20Z | paired-paths-quick | `081a5ea07b8c` | yes | informational-quick-run | 0.89× | 1.35× | 0.91× | 0.05× |
 | 2026-08-23T16:38:10Z | paired-paths | `081a5ea07b8c` | no | enforced | 1.02× | 1.29× | 1.41× | 0.08× |
-| 2026-08-23T17:06:40Z | paired-paths-quick | `0df4110433e6` | yes | informational-quick-run | 0.74× | 0.51× | 0.49× | 0.06× |
 | 2026-08-23T17:08:28Z | paired-paths | `0df4110433e6` | no | enforced | 0.69× | 0.97× | 1.13× | 0.07× |
-| 2026-08-23T17:34:12Z | paired-paths-quick | `6c860eddd1a3` | yes | informational-quick-run | 1.03× | 1.54× | 0.77× | 0.05× |
 | 2026-08-23T17:39:39Z | paired-paths | `6c860eddd1a3` | no | enforced | 0.70× | 0.89× | 1.07× | 0.07× |
-| 2026-08-23T18:03:33Z | paired-paths-quick | `fe67eee1b7a7` | yes | informational-quick-run | 0.62× | 0.96× | 0.50× | 0.10× |
 | 2026-08-23T18:11:13Z | paired-paths | `fe67eee1b7a7` | no | enforced | 0.60× | 1.34× | 1.13× | 0.07× |
-| 2026-08-23T18:32:51Z | paired-paths-quick | `7f3420de0df2` | yes | informational-quick-run | 0.80× | 1.12× | 1.07× | 0.05× |
-| 2026-08-23T18:36:15Z | paired-paths | `7f3420de0df2` | no | enforced | 1.02× | 1.12× | 0.98× | 0.08× |
-| 2026-08-23T18:37:52Z | paired-paths | `7f3420de0df2` | no | enforced | 0.99× | 0.99× | 1.06× | 0.08× |
-| 2026-08-23T18:41:04Z | paired-paths | `7f3420de0df2` | no | enforced | 0.88× | 1.11× | 1.62× | 0.07× |
-| 2026-08-23T18:42:40Z | paired-paths | `7f3420de0df2` | no | enforced | 0.90× | 1.08× | 1.11× | 0.07× |
 | 2026-08-23T18:45:53Z | paired-paths | `7f3420de0df2` | no | enforced | 0.76× | 1.09× | 1.10× | 0.08× |
-| 2026-08-23T18:53:32Z | paired-paths-quick | `8d442e6943f4` | yes | informational-quick-run | 1.26× | 1.23× | 1.16× | 0.06× |
-| 2026-08-23T18:55:18Z | paired-paths | `8d442e6943f4` | no | enforced | 0.84× | 1.14× | 1.25× | 0.07× |
-| 2026-08-23T18:56:55Z | paired-paths | `8d442e6943f4` | no | enforced | 0.88× | 1.02× | 1.09× | 0.08× |
-| 2026-08-23T18:58:33Z | paired-paths | `8d442e6943f4` | no | enforced | 0.81× | 1.16× | 1.12× | 0.08× |
-| 2026-08-23T19:00:10Z | paired-paths | `8d442e6943f4` | no | enforced | 0.82× | 0.96× | 0.97× | 0.07× |
-| 2026-08-23T19:03:23Z | paired-paths | `8d442e6943f4` | no | enforced | 0.92× | 1.00× | 1.11× | 0.08× |
 | 2026-08-23T19:06:38Z | paired-paths | `8d442e6943f4` | no | enforced | 0.68× | 1.16× | 1.33× | 0.07× |
-| 2026-08-23T19:23:04Z | paired-paths-quick | `7dfb9698e77c` | yes | informational-quick-run | 0.91× | 1.14× | 1.15× | 0.06× |
-| 2026-08-23T19:29:31Z | paired-paths | `7dfb9698e77c` | no | enforced | 0.88× | 1.07× | 1.12× | 0.08× |
-| 2026-08-23T19:31:06Z | paired-paths | `7dfb9698e77c` | no | enforced | 0.95× | 1.05× | 1.11× | 0.07× |
-| 2026-08-23T19:32:43Z | paired-paths | `7dfb9698e77c` | no | enforced | 0.92× | 1.03× | 1.04× | 0.08× |
-| 2026-08-23T19:34:18Z | paired-paths | `7dfb9698e77c` | no | enforced | 0.96× | 1.11× | 0.99× | 0.07× |
 | 2026-08-23T19:35:54Z | paired-paths | `7dfb9698e77c` | no | enforced | 0.84× | 1.04× | 1.11× | 0.08× |
-| 2026-08-23T19:53:36Z | paired-paths-quick | `469bd3e5136d` | yes | informational-quick-run | 0.84× | 1.21× | 1.19× | 0.06× |
-| 2026-08-23T19:55:14Z | paired-paths | `469bd3e5136d` | no | enforced | 0.70× | 1.06× | 1.06× | 0.07× |
-| 2026-08-23T20:00:03Z | paired-paths | `469bd3e5136d` | no | enforced | 0.94× | 1.19× | 1.05× | 0.07× |
-| 2026-08-23T20:01:39Z | paired-paths | `469bd3e5136d` | no | enforced | 0.88× | 1.03× | 1.04× | 0.08× |
-| 2026-08-23T20:03:15Z | paired-paths | `469bd3e5136d` | no | enforced | 0.86× | 1.10× | 1.27× | 0.07× |
-| 2026-08-23T20:04:51Z | paired-paths | `469bd3e5136d` | no | enforced | 0.77× | 1.05× | 0.98× | 0.07× |
 | 2026-08-23T20:06:28Z | paired-paths | `469bd3e5136d` | no | enforced | 0.92× | 1.13× | 1.07× | 0.07× |
-| 2026-08-23T20:36:30Z | paired-paths-quick | `978c406a11d7` | yes | informational-quick-run | 0.93× | 1.19× | 0.94× | 0.06× |
-| 2026-08-23T20:38:17Z | paired-paths | `978c406a11d7` | no | enforced | 0.93× | 0.98× | 1.06× | 0.07× |
-| 2026-08-23T20:39:55Z | paired-paths | `978c406a11d7` | no | enforced | 0.81× | 1.16× | 0.96× | 0.07× |
-| 2026-08-23T20:43:16Z | paired-paths | `978c406a11d7` | no | enforced | 0.75× | 1.13× | 1.10× | 0.07× |
-| 2026-08-23T20:44:58Z | paired-paths | `978c406a11d7` | no | enforced | 0.91× | 0.94× | 1.12× | 0.08× |
-| 2026-08-23T20:46:38Z | paired-paths | `978c406a11d7` | no | enforced | 0.85× | 1.07× | 1.22× | 0.07× |
-| 2026-08-23T20:48:18Z | paired-paths | `978c406a11d7` | no | enforced | 0.75× | 1.09× | 1.20× | 0.06× |
 | 2026-08-23T20:49:58Z | paired-paths | `978c406a11d7` | no | enforced | 0.89× | 1.21× | 1.21× | 0.07× |
-| 2026-08-23T21:24:44Z | paired-paths-quick | `874610ca970d` | yes | informational-quick-run | 0.83× | 0.68× | 1.08× | 0.07× |
-| 2026-08-23T21:26:28Z | paired-paths | `874610ca970d` | no | enforced | 0.88× | 1.14× | 1.10× | 0.07× |
-| 2026-08-23T21:29:39Z | paired-paths | `874610ca970d` | no | enforced | 0.92× | 1.06× | 1.19× | 0.07× |
-| 2026-08-23T21:31:15Z | paired-paths | `874610ca970d` | no | enforced | 0.87× | 1.23× | 1.27× | 0.08× |
-| 2026-08-23T21:36:00Z | paired-paths | `874610ca970d` | no | enforced | 0.79× | 1.09× | 1.22× | 0.07× |
 | 2026-08-23T21:37:35Z | paired-paths | `874610ca970d` | no | enforced | 0.85× | 1.12× | 1.16× | 0.07× |
-| 2026-08-23T21:53:43Z | paired-paths-quick | `30ad90a6c11b` | yes | informational-quick-run | 0.76× | 0.93× | 0.35× | 0.07× |
-| 2026-08-23T21:55:24Z | paired-paths | `30ad90a6c11b` | no | enforced | 0.73× | 1.11× | 1.23× | 0.07× |
-| 2026-08-23T21:57:01Z | paired-paths | `30ad90a6c11b` | no | enforced | 0.84× | 1.03× | 0.97× | 0.07× |
-| 2026-08-23T22:00:13Z | paired-paths | `30ad90a6c11b` | no | enforced | 0.75× | 0.87× | 1.06× | 0.07× |
 | 2026-08-23T22:01:49Z | paired-paths | `30ad90a6c11b` | no | enforced | 0.71× | 1.14× | 1.18× | 0.07× |
-| 2026-08-23T22:25:37Z | paired-paths-quick | `fc922e31a320` | yes | informational-quick-run | 0.94× | 1.30× | 1.14× | 0.07× |
-| 2026-08-23T22:27:20Z | paired-paths | `fc922e31a320` | no | enforced | 0.92× | 0.97× | 1.10× | 0.08× |
-| 2026-08-23T22:30:31Z | paired-paths | `fc922e31a320` | no | enforced | 0.84× | 0.93× | 1.14× | 0.08× |
-| 2026-08-23T22:32:09Z | paired-paths | `fc922e31a320` | no | enforced | 0.93× | 1.05× | 1.15× | 0.08× |
-| 2026-08-23T22:33:45Z | paired-paths | `fc922e31a320` | no | enforced | 0.95× | 1.06× | 1.08× | 0.07× |
-| 2026-08-23T22:35:22Z | paired-paths | `fc922e31a320` | no | enforced | 0.81× | 1.04× | 1.05× | 0.08× |
 | 2026-08-23T22:36:59Z | paired-paths | `fc922e31a320` | no | enforced | 0.89× | 1.04× | 1.00× | 0.08× |
 | 2026-08-23T22:52:24Z | paired-paths-quick | `49695e157da6` | yes | informational-quick-run | 0.91× | 1.01× | 1.04× | 0.05× |
 | 2026-08-23T23:23:11Z | paired-paths-quick | `10ce2e547aa1` | yes | informational-quick-run | 0.87× | 1.07× | 1.01× | 0.05× |
 | 2026-08-23T23:53:20Z | paired-paths-quick | `3570e751fd60` | yes | informational-quick-run | 0.94× | 0.91× | 1.05× | 0.05× |
 | 2026-08-24T00:23:11Z | paired-paths-quick | `96128d762c77` | yes | informational-quick-run | 0.33× | 0.82× | 1.03× | 0.07× |
 | 2026-08-24T00:53:53Z | paired-paths-quick | `b31deed01530` | yes | informational-quick-run | 0.53× | 0.25× | 1.02× | 0.08× |
-| 2026-08-24T01:29:07Z | paired-paths-quick | `fe4145a00eb4` | yes | informational-quick-run | 0.65× | 0.37× | 0.72× | 0.05× |
 | 2026-08-24T04:40:46Z | paired-paths | `fe4145a00eb4` | no | enforced-only:cli_selectors.login_auth_type_route | 0.88× | 0.97× | 1.16× | 0.08× |
-| 2026-08-24T05:00:07Z | paired-paths-quick | `6936fca28a3b` | yes | informational-quick-run | 0.99× | 1.10× | 0.99× | 0.05× |
 | 2026-08-24T05:02:14Z | paired-paths | `6936fca28a3b` | no | enforced-only:cli_selectors.login_provider_options | 0.67× | 1.40× | 1.27× | 0.08× |
-| 2026-08-24T05:22:48Z | paired-paths-quick | `0d833a1ed5bd` | yes | informational-quick-run | 0.67× | 0.83× | 0.32× | 0.06× |
 | 2026-08-24T05:24:33Z | paired-paths | `0d833a1ed5bd` | no | enforced-only:cli_selectors.logout_provider_options | 0.95× | 1.04× | 0.94× | 0.07× |
-| 2026-08-24T05:48:12Z | paired-paths-quick | `e53c99fe3f1c` | yes | informational-quick-run | 0.56× | 0.79× | 0.82× | 0.03× |
 | 2026-08-24T05:50:18Z | paired-paths | `e53c99fe3f1c` | no | enforced-only:cli_selectors.login_method_selector_handle_event | 0.77× | 0.99× | 1.04× | 0.06× |
-| 2026-08-24T06:01:17Z | paired-paths-quick | `15c3588347aa` | yes | informational-quick-run | 0.77× | 1.05× | 0.91× | 0.07× |
 | 2026-08-24T06:07:32Z | paired-paths | `15c3588347aa` | no | enforced-only:cli_selectors.oauth_selector_move | 0.57× | 0.62× | 0.74× | 0.06× |
-| 2026-08-24T06:13:50Z | paired-paths-quick | `4d175e900613` | yes | informational-quick-run | 0.79× | 1.40× | 1.11× | 0.05× |
 | 2026-08-24T06:17:57Z | paired-paths | `4d175e900613` | no | enforced-only:cli_selectors.oauth_option_status_rendered | 0.88× | 1.11× | 1.33× | 0.06× |
-| 2026-08-24T06:28:20Z | paired-paths-quick | `1b5554f2fd5d` | yes | informational-quick-run | 0.91× | 1.16× | 1.30× | 0.04× |
 | 2026-08-24T06:30:19Z | paired-paths | `1b5554f2fd5d` | no | enforced-only:cli_selectors.api_key_input_state_handle_event | 0.86× | 1.01× | 1.14× | 0.06× |
-| 2026-08-24T06:44:43Z | paired-paths-quick | `f47caee83586` | yes | informational-quick-run | 0.16× | 0.94× | 0.33× | 0.07× |
 | 2026-08-24T06:49:11Z | paired-paths | `f47caee83586` | no | enforced-only:cli_selectors.login_method_selector_ui_state | 1.01× | 1.16× | 1.08× | 0.07× |
-| 2026-08-24T06:55:01Z | paired-paths-quick | `a9034fd6e39b` | yes | informational-quick-run | 0.82× | 1.69× | 1.19× | 0.06× |
 | 2026-08-24T06:57:10Z | paired-paths | `a9034fd6e39b` | no | enforced-only:cli_selectors.api_key_input_ui_state | 0.81× | 1.00× | 1.09× | 0.08× |
-| 2026-08-24T07:04:57Z | paired-paths-quick | `643d6e0eb565` | yes | informational-quick-run | 0.90× | 1.28× | 1.22× | 0.07× |
 | 2026-08-24T07:10:15Z | paired-paths | `643d6e0eb565` | no | enforced-only:cli_selectors.oauth_selector_ui_state | 0.77× | 1.01× | 1.06× | 0.07× |
-| 2026-08-24T07:29:29Z | paired-paths-quick | `62e4fdc35700` | yes | informational-quick-run | 0.96× | 1.51× | 0.99× | 0.06× |
 | 2026-08-24T07:31:42Z | paired-paths | `62e4fdc35700` | no | enforced-only:cli_selectors.model_selector_search_text | 0.60× | 0.98× | 1.22× | 0.07× |
-| 2026-08-24T08:24:39Z | paired-paths-quick | `2c7d4009fde7` | yes | informational-quick-run | 1.12× | 1.20× | 1.78× | 0.07× |
 | 2026-08-24T08:26:34Z | paired-paths | `2c7d4009fde7` | no | enforced-only:cli_selectors.qualified_model_id | 0.82× | 1.16× | 1.05× | 0.07× |
-| 2026-08-24T08:51:31Z | paired-paths-quick | `f1755fd2750c` | yes | informational-quick-run | 1.87× | 0.93× | 1.01× | 0.07× |
 | 2026-08-24T08:53:31Z | paired-paths | `f1755fd2750c` | no | enforced-only:cli_selectors.model_selector_apply_filter | 0.97× | 1.02× | 0.76× | 0.07× |
-| 2026-08-24T08:58:55Z | paired-paths-quick | `cfae0c3700fa` | yes | informational-quick-run | 1.38× | 1.22× | 0.86× | 0.10× |
 | 2026-08-24T09:03:44Z | paired-paths | `cfae0c3700fa` | no | enforced-only:cli_selectors.model_selector_move | 0.92× | 1.06× | 1.52× | 0.07× |
-| 2026-08-24T09:17:53Z | paired-paths-quick | `2660d65515ea` | yes | informational-quick-run | 0.80× | 1.10× | 1.07× | 0.04× |
 | 2026-08-24T09:20:10Z | paired-paths | `2660d65515ea` | no | enforced-only:cli_selectors.model_selector_handle_event | 0.90× | 1.38× | 0.48× | 0.07× |
-| 2026-08-24T09:24:49Z | paired-paths-quick | `d6e35227cc33` | yes | informational-quick-run | 0.90× | 0.73× | 0.31× | 0.05× |
 | 2026-08-24T09:27:01Z | paired-paths | `d6e35227cc33` | no | enforced-only:cli_selectors.model_selector_handle_raw_input | 0.97× | 1.08× | 1.52× | 0.07× |
-| 2026-08-24T09:43:31Z | paired-paths-quick | `dd0014dcc211` | yes | informational-quick-run | 0.66× | 0.92× | 0.80× | 0.06× |
 | 2026-08-24T09:45:51Z | paired-paths | `dd0014dcc211` | no | enforced-only:cli_selectors.model_selector_set_query | 0.86× | 0.93× | 1.02× | 0.07× |
-| 2026-08-24T09:54:40Z | paired-paths-quick | `dab221b3ea72` | yes | informational-quick-run | 0.77× | 0.80× | 0.36× | 0.06× |
 | 2026-08-24T09:58:58Z | paired-paths | `dab221b3ea72` | no | enforced-only:cli_selectors.model_selector_selected_model | 0.84× | 1.08× | 1.00× | 0.07× |
-| 2026-08-24T10:09:38Z | paired-paths-quick | `d6c6170327e9` | yes | informational-quick-run | 0.44× | 0.65× | 0.88× | 0.05× |
 | 2026-08-24T10:11:57Z | paired-paths | `d6c6170327e9` | no | enforced-only:cli_selectors.model_selector_toggle_scope | 0.94× | 1.33× | 1.21× | 0.08× |
-| 2026-08-24T10:23:56Z | paired-paths-quick | `8e0e55578b0a` | yes | informational-quick-run | 0.72× | 0.63× | 1.32× | 0.06× |
 | 2026-08-24T10:26:18Z | paired-paths | `8e0e55578b0a` | no | enforced-only:cli_selectors.model_selector_ui_state | 0.97× | 0.88× | 1.11× | 0.07× |
-| 2026-08-24T10:36:34Z | paired-paths-quick | `a9da89163867` | yes | informational-quick-run | 1.72× | 1.15× | 1.26× | 0.07× |
 | 2026-08-24T10:38:57Z | paired-paths | `a9da89163867` | no | enforced-only:cli_selectors.scoped_models_selector_set_query | 1.00× | 1.24× | 0.92× | 0.07× |
-| 2026-08-24T10:42:50Z | paired-paths-quick | `37361952bb67` | yes | informational-quick-run | 0.94× | 1.23× | 1.21× | 0.05× |
 | 2026-08-24T10:49:46Z | paired-paths | `37361952bb67` | no | enforced-only:cli_selectors.scoped_models_selector_move | 0.78× | 1.05× | 0.93× | 0.06× |
-| 2026-08-24T10:55:25Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 1.19× | 1.07× | 1.20× | 0.06× |
-| 2026-08-24T10:56:31Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 0.61× | 0.67× | 0.94× | 0.06× |
-| 2026-08-24T10:57:05Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 0.96× | 1.25× | 1.34× | 0.06× |
-| 2026-08-24T10:58:50Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_ui_state | 1.01× | 1.24× | 1.36× | 0.09× |
-| 2026-08-24T10:59:23Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_handle_raw_input | 0.70× | 1.18× | 1.28× | 0.06× |
-| 2026-08-24T11:00:13Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_handle_event | 0.85× | 1.19× | 1.10× | 0.07× |
-| 2026-08-24T11:06:08Z | paired-paths-quick | `60b1651757ab` | yes | informational-quick-run | 0.82× | 1.31× | 0.86× | 0.05× |
 | 2026-08-24T11:08:28Z | paired-paths | `60b1651757ab` | no | enforced-only:cli_selectors.scoped_models_selector_handle_raw_input | 0.99× | 1.07× | 1.06× | 0.07× |
-| 2026-08-24T11:37:52Z | paired-paths-quick | `f672ed34a01d` | yes | informational-quick-run | 0.98× | 1.12× | 1.44× | 0.07× |
-| 2026-08-24T11:39:47Z | paired-paths-quick | `f672ed34a01d` | yes | informational-quick-run | 0.67× | 1.05× | 1.15× | 0.07× |
 | 2026-08-24T11:42:19Z | paired-paths | `f672ed34a01d` | no | enforced-only:cli_selectors.scoped_models_selector_toggle_selected | 0.78× | 0.97× | 1.06× | 0.06× |
 | 2026-08-24T12:02:18Z | paired-paths | `d9cc90196e87` | no | enforced-only:cli_selectors.scoped_models_selector_sorted_ids | 0.77× | 1.00× | 1.26× | 0.08× |
 | 2026-08-24T12:10:17Z | paired-paths | `20f17c4e1062` | no | enforced-only:cli_selectors.scoped_models_selector_counts | 0.86× | 0.99× | 1.32× | 0.07× |
 | 2026-08-24T12:53:47Z | paired-paths | `6d6b8b2bef79` | no | enforced-only:cli_selectors.scoped_models_selector_target_ids | 1.22× | 1.11× | 1.09× | 0.06× |
-| 2026-08-24T13:13:47Z | paired-paths | `7f7aa9248114` | no | enforced-only:cli_selectors.scoped_models_selector_enable_all | 0.86× | 1.42× | 0.96× | 0.12× |
 | 2026-08-24T13:14:04Z | paired-paths-quick | `7f7aa9248114` | yes | informational-quick-run | 0.93× | 1.93× | 1.17× | 0.04× |
 | 2026-08-24T13:23:14Z | paired-paths | `bbb238e88c6a` | no | enforced-only:cli_selectors.scoped_models_selector_toggle_provider | 0.98× | 1.30× | 1.43× | 0.09× |
 | 2026-08-24T14:14:49Z | paired-paths | `2e6e0ae9fe89` | no | enforced-only:cli_selectors.scoped_models_selector_clear_all | 0.98× | 1.04× | 1.26× | 0.07× |
 | 2026-08-24T14:28:03Z | paired-paths | `7a3aa93d3fe5` | no | enforced-only:cli_selectors.scoped_models_selector_reorder | 0.80× | 1.48× | 1.30× | 0.08× |
-| 2026-08-24T14:57:05Z | paired-paths-quick | `9cb6b8971f97` | yes | informational-quick-run | 0.61× | 0.58× | 0.26× | 0.04× |
 | 2026-08-24T15:03:27Z | paired-paths | `9cb6b8971f97` | no | enforced-only:cli_selectors.scoped_models_selector_persist | 1.39× | 1.61× | 1.76× | 0.10× |
-| 2026-08-24T16:15:10Z | paired-paths-quick | `8ec14a311c6c` | yes | informational-quick-run | 0.71× | 1.54× | 0.91× | 0.08× |
-| 2026-08-24T16:26:50Z | paired-paths-quick | `8ec14a311c6c` | yes | informational-quick-run | 0.88× | 0.92× | 1.05× | 0.21× |
-| 2026-08-24T16:29:16Z | paired-paths-quick | `8ec14a311c6c` | yes | informational-quick-run | 0.55× | 0.36× | 0.81× | 0.08× |
 | 2026-08-24T16:31:28Z | paired-paths | `8ec14a311c6c` | no | enforced-only:cli_selectors.scoped_models_selector_provider_count | 0.74× | 0.90× | 1.13× | 0.08× |
-| 2026-08-24T16:40:09Z | paired-paths-quick | `24481e01e695` | yes | informational-quick-run | 1.24× | 0.78× | 1.48× | 0.04× |
-| 2026-08-24T16:40:25Z | paired-paths-quick | `24481e01e695` | yes | informational-quick-run | 0.59× | 0.65× | 1.10× | 0.04× |
-| 2026-08-24T16:41:11Z | paired-paths-quick | `24481e01e695` | yes | informational-quick-run | 0.95× | 1.19× | 1.75× | 0.07× |
 | 2026-08-24T16:43:03Z | paired-paths | `24481e01e695` | no | enforced-only:tui_latex.normalize_output | 0.68× | 0.75× | 0.89× | 0.05× |
 | 2026-08-24T16:44:42Z | paired-paths | `10ce6a5c9307` | no | enforced-only:tui_latex.normalize_output | 0.39× | 0.75× | 0.71× | 0.06× |
 | 2026-08-24T16:48:46Z | paired-paths | `d6258667b13e` | no | enforced-only:tui_latex.normalize_output | 0.90× | 1.33× | 1.28× | 0.07× |
@@ -1494,19 +1289,12 @@ Previous: `paired-paths` (2026-08-27T19:25:36Z) on `cursor`, git `8c1fc72b060f`,
 | 2026-08-24T18:38:17Z | paired-paths | `d230959a9367` | no | enforced-only:settings_load.stored_auth_secrets | 1.05× | 1.45× | 1.39× | 0.08× |
 | 2026-08-24T18:50:15Z | paired-paths | `789a4dc53b5f` | no | enforced-only:cli_extensions_install.extension_discovery | 0.71× | 0.72× | 1.15× | 0.07× |
 | 2026-08-24T18:55:39Z | paired-paths | `a39f3a2cc47e` | no | enforced-only:cli_bootstrap_sessions.bootstrap_auth | 0.95× | 1.07× | 0.81× | 0.08× |
-| 2026-08-24T19:25:46Z | paired-paths | `isolated-copy` | no | enforced-only:cli_models_rest.login_selection | 1.67× | 1.43× | 1.90× | 0.10× |
-| 2026-08-24T19:47:14Z | paired-paths-quick | `isolated-copy` | yes | informational-quick-run | 0.80× | 0.92× | 0.78× | 0.07× |
 | 2026-08-24T19:49:44Z | paired-paths | `isolated-copy` | no | enforced-only:agent_tool_loop.runtime | 0.87× | 0.95× | 1.12× | 0.07× |
 | 2026-08-24T20:17:47Z | paired-paths | `51832c373f81` | no | enforced-only:session_compact.branch_summarize | 0.81× | 1.27× | 1.00× | 0.07× |
 | 2026-08-24T20:45:35Z | paired-paths | `479086e853b0` | no | enforced-only:session_compact.branch_summarize | 0.67× | 0.73× | 0.91× | 0.07× |
 | 2026-08-24T21:00:16Z | paired-paths | `39d565a10da8` | no | enforced-only:session_compact.branch_summarize | 0.73× | 1.06× | 0.84× | 0.08× |
 | 2026-08-24T21:33:08Z | paired-paths | `2f7a04674138` | no | enforced-only:resource_loader.dedupe_by_name | 0.87× | 0.98× | 0.99× | 0.07× |
 | 2026-08-24T21:47:22Z | paired-paths | `2c687372fbb8` | no | enforced-only:resource_loader.dedupe_by_name | 0.87× | 1.01× | 1.15× | 0.08× |
-| 2026-08-24T23:42:30Z | paired-paths-quick | `7656539e99c3` | yes | informational-quick-run | 0.69× | 1.17× | 0.93× | 0.04× |
-| 2026-08-24T23:47:27Z | paired-paths-quick | `7656539e99c3` | yes | informational-quick-run | 0.79× | 0.69× | 0.53× | 0.08× |
-| 2026-08-24T23:51:48Z | paired-paths-quick | `7656539e99c3` | yes | informational-quick-run | 0.82× | 1.21× | 1.13× | 0.07× |
-| 2026-08-25T00:07:43Z | paired-paths-quick | `7656539e99c3` | yes | informational-quick-run | 1.18× | 1.46× | 1.04× | 0.05× |
-| 2026-08-25T00:13:05Z | paired-paths-quick | `7656539e99c3` | yes | informational-quick-run | 0.88× | 1.08× | 1.16× | 0.04× |
 | 2026-08-25T00:15:57Z | paired-paths | `7656539e99c3` | no | enforced-only:file_mutation_queue.with_queue | 0.83× | 0.97× | 1.17× | 0.07× |
 | 2026-08-27T12:12:06Z | paired-paths | `53f5f0b23822` | no | enforced-only:file_mutation_queue.queue_key | 1.09× | 0.91× | 0.97× | 0.07× |
 | 2026-08-27T12:36:26Z | paired-paths | `4ed06141876b` | no | enforced-only:file_mutation_queue.lock | 1.12× | 0.83× | 0.94× | 0.08× |
@@ -1536,6 +1324,7 @@ Previous: `paired-paths` (2026-08-27T19:25:36Z) on `cursor`, git `8c1fc72b060f`,
 | 2026-08-27T19:13:42Z | paired-paths | `be74152613f0` | no | enforced-only:write_tool.ensure_parent,write_tool.make_tool,write_tool.write_utf8 | 1.04× | 0.81× | 0.96× | 0.08× |
 | 2026-08-27T19:25:36Z | paired-paths | `8c1fc72b060f` | no | enforced-only:evals_harness.result_json,evals_harness.step_value,evals_harness.usage | 1.07× | 0.99× | 1.11× | 0.08× |
 | 2026-08-27T19:54:58Z | paired-paths | `4aaa4f0c149b` | no | enforced-only:evals_harness.eval_environment,evals_harness.prompt_step,evals_harness.reload_step | 1.15× | 0.84× | 0.90× | 0.08× |
+| 2026-08-27T20:15:52Z | paired-paths | `46cdef89216a` | no | enforced-only:evals_harness.make_eval_root,evals_harness.normalize_step_type,evals_harness.selected_eval_tools | 1.04× | 0.85× | 0.94× | 0.07× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

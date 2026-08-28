@@ -235,6 +235,9 @@ const REPETITIONS = {
 	"evals_harness.eval_environment": 50,
 	"evals_harness.prompt_step": 50,
 	"evals_harness.reload_step": 50,
+	"evals_harness.make_eval_root": 50,
+	"evals_harness.normalize_step_type": 50,
+	"evals_harness.selected_eval_tools": 50,
 	"ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -5821,6 +5824,66 @@ function runEvalsHarnessReloadStep() {
 	};
 }
 
+function makeEvalRoot() {
+	const root = mkdtempSync(path.join(tmpdir(), "cadr-eval-"));
+	return root;
+}
+
+function runEvalsHarnessMakeEvalRoot() {
+	const root = makeEvalRoot();
+	try {
+		return {
+			mer_exists: existsSync(root) ? 1 : 0,
+			mer_prefix: root.includes("cadr-eval-") ? 1 : 0,
+			mer_no_ws: existsSync(path.join(root, "workspace")) ? 0 : 1,
+			mer_n: 3,
+		};
+	} finally {
+		rmSync(root, { recursive: true, force: true });
+	}
+}
+
+function normalizeStepType(value) {
+	if (typeof value === "string") return value.toLowerCase();
+	return undefined;
+}
+
+function runEvalsHarnessNormalizeStepType() {
+	return {
+		nst_kw: normalizeStepType("prompt") === "prompt" ? 1 : 0,
+		nst_sym: normalizeStepType("prompt") === "prompt" ? 1 : 0,
+		nst_str: normalizeStepType("reload") === "reload" ? 1 : 0,
+		nst_bad: normalizeStepType(42) === undefined ? 1 : 0,
+		nst_n: 4,
+	};
+}
+
+function selectedEvalTools(cwd, noTools) {
+	const tools = codingToolsModule.createCodingTools(cwd);
+	if (noTools === "all") return [];
+	if (Array.isArray(noTools)) {
+		return tools.filter((tool) => !noTools.includes(tool.name));
+	}
+	return tools;
+}
+
+function runEvalsHarnessSelectedEvalTools() {
+	const cwd = "/tmp/proj";
+	const all = selectedEvalTools(cwd, null);
+	const none = selectedEvalTools(cwd, "all");
+	const filtered = selectedEvalTools(cwd, ["bash"]);
+	const allNames = all.map((tool) => tool.name);
+	const filteredNames = filtered.map((tool) => tool.name);
+	return {
+		set_n: all.length,
+		set_names: allNames.join(",") === "read,bash,edit,write" ? 1 : 0,
+		set_all: none.length === 0 ? 1 : 0,
+		set_filt_n: filtered.length,
+		set_no_bash: filteredNames.includes("bash") ? 0 : 1,
+		set_cases: 5,
+	};
+}
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -5841,6 +5904,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessEvalEnvironment(),
 		...runEvalsHarnessPromptStep(),
 		...runEvalsHarnessReloadStep(),
+		...runEvalsHarnessMakeEvalRoot(),
+		...runEvalsHarnessNormalizeStepType(),
+		...runEvalsHarnessSelectedEvalTools(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -5884,6 +5950,15 @@ async function measureEvalsHarness() {
 		}),
 		reload_step: await collect("evals_harness.reload_step", () => {
 			return () => runEvalsHarnessReloadStep();
+		}),
+		make_eval_root: await collect("evals_harness.make_eval_root", () => {
+			return () => runEvalsHarnessMakeEvalRoot();
+		}),
+		normalize_step_type: await collect("evals_harness.normalize_step_type", () => {
+			return () => runEvalsHarnessNormalizeStepType();
+		}),
+		selected_eval_tools: await collect("evals_harness.selected_eval_tools", () => {
+			return () => runEvalsHarnessSelectedEvalTools();
 		}),
 		observed,
 	};
@@ -17193,6 +17268,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts runPiCodingAgent prompt step object",
 			"evals_harness.reload_step":
 				"packages/evals/src/pi-harness.ts runPiCodingAgent reload step object",
+			"evals_harness.make_eval_root":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent isolated eval directory",
+			"evals_harness.normalize_step_type":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent step type coercion",
+			"evals_harness.selected_eval_tools":
+				"packages/evals/src/pi-harness.ts runPiCodingAgent coding-tool selection",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",

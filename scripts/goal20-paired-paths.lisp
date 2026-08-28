@@ -138,6 +138,9 @@
 ;;;; 346. evals_harness eval-environment vs pi-harness environment trim
 ;;;; 347. evals_harness make-eval-prompt-step vs pi-harness prompt step object
 ;;;; 348. evals_harness make-eval-reload-step vs pi-harness reload step object
+;;;; 349. evals_harness make-eval-root vs pi-harness isolated eval directory
+;;;; 350. evals_harness normalize-step-type vs pi-harness step type coercion
+;;;; 351. evals_harness selected-eval-tools vs pi-harness coding-tool selection
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -386,6 +389,9 @@
     ("evals_harness.eval_environment" . 50)
     ("evals_harness.prompt_step" . 50)
     ("evals_harness.reload_step" . 50)
+    ("evals_harness.make_eval_root" . 50)
+    ("evals_harness.normalize_step_type" . 50)
+    ("evals_harness.selected_eval_tools" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -7304,6 +7310,67 @@
      (eval-flag (null (getf step :content)))
      2)))
 
+(defun evals-delete-eval-root (root)
+  (when (and root (probe-file root))
+    (uiop:delete-directory-tree
+     root
+     :validate t
+     :if-does-not-exist :ignore)))
+
+(defun run-evals-harness-make-eval-root ()
+  ;; Leftover of run-coding-agent-eval: isolated temp root, no workspace yet.
+  (let ((root (cadr-evals::make-eval-root)))
+    (unwind-protect
+         (let ((names (namestring root)))
+           (list
+            (eval-flag (probe-file root))
+            (eval-flag (search "cadr-eval-" names))
+            (eval-flag
+             (not
+              (probe-file
+               (merge-pathnames "workspace/" root))))
+            3))
+      (evals-delete-eval-root root))))
+
+(defun run-evals-harness-normalize-step-type ()
+  ;; Leftover callee of normalize-eval-steps: keyword/symbol/string/other.
+  (list
+   (eval-flag
+    (eq (cadr-evals::normalize-step-type :prompt) :prompt))
+   (eval-flag
+    (eq (cadr-evals::normalize-step-type 'prompt) :prompt))
+   (eval-flag
+    (eq (cadr-evals::normalize-step-type "reload") :reload))
+   (eval-flag
+    (null (cadr-evals::normalize-step-type 42)))
+   4))
+
+(defun evals-tool-names (tools)
+  (mapcar #'cadr-ai:tool-name tools))
+
+(defun run-evals-harness-selected-eval-tools ()
+  ;; Leftover of run-coding-agent-eval: default / :all / exclude-name filter.
+  (let* ((cwd "/tmp/proj")
+         (all (cadr-evals::selected-eval-tools cwd nil))
+         (none (cadr-evals::selected-eval-tools cwd :all))
+         (filtered
+           (cadr-evals::selected-eval-tools cwd '("bash"))))
+    (list
+     (length all)
+     (eval-flag
+      (equal
+       (evals-tool-names all)
+       '("read" "bash" "edit" "write")))
+     (eval-flag (null none))
+     (length filtered)
+     (eval-flag
+      (not
+       (member
+        "bash"
+        (evals-tool-names filtered)
+        :test #'string=)))
+     5)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7323,7 +7390,10 @@
          (result-json (run-evals-harness-result-json))
          (environment (run-evals-harness-eval-environment))
          (prompt-step (run-evals-harness-prompt-step))
-         (reload-step (run-evals-harness-reload-step)))
+         (reload-step (run-evals-harness-reload-step))
+         (eval-root (run-evals-harness-make-eval-root))
+         (step-type (run-evals-harness-normalize-step-type))
+         (eval-tools (run-evals-harness-selected-eval-tools)))
     (json-object
      "observed"
      (json-object
@@ -7404,7 +7474,22 @@
       "ps_n" (nth 2 prompt-step)
       "rs_type" (nth 0 reload-step)
       "rs_no_content" (nth 1 reload-step)
-      "rs_n" (nth 2 reload-step))
+      "rs_n" (nth 2 reload-step)
+      "mer_exists" (nth 0 eval-root)
+      "mer_prefix" (nth 1 eval-root)
+      "mer_no_ws" (nth 2 eval-root)
+      "mer_n" (nth 3 eval-root)
+      "nst_kw" (nth 0 step-type)
+      "nst_sym" (nth 1 step-type)
+      "nst_str" (nth 2 step-type)
+      "nst_bad" (nth 3 step-type)
+      "nst_n" (nth 4 step-type)
+      "set_n" (nth 0 eval-tools)
+      "set_names" (nth 1 eval-tools)
+      "set_all" (nth 2 eval-tools)
+      "set_filt_n" (nth 3 eval-tools)
+      "set_no_bash" (nth 4 eval-tools)
+      "set_cases" (nth 5 eval-tools))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7475,7 +7560,22 @@
      (collect "evals_harness.reload_step"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-reload-step)))))))
+                  (run-evals-harness-reload-step))))
+     "make_eval_root"
+     (collect "evals_harness.make_eval_root"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-make-eval-root))))
+     "normalize_step_type"
+     (collect "evals_harness.normalize_step_type"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-normalize-step-type))))
+     "selected_eval_tools"
+     (collect "evals_harness.selected_eval_tools"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-selected-eval-tools)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16774,6 +16874,12 @@
       "src/cadr-evals/harness.lisp make-eval-prompt-step"
       "evals_harness.reload_step"
       "src/cadr-evals/harness.lisp make-eval-reload-step"
+      "evals_harness.make_eval_root"
+      "src/cadr-evals/harness.lisp make-eval-root"
+      "evals_harness.normalize_step_type"
+      "src/cadr-evals/harness.lisp normalize-step-type"
+      "evals_harness.selected_eval_tools"
+      "src/cadr-evals/harness.lisp selected-eval-tools"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"
