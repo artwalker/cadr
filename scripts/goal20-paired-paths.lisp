@@ -522,6 +522,9 @@
     ("evals_harness.argument_prefix" . 50)
     ("evals_harness.parse_arguments" . 50)
     ("evals_harness.validate_smoke" . 50)
+    ("evals_harness.canonical_api" . 50)
+    ("evals_harness.legacy_api" . 50)
+    ("evals_harness.extension_error_json" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -10943,6 +10946,60 @@
      3)))
 
 
+(defun leftover-canonical-api (source)
+  (cadr-evals::source-uses-canonical-extension-api-p source))
+
+(defun leftover-legacy-api (source)
+  (cadr-evals::source-uses-legacy-extension-api-p source))
+
+(defun leftover-extension-error-json (error)
+  (cadr-evals::extension-error-json error))
+
+(defun run-evals-harness-canonical-api ()
+  (list
+   (eval-flag
+    (leftover-canonical-api "(define-tool hello ())"))
+   (eval-flag
+    (leftover-canonical-api "(cadr-agent:define-tool hello ())"))
+   (eval-flag
+    (leftover-canonical-api "(DEFINE-TOOL hello ())"))
+   (eval-flag
+    (not (leftover-canonical-api "hello")))
+   (eval-flag
+    (not (leftover-canonical-api "@mariozechner/pi")))
+   5))
+
+(defun run-evals-harness-legacy-api ()
+  (list
+   (eval-flag
+    (leftover-legacy-api "@mariozechner/foo"))
+   (eval-flag
+    (leftover-legacy-api "import { Type } from \"@sinclair/typebox\""))
+   (eval-flag
+    (leftover-legacy-api "@earendil-works/pi-coding-agent"))
+   (eval-flag
+    (leftover-legacy-api "@MarioZechner/foo"))
+   (eval-flag
+    (not (leftover-legacy-api "(define-tool hello ())")))
+   5))
+
+(defun run-evals-harness-extension-error-json ()
+  (let ((hit (leftover-extension-error-json "boom"))
+        (empty (leftover-extension-error-json "")))
+    (list
+     (eval-flag
+      (string= (cadr-ai::json-get hit "path") ""))
+     (eval-flag
+      (string= (cadr-ai::json-get hit "error") "boom"))
+     (eval-flag
+      (string= (cadr-ai::json-get empty "path") ""))
+     (eval-flag
+      (string= (cadr-ai::json-get empty "error") ""))
+     (eval-flag
+      (and (hash-table-p hit) (= (hash-table-count hit) 2)))
+     5)))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -10971,7 +11028,10 @@
          (coding-eval (run-evals-harness-run-coding-agent-eval))
          (argument-prefix (run-evals-harness-argument-prefix))
          (parse-arguments (run-evals-harness-parse-arguments))
-         (validate-smoke (run-evals-harness-validate-smoke)))
+         (validate-smoke (run-evals-harness-validate-smoke))
+         (canonical-api (run-evals-harness-canonical-api))
+         (legacy-api (run-evals-harness-legacy-api))
+         (extension-error (run-evals-harness-extension-error-json)))
     (json-object
      "observed"
      (json-object
@@ -11097,7 +11157,22 @@
       "vs_trim" (nth 1 validate-smoke)
       "vs_city" (nth 2 validate-smoke)
       "vs_tok" (nth 3 validate-smoke)
-      "vs_n" (nth 4 validate-smoke))
+      "vs_n" (nth 4 validate-smoke)
+      "sca_def" (nth 0 canonical-api)
+      "sca_pkg" (nth 1 canonical-api)
+      "sca_case" (nth 2 canonical-api)
+      "sca_miss" (nth 3 canonical-api)
+      "sca_leg" (nth 4 canonical-api)
+      "sla_mz" (nth 0 legacy-api)
+      "sla_tb" (nth 1 legacy-api)
+      "sla_pi" (nth 2 legacy-api)
+      "sla_case" (nth 3 legacy-api)
+      "sla_miss" (nth 4 legacy-api)
+      "see_path" (nth 0 extension-error)
+      "see_err" (nth 1 extension-error)
+      "see_empty" (nth 2 extension-error)
+      "see_blank" (nth 3 extension-error)
+      "see_n" (nth 4 extension-error))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -11213,7 +11288,22 @@
      (collect "evals_harness.validate_smoke"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-validate-smoke)))))))
+                  (run-evals-harness-validate-smoke))))
+     "canonical_api"
+     (collect "evals_harness.canonical_api"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-canonical-api))))
+     "legacy_api"
+     (collect "evals_harness.legacy_api"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-legacy-api))))
+     "extension_error_json"
+     (collect "evals_harness.extension_error_json"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-extension-error-json)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -29602,6 +29692,12 @@
       "src/cadr-evals/main.lisp parse-arguments"
       "evals_harness.validate_smoke"
       "src/cadr-evals/main.lisp validate-smoke-result"
+      "evals_harness.canonical_api"
+      "src/cadr-evals/suites.lisp source-uses-canonical-extension-api-p"
+      "evals_harness.legacy_api"
+      "src/cadr-evals/suites.lisp source-uses-legacy-extension-api-p"
+      "evals_harness.extension_error_json"
+      "src/cadr-evals/suites.lisp extension-error-json"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

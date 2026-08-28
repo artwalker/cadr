@@ -308,6 +308,9 @@ const REPETITIONS = {
 	"evals_harness.argument_prefix": 50,
 	"evals_harness.parse_arguments": 50,
 	"evals_harness.validate_smoke": 50,
+	"evals_harness.canonical_api": 50,
+	"evals_harness.legacy_api": 50,
+	"evals_harness.extension_error_json": 50,
 	"oauth_pkce_device.error_detail": 50,
 	"oauth_pkce_device.ensure_success": 50,
 	"oauth_pkce_device.notify_device": 50,
@@ -8598,6 +8601,62 @@ function runEvalsHarnessJsonString() {
 }
 
 
+function leftoverCanonicalApi(source) {
+	const text = String(source).toLowerCase();
+	return text.includes("(define-tool") || text.includes("(cadr-agent:define-tool");
+}
+
+
+function leftoverLegacyApi(source) {
+	const text = String(source).toLowerCase();
+	return (
+		text.includes("@mariozechner/") ||
+		text.includes("@sinclair/typebox") ||
+		text.includes("@earendil-works/pi-coding-agent")
+	);
+}
+
+
+function leftoverExtensionErrorJson(error) {
+	return { path: "", error };
+}
+
+
+function runEvalsHarnessCanonicalApi() {
+	return {
+		sca_def: leftoverCanonicalApi("(define-tool hello ())") ? 1 : 0,
+		sca_pkg: leftoverCanonicalApi("(cadr-agent:define-tool hello ())") ? 1 : 0,
+		sca_case: leftoverCanonicalApi("(DEFINE-TOOL hello ())") ? 1 : 0,
+		sca_miss: leftoverCanonicalApi("hello") ? 0 : 1,
+		sca_leg: leftoverCanonicalApi("@mariozechner/pi") ? 0 : 1,
+	};
+}
+
+
+function runEvalsHarnessLegacyApi() {
+	return {
+		sla_mz: leftoverLegacyApi("@mariozechner/foo") ? 1 : 0,
+		sla_tb: leftoverLegacyApi('import { Type } from "@sinclair/typebox"') ? 1 : 0,
+		sla_pi: leftoverLegacyApi("@earendil-works/pi-coding-agent") ? 1 : 0,
+		sla_case: leftoverLegacyApi("@MarioZechner/foo") ? 1 : 0,
+		sla_miss: leftoverLegacyApi("(define-tool hello ())") ? 0 : 1,
+	};
+}
+
+
+function runEvalsHarnessExtensionErrorJson() {
+	const hit = leftoverExtensionErrorJson("boom");
+	const empty = leftoverExtensionErrorJson("");
+	return {
+		see_path: hit.path === "" ? 1 : 0,
+		see_err: hit.error === "boom" ? 1 : 0,
+		see_empty: empty.path === "" ? 1 : 0,
+		see_blank: empty.error === "" ? 1 : 0,
+		see_n: Object.keys(hit).length === 2 ? 1 : 0,
+	};
+}
+
+
 async function measureEvalsHarness() {
 	const emptyReport = evalsSummaryModule.summarizeHarnessComparisons([]);
 	const report = evalsSummaryModule.summarizeHarnessComparisons(
@@ -8627,6 +8686,9 @@ async function measureEvalsHarness() {
 		...runEvalsHarnessArgumentPrefix(),
 		...runEvalsHarnessParseArguments(),
 		...runEvalsHarnessValidateSmoke(),
+		...runEvalsHarnessCanonicalApi(),
+		...runEvalsHarnessLegacyApi(),
+		...runEvalsHarnessExtensionErrorJson(),
 	};
 	return {
 		summarize: await collect("evals_harness.summarize", () => {
@@ -8697,6 +8759,15 @@ async function measureEvalsHarness() {
 		}),
 		validate_smoke: await collect("evals_harness.validate_smoke", () => {
 			return () => runEvalsHarnessValidateSmoke();
+		}),
+		canonical_api: await collect("evals_harness.canonical_api", () => {
+			return () => runEvalsHarnessCanonicalApi();
+		}),
+		legacy_api: await collect("evals_harness.legacy_api", () => {
+			return () => runEvalsHarnessLegacyApi();
+		}),
+		extension_error_json: await collect("evals_harness.extension_error_json", () => {
+			return () => runEvalsHarnessExtensionErrorJson();
 		}),
 		observed,
 	};
@@ -31251,6 +31322,12 @@ const result = {
 				"packages/evals/src/pi-harness.ts AgentSession.reload + dispose",
 			"evals_harness.run_coding_agent_eval":
 				"packages/evals/src/pi-harness.ts runPiCodingAgent",
+			"evals_harness.canonical_api":
+				"packages/evals/src/suites.ts canonical extension API probe (cadr source-uses-canonical-extension-api-p)",
+			"evals_harness.legacy_api":
+				"packages/evals/src/suites.ts legacy extension API probe (cadr source-uses-legacy-extension-api-p)",
+			"evals_harness.extension_error_json":
+				"packages/evals/src/suites.ts extension error JSON (cadr extension-error-json)",
 			"ai_crypto_model_data.manifest":
 				"packages/ai/scripts/model-data.ts createModelDataManifest",
 			"ai_crypto.hmac": "node:crypto createHmac sha256",
