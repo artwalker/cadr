@@ -12,19 +12,26 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `cli_extensions_install.unsafe_git`
   (`unsafe-git-source-p` on `src/cadr-cli/extensions/installer.lisp` vs
   `hasUnsafeGitInstallPart`). Observed `ug_empty` / `ug_dash` / `ug_ok`
-  / `ug_n` exact. n=5 freeze pending on host `cursor`, ceiling 8.0.
-  Measure-only leftover (Pair 499). `nextPairNum` left unchanged.
+  / `ug_n` exact. n=5 **1.159×** (0.762 / 0.658 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 499). Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text /
+  `execution_env.tmp_*`), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
 - Goal 20 P.13 leftover: pair `cli_extensions_install.git_path`
   (`git-source-path` on `src/cadr-cli/extensions/installer.lisp` vs git
   URL path slice). Observed `gp_https` / `gp_scp` / `gp_slash` /
-  `gp_miss` exact. n=5 freeze pending on host `cursor`, ceiling 8.0.
-  Measure-only leftover (Pair 500). `nextPairNum` left unchanged.
+  `gp_miss` exact. n=5 **1.852×** (1.055 / 0.569 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 500). Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
 - Goal 20 P.13 leftover: pair `cli_extensions_install.normalize_git`
   (`normalize-git-install-source` on
   `src/cadr-cli/extensions/installer.lisp` vs `parseGitUrl` + extension
   name). Observed `ng_https` / `ng_git` / `ng_file` / `ng_empty` /
-  `ng_bare` exact. n=5 freeze pending on host `cursor`, ceiling 8.0.
-  Measure-only leftover (Pair 501). `nextPairNum` left unchanged.
+  `ng_bare` exact. n=5 **0.369×** (4.884 / 13.233 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 501). cadr leads.
+  `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
