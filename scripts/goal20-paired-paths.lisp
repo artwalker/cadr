@@ -10964,6 +10964,48 @@
       (list has-x nframes 2))))
 
 
+(defun make-bench-cancellable-loader
+    (&key (frames '("a" "b")) (message "Loading..."))
+  (cadr-tui:make-cancellable-loader-component
+   (lambda ()) #'identity #'identity
+   :message message
+   :indicator-frames frames
+   :start-p nil))
+
+
+(defun run-tui-loader-update-display ()
+  (let ((loader (make-bench-loader)))
+    (cadr-tui::loader-component-update-display loader)
+    (let ((has-a (loader-text-has loader "a Loading..."))
+          (nframes
+            (length (cadr-tui::loader-component-frames loader))))
+      (cadr-tui:component-dispose loader)
+      (list has-a nframes 2))))
+
+
+(defun run-tui-loader-make-cancellable ()
+  (let ((loader (make-bench-cancellable-loader)))
+    (let ((has-a (loader-text-has loader "a Loading..."))
+          (aborted
+            (if (cadr-tui:cancellation-token-aborted-p
+                 (cadr-tui:cancellable-loader-token loader))
+                1
+                0)))
+      (cadr-tui:component-dispose loader)
+      (list has-a aborted 2))))
+
+
+(defun run-tui-loader-aborted ()
+  (let ((token (make-instance 'cadr-tui:cancellation-token)))
+    (let ((before
+            (if (cadr-tui:cancellation-token-aborted-p token) 1 0)))
+      (setf (cadr-tui:cancellation-token-aborted-p token) t)
+      (list
+       before
+       (if (cadr-tui:cancellation-token-aborted-p token) 1 0)
+       2))))
+
+
 (defun measure-tui-select-list ()
   (let ((observed (run-tui-select-list))
         (frames (run-tui-loader-frames))

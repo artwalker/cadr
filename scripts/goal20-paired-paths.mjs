@@ -305,6 +305,9 @@ const REPETITIONS = {
 	"evals_harness.eval_layout": 50,
 	"evals_harness.system_prompt": 50,
 	"evals_harness.output_selector": 50,
+	"tui_select_settings_loaders.update_display": 50,
+	"tui_select_settings_loaders.make_cancellable_loader": 50,
+	"tui_select_settings_loaders.cancellation_token_aborted": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -10129,6 +10132,49 @@ function runTuiLoaderSetIndicator() {
 	const hasX = loaderTextHas(loader, "x Loading...");
 	const nframes = loader.frames.length;
 	return { si_has_x: hasX, si_frames: nframes, si_n: 2 };
+}
+
+
+function makeStoppedCancellableLoader(frames = ["a", "b"], message = "Loading...") {
+	const ui = { requestRender() {} };
+	const loader = new cancellableLoaderModule.CancellableLoader(
+		ui,
+		(text) => text,
+		(text) => text,
+		message,
+		{ frames },
+	);
+	loader.stop();
+	return loader;
+}
+
+
+function runTuiLoaderUpdateDisplay() {
+	const loader = makeStoppedBenchLoader();
+	loader.updateDisplay();
+	const hasA = loaderTextHas(loader, "a Loading...");
+	const nframes = loader.frames.length;
+	loader.stop();
+	return { ud_has_a: hasA, ud_frames: nframes, ud_n: 2 };
+}
+
+
+function runTuiLoaderMakeCancellable() {
+	const loader = makeStoppedCancellableLoader();
+	const hasA = loaderTextHas(loader, "a Loading...");
+	const aborted = loader.aborted ? 1 : 0;
+	loader.stop();
+	return { cl_has_a: hasA, cl_aborted: aborted, cl_n: 2 };
+}
+
+
+function runTuiLoaderAborted() {
+	const loader = makeStoppedCancellableLoader();
+	const before = loader.aborted ? 1 : 0;
+	loader.abortController.abort();
+	const after = loader.aborted ? 1 : 0;
+	loader.stop();
+	return { ct_before: before, ct_after: after, ct_n: 2 };
 }
 
 

@@ -5261,6 +5261,51 @@ freeze **1.007×** (0.189 / 0.188 µs) on host `cursor`, ceiling 8.0. Gate used
 help text; this metric did not fail). Over-1× booked (sub-µs). Same commit
 no optimize.
 
+### Pair 433 — `tui_select_settings_loaders` (update_display)
+
+| metric | cadr | pi |
+|---|---|---|
+| `update_display` | `loader-component-update-display` (`src/cadr-tui/composition/loaders.lisp`) | `Loader.updateDisplay` (`packages/tui/src/components/loader.ts`) |
+
+Leftover sibling of Pair 39 `filter` on the `tui_select_settings_loaders` hole,
+staggered from in-flight #53 `loader_frames` / `loader_interval` / `loader_step`
+and #61 `make_loader_component` / `set_message` / `set_indicator`. Timed work
+is display rebuild on a stopped two-frame loader — not `loader-component-start`
+/ `stop` / `run` threads. Observed `ud_has_a` / `ud_frames` / `ud_n` are exact
+(1 / 2 / 2). First n=5 freeze **1.225×** (0.282 / 0.230 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1× booked.
+Same commit no optimize. Pair numbers 328–432 belong to other lanes; this cut
+is 433–435 only. `nextPairNum` stays 328.
+
+### Pair 434 — `tui_select_settings_loaders` (make_cancellable_loader)
+
+| metric | cadr | pi |
+|---|---|---|
+| `make_cancellable_loader` | `make-cancellable-loader-component` (`src/cadr-tui/composition/loaders.lisp`) | `CancellableLoader` constructor (`packages/tui/src/components/cancellable-loader.ts`) |
+
+Leftover sibling of Pair 433 `update_display` on the same `loaders.lisp` hole.
+Timed work is construct a two-frame cancellable loader with `:start-p nil` /
+`stop()` — not animation threads. Observed `cl_has_a` / `cl_aborted` / `cl_n`
+are exact (1 / 0 / 2). First n=5 freeze **0.205×** (0.600 / 2.934 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
+
+### Pair 435 — `tui_select_settings_loaders` (cancellation_token_aborted)
+
+| metric | cadr | pi |
+|---|---|---|
+| `cancellation_token_aborted` | `cancellation-token-aborted-p` (`src/cadr-tui/composition/loaders.lisp`) | `CancellableLoader.aborted` (`packages/tui/src/components/cancellable-loader.ts`) |
+
+Leftover sibling of Pair 433 `update_display` and Pair 434
+`make_cancellable_loader` on the same `loaders.lisp` hole. Timed work is the
+aborted predicate after abort — not Escape `handleInput`, not start/stop/run.
+Observed `ct_before` / `ct_after` / `ct_n` are exact (0 / 1 / 2). First n=5
+freeze **0.868×** (0.103 / 0.119 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -5791,14 +5836,14 @@ Denominator: **297 files / 128,901 lines**
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 181 | 78,030 | 60.5% | `no worse than baseline` is falsifiable |
+| `paired` | 182 | 78,265 | 60.7% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,477 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 28 | 17,427 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 64 | 25,967 | 20.1% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 63 | 25,732 | 20.0% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
-- **Falsifiable vs baseline:** 60.5% of lines (181 files). This is the share whose `no worse than baseline` claim is a measured pair.
-- **K-advanceable** (paired ∪ unpairable): 66.3% of lines.
+- **Falsifiable vs baseline:** 60.7% of lines (182 files). This is the share whose `no worse than baseline` claim is a measured pair.
+- **K-advanceable** (paired ∪ unpairable): 66.5% of lines.
 - **P.13 `pairable-uncovered`:** 0.0% of lines (must be 0%). Remaining pairable work is `needs-pair`, not unlabeled.
 
 H does not require the paired ratios to be ≤ 1.0×; that is Part O / P.13 floor.
@@ -5982,6 +6027,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/components/markdown.lisp` | 1,553 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/components/select-list.lisp` | 305 | `tui_select_settings_loaders.filter` |
 | `src/cadr-tui/components/tool-block.lisp` | 623 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
+| `src/cadr-tui/composition/loaders.lisp` | 235 | `tui_select_settings_loaders.update_display`, `tui_select_settings_loaders.make_cancellable_loader`, `tui_select_settings_loaders.cancellation_token_aborted` |
 | `src/cadr-tui/composition/protocol.lisp` | 143 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/rich-content.lisp` | 276 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/composition/root.lisp` | 317 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
@@ -6069,7 +6115,6 @@ Grouped by hole. Do not invent a file-level idle bench.
 | `settings_load` | 2 | 479 |
 | `provider_registry_defs` | 2 | 454 |
 | `skill_prompt_load` | 2 | 423 |
-| `tui_select_settings_loaders` | 1 | 235 |
 | `cli_support` | 5 | 123 |
 | `tui_mermaid` | 1 | 17 |
 | `ai_support` | 1 | 6 |
