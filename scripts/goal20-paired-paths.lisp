@@ -55,6 +55,9 @@
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;  42. cli_bootstrap_sessions make-coding-tools vs createCodingTools
 ;;;; 250. cli_bootstrap_sessions model-registry-login-options vs getLoginProviderOptions
+;;;; 490. cli_bootstrap_sessions parse-user-bash-input vs interactive-mode !/!! extract
+;;;; 491. cli_bootstrap_sessions response-text vs sendUserMessage textParts.join
+;;;; 492. cli_bootstrap_sessions dispatch-user-input vs interactive submit classify
 ;;;;  43. ai_runtime_faux faux-text/faux-thinking vs fauxText/fauxThinking
 ;;;;  44. http_transport parse-http-url vs WHATWG URL
 ;;;;  45. cli_support normalize-path-input vs normalizePath
@@ -596,6 +599,9 @@
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
+    ("cli_bootstrap_sessions.parse_bash" . 50)
+    ("cli_bootstrap_sessions.response_text" . 50)
+    ("cli_bootstrap_sessions.dispatch_plain" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -16287,9 +16293,104 @@
      (bootstrap-auth-structured-flag options :google-vertex)
      (bootstrap-auth-structured-flag options :amazon-bedrock))))
 
+(defun bash-parse-fields (line)
+  (multiple-value-bind (command exclude-p present-p)
+      (cadr-cli::parse-user-bash-input line)
+    (list
+     (if command (copy-seq command) "")
+     (if exclude-p 1 0)
+     (if present-p 1 0))))
+
+(defun run-cli-bootstrap-parse-bash ()
+  (let ((ls (bash-parse-fields "!ls"))
+        (excl (bash-parse-fields "!!echo hi"))
+        (bang (bash-parse-fields "!"))
+        (ws (bash-parse-fields "  !pwd  "))
+        (plain (bash-parse-fields "hello")))
+    (list
+     (first ls)
+     (second ls)
+     (third ls)
+     (first excl)
+     (second excl)
+     (third excl)
+     (first bang)
+     (third bang)
+     (first ws)
+     (third ws)
+     (third plain)
+     (+ (third ls) (third excl) (third bang) (third ws) (third plain)))))
+
+(defun run-cli-bootstrap-response-text ()
+  (let* ((one
+           (cadr-cli::response-text
+            (cadr-ai:make-assistant-message
+             :content (list (cadr-ai:make-text-content :text "hello")))))
+         (two
+           (cadr-cli::response-text
+            (cadr-ai:make-assistant-message
+             :content
+             (list
+              (cadr-ai:make-text-content :text "hello")
+              (cadr-ai:make-thinking-content :thinking "hmm")
+              (cadr-ai:make-text-content :text "world")))))
+         (empty
+           (cadr-cli::response-text
+            (cadr-ai:make-assistant-message :content nil))))
+    (list one two empty (length two))))
+
+(defun dispatch-kind-code (kind)
+  (ecase kind
+    (:empty 0)
+    (:bash 1)
+    (:command 2)
+    (:prompt 3)
+    (:unknown-command 4)))
+
+(defun dispatch-case (line)
+  (flet ((prompt (text) (length text))
+         (bash (command exclude-p)
+           (declare (ignore exclude-p))
+           (length command))
+         (command-fn (text)
+           (declare (ignore text))
+           (values nil nil))
+         (template-fn (text)
+           (values text nil)))
+    (multiple-value-bind (kind result)
+        (cadr-cli::dispatch-user-input
+         line #'prompt
+         :command-function #'command-fn
+         :template-function #'template-fn
+         :bash-function #'bash)
+      (list
+       (dispatch-kind-code kind)
+       (if (integerp result) result 0)))))
+
+(defun run-cli-bootstrap-dispatch-plain ()
+  (let ((empty (dispatch-case ""))
+        (ws (dispatch-case "   "))
+        (plain (dispatch-case "hello"))
+        (slash (dispatch-case "/nope"))
+        (bash (dispatch-case "!ls"))
+        (bang (dispatch-case "!")))
+    (list
+     (first empty)
+     (first ws)
+     (first plain)
+     (second plain)
+     (first slash)
+     (first bash)
+     (second bash)
+     (first bang)
+     6)))
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
-         (auth-observed (run-cli-bootstrap-auth)))
+         (auth-observed (run-cli-bootstrap-auth))
+         (parse (run-cli-bootstrap-parse-bash))
+         (response (run-cli-bootstrap-response-text))
+         (dispatch (run-cli-bootstrap-dispatch-plain)))
     (json-object
      "observed"
      (json-object
@@ -16300,7 +16401,32 @@
       "option_count" (first auth-observed)
       "auth_pairs_digest" (second auth-observed)
       "vertex_structured" (third auth-observed)
-      "bedrock_structured" (fourth auth-observed))
+      "bedrock_structured" (fourth auth-observed)
+      "pb_ls" (nth 0 parse)
+      "pb_ls_ex" (nth 1 parse)
+      "pb_ls_ok" (nth 2 parse)
+      "pb_excl" (nth 3 parse)
+      "pb_excl_ex" (nth 4 parse)
+      "pb_excl_ok" (nth 5 parse)
+      "pb_bang" (nth 6 parse)
+      "pb_bang_ok" (nth 7 parse)
+      "pb_ws" (nth 8 parse)
+      "pb_ws_ok" (nth 9 parse)
+      "pb_plain_ok" (nth 10 parse)
+      "pb_n" (nth 11 parse)
+      "rt_one" (nth 0 response)
+      "rt_two" (nth 1 response)
+      "rt_empty" (nth 2 response)
+      "rt_n" (nth 3 response)
+      "dp_empty" (nth 0 dispatch)
+      "dp_ws" (nth 1 dispatch)
+      "dp_plain" (nth 2 dispatch)
+      "dp_plain_n" (nth 3 dispatch)
+      "dp_slash" (nth 4 dispatch)
+      "dp_bash" (nth 5 dispatch)
+      "dp_bash_n" (nth 6 dispatch)
+      "dp_bang" (nth 7 dispatch)
+      "dp_n" (nth 8 dispatch))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -16310,7 +16436,22 @@
      (collect "cli_bootstrap_sessions.bootstrap_auth"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-auth)))))))
+                  (run-cli-bootstrap-auth))))
+     "parse_bash"
+     (collect "cli_bootstrap_sessions.parse_bash"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-parse-bash))))
+     "response_text"
+     (collect "cli_bootstrap_sessions.response_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-response-text))))
+     "dispatch_plain"
+     (collect "cli_bootstrap_sessions.dispatch_plain"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-dispatch-plain)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -17112,6 +17253,12 @@
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "cli_bootstrap_sessions.bootstrap_auth"
       "src/cadr-cli/bootstrap/auth.lisp model-registry-login-options"
+      "cli_bootstrap_sessions.parse_bash"
+      "src/cadr-cli/repl.lisp parse-user-bash-input"
+      "cli_bootstrap_sessions.response_text"
+      "src/cadr-cli/repl.lisp response-text"
+      "cli_bootstrap_sessions.dispatch_plain"
+      "src/cadr-cli/repl.lisp dispatch-user-input"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

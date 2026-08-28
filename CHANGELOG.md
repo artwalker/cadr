@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.parse_bash`
+  (`parse-user-bash-input` on `src/cadr-cli/repl.lisp` vs interactive
+  `!` / `!!` extract). Observed `pb_ls` / `pb_excl` / `pb_ws` / `pb_n`
+  exact. n=5 freeze pending on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 490). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.response_text`
+  (`response-text` on `src/cadr-cli/repl.lisp` vs `textParts.join`).
+  Observed `rt_one` / `rt_two` / `rt_empty` / `rt_n` exact. n=5 freeze
+  pending on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 491). `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.dispatch_plain`
+  (`dispatch-user-input` on `src/cadr-cli/repl.lisp` vs submit
+  classify). Observed `dp_empty` / `dp_plain` / `dp_slash` / `dp_bash`
+  / `dp_n` exact. n=5 freeze pending on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 492). `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

@@ -447,6 +447,9 @@ const REPETITIONS = {
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
+	"cli_bootstrap_sessions.parse_bash": 50,
+	"cli_bootstrap_sessions.response_text": 50,
+	"cli_bootstrap_sessions.dispatch_plain": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -16412,9 +16415,113 @@ async function runCliBootstrapAuth() {
 	};
 }
 
+function asciiTrim(line, charset = " \t\n\r") {
+	let start = 0;
+	let end = line.length;
+	while (start < end && charset.includes(line[start])) start += 1;
+	while (end > start && charset.includes(line[end - 1])) end -= 1;
+	return line.slice(start, end);
+}
+
+function parseUserBashInput(line) {
+	const trimmed = asciiTrim(line);
+	if (trimmed.length === 0 || trimmed[0] !== "!") {
+		return { command: "", exclude: 0, present: 0 };
+	}
+	const exclude = trimmed.length > 1 && trimmed[1] === "!" ? 1 : 0;
+	let command = trimmed.slice(exclude ? 2 : 1);
+	let index = 0;
+	while (index < command.length && (command[index] === " " || command[index] === "\t")) {
+		index += 1;
+	}
+	command = command.slice(index);
+	if (command.length === 0) return { command: "", exclude, present: 0 };
+	return { command, exclude, present: 1 };
+}
+
+function runCliBootstrapParseBash() {
+	const ls = parseUserBashInput("!ls");
+	const excl = parseUserBashInput("!!echo hi");
+	const bang = parseUserBashInput("!");
+	const ws = parseUserBashInput("  !pwd  ");
+	const plain = parseUserBashInput("hello");
+	return {
+		pb_ls: ls.command,
+		pb_ls_ex: ls.exclude,
+		pb_ls_ok: ls.present,
+		pb_excl: excl.command,
+		pb_excl_ex: excl.exclude,
+		pb_excl_ok: excl.present,
+		pb_bang: bang.command,
+		pb_bang_ok: bang.present,
+		pb_ws: ws.command,
+		pb_ws_ok: ws.present,
+		pb_plain_ok: plain.present,
+		pb_n: ls.present + excl.present + bang.present + ws.present + plain.present,
+	};
+}
+
+function assistantResponseText(content) {
+	return content
+		.filter((block) => block.type === "text")
+		.map((block) => block.text)
+		.join("\n");
+}
+
+function runCliBootstrapResponseText() {
+	const one = assistantResponseText([{ type: "text", text: "hello" }]);
+	const two = assistantResponseText([
+		{ type: "text", text: "hello" },
+		{ type: "thinking", thinking: "hmm" },
+		{ type: "text", text: "world" },
+	]);
+	const empty = assistantResponseText([]);
+	return {
+		rt_one: one,
+		rt_two: two,
+		rt_empty: empty,
+		rt_n: two.length,
+	};
+}
+
+function dispatchUserInput(line) {
+	const trimmed = asciiTrim(line);
+	if (trimmed.length === 0) return { kind: 0, result: 0 };
+	if (trimmed[0] === "!") {
+		const parsed = parseUserBashInput(trimmed);
+		if (parsed.present) return { kind: 1, result: parsed.command.length };
+		return { kind: 0, result: 0 };
+	}
+	if (trimmed[0] === "/") return { kind: 4, result: 0 };
+	return { kind: 3, result: line.length };
+}
+
+function runCliBootstrapDispatchPlain() {
+	const empty = dispatchUserInput("");
+	const ws = dispatchUserInput("   ");
+	const plain = dispatchUserInput("hello");
+	const slash = dispatchUserInput("/nope");
+	const bash = dispatchUserInput("!ls");
+	const bang = dispatchUserInput("!");
+	return {
+		dp_empty: empty.kind,
+		dp_ws: ws.kind,
+		dp_plain: plain.kind,
+		dp_plain_n: plain.result,
+		dp_slash: slash.kind,
+		dp_bash: bash.kind,
+		dp_bash_n: bash.result,
+		dp_bang: bang.kind,
+		dp_n: 6,
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
+	const parse = runCliBootstrapParseBash();
+	const response = runCliBootstrapResponseText();
+	const dispatch = runCliBootstrapDispatchPlain();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -16422,9 +16529,21 @@ async function measureCliBootstrapCodingTools() {
 		bootstrap_auth: await collect("cli_bootstrap_sessions.bootstrap_auth", () => {
 			return () => runCliBootstrapAuth();
 		}),
+		parse_bash: await collect("cli_bootstrap_sessions.parse_bash", () => {
+			return () => runCliBootstrapParseBash();
+		}),
+		response_text: await collect("cli_bootstrap_sessions.response_text", () => {
+			return () => runCliBootstrapResponseText();
+		}),
+		dispatch_plain: await collect("cli_bootstrap_sessions.dispatch_plain", () => {
+			return () => runCliBootstrapDispatchPlain();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
+			...parse,
+			...response,
+			...dispatch,
 		},
 	};
 }
@@ -17460,6 +17579,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"cli_bootstrap_sessions.bootstrap_auth":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
+			"cli_bootstrap_sessions.parse_bash":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts !/!! bash extract",
+			"cli_bootstrap_sessions.response_text":
+				"packages/coding-agent/src/core/agent-session.ts sendUserMessage textParts.join",
+			"cli_bootstrap_sessions.dispatch_plain":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts submit classify",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

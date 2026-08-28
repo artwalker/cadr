@@ -919,6 +919,42 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 490,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.parse_bash",
+   "branch": "cursor/repl-leftovers-490-492-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 490-492, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 491,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.response_text",
+   "branch": "cursor/repl-leftovers-490-492-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 490-492, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
+  },
+  {
+   "pair": 492,
+   "lane": "cursor",
+   "status": "pairing",
+   "source": "src/cadr-cli/repl.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.dispatch_plain",
+   "branch": "cursor/repl-leftovers-490-492-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 490-492, not sequential nextPairNum)",
+   "ratio": null,
+   "ceiling": 8.0
   }
  ],
  "mergeQueue": []
