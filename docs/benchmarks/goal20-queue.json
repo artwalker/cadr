@@ -844,9 +844,9 @@
    "measure": "measure-execution-env",
    "metric": "execution_env.absolute_path",
    "branch": "cursor/pair-391-393-execution-env-leftovers-494e",
-   "ratio": 2.926,
-   "cadrUs": 11.812,
-   "piUs": 4.037,
+   "ratio": 3.301,
+   "cadrUs": 11.920,
+   "piUs": 3.612,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -858,9 +858,9 @@
    "measure": "measure-execution-env",
    "metric": "execution_env.join_path",
    "branch": "cursor/pair-391-393-execution-env-leftovers-494e",
-   "ratio": 10.262,
-   "cadrUs": 9.174,
-   "piUs": 0.894,
+   "ratio": 10.091,
+   "cadrUs": 9.267,
+   "piUs": 0.918,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -872,9 +872,9 @@
    "measure": "measure-execution-env",
    "metric": "execution_env.file_info",
    "branch": "cursor/pair-391-393-execution-env-leftovers-494e",
-   "ratio": 0.411,
-   "cadrUs": 5.723,
-   "piUs": 13.935,
+   "ratio": 0.408,
+   "cadrUs": 5.834,
+   "piUs": 14.284,
    "ceiling": 8.0,
    "rc": 1
   }
