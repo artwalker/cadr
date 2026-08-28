@@ -12,22 +12,24 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `cli_print_rpc.dialog_request`
   (`rpc-dialog-request-object` on `src/cadr-cli/modes/rpc/ui.lisp` vs
   `createDialogPromise` request object). Observed `dr_type` / `dr_method` /
-  `dr_msg` / `dr_opt_n` / `dr_ph` / `dr_to` exact. n=5 **RATIO_PLACEHOLDER**.
-  Measure-only leftover (Pair 466). Gate rc=1 only from known old holes
-  (`lc_n` / `lc_sleep` / help text), not this metric. `nextPairNum` left
-  unchanged.
+  `dr_msg` / `dr_opt_n` / `dr_ph` / `dr_to` exact. n=5 **3.471×** (1.129 /
+  0.325 µs) on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 466).
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not
+  this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_print_rpc.dialog_result`
   (`rpc-dialog-result` on `src/cadr-cli/modes/rpc/ui.lisp` vs
   `createDialogPromise` parseResponse). Observed `rs_nil` / `rs_can` /
-  `rs_ok` / `rs_val` / `rs_num` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only
-  leftover (Pair 467). Gate rc=1 only from known old holes (`lc_n` /
-  `lc_sleep` / help text), not this metric.
+  `rs_ok` / `rs_val` / `rs_num` exact. n=5 **4.257×** (1.233 / 0.290 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 467). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 - Goal 20 P.13 leftover: pair `cli_print_rpc.dialog_expired`
   (`rpc-dialog-expired-p` on `src/cadr-cli/modes/rpc/ui.lisp` vs
   `createDialogPromise` timeout). Observed `ex_nil` / `ex_zero` / `ex_future`
-  exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover (Pair 468). Gate
-  rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text), not this
-  metric.
+  exact. n=5 **0.410×** (0.094 / 0.229 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 468). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.

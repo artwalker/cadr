@@ -929,9 +929,9 @@
    "metric": "cli_print_rpc.dialog_request",
    "branch": "cursor/rpc-ui-leftovers-466-468-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 466-468, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 3.471,
+   "cadrUs": 1.129,
+   "piUs": 0.325,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -944,9 +944,9 @@
    "metric": "cli_print_rpc.dialog_result",
    "branch": "cursor/rpc-ui-leftovers-466-468-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 466-468, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 4.257,
+   "cadrUs": 1.233,
+   "piUs": 0.290,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -959,9 +959,9 @@
    "metric": "cli_print_rpc.dialog_expired",
    "branch": "cursor/rpc-ui-leftovers-466-468-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 466-468, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 0.410,
+   "cadrUs": 0.094,
+   "piUs": 0.229,
    "ceiling": 8.0,
    "rc": 1
   }

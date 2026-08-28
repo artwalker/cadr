@@ -245,6 +245,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.usage` | 2.240 | 1.042 | 2.148× | 8.00× | measure-only pair 332; leftover `eval-usage` vs usage object assembly | invent pause；地板优化另刀 |
 | `evals_harness.result_json` | 1.933 | 0.370 | 5.225× | 8.00× | measure-only pair 333; leftover `eval-result-json` vs SimpleHarnessResult JSON shape | invent pause；地板优化另刀 |
 | `evals_harness.eval_environment` | 0.758 | 0.282 | 2.692× | 8.00× | measure-only pair 346; `eval-environment` getenv+trim leftover (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_print_rpc.dialog_request` | 1.129 | 0.325 | 3.471× | 8.00× | measure-only leftover 466; `rpc-dialog-request-object` vs createDialogPromise request (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_print_rpc.dialog_result` | 1.233 | 0.290 | 4.257× | 8.00× | measure-only leftover 467; `rpc-dialog-result` vs createDialogPromise parseResponse (sub-µs variance) | invent pause；地板优化另刀 |
 | `ls_tool.list_directory` | 352.2 | 314.9 | 1.119× | 8.00× | measure-only pair 317; `list-directory` empty/mixed/limit listing | invent pause；地板优化另刀 |
 | `ls_tool.make_tool` | 284.4 | 279.6 | 1.017× | 8.00× | measure-only pair 318; `make-ls-tool` vs `createLsToolDefinition` | invent pause；地板优化另刀 |
 | `cli_settings.enabled_models` | 18.7 | 3.26 | 5.735× | 8.00× | measure-only pair 308; `settings-enabled-models` missing→`:all` plus one in-memory pattern | invent pause；地板优化另刀 |
