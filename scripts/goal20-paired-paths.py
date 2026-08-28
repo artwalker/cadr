@@ -1267,10 +1267,17 @@ RATIO_CEILINGS = {
     # (181.6 / 22730 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "core_rest.threads_cleanup": 8.0,
-    # core_rest leftover trio (samples=5): first-freeze headroom.
-    # Ratchet down only.
+    # core_rest leftover trio (samples=5): cancellation_predicate observed
+    # 0.106x (0.296 / 2.788 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "core_rest.cancellation_predicate": 8.0,
+    # core_rest.redacted_register leftover pair (samples=5): observed
+    # 0.698x (0.216 / 0.309 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "core_rest.redacted_register": 8.0,
+    # core_rest.redacted_replace leftover pair (samples=5): observed
+    # 3.383x (1.464 / 0.433 us). 8.0 is first-freeze headroom.
+    # Ratchet down only.
     "core_rest.redacted_replace": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # skill_prompt_load pair (samples=5): observed 1170.57x

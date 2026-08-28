@@ -3983,7 +3983,9 @@ Leftover sibling of Pair 322 `cancellation_abort` on hole `core_rest`. Timed
 work is the exported predicate helper (nil / true / false / error) — not
 `abort-cancellation`, `wait-for-cancellation`, or `cancellation-aborted-p` on
 a `cancellation-state`. Observed `cp_nil` / `cp_true` / `cp_false` / `cp_err`
-are exact. First n=5 freeze pending `--only-enforce`. Ceiling 8.0. Same
+are exact. First n=5 freeze **0.106×** (0.296 / 2.788 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize. Pair numbers 328–357 / 358 / 361–363 belong to other
 lanes; this cut is 385–387 only.
 
@@ -3997,8 +3999,10 @@ Leftover sibling of Pair 323 `redacted_secrets` on the same
 `redacted-print.lisp` hole. Timed work is the unexported register helper
 (first insert / duplicate / sorted names) — not `redact-secrets`, not
 `redacted-object-types`, not `define-redacted-print-object`. Observed `rr_new`
-/ `rr_dup` / `rr_sort` are exact. First n=5 freeze pending `--only-enforce`.
-Ceiling 8.0. Same commit no optimize.
+/ `rr_dup` / `rr_sort` are exact. First n=5 freeze **0.698×** (0.216 /
+0.309 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script
+rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
 
 ### Pair 387 — `core_rest` (redacted_replace)
 
@@ -4010,8 +4014,11 @@ Leftover sibling of Pair 323 `redacted_secrets` and Pair 386
 `redacted_register` on the same `redacted-print.lisp` hole. Timed work is the
 unexported one-needle replace (hit / miss / empty needle returns the same
 string) — not `redact-secrets` as the timed owner. Observed `ra_hit` /
-`ra_mark` / `ra_miss` / `ra_empty` are exact. First n=5 freeze pending
-`--only-enforce`. Ceiling 8.0. Same commit no optimize.
+`ra_mark` / `ra_miss` / `ra_empty` are exact. First n=5 freeze **3.383×**
+(1.464 / 0.433 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
