@@ -3855,7 +3855,9 @@ sibling, repeat lookup) — not `wait-for-file-mutation-turn`, not
 `with-file-mutation-queue`, not write/edit tools. Same staged scratch
 layout as `with_queue`. Observed `fmqb_present` / `fmqb_shared` /
 `fmqb_other` / `fmqb_repeat` / `fmqb_n` are exact. First n=5 freeze
-pending `--only-enforce`. Same commit no optimize.
+**1.120×** (120.311 / 107.377 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 329 — `file_mutation_queue` (registry)
 
@@ -3868,8 +3870,11 @@ Timed work is Map/hash membership after ensure (hit, shared alias key, miss
 on a never-ensured path, still present after repeat) — not get-or-create as
 the owner (`ensure_state` / `lock`), not write/edit tools. Same staged
 scratch layout as `with_queue`. Observed `fmqg_hit` / `fmqg_alias` /
-`fmqg_miss` / `fmqg_repeat` / `fmqg_n` are exact. First n=5 freeze pending
-`--only-enforce`. Same commit no optimize.
+`fmqg_miss` / `fmqg_repeat` / `fmqg_n` are exact. First n=5 freeze
+**0.779×** (96.436 / 123.778 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). cadr leads. Same commit
+no optimize.
 
 ### Pair 330 — `file_mutation_queue` (state_p)
 
@@ -3882,8 +3887,10 @@ Leftover sibling of Pair 328 `waitqueue` and Pair 329 `registry` on the same
 constructed states, false for a list, false for null/nil) — not slot
 accessors, not write/edit tools. Same staged scratch layout as `with_queue`.
 Observed `fmqc_target` / `fmqc_other` / `fmqc_list` / `fmqc_null` / `fmqc_n`
-are exact. First n=5 freeze pending `--only-enforce`. Same commit no
-optimize.
+are exact. First n=5 freeze **1.440×** (100.853 / 70.044 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
 
 ### Pair 307 — `cli_settings` (reload)
 

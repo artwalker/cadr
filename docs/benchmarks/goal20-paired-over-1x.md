@@ -248,6 +248,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 
 | `file_mutation_queue.pending_count` | 194.6 | 135.5 | 1.435× | 8.00× | measure-only pair 304; `file-mutation-queue-state-pending-count` after enqueue | invent pause；地板优化另刀 |
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
+| `file_mutation_queue.waitqueue` | 120.311 | 107.377 | 1.120× | 8.00× | measure-only pair 328; `file-mutation-queue-state-waitqueue` vs `state.current` | invent pause；地板优化另刀 |
+| `file_mutation_queue.state_p` | 100.853 | 70.044 | 1.440× | 8.00× | measure-only pair 330; `file-mutation-queue-state-p` vs queue-state object predicate | invent pause；地板优化另刀 |
 | `oauth_pkce_device.percent_decode` | 1.592 | 1.044 | 1.525× | 8.00× | measure-only pair 310; `percent-decode` vs URLSearchParams | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_query` | 6.672 | 3.431 | 1.944× | 8.00× | measure-only pair 311; `parse-query` vs URLSearchParams | invent pause；地板优化另刀 |
 
