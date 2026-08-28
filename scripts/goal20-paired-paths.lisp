@@ -7741,6 +7741,58 @@
         :test #'string=)))
      5)))
 
+(defun run-evals-harness-content-text ()
+  ;; String / text-parts join / empty / non-text skip. Not messages-to-transcript.
+  (let ((plain (cadr-evals::message-content-text "hi"))
+        (parts
+          (cadr-evals::message-content-text
+           (list
+            (cadr-ai:make-text-content :text "a")
+            (cadr-ai:make-tool-call
+             :id "c1"
+             :name "bash"
+             :arguments (cadr-ai::json-object "cmd" "ls"))
+            (cadr-ai:make-text-content :text "b"))))
+        (empty (cadr-evals::message-content-text nil))
+        (blank
+          (cadr-evals::message-content-text
+           (list (cadr-ai:make-text-content :text "")))))
+    (list
+     (eval-flag (string= plain "hi"))
+     (eval-flag (string= parts (format nil "a~%b")))
+     (eval-flag (string= empty ""))
+     (eval-flag (string= blank ""))
+     4)))
+
+
+(defun run-evals-harness-transcript-event ()
+  ;; Message event object only. Not toTranscriptEvents / tool_call / tool_result.
+  (let ((user (cadr-evals::transcript-message-event "user" "hi"))
+        (asst (cadr-evals::transcript-message-event "assistant" "ok")))
+    (list
+     (eval-flag (string= (cadr-ai::json-get user "type") "message"))
+     (eval-flag (string= (cadr-ai::json-get user "role") "user"))
+     (eval-flag (string= (cadr-ai::json-get user "content") "hi"))
+     (eval-flag (string= (cadr-ai::json-get asst "role") "assistant"))
+     (eval-flag (string= (cadr-ai::json-get asst "content") "ok"))
+     5)))
+
+
+(defun run-evals-harness-elapsed ()
+  ;; timings.totalMs helper only. Flags, not the raw millisecond values.
+  (let* ((started-now (get-internal-real-time))
+         (now (cadr-evals::eval-elapsed-milliseconds started-now))
+         (started-past
+           (- (get-internal-real-time)
+              internal-time-units-per-second))
+         (past (cadr-evals::eval-elapsed-milliseconds started-past)))
+    (list
+     (eval-flag (>= now 0d0))
+     (eval-flag (>= past 0d0))
+     (eval-flag (>= past now))
+     3)))
+
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))

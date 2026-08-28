@@ -951,6 +951,33 @@
      "piUs": 1.021,
      "ceiling": 8.0,
      "rc": 1
+    },
+    {
+     "pair": 364,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.content_text",
+     "branch": "cursor/evals-harness-pairs-364-366-d90b"
+    },
+    {
+     "pair": 365,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.transcript_event",
+     "branch": "cursor/evals-harness-pairs-364-366-d90b"
+    },
+    {
+     "pair": 366,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-evals/harness.lisp",
+     "measure": "measure-evals-harness",
+     "metric": "evals_harness.elapsed",
+     "branch": "cursor/evals-harness-pairs-364-366-d90b"
     }
    ],
    "mergeQueue": []

@@ -1158,6 +1158,49 @@
    "piUs": 1.021,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 364,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.content_text",
+   "branch": "cursor/evals-harness-pairs-364-366-d90b",
+   "note": "nextPairNum left at 328 (agent lane lock); pairs 364-366",
+   "ratio": 1.386,
+   "cadrUs": 0.997,
+   "piUs": 0.719,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 365,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.transcript_event",
+   "branch": "cursor/evals-harness-pairs-364-366-d90b",
+   "ratio": 5.702,
+   "cadrUs": 1.016,
+   "piUs": 0.178,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 366,
+   "lane": "a",
+   "status": "done",
+   "source": "src/cadr-evals/harness.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.elapsed",
+   "branch": "cursor/evals-harness-pairs-364-366-d90b",
+   "ratio": 0.275,
+   "cadrUs": 0.182,
+   "piUs": 0.663,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

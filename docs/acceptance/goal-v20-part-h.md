@@ -3531,6 +3531,49 @@ from-end — not `agent-prompt`. Observed `la_new` / `la_none` / `la_full` /
 known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Over-1× booked (sub-µs). Same commit no optimize.
 
+### Pair 364 — `evals_harness` (content_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `content_text` | `message-content-text` (`src/cadr-evals/harness.lisp`) | `contentText` (`packages/evals/src/pi-harness.ts` via `@earendil-works/pi-ai`) |
+
+Leftover sibling of Pairs 325–327 on the same `evals_harness` hole. Timed
+work is string content, text-part join with a non-text skip, empty, and
+blank text — not `messages-to-transcript`. Observed `ct_plain` / `ct_join` /
+`ct_empty` / `ct_blank` / `ct_n` are exact. First n=5 freeze **1.386×**
+(0.997 / 0.719 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 365 — `evals_harness` (transcript_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `transcript_event` | `transcript-message-event` (`src/cadr-evals/harness.lisp`) | transcript `{ type: "message", role, content }` (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pair 364 `content_text` on the same `evals_harness`
+hole. Timed work is user and assistant message event objects — not
+`toTranscriptEvents` tool_call / tool_result. Observed `te_type` /
+`te_role` / `te_content` / `te_asst_role` / `te_asst` / `te_n` are exact.
+First n=5 freeze **5.702×** (1.016 / 0.178 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Over-1× booked
+(sub-µs). Same commit no optimize.
+
+### Pair 366 — `evals_harness` (elapsed)
+
+| metric | cadr | pi |
+|---|---|---|
+| `elapsed` | `eval-elapsed-milliseconds` (`src/cadr-evals/harness.lisp`) | `performance.now() - startedAt` timings.totalMs (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pairs 364–365 on the same `evals_harness` hole. Timed
+work is the eval timing helper: non-negative now, non-negative past, and
+past ≥ now flags — not `run-coding-agent-eval`. Observed `el_now` /
+`el_past` / `el_order` / `el_n` are exact. First n=5 freeze **0.275×**
+(0.182 / 0.663 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text; this
+metric did not fail). cadr leads. Same commit no optimize.
+
 ### Pair 295 — `provider_registry_defs` (merge_environment)
 
 | metric | cadr | pi |

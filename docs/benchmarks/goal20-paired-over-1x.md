@@ -231,6 +231,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `tool_manager.cleanup_quarantine` | 120.1 | 88.0 | 1.37× | 8.00× | measure-only pair 294; `cleanup-windows-self-update-quarantine` (not download/ensure) | invent pause；地板优化另刀 |
 | `evals_harness.transcript` | 3.80 | 2.18 | 1.743× | 8.00× | measure-only pair 326; `messages-to-transcript` vs `toTranscriptEvents` | invent pause；地板优化另刀 |
 | `evals_harness.last_assistant` | 0.579 | 0.560 | 1.034× | 8.00× | measure-only pair 327; `last-assistant-since` vs promptAgent slice; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `evals_harness.content_text` | 0.997 | 0.719 | 1.386× | 8.00× | measure-only pair 364; `message-content-text` vs `contentText`; sub-µs — variance floor applies | invent pause；地板优化另刀 |
+| `evals_harness.transcript_event` | 1.016 | 0.178 | 5.702× | 8.00× | measure-only pair 365; `transcript-message-event` vs message object; sub-µs — variance floor applies | invent pause；地板优化另刀 |
 | `provider_registry_defs.runtime_models` | 17.89 | 4.794 | 3.73× | 8.00× | measure-only pair 296; leftover `provider-runtime-models` vs `getBuiltinModels` | invent pause；地板优化另刀 |
 | `core_rest.redacted_secrets` | 2.750 | 1.105 | 2.49× | 8.00× | measure-only pair 323; leftover `redact-secrets` vs String.split/join | invent pause；地板优化另刀 |
 | `powershell_tool.utf8_prefix` | 0.647 | 0.171 | 3.79× | 8.00× | measure-only pair 301; `+powershell-utf8-output-prefix+` vs `UTF8_OUTPUT_PREFIX` (not execute/spawn); sub-µs — variance floor applies | invent pause；地板优化另刀 |
