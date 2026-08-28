@@ -155,6 +155,9 @@
   "settings_load.http_idle",
   "resource_loader.reload",
   "resource_loader.dedupe_by_name",
+  "resource_loader.context_file",
+  "resource_loader.project_context_files",
+  "resource_loader.ancestor_directories",
   "execution_env.exists_remove_temps",
   "session_pipeline.session_load",
   "session_pipeline.context_walk",
@@ -422,7 +425,10 @@
    "class": "paired",
    "metrics": [
     "resource_loader.reload",
-    "resource_loader.dedupe_by_name"
+    "resource_loader.dedupe_by_name",
+    "resource_loader.context_file",
+    "resource_loader.project_context_files",
+    "resource_loader.ancestor_directories"
    ]
   },
   {

@@ -9,6 +9,18 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13: pair `resource_loader.context_file` (`load-context-file-from-dir`
+  on `src/cadr-cli/resource-loader.lisp` vs baseline `loadContextFileFromDir`).
+  Observed `cf_agents` / `cf_miss` / `cf_override` / `cf_n` exact.
+  Measure-only leftover sibling of `reload` / `dedupe_by_name`. Pairs 382–384.
+- Goal 20 P.13: pair `resource_loader.project_context_files`
+  (`load-project-context-files` on `src/cadr-cli/resource-loader.lisp` vs
+  baseline `loadProjectContextFiles`). Observed `pcf_cwd` / `pcf_agents` /
+  `pcf_empty` / `pcf_n` exact. Measure-only.
+- Goal 20 P.13: pair `resource_loader.ancestor_directories`
+  (`ancestor-directories` on `src/cadr-cli/resource-loader.lisp` vs baseline
+  cwd→root dirname walk). Observed `ad_first` / `ad_parent` / `ad_root` /
+  `ad_n` exact. Measure-only. `nextPairNum` stays 328.
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.

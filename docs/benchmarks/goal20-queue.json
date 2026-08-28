@@ -835,6 +835,34 @@
    "piUs": 4.343,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 382,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/resource-loader.lisp",
+   "measure": "measure-resource-loader",
+   "metric": "resource_loader.context_file",
+   "branch": "cursor/pair-382-384-resource-loader-leftovers-80f7",
+   "note": "nextPairNum left at tip 328 (outside 382-384); 328-381 reserved for other leftover knives"
+  },
+  {
+   "pair": 383,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/resource-loader.lisp",
+   "measure": "measure-resource-loader",
+   "metric": "resource_loader.project_context_files",
+   "branch": "cursor/pair-382-384-resource-loader-leftovers-80f7"
+  },
+  {
+   "pair": 384,
+   "lane": "b",
+   "status": "done",
+   "source": "src/cadr-cli/resource-loader.lisp",
+   "measure": "measure-resource-loader",
+   "metric": "resource_loader.ancestor_directories",
+   "branch": "cursor/pair-382-384-resource-loader-leftovers-80f7"
   }
  ],
  "mergeQueue": []

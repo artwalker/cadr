@@ -3973,6 +3973,43 @@ on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
 from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 382 — `resource_loader` (context_file)
+
+| metric | cadr | pi |
+|---|---|---|
+| `context_file` | `load-context-file-from-dir` (`src/cadr-cli/resource-loader.lisp`) | `loadContextFileFromDir` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pair 12 `resource_loader.reload` and Pair 256 `dedupe_by_name`
+on the same `skill_prompt_load` hole. Timed work is the five-name context
+candidate walk (AGENTS.md hit / empty miss / AGENTS.override.md wins) — not
+`reload-resources`, not skill/prompt load. Observed `cf_agents` / `cf_miss` /
+`cf_override` / `cf_n` are exact. First n=5 freeze pending. Gate uses
+`--only-enforce`. Same commit no optimize. Pair numbers 328–381 belong to
+other lanes; this cut is 382–384 only.
+
+### Pair 383 — `resource_loader` (project_context_files)
+
+| metric | cadr | pi |
+|---|---|---|
+| `project_context_files` | `load-project-context-files` (`src/cadr-cli/resource-loader.lisp`) | `loadProjectContextFiles` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pair 382 `context_file` on the same `resource-loader.lisp`
+hole. Timed work is cwd + agent-dir context collection plus empty miss — not
+reload, not extension discovery. Observed `pcf_cwd` / `pcf_agents` /
+`pcf_empty` / `pcf_n` are exact. First n=5 freeze pending. Same commit no
+optimize.
+
+### Pair 384 — `resource_loader` (ancestor_directories)
+
+| metric | cadr | pi |
+|---|---|---|
+| `ancestor_directories` | `ancestor-directories` (`src/cadr-cli/resource-loader.lisp`) | cwd→root `dirname` walk in `loadProjectContextFiles` (`packages/coding-agent/src/core/resource-loader.ts`) |
+
+Leftover sibling of Pairs 382–383 on the same `resource-loader.lisp` hole.
+Timed work is cwd-first ancestor walk to filesystem root — not context-file
+IO, not reload. Observed `ad_first` / `ad_parent` / `ad_root` / `ad_n` are
+exact. First n=5 freeze pending. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

@@ -196,6 +196,9 @@ const REPETITIONS = {
 	"settings_load.config_paths": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
+	"resource_loader.context_file": 50,
+	"resource_loader.project_context_files": 50,
+	"resource_loader.ancestor_directories": 50,
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
 	"package_manager.package_source": 50,
@@ -2275,17 +2278,142 @@ function runResourceLoaderDedupeByName() {
 	};
 }
 
+const CONTEXT_FILE_CANDIDATES = [
+	"AGENTS.override.md",
+	"AGENTS.md",
+	"AGENTS.MD",
+	"CLAUDE.md",
+	"CLAUDE.MD",
+];
+
+function stageResourceLoaderLeftovers() {
+	const root = path.join(scratch, "rl-leftover");
+	const empty = path.join(root, "empty");
+	const agents = path.join(root, "agents");
+	const override = path.join(root, "override");
+	const nested = path.join(root, "nested", "child");
+	const pcfCwd = path.join(root, "pcf-cwd");
+	const pcfAgent = path.join(root, "pcf-agent");
+	mkdirSync(empty, { recursive: true });
+	mkdirSync(nested, { recursive: true });
+	mkdirSync(agents, { recursive: true });
+	mkdirSync(override, { recursive: true });
+	mkdirSync(pcfCwd, { recursive: true });
+	mkdirSync(pcfAgent, { recursive: true });
+	writeFileSync(path.join(agents, "AGENTS.md"), "cwd agents", "utf8");
+	writeFileSync(path.join(override, "AGENTS.md"), "loser", "utf8");
+	writeFileSync(path.join(override, "AGENTS.override.md"), "winner", "utf8");
+	writeFileSync(path.join(pcfCwd, "AGENTS.md"), "pcf cwd", "utf8");
+	writeFileSync(path.join(pcfAgent, "AGENTS.md"), "pcf agent", "utf8");
+	return { empty, agents, override, nested, pcfCwd, pcfAgent };
+}
+
+function loadContextFileFromDir(dir) {
+	for (const filename of CONTEXT_FILE_CANDIDATES) {
+		const filePath = path.join(dir, filename);
+		if (!existsSync(filePath)) continue;
+		try {
+			if (!statSync(filePath).isFile()) continue;
+			return filePath;
+		} catch {
+			continue;
+		}
+	}
+	return null;
+}
+
+function runResourceLoaderContextFile(empty, agents, override) {
+	const agentsLeaf = loadContextFileFromDir(agents);
+	const emptyLeaf = loadContextFileFromDir(empty);
+	const overrideLeaf = loadContextFileFromDir(override);
+	return {
+		cf_agents: path.basename(agentsLeaf ?? "") === "AGENTS.md" ? 1 : 0,
+		cf_miss: emptyLeaf === null ? 1 : 0,
+		cf_override: path.basename(overrideLeaf ?? "") === "AGENTS.override.md" ? 1 : 0,
+		cf_n: 3,
+	};
+}
+
+function runResourceLoaderProjectContextFiles(pcfCwd, pcfAgent, empty) {
+	const loaded = resourceLoaderModule.loadProjectContextFiles({
+		cwd: pcfCwd,
+		agentDir: pcfAgent,
+	});
+	const none = resourceLoaderModule.loadProjectContextFiles({
+		cwd: empty,
+		agentDir: empty,
+	});
+	return {
+		pcf_cwd: loaded.length > 0 ? 1 : 0,
+		pcf_agents: loaded.some((entry) => path.basename(entry.path) === "AGENTS.md") ? 1 : 0,
+		pcf_empty: none.length === 0 ? 1 : 0,
+		pcf_n: 3,
+	};
+}
+
+function ancestorDirectories(directory) {
+	const dirs = [];
+	let current = path.resolve(directory);
+	while (true) {
+		dirs.push(current);
+		const parent = path.dirname(current);
+		if (parent === current) break;
+		current = parent;
+	}
+	return dirs;
+}
+
+function runResourceLoaderAncestorDirectories(nested) {
+	const dirs = ancestorDirectories(nested);
+	const cwd = path.resolve(nested);
+	const parent = path.dirname(cwd);
+	const last = dirs[dirs.length - 1];
+	return {
+		ad_first: dirs[0] === cwd ? 1 : 0,
+		ad_parent: dirs.includes(parent) ? 1 : 0,
+		ad_root: path.dirname(last) === last ? 1 : 0,
+		ad_n: 3,
+	};
+}
+
 async function measureResourceLoader() {
 	const loader = await runResourceLoader();
 	const skills = loader.getSkills().skills;
 	const prompts = loader.getPrompts().prompts;
 	const dedupe = runResourceLoaderDedupeByName();
+	const leftover = stageResourceLoaderLeftovers();
+	const contextObserved = runResourceLoaderContextFile(
+		leftover.empty,
+		leftover.agents,
+		leftover.override,
+	);
+	const projectObserved = runResourceLoaderProjectContextFiles(
+		leftover.pcfCwd,
+		leftover.pcfAgent,
+		leftover.empty,
+	);
+	const ancestorObserved = runResourceLoaderAncestorDirectories(leftover.nested);
 	return {
 		dedupe_by_name: await collect("resource_loader.dedupe_by_name", () => {
 			return () => runResourceLoaderDedupeByName();
 		}),
 		reload: await collect("resource_loader.reload", () => {
 			return () => runResourceLoader();
+		}),
+		context_file: await collect("resource_loader.context_file", () => {
+			return () =>
+				runResourceLoaderContextFile(leftover.empty, leftover.agents, leftover.override);
+		}),
+		project_context_files: await collect("resource_loader.project_context_files", () => {
+			return () =>
+				runResourceLoaderProjectContextFiles(
+					leftover.pcfCwd,
+					leftover.pcfAgent,
+					leftover.empty,
+				);
+		}),
+		ancestor_directories: await collect("resource_loader.ancestor_directories", () => {
+			return () => runResourceLoaderAncestorDirectories(leftover.nested);
 		}),
 		observed: {
 			skill_count: skills.length,
@@ -2297,6 +2425,9 @@ async function measureResourceLoader() {
 			context_file_count: loader.getAgentsFiles().agentsFiles.length,
 			system_prompt: loader.getSystemPrompt() ? 1 : 0,
 			...dedupe,
+			...contextObserved,
+			...projectObserved,
+			...ancestorObserved,
 		},
 	};
 }
@@ -16787,6 +16918,9 @@ const result = {
 				"packages/coding-agent/src/config.ts getSettingsPath + getAuthPath",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
+			"resource_loader.context_file": "packages/coding-agent/src/core/resource-loader.ts loadContextFileFromDir",
+			"resource_loader.project_context_files": "packages/coding-agent/src/core/resource-loader.ts loadProjectContextFiles",
+			"resource_loader.ancestor_directories": "packages/coding-agent/src/core/resource-loader.ts cwd→root dirname walk in loadProjectContextFiles",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"package_manager.manifest_parse":
 				"packages/coding-agent/src/core/pi-manifest.ts readPiManifest",
