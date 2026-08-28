@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `bash_tool.live_output`
+  (`bash-live-output-for-mode` on `src/cadr-cli/tools/bash.lisp`).
+  Observed `lo_repl` / `lo_tui` / `lo_print` / `lo_rpc` exact. n=5
+  **0.479×** (0.105 / 0.218 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 508). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`), not this
+  metric. cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `bash_tool.strip_status`
+  (`bash-strip-status-footer` on `src/cadr-cli/tools/bash.lisp`). Observed
+  `ss_exact` / `ss_nl` / `ss_plain` / `ss_trim` exact. n=5 **0.773×**
+  (0.417 / 0.540 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 509). cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `bash_tool.strip_truncation`
+  (`bash-strip-truncation-footer` on `src/cadr-cli/tools/bash.lisp`).
+  Observed `st_none` / `st_footer` / `st_no_full` / `st_plain` exact. n=5
+  **5.885×** (2.331 / 0.396 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 510). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`), not this
+  metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_extensions_install.gated_approval`
   (`llama-gated-approval-text` on
   `src/cadr-cli/extensions/llama/extension.lisp`). Observed `ga_manual` /

@@ -175,6 +175,9 @@ const REPETITIONS = {
 	"bash_tool.strip_exit_footer": 50,
 	"bash_tool.append_status": 50,
 	"bash_tool.truncation_notice": 50,
+	"bash_tool.live_output": 50,
+	"bash_tool.strip_status": 50,
+	"bash_tool.strip_truncation": 50,
 	"output_accumulator.append": 50,
 	"output_accumulator.snapshot": 50,
 	"output_accumulator.finish": 50,
@@ -4607,10 +4610,87 @@ function runBashTruncationNotice() {
 	};
 }
 
+function lispRightTrim(text) {
+	return text.replace(/[ \t\n\r]+$/, "");
+}
+
+function replicaBashLiveOutputForMode(mode, frontend, tui, otherwise) {
+	if (mode === "repl") return frontend;
+	if (mode === "tui") return tui;
+	return otherwise;
+}
+
+function replicaBashStripStatusFooter(text, status) {
+	if (text === status) return "";
+	if (text.length > status.length && text.endsWith(status)) {
+		return lispRightTrim(text.slice(0, text.length - status.length));
+	}
+	return text;
+}
+
+function replicaBashStripTruncationFooter(text) {
+	if (text.length === 0 || text[text.length - 1] !== "]") {
+		return text;
+	}
+	const footerStart = text.lastIndexOf("\n\n[");
+	if (footerStart < 0) {
+		return text;
+	}
+	if (!text.includes("Full output: ", footerStart)) {
+		return text;
+	}
+	return lispRightTrim(text.slice(0, footerStart));
+}
+
+function runBashLiveOutput() {
+	const frontend = { id: "frontend" };
+	const tui = { id: "tui" };
+	const otherwise = { id: "otherwise" };
+	const pick = replicaBashLiveOutputForMode;
+	return {
+		lo_repl: pick("repl", frontend, tui, otherwise) === frontend ? 1 : 0,
+		lo_tui: pick("tui", frontend, tui, otherwise) === tui ? 1 : 0,
+		lo_print: pick("print", frontend, tui, otherwise) === otherwise ? 1 : 0,
+		lo_rpc: pick("rpc", frontend, tui, otherwise) === otherwise ? 1 : 0,
+	};
+}
+
+function runBashStripStatusFooter() {
+	const status = "Command aborted";
+	const exact = replicaBashStripStatusFooter(status, status);
+	const nl = replicaBashStripStatusFooter(`out\n\n${status}`, status);
+	const plain = replicaBashStripStatusFooter("plain output", status);
+	const trim = replicaBashStripStatusFooter(`keep  \n${status}`, status);
+	return {
+		ss_exact: exact === "" ? 1 : 0,
+		ss_nl: nl === "out" ? 1 : 0,
+		ss_plain: plain === "plain output" ? 1 : 0,
+		ss_trim: trim === "keep" ? 1 : 0,
+	};
+}
+
+function runBashStripTruncationFooter() {
+	const none = replicaBashStripTruncationFooter("plain");
+	const footer = replicaBashStripTruncationFooter(
+		"keep\n\n[Showing last 1 of line 2. Full output: /tmp/x]",
+	);
+	const noFull = replicaBashStripTruncationFooter("keep\n\n[Showing last 1 of line 2.]");
+	const plain = replicaBashStripTruncationFooter("");
+	return {
+		st_none: none === "plain" ? 1 : 0,
+		st_footer: footer === "keep" ? 1 : 0,
+		st_no_full: noFull === "keep\n\n[Showing last 1 of line 2.]" ? 1 : 0,
+		st_plain: plain === "" ? 1 : 0,
+	};
+}
+
 async function measureBashTool() {
 	const stripObserved = runBashStripExitFooter();
 	const appendObserved = runBashAppendStatus();
 	const noticeObserved = runBashTruncationNotice();
+	const liveObserved = runBashLiveOutput();
+	const statusObserved = runBashStripStatusFooter();
+	const truncObserved = runBashStripTruncationFooter();
 	return {
 		strip_exit_footer: await collect("bash_tool.strip_exit_footer", () => {
 			return () => runBashStripExitFooter();
@@ -4621,10 +4701,22 @@ async function measureBashTool() {
 		truncation_notice: await collect("bash_tool.truncation_notice", () => {
 			return () => runBashTruncationNotice();
 		}),
+		live_output: await collect("bash_tool.live_output", () => {
+			return () => runBashLiveOutput();
+		}),
+		strip_status: await collect("bash_tool.strip_status", () => {
+			return () => runBashStripStatusFooter();
+		}),
+		strip_truncation: await collect("bash_tool.strip_truncation", () => {
+			return () => runBashStripTruncationFooter();
+		}),
 		observed: {
 			...stripObserved,
 			...appendObserved,
 			...noticeObserved,
+			...liveObserved,
+			...statusObserved,
+			...truncObserved,
 		},
 	};
 }
@@ -22192,6 +22284,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/bash.ts appendStatus",
 			"bash_tool.truncation_notice":
 				"packages/coding-agent/src/core/tools/bash.ts formatOutput truncation notice [Showing ...]",
+			"bash_tool.live_output":
+				"packages/coding-agent/src/core/tools/bash.ts live-output stream pick (repl/tui/otherwise)",
+			"bash_tool.strip_status":
+				"packages/coding-agent/src/core/tools/bash.ts status-footer suffix strip",
+			"bash_tool.strip_truncation":
+				"packages/coding-agent/src/core/tools/bash.ts [Showing … Full output:] suffix strip",
 			"output_accumulator.append":
 				"packages/coding-agent/src/core/tools/output-accumulator.ts OutputAccumulator.append",
 			"output_accumulator.snapshot":

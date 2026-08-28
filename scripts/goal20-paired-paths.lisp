@@ -127,6 +127,9 @@
 ;;;; 277. bash_tool strip Process-exited footer vs bash-strip-exit-footer
 ;;;; 278. bash_tool appendStatus vs append-bash-status
 ;;;; 279. bash_tool formatOutput truncation notice vs bash-truncation-notice
+;;;; 508. bash_tool bash-live-output-for-mode vs live-output stream pick
+;;;; 509. bash_tool bash-strip-status-footer vs status-footer suffix strip
+;;;; 510. bash_tool bash-strip-truncation-footer vs Full-output suffix strip
 ;;;; 280. output_accumulator append vs OutputAccumulator.append
 ;;;; 281. output_accumulator snapshot vs OutputAccumulator.snapshot
 ;;;; 282. output_accumulator finish vs OutputAccumulator.finish
@@ -377,6 +380,9 @@
     ("bash_tool.strip_exit_footer" . 50)
     ("bash_tool.append_status" . 50)
     ("bash_tool.truncation_notice" . 50)
+    ("bash_tool.live_output" . 50)
+    ("bash_tool.strip_status" . 50)
+    ("bash_tool.strip_truncation" . 50)
     ("output_accumulator.append" . 50)
     ("output_accumulator.snapshot" . 50)
     ("output_accumulator.finish" . 50)
@@ -5721,6 +5727,66 @@
      (length bytes)
      4)))
 
+(defun run-bash-live-output ()
+  ;; Mode projection only. Not execute/spawn.
+  (let* ((frontend (list :frontend))
+         (tui (list :tui))
+         (cadr-cli::*bash-live-output* tui))
+    (list
+     (bash-tool-truth
+      (eq (cadr-cli::bash-live-output-for-mode :repl frontend)
+          frontend))
+     (bash-tool-truth
+      (eq (cadr-cli::bash-live-output-for-mode :tui frontend)
+          tui))
+     (bash-tool-truth
+      (eq (cadr-cli::bash-live-output-for-mode :print frontend)
+          *error-output*))
+     (bash-tool-truth
+      (eq (cadr-cli::bash-live-output-for-mode :rpc frontend)
+          *error-output*)))))
+
+(defun run-bash-strip-status-footer ()
+  ;; Inverse of append-bash-status / catch-path status suffix.
+  ;; Not execute/spawn.
+  (let* ((status "Command aborted")
+         (exact
+           (cadr-cli::bash-strip-status-footer status status))
+         (nl
+           (cadr-cli::bash-strip-status-footer
+            (format nil "out~%~%~A" status) status))
+         (plain
+           (cadr-cli::bash-strip-status-footer "plain output" status))
+         (trim
+           (cadr-cli::bash-strip-status-footer
+            (format nil "keep  ~%~A" status) status)))
+    (list
+     (bash-tool-truth (string= exact ""))
+     (bash-tool-truth (string= nl "out"))
+     (bash-tool-truth (string= plain "plain output"))
+     (bash-tool-truth (string= trim "keep")))))
+
+(defun run-bash-strip-truncation-footer ()
+  ;; Inverse of the [Showing … Full output: path] bracket.
+  ;; Not notice construction, not execute/spawn.
+  (let* ((none
+           (cadr-cli::bash-strip-truncation-footer "plain"))
+         (footer
+           (cadr-cli::bash-strip-truncation-footer
+            (format nil "keep~%~%[Showing last 1 of line 2. Full output: /tmp/x]")))
+         (no-full
+           (cadr-cli::bash-strip-truncation-footer
+            (format nil "keep~%~%[Showing last 1 of line 2.]")))
+         (plain
+           (cadr-cli::bash-strip-truncation-footer "")))
+    (list
+     (bash-tool-truth (string= none "plain"))
+     (bash-tool-truth (string= footer "keep"))
+     (bash-tool-truth
+      (string= no-full
+               (format nil "keep~%~%[Showing last 1 of line 2.]")))
+     (bash-tool-truth (string= plain "")))))
+
 (defun measure-bash-tool ()
   (destructuring-bind (sef-exact sef-nl sef-no-nl sef-plain sef-empty sef-n)
       (run-bash-strip-exit-footer)
@@ -5728,40 +5794,70 @@
         (run-bash-append-status)
       (destructuring-bind (btn-none btn-partial btn-lines btn-bytes btn-n)
           (run-bash-truncation-notice)
-        (json-object
-         "observed"
-         (json-object
-          "sef_exact" sef-exact
-          "sef_nl" sef-nl
-          "sef_no_nl" sef-no-nl
-          "sef_plain" sef-plain
-          "sef_empty" sef-empty
-          "sef_n" sef-n
-          "abs_empty" abs-empty
-          "abs_abort" abs-abort
-          "abs_exit" abs-exit
-          "abs_timeout" abs-timeout
-          "abs_n" abs-n
-          "btn_none" btn-none
-          "btn_partial" btn-partial
-          "btn_lines" btn-lines
-          "btn_bytes" btn-bytes
-          "btn_n" btn-n)
-         "strip_exit_footer"
-         (collect "bash_tool.strip_exit_footer"
-                  (lambda ()
+        (let ((live (run-bash-live-output))
+              (status (run-bash-strip-status-footer))
+              (trunc (run-bash-strip-truncation-footer)))
+          (json-object
+           "observed"
+           (json-object
+            "sef_exact" sef-exact
+            "sef_nl" sef-nl
+            "sef_no_nl" sef-no-nl
+            "sef_plain" sef-plain
+            "sef_empty" sef-empty
+            "sef_n" sef-n
+            "abs_empty" abs-empty
+            "abs_abort" abs-abort
+            "abs_exit" abs-exit
+            "abs_timeout" abs-timeout
+            "abs_n" abs-n
+            "btn_none" btn-none
+            "btn_partial" btn-partial
+            "btn_lines" btn-lines
+            "btn_bytes" btn-bytes
+            "btn_n" btn-n
+            "lo_repl" (nth 0 live)
+            "lo_tui" (nth 1 live)
+            "lo_print" (nth 2 live)
+            "lo_rpc" (nth 3 live)
+            "ss_exact" (nth 0 status)
+            "ss_nl" (nth 1 status)
+            "ss_plain" (nth 2 status)
+            "ss_trim" (nth 3 status)
+            "st_none" (nth 0 trunc)
+            "st_footer" (nth 1 trunc)
+            "st_no_full" (nth 2 trunc)
+            "st_plain" (nth 3 trunc))
+           "strip_exit_footer"
+           (collect "bash_tool.strip_exit_footer"
                     (lambda ()
-                      (run-bash-strip-exit-footer))))
-         "append_status"
-         (collect "bash_tool.append_status"
-                  (lambda ()
+                      (lambda ()
+                        (run-bash-strip-exit-footer))))
+           "append_status"
+           (collect "bash_tool.append_status"
                     (lambda ()
-                      (run-bash-append-status))))
-         "truncation_notice"
-         (collect "bash_tool.truncation_notice"
-                  (lambda ()
+                      (lambda ()
+                        (run-bash-append-status))))
+           "truncation_notice"
+           (collect "bash_tool.truncation_notice"
                     (lambda ()
-                      (run-bash-truncation-notice)))))))))
+                      (lambda ()
+                        (run-bash-truncation-notice))))
+           "live_output"
+           (collect "bash_tool.live_output"
+                    (lambda ()
+                      (lambda ()
+                        (run-bash-live-output))))
+           "strip_status"
+           (collect "bash_tool.strip_status"
+                    (lambda ()
+                      (lambda ()
+                        (run-bash-strip-status-footer))))
+           "strip_truncation"
+           (collect "bash_tool.strip_truncation"
+                    (lambda ()
+                      (lambda ()
+                        (run-bash-strip-truncation-footer))))))))))
 
 (defun find-tool-truth (value)
   (if value 1 0))
@@ -21421,6 +21517,12 @@
       "src/cadr-cli/tools/bash.lisp append-bash-status"
       "bash_tool.truncation_notice"
       "src/cadr-cli/tools/bash.lisp bash-truncation-notice"
+      "bash_tool.live_output"
+      "src/cadr-cli/tools/bash.lisp bash-live-output-for-mode"
+      "bash_tool.strip_status"
+      "src/cadr-cli/tools/bash.lisp bash-strip-status-footer"
+      "bash_tool.strip_truncation"
+      "src/cadr-cli/tools/bash.lisp bash-strip-truncation-footer"
       "output_accumulator.append"
       "src/cadr-cli/output-accumulator.lisp output-accumulator-append"
       "output_accumulator.snapshot"
