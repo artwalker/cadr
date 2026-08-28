@@ -183,6 +183,9 @@
 ;;;; 137. cli_selectors settings-display-value vs settings-selector boolean/value formatting
 ;;;; 138. cli_interactive_controller parse-auto-theme-setting vs theme parseAutoThemeSetting
 ;;;; 139. cli_interactive_controller resolve-theme-setting vs theme resolveThemeSetting
+;;;; 511. cli_interactive_controller sanitize-terminal-title-text vs interactive-mode control-byte strip
+;;;; 512. cli_interactive_controller tui-terminal-title-cwd-basename vs cwd basename
+;;;; 513. cli_interactive_controller tui-terminal-title vs APP_TITLE session/cwd grammar
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -446,6 +449,9 @@
     ("cli_interactive_controller.auth_type" . 50)
     ("cli_interactive_controller.parse_auto_theme" . 50)
     ("cli_interactive_controller.resolve_theme" . 50)
+    ("cli_interactive_controller.sanitize_title" . 50)
+    ("cli_interactive_controller.title_basename" . 50)
+    ("cli_interactive_controller.terminal_title" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -9672,13 +9678,43 @@
    (resolve-theme-str "light/dark/extra" :dark)
    (resolve-theme-str nil :light)))
 
+(defun run-cli-interactive-sanitize-title ()
+  (list
+   (cadr-cli::sanitize-terminal-title-text "hello")
+   (cadr-cli::sanitize-terminal-title-text
+    (format nil "a~Cb" #\Escape))
+   (cadr-cli::sanitize-terminal-title-text
+    (format nil "a~Cb" (code-char 7)))
+   (cadr-cli::sanitize-terminal-title-text nil)
+   (cadr-cli::sanitize-terminal-title-text "")))
+
+(defun run-cli-interactive-title-basename ()
+  (list
+   (cadr-cli::tui-terminal-title-cwd-basename "/tmp/project/")
+   (cadr-cli::tui-terminal-title-cwd-basename "C:\\foo\\bar\\")
+   (cadr-cli::tui-terminal-title-cwd-basename "nopath")
+   (cadr-cli::tui-terminal-title-cwd-basename "")
+   (cadr-cli::tui-terminal-title-cwd-basename nil)))
+
+(defun run-cli-interactive-terminal-title ()
+  (list
+   (cadr-cli::tui-terminal-title "/tmp/project/" nil)
+   (cadr-cli::tui-terminal-title "/tmp/project/" "branch work")
+   (cadr-cli::tui-terminal-title
+    "/tmp/project/"
+    (format nil "branch~Cwork" #\Escape))
+   (cadr-cli::tui-terminal-title "/tmp/project/" "")))
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))
         (cwd (run-cli-interactive-cwd-footer))
         (auth (run-cli-interactive-auth-type))
         (parse-auto-theme (run-cli-interactive-parse-auto-theme))
-        (resolve-theme (run-cli-interactive-resolve-theme)))
+        (resolve-theme (run-cli-interactive-resolve-theme))
+        (sanitize-title (run-cli-interactive-sanitize-title))
+        (title-basename (run-cli-interactive-title-basename))
+        (terminal-title (run-cli-interactive-terminal-title)))
     (json-object
      "observed"
      (json-object
@@ -9709,7 +9745,21 @@
       "rts_auto_dark" (second resolve-theme)
       "rts_fixed" (third resolve-theme)
       "rts_bad" (fourth resolve-theme)
-      "rts_nil" (fifth resolve-theme))
+      "rts_nil" (fifth resolve-theme)
+      "st_plain" (first sanitize-title)
+      "st_esc" (second sanitize-title)
+      "st_bel" (third sanitize-title)
+      "st_nil" (fourth sanitize-title)
+      "st_empty" (fifth sanitize-title)
+      "bn_unix" (first title-basename)
+      "bn_win" (second title-basename)
+      "bn_plain" (third title-basename)
+      "bn_empty" (fourth title-basename)
+      "bn_nil" (fifth title-basename)
+      "tt_none" (first terminal-title)
+      "tt_session" (second terminal-title)
+      "tt_esc" (third terminal-title)
+      "tt_empty" (fourth terminal-title))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -9739,7 +9789,22 @@
      (collect "cli_interactive_controller.resolve_theme"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-resolve-theme)))))))
+                  (run-cli-interactive-resolve-theme))))
+     "sanitize_title"
+     (collect "cli_interactive_controller.sanitize_title"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-sanitize-title))))
+     "title_basename"
+     (collect "cli_interactive_controller.title_basename"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-title-basename))))
+     "terminal_title"
+     (collect "cli_interactive_controller.terminal_title"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-terminal-title)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -16820,6 +16885,12 @@
       "src/cadr-cli/interactive/theme.lisp parse-auto-theme-setting"
       "cli_interactive_controller.resolve_theme"
       "src/cadr-cli/interactive/theme.lisp resolve-theme-setting"
+      "cli_interactive_controller.sanitize_title"
+      "src/cadr-cli/interactive/controller.lisp sanitize-terminal-title-text"
+      "cli_interactive_controller.title_basename"
+      "src/cadr-cli/interactive/controller.lisp tui-terminal-title-cwd-basename"
+      "cli_interactive_controller.terminal_title"
+      "src/cadr-cli/interactive/controller.lisp tui-terminal-title"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

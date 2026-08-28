@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.sanitize_title`
+  (`sanitize-terminal-title-text` on `src/cadr-cli/interactive/controller.lisp`).
+  Observed `st_plain` / `st_esc` / `st_bel` / `st_nil` / `st_empty` exact.
+  Pending first n=5 freeze. Measure-only leftover (Pair 511).
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.title_basename`
+  (`tui-terminal-title-cwd-basename` on `src/cadr-cli/interactive/controller.lisp`).
+  Observed `bn_unix` / `bn_win` / `bn_plain` / `bn_empty` / `bn_nil` exact.
+  Pending first n=5 freeze. Measure-only leftover (Pair 512).
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_interactive_controller.terminal_title`
+  (`tui-terminal-title` on `src/cadr-cli/interactive/controller.lisp`).
+  Observed `tt_none` / `tt_session` / `tt_esc` / `tt_empty` exact.
+  Pending first n=5 freeze. Measure-only leftover (Pair 513).
+  `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

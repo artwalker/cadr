@@ -919,6 +919,51 @@
    "piUs": 0.105,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 511,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.sanitize_title",
+   "branch": "cursor/interactive-controller-leftovers-511-513-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 511-513, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
+  },
+  {
+   "pair": 512,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.title_basename",
+   "branch": "cursor/interactive-controller-leftovers-511-513-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 511-513, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
+  },
+  {
+   "pair": 513,
+   "lane": "cursor",
+   "status": "pending-freeze",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.terminal_title",
+   "branch": "cursor/interactive-controller-leftovers-511-513-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 511-513, not sequential nextPairNum)",
+   "ratio": null,
+   "cadrUs": null,
+   "piUs": null,
+   "ceiling": 8.0,
+   "rc": null
   }
  ],
  "mergeQueue": []

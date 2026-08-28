@@ -4059,6 +4059,30 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 511 — `cli_interactive_controller` (sanitize_title)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sanitize_title` | `sanitize-terminal-title-text` (`src/cadr-cli/interactive/controller.lisp`) | terminal-title control-byte strip (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover of the `cli_interactive_controller` hole on `interactive/controller.lisp`. Timed work is Escape/BEL strip — not OSC title sequence, not `run-tui`. Observed `st_plain` / `st_esc` / `st_bel` / `st_nil` / `st_empty` are exact. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
+### Pair 512 — `cli_interactive_controller` (title_basename)
+
+| metric | cadr | pi |
+|---|---|---|
+| `title_basename` | `tui-terminal-title-cwd-basename` (`src/cadr-cli/interactive/controller.lisp`) | cwd basename (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pair 511 on the same hole. Timed work is trailing `/` `\\` trim plus last-separator basename — not title grammar, not `run-tui`. Observed `bn_unix` / `bn_win` / `bn_plain` / `bn_empty` / `bn_nil` are exact. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
+### Pair 513 — `cli_interactive_controller` (terminal_title)
+
+| metric | cadr | pi |
+|---|---|---|
+| `terminal_title` | `tui-terminal-title` (`src/cadr-cli/interactive/controller.lisp`) | APP_TITLE session/cwd grammar (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pairs 511–512 on the same hole. Timed work is `cadr - [session -] basename` — not OSC sequence, not `run-tui`. Observed `tt_none` / `tt_session` / `tt_esc` / `tt_empty` are exact. Product slug is cadr (identity), not Pi. Pending first n=5 freeze, ceiling 8.0. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

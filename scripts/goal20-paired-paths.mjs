@@ -297,6 +297,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.auth_type": 50,
 	"cli_interactive_controller.parse_auto_theme": 50,
 	"cli_interactive_controller.resolve_theme": 50,
+	"cli_interactive_controller.sanitize_title": 50,
+	"cli_interactive_controller.title_basename": 50,
+	"cli_interactive_controller.terminal_title": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -8622,6 +8625,72 @@ function runCliInteractiveResolveTheme() {
 	};
 }
 
+function replicaSanitizeTerminalTitleText(text) {
+	const src = text == null ? "" : String(text);
+	let out = "";
+	for (const ch of src) {
+		if (ch !== "\x1b" && ch !== "\x07") {
+			out += ch;
+		}
+	}
+	return out;
+}
+
+function replicaTuiTerminalTitleCwdBasename(cwd) {
+	let cwdText = cwd == null ? "" : String(cwd);
+	let trimmed = cwdText;
+	while (trimmed.endsWith("/") || trimmed.endsWith("\\")) {
+		trimmed = trimmed.slice(0, -1);
+	}
+	let sep = -1;
+	for (let i = trimmed.length - 1; i >= 0; i--) {
+		const c = trimmed[i];
+		if (c === "/" || c === "\\") {
+			sep = i;
+			break;
+		}
+	}
+	return sep >= 0 ? trimmed.slice(sep + 1) : trimmed;
+}
+
+function replicaTuiTerminalTitle(cwd, sessionName) {
+	const basename = replicaTuiTerminalTitleCwdBasename(cwd);
+	const cleanSession = replicaSanitizeTerminalTitleText(sessionName);
+	if (cleanSession.length > 0) {
+		return `cadr - ${cleanSession} - ${basename}`;
+	}
+	return `cadr - ${basename}`;
+}
+
+function runCliInteractiveSanitizeTitle() {
+	return {
+		st_plain: replicaSanitizeTerminalTitleText("hello"),
+		st_esc: replicaSanitizeTerminalTitleText("a\x1bb"),
+		st_bel: replicaSanitizeTerminalTitleText("a\x07b"),
+		st_nil: replicaSanitizeTerminalTitleText(undefined),
+		st_empty: replicaSanitizeTerminalTitleText(""),
+	};
+}
+
+function runCliInteractiveTitleBasename() {
+	return {
+		bn_unix: replicaTuiTerminalTitleCwdBasename("/tmp/project/"),
+		bn_win: replicaTuiTerminalTitleCwdBasename("C:\\foo\\bar\\"),
+		bn_plain: replicaTuiTerminalTitleCwdBasename("nopath"),
+		bn_empty: replicaTuiTerminalTitleCwdBasename(""),
+		bn_nil: replicaTuiTerminalTitleCwdBasename(undefined),
+	};
+}
+
+function runCliInteractiveTerminalTitle() {
+	return {
+		tt_none: replicaTuiTerminalTitle("/tmp/project/", undefined),
+		tt_session: replicaTuiTerminalTitle("/tmp/project/", "branch work"),
+		tt_esc: replicaTuiTerminalTitle("/tmp/project/", "branch\x1bwork"),
+		tt_empty: replicaTuiTerminalTitle("/tmp/project/", ""),
+	};
+}
+
 async function measureCliInteractiveDecodeEntity() {
 	const observed = {
 		...runCliInteractiveDecodeEntity(),
@@ -8630,6 +8699,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveAuthType(),
 		...runCliInteractiveParseAutoTheme(),
 		...runCliInteractiveResolveTheme(),
+		...runCliInteractiveSanitizeTitle(),
+		...runCliInteractiveTitleBasename(),
+		...runCliInteractiveTerminalTitle(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -8649,6 +8721,15 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		resolve_theme: await collect("cli_interactive_controller.resolve_theme", () => {
 			return () => runCliInteractiveResolveTheme();
+		}),
+		sanitize_title: await collect("cli_interactive_controller.sanitize_title", () => {
+			return () => runCliInteractiveSanitizeTitle();
+		}),
+		title_basename: await collect("cli_interactive_controller.title_basename", () => {
+			return () => runCliInteractiveTitleBasename();
+		}),
+		terminal_title: await collect("cli_interactive_controller.terminal_title", () => {
+			return () => runCliInteractiveTerminalTitle();
 		}),
 		observed,
 	};
@@ -17179,6 +17260,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts parseAutoThemeSetting",
 			"cli_interactive_controller.resolve_theme":
 				"packages/coding-agent/src/modes/interactive/theme/theme.ts resolveThemeSetting",
+			"cli_interactive_controller.sanitize_title":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts terminal-title control-byte strip",
+			"cli_interactive_controller.title_basename":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts terminal-title cwd basename",
+			"cli_interactive_controller.terminal_title":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts APP_TITLE session/cwd title grammar",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
