@@ -373,4 +373,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.framed_select_title` | 0.775 | 0.551 | 1.406× | 8.00× | measure-only leftover 550; `framed-select-title` vs countdown `${title} (${s}s)` (sub-µs) | invent pause；地板优化另刀 |
 | `cli_interactive_controller.extension_overlay_options` | 1.270 | 0.601 | 2.114× | 8.00× | measure-only leftover 551; `extension-overlay-options` vs resolveOptions | invent pause；地板优化另刀 |
 | `cli_interactive_controller.extension_custom_ui_visible` | 1.027 | 0.551 | 1.866× | 8.00× | measure-only leftover 552; `extension-custom-ui-visible-p` flags (no size callback) | invent pause；地板优化另刀 |
+| `cli_selectors.countdown_seconds` | 0.768 | 0.335 | 2.292× | 8.00× | measure-only leftover 556; `make-countdown-timer` remaining seconds vs `Math.ceil` (sub-µs) | invent pause；地板优化另刀 |
+| `cli_selectors.countdown_tick` | 0.700 | 0.233 | 3.006× | 8.00× | measure-only leftover 557; `countdown-timer-tick` vs interval body (sub-µs) | invent pause；地板优化另刀 |
+| `cli_selectors.countdown_render` | 0.892 | 0.463 | 1.928× | 8.00× | measure-only leftover 558; `countdown-request-render` vs `tui?.requestRender` (sub-µs) | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

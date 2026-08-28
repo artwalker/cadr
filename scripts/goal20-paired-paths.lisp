@@ -19021,6 +19021,103 @@
    "smsprv_empty" (nth 3 results)
    "smsprv_single" (nth 4 results)))
 
+(defun countdown-observed-pairs (seconds tick render)
+  (list
+   "cds_0" (nth 0 seconds)
+   "cds_1" (nth 1 seconds)
+   "cds_1000" (nth 2 seconds)
+   "cds_1001" (nth 3 seconds)
+   "cds_1500" (nth 4 seconds)
+   "cds_999" (nth 5 seconds)
+   "cdt_make" (nth 0 tick)
+   "cdt_remain" (nth 1 tick)
+   "cdt_expired" (nth 2 tick)
+   "cdt_ticks" (nth 3 tick)
+   "cdt_expires" (nth 4 tick)
+   "cdt_renders" (nth 5 tick)
+   "cdr_fn1" (nth 0 render)
+   "cdr_fn2" (nth 1 render)
+   "cdr_nil" (nth 2 render)
+   "cdr_sym" (nth 3 render)
+   "cdr_zero" (nth 4 render)
+   "cdr_fn3" (nth 5 render)))
+
+
+(defun make-countdown-bench-timer (timeout-ms ui on-tick on-expire)
+  (cadr-cli::make-countdown-timer
+   timeout-ms ui on-tick on-expire :start-p nil))
+
+
+(defun countdown-seconds-for (timeout-ms)
+  (cadr-cli::countdown-timer-remaining-seconds
+   (make-countdown-bench-timer
+    timeout-ms
+    (lambda ())
+    (lambda (seconds) (declare (ignore seconds)))
+    (lambda ()))))
+
+
+(defun run-cli-selectors-countdown-seconds ()
+  (mapcar
+   (lambda (timeout)
+     (write-to-string (countdown-seconds-for timeout)))
+   '(0 1 1000 1001 1500 999)))
+
+
+(defun run-cli-selectors-countdown-tick ()
+  (let* ((ticks 0)
+         (expires 0)
+         (renders 0)
+         (timer
+           (make-countdown-bench-timer
+            3000
+            (lambda () (incf renders))
+            (lambda (seconds)
+              (declare (ignore seconds))
+              (incf ticks))
+            (lambda () (incf expires))))
+         (after-make ticks))
+    (cadr-cli::countdown-timer-tick timer)
+    (cadr-cli::countdown-timer-tick timer)
+    (cadr-cli::countdown-timer-tick timer)
+    (list
+     (write-to-string after-make)
+     (write-to-string
+      (cadr-cli::countdown-timer-remaining-seconds timer))
+     (if (cadr-cli::countdown-timer-expired-p timer) "1" "0")
+     (write-to-string ticks)
+     (write-to-string expires)
+     (write-to-string renders))))
+
+
+(defun countdown-render-count (ui-kind calls)
+  (let ((n 0))
+    (let ((ui
+            (case ui-kind
+              (:fn (lambda () (incf n)))
+              (:nil nil)
+              (otherwise :not-a-function))))
+      (let ((timer
+              (make-countdown-bench-timer
+               1000
+               ui
+               (lambda (seconds) (declare (ignore seconds)))
+               (lambda ()))))
+        (dotimes (index calls)
+          (cadr-cli::countdown-request-render timer))))
+    (write-to-string n)))
+
+
+(defun run-cli-selectors-countdown-render ()
+  (list
+   (countdown-render-count :fn 1)
+   (countdown-render-count :fn 2)
+   (countdown-render-count :nil 1)
+   (countdown-render-count :sym 1)
+   (countdown-render-count :fn 0)
+   (countdown-render-count :fn 3)))
+
+
 (defun scoped-models-selector-provider-count-encoded (state)
   (write-to-string
    (cadr-cli::scoped-models-selector-provider-count state)))

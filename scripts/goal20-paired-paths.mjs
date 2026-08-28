@@ -415,6 +415,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.extension_custom_ui_visible": 50,
 	"cli_bootstrap_sessions.session_argument_path": 50,
 	"cli_bootstrap_sessions.path_command_argument": 50,
+	"cli_selectors.countdown_seconds": 50,
+	"cli_selectors.countdown_tick": 50,
+	"cli_selectors.countdown_render": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -19876,6 +19879,81 @@ function runCliSelectorsDaxnutsCenterLine() {
 		dcl_empty: daxnutsCenter("", 10),
 		dcl_ansi: daxnutsCenter("\x1b[31mhi\x1b[0m", 10),
 		dcl_wide: daxnutsCenter("hi", 80),
+	};
+}
+
+
+function countdownSeconds(timeoutMs) {
+	return String(Math.ceil(timeoutMs / 1000));
+}
+
+
+function runCliSelectorsCountdownSeconds() {
+	return {
+		cds_0: countdownSeconds(0),
+		cds_1: countdownSeconds(1),
+		cds_1000: countdownSeconds(1000),
+		cds_1001: countdownSeconds(1001),
+		cds_1500: countdownSeconds(1500),
+		cds_999: countdownSeconds(999),
+	};
+}
+
+
+function runCliSelectorsCountdownTick() {
+	let ticks = 0;
+	let expires = 0;
+	let renders = 0;
+	let remainingSeconds = Math.ceil(3000 / 1000);
+	ticks += 1;
+	const afterMake = ticks;
+	const tick = () => {
+		remainingSeconds -= 1;
+		ticks += 1;
+		renders += 1;
+		if (remainingSeconds <= 0) {
+			expires += 1;
+		}
+	};
+	tick();
+	tick();
+	tick();
+	return {
+		cdt_make: String(afterMake),
+		cdt_remain: String(remainingSeconds),
+		cdt_expired: remainingSeconds <= 0 ? "1" : "0",
+		cdt_ticks: String(ticks),
+		cdt_expires: String(expires),
+		cdt_renders: String(renders),
+	};
+}
+
+
+function countdownRenderCount(kind, calls) {
+	let n = 0;
+	const tui =
+		kind === "fn"
+			? {
+					requestRender() {
+						n += 1;
+					},
+				}
+			: undefined;
+	for (let index = 0; index < calls; index += 1) {
+		tui?.requestRender();
+	}
+	return String(n);
+}
+
+
+function runCliSelectorsCountdownRender() {
+	return {
+		cdr_fn1: countdownRenderCount("fn", 1),
+		cdr_fn2: countdownRenderCount("fn", 2),
+		cdr_nil: countdownRenderCount("nil", 1),
+		cdr_sym: countdownRenderCount("sym", 1),
+		cdr_zero: countdownRenderCount("fn", 0),
+		cdr_fn3: countdownRenderCount("fn", 3),
 	};
 }
 

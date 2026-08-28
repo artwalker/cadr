@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.countdown_seconds`
+  (`make-countdown-timer` remaining seconds on
+  `src/cadr-cli/interactive/components/countdown.lisp` vs baseline
+  `Math.ceil(timeoutMs / 1000)`). Observed `cds_0` / `cds_1` /
+  `cds_1000` / `cds_1001` / `cds_1500` / `cds_999` exact. n=5 **2.292×**
+  (0.768 / 0.335 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 556). Gate rc=1 only from known old holes, not this metric.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum`
+  left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.countdown_tick`
+  (`countdown-timer-tick` vs CountdownTimer interval body). Observed
+  `cdt_make` / `cdt_remain` / `cdt_expired` / `cdt_ticks` / `cdt_expires` /
+  `cdt_renders` exact. n=5 **3.006×** (0.700 / 0.233 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 557). Gate rc=1 only
+  from known old holes, not this metric. Booked over-1×.
+- Goal 20 P.13 leftover: pair `cli_selectors.countdown_render`
+  (`countdown-request-render` vs `tui?.requestRender`). Observed
+  `cdr_fn1` / `cdr_fn2` / `cdr_nil` / `cdr_sym` / `cdr_zero` / `cdr_fn3`
+  exact. n=5 **1.928×** (0.892 / 0.463 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 558). Gate rc=1 only from known old holes,
+  not this metric. Booked over-1×.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.session_argument_path`
   (`session-argument-path-p` on `src/cadr-cli/bootstrap/sessions.lisp` vs
   baseline `resolveSessionPath` path test). Observed `sap_slash` /
