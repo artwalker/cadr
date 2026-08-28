@@ -13774,6 +13774,75 @@
    (cadr-cli::tui-terminal-title "/tmp/project/" "")))
 
 
+(defun wrap-transcript-flag (got expected)
+  (if (equal got expected) 1 0))
+
+
+(defun run-cli-interactive-wrap-transcript ()
+  (let* ((one (cadr-cli::wrap-transcript-lines (list "x")))
+         (two (cadr-cli::wrap-transcript-lines (list "a" "b")))
+         (expected-one
+           (concatenate
+            'string
+            cadr-cli::+osc-133-end+
+            cadr-cli::+osc-133-final+
+            cadr-cli::+osc-133-start+
+            "x"))
+         (expected-two-first
+           (concatenate 'string cadr-cli::+osc-133-start+ "a"))
+         (expected-two-last
+           (concatenate
+            'string
+            cadr-cli::+osc-133-end+
+            cadr-cli::+osc-133-final+
+            "b")))
+    (list
+     (if (cadr-cli::wrap-transcript-lines nil) 0 1)
+     (wrap-transcript-flag (length one) 1)
+     (wrap-transcript-flag (first one) expected-one)
+     (wrap-transcript-flag (length two) 2)
+     (wrap-transcript-flag (first two) expected-two-first)
+     (wrap-transcript-flag (second two) expected-two-last))))
+
+
+(defun run-cli-interactive-output-padding ()
+  (list
+   (length (cadr-cli::output-padding-string 0))
+   (length (cadr-cli::output-padding-string 1))
+   (length (cadr-cli::output-padding-string 2))
+   (if (string= (cadr-cli::output-padding-string 1) " ") 1 0)))
+
+
+(defun render-cacheable-flag (entry)
+  (if (cadr-cli::tui-entry-render-cacheable-p entry) 1 0))
+
+
+(defun run-cli-interactive-render-cacheable ()
+  (list
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry :type :assistant :streaming-p nil))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry :type :assistant :streaming-p t))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry :type :tool :streaming-p nil))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry
+     :type :tool
+     :streaming-p nil
+     :tool-block (cadr-tui:make-tool-block :status :complete)))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry
+     :type :tool
+     :streaming-p nil
+     :tool-block (cadr-tui:make-tool-block :status :running)))
+   (render-cacheable-flag
+    (cadr-cli::make-tui-entry
+     :type :tool
+     :streaming-p nil
+     :tool-block (cadr-tui:make-tool-block :status :complete)
+     :custom-call-rendered-p t))))
+
+
 (defun measure-cli-interactive-decode-entity ()
   (let ((observed (run-cli-interactive-decode-entity))
         (wayland (run-cli-interactive-wayland))

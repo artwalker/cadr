@@ -377,6 +377,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.sanitize_title": 50,
 	"cli_interactive_controller.title_basename": 50,
 	"cli_interactive_controller.terminal_title": 50,
+	"cli_interactive_controller.wrap_transcript": 50,
+	"cli_interactive_controller.output_padding": 50,
+	"cli_interactive_controller.render_cacheable": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -13199,6 +13202,95 @@ function runCliInteractiveTerminalTitle() {
 		tt_session: replicaTuiTerminalTitle("/tmp/project/", "branch work"),
 		tt_esc: replicaTuiTerminalTitle("/tmp/project/", "branch\x1bwork"),
 		tt_empty: replicaTuiTerminalTitle("/tmp/project/", ""),
+	};
+}
+
+
+function wrapTranscriptLines(lines) {
+	if (!lines || lines.length === 0) return null;
+	const copy = lines.slice();
+	copy[0] = OSC133_ZONE_START + copy[0];
+	copy[copy.length - 1] = OSC133_ZONE_END + OSC133_ZONE_FINAL + copy[copy.length - 1];
+	return copy;
+}
+
+
+function wrapTranscriptFlag(got, expected) {
+	return got === expected ? 1 : 0;
+}
+
+
+function runCliInteractiveWrapTranscript() {
+	const one = wrapTranscriptLines(["x"]);
+	const two = wrapTranscriptLines(["a", "b"]);
+	const expectedOne = OSC133_ZONE_END + OSC133_ZONE_FINAL + OSC133_ZONE_START + "x";
+	const expectedTwoFirst = OSC133_ZONE_START + "a";
+	const expectedTwoLast = OSC133_ZONE_END + OSC133_ZONE_FINAL + "b";
+	return {
+		wt_nil: wrapTranscriptLines(null) ? 0 : 1,
+		wt_one_n: wrapTranscriptFlag(one.length, 1),
+		wt_one_order: wrapTranscriptFlag(one[0], expectedOne),
+		wt_two_n: wrapTranscriptFlag(two.length, 2),
+		wt_two_first: wrapTranscriptFlag(two[0], expectedTwoFirst),
+		wt_two_last: wrapTranscriptFlag(two[1], expectedTwoLast),
+	};
+}
+
+
+function outputPaddingString(outputPad) {
+	const n = outputPad === 0 || outputPad === 1 ? outputPad : 1;
+	return " ".repeat(n);
+}
+
+
+function runCliInteractiveOutputPadding() {
+	return {
+		op_0: outputPaddingString(0).length,
+		op_1: outputPaddingString(1).length,
+		op_other: outputPaddingString(2).length,
+		op_space: outputPaddingString(1) === " " ? 1 : 0,
+	};
+}
+
+
+function tuiEntryRenderCacheableP(entry) {
+	return (
+		!entry.streamingP &&
+		(entry.type !== "tool" ||
+			(!!entry.toolBlock &&
+				entry.toolBlock.status !== "running" &&
+				!entry.customCallRenderedP &&
+				!entry.customResultRenderedP))
+	);
+}
+
+
+function renderCacheableFlag(entry) {
+	return tuiEntryRenderCacheableP(entry) ? 1 : 0;
+}
+
+
+function runCliInteractiveRenderCacheable() {
+	return {
+		rc_assist: renderCacheableFlag({ type: "assistant", streamingP: false }),
+		rc_stream: renderCacheableFlag({ type: "assistant", streamingP: true }),
+		rc_tool_nil: renderCacheableFlag({ type: "tool", streamingP: false }),
+		rc_tool_done: renderCacheableFlag({
+			type: "tool",
+			streamingP: false,
+			toolBlock: { status: "complete" },
+		}),
+		rc_tool_run: renderCacheableFlag({
+			type: "tool",
+			streamingP: false,
+			toolBlock: { status: "running" },
+		}),
+		rc_custom: renderCacheableFlag({
+			type: "tool",
+			streamingP: false,
+			toolBlock: { status: "complete" },
+			customCallRenderedP: true,
+		}),
 	};
 }
 
