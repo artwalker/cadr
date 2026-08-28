@@ -243,6 +243,9 @@
 ;;;; 655. cli_interactive_controller seed-tui-message vs interactive-mode addChild user/assistant/bash
 ;;;; 656. cli_interactive_controller reset-tui-messages vs chatContainer reset + usage preserve
 ;;;; 657. cli_interactive_controller render-user-message-lines vs UserMessageComponent wrap + OSC 133
+;;;; 658. cli_interactive_controller render-assistant-message-lines vs AssistantMessageComponent wrap + OSC 133
+;;;; 659. cli_interactive_controller transform-tui-markdown vs mermaid transform + extension markdown cache
+;;;; 660. cli_interactive_controller render-transcript-summary-entry vs skill/branch/compaction CustomMessage
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -611,6 +614,9 @@
     ("cli_interactive_controller.seed_tui_message" . 50)
     ("cli_interactive_controller.reset_tui_messages" . 50)
     ("cli_interactive_controller.render_user_lines" . 50)
+    ("cli_interactive_controller.render_assistant_lines" . 50)
+    ("cli_interactive_controller.transform_tui_markdown" . 50)
+    ("cli_interactive_controller.render_transcript_summary" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14484,6 +14490,26 @@
    "rum_empty" (nth 4 render-user)))
 
 
+(defun leftover-transcript-asst-md-summary-observed-pairs
+    (assistant-lines transform-md summary)
+  (list
+   "ram_hi" (nth 0 assistant-lines)
+   "ram_n" (nth 1 assistant-lines)
+   "ram_osc" (nth 2 assistant-lines)
+   "ram_think" (nth 3 assistant-lines)
+   "ram_trunc" (nth 4 assistant-lines)
+   "ttm_eq" (nth 0 transform-md)
+   "ttm_n" (nth 1 transform-md)
+   "ttm_off" (nth 2 transform-md)
+   "ttm_think" (nth 3 transform-md)
+   "ttm_hit" (nth 4 transform-md)
+   "rts_skill" (nth 0 summary)
+   "rts_foo" (nth 1 summary)
+   "rts_branch" (nth 2 summary)
+   "rts_comp" (nth 3 summary)
+   "rts_n" (nth 4 summary)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -14969,7 +14995,13 @@
         (leftover-reset-tui-messages
           (run-cli-interactive-reset-tui-messages))
         (leftover-render-user-lines
-          (run-cli-interactive-render-user-lines)))
+          (run-cli-interactive-render-user-lines))
+        (leftover-render-assistant-lines
+          (run-cli-interactive-render-assistant-lines))
+        (leftover-transform-tui-markdown
+          (run-cli-interactive-transform-tui-markdown))
+        (leftover-render-transcript-summary
+          (run-cli-interactive-render-transcript-summary)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15052,7 +15084,11 @@
              (leftover-transcript-seed-reset-user-lines-observed-pairs
               leftover-seed-tui-message
               leftover-reset-tui-messages
-              leftover-render-user-lines)))
+              leftover-render-user-lines)
+             (leftover-transcript-asst-md-summary-observed-pairs
+              leftover-render-assistant-lines
+              leftover-transform-tui-markdown
+              leftover-render-transcript-summary)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15202,7 +15238,22 @@
      (collect "cli_interactive_controller.render_user_lines"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-render-user-lines)))))))
+                  (run-cli-interactive-render-user-lines))))
+     "render_assistant_lines"
+     (collect "cli_interactive_controller.render_assistant_lines"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-assistant-lines))))
+     "transform_tui_markdown"
+     (collect "cli_interactive_controller.transform_tui_markdown"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-transform-tui-markdown))))
+     "render_transcript_summary"
+     (collect "cli_interactive_controller.render_transcript_summary"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-transcript-summary)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -15770,6 +15821,111 @@
      (if (search "133" hello) 1 0)
      (if (search " hello" stripped) 1 0)
      (if (>= (length empty) 2) 1 0))))
+
+(defun leftover-assistant-lines-joined (blocks width &rest keys)
+  (let ((lines
+          (apply #'cadr-cli::render-assistant-message-lines
+                 blocks width keys)))
+    (if lines
+        (format nil "~{~A~^~%~}" lines)
+        "")))
+
+(defun run-cli-interactive-render-assistant-lines ()
+  (let* ((text-blocks
+           (list (list :type :text :text "hello")))
+         (hello (leftover-assistant-lines-joined text-blocks 80))
+         (stripped (cadr-cli::strip-ansi hello))
+         (lines
+           (cadr-cli::render-assistant-message-lines text-blocks 80))
+         (think
+           (leftover-assistant-lines-joined
+            (list (list :type :thinking :thinking "secret"))
+            80))
+         (trunc
+           (leftover-assistant-lines-joined
+            text-blocks 80 :stop-reason :length)))
+    (cadr-cli::render-assistant-message-lines text-blocks 80)
+    (cadr-cli::render-assistant-message-lines
+     (list (list :type :thinking :thinking "secret"))
+     80)
+    (cadr-cli::render-assistant-message-lines
+     text-blocks 80 :stop-reason :length)
+    (list
+     (if (search "hello" stripped) 1 0)
+     (if (>= (length lines) 1) 1 0)
+     (if (search "133" hello) 1 0)
+     (if (search "Thinking" (cadr-cli::strip-ansi think)) 1 0)
+     (if (search "truncated" (cadr-cli::strip-ansi trunc)) 1 0))))
+
+(defun leftover-plain-tui-entry ()
+  (cadr-cli::make-tui-entry :type :assistant :text "hello"))
+
+(defun leftover-transform-tui-markdown
+    (entry source message-type width &key mermaid-mode cache-key)
+  (cadr-cli::transform-tui-markdown
+   entry source message-type width nil
+   :cache-key (or cache-key message-type)
+   :mermaid-mode (or mermaid-mode "streaming")))
+
+(defun run-cli-interactive-transform-tui-markdown ()
+  (let ((entry (leftover-plain-tui-entry))
+        (think-entry (leftover-plain-tui-entry))
+        (off-entry (leftover-plain-tui-entry)))
+    (let ((hello
+            (leftover-transform-tui-markdown
+             entry "hello" :assistant 80 :cache-key :assistant)))
+      (leftover-transform-tui-markdown
+       entry "hello" :assistant 80 :cache-key :assistant)
+      (leftover-transform-tui-markdown
+       entry "world" :assistant 80 :cache-key :other)
+      (let ((off
+              (leftover-transform-tui-markdown
+               off-entry "hello" :assistant 80 :mermaid-mode "off"))
+            (thinking
+              (leftover-transform-tui-markdown
+               think-entry "secret" :assistant-thinking 80)))
+        (list
+         (if (string= hello "hello") 1 0)
+         (length (cadr-cli::tui-entry-markdown-cache entry))
+         (if (string= off "hello") 1 0)
+         (if (string= thinking "secret") 1 0)
+         (if (search "hello" (or hello "")) 1 0))))))
+
+(defun leftover-summary-stripped (entry width)
+  (cadr-cli::strip-ansi
+   (format
+    nil "~{~A~^~%~}"
+    (cadr-cli::render-transcript-summary-entry entry width))))
+
+(defun run-cli-interactive-render-transcript-summary ()
+  (let* ((skill
+           (cadr-cli::make-tui-entry
+            :type :skill-invocation
+            :label "foo"
+            :text "body"))
+         (branch
+           (cadr-cli::make-tui-entry
+            :type :branch-summary
+            :text "sum"))
+         (comp
+           (cadr-cli::make-tui-entry
+            :type :compaction-summary
+            :text "gone"
+            :tokens-before 12))
+         (skill-text (leftover-summary-stripped skill 80))
+         (branch-text (leftover-summary-stripped branch 80))
+         (comp-text (leftover-summary-stripped comp 80))
+         (lines
+           (cadr-cli::render-transcript-summary-entry skill 80)))
+    (cadr-cli::render-transcript-summary-entry skill 80)
+    (cadr-cli::render-transcript-summary-entry branch 80)
+    (cadr-cli::render-transcript-summary-entry comp 80)
+    (list
+     (if (search "[skill]" skill-text) 1 0)
+     (if (search "foo" skill-text) 1 0)
+     (if (search "[branch]" branch-text) 1 0)
+     (if (search "Compacted" comp-text) 1 0)
+     (if (>= (length lines) 1) 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -28084,6 +28240,12 @@
       "src/cadr-cli/interactive/transcript.lisp reset-tui-messages"
       "cli_interactive_controller.render_user_lines"
       "src/cadr-cli/interactive/transcript.lisp render-user-message-lines"
+      "cli_interactive_controller.render_assistant_lines"
+      "src/cadr-cli/interactive/transcript.lisp render-assistant-message-lines"
+      "cli_interactive_controller.transform_tui_markdown"
+      "src/cadr-cli/interactive/transcript.lisp transform-tui-markdown"
+      "cli_interactive_controller.render_transcript_summary"
+      "src/cadr-cli/interactive/transcript.lisp render-transcript-summary-entry"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

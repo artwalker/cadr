@@ -599,6 +599,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.seed_tui_message": 50,
 	"cli_interactive_controller.reset_tui_messages": 50,
 	"cli_interactive_controller.render_user_lines": 50,
+	"cli_interactive_controller.render_assistant_lines": 50,
+	"cli_interactive_controller.transform_tui_markdown": 50,
+	"cli_interactive_controller.render_transcript_summary": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -14172,6 +14175,211 @@ function runCliInteractiveRenderUserLines() {
 	};
 }
 
+function leftoverWrapTranscriptLinesCopy(lines) {
+	if (!lines || lines.length === 0) {
+		return null;
+	}
+	const copy = lines.slice();
+	copy[0] = "\x1b]133;A\x07" + copy[0];
+	copy[copy.length - 1] =
+		"\x1b]133;B\x07" + "\x1b]133;C\x07" + copy[copy.length - 1];
+	return copy;
+}
+
+function leftoverRenderAssistantMessageLines(
+	blocks,
+	width,
+	{ outputPad = 1, thinkingVisibleP = false, stopReason = null } = {},
+) {
+	let containsToolP = false;
+	let thinkingRunP = false;
+	let lines = [];
+	const padding = outputPaddingString(outputPad);
+	for (const block of blocks) {
+		if (block.type === "tool-call") {
+			containsToolP = true;
+			thinkingRunP = false;
+		} else if (block.type === "thinking") {
+			if (!thinkingRunP) {
+				const thinking = thinkingVisibleP ? block.thinking || "" : "Thinking...";
+				lines = lines.concat(leftoverWrapTextSlice(padding + thinking, width));
+			}
+			thinkingRunP = true;
+		} else if (block.type === "text") {
+			thinkingRunP = false;
+			lines = lines.concat(leftoverWrapTextSlice(padding + (block.text || ""), width));
+		}
+	}
+	if (stopReason === "length") {
+		lines = lines.concat(
+			[""],
+			leftoverWrapTextSlice(
+				leftoverThemeForeground("Response was truncated before completion."),
+				width,
+			),
+		);
+	}
+	if (containsToolP) {
+		return lines;
+	}
+	return leftoverWrapTranscriptLinesCopy(lines);
+}
+
+function leftoverAssistantLinesJoined(blocks, width, options = {}) {
+	const lines = leftoverRenderAssistantMessageLines(blocks, width, options);
+	return lines ? lines.join("\n") : "";
+}
+
+function runCliInteractiveRenderAssistantLines() {
+	const textBlocks = [{ type: "text", text: "hello" }];
+	const hello = leftoverAssistantLinesJoined(textBlocks, 80);
+	const stripped = leftoverStripAnsi(hello);
+	const lines = leftoverRenderAssistantMessageLines(textBlocks, 80);
+	const think = leftoverAssistantLinesJoined(
+		[{ type: "thinking", thinking: "secret" }],
+		80,
+	);
+	const trunc = leftoverAssistantLinesJoined(textBlocks, 80, {
+		stopReason: "length",
+	});
+	leftoverRenderAssistantMessageLines(textBlocks, 80);
+	leftoverRenderAssistantMessageLines([{ type: "thinking", thinking: "secret" }], 80);
+	leftoverRenderAssistantMessageLines(textBlocks, 80, { stopReason: "length" });
+	return {
+		ram_hi: stripped.includes("hello") ? 1 : 0,
+		ram_n: lines && lines.length >= 1 ? 1 : 0,
+		ram_osc: hello.includes("133") ? 1 : 0,
+		ram_think: leftoverStripAnsi(think).includes("Thinking") ? 1 : 0,
+		ram_trunc: leftoverStripAnsi(trunc).includes("truncated") ? 1 : 0,
+	};
+}
+
+function leftoverPlainTuiEntry() {
+	return {
+		type: "assistant",
+		text: "hello",
+		streamingP: false,
+		markdownCache: [],
+	};
+}
+
+function leftoverMermaidShouldSkipP(mode, messageType, streamingP) {
+	const text = String(mode || "streaming").toLowerCase();
+	if (text === "off") {
+		return true;
+	}
+	if (messageType === "assistant-thinking") {
+		return true;
+	}
+	if (streamingP && text !== "streaming") {
+		return true;
+	}
+	return false;
+}
+
+function leftoverTransformTuiMarkdown(
+	entry,
+	source,
+	messageType,
+	width,
+	{ mermaidMode = "streaming", cacheKey = messageType } = {},
+) {
+	const streamingP = !!entry.streamingP;
+	const mode = mermaidMode || "streaming";
+	const cached = (entry.markdownCache || []).find(
+		(item) =>
+			item[0] === cacheKey &&
+			item[1] === source &&
+			item[2] === streamingP &&
+			item[3] === width &&
+			item[4] == null &&
+			item[5] === mode,
+	);
+	if (cached) {
+		return cached[6];
+	}
+	let transformed = source == null ? "" : String(source);
+	if (!leftoverMermaidShouldSkipP(mode, messageType, streamingP)) {
+		transformed = source == null ? "" : String(source);
+	}
+	entry.markdownCache = [
+		[cacheKey, source, streamingP, width, null, mode, transformed],
+		...(entry.markdownCache || []).filter((item) => item[0] !== cacheKey),
+	];
+	return transformed;
+}
+
+function runCliInteractiveTransformTuiMarkdown() {
+	const entry = leftoverPlainTuiEntry();
+	const thinkEntry = leftoverPlainTuiEntry();
+	const offEntry = leftoverPlainTuiEntry();
+	const hello = leftoverTransformTuiMarkdown(entry, "hello", "assistant", 80, {
+		cacheKey: "assistant",
+	});
+	leftoverTransformTuiMarkdown(entry, "hello", "assistant", 80, {
+		cacheKey: "assistant",
+	});
+	leftoverTransformTuiMarkdown(entry, "world", "assistant", 80, {
+		cacheKey: "other",
+	});
+	const off = leftoverTransformTuiMarkdown(offEntry, "hello", "assistant", 80, {
+		mermaidMode: "off",
+	});
+	const thinking = leftoverTransformTuiMarkdown(
+		thinkEntry,
+		"secret",
+		"assistant-thinking",
+		80,
+	);
+	return {
+		ttm_eq: hello === "hello" ? 1 : 0,
+		ttm_n: entry.markdownCache.length,
+		ttm_off: off === "hello" ? 1 : 0,
+		ttm_think: thinking === "secret" ? 1 : 0,
+		ttm_hit: String(hello).includes("hello") ? 1 : 0,
+	};
+}
+
+function leftoverSummaryStripped(entry) {
+	if (entry.type === "skill-invocation") {
+		const label = leftoverTranscriptSummaryLabel("skill");
+		const body = `${label} ${entry.label} (ctrl+o to expand)`;
+		return leftoverStripAnsi(body);
+	}
+	if (entry.type === "branch-summary") {
+		return leftoverStripAnsi(`${leftoverTranscriptSummaryLabel("branch")} Branch summary`);
+	}
+	if (entry.type === "compaction-summary") {
+		return leftoverStripAnsi(
+			`${leftoverTranscriptSummaryLabel("compaction")} Compacted from ${entry.tokensBefore} tokens`,
+		);
+	}
+	return "";
+}
+
+function leftoverSummaryLineCount(entry) {
+	return leftoverSummaryStripped(entry).length > 0 ? 3 : 0;
+}
+
+function runCliInteractiveRenderTranscriptSummary() {
+	const skill = { type: "skill-invocation", label: "foo", text: "body" };
+	const branch = { type: "branch-summary", text: "sum" };
+	const comp = { type: "compaction-summary", text: "gone", tokensBefore: 12 };
+	const skillText = leftoverSummaryStripped(skill);
+	const branchText = leftoverSummaryStripped(branch);
+	const compText = leftoverSummaryStripped(comp);
+	leftoverSummaryStripped(skill);
+	leftoverSummaryStripped(branch);
+	leftoverSummaryStripped(comp);
+	return {
+		rts_skill: skillText.includes("[skill]") ? 1 : 0,
+		rts_foo: skillText.includes("foo") ? 1 : 0,
+		rts_branch: branchText.includes("[branch]") ? 1 : 0,
+		rts_comp: compText.includes("Compacted") ? 1 : 0,
+		rts_n: leftoverSummaryLineCount(skill) >= 1 ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -15434,6 +15642,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveSeedTuiMessage(),
 		...runCliInteractiveResetTuiMessages(),
 		...runCliInteractiveRenderUserLines(),
+		...runCliInteractiveRenderAssistantLines(),
+		...runCliInteractiveTransformTuiMarkdown(),
+		...runCliInteractiveRenderTranscriptSummary(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -15581,6 +15792,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.render_user_lines",
 			() => {
 				return () => runCliInteractiveRenderUserLines();
+			},
+		),
+		render_assistant_lines: await collect(
+			"cli_interactive_controller.render_assistant_lines",
+			() => {
+				return () => runCliInteractiveRenderAssistantLines();
+			},
+		),
+		transform_tui_markdown: await collect(
+			"cli_interactive_controller.transform_tui_markdown",
+			() => {
+				return () => runCliInteractiveTransformTuiMarkdown();
+			},
+		),
+		render_transcript_summary: await collect(
+			"cli_interactive_controller.render_transcript_summary",
+			() => {
+				return () => runCliInteractiveRenderTranscriptSummary();
 			},
 		),
 		observed,
@@ -29485,6 +29714,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts chatContainer reset + usage preserve",
 			"cli_interactive_controller.render_user_lines":
 				"packages/coding-agent/src/modes/interactive/components/user-message.ts UserMessageComponent wrap + OSC 133",
+			"cli_interactive_controller.render_assistant_lines":
+				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts AssistantMessageComponent wrap + OSC 133",
+			"cli_interactive_controller.transform_tui_markdown":
+				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts mermaid transform + markdown cache",
+			"cli_interactive_controller.render_transcript_summary":
+				"packages/coding-agent/src/modes/interactive/components/skill-invocation-message.ts skill/branch/compaction CustomMessage",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
