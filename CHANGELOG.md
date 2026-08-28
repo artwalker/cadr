@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.legacy_product`
+  (`legacy-product-name` on `src/cadr-cli/migration.lisp`). Observed `lp_len` /
+  `lp_p` / `lp_i` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only leftover
+  (Pair 457). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.shell_quote`
+  (`shell-single-quote` on `src/cadr-cli/migration.lisp`). Observed `sq_plain` /
+  `sq_space` / `sq_quote` / `sq_empty` exact. n=5 **RATIO_PLACEHOLDER**.
+  Measure-only leftover (Pair 458). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.affirmative`
+  (`affirmative-response-p` on `src/cadr-cli/migration.lisp`). Observed `af_y` /
+  `af_yes` / `af_trim` / `af_no` exact. n=5 **RATIO_PLACEHOLDER**. Measure-only
+  leftover (Pair 459). Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.

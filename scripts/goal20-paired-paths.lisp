@@ -596,6 +596,9 @@
     ("skill_prompt_load.build_prompt" . 50)
     ("cli_bootstrap_sessions.coding_tools" . 50)
     ("cli_bootstrap_sessions.bootstrap_auth" . 50)
+    ("cli_bootstrap_sessions.legacy_product" . 50)
+    ("cli_bootstrap_sessions.shell_quote" . 50)
+    ("cli_bootstrap_sessions.affirmative" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -16287,9 +16290,33 @@
      (bootstrap-auth-structured-flag options :google-vertex)
      (bootstrap-auth-structured-flag options :amazon-bedrock))))
 
+(defun run-cli-bootstrap-legacy-product ()
+  (let ((name (cadr-cli::legacy-product-name)))
+    (list
+     (length name)
+     (char-code (char name 0))
+     (char-code (char name 1)))))
+
+(defun run-cli-bootstrap-shell-quote ()
+  (list
+   (if (string= (cadr-cli::shell-single-quote "foo") "'foo'") 1 0)
+   (if (string= (cadr-cli::shell-single-quote "a b") "'a b'") 1 0)
+   (if (string= (cadr-cli::shell-single-quote "a'b") "'a'\\''b'") 1 0)
+   (if (string= (cadr-cli::shell-single-quote "") "''") 1 0)))
+
+(defun run-cli-bootstrap-affirmative ()
+  (list
+   (if (cadr-cli::affirmative-response-p "y") 1 0)
+   (if (cadr-cli::affirmative-response-p "yes") 1 0)
+   (if (cadr-cli::affirmative-response-p (format nil " YES~C" #\Newline)) 1 0)
+   (if (cadr-cli::affirmative-response-p "n") 0 1)))
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
-         (auth-observed (run-cli-bootstrap-auth)))
+         (auth-observed (run-cli-bootstrap-auth))
+         (legacy (run-cli-bootstrap-legacy-product))
+         (quoted (run-cli-bootstrap-shell-quote))
+         (affirm (run-cli-bootstrap-affirmative)))
     (json-object
      "observed"
      (json-object
@@ -16300,7 +16327,18 @@
       "option_count" (first auth-observed)
       "auth_pairs_digest" (second auth-observed)
       "vertex_structured" (third auth-observed)
-      "bedrock_structured" (fourth auth-observed))
+      "bedrock_structured" (fourth auth-observed)
+      "lp_len" (nth 0 legacy)
+      "lp_p" (nth 1 legacy)
+      "lp_i" (nth 2 legacy)
+      "sq_plain" (nth 0 quoted)
+      "sq_space" (nth 1 quoted)
+      "sq_quote" (nth 2 quoted)
+      "sq_empty" (nth 3 quoted)
+      "af_y" (nth 0 affirm)
+      "af_yes" (nth 1 affirm)
+      "af_trim" (nth 2 affirm)
+      "af_no" (nth 3 affirm))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -16310,7 +16348,22 @@
      (collect "cli_bootstrap_sessions.bootstrap_auth"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-auth)))))))
+                  (run-cli-bootstrap-auth))))
+     "legacy_product"
+     (collect "cli_bootstrap_sessions.legacy_product"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-legacy-product))))
+     "shell_quote"
+     (collect "cli_bootstrap_sessions.shell_quote"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-shell-quote))))
+     "affirmative"
+     (collect "cli_bootstrap_sessions.affirmative"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-affirmative)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -17112,6 +17165,12 @@
       "src/cadr-cli/bootstrap/tools.lisp make-coding-tools"
       "cli_bootstrap_sessions.bootstrap_auth"
       "src/cadr-cli/bootstrap/auth.lisp model-registry-login-options"
+      "cli_bootstrap_sessions.legacy_product"
+      "src/cadr-cli/migration.lisp legacy-product-name"
+      "cli_bootstrap_sessions.shell_quote"
+      "src/cadr-cli/migration.lisp shell-single-quote"
+      "cli_bootstrap_sessions.affirmative"
+      "src/cadr-cli/migration.lisp affirmative-response-p"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

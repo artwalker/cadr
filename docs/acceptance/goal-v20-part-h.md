@@ -4059,6 +4059,39 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 457 — `cli_bootstrap_sessions` (legacy_product)
+
+| metric | cadr | pi |
+|---|---|---|
+| `legacy_product` | `legacy-product-name` (`src/cadr-cli/migration.lisp`) | legacy product directory name (`packages/coding-agent/src/migrations.ts`) |
+
+Leftover of the `cli_bootstrap_sessions` hole on `migration.lisp`. Timed work
+is the two-character product name plus `-cl`. Observed `lp_len` / `lp_p` /
+`lp_i` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
+### Pair 458 — `cli_bootstrap_sessions` (shell_quote)
+
+| metric | cadr | pi |
+|---|---|---|
+| `shell_quote` | `shell-single-quote` (`src/cadr-cli/migration.lisp`) | POSIX single-quote wrap (`packages/coding-agent/src/migrations.ts`) |
+
+Leftover sibling of Pair 457 on the same hole. Timed work is wrapping plus
+embedded-quote escape. Observed `sq_plain` / `sq_space` / `sq_quote` /
+`sq_empty` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
+### Pair 459 — `cli_bootstrap_sessions` (affirmative)
+
+| metric | cadr | pi |
+|---|---|---|
+| `affirmative` | `affirmative-response-p` (`src/cadr-cli/migration.lisp`) | y/yes consent trim (`packages/coding-agent/src/migrations.ts`) |
+
+Leftover sibling of Pairs 457–458 on the same hole. Timed work is trim plus
+downcase membership in y/yes. Observed `af_y` / `af_yes` / `af_trim` /
+`af_no` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
+`--only-enforce`. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

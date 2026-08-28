@@ -447,6 +447,9 @@ const REPETITIONS = {
 	"skill_prompt_load.build_prompt": 50,
 	"cli_bootstrap_sessions.coding_tools": 50,
 	"cli_bootstrap_sessions.bootstrap_auth": 50,
+	"cli_bootstrap_sessions.legacy_product": 50,
+	"cli_bootstrap_sessions.shell_quote": 50,
+	"cli_bootstrap_sessions.affirmative": 50,
 	"ai_runtime_faux.blocks": 50,
 	"http_transport.parse_url": 50,
 	"session_pipeline.session_load": 3,
@@ -16412,9 +16415,59 @@ async function runCliBootstrapAuth() {
 	};
 }
 
+function migrationLegacyProductName() {
+	return String.fromCharCode(112, 105) + "-cl";
+}
+
+function migrationShellSingleQuote(value) {
+	let quoted = "'";
+	for (const character of String(value)) {
+		quoted += character === "'" ? "'\\''" : character;
+	}
+	return quoted + "'";
+}
+
+function migrationAffirmativeResponseP(response) {
+	const trimmed = String(response ?? "")
+		.replace(/^[ \t\n\r]+/, "")
+		.replace(/[ \t\n\r]+$/, "")
+		.toLowerCase();
+	return trimmed === "y" || trimmed === "yes";
+}
+
+function runCliBootstrapLegacyProduct() {
+	const name = migrationLegacyProductName();
+	return {
+		lp_len: name.length,
+		lp_p: name.charCodeAt(0),
+		lp_i: name.charCodeAt(1),
+	};
+}
+
+function runCliBootstrapShellQuote() {
+	return {
+		sq_plain: migrationShellSingleQuote("foo") === "'foo'" ? 1 : 0,
+		sq_space: migrationShellSingleQuote("a b") === "'a b'" ? 1 : 0,
+		sq_quote: migrationShellSingleQuote("a'b") === "'a'\\''b'" ? 1 : 0,
+		sq_empty: migrationShellSingleQuote("") === "''" ? 1 : 0,
+	};
+}
+
+function runCliBootstrapAffirmative() {
+	return {
+		af_y: migrationAffirmativeResponseP("y") ? 1 : 0,
+		af_yes: migrationAffirmativeResponseP("yes") ? 1 : 0,
+		af_trim: migrationAffirmativeResponseP(" YES\n") ? 1 : 0,
+		af_no: migrationAffirmativeResponseP("n") ? 0 : 1,
+	};
+}
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
+	const legacy = runCliBootstrapLegacyProduct();
+	const quoted = runCliBootstrapShellQuote();
+	const affirm = runCliBootstrapAffirmative();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -16422,9 +16475,21 @@ async function measureCliBootstrapCodingTools() {
 		bootstrap_auth: await collect("cli_bootstrap_sessions.bootstrap_auth", () => {
 			return () => runCliBootstrapAuth();
 		}),
+		legacy_product: await collect("cli_bootstrap_sessions.legacy_product", () => {
+			return () => runCliBootstrapLegacyProduct();
+		}),
+		shell_quote: await collect("cli_bootstrap_sessions.shell_quote", () => {
+			return () => runCliBootstrapShellQuote();
+		}),
+		affirmative: await collect("cli_bootstrap_sessions.affirmative", () => {
+			return () => runCliBootstrapAffirmative();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
+			...legacy,
+			...quoted,
+			...affirm,
 		},
 	};
 }
@@ -17460,6 +17525,12 @@ const result = {
 				"packages/coding-agent/src/core/tools/index.ts createCodingTools",
 			"cli_bootstrap_sessions.bootstrap_auth":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts getLoginProviderOptions",
+			"cli_bootstrap_sessions.legacy_product":
+				"packages/coding-agent/src/migrations.ts legacy product directory name",
+			"cli_bootstrap_sessions.shell_quote":
+				"packages/coding-agent/src/migrations.ts POSIX single-quote wrap",
+			"cli_bootstrap_sessions.affirmative":
+				"packages/coding-agent/src/migrations.ts y/yes consent trim",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
