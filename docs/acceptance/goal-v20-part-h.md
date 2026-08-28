@@ -4059,6 +4059,51 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 577 — `cli_selectors` (model_selector_rebuild_search_text_table)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_rebuild_search_text_table` | `model-selector-rebuild-search-text-table` (`src/cadr-cli/interactive/selectors/models.lisp`) | search-text table rebuild (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover on unused helpers in `models.lisp`. Timed work is eq/Map identity
+table fill (all-models, overlapping scoped refs, extra scoped object,
+empty, scoped-only) — not `model-selector-search-text` pairing, not
+filter. Observed `msrst_all` / `msrst_overlap` / `msrst_extra` /
+`msrst_empty` / `msrst_scoped_only` are exact. First n=5 freeze **3.240×**
+(16.001 / 4.939 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail).
+Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 578 — `cli_selectors` (model_selector_filter_search_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_filter_search_text` | `model-selector-filter-search-text` (`src/cadr-cli/interactive/selectors/models.lisp`) | search-text table lookup (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pair 577 on the same `models.lisp` hole. Timed work is
+table hit / last / scoped-extra / miss fallback / empty-table fallback —
+not rebuild pairing, not fuzzy filter. Observed `msfst_hit` / `msfst_last`
+/ `msfst_extra` / `msfst_miss` / `msfst_empty` are exact. First n=5 freeze
+**4.389×** (13.376 / 3.048 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum`
+left at 328.
+
+### Pair 579 — `cli_selectors` (model_selector_finish_refresh)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_finish_refresh` | `model-selector-finish-refresh` (`src/cadr-cli/interactive/selectors/models.lisp`) | catalog refresh completion (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pairs 577–578 on the same `models.lisp` hole. Timed
+work is sort + status/error/kind + skip-refilter-when-query-unchanged +
+select/clamp (ok / fail / accent kind / reversed snapshot / gpt query) —
+not `make-model-selector-state` constructor, not handle-event. Observed
+`msfr_ok` / `msfr_err` / `msfr_kind` / `msfr_rev` / `msfr_query` are
+exact. First n=5 freeze **4.278×** (46.658 / 10.907 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no
+optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
