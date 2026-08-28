@@ -9,6 +9,30 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.model_selector_active_models`
+  (`model-selector-active-models` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs `activeModels` scope
+  switch). Observed `msa_all` / `msa_scoped` / `msa_empty` / `msa_one` /
+  `msa_force_all` / `msa_force_scoped` exact. n=5 **11.315×**
+  (20.408 / 1.804 µs) on host `cursor`, ceiling 15.0. Measure-only leftover
+  (Pair 571). Gate rc=1 only from known old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.model_selector_clamp_selected`
+  (`model-selector-clamp-selected` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs `filterModels`
+  selectedIndex clamp). Observed `msc_ok` / `msc_high` / `msc_zero` /
+  `msc_one` / `msc_keep` / `msc_filter` exact. n=5 **4.015×**
+  (21.011 / 5.234 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 572). Gate rc=1 only from known old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.model_selector_select_current`
+  (`model-selector-select-current` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs `setScope`
+  currentIndex). Observed `msel_hit` / `msel_first` / `msel_last` /
+  `msel_miss` / `msel_nil` / `msel_empty` exact. n=5 **43.943×**
+  (19.744 / 0.449 µs) on host `cursor`, ceiling 55.0. Measure-only leftover
+  (Pair 573). Gate rc=1 only from known old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

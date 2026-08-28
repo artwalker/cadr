@@ -4059,6 +4059,30 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 571 — `cli_selectors` (model_selector_active_models)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_active_models` | `model-selector-active-models` (`src/cadr-cli/interactive/selectors/models.lisp`) | `activeModels` scope switch (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of the `cli_selectors` hole on `models.lisp`. Timed work is all-vs-scoped list selection (including empty, one, and forced scope) — not `model-selector-toggle-scope`, not filter. Observed `msa_all` / `msa_scoped` / `msa_empty` / `msa_one` / `msa_force_all` / `msa_force_scoped` are exact. First n=5 freeze **11.315×** (20.408 / 1.804 µs) on host `cursor`, ceiling 15.0. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail after first-freeze ceiling). Over-1× booked. Same commit no optimize.
+
+### Pair 572 — `cli_selectors` (model_selector_clamp_selected)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_clamp_selected` | `model-selector-clamp-selected` (`src/cadr-cli/interactive/selectors/models.lisp`) | `filterModels` selectedIndex clamp (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pair 571 on the same `models.lisp` hole. Timed work is clamp of `selected` to `[0, count)` including empty, one, and filtered lists — not move, not apply-filter itself. Observed `msc_ok` / `msc_high` / `msc_zero` / `msc_one` / `msc_keep` / `msc_filter` are exact. First n=5 freeze **4.015×** (21.011 / 5.234 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes; this metric did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 573 — `cli_selectors` (model_selector_select_current)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_selector_select_current` | `model-selector-select-current` (`src/cadr-cli/interactive/selectors/models.lisp`) | `setScope` currentIndex (`packages/coding-agent/src/modes/interactive/components/model-selector.ts`) |
+
+Leftover sibling of Pairs 571–572 on the same `models.lisp` hole. Timed work is `position` / `findIndex` of the current model in the visible list, including miss / nil / empty — not sort, not toggle-scope. Observed `msel_hit` / `msel_first` / `msel_last` / `msel_miss` / `msel_nil` / `msel_empty` are exact. First n=5 freeze **43.943×** (19.744 / 0.449 µs) on host `cursor`, ceiling 55.0. Gate used `--only-enforce` (script rc=1 only from known old holes; this metric did not fail after first-freeze ceiling). Over-1× booked. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
