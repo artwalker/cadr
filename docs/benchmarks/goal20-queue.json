@@ -877,6 +877,34 @@
    "piUs": 0.370,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 421,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.json_copy",
+   "branch": "cursor/pair-421-423-oauth-openai-device-0de9",
+   "note": "nextPairNum left at tip 328; leftover knife 421-423"
+  },
+  {
+   "pair": 422,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.interval_seconds",
+   "branch": "cursor/pair-421-423-oauth-openai-device-0de9"
+  },
+  {
+   "pair": 423,
+   "lane": "a",
+   "status": "queued",
+   "source": "src/cadr-ai/oauth/providers/openai-device.lisp",
+   "measure": "measure-oauth-pkce-device",
+   "metric": "oauth_pkce_device.device_start",
+   "branch": "cursor/pair-421-423-oauth-openai-device-0de9"
   }
  ],
  "mergeQueue": []

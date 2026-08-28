@@ -9,6 +9,13 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `oauth_pkce_device.json_copy` /
+  `interval_seconds` / `device_start` on
+  `src/cadr-ai/oauth/providers/openai-device.lisp` vs baseline
+  `startOpenAICodexDeviceAuth` error-body copy / interval parse / device start
+  (`packages/ai/src/auth/oauth/openai-codex.ts`). Observed `jc_*` / `iv_*` /
+  `ds_*` exact. Measure-only. Pairs 421–423. Freeze numbers in the following
+  docs commit. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
   `src/cadr-evals/harness.lisp` vs baseline step property access).
   Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.

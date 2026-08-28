@@ -214,6 +214,9 @@
 ;;;; 310. oauth_pkce_device percent-decode vs URLSearchParams percent-decode
 ;;;; 311. oauth_pkce_device parse-query vs URLSearchParams
 ;;;; 312. oauth_pkce_device parse-oauth-authorization-input vs parseAuthorizationInput
+;;;; 421. oauth_pkce_device oauth-response-json-copy vs JSON.stringify error-body copy
+;;;; 422. oauth_pkce_device openai-device-interval-seconds vs startOpenAICodexDeviceAuth interval parse
+;;;; 423. oauth_pkce_device start-openai-codex-device-authorization vs startOpenAICodexDeviceAuth
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -363,6 +366,9 @@
     ("oauth_pkce_device.percent_decode" . 50)
     ("oauth_pkce_device.parse_query" . 50)
     ("oauth_pkce_device.parse_authorization_input" . 50)
+    ("oauth_pkce_device.json_copy" . 50)
+    ("oauth_pkce_device.interval_seconds" . 50)
+    ("oauth_pkce_device.device_start" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -6397,6 +6403,110 @@
    (oauth-authorization-input-flag " code-d " "code-d" nil)
    4))
 
+(defun oauth-json-copy-flag (object expected-empty expected-needle)
+  (handler-case
+      (let ((copied (cadr-ai::oauth-response-json-copy object)))
+        (if expected-empty
+            (if (zerop (length copied)) 1 0)
+            (if (and (plusp (length copied))
+                     (search expected-needle copied))
+                1
+                0)))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-json-copy ()
+  (list
+   (oauth-json-copy-flag (cadr-ai::json-object) t nil)
+   (oauth-json-copy-flag
+    (cadr-ai::json-object "error" "boom")
+    nil
+    "boom")
+   (oauth-json-copy-flag nil t nil)
+   3))
+
+(defun oauth-interval-ok-flag (object expected)
+  (handler-case
+      (if (= (cadr-ai::openai-device-interval-seconds object) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun oauth-interval-error-flag (object)
+  (handler-case
+      (progn
+        (cadr-ai::openai-device-interval-seconds object)
+        0)
+    (error () 1)))
+
+(defun run-oauth-pkce-device-interval-seconds ()
+  (list
+   (oauth-interval-ok-flag (cadr-ai::json-object "interval" 5) 5)
+   (oauth-interval-ok-flag (cadr-ai::json-object "interval" " 5 ") 5)
+   (oauth-interval-ok-flag (cadr-ai::json-object "interval" 0) 0)
+   (oauth-interval-error-flag (cadr-ai::json-object "interval" -1))
+   (oauth-interval-error-flag (cadr-ai::json-object "interval" "nope"))
+   5))
+
+(defun with-oauth-flow-stub (status object thunk)
+  (let ((cadr-ai::*oauth-flow-request-function*
+          (lambda (url &key method headers content connect-timeout read-timeout)
+            (declare (ignore url method headers content
+                             connect-timeout read-timeout))
+            (values object status nil))))
+    (funcall thunk)))
+
+(defun oauth-device-start-ok-flag ()
+  (handler-case
+      (let ((device
+              (with-oauth-flow-stub
+               200
+               (cadr-ai::json-object
+                "device_auth_id" "dev-1"
+                "user_code" "ABCD"
+                "interval" 5)
+               (lambda ()
+                 (cadr-ai::start-openai-codex-device-authorization)))))
+        (if (and (string= (getf device :device-auth-id) "dev-1")
+                 (string= (getf device :user-code) "ABCD")
+                 (= (getf device :interval) 5))
+            1
+            0))
+    (error () 0)))
+
+(defun oauth-device-start-error-flag (status object needle)
+  (handler-case
+      (progn
+        (with-oauth-flow-stub
+         status
+         object
+         (lambda ()
+           (cadr-ai::start-openai-codex-device-authorization)))
+        0)
+    (cadr-ai:authentication-error (condition)
+      (if (search needle (cadr-ai::cadr-error-message condition))
+          1
+          0))
+    (error () 0)))
+
+(defun run-oauth-pkce-device-device-start ()
+  (list
+   (oauth-device-start-ok-flag)
+   (oauth-device-start-error-flag
+    404
+    (cadr-ai::json-object)
+    "not enabled")
+   (oauth-device-start-error-flag
+    500
+    (cadr-ai::json-object "error" "boom")
+    "boom")
+   (oauth-device-start-error-flag
+    200
+    (cadr-ai::json-object
+     "device_auth_id" "dev-1"
+     "interval" 5)
+    "Invalid OpenAI Codex device code response")
+   4))
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -6406,7 +6516,10 @@
         (copilot-auth (run-oauth-pkce-device-copilot-auth))
         (percent (run-oauth-pkce-device-percent-decode))
         (query (run-oauth-pkce-device-parse-query))
-        (auth-input (run-oauth-pkce-device-parse-authorization-input)))
+        (auth-input (run-oauth-pkce-device-parse-authorization-input))
+        (json-copy (run-oauth-pkce-device-json-copy))
+        (interval (run-oauth-pkce-device-interval-seconds))
+        (device-start (run-oauth-pkce-device-device-start)))
     (json-object
      "observed"
      (json-object
@@ -6449,7 +6562,22 @@
       "pai_hash" (nth 1 auth-input)
       "pai_qs" (nth 2 auth-input)
       "pai_plain" (nth 3 auth-input)
-      "pai_n" (nth 4 auth-input))
+      "pai_n" (nth 4 auth-input)
+      "jc_empty" (nth 0 json-copy)
+      "jc_ok" (nth 1 json-copy)
+      "jc_nil" (nth 2 json-copy)
+      "jc_n" (nth 3 json-copy)
+      "iv_num" (nth 0 interval)
+      "iv_str" (nth 1 interval)
+      "iv_zero" (nth 2 interval)
+      "iv_neg" (nth 3 interval)
+      "iv_bad" (nth 4 interval)
+      "iv_n" (nth 5 interval)
+      "ds_ok" (nth 0 device-start)
+      "ds_404" (nth 1 device-start)
+      "ds_fail" (nth 2 device-start)
+      "ds_bad" (nth 3 device-start)
+      "ds_n" (nth 4 device-start))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -6494,7 +6622,22 @@
      (collect "oauth_pkce_device.parse_authorization_input"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-authorization-input)))))))
+                  (run-oauth-pkce-device-parse-authorization-input))))
+     "json_copy"
+     (collect "oauth_pkce_device.json_copy"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-json-copy))))
+     "interval_seconds"
+     (collect "oauth_pkce_device.interval_seconds"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-interval-seconds))))
+     "device_start"
+     (collect "oauth_pkce_device.device_start"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-device-start)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -16584,6 +16727,12 @@
       "src/cadr-ai/oauth/callback.lisp parse-query"
       "oauth_pkce_device.parse_authorization_input"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-authorization-input"
+      "oauth_pkce_device.json_copy"
+      "src/cadr-ai/oauth/providers/openai-device.lisp oauth-response-json-copy"
+      "oauth_pkce_device.interval_seconds"
+      "src/cadr-ai/oauth/providers/openai-device.lisp openai-device-interval-seconds"
+      "oauth_pkce_device.device_start"
+      "src/cadr-ai/oauth/providers/openai-device.lisp start-openai-codex-device-authorization"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
