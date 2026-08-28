@@ -413,6 +413,9 @@ const REPETITIONS = {
 	"cli_selectors.make_login_method_selector_state": 50,
 	"cli_selectors.make_api_key_input_state": 50,
 	"cli_selectors.make_oauth_selector_state": 50,
+	"cli_selectors.login_dialog_show_waiting": 50,
+	"cli_selectors.login_dialog_show_progress": 50,
+	"cli_selectors.login_dialog_show_manual_input": 50,
 	"cli_interactive_controller.clipboard_candidates": 50,
 	"cli_interactive_controller.osc52_copy": 50,
 	"cli_interactive_controller.clipboard_copy": 50,
@@ -22397,6 +22400,151 @@ function runCliSelectorsLoginDialogDevice() {
 	};
 }
 
+const LOGIN_DIALOG_NOOP_CANCEL = () => {};
+
+function encodeLoginDialogMutated(state) {
+	return `${loginDialogSectionsEncoded(state)}|${state.input ? 1 : 0}|${state.cancelFunction ? 1 : 0}`;
+}
+
+function loginDialogShowWaiting(state, message) {
+	state.sections = state.sections.concat([
+		{ kind: "blank" },
+		{ kind: "dim", text: message },
+		{ kind: "hint-cancel" },
+	]);
+	return state;
+}
+
+function loginDialogShowProgress(state, message) {
+	state.sections = state.sections.concat([{ kind: "dim", text: message }]);
+	return state;
+}
+
+function loginDialogShowManualInput(state, message, cancelFunction) {
+	state.input = { prompt: "> ", value: "" };
+	state.cancelFunction = cancelFunction ?? null;
+	state.sections = state.sections.concat([
+		{ kind: "blank" },
+		{ kind: "dim", text: message },
+		{ kind: "input" },
+		{ kind: "hint-cancel" },
+	]);
+	return state;
+}
+
+function runCliSelectorsLoginDialogShowWaiting() {
+	return {
+		ldw_empty: encodeLoginDialogMutated(
+			loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
+		),
+		ldw_auth: encodeLoginDialogMutated(
+			loginDialogShowWaiting(
+				loginDialogShowAuth(
+					makeLoginDialogState("OpenAI"),
+					"https://example.invalid/auth",
+					null,
+				),
+				"Waiting for login...",
+			),
+		),
+		ldw_twice: encodeLoginDialogMutated(
+			loginDialogShowWaiting(
+				loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
+				"Still waiting",
+			),
+		),
+		ldw_blank: encodeLoginDialogMutated(
+			loginDialogShowWaiting(makeLoginDialogState("OpenAI"), ""),
+		),
+		ldw_device: encodeLoginDialogMutated(
+			loginDialogShowWaiting(
+				loginDialogShowDeviceCode(
+					makeLoginDialogState("GitHub"),
+					"https://github.com/login/device",
+					"ABCD-1234",
+				),
+				"Waiting...",
+			),
+		),
+	};
+}
+
+function runCliSelectorsLoginDialogShowProgress() {
+	return {
+		ldp_empty: encodeLoginDialogMutated(
+			loginDialogShowProgress(makeLoginDialogState("OpenAI"), "Working"),
+		),
+		ldp_auth: encodeLoginDialogMutated(
+			loginDialogShowProgress(
+				loginDialogShowAuth(
+					makeLoginDialogState("OpenAI"),
+					"https://example.invalid/auth",
+					null,
+				),
+				"Polling",
+			),
+		),
+		ldp_two: encodeLoginDialogMutated(
+			loginDialogShowProgress(
+				loginDialogShowProgress(makeLoginDialogState("OpenAI"), "Working"),
+				"Almost done",
+			),
+		),
+		ldp_blank: encodeLoginDialogMutated(
+			loginDialogShowProgress(makeLoginDialogState("OpenAI"), ""),
+		),
+		ldp_wait: encodeLoginDialogMutated(
+			loginDialogShowProgress(
+				loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
+				"Working",
+			),
+		),
+	};
+}
+
+function runCliSelectorsLoginDialogShowManualInput() {
+	return {
+		ldmi_empty: encodeLoginDialogMutated(
+			loginDialogShowManualInput(
+				makeLoginDialogState("OpenAI"),
+				"Paste the code",
+				LOGIN_DIALOG_NOOP_CANCEL,
+			),
+		),
+		ldmi_auth: encodeLoginDialogMutated(
+			loginDialogShowManualInput(
+				loginDialogShowAuth(
+					makeLoginDialogState("OpenAI"),
+					"https://example.invalid/auth",
+					null,
+				),
+				"Paste the code",
+				LOGIN_DIALOG_NOOP_CANCEL,
+			),
+		),
+		ldmi_blank: encodeLoginDialogMutated(
+			loginDialogShowManualInput(
+				makeLoginDialogState("OpenAI"),
+				"",
+				LOGIN_DIALOG_NOOP_CANCEL,
+			),
+		),
+		ldmi_nocancel: encodeLoginDialogMutated(
+			loginDialogShowManualInput(
+				makeLoginDialogState("OpenAI"),
+				"Paste the code",
+				null,
+			),
+		),
+		ldmi_wait: encodeLoginDialogMutated(
+			loginDialogShowManualInput(
+				loginDialogShowWaiting(makeLoginDialogState("OpenAI"), "Waiting..."),
+				"Paste the code",
+				LOGIN_DIALOG_NOOP_CANCEL,
+			),
+		),
+	};
+}
 
 function thinkingLevelLabel(level) {
 	return String(level).toLowerCase();
@@ -23333,6 +23481,10 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsMakeLoginMethodSelectorState();
 	const makeApiKeyInputStateResults = runCliSelectorsMakeApiKeyInputState();
 	const makeOauthSelectorStateResults = runCliSelectorsMakeOauthSelectorState();
+	const loginDialogShowWaitingResults = runCliSelectorsLoginDialogShowWaiting();
+	const loginDialogShowProgressResults = runCliSelectorsLoginDialogShowProgress();
+	const loginDialogShowManualInputResults =
+		runCliSelectorsLoginDialogShowManualInput();
 	const arminPixelResults = runCliSelectorsArminPixel();
 	const arminCellResults = runCliSelectorsArminCell();
 	const arminGridHeightResults = runCliSelectorsArminGridHeight();
@@ -23703,6 +23855,9 @@ async function measureCliSelectorsSessionSearch() {
 		...makeLoginMethodSelectorStateResults,
 		...makeApiKeyInputStateResults,
 		...makeOauthSelectorStateResults,
+		...loginDialogShowWaitingResults,
+		...loginDialogShowProgressResults,
+		...loginDialogShowManualInputResults,
 		...arminPixelResults,
 		...arminCellResults,
 		...arminGridHeightResults,
@@ -24529,6 +24684,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.make_oauth_selector_state",
 			() => {
 				return () => runCliSelectorsMakeOauthSelectorState();
+			},
+		),
+		login_dialog_show_waiting: await collect(
+			"cli_selectors.login_dialog_show_waiting",
+			() => {
+				return () => runCliSelectorsLoginDialogShowWaiting();
+			},
+		),
+		login_dialog_show_progress: await collect(
+			"cli_selectors.login_dialog_show_progress",
+			() => {
+				return () => runCliSelectorsLoginDialogShowProgress();
+			},
+		),
+		login_dialog_show_manual_input: await collect(
+			"cli_selectors.login_dialog_show_manual_input",
+			() => {
+				return () => runCliSelectorsLoginDialogShowManualInput();
 			},
 		),
 		armin_pixel: await collect("cli_selectors.armin_pixel", () => {
@@ -27443,6 +27616,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts showPrompt api key Input constructor",
 			"cli_selectors.make_oauth_selector_state":
 				"packages/coding-agent/src/modes/interactive/components/oauth-selector.ts OauthSelectorComponent constructor",
+			"cli_selectors.login_dialog_show_waiting":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showWaiting",
+			"cli_selectors.login_dialog_show_progress":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showProgress",
+			"cli_selectors.login_dialog_show_manual_input":
+				"packages/coding-agent/src/modes/interactive/components/login-dialog.ts LoginDialogComponent.showManualInput",
 			"cli_selectors.armin_pixel":
 				"packages/coding-agent/src/modes/interactive/components/armin.ts ArminComponent pixel probe",
 			"cli_selectors.armin_cell":

@@ -767,6 +767,9 @@
     ("cli_selectors.make_login_method_selector_state" . 50)
     ("cli_selectors.make_api_key_input_state" . 50)
     ("cli_selectors.make_oauth_selector_state" . 50)
+    ("cli_selectors.login_dialog_show_waiting" . 50)
+    ("cli_selectors.login_dialog_show_progress" . 50)
+    ("cli_selectors.login_dialog_show_manual_input" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -15211,6 +15214,125 @@
          1
          0))))
 
+(defun encode-login-dialog-mutated (state)
+  (format
+   nil "~A|~D|~D"
+   (login-dialog-sections-encoded state)
+   (if (cadr-cli::login-dialog-state-input state) 1 0)
+   (if (cadr-cli::login-dialog-state-cancel-function state) 1 0)))
+
+(defun login-dialog-noop-cancel ()
+  nil)
+
+(defun run-cli-selectors-login-dialog-show-waiting ()
+  (list
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-waiting
+     (cadr-cli::make-login-dialog-state "OpenAI")
+     "Waiting..."))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-waiting
+     (cadr-cli::login-dialog-show-auth
+      (cadr-cli::make-login-dialog-state "OpenAI")
+      "https://example.invalid/auth" nil)
+     "Waiting for login..."))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-waiting
+     (cadr-cli::login-dialog-show-waiting
+      (cadr-cli::make-login-dialog-state "OpenAI")
+      "Waiting...")
+     "Still waiting"))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-waiting
+     (cadr-cli::make-login-dialog-state "OpenAI")
+     ""))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-waiting
+     (cadr-cli::login-dialog-show-device-code
+      (cadr-cli::make-login-dialog-state "GitHub")
+      "https://github.com/login/device"
+      "ABCD-1234")
+     "Waiting..."))))
+
+(defun run-cli-selectors-login-dialog-show-progress ()
+  (list
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-progress
+     (cadr-cli::make-login-dialog-state "OpenAI")
+     "Working"))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-progress
+     (cadr-cli::login-dialog-show-auth
+      (cadr-cli::make-login-dialog-state "OpenAI")
+      "https://example.invalid/auth" nil)
+     "Polling"))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-progress
+     (cadr-cli::login-dialog-show-progress
+      (cadr-cli::make-login-dialog-state "OpenAI")
+      "Working")
+     "Almost done"))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-progress
+     (cadr-cli::make-login-dialog-state "OpenAI")
+     ""))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-progress
+     (cadr-cli::login-dialog-show-waiting
+      (cadr-cli::make-login-dialog-state "OpenAI")
+      "Waiting...")
+     "Working"))))
+
+(defun run-cli-selectors-login-dialog-show-manual-input ()
+  (list
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-manual-input
+     (cadr-cli::make-login-dialog-state "OpenAI")
+     "Paste the code"
+     #'login-dialog-noop-cancel))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-manual-input
+     (cadr-cli::login-dialog-show-auth
+      (cadr-cli::make-login-dialog-state "OpenAI")
+      "https://example.invalid/auth" nil)
+     "Paste the code"
+     #'login-dialog-noop-cancel))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-manual-input
+     (cadr-cli::make-login-dialog-state "OpenAI")
+     ""
+     #'login-dialog-noop-cancel))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-manual-input
+     (cadr-cli::make-login-dialog-state "OpenAI")
+     "Paste the code"
+     nil))
+   (encode-login-dialog-mutated
+    (cadr-cli::login-dialog-show-manual-input
+     (cadr-cli::login-dialog-show-waiting
+      (cadr-cli::make-login-dialog-state "OpenAI")
+      "Waiting...")
+     "Paste the code"
+     #'login-dialog-noop-cancel))))
+
+(defun login-dialog-wait-progress-manual-observed-pairs
+    (waiting progress manual)
+  (list
+   "ldw_empty" (nth 0 waiting)
+   "ldw_auth" (nth 1 waiting)
+   "ldw_twice" (nth 2 waiting)
+   "ldw_blank" (nth 3 waiting)
+   "ldw_device" (nth 4 waiting)
+   "ldp_empty" (nth 0 progress)
+   "ldp_auth" (nth 1 progress)
+   "ldp_two" (nth 2 progress)
+   "ldp_blank" (nth 3 progress)
+   "ldp_wait" (nth 4 progress)
+   "ldmi_empty" (nth 0 manual)
+   "ldmi_auth" (nth 1 manual)
+   "ldmi_blank" (nth 2 manual)
+   "ldmi_nocancel" (nth 3 manual)
+   "ldmi_wait" (nth 4 manual)))
 
 (defun login-dialog-observed-pairs (make auth device)
   (list
@@ -22030,6 +22152,12 @@
           (run-cli-selectors-make-api-key-input-state))
         (leftover-make-oauth-state
           (run-cli-selectors-make-oauth-selector-state))
+        (leftover-login-waiting
+          (run-cli-selectors-login-dialog-show-waiting))
+        (leftover-login-progress
+          (run-cli-selectors-login-dialog-show-progress))
+        (leftover-login-manual
+          (run-cli-selectors-login-dialog-show-manual-input))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -22811,6 +22939,8 @@
               leftover-trust-saved-p leftover-make-trust-state leftover-trust-render)
              (auth-make-login-api-oauth-observed-pairs
               leftover-make-login-method-state leftover-make-api-key-state leftover-make-oauth-state)
+             (login-dialog-wait-progress-manual-observed-pairs
+              leftover-login-waiting leftover-login-progress leftover-login-manual)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -23787,7 +23917,22 @@
      (collect "cli_selectors.make_oauth_selector_state"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-make-oauth-selector-state)))))))
+                  (run-cli-selectors-make-oauth-selector-state))))
+     "login_dialog_show_waiting"
+     (collect "cli_selectors.login_dialog_show_waiting"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-waiting))))
+     "login_dialog_show_progress"
+     (collect "cli_selectors.login_dialog_show_progress"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-progress))))
+     "login_dialog_show_manual_input"
+     (collect "cli_selectors.login_dialog_show_manual_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-login-dialog-show-manual-input)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -26481,6 +26626,12 @@
       "src/cadr-cli/interactive/selectors/auth.lisp make-api-key-input-state"
       "cli_selectors.make_oauth_selector_state"
       "src/cadr-cli/interactive/selectors/auth.lisp make-oauth-selector-state"
+      "cli_selectors.login_dialog_show_waiting"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-waiting"
+      "cli_selectors.login_dialog_show_progress"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-progress"
+      "cli_selectors.login_dialog_show_manual_input"
+      "src/cadr-cli/interactive/selectors/login-dialog.lisp login-dialog-show-manual-input"
       "cli_selectors.key_text"
       "src/cadr-cli/interactive/components/loaders.lisp format-key-text"
       "cli_selectors.fuzzy_filter"
