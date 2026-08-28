@@ -11,18 +11,24 @@ tag/Release step.
 
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_make`
   (`make-tool-render-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
-  Observed `tsm_name` / `tsm_pending` / `tsm_nil` exact. Pending first n=5 freeze.
-  Measure-only leftover (Pair 520). `nextPairNum` left unchanged.
+  Observed `tsm_name` / `tsm_pending` / `tsm_nil` exact. n=5 **1.224×**
+  (0.257 / 0.210 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 520). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text / `execution_env.tmp_*`), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_update`
   (`update-tool-render-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
-  Observed `tsu_result` / `tsu_pending` / `tsu_cleared` exact.
-  Pending first n=5 freeze. Measure-only leftover (Pair 521).
-  `nextPairNum` left unchanged.
+  Observed `tsu_result` / `tsu_pending` / `tsu_cleared` exact. n=5
+  **1.151×** (0.266 / 0.231 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 521). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`), not this metric.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.tool_session_render`
   (`render-tool-session` on `src/cadr-cli/interactive/tool-render-session.lisp`).
   Observed `trr_pending_n` / `trr_pending_call` / `trr_done_n` /
-  `trr_done_result` / `trr_custom` / `trr_empty` exact. Pending first n=5 freeze.
-  Measure-only leftover (Pair 522). `nextPairNum` left unchanged.
+  `trr_done_result` / `trr_custom` / `trr_empty` exact. n=5 **0.969×**
+  (1.733 / 1.789 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 522). cadr leads. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
