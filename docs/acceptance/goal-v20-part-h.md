@@ -4712,7 +4712,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-tui/renderer/main-screen.lisp` | 595 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/terminal-protocol.lisp` | 78 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
 | `src/cadr-tui/renderer/virtual-terminal.lisp` | 184 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |
-| `src/cadr-tui/stdin-buffer.lisp` | 232 | `tui_stdin_buffer.process` |
+| `src/cadr-tui/stdin-buffer.lisp` | 232 | `tui_stdin_buffer.process`, `tui_stdin_buffer.flush`, `tui_stdin_buffer.clear`, `tui_stdin_buffer.contents` |
 | `src/cadr-tui/terminal-colors.lisp` | 191 | `tui_theme_overlay.osc11_bg` |
 | `src/cadr-tui/terminal-image.lisp` | 686 | `image_runtime.dimensions` |
 | `src/cadr-tui/terminal.lisp` | 916 | `goal11.mouse_drag`, `goal11.wheel`, `goal11.continuous_alt_input` |

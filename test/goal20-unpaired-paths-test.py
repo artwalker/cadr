@@ -371,6 +371,9 @@ class TestClassify(unittest.TestCase):
         self.assertEqual(len(stdin_buffer), 1)
         self.assertEqual(stdin_buffer[0]["class"], "paired")
         self.assertIn("tui_stdin_buffer.process", stdin_buffer[0]["metrics"])
+        self.assertIn("tui_stdin_buffer.flush", stdin_buffer[0]["metrics"])
+        self.assertIn("tui_stdin_buffer.clear", stdin_buffer[0]["metrics"])
+        self.assertIn("tui_stdin_buffer.contents", stdin_buffer[0]["metrics"])
         input_component = [
             row
             for row in classified["rows"]

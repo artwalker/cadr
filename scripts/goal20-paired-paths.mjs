@@ -269,6 +269,9 @@ const REPETITIONS = {
 	"tui_autocomplete.suggest_apply": 50,
 	"tui_keybindings.resolve_match": 50,
 	"tui_stdin_buffer.process": 50,
+	"tui_stdin_buffer.flush": 50,
+	"tui_stdin_buffer.clear": 50,
+	"tui_stdin_buffer.contents": 50,
 	"tui_input_component.edit": 50,
 	"tui_native_modifiers.pressed": 50,
 	"tui_settings_list.apply_filter": 50,
@@ -7787,11 +7790,86 @@ function runTuiStdinBuffer() {
 	};
 }
 
+function runTuiStdinBufferFlush() {
+	const empty = new stdinBufferModule.StdinBuffer({ timeout: 50 });
+	const emptyN = empty.flush().length;
+	const buffer = new stdinBufferModule.StdinBuffer({ timeout: 50 });
+	buffer.process("\x1b[");
+	const before = buffer.getBuffer().length;
+	const flushed = buffer.flush();
+	const after = buffer.getBuffer().length;
+	empty.destroy();
+	buffer.destroy();
+	return {
+		fl_empty: emptyN,
+		fl_before: before,
+		fl_n: flushed.length,
+		fl_seq: (flushed[0] ?? "").length,
+		fl_after: after,
+	};
+}
+
+function runTuiStdinBufferClear() {
+	const buffer = new stdinBufferModule.StdinBuffer({ timeout: 50 });
+	const data = [];
+	buffer.on("data", (sequence) => data.push(sequence));
+	buffer.process("\x1b[");
+	const before = buffer.getBuffer().length;
+	buffer.clear();
+	const after = buffer.getBuffer().length;
+	buffer.process("hello");
+	const hello = data.length;
+	buffer.clear();
+	const finalLen = buffer.getBuffer().length;
+	buffer.destroy();
+	return {
+		cl_before: before,
+		cl_after: after,
+		cl_hello: hello,
+		cl_final: finalLen,
+	};
+}
+
+function runTuiStdinBufferContents() {
+	const empty = new stdinBufferModule.StdinBuffer({ timeout: 50 });
+	const emptyN = empty.getBuffer().length;
+	const buffer = new stdinBufferModule.StdinBuffer({ timeout: 50 });
+	buffer.process("\x1b[");
+	const csi = buffer.getBuffer().length;
+	buffer.process("A");
+	const done = buffer.getBuffer().length;
+	buffer.process("\x1b[");
+	const again = buffer.getBuffer().length;
+	empty.destroy();
+	buffer.destroy();
+	return {
+		ct_empty: emptyN,
+		ct_csi: csi,
+		ct_done: done,
+		ct_again: again,
+		ct_n: 4,
+	};
+}
+
 async function measureTuiStdinBuffer() {
-	const observed = runTuiStdinBuffer();
+	const observed = {
+		...runTuiStdinBuffer(),
+		...runTuiStdinBufferFlush(),
+		...runTuiStdinBufferClear(),
+		...runTuiStdinBufferContents(),
+	};
 	return {
 		process: await collect("tui_stdin_buffer.process", () => {
 			return () => runTuiStdinBuffer();
+		}),
+		flush: await collect("tui_stdin_buffer.flush", () => {
+			return () => runTuiStdinBufferFlush();
+		}),
+		clear: await collect("tui_stdin_buffer.clear", () => {
+			return () => runTuiStdinBufferClear();
+		}),
+		contents: await collect("tui_stdin_buffer.contents", () => {
+			return () => runTuiStdinBufferContents();
 		}),
 		observed,
 	};
@@ -17062,6 +17140,12 @@ const result = {
 				"packages/tui/src/keybindings.ts KeybindingsManager / getKeybindings",
 			"tui_stdin_buffer.process":
 				"packages/tui/src/stdin-buffer.ts StdinBuffer.process",
+			"tui_stdin_buffer.flush":
+				"packages/tui/src/stdin-buffer.ts StdinBuffer.flush",
+			"tui_stdin_buffer.clear":
+				"packages/tui/src/stdin-buffer.ts StdinBuffer.clear",
+			"tui_stdin_buffer.contents":
+				"packages/tui/src/stdin-buffer.ts StdinBuffer.getBuffer",
 			"tui_input_component.edit":
 				"packages/tui/src/components/input.ts Input.handleInput",
 			"tui_native_modifiers.pressed":

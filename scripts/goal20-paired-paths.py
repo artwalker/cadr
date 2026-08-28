@@ -151,7 +151,7 @@ METRICS = {
     "tui_undo_stack": ("push_pop",),
     "tui_autocomplete": ("suggest_apply",),
     "tui_keybindings": ("resolve_match",),
-    "tui_stdin_buffer": ("process",),
+    "tui_stdin_buffer": ("process", "flush", "clear", "contents"),
     "tui_input_component": ("edit",),
     "tui_native_modifiers": ("pressed",),
     "tui_settings_list": ("apply_filter",),
@@ -706,6 +706,18 @@ RATIO_CEILINGS = {
     # microsecond-floor first-freeze headroom.
     # Ratchet down only.
     "tui_stdin_buffer.process": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_stdin_buffer.flush leftover pair (samples=5): 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "tui_stdin_buffer.flush": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_stdin_buffer.clear leftover pair (samples=5): 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "tui_stdin_buffer.clear": 8.0,
+    # Frozen from the first Friend-MachineD non-quick
+    # tui_stdin_buffer.contents leftover pair (samples=5): 8.0 is
+    # first-freeze headroom. Ratchet down only.
+    "tui_stdin_buffer.contents": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # tui_input_component pair (samples=5): observed 0.06x
     # (5.5 / 97.8 us). cadr leads. 8.0 follows the
@@ -2253,6 +2265,20 @@ OBSERVED_EXACT = {
         "up_len",
         "paste_len",
         "tail_count",
+        "fl_empty",
+        "fl_before",
+        "fl_n",
+        "fl_seq",
+        "fl_after",
+        "cl_before",
+        "cl_after",
+        "cl_hello",
+        "cl_final",
+        "ct_empty",
+        "ct_csi",
+        "ct_done",
+        "ct_again",
+        "ct_n",
     ),
     "tui_input_component": (
         "after_insert",
