@@ -4059,6 +4059,43 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 382 — `cli_settings` (default_thinking_level)
+
+| metric | cadr | pi |
+|---|---|---|
+| `default_thinking_level` | `settings-default-thinking-level` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getDefaultThinkingLevel` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 307–309 on the same `cli_settings` hole. Timed
+work is missing default plus in-memory `"high"` / `"max"` — not
+`reload`, not selector UI, not persist. Observed `dtl_missing` /
+`dtl_high` / `dtl_max` / `dtl_n` are exact. First n=5 freeze pending.
+Gate uses `--only-enforce`. Same commit no optimize. Pair numbers
+328–381 belong to other lanes; this cut is 382–384 only.
+
+### Pair 383 — `cli_settings` (model_thinking_level)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_thinking_level` | `settings-model-thinking-level` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getModelThinkingLevel` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 382 `default_thinking_level` on the same
+`manager.lisp` hole. Timed work is missing per-model key plus in-memory
+`anthropic/claude-sonnet-4-5` hit / `openai/gpt-4.1` miss — not
+`getDefaultThinkingLevel`, not set. Observed `mtl_missing` / `mtl_hit` /
+`mtl_miss` / `mtl_n` are exact. First n=5 freeze pending. Same commit no
+optimize.
+
+### Pair 384 — `cli_settings` (all_model_thinking_levels)
+
+| metric | cadr | pi |
+|---|---|---|
+| `all_model_thinking_levels` | `settings-all-model-thinking-levels` (`src/cadr-cli/settings/manager.lisp`) | `SettingsManager.getAllModelThinkingLevels` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 382–383 on the same `manager.lisp` hole. Timed
+work is empty map plus two in-memory keys (`low` / `high`) — not set,
+not remove. Observed `amtl_empty` / `amtl_n2` / `amtl_low` / `amtl_high` /
+`amtl_n` are exact. First n=5 freeze pending. Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
@@ -4697,7 +4734,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/sdk/session-runtime.lisp` | 277 | `cli_sdk.session_services` |
 | `src/cadr-cli/sdk/system-prompt.lisp` | 218 | `skill_prompt_load.build_prompt` |
 | `src/cadr-cli/settings/config-values.lisp` | 198 | `cli_settings.create`, `settings_load.config_value` |
-| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images` |
+| `src/cadr-cli/settings/manager.lisp` | 616 | `cli_settings.create`, `cli_settings.reload`, `cli_settings.enabled_models`, `cli_settings.block_images`, `cli_settings.default_thinking_level`, `cli_settings.model_thinking_level`, `cli_settings.all_model_thinking_levels` |
 | `src/cadr-cli/settings/trust.lisp` | 216 | `settings_load.project_trust` |
 | `src/cadr-cli/support/changelog-share.lisp` | 342 | `cli_support.strip_ansi`, `cli_support.parse_changelog` |
 | `src/cadr-cli/support/event-bus.lisp` | 40 | `cli_support.event_bus` |

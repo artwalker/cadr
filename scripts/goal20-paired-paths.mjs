@@ -146,6 +146,9 @@ const REPETITIONS = {
 	"cli_settings.reload": 50,
 	"cli_settings.enabled_models": 50,
 	"cli_settings.block_images": 50,
+	"cli_settings.default_thinking_level": 50,
+	"cli_settings.model_thinking_level": 50,
+	"cli_settings.all_model_thinking_levels": 50,
 	"agent_conditions.error_probe": 50,
 	"execution_env.exists_remove_temps": 50,
 	"file_mutation_queue.with_queue": 50,
@@ -196,9 +199,6 @@ const REPETITIONS = {
 	"settings_load.config_paths": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
-	"resource_loader.context_file": 50,
-	"resource_loader.project_context_files": 50,
-	"resource_loader.ancestor_directories": 50,
 	"package_manager.resolve": 5,
 	"package_manager.manifest_parse": 50,
 	"package_manager.package_source": 50,
@@ -1958,11 +1958,63 @@ async function measureExecutionEnv() {
 	};
 }
 
+
+function runCliSettingsDefaultThinkingLevel(manager) {
+	const missing = manager.getDefaultThinkingLevel();
+	const high = settingsModule.SettingsManager.inMemory({
+		defaultThinkingLevel: "high",
+	}).getDefaultThinkingLevel();
+	const max = settingsModule.SettingsManager.inMemory({
+		defaultThinkingLevel: "max",
+	}).getDefaultThinkingLevel();
+	return {
+		dtl_missing: csTruth(missing === undefined),
+		dtl_high: csTruth(high === "high"),
+		dtl_max: csTruth(max === "max"),
+		dtl_n: 3,
+	};
+}
+
+function runCliSettingsModelThinkingLevel(manager) {
+	const missing = manager.getModelThinkingLevel("anthropic", "claude-sonnet-4-5");
+	const memory = settingsModule.SettingsManager.inMemory({
+		modelThinkingLevels: { "anthropic/claude-sonnet-4-5": "low" },
+	});
+	const hit = memory.getModelThinkingLevel("anthropic", "claude-sonnet-4-5");
+	const miss = memory.getModelThinkingLevel("openai", "gpt-4.1");
+	return {
+		mtl_missing: csTruth(missing === undefined),
+		mtl_hit: csTruth(hit === "low"),
+		mtl_miss: csTruth(miss === undefined),
+		mtl_n: 3,
+	};
+}
+
+function runCliSettingsAllModelThinkingLevels(manager) {
+	const empty = manager.getAllModelThinkingLevels();
+	const all = settingsModule.SettingsManager.inMemory({
+		modelThinkingLevels: {
+			"anthropic/claude-sonnet-4-5": "low",
+			"openai/gpt-4.1": "high",
+		},
+	}).getAllModelThinkingLevels();
+	return {
+		amtl_empty: csTruth(Object.keys(empty).length === 0),
+		amtl_n2: csTruth(Object.keys(all).length === 2),
+		amtl_low: csTruth(all["anthropic/claude-sonnet-4-5"] === "low"),
+		amtl_high: csTruth(all["openai/gpt-4.1"] === "high"),
+		amtl_n: 4,
+	};
+}
+
 async function measureCliSettings() {
 	const manager = runCliSettings();
 	const reloadObserved = await runCliSettingsReload(manager);
 	const enabledObserved = runCliSettingsEnabledModels(manager);
 	const blockObserved = runCliSettingsBlockImages(manager);
+	const defaultThinkingObserved = runCliSettingsDefaultThinkingLevel(manager);
+	const modelThinkingObserved = runCliSettingsModelThinkingLevel(manager);
+	const allThinkingObserved = runCliSettingsAllModelThinkingLevels(manager);
 	return {
 		create: await collect("cli_settings.create", () => {
 			return () => runCliSettings();
@@ -1976,6 +2028,15 @@ async function measureCliSettings() {
 		block_images: await collect("cli_settings.block_images", () => {
 			return () => runCliSettingsBlockImages(manager);
 		}),
+		default_thinking_level: await collect("cli_settings.default_thinking_level", () => {
+			return () => runCliSettingsDefaultThinkingLevel(manager);
+		}),
+		model_thinking_level: await collect("cli_settings.model_thinking_level", () => {
+			return () => runCliSettingsModelThinkingLevel(manager);
+		}),
+		all_model_thinking_levels: await collect("cli_settings.all_model_thinking_levels", () => {
+			return () => runCliSettingsAllModelThinkingLevels(manager);
+		}),
 		observed: {
 			theme: manager.getThemeSetting() ?? "",
 			default_model: manager.getDefaultModel() ?? "",
@@ -1987,6 +2048,9 @@ async function measureCliSettings() {
 			...reloadObserved,
 			...enabledObserved,
 			...blockObserved,
+			...defaultThinkingObserved,
+			...modelThinkingObserved,
+			...allThinkingObserved,
 		},
 	};
 }
@@ -2284,142 +2348,17 @@ function runResourceLoaderDedupeByName() {
 	};
 }
 
-const CONTEXT_FILE_CANDIDATES = [
-	"AGENTS.override.md",
-	"AGENTS.md",
-	"AGENTS.MD",
-	"CLAUDE.md",
-	"CLAUDE.MD",
-];
-
-function stageResourceLoaderLeftovers() {
-	const root = path.join(scratch, "rl-leftover");
-	const empty = path.join(root, "empty");
-	const agents = path.join(root, "agents");
-	const override = path.join(root, "override");
-	const nested = path.join(root, "nested", "child");
-	const pcfCwd = path.join(root, "pcf-cwd");
-	const pcfAgent = path.join(root, "pcf-agent");
-	mkdirSync(empty, { recursive: true });
-	mkdirSync(nested, { recursive: true });
-	mkdirSync(agents, { recursive: true });
-	mkdirSync(override, { recursive: true });
-	mkdirSync(pcfCwd, { recursive: true });
-	mkdirSync(pcfAgent, { recursive: true });
-	writeFileSync(path.join(agents, "AGENTS.md"), "cwd agents", "utf8");
-	writeFileSync(path.join(override, "AGENTS.md"), "loser", "utf8");
-	writeFileSync(path.join(override, "AGENTS.override.md"), "winner", "utf8");
-	writeFileSync(path.join(pcfCwd, "AGENTS.md"), "pcf cwd", "utf8");
-	writeFileSync(path.join(pcfAgent, "AGENTS.md"), "pcf agent", "utf8");
-	return { empty, agents, override, nested, pcfCwd, pcfAgent };
-}
-
-function loadContextFileFromDir(dir) {
-	for (const filename of CONTEXT_FILE_CANDIDATES) {
-		const filePath = path.join(dir, filename);
-		if (!existsSync(filePath)) continue;
-		try {
-			if (!statSync(filePath).isFile()) continue;
-			return filePath;
-		} catch {
-			continue;
-		}
-	}
-	return null;
-}
-
-function runResourceLoaderContextFile(empty, agents, override) {
-	const agentsLeaf = loadContextFileFromDir(agents);
-	const emptyLeaf = loadContextFileFromDir(empty);
-	const overrideLeaf = loadContextFileFromDir(override);
-	return {
-		cf_agents: path.basename(agentsLeaf ?? "") === "AGENTS.md" ? 1 : 0,
-		cf_miss: emptyLeaf === null ? 1 : 0,
-		cf_override: path.basename(overrideLeaf ?? "") === "AGENTS.override.md" ? 1 : 0,
-		cf_n: 3,
-	};
-}
-
-function runResourceLoaderProjectContextFiles(pcfCwd, pcfAgent, empty) {
-	const loaded = resourceLoaderModule.loadProjectContextFiles({
-		cwd: pcfCwd,
-		agentDir: pcfAgent,
-	});
-	const none = resourceLoaderModule.loadProjectContextFiles({
-		cwd: empty,
-		agentDir: empty,
-	});
-	return {
-		pcf_cwd: loaded.length > 0 ? 1 : 0,
-		pcf_agents: loaded.some((entry) => path.basename(entry.path) === "AGENTS.md") ? 1 : 0,
-		pcf_empty: none.length === 0 ? 1 : 0,
-		pcf_n: 3,
-	};
-}
-
-function ancestorDirectories(directory) {
-	const dirs = [];
-	let current = path.resolve(directory);
-	while (true) {
-		dirs.push(current);
-		const parent = path.dirname(current);
-		if (parent === current) break;
-		current = parent;
-	}
-	return dirs;
-}
-
-function runResourceLoaderAncestorDirectories(nested) {
-	const dirs = ancestorDirectories(nested);
-	const cwd = path.resolve(nested);
-	const parent = path.dirname(cwd);
-	const last = dirs[dirs.length - 1];
-	return {
-		ad_first: dirs[0] === cwd ? 1 : 0,
-		ad_parent: dirs.includes(parent) ? 1 : 0,
-		ad_root: path.dirname(last) === last ? 1 : 0,
-		ad_n: 3,
-	};
-}
-
 async function measureResourceLoader() {
 	const loader = await runResourceLoader();
 	const skills = loader.getSkills().skills;
 	const prompts = loader.getPrompts().prompts;
 	const dedupe = runResourceLoaderDedupeByName();
-	const leftover = stageResourceLoaderLeftovers();
-	const contextObserved = runResourceLoaderContextFile(
-		leftover.empty,
-		leftover.agents,
-		leftover.override,
-	);
-	const projectObserved = runResourceLoaderProjectContextFiles(
-		leftover.pcfCwd,
-		leftover.pcfAgent,
-		leftover.empty,
-	);
-	const ancestorObserved = runResourceLoaderAncestorDirectories(leftover.nested);
 	return {
 		dedupe_by_name: await collect("resource_loader.dedupe_by_name", () => {
 			return () => runResourceLoaderDedupeByName();
 		}),
 		reload: await collect("resource_loader.reload", () => {
 			return () => runResourceLoader();
-		}),
-		context_file: await collect("resource_loader.context_file", () => {
-			return () =>
-				runResourceLoaderContextFile(leftover.empty, leftover.agents, leftover.override);
-		}),
-		project_context_files: await collect("resource_loader.project_context_files", () => {
-			return () =>
-				runResourceLoaderProjectContextFiles(
-					leftover.pcfCwd,
-					leftover.pcfAgent,
-					leftover.empty,
-				);
-		}),
-		ancestor_directories: await collect("resource_loader.ancestor_directories", () => {
-			return () => runResourceLoaderAncestorDirectories(leftover.nested);
 		}),
 		observed: {
 			skill_count: skills.length,
@@ -2431,9 +2370,6 @@ async function measureResourceLoader() {
 			context_file_count: loader.getAgentsFiles().agentsFiles.length,
 			system_prompt: loader.getSystemPrompt() ? 1 : 0,
 			...dedupe,
-			...contextObserved,
-			...projectObserved,
-			...ancestorObserved,
 		},
 	};
 }
@@ -17021,6 +16957,12 @@ const result = {
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getEnabledModels",
 			"cli_settings.block_images":
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getBlockImages",
+			"cli_settings.default_thinking_level":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getDefaultThinkingLevel",
+			"cli_settings.model_thinking_level":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getModelThinkingLevel",
+			"cli_settings.all_model_thinking_levels":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getAllModelThinkingLevels",
 			"agent_conditions.error_probe":
 				"packages/agent/src agent error slot/type probe (fixture-aligned harness)",
 			"execution_env.exists_remove_temps":
@@ -17119,9 +17061,6 @@ const result = {
 				"packages/coding-agent/src/config.ts getSettingsPath + getAuthPath",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
-			"resource_loader.context_file": "packages/coding-agent/src/core/resource-loader.ts loadContextFileFromDir",
-			"resource_loader.project_context_files": "packages/coding-agent/src/core/resource-loader.ts loadProjectContextFiles",
-			"resource_loader.ancestor_directories": "packages/coding-agent/src/core/resource-loader.ts cwd→root dirname walk in loadProjectContextFiles",
 			"package_manager.resolve": "packages/coding-agent/src/core/package-manager.ts DefaultPackageManager.resolve",
 			"package_manager.manifest_parse":
 				"packages/coding-agent/src/core/pi-manifest.ts readPiManifest",

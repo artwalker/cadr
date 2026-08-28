@@ -98,7 +98,7 @@ METRICS = {
     "provider_vertex": ("stream_roundtrip",),
     "provider_codex": ("stream_roundtrip",),
     "provider_pi_messages": ("stream_roundtrip",),
-    "cli_settings": ("create", "reload", "enabled_models", "block_images"),
+    "cli_settings": ("create", "reload", "enabled_models", "block_images", "default_thinking_level", "model_thinking_level", "all_model_thinking_levels"),
     "agent_conditions": ("error_probe",),
     "execution_env": ("exists_remove_temps",),
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
@@ -114,9 +114,6 @@ METRICS = {
     "resource_loader": (
         "reload",
         "dedupe_by_name",
-        "context_file",
-        "project_context_files",
-        "ancestor_directories",
     ),
     "package_manager": ("resolve", "manifest_parse", "package_source"),
     "session_discovery": ("header_probe", "session_list_probe"),
@@ -269,6 +266,11 @@ RATIO_CEILINGS = {
     "cli_settings.reload": 8.0,
     "cli_settings.enabled_models": 8.0,
     "cli_settings.block_images": 8.0,
+    # cli_settings leftover thinking trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "cli_settings.default_thinking_level": 8.0,
+    "cli_settings.model_thinking_level": 8.0,
+    "cli_settings.all_model_thinking_levels": 8.0,
     # agent_conditions.error_probe pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "agent_conditions.error_probe": 8.0,
@@ -391,11 +393,6 @@ RATIO_CEILINGS = {
     # resource_loader.dedupe_by_name pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "resource_loader.dedupe_by_name": 8.0,
-    # resource_loader leftover trio (samples=5): first-freeze headroom.
-    # Ratchet down only.
-    "resource_loader.context_file": 8.0,
-    "resource_loader.project_context_files": 8.0,
-    "resource_loader.ancestor_directories": 8.0,
     # Frozen from the first Friend-MachineD non-quick package_manager
     # pair (samples=5): observed 0.36x (200 / 551 us). cadr leads.
     # 1.5 follows the list_models_registry / render_slicing precedent.
@@ -1549,6 +1546,19 @@ OBSERVED_EXACT = {
         "bi_default",
         "bi_blocked",
         "bi_n",
+        "dtl_missing",
+        "dtl_high",
+        "dtl_max",
+        "dtl_n",
+        "mtl_missing",
+        "mtl_hit",
+        "mtl_miss",
+        "mtl_n",
+        "amtl_empty",
+        "amtl_n2",
+        "amtl_low",
+        "amtl_high",
+        "amtl_n",
     ),
     "agent_conditions": (
         "ac_schema_tool",
@@ -3117,18 +3127,6 @@ OBSERVED_EXACT = {
         "dbn_prompt_count",
         "dbn_prompt_collisions",
         "dbn_prompt_project",
-        "cf_agents",
-        "cf_miss",
-        "cf_override",
-        "cf_n",
-        "pcf_cwd",
-        "pcf_agents",
-        "pcf_empty",
-        "pcf_n",
-        "ad_first",
-        "ad_parent",
-        "ad_root",
-        "ad_n",
     ),
     "session_pipeline": (
         "entry_count",

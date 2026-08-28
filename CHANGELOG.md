@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_settings.default_thinking_level`
+  (`settings-default-thinking-level` on `src/cadr-cli/settings/manager.lisp`
+  vs baseline `SettingsManager.getDefaultThinkingLevel`). Observed
+  `dtl_missing` / `dtl_high` / `dtl_max` / `dtl_n` exact. Measure-only leftover
+  sibling of `reload` / `enabled_models` / `block_images`. Pairs 382–384.
+  `nextPairNum` stays 328.
+- Goal 20 P.13 leftover: pair `cli_settings.model_thinking_level`
+  (`settings-model-thinking-level` on `src/cadr-cli/settings/manager.lisp`
+  vs baseline `SettingsManager.getModelThinkingLevel`). Observed
+  `mtl_missing` / `mtl_hit` / `mtl_miss` / `mtl_n` exact. Measure-only.
+- Goal 20 P.13 leftover: pair `cli_settings.all_model_thinking_levels`
+  (`settings-all-model-thinking-levels` on `src/cadr-cli/settings/manager.lisp`
+  vs baseline `SettingsManager.getAllModelThinkingLevels`). Observed
+  `amtl_empty` / `amtl_n2` / `amtl_low` / `amtl_high` / `amtl_n` exact.
+  Measure-only. `nextPairNum` stays 328.
 - Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
   `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
   trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.

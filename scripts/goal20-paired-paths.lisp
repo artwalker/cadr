@@ -205,9 +205,9 @@
 ;;;; 252. package_manager read-package-pi-manifest vs readPiManifest
 ;;;; 256. package_manager parse-package-source vs DefaultPackageManager.parseSource
 ;;;; 256. resource_loader dedupe-resources-by-name vs skills.ts skillMap
-;;;; 382. resource_loader load-context-file-from-dir vs loadContextFileFromDir
-;;;; 383. resource_loader load-project-context-files vs loadProjectContextFiles
-;;;; 384. resource_loader ancestor-directories vs cwd→root dirname walk
+;;;; 382. cli_settings settings-default-thinking-level vs SettingsManager.getDefaultThinkingLevel
+;;;; 383. cli_settings settings-model-thinking-level vs SettingsManager.getModelThinkingLevel
+;;;; 384. cli_settings settings-all-model-thinking-levels vs SettingsManager.getAllModelThinkingLevels
 ;;;;  84. cli_extensions_install llama-provider-set-catalog vs createLlamaProvider.setCatalog
 ;;;; 251. cli_extensions_install discover-extension-sources vs discoverAndLoadExtensions path discovery
 ;;;;  85. cli_interactive_controller format-cwd-for-footer vs formatCwdForFooter
@@ -298,6 +298,9 @@
     ("cli_settings.reload" . 50)
     ("cli_settings.enabled_models" . 50)
     ("cli_settings.block_images" . 50)
+    ("cli_settings.default_thinking_level" . 50)
+    ("cli_settings.model_thinking_level" . 50)
+    ("cli_settings.all_model_thinking_levels" . 50)
     ("agent_conditions.error_probe" . 50)
     ("execution_env.exists_remove_temps" . 50)
     ("file_mutation_queue.with_queue" . 50)
@@ -348,9 +351,6 @@
     ("settings_load.config_paths" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
-    ("resource_loader.context_file" . 50)
-    ("resource_loader.project_context_files" . 50)
-    ("resource_loader.ancestor_directories" . 50)
     ("package_manager.resolve" . 5)
     ("package_manager.manifest_parse" . 50)
     ("package_manager.package_source" . 50)
@@ -2976,6 +2976,61 @@
        (cs-truth blocked)
        2))))
 
+(defun run-cli-settings-default-thinking-level (manager)
+  (let* ((missing (cadr-cli::settings-default-thinking-level manager))
+         (high-initial (cadr-ai::json-object))
+         (max-initial (cadr-ai::json-object)))
+    (cadr-ai::json-put high-initial "defaultThinkingLevel" "high")
+    (cadr-ai::json-put max-initial "defaultThinkingLevel" "max")
+    (let ((high
+            (cadr-cli::settings-default-thinking-level
+             (cadr-cli::make-memory-settings-manager high-initial)))
+          (max-level
+            (cadr-cli::settings-default-thinking-level
+             (cadr-cli::make-memory-settings-manager max-initial))))
+      (list
+       (cs-truth (null missing))
+       (cs-truth (eq high :high))
+       (cs-truth (eq max-level :max))
+       3))))
+
+(defun run-cli-settings-model-thinking-level (manager)
+  (let* ((missing
+           (cadr-cli::settings-model-thinking-level
+            manager "anthropic" "claude-sonnet-4-5"))
+         (levels (cadr-ai::json-object))
+         (initial (cadr-ai::json-object)))
+    (cadr-ai::json-put levels "anthropic/claude-sonnet-4-5" "low")
+    (cadr-ai::json-put initial "modelThinkingLevels" levels)
+    (let* ((memory (cadr-cli::make-memory-settings-manager initial))
+           (hit (cadr-cli::settings-model-thinking-level
+                 memory "anthropic" "claude-sonnet-4-5"))
+           (miss (cadr-cli::settings-model-thinking-level
+                  memory "openai" "gpt-4.1")))
+      (list
+       (cs-truth (null missing))
+       (cs-truth (eq hit :low))
+       (cs-truth (null miss))
+       3))))
+
+(defun run-cli-settings-all-model-thinking-levels (manager)
+  (let* ((empty (cadr-cli::settings-all-model-thinking-levels manager))
+         (levels (cadr-ai::json-object))
+         (initial (cadr-ai::json-object)))
+    (cadr-ai::json-put levels "anthropic/claude-sonnet-4-5" "low")
+    (cadr-ai::json-put levels "openai/gpt-4.1" "high")
+    (cadr-ai::json-put initial "modelThinkingLevels" levels)
+    (let* ((memory (cadr-cli::make-memory-settings-manager initial))
+           (all (cadr-cli::settings-all-model-thinking-levels memory)))
+      (flet ((level-of (key)
+               (cdr (assoc key all :test #'string=))))
+        (list
+         (cs-truth (null empty))
+         (cs-truth (= (length all) 2))
+         (cs-truth (eq (level-of "anthropic/claude-sonnet-4-5") :low))
+         (cs-truth (eq (level-of "openai/gpt-4.1") :high))
+         4)))))
+
 
 (defun agent-conditions-bool (value)
   (if value 1 0))
@@ -3166,56 +3221,94 @@
             (run-cli-settings-enabled-models manager)
           (destructuring-bind (bi-default bi-blocked bi-n)
               (run-cli-settings-block-images manager)
-            (json-object
-             "observed"
-             (json-object
-              "theme"
-              (or (cadr-cli::settings-value manager "theme") "")
-              "default_model"
-              (or (cadr-cli::settings-value manager "defaultModel") "")
-              "default_provider"
-              (or (cadr-cli::settings-value manager "defaultProvider") "")
-              "compaction_reserve_tokens"
-              (or (cadr-cli::settings-nested-value
-                   manager "compaction" "reserveTokens")
-                  0)
-              "default_project_trust"
-              (or (cadr-cli::settings-value manager "defaultProjectTrust")
-                  "")
-              "http_idle_timeout_ms"
-              (cadr-cli::settings-http-idle-timeout-ms manager)
-              "project_trusted"
-              (and (cadr-cli::settings-manager-project-trusted-p manager) t)
-              "rl_theme_light" rl-theme-light
-              "rl_model" rl-model
-              "rl_idle" rl-idle
-              "rl_n" rl-n
-              "em_all" em-all
-              "em_one" em-one
-              "em_n" em-n
-              "bi_default" bi-default
-              "bi_blocked" bi-blocked
-              "bi_n" bi-n)
-             "create"
-             (collect "cli_settings.create"
-                      (lambda ()
-                        (lambda ()
-                          (run-cli-settings global project))))
-             "reload"
-             (collect "cli_settings.reload"
-                      (lambda ()
-                        (lambda ()
-                          (run-cli-settings-reload manager))))
-             "enabled_models"
-             (collect "cli_settings.enabled_models"
-                      (lambda ()
-                        (lambda ()
-                          (run-cli-settings-enabled-models manager))))
-             "block_images"
-             (collect "cli_settings.block_images"
-                      (lambda ()
-                        (lambda ()
-                          (run-cli-settings-block-images manager)))))))))))
+            (destructuring-bind (dtl-missing dtl-high dtl-max dtl-n)
+                (run-cli-settings-default-thinking-level manager)
+              (destructuring-bind (mtl-missing mtl-hit mtl-miss mtl-n)
+                  (run-cli-settings-model-thinking-level manager)
+                (destructuring-bind
+                      (amtl-empty amtl-n2 amtl-low amtl-high amtl-n)
+                    (run-cli-settings-all-model-thinking-levels manager)
+                  (json-object
+                   "observed"
+                   (json-object
+                    "theme"
+                    (or (cadr-cli::settings-value manager "theme") "")
+                    "default_model"
+                    (or (cadr-cli::settings-value manager "defaultModel") "")
+                    "default_provider"
+                    (or (cadr-cli::settings-value manager "defaultProvider") "")
+                    "compaction_reserve_tokens"
+                    (or (cadr-cli::settings-nested-value
+                         manager "compaction" "reserveTokens")
+                        0)
+                    "default_project_trust"
+                    (or (cadr-cli::settings-value manager "defaultProjectTrust")
+                        "")
+                    "http_idle_timeout_ms"
+                    (cadr-cli::settings-http-idle-timeout-ms manager)
+                    "project_trusted"
+                    (and (cadr-cli::settings-manager-project-trusted-p manager) t)
+                    "rl_theme_light" rl-theme-light
+                    "rl_model" rl-model
+                    "rl_idle" rl-idle
+                    "rl_n" rl-n
+                    "em_all" em-all
+                    "em_one" em-one
+                    "em_n" em-n
+                    "bi_default" bi-default
+                    "bi_blocked" bi-blocked
+                    "bi_n" bi-n
+                    "dtl_missing" dtl-missing
+                    "dtl_high" dtl-high
+                    "dtl_max" dtl-max
+                    "dtl_n" dtl-n
+                    "mtl_missing" mtl-missing
+                    "mtl_hit" mtl-hit
+                    "mtl_miss" mtl-miss
+                    "mtl_n" mtl-n
+                    "amtl_empty" amtl-empty
+                    "amtl_n2" amtl-n2
+                    "amtl_low" amtl-low
+                    "amtl_high" amtl-high
+                    "amtl_n" amtl-n)
+                   "create"
+                   (collect "cli_settings.create"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings global project))))
+                   "reload"
+                   (collect "cli_settings.reload"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-reload manager))))
+                   "enabled_models"
+                   (collect "cli_settings.enabled_models"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-enabled-models manager))))
+                   "block_images"
+                   (collect "cli_settings.block_images"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-block-images manager))))
+                   "default_thinking_level"
+                   (collect "cli_settings.default_thinking_level"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-default-thinking-level
+                                 manager))))
+                   "model_thinking_level"
+                   (collect "cli_settings.model_thinking_level"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-model-thinking-level
+                                 manager))))
+                   "all_model_thinking_levels"
+                   (collect "cli_settings.all_model_thinking_levels"
+                            (lambda ()
+                              (lambda ()
+                                (run-cli-settings-all-model-thinking-levels
+                                 manager))))))))))))))
 
 (defun stage-settings-load-trust ()
   (let* ((empty
@@ -3610,107 +3703,6 @@
                    1
                    0)))))))))
 
-;;; Leftover siblings of resource_loader.reload / dedupe_by_name on
-;;; src/cadr-cli/resource-loader.lisp (Pairs 382-384). Timed owners:
-;;; load-context-file-from-dir, load-project-context-files,
-;;; ancestor-directories — not reload-resources, not skill load.
-
-(defun rl-leftover-truth (value)
-  (if value 1 0))
-
-(defun rl-leftover-write (path text)
-  (ensure-directories-exist path)
-  (with-open-file (out path
-                       :direction :output
-                       :if-exists :supersede
-                       :if-does-not-exist :create
-                       :external-format :utf-8)
-    (write-string text out))
-  path)
-
-(defun stage-resource-loader-leftovers ()
-  (let* ((root
-           (merge-pathnames "rl-leftover/" *scratch-directory*))
-         (empty (merge-pathnames "empty/" root))
-         (agents (merge-pathnames "agents/" root))
-         (override (merge-pathnames "override/" root))
-         (nested (merge-pathnames "nested/child/" root))
-         (pcf-cwd (merge-pathnames "pcf-cwd/" root))
-         (pcf-agent (merge-pathnames "pcf-agent/" root)))
-    (ensure-directories-exist empty)
-    (ensure-directories-exist nested)
-    (rl-leftover-write
-     (merge-pathnames "AGENTS.md" agents) "cwd agents")
-    (rl-leftover-write
-     (merge-pathnames "AGENTS.md" override) "loser")
-    (rl-leftover-write
-     (merge-pathnames "AGENTS.override.md" override) "winner")
-    (rl-leftover-write
-     (merge-pathnames "AGENTS.md" pcf-cwd) "pcf cwd")
-    (rl-leftover-write
-     (merge-pathnames "AGENTS.md" pcf-agent) "pcf agent")
-    (list
-     (namestring (uiop:ensure-directory-pathname empty))
-     (namestring (uiop:ensure-directory-pathname agents))
-     (namestring (uiop:ensure-directory-pathname override))
-     (namestring (uiop:ensure-directory-pathname nested))
-     (namestring (uiop:ensure-directory-pathname pcf-cwd))
-     (namestring (uiop:ensure-directory-pathname pcf-agent)))))
-
-(defun rl-context-leaf (directory)
-  (let ((path (cadr-cli::load-context-file-from-dir directory)))
-    (if path
-        (file-namestring path)
-        "")))
-
-(defun run-resource-loader-context-file (empty agents override)
-  (list
-   (rl-leftover-truth (string= "AGENTS.md" (rl-context-leaf agents)))
-   (rl-leftover-truth (string= "" (rl-context-leaf empty)))
-   (rl-leftover-truth
-    (string= "AGENTS.override.md" (rl-context-leaf override)))
-   3))
-
-(defun rl-context-has-leaf (paths leaf)
-  (some
-   (lambda (path)
-     (string= leaf (file-namestring path)))
-   paths))
-
-(defun run-resource-loader-project-context-files
-    (pcf-cwd pcf-agent empty)
-  (let ((loaded
-          (cadr-cli::load-project-context-files
-           :cwd pcf-cwd :agent-directory pcf-agent))
-        (none
-          (cadr-cli::load-project-context-files
-           :cwd empty :agent-directory empty)))
-    (list
-     (rl-leftover-truth (plusp (length loaded)))
-     (rl-leftover-truth (rl-context-has-leaf loaded "AGENTS.md"))
-     (rl-leftover-truth (zerop (length none)))
-     3)))
-
-(defun rl-leftover-pathname= (left right)
-  (string=
-   (namestring (uiop:ensure-directory-pathname left))
-   (namestring (uiop:ensure-directory-pathname right))))
-
-(defun run-resource-loader-ancestor-directories (nested)
-  (let* ((dirs (cadr-cli::ancestor-directories nested))
-         (cwd (uiop:ensure-directory-pathname nested))
-         (parent (cadr-cli::parent-directory cwd))
-         (last (car (last dirs))))
-    (list
-     (rl-leftover-truth
-      (and dirs (rl-leftover-pathname= (first dirs) cwd)))
-     (rl-leftover-truth
-      (and parent
-           (find parent dirs :test #'rl-leftover-pathname=)))
-     (rl-leftover-truth
-      (and last (null (cadr-cli::parent-directory last))))
-     3)))
-
 (defun stage-package-layout ()
   (let* ((agent
            (merge-pathnames "package-agent/" *scratch-directory*))
@@ -3908,115 +3900,75 @@
   (multiple-value-bind
         (cwd agent project-skill agent-skill project-prompt agent-prompt)
       (stage-resource-layout)
-    (destructuring-bind
-          (empty agents override nested pcf-cwd pcf-agent)
-        (stage-resource-loader-leftovers)
-      (let* ((snapshot
-               (run-resource-loader
-                cwd agent project-skill agent-skill
-                project-prompt agent-prompt))
-             (skills
-               (cadr-cli::resource-snapshot-skills snapshot))
-             (prompts
-               (cadr-cli::resource-snapshot-prompts snapshot))
-             (dedupe
-               (run-resource-loader-dedupe-by-name
-                agent-skill project-skill agent-prompt project-prompt)))
-        (destructuring-bind (cf-agents cf-miss cf-override cf-n)
-            (run-resource-loader-context-file empty agents override)
-          (destructuring-bind (pcf-cwd-hit pcf-agents pcf-empty pcf-n)
-              (run-resource-loader-project-context-files
-               pcf-cwd pcf-agent empty)
-            (destructuring-bind (ad-first ad-parent ad-root ad-n)
-                (run-resource-loader-ancestor-directories nested)
-              (json-object
-               "observed"
-               (json-object
-                "skill_count" (length skills)
-                "prompt_count" (length prompts)
-                "skill_names"
-                (json-array
-                 (sort (mapcar #'cadr-agent:skill-name skills) #'string<))
-                "prompt_names"
-                (json-array
-                 (sort
-                  (mapcar #'cadr-agent:prompt-template-name prompts)
-                  #'string<))
-                "skill_from_project"
-                (if (some
-                     (lambda (skill)
-                       (search
-                        "project overlay"
-                        (cadr-agent:skill-description skill)))
-                     skills)
-                    1
-                    0)
-                "prompt_from_project"
-                (if (some
-                     (lambda (prompt)
-                       (search
-                        "project review"
-                        (cadr-agent:prompt-template-content prompt)))
-                     prompts)
-                    1
-                    0)
-                "context_file_count"
-                (length
-                 (cadr-cli::resource-snapshot-context-files snapshot))
-                "system_prompt"
-                (if (cadr-cli::resource-snapshot-system-prompt-path snapshot)
-                    1
-                    0)
-                "dbn_skill_count" (nth 0 dedupe)
-                "dbn_skill_collisions" (nth 1 dedupe)
-                "dbn_skill_project" (nth 2 dedupe)
-                "dbn_prompt_count" (nth 3 dedupe)
-                "dbn_prompt_collisions" (nth 4 dedupe)
-                "dbn_prompt_project" (nth 5 dedupe)
-                "cf_agents" cf-agents
-                "cf_miss" cf-miss
-                "cf_override" cf-override
-                "cf_n" cf-n
-                "pcf_cwd" pcf-cwd-hit
-                "pcf_agents" pcf-agents
-                "pcf_empty" pcf-empty
-                "pcf_n" pcf-n
-                "ad_first" ad-first
-                "ad_parent" ad-parent
-                "ad_root" ad-root
-                "ad_n" ad-n)
-               "dedupe_by_name"
-               (collect "resource_loader.dedupe_by_name"
-                        (lambda ()
-                          (lambda ()
-                            (run-resource-loader-dedupe-by-name
-                             agent-skill project-skill
-                             agent-prompt project-prompt))))
-               "reload"
-               (collect "resource_loader.reload"
-                        (lambda ()
-                          (lambda ()
-                            (run-resource-loader
-                             cwd agent project-skill agent-skill
-                             project-prompt agent-prompt))))
-               "context_file"
-               (collect "resource_loader.context_file"
-                        (lambda ()
-                          (lambda ()
-                            (run-resource-loader-context-file
-                             empty agents override))))
-               "project_context_files"
-               (collect "resource_loader.project_context_files"
-                        (lambda ()
-                          (lambda ()
-                            (run-resource-loader-project-context-files
-                             pcf-cwd pcf-agent empty))))
-               "ancestor_directories"
-               (collect "resource_loader.ancestor_directories"
-                        (lambda ()
-                          (lambda ()
-                            (run-resource-loader-ancestor-directories
-                             nested))))))))))))
+    (let* ((snapshot
+             (run-resource-loader
+              cwd agent project-skill agent-skill
+              project-prompt agent-prompt))
+           (skills
+             (cadr-cli::resource-snapshot-skills snapshot))
+           (prompts
+             (cadr-cli::resource-snapshot-prompts snapshot))
+           (dedupe
+             (run-resource-loader-dedupe-by-name
+              agent-skill project-skill agent-prompt project-prompt)))
+      (json-object
+       "observed"
+       (json-object
+        "skill_count" (length skills)
+        "prompt_count" (length prompts)
+        "skill_names"
+        (json-array
+         (sort (mapcar #'cadr-agent:skill-name skills) #'string<))
+        "prompt_names"
+        (json-array
+         (sort
+          (mapcar #'cadr-agent:prompt-template-name prompts)
+          #'string<))
+        "skill_from_project"
+        (if (some
+             (lambda (skill)
+               (search
+                "project overlay"
+                (cadr-agent:skill-description skill)))
+             skills)
+            1
+            0)
+        "prompt_from_project"
+        (if (some
+             (lambda (prompt)
+               (search
+                "project review"
+                (cadr-agent:prompt-template-content prompt)))
+             prompts)
+            1
+            0)
+        "context_file_count"
+        (length
+         (cadr-cli::resource-snapshot-context-files snapshot))
+        "system_prompt"
+        (if (cadr-cli::resource-snapshot-system-prompt-path snapshot)
+            1
+            0)
+        "dbn_skill_count" (nth 0 dedupe)
+        "dbn_skill_collisions" (nth 1 dedupe)
+        "dbn_skill_project" (nth 2 dedupe)
+        "dbn_prompt_count" (nth 3 dedupe)
+        "dbn_prompt_collisions" (nth 4 dedupe)
+        "dbn_prompt_project" (nth 5 dedupe))
+       "dedupe_by_name"
+       (collect "resource_loader.dedupe_by_name"
+                (lambda ()
+                  (lambda ()
+                    (run-resource-loader-dedupe-by-name
+                     agent-skill project-skill
+                     agent-prompt project-prompt))))
+       "reload"
+       (collect "resource_loader.reload"
+                (lambda ()
+                  (lambda ()
+                    (run-resource-loader
+                     cwd agent project-skill agent-skill
+                     project-prompt agent-prompt))))))))
 
 (defun fmq-truth (value)
   (if value 1 0))
@@ -16665,6 +16617,12 @@
       "src/cadr-cli/settings/manager.lisp settings-enabled-models"
       "cli_settings.block_images"
       "src/cadr-cli/settings/manager.lisp settings-block-images-p"
+      "cli_settings.default_thinking_level"
+      "src/cadr-cli/settings/manager.lisp settings-default-thinking-level"
+      "cli_settings.model_thinking_level"
+      "src/cadr-cli/settings/manager.lisp settings-model-thinking-level"
+      "cli_settings.all_model_thinking_levels"
+      "src/cadr-cli/settings/manager.lisp settings-all-model-thinking-levels"
       "agent_conditions.error_probe"
       "src/cadr-agent/conditions.lisp define-condition slot accessors + subtypep"
       "execution_env.exists_remove_temps"
@@ -16765,12 +16723,6 @@
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"
       "src/cadr-cli/resource-loader.lisp dedupe-resources-by-name"
-      "resource_loader.context_file"
-      "src/cadr-cli/resource-loader.lisp load-context-file-from-dir"
-      "resource_loader.project_context_files"
-      "src/cadr-cli/resource-loader.lisp load-project-context-files"
-      "resource_loader.ancestor_directories"
-      "src/cadr-cli/resource-loader.lisp ancestor-directories"
       "package_manager.resolve"
       "src/cadr-cli/packages/manifest.lisp package-resource-paths"
       "package_manager.manifest_parse"
