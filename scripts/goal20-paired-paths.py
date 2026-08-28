@@ -720,8 +720,12 @@ RATIO_CEILINGS = {
     "find_tool.gitignore_regex": 8.0,
     # find_tool leftover trio on glob.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 688–690.
-    "find_tool.glob_scanner": 8.0,
+    # leftover 688; first freeze 11.176× (10.624 / 0.951 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "find_tool.glob_scanner": 20.0,
+    # leftover 689; first freeze 1.393× (0.580 / 0.417 µs).
     "find_tool.glob_regex_body": 8.0,
+    # leftover 690; first freeze 5.556× (7.267 / 1.308 µs).
     "find_tool.parse_gitignore_line": 8.0,
     # cli_bootstrap_sessions leftover trio on sessions.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.

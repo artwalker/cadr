@@ -8224,6 +8224,30 @@ Leftover sibling of Pair 685. Timed work is string-component escape cancel, ente
 
 Leftover sibling of Pairs 685–686. Timed work is hidden overlay (`:visible nil`) plus visible Hello composite. Do not exact-match ANSI or full-screen geometry. Observed `rto_hid` / `rto_hi` / `rto_n` / `rto_vn` / `rto_row` are exact. First n=5 freeze **88.995×** (144.970 / 1.629 µs) on host `cursor`, ceiling 160.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 688 — `find_tool` (glob_scanner)
+
+| metric | cadr | pi |
+|---|---|---|
+| `glob_scanner` | `glob-scanner` (`src/cadr-cli/tools/glob.lisp`) | glob scanner compile+test (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pairs 448–450 on the same `glob.lisp` `find_tool` hole. Timed work is compile+test of `*` / `**` / `?` / `.a` scanners. Observed `gsc_star` / `gsc_miss` / `gsc_glob` / `gsc_q` / `gsc_dot` are exact. First n=5 freeze **11.176×** (10.624 / 0.951 µs) on host `cursor`, ceiling 20.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 689 — `find_tool` (glob_regex_body)
+
+| metric | cadr | pi |
+|---|---|---|
+| `glob_regex_body` | `glob-regex-body` (`src/cadr-cli/tools/glob.lisp`) | glob regex body (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pair 688. Timed work is stripping `^`/`$` from glob regex source for `*` / `**` / `?` / `.a`. Observed `grb_star` / `grb_glob` / `grb_q` / `grb_dot` are exact. First n=5 freeze **1.393×** (0.580 / 0.417 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 690 — `find_tool` (parse_gitignore_line)
+
+| metric | cadr | pi |
+|---|---|---|
+| `parse_gitignore_line` | `parse-gitignore-line` (`src/cadr-cli/tools/glob.lisp`) | gitignore line parse (`packages/coding-agent/src/core/tools/find.ts`) |
+
+Leftover sibling of Pairs 688–689. Timed work is empty/`#` skip, `foo` rule, `!foo` negation, and scanner construction. Observed `pgl_empty` / `pgl_hash` / `pgl_foo` / `pgl_bang` / `pgl_scan` are exact. First n=5 freeze **5.556×** (7.267 / 1.308 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

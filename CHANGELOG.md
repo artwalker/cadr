@@ -9,6 +9,25 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `find_tool.glob_scanner`
+  (`glob-scanner` vs glob scanner compile+test). Observed `gsc_star` /
+  `gsc_miss` / `gsc_glob` / `gsc_q` / `gsc_dot` exact. n=5 **11.176×**
+  (10.624 / 0.951 µs) on host `cursor`, ceiling 20.0 (first-freeze
+  headroom). Measure-only leftover (Pair 688). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `find_tool.glob_regex_body`
+  (`glob-regex-body` vs glob regex body). Observed `grb_star` /
+  `grb_glob` / `grb_q` / `grb_dot` exact. n=5 **1.393×** (0.580 /
+  0.417 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 689). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `find_tool.parse_gitignore_line`
+  (`parse-gitignore-line` vs gitignore line parse). Observed
+  `pgl_empty` / `pgl_hash` / `pgl_foo` / `pgl_bang` / `pgl_scan` exact.
+  n=5 **5.556×** (7.267 / 1.308 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 690). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.make_extension_input_dialog`
   (`make-extension-input-dialog` on
   `src/cadr-cli/interactive/extension-ui.lisp` vs input dialog
