@@ -254,5 +254,8 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
 | `oauth_pkce_device.percent_decode` | 1.592 | 1.044 | 1.525× | 8.00× | measure-only pair 310; `percent-decode` vs URLSearchParams | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_query` | 6.672 | 3.431 | 1.944× | 8.00× | measure-only pair 311; `parse-query` vs URLSearchParams | invent pause；地板优化另刀 |
+| `skill_prompt_load.resolve_prompt` | 16.882 | 4.643 | 3.636× | 8.00× | measure-only pair 472; leftover `resolve-system-prompt` vs `resolvePromptInput` | invent pause；地板优化另刀 |
+| `skill_prompt_load.node_read_error` | 10.042 | 3.219 | 3.120× | 8.00× | measure-only pair 473; leftover `node-read-error-message` vs Node fs errno text | invent pause；地板优化另刀 |
+| `skill_prompt_load.prompt_appends` | 6.306 | 1.930 | 3.268× | 8.00× | measure-only pair 474; leftover `resolve-system-prompt-with-appends` vs append join | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

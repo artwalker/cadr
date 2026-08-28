@@ -4068,8 +4068,10 @@ commit no optimize.
 Leftover of the `skill_prompt_load` hole on `system-prompt.lisp`. Timed work
 is literal / file / missing-path prompt resolution — not
 `build-system-prompt`. Observed `rp_lit` / `rp_file` / `rp_miss` are exact.
-First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same
-commit no optimize.
+First n=5 freeze **3.636×** (16.882 / 4.643 µs) on host `cursor`, ceiling
+8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize.
 
 ### Pair 473 — `skill_prompt_load` (node_read_error)
 
@@ -4079,8 +4081,10 @@ commit no optimize.
 
 Leftover sibling of Pair 472 on the same hole. Timed work is EISDIR / EACCES
 / generic read-error mapping. Observed `nr_eisdir` / `nr_eacces` /
-`nr_other` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`nr_other` are exact. First n=5 freeze **3.120×** (10.042 / 3.219 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
+from known old holes `lc_n` / `lc_sleep` / help text; this metric did not
+fail). Same commit no optimize.
 
 ### Pair 474 — `skill_prompt_load` (prompt_appends)
 
@@ -4090,8 +4094,10 @@ Leftover sibling of Pair 472 on the same hole. Timed work is EISDIR / EACCES
 
 Leftover sibling of Pairs 472–473 on the same hole. Timed work is base plus
 append list joined with blank lines. Observed `pa_len` / `pa_join` /
-`pa_base` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used
-`--only-enforce`. Same commit no optimize.
+`pa_base` are exact. First n=5 freeze **3.268×** (6.306 / 1.930 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

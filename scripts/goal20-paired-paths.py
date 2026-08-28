@@ -1281,6 +1281,10 @@ RATIO_CEILINGS = {
     # on the custom-prompt path. 3000.0 is first-freeze
     # headroom. Ratchet down only.
     "skill_prompt_load.build_prompt": 3000.0,
+    # skill_prompt_load leftover trio (samples=5): observed
+    # resolve_prompt 3.64x (16.88 / 4.64 us), node_read_error 3.12x
+    # (10.04 / 3.22 us), prompt_appends 3.27x (6.31 / 1.93 us).
+    # 8.0 is first-freeze headroom. Ratchet down only.
     "skill_prompt_load.resolve_prompt": 8.0,
     "skill_prompt_load.node_read_error": 8.0,
     "skill_prompt_load.prompt_appends": 8.0,

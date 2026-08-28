@@ -929,9 +929,9 @@
    "metric": "skill_prompt_load.resolve_prompt",
    "branch": "cursor/system-prompt-leftovers-472-474-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 472-474, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 3.636,
+   "cadrUs": 16.882,
+   "piUs": 4.643,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -944,9 +944,9 @@
    "metric": "skill_prompt_load.node_read_error",
    "branch": "cursor/system-prompt-leftovers-472-474-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 472-474, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 3.120,
+   "cadrUs": 10.042,
+   "piUs": 3.219,
    "ceiling": 8.0,
    "rc": 1
   },
@@ -959,9 +959,9 @@
    "metric": "skill_prompt_load.prompt_appends",
    "branch": "cursor/system-prompt-leftovers-472-474-34f9",
    "note": "nextPairNum left at tip 328 (leftover IDs 472-474, not sequential nextPairNum)",
-   "ratio": null,
-   "cadrUs": null,
-   "piUs": null,
+   "ratio": 3.268,
+   "cadrUs": 6.306,
+   "piUs": 1.930,
    "ceiling": 8.0,
    "rc": 1
   }
