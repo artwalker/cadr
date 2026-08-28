@@ -365,6 +365,9 @@ const REPETITIONS = {
 	"cli_extensions_install.unsafe_git": 50,
 	"cli_extensions_install.git_path": 50,
 	"cli_extensions_install.normalize_git": 50,
+	"cli_extensions_install.package_fragment": 50,
+	"cli_extensions_install.local_system_name": 50,
+	"cli_extensions_install.inline_factory": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -9584,6 +9587,78 @@ function runCliExtensionsNormalizeGit() {
 		normalizeGitInstallErrorP("file://tmp/x"),
 		normalizeGitInstallErrorP(""),
 		normalizeGitInstallErrorP("github.com/user/repo"),
+	];
+}
+
+
+function replicaExtensionPackageFragment(text) {
+	let out = "";
+	for (const character of text) {
+		if (/[A-Za-z0-9]/.test(character) || character === "-" || character === "_") {
+			out += character.toUpperCase();
+		} else {
+			out += "-";
+		}
+	}
+	return out;
+}
+
+
+function replicaExtensionLocalSystemNameP(name) {
+	if (typeof name !== "string" || name.length === 0) return false;
+	if (name === "." || name === "..") return false;
+	return [...name].every(
+		(character) => /[A-Za-z0-9]/.test(character) || character === "-" || character === "_" || character === ".",
+	);
+}
+
+
+function replicaValidInlineExtensionFactoryP(input) {
+	if (typeof input === "function") return true;
+	if (!input || typeof input !== "object" || Array.isArray(input)) return false;
+	for (const key of Object.keys(input)) {
+		if (key === "name") {
+			if (typeof input.name !== "string") return false;
+		} else if (key === "factory") {
+			if (typeof input.factory !== "function") return false;
+		} else if (key === "hiddenP") {
+			if (input.hiddenP !== true && input.hiddenP !== false && input.hiddenP != null) {
+				return false;
+			}
+		} else {
+			return false;
+		}
+	}
+	return typeof input.name === "string" && input.name.length > 0 && typeof input.factory === "function";
+}
+
+
+function runCliExtensionsPackageFragment() {
+	const frag = replicaExtensionPackageFragment;
+	return [
+		frag("foo") === "FOO" ? 1 : 0,
+		frag("a.b") === "A-B" ? 1 : 0,
+		frag("ab_cd-9") === "AB_CD-9" ? 1 : 0,
+		frag("") === "" ? 1 : 0,
+		4,
+	];
+}
+
+
+function runCliExtensionsLocalSystemName() {
+	const flag = (name) => (replicaExtensionLocalSystemNameP(name) ? 1 : 0);
+	return [flag("pkg.1"), flag(""), flag("."), flag(".."), flag("a/b"), 5];
+}
+
+
+function runCliExtensionsInlineFactory() {
+	const noop = () => {};
+	return [
+		replicaValidInlineExtensionFactoryP(noop) ? 1 : 0,
+		replicaValidInlineExtensionFactoryP({ name: "ext", factory: noop, hiddenP: true }) ? 1 : 0,
+		replicaValidInlineExtensionFactoryP({ name: "", factory: noop }) ? 1 : 0,
+		replicaValidInlineExtensionFactoryP({ name: "ext" }) ? 1 : 0,
+		replicaValidInlineExtensionFactoryP({ name: undefined }) ? 1 : 0,
 	];
 }
 

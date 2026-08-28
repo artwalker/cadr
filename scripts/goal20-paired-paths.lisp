@@ -8735,6 +8735,53 @@
    (normalize-git-install-error-p "github.com/user/repo")))
 
 
+(defun run-cli-extensions-package-fragment ()
+  (flet ((frag (text)
+           (cadr-cli::extension-package-fragment text)))
+    (list
+     (if (string= (frag "foo") "FOO") 1 0)
+     (if (string= (frag "a.b") "A-B") 1 0)
+     (if (string= (frag "ab_cd-9") "AB_CD-9") 1 0)
+     (if (string= (frag "") "") 1 0)
+     4)))
+
+
+(defun run-cli-extensions-local-system-name ()
+  (flet ((flag (name)
+           (if (cadr-cli::extension-local-system-name-p name) 1 0)))
+    (list
+     (flag "pkg.1")
+     (flag "")
+     (flag ".")
+     (flag "..")
+     (flag "a/b")
+     5)))
+
+
+(defun run-cli-extensions-inline-factory ()
+  (list
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (lambda ()))
+       1
+       0)
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (list :name "ext" :factory (lambda ()) :hidden-p t))
+       1
+       0)
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (list :name "" :factory (lambda ())))
+       1
+       0)
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (list :name "ext"))
+       1
+       0)
+   (if (cadr-cli::valid-inline-extension-factory-p
+        (list :name))
+       1
+       0)))
+
+
 (defun measure-cli-extensions-install ()
   (let* ((url (run-cli-extensions-llama-url))
          (token (run-cli-extensions-hf-token))

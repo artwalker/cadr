@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_extensions_install.package_fragment`
+  (`extension-package-fragment` on `src/cadr-cli/extensions/loader.lisp`).
+  Observed `pf_plain` / `pf_hyphen` / `pf_keep` / `pf_empty` exact. n=5
+  **0.351×** (0.468 / 1.334 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 502). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`), not this
+  metric. cadr leads. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.local_system_name`
+  (`extension-local-system-name-p` on
+  `src/cadr-cli/extensions/loader.lisp`). Observed `ls_ok` / `ls_empty` /
+  `ls_dot` / `ls_slash` exact. n=5 **0.273×** (0.192 / 0.704 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 503). cadr leads.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_extensions_install.inline_factory`
+  (`valid-inline-extension-factory-p` on
+  `src/cadr-cli/extensions/loader.lisp` vs `loadExtensionFromFactory`
+  input check). Observed `if_fn` / `if_plist` / `if_empty_name` /
+  `if_no_factory` exact. n=5 **0.260×** (0.188 / 0.725 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 504). cadr leads.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_extensions_install.unsafe_git`
   (`unsafe-git-source-p` on `src/cadr-cli/extensions/installer.lisp` vs
   `hasUnsafeGitInstallPart`). Observed `ug_empty` / `ug_dash` / `ug_ok`

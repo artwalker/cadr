@@ -118,7 +118,7 @@ METRICS = {
     "agent_proxy": ("stream_roundtrip", "event_count", "text", "usage_total"),
     "oauth_pkce": ("challenge_urls", "challenge", "openai_has_challenge", "anthropic_has_challenge", "openai_prefix", "anthropic_prefix"),
     "oauth_pkce_device": ("poll", "auth_json", "copilot_url", "cloudflare_url", "radius_gateway", "copilot_auth", "percent_decode", "parse_query", "parse_authorization_input", "provider_key", "http_status_text", "parse_callback_request", "dc_ok", "dc_fail", "dc_cancel", "ak_ok", "ak_len", "oa_ok", "oa_len", "auth_miss", "auth_bad", "gc_def", "gc_ind", "gc_ent", "gc_dom", "cf_plain", "cf_ok", "cf_gw", "rg_slash", "rg_plain", "rg_http", "ga_def", "ga_ind", "ga_ent", "ga_dom", "ga_key", "pd_plain", "pd_plus", "pd_slash", "pd_space", "pd_utf8", "pd_n", "pq_code", "pq_state", "pq_plus", "pq_empty", "pq_n", "pai_url", "pai_hash", "pai_qs", "pai_plain", "pai_n", "bv_A", "bv_a", "bv_0", "bv_dash", "bv_us", "bv_n", "bd_obj", "bd_foo", "bd_acct", "bd_n", "aid_ok", "aid_miss", "aid_bad", "aid_n", "error_detail", "ensure_success", "notify_device", "json_copy", "interval_seconds", "device_start", "openrouter_input", "openrouter_refresh", "openrouter_exchange"),
-    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery", "nu_local", "nu_https", "nu_file", "inf_ok", "fb_b", "fb_k", "hf_env", "hf_path", "hf_home", "hf_miss", "hf_blank", "lc_n", "lc_img", "lc_ctx", "lc_url", "lc_sleep", "lc_fb", "ed_n", "ed_err", "ed_coll", "ed_cli", "ed_proj", "ed_glob", "ed_probe", "ed_miss", "split_command", "handle_plain", "handle_unknown", "unsafe_git", "git_path", "normalize_git"),
+    "cli_extensions_install": ("llama_url", "hf_token", "llama_catalog", "extension_discovery", "nu_local", "nu_https", "nu_file", "inf_ok", "fb_b", "fb_k", "hf_env", "hf_path", "hf_home", "hf_miss", "hf_blank", "lc_n", "lc_img", "lc_ctx", "lc_url", "lc_sleep", "lc_fb", "ed_n", "ed_err", "ed_coll", "ed_cli", "ed_proj", "ed_glob", "ed_probe", "ed_miss", "split_command", "handle_plain", "handle_unknown", "unsafe_git", "git_path", "normalize_git", "package_fragment", "local_system_name", "inline_factory"),
     "evals_harness": ("summarize", "group_key", "artifact_persist", "format", "normalize_steps", "resolve_selection", "transcript", "last_assistant", "step_value", "usage", "result_json", "eval_environment", "prompt_step", "reload_step", "make_eval_root", "normalize_step_type", "selected_eval_tools", "prompt_eval_agent", "reload_shutdown", "run_coding_agent_eval", "eval_sets", "comparisons", "candidate_wins", "ties", "gk_id", "gk_trim", "art_ok", "art_bad", "ap_n", "ap_sess", "ap_src", "ap_sess_prefix", "ap_src_prefix", "ap_sess_file", "ap_src_file", "fmt_empty", "fmt_empty_hdr", "fmt_hdr", "fmt_base", "fmt_pass", "ns_empty", "ns_str_n", "ns_str_pr", "ns_seq_n", "ns_seq_rel", "ns_kw_n", "ns_kw_rel", "ns_vec_n", "ns_bad", "rs_explicit", "rs_env", "rs_miss", "rs_prov", "rs_blank", "rs_n", "tr_n", "tr_user", "tr_role", "tr_text", "tr_call", "tr_name", "tr_result", "tr_err", "tr_keys", "la_new", "la_none", "la_full", "la_n", "ct_plain", "ct_join", "ct_empty", "ct_blank", "ct_n", "te_type", "te_role", "te_content", "te_asst_role", "te_asst", "te_n", "el_now", "el_past", "el_order", "el_n", "release_extensions", "agent_tools", "extension_paths", "argument_prefix", "parse_arguments", "validate_smoke", "eval_result", "root_observer", "model_resolver", "status_name", "case_observation", "finish", "eval_layout", "system_prompt", "output_selector", "make_reporter", "finite_number", "artifact_metadata", "extension_authoring_input", "json_array_items", "json_string"),
     "ai_crypto_model_data": ("manifest", "schema_version", "structure_hash", "generated_at", "file_count", "openai_json_hash", "anthropic_json_hash"),
     "ai_crypto": ("hmac", "fox", "empty", "long"),
@@ -838,6 +838,21 @@ RATIO_CEILINGS = {
     # 0.369x (4.884 / 13.233 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "cli_extensions_install.normalize_git": 8.0,
+    # Frozen from the first Friend-MachineD leftover
+    # cli_extensions_install.package_fragment pair (samples=5): observed
+    # 0.351x (0.468 / 1.334 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "cli_extensions_install.package_fragment": 8.0,
+    # Frozen from the first Friend-MachineD leftover
+    # cli_extensions_install.local_system_name pair (samples=5): observed
+    # 0.273x (0.192 / 0.704 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "cli_extensions_install.local_system_name": 8.0,
+    # Frozen from the first Friend-MachineD leftover
+    # cli_extensions_install.inline_factory pair (samples=5): observed
+    # 0.260x (0.188 / 0.725 us). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
+    "cli_extensions_install.inline_factory": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_crypto.hmac pair (samples=5): observed 18.81x
@@ -2419,6 +2434,22 @@ OBSERVED_EXACT = {
         "ng_file",
         "ng_empty",
         "ng_bare",
+        "pf_plain",
+        "pf_hyphen",
+        "pf_keep",
+        "pf_empty",
+        "pf_n",
+        "ls_ok",
+        "ls_empty",
+        "ls_dot",
+        "ls_dotdot",
+        "ls_slash",
+        "ls_n",
+        "if_fn",
+        "if_plist",
+        "if_empty_name",
+        "if_no_factory",
+        "if_odd",
     ),
     "evals_harness": ("eval_sets", "comparisons", "candidate_wins", "ties", "gk_id", "gk_trim", "art_ok", "art_bad", "ap_n", "ap_sess", "ap_src", "ap_sess_prefix", "ap_src_prefix", "ap_sess_file", "ap_src_file", "fmt_empty", "fmt_empty_hdr", "fmt_hdr", "fmt_base", "fmt_pass", "ns_empty", "ns_str_n", "ns_str_pr", "ns_seq_n", "ns_seq_rel", "ns_kw_n", "ns_kw_rel", "ns_vec_n", "ns_bad", "rs_explicit", "rs_env", "rs_miss", "rs_prov", "rs_blank", "rs_n", "tr_n", "tr_user", "tr_role", "tr_text", "tr_call", "tr_name", "tr_result", "tr_err", "tr_keys", "la_new", "la_none", "la_full", "la_n", "sv_hash", "sv_plist", "sv_intern", "sv_miss", "sv_n", "us_in", "us_out", "us_total", "us_tools", "us_prov", "us_model", "us_cost", "us_n", "rj_out", "rj_ev", "rj_err", "rj_art", "rj_time", "rj_n", "ee_trim", "ee_model", "ee_ws", "ee_miss", "ee_n", "ps_type", "ps_content", "ps_n", "rs_type", "rs_no_content", "rs_n", "mer_exists", "mer_prefix", "mer_no_ws", "mer_n", "nst_kw", "nst_sym", "nst_str", "nst_bad", "nst_n", "set_n", "set_names", "set_all", "set_filt_n", "set_no_bash", "set_cases", "pea_out", "pea_msgs", "pea_stop", "pea_n", "rld_err", "rld_active", "rld_reports", "rld_n", "rca_out", "rca_events", "rca_err", "rca_ms", "rca_n", "ct_plain", "ct_join", "ct_empty", "ct_blank", "ct_n", "te_type", "te_role", "te_content", "te_asst_role", "te_asst", "te_n", "el_now", "el_past", "el_order", "el_n", "apr_val", "apr_empty", "apr_miss", "apr_model", "apr_n", "pa_space", "pa_eq", "pa_mix", "pa_miss", "pa_empty", "pa_unknown", "pa_n", "vs_ok", "vs_trim", "vs_city", "vs_tok", "vs_n"),
     "ai_crypto_model_data": (
