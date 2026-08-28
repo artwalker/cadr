@@ -9,6 +9,29 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.login_dialog_show_prompt`
+  (`login-dialog-show-prompt` on
+  `src/cadr-cli/interactive/selectors/login-dialog.lisp` vs
+  LoginDialogComponent.showPrompt). Observed `ldpr_empty` / `ldpr_auth` /
+  `ldpr_noplace` / `ldpr_nocancel` / `ldpr_wait` exact. n=5 **1.771×**
+  (6.781 / 3.830 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 622). Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.login_dialog_show_info`
+  (`login-dialog-show-info` vs LoginDialogComponent.showInfo). Observed
+  `ldi_labeled` / `ldi_auth` / `ldi_bare` / `ldi_nolink` / `ldi_wait`
+  exact. n=5 **1.567×** (8.766 / 5.594 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 623). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.login_dialog_show_details`
+  (`login-dialog-show-details` vs LoginDialogComponent.showDetails).
+  Observed `lddt_two` / `lddt_auth` / `lddt_empty` / `lddt_styles` /
+  `lddt_wait` exact. n=5 **0.756×** (2.598 / 3.435 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 624). cadr leads. `nextPairNum`
+  left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.login_dialog_show_waiting`
   (`login-dialog-show-waiting` on
   `src/cadr-cli/interactive/selectors/login-dialog.lisp` vs
