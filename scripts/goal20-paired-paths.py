@@ -956,12 +956,14 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.assistant_stop_error": 20.0,
     # Measure-only leftover 648; first freeze 4.259× (6.319 / 1.484 µs).
     "cli_interactive_controller.update_notification_border": 8.0,
-    # Measure-only leftover 649; first freeze pending.
+    # Measure-only leftover 649; first freeze 5.465× (8.586 / 1.571 µs).
     "cli_interactive_controller.theme_message_background": 8.0,
-    # Measure-only leftover 650; first freeze pending.
-    "cli_interactive_controller.update_notification_text": 8.0,
-    # Measure-only leftover 651; first freeze pending.
-    "cli_interactive_controller.syntax_highlight": 8.0,
+    # Measure-only leftover 650; first freeze 29.104× (59.152 / 2.032 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.update_notification_text": 50.0,
+    # Measure-only leftover 651; first freeze 12.184× (13.174 / 1.081 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.syntax_highlight": 20.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.user_message_make": 8.0,

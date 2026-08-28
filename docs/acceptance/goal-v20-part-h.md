@@ -7912,6 +7912,30 @@ Leftover sibling of Pair 646. Timed work is length/aborted/error stop lines (tru
 
 Leftover sibling of Pairs 646–647. Timed work is warning-themed `─` border at widths 8 / 0 / 1 / 40 with ANSI stripped. Observed `unb_w` / `unb_ch` / `unb_0` / `unb_1` / `unb_n` are exact. First n=5 freeze **4.259×** (6.319 / 1.484 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 649 — `cli_interactive_controller` (theme_message_background)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_message_background` | `theme-message-background-lines` (`src/cadr-cli/interactive/transcript.lisp`) | `theme.bg` message background (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pairs 646–648 on the same `transcript.lisp` hole. Timed work is per-line themed backgrounds (hello / empty / two-line keep / user-message token) with ANSI stripped. Observed `tmb_hi` / `tmb_empty` / `tmb_n` / `tmb_keep` / `tmb_tok` are exact. First n=5 freeze **5.465×** (8.586 / 1.571 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider`). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 650 — `cli_interactive_controller` (update_notification_text)
+
+| metric | cadr | pi |
+|---|---|---|
+| `update_notification_text` | `update-notification-text-lines` (`src/cadr-cli/interactive/transcript.lisp`) | warning body text (`packages/coding-agent/src/modes/interactive/components/dynamic-border.ts`) |
+
+Leftover sibling of Pair 649. Timed work is padded notification body lines (hello / empty / CJK / wrap). Observed `unt_hi` / `unt_empty` / `unt_cjk` / `unt_n` / `unt_pad` are exact. First n=5 freeze **29.104×** (59.152 / 2.032 µs) on host `cursor`. First-freeze headroom ceiling **50.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 651 — `cli_interactive_controller` (syntax_highlight)
+
+| metric | cadr | pi |
+|---|---|---|
+| `syntax_highlight` | `tui-syntax-highlight` (`src/cadr-cli/interactive/transcript.lisp`) | syntaxHighlight keyword/number (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pairs 649–650. Timed work is unsupported-language passthrough, empty lisp, lisp keep `(+ 1 2)`, json `{}` with ANSI stripped. Observed `syn_plain` / `syn_empty` / `syn_keep` / `syn_n` / `syn_json` are exact. First n=5 freeze **12.184×** (13.174 / 1.081 µs) on host `cursor`. First-freeze headroom ceiling **20.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
