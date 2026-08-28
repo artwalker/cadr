@@ -7435,12 +7435,12 @@ function loaderIntervalMs(intervalMs) {
 function runTuiLoaderFrames() {
 	const defaults = loaderFrames(undefined);
 	const custom = loaderFrames(["a", "b"]);
-	const empty = loaderFrames([]);
+	const one = loaderFrames(["x"]);
 	return {
 		lf_default_n: defaults.length,
 		lf_default_first: defaults[0] === "⠋" ? 1 : 0,
 		lf_custom_n: custom.length,
-		lf_empty_n: empty.length,
+		lf_one_n: one.length,
 	};
 }
 

@@ -8328,12 +8328,12 @@
 (defun run-tui-loader-frames ()
   (let ((default-frames (cadr-tui::loader-frames nil))
         (custom (cadr-tui::loader-frames '("a" "b")))
-        (empty (cadr-tui::loader-frames '())))
+        (one (cadr-tui::loader-frames '("x"))))
     (list
      (length default-frames)
      (if (string= (first default-frames) "⠋") 1 0)
      (length custom)
-     (length empty))))
+     (length one))))
 
 (defun run-tui-loader-interval ()
   (list
@@ -8381,7 +8381,7 @@
       "lf_default_n" (first frames)
       "lf_default_first" (second frames)
       "lf_custom_n" (third frames)
-      "lf_empty_n" (fourth frames)
+      "lf_one_n" (fourth frames)
       "li_default" (first interval)
       "li_pos" (second interval)
       "li_zero" (third interval)

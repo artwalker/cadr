@@ -3973,6 +3973,51 @@ on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
 from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
+### Pair 397 — `tui_select_settings_loaders` (loader_frames)
+
+| metric | cadr | pi |
+|---|---|---|
+| `loader_frames` | `loader-frames` (`src/cadr-tui/composition/loaders.lisp`) | `Loader` `DEFAULT_FRAMES` copy (`packages/tui/src/components/loader.ts` `setIndicator` frames) |
+
+Leftover sibling of Pair 39 `filter` on the `tui_select_settings_loaders` hole,
+this file only. Timed work is default / two-frame / one-frame copy — not
+`loader-component-start` / `stop` / `run`. Observed `lf_default_n` /
+`lf_default_first` / `lf_custom_n` / `lf_one_n` are exact (10 / 1 / 2 / 1).
+First n=5 freeze **1.051×** (0.200 / 0.190 µs) on host `cursor`, ceiling 8.0.
+Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` /
+`lc_sleep` / help text; this metric did not fail). Same commit no optimize.
+Booked in `docs/benchmarks/goal20-paired-over-1x.md`. Pair numbers 328–396
+belong to other lanes; this cut is 397–399 only. `nextPairNum` stays 328.
+
+### Pair 398 — `tui_select_settings_loaders` (loader_interval)
+
+| metric | cadr | pi |
+|---|---|---|
+| `loader_interval` | `loader-interval-seconds` (`src/cadr-tui/composition/loaders.lisp`) | `Loader` `intervalMs` default 80 (`packages/tui/src/components/loader.ts` `setIndicator`) |
+
+Leftover sibling of Pair 397 `loader_frames` on the same `loaders.lisp` hole.
+Timed work is default / positive 200 ms / non-positive fallback — not the
+animation thread. Observed `li_default` / `li_pos` / `li_zero` / `li_n` are
+exact (80 / 200 / 80 / 3). First n=5 freeze **1.464×** (0.201 / 0.138 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+
+### Pair 399 — `tui_select_settings_loaders` (loader_step)
+
+| metric | cadr | pi |
+|---|---|---|
+| `loader_step` | `loader-component-step` (`src/cadr-tui/composition/loaders.lisp`) | `Loader` animation tick (`currentFrame` + `updateDisplay`) |
+
+Leftover sibling of Pair 397 `loader_frames` and Pair 398 `loader_interval` on
+the same `loaders.lisp` hole. Timed work is one deterministic frame advance on
+a two-frame loader constructed with `:start-p nil` / `stop()` — not
+start/stop/run threads. Observed `ls_initial` / `ls_next` / `ls_wrap` / `ls_n`
+are exact. First n=5 freeze **1.543×** (0.339 / 0.219 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old holes
+`lc_n` / `lc_sleep` / help text; this metric did not fail). Same commit no
+optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
