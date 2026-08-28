@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_selectors.model_selector_provider_badge`
+  (`model-selector-provider-badge` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs baseline
+  `` [`${provider}`] ``). Observed `mspb_openai` / `mspb_anthropic` /
+  `mspb_codex` / `mspb_google` / `mspb_openrouter` / `mspb_hit` exact.
+  n=5 **0.307×** (0.126 / 0.411 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 559). Gate rc=1 only from known old holes,
+  not this metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_selectors.scoped_models_copy_enabled`
+  (`scoped-models-copy-enabled` vs `enabledModelIds` copy). Observed
+  `smce_all` / `smce_two` / `smce_empty` / `smce_one` / `smce_three` /
+  `smce_unavail` exact. n=5 **1.960×** (1.074 / 0.548 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 560). Gate rc=1 only
+  from known old holes, not this metric. Booked over-1×.
+- Goal 20 P.13 leftover: pair `cli_selectors.move_list_item`
+  (`move-list-item` vs `move()` index swap). Observed `mli_swap` /
+  `mli_ends` / `mli_neg` / `mli_over` / `mli_same` / `mli_empty` exact.
+  n=5 **1.357×** (1.317 / 0.971 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 561). Gate rc=1 only from known old holes,
+  not this metric. Booked over-1×.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See

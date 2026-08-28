@@ -1194,14 +1194,17 @@ RATIO_CEILINGS = {
   "cli_selectors.scoped_models_selector_persist": 25.0,
   # Measure-only pair (Pair 240); first freeze 46.24×.
   "cli_selectors.scoped_models_selector_provider_count": 50.0,
-  # cli_selectors.model_selector_provider_badge leftover 559:
-  # first-freeze 8.0 headroom. Ratchet down only.
+  # cli_selectors.model_selector_provider_badge leftover 559 (samples=5):
+  # observed 0.307x (0.126 / 0.411 us). 8.0 is first-freeze
+  # headroom. Ratchet down only.
   "cli_selectors.model_selector_provider_badge": 8.0,
-  # cli_selectors.scoped_models_copy_enabled leftover 560:
-  # first-freeze 8.0 headroom. Ratchet down only.
+  # cli_selectors.scoped_models_copy_enabled leftover 560 (samples=5):
+  # observed 1.960x (1.074 / 0.548 us). 8.0 is first-freeze
+  # headroom. Ratchet down only.
   "cli_selectors.scoped_models_copy_enabled": 8.0,
-  # cli_selectors.move_list_item leftover 561:
-  # first-freeze 8.0 headroom. Ratchet down only.
+  # cli_selectors.move_list_item leftover 561 (samples=5):
+  # observed 1.357x (1.317 / 0.971 us). 8.0 is first-freeze
+  # headroom. Ratchet down only.
   "cli_selectors.move_list_item": 8.0,
   "cli_selectors.scoped_models_selector_target_ids": 8.0,
   # Measure-only pair (Pair 235); first freeze 20.77×.
