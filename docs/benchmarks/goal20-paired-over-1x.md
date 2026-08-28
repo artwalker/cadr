@@ -398,4 +398,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.model_selector_rebuild_search_text_table` | 16.001 | 4.939 | 3.240× | 8.00× | measure-only leftover 577; `model-selector-rebuild-search-text-table` vs search-text Map rebuild | invent pause；地板优化另刀 |
 | `cli_selectors.model_selector_filter_search_text` | 13.376 | 3.048 | 4.389× | 8.00× | measure-only leftover 578; `model-selector-filter-search-text` vs table lookup / fallback | invent pause；地板优化另刀 |
 | `cli_selectors.model_selector_finish_refresh` | 46.658 | 10.907 | 4.278× | 8.00× | measure-only leftover 579; `model-selector-finish-refresh` vs catalog refresh completion | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_items` | 26.959 | 6.435 | 4.189× | 8.00× | measure-only leftover 584; `scoped-models-selector-items` vs items after rebuild | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_cancel` | 0.667 | 0.382 | 1.746× | 8.00× | measure-only leftover 585; `scoped-models-selector-cancel` vs `onCancel` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

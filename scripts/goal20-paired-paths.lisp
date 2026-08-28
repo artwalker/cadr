@@ -19215,6 +19215,22 @@
    (cadr-cli::model-selector-provider-badge :openai)))
 
 
+(defun make-scoped-models-copy-items-bench-state (models enabled-ids)
+  (cadr-cli::%make-scoped-models-selector-state
+   :all-models (copy-list models)
+   :all-ids (mapcar #'cadr-cli::qualified-model-id models)
+   :enabled-ids
+   (cadr-cli::scoped-models-copy-enabled enabled-ids)))
+
+
+(defun encode-scoped-models-copy-enabled (enabled)
+  (let ((copied (cadr-cli::scoped-models-copy-enabled enabled)))
+    (cond
+      ((eq copied :all) "all")
+      ((null copied) "")
+      (t (format nil "~{~a~^,~}" copied)))))
+
+
 (defun run-cli-selectors-scoped-models-copy-enabled ()
   (mapcar
    (lambda (enabled)
@@ -20056,6 +20072,75 @@
    "smist_codex" (nth 2 search-text)
    "smist_cached" (nth 3 search-text)
    "smist_noid" (nth 4 search-text)))
+
+
+(defun encode-scoped-models-selector-items (models enabled-ids)
+  (let ((state
+          (make-scoped-models-copy-items-bench-state models enabled-ids)))
+    (cadr-cli::scoped-models-selector-rebuild-items state)
+    (format
+     nil
+     "~{~a~^,~}"
+     (mapcar
+      (lambda (item)
+        (let ((id (getf item :id)))
+          (cond
+            ((stringp id) id)
+            ((null id) "")
+            (t (coerce id 'string)))))
+      (cadr-cli::scoped-models-selector-items state)))))
+
+
+(defun run-cli-selectors-scoped-models-selector-items ()
+  (let ((models (make-scoped-models-test-models))
+        (partial '("google/gemini-2.5-pro" "openai/gpt-4o")))
+    (list
+     (encode-scoped-models-selector-items models :all)
+     (encode-scoped-models-selector-items models partial)
+     (encode-scoped-models-selector-items models '())
+     (encode-scoped-models-selector-items nil :all)
+     (encode-scoped-models-selector-items
+      models '("anthropic/claude-sonnet-4")))))
+
+
+(defun scoped-models-selector-cancel-encoded (callback-p &optional (times 1))
+  (let* ((n 0)
+         (state
+           (cadr-cli::%make-scoped-models-selector-state
+            :cancel-callback
+            (when callback-p (lambda () (incf n))))))
+    (dotimes (i times)
+      (cadr-cli::scoped-models-selector-cancel state))
+    (write-to-string n)))
+
+
+(defun run-cli-selectors-scoped-models-selector-cancel ()
+  (list
+   (scoped-models-selector-cancel-encoded t 1)
+   (scoped-models-selector-cancel-encoded t 2)
+   (scoped-models-selector-cancel-encoded nil 1)
+   (scoped-models-selector-cancel-encoded nil 2)
+   (scoped-models-selector-cancel-encoded t 0)))
+
+
+(defun scoped-models-copy-items-cancel-observed-pairs
+    (copy-enabled items cancel)
+  (list
+   "smce_all" (nth 0 copy-enabled)
+   "smce_two" (nth 1 copy-enabled)
+   "smce_empty" (nth 2 copy-enabled)
+   "smce_one" (nth 3 copy-enabled)
+   "smce_copy" (nth 4 copy-enabled)
+   "smsi_all" (nth 0 items)
+   "smsi_partial" (nth 1 items)
+   "smsi_none" (nth 2 items)
+   "smsi_empty" (nth 3 items)
+   "smsi_single" (nth 4 items)
+   "smsc_once" (nth 0 cancel)
+   "smsc_twice" (nth 1 cancel)
+   "smsc_none" (nth 2 cancel)
+   "smsc_none2" (nth 3 cancel)
+   "smsc_zero" (nth 4 cancel)))
 
 
 (defun run-cli-selectors-qualified-model-id ()

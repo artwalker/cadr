@@ -442,6 +442,8 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_rebuild_models_by_id": 50,
 	"cli_selectors.scoped_models_model_by_id": 50,
 	"cli_selectors.scoped_model_item_search_text": 50,
+	"cli_selectors.scoped_models_selector_items": 50,
+	"cli_selectors.scoped_models_selector_cancel": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20011,6 +20013,14 @@ function encodeScopedModelsCopyEnabled(enabledIds) {
 }
 
 
+function scopedModelsCopyEnabledEncoded(enabled) {
+	if (enabled === null) {
+		return "all";
+	}
+	return [...enabled].join(",");
+}
+
+
 function runCliSelectorsScopedModelsCopyEnabled() {
 	return {
 		smce_all: encodeScopedModelsCopyEnabled(null),
@@ -20754,6 +20764,53 @@ function runCliSelectorsScopedModelItemSearchText() {
 		smist_noid: encodeScopedModelItemSearchText({
 			fullId: "stale/missing",
 		}),
+	};
+}
+
+
+function scopedModelsSelectorItemsEncoded(allModels, enabledIds) {
+	return scopedModelsBuildItems(allModels, enabledIds)
+		.map((item) => item.fullId)
+		.join(",");
+}
+
+
+function runCliSelectorsScopedModelsSelectorItems() {
+	const models = makeModelSelectorTestModels();
+	return {
+		smsi_all: scopedModelsSelectorItemsEncoded(models, null),
+		smsi_partial: scopedModelsSelectorItemsEncoded(models, [
+			"google/gemini-2.5-pro",
+			"openai/gpt-4o",
+		]),
+		smsi_none: scopedModelsSelectorItemsEncoded(models, []),
+		smsi_empty: scopedModelsSelectorItemsEncoded([], null),
+		smsi_single: scopedModelsSelectorItemsEncoded(models, [
+			"anthropic/claude-sonnet-4",
+		]),
+	};
+}
+
+
+function scopedModelsSelectorCancelEncoded(withCallback, times = 1) {
+	let n = 0;
+	const onCancel = withCallback ? () => {
+		n += 1;
+	} : undefined;
+	for (let i = 0; i < times; i++) {
+		onCancel?.();
+	}
+	return String(n);
+}
+
+
+function runCliSelectorsScopedModelsSelectorCancel() {
+	return {
+		smsc_once: scopedModelsSelectorCancelEncoded(true, 1),
+		smsc_twice: scopedModelsSelectorCancelEncoded(true, 2),
+		smsc_none: scopedModelsSelectorCancelEncoded(false, 1),
+		smsc_none2: scopedModelsSelectorCancelEncoded(false, 2),
+		smsc_zero: scopedModelsSelectorCancelEncoded(true, 0),
 	};
 }
 

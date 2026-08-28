@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.scoped_models_copy_enabled`
+  (`scoped-models-copy-enabled` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs enabled-ids copy).
+  Observed `smce_all` / `smce_two` / `smce_empty` / `smce_one` / `smce_copy`
+  exact. n=5 **1.604×** (0.743 / 0.463 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 583). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_items`
+  (`scoped-models-selector-items` vs items after rebuild). Observed
+  `smsi_all` / `smsi_partial` / `smsi_none` / `smsi_empty` / `smsi_single`
+  exact. n=5 **4.189×** (26.959 / 6.435 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 584). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_cancel`
+  (`scoped-models-selector-cancel` vs `onCancel`). Observed `smsc_once` /
+  `smsc_twice` / `smsc_none` / `smsc_none2` / `smsc_zero` exact. n=5
+  **1.746×** (0.667 / 0.382 µs) on host `cursor`, ceiling 8.0. Measure-only
+  leftover (Pair 585). Gate rc=1 only from known old holes. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.scoped_models_selector_rebuild_models_by_id`
   (`scoped-models-selector-rebuild-models-by-id` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs `modelsById` rebuild).

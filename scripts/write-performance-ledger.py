@@ -326,6 +326,8 @@ METRIC_KEYS = (
     "cli_selectors.scoped_models_selector_rebuild_models_by_id",
     "cli_selectors.scoped_models_model_by_id",
     "cli_selectors.scoped_model_item_search_text",
+    "cli_selectors.scoped_models_selector_items",
+    "cli_selectors.scoped_models_selector_cancel",
     "ai_crypto_model_data.manifest",
     "ai_crypto.hmac",
     "cli_models_rest.pattern_match",
