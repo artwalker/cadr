@@ -796,6 +796,49 @@
      "measure": "measure-evals-harness",
      "metric": "evals_harness.last_assistant",
      "branch": "cursor/evals-leftover-pairs-325-327-b3bc"
+    },
+    {
+     "pair": 379,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/providers/xai.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.error_detail",
+     "branch": "cursor/pair-379-381-oauth-xai-leftovers-8969",
+     "note": "nextPairNum left at tip 328 (outside 379-381); 328-378 reserved for other leftover knives",
+     "ratio": 2.301,
+     "cadrUs": 0.838,
+     "piUs": 0.364,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 380,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/providers/xai.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.ensure_success",
+     "branch": "cursor/pair-379-381-oauth-xai-leftovers-8969",
+     "ratio": 0.701,
+     "cadrUs": 1.779,
+     "piUs": 2.538,
+     "ceiling": 8.0,
+     "rc": 1
+    },
+    {
+     "pair": 381,
+     "lane": "a",
+     "status": "done",
+     "source": "src/cadr-ai/oauth/providers/xai.lisp",
+     "measure": "measure-oauth-pkce-device",
+     "metric": "oauth_pkce_device.notify_device",
+     "branch": "cursor/pair-379-381-oauth-xai-leftovers-8969",
+     "ratio": 2.586,
+     "cadrUs": 0.960,
+     "piUs": 0.371,
+     "ceiling": 8.0,
+     "rc": 1
     }
    ],
    "mergeQueue": []

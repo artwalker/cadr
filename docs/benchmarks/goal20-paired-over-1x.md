@@ -250,5 +250,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `file_mutation_queue.next_ticket` | 157.9 | 137.6 | 1.147× | 8.00× | measure-only pair 305; `file-mutation-queue-state-next-ticket` after enqueue | invent pause；地板优化另刀 |
 | `oauth_pkce_device.percent_decode` | 1.592 | 1.044 | 1.525× | 8.00× | measure-only pair 310; `percent-decode` vs URLSearchParams | invent pause；地板优化另刀 |
 | `oauth_pkce_device.parse_query` | 6.672 | 3.431 | 1.944× | 8.00× | measure-only pair 311; `parse-query` vs URLSearchParams | invent pause；地板优化另刀 |
+| `oauth_pkce_device.error_detail` | 0.838 | 0.364 | 2.301× | 8.00× | measure-only pair 379; `oauth-response-error-detail` vs xai.ts requestFailure detail (sub-µs variance) | invent pause；地板优化另刀 |
+| `oauth_pkce_device.notify_device` | 0.960 | 0.371 | 2.586× | 8.00× | measure-only pair 381; `notify-device-authorization` vs xai.ts interaction.notify device_code (sub-µs variance) | invent pause；地板优化另刀 |
 
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
