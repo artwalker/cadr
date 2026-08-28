@@ -1005,11 +1005,12 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.tui_command_error": 8.0,
     # Measure-only leftover 669; first freeze 0.360× (0.190 / 0.527 µs). cadr leads.
     "cli_interactive_controller.route_tui_submission": 8.0,
-    # Measure-only leftover 670; first freeze pending.
-    "cli_interactive_controller.extension_dialog_chrome": 8.0,
-    # Measure-only leftover 671; first freeze pending.
+    # Measure-only leftover 670; first freeze 14.268× (21.804 / 1.528 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.extension_dialog_chrome": 30.0,
+    # Measure-only leftover 671; first freeze 1.527× (0.587 / 0.384 µs).
     "cli_interactive_controller.tui_component_protocol": 8.0,
-    # Measure-only leftover 672; first freeze pending.
+    # Measure-only leftover 672; first freeze 2.452× (2.505 / 1.022 µs).
     "cli_interactive_controller.extension_render_value_lines": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.

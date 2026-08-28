@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.extension_dialog_chrome`
+  (`extension-dialog-chrome` on
+  `src/cadr-cli/interactive/extension-ui.lisp` vs dialog chrome border).
+  Observed `edc_hi` / `edc_body` / `edc_sub` / `edc_n` / `edc_dash`
+  exact. n=5 **14.268×** (21.804 / 1.528 µs) on host `cursor`.
+  First-freeze headroom ceiling **30.0** (ratchet down only).
+  Measure-only leftover (Pair 670). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.tui_component_protocol`
+  (`tui-component-protocol-p` vs Component protocol predicate). Observed
+  `tcp_nil` / `tcp_in` / `tcp_str` / `tcp_dlg` / `tcp_ed` exact. n=5
+  **1.527×** (0.587 / 0.384 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 671). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.extension_render_value_lines`
+  (`extension-render-value-lines` vs custom value lines). Observed
+  `erv_nil` / `erv_hi` / `erv_list` / `erv_num` / `erv_n` exact. n=5
+  **2.452×** (2.505 / 1.022 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 672). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.should_use_tui`
   (`should-use-tui-p` on
   `src/cadr-cli/interactive/controller.lisp` vs shouldUseTui
