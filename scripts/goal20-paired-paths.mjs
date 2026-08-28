@@ -347,6 +347,9 @@ const REPETITIONS = {
 	"skill_prompt_load.sdk_prompt_input": 50,
 	"skill_prompt_load.sdk_list_override": 50,
 	"skill_prompt_load.sdk_context_files": 50,
+	"cli_support.watch_retry_delay": 50,
+	"cli_support.close_watcher": 50,
+	"cli_support.watch_signature": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -12145,6 +12148,55 @@ function runCliSupportExperimental() {
 		ex_nil: experimentalFlag(null),
 	};
 }
+
+function cliSupportWatchPresentFile() {
+	const watchPath = path.join(scratch, "watch-present.txt");
+	writeFileSync(watchPath, "watched");
+	return watchPath;
+}
+
+
+function runCliSupportWatchRetryDelay() {
+	return {
+		rd_eq: fsWatchModule.FS_WATCH_RETRY_DELAY_MS === 5000 ? 1 : 0,
+		rd_ms: fsWatchModule.FS_WATCH_RETRY_DELAY_MS,
+		rd_pos: fsWatchModule.FS_WATCH_RETRY_DELAY_MS > 0 ? 1 : 0,
+	};
+}
+
+
+function runCliSupportCloseWatcher() {
+	try {
+		fsWatchModule.closeWatcher(null);
+		fsWatchModule.closeWatcher(undefined);
+		return { cl_nil: 1, cl_twice: 1, cl_ok: 1 };
+	} catch {
+		return { cl_nil: 0, cl_twice: 0, cl_ok: 0 };
+	}
+}
+
+
+function watchedPathSignature(filePath) {
+	try {
+		if (!existsSync(filePath)) return null;
+		const stats = statSync(filePath);
+		return [stats.mtimeMs, stats.size];
+	} catch {
+		return null;
+	}
+}
+
+
+function runCliSupportWatchSignature(missing, present) {
+	const miss = watchedPathSignature(missing);
+	const hit = watchedPathSignature(present);
+	return {
+		sg_miss: miss ? 0 : 1,
+		sg_hit: hit ? 1 : 0,
+		sg_n: Array.isArray(hit) && hit.length === 2 ? 1 : 0,
+	};
+}
+
 
 function runCliSupportParseChangelog() {
 	const changelogPath = path.join(scratch, "changelog.md");

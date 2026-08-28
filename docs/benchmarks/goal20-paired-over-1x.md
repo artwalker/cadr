@@ -338,4 +338,5 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_print_rpc.command_list` | 1.490 | 0.359 | 4.151× | 8.00× | measure-only leftover pair 477; `rpc-command-list` vs `get_commands` walk | invent pause；地板优化另刀 |
 | `skill_prompt_load.sdk_prompt_input` | 15.179 | 3.512 | 4.322× | 8.00× | measure-only leftover pair 478; `sdk-resolve-prompt-input` vs `resolvePromptInput` | invent pause；地板优化另刀 |
 | `skill_prompt_load.sdk_context_files` | 7.556 | 2.625 | 2.879× | 8.00× | measure-only leftover pair 480; `sdk-context-file-records` vs agentsFiles records | invent pause；地板优化另刀 |
+| `cli_support.watch_signature` | 12.165 | 2.262 | 5.379× | 8.00× | measure-only leftover pair 483; `watched-path-signature` vs `statSync` presence | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

@@ -13012,6 +13012,50 @@
      (auth-prefix unknown 40)
      (auth-flag unknown "the selected model"))))
 
+(defun cli-support-watch-present-file ()
+  (ensure-directories-exist *scratch-directory*)
+  (let ((path
+          (merge-pathnames
+           "watch-present.txt" *scratch-directory*)))
+    (with-open-file
+        (out path
+             :direction :output
+             :if-exists :supersede
+             :if-does-not-exist :create)
+      (write-string "watched" out))
+    path))
+
+
+(defun run-cli-support-watch-retry-delay ()
+  (list
+   (if (= cadr-cli::+fs-watch-retry-delay-milliseconds+ 5000)
+       1
+       0)
+   cadr-cli::+fs-watch-retry-delay-milliseconds+
+   (if (plusp cadr-cli::+fs-watch-retry-delay-milliseconds+)
+       1
+       0)))
+
+
+(defun run-cli-support-close-watcher ()
+  (handler-case
+      (progn
+        (cadr-cli::close-watcher nil)
+        (cadr-cli::close-watcher nil)
+        (list 1 1 1))
+    (error ()
+      (list 0 0 0))))
+
+
+(defun run-cli-support-watch-signature (missing present)
+  (let ((miss (cadr-cli::watched-path-signature missing))
+        (hit (cadr-cli::watched-path-signature present)))
+    (list
+     (if miss 0 1)
+     (if hit 1 0)
+     (if (and (consp hit) (= (length hit) 2)) 1 0))))
+
+
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
   (let ((ansi (run-cli-support-strip-ansi))

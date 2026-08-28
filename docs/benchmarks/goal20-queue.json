@@ -2843,6 +2843,51 @@
    "piUs": 2.625,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 481,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/file-watcher.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.watch_retry_delay",
+   "branch": "cursor/file-watcher-leftovers-481-483-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 481-483, not sequential nextPairNum)",
+   "ratio": 0.669,
+   "cadrUs": 0.067,
+   "piUs": 0.101,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 482,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/file-watcher.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.close_watcher",
+   "branch": "cursor/file-watcher-leftovers-481-483-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 481-483, not sequential nextPairNum)",
+   "ratio": 0.645,
+   "cadrUs": 0.068,
+   "piUs": 0.105,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 483,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/support/file-watcher.lisp",
+   "measure": "measure-cli-support-strip-ansi",
+   "metric": "cli_support.watch_signature",
+   "branch": "cursor/file-watcher-leftovers-481-483-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 481-483, not sequential nextPairNum)",
+   "ratio": 5.379,
+   "cadrUs": 12.165,
+   "piUs": 2.262,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
