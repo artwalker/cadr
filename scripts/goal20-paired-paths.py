@@ -1194,8 +1194,11 @@ RATIO_CEILINGS = {
   "cli_selectors.scoped_models_selector_persist": 25.0,
   # Measure-only pair (Pair 240); first freeze 46.24×.
   "cli_selectors.scoped_models_selector_provider_count": 50.0,
+  # Measure-only leftover 586; first freeze 3.417× (26.636 / 7.796 µs).
   "cli_selectors.scoped_models_selector_selected_item": 8.0,
+  # Measure-only leftover 587; first freeze 3.323× (26.954 / 8.112 µs).
   "cli_selectors.scoped_models_selector_select_id": 8.0,
+  # Measure-only leftover 588; first freeze 1.745× (1.398 / 0.801 µs).
   "cli_selectors.scoped_models_selector_notify_change": 8.0,
   "cli_selectors.scoped_models_selector_target_ids": 8.0,
   # Measure-only pair (Pair 235); first freeze 20.77×.
