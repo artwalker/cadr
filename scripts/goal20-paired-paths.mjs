@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.scoped_models_selector_reorder": 50,
 	"cli_selectors.scoped_models_selector_persist": 50,
 	"cli_selectors.scoped_models_selector_provider_count": 50,
+	"cli_selectors.sort_model_selector_models": 50,
+	"cli_selectors.model_selector_visible_models": 50,
+	"cli_selectors.model_selector_visible_slice": 50,
 	"websocket_stream.stream_roundtrip": 10,
 	"cli_sdk.version_newer": 50,
 	"cli_sdk.cache_miss": 50,
@@ -14127,6 +14130,67 @@ function runCliSelectorsScopedModelsSelectorProviderCount() {
 	};
 }
 
+function encodeSortedModelSelectorModels(models, currentItem) {
+	return sortModelSelectorTestModels(models, currentItem)
+		.map((item) => qualifiedModelId(item))
+		.join(",");
+}
+
+function runCliSelectorsSortModelSelectorModels() {
+	const models = makeModelSelectorTestModels();
+	const reversed = [...models].reverse();
+	return {
+		smsort_first: encodeSortedModelSelectorModels(models, models[0]),
+		smsort_last: encodeSortedModelSelectorModels(
+			models,
+			models[models.length - 1],
+		),
+		smsort_mid: encodeSortedModelSelectorModels(models, models[2]),
+		smsort_rev: encodeSortedModelSelectorModels(reversed, models[0]),
+		smsort_single: encodeSortedModelSelectorModels([models[0]], models[0]),
+	};
+}
+
+function encodeModelSelectorVisibleModels(models, query) {
+	return modelSelectorFilteredModels(models, query)
+		.map((item) => qualifiedModelId(item))
+		.join(",");
+}
+
+function runCliSelectorsModelSelectorVisibleModels() {
+	const models = makeModelSelectorTestModels();
+	return {
+		msvm_all: encodeModelSelectorVisibleModels(models, ""),
+		msvm_gpt: encodeModelSelectorVisibleModels(models, "gpt"),
+		msvm_nope: encodeModelSelectorVisibleModels(models, "nope"),
+		msvm_anth: encodeModelSelectorVisibleModels(models, "anth"),
+		msvm_oogle: encodeModelSelectorVisibleModels(models, "oogle"),
+	};
+}
+
+function encodeModelSelectorVisibleSlice(models, selected, maximum, query = "") {
+	const current = models[0];
+	const sorted = sortModelSelectorTestModels(models, current);
+	const filtered = modelSelectorFilterActiveModels(sorted, query);
+	const { visible, start, total } = modelSelectorVisibleSlice(
+		filtered,
+		selected,
+		maximum,
+	);
+	return `${start}|${total}|${visible.map((item) => qualifiedModelId(item)).join(",")}`;
+}
+
+function runCliSelectorsModelSelectorVisibleSlice() {
+	const models = makeModelSelectorTestModels();
+	return {
+		msvs_all: encodeModelSelectorVisibleSlice(models, 0, 10),
+		msvs_mid: encodeModelSelectorVisibleSlice(models, 4, 3),
+		msvs_filter: encodeModelSelectorVisibleSlice(models, 0, 10, "gpt"),
+		msvs_empty: encodeModelSelectorVisibleSlice(models, 0, 10, "nope"),
+		msvs_max1: encodeModelSelectorVisibleSlice(models, 2, 1),
+	};
+}
+
 function runCliSelectorsScopedModelsSelectorToggleProvider() {
 	const models = makeModelSelectorTestModels();
 	return {
@@ -14897,6 +14961,12 @@ async function measureCliSelectorsSessionSearch() {
 		runCliSelectorsScopedModelsSelectorPersist();
 	const scopedModelsSelectorProviderCountResults =
 		runCliSelectorsScopedModelsSelectorProviderCount();
+	const sortModelSelectorModelsResults =
+		runCliSelectorsSortModelSelectorModels();
+	const modelSelectorVisibleModelsResults =
+		runCliSelectorsModelSelectorVisibleModels();
+	const modelSelectorVisibleSliceResults =
+		runCliSelectorsModelSelectorVisibleSlice();
 	const observed = {
 		...runCliSelectorsSessionSearch(),
 		...runCliSelectorsKeyText(),
@@ -15202,6 +15272,9 @@ async function measureCliSelectorsSessionSearch() {
 		...scopedModelsSelectorReorderResults,
 		...scopedModelsSelectorPersistResults,
 		...scopedModelsSelectorProviderCountResults,
+		...sortModelSelectorModelsResults,
+		...modelSelectorVisibleModelsResults,
+		...modelSelectorVisibleSliceResults,
 	};
 	return {
 		session_search: await collect("cli_selectors.session_search", () => {
@@ -15659,6 +15732,24 @@ async function measureCliSelectorsSessionSearch() {
 			"cli_selectors.scoped_models_selector_provider_count",
 			() => {
 				return () => runCliSelectorsScopedModelsSelectorProviderCount();
+			},
+		),
+		sort_model_selector_models: await collect(
+			"cli_selectors.sort_model_selector_models",
+			() => {
+				return () => runCliSelectorsSortModelSelectorModels();
+			},
+		),
+		model_selector_visible_models: await collect(
+			"cli_selectors.model_selector_visible_models",
+			() => {
+				return () => runCliSelectorsModelSelectorVisibleModels();
+			},
+		),
+		model_selector_visible_slice: await collect(
+			"cli_selectors.model_selector_visible_slice",
+			() => {
+				return () => runCliSelectorsModelSelectorVisibleSlice();
 			},
 		),
 		observed,
@@ -17393,6 +17484,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/scoped-models-selector.ts toggle on confirm",
 			"cli_selectors.scoped_models_selector_provider_count":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts updateAvailableProviderCount",
+			"cli_selectors.sort_model_selector_models":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts sort models current-first then provider localeCompare",
+			"cli_selectors.model_selector_visible_models":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts filteredModels after filter",
+			"cli_selectors.model_selector_visible_slice":
+				"packages/coding-agent/src/modes/interactive/components/model-selector.ts viewport slice of filteredModels",
 			"cli_selectors.key_text":
 				"packages/coding-agent/src/modes/interactive/components/keybinding-hints.ts formatKeyText",
 			"cli_selectors.fuzzy_filter": "packages/tui/src/fuzzy.ts fuzzyFilter",
