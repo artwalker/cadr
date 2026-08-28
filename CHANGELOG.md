@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.model_selector_rebuild_search_text_table`
+  (`model-selector-rebuild-search-text-table` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs search-text table
+  rebuild). Observed `msrst_all` / `msrst_overlap` / `msrst_extra` /
+  `msrst_empty` / `msrst_scoped_only` exact. n=5 **3.240×**
+  (16.001 / 4.939 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 577). Gate rc=1 only from known old holes. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.model_selector_filter_search_text`
+  (`model-selector-filter-search-text` vs table lookup / fallback).
+  Observed `msfst_hit` / `msfst_last` / `msfst_extra` / `msfst_miss` /
+  `msfst_empty` exact. n=5 **4.389×** (13.376 / 3.048 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 578). Gate rc=1 only from known
+  old holes. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.model_selector_finish_refresh`
+  (`model-selector-finish-refresh` vs catalog refresh completion). Observed
+  `msfr_ok` / `msfr_err` / `msfr_kind` / `msfr_rev` / `msfr_query` exact.
+  n=5 **4.278×** (46.658 / 10.907 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 579). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_selectors.sort_model_selector_models`
   (`sort-model-selector-models` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs current-first then

@@ -19773,6 +19773,167 @@
    "msvs_max1" (nth 4 slice-obs)))
 
 
+(defun encode-model-selector-search-text-value (text)
+  (if (stringp text)
+      text
+      (coerce text 'string)))
+
+
+(defun encode-model-selector-search-text-table (state)
+  (let* ((table
+           (cadr-cli::model-selector-state-search-text-table state))
+         (all-models
+           (cadr-cli::model-selector-state-all-models state))
+         (texts nil))
+    (dolist (model all-models)
+      (push
+       (encode-model-selector-search-text-value
+        (gethash model table))
+       texts))
+    (dolist (model (cadr-cli::model-selector-state-scoped-models state))
+      (unless (member model all-models :test #'eq)
+        (push
+         (encode-model-selector-search-text-value
+          (gethash model table))
+         texts)))
+    (format nil "~D|~{~a~^;~}"
+            (hash-table-count table)
+            (nreverse texts))))
+
+
+(defun model-selector-rebuild-search-text-table-encoded
+    (all-models scoped-models)
+  (let ((state
+          (cadr-cli::%make-model-selector-state
+           :all-models all-models
+           :scoped-models scoped-models
+           :current-model
+           (or (first all-models) (first scoped-models)))))
+    (cadr-cli::model-selector-rebuild-search-text-table state)
+    (encode-model-selector-search-text-table state)))
+
+
+(defun run-cli-selectors-model-selector-rebuild-search-text-table ()
+  (let* ((models (make-model-selector-test-models))
+         (extra
+           (make-model-selector-search-fixture
+            :id "grok"
+            :provider :xai
+            :name "Grok"))
+         (scoped-only (make-model-selector-scoped-test-models)))
+    (list
+     (model-selector-rebuild-search-text-table-encoded models nil)
+     (model-selector-rebuild-search-text-table-encoded
+      models (list (first models) (second models)))
+     (model-selector-rebuild-search-text-table-encoded
+      models (list extra))
+     (model-selector-rebuild-search-text-table-encoded nil nil)
+     (model-selector-rebuild-search-text-table-encoded nil scoped-only))))
+
+
+(defun model-selector-filter-search-text-encoded
+    (all-models scoped-models lookup)
+  (let ((state
+          (cadr-cli::%make-model-selector-state
+           :all-models all-models
+           :scoped-models scoped-models
+           :current-model
+           (or (first all-models) (first scoped-models) lookup))))
+    (cadr-cli::model-selector-rebuild-search-text-table state)
+    (encode-model-selector-search-text-value
+     (cadr-cli::model-selector-filter-search-text state lookup))))
+
+
+(defun run-cli-selectors-model-selector-filter-search-text ()
+  (let* ((models (make-model-selector-test-models))
+         (extra
+           (make-model-selector-search-fixture
+            :id "grok"
+            :provider :xai
+            :name "Grok"))
+         (miss
+           (make-model-selector-search-fixture
+            :id "mimo"
+            :provider :xiaomi
+            :name "")))
+    (list
+     (model-selector-filter-search-text-encoded models nil (first models))
+     (model-selector-filter-search-text-encoded
+      models nil (car (last models)))
+     (model-selector-filter-search-text-encoded
+      models (list extra) extra)
+     (model-selector-filter-search-text-encoded models nil miss)
+     (model-selector-filter-search-text-encoded nil nil miss))))
+
+
+(defun encode-model-selector-finish-refresh (state)
+  (format nil "~a|~D|~a|~a|~a"
+          (format nil "~{~a~^,~}"
+                  (mapcar
+                   #'cadr-cli::qualified-model-id
+                   (cadr-cli::model-selector-visible-models state)))
+          (cadr-cli::model-selector-state-selected state)
+          (or
+           (cadr-cli::model-selector-state-refresh-status-message state)
+           "")
+          (or
+           (cadr-cli::model-selector-state-error-message state)
+           "")
+          (string-downcase
+           (symbol-name
+            (cadr-cli::model-selector-state-refresh-status-kind state)))))
+
+
+(defun model-selector-finish-refresh-encoded
+    (models &key refresh-models status error kind query)
+  (let* ((current (first models))
+         (state
+           (cadr-cli::make-model-selector-state
+            :all-models models
+            :current-model current)))
+    (when query
+      (cadr-cli::model-selector-set-query state query))
+    (cadr-cli::model-selector-finish-refresh
+     state
+     (or refresh-models models)
+     :status-message status
+     :status-kind kind
+     :error-message error)
+    (encode-model-selector-finish-refresh state)))
+
+
+(defun run-cli-selectors-model-selector-finish-refresh ()
+  (let ((models (make-model-selector-test-models)))
+    (list
+     (model-selector-finish-refresh-encoded models :status "ok")
+     (model-selector-finish-refresh-encoded models :error "fail")
+     (model-selector-finish-refresh-encoded
+      models :status "note" :kind :accent)
+     (model-selector-finish-refresh-encoded
+      models :refresh-models (reverse models) :status "rev")
+     (model-selector-finish-refresh-encoded
+      models :query "gpt" :status "done"))))
+
+
+(defun refresh-search-observed-pairs (rebuild filter refresh)
+  (list
+   "msrst_all" (nth 0 rebuild)
+   "msrst_overlap" (nth 1 rebuild)
+   "msrst_extra" (nth 2 rebuild)
+   "msrst_empty" (nth 3 rebuild)
+   "msrst_scoped_only" (nth 4 rebuild)
+   "msfst_hit" (nth 0 filter)
+   "msfst_last" (nth 1 filter)
+   "msfst_extra" (nth 2 filter)
+   "msfst_miss" (nth 3 filter)
+   "msfst_empty" (nth 4 filter)
+   "msfr_ok" (nth 0 refresh)
+   "msfr_err" (nth 1 refresh)
+   "msfr_kind" (nth 2 refresh)
+   "msfr_rev" (nth 3 refresh)
+   "msfr_query" (nth 4 refresh)))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id
