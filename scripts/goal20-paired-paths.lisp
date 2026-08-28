@@ -246,6 +246,9 @@
 ;;;; 658. cli_interactive_controller render-assistant-message-lines vs AssistantMessageComponent wrap + OSC 133
 ;;;; 659. cli_interactive_controller transform-tui-markdown vs mermaid transform + extension markdown cache
 ;;;; 660. cli_interactive_controller render-transcript-summary-entry vs skill/branch/compaction CustomMessage
+;;;; 661. cli_interactive_controller render-assistant-blocks vs assistant markdown blocks + stop error
+;;;; 662. cli_interactive_controller render-version-update-notification vs version warning DynamicBorder
+;;;; 663. cli_interactive_controller render-package-update-notification vs package warning DynamicBorder
 ;;;; 140. cli_selectors settings-selector-automatic-theme-setting vs ThemeSubmenu getAutomaticThemeSetting
 ;;;; 141. cli_selectors settings-selector-active-automatic-theme vs ThemeSubmenu getActiveAutomaticTheme
 ;;;; 142. cli_selectors settings-selector-cycle vs SettingsList value cycle
@@ -617,6 +620,9 @@
     ("cli_interactive_controller.render_assistant_lines" . 50)
     ("cli_interactive_controller.transform_tui_markdown" . 50)
     ("cli_interactive_controller.render_transcript_summary" . 50)
+    ("cli_interactive_controller.render_assistant_blocks" . 50)
+    ("cli_interactive_controller.render_version_notification" . 50)
+    ("cli_interactive_controller.render_package_notification" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14510,6 +14516,26 @@
    "rts_n" (nth 4 summary)))
 
 
+(defun leftover-transcript-blocks-version-package-observed-pairs
+    (assistant-blocks version-note package-note)
+  (list
+   "rab_hi" (nth 0 assistant-blocks)
+   "rab_n" (nth 1 assistant-blocks)
+   "rab_empty" (nth 2 assistant-blocks)
+   "rab_err" (nth 3 assistant-blocks)
+   "rab_think" (nth 4 assistant-blocks)
+   "rvn_avail" (nth 0 version-note)
+   "rvn_ver" (nth 1 version-note)
+   "rvn_change" (nth 2 version-note)
+   "rvn_n" (nth 3 version-note)
+   "rvn_dash" (nth 4 version-note)
+   "rpn_avail" (nth 0 package-note)
+   "rpn_pkg" (nth 1 package-note)
+   "rpn_run" (nth 2 package-note)
+   "rpn_n" (nth 3 package-note)
+   "rpn_dash" (nth 4 package-note)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15001,7 +15027,13 @@
         (leftover-transform-tui-markdown
           (run-cli-interactive-transform-tui-markdown))
         (leftover-render-transcript-summary
-          (run-cli-interactive-render-transcript-summary)))
+          (run-cli-interactive-render-transcript-summary))
+        (leftover-render-assistant-blocks
+          (run-cli-interactive-render-assistant-blocks))
+        (leftover-render-version-notification
+          (run-cli-interactive-render-version-notification))
+        (leftover-render-package-notification
+          (run-cli-interactive-render-package-notification)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15088,7 +15120,11 @@
              (leftover-transcript-asst-md-summary-observed-pairs
               leftover-render-assistant-lines
               leftover-transform-tui-markdown
-              leftover-render-transcript-summary)))
+              leftover-render-transcript-summary)
+             (leftover-transcript-blocks-version-package-observed-pairs
+              leftover-render-assistant-blocks
+              leftover-render-version-notification
+              leftover-render-package-notification)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15253,7 +15289,22 @@
      (collect "cli_interactive_controller.render_transcript_summary"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-render-transcript-summary)))))))
+                  (run-cli-interactive-render-transcript-summary))))
+     "render_assistant_blocks"
+     (collect "cli_interactive_controller.render_assistant_blocks"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-assistant-blocks))))
+     "render_version_notification"
+     (collect "cli_interactive_controller.render_version_notification"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-version-notification))))
+     "render_package_notification"
+     (collect "cli_interactive_controller.render_package_notification"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-package-notification)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -15926,6 +15977,98 @@
      (if (search "[branch]" branch-text) 1 0)
      (if (search "Compacted" comp-text) 1 0)
      (if (>= (length lines) 1) 1 0))))
+
+(defun leftover-assistant-blocks-joined (entry width &rest keys)
+  (let ((lines
+          (apply #'cadr-cli::render-assistant-blocks
+                 entry width nil keys)))
+    (if lines
+        (format nil "~{~A~^~%~}" lines)
+        "")))
+
+(defun leftover-assistant-blocks-stripped (entry width &rest keys)
+  (cadr-cli::strip-ansi
+   (apply #'leftover-assistant-blocks-joined entry width keys)))
+
+(defun run-cli-interactive-render-assistant-blocks ()
+  (let* ((hello
+           (cadr-cli::make-tui-entry :type :assistant :text "hello"))
+         (empty
+           (cadr-cli::make-tui-entry :type :assistant :text ""))
+         (err
+           (cadr-cli::make-tui-entry
+            :type :assistant
+            :text "hello"
+            :stop-reason :error
+            :error-message "boom"))
+         (think
+           (cadr-cli::make-tui-entry
+            :type :assistant
+            :content-blocks
+            (list (cons :assistant-thinking "secret"))))
+         (hello-text (leftover-assistant-blocks-stripped hello 80))
+         (hello-lines
+           (cadr-cli::render-assistant-blocks hello 80 nil))
+         (empty-lines
+           (cadr-cli::render-assistant-blocks empty 80 nil))
+         (err-text (leftover-assistant-blocks-stripped err 80))
+         (think-text
+           (leftover-assistant-blocks-stripped
+            think 80 :hide-thinking-block-p t)))
+    (cadr-cli::render-assistant-blocks hello 80 nil)
+    (cadr-cli::render-assistant-blocks empty 80 nil)
+    (cadr-cli::render-assistant-blocks err 80 nil)
+    (cadr-cli::render-assistant-blocks
+     think 80 nil :hide-thinking-block-p t)
+    (list
+     (if (search "hello" hello-text) 1 0)
+     (if (>= (length hello-lines) 2) 1 0)
+     (if (null empty-lines) 1 0)
+     (if (search "Error:" err-text) 1 0)
+     (if (search "Thinking" think-text) 1 0))))
+
+(defun leftover-notification-joined (lines)
+  (cadr-cli::strip-ansi
+   (format nil "~{~A~^~%~}" lines)))
+
+(defun run-cli-interactive-render-version-notification ()
+  (let* ((entry
+           (cadr-cli::make-tui-entry
+            :type :custom-message
+            :text "1.2.3"))
+         (lines
+           (cadr-cli::render-version-update-notification entry 80))
+         (text (leftover-notification-joined lines)))
+    (cadr-cli::render-version-update-notification entry 80)
+    (cadr-cli::render-version-update-notification
+     (cadr-cli::make-tui-entry :text "9.9.9") 40)
+    (list
+     (if (search "Update Available" text) 1 0)
+     (if (search "1.2.3" text) 1 0)
+     (if (search "Changelog" text) 1 0)
+     (if (>= (length lines) 3) 1 0)
+     (if (search "─" text) 1 0))))
+
+(defun run-cli-interactive-render-package-notification ()
+  (let* ((entry
+           (cadr-cli::make-tui-entry
+            :type :custom-message
+            :custom-options
+            (list :packages '("ext-a" "ext-b"))))
+         (lines
+           (cadr-cli::render-package-update-notification entry 80))
+         (text (leftover-notification-joined lines)))
+    (cadr-cli::render-package-update-notification entry 80)
+    (cadr-cli::render-package-update-notification
+     (cadr-cli::make-tui-entry
+      :custom-options (list :packages '("z")))
+     40)
+    (list
+     (if (search "Package Updates Available" text) 1 0)
+     (if (search "ext-a" text) 1 0)
+     (if (search "update" text) 1 0)
+     (if (>= (length lines) 3) 1 0)
+     (if (search "─" text) 1 0))))
 
 (defun session-search-fixture-records ()
   (list
@@ -28246,6 +28389,12 @@
       "src/cadr-cli/interactive/transcript.lisp transform-tui-markdown"
       "cli_interactive_controller.render_transcript_summary"
       "src/cadr-cli/interactive/transcript.lisp render-transcript-summary-entry"
+      "cli_interactive_controller.render_assistant_blocks"
+      "src/cadr-cli/interactive/transcript.lisp render-assistant-blocks"
+      "cli_interactive_controller.render_version_notification"
+      "src/cadr-cli/interactive/transcript.lisp render-version-update-notification"
+      "cli_interactive_controller.render_package_notification"
+      "src/cadr-cli/interactive/transcript.lisp render-package-update-notification"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
