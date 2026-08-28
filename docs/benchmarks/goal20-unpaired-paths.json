@@ -182,6 +182,9 @@
   "output_accumulator.append",
   "output_accumulator.snapshot",
   "output_accumulator.finish",
+  "output_accumulator.last_line_bytes",
+  "output_accumulator.needs_file",
+  "output_accumulator.close_temp_file",
   "tool_manager.get_tool_path",
   "tool_manager.ensure_tool",
   "tool_manager.cleanup_quarantine",
@@ -1518,7 +1521,10 @@
    "metrics": [
     "output_accumulator.append",
     "output_accumulator.snapshot",
-    "output_accumulator.finish"
+    "output_accumulator.finish",
+    "output_accumulator.last_line_bytes",
+    "output_accumulator.needs_file",
+    "output_accumulator.close_temp_file"
    ]
   },
   {

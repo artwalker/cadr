@@ -112,6 +112,9 @@
 ;;;; 280. output_accumulator append vs OutputAccumulator.append
 ;;;; 281. output_accumulator snapshot vs OutputAccumulator.snapshot
 ;;;; 282. output_accumulator finish vs OutputAccumulator.finish
+;;;; 427. output_accumulator last_line_bytes vs OutputAccumulator.getLastLineBytes
+;;;; 428. output_accumulator needs_file vs OutputAccumulator.shouldUseTempFile
+;;;; 429. output_accumulator close_temp_file vs OutputAccumulator.closeTempFile
 ;;;; 283. harness_events on vs HarnessEventBus.on
 ;;;; 284. harness_events watch vs HarnessEventBus.watch
 ;;;; 285. harness_events make_start vs RunStartEvent object
@@ -314,6 +317,9 @@
     ("output_accumulator.append" . 50)
     ("output_accumulator.snapshot" . 50)
     ("output_accumulator.finish" . 50)
+    ("output_accumulator.last_line_bytes" . 50)
+    ("output_accumulator.needs_file" . 50)
+    ("output_accumulator.close_temp_file" . 50)
     ("harness_events.on" . 50)
     ("harness_events.watch" . 50)
     ("harness_events.make_start" . 50)
@@ -5496,6 +5502,70 @@
         (cadr-cli:output-snapshot-truncation snapshot))
        4))))
 
+(defun run-output-accumulator-last-line-bytes ()
+  ;; Leftover sibling of Pair 280–282: getLastLineBytes only.
+  ;; Open line, newline-closed line, then split UTF-8 é — not append/snapshot/finish.
+  (let ((open-line (make-oa-bench-accumulator))
+        (closed-line (make-oa-bench-accumulator))
+        (utf8-line (make-oa-bench-accumulator)))
+    (cadr-cli:output-accumulator-append
+     open-line (oa-octets #x68 #x65 #x6c #x6c #x6f))
+    (cadr-cli:output-accumulator-append
+     closed-line (oa-octets #x68 #x65 #x6c #x6c #x6f #x0a))
+    (cadr-cli:output-accumulator-append utf8-line (oa-octets #xc3 #xa9))
+    (list
+     (cadr-cli:output-accumulator-last-line-bytes open-line)
+     (cadr-cli:output-accumulator-last-line-bytes closed-line)
+     (cadr-cli:output-accumulator-last-line-bytes utf8-line)
+     3)))
+
+(defun make-oa-needs-accumulator ()
+  (cadr-cli:make-output-accumulator
+   :max-lines 2
+   :max-bytes 16
+   :temp-file-prefix "oa-needs"))
+
+(defun run-output-accumulator-needs-file ()
+  ;; Leftover sibling: shouldUseTempFile / needs-file-p — not append owner,
+  ;; not snapshot truncateTail, not temp-file create/close.
+  (let ((empty (make-oa-needs-accumulator))
+        (under (make-oa-needs-accumulator))
+        (over-bytes (make-oa-needs-accumulator))
+        (over-lines (make-oa-needs-accumulator)))
+    (cadr-cli:output-accumulator-append under (oa-octets #x68 #x69))
+    (cadr-cli:output-accumulator-append
+     over-bytes
+     (make-array 20 :element-type '(unsigned-byte 8) :initial-element #x78))
+    (cadr-cli:output-accumulator-append
+     over-lines (oa-octets #x61 #x0a #x62 #x0a #x63 #x0a))
+    (list
+     (oa-truth (cadr-cli::output-accumulator-needs-file-p empty))
+     (oa-truth (cadr-cli::output-accumulator-needs-file-p under))
+     (oa-truth (cadr-cli::output-accumulator-needs-file-p over-bytes))
+     (oa-truth (cadr-cli::output-accumulator-needs-file-p over-lines))
+     4)))
+
+(defun run-output-accumulator-close-temp-file ()
+  ;; Leftover sibling: closeTempFile after a bytes spill — not append/snapshot/finish.
+  (let ((accumulator
+          (cadr-cli:make-output-accumulator
+           :max-lines 50
+           :max-bytes 16
+           :temp-file-prefix "oa-close")))
+    (cadr-cli:output-accumulator-append
+     accumulator
+     (make-array 32 :element-type '(unsigned-byte 8) :initial-element #x78))
+    (let ((path (cadr-cli::output-accumulator-temp-file-path accumulator)))
+      (cadr-cli:output-accumulator-close-temp-file accumulator)
+      (let ((path-ok (oa-truth (and path (probe-file path))))
+            (stream-closed
+              (oa-truth
+               (null (cadr-cli::output-accumulator-temp-file-stream
+                      accumulator)))))
+        (when path
+          (uiop:delete-file-if-exists path))
+        (list path-ok stream-closed 1)))))
+
 (defun measure-output-accumulator ()
   (destructuring-bind (oa-append-bytes oa-append-trunc oa-append-lines
                        oa-append-last oa-append-n)
@@ -5506,39 +5576,73 @@
       (destructuring-bind (oa-fin-bytes oa-fin-fffd oa-fin-last
                            oa-fin-trunc oa-fin-n)
           (run-output-accumulator-finish)
-        (json-object
-         "observed"
-         (json-object
-          "oa_append_bytes" oa-append-bytes
-          "oa_append_trunc" oa-append-trunc
-          "oa_append_lines" oa-append-lines
-          "oa_append_last" oa-append-last
-          "oa_append_n" oa-append-n
-          "oa_snap_bytes" oa-snap-bytes
-          "oa_snap_trunc" oa-snap-trunc
-          "oa_snap_lines" oa-snap-lines
-          "oa_snap_total" oa-snap-total
-          "oa_snap_n" oa-snap-n
-          "oa_fin_bytes" oa-fin-bytes
-          "oa_fin_fffd" oa-fin-fffd
-          "oa_fin_last" oa-fin-last
-          "oa_fin_trunc" oa-fin-trunc
-          "oa_fin_n" oa-fin-n)
-         "append"
-         (collect "output_accumulator.append"
-                  (lambda ()
-                    (lambda ()
-                      (run-output-accumulator-append))))
-         "snapshot"
-         (collect "output_accumulator.snapshot"
-                  (lambda ()
-                    (lambda ()
-                      (run-output-accumulator-snapshot))))
-         "finish"
-         (collect "output_accumulator.finish"
-                  (lambda ()
-                    (lambda ()
-                      (run-output-accumulator-finish)))))))))
+        (destructuring-bind (oa-ll-open oa-ll-nl oa-ll-utf8 oa-ll-n)
+            (run-output-accumulator-last-line-bytes)
+          (destructuring-bind (oa-nf-empty oa-nf-under oa-nf-bytes
+                               oa-nf-lines oa-nf-n)
+              (run-output-accumulator-needs-file)
+            (destructuring-bind (oa-close-path oa-close-stream oa-close-n)
+                (run-output-accumulator-close-temp-file)
+              (json-object
+               "observed"
+               (json-object
+                "oa_append_bytes" oa-append-bytes
+                "oa_append_trunc" oa-append-trunc
+                "oa_append_lines" oa-append-lines
+                "oa_append_last" oa-append-last
+                "oa_append_n" oa-append-n
+                "oa_snap_bytes" oa-snap-bytes
+                "oa_snap_trunc" oa-snap-trunc
+                "oa_snap_lines" oa-snap-lines
+                "oa_snap_total" oa-snap-total
+                "oa_snap_n" oa-snap-n
+                "oa_fin_bytes" oa-fin-bytes
+                "oa_fin_fffd" oa-fin-fffd
+                "oa_fin_last" oa-fin-last
+                "oa_fin_trunc" oa-fin-trunc
+                "oa_fin_n" oa-fin-n
+                "oa_ll_open" oa-ll-open
+                "oa_ll_nl" oa-ll-nl
+                "oa_ll_utf8" oa-ll-utf8
+                "oa_ll_n" oa-ll-n
+                "oa_nf_empty" oa-nf-empty
+                "oa_nf_under" oa-nf-under
+                "oa_nf_bytes" oa-nf-bytes
+                "oa_nf_lines" oa-nf-lines
+                "oa_nf_n" oa-nf-n
+                "oa_close_path" oa-close-path
+                "oa_close_stream" oa-close-stream
+                "oa_close_n" oa-close-n)
+               "append"
+               (collect "output_accumulator.append"
+                        (lambda ()
+                          (lambda ()
+                            (run-output-accumulator-append))))
+               "snapshot"
+               (collect "output_accumulator.snapshot"
+                        (lambda ()
+                          (lambda ()
+                            (run-output-accumulator-snapshot))))
+               "finish"
+               (collect "output_accumulator.finish"
+                        (lambda ()
+                          (lambda ()
+                            (run-output-accumulator-finish))))
+               "last_line_bytes"
+               (collect "output_accumulator.last_line_bytes"
+                        (lambda ()
+                          (lambda ()
+                            (run-output-accumulator-last-line-bytes))))
+               "needs_file"
+               (collect "output_accumulator.needs_file"
+                        (lambda ()
+                          (lambda ()
+                            (run-output-accumulator-needs-file))))
+               "close_temp_file"
+               (collect "output_accumulator.close_temp_file"
+                        (lambda ()
+                          (lambda ()
+                            (run-output-accumulator-close-temp-file))))))))))))
 
 ;;; ---------------------------------------------------------------------
 ;;; Leftover siblings of the agent_tool_loop hole on
@@ -16486,6 +16590,12 @@
       "src/cadr-cli/output-accumulator.lisp output-accumulator-snapshot"
       "output_accumulator.finish"
       "src/cadr-cli/output-accumulator.lisp output-accumulator-finish"
+      "output_accumulator.last_line_bytes"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-last-line-bytes"
+      "output_accumulator.needs_file"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-needs-file-p"
+      "output_accumulator.close_temp_file"
+      "src/cadr-cli/output-accumulator.lisp output-accumulator-close-temp-file"
       "harness_events.on"
       "src/cadr-agent/harness-events.lisp harness-event-bus-on"
       "harness_events.watch"

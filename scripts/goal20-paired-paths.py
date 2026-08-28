@@ -104,7 +104,7 @@ METRICS = {
     "file_mutation_queue": ("with_queue", "queue_key", "lock", "register", "wait_turn", "release_turn", "ensure_state", "call_with", "make_state", "state_key", "pending_count", "next_ticket", "serving_ticket"),
     "harness_events": ("emit", "on", "watch", "make_start", "make_end", "event_type", "make_bus"),
     "bash_tool": ("strip_exit_footer", "append_status", "truncation_notice"),
-    "output_accumulator": ("append", "snapshot", "finish"),
+    "output_accumulator": ("append", "snapshot", "finish", "last_line_bytes", "needs_file", "close_temp_file"),
     "find_tool": ("pattern_match", "find_files", "make_tool"),
     "write_tool": ("ensure_parent", "write_utf8", "make_tool"),
     "ls_tool": ("directory_entry_name", "list_directory", "make_tool"),
@@ -317,6 +317,11 @@ RATIO_CEILINGS = {
     "output_accumulator.append": 8.0,
     "output_accumulator.snapshot": 8.0,
     "output_accumulator.finish": 8.0,
+    # output_accumulator leftover trio (samples=5): first-freeze headroom.
+    # Ratchet down only.
+    "output_accumulator.last_line_bytes": 8.0,
+    "output_accumulator.needs_file": 8.0,
+    "output_accumulator.close_temp_file": 8.0,
     # harness_events.on pair (samples=5): first-freeze headroom.
     # Ratchet down only.
     "harness_events.on": 8.0,
@@ -1694,6 +1699,18 @@ OBSERVED_EXACT = {
         "oa_fin_last",
         "oa_fin_trunc",
         "oa_fin_n",
+        "oa_ll_open",
+        "oa_ll_nl",
+        "oa_ll_utf8",
+        "oa_ll_n",
+        "oa_nf_empty",
+        "oa_nf_under",
+        "oa_nf_bytes",
+        "oa_nf_lines",
+        "oa_nf_n",
+        "oa_close_path",
+        "oa_close_stream",
+        "oa_close_n",
     ),
     "find_tool": (
         "fpm_star_a",

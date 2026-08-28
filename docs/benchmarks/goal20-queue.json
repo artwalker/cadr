@@ -877,6 +877,33 @@
    "piUs": 0.370,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 427,
+   "lane": "a",
+   "status": "in_progress",
+   "source": "src/cadr-cli/output-accumulator.lisp",
+   "measure": "measure-output-accumulator",
+   "metric": "output_accumulator.last_line_bytes",
+   "branch": "cursor/pair-427-429-output-accumulator-leftovers-154d"
+  },
+  {
+   "pair": 428,
+   "lane": "a",
+   "status": "in_progress",
+   "source": "src/cadr-cli/output-accumulator.lisp",
+   "measure": "measure-output-accumulator",
+   "metric": "output_accumulator.needs_file",
+   "branch": "cursor/pair-427-429-output-accumulator-leftovers-154d"
+  },
+  {
+   "pair": 429,
+   "lane": "a",
+   "status": "in_progress",
+   "source": "src/cadr-cli/output-accumulator.lisp",
+   "measure": "measure-output-accumulator",
+   "metric": "output_accumulator.close_temp_file",
+   "branch": "cursor/pair-427-429-output-accumulator-leftovers-154d"
   }
  ],
  "mergeQueue": []
