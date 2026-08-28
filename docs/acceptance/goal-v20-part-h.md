@@ -4068,8 +4068,11 @@ commit no optimize.
 Leftover of the `cli_bootstrap_sessions` hole on `repl.lisp`.
 Timed work is bang-prefix parse — not bash execution, not the REPL
 loop. Observed `pb_ls` / `pb_excl` / `pb_bang` / `pb_ws` / `pb_plain_ok`
-/ `pb_n` are exact. First n=5 freeze pending on host `cursor`, ceiling
-8.0. Gate uses `--only-enforce`. Same commit no optimize.
+/ `pb_n` are exact. First n=5 freeze **0.421×** (0.528 / 1.252 µs) on
+host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes `lc_n` / `lc_sleep` / help text /
+`execution_env.tmp_*`; this metric did not fail). Same commit no
+optimize.
 
 ### Pair 491 — `cli_bootstrap_sessions` (response_text)
 
@@ -4080,8 +4083,10 @@ loop. Observed `pb_ls` / `pb_excl` / `pb_bang` / `pb_ws` / `pb_plain_ok`
 Leftover sibling of Pair 490 on the same hole. Timed work is joining
 assistant text blocks with newline, skipping thinking — not a live
 prompt. Observed `rt_one` / `rt_two` / `rt_empty` / `rt_n` are exact.
-First n=5 freeze pending on host `cursor`, ceiling 8.0. Gate uses
-`--only-enforce`. Same commit no optimize.
+First n=5 freeze **1.314×** (0.939 / 0.714 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 492 — `cli_bootstrap_sessions` (dispatch_plain)
 
@@ -4093,8 +4098,10 @@ Leftover sibling of Pairs 490–491 on the same hole. Timed work is empty
 / plain / unknown slash / bash-present classification with stub
 functions — not `run-repl`, not a live session. Observed `dp_empty` /
 `dp_plain` / `dp_slash` / `dp_bash` / `dp_bang` / `dp_n` are exact.
-First n=5 freeze pending on host `cursor`, ceiling 8.0. Gate uses
-`--only-enforce`. Same commit no optimize.
+First n=5 freeze **0.446×** (0.543 / 1.216 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known
+old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`;
+this metric did not fail). Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

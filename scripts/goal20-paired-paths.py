@@ -1295,10 +1295,14 @@ RATIO_CEILINGS = {
     # cli_bootstrap_sessions.bootstrap_auth pair (samples=5): observed 0.64x
     # (3928.6 / 6134.0 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.bootstrap_auth": 8.0,
-    # cli_bootstrap_sessions leftover trio on repl.lisp (490-492).
-    # First leftover freeze pending; 8.0 is first-freeze headroom.
+    # cli_bootstrap_sessions.parse_bash leftover (samples=5): observed 0.421x
+    # (0.528 / 1.252 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.parse_bash": 8.0,
+    # cli_bootstrap_sessions.response_text leftover (samples=5): observed 1.314x
+    # (0.939 / 0.714 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.response_text": 8.0,
+    # cli_bootstrap_sessions.dispatch_plain leftover (samples=5): observed 0.446x
+    # (0.543 / 1.216 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.dispatch_plain": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # ai_runtime_faux pair (samples=5): observed 1.76x

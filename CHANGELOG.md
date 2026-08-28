@@ -12,18 +12,23 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.parse_bash`
   (`parse-user-bash-input` on `src/cadr-cli/repl.lisp` vs interactive
   `!` / `!!` extract). Observed `pb_ls` / `pb_excl` / `pb_ws` / `pb_n`
-  exact. n=5 freeze pending on host `cursor`, ceiling 8.0.
-  Measure-only leftover (Pair 490). `nextPairNum` left unchanged.
+  exact. n=5 **0.421×** (0.528 / 1.252 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 490). Gate rc=1 only from known old holes
+  (`lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`), not this
+  metric. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.response_text`
   (`response-text` on `src/cadr-cli/repl.lisp` vs `textParts.join`).
-  Observed `rt_one` / `rt_two` / `rt_empty` / `rt_n` exact. n=5 freeze
-  pending on host `cursor`, ceiling 8.0. Measure-only leftover
-  (Pair 491). `nextPairNum` left unchanged.
+  Observed `rt_one` / `rt_two` / `rt_empty` / `rt_n` exact. n=5
+  **1.314×** (0.939 / 0.714 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 491). Gate rc=1 only from known old holes,
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.dispatch_plain`
   (`dispatch-user-input` on `src/cadr-cli/repl.lisp` vs submit
   classify). Observed `dp_empty` / `dp_plain` / `dp_slash` / `dp_bash`
-  / `dp_n` exact. n=5 freeze pending on host `cursor`, ceiling 8.0.
-  Measure-only leftover (Pair 492). `nextPairNum` left unchanged.
+  / `dp_n` exact. n=5 **0.446×** (0.543 / 1.216 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 492). Gate rc=1 only from
+  known old holes, not this metric. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
