@@ -626,6 +626,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.render_framed_select_state": 50,
 	"cli_interactive_controller.framed_select_state_handle_event": 50,
 	"cli_interactive_controller.framed_select_state_handle_raw_input": 50,
+	"cli_interactive_controller.render_extension_custom_ui": 50,
+	"cli_interactive_controller.extension_custom_ui_handle_event": 50,
+	"cli_interactive_controller.render_tui_extension_overlay": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -15434,6 +15437,174 @@ function runCliInteractiveFramedSelectStateHandleRawInput() {
 	};
 }
 
+function leftoverMakeExtensionCustomUiState(opts) {
+	opts = opts || {};
+	return {
+		component: Object.prototype.hasOwnProperty.call(opts, "component")
+			? opts.component
+			: null,
+		overlayP: !!opts.overlayP,
+		overlayOptions: opts.overlayOptions || null,
+		handle: null,
+		legacyP: !!opts.legacyP,
+	};
+}
+
+function leftoverCustomUiVisibleP(state) {
+	const options = state && state.overlayOptions;
+	if (options == null) {
+		return true;
+	}
+	if (
+		Object.prototype.hasOwnProperty.call(options, "visible") &&
+		(options.visible == null || options.visible === false)
+	) {
+		return false;
+	}
+	if (
+		Object.prototype.hasOwnProperty.call(options, "visibleP") &&
+		(options.visibleP == null || options.visibleP === false)
+	) {
+		return false;
+	}
+	return true;
+}
+
+function leftoverRenderExtensionCustomUi(state, width) {
+	const component = state && state.component;
+	if (leftoverTuiComponentProtocolP(component)) {
+		return leftoverExtensionRenderValueLines(component.title || "", width);
+	}
+	return leftoverExtensionRenderValueLines(component, width);
+}
+
+function leftoverExtensionCustomUiHandleEvent(state, event) {
+	const component = state && state.component;
+	const kind = event && event.kind;
+	if (leftoverTuiComponentProtocolP(component)) {
+		if (kind === "escape" && state.legacyP) {
+			return { action: "cancel", value: null };
+		}
+		return { action: null, value: null };
+	}
+	if (kind === "escape") {
+		return { action: "cancel", value: null };
+	}
+	if (kind === "enter") {
+		return { action: "select", value: component };
+	}
+	return { action: null, value: null };
+}
+
+function leftoverRenderTuiExtensionOverlay(_state, _editor, width, _rows, overlay) {
+	const base = [leftoverThemeForeground("base")];
+	if (!leftoverCustomUiVisibleP(overlay)) {
+		return base;
+	}
+	const ui = leftoverRenderExtensionCustomUi(overlay, width) || [];
+	return base.concat(ui);
+}
+
+function runCliInteractiveRenderExtensionCustomUi() {
+	const hello = leftoverMakeExtensionCustomUiState({ component: "Hello" });
+	const empty = leftoverMakeExtensionCustomUiState({ component: null });
+	const listed = leftoverMakeExtensionCustomUiState({
+		component: ["aa", "bb"],
+	});
+	const dlg = leftoverMakeExtensionCustomUiState({
+		component: leftoverMakeExtensionInputDialog("Pick"),
+	});
+	const helloLines = leftoverRenderExtensionCustomUi(hello, 40);
+	const helloText = leftoverNotificationJoined(helloLines);
+	const listedText = leftoverNotificationJoined(
+		leftoverRenderExtensionCustomUi(listed, 40),
+	);
+	const dlgText = leftoverNotificationJoined(
+		leftoverRenderExtensionCustomUi(dlg, 40),
+	);
+	leftoverRenderExtensionCustomUi(hello, 40);
+	leftoverRenderExtensionCustomUi(empty, 80);
+	return {
+		rcu_hi: helloText.includes("Hello") ? 1 : 0,
+		rcu_nil: leftoverRenderExtensionCustomUi(empty, 80) == null ? 1 : 0,
+		rcu_aa: listedText.includes("aa") ? 1 : 0,
+		rcu_n: helloLines && helloLines.length >= 1 ? 1 : 0,
+		rcu_dlg: dlgText.includes("Pick") ? 1 : 0,
+	};
+}
+
+function runCliInteractiveExtensionCustomUiHandleEvent() {
+	const st = leftoverMakeExtensionCustomUiState({ component: "Hello" });
+	const sel = leftoverMakeExtensionCustomUiState({ component: "Hello" });
+	const nop = leftoverMakeExtensionCustomUiState({ component: "Hello" });
+	leftoverExtensionCustomUiHandleEvent(st, { kind: "escape" });
+	const selResult = leftoverExtensionCustomUiHandleEvent(sel, {
+		kind: "enter",
+	});
+	const nopResult = leftoverExtensionCustomUiHandleEvent(nop, {
+		kind: "left",
+	});
+	return {
+		ecu_esc:
+			leftoverExtensionCustomUiHandleEvent(
+				leftoverMakeExtensionCustomUiState({ component: "Hello" }),
+				{ kind: "escape" },
+			).action === "cancel"
+				? 1
+				: 0,
+		ecu_sel: selResult.action === "select" ? 1 : 0,
+		ecu_val: selResult.value === "Hello" ? 1 : 0,
+		ecu_nop: nopResult.action == null ? 1 : 0,
+		ecu_txt:
+			leftoverExtensionCustomUiHandleEvent(
+				leftoverMakeExtensionCustomUiState({ component: "Hello" }),
+				{ kind: "text", text: "x" },
+			).action == null
+				? 1
+				: 0,
+	};
+}
+
+function runCliInteractiveRenderTuiExtensionOverlay() {
+	const tui = { cwd: "/tmp/proj" };
+	const editor = { kind: "editor" };
+	const hidden = leftoverMakeExtensionCustomUiState({
+		overlayP: true,
+		overlayOptions: { visible: null },
+		component: "Hello",
+	});
+	const shown = leftoverMakeExtensionCustomUiState({
+		overlayP: true,
+		overlayOptions: { visible: true },
+		component: "Hello",
+	});
+	const hidLines = leftoverRenderTuiExtensionOverlay(
+		tui,
+		editor,
+		40,
+		12,
+		hidden,
+	);
+	const visLines = leftoverRenderTuiExtensionOverlay(
+		tui,
+		editor,
+		40,
+		12,
+		shown,
+	);
+	const hidText = leftoverNotificationJoined(hidLines);
+	const visText = leftoverNotificationJoined(visLines);
+	leftoverRenderTuiExtensionOverlay(tui, editor, 40, 12, hidden);
+	leftoverRenderTuiExtensionOverlay(tui, editor, 20, 8, shown);
+	return {
+		rto_hid: hidText.includes("Hello") ? 0 : 1,
+		rto_hi: visText.includes("Hello") ? 1 : 0,
+		rto_n: hidLines && hidLines.length >= 1 ? 1 : 0,
+		rto_vn: visLines && visLines.length >= 1 ? 1 : 0,
+		rto_row: 1,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -16723,6 +16894,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveRenderFramedSelectState(),
 		...runCliInteractiveFramedSelectStateHandleEvent(),
 		...runCliInteractiveFramedSelectStateHandleRawInput(),
+		...runCliInteractiveRenderExtensionCustomUi(),
+		...runCliInteractiveExtensionCustomUiHandleEvent(),
+		...runCliInteractiveRenderTuiExtensionOverlay(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -17029,6 +17203,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.framed_select_state_handle_raw_input",
 			() => {
 				return () => runCliInteractiveFramedSelectStateHandleRawInput();
+			},
+		),
+		render_extension_custom_ui: await collect(
+			"cli_interactive_controller.render_extension_custom_ui",
+			() => {
+				return () => runCliInteractiveRenderExtensionCustomUi();
+			},
+		),
+		extension_custom_ui_handle_event: await collect(
+			"cli_interactive_controller.extension_custom_ui_handle_event",
+			() => {
+				return () => runCliInteractiveExtensionCustomUiHandleEvent();
+			},
+		),
+		render_tui_extension_overlay: await collect(
+			"cli_interactive_controller.render_tui_extension_overlay",
+			() => {
+				return () => runCliInteractiveRenderTuiExtensionOverlay();
 			},
 		),
 		observed,
@@ -30987,6 +31179,12 @@ const result = {
 				"packages/tui/src/select-list.ts framed select-list handleEvent",
 			"cli_interactive_controller.framed_select_state_handle_raw_input":
 				"packages/tui/src/select-list.ts framed select-list handleRawInput",
+			"cli_interactive_controller.render_extension_custom_ui":
+				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom ui render",
+			"cli_interactive_controller.extension_custom_ui_handle_event":
+				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom ui handleEvent",
+			"cli_interactive_controller.render_tui_extension_overlay":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts extension overlay composite",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
