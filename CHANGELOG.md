@@ -12,18 +12,24 @@ tag/Release step.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.wrap_transcript`
   (`wrap-transcript-lines` on `src/cadr-cli/interactive/transcript.lisp`).
   Observed `wt_nil` / `wt_one_n` / `wt_one_order` / `wt_two_n` /
-  `wt_two_first` / `wt_two_last` exact. Pending first n=5 freeze.
-  Measure-only leftover (Pair 517). `nextPairNum` left unchanged.
+  `wt_two_first` / `wt_two_last` exact. n=5 **1.003×**
+  (0.601 / 0.599 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 517). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text / `execution_env.tmp_*`), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.output_padding`
   (`output-padding-string` on `src/cadr-cli/interactive/transcript.lisp`).
-  Observed `op_0` / `op_1` / `op_other` / `op_space` exact.
-  Pending first n=5 freeze. Measure-only leftover (Pair 518).
-  `nextPairNum` left unchanged.
+  Observed `op_0` / `op_1` / `op_other` / `op_space` exact. n=5
+  **0.987×** (0.226 / 0.229 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 518). cadr leads. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `cli_interactive_controller.render_cacheable`
   (`tui-entry-render-cacheable-p` on `src/cadr-cli/interactive/transcript.lisp`).
   Observed `rc_assist` / `rc_stream` / `rc_tool_nil` / `rc_tool_done` /
-  `rc_tool_run` / `rc_custom` exact. Pending first n=5 freeze.
-  Measure-only leftover (Pair 519). `nextPairNum` left unchanged.
+  `rc_tool_run` / `rc_custom` exact. n=5 **2.515×** (1.461 / 0.581 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 519).
+  Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text /
+  `execution_env.tmp_*`), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
