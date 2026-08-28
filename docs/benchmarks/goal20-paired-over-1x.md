@@ -383,4 +383,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.all_known_model_ids_enabled_p` | 1.679 | 0.825 | 2.035× | 8.00× | leftover 565; `all-known-model-ids-enabled-p` vs enableAll collapse-to-null (sub-µs variance) | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_enable_ids` | 2.605 | 1.715 | 1.519× | 8.00× | leftover 566; `scoped-models-enable-ids` vs enableAll id union | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_clear_ids` | 2.931 | 1.455 | 2.015× | 8.00× | leftover 567; `scoped-models-clear-ids` vs clearAll id subtract | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_enabled_set` | 2.709 | 1.067 | 2.540× | 8.00× | leftover 568; `scoped-models-enabled-set` vs `new Set(enabledIds)` | invent pause；地板优化另刀 |
+| `cli_selectors.model_equal_p` | 0.458 | 0.249 | 1.840× | 8.00× | leftover 569; `model-equal-p` vs `modelsAreEqual` (sub-µs variance) | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_model_selector_search_text` | 4.242 | 0.499 | 8.503× | 12.00× | leftover 570; `scoped-model-selector-search-text` vs `getModelSearchText` | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

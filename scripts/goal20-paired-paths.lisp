@@ -19448,6 +19448,112 @@
        :all all-ids '())))))
 
 
+(defun scoped-set-leftover-observed-pairs
+    (enabled-set model-equal search-text)
+  (list
+   "smes_empty" (nth 0 enabled-set)
+   "smes_one" (nth 1 enabled-set)
+   "smes_two" (nth 2 enabled-set)
+   "smes_dup" (nth 3 enabled-set)
+   "smes_sort" (nth 4 enabled-set)
+   "smes_three" (nth 5 enabled-set)
+   "meq_same" (nth 0 model-equal)
+   "meq_diff_id" (nth 1 model-equal)
+   "meq_diff_prov" (nth 2 model-equal)
+   "meq_nil_left" (nth 3 model-equal)
+   "meq_nil_right" (nth 4 model-equal)
+   "meq_both_nil" (nth 5 model-equal)
+   "smsst_openai" (nth 0 search-text)
+   "smsst_anthropic" (nth 1 search-text)
+   "smsst_codex" (nth 2 search-text)
+   "smsst_openrouter" (nth 3 search-text)
+   "smsst_google" (nth 4 search-text)
+   "smsst_noname" (nth 5 search-text)))
+
+
+(defun encode-scoped-models-enabled-set (enabled)
+  (let ((keys '()))
+    (maphash
+     (lambda (key value)
+       (declare (ignore value))
+       (push key keys))
+     (cadr-cli::scoped-models-enabled-set enabled))
+    (format nil "~{~a~^,~}" (sort keys #'string<))))
+
+
+(defun run-cli-selectors-scoped-models-enabled-set ()
+  (list
+   (encode-scoped-models-enabled-set '())
+   (encode-scoped-models-enabled-set '("openai/gpt-4o"))
+   (encode-scoped-models-enabled-set
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4"))
+   (encode-scoped-models-enabled-set
+    '("openai/gpt-4o" "openai/gpt-4o"))
+   (encode-scoped-models-enabled-set
+    '("b/id" "a/id"))
+   (encode-scoped-models-enabled-set
+    '("openai/gpt-4o" "anthropic/claude-sonnet-4" "google/gemini-2.5-pro"))))
+
+
+(defun model-equal-flag (left right)
+  (if (cadr-cli::model-equal-p left right)
+      "1"
+      "0"))
+
+
+(defun run-cli-selectors-model-equal-p ()
+  (let ((gpt (make-model-selector-search-fixture))
+        (claude
+          (make-model-selector-search-fixture
+           :id "claude-sonnet-4"
+           :provider :anthropic
+           :name "Claude Sonnet 4"))
+        (gpt-again (make-model-selector-search-fixture))
+        (gpt-other-provider
+          (make-model-selector-search-fixture
+           :id "gpt-4o"
+           :provider :openrouter
+           :name "GPT-4o")))
+    (list
+     (model-equal-flag gpt gpt-again)
+     (model-equal-flag gpt claude)
+     (model-equal-flag gpt gpt-other-provider)
+     (model-equal-flag nil gpt)
+     (model-equal-flag gpt nil)
+     (model-equal-flag nil nil))))
+
+
+(defun run-cli-selectors-scoped-model-selector-search-text ()
+  (list
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "claude-sonnet-4"
+     :provider :anthropic
+     :name "Claude Sonnet 4"))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "gpt-5"
+     :provider :openai-codex
+     :name ""))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "openai/gpt-4o"
+     :provider :openrouter
+     :name "GPT-4o"))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "gemini-2.5-pro"
+     :provider :google
+     :name ""))
+   (cadr-cli::scoped-model-selector-search-text
+    (make-model-selector-search-fixture
+     :id "mimo-v2.5"
+     :provider :opencode-go
+     :name ""))))
+
+
 (defun run-cli-selectors-qualified-model-id ()
   (list
    (cadr-cli::qualified-model-id

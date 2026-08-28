@@ -427,6 +427,9 @@ const REPETITIONS = {
 	"cli_selectors.all_known_model_ids_enabled_p": 50,
 	"cli_selectors.scoped_models_enable_ids": 50,
 	"cli_selectors.scoped_models_clear_ids": 50,
+	"cli_selectors.scoped_models_enabled_set": 50,
+	"cli_selectors.model_equal_p": 50,
+	"cli_selectors.scoped_model_selector_search_text": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -20210,6 +20213,97 @@ function runCliSelectorsScopedModelsClearIds() {
 		smci_all_none: encodeScopedModelsEnabledIds(
 			scopedModelsClearIds(null, allIds, []),
 		),
+	};
+}
+
+
+function encodeScopedModelsEnabledSet(enabled) {
+	return [...new Set(enabled)].sort().join(",");
+}
+
+
+function runCliSelectorsScopedModelsEnabledSet() {
+	return {
+		smes_empty: encodeScopedModelsEnabledSet([]),
+		smes_one: encodeScopedModelsEnabledSet(["openai/gpt-4o"]),
+		smes_two: encodeScopedModelsEnabledSet([
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+		]),
+		smes_dup: encodeScopedModelsEnabledSet(["openai/gpt-4o", "openai/gpt-4o"]),
+		smes_sort: encodeScopedModelsEnabledSet(["b/id", "a/id"]),
+		smes_three: encodeScopedModelsEnabledSet([
+			"openai/gpt-4o",
+			"anthropic/claude-sonnet-4",
+			"google/gemini-2.5-pro",
+		]),
+	};
+}
+
+
+function modelEqualP(left, right) {
+	if (!left || !right) {
+		return "0";
+	}
+	return left.id === right.id && left.provider === right.provider ? "1" : "0";
+}
+
+
+function runCliSelectorsModelEqualP() {
+	const gpt = { id: "gpt-4o", provider: "openai", name: "GPT-4o" };
+	const claude = {
+		id: "claude-sonnet-4",
+		provider: "anthropic",
+		name: "Claude Sonnet 4",
+	};
+	const gptAgain = { id: "gpt-4o", provider: "openai", name: "GPT-4o" };
+	const gptOtherProvider = {
+		id: "gpt-4o",
+		provider: "openrouter",
+		name: "GPT-4o",
+	};
+	return {
+		meq_same: modelEqualP(gpt, gptAgain),
+		meq_diff_id: modelEqualP(gpt, claude),
+		meq_diff_prov: modelEqualP(gpt, gptOtherProvider),
+		meq_nil_left: modelEqualP(null, gpt),
+		meq_nil_right: modelEqualP(gpt, null),
+		meq_both_nil: modelEqualP(null, null),
+	};
+}
+
+
+function runCliSelectorsScopedModelSelectorSearchText() {
+	return {
+		smsst_openai: modelSearchModule.getModelSearchText({
+			id: "gpt-4o",
+			provider: "openai",
+			name: "GPT-4o",
+		}),
+		smsst_anthropic: modelSearchModule.getModelSearchText({
+			id: "claude-sonnet-4",
+			provider: "anthropic",
+			name: "Claude Sonnet 4",
+		}),
+		smsst_codex: modelSearchModule.getModelSearchText({
+			id: "gpt-5",
+			provider: "openai-codex",
+		}),
+		smsst_openrouter: modelSearchModule.getModelSearchText({
+			id: "openai/gpt-4o",
+			provider: "openrouter",
+			name: "GPT-4o",
+		}),
+		smsst_google: modelSearchModule.getModelSearchText({
+			id: "gemini-2.5-pro",
+			provider: "google",
+			name: "",
+		}),
+		smsst_noname: modelSearchModule.getModelSearchText({
+			id: "mimo-v2.5",
+			provider: "opencode-go",
+			name: "",
+		}),
 	};
 }
 

@@ -9,6 +9,30 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.scoped_models_enabled_set`
+  (`scoped-models-enabled-set` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs `getSortedIds`
+  `enabledSet`). Observed `smes_empty` / `smes_one` / `smes_two` /
+  `smes_dup` / `smes_sort` / `smes_three` exact. n=5 **2.540×**
+  (2.709 / 1.067 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 568). Gate rc=1 only from known old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.model_equal_p`
+  (`model-equal-p` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs `modelsAreEqual`).
+  Observed `meq_same` / `meq_diff_id` / `meq_diff_prov` / `meq_nil_left` /
+  `meq_nil_right` / `meq_both_nil` exact. n=5 **1.840×** (0.458 / 0.249 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 569). Gate rc=1
+  only from known old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_model_selector_search_text`
+  (`scoped-model-selector-search-text` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs `getModelSearchText`).
+  Observed `smsst_openai` / `smsst_anthropic` / `smsst_codex` /
+  `smsst_openrouter` / `smsst_google` / `smsst_noname` exact. n=5 **8.503×**
+  (4.242 / 0.499 µs) on host `cursor`, ceiling 12.0. Measure-only leftover
+  (Pair 570). Gate rc=1 only from known old holes, not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.all_known_model_ids_enabled_p`
   (`all-known-model-ids-enabled-p` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs enableAll
