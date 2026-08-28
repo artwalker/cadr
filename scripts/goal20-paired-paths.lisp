@@ -5025,7 +5025,7 @@
            (collect "bash_tool.strip_truncation"
                     (lambda ()
                       (lambda ()
-                        (run-bash-strip-truncation-footer)))))))))))
+                        (run-bash-strip-truncation-footer))))))))))
 
 (defun find-tool-truth (value)
   (if value 1 0))
