@@ -1132,11 +1132,11 @@ RATIO_CEILINGS = {
   "cli_selectors.thinking_selector_keybindings": 8.0,
   # Measure-only leftover 603; first freeze 0.638× (1.623 / 2.545 µs). cadr leads.
   "cli_selectors.make_thinking_selector_state": 8.0,
-  # Measure-only leftover 604; first freeze pending.
+  # Measure-only leftover 604; first freeze 1.149× (13.399 / 11.664 µs).
   "cli_selectors.thinking_selector_apply_filter": 8.0,
-  # Measure-only leftover 605; first freeze pending.
+  # Measure-only leftover 605; first freeze 0.753× (0.637 / 0.847 µs). cadr leads.
   "cli_selectors.thinking_selector_clamp_selected": 8.0,
-  # Measure-only leftover 606; first freeze pending.
+  # Measure-only leftover 606; first freeze 0.854× (0.981 / 1.149 µs). cadr leads.
   "cli_selectors.thinking_selector_select_current": 8.0,
 "ai_crypto_model_data.manifest": 20.0,
     # Frozen from the first Friend-MachineD non-quick
