@@ -15601,24 +15601,17 @@
        state action level consumed))))
 
 
-(defun thinking-selector-raw-key (name)
-  (first
-   (cadr-tui:keybinding-keys
-    cadr-cli::*default-thinking-selector-keybindings*
-    name)))
-
-
 (defun run-cli-selectors-thinking-selector-handle-raw-input ()
-  (list
-   (thinking-selector-handle-raw-encoded
-    0 (thinking-selector-raw-key "tui.select.down"))
-   (thinking-selector-handle-raw-encoded
-    1 (thinking-selector-raw-key "tui.select.up"))
-   (thinking-selector-handle-raw-encoded
-    0 (thinking-selector-raw-key "tui.select.confirm"))
-   (thinking-selector-handle-raw-encoded
-    1 (thinking-selector-raw-key "app.thinking.save"))
-   (thinking-selector-handle-raw-encoded 0 "q")))
+  (let ((arrow-down (format nil "~C[B" #\Escape))
+        (arrow-up (format nil "~C[A" #\Escape))
+        (enter (string #\Return))
+        (ctrl-s (string (code-char 19))))
+    (list
+     (thinking-selector-handle-raw-encoded 0 arrow-down)
+     (thinking-selector-handle-raw-encoded 1 arrow-up)
+     (thinking-selector-handle-raw-encoded 0 enter)
+     (thinking-selector-handle-raw-encoded 1 ctrl-s)
+     (thinking-selector-handle-raw-encoded 0 "q"))))
 
 
 (defun encode-thinking-selector-handle-event (state action level)

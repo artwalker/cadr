@@ -22627,11 +22627,6 @@ function encodeThinkingSelectorHandleRaw(state, result) {
 }
 
 
-function thinkingSelectorRawKey(name) {
-	return GOAL20_THINKING_DEFAULT_KB.getKeys(name)[0];
-}
-
-
 function thinkingSelectorHandleRawEncoded(selected, data, { query } = {}) {
 	const state = thinkingFilledSelectorState({ selected, query: query ?? "" });
 	const result = thinkingSelectorHandleRawInput(state, data);
@@ -22640,11 +22635,15 @@ function thinkingSelectorHandleRawEncoded(selected, data, { query } = {}) {
 
 
 function runCliSelectorsThinkingSelectorHandleRawInput() {
+	const arrowDown = "\x1b[B";
+	const arrowUp = "\x1b[A";
+	const enter = "\r";
+	const ctrlS = "\x13";
 	return {
-		tshri_down: thinkingSelectorHandleRawEncoded(0, thinkingSelectorRawKey("tui.select.down")),
-		tshri_up: thinkingSelectorHandleRawEncoded(1, thinkingSelectorRawKey("tui.select.up")),
-		tshri_enter: thinkingSelectorHandleRawEncoded(0, thinkingSelectorRawKey("tui.select.confirm")),
-		tshri_save: thinkingSelectorHandleRawEncoded(1, thinkingSelectorRawKey("app.thinking.save")),
+		tshri_down: thinkingSelectorHandleRawEncoded(0, arrowDown),
+		tshri_up: thinkingSelectorHandleRawEncoded(1, arrowUp),
+		tshri_enter: thinkingSelectorHandleRawEncoded(0, enter),
+		tshri_save: thinkingSelectorHandleRawEncoded(1, ctrlS),
 		tshri_nop: thinkingSelectorHandleRawEncoded(0, "q"),
 	};
 }
