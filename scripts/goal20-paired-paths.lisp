@@ -133,6 +133,9 @@
 ;;;; 325. evals_harness resolve-eval-selection vs resolveModelSelection
 ;;;; 326. evals_harness messages-to-transcript vs toTranscriptEvents
 ;;;; 327. evals_harness last-assistant-since vs promptAgent assistant slice
+;;;; 346. evals_harness eval-environment vs pi-harness environment trim
+;;;; 347. evals_harness make-eval-prompt-step vs pi-harness prompt step object
+;;;; 348. evals_harness make-eval-reload-step vs pi-harness reload step object
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -381,6 +384,12 @@
     ("evals_harness.resolve_selection" . 50)
     ("evals_harness.transcript" . 50)
     ("evals_harness.last_assistant" . 50)
+    ("evals_harness.step_value" . 50)
+    ("evals_harness.usage" . 50)
+    ("evals_harness.result_json" . 50)
+    ("evals_harness.eval_environment" . 50)
+    ("evals_harness.prompt_step" . 50)
+    ("evals_harness.reload_step" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -7290,6 +7299,153 @@
         (eq new (cadr-evals::last-assistant-since messages nil)))
        3))))
 
+(defun run-evals-harness-step-value ()
+  ;; Hash-table JSON step, keyword plist, interned keyword plist, miss.
+  (let* ((hash
+           (cadr-ai::json-object
+            "type" "prompt"
+            "content" "hi"))
+         (plist
+           (list :type :prompt :content "hi"))
+         (interned
+           (list (intern "TYPE" :keyword) :prompt
+                 (intern "CONTENT" :keyword) "hi")))
+    (list
+     (eval-flag
+      (string= (cadr-evals::step-value hash :type) "prompt"))
+     (eval-flag
+      (string= (cadr-evals::step-value plist :content) "hi"))
+     (eval-flag
+      (eq (cadr-evals::step-value interned :type) :prompt))
+     (eval-flag
+      (null (cadr-evals::step-value hash :missing)))
+     4)))
+
+(defun eval-usage-messages ()
+  (list
+   (cadr-ai:make-user-message :content "hi")
+   (cadr-ai:make-assistant-message
+    :content
+    (list
+     (cadr-ai:make-text-content :text "hello")
+     (cadr-ai:make-tool-call
+      :id "c1"
+      :name "bash"
+      :arguments (cadr-ai::json-object "cmd" "ls")))
+    :usage
+    (cadr-ai:make-usage
+     :input 10
+     :output 20
+     :cache-read 1
+     :cache-write 2
+     :cost (cadr-ai:make-cost :total 1.5d0)))
+   (cadr-ai:make-assistant-message
+    :content
+    (list (cadr-ai:make-text-content :text "done"))
+    :usage
+    (cadr-ai:make-usage :input 5 :output 7))))
+
+(defun run-evals-harness-usage ()
+  (let* ((model
+           (cadr-ai::make-model
+            :id "gpt-4o"
+            :provider :openai))
+         (usage
+           (cadr-evals::eval-usage
+            (eval-usage-messages)
+            model))
+         (meta (cadr-ai::json-get usage "metadata")))
+    (list
+     (eval-flag (= (cadr-ai::json-get usage "inputTokens") 15))
+     (eval-flag (= (cadr-ai::json-get usage "outputTokens") 27))
+     (eval-flag (= (cadr-ai::json-get usage "totalTokens") 45))
+     (eval-flag (= (cadr-ai::json-get usage "toolCalls") 1))
+     (eval-flag
+      (string= (cadr-ai::json-get usage "provider") "openai"))
+     (eval-flag
+      (string= (cadr-ai::json-get usage "model") "gpt-4o"))
+     (eval-flag
+      (and (= (cadr-ai::json-get meta "cacheReadTokens") 1)
+           (= (cadr-ai::json-get meta "cacheWriteTokens") 2)
+           (plusp
+            (cadr-ai::json-get meta "estimatedCostUsd" 0))))
+     7)))
+
+(defun run-evals-harness-result-json ()
+  (let* ((result
+           (cadr-evals::make-eval-result
+            :output "ok"
+            :events
+            (list
+             (cadr-ai::json-object
+              "type" "message"
+              "role" "user"))
+            :usage
+            (cadr-ai::json-object
+             "model" "gpt-4o"
+             "inputTokens" 3)
+            :errors nil
+            :artifacts
+            (cadr-ai::json-object "runId" "r1")
+            :timings
+            (cadr-ai::json-object "totalMs" 12.5d0)))
+         (json (cadr-evals::eval-result-json result))
+         (events (cadr-ai::json-get json "events"))
+         (errors (cadr-ai::json-get json "errors"))
+         (artifacts (cadr-ai::json-get json "artifacts"))
+         (timings (cadr-ai::json-get json "timings")))
+    (list
+     (eval-flag
+      (string= (cadr-ai::json-get json "output") "ok"))
+     (eval-flag (= (length events) 1))
+     (eval-flag (zerop (length errors)))
+     (eval-flag
+      (string= (cadr-ai::json-get artifacts "runId") "r1"))
+     (eval-flag
+      (eql (cadr-ai::json-get timings "totalMs") 12.5d0))
+     5)))
+
+
+(defun evals-environment-table ()
+  (let ((table (make-hash-table :test #'equal)))
+    (setf (gethash "CADR_EVAL_PROVIDER" table) "  openai  ")
+    (setf (gethash "CADR_EVAL_MODEL" table) "gpt-4o")
+    (setf (gethash "WS" table) "   ")
+    table))
+
+(defun run-evals-harness-eval-environment ()
+  ;; Leftover callee of resolve-eval-selection: getenv + trim.
+  (let ((cadr-evals::*eval-environment-function*
+          (let ((table (evals-environment-table)))
+            (lambda (name)
+              (gethash name table)))))
+    (list
+     (eval-flag
+      (string= (cadr-evals::eval-environment "CADR_EVAL_PROVIDER")
+               "openai"))
+     (eval-flag
+      (string= (cadr-evals::eval-environment "CADR_EVAL_MODEL")
+               "gpt-4o"))
+     (eval-flag
+      (string= (cadr-evals::eval-environment "WS") ""))
+     (eval-flag
+      (null (cadr-evals::eval-environment "MISSING")))
+     4)))
+
+(defun run-evals-harness-prompt-step ()
+  (let ((step (cadr-evals::make-eval-prompt-step "hello")))
+    (list
+     (eval-flag (eq (getf step :type) :prompt))
+     (eval-flag (string= (getf step :content) "hello"))
+     2)))
+
+(defun run-evals-harness-reload-step ()
+  (let ((step (cadr-evals::make-eval-reload-step)))
+    (list
+     (eval-flag (eq (getf step :type) :reload))
+     (eval-flag (null (getf step :content)))
+     2)))
+
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
          (group (run-evals-harness-group-key))
@@ -7303,7 +7459,13 @@
          (normalize (run-evals-harness-normalize-steps))
          (resolve (run-evals-harness-resolve-selection))
          (transcript (run-evals-harness-transcript))
-         (last-assistant (run-evals-harness-last-assistant)))
+         (last-assistant (run-evals-harness-last-assistant))
+         (step-value (run-evals-harness-step-value))
+         (usage (run-evals-harness-usage))
+         (result-json (run-evals-harness-result-json))
+         (environment (run-evals-harness-eval-environment))
+         (prompt-step (run-evals-harness-prompt-step))
+         (reload-step (run-evals-harness-reload-step)))
     (json-object
      "observed"
      (json-object
@@ -7354,7 +7516,37 @@
       "la_new" (nth 0 last-assistant)
       "la_none" (nth 1 last-assistant)
       "la_full" (nth 2 last-assistant)
-      "la_n" (nth 3 last-assistant))
+      "la_n" (nth 3 last-assistant)
+      "sv_hash" (nth 0 step-value)
+      "sv_plist" (nth 1 step-value)
+      "sv_intern" (nth 2 step-value)
+      "sv_miss" (nth 3 step-value)
+      "sv_n" (nth 4 step-value)
+      "us_in" (nth 0 usage)
+      "us_out" (nth 1 usage)
+      "us_total" (nth 2 usage)
+      "us_tools" (nth 3 usage)
+      "us_prov" (nth 4 usage)
+      "us_model" (nth 5 usage)
+      "us_cost" (nth 6 usage)
+      "us_n" (nth 7 usage)
+      "rj_out" (nth 0 result-json)
+      "rj_ev" (nth 1 result-json)
+      "rj_err" (nth 2 result-json)
+      "rj_art" (nth 3 result-json)
+      "rj_time" (nth 4 result-json)
+      "rj_n" (nth 5 result-json)
+      "ee_trim" (nth 0 environment)
+      "ee_model" (nth 1 environment)
+      "ee_ws" (nth 2 environment)
+      "ee_miss" (nth 3 environment)
+      "ee_n" (nth 4 environment)
+      "ps_type" (nth 0 prompt-step)
+      "ps_content" (nth 1 prompt-step)
+      "ps_n" (nth 2 prompt-step)
+      "rs_type" (nth 0 reload-step)
+      "rs_no_content" (nth 1 reload-step)
+      "rs_n" (nth 2 reload-step))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -7395,7 +7587,37 @@
      (collect "evals_harness.last_assistant"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-last-assistant)))))))
+                  (run-evals-harness-last-assistant))))
+     "step_value"
+     (collect "evals_harness.step_value"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-step-value))))
+     "usage"
+     (collect "evals_harness.usage"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-usage))))
+     "result_json"
+     (collect "evals_harness.result_json"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-result-json))))
+     "eval_environment"
+     (collect "evals_harness.eval_environment"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-eval-environment))))
+     "prompt_step"
+     (collect "evals_harness.prompt_step"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-prompt-step))))
+     "reload_step"
+     (collect "evals_harness.reload_step"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-reload-step)))))))
 
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
@@ -16615,6 +16837,18 @@
       "src/cadr-evals/harness.lisp messages-to-transcript"
       "evals_harness.last_assistant"
       "src/cadr-evals/harness.lisp last-assistant-since"
+      "evals_harness.step_value"
+      "src/cadr-evals/harness.lisp step-value"
+      "evals_harness.usage"
+      "src/cadr-evals/harness.lisp eval-usage"
+      "evals_harness.result_json"
+      "src/cadr-evals/harness.lisp eval-result-json"
+      "evals_harness.eval_environment"
+      "src/cadr-evals/harness.lisp eval-environment"
+      "evals_harness.prompt_step"
+      "src/cadr-evals/harness.lisp make-eval-prompt-step"
+      "evals_harness.reload_step"
+      "src/cadr-evals/harness.lisp make-eval-reload-step"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

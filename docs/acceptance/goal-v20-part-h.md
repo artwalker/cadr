@@ -3973,42 +3973,91 @@ on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only
 from known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
 Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 
-### Pair 382 — `resource_loader` (context_file)
+### Pair 331 — `evals_harness` (step_value)
 
 | metric | cadr | pi |
 |---|---|---|
-| `context_file` | `load-context-file-from-dir` (`src/cadr-cli/resource-loader.lisp`) | `loadContextFileFromDir` (`packages/coding-agent/src/core/resource-loader.ts`) |
+| `step_value` | `step-value` (`src/cadr-evals/harness.lisp`) | step property access (`packages/evals/src/pi-harness.ts` `runPiCodingAgent` step loop) |
 
-Leftover sibling of Pair 12 `resource_loader.reload` and Pair 256 `dedupe_by_name`
-on the same `skill_prompt_load` hole. Timed work is the five-name context
-candidate walk (AGENTS.md hit / empty miss / AGENTS.override.md wins) — not
-`reload-resources`, not skill/prompt load. Observed `cf_agents` / `cf_miss` /
-`cf_override` / `cf_n` are exact. First n=5 freeze pending. Gate uses
-`--only-enforce`. Same commit no optimize. Pair numbers 328–381 belong to
-other lanes; this cut is 382–384 only.
+Leftover of the `evals_harness` hole on `harness.lisp`. Timed work is JSON
+hash / keyword plist / interned-keyword lookup plus a miss — not
+`normalize-eval-steps`, not `resolve-eval-selection`. Observed `sv_hash` /
+`sv_plist` / `sv_intern` / `sv_miss` / `sv_n` are exact. First n=5 freeze
+**3.693×** (0.774 / 0.210 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
-### Pair 383 — `resource_loader` (project_context_files)
-
-| metric | cadr | pi |
-|---|---|---|
-| `project_context_files` | `load-project-context-files` (`src/cadr-cli/resource-loader.lisp`) | `loadProjectContextFiles` (`packages/coding-agent/src/core/resource-loader.ts`) |
-
-Leftover sibling of Pair 382 `context_file` on the same `resource-loader.lisp`
-hole. Timed work is cwd + agent-dir context collection plus empty miss — not
-reload, not extension discovery. Observed `pcf_cwd` / `pcf_agents` /
-`pcf_empty` / `pcf_n` are exact. First n=5 freeze pending. Same commit no
-optimize.
-
-### Pair 384 — `resource_loader` (ancestor_directories)
+### Pair 332 — `evals_harness` (usage)
 
 | metric | cadr | pi |
 |---|---|---|
-| `ancestor_directories` | `ancestor-directories` (`src/cadr-cli/resource-loader.lisp`) | cwd→root `dirname` walk in `loadProjectContextFiles` (`packages/coding-agent/src/core/resource-loader.ts`) |
+| `usage` | `eval-usage` (`src/cadr-evals/harness.lisp`) | usage object assembly (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
 
-Leftover sibling of Pairs 382–383 on the same `resource-loader.lisp` hole.
-Timed work is cwd-first ancestor walk to filesystem root — not context-file
-IO, not reload. Observed `ad_first` / `ad_parent` / `ad_root` / `ad_n` are
-exact. First n=5 freeze pending. Same commit no optimize.
+Leftover sibling of Pair 331 `step_value` on the same `evals_harness` hole.
+Timed work is token / tool-call / cost aggregation over fixture assistant
+messages — not `getSessionStats` live session, not prompt. Observed `us_in`
+/ `us_out` / `us_total` / `us_tools` / `us_prov` / `us_model` / `us_cost` /
+`us_n` are exact. First n=5 freeze **2.148×** (2.240 / 1.042 µs) on host
+`cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from
+known old holes `lc_n` / `lc_sleep` / help text; this metric did not fail).
+Same commit no optimize.
+
+### Pair 333 — `evals_harness` (result_json)
+
+| metric | cadr | pi |
+|---|---|---|
+| `result_json` | `eval-result-json` (`src/cadr-evals/harness.lisp`) | `SimpleHarnessResult` JSON shape (`packages/evals/src/pi-harness.ts`) |
+
+Leftover sibling of Pairs 331–332 on the same `evals_harness` hole. Timed
+work is result object JSON (output / events / errors / artifacts / timings)
+— not persist, not summarize. Observed `rj_out` / `rj_ev` / `rj_err` /
+`rj_art` / `rj_time` / `rj_n` are exact. First n=5 freeze **5.225×**
+(1.933 / 0.370 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). Same commit no optimize.
+
+### Pair 346 — `evals_harness` (eval_environment)
+
+| metric | cadr | pi |
+|---|---|---|
+| `eval_environment` | `eval-environment` (`src/cadr-evals/harness.lisp`) | environment trim (`packages/evals/src/pi-harness.ts` `resolveModelSelection`) |
+
+Leftover of the `evals_harness` hole on `harness.lisp`. Timed work is
+getenv lookup plus whitespace trim (padded provider, unpadded model,
+whitespace-only, missing) — not `resolve-eval-selection`, not
+`normalize-eval-steps`. Observed `ee_trim` / `ee_model` / `ee_ws` /
+`ee_miss` / `ee_n` are exact. First n=5 freeze **2.692×** (0.758 / 0.282 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Over-1× booked. Same commit no optimize.
+
+### Pair 347 — `evals_harness` (prompt_step)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prompt_step` | `make-eval-prompt-step` (`src/cadr-evals/harness.lisp`) | prompt step object (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
+
+Leftover sibling of Pair 346 `eval_environment` on the same `evals_harness`
+hole. Timed work is `{type: prompt, content}` construction — not step
+normalization of a sequence, not prompt-agent. Observed `ps_type` /
+`ps_content` / `ps_n` are exact. First n=5 freeze **0.956×** (0.109 / 0.114 µs)
+on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (script rc=1
+only from known old holes `lc_n` / `lc_sleep` / help text; this metric
+did not fail). Same commit no optimize.
+
+### Pair 348 — `evals_harness` (reload_step)
+
+| metric | cadr | pi |
+|---|---|---|
+| `reload_step` | `make-eval-reload-step` (`src/cadr-evals/harness.lisp`) | reload step object (`packages/evals/src/pi-harness.ts` `runPiCodingAgent`) |
+
+Leftover sibling of Pairs 346–347 on the same `evals_harness` hole. Timed
+work is `{type: reload}` construction — not extension reload, not
+`run-coding-agent-eval`. Observed `rs_type` / `rs_no_content` / `rs_n` are
+exact. First n=5 freeze **0.738×** (0.078 / 0.105 µs) on host `cursor`,
+ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
+holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
+commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

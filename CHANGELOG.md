@@ -9,18 +9,46 @@ tag/Release step.
 
 ### Changed
 
-- Goal 20 P.13: pair `resource_loader.context_file` (`load-context-file-from-dir`
-  on `src/cadr-cli/resource-loader.lisp` vs baseline `loadContextFileFromDir`).
-  Observed `cf_agents` / `cf_miss` / `cf_override` / `cf_n` exact.
-  Measure-only leftover sibling of `reload` / `dedupe_by_name`. Pairs 382–384.
-- Goal 20 P.13: pair `resource_loader.project_context_files`
-  (`load-project-context-files` on `src/cadr-cli/resource-loader.lisp` vs
-  baseline `loadProjectContextFiles`). Observed `pcf_cwd` / `pcf_agents` /
-  `pcf_empty` / `pcf_n` exact. Measure-only.
-- Goal 20 P.13: pair `resource_loader.ancestor_directories`
-  (`ancestor-directories` on `src/cadr-cli/resource-loader.lisp` vs baseline
-  cwd→root dirname walk). Observed `ad_first` / `ad_parent` / `ad_root` /
-  `ad_n` exact. Measure-only. `nextPairNum` stays 328.
+- Goal 20 P.13 leftover: pair `evals_harness.eval_environment` (`eval-environment` on
+  `src/cadr-evals/harness.lisp` vs baseline `resolveModelSelection` environment
+  trim). Observed `ee_trim` / `ee_model` / `ee_ws` / `ee_miss` / `ee_n` exact.
+  n=5 **2.692×** (0.758 / 0.282 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 346). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.prompt_step` (`make-eval-prompt-step` on
+  `src/cadr-evals/harness.lisp` vs baseline prompt step object). Observed
+  `ps_type` / `ps_content` / `ps_n` exact.
+  n=5 **0.956×** (0.109 / 0.114 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 347). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.reload_step` (`make-eval-reload-step` on
+  `src/cadr-evals/harness.lisp` vs baseline reload step object). Observed
+  `rs_type` / `rs_no_content` / `rs_n` exact.
+  n=5 **0.738×** (0.078 / 0.105 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 348). Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` / help text),
+  not this metric.
+- Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
+  `src/cadr-evals/harness.lisp` vs baseline step property access).
+  Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.
+  n=5 **3.693×** (0.774 / 0.210 µs) on host `cursor`, ceiling 8.0.
+  Measure-only. Gate rc=1 only from known old holes (`lc_n` / `lc_sleep` /
+  help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.usage` (`eval-usage` on
+  `src/cadr-evals/harness.lisp` vs baseline usage object assembly).
+  Observed `us_in` / `us_out` / `us_total` / `us_tools` / `us_prov` /
+  `us_model` / `us_cost` / `us_n` exact. n=5 **2.148×** (2.240 / 1.042 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known
+  old holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `evals_harness.result_json` (`eval-result-json`
+  on `src/cadr-evals/harness.lisp` vs baseline `SimpleHarnessResult` JSON
+  shape). Observed `rj_out` / `rj_ev` / `rj_err` / `rj_art` / `rj_time` /
+  `rj_n` exact. n=5 **5.225×** (1.933 / 0.370 µs) on host `cursor`,
+  ceiling 8.0. Measure-only. Gate rc=1 only from known old holes (`lc_n` /
+  `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
 - Goal 20 P.13: pair `write_tool.ensure_parent` (`ensure-write-parent-directories`
   on `src/cadr-cli/tools/write.lisp` vs baseline `defaultWriteOperations.mkdir`).
   Observed `ep_nested` / `ep_exists` / `ep_eexist` / `ep_n` exact.
