@@ -461,4 +461,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.append_user_message` | 5.050 | 1.201 | 4.205× | 8.00× | measure-only leftover 654; `append-tui-user-message` vs parseSkillBlock UserMessageComponent | invent pause；地板优化另刀 |
 | `cli_interactive_controller.reset_tui_messages` | 2.035 | 1.570 | 1.296× | 8.00× | measure-only leftover 656; `reset-tui-messages` vs chatContainer reset + usage preserve | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_user_lines` | 3.956 | 1.541 | 2.567× | 8.00× | measure-only leftover 657; `render-user-message-lines` vs UserMessageComponent wrap + OSC 133 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_assistant_lines` | 12.279 | 4.498 | 2.730× | 8.00× | measure-only leftover 658; `render-assistant-message-lines` vs AssistantMessageComponent wrap + OSC 133 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.transform_tui_markdown` | 2.923 | 1.968 | 1.485× | 8.00× | measure-only leftover 659; `transform-tui-markdown` vs mermaid transform + markdown cache | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_transcript_summary` | 786.501 | 3.083 | 255.111× | 400.00× | measure-only leftover 660; `render-transcript-summary-entry` vs skill/branch/compaction CustomMessage; first-freeze headroom 400.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

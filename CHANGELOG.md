@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.render_assistant_lines`
+  (`render-assistant-message-lines` on
+  `src/cadr-cli/interactive/transcript.lisp` vs AssistantMessageComponent
+  wrap + OSC 133). Observed `ram_hi` / `ram_n` / `ram_osc` / `ram_think`
+  / `ram_trunc` exact. n=5 **2.730×** (12.279 / 4.498 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 658). Over-1×
+  booked. Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.transform_tui_markdown`
+  (`transform-tui-markdown` vs mermaid transform + markdown cache).
+  Observed `ttm_eq` / `ttm_n` / `ttm_off` / `ttm_think` / `ttm_hit`
+  exact. n=5 **1.485×** (2.923 / 1.968 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 659). Over-1× booked. `nextPairNum`
+  left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_transcript_summary`
+  (`render-transcript-summary-entry` vs skill/branch/compaction
+  CustomMessage). Observed `rts_skill` / `rts_foo` / `rts_branch` /
+  `rts_comp` / `rts_n` exact. n=5 **255.111×** (786.501 / 3.083 µs) on
+  host `cursor`. First-freeze headroom ceiling **400.0** (ratchet down
+  only). Measure-only leftover (Pair 660). Over-1× booked. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.seed_tui_message`
   (`seed-tui-message` on
   `src/cadr-cli/interactive/transcript.lisp` vs interactive-mode addChild

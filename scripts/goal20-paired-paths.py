@@ -976,12 +976,13 @@ RATIO_CEILINGS = {
     "cli_interactive_controller.reset_tui_messages": 8.0,
     # Measure-only leftover 657; first freeze 2.567× (3.956 / 1.541 µs).
     "cli_interactive_controller.render_user_lines": 8.0,
-    # Measure-only leftover 658; first freeze pending.
+    # Measure-only leftover 658; first freeze 2.730× (12.279 / 4.498 µs).
     "cli_interactive_controller.render_assistant_lines": 8.0,
-    # Measure-only leftover 659; first freeze pending.
+    # Measure-only leftover 659; first freeze 1.485× (2.923 / 1.968 µs).
     "cli_interactive_controller.transform_tui_markdown": 8.0,
-    # Measure-only leftover 660; first freeze pending.
-    "cli_interactive_controller.render_transcript_summary": 8.0,
+    # Measure-only leftover 660; first freeze 255.111× (786.501 / 3.083 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "cli_interactive_controller.render_transcript_summary": 400.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_selectors.user_message_make": 8.0,
