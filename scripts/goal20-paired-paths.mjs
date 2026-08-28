@@ -14211,30 +14211,11 @@ function runCliSelectorsModelSelectorClampSelected() {
 	};
 }
 
-function modelSelectorModelsEqual(left, right) {
-	if (!left || !right) {
-		return false;
-	}
-	return left.id === right.id && left.provider === right.provider;
-}
-
-function modelSelectorSelectCurrent(state) {
-	const models = state.filteredModels;
-	const index = models.findIndex((item) =>
-		modelSelectorModelsEqual(state.currentModel, item),
-	);
-	state.selected = index >= 0 ? index : 0;
-	return state;
-}
-
 function modelSelectorSelectCurrentEncoded(models, current) {
-	const state = {
-		filteredModels: models,
-		currentModel: current,
-		selected: 0,
-	};
-	modelSelectorSelectCurrent(state);
-	return String(state.selected);
+	if (!current) {
+		return "0";
+	}
+	return String(modelSelectorSelectCurrent(models, current.model));
 }
 
 function runCliSelectorsModelSelectorSelectCurrent() {
