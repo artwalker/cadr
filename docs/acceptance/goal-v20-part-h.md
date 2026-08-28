@@ -4059,6 +4059,30 @@ ceiling 8.0. Gate used `--only-enforce` (script rc=1 only from known old
 holes `lc_n` / `lc_sleep` / help text; this metric did not fail). Same
 commit no optimize.
 
+### Pair 526 — `cli_selectors` (user_message_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `user_message_make` | `make-user-message-selector-state` (`src/cadr-cli/interactive/selectors/fork.lisp`) | `UserMessageList` constructor (`packages/coding-agent/src/modes/interactive/components/user-message-selector.ts`) |
+
+Leftover trio on `src/cadr-cli/interactive/selectors/fork.lisp` / hole `cli_selectors`. Timed work is empty/one/two/initial-hit/initial-miss/copy-list construction — not `render-user-message-selector`, not handle-event. Fixtures pass `:keybindings :bench` so default `make-keybindings-manager` is not in the timed path. Observed `umm_empty` / `umm_one` / `umm_two` / `umm_hit` / `umm_miss` / `umm_copy` are exact. First n=5 freeze **0.530×** (0.760 / 1.434 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 527 — `cli_selectors` (user_message_move)
+
+| metric | cadr | pi |
+|---|---|---|
+| `user_message_move` | `user-message-selector-move` (`src/cadr-cli/interactive/selectors/fork.lisp`) | `selectedIndex` wrap (`packages/coding-agent/src/modes/interactive/components/user-message-selector.ts`) |
+
+Leftover sibling of Pair 526 on the same hole. Timed work is wrap-forward / back / full-step / three-item wrap via `selector-frame-move-index` — not handle-raw-input. Observed `umv_empty` / `umv_wrap_fwd` / `umv_back` / `umv_full` / `umv_three_back` / `umv_three_fwd` are exact. First n=5 freeze **0.526×** (0.826 / 1.572 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
+### Pair 528 — `cli_selectors` (user_message_selection)
+
+| metric | cadr | pi |
+|---|---|---|
+| `user_message_selection` | `user-message-selector-selection` (`src/cadr-cli/interactive/selectors/fork.lisp`) | selected item value (`packages/coding-agent/src/modes/interactive/components/user-message-selector.ts`) |
+
+Leftover sibling of Pairs 526–527 on the same hole. Timed work is empty/last/initial-hit/wrap/miss/one-item value lookup — not render. Observed `ums_empty` / `ums_last` / `ums_hit` / `ums_wrap` / `ums_miss` / `ums_one` are exact. First n=5 freeze **0.553×** (0.862 / 1.559 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text / `execution_env.tmp_*`; this metric did not fail). Same commit no optimize.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
