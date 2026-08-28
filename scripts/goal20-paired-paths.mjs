@@ -20004,6 +20004,9 @@ function runCliSelectorsArminGridHeight() {
 	};
 }
 
+let cachedDaxnutsHex;
+let cachedDaxnutsPixels;
+
 function daxnutsHex() {
 	if (cachedDaxnutsHex === undefined) {
 		const source = readFileSync(
