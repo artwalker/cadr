@@ -216,6 +216,9 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.scoped_models_selector_clear_all` | 287.2 | 13.6 | 21.18× | 25.00× | measure-only pair (Pair 237); scoped models clearAll | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_persist` | 208.1 | 15.3 | 13.58× | 25.00× | measure-only pair (Pair 239); scoped models onPersist | invent pause；地板优化另刀 |
 | `cli_selectors.scoped_models_selector_provider_count` | 182.6 | 3.9 | 46.51× | 50.00× | measure-only pair (Pair 240); scoped models provider count | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_rebuild_items` | 27.154 | 6.105 | 4.448× | 8.00× | measure-only leftover 589; `scoped-models-selector-rebuild-items` vs rebuild items | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_apply_filter` | 34.896 | 23.842 | 1.464× | 8.00× | measure-only leftover 590; `scoped-models-selector-apply-filter` vs apply filter | invent pause；地板优化另刀 |
+| `cli_selectors.scoped_models_selector_visible_items` | 32.039 | 13.230 | 2.422× | 8.00× | measure-only leftover 591; `scoped-models-selector-visible-items` vs lazy visible items | invent pause；地板优化另刀 |
 | `tui_latex.normalize_output` | 12.7 | 8.7 | 1.46× | 20.00× | measure-only pair (Pair 243); latex marker cleanup | invent pause；地板优化另刀 |
 | `file_mutation_queue.queue_key` | 169.3 | 156.2 | 1.08× | 8.00× | measure-only pair 270; `file-mutation-queue-key` only (not `with_queue`) | invent pause；地板优化另刀 |
 | `file_mutation_queue.lock` | 183.3 | 148.0 | 1.24× | 8.00× | measure-only pair 271; `file-mutation-queue-lock` only (not `with_queue` / `queue_key`) | invent pause；地板优化另刀 |

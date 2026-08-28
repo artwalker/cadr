@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_rebuild_items`
+  (`scoped-models-selector-rebuild-items` on
+  `src/cadr-cli/interactive/selectors/models.lisp` vs rebuild items). Observed
+  `smri_all` / `smri_partial` / `smri_none` / `smri_empty` / `smri_single`
+  exact. n=5 **4.448×** (27.154 / 6.105 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 589). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_apply_filter`
+  (`scoped-models-selector-apply-filter` vs apply filter). Observed
+  `smaf_all` / `smaf_gpt` / `smaf_miss` / `smaf_partial` / `smaf_empty`
+  exact. n=5 **1.464×** (34.896 / 23.842 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 590). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_selectors.scoped_models_selector_visible_items`
+  (`scoped-models-selector-visible-items` vs lazy visible items). Observed
+  `smvi_all` / `smvi_gpt` / `smvi_miss` / `smvi_empty` / `smvi_partial`
+  exact. n=5 **2.422×** (32.039 / 13.230 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 591). Gate rc=1 only from known old holes.
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left
+  unchanged.
 - Live process: Cursor cloud agents merge READY Goal 20 leftover pairing
   PRs into `cadr-migration` (serial; rebase the next PR first). Tags,
   force-push, and spend stay with Ethan. See
