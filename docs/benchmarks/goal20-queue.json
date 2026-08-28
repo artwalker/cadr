@@ -886,7 +886,12 @@
    "measure": "measure-provider-registry-defs",
    "metric": "provider_registry_defs.api_key_strategy",
    "branch": "cursor/pair-403-405-runtime-projection-ff1b",
-   "note": "nextPairNum left at tip 328 (outside 403-405); 328-402 reserved for other leftover knives"
+   "note": "nextPairNum left at tip 328 (outside 403-405); 328-402 reserved for other leftover knives",
+   "ratio": 0.417,
+   "cadrUs": 0.114,
+   "piUs": 0.274,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 404,
@@ -895,7 +900,12 @@
    "source": "src/cadr-ai/providers/runtime-projection.lisp",
    "measure": "measure-provider-registry-defs",
    "metric": "provider_registry_defs.provider_options",
-   "branch": "cursor/pair-403-405-runtime-projection-ff1b"
+   "branch": "cursor/pair-403-405-runtime-projection-ff1b",
+   "ratio": 1.697,
+   "cadrUs": 0.560,
+   "piUs": 0.330,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 405,
@@ -904,7 +914,12 @@
    "source": "src/cadr-ai/providers/runtime-projection.lisp",
    "measure": "measure-provider-registry-defs",
    "metric": "provider_registry_defs.strip_runtime_options",
-   "branch": "cursor/pair-403-405-runtime-projection-ff1b"
+   "branch": "cursor/pair-403-405-runtime-projection-ff1b",
+   "ratio": 0.0627,
+   "cadrUs": 0.134,
+   "piUs": 2.131,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []

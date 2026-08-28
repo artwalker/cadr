@@ -1262,14 +1262,16 @@ RATIO_CEILINGS = {
     # (0.176 / 211.2 us). cadr leads. 8.0 is first-freeze
     # headroom. Ratchet down only.
     "provider_registry_defs.structured_api_key_login": 8.0,
-    # provider_registry_defs.api_key_strategy pair (samples=5): first-freeze
-    # headroom 8.0. Observed filled after n=5. Ratchet down only.
+    # provider_registry_defs.api_key_strategy pair (samples=5): observed 0.417x
+    # (0.114 / 0.274 µs). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "provider_registry_defs.api_key_strategy": 8.0,
-    # provider_registry_defs.provider_options pair (samples=5): first-freeze
-    # headroom 8.0. Observed filled after n=5. Ratchet down only.
+    # provider_registry_defs.provider_options pair (samples=5): observed 1.697x
+    # (0.560 / 0.330 µs). 8.0 is first-freeze headroom. Ratchet down only.
     "provider_registry_defs.provider_options": 8.0,
-    # provider_registry_defs.strip_runtime_options pair (samples=5): first-freeze
-    # headroom 8.0. Observed filled after n=5. Ratchet down only.
+    # provider_registry_defs.strip_runtime_options pair (samples=5): observed 0.0627x
+    # (0.134 / 2.131 µs). cadr leads. 8.0 is first-freeze
+    # headroom. Ratchet down only.
     "provider_registry_defs.strip_runtime_options": 8.0,
     # core_rest.cancellation_abort pair (samples=5): observed 0.0712x
     # (0.579 / 8.130 us). cadr leads. 8.0 is first-freeze

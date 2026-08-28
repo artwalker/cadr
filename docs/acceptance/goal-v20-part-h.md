@@ -3579,7 +3579,10 @@ help text; this metric did not fail). Same commit no optimize.
 |---|---|---|
 | `api_key_strategy` | `api-key-auth-strategy-entry` (`src/cadr-ai/providers/runtime-projection.lisp`) | Bedrock/Vertex structured ApiKeyAuth table + environment default (`packages/ai/src/providers/amazon-bedrock.ts`, `packages/ai/src/providers/google-vertex.ts`) |
 
-Leftover sibling of lookup/merge_environment/runtime_models/structured_api_key_login on the same `provider_registry_defs` hole. Timed work is table assoc for `:bedrock` / `:vertex` / `:environment` plus a miss — not the structured-login predicate, not login interaction, not stream. Observed `as_bedrock` / `as_vertex` / `as_env` / `as_miss` / `as_hit` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+Leftover sibling of lookup/merge_environment/runtime_models/structured_api_key_login on the same `provider_registry_defs` hole. Timed work is table assoc for `:bedrock` / `:vertex` / `:environment` plus a miss — not the structured-login predicate, not login interaction, not stream. Observed `as_bedrock` / `as_vertex` / `as_env` / `as_miss` / `as_hit` are exact. First n=5 freeze
+**0.417×** (0.114 / 0.274 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 404 — `provider_registry_defs` (provider_options)
 
@@ -3587,7 +3590,11 @@ Leftover sibling of lookup/merge_environment/runtime_models/structured_api_key_l
 |---|---|---|
 | `provider_options` | `built-in-provider-options` (`src/cadr-ai/providers/runtime-projection.lisp`) | Azure/Cloudflare/Google env-key option projection (same keys the baseline providers read) |
 
-Leftover sibling of Pair 403 on the same `provider_registry_defs` hole. Timed work is fixture env → azure URL / Google project (GOOGLE_CLOUD_PROJECT wins over GCLOUD_PROJECT) / location / Cloudflare account / Azure resource — not getenv, not stream. Observed `po_azure` / `po_project` / `po_location` / `po_cf` / `po_res` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+Leftover sibling of Pair 403 on the same `provider_registry_defs` hole. Timed work is fixture env → azure URL / Google project (GOOGLE_CLOUD_PROJECT wins over GCLOUD_PROJECT) / location / Cloudflare account / Azure resource — not getenv, not stream. Observed `po_azure` / `po_project` / `po_location` / `po_cf` / `po_res` are exact. First n=5 freeze
+**1.697×** (0.560 / 0.330 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize. Booked in
+`docs/benchmarks/goal20-paired-over-1x.md`.
 
 ### Pair 405 — `provider_registry_defs` (strip_runtime_options)
 
@@ -3595,7 +3602,10 @@ Leftover sibling of Pair 403 on the same `provider_registry_defs` hole. Timed wo
 |---|---|---|
 | `strip_runtime_options` | `remove-runtime-only-options` (`src/cadr-ai/providers/runtime-projection.lisp`) | omit `apiKey` / `headers` / `environment` / `authType` before stream/complete |
 
-Leftover sibling of Pairs 403–404 on the same `provider_registry_defs` hole. Timed work is dropping runtime-only keys while keeping `max-tokens` / `temperature`, plus an all-runtime empty result — not `stream-chat`. Observed `sro_keep` / `sro_drop` / `sro_n` / `sro_empty` / `sro_temp` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Gate used `--only-enforce`. Same commit no optimize.
+Leftover sibling of Pairs 403–404 on the same `provider_registry_defs` hole. Timed work is dropping runtime-only keys while keeping `max-tokens` / `temperature`, plus an all-runtime empty result — not `stream-chat`. Observed `sro_keep` / `sro_drop` / `sro_n` / `sro_empty` / `sro_temp` are exact. First n=5 freeze
+**0.0627×** (0.134 / 2.131 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). Same commit no optimize.
 
 ### Pair 322 — `core_rest` (cancellation_abort)
 

@@ -9,6 +9,30 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `provider_registry_defs.api_key_strategy`
+  (`api-key-auth-strategy-entry` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs Bedrock/Vertex
+  structured ApiKeyAuth table + environment default). Observed `as_bedrock` /
+  `as_vertex` / `as_env` / `as_miss` / `as_hit` exact. n=5 **0.417×**
+  (0.114 / 0.274 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `provider_registry_defs.provider_options`
+  (`built-in-provider-options` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs Azure/Cloudflare/Google
+  env-key option projection). Observed `po_azure` / `po_project` /
+  `po_location` / `po_cf` / `po_res` exact. n=5 **1.697×** (0.560 / 0.330 µs)
+  on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `provider_registry_defs.strip_runtime_options`
+  (`remove-runtime-only-options` on
+  `src/cadr-ai/providers/runtime-projection.lisp` vs omit
+  `apiKey`/`headers`/`environment`/`authType`). Observed `sro_keep` /
+  `sro_drop` / `sro_n` / `sro_empty` / `sro_temp` exact. n=5 **0.0627×**
+  (0.134 / 2.131 µs) on host `cursor`, ceiling 8.0. Measure-only. Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this
+  metric. `nextPairNum` left unchanged.
 - Goal 20 P.13 leftover: pair `evals_harness.step_value` (`step-value` on
   `src/cadr-evals/harness.lisp` vs baseline step property access).
   Observed `sv_hash` / `sv_plist` / `sv_intern` / `sv_miss` / `sv_n` exact.
