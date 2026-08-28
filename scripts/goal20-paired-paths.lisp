@@ -10056,7 +10056,7 @@
      (length (cadr-cli::login-dialog-state-sections code))
      (if (search "Enter code:" (login-dialog-sections-encoded code))
          1
-         0)))))
+         0))))
 
 (defun login-dialog-observed-pairs (make auth device)
   (list
