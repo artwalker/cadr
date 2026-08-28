@@ -3982,8 +3982,11 @@ Same commit no optimize. Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
 Leftover sibling of the `tool_grep.context_file` hole on `src/cadr-cli/tools/grep.lisp`.
 Timed work is UTF-8 ingest of ASCII `hello` plus empty file — not `grep-lines` /
 ripgrep spawn, not match-event / line-text / make-tool (pairs 373–375 on PR #48).
-Observed `gru_ascii` / `gru_empty` / `gru_n` are exact. First n=5 freeze pending
-on host `cursor`, ceiling 8.0. Measure-only. Pair numbers 406–408 only.
+Observed `gru_ascii` / `gru_empty` / `gru_n` are exact. First n=5 freeze **0.500×**
+(101.136 / 202.336 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`
+(script rc=1 only from known old holes `lc_n` / `lc_sleep` / help text;
+this metric did not fail). cadr leads. Same commit no optimize. Pair numbers
+406–408 only.
 
 ### Pair 407 — `grep_tool` (file_lines)
 
@@ -3995,7 +3998,9 @@ Leftover sibling of Pair 406 `read_utf8` on the same `grep.lisp` `tool_grep` hol
 Timed work is the per-file line-table cache (7 content lines, no trailing newline
 so cadr table n and pi `split("\n")` length match) — not execute / spawn.
 Observed `gfl_n` / `gfl_first` / `gfl_cache` / `gfl_count` are exact. First n=5 freeze
-pending on host `cursor`, ceiling 8.0. Measure-only.
+**0.644×** (97.236 / 151.098 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). cadr leads. Same commit no optimize.
 
 ### Pair 408 — `grep_tool` (context_block)
 
@@ -4007,7 +4012,9 @@ Leftover sibling of Pair 406 `read_utf8` and Pair 407 `file_lines` on the same
 `grep.lisp` `tool_grep` hole. Timed work is context=2 around line 4 plus missing-file
 `(unable to read file)` — not match JSON parse, not `make-grep-tool`. Observed
 `gcb_lines` / `gcb_match` / `gcb_missing` / `gcb_n` are exact. First n=5 freeze
-pending on host `cursor`, ceiling 8.0. Measure-only.
+**0.598×** (113.423 / 189.556 µs) on host `cursor`, ceiling 8.0. Gate used
+`--only-enforce` (script rc=1 only from known old holes `lc_n` / `lc_sleep` /
+help text; this metric did not fail). cadr leads. Same commit no optimize.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

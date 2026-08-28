@@ -839,29 +839,44 @@
   {
    "pair": 406,
    "lane": "a",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/tools/grep.lisp",
    "measure": "measure-grep-tool",
    "metric": "grep_tool.read_utf8",
-   "branch": "cursor/pair-406-408-grep-leftovers-4050"
+   "branch": "cursor/pair-406-408-grep-leftovers-4050",
+   "ratio": 0.5,
+   "cadrUs": 101.136,
+   "piUs": 202.336,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 407,
    "lane": "a",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/tools/grep.lisp",
    "measure": "measure-grep-tool",
    "metric": "grep_tool.file_lines",
-   "branch": "cursor/pair-406-408-grep-leftovers-4050"
+   "branch": "cursor/pair-406-408-grep-leftovers-4050",
+   "ratio": 0.644,
+   "cadrUs": 97.236,
+   "piUs": 151.098,
+   "ceiling": 8.0,
+   "rc": 1
   },
   {
    "pair": 408,
    "lane": "a",
-   "status": "in_progress",
+   "status": "done",
    "source": "src/cadr-cli/tools/grep.lisp",
    "measure": "measure-grep-tool",
    "metric": "grep_tool.context_block",
-   "branch": "cursor/pair-406-408-grep-leftovers-4050"
+   "branch": "cursor/pair-406-408-grep-leftovers-4050",
+   "ratio": 0.598,
+   "cadrUs": 113.423,
+   "piUs": 189.556,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
