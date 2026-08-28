@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.legacy_product`
+  (`legacy-product-name` on `src/cadr-cli/migration.lisp`). Observed `lp_len` /
+  `lp_p` / `lp_i` exact. n=5 **1.178×** (0.171 / 0.145 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 457). Gate rc=1 only from known old
+  holes (`lc_n` / `lc_sleep` / help text), not this metric. Booked in
+  `docs/benchmarks/goal20-paired-over-1x.md`. `nextPairNum` left unchanged.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.shell_quote`
+  (`shell-single-quote` on `src/cadr-cli/migration.lisp`). Observed `sq_plain` /
+  `sq_space` / `sq_quote` / `sq_empty` exact. n=5 **0.714×** (0.461 / 0.645 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 458). Gate rc=1
+  only from known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
+- Goal 20 P.13 leftover: pair `cli_bootstrap_sessions.affirmative`
+  (`affirmative-response-p` on `src/cadr-cli/migration.lisp`). Observed `af_y` /
+  `af_yes` / `af_trim` / `af_no` exact. n=5 **0.584×** (0.371 / 0.635 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 459). Gate rc=1 only from
+  known old holes (`lc_n` / `lc_sleep` / help text), not this metric.
 - Goal 20 P.13 leftover: pair `settings_load.provider_symbol` (`provider-symbol` on
   `src/cadr-cli/config.lisp` vs upcase keyword intern). Observed `ps_openai` /
   `ps_mixed` / `ps_hyphen` exact. n=5 **1.351×** (0.313 / 0.231 µs) on host

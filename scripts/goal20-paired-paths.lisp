@@ -19662,6 +19662,30 @@
    (if (null (cadr-cli::path-command-argument "nope" "/export")) 1 0)
    4))
 
+(defun run-cli-bootstrap-legacy-product ()
+  (let ((name (cadr-cli::legacy-product-name)))
+    (list
+     (length name)
+     (char-code (char name 0))
+     (char-code (char name 1)))))
+
+
+(defun run-cli-bootstrap-shell-quote ()
+  (list
+   (if (string= (cadr-cli::shell-single-quote "foo") "'foo'") 1 0)
+   (if (string= (cadr-cli::shell-single-quote "a b") "'a b'") 1 0)
+   (if (string= (cadr-cli::shell-single-quote "a'b") "'a'\\''b'") 1 0)
+   (if (string= (cadr-cli::shell-single-quote "") "''") 1 0)))
+
+
+(defun run-cli-bootstrap-affirmative ()
+  (list
+   (if (cadr-cli::affirmative-response-p "y") 1 0)
+   (if (cadr-cli::affirmative-response-p "yes") 1 0)
+   (if (cadr-cli::affirmative-response-p (format nil " YES~C" #\Newline)) 1 0)
+   (if (cadr-cli::affirmative-response-p "n") 0 1)))
+
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
          (auth-observed (run-cli-bootstrap-auth))

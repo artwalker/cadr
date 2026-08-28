@@ -332,6 +332,9 @@ const REPETITIONS = {
 	"package_manager.update_argv": 50,
 	"package_manager.update_env": 50,
 	"package_manager.git_object_id": 50,
+	"cli_bootstrap_sessions.legacy_product": 50,
+	"cli_bootstrap_sessions.shell_quote": 50,
+	"cli_bootstrap_sessions.affirmative": 50,
 "ai_crypto_model_data.manifest": 50,
 	"ai_crypto.hmac": 50,
 	"cli_models_rest.pattern_match": 50,
@@ -19920,6 +19923,59 @@ function runCliBootstrapPathArgument() {
 		pa_miss: pathCommandArgument("nope", "/export") === null ? 1 : 0,
 	};
 }
+
+function migrationLegacyProductName() {
+	return String.fromCharCode(112, 105) + "-cl";
+}
+
+
+function migrationShellSingleQuote(value) {
+	let quoted = "'";
+	for (const character of String(value)) {
+		quoted += character === "'" ? "'\\''" : character;
+	}
+	return quoted + "'";
+}
+
+
+function migrationAffirmativeResponseP(response) {
+	const trimmed = String(response ?? "")
+		.replace(/^[ \t\n\r]+/, "")
+		.replace(/[ \t\n\r]+$/, "")
+		.toLowerCase();
+	return trimmed === "y" || trimmed === "yes";
+}
+
+
+function runCliBootstrapLegacyProduct() {
+	const name = migrationLegacyProductName();
+	return {
+		lp_len: name.length,
+		lp_p: name.charCodeAt(0),
+		lp_i: name.charCodeAt(1),
+	};
+}
+
+
+function runCliBootstrapShellQuote() {
+	return {
+		sq_plain: migrationShellSingleQuote("foo") === "'foo'" ? 1 : 0,
+		sq_space: migrationShellSingleQuote("a b") === "'a b'" ? 1 : 0,
+		sq_quote: migrationShellSingleQuote("a'b") === "'a'\\''b'" ? 1 : 0,
+		sq_empty: migrationShellSingleQuote("") === "''" ? 1 : 0,
+	};
+}
+
+
+function runCliBootstrapAffirmative() {
+	return {
+		af_y: migrationAffirmativeResponseP("y") ? 1 : 0,
+		af_yes: migrationAffirmativeResponseP("yes") ? 1 : 0,
+		af_trim: migrationAffirmativeResponseP(" YES\n") ? 1 : 0,
+		af_no: migrationAffirmativeResponseP("n") ? 0 : 1,
+	};
+}
+
 
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();

@@ -2483,6 +2483,51 @@
    "piUs": 0.971,
    "ceiling": 8.0,
    "rc": 1
+  },
+  {
+   "pair": 457,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/migration.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.legacy_product",
+   "branch": "cursor/migration-leftovers-457-459-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 457-459, not sequential nextPairNum)",
+   "ratio": 1.178,
+   "cadrUs": 0.171,
+   "piUs": 0.145,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 458,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/migration.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.shell_quote",
+   "branch": "cursor/migration-leftovers-457-459-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 457-459, not sequential nextPairNum)",
+   "ratio": 0.714,
+   "cadrUs": 0.461,
+   "piUs": 0.645,
+   "ceiling": 8.0,
+   "rc": 1
+  },
+  {
+   "pair": 459,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/migration.lisp",
+   "measure": "measure-cli-bootstrap-coding-tools",
+   "metric": "cli_bootstrap_sessions.affirmative",
+   "branch": "cursor/migration-leftovers-457-459-34f9",
+   "note": "nextPairNum left at tip 328 (leftover IDs 457-459, not sequential nextPairNum)",
+   "ratio": 0.584,
+   "cadrUs": 0.371,
+   "piUs": 0.635,
+   "ceiling": 8.0,
+   "rc": 1
   }
  ],
  "mergeQueue": []
