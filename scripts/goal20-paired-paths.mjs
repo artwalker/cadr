@@ -260,6 +260,9 @@ const REPETITIONS = {
 	"package_manager.selected_entry": 50,
 	"package_manager.selector_move": 50,
 	"package_manager.visible_range": 50,
+	"package_manager.item_ordinal": 50,
+	"package_manager.replace_pattern": 50,
+	"package_manager.scope_base": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -6164,7 +6167,54 @@ function leftoverConfigSelectorState(selected, extras = {}) {
 		flatItems,
 		selected,
 		maxVisible: extras.maxVisible ?? 16,
+		cwd: extras.cwd,
+		agentDirectory: extras.agentDirectory,
 	};
+}
+
+function leftoverEnsureDir(pathname) {
+	if (!pathname) {
+		return pathname;
+	}
+	return pathname.endsWith("/") ? pathname : `${pathname}/`;
+}
+
+function leftoverConfigSelectorItemOrdinal(state) {
+	return (
+		1 +
+		state.flatItems.slice(0, state.selected).filter((entry) => entry.kind === "item")
+			.length
+	);
+}
+
+function leftoverConfigSelectorReplacePattern(
+	entries,
+	pattern,
+	override,
+	includeSourceP = false,
+) {
+	let updated = entries.filter(
+		(entry) => leftoverConfigSelectorEntryTarget(entry) !== pattern,
+	);
+	if (includeSourceP && !updated.includes(pattern)) {
+		updated = [...updated, pattern];
+	}
+	if (override) {
+		const prefix = override === "load" ? "+" : "-";
+		updated = [...updated, `${prefix}${pattern}`];
+	}
+	return updated;
+}
+
+function leftoverProjectConfigDirectory(base) {
+	return `${leftoverEnsureDir(base)}.cadr/`;
+}
+
+function leftoverConfigSelectorScopeBase(state, scope) {
+	if (scope === "global") {
+		return leftoverEnsureDir(state.agentDirectory);
+	}
+	return leftoverProjectConfigDirectory(state.cwd);
 }
 
 function leftoverConfigSelectorKindCode(entry) {
@@ -6298,6 +6348,52 @@ function runPackageManagerVisibleRange() {
 	};
 }
 
+function runPackageManagerItemOrdinal() {
+	return {
+		io_group: leftoverConfigSelectorItemOrdinal(leftoverConfigSelectorState(0)),
+		io_first: leftoverConfigSelectorItemOrdinal(leftoverConfigSelectorState(1)),
+		io_second: leftoverConfigSelectorItemOrdinal(leftoverConfigSelectorState(3)),
+		io_sub: leftoverConfigSelectorItemOrdinal(leftoverConfigSelectorState(2)),
+		io_n: 5,
+	};
+}
+
+function runPackageManagerReplacePattern() {
+	const entries = ["!foo", "bar"];
+	const drop = leftoverConfigSelectorReplacePattern(entries, "foo", null);
+	const load = leftoverConfigSelectorReplacePattern(["bar"], "foo", "load");
+	const unload = leftoverConfigSelectorReplacePattern(["bar"], "foo", "unload");
+	const keep = leftoverConfigSelectorReplacePattern(entries, "foo", null, true);
+	return {
+		rp_drop: drop.length === 1 && drop[0] === "bar" ? 1 : 0,
+		rp_load: load.length === 2 && load[1] === "+foo" ? 1 : 0,
+		rp_unload: unload.length === 2 && unload[1] === "-foo" ? 1 : 0,
+		rp_keep: keep.length === 2 && keep[1] === "foo" ? 1 : 0,
+		rp_n: 5,
+	};
+}
+
+function runPackageManagerScopeBase() {
+	const state = leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+	});
+	const nested = leftoverConfigSelectorState(0, {
+		cwd: "/tmp/work/src",
+		agentDirectory: "/tmp/agent",
+	});
+	const global = leftoverConfigSelectorScopeBase(state, "global");
+	const project = leftoverConfigSelectorScopeBase(state, "project");
+	const nestedProject = leftoverConfigSelectorScopeBase(nested, "project");
+	return {
+		sb_global: global === "/tmp/agent/" ? 1 : 0,
+		sb_proj: project === "/tmp/proj/.cadr/" ? 1 : 0,
+		sb_nested: nestedProject === "/tmp/work/src/.cadr/" ? 1 : 0,
+		sb_slash: project.endsWith("/") ? 1 : 0,
+		sb_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -6406,6 +6502,9 @@ async function measurePackageManager() {
 	const selectedEntry = runPackageManagerSelectedEntry();
 	const selectorMove = runPackageManagerSelectorMove();
 	const visibleRange = runPackageManagerVisibleRange();
+	const itemOrdinal = runPackageManagerItemOrdinal();
+	const replacePattern = runPackageManagerReplacePattern();
+	const scopeBase = runPackageManagerScopeBase();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6479,6 +6578,15 @@ async function measurePackageManager() {
 		visible_range: await collect("package_manager.visible_range", () => {
 			return () => runPackageManagerVisibleRange();
 		}),
+		item_ordinal: await collect("package_manager.item_ordinal", () => {
+			return () => runPackageManagerItemOrdinal();
+		}),
+		replace_pattern: await collect("package_manager.replace_pattern", () => {
+			return () => runPackageManagerReplacePattern();
+		}),
+		scope_base: await collect("package_manager.scope_base", () => {
+			return () => runPackageManagerScopeBase();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6508,6 +6616,9 @@ async function measurePackageManager() {
 			...selectedEntry,
 			...selectorMove,
 			...visibleRange,
+			...itemOrdinal,
+			...replacePattern,
+			...scopeBase,
 		},
 	};
 }
@@ -32050,6 +32161,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts selector move (cadr config-selector-move)",
 			"package_manager.visible_range":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts visible range (cadr config-selector-visible-range)",
+			"package_manager.item_ordinal":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts item ordinal (cadr config-selector-item-ordinal)",
+			"package_manager.replace_pattern":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts replace pattern (cadr config-selector-replace-pattern)",
+			"package_manager.scope_base":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts scope base (cadr config-selector-scope-base)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":
