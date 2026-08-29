@@ -2176,21 +2176,18 @@
                (cli-arguments-offline-p command)
                (offline-mode-p))))
            :tool-ensure-function
-           ;; Baseline v0.84.4 interactive-mode.ts: fd/rg are ensured
-           ;; after the UI mounts; progress surfaces as a status, not
-           ;; stdout noise.
+           ;; Baseline interactive-mode.ts: fd/rg are awaited after the
+           ;; header mounts and before session messages bind. Warnings
+           ;; use showManagedToolStatus (Warning: + theme.warning).
            (lambda ()
-             (let ((output
-                     (make-string-output-stream)))
-               (ensure-tool :fd :output output)
-               (ensure-tool :rg :output output)
-               (let ((text
-                       (string-trim
-                        '(#\Space #\Tab #\Newline #\Return)
-                        (get-output-stream-string output))))
-                 (when (and (plusp (length text))
-                            status-consumer)
-                   (funcall status-consumer text)))))
+             (flet ((report (type message)
+                      (when status-consumer
+                        (funcall
+                         status-consumer
+                         message
+                         (if (eq type :warning) :warning :status)))))
+               (ensure-tool :fd :on-status #'report)
+               (ensure-tool :rg :on-status #'report))))
            :footer-state-function
            #'current-footer-state
            :footer-cwd cwd

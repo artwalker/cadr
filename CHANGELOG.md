@@ -18,8 +18,9 @@ tag/Release step.
   Exp, OpenRouter reasoning-effort mapper, compact-before-next-tool
   request, queued custom messages during a run, persist-default into a
   non-empty model scope, llama.cpp autoload presets, JSONL trailing
-  newline repair, and omit `tool_choice` when a completions request has
-  no tools.
+  newline repair, omit `tool_choice` when a completions request has
+  no tools, and interactive fd/rg ensure via TUI `Warning:` lines
+  before restored session messages (matching `showManagedToolStatus`).
 
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login

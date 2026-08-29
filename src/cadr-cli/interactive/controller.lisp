@@ -385,7 +385,9 @@ interactive-mode.ts:5956-5960).")
                 (or (funcall mermaid-mode-function) "streaming")
                 "streaming")
             :session session
-            :messages messages))
+            ;; Seed after managed-tool ensure so offline fd/rg warnings
+            ;; sit above restored session messages (interactive-mode.ts).
+            :messages nil))
          (editor
            (let ((editor
                    (cadr-tui:make-multiline-editor
@@ -441,7 +443,6 @@ interactive-mode.ts:5956-5960).")
          (unwrap-tui-turn-dispatch nil)
          (version-update-worker nil)
          (package-update-worker nil)
-         (tool-ensure-worker nil)
          (session-loader-worker nil)
          (custom-ui-lock
            (sb-thread:make-mutex
@@ -2770,16 +2771,13 @@ interactive-mode.ts:5956-5960).")
               (condition () nil)))
           :name "cadr-package-update-check")))
       (when tool-ensure-function
-        ;; Baseline v0.84.4 interactive-mode.ts: fd/rg download runs
-        ;; after the UI mounts so a slow fetch cannot freeze startup.
-        (setf
-         tool-ensure-worker
-         (sb-thread:make-thread
-          (lambda ()
-            (handler-case
-                (funcall tool-ensure-function)
-              (condition () nil)))
-          :name "cadr-tool-ensure")))
+        ;; Await fd/rg before seeding session messages, matching
+        ;; interactive-mode.ts ensureTool then rebindCurrentSession.
+        (handler-case
+            (funcall tool-ensure-function)
+          (condition () nil)))
+      (dolist (message messages)
+        (seed-tui-message state message))
       (setf *tui-mode-switch-hook* #'switch-tui-mode
             *fullscreen-copy-on-select-hook*
             (lambda (enabled)
@@ -2988,8 +2986,7 @@ interactive-mode.ts:5956-5960).")
            session-loader-worker))
         (dolist (update-worker
                  (list version-update-worker
-                       package-update-worker
-                       tool-ensure-worker))
+                       package-update-worker))
           (when (and update-worker
                      (sb-thread:thread-alive-p
                       update-worker))

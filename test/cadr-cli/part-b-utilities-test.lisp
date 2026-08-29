@@ -50,6 +50,30 @@
             (sb-posix:setenv (first entry) (second entry) 1)
             (sb-posix:unsetenv (first entry)))))))
 
+(test ensure-tool-offline-on-status-emits-warning
+  (let ((previous-offline (uiop:getenv "CADR_OFFLINE"))
+        (previous-path (uiop:getenv "PATH"))
+        (events nil))
+    (unwind-protect
+         (progn
+           (sb-posix:setenv "CADR_OFFLINE" "1" 1)
+           (sb-posix:setenv "PATH" "/nonexistent-cadr-tool-path" 1)
+           (is (null
+                (cadr-cli:ensure-tool
+                 :fd
+                 :on-status
+                 (lambda (type message)
+                   (push (cons type message) events)))))
+           (is (equal
+                '((:warning . "fd not found. Offline mode enabled, skipping download."))
+                (reverse events))))
+      (if previous-offline
+          (sb-posix:setenv "CADR_OFFLINE" previous-offline 1)
+          (sb-posix:unsetenv "CADR_OFFLINE"))
+      (if previous-path
+          (sb-posix:setenv "PATH" previous-path 1)
+          (sb-posix:unsetenv "PATH")))))
+
 (test changelog-links-are-tag-pinned-and-canonical
   (let* ((input
            (format nil
