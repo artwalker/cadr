@@ -471,6 +471,9 @@
     ("package_manager.normalize_pattern" . 50)
     ("package_manager.resource_kinds" . 50)
     ("package_manager.type_label" . 50)
+    ("package_manager.resource_file_p" . 50)
+    ("package_manager.resource_display_name" . 50)
+    ("package_manager.settings_array" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4494,6 +4497,69 @@
      "Themes"))
    4))
 
+(defun leftover-config-resource-file-p (path extension basename)
+  (cadr-cli::config-resource-file-p
+   (parse-namestring path) extension basename))
+
+(defun leftover-config-resource-display-name (path type)
+  (cadr-cli::config-resource-display-name
+   (parse-namestring path) type))
+
+(defun leftover-config-settings-array (object key)
+  (cadr-cli::config-settings-array object key))
+
+(defun run-package-manager-resource-file-p ()
+  (list
+   (package-manager-truth
+    (leftover-config-resource-file-p "foo.lisp" "lisp" nil))
+   (package-manager-truth
+    (leftover-config-resource-file-p "foo.LISP" "lisp" nil))
+   (package-manager-truth
+    (not (leftover-config-resource-file-p "foo.md" "lisp" nil)))
+   (package-manager-truth
+    (leftover-config-resource-file-p "SKILL.md" nil "SKILL.md"))
+   5))
+
+(defun run-package-manager-resource-display-name ()
+  (list
+   (package-manager-truth
+    (string=
+     (leftover-config-resource-display-name
+      "/tmp/skills/hello/SKILL.md" :skills)
+     "hello"))
+   (package-manager-truth
+    (string=
+     (leftover-config-resource-display-name
+      "/tmp/ext.lisp" :extensions)
+     "ext.lisp"))
+   (package-manager-truth
+    (string=
+     (leftover-config-resource-display-name
+      "/tmp/note.md" :prompts)
+     "note.md"))
+   (package-manager-truth
+    (string=
+     (leftover-config-resource-display-name
+      "/tmp/dark.json" :themes)
+     "dark.json"))
+   5))
+
+(defun run-package-manager-settings-array ()
+  (let ((vec (cadr-ai::json-object "a" (vector "x" "y")))
+        (lst (cadr-ai::json-object "a" '("x")))
+        (miss (cadr-ai::json-object "b" "x"))
+        (bad (cadr-ai::json-object "a" 3)))
+    (list
+     (package-manager-truth
+      (= (length (leftover-config-settings-array vec "a")) 2))
+     (package-manager-truth
+      (= (length (leftover-config-settings-array lst "a")) 1))
+     (package-manager-truth
+      (null (leftover-config-settings-array miss "a")))
+     (package-manager-truth
+      (null (leftover-config-settings-array bad "a")))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -4574,7 +4640,10 @@
            (package-source (run-package-manager-package-source agent))
            (normalize-pattern (run-package-manager-normalize-pattern))
            (resource-kinds (run-package-manager-resource-kinds))
-           (type-label (run-package-manager-type-label)))
+           (type-label (run-package-manager-type-label))
+           (resource-file-p (run-package-manager-resource-file-p))
+           (resource-display (run-package-manager-resource-display-name))
+           (settings-array (run-package-manager-settings-array)))
       (json-object
        "observed"
        (json-object
@@ -4608,7 +4677,22 @@
         "tl_ext" (nth 0 type-label)
         "tl_sk" (nth 1 type-label)
         "tl_pr" (nth 2 type-label)
-        "tl_th" (nth 3 type-label))
+        "tl_th" (nth 3 type-label)
+        "rfp_lisp" (nth 0 resource-file-p)
+        "rfp_case" (nth 1 resource-file-p)
+        "rfp_miss" (nth 2 resource-file-p)
+        "rfp_skill" (nth 3 resource-file-p)
+        "rfp_n" (nth 4 resource-file-p)
+        "rdn_skill" (nth 0 resource-display)
+        "rdn_lisp" (nth 1 resource-display)
+        "rdn_md" (nth 2 resource-display)
+        "rdn_json" (nth 3 resource-display)
+        "rdn_n" (nth 4 resource-display)
+        "csa_vec" (nth 0 settings-array)
+        "csa_list" (nth 1 settings-array)
+        "csa_miss" (nth 2 settings-array)
+        "csa_bad" (nth 3 settings-array)
+        "csa_n" (nth 4 settings-array))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -4639,7 +4723,22 @@
        (collect "package_manager.type_label"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-type-label))))))))
+                    (run-package-manager-type-label))))
+       "resource_file_p"
+       (collect "package_manager.resource_file_p"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-resource-file-p))))
+       "resource_display_name"
+       (collect "package_manager.resource_display_name"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-resource-display-name))))
+       "settings_array"
+       (collect "package_manager.settings_array"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-settings-array))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -29839,6 +29938,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-resource-kinds"
       "package_manager.type_label"
       "src/cadr-cli/packages/config-selector.lisp config-resource-type-label"
+      "package_manager.resource_file_p"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-file-p"
+      "package_manager.resource_display_name"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-display-name"
+      "package_manager.settings_array"
+      "src/cadr-cli/packages/config-selector.lisp config-settings-array"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
