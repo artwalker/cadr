@@ -8509,6 +8509,36 @@
    "piUs": 3.484,
    "ceiling": 25.0,
    "rc": 2
+  },
+  {
+   "pair": 802,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.string_prefix",
+   "branch": "cursor/cli-extensions-install-prefix-split-strip-leftovers-802-804-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 802"
+  },
+  {
+   "pair": 803,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.split_path_segments",
+   "branch": "cursor/cli-extensions-install-prefix-split-strip-leftovers-802-804-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 803"
+  },
+  {
+   "pair": 804,
+   "lane": "cursor",
+   "status": "in-progress",
+   "source": "src/cadr-cli/extensions/installer.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.strip_git_query",
+   "branch": "cursor/cli-extensions-install-prefix-split-strip-leftovers-802-804-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 804"
   }
  ],
  "mergeQueue": []

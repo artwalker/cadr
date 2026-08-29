@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.string_prefix`
+  (`string-prefix-p` vs leftover startsWith). Observed
+  `sp_git` / `sp_http` / `sp_case` / `sp_empty` / `sp_n` exact.
+  Measure-only leftover (Pair 802). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.split_path_segments`
+  (`split-path-segments` vs leftover split("/")). Observed
+  `sps_dot` / `sps_empty` / `sps_nseg` / `sps_blank` / `sps_n` exact.
+  Measure-only leftover (Pair 803). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.strip_git_query`
+  (`strip-git-query-and-ref` vs leftover strip query/hash). Observed
+  `sgq_q` / `sgq_hash` / `sgq_plain` / `sgq_both` / `sgq_n` exact.
+  Measure-only leftover (Pair 804). Freeze pending. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `package_manager.selector_hint`
   (`config-selector-hint` vs leftover keyHint wrap). Observed
   `csh_tab` / `csh_space` / `csh_esc` / `csh_empty` / `csh_n` exact.
