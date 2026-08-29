@@ -225,6 +225,9 @@
 ;;;; 802. cli_extensions_install string-prefix-p vs leftover startsWith
 ;;;; 803. cli_extensions_install split-path-segments vs leftover split("/")
 ;;;; 804. cli_extensions_install strip-git-query-and-ref vs leftover strip query/hash
+;;;; 805. cli_extensions_install llama-format-context-size vs leftover Math.round k
+;;;; 806. cli_extensions_install llama-js-to-fixed vs leftover Number.toFixed
+;;;; 807. cli_extensions_install llama-search-exact-query-p vs leftover id regex
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -740,6 +743,9 @@
     ("cli_extensions_install.string_prefix" . 50)
     ("cli_extensions_install.split_path_segments" . 50)
     ("cli_extensions_install.strip_git_query" . 50)
+    ("cli_extensions_install.llama_format_context" . 50)
+    ("cli_extensions_install.llama_js_to_fixed" . 50)
+    ("cli_extensions_install.llama_search_exact" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -13393,6 +13399,52 @@
    (cadr-cli::llama-compact-count 999)))
 
 
+(defun leftover-llama-format-eq (value expected)
+  (if (string= (cadr-cli::llama-format-context-size value) expected)
+      1
+      0))
+
+
+(defun run-cli-extensions-llama-format-context ()
+  ;; Leftover on llama/ui.lisp: Math.round k. Not TUI view.
+  (list
+   (leftover-llama-format-eq 512 "512")
+   (leftover-llama-format-eq 1000 "1k")
+   (leftover-llama-format-eq 8192 "8k")
+   (leftover-llama-format-eq 1500 "2k")
+   5))
+
+
+(defun leftover-llama-fixed-eq (value digits expected)
+  (if (string= (cadr-cli::llama-js-to-fixed value digits) expected)
+      1
+      0))
+
+
+(defun run-cli-extensions-llama-js-to-fixed ()
+  ;; Leftover on llama/ui.lisp: Number.toFixed. Not compactCount TUI.
+  (list
+   (leftover-llama-fixed-eq 1.2d0 1 "1.2")
+   (leftover-llama-fixed-eq 42 0 "42")
+   (leftover-llama-fixed-eq 3.14159d0 2 "3.14")
+   (leftover-llama-fixed-eq 10 1 "10.0")
+   5))
+
+
+(defun leftover-llama-exact-flag (query)
+  (if (cadr-cli::llama-search-exact-query-p query) 1 0))
+
+
+(defun run-cli-extensions-llama-search-exact ()
+  ;; Leftover on llama/ui.lisp: org/name regex. Not search schedule TUI.
+  (list
+   (leftover-llama-exact-flag "user/repo")
+   (leftover-llama-exact-flag "user/repo:Q4_K_M")
+   (leftover-llama-exact-flag "user repo")
+   (leftover-llama-exact-flag "/bad")
+   5))
+
+
 (defun measure-cli-extensions-install ()
   (let* ((url (run-cli-extensions-llama-url))
          (token (run-cli-extensions-hf-token))
@@ -13416,7 +13468,10 @@
          (quant-label (run-cli-extensions-quant-label))
          (string-prefix (run-cli-extensions-string-prefix))
          (split-path-segments (run-cli-extensions-split-path-segments))
-         (strip-git-query (run-cli-extensions-strip-git-query)))
+         (strip-git-query (run-cli-extensions-strip-git-query))
+         (format-context (run-cli-extensions-llama-format-context))
+         (js-to-fixed (run-cli-extensions-llama-js-to-fixed))
+         (search-exact (run-cli-extensions-llama-search-exact)))
     (json-object
      "observed"
      (json-object
@@ -13537,7 +13592,22 @@
       "sgq_hash" (nth 1 strip-git-query)
       "sgq_plain" (nth 2 strip-git-query)
       "sgq_both" (nth 3 strip-git-query)
-      "sgq_n" (nth 4 strip-git-query))
+      "sgq_n" (nth 4 strip-git-query)
+      "lfc_small" (nth 0 format-context)
+      "lfc_1k" (nth 1 format-context)
+      "lfc_8k" (nth 2 format-context)
+      "lfc_round" (nth 3 format-context)
+      "lfc_n" (nth 4 format-context)
+      "ltf_one" (nth 0 js-to-fixed)
+      "ltf_zero" (nth 1 js-to-fixed)
+      "ltf_pi" (nth 2 js-to-fixed)
+      "ltf_ten" (nth 3 js-to-fixed)
+      "ltf_n" (nth 4 js-to-fixed)
+      "lseq_ok" (nth 0 search-exact)
+      "lseq_tag" (nth 1 search-exact)
+      "lseq_space" (nth 2 search-exact)
+      "lseq_slash" (nth 3 search-exact)
+      "lseq_n" (nth 4 search-exact))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -13648,7 +13718,22 @@
      (collect "cli_extensions_install.strip_git_query"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-strip-git-query)))))))
+                  (run-cli-extensions-strip-git-query))))
+     "llama_format_context"
+     (collect "cli_extensions_install.llama_format_context"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-format-context))))
+     "llama_js_to_fixed"
+     (collect "cli_extensions_install.llama_js_to_fixed"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-js-to-fixed))))
+     "llama_search_exact"
+     (collect "cli_extensions_install.llama_search_exact"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-llama-search-exact)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -36327,6 +36412,12 @@
       "src/cadr-cli/extensions/installer.lisp split-path-segments"
       "cli_extensions_install.strip_git_query"
       "src/cadr-cli/extensions/installer.lisp strip-git-query-and-ref"
+      "cli_extensions_install.llama_format_context"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-format-context-size"
+      "cli_extensions_install.llama_js_to_fixed"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-js-to-fixed"
+      "cli_extensions_install.llama_search_exact"
+      "src/cadr-cli/extensions/llama/ui.lisp llama-search-exact-query-p"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"
