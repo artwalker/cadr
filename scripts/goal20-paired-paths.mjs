@@ -686,6 +686,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.render_extension_custom_ui": 50,
 	"cli_interactive_controller.extension_custom_ui_handle_event": 50,
 	"cli_interactive_controller.render_tui_extension_overlay": 50,
+	"cli_interactive_controller.announcement_make": 5,
+	"cli_interactive_controller.announcement_url": 5,
+	"cli_interactive_controller.announcement_title": 5,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -1199,6 +1202,9 @@ const treeSelectorModule = await import(
 	moduleUrl("packages/coding-agent/src/modes/interactive/components/tree-selector.ts")
 );
 themeModule.initTheme("dark", false);
+const earendilAnnouncementModule = await import(
+	moduleUrl("packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts")
+);
 const fuzzyModule = await import(moduleUrl("packages/tui/src/fuzzy.ts"));
 const terminalColorsModule = await import(moduleUrl("packages/tui/src/terminal-colors.ts"));
 const estimateModule = await import(moduleUrl("packages/ai/src/utils/estimate.ts"));
@@ -17906,6 +17912,44 @@ function runCliInteractiveRenderTuiExtensionOverlay() {
 	};
 }
 
+function leftoverAnnouncementJoined(component) {
+	return component.render(80).join("\n");
+}
+
+function runCliInteractiveAnnouncementMake() {
+	// Leftover 874: EarendilAnnouncementComponent constructor.
+	const component = new earendilAnnouncementModule.EarendilAnnouncementComponent();
+	const n = Array.isArray(component.children) ? component.children.length : 0;
+	return {
+		eam_ok: component ? 1 : 0,
+		eam_min: n >= 7 ? 1 : 0,
+		eam_n: 2,
+	};
+}
+
+function runCliInteractiveAnnouncementUrl() {
+	// Leftover 875: blog URL is present in the rendered announcement.
+	const component = new earendilAnnouncementModule.EarendilAnnouncementComponent();
+	const text = leftoverAnnouncementJoined(component);
+	const url = "https://mariozechner.at/posts/2026-04-08-ive-sold-out/";
+	return {
+		eau_eq: text.includes(url) ? 1 : 0,
+		eau_sold: url.includes("sold-out") ? 1 : 0,
+		eau_n: 2,
+	};
+}
+
+function runCliInteractiveAnnouncementTitle() {
+	// Leftover 876: title string is present in the rendered announcement.
+	const component = new earendilAnnouncementModule.EarendilAnnouncementComponent();
+	const text = leftoverAnnouncementJoined(component);
+	return {
+		eat_eq: text.includes("pi has joined Earendil") ? 1 : 0,
+		eat_pi: text.includes("Earendil") ? 1 : 0,
+		eat_n: 2,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -19198,6 +19242,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveRenderExtensionCustomUi(),
 		...runCliInteractiveExtensionCustomUiHandleEvent(),
 		...runCliInteractiveRenderTuiExtensionOverlay(),
+		...runCliInteractiveAnnouncementMake(),
+		...runCliInteractiveAnnouncementUrl(),
+		...runCliInteractiveAnnouncementTitle(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -19522,6 +19569,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.render_tui_extension_overlay",
 			() => {
 				return () => runCliInteractiveRenderTuiExtensionOverlay();
+			},
+		),
+		announcement_make: await collect(
+			"cli_interactive_controller.announcement_make",
+			() => {
+				return () => runCliInteractiveAnnouncementMake();
+			},
+		),
+		announcement_url: await collect(
+			"cli_interactive_controller.announcement_url",
+			() => {
+				return () => runCliInteractiveAnnouncementUrl();
+			},
+		),
+		announcement_title: await collect(
+			"cli_interactive_controller.announcement_title",
+			() => {
+				return () => runCliInteractiveAnnouncementTitle();
 			},
 		),
 		observed,
@@ -33811,6 +33876,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom ui handleEvent",
 			"cli_interactive_controller.render_tui_extension_overlay":
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts extension overlay composite",
+			"cli_interactive_controller.announcement_make":
+				"packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts EarendilAnnouncementComponent",
+			"cli_interactive_controller.announcement_url":
+				"packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts BLOG_URL",
+			"cli_interactive_controller.announcement_title":
+				"packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts Earendil title",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

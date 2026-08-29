@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 874 — `cli_interactive_controller` (announcement_make)
+
+| metric | cadr | pi |
+|---|---|---|
+| `announcement_make` | `make-earendil-announcement-component` (`src/cadr-cli/interactive/components/announcement.lisp`) | `EarendilAnnouncementComponent` (`packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts`) |
+
+Leftover trio on unclaimed `src/cadr-cli/interactive/components/announcement.lisp`. Timed work is constructing the Earendil announcement (cadr has no bundled image; pi may attach `clankolas.png`). Observed `eam_ok` / `eam_min` / `eam_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 875 — `cli_interactive_controller` (announcement_url)
+
+| metric | cadr | pi |
+|---|---|---|
+| `announcement_url` | `+earendil-blog-url+` (`src/cadr-cli/interactive/components/announcement.lisp`) | `BLOG_URL` (`packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts`) |
+
+Leftover sibling of Pair 874. Timed work is rendering the announcement and checking the sold-out blog URL. Observed `eau_eq` / `eau_sold` / `eau_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 876 — `cli_interactive_controller` (announcement_title)
+
+| metric | cadr | pi |
+|---|---|---|
+| `announcement_title` | Earendil title (`src/cadr-cli/interactive/components/announcement.lisp`) | Earendil title (`packages/coding-agent/src/modes/interactive/components/earendil-announcement.ts`) |
+
+Leftover sibling of Pairs 874–875. Timed work is rendering the announcement and checking `pi has joined Earendil`. Observed `eat_eq` / `eat_pi` / `eat_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
