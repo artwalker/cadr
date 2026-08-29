@@ -234,6 +234,9 @@ const REPETITIONS = {
 	"settings_load.environment_value": 50,
 	"settings_load.configured_provider_name": 50,
 	"settings_load.provider_settings": 50,
+	"settings_load.provider_default_model": 50,
+	"settings_load.oauth_refresh_function": 50,
+	"settings_load.oauth_login_function": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -2865,6 +2868,100 @@ function runSettingsLoadProviderSettings() {
 	};
 }
 
+const leftoverProviderDefaultModels = {
+	openai: "gpt-5.5",
+	anthropic: "claude-opus-4-8",
+	google: "gemini-3.1-pro-preview",
+};
+
+function leftoverProviderDefaultModel(name) {
+	if (!Object.prototype.hasOwnProperty.call(leftoverProviderDefaultModels, name)) {
+		throw new Error(`Unknown provider: ${name}`);
+	}
+	return leftoverProviderDefaultModels[name];
+}
+
+const leftoverOauthRefreshNames = {
+	"openai-codex": "refresh-openai-oauth-credential",
+	anthropic: "refresh-anthropic-oauth-credential",
+};
+
+function leftoverOauthRefreshFunction(provider) {
+	const name = leftoverOauthRefreshNames[provider];
+	if (!name) {
+		throw new Error(`No OAuth refresh for ${provider}`);
+	}
+	return name;
+}
+
+const leftoverOauthLoginNames = {
+	"openai-codex": "login-openai-oauth",
+	anthropic: "login-anthropic-oauth",
+};
+
+function leftoverOauthLoginFunction(provider) {
+	const name = leftoverOauthLoginNames[provider];
+	if (!name) {
+		throw new Error(`No OAuth login for ${provider}`);
+	}
+	return name;
+}
+
+function leftoverFlagCaught(fn) {
+	try {
+		fn();
+		return 0;
+	} catch {
+		return 1;
+	}
+}
+
+function runSettingsLoadProviderDefaultModel() {
+	return {
+		pdm_openai: leftoverProviderDefaultModel("openai") === "gpt-5.5" ? 1 : 0,
+		pdm_anth: leftoverProviderDefaultModel("anthropic") === "claude-opus-4-8" ? 1 : 0,
+		pdm_google:
+			leftoverProviderDefaultModel("google") === "gemini-3.1-pro-preview" ? 1 : 0,
+		pdm_miss: leftoverFlagCaught(() => leftoverProviderDefaultModel("not-a-provider")),
+		pdm_n: 5,
+	};
+}
+
+function runSettingsLoadOauthRefreshFunction() {
+	return {
+		orf_codex:
+			leftoverOauthRefreshFunction("openai-codex") ===
+			"refresh-openai-oauth-credential"
+				? 1
+				: 0,
+		orf_anth:
+			leftoverOauthRefreshFunction("anthropic") ===
+			"refresh-anthropic-oauth-credential"
+				? 1
+				: 0,
+		orf_miss: leftoverFlagCaught(() => leftoverOauthRefreshFunction("google")),
+		orf_diff:
+			leftoverOauthRefreshFunction("openai-codex") !==
+			leftoverOauthRefreshFunction("anthropic")
+				? 1
+				: 0,
+		orf_n: 5,
+	};
+}
+
+function runSettingsLoadOauthLoginFunction() {
+	return {
+		olf_codex: leftoverOauthLoginFunction("openai-codex") === "login-openai-oauth" ? 1 : 0,
+		olf_anth: leftoverOauthLoginFunction("anthropic") === "login-anthropic-oauth" ? 1 : 0,
+		olf_miss: leftoverFlagCaught(() => leftoverOauthLoginFunction("google")),
+		olf_diff:
+			leftoverOauthLoginFunction("openai-codex") !== leftoverOauthLoginFunction("anthropic")
+				? 1
+				: 0,
+		olf_n: 5,
+	};
+}
+
 function sdkSettingsFixtureManager() {
 	return settingsModule.SettingsManager.inMemory(SDK_SETTINGS_FIXTURE);
 }
@@ -2927,6 +3024,9 @@ async function measureSettingsLoad() {
 	const environmentValue = runSettingsLoadEnvironmentValue();
 	const configuredProviderName = runSettingsLoadConfiguredProviderName();
 	const providerSettings = runSettingsLoadProviderSettings();
+	const providerDefaultModel = runSettingsLoadProviderDefaultModel();
+	const oauthRefreshFunction = runSettingsLoadOauthRefreshFunction();
+	const oauthLoginFunction = runSettingsLoadOauthLoginFunction();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -2964,6 +3064,18 @@ async function measureSettingsLoad() {
 		provider_settings: await collect("settings_load.provider_settings", () => {
 			return () => runSettingsLoadProviderSettings();
 		}),
+		provider_default_model: await collect("settings_load.provider_default_model", () => {
+			return () => runSettingsLoadProviderDefaultModel();
+		}),
+		oauth_refresh_function: await collect(
+			"settings_load.oauth_refresh_function",
+			() => {
+				return () => runSettingsLoadOauthRefreshFunction();
+			},
+		),
+		oauth_login_function: await collect("settings_load.oauth_login_function", () => {
+			return () => runSettingsLoadOauthLoginFunction();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -2976,6 +3088,9 @@ async function measureSettingsLoad() {
 			...environmentValue,
 			...configuredProviderName,
 			...providerSettings,
+			...providerDefaultModel,
+			...oauthRefreshFunction,
+			...oauthLoginFunction,
 		},
 	};
 }
@@ -33011,6 +33126,12 @@ const result = {
 				"packages/coding-agent/src/config.ts configured provider name (cadr configured-provider-name)",
 			"settings_load.provider_settings":
 				"packages/coding-agent/src/config.ts provider settings object (cadr provider-settings)",
+			"settings_load.provider_default_model":
+				"packages/coding-agent/src/config.ts provider default model (cadr provider-default-model)",
+			"settings_load.oauth_refresh_function":
+				"packages/coding-agent/src/config.ts oauth refresh function (cadr oauth-refresh-function)",
+			"settings_load.oauth_login_function":
+				"packages/coding-agent/src/config.ts oauth login function (cadr oauth-login-function)",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":

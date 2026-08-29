@@ -463,6 +463,9 @@
     ("settings_load.environment_value" . 50)
     ("settings_load.configured_provider_name" . 50)
     ("settings_load.provider_settings" . 50)
+    ("settings_load.provider_default_model" . 50)
+    ("settings_load.oauth_refresh_function" . 50)
+    ("settings_load.oauth_login_function" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -3999,6 +4002,33 @@
 (defun leftover-provider-settings (config name)
   (cadr-cli::provider-settings config name))
 
+(defun leftover-provider-default-model (name)
+  (cadr-cli::provider-default-model name))
+
+(defun leftover-oauth-refresh-ok (provider expected)
+  (handler-case
+      (eq (cadr-cli::oauth-refresh-function provider) expected)
+    (error () nil)))
+
+(defun leftover-oauth-refresh-miss (provider)
+  (handler-case
+      (progn
+        (cadr-cli::oauth-refresh-function provider)
+        nil)
+    (error () t)))
+
+(defun leftover-oauth-login-ok (provider expected)
+  (handler-case
+      (eq (cadr-cli::oauth-login-function provider) expected)
+    (error () nil)))
+
+(defun leftover-oauth-login-miss (provider)
+  (handler-case
+      (progn
+        (cadr-cli::oauth-login-function provider)
+        nil)
+    (error () t)))
+
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
@@ -4079,6 +4109,68 @@
      (if (hash-table-p miss) 1 0)
      5)))
 
+(defun run-settings-load-provider-default-model ()
+  (list
+   (if (string= (leftover-provider-default-model "openai") "gpt-5.5") 1 0)
+   (if (string= (leftover-provider-default-model "anthropic") "claude-opus-4-8")
+       1
+       0)
+   (if (string=
+        (leftover-provider-default-model "google")
+        "gemini-3.1-pro-preview")
+       1
+       0)
+   (if (handler-case
+           (progn
+             (leftover-provider-default-model "not-a-provider")
+             nil)
+         (error () t))
+       1
+       0)
+   5))
+
+(defun run-settings-load-oauth-refresh-function ()
+  (list
+   (if (leftover-oauth-refresh-ok
+        :openai-codex
+        #'cadr-ai:refresh-openai-oauth-credential)
+       1
+       0)
+   (if (leftover-oauth-refresh-ok
+        :anthropic
+        #'cadr-ai:refresh-anthropic-oauth-credential)
+       1
+       0)
+   (if (leftover-oauth-refresh-miss :google) 1 0)
+   (if (not
+        (eq
+         (cadr-cli::oauth-refresh-function :openai-codex)
+         (cadr-cli::oauth-refresh-function :anthropic)))
+       1
+       0)
+   5))
+
+(defun run-settings-load-oauth-login-function ()
+  (list
+   (if (leftover-oauth-login-ok
+        :openai-codex
+        cadr-cli::*openai-login-function*)
+       1
+       0)
+   (if (leftover-oauth-login-ok
+        :anthropic
+        cadr-cli::*anthropic-login-function*)
+       1
+       0)
+   (if (leftover-oauth-login-miss :google) 1 0)
+   (if (not
+        (eq
+         (cadr-cli::oauth-login-function :openai-codex)
+         (cadr-cli::oauth-login-function :anthropic)))
+       1
+       0)
+   5))
+
 (defun sdk-settings-fixture-manager ()
   (cadr-cli::make-memory-sdk-settings-manager
    (cadr-ai::json-object
@@ -4156,7 +4248,13 @@
               (environment-value (run-settings-load-environment-value))
               (configured-provider-name
                 (run-settings-load-configured-provider-name))
-              (provider-settings (run-settings-load-provider-settings)))
+              (provider-settings (run-settings-load-provider-settings))
+              (provider-default-model
+                (run-settings-load-provider-default-model))
+              (oauth-refresh-function
+                (run-settings-load-oauth-refresh-function))
+              (oauth-login-function
+                (run-settings-load-oauth-login-function)))
         (json-object
          "observed"
          (json-object
@@ -4217,7 +4315,22 @@
           "pset_miss" (nth 1 provider-settings)
           "pset_none" (nth 2 provider-settings)
           "pset_ht" (nth 3 provider-settings)
-          "pset_n" (nth 4 provider-settings))
+          "pset_n" (nth 4 provider-settings)
+          "pdm_openai" (nth 0 provider-default-model)
+          "pdm_anth" (nth 1 provider-default-model)
+          "pdm_google" (nth 2 provider-default-model)
+          "pdm_miss" (nth 3 provider-default-model)
+          "pdm_n" (nth 4 provider-default-model)
+          "orf_codex" (nth 0 oauth-refresh-function)
+          "orf_anth" (nth 1 oauth-refresh-function)
+          "orf_miss" (nth 2 oauth-refresh-function)
+          "orf_diff" (nth 3 oauth-refresh-function)
+          "orf_n" (nth 4 oauth-refresh-function)
+          "olf_codex" (nth 0 oauth-login-function)
+          "olf_anth" (nth 1 oauth-login-function)
+          "olf_miss" (nth 2 oauth-login-function)
+          "olf_diff" (nth 3 oauth-login-function)
+          "olf_n" (nth 4 oauth-login-function))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -4275,7 +4388,22 @@
          (collect "settings_load.provider_settings"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-provider-settings))))))))))
+                      (run-settings-load-provider-settings))))
+         "provider_default_model"
+         (collect "settings_load.provider_default_model"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-provider-default-model))))
+         "oauth_refresh_function"
+         (collect "settings_load.oauth_refresh_function"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-oauth-refresh-function))))
+         "oauth_login_function"
+         (collect "settings_load.oauth_login_function"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-oauth-login-function))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -31304,6 +31432,12 @@
       "src/cadr-cli/config.lisp configured-provider-name"
       "settings_load.provider_settings"
       "src/cadr-cli/config.lisp provider-settings"
+      "settings_load.provider_default_model"
+      "src/cadr-cli/config.lisp provider-default-model"
+      "settings_load.oauth_refresh_function"
+      "src/cadr-cli/config.lisp oauth-refresh-function"
+      "settings_load.oauth_login_function"
+      "src/cadr-cli/config.lisp oauth-login-function"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"
