@@ -23946,7 +23946,7 @@
          (if (string= got "x") 1 0)
          (if (null empty-got) 1 0)
          (if (eql ch #\x) 1 0)
-         5))))
+         5)))))
 
 (defun run-cli-interactive-notification-stream-flush ()
   ;; Leftover sibling: flush buffered chars. Empty flush is a no-op.
