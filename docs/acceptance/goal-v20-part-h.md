@@ -8830,7 +8830,7 @@ Leftover sibling of Pairs 760–761. Timed work is constructing openai with an e
 |---|---|---|
 | `sdk_default_provider` | `sdk-settings-default-provider` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultProvider` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling on a different needs-pair file. Timed work is in-memory defaultProvider lookup — not `stream-chat`. Observed `sdp_hit` / `sdp_miss` / `sdp_len` / `sdp_str` / `sdp_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling on a different needs-pair file. Timed work is in-memory defaultProvider lookup — not `stream-chat`. Observed `sdp_hit` / `sdp_miss` / `sdp_len` / `sdp_str` / `sdp_n` are exact. First n=5 freeze **4.990×** (31.153 / 6.243 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 764 — `settings_load` (sdk_default_model)
 
@@ -8838,7 +8838,7 @@ Leftover sibling on a different needs-pair file. Timed work is in-memory default
 |---|---|---|
 | `sdk_default_model` | `sdk-settings-default-model` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultModel` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pair 763. Timed work is in-memory defaultModel lookup — not `stream-chat`. Observed `sdm_hit` / `sdm_miss` / `sdm_len` / `sdm_str` / `sdm_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 763. Timed work is in-memory defaultModel lookup — not `stream-chat`. Observed `sdm_hit` / `sdm_miss` / `sdm_len` / `sdm_str` / `sdm_n` are exact. First n=5 freeze **5.274×** (31.246 / 5.925 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 765 — `settings_load` (sdk_retry_settings)
 
@@ -8846,7 +8846,7 @@ Leftover sibling of Pair 763. Timed work is in-memory defaultModel lookup — no
 |---|---|---|
 | `sdk_retry_settings` | `sdk-settings-retry-settings` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getRetrySettings` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 763–764. Timed work is retry enabled/max/baseDelay defaults — not login I/O. Observed `srs_en` / `srs_max` / `srs_base` / `srs_empty` / `srs_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 763–764. Timed work is retry enabled/max/baseDelay defaults — not login I/O. Observed `srs_en` / `srs_max` / `srs_base` / `srs_empty` / `srs_n` are exact. First n=5 freeze **2.639×** (15.933 / 6.038 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

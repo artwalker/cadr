@@ -537,4 +537,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.read_cli_config` | 200.606 | 95.628 | 2.098× | 8.00× | measure-only leftover 760; `read-cli-config` vs JSON.parse settings object | invent pause；地板优化另刀 |
 | `settings_load.provider_config_secrets` | 59.914 | 1.371 | 43.688× | 50.00× | measure-only leftover 761; `provider-config-secrets` vs apiKey/oauth/env collect; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
 | `settings_load.resolve_provider_config` | 225.982 | 42.635 | 5.300× | 8.00× | measure-only leftover 762; `resolve-provider-config` vs openaiProvider construct | invent pause；地板优化另刀 |
+| `settings_load.sdk_default_provider` | 31.153 | 6.243 | 4.990× | 8.00× | measure-only leftover 763; `sdk-settings-default-provider` vs getDefaultProvider | invent pause；地板优化另刀 |
+| `settings_load.sdk_default_model` | 31.246 | 5.925 | 5.274× | 8.00× | measure-only leftover 764; `sdk-settings-default-model` vs getDefaultModel | invent pause；地板优化另刀 |
+| `settings_load.sdk_retry_settings` | 15.933 | 6.038 | 2.639× | 8.00× | measure-only leftover 765; `sdk-settings-retry-settings` vs getRetrySettings | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

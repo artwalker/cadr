@@ -924,8 +924,11 @@ RATIO_CEILINGS = {
     # leftover 762; first freeze 5.300× (225.982 / 42.635 µs).
     "settings_load.resolve_provider_config": 8.0,
     # leftover 763–765 settings-service.lisp (samples=5): first-freeze headroom.
+    # leftover 763; first freeze 4.990× (31.153 / 6.243 µs).
     "settings_load.sdk_default_provider": 8.0,
+    # leftover 764; first freeze 5.274× (31.246 / 5.925 µs).
     "settings_load.sdk_default_model": 8.0,
+    # leftover 765; first freeze 2.639× (15.933 / 6.038 µs).
     "settings_load.sdk_retry_settings": 8.0,
     "cli_bootstrap_sessions.legacy_product": 8.0,
     "cli_bootstrap_sessions.shell_quote": 8.0,

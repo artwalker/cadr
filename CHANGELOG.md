@@ -12,17 +12,21 @@ tag/Release step.
 - Goal 20 leftover: pair `settings_load.sdk_default_provider`
   (`sdk-settings-default-provider` vs SettingsManager.getDefaultProvider).
   Observed `sdp_hit` / `sdp_miss` / `sdp_len` / `sdp_str` / `sdp_n` exact.
-  Measure-only leftover (Pair 763). Freeze pending. `nextPairNum` left
-  unchanged.
+  n=5 **4.990×** (31.153 / 6.243 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 763). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_default_model`
   (`sdk-settings-default-model` vs SettingsManager.getDefaultModel).
   Observed `sdm_hit` / `sdm_miss` / `sdm_len` / `sdm_str` / `sdm_n` exact.
-  Measure-only leftover (Pair 764). Freeze pending. `nextPairNum` left
+  n=5 **5.274×** (31.246 / 5.925 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 764). Over-1× booked. `nextPairNum` left
   unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_retry_settings`
   (`sdk-settings-retry-settings` vs SettingsManager.getRetrySettings).
   Observed `srs_en` / `srs_max` / `srs_base` / `srs_empty` / `srs_n` exact.
-  Measure-only leftover (Pair 765). Freeze pending. `nextPairNum` left
+  n=5 **2.639×** (15.933 / 6.038 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 765). Over-1× booked. `nextPairNum` left
   unchanged.
 
 - Goal 20 leftover: pair `settings_load.read_cli_config`
