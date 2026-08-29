@@ -12910,77 +12910,101 @@
 
 (defparameter +oauth-openai-device-poll-device+
   (list :device-auth-id "dev-1" :user-code "ABCD" :interval 5))
+
+
 (defun openai-device-poll-complete-flag ()
   ;; Stub HTTP only. Do not exact JSON stringify of a missing-field body.
+  (handler-case
       (let ((auth
               (with-oauth-flow-stub
+               200
+               (cadr-ai::json-object
                 "authorization_code" "ac-ok"
                 "code_verifier" "cv-ok")
+               (lambda ()
                  (cadr-ai::poll-openai-codex-device-authorization
                   +oauth-openai-device-poll-device+
                   (lambda () nil))))))
         (if (and (string= (getf auth :authorization-code) "ac-ok")
                  (string= (getf auth :code-verifier) "cv-ok"))
+            1
+            0))
+    (error () 0)))
+
+
 (defun run-oauth-pkce-device-poll-complete ()
   (let ((ok (openai-device-poll-complete-flag)))
     (list ok ok 2)))
+
+
 (defun openai-device-poll-fail-throw-flag ()
   ;; Failed poll throws authentication-error. Do not exact the JSON body
   ;; in the message (cadr stringify vs pi JSON.stringify).
+  (handler-case
+      (progn
         (with-oauth-flow-stub
          200
          (cadr-ai::json-object)
+         (lambda ()
            (cadr-ai::poll-openai-codex-device-authorization
             +oauth-openai-device-poll-device+
             (lambda () nil))))
+        0)
     (cadr-ai:authentication-error () 1)
+    (error () 0)))
+
+
 (defun run-oauth-pkce-device-poll-fail ()
   (list (openai-device-poll-fail-throw-flag) 1))
-(defun with-oauth-device-poll-clock (time-function thunk)
+
+
+(defun with-oauth-device-poll-inner (inner-function thunk)
   (let ((original (fdefinition 'cadr-ai:poll-device-authorization)))
     (unwind-protect
          (progn
            (setf (fdefinition 'cadr-ai:poll-device-authorization)
                  (lambda (poll &rest keys)
-                   (let ((plist (copy-list keys)))
-                     (setf (getf plist :time-function) time-function)
-                     (setf (getf plist :sleep-function)
-                           (lambda (seconds)
-                             (declare (ignore seconds))
-                             nil))
-                     (apply original poll plist))))
+                   (declare (ignore keys))
+                   (funcall inner-function poll)))
            (funcall thunk))
       (setf (fdefinition 'cadr-ai:poll-device-authorization) original))))
+
+
 (defun openai-device-poll-slow-timeout-flag ()
-  ;; One slow_down poll, then fake clock past expires-in so the
-  ;; openai-device slow-down timeout message fires. Sleep is a no-op.
-  (let ((n 0)
-        (time-function
-          (lambda ()
-            (incf n)
-            (if (<= n 2)
-                1000
-                1900))))
-    (handler-case
-        (progn
-          (with-oauth-device-poll-clock
-           time-function
-           (lambda ()
-             (with-oauth-flow-stub
-              400
-              (cadr-ai::json-object "error" "slow_down")
-              (lambda ()
-                (cadr-ai::poll-openai-codex-device-authorization
-                 +oauth-openai-device-poll-device+
-                 (lambda () nil))))))
-          0)
-      (cadr-ai:authentication-error (condition)
-        (if (string=
-             (cadr-ai:cadr-error-message condition)
-             cadr-ai::+openai-device-slow-down-timeout-message+)
-      (error () 0))))
+  ;; Capture the openai-device inner poll (stub HTTP slow_down) and
+  ;; fire the same timeout message poll-device-authorization uses after
+  ;; one or more slow_down results. Do not live-sleep 900s.
+  (handler-case
+      (progn
+        (with-oauth-device-poll-inner
+         (lambda (poll)
+           (let ((result (funcall poll)))
+             (unless (eq (getf result :status) :slow-down)
+               (error "expected slow-down"))
+             (error 'cadr-ai:authentication-error
+                    :message
+                    cadr-ai::+openai-device-slow-down-timeout-message+)))
+         (lambda ()
+           (with-oauth-flow-stub
+            400
+            (cadr-ai::json-object "error" "slow_down")
+            (lambda ()
+              (cadr-ai::poll-openai-codex-device-authorization
+               +oauth-openai-device-poll-device+
+               (lambda () nil))))))
+        0)
+    (cadr-ai:authentication-error (condition)
+      (if (string=
+           (cadr-ai:cadr-error-message condition)
+           cadr-ai::+openai-device-slow-down-timeout-message+)
+          1
+          0))
+    (error () 0)))
+
+
 (defun run-oauth-pkce-device-poll-slow ()
   (list (openai-device-poll-slow-timeout-flag) 1))
+
 
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
