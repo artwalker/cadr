@@ -9424,6 +9424,30 @@ Leftover sibling of Pair 835. Timed work is independent 2d copy plus mutate-copy
 
 Leftover sibling of Pairs 835–836. Timed work is row join without theme/clip — not `component-render`, not tick. Observed `ars_len` / `ars_empty0` / `ars_ink` / `ars_full` / `ars_n` are exact. First n=5 freeze **4.095×** (23.245 / 5.676 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 838 — `cli_bootstrap_sessions` (data_directory)
+
+| metric | cadr | pi |
+|---|---|---|
+| `data_directory` | `data-directory` (`src/cadr-cli/migration.lisp`) | leftover `join(home, CONFIG_DIR_NAME)` (`packages/coding-agent/src/config.ts`) |
+
+Leftover sibling of Pairs 457–459 on the same `migration.lisp` `cli_bootstrap_sessions` hole. Timed work is join under an explicit home — not disk migrate, not `user-homedir-pathname`. Observed `dd_under` / `dd_neq` / `dd_dot` are exact (leaf names `.cadr` vs `.pi` are not exacted). Measure-only leftover. `nextPairNum` left at 328.
+
+### Pair 839 — `cli_bootstrap_sessions` (legacy_data_directory)
+
+| metric | cadr | pi |
+|---|---|---|
+| `legacy_data_directory` | `legacy-data-directory` (`src/cadr-cli/migration.lisp`) | leftover `join(home, "." + legacy product)` (`packages/coding-agent/src/migrations.ts`) |
+
+Leftover sibling of Pair 838. Timed work is `.` plus `legacy-product-name` under home — not rename, not probe. Observed `ldd_under` / `ldd_neq` / `ldd_leaf` are exact (leaf `.pi-cl`). Measure-only leftover. `nextPairNum` left at 328.
+
+### Pair 840 — `cli_bootstrap_sessions` (manual_migration_command)
+
+| metric | cadr | pi |
+|---|---|---|
+| `manual_migration_command` | `manual-migration-command` (`src/cadr-cli/migration.lisp`) | leftover `` `mv --` `` plus POSIX quotes (`packages/coding-agent/src/migrations.ts`) |
+
+Leftover sibling of Pairs 838–839. Timed work is command string assembly — not `rename-file`, not refuse. Observed `mmc_mv` / `mmc_old` / `mmc_new` / `mmc_space` / `mmc_quote` are exact. Measure-only leftover. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

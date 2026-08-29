@@ -586,6 +586,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.validate_cli_session_flags": 50,
 	"cli_bootstrap_sessions.session_entry_tree_selector_data": 50,
 	"cli_bootstrap_sessions.session_restored_model": 50,
+	"cli_bootstrap_sessions.data_directory": 50,
+	"cli_bootstrap_sessions.legacy_data_directory": 50,
+	"cli_bootstrap_sessions.manual_migration_command": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -35745,6 +35748,81 @@ function runCliBootstrapSessionRestoredModel() {
 	};
 }
 
+
+function leftoverTrimmedPath(value) {
+	return String(value).replace(/\/+$/, "");
+}
+
+
+function leftoverPathLeaf(value) {
+	const trimmed = leftoverTrimmedPath(value);
+	const slash = trimmed.lastIndexOf("/");
+	return slash === -1 ? trimmed : trimmed.slice(slash + 1);
+}
+
+
+function leftoverPathUnderP(home, dir) {
+	const homeString = leftoverTrimmedPath(home);
+	const pathString = leftoverTrimmedPath(dir);
+	return (
+		pathString === homeString ||
+		(pathString.startsWith(homeString) && pathString[homeString.length] === "/")
+	);
+}
+
+
+function leftoverDataDirectory(home) {
+	return path.join(home, ".pi");
+}
+
+
+function leftoverLegacyDataDirectory(home) {
+	return path.join(home, `.${migrationLegacyProductName()}`);
+}
+
+
+function leftoverManualMigrationCommand(oldDir, newDir) {
+	return `mv -- ${migrationShellSingleQuote(oldDir)} ${migrationShellSingleQuote(newDir)}`;
+}
+
+
+function runCliBootstrapDataDirectory() {
+	const home = "/tmp/g20-migration-home";
+	const dir = leftoverDataDirectory(home);
+	const leaf = leftoverPathLeaf(dir);
+	return {
+		dd_under: leftoverPathUnderP(home, dir) ? 1 : 0,
+		dd_neq: leftoverTrimmedPath(dir) === leftoverTrimmedPath(home) ? 0 : 1,
+		dd_dot: leaf.charAt(0) === "." ? 1 : 0,
+	};
+}
+
+
+function runCliBootstrapLegacyDataDirectory() {
+	const home = "/tmp/g20-migration-home";
+	const dir = leftoverLegacyDataDirectory(home);
+	return {
+		ldd_under: leftoverPathUnderP(home, dir) ? 1 : 0,
+		ldd_neq: leftoverTrimmedPath(dir) === leftoverTrimmedPath(home) ? 0 : 1,
+		ldd_leaf: leftoverPathLeaf(dir) === ".pi-cl" ? 1 : 0,
+	};
+}
+
+
+function runCliBootstrapManualMigrationCommand() {
+	const oldDir = "/tmp/g20-old/.pi-cl";
+	const newDir = "/tmp/g20-new/.cadr";
+	const cmd = leftoverManualMigrationCommand(oldDir, newDir);
+	return {
+		mmc_mv: cmd.startsWith("mv -- ") ? 1 : 0,
+		mmc_old: cmd.includes(oldDir) ? 1 : 0,
+		mmc_new: cmd.includes(newDir) ? 1 : 0,
+		mmc_space: cmd.includes(" ") ? 1 : 0,
+		mmc_quote: cmd.includes("'") ? 1 : 0,
+	};
+}
+
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -35769,6 +35847,9 @@ async function measureCliBootstrapCodingTools() {
 	const validateFlagsObserved = runCliBootstrapValidateCliSessionFlags();
 	const entrySelectorObserved = runCliBootstrapSessionEntryTreeSelectorData();
 	const restoredModelObserved = runCliBootstrapSessionRestoredModel();
+	const dataDirectoryObserved = runCliBootstrapDataDirectory();
+	const legacyDataDirectoryObserved = runCliBootstrapLegacyDataDirectory();
+	const manualMigrationCommandObserved = runCliBootstrapManualMigrationCommand();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -35848,6 +35929,15 @@ async function measureCliBootstrapCodingTools() {
 		session_restored_model: await collect("cli_bootstrap_sessions.session_restored_model", () => {
 			return () => runCliBootstrapSessionRestoredModel();
 		}),
+		data_directory: await collect("cli_bootstrap_sessions.data_directory", () => {
+			return () => runCliBootstrapDataDirectory();
+		}),
+		legacy_data_directory: await collect("cli_bootstrap_sessions.legacy_data_directory", () => {
+			return () => runCliBootstrapLegacyDataDirectory();
+		}),
+		manual_migration_command: await collect("cli_bootstrap_sessions.manual_migration_command", () => {
+			return () => runCliBootstrapManualMigrationCommand();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -35872,6 +35962,9 @@ async function measureCliBootstrapCodingTools() {
 			...validateFlagsObserved,
 			...entrySelectorObserved,
 			...restoredModelObserved,
+			...dataDirectoryObserved,
+			...legacyDataDirectoryObserved,
+			...manualMigrationCommandObserved,
 		},
 	};
 }
@@ -37808,6 +37901,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/tree-selector.ts leftover one tree row (cadr session-entry-tree-selector-data)",
 			"cli_bootstrap_sessions.session_restored_model":
 				"packages/coding-agent/src/core/agent-session.ts leftover restored model lookup (cadr session-restored-model)",
+			"cli_bootstrap_sessions.data_directory":
+				"packages/coding-agent/src/config.ts leftover join(home, CONFIG_DIR_NAME) (cadr data-directory)",
+			"cli_bootstrap_sessions.legacy_data_directory":
+				"packages/coding-agent/src/migrations.ts leftover join(home, '.' + legacy product) (cadr legacy-data-directory)",
+			"cli_bootstrap_sessions.manual_migration_command":
+				"packages/coding-agent/src/migrations.ts leftover mv -- quoted paths (cadr manual-migration-command)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":

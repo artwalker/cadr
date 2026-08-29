@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_bootstrap_sessions.data_directory`
+  (`data-directory` vs leftover join(home, CONFIG_DIR_NAME)). Observed
+  `dd_under` / `dd_neq` / `dd_dot` exact. Measure-only leftover (Pair 838).
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.legacy_data_directory`
+  (`legacy-data-directory` vs leftover join(home, '.' + legacy product)).
+  Observed `ldd_under` / `ldd_neq` / `ldd_leaf` exact.
+  Measure-only leftover (Pair 839). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.manual_migration_command`
+  (`manual-migration-command` vs leftover mv -- quoted paths). Observed
+  `mmc_mv` / `mmc_old` / `mmc_new` / `mmc_space` / `mmc_quote` exact.
+  Measure-only leftover (Pair 840). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_selectors.armin_make_grid`
   (`make-armin-grid` vs leftover buildFinalGrid/createEmptyGrid). Observed
   `amg_spaces` / `amg_ink` / `amg_h` / `amg_w` / `amg_empty0` exact.

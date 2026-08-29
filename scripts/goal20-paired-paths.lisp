@@ -1093,6 +1093,9 @@
     ("cli_bootstrap_sessions.validate_cli_session_flags" . 50)
     ("cli_bootstrap_sessions.session_entry_tree_selector_data" . 50)
     ("cli_bootstrap_sessions.session_restored_model" . 50)
+    ("cli_bootstrap_sessions.data_directory" . 50)
+    ("cli_bootstrap_sessions.legacy_data_directory" . 50)
+    ("cli_bootstrap_sessions.manual_migration_command" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -34536,6 +34539,67 @@
      (leftover-restored-model-id filled wrong-registry (list wrong)))))
 
 
+(defun leftover-trimmed-namestring (path)
+  (string-right-trim '(#\/) (namestring path)))
+
+
+(defun leftover-path-leaf (path)
+  (let* ((trimmed (leftover-trimmed-namestring path))
+         (slash (position #\/ trimmed :from-end t)))
+    (if slash
+        (subseq trimmed (1+ slash))
+        trimmed)))
+
+
+(defun leftover-path-under-p (home path)
+  (let ((home-string (leftover-trimmed-namestring home))
+        (path-string (leftover-trimmed-namestring path)))
+    (or (string= path-string home-string)
+        (and (> (length path-string) (length home-string))
+             (string= path-string home-string
+                      :end1 (length home-string))
+             (char= (char path-string (length home-string)) #\/)))))
+
+
+(defun run-cli-bootstrap-data-directory ()
+  ;; Leftover on migration.lisp: user data dir under an explicit home.
+  ;; Structural flags only — cadr leaf is .cadr, leftover replica is .pi.
+  (let* ((home "/tmp/g20-migration-home")
+         (path (cadr-cli::data-directory home))
+         (leaf (leftover-path-leaf path)))
+    (list
+     (if (leftover-path-under-p home path) 1 0)
+     (if (string= (leftover-trimmed-namestring path)
+                  (leftover-trimmed-namestring home))
+         0 1)
+     (if (and (> (length leaf) 0) (char= (char leaf 0) #\.)) 1 0))))
+
+
+(defun run-cli-bootstrap-legacy-data-directory ()
+  ;; Leftover on migration.lisp: "." + legacy-product-name under home.
+  (let* ((home "/tmp/g20-migration-home")
+         (path (cadr-cli::legacy-data-directory home)))
+    (list
+     (if (leftover-path-under-p home path) 1 0)
+     (if (string= (leftover-trimmed-namestring path)
+                  (leftover-trimmed-namestring home))
+         0 1)
+     (if (string= (leftover-path-leaf path) ".pi-cl") 1 0))))
+
+
+(defun run-cli-bootstrap-manual-migration-command ()
+  ;; Leftover on migration.lisp: mv -- plus POSIX single-quoted paths.
+  (let* ((old-dir "/tmp/g20-old/.pi-cl")
+         (new-dir "/tmp/g20-new/.cadr")
+         (cmd (cadr-cli::manual-migration-command old-dir new-dir)))
+    (list
+     (if (and (>= (length cmd) 6) (string= cmd "mv -- " :end1 6)) 1 0)
+     (if (search old-dir cmd) 1 0)
+     (if (search new-dir cmd) 1 0)
+     (if (find #\Space cmd) 1 0)
+     (if (find #\' cmd) 1 0))))
+
+
 (defun run-cli-bootstrap-write-hotkeys-command ()
   ;; Leftover on sessions.lisp: Keyboard Shortcuts + definitions.
   ;; Not hotkeys-command-markdown (keybinding display can drift).
@@ -34589,7 +34653,11 @@
          (tree-selector (run-cli-bootstrap-session-tree-selector-data))
          (validate-flags (run-cli-bootstrap-validate-cli-session-flags))
          (entry-selector (run-cli-bootstrap-session-entry-tree-selector-data))
-         (restored-model (run-cli-bootstrap-session-restored-model)))
+         (restored-model (run-cli-bootstrap-session-restored-model))
+         (data-directory (run-cli-bootstrap-data-directory))
+         (legacy-data-directory (run-cli-bootstrap-legacy-data-directory))
+         (manual-migration-command
+          (run-cli-bootstrap-manual-migration-command)))
     (json-object
      "observed"
      (json-object
@@ -34705,7 +34773,18 @@
       "srm_hit" (nth 1 restored-model)
       "srm_noreg" (nth 2 restored-model)
       "srm_noavail" (nth 3 restored-model)
-      "srm_wrong" (nth 4 restored-model))
+      "srm_wrong" (nth 4 restored-model)
+      "dd_under" (nth 0 data-directory)
+      "dd_neq" (nth 1 data-directory)
+      "dd_dot" (nth 2 data-directory)
+      "ldd_under" (nth 0 legacy-data-directory)
+      "ldd_neq" (nth 1 legacy-data-directory)
+      "ldd_leaf" (nth 2 legacy-data-directory)
+      "mmc_mv" (nth 0 manual-migration-command)
+      "mmc_old" (nth 1 manual-migration-command)
+      "mmc_new" (nth 2 manual-migration-command)
+      "mmc_space" (nth 3 manual-migration-command)
+      "mmc_quote" (nth 4 manual-migration-command))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -34820,7 +34899,22 @@
      (collect "cli_bootstrap_sessions.session_restored_model"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-session-restored-model)))))))
+                  (run-cli-bootstrap-session-restored-model))))
+     "data_directory"
+     (collect "cli_bootstrap_sessions.data_directory"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-data-directory))))
+     "legacy_data_directory"
+     (collect "cli_bootstrap_sessions.legacy_data_directory"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-legacy-data-directory))))
+     "manual_migration_command"
+     (collect "cli_bootstrap_sessions.manual_migration_command"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-manual-migration-command)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -36522,6 +36616,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp session-entry-tree-selector-data"
       "cli_bootstrap_sessions.session_restored_model"
       "src/cadr-cli/bootstrap/sessions.lisp session-restored-model"
+      "cli_bootstrap_sessions.data_directory"
+      "src/cadr-cli/migration.lisp data-directory"
+      "cli_bootstrap_sessions.legacy_data_directory"
+      "src/cadr-cli/migration.lisp legacy-data-directory"
+      "cli_bootstrap_sessions.manual_migration_command"
+      "src/cadr-cli/migration.lisp manual-migration-command"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
