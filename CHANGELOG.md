@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `settings_load.sdk_effective_object`
+  (`sdk-settings-effective-object` vs Settings object merge replica).
+  Observed `seo_prov` / `seo_model` / `seo_empty` / `seo_obj` / `seo_n`
+  exact. Measure-only leftover (Pair 772). Freeze pending n=5
+  `--only-enforce`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_settings_set`
+  (`sdk-settings-set` vs setDefaultProvider/setDefaultModel/setTheme).
+  Observed `sss_prov` / `sss_model` / `sss_theme` / `sss_str` / `sss_n`
+  exact. Measure-only leftover (Pair 773). Freeze pending n=5
+  `--only-enforce`. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_settings_remove`
+  (`sdk-settings-remove` vs Settings object delete-key replica). Observed
+  `ssr_miss` / `ssr_keep` / `ssr_ret` / `ssr_val` / `ssr_n` exact.
+  Measure-only leftover (Pair 774). Freeze pending n=5 `--only-enforce`.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `settings_load.sdk_settings_value`
   (`sdk-settings-value` vs Settings object json-get). Observed `ssv_hit` /
   `ssv_miss` / `ssv_def` / `ssv_ok` / `ssv_n` exact. n=5 **86.814×**

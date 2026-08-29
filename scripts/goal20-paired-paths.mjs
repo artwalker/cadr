@@ -249,6 +249,9 @@ const REPETITIONS = {
 	"settings_load.sdk_settings_value": 50,
 	"settings_load.sdk_default_thinking_level": 50,
 	"settings_load.sdk_drain_errors": 50,
+	"settings_load.sdk_effective_object": 50,
+	"settings_load.sdk_settings_set": 50,
+	"settings_load.sdk_settings_remove": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -3244,6 +3247,51 @@ function leftoverSdkSettingsFixtureObject() {
 	};
 }
 
+function leftoverSdkSettingsRemove(settings, key) {
+	const next = { ...settings };
+	delete next[key];
+	return next;
+}
+
+function runSettingsLoadSdkEffectiveObject() {
+	const settings = leftoverSdkSettingsFixtureObject();
+	const empty = {};
+	return {
+		seo_prov: leftoverJsonGet(settings, "defaultProvider") === "openai" ? 1 : 0,
+		seo_model: leftoverJsonGet(settings, "defaultModel") === "gpt-4" ? 1 : 0,
+		seo_empty: leftoverJsonGet(empty, "defaultProvider") == null ? 1 : 0,
+		seo_obj: settings && typeof settings === "object" && !Array.isArray(settings) ? 1 : 0,
+		seo_n: 5,
+	};
+}
+
+function runSettingsLoadSdkSettingsSet() {
+	const mgr = leftoverSdkSettingsEmpty();
+	mgr.setDefaultProvider("anthropic");
+	mgr.setDefaultModel("gpt-5");
+	mgr.setTheme("dark");
+	return {
+		sss_prov: mgr.getDefaultProvider() === "anthropic" ? 1 : 0,
+		sss_model: mgr.getDefaultModel() === "gpt-5" ? 1 : 0,
+		sss_theme: mgr.getTheme() === "dark" ? 1 : 0,
+		sss_str: typeof mgr.getDefaultProvider() === "string" ? 1 : 0,
+		sss_n: 5,
+	};
+}
+
+function runSettingsLoadSdkSettingsRemove() {
+	let settings = leftoverSdkSettingsFixtureObject();
+	settings = leftoverSdkSettingsRemove(settings, "defaultProvider");
+	const afterNope = leftoverSdkSettingsRemove(settings, "nope");
+	return {
+		ssr_miss: leftoverJsonGet(settings, "defaultProvider") == null ? 1 : 0,
+		ssr_keep: leftoverJsonGet(settings, "defaultModel") === "gpt-4" ? 1 : 0,
+		ssr_ret: leftoverJsonGet(afterNope, "nope") == null ? 1 : 0,
+		ssr_val: leftoverJsonGet(settings, "defaultProvider") == null ? 1 : 0,
+		ssr_n: 5,
+	};
+}
+
 function runSettingsLoadSdkSettingsValue() {
 	const settings = leftoverSdkSettingsFixtureObject();
 	const hit = leftoverSdkSettingsValue({ settings }, "defaultProvider");
@@ -3356,6 +3404,9 @@ async function measureSettingsLoad() {
 	const sdkSettingsValue = runSettingsLoadSdkSettingsValue();
 	const sdkDefaultThinkingLevel = runSettingsLoadSdkDefaultThinkingLevel();
 	const sdkDrainErrors = runSettingsLoadSdkDrainErrors();
+	const sdkEffectiveObject = runSettingsLoadSdkEffectiveObject();
+	const sdkSettingsSet = runSettingsLoadSdkSettingsSet();
+	const sdkSettingsRemove = runSettingsLoadSdkSettingsRemove();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -3441,6 +3492,15 @@ async function measureSettingsLoad() {
 		sdk_drain_errors: await collect("settings_load.sdk_drain_errors", () => {
 			return () => runSettingsLoadSdkDrainErrors();
 		}),
+		sdk_effective_object: await collect("settings_load.sdk_effective_object", () => {
+			return () => runSettingsLoadSdkEffectiveObject();
+		}),
+		sdk_settings_set: await collect("settings_load.sdk_settings_set", () => {
+			return () => runSettingsLoadSdkSettingsSet();
+		}),
+		sdk_settings_remove: await collect("settings_load.sdk_settings_remove", () => {
+			return () => runSettingsLoadSdkSettingsRemove();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -3468,6 +3528,9 @@ async function measureSettingsLoad() {
 			...sdkSettingsValue,
 			...sdkDefaultThinkingLevel,
 			...sdkDrainErrors,
+			...sdkEffectiveObject,
+			...sdkSettingsSet,
+			...sdkSettingsRemove,
 		},
 	};
 }
@@ -33982,6 +34045,12 @@ const result = {
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getDefaultThinkingLevel",
 			"settings_load.sdk_drain_errors":
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.drainErrors",
+			"settings_load.sdk_effective_object":
+				"packages/coding-agent/src/core/settings-manager.ts Settings object merge replica (cadr sdk-settings-effective-object)",
+			"settings_load.sdk_settings_set":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.setDefaultProvider/setDefaultModel/setTheme",
+			"settings_load.sdk_settings_remove":
+				"packages/coding-agent/src/core/settings-manager.ts Settings object delete-key replica (cadr sdk-settings-remove)",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":
