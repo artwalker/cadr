@@ -1222,6 +1222,18 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("pcr_ok", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("pcr_state", paired.OBSERVED_EXACT["oauth_pkce_device"])
         self.assertIn("pcr_n", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.kimi_host_default", RECORD.METRIC_KEYS)
+        self.assertIn("kimi_host_default", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.kimi_host_default", paired.RATIO_CEILINGS)
+        self.assertIn("khd_eq", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.kimi_host_code", RECORD.METRIC_KEYS)
+        self.assertIn("kimi_host_code", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.kimi_host_code", paired.RATIO_CEILINGS)
+        self.assertIn("khc_eq", paired.OBSERVED_EXACT["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.kimi_host_trim", RECORD.METRIC_KEYS)
+        self.assertIn("kimi_host_trim", paired.METRICS["oauth_pkce_device"])
+        self.assertIn("oauth_pkce_device.kimi_host_trim", paired.RATIO_CEILINGS)
+        self.assertIn("kht_eq", paired.OBSERVED_EXACT["oauth_pkce_device"])
 
     def test_cli_extensions_install_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")

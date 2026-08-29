@@ -65,6 +65,9 @@
 ;;;; 748. provider_registry_defs built-in-api-key-login-function vs bedrock/vertex ApiKeyAuth.login
 ;;;; 749. provider_registry_defs built-in-api-key-auth vs envApiKeyAuth.resolve (in-memory env)
 ;;;; 750. provider_registry_defs built-in-model-filter-function vs github-copilot filterModels
+;;;; 877. oauth_pkce_device kimi-oauth-host default vs getOauthHost DEFAULT_OAUTH_HOST
+;;;; 878. leftover: kimi-oauth-host KIMI_CODE_OAUTH_HOST vs getOauthHost
+;;;; 879. leftover: kimi-oauth-host trailing-slash trim vs getOauthHost replace /+$
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;      leftover: resolve-system-prompt / node-read-error-message /
 ;;;;      resolve-system-prompt-with-appends
@@ -534,6 +537,9 @@
     ("oauth_pkce_device.provider_key" . 50)
     ("oauth_pkce_device.http_status_text" . 50)
     ("oauth_pkce_device.parse_callback_request" . 50)
+    ("oauth_pkce_device.kimi_host_default" . 50)
+    ("oauth_pkce_device.kimi_host_code" . 50)
+    ("oauth_pkce_device.kimi_host_trim" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -10444,6 +10450,41 @@
    3))
 
 
+(defun run-oauth-kimi-host-default ()
+  ;; Leftover 877: kimi-oauth-host with no env vs getOauthHost default.
+  (let ((host (cadr-ai::kimi-oauth-host nil)))
+    (list
+     (if (string= host "https://auth.kimi.com") 1 0)
+     (if (and (>= (length host) 8)
+              (string= (subseq host 0 8) "https://"))
+         1
+         0)
+     2)))
+
+
+(defun run-oauth-kimi-host-code ()
+  ;; Leftover 878: KIMI_CODE_OAUTH_HOST wins over KIMI_OAUTH_HOST.
+  (let ((host
+          (cadr-ai::kimi-oauth-host
+           '(("KIMI_CODE_OAUTH_HOST" . "https://code.example")
+             ("KIMI_OAUTH_HOST" . "https://other.example")))))
+    (list
+     (if (string= host "https://code.example") 1 0)
+     (if (search "other" host) 0 1)
+     2)))
+
+
+(defun run-oauth-kimi-host-trim ()
+  ;; Leftover 879: trailing slashes stripped from KIMI_OAUTH_HOST.
+  (let ((host
+          (cadr-ai::kimi-oauth-host
+           '(("KIMI_OAUTH_HOST" . "https://auth.example.com///")))))
+    (list
+     (if (string= host "https://auth.example.com") 1 0)
+     (if (search "///" host) 0 1)
+     2)))
+
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -10456,7 +10497,10 @@
         (auth-input (run-oauth-pkce-device-parse-authorization-input))
         (provider-key (run-oauth-pkce-device-provider-key))
         (status-text (run-oauth-pkce-device-http-status-text))
-        (callback-request (run-oauth-pkce-device-parse-callback-request)))
+        (callback-request (run-oauth-pkce-device-parse-callback-request))
+        (kimi-host-default (run-oauth-kimi-host-default))
+        (kimi-host-code (run-oauth-kimi-host-code))
+        (kimi-host-trim (run-oauth-kimi-host-trim)))
     (json-object
      "observed"
      (json-object
@@ -10513,7 +10557,16 @@
       "pcr_state" (nth 1 callback-request)
       "pcr_path" (nth 2 callback-request)
       "pcr_code" (nth 3 callback-request)
-      "pcr_n" (nth 4 callback-request))
+      "pcr_n" (nth 4 callback-request)
+      "khd_eq" (nth 0 kimi-host-default)
+      "khd_https" (nth 1 kimi-host-default)
+      "khd_n" (nth 2 kimi-host-default)
+      "khc_eq" (nth 0 kimi-host-code)
+      "khc_win" (nth 1 kimi-host-code)
+      "khc_n" (nth 2 kimi-host-code)
+      "kht_eq" (nth 0 kimi-host-trim)
+      "kht_noslash" (nth 1 kimi-host-trim)
+      "kht_n" (nth 2 kimi-host-trim))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -10573,7 +10626,22 @@
      (collect "oauth_pkce_device.parse_callback_request"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-callback-request)))))))
+                  (run-oauth-pkce-device-parse-callback-request))))
+     "kimi_host_default"
+     (collect "oauth_pkce_device.kimi_host_default"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-kimi-host-default))))
+     "kimi_host_code"
+     (collect "oauth_pkce_device.kimi_host_code"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-kimi-host-code))))
+     "kimi_host_trim"
+     (collect "oauth_pkce_device.kimi_host_trim"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-kimi-host-trim)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -31850,6 +31918,12 @@
       "src/cadr-ai/oauth/callback.lisp oauth-http-status-text"
       "oauth_pkce_device.parse_callback_request"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-callback-request"
+      "oauth_pkce_device.kimi_host_default"
+      "src/cadr-ai/oauth/providers/kimi.lisp kimi-oauth-host default"
+      "oauth_pkce_device.kimi_host_code"
+      "src/cadr-ai/oauth/providers/kimi.lisp kimi-oauth-host KIMI_CODE_OAUTH_HOST"
+      "oauth_pkce_device.kimi_host_trim"
+      "src/cadr-ai/oauth/providers/kimi.lisp kimi-oauth-host trailing-slash trim"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"

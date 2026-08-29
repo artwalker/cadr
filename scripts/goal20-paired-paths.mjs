@@ -302,6 +302,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.provider_key": 50,
 	"oauth_pkce_device.http_status_text": 50,
 	"oauth_pkce_device.parse_callback_request": 50,
+	"oauth_pkce_device.kimi_host_default": 50,
+	"oauth_pkce_device.kimi_host_code": 50,
+	"oauth_pkce_device.kimi_host_trim": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -11608,6 +11611,52 @@ function runOauthPkceDeviceOpenrouterExchange() {
 }
 
 
+const leftoverKimiOauthDefaultHost = "https://auth.kimi.com";
+
+function leftoverKimiGetOauthHost(environment) {
+	// Same order as getOauthHost in
+	// packages/ai/src/auth/oauth/kimi-coding.ts, using the cadr
+	// fixture alist instead of live process.env so observed hosts match
+	// kimi-oauth-host's optional environment argument.
+	const override =
+		(environment && environment.KIMI_CODE_OAUTH_HOST) ||
+		(environment && environment.KIMI_OAUTH_HOST);
+	return (override || leftoverKimiOauthDefaultHost).replace(/\/+$/, "");
+}
+
+function runOauthKimiHostDefault() {
+	const host = leftoverKimiGetOauthHost(undefined);
+	return {
+		khd_eq: host === "https://auth.kimi.com" ? 1 : 0,
+		khd_https: host.startsWith("https://") ? 1 : 0,
+		khd_n: 2,
+	};
+}
+
+function runOauthKimiHostCode() {
+	const host = leftoverKimiGetOauthHost({
+		KIMI_CODE_OAUTH_HOST: "https://code.example",
+		KIMI_OAUTH_HOST: "https://other.example",
+	});
+	return {
+		khc_eq: host === "https://code.example" ? 1 : 0,
+		khc_win: host.includes("other") ? 0 : 1,
+		khc_n: 2,
+	};
+}
+
+function runOauthKimiHostTrim() {
+	const host = leftoverKimiGetOauthHost({
+		KIMI_OAUTH_HOST: "https://auth.example.com///",
+	});
+	return {
+		kht_eq: host === "https://auth.example.com" ? 1 : 0,
+		kht_noslash: host.includes("///") ? 0 : 1,
+		kht_n: 2,
+	};
+}
+
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -11658,6 +11707,15 @@ async function measureOauthPkceDevice() {
 		parse_callback_request: await collect("oauth_pkce_device.parse_callback_request", () => {
 			return () => runOauthPkceDeviceParseCallbackRequest();
 		}),
+		kimi_host_default: await collect("oauth_pkce_device.kimi_host_default", () => {
+			return () => runOauthKimiHostDefault();
+		}),
+		kimi_host_code: await collect("oauth_pkce_device.kimi_host_code", () => {
+			return () => runOauthKimiHostCode();
+		}),
+		kimi_host_trim: await collect("oauth_pkce_device.kimi_host_trim", () => {
+			return () => runOauthKimiHostTrim();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -11671,6 +11729,9 @@ async function measureOauthPkceDevice() {
 			...providerKey,
 			...statusText,
 			...callbackRequest,
+			...runOauthKimiHostDefault(),
+			...runOauthKimiHostCode(),
+			...runOauthKimiHostTrim(),
 		},
 	};
 }
@@ -33479,6 +33540,12 @@ const result = {
 				"node:http STATUS_CODES (cadr oauth-http-status-text)",
 			"oauth_pkce_device.parse_callback_request":
 				"packages/ai/src/auth/oauth/openai-codex.ts startLocalOAuthServer pathname/state/code (cadr parse-oauth-callback-request)",
+			"oauth_pkce_device.kimi_host_default":
+				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost DEFAULT_OAUTH_HOST",
+			"oauth_pkce_device.kimi_host_code":
+				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost KIMI_CODE_OAUTH_HOST",
+			"oauth_pkce_device.kimi_host_trim":
+				"packages/ai/src/auth/oauth/kimi-coding.ts getOauthHost trailing-slash trim",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 877 — `oauth_pkce_device` (kimi_host_default)
+
+| metric | cadr | pi |
+|---|---|---|
+| `kimi_host_default` | `kimi-oauth-host` (`src/cadr-ai/oauth/providers/kimi.lisp`) | `getOauthHost` default (`packages/ai/src/auth/oauth/kimi-coding.ts`) |
+
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/kimi.lisp`. Timed work is the default host with no env override. Observed `khd_eq` / `khd_https` / `khd_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 878 — `oauth_pkce_device` (kimi_host_code)
+
+| metric | cadr | pi |
+|---|---|---|
+| `kimi_host_code` | `kimi-oauth-host` (`src/cadr-ai/oauth/providers/kimi.lisp`) | `getOauthHost` (`packages/ai/src/auth/oauth/kimi-coding.ts`) |
+
+Leftover sibling of Pair 877. Timed work is `KIMI_CODE_OAUTH_HOST` winning over `KIMI_OAUTH_HOST`. Observed `khc_eq` / `khc_win` / `khc_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 879 — `oauth_pkce_device` (kimi_host_trim)
+
+| metric | cadr | pi |
+|---|---|---|
+| `kimi_host_trim` | `kimi-oauth-host` (`src/cadr-ai/oauth/providers/kimi.lisp`) | `getOauthHost` trailing-slash trim (`packages/ai/src/auth/oauth/kimi-coding.ts`) |
+
+Leftover sibling of Pairs 877–878. Timed work is stripping trailing slashes from `KIMI_OAUTH_HOST`. Observed `kht_eq` / `kht_noslash` / `kht_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
