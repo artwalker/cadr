@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.project_package_entry`
+  (`config-selector-project-package-entry` vs leftover project identity find).
+  Observed `ppe_hit` / `ppe_miss` / `ppe_pin` / `ppe_eq` / `ppe_n` exact.
+  Measure-only leftover (Pair 787). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.project_package_state`
+  (`config-selector-project-package-state` vs leftover filter walk). Observed
+  `pps_load` / `pps_unload` / `pps_miss` / `pps_nofilter` / `pps_n` exact.
+  Measure-only leftover (Pair 788). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.package_setting_record`
+  (`config-package-setting-record` vs leftover npm record). Observed
+  `psr_npm` / `psr_id` / `psr_path` / `psr_auto` / `psr_n` exact.
+  Measure-only leftover (Pair 789). Freeze pending. `nextPairNum` left
+  unchanged.
 - Goal 20: Friend-MachineD remesure + ledger book leftover 772–774
   (`settings_load.sdk_effective_object` **86.669×**,
   `sdk_settings_set` **2.210×**, `sdk_settings_remove` **35.830×**).

@@ -213,6 +213,9 @@
 ;;;; 784. package_manager config-selector-inherited-enabled-p vs leftover inherited map
 ;;;; 785. package_manager config-resource-group-key vs leftover group key
 ;;;; 786. package_manager config-selector-package-entry-index vs leftover identity index
+;;;; 787. package_manager config-selector-project-package-entry vs leftover project identity find
+;;;; 788. package_manager config-selector-project-package-state vs leftover filter walk
+;;;; 789. package_manager config-package-setting-record vs leftover npm record
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -652,6 +655,9 @@
     ("package_manager.inherited_enabled" . 50)
     ("package_manager.resource_group_key" . 50)
     ("package_manager.package_entry_index" . 50)
+    ("package_manager.project_package_entry" . 50)
+    ("package_manager.project_package_state" . 50)
+    ("package_manager.package_setting_record" . 50)
     ("package_manager.records_project_first" . 50)
     ("package_manager.candidate_record" . 50)
     ("package_manager.update_offline" . 50)
@@ -6177,6 +6183,41 @@
 (defun leftover-config-selector-package-entry-index (state item packages scope)
   (cadr-cli::config-selector-package-entry-index state item packages scope))
 
+(defun leftover-config-selector-project-package-entry (state item)
+  (cadr-cli::config-selector-project-package-entry state item))
+
+(defun leftover-config-selector-project-package-state (state item)
+  (cadr-cli::config-selector-project-package-state state item))
+
+(defun leftover-config-package-setting-record
+    (entry scope base-directory install-root)
+  (cadr-cli::config-package-setting-record
+   entry scope base-directory install-root))
+
+(defun leftover-config-package-entry
+    (source &key (extensions nil extensions-p) (autoload nil autoload-p))
+  (let ((entry (cadr-ai::json-object "source" source)))
+    (when extensions-p
+      (setf (gethash "extensions" entry)
+            (if (listp extensions)
+                (coerce extensions 'vector)
+                extensions)))
+    (when autoload-p
+      (setf (gethash "autoload" entry) autoload))
+    entry))
+
+(defun leftover-config-selector-project-packages-state (entries)
+  (leftover-config-selector-state
+   0
+   :cwd "/tmp/proj"
+   :agent-directory "/tmp/agent"
+   :settings-manager
+   (leftover-memory-settings-manager
+    (cadr-ai::json-object)
+    (cadr-ai::json-object
+     "packages"
+     (coerce entries 'vector)))))
+
 (defun leftover-config-resource-item-scoped (path type display-name scope)
   (cadr-cli::make-config-resource-item
    :path (parse-namestring path)
@@ -6891,6 +6932,108 @@
      (package-manager-leftover-truth (eql scoped 1))
      5)))
 
+(defun run-package-manager-project-package-entry ()
+  (let* ((state
+          (leftover-config-selector-project-packages-state
+           (leftover-package-entries
+            "npm:bar" "npm:foo" "npm:baz" "npm:@scope/pkg@1.2.3")))
+         (foo
+          (leftover-config-resource-item-labeled
+           :package :user "npm:foo"
+           :base-directory "/tmp/agent/pkg/"))
+         (pin
+          (leftover-config-resource-item-labeled
+           :package :user "npm:@scope/pkg@9.9.9"
+           :base-directory "/tmp/agent/pkg/"))
+         (miss
+          (leftover-config-resource-item-labeled
+           :package :user "npm:zzz"
+           :base-directory "/tmp/agent/pkg/"))
+         (hit
+          (leftover-config-selector-project-package-entry state foo))
+         (scoped
+          (leftover-config-selector-project-package-entry state pin)))
+    (list
+     (package-manager-leftover-truth (hash-table-p hit))
+     (package-manager-leftover-truth
+      (null
+       (leftover-config-selector-project-package-entry state miss)))
+     (package-manager-leftover-truth (hash-table-p scoped))
+     (package-manager-leftover-truth
+      (string= (cadr-cli::package-entry-source hit) "npm:foo"))
+     5)))
+
+(defun run-package-manager-project-package-state ()
+  (let* ((item
+          (leftover-config-selector-hello-item
+           :origin :package :source "npm:foo"))
+         (load-state
+          (leftover-config-selector-project-packages-state
+           (list
+            (leftover-config-package-entry
+             "npm:foo" :extensions '("+hello.lisp")))))
+         (unload-state
+          (leftover-config-selector-project-packages-state
+           (list
+            (leftover-config-package-entry "npm:foo" :extensions '()))))
+         (nofilter-state
+          (leftover-config-selector-project-packages-state
+           (list (leftover-config-package-entry "npm:foo"))))
+         (miss-state
+          (leftover-config-selector-project-packages-state
+           (leftover-package-entries "npm:bar"))))
+    (list
+     (package-manager-leftover-truth
+      (eq
+       (leftover-config-selector-project-package-state load-state item)
+       :load))
+     (package-manager-leftover-truth
+      (eq
+       (leftover-config-selector-project-package-state unload-state item)
+       :unload))
+     (package-manager-leftover-truth
+      (eq
+       (leftover-config-selector-project-package-state miss-state item)
+       :inherit))
+     (package-manager-leftover-truth
+      (eq
+       (leftover-config-selector-project-package-state nofilter-state item)
+       :inherit))
+     5)))
+
+(defun run-package-manager-package-setting-record ()
+  (let* ((npm
+          (leftover-config-package-setting-record
+           (leftover-config-package-entry "npm:lodash" :autoload nil)
+           :project
+           (parse-namestring "/tmp/proj/.cadr/")
+           (parse-namestring "/tmp/proj/.cadr/packages/")))
+         (foo
+          (leftover-config-package-setting-record
+           (leftover-config-package-entry "npm:foo")
+           :user
+           (parse-namestring "/tmp/agent/")
+           (parse-namestring "/tmp/agent/packages/")))
+         (pin
+          (leftover-config-package-setting-record
+           (leftover-config-package-entry "npm:@scope/x@1.0.0")
+           :project
+           (parse-namestring "/tmp/proj/.cadr/")
+           (parse-namestring "/tmp/proj/.cadr/packages/"))))
+    (list
+     (package-manager-leftover-truth
+      (and
+       (null (getf npm :path))
+       (uiop:string-prefix-p "npm:" (getf npm :identity))))
+     (package-manager-leftover-truth
+      (string= (getf npm :identity) "npm:lodash"))
+     (package-manager-leftover-truth (null (getf foo :path)))
+     (package-manager-leftover-truth
+      (and
+       (getf npm :autoload-disabled-p)
+       (string= (getf pin :identity) "npm:@scope/x")))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -7094,6 +7237,12 @@
              (run-package-manager-resource-group-key))
            (package-entry-index
              (run-package-manager-package-entry-index))
+           (project-package-entry
+             (run-package-manager-project-package-entry))
+           (project-package-state
+             (run-package-manager-project-package-state))
+           (package-setting-record
+             (run-package-manager-package-setting-record))
            (records-project-first
              (run-package-manager-records-project-first))
            (candidate-record
@@ -7342,6 +7491,21 @@
         "pei_miss" (nth 2 package-entry-index)
         "pei_pin" (nth 3 package-entry-index)
         "pei_n" (nth 4 package-entry-index)
+        "ppe_hit" (nth 0 project-package-entry)
+        "ppe_miss" (nth 1 project-package-entry)
+        "ppe_pin" (nth 2 project-package-entry)
+        "ppe_eq" (nth 3 project-package-entry)
+        "ppe_n" (nth 4 project-package-entry)
+        "pps_load" (nth 0 project-package-state)
+        "pps_unload" (nth 1 project-package-state)
+        "pps_miss" (nth 2 project-package-state)
+        "pps_nofilter" (nth 3 project-package-state)
+        "pps_n" (nth 4 project-package-state)
+        "psr_npm" (nth 0 package-setting-record)
+        "psr_id" (nth 1 package-setting-record)
+        "psr_path" (nth 2 package-setting-record)
+        "psr_auto" (nth 3 package-setting-record)
+        "psr_n" (nth 4 package-setting-record)
         "upf_proj" (nth 0 records-project-first)
         "upf_user" (nth 1 records-project-first)
         "upf_tail" (nth 2 records-project-first)
@@ -7598,6 +7762,21 @@
                 (lambda ()
                   (lambda ()
                     (run-package-manager-package-entry-index))))
+       "project_package_entry"
+       (collect "package_manager.project_package_entry"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-project-package-entry))))
+       "project_package_state"
+       (collect "package_manager.project_package_state"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-project-package-state))))
+       "package_setting_record"
+       (collect "package_manager.package_setting_record"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-package-setting-record))))
        "records_project_first"
        (collect "package_manager.records_project_first"
                 (lambda ()
@@ -35343,6 +35522,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-resource-group-key"
       "package_manager.package_entry_index"
       "src/cadr-cli/packages/config-selector.lisp config-selector-package-entry-index"
+      "package_manager.project_package_entry"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-project-package-entry"
+      "package_manager.project_package_state"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-project-package-state"
+      "package_manager.package_setting_record"
+      "src/cadr-cli/packages/config-selector.lisp config-package-setting-record"
       "package_manager.records_project_first"
       "src/cadr-cli/packages/update-checks.lisp package-update-records-project-first"
       "package_manager.candidate_record"
