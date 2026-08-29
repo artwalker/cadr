@@ -643,8 +643,11 @@ RATIO_CEILINGS = {
     "provider_registry_defs.oauth_to_auth": 8.0,
     # leftover 748–750 runtime-projection api-key/filter (samples=5):
     # first-freeze headroom. Ratchet down only. Measure-only leftover 748–750.
+    # leftover 748; first freeze 0.001× (0.174 / 212.888 µs). cadr leads.
     "provider_registry_defs.api_key_login_function": 8.0,
+    # leftover 749; first freeze 0.003× (0.709 / 209.735 µs). cadr leads.
     "provider_registry_defs.api_key_auth": 8.0,
+    # leftover 750; first freeze 0.003× (0.646 / 215.457 µs). cadr leads.
     "provider_registry_defs.model_filter_function": 8.0,
     "tool_manager.release_asset": 8.0,
     "tool_manager.find_binary": 8.0,

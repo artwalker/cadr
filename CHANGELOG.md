@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
+  (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
+  select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
+  `alk_openai` / `alk_diff` / `alk_n` exact. n=5 **0.001×** (0.174 /
+  212.888 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 748). Under-1×. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `provider_registry_defs.api_key_auth`
+  (`built-in-api-key-auth` vs envApiKeyAuth.resolve). Observed
+  `aka_explicit` / `aka_stored` / `aka_env` / `aka_miss` / `aka_n`
+  exact. n=5 **0.003×** (0.709 / 209.735 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 749). Under-1×. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `provider_registry_defs.model_filter_function`
+  (`built-in-model-filter-function` vs github-copilot filterModels).
+  Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` /
+  `mff_n` exact. n=5 **0.003×** (0.646 / 215.457 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 750). Under-1×.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.oauth_login_function`
   (`built-in-oauth-login-function` vs oauth.login presence). Observed
   `ologin_copilot` / `ologin_anth` / `ologin_miss` / `ologin_diff` /

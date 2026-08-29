@@ -8704,6 +8704,30 @@ Leftover sibling of Pair 745. Timed work is github-copilot refresh function, ant
 
 Leftover sibling of Pairs 745–746. Timed work is anthropic access-token api-key, kimi-bearer Authorization header, google miss, and access-token vs bearer not sharing api-key. Observed `ota_anth` / `ota_kimi` / `ota_miss` / `ota_diff` / `ota_n` are exact. First n=5 freeze **1.601×** (0.428 / 0.267 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 748 — `provider_registry_defs` (api_key_login_function)
+
+| metric | cadr | pi |
+|---|---|---|
+| `api_key_login_function` | `built-in-api-key-login-function` (`src/cadr-ai/providers/runtime-projection.lisp`) | ApiKeyAuth.login select-flow presence (`packages/ai/src/providers/amazon-bedrock.ts` + `google-vertex.ts`) |
+
+Leftover sibling of leftover 745–747 on the same needs-pair file. Timed work is amazon-bedrock login function, google-vertex login function, openai env-login not in the cadr table, and two structured logins not eq. Observed `alk_bedrock` / `alk_vertex` / `alk_openai` / `alk_diff` / `alk_n` are exact. First n=5 freeze **0.001×** (0.174 / 212.888 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 749 — `provider_registry_defs` (api_key_auth)
+
+| metric | cadr | pi |
+|---|---|---|
+| `api_key_auth` | `built-in-api-key-auth` (`src/cadr-ai/providers/runtime-projection.lisp`) | envApiKeyAuth.resolve (`packages/ai/src/auth/helpers.ts`; openai-codex has no apiKey) |
+
+Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPENAI_API_KEY env, miss, and openai-codex otherwise-nil. Observed `aka_explicit` / `aka_stored` / `aka_env` / `aka_miss` / `aka_n` are exact. First n=5 freeze **0.003×** (0.709 / 209.735 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 750 — `provider_registry_defs` (model_filter_function)
+
+| metric | cadr | pi |
+|---|---|---|
+| `model_filter_function` | `built-in-model-filter-function` (`src/cadr-ai/providers/runtime-projection.lisp`) | filterModels (`packages/ai/src/providers/github-copilot.ts`) |
+
+Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
