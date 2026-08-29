@@ -9166,7 +9166,7 @@ Leftover sibling of Pairs 802–803. Timed work is strip at first `?` or `#` —
 |---|---|---|
 | `llama_format_context` | `llama-format-context-size` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover Math.round k (`packages/coding-agent/src/extensions/llama/ui.ts`) |
 
-Leftover sibling of leftover 544–546 on the same `llama/ui.lisp` `cli_extensions_install` hole. Timed work is k-suffix rounding — not `llama-context-label` TUI, not view frames. Observed `lfc_small` / `lfc_1k` / `lfc_8k` / `lfc_round` / `lfc_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of leftover 544–546 on the same `llama/ui.lisp` `cli_extensions_install` hole. Timed work is k-suffix rounding — not `llama-context-label` TUI, not view frames. Observed `lfc_small` / `lfc_1k` / `lfc_8k` / `lfc_round` / `lfc_n` are exact. First n=5 freeze **1.959×** (0.586 / 0.299 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 806 — `cli_extensions_install` (llama_js_to_fixed)
 
@@ -9174,7 +9174,7 @@ Leftover sibling of leftover 544–546 on the same `llama/ui.lisp` `cli_extensio
 |---|---|---|
 | `llama_js_to_fixed` | `llama-js-to-fixed` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover Number.toFixed (`packages/coding-agent/src/extensions/llama/ui.ts`) |
 
-Leftover sibling of Pair 805. Timed work is toFixed digit strings — not compactCount TUI. Observed `ltf_one` / `ltf_zero` / `ltf_pi` / `ltf_ten` / `ltf_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 805. Timed work is toFixed digit strings — not compactCount TUI. Observed `ltf_one` / `ltf_zero` / `ltf_pi` / `ltf_ten` / `ltf_n` are exact. First n=5 freeze **1.577×** (0.807 / 0.511 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 807 — `cli_extensions_install` (llama_search_exact)
 
@@ -9182,7 +9182,7 @@ Leftover sibling of Pair 805. Timed work is toFixed digit strings — not compac
 |---|---|---|
 | `llama_search_exact` | `llama-search-exact-query-p` (`src/cadr-cli/extensions/llama/ui.lisp`) | leftover org/name regex (`packages/coding-agent/src/extensions/llama/ui.ts`) |
 
-Leftover sibling of Pairs 805–806. Timed work is org/name(:quant) regex — not search schedule, not TUI. Observed `lseq_ok` / `lseq_tag` / `lseq_space` / `lseq_slash` / `lseq_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 805–806. Timed work is org/name(:quant) regex — not search schedule, not TUI. Observed `lseq_ok` / `lseq_tag` / `lseq_space` / `lseq_slash` / `lseq_n` are exact. First n=5 freeze **2.389×** (0.678 / 0.284 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
