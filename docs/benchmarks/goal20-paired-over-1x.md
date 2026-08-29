@@ -500,4 +500,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.extension_error_json` | 0.860 | 0.180 | 4.784× | 8.00× | measure-only leftover 699; `extension-error-json` vs extension error JSON | invent pause；地板优化另刀 |
 | `evals_harness.exclude_guidelines` | 0.742 | 0.197 | 3.757× | 8.00× | measure-only leftover 701; `exclude-guidelines-and-documentation` vs exclude Guidelines section | invent pause；地板优化另刀 |
 | `evals_harness.prepare_default_prompt` | 2.797 | 0.417 | 6.700× | 8.00× | measure-only leftover 702; `prepare-default-prompt-override` vs prepare default prompt override | invent pause；地板优化另刀 |
+| `evals_harness.reporter_run_id` | 2.621 | 0.891 | 2.941× | 8.00× | measure-only leftover 703; `reporter-run-id` vs artifact runId | invent pause；地板优化另刀 |
+| `evals_harness.artifact_reference_json` | 0.913 | 0.155 | 5.883× | 8.00× | measure-only leftover 704; `artifact-reference-json` vs persist name/path | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

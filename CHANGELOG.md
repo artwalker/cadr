@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `evals_harness.reporter_run_id`
+  (`reporter-run-id` vs artifact runId). Observed `rid_hit` /
+  `rid_empty` / `rid_custom` / `rid_gen` / `rid_n` exact. n=5
+  **2.941×** (2.621 / 0.891 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 703). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.artifact_reference_json`
+  (`artifact-reference-json` vs persist name/path). Observed `arj_name`
+  / `arj_path` / `arj_empty` / `arj_keys` / `arj_n` exact. n=5
+  **5.883×** (0.913 / 0.155 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 704). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `evals_harness.reporter_artifacts`
+  (`reporter-artifacts` vs test.artifacts assemble). Observed
+  `ra_empty` / `ra_sess` / `ra_rec` / `ra_case` / `ra_n` exact. n=5
+  **0.927×** (1.620 / 1.747 µs) on host `cursor`, ceiling 8.0. cadr
+  leads. Measure-only leftover (Pair 705). `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `evals_harness.required_prompt_boundary`
   (`required-prompt-boundary` vs required prompt boundary). Observed
   `rpb_mid` / `rpb_end` / `rpb_zero` / `rpb_miss` / `rpb_n` exact. n=5

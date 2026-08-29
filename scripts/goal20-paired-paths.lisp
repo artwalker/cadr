@@ -528,6 +528,9 @@
     ("evals_harness.required_prompt_boundary" . 50)
     ("evals_harness.exclude_guidelines" . 50)
     ("evals_harness.prepare_default_prompt" . 50)
+    ("evals_harness.reporter_run_id" . 50)
+    ("evals_harness.artifact_reference_json" . 50)
+    ("evals_harness.reporter_artifacts" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -10971,6 +10974,17 @@
   (cadr-evals::prepare-default-prompt-override
    default-prompt))
 
+(defun leftover-reporter-run-id (result)
+  (cadr-evals::reporter-run-id result))
+
+(defun leftover-artifact-reference-json (name path)
+  (cadr-evals::artifact-reference-json
+   (cadr-evals::make-eval-artifact-reference
+    :name name :path path)))
+
+(defun leftover-reporter-artifacts (case result)
+  (cadr-evals::reporter-artifacts case result))
+
 (defparameter *leftover-default-prompt*
   (format nil
           "HEAD~%Guidelines:~%BODY~%Current working directory: /tmp~%TAIL"))
@@ -11077,6 +11091,97 @@
      (eval-flag (search "Guidelines" cut))
      5)))
 
+(defun run-evals-harness-reporter-run-id ()
+  (let ((hit
+          (leftover-reporter-run-id
+           (cadr-evals::make-eval-result
+            :artifacts
+            (cadr-ai::json-object "runId" "run-1"))))
+        (empty
+          (leftover-reporter-run-id
+           (cadr-evals::make-eval-result
+            :artifacts
+            (cadr-ai::json-object "runId" ""))))
+        (custom
+          (leftover-reporter-run-id
+           (cadr-evals::make-eval-result
+            :artifacts
+            (cadr-ai::json-object "runId" "abc-def"))))
+        (generated
+          (leftover-reporter-run-id
+           (cadr-evals::make-eval-result))))
+    (list
+     (eval-flag (string= hit "run-1"))
+     (eval-flag (string= empty ""))
+     (eval-flag (string= custom "abc-def"))
+     (eval-flag
+      (and (stringp generated)
+           (>= (length generated) 32)))
+     5)))
+
+(defun run-evals-harness-artifact-reference-json ()
+  (let ((hit (leftover-artifact-reference-json
+              "session.jsonl" "a/session.jsonl"))
+        (empty (leftover-artifact-reference-json "" "")))
+    (list
+     (eval-flag
+      (string= (cadr-ai::json-get hit "name") "session.jsonl"))
+     (eval-flag
+      (string= (cadr-ai::json-get hit "path") "a/session.jsonl"))
+     (eval-flag
+      (string= (cadr-ai::json-get empty "name") ""))
+     (eval-flag
+      (and (hash-table-p hit) (= (hash-table-count hit) 2)))
+     5)))
+
+(defun run-evals-harness-reporter-artifacts ()
+  (let* ((empty-out
+           (leftover-reporter-artifacts
+            (cadr-evals:make-eval-reporter-case :id "c")
+            (cadr-evals::make-eval-result)))
+         (session-result
+           (cadr-evals::make-eval-result
+            :artifacts
+            (cadr-ai::json-object
+             "runId" "run-1"
+             cadr-evals:+cadr-session-snapshot-artifact+
+             "snap")))
+         (session-out
+           (leftover-reporter-artifacts
+            (cadr-evals:make-eval-reporter-case :id "c")
+            session-result))
+         (recorded
+           (cadr-evals::make-eval-artifact
+            :type :source :run-id "run-1"))
+         (recorded-out
+           (leftover-reporter-artifacts
+            (cadr-evals:make-eval-reporter-case :id "c")
+            (cadr-evals::make-eval-result
+             :recorded-artifacts (list recorded))))
+         (case-out
+           (leftover-reporter-artifacts
+            (cadr-evals:make-eval-reporter-case
+             :id "c" :artifacts '("case-art"))
+            (cadr-evals::make-eval-result))))
+    (list
+     (eval-flag (null empty-out))
+     (eval-flag
+      (and (= (length session-out) 1)
+           (eq (cadr-evals::eval-artifact-type
+                (first session-out))
+               :session)
+           (string=
+            (cadr-evals::eval-artifact-run-id
+             (first session-out))
+            "run-1")))
+     (eval-flag
+      (and (= (length recorded-out) 1)
+           (eq recorded (first recorded-out))))
+     (eval-flag
+      (and (= (length case-out) 1)
+           (string= (first case-out) "case-art")))
+     5)))
+
 
 (defun measure-evals-harness ()
   (let* ((observed (run-evals-harness-summarize))
@@ -11112,7 +11217,10 @@
          (extension-error (run-evals-harness-extension-error-json))
          (prompt-boundary (run-evals-harness-required-prompt-boundary))
          (exclude-guidelines (run-evals-harness-exclude-guidelines))
-         (prepare-default (run-evals-harness-prepare-default-prompt)))
+         (prepare-default (run-evals-harness-prepare-default-prompt))
+         (reporter-run-id (run-evals-harness-reporter-run-id))
+         (artifact-reference (run-evals-harness-artifact-reference-json))
+         (reporter-artifacts (run-evals-harness-reporter-artifacts)))
     (json-object
      "observed"
      (json-object
@@ -11268,7 +11376,22 @@
       "pdp_dbl" (nth 1 prepare-default)
       "pdp_no_cwd" (nth 2 prepare-default)
       "pdp_keep" (nth 3 prepare-default)
-      "pdp_n" (nth 4 prepare-default))
+      "pdp_n" (nth 4 prepare-default)
+      "rid_hit" (nth 0 reporter-run-id)
+      "rid_empty" (nth 1 reporter-run-id)
+      "rid_custom" (nth 2 reporter-run-id)
+      "rid_gen" (nth 3 reporter-run-id)
+      "rid_n" (nth 4 reporter-run-id)
+      "arj_name" (nth 0 artifact-reference)
+      "arj_path" (nth 1 artifact-reference)
+      "arj_empty" (nth 2 artifact-reference)
+      "arj_keys" (nth 3 artifact-reference)
+      "arj_n" (nth 4 artifact-reference)
+      "ra_empty" (nth 0 reporter-artifacts)
+      "ra_sess" (nth 1 reporter-artifacts)
+      "ra_rec" (nth 2 reporter-artifacts)
+      "ra_case" (nth 3 reporter-artifacts)
+      "ra_n" (nth 4 reporter-artifacts))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -11414,7 +11537,22 @@
      (collect "evals_harness.prepare_default_prompt"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-prepare-default-prompt)))))))
+                  (run-evals-harness-prepare-default-prompt))))
+     "reporter_run_id"
+     (collect "evals_harness.reporter_run_id"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-reporter-run-id))))
+     "artifact_reference_json"
+     (collect "evals_harness.artifact_reference_json"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-artifact-reference-json))))
+     "reporter_artifacts"
+     (collect "evals_harness.reporter_artifacts"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-reporter-artifacts)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -29815,6 +29953,12 @@
       "src/cadr-evals/suites.lisp exclude-guidelines-and-documentation"
       "evals_harness.prepare_default_prompt"
       "src/cadr-evals/suites.lisp prepare-default-prompt-override"
+      "evals_harness.reporter_run_id"
+      "src/cadr-evals/reporter.lisp reporter-run-id"
+      "evals_harness.artifact_reference_json"
+      "src/cadr-evals/reporter.lisp artifact-reference-json"
+      "evals_harness.reporter_artifacts"
+      "src/cadr-evals/reporter.lisp reporter-artifacts"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

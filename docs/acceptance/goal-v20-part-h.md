@@ -8344,6 +8344,30 @@ Leftover sibling of Pair 700. Timed work is prefix cut, length, Guidelines absen
 
 Leftover sibling of Pairs 700–701. Timed work is cwd cut, last-of-two cwd markers, cwd absence in the cut, and Guidelines keep. Observed `pdp_cut` / `pdp_dbl` / `pdp_no_cwd` / `pdp_keep` / `pdp_n` are exact. First n=5 freeze **6.700×** (2.797 / 0.417 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 703 — `evals_harness` (reporter_run_id)
+
+| metric | cadr | pi |
+|---|---|---|
+| `reporter_run_id` | `reporter-run-id` (`src/cadr-evals/reporter.lisp`) | artifact runId (`packages/evals/src/vitest-evals/reporter.ts`) |
+
+Leftover sibling of earlier `evals_harness` leftovers on `src/cadr-evals/reporter.lisp`. Timed work is present runId, empty string, custom id, and generated id when missing (stringp / length only). Observed `rid_hit` / `rid_empty` / `rid_custom` / `rid_gen` / `rid_n` are exact. First n=5 freeze **2.941×** (2.621 / 0.891 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 704 — `evals_harness` (artifact_reference_json)
+
+| metric | cadr | pi |
+|---|---|---|
+| `artifact_reference_json` | `artifact-reference-json` (`src/cadr-evals/reporter.lisp`) | persist name/path (`packages/evals/src/vitest-evals/artifacts.ts`) |
+
+Leftover sibling of Pair 703. Timed work is name, path, empty strings, and key count. Observed `arj_name` / `arj_path` / `arj_empty` / `arj_keys` / `arj_n` are exact. First n=5 freeze **5.883×** (0.913 / 0.155 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 705 — `evals_harness` (reporter_artifacts)
+
+| metric | cadr | pi |
+|---|---|---|
+| `reporter_artifacts` | `reporter-artifacts` (`src/cadr-evals/reporter.lisp`) | test.artifacts assemble (`packages/evals/src/vitest-evals/reporter.ts`) |
+
+Leftover sibling of Pairs 703–704. Timed work is empty assemble, session snapshot artifact, recorded artifact keep, and case artifact keep. Observed `ra_empty` / `ra_sess` / `ra_rec` / `ra_case` / `ra_n` are exact. First n=5 freeze **0.927×** (1.620 / 1.747 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

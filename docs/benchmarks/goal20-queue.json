@@ -6169,6 +6169,51 @@
    "piUs": 0.417,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 703,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.reporter_run_id",
+   "branch": "cursor/evals-reporter-run-id-reference-artifacts-leftovers-703-705-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 703",
+   "ratio": 2.941,
+   "cadrUs": 2.621,
+   "piUs": 0.891,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 704,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.artifact_reference_json",
+   "branch": "cursor/evals-reporter-run-id-reference-artifacts-leftovers-703-705-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 704",
+   "ratio": 5.883,
+   "cadrUs": 0.913,
+   "piUs": 0.155,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 705,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/reporter.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.reporter_artifacts",
+   "branch": "cursor/evals-reporter-run-id-reference-artifacts-leftovers-703-705-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 705",
+   "ratio": 0.927,
+   "cadrUs": 1.62,
+   "piUs": 1.747,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
