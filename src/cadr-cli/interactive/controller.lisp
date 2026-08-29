@@ -441,8 +441,6 @@ interactive-mode.ts:5956-5960).")
          (worker nil)
          (extension-prompt-worker nil)
          (unwrap-tui-turn-dispatch nil)
-         (version-update-worker nil)
-         (package-update-worker nil)
          (session-loader-worker nil)
          (custom-ui-lock
            (sb-thread:make-mutex
@@ -2748,28 +2746,6 @@ interactive-mode.ts:5956-5960).")
                 (call-with-tui-command-error-notice
                  thunk #'show-error))
               :name "cadr-tui-extension-prompt"))))))
-      (when version-update-check-function
-        (setf
-         version-update-worker
-         (sb-thread:make-thread
-          (lambda ()
-            (handler-case
-                (show-version-update
-                 (funcall
-                  version-update-check-function))
-              (condition () nil)))
-          :name "cadr-version-update-check")))
-      (when package-update-check-function
-        (setf
-         package-update-worker
-         (sb-thread:make-thread
-          (lambda ()
-            (handler-case
-                (show-package-updates
-                 (funcall
-                  package-update-check-function))
-              (condition () nil)))
-          :name "cadr-package-update-check")))
       (when tool-ensure-function
         ;; Await fd/rg before seeding session messages, matching
         ;; interactive-mode.ts ensureTool then rebindCurrentSession.
@@ -2778,6 +2754,16 @@ interactive-mode.ts:5956-5960).")
           (condition () nil)))
       (dolist (message messages)
         (seed-tui-message state message))
+      (when version-update-check-function
+        (handler-case
+            (show-version-update
+             (funcall version-update-check-function))
+          (condition () nil)))
+      (when package-update-check-function
+        (handler-case
+            (show-package-updates
+             (funcall package-update-check-function))
+          (condition () nil)))
       (setf *tui-mode-switch-hook* #'switch-tui-mode
             *fullscreen-copy-on-select-hook*
             (lambda (enabled)
@@ -2984,14 +2970,6 @@ interactive-mode.ts:5956-5960).")
                   session-loader-worker))
           (stop-thread-for-cleanup
            session-loader-worker))
-        (dolist (update-worker
-                 (list version-update-worker
-                       package-update-worker))
-          (when (and update-worker
-                     (sb-thread:thread-alive-p
-                      update-worker))
-            (stop-thread-for-cleanup
-             update-worker)))
         (when set-event-consumer
           (funcall set-event-consumer nil))
         (when set-notice-consumer
