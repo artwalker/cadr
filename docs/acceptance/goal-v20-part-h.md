@@ -10450,6 +10450,30 @@ Leftover sibling of Pair 844. Timed work is path equality — not `reload-cli-ex
 
 Leftover sibling of Pairs 844–845. Timed work is swapping the manager output stream — not discovery. Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n` are exact. First n=5 freeze **2.740×** (0.680 / 0.248 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **6.863×** (1.176 / 0.171 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 847 — `cli_extensions_install` (manager_notify)
+
+| metric | cadr | pi |
+|---|---|---|
+| `manager_notify` | `extension-manager-notify` (`src/cadr-cli/extensions/loader.lisp`) | leftover notify format (`packages/coding-agent/src/core/extensions/loader.ts`) |
+
+Leftover sibling of Pairs 844–846 on the same `loader.lisp` hole. Timed work is the notify prefix, downcased level, and secret absence — not reload. Observed `enm_info` / `enm_error` / `enm_redact` / `enm_nl` / `enm_n`. `nextPairNum` left at 328.
+
+### Pair 848 — `cli_extensions_install` (startup_issues)
+
+| metric | cadr | pi |
+|---|---|---|
+| `startup_issues` | `report-startup-extension-issues` (`src/cadr-cli/extensions/loader.lisp`) | leftover `reportDiagnostics` (`packages/coding-agent/src/core/extensions/loader.ts`) |
+
+Leftover sibling of Pair 847. Timed work is Error:/Warning:/load-failure flags — not ANSI, not TUI. Observed `rsi_err` / `rsi_warn` / `rsi_load` / `rsi_prefix` / `rsi_n`. `nextPairNum` left at 328.
+
+### Pair 849 — `cli_extensions_install` (output_boundary)
+
+| metric | cadr | pi |
+|---|---|---|
+| `output_boundary` | `call-with-extension-output-boundary` (`src/cadr-cli/extensions/loader.lisp`) | leftover stdout/stderr bind (`packages/coding-agent/src/core/extensions/loader.ts`) |
+
+Leftover sibling of Pairs 847–848. Timed work is writes landing on the manager stream — not asdf load. Observed `eob_out` / `eob_err` / `eob_n`. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
