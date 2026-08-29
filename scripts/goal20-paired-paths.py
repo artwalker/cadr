@@ -915,10 +915,12 @@ RATIO_CEILINGS = {
     "settings_load.oauth_refresh_function": 8.0,
     # leftover 744; first freeze 1.057× (2.562 / 2.423 µs).
     "settings_load.oauth_login_function": 8.0,
-    # settings_load leftover trio on config.lisp (samples=5):
-    # read-cli-config / provider-config-secrets / resolve-provider-config.
+    # leftover 760–762 config.lisp (samples=5): first-freeze headroom.
+    # leftover 760; first freeze 2.098× (200.606 / 95.628 µs).
     "settings_load.read_cli_config": 8.0,
-    "settings_load.provider_config_secrets": 8.0,
+    # leftover 761; first freeze 43.688× (59.914 / 1.371 µs).
+    "settings_load.provider_config_secrets": 50.0,
+    # leftover 762; first freeze 5.300× (225.982 / 42.635 µs).
     "settings_load.resolve_provider_config": 8.0,
     "cli_bootstrap_sessions.legacy_product": 8.0,
     "cli_bootstrap_sessions.shell_quote": 8.0,
