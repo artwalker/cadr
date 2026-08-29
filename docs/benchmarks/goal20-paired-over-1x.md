@@ -722,4 +722,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_selectors.armin_make_grid` | 27.119 | 16.108 | 1.684× | 8.00× | measure-only leftover 835; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_selectors.armin_copy_grid` | 24.841 | 3.842 | 6.466× | 8.00× | measure-only leftover 836; remeasure Friend-MachineD | invent pause；地板优化另刀 |
 | `cli_selectors.armin_row_string` | 23.584 | 5.494 | 4.293× | 8.00× | measure-only leftover 837; remeasure Friend-MachineD | invent pause；地板优化另刀 |
+| `cli_extensions_install.http_timeout_p` | 0.832 | 0.298 | 2.787× | 8.00× | measure-only leftover 844; `extension-http-timeout-condition-p` vs leftover timeout names | invent pause；地板优化另刀 |
+| `cli_extensions_install.same_source` | 0.421 | 0.160 | 2.631× | 8.00× | measure-only leftover 845; `same-extension-source-p` vs leftover path equality | invent pause；地板优化另刀 |
+| `cli_extensions_install.quiet_manager` | 0.680 | 0.248 | 2.740× | 8.00× | measure-only leftover 846; `call-with-quiet-extension-manager` vs leftover silenced notify | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
