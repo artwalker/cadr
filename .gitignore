@@ -32,6 +32,11 @@ out.html
 __pycache__/
 *.py[cod]
 
+# Verification-skill run state and captured proofs (proofs are local;
+# copy durable walkthroughs to /opt/cursor/artifacts when needed).
+.cursor/skills/verify-cadr/.run/
+.cursor/skills/verify-cadr/artifacts/
+
 # Editor and OS files
 .DS_Store
 .idea/
