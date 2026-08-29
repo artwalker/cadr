@@ -310,6 +310,9 @@ const REPETITIONS = {
 	"package_manager.project_package_entry": 50,
 	"package_manager.project_package_state": 50,
 	"package_manager.package_setting_record": 50,
+	"package_manager.package_setting_records": 50,
+	"package_manager.selector_rebuild": 50,
+	"package_manager.switch_scope": 50,
 	"package_manager.records_project_first": 50,
 	"package_manager.candidate_record": 50,
 	"package_manager.update_offline": 50,
@@ -7238,8 +7241,10 @@ function leftoverConfigSelectorItemMatchesP(item, query) {
 		return true;
 	}
 	const haystacks = [item.displayName, String(item.path), item.typeName];
-	return haystacks.some((haystack) =>
-		haystack.toLowerCase().includes(query.toLowerCase()),
+	return haystacks.some(
+		(haystack) =>
+			typeof haystack === "string" &&
+			haystack.toLowerCase().includes(query.toLowerCase()),
 	);
 }
 
@@ -7394,6 +7399,8 @@ function leftoverConfigSelectorState(selected, extras = {}) {
 		globalItems: extras.globalItems ?? [],
 		projectItems: extras.projectItems ?? [],
 		settingsManager: extras.settingsManager ?? null,
+		query: extras.query ?? "",
+		projectModeAvailableP: extras.projectModeAvailableP ?? true,
 	};
 }
 
@@ -8215,6 +8222,154 @@ function leftoverConfigPackageSettingRecord(entry, scope, baseDirectory, _instal
 	};
 }
 
+function leftoverConfigPackageSettingRecords(manager, cwd, agentDirectory, includeProjectP) {
+	const projectBase = leftoverProjectConfigDirectory(cwd || "");
+	const globalBase = leftoverEnsureDir(agentDirectory || "");
+	const globalRoot = `${globalBase}packages/`;
+	const projectRoot = `${projectBase}packages/`;
+	const global = leftoverSettingsPackageEntries(manager, "global")
+		.map((entry) => leftoverConfigPackageSettingRecord(entry, "user", globalBase, globalRoot))
+		.filter(Boolean);
+	const project = includeProjectP
+		? leftoverSettingsPackageEntries(manager, "project")
+				.map((entry) =>
+					leftoverConfigPackageSettingRecord(entry, "project", projectBase, projectRoot),
+				)
+				.filter(Boolean)
+		: [];
+	const result = [];
+	const consumed = new Set();
+	for (const record of project) {
+		const identity = record.identity;
+		const globalRecord = global.find((item) => item.identity === identity);
+		if (record.autoloadDisabledP) {
+			if (globalRecord) {
+				record.path = globalRecord.path;
+				consumed.add(identity);
+			}
+			result.push(record);
+			if (globalRecord) {
+				result.push(globalRecord);
+			}
+		} else {
+			result.push(record);
+			if (globalRecord) {
+				consumed.add(identity);
+			}
+		}
+	}
+	for (const record of global) {
+		if (!consumed.has(record.identity)) {
+			result.push(record);
+		}
+	}
+	return result;
+}
+
+function leftoverConfigSelectorRebuild(state) {
+	const query = state.query ?? "";
+	const items = leftoverConfigSelectorItems(state).filter((candidate) =>
+		leftoverConfigSelectorItemMatchesP(candidate, query),
+	);
+	const groups = [];
+	const groupsByKey = new Map();
+	for (const item of items) {
+		const key = leftoverConfigResourceGroupKey(item);
+		let group = groupsByKey.get(key);
+		if (!group) {
+			group = { key, item, items: [] };
+			groupsByKey.set(key, group);
+			groups.push(group);
+		}
+		group.items.push(item);
+	}
+	groups.sort((left, right) => {
+		if (leftoverConfigResourceGroupLessP(left, right)) {
+			return -1;
+		}
+		if (leftoverConfigResourceGroupLessP(right, left)) {
+			return 1;
+		}
+		return 0;
+	});
+	const flat = [];
+	for (const group of groups) {
+		const representative = group.item;
+		const scope = representative.scope;
+		flat.push({
+			kind: "group",
+			scope,
+			label: leftoverConfigResourceGroupLabel(state, representative),
+		});
+		for (const type of PACKAGE_RESOURCE_TYPES) {
+			const typed = group.items
+				.filter(
+					(item) => String(item.type || "").replace(/^:/, "").toLowerCase() === type,
+				)
+				.sort((left, right) =>
+					String(left.displayName || "").localeCompare(String(right.displayName || "")),
+				);
+			if (typed.length) {
+				flat.push({
+					kind: "subgroup",
+					scope,
+					label: PACKAGE_RESOURCE_TYPE_LABELS[type],
+				});
+				for (const item of typed) {
+					flat.push({ kind: "item", item });
+				}
+			}
+		}
+	}
+	state.flatItems = flat;
+	const selected = flat.findIndex((entry) => entry.kind === "item");
+	state.selected = selected >= 0 ? selected : 0;
+	return state;
+}
+
+function leftoverConfigSelectorSwitchScope(state) {
+	if (state.projectModeAvailableP) {
+		state.writeScope = state.writeScope === "global" ? "project" : "global";
+		leftoverConfigSelectorRebuild(state);
+	}
+	return state;
+}
+
+function leftoverConfigSelectorRebuildState(extras = {}) {
+	const hello = leftoverConfigSelectorHelloItem();
+	const skill = leftoverConfigSelectorHelloItem({ type: "skills" });
+	const pkg = leftoverConfigResourceItemLabeled("package", "user", "npm:foo", {
+		path: "/tmp/agent/pkg/foo.lisp",
+		baseDirectory: "/tmp/agent/pkg/",
+	});
+	return leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+		writeScope: extras.writeScope ?? "global",
+		query: extras.query ?? "",
+		projectModeAvailableP: extras.projectModeAvailableP ?? true,
+		globalItems: [hello, skill],
+		projectItems: [pkg],
+	});
+}
+
+function leftoverConfigSelectorDualPackagesManager() {
+	return leftoverMemorySettingsManager(
+		{
+			packages: [
+				leftoverConfigPackageEntry("npm:foo"),
+				leftoverConfigPackageEntry("npm:shared"),
+			],
+		},
+		{
+			packages: [
+				leftoverConfigPackageEntry("npm:bar"),
+				leftoverConfigPackageEntry("npm:shared", { autoload: null }),
+			],
+		},
+	);
+}
+
 function leftoverPackageEntries(...sources) {
 	return sources.map((source) => ({ source }));
 }
@@ -8401,6 +8556,63 @@ function runPackageManagerPackageSettingRecord() {
 		psr_auto:
 			npm && npm.autoloadDisabledP && pin && pin.identity === "npm:@scope/x" ? 1 : 0,
 		psr_n: 5,
+	};
+}
+
+function leftoverFlatKindCount(flat, kind) {
+	return flat.filter((entry) => entry.kind === kind).length;
+}
+
+function leftoverFlatFirstItem(flat) {
+	return flat.find((entry) => entry.kind === "item")?.item ?? null;
+}
+
+function runPackageManagerPackageSettingRecords() {
+	const manager = leftoverConfigSelectorDualPackagesManager();
+	const both = leftoverConfigPackageSettingRecords(manager, "/tmp/proj/", "/tmp/agent/", true);
+	const globalOnly = leftoverConfigPackageSettingRecords(
+		manager,
+		"/tmp/proj/",
+		"/tmp/agent/",
+		false,
+	);
+	return {
+		psrs_len: both.length === 4 ? 1 : 0,
+		psrs_user: both.some((record) => record.scope === "user") ? 1 : 0,
+		psrs_proj: both.some((record) => record.scope === "project") ? 1 : 0,
+		psrs_glob: globalOnly.length === 2 ? 1 : 0,
+		psrs_n: 5,
+	};
+}
+
+function runPackageManagerSelectorRebuild() {
+	const built = leftoverConfigSelectorRebuild(leftoverConfigSelectorRebuildState());
+	const flat = built.flatItems;
+	const miss = leftoverConfigSelectorRebuild(leftoverConfigSelectorRebuildState({ query: "zzz" }));
+	return {
+		crb_group: flat[0]?.kind === "group" ? 1 : 0,
+		crb_items: leftoverFlatKindCount(flat, "item") === 2 ? 1 : 0,
+		crb_sel: flat[built.selected]?.kind === "item" ? 1 : 0,
+		crb_query: miss.flatItems.length === 0 ? 1 : 0,
+		crb_n: 5,
+	};
+}
+
+function runPackageManagerSwitchScope() {
+	const toProj = leftoverConfigSelectorSwitchScope(leftoverConfigSelectorRebuildState());
+	const toGlob = leftoverConfigSelectorSwitchScope(
+		leftoverConfigSelectorRebuildState({ writeScope: "project" }),
+	);
+	const nop = leftoverConfigSelectorSwitchScope(
+		leftoverConfigSelectorRebuildState({ projectModeAvailableP: false }),
+	);
+	const pkgItem = leftoverFlatFirstItem(toProj.flatItems);
+	return {
+		css_proj: toProj.writeScope === "project" ? 1 : 0,
+		css_glob: toGlob.writeScope === "global" ? 1 : 0,
+		css_nop: nop.writeScope === "global" ? 1 : 0,
+		css_pkg: pkgItem && pkgItem.origin === "package" ? 1 : 0,
+		css_n: 5,
 	};
 }
 
@@ -8624,6 +8836,9 @@ async function measurePackageManager() {
 	const projectPackageEntry = runPackageManagerProjectPackageEntry();
 	const projectPackageState = runPackageManagerProjectPackageState();
 	const packageSettingRecord = runPackageManagerPackageSettingRecord();
+	const packageSettingRecords = runPackageManagerPackageSettingRecords();
+	const selectorRebuild = runPackageManagerSelectorRebuild();
+	const switchScope = runPackageManagerSwitchScope();
 	const recordsProjectFirst = runPackageManagerRecordsProjectFirst();
 	const candidateRecord = runPackageManagerCandidateRecord();
 	const updateOffline = runPackageManagerUpdateOffline();
@@ -8790,6 +9005,15 @@ async function measurePackageManager() {
 		package_setting_record: await collect("package_manager.package_setting_record", () => {
 			return () => runPackageManagerPackageSettingRecord();
 		}),
+		package_setting_records: await collect("package_manager.package_setting_records", () => {
+			return () => runPackageManagerPackageSettingRecords();
+		}),
+		selector_rebuild: await collect("package_manager.selector_rebuild", () => {
+			return () => runPackageManagerSelectorRebuild();
+		}),
+		switch_scope: await collect("package_manager.switch_scope", () => {
+			return () => runPackageManagerSwitchScope();
+		}),
 		records_project_first: await collect("package_manager.records_project_first", () => {
 			return () => runPackageManagerRecordsProjectFirst();
 		}),
@@ -8855,6 +9079,9 @@ async function measurePackageManager() {
 			...projectPackageEntry,
 			...projectPackageState,
 			...packageSettingRecord,
+			...packageSettingRecords,
+			...selectorRebuild,
+			...switchScope,
 			...recordsProjectFirst,
 			...candidateRecord,
 			...updateOffline,
@@ -36270,6 +36497,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover project package filter walk (cadr config-selector-project-package-state)",
 			"package_manager.package_setting_record":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover npm setting record (cadr config-package-setting-record)",
+			"package_manager.package_setting_records":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover npm setting records merge (cadr config-package-setting-records)",
+			"package_manager.selector_rebuild":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover selector flat rebuild (cadr config-selector-rebuild)",
+			"package_manager.switch_scope":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts leftover selector scope flip (cadr config-selector-switch-scope)",
 			"package_manager.records_project_first":
 				"packages/coding-agent/src/core/package-manager.ts checkForAvailableUpdates project-then-user collect (cadr package-update-records-project-first)",
 			"package_manager.candidate_record":
