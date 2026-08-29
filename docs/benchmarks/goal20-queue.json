@@ -6754,6 +6754,51 @@
    "piUs": 0.661,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 742,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.provider_default_model",
+   "branch": "cursor/config-default-oauth-leftovers-742-744-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 742",
+   "ratio": 0.410,
+   "cadrUs": 0.970,
+   "piUs": 2.367,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 743,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.oauth_refresh_function",
+   "branch": "cursor/config-default-oauth-leftovers-742-744-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 743",
+   "ratio": 0.139,
+   "cadrUs": 0.346,
+   "piUs": 2.498,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 744,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/config.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.oauth_login_function",
+   "branch": "cursor/config-default-oauth-leftovers-742-744-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 744",
+   "ratio": 1.057,
+   "cadrUs": 2.562,
+   "piUs": 2.423,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

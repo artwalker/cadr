@@ -870,8 +870,11 @@ RATIO_CEILINGS = {
     "settings_load.provider_settings": 8.0,
     # settings_load leftover trio on config.lisp (samples=5):
     # first-freeze headroom. Ratchet down only. Measure-only leftover 742–744.
+    # leftover 742; first freeze 0.410× (0.970 / 2.367 µs).
     "settings_load.provider_default_model": 8.0,
+    # leftover 743; first freeze 0.139× (0.346 / 2.498 µs).
     "settings_load.oauth_refresh_function": 8.0,
+    # leftover 744; first freeze 1.057× (2.562 / 2.423 µs).
     "settings_load.oauth_login_function": 8.0,
     "cli_bootstrap_sessions.legacy_product": 8.0,
     "cli_bootstrap_sessions.shell_quote": 8.0,

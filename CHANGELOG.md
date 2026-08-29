@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `settings_load.provider_default_model`
+  (`provider-default-model` vs provider default model). Observed `pdm_openai`
+  / `pdm_anth` / `pdm_google` / `pdm_miss` / `pdm_n` exact. n=5 **0.410×**
+  (0.970 / 2.367 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 742). Under-1×. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.oauth_refresh_function`
+  (`oauth-refresh-function` vs oauth refresh function). Observed `orf_codex`
+  / `orf_anth` / `orf_miss` / `orf_diff` / `orf_n` exact. n=5 **0.139×**
+  (0.346 / 2.498 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 743). Under-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.oauth_login_function`
+  (`oauth-login-function` vs oauth login function). Observed `olf_codex` /
+  `olf_anth` / `olf_miss` / `olf_diff` / `olf_n` exact. n=5 **1.057×**
+  (2.562 / 2.423 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 744). Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `settings_load.environment_value`
   (`environment-value` vs env lookup). Observed `ev_hit` / `ev_miss` /
   `ev_blank` / `ev_cadr` / `ev_n` exact. n=5 **1.090×** (0.299 / 0.274 µs)
