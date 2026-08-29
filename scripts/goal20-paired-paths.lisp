@@ -736,7 +736,9 @@
     ("oauth_pkce_device.token_fields" . 50)
     ("oauth_pkce_device.openai_exchange" . 50)
     ("oauth_pkce_device.anthropic_exchange" . 50)
-    ("cli_extensions_install.llama_url" . 50)
+    ("oauth_pkce_device.device_poll_complete" . 50)
+    ("oauth_pkce_device.device_poll_fail" . 50)
+    ("oauth_pkce_device.device_poll_slow" . 50)    ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
     ("cli_extensions_install.extension_discovery" . 50)
@@ -12906,7 +12908,79 @@
    (oauth-anthropic-exchange-error-flag 200 "not-json")
    3))
 
-
+(defparameter +oauth-openai-device-poll-device+
+  (list :device-auth-id "dev-1" :user-code "ABCD" :interval 5))
+(defun openai-device-poll-complete-flag ()
+  ;; Stub HTTP only. Do not exact JSON stringify of a missing-field body.
+      (let ((auth
+              (with-oauth-flow-stub
+                "authorization_code" "ac-ok"
+                "code_verifier" "cv-ok")
+                 (cadr-ai::poll-openai-codex-device-authorization
+                  +oauth-openai-device-poll-device+
+                  (lambda () nil))))))
+        (if (and (string= (getf auth :authorization-code) "ac-ok")
+                 (string= (getf auth :code-verifier) "cv-ok"))
+(defun run-oauth-pkce-device-poll-complete ()
+  (let ((ok (openai-device-poll-complete-flag)))
+    (list ok ok 2)))
+(defun openai-device-poll-fail-throw-flag ()
+  ;; Failed poll throws authentication-error. Do not exact the JSON body
+  ;; in the message (cadr stringify vs pi JSON.stringify).
+        (with-oauth-flow-stub
+         200
+         (cadr-ai::json-object)
+           (cadr-ai::poll-openai-codex-device-authorization
+            +oauth-openai-device-poll-device+
+            (lambda () nil))))
+    (cadr-ai:authentication-error () 1)
+(defun run-oauth-pkce-device-poll-fail ()
+  (list (openai-device-poll-fail-throw-flag) 1))
+(defun with-oauth-device-poll-clock (time-function thunk)
+  (let ((original (fdefinition 'cadr-ai:poll-device-authorization)))
+    (unwind-protect
+         (progn
+           (setf (fdefinition 'cadr-ai:poll-device-authorization)
+                 (lambda (poll &rest keys)
+                   (let ((plist (copy-list keys)))
+                     (setf (getf plist :time-function) time-function)
+                     (setf (getf plist :sleep-function)
+                           (lambda (seconds)
+                             (declare (ignore seconds))
+                             nil))
+                     (apply original poll plist))))
+           (funcall thunk))
+      (setf (fdefinition 'cadr-ai:poll-device-authorization) original))))
+(defun openai-device-poll-slow-timeout-flag ()
+  ;; One slow_down poll, then fake clock past expires-in so the
+  ;; openai-device slow-down timeout message fires. Sleep is a no-op.
+  (let ((n 0)
+        (time-function
+          (lambda ()
+            (incf n)
+            (if (<= n 2)
+                1000
+                1900))))
+    (handler-case
+        (progn
+          (with-oauth-device-poll-clock
+           time-function
+           (lambda ()
+             (with-oauth-flow-stub
+              400
+              (cadr-ai::json-object "error" "slow_down")
+              (lambda ()
+                (cadr-ai::poll-openai-codex-device-authorization
+                 +oauth-openai-device-poll-device+
+                 (lambda () nil))))))
+          0)
+      (cadr-ai:authentication-error (condition)
+        (if (string=
+             (cadr-ai:cadr-error-message condition)
+             cadr-ai::+openai-device-slow-down-timeout-message+)
+      (error () 0))))
+(defun run-oauth-pkce-device-poll-slow ()
+  (list (openai-device-poll-slow-timeout-flag) 1))
 
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
@@ -12944,7 +13018,10 @@
         (kimi-host-trim (run-oauth-kimi-host-trim))
         (hex-value (run-oauth-pkce-device-hex-value))
         (write-http (run-oauth-pkce-device-write-http-response))
-        (present-url (run-oauth-pkce-device-present-auth-url)))
+        (present-url (run-oauth-pkce-device-present-auth-url))
+        (device-poll-complete (run-oauth-pkce-device-poll-complete))
+        (device-poll-fail (run-oauth-pkce-device-poll-fail))
+        (device-poll-slow (run-oauth-pkce-device-poll-slow)))
     (json-object
      "observed"
      (json-object
@@ -13099,7 +13176,14 @@
       "aex_ok" (nth 0 anthropic-exchange)
       "aex_http" (nth 1 anthropic-exchange)
       "aex_badjson" (nth 2 anthropic-exchange)
-      "aex_n" (nth 3 anthropic-exchange))
+      "aex_n" (nth 3 anthropic-exchange)
+      "dpc_code" (nth 0 device-poll-complete)
+      "dpc_ver" (nth 1 device-poll-complete)
+      "dpc_n" (nth 2 device-poll-complete)
+      "dpf_throw" (nth 0 device-poll-fail)
+      "dpf_n" (nth 1 device-poll-fail)
+      "dps_msg" (nth 0 device-poll-slow)
+      "dps_n" (nth 1 device-poll-slow))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -13279,8 +13363,22 @@
      (collect "oauth_pkce_device.anthropic_exchange"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-anthropic-exchange)))))))
-
+                  (run-oauth-pkce-device-anthropic-exchange))))
+     "device_poll_complete"
+     (collect "oauth_pkce_device.device_poll_complete"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-poll-complete))))
+     "device_poll_fail"
+     (collect "oauth_pkce_device.device_poll_fail"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-poll-fail))))
+     "device_poll_slow"
+     (collect "oauth_pkce_device.device_poll_slow"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-poll-slow)))))))
 (defun llama-url-flag (value expected)
   (handler-case
       (if (string=
@@ -38719,7 +38817,12 @@
       "src/cadr-ai/oauth/providers/kimi.lisp kimi-oauth-host KIMI_CODE_OAUTH_HOST"
       "oauth_pkce_device.kimi_host_trim"
       "src/cadr-ai/oauth/providers/kimi.lisp kimi-oauth-host trailing-slash trim"
-      "cli_extensions_install.llama_url"
+      "oauth_pkce_device.device_poll_complete"
+      "src/cadr-ai/oauth/providers/openai-device.lisp poll-openai-codex-device-authorization complete"
+      "oauth_pkce_device.device_poll_fail"
+      "src/cadr-ai/oauth/providers/openai-device.lisp poll-openai-codex-device-authorization failed"
+      "oauth_pkce_device.device_poll_slow"
+      "src/cadr-ai/oauth/providers/openai-device.lisp poll-openai-codex-device-authorization slow_down timeout"      "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
       "src/cadr-cli/extensions/llama/huggingface.lisp find-hugging-face-token"
