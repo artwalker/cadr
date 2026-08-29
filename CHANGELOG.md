@@ -11,16 +11,22 @@ tag/Release step.
 
 - Goal 20 leftover: pair `cli_extensions_install.manager_notify`
   (`extension-manager-notify` vs leftover notify format). Observed
-  `enm_info` / `enm_error` / `enm_redact` / `enm_nl` / `enm_n`.
-  Measure-only leftover (Pair 847). `nextPairNum` left unchanged.
+  `enm_info` / `enm_error` / `enm_redact` / `enm_nl` / `enm_n` exact.
+  n=5 **2.503×** (3.324 / 1.328 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 847). Over-1× booked.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_extensions_install.startup_issues`
   (`report-startup-extension-issues` vs leftover reportDiagnostics). Observed
-  `rsi_err` / `rsi_warn` / `rsi_load` / `rsi_prefix` / `rsi_n`.
-  Measure-only leftover (Pair 848). `nextPairNum` left unchanged.
+  `rsi_err` / `rsi_warn` / `rsi_load` / `rsi_prefix` / `rsi_n` exact.
+  n=5 **2.567×** (2.919 / 1.137 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 848). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_extensions_install.output_boundary`
   (`call-with-extension-output-boundary` vs leftover stdout/stderr bind). Observed
-  `eob_out` / `eob_err` / `eob_n`.
-  Measure-only leftover (Pair 849). `nextPairNum` left unchanged.
+  `eob_out` / `eob_err` / `eob_n` exact.
+  n=5 **2.759×** (0.740 / 0.268 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 849). Over-1× booked. `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_extensions_install.http_timeout_p`
   (`extension-http-timeout-condition-p` vs leftover timeout error names).
