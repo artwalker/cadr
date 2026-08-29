@@ -6664,6 +6664,51 @@
    "piUs": 6.637,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 736,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.delta_resource_state",
+   "branch": "cursor/config-selector-delta-top-derived-leftovers-736-738-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 736",
+   "ratio": 3.946,
+   "cadrUs": 17.140,
+   "piUs": 4.344,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 737,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.project_top_level_state",
+   "branch": "cursor/config-selector-delta-top-derived-leftovers-736-738-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 737",
+   "ratio": 5.971,
+   "cadrUs": 31.215,
+   "piUs": 5.227,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 738,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/packages/config-selector.lisp",
+   "measure": "measure-package-manager",
+   "metric": "package_manager.derived_project_state",
+   "branch": "cursor/config-selector-delta-top-derived-leftovers-736-738-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 738",
+   "ratio": 6.210,
+   "cadrUs": 31.710,
+   "piUs": 5.107,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

@@ -501,6 +501,9 @@
     ("package_manager.pattern_candidates" . 50)
     ("package_manager.pattern_matches" . 50)
     ("package_manager.enabled_by_patterns" . 50)
+    ("package_manager.delta_resource_state" . 50)
+    ("package_manager.project_top_level_state" . 50)
+    ("package_manager.derived_project_state" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4614,6 +4617,23 @@
    (uiop:ensure-directory-pathname (parse-namestring base-directory))
    :default default))
 
+(defun leftover-config-package-delta-resource-state
+    (path patterns root)
+  (multiple-value-list
+   (cadr-cli::config-package-delta-resource-state
+    (parse-namestring path)
+    patterns
+    (uiop:ensure-directory-pathname (parse-namestring root)))))
+
+(defun leftover-config-delta-code (enabled-p matched-p)
+  (+ (* (if enabled-p 1 0) 10) (if matched-p 1 0)))
+
+(defun leftover-config-selector-state-code (state)
+  (ecase state
+    (:inherit 0)
+    (:load 1)
+    (:unload 2)))
+
 (defun leftover-config-selector-entry-target (entry)
   (cadr-cli::config-selector-entry-target entry))
 
@@ -4804,7 +4824,8 @@
 (defun leftover-config-selector-state
     (selected &key (max-visible 16) (item-count nil)
      (cwd nil) (agent-directory nil)
-     (write-scope :global) (global-items nil) (project-items nil))
+     (write-scope :global) (global-items nil) (project-items nil)
+     (settings-manager nil))
   (let ((flat
           (if item-count
               (loop for i below item-count
@@ -4821,6 +4842,7 @@
      :write-scope write-scope
      :global-items global-items
      :project-items project-items
+     :settings-manager settings-manager
      :cwd (and cwd (uiop:ensure-directory-pathname cwd))
      :agent-directory
      (and agent-directory
@@ -4883,8 +4905,9 @@
     manager))
 
 (defun leftover-config-resource-item-labeled
-    (origin scope source &key (base-directory "/tmp/"))
-  (let ((item (leftover-config-resource-item "/tmp/x.lisp" :extensions "x")))
+    (origin scope source &key (base-directory "/tmp/")
+     (path "/tmp/x.lisp") (type :extensions))
+  (let ((item (leftover-config-resource-item path type "x")))
     (setf (cadr-cli::config-resource-item-origin item) origin
           (cadr-cli::config-resource-item-scope item) scope
           (cadr-cli::config-resource-item-source item) source
@@ -4892,6 +4915,31 @@
           (uiop:ensure-directory-pathname
            (parse-namestring base-directory)))
     item))
+
+(defun leftover-config-selector-hello-item
+    (&key (origin :top-level) (source "auto"))
+  (leftover-config-resource-item-labeled
+   origin :project source
+   :path "/tmp/proj/.cadr/hello.lisp"
+   :base-directory "/tmp/proj/.cadr/"))
+
+(defun leftover-config-selector-project-extensions-state (patterns)
+  (leftover-config-selector-state
+   0
+   :cwd "/tmp/proj"
+   :agent-directory "/tmp/agent"
+   :settings-manager
+   (leftover-memory-settings-manager
+    (cadr-ai::json-object)
+    (cadr-ai::json-object
+     "extensions"
+     (coerce patterns 'vector)))))
+
+(defun leftover-config-selector-project-top-level-state (state item)
+  (cadr-cli::config-selector-project-top-level-state state item))
+
+(defun leftover-config-selector-derived-project-state (state item)
+  (cadr-cli::config-selector-derived-project-state state item))
 
 (defun leftover-config-resource-item-scoped (path type display-name scope)
   (cadr-cli::make-config-resource-item
@@ -5340,6 +5388,88 @@
      "/tmp/hello.lisp" '("*.md" "+hello.lisp") "/tmp/"))
    5))
 
+(defun run-package-manager-delta-resource-state ()
+  (let ((plus
+          (leftover-config-package-delta-resource-state
+           "/tmp/hello.lisp" '("+hello.lisp") "/tmp/"))
+        (minus
+          (leftover-config-package-delta-resource-state
+           "/tmp/hello.lisp" '("-hello.lisp") "/tmp/"))
+        (bang
+          (leftover-config-package-delta-resource-state
+           "/tmp/hello.lisp" '("!hello.lisp") "/tmp/"))
+        (miss
+          (leftover-config-package-delta-resource-state
+           "/tmp/hello.lisp" '("*.md") "/tmp/")))
+    (list
+     (leftover-config-delta-code (first plus) (second plus))
+     (leftover-config-delta-code (first minus) (second minus))
+     (leftover-config-delta-code (first bang) (second bang))
+     (leftover-config-delta-code (first miss) (second miss))
+     5)))
+
+(defun run-package-manager-project-top-level-state ()
+  (let ((item (leftover-config-selector-hello-item)))
+    (list
+     (leftover-config-selector-state-code
+      (leftover-config-selector-project-top-level-state
+       (leftover-config-selector-project-extensions-state
+        '("+hello.lisp"))
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-project-top-level-state
+       (leftover-config-selector-project-extensions-state
+        '("-hello.lisp"))
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-project-top-level-state
+       (leftover-config-selector-project-extensions-state
+        '("!hello.lisp"))
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-project-top-level-state
+       (leftover-config-selector-project-extensions-state
+        '("+other.lisp"))
+       item))
+     5)))
+
+(defun run-package-manager-derived-project-state ()
+  (let ((item (leftover-config-selector-hello-item))
+        (pkg-item
+          (leftover-config-resource-item-labeled
+           :package :user "npm:foo"
+           :path "/tmp/hello.lisp"
+           :base-directory "/tmp/agent/pkg/"))
+        (pkg-state
+          (leftover-config-selector-state
+           0
+           :cwd "/tmp/proj"
+           :agent-directory "/tmp/agent"
+           :settings-manager
+           (leftover-memory-settings-manager
+            (cadr-ai::json-object)
+            (cadr-ai::json-object "packages" (vector))))))
+    (list
+     (leftover-config-selector-state-code
+      (leftover-config-selector-derived-project-state
+       (leftover-config-selector-project-extensions-state
+        '("+hello.lisp"))
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-derived-project-state
+       (leftover-config-selector-project-extensions-state
+        '("-hello.lisp"))
+       item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-derived-project-state
+       pkg-state pkg-item))
+     (leftover-config-selector-state-code
+      (leftover-config-selector-derived-project-state
+       (leftover-config-selector-project-extensions-state
+        '("+other.lisp"))
+       item))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -5457,7 +5587,13 @@
            (pattern-matches
              (run-package-manager-pattern-matches))
            (enabled-by-patterns
-             (run-package-manager-enabled-by-patterns)))
+             (run-package-manager-enabled-by-patterns))
+           (delta-resource-state
+             (run-package-manager-delta-resource-state))
+           (project-top-level-state
+             (run-package-manager-project-top-level-state))
+           (derived-project-state
+             (run-package-manager-derived-project-state)))
       (json-object
        "observed"
        (json-object
@@ -5643,7 +5779,22 @@
         "ebp_inc" (nth 1 enabled-by-patterns)
         "ebp_exc" (nth 2 enabled-by-patterns)
         "ebp_load" (nth 3 enabled-by-patterns)
-        "ebp_n" (nth 4 enabled-by-patterns))
+        "ebp_n" (nth 4 enabled-by-patterns)
+        "drs_plus" (nth 0 delta-resource-state)
+        "drs_minus" (nth 1 delta-resource-state)
+        "drs_bang" (nth 2 delta-resource-state)
+        "drs_miss" (nth 3 delta-resource-state)
+        "drs_n" (nth 4 delta-resource-state)
+        "pts_load" (nth 0 project-top-level-state)
+        "pts_unload" (nth 1 project-top-level-state)
+        "pts_bang" (nth 2 project-top-level-state)
+        "pts_miss" (nth 3 project-top-level-state)
+        "pts_n" (nth 4 project-top-level-state)
+        "dps_load" (nth 0 derived-project-state)
+        "dps_unload" (nth 1 derived-project-state)
+        "dps_pkg" (nth 2 derived-project-state)
+        "dps_miss" (nth 3 derived-project-state)
+        "dps_n" (nth 4 derived-project-state))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -5824,7 +5975,22 @@
        (collect "package_manager.enabled_by_patterns"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-enabled-by-patterns))))))))
+                    (run-package-manager-enabled-by-patterns))))
+       "delta_resource_state"
+       (collect "package_manager.delta_resource_state"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-delta-resource-state))))
+       "project_top_level_state"
+       (collect "package_manager.project_top_level_state"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-project-top-level-state))))
+       "derived_project_state"
+       (collect "package_manager.derived_project_state"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-derived-project-state))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -31084,6 +31250,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-pattern-matches-p"
       "package_manager.enabled_by_patterns"
       "src/cadr-cli/packages/config-selector.lisp config-enabled-by-patterns-p"
+      "package_manager.delta_resource_state"
+      "src/cadr-cli/packages/config-selector.lisp config-package-delta-resource-state"
+      "package_manager.project_top_level_state"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-project-top-level-state"
+      "package_manager.derived_project_state"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-derived-project-state"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"

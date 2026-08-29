@@ -8608,6 +8608,30 @@ Leftover sibling of Pair 733. Timed work is glob `*.lisp` hit, `*.md` miss, exac
 
 Leftover sibling of Pairs 733–734. Timed work is default-on with no includes, include glob, exclude bang, and `+` exact load after a miss include. Observed `ebp_def` / `ebp_inc` / `ebp_exc` / `ebp_load` / `ebp_n` are exact. First n=5 freeze **4.820×** (31.989 / 6.637 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 736 — `package_manager` (delta_resource_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `delta_resource_state` | `config-package-delta-resource-state` (`src/cadr-cli/packages/config-selector.lisp`) | package delta resource state (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 733–735 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is `+` exact enable+match, `-` match not enabled, `!` glob match not enabled, and `*.md` miss. Observed `drs_plus` / `drs_minus` / `drs_bang` / `drs_miss` / `drs_n` are exact. First n=5 freeze **3.946×** (17.140 / 4.344 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 737 — `package_manager` (project_top_level_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `project_top_level_state` | `config-selector-project-top-level-state` (`src/cadr-cli/packages/config-selector.lisp`) | project top-level state (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 736. Timed work is project settings `+hello.lisp` load, `-hello.lisp` unload, `!hello.lisp` unload, and `+other.lisp` inherit. Observed `pts_load` / `pts_unload` / `pts_bang` / `pts_miss` / `pts_n` are exact. First n=5 freeze **5.971×** (31.215 / 5.227 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 738 — `package_manager` (derived_project_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `derived_project_state` | `config-selector-derived-project-state` (`src/cadr-cli/packages/config-selector.lisp`) | derived project state (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 736–737. Timed work is derived top-level load, derived top-level unload, package origin `npm:foo` empty project packages inherit, and derived miss inherit. Observed `dps_load` / `dps_unload` / `dps_pkg` / `dps_miss` / `dps_n` are exact. First n=5 freeze **6.210×** (31.710 / 5.107 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

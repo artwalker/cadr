@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.delta_resource_state`
+  (`config-package-delta-resource-state` vs package delta resource state).
+  Observed `drs_plus` / `drs_minus` / `drs_bang` / `drs_miss` / `drs_n`
+  exact. n=5 **3.946×** (17.140 / 4.344 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 736). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.project_top_level_state`
+  (`config-selector-project-top-level-state` vs project top-level state).
+  Observed `pts_load` / `pts_unload` / `pts_bang` / `pts_miss` / `pts_n`
+  exact. n=5 **5.971×** (31.215 / 5.227 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 737). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.derived_project_state`
+  (`config-selector-derived-project-state` vs derived project state).
+  Observed `dps_load` / `dps_unload` / `dps_pkg` / `dps_miss` / `dps_n`
+  exact. n=5 **6.210×** (31.710 / 5.107 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 738). Over-1× booked. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `package_manager.pattern_candidates`
   (`config-pattern-candidates` vs pattern candidates). Observed
   `cpc_plain` / `cpc_abs` / `cpc_skill` / `cpc_hello` / `cpc_n` exact.

@@ -524,4 +524,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.pattern_candidates` | 15.875 | 2.686 | 5.911× | 8.00× | measure-only leftover 733; `config-pattern-candidates` vs pattern candidates | invent pause；地板优化另刀 |
 | `package_manager.pattern_matches` | 32.598 | 4.556 | 7.155× | 8.00× | measure-only leftover 734; `config-pattern-matches-p` vs pattern matches | invent pause；地板优化另刀 |
 | `package_manager.enabled_by_patterns` | 31.989 | 6.637 | 4.820× | 8.00× | measure-only leftover 735; `config-enabled-by-patterns-p` vs enabled by patterns | invent pause；地板优化另刀 |
+| `package_manager.delta_resource_state` | 17.140 | 4.344 | 3.946× | 8.00× | measure-only leftover 736; `config-package-delta-resource-state` vs package delta resource state | invent pause；地板优化另刀 |
+| `package_manager.project_top_level_state` | 31.215 | 5.227 | 5.971× | 8.00× | measure-only leftover 737; `config-selector-project-top-level-state` vs project top-level state | invent pause；地板优化另刀 |
+| `package_manager.derived_project_state` | 31.710 | 5.107 | 6.210× | 8.00× | measure-only leftover 738; `config-selector-derived-project-state` vs derived project state | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
