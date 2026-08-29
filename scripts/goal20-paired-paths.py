@@ -721,8 +721,11 @@ RATIO_CEILINGS = {
     "evals_harness.prepare_default_prompt": 8.0,
     # evals_harness leftover trio on reporter.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 703–705.
+    # leftover 703; first freeze 2.941× (2.621 / 0.891 µs).
     "evals_harness.reporter_run_id": 8.0,
+    # leftover 704; first freeze 5.883× (0.913 / 0.155 µs).
     "evals_harness.artifact_reference_json": 8.0,
+    # leftover 705; first freeze 0.927× (1.620 / 1.747 µs). cadr leads.
     "evals_harness.reporter_artifacts": 8.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.
