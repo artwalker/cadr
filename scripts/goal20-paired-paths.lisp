@@ -298,6 +298,9 @@
 ;;;; 334. oauth_pkce_device oauth-callback-provider-key vs Anthropic/Radius display-name map
 ;;;; 335. oauth_pkce_device oauth-http-status-text vs node:http STATUS_CODES
 ;;;; 336. oauth_pkce_device parse-oauth-callback-request vs openai-codex startLocalOAuthServer handler
+;;;; 889. oauth_pkce_device token-response-credential vs readTokenResponse field check
+;;;; 890. oauth_pkce_device exchange-openai-authorization-code vs openai-codex exchange stub
+;;;; 891. oauth_pkce_device exchange-anthropic-authorization-code vs anthropic exchange stub
 ;;;;  91. tui_mermaid gm-render vs grok-mermaid render
 ;;;;  92. tui_mermaid transform-mermaid-markdown vs createMermaidMarkdownTransformer
 ;;;;  93. cli_selectors filter-and-sort-sessions vs filterAndSortSessions
@@ -534,6 +537,9 @@
     ("oauth_pkce_device.provider_key" . 50)
     ("oauth_pkce_device.http_status_text" . 50)
     ("oauth_pkce_device.parse_callback_request" . 50)
+    ("oauth_pkce_device.token_fields" . 50)
+    ("oauth_pkce_device.openai_exchange" . 50)
+    ("oauth_pkce_device.anthropic_exchange" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -10444,6 +10450,154 @@
    3))
 
 
+(defparameter +oauth-token-ok-body+
+  "{\"access_token\":\"sk-ex\",\"refresh_token\":\"rt-ex\",\"expires_in\":60}")
+
+
+(defun oauth-token-fields-ok-flag ()
+  (handler-case
+      (let ((credential
+              (cadr-ai::token-response-credential
+               :anthropic
+               (cadr-ai::json-object
+                "access_token" "sk-a"
+                "refresh_token" "rt-a"
+                "expires_in" 3600)
+               nil)))
+        (if (and (string= (cadr-ai:oauth-credential-access credential)
+                          "sk-a")
+                 (string= (cadr-ai:oauth-credential-refresh credential)
+                          "rt-a")
+                 (eq (cadr-ai:oauth-credential-provider credential)
+                     :anthropic))
+            1
+            0))
+    (error () 0)))
+
+
+(defun oauth-token-fields-miss-flag (object)
+  (handler-case
+      (progn
+        (cadr-ai::token-response-credential :anthropic object nil)
+        0)
+    (error () 1)))
+
+
+(defun run-oauth-pkce-device-token-fields ()
+  ;; Overlap with openai-codex.ts readTokenResponse field checks. Do not
+  ;; exact expires (live clocks) or refresh-token fallback (cadr keeps
+  ;; old-refresh; pi requires json.refresh_token).
+  (list
+   (oauth-token-fields-ok-flag)
+   (oauth-token-fields-miss-flag
+    (cadr-ai::json-object
+     "refresh_token" "rt-a"
+     "expires_in" 3600))
+   (oauth-token-fields-miss-flag
+    (cadr-ai::json-object
+     "access_token" "sk-a"
+     "refresh_token" "rt-a"))
+   3))
+
+
+(defun with-oauth-http-stub (status body thunk)
+  (let ((cadr-ai::*oauth-http-request-function*
+          (lambda (url &key method headers content connect-timeout
+                       read-timeout force-string)
+            (declare (ignore url method headers content connect-timeout
+                             read-timeout force-string))
+            (values body status))))
+    (funcall thunk)))
+
+
+(defun oauth-openai-exchange-ok-flag ()
+  (handler-case
+      (let ((credential
+              (with-oauth-http-stub
+               200
+               +oauth-token-ok-body+
+               (lambda ()
+                 (cadr-ai::exchange-openai-authorization-code
+                  "code" "verifier")))))
+        (if (and (string= (cadr-ai:oauth-credential-access credential)
+                          "sk-ex")
+                 (string= (cadr-ai:oauth-credential-refresh credential)
+                          "rt-ex")
+                 (eq (cadr-ai:oauth-credential-provider credential)
+                     :openai-codex))
+            1
+            0))
+    (error () 0)))
+
+
+(defun oauth-openai-exchange-error-flag (status body)
+  (handler-case
+      (progn
+        (with-oauth-http-stub
+         status
+         body
+         (lambda ()
+           (cadr-ai::exchange-openai-authorization-code
+            "code" "verifier")))
+        0)
+    (error () 1)))
+
+
+(defun run-oauth-pkce-device-openai-exchange ()
+  ;; Stub HTTP only. Do not exact error text (cadr interpolates HTTP
+  ;; status; pi prefixes "OpenAI Codex token exchange failed").
+  (list
+   (oauth-openai-exchange-ok-flag)
+   (oauth-openai-exchange-error-flag 400 "{}")
+   (oauth-openai-exchange-error-flag
+    200
+    "{\"access_token\":\"sk-ex\",\"expires_in\":60}")
+   3))
+
+
+(defun oauth-anthropic-exchange-ok-flag ()
+  (handler-case
+      (let ((credential
+              (with-oauth-http-stub
+               200
+               +oauth-token-ok-body+
+               (lambda ()
+                 (cadr-ai::exchange-anthropic-authorization-code
+                  "code" "state" "verifier")))))
+        (if (and (string= (cadr-ai:oauth-credential-access credential)
+                          "sk-ex")
+                 (string= (cadr-ai:oauth-credential-refresh credential)
+                          "rt-ex")
+                 (eq (cadr-ai:oauth-credential-provider credential)
+                     :anthropic))
+            1
+            0))
+    (error () 0)))
+
+
+(defun oauth-anthropic-exchange-error-flag (status body)
+  (handler-case
+      (progn
+        (with-oauth-http-stub
+         status
+         body
+         (lambda ()
+           (cadr-ai::exchange-anthropic-authorization-code
+            "code" "state" "verifier")))
+        0)
+    (error () 1)))
+
+
+(defun run-oauth-pkce-device-anthropic-exchange ()
+  ;; Stub HTTP only. Do not exact Anthropic JSON key order or expires
+  ;; skew (pi subtracts five minutes). Invalid JSON throws on both.
+  (list
+   (oauth-anthropic-exchange-ok-flag)
+   (oauth-anthropic-exchange-error-flag 400 "{}")
+   (oauth-anthropic-exchange-error-flag 200 "not-json")
+   3))
+
+
 (defun measure-oauth-pkce-device ()
   (let ((poll (run-oauth-pkce-device-poll))
         (auth (run-oauth-pkce-device-auth-json))
@@ -10456,7 +10610,10 @@
         (auth-input (run-oauth-pkce-device-parse-authorization-input))
         (provider-key (run-oauth-pkce-device-provider-key))
         (status-text (run-oauth-pkce-device-http-status-text))
-        (callback-request (run-oauth-pkce-device-parse-callback-request)))
+        (callback-request (run-oauth-pkce-device-parse-callback-request))
+        (token-fields (run-oauth-pkce-device-token-fields))
+        (openai-exchange (run-oauth-pkce-device-openai-exchange))
+        (anthropic-exchange (run-oauth-pkce-device-anthropic-exchange)))
     (json-object
      "observed"
      (json-object
@@ -10513,7 +10670,19 @@
       "pcr_state" (nth 1 callback-request)
       "pcr_path" (nth 2 callback-request)
       "pcr_code" (nth 3 callback-request)
-      "pcr_n" (nth 4 callback-request))
+      "pcr_n" (nth 4 callback-request)
+      "trc_ok" (nth 0 token-fields)
+      "trc_miss_acc" (nth 1 token-fields)
+      "trc_miss_exp" (nth 2 token-fields)
+      "trc_n" (nth 3 token-fields)
+      "oex_ok" (nth 0 openai-exchange)
+      "oex_http" (nth 1 openai-exchange)
+      "oex_miss" (nth 2 openai-exchange)
+      "oex_n" (nth 3 openai-exchange)
+      "aex_ok" (nth 0 anthropic-exchange)
+      "aex_http" (nth 1 anthropic-exchange)
+      "aex_badjson" (nth 2 anthropic-exchange)
+      "aex_n" (nth 3 anthropic-exchange))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -10573,7 +10742,22 @@
      (collect "oauth_pkce_device.parse_callback_request"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-callback-request)))))))
+                  (run-oauth-pkce-device-parse-callback-request))))
+     "token_fields"
+     (collect "oauth_pkce_device.token_fields"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-token-fields))))
+     "openai_exchange"
+     (collect "oauth_pkce_device.openai_exchange"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-openai-exchange))))
+     "anthropic_exchange"
+     (collect "oauth_pkce_device.anthropic_exchange"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-anthropic-exchange)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -31850,6 +32034,12 @@
       "src/cadr-ai/oauth/callback.lisp oauth-http-status-text"
       "oauth_pkce_device.parse_callback_request"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-callback-request"
+      "oauth_pkce_device.token_fields"
+      "src/cadr-ai/oauth/openai-anthropic.lisp token-response-credential"
+      "oauth_pkce_device.openai_exchange"
+      "src/cadr-ai/oauth/openai-anthropic.lisp exchange-openai-authorization-code"
+      "oauth_pkce_device.anthropic_exchange"
+      "src/cadr-ai/oauth/openai-anthropic.lisp exchange-anthropic-authorization-code"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
