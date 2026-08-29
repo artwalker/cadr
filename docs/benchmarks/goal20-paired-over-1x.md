@@ -540,4 +540,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.sdk_default_provider` | 31.153 | 6.243 | 4.990× | 8.00× | measure-only leftover 763; `sdk-settings-default-provider` vs getDefaultProvider | invent pause；地板优化另刀 |
 | `settings_load.sdk_default_model` | 31.246 | 5.925 | 5.274× | 8.00× | measure-only leftover 764; `sdk-settings-default-model` vs getDefaultModel | invent pause；地板优化另刀 |
 | `settings_load.sdk_retry_settings` | 15.933 | 6.038 | 2.639× | 8.00× | measure-only leftover 765; `sdk-settings-retry-settings` vs getRetrySettings | invent pause；地板优化另刀 |
+| `settings_load.sdk_http_idle_timeout` | 10.990 | 8.800 | 1.249× | 8.00× | measure-only leftover 766; `sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs | invent pause；地板优化另刀 |
+| `settings_load.sdk_apply_overrides` | 45.476 | 6.534 | 6.960× | 8.00× | measure-only leftover 767; `sdk-settings-apply-overrides` vs applyOverrides | invent pause；地板优化另刀 |
+| `settings_load.sdk_model_thinking_level` | 16.293 | 3.769 | 4.323× | 8.00× | measure-only leftover 768; `sdk-settings-model-thinking-level` vs getModelThinkingLevel | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

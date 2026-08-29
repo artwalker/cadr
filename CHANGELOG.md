@@ -11,17 +11,21 @@ tag/Release step.
 
 - Goal 20 leftover: pair `settings_load.sdk_http_idle_timeout`
   (`sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs). Observed
-  `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` exact.
-  Measure-only leftover (Pair 766). Freeze pending. `nextPairNum` left
-  unchanged.
+  `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` exact. n=5
+  **1.249×** (10.990 / 8.800 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 766). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_apply_overrides`
   (`sdk-settings-apply-overrides` vs applyOverrides). Observed `sao_prov` /
-  `sao_last` / `sao_len` / `sao_base` / `sao_n` exact. Measure-only leftover
-  (Pair 767). Freeze pending. `nextPairNum` left unchanged.
+  `sao_last` / `sao_len` / `sao_base` / `sao_n` exact. n=5 **6.960×**
+  (45.476 / 6.534 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 767). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_model_thinking_level`
   (`sdk-settings-model-thinking-level` vs getModelThinkingLevel). Observed
-  `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` exact.
-  Measure-only leftover (Pair 768). Freeze pending. `nextPairNum` left
+  `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` exact. n=5
+  **4.323×** (16.293 / 3.769 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 768). Over-1× booked. `nextPairNum` left
   unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_default_provider`
