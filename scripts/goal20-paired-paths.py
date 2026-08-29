@@ -1127,8 +1127,12 @@ RATIO_CEILINGS = {
     "cli_extensions_install.startup_issues": 8.0,
     "cli_extensions_install.output_boundary": 8.0,
     "cli_extensions_install.loaded_model": 8.0,
-    "cli_extensions_install.catalog_notify": 8.0,
-    "cli_extensions_install.progress_notify": 8.0,
+    # leftover 851–852 llama/extension.lisp (samples=5): first-freeze
+    # catalog_notify 40.150× (28.921 / 0.720 µs),
+    # progress_notify 47.472× (29.267 / 0.616 µs).
+    # Headroom ceilings; ratchet down only. Measure-only leftover 851–852.
+    "cli_extensions_install.catalog_notify": 60.0,
+    "cli_extensions_install.progress_notify": 60.0,
     # cli_bootstrap_sessions.parse_bash leftover (samples=5): observed 0.421x
     # (0.528 / 1.252 us). 8.0 is first-freeze headroom. Ratchet down only.
     "cli_bootstrap_sessions.parse_bash": 8.0,

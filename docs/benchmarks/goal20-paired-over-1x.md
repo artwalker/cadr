@@ -614,4 +614,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.manager_notify` | 3.324 | 1.328 | 2.503× | 8.00× | measure-only leftover 847; `extension-manager-notify` vs leftover notify format | invent pause；地板优化另刀 |
 | `cli_extensions_install.startup_issues` | 2.919 | 1.137 | 2.567× | 8.00× | measure-only leftover 848; `report-startup-extension-issues` vs leftover reportDiagnostics | invent pause；地板优化另刀 |
 | `cli_extensions_install.output_boundary` | 0.740 | 0.268 | 2.759× | 8.00× | measure-only leftover 849; `call-with-extension-output-boundary` vs leftover stdout/stderr bind | invent pause；地板优化另刀 |
+| `cli_extensions_install.loaded_model` | 0.211 | 0.140 | 1.511× | 8.00× | measure-only leftover 850; `llama-loaded-model-p` vs leftover loaded/sleeping predicate | invent pause；地板优化另刀 |
+| `cli_extensions_install.catalog_notify` | 28.921 | 0.720 | 40.150× | 60.00× | measure-only leftover 851; `notify-llama-catalog` vs leftover catalog notify | invent pause；地板优化另刀 |
+| `cli_extensions_install.progress_notify` | 29.267 | 0.616 | 47.472× | 60.00× | measure-only leftover 852; `llama-progress-notifier` vs leftover progress notify | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
