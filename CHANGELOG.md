@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_bootstrap_sessions.managed_binary_names`
+  (`+managed-binary-names+` vs leftover fd/rg (+ .exe) names). Observed
+  `mbn_n` / `mbn_fd` / `mbn_rg` / `mbn_fdexe` / `mbn_rgexe` exact.
+  Measure-only leftover (Pair 841). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.migration_guide_url`
+  (`+migration-guide-url+` vs leftover MIGRATION_GUIDE_URL). Observed
+  `mgu_eq` / `mgu_https` / `mgu_gh` / `mgu_n` exact.
+  Measure-only leftover (Pair 842). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.extensions_doc_url`
+  (`+extensions-doc-url+` vs leftover EXTENSIONS_DOC_URL). Observed
+  `edu_eq` / `edu_https` / `edu_gh` / `edu_n` exact.
+  Measure-only leftover (Pair 843). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.data_directory`
   (`data-directory` vs leftover join(home, CONFIG_DIR_NAME)). Observed
   `dd_under` / `dd_neq` / `dd_dot` exact.

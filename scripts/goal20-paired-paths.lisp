@@ -1096,6 +1096,9 @@
     ("cli_bootstrap_sessions.data_directory" . 50)
     ("cli_bootstrap_sessions.legacy_data_directory" . 50)
     ("cli_bootstrap_sessions.manual_migration_command" . 50)
+    ("cli_bootstrap_sessions.managed_binary_names" . 50)
+    ("cli_bootstrap_sessions.migration_guide_url" . 50)
+    ("cli_bootstrap_sessions.extensions_doc_url" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -34600,6 +34603,37 @@
      (if (find #\' cmd) 1 0))))
 
 
+(defun leftover-url-flags (url expected)
+  (list
+   (if (string= url expected) 1 0)
+   (if (and (>= (length url) 8) (string= url "https://" :end1 8)) 1 0)
+   (if (search "github.com" url) 1 0)
+   (length url)))
+
+
+(defun run-cli-bootstrap-managed-binary-names ()
+  ;; Leftover on migration.lisp: fd/rg (+ .exe) names. Not rename, not disk.
+  (let ((names cadr-cli::+managed-binary-names+))
+    (list
+     (length names)
+     (if (find "fd" names :test #'string=) 1 0)
+     (if (find "rg" names :test #'string=) 1 0)
+     (if (find "fd.exe" names :test #'string=) 1 0)
+     (if (find "rg.exe" names :test #'string=) 1 0))))
+
+
+(defun run-cli-bootstrap-migration-guide-url ()
+  (leftover-url-flags
+   cadr-cli::+migration-guide-url+
+   "https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration"))
+
+
+(defun run-cli-bootstrap-extensions-doc-url ()
+  (leftover-url-flags
+   cadr-cli::+extensions-doc-url+
+   "https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md"))
+
+
 (defun run-cli-bootstrap-write-hotkeys-command ()
   ;; Leftover on sessions.lisp: Keyboard Shortcuts + definitions.
   ;; Not hotkeys-command-markdown (keybinding display can drift).
@@ -34657,7 +34691,10 @@
          (data-directory (run-cli-bootstrap-data-directory))
          (legacy-data-directory (run-cli-bootstrap-legacy-data-directory))
          (manual-migration-command
-          (run-cli-bootstrap-manual-migration-command)))
+          (run-cli-bootstrap-manual-migration-command))
+         (managed-binary-names (run-cli-bootstrap-managed-binary-names))
+         (migration-guide-url (run-cli-bootstrap-migration-guide-url))
+         (extensions-doc-url (run-cli-bootstrap-extensions-doc-url)))
     (json-object
      "observed"
      (json-object
@@ -34784,7 +34821,20 @@
       "mmc_old" (nth 1 manual-migration-command)
       "mmc_new" (nth 2 manual-migration-command)
       "mmc_space" (nth 3 manual-migration-command)
-      "mmc_quote" (nth 4 manual-migration-command))
+      "mmc_quote" (nth 4 manual-migration-command)
+      "mbn_n" (nth 0 managed-binary-names)
+      "mbn_fd" (nth 1 managed-binary-names)
+      "mbn_rg" (nth 2 managed-binary-names)
+      "mbn_fdexe" (nth 3 managed-binary-names)
+      "mbn_rgexe" (nth 4 managed-binary-names)
+      "mgu_eq" (nth 0 migration-guide-url)
+      "mgu_https" (nth 1 migration-guide-url)
+      "mgu_gh" (nth 2 migration-guide-url)
+      "mgu_n" (nth 3 migration-guide-url)
+      "edu_eq" (nth 0 extensions-doc-url)
+      "edu_https" (nth 1 extensions-doc-url)
+      "edu_gh" (nth 2 extensions-doc-url)
+      "edu_n" (nth 3 extensions-doc-url))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -34914,7 +34964,22 @@
      (collect "cli_bootstrap_sessions.manual_migration_command"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-manual-migration-command)))))))
+                  (run-cli-bootstrap-manual-migration-command))))
+     "managed_binary_names"
+     (collect "cli_bootstrap_sessions.managed_binary_names"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-managed-binary-names))))
+     "migration_guide_url"
+     (collect "cli_bootstrap_sessions.migration_guide_url"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-migration-guide-url))))
+     "extensions_doc_url"
+     (collect "cli_bootstrap_sessions.extensions_doc_url"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-extensions-doc-url)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -36622,6 +36687,12 @@
       "src/cadr-cli/migration.lisp legacy-data-directory"
       "cli_bootstrap_sessions.manual_migration_command"
       "src/cadr-cli/migration.lisp manual-migration-command"
+      "cli_bootstrap_sessions.managed_binary_names"
+      "src/cadr-cli/migration.lisp +managed-binary-names+"
+      "cli_bootstrap_sessions.migration_guide_url"
+      "src/cadr-cli/migration.lisp +migration-guide-url+"
+      "cli_bootstrap_sessions.extensions_doc_url"
+      "src/cadr-cli/migration.lisp +extensions-doc-url+"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

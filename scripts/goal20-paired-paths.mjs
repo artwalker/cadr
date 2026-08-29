@@ -589,6 +589,9 @@ const REPETITIONS = {
 	"cli_bootstrap_sessions.data_directory": 50,
 	"cli_bootstrap_sessions.legacy_data_directory": 50,
 	"cli_bootstrap_sessions.manual_migration_command": 50,
+	"cli_bootstrap_sessions.managed_binary_names": 50,
+	"cli_bootstrap_sessions.migration_guide_url": 50,
+	"cli_bootstrap_sessions.extensions_doc_url": 50,
 	"cli_selectors.countdown_seconds": 50,
 	"cli_selectors.countdown_tick": 50,
 	"cli_selectors.countdown_render": 50,
@@ -35823,6 +35826,57 @@ function runCliBootstrapManualMigrationCommand() {
 }
 
 
+const leftoverManagedBinaryNames = ["fd", "rg", "fd.exe", "rg.exe"];
+const leftoverMigrationGuideUrl =
+	"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/CHANGELOG.md#extensions-migration";
+const leftoverExtensionsDocUrl =
+	"https://github.com/earendil-works/pi-mono/blob/main/packages/coding-agent/docs/extensions.md";
+
+
+function leftoverUrlFlags(url, expected) {
+	return {
+		eq: url === expected ? 1 : 0,
+		https: url.startsWith("https://") ? 1 : 0,
+		gh: url.includes("github.com") ? 1 : 0,
+		n: url.length,
+	};
+}
+
+
+function runCliBootstrapManagedBinaryNames() {
+	const names = leftoverManagedBinaryNames;
+	return {
+		mbn_n: names.length,
+		mbn_fd: names.includes("fd") ? 1 : 0,
+		mbn_rg: names.includes("rg") ? 1 : 0,
+		mbn_fdexe: names.includes("fd.exe") ? 1 : 0,
+		mbn_rgexe: names.includes("rg.exe") ? 1 : 0,
+	};
+}
+
+
+function runCliBootstrapMigrationGuideUrl() {
+	const flags = leftoverUrlFlags(leftoverMigrationGuideUrl, leftoverMigrationGuideUrl);
+	return {
+		mgu_eq: flags.eq,
+		mgu_https: flags.https,
+		mgu_gh: flags.gh,
+		mgu_n: flags.n,
+	};
+}
+
+
+function runCliBootstrapExtensionsDocUrl() {
+	const flags = leftoverUrlFlags(leftoverExtensionsDocUrl, leftoverExtensionsDocUrl);
+	return {
+		edu_eq: flags.eq,
+		edu_https: flags.https,
+		edu_gh: flags.gh,
+		edu_n: flags.n,
+	};
+}
+
+
 async function measureCliBootstrapCodingTools() {
 	const codingObserved = runCliBootstrapCodingTools();
 	const authObserved = await runCliBootstrapAuth();
@@ -35850,6 +35904,9 @@ async function measureCliBootstrapCodingTools() {
 	const dataDirectoryObserved = runCliBootstrapDataDirectory();
 	const legacyDataDirectoryObserved = runCliBootstrapLegacyDataDirectory();
 	const manualMigrationCommandObserved = runCliBootstrapManualMigrationCommand();
+	const managedBinaryNamesObserved = runCliBootstrapManagedBinaryNames();
+	const migrationGuideUrlObserved = runCliBootstrapMigrationGuideUrl();
+	const extensionsDocUrlObserved = runCliBootstrapExtensionsDocUrl();
 	return {
 		coding_tools: await collect("cli_bootstrap_sessions.coding_tools", () => {
 			return () => runCliBootstrapCodingTools();
@@ -35938,6 +35995,15 @@ async function measureCliBootstrapCodingTools() {
 		manual_migration_command: await collect("cli_bootstrap_sessions.manual_migration_command", () => {
 			return () => runCliBootstrapManualMigrationCommand();
 		}),
+		managed_binary_names: await collect("cli_bootstrap_sessions.managed_binary_names", () => {
+			return () => runCliBootstrapManagedBinaryNames();
+		}),
+		migration_guide_url: await collect("cli_bootstrap_sessions.migration_guide_url", () => {
+			return () => runCliBootstrapMigrationGuideUrl();
+		}),
+		extensions_doc_url: await collect("cli_bootstrap_sessions.extensions_doc_url", () => {
+			return () => runCliBootstrapExtensionsDocUrl();
+		}),
 		observed: {
 			...codingObserved,
 			...authObserved,
@@ -35965,6 +36031,9 @@ async function measureCliBootstrapCodingTools() {
 			...dataDirectoryObserved,
 			...legacyDataDirectoryObserved,
 			...manualMigrationCommandObserved,
+			...managedBinaryNamesObserved,
+			...migrationGuideUrlObserved,
+			...extensionsDocUrlObserved,
 		},
 	};
 }
@@ -37907,6 +37976,12 @@ const result = {
 				"packages/coding-agent/src/migrations.ts leftover join(home, '.' + legacy product) (cadr legacy-data-directory)",
 			"cli_bootstrap_sessions.manual_migration_command":
 				"packages/coding-agent/src/migrations.ts leftover mv -- quoted paths (cadr manual-migration-command)",
+			"cli_bootstrap_sessions.managed_binary_names":
+				"packages/coding-agent/src/migrations.ts leftover fd/rg (+ .exe) names (cadr +managed-binary-names+)",
+			"cli_bootstrap_sessions.migration_guide_url":
+				"packages/coding-agent/src/migrations.ts leftover MIGRATION_GUIDE_URL (cadr +migration-guide-url+)",
+			"cli_bootstrap_sessions.extensions_doc_url":
+				"packages/coding-agent/src/migrations.ts leftover EXTENSIONS_DOC_URL (cadr +extensions-doc-url+)",
 			"ai_runtime_faux.blocks":
 				"packages/ai/src/providers/faux.ts fauxText + fauxThinking",
 			"http_transport.parse_url":
