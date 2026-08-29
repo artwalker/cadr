@@ -248,6 +248,9 @@ const REPETITIONS = {
 	"package_manager.resource_specification": 50,
 	"package_manager.config_glob_regex": 50,
 	"package_manager.entry_target": 50,
+	"package_manager.autoload_disabled": 50,
+	"package_manager.package_entry_filter": 50,
+	"package_manager.item_matches": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -5973,6 +5976,80 @@ function runPackageManagerEntryTarget() {
 	};
 }
 
+function leftoverConfigPackageEntryAutoloadDisabledP(entry) {
+	return Boolean(
+		entry != null &&
+			typeof entry === "object" &&
+			!Array.isArray(entry) &&
+			Object.prototype.hasOwnProperty.call(entry, "autoload") &&
+			entry.autoload == null,
+	);
+}
+
+function leftoverConfigPackageEntryFilter(entry, type) {
+	if (entry == null || typeof entry !== "object" || Array.isArray(entry)) {
+		return null;
+	}
+	if (!Object.prototype.hasOwnProperty.call(entry, type)) {
+		return null;
+	}
+	const value = entry[type];
+	if (Array.isArray(value)) {
+		return value.slice();
+	}
+	return null;
+}
+
+function leftoverConfigSelectorItemMatchesP(item, query) {
+	if (query.length === 0) {
+		return true;
+	}
+	const haystacks = [item.displayName, String(item.path), item.typeName];
+	return haystacks.some((haystack) =>
+		haystack.toLowerCase().includes(query.toLowerCase()),
+	);
+}
+
+function runPackageManagerAutoloadDisabled() {
+	return {
+		ad_nil: leftoverConfigPackageEntryAutoloadDisabledP({ autoload: null }) ? 1 : 0,
+		ad_true: leftoverConfigPackageEntryAutoloadDisabledP({ autoload: true }) ? 0 : 1,
+		ad_miss: leftoverConfigPackageEntryAutoloadDisabledP({}) ? 0 : 1,
+		ad_notht: leftoverConfigPackageEntryAutoloadDisabledP("x") ? 0 : 1,
+		ad_n: 5,
+	};
+}
+
+function runPackageManagerPackageEntryFilter() {
+	const vec = leftoverConfigPackageEntryFilter({ extensions: ["a", "b"] }, "extensions");
+	const lst = leftoverConfigPackageEntryFilter({ skills: ["x"] }, "skills");
+	const miss = leftoverConfigPackageEntryFilter({}, "extensions");
+	const bad = leftoverConfigPackageEntryFilter({ extensions: 3 }, "extensions");
+	return {
+		pef_vec: Array.isArray(vec) && vec.length === 2 ? 1 : 0,
+		pef_list: Array.isArray(lst) && lst.length === 1 ? 1 : 0,
+		pef_miss: miss === null ? 1 : 0,
+		pef_bad: bad === null ? 1 : 0,
+		pef_n: 5,
+	};
+}
+
+function runPackageManagerItemMatches() {
+	const item = {
+		path: "/tmp/hello.lisp",
+		displayName: "hello.lisp",
+		typeName: "EXTENSIONS",
+	};
+	return {
+		im_empty: leftoverConfigSelectorItemMatchesP(item, "") ? 1 : 0,
+		im_name: leftoverConfigSelectorItemMatchesP(item, "HELLO") ? 1 : 0,
+		im_path: leftoverConfigSelectorItemMatchesP(item, "tmp") ? 1 : 0,
+		im_type: leftoverConfigSelectorItemMatchesP(item, "ext") ? 1 : 0,
+		im_miss: leftoverConfigSelectorItemMatchesP(item, "zzz") ? 0 : 1,
+		im_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -6069,6 +6146,9 @@ async function measurePackageManager() {
 	const resourceSpecification = runPackageManagerResourceSpecification();
 	const configGlobRegex = runPackageManagerConfigGlobRegex();
 	const entryTarget = runPackageManagerEntryTarget();
+	const autoloadDisabled = runPackageManagerAutoloadDisabled();
+	const packageEntryFilter = runPackageManagerPackageEntryFilter();
+	const itemMatches = runPackageManagerItemMatches();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6106,6 +6186,15 @@ async function measurePackageManager() {
 		entry_target: await collect("package_manager.entry_target", () => {
 			return () => runPackageManagerEntryTarget();
 		}),
+		autoload_disabled: await collect("package_manager.autoload_disabled", () => {
+			return () => runPackageManagerAutoloadDisabled();
+		}),
+		package_entry_filter: await collect("package_manager.package_entry_filter", () => {
+			return () => runPackageManagerPackageEntryFilter();
+		}),
+		item_matches: await collect("package_manager.item_matches", () => {
+			return () => runPackageManagerItemMatches();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6123,6 +6212,9 @@ async function measurePackageManager() {
 			...resourceSpecification,
 			...configGlobRegex,
 			...entryTarget,
+			...autoloadDisabled,
+			...packageEntryFilter,
+			...itemMatches,
 		},
 	};
 }
@@ -31641,6 +31733,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts globToRegex (cadr config-glob-regex)",
 			"package_manager.entry_target":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts entry target strip (cadr config-selector-entry-target)",
+			"package_manager.autoload_disabled":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package autoload disabled (cadr config-package-entry-autoload-disabled-p)",
+			"package_manager.package_entry_filter":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package entry filter (cadr config-package-entry-filter)",
+			"package_manager.item_matches":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts item query match (cadr config-selector-item-matches-p)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":
