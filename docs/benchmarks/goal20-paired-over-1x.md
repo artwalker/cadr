@@ -565,4 +565,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.package_setting_records` | 39.372 | 3.556 | 11.073× | 15.00× | measure-only leftover 790; `config-package-setting-records` vs leftover npm merge; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
 | `package_manager.selector_rebuild` | 44.571 | 4.452 | 10.012× | 15.00× | measure-only leftover 791; `config-selector-rebuild` vs leftover flat rebuild; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
 | `package_manager.switch_scope` | 52.658 | 5.942 | 8.862× | 12.00× | measure-only leftover 792; `config-selector-switch-scope` vs leftover scope flip; first-freeze headroom 12.0 | invent pause；地板优化另刀 |
+| `evals_harness.visible_extension_bundles` | 6.515 | 0.734 | 8.873× | 12.00× | measure-only leftover 794; `visible-extension-bundles` vs leftover hidden-p filter; first-freeze headroom 12.0 | invent pause；地板优化另刀 |
+| `evals_harness.authoring_harness_table` | 0.568 | 0.218 | 2.598× | 8.00× | measure-only leftover 795; `extension-authoring-harness-table` vs leftover two-row table | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
