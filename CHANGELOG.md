@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.selector_items`
+  (`config-selector-items` vs selector items). Observed `si_global` /
+  `si_proj` / `si_empty` / `si_copy` / `si_n` exact. n=5 **22.378×**
+  (10.768 / 0.481 µs) on host `cursor`, ceiling 40.0 (first-freeze
+  headroom). Measure-only leftover (Pair 727). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.item_source_base`
+  (`config-selector-item-source-base` vs item source base). Observed
+  `isb_global` / `isb_proj` / `isb_user` / `isb_diff` / `isb_n` exact.
+  n=5 **28.506×** (16.439 / 0.577 µs) on host `cursor`, ceiling 50.0
+  (first-freeze headroom). Measure-only leftover (Pair 728). Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.package_resource_pattern`
+  (`config-selector-package-resource-pattern` vs package resource
+  pattern). Observed `prp_file` / `prp_nested` / `prp_ext` / `prp_plain`
+  / `prp_n` exact. n=5 **13.804×** (15.247 / 1.105 µs) on host `cursor`,
+  ceiling 20.0 (first-freeze headroom). Measure-only leftover (Pair 729).
+  Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `package_manager.item_ordinal`
   (`config-selector-item-ordinal` vs item ordinal). Observed `io_group`
   / `io_first` / `io_second` / `io_sub` / `io_n` exact. n=5 **0.835×**

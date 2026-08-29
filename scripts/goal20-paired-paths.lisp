@@ -492,6 +492,9 @@
     ("package_manager.item_ordinal" . 50)
     ("package_manager.replace_pattern" . 50)
     ("package_manager.scope_base" . 50)
+    ("package_manager.selector_items" . 50)
+    ("package_manager.item_source_base" . 50)
+    ("package_manager.package_resource_pattern" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4773,7 +4776,8 @@
 
 (defun leftover-config-selector-state
     (selected &key (max-visible 16) (item-count nil)
-     (cwd nil) (agent-directory nil))
+     (cwd nil) (agent-directory nil)
+     (write-scope :global) (global-items nil) (project-items nil))
   (let ((flat
           (if item-count
               (loop for i below item-count
@@ -4787,6 +4791,9 @@
      :flat-items flat
      :selected selected
      :max-visible max-visible
+     :write-scope write-scope
+     :global-items global-items
+     :project-items project-items
      :cwd (and cwd (uiop:ensure-directory-pathname cwd))
      :agent-directory
      (and agent-directory
@@ -4823,6 +4830,23 @@
 
 (defun leftover-config-dir-namestring (path)
   (namestring (uiop:ensure-directory-pathname path)))
+
+(defun leftover-config-selector-items (state)
+  (cadr-cli::config-selector-items state))
+
+(defun leftover-config-selector-item-source-base (state item)
+  (cadr-cli::config-selector-item-source-base state item))
+
+(defun leftover-config-selector-package-resource-pattern (item)
+  (cadr-cli::config-selector-package-resource-pattern item))
+
+(defun leftover-config-resource-item-scoped (path type display-name scope)
+  (cadr-cli::make-config-resource-item
+   :path (parse-namestring path)
+   :type type
+   :scope scope
+   :base-directory (parse-namestring "/tmp/")
+   :display-name display-name))
 
 (defun run-package-manager-group-less-p ()
   (let ((pkg (leftover-config-group-plist :package :user "z"))
@@ -5005,6 +5029,99 @@
            (char= (char project (1- (length project))) #\/)))
      5)))
 
+(defun run-package-manager-selector-items ()
+  (let* ((a (leftover-config-resource-item "/tmp/a.lisp" :extensions "a"))
+         (b (leftover-config-resource-item "/tmp/b.lisp" :extensions "b"))
+         (c (leftover-config-resource-item "/tmp/c.lisp" :extensions "c"))
+         (global (list a b))
+         (project (list c))
+         (global-state
+           (leftover-config-selector-state
+            0 :write-scope :global
+            :global-items global :project-items project))
+         (project-state
+           (leftover-config-selector-state
+            0 :write-scope :project
+            :global-items global :project-items project))
+         (empty-state
+           (leftover-config-selector-state
+            0 :write-scope :global
+            :global-items nil :project-items project))
+         (copied (leftover-config-selector-items global-state)))
+    (setf (cdr copied) nil)
+    (list
+     (length (leftover-config-selector-items global-state))
+     (length (leftover-config-selector-items project-state))
+     (length (leftover-config-selector-items empty-state))
+     (package-manager-truth (= (length global) 2))
+     5)))
+
+(defun run-package-manager-item-source-base ()
+  (let* ((state
+           (leftover-config-selector-state
+            0
+            :cwd "/tmp/proj"
+            :agent-directory "/tmp/agent"))
+         (global-item
+           (leftover-config-resource-item-scoped
+            "/tmp/a.lisp" :extensions "a" :global))
+         (project-item
+           (leftover-config-resource-item-scoped
+            "/tmp/b.lisp" :extensions "b" :project))
+         (user-item
+           (leftover-config-resource-item-scoped
+            "/tmp/c.lisp" :extensions "c" :user)))
+    (list
+     (package-manager-truth
+      (string=
+       (leftover-config-dir-namestring
+        (leftover-config-selector-item-source-base state global-item))
+       "/tmp/agent/"))
+     (package-manager-truth
+      (string=
+       (leftover-config-dir-namestring
+        (leftover-config-selector-item-source-base state project-item))
+       "/tmp/proj/.cadr/"))
+     (package-manager-truth
+      (string=
+       (leftover-config-dir-namestring
+        (leftover-config-selector-item-source-base state user-item))
+       "/tmp/agent/"))
+     (package-manager-truth
+      (not
+       (string=
+        (leftover-config-dir-namestring
+         (leftover-config-selector-item-source-base state project-item))
+        (leftover-config-dir-namestring
+         (leftover-config-selector-item-source-base state global-item)))))
+     5)))
+
+(defun run-package-manager-package-resource-pattern ()
+  (list
+   (package-manager-truth
+    (string=
+     (leftover-config-selector-package-resource-pattern
+      (leftover-config-resource-item "/tmp/hello.lisp" :extensions "x"))
+     "hello.lisp"))
+   (package-manager-truth
+    (string=
+     (leftover-config-selector-package-resource-pattern
+      (leftover-config-resource-item
+       "/tmp/skills/hello/SKILL.md" :skills "x"))
+     "skills/hello/SKILL.md"))
+   (package-manager-truth
+    (string=
+     (leftover-config-selector-package-resource-pattern
+      (leftover-config-resource-item
+       "/tmp/extensions/foo.lisp" :extensions "x"))
+     "extensions/foo.lisp"))
+   (package-manager-truth
+    (string=
+     (leftover-config-selector-package-resource-pattern
+      (leftover-config-resource-item "/tmp/x" :extensions "x"))
+     "x"))
+   5))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -5106,7 +5223,11 @@
            (visible-range (run-package-manager-visible-range))
            (item-ordinal (run-package-manager-item-ordinal))
            (replace-pattern (run-package-manager-replace-pattern))
-           (scope-base (run-package-manager-scope-base)))
+           (scope-base (run-package-manager-scope-base))
+           (selector-items (run-package-manager-selector-items))
+           (item-source-base (run-package-manager-item-source-base))
+           (package-resource-pattern
+             (run-package-manager-package-resource-pattern)))
       (json-object
        "observed"
        (json-object
@@ -5247,7 +5368,22 @@
         "sb_proj" (nth 1 scope-base)
         "sb_nested" (nth 2 scope-base)
         "sb_slash" (nth 3 scope-base)
-        "sb_n" (nth 4 scope-base))
+        "sb_n" (nth 4 scope-base)
+        "si_global" (nth 0 selector-items)
+        "si_proj" (nth 1 selector-items)
+        "si_empty" (nth 2 selector-items)
+        "si_copy" (nth 3 selector-items)
+        "si_n" (nth 4 selector-items)
+        "isb_global" (nth 0 item-source-base)
+        "isb_proj" (nth 1 item-source-base)
+        "isb_user" (nth 2 item-source-base)
+        "isb_diff" (nth 3 item-source-base)
+        "isb_n" (nth 4 item-source-base)
+        "prp_file" (nth 0 package-resource-pattern)
+        "prp_nested" (nth 1 package-resource-pattern)
+        "prp_ext" (nth 2 package-resource-pattern)
+        "prp_plain" (nth 3 package-resource-pattern)
+        "prp_n" (nth 4 package-resource-pattern))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -5383,7 +5519,22 @@
        (collect "package_manager.scope_base"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-scope-base))))))))
+                    (run-package-manager-scope-base))))
+       "selector_items"
+       (collect "package_manager.selector_items"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-selector-items))))
+       "item_source_base"
+       (collect "package_manager.item_source_base"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-item-source-base))))
+       "package_resource_pattern"
+       (collect "package_manager.package_resource_pattern"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-package-resource-pattern))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -30625,6 +30776,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-replace-pattern"
       "package_manager.scope_base"
       "src/cadr-cli/packages/config-selector.lisp config-selector-scope-base"
+      "package_manager.selector_items"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-items"
+      "package_manager.item_source_base"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-item-source-base"
+      "package_manager.package_resource_pattern"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-package-resource-pattern"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"

@@ -263,6 +263,9 @@ const REPETITIONS = {
 	"package_manager.item_ordinal": 50,
 	"package_manager.replace_pattern": 50,
 	"package_manager.scope_base": 50,
+	"package_manager.selector_items": 50,
+	"package_manager.item_source_base": 50,
+	"package_manager.package_resource_pattern": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -6169,7 +6172,27 @@ function leftoverConfigSelectorState(selected, extras = {}) {
 		maxVisible: extras.maxVisible ?? 16,
 		cwd: extras.cwd,
 		agentDirectory: extras.agentDirectory,
+		writeScope: extras.writeScope ?? "global",
+		globalItems: extras.globalItems ?? [],
+		projectItems: extras.projectItems ?? [],
 	};
+}
+
+function leftoverConfigSelectorItems(state) {
+	return state.writeScope === "project"
+		? [...state.projectItems]
+		: [...state.globalItems];
+}
+
+function leftoverConfigSelectorItemSourceBase(state, item) {
+	return leftoverConfigSelectorScopeBase(
+		state,
+		item.scope === "project" ? "project" : "global",
+	);
+}
+
+function leftoverConfigSelectorPackageResourcePattern(item) {
+	return leftoverConfigSelectorRelativePattern(item.path, item.baseDirectory);
 }
 
 function leftoverEnsureDir(pathname) {
@@ -6394,6 +6417,113 @@ function runPackageManagerScopeBase() {
 	};
 }
 
+function leftoverConfigResourceItem(path, type, displayName, scope = "global") {
+	return {
+		path,
+		type,
+		scope,
+		baseDirectory: "/tmp/",
+		displayName,
+	};
+}
+
+function runPackageManagerSelectorItems() {
+	const a = leftoverConfigResourceItem("/tmp/a.lisp", "extensions", "a");
+	const b = leftoverConfigResourceItem("/tmp/b.lisp", "extensions", "b");
+	const c = leftoverConfigResourceItem("/tmp/c.lisp", "extensions", "c");
+	const global = [a, b];
+	const project = [c];
+	const globalState = leftoverConfigSelectorState(0, {
+		writeScope: "global",
+		globalItems: global,
+		projectItems: project,
+	});
+	const projectState = leftoverConfigSelectorState(0, {
+		writeScope: "project",
+		globalItems: global,
+		projectItems: project,
+	});
+	const emptyState = leftoverConfigSelectorState(0, {
+		writeScope: "global",
+		globalItems: [],
+		projectItems: project,
+	});
+	const copied = leftoverConfigSelectorItems(globalState);
+	copied.pop();
+	return {
+		si_global: leftoverConfigSelectorItems(globalState).length,
+		si_proj: leftoverConfigSelectorItems(projectState).length,
+		si_empty: leftoverConfigSelectorItems(emptyState).length,
+		si_copy: global.length === 2 ? 1 : 0,
+		si_n: 5,
+	};
+}
+
+function runPackageManagerItemSourceBase() {
+	const state = leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+	});
+	const globalItem = leftoverConfigResourceItem(
+		"/tmp/a.lisp",
+		"extensions",
+		"a",
+		"global",
+	);
+	const projectItem = leftoverConfigResourceItem(
+		"/tmp/b.lisp",
+		"extensions",
+		"b",
+		"project",
+	);
+	const userItem = leftoverConfigResourceItem(
+		"/tmp/c.lisp",
+		"extensions",
+		"c",
+		"user",
+	);
+	const globalBase = leftoverConfigSelectorItemSourceBase(state, globalItem);
+	const projectBase = leftoverConfigSelectorItemSourceBase(state, projectItem);
+	const userBase = leftoverConfigSelectorItemSourceBase(state, userItem);
+	return {
+		isb_global: globalBase === "/tmp/agent/" ? 1 : 0,
+		isb_proj: projectBase === "/tmp/proj/.cadr/" ? 1 : 0,
+		isb_user: userBase === "/tmp/agent/" ? 1 : 0,
+		isb_diff: projectBase !== globalBase ? 1 : 0,
+		isb_n: 5,
+	};
+}
+
+function runPackageManagerPackageResourcePattern() {
+	return {
+		prp_file:
+			leftoverConfigSelectorPackageResourcePattern(
+				leftoverConfigResourceItem("/tmp/hello.lisp", "extensions", "x"),
+			) === "hello.lisp"
+				? 1
+				: 0,
+		prp_nested:
+			leftoverConfigSelectorPackageResourcePattern(
+				leftoverConfigResourceItem("/tmp/skills/hello/SKILL.md", "skills", "x"),
+			) === "skills/hello/SKILL.md"
+				? 1
+				: 0,
+		prp_ext:
+			leftoverConfigSelectorPackageResourcePattern(
+				leftoverConfigResourceItem("/tmp/extensions/foo.lisp", "extensions", "x"),
+			) === "extensions/foo.lisp"
+				? 1
+				: 0,
+		prp_plain:
+			leftoverConfigSelectorPackageResourcePattern(
+				leftoverConfigResourceItem("/tmp/x", "extensions", "x"),
+			) === "x"
+				? 1
+				: 0,
+		prp_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -6505,6 +6635,9 @@ async function measurePackageManager() {
 	const itemOrdinal = runPackageManagerItemOrdinal();
 	const replacePattern = runPackageManagerReplacePattern();
 	const scopeBase = runPackageManagerScopeBase();
+	const selectorItems = runPackageManagerSelectorItems();
+	const itemSourceBase = runPackageManagerItemSourceBase();
+	const packageResourcePattern = runPackageManagerPackageResourcePattern();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6587,6 +6720,18 @@ async function measurePackageManager() {
 		scope_base: await collect("package_manager.scope_base", () => {
 			return () => runPackageManagerScopeBase();
 		}),
+		selector_items: await collect("package_manager.selector_items", () => {
+			return () => runPackageManagerSelectorItems();
+		}),
+		item_source_base: await collect("package_manager.item_source_base", () => {
+			return () => runPackageManagerItemSourceBase();
+		}),
+		package_resource_pattern: await collect(
+			"package_manager.package_resource_pattern",
+			() => {
+				return () => runPackageManagerPackageResourcePattern();
+			},
+		),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6619,6 +6764,9 @@ async function measurePackageManager() {
 			...itemOrdinal,
 			...replacePattern,
 			...scopeBase,
+			...selectorItems,
+			...itemSourceBase,
+			...packageResourcePattern,
 		},
 	};
 }
@@ -32167,6 +32315,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts replace pattern (cadr config-selector-replace-pattern)",
 			"package_manager.scope_base":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts scope base (cadr config-selector-scope-base)",
+			"package_manager.selector_items":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts selector items (cadr config-selector-items)",
+			"package_manager.item_source_base":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts item source base (cadr config-selector-item-source-base)",
+			"package_manager.package_resource_pattern":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package resource pattern (cadr config-selector-package-resource-pattern)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

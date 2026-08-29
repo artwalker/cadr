@@ -8536,6 +8536,30 @@ Leftover sibling of Pair 724. Timed work is drop bang target, load prefix, unloa
 
 Leftover sibling of Pairs 724–725. Timed work is global agent directory, project `.cadr/` join, nested cwd, and trailing slash. Observed `sb_global` / `sb_proj` / `sb_nested` / `sb_slash` / `sb_n` are exact. First n=5 freeze **30.489×** (16.512 / 0.542 µs) on host `cursor`, ceiling 50.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 727 — `package_manager` (selector_items)
+
+| metric | cadr | pi |
+|---|---|---|
+| `selector_items` | `config-selector-items` (`src/cadr-cli/packages/config-selector.lisp`) | selector items (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 724–726 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is global list, project list, empty global, and copy independence. Observed `si_global` / `si_proj` / `si_empty` / `si_copy` / `si_n` are exact. First n=5 freeze **22.378×** (10.768 / 0.481 µs) on host `cursor`, ceiling 40.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 728 — `package_manager` (item_source_base)
+
+| metric | cadr | pi |
+|---|---|---|
+| `item_source_base` | `config-selector-item-source-base` (`src/cadr-cli/packages/config-selector.lisp`) | item source base (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 727. Timed work is global item, project item, user item, and project-vs-global difference. Observed `isb_global` / `isb_proj` / `isb_user` / `isb_diff` / `isb_n` are exact. First n=5 freeze **28.506×** (16.439 / 0.577 µs) on host `cursor`, ceiling 50.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 729 — `package_manager` (package_resource_pattern)
+
+| metric | cadr | pi |
+|---|---|---|
+| `package_resource_pattern` | `config-selector-package-resource-pattern` (`src/cadr-cli/packages/config-selector.lisp`) | package resource pattern (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 727–728. Timed work is file, nested skill path, extensions path, and bare name. Observed `prp_file` / `prp_nested` / `prp_ext` / `prp_plain` / `prp_n` are exact. First n=5 freeze **13.804×** (15.247 / 1.105 µs) on host `cursor`, ceiling 20.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
