@@ -1666,6 +1666,16 @@ render loopback login received
            (lambda (consumer) (setf auth-prompt-consumer consumer))
            :set-status-consumer
            (lambda (consumer) (setf status-consumer consumer))
+           :tool-ensure-function
+           (lambda ()
+             (flet ((report (type message)
+                      (when status-consumer
+                        (funcall
+                         status-consumer
+                         message
+                         (if (eq type :warning) :warning :status)))))
+               (cadr-cli:ensure-tool :fd :on-status #'report)
+               (cadr-cli:ensure-tool :rg :on-status #'report)))
            :version-update-check-function
            (when
                (json-get
