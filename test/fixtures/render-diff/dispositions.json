@@ -141,7 +141,7 @@
           "cadr": "6c4e5391ec3a61ee15d538e05e7fc1dd97e2ed2e5f200edf5cd3e54434c0b564"
         }
       },
-      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '✓ Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
+      "note": "At slash-debug/debug-written [wide+narrow] the Spacer(1) + padded Text block (accent '\u2713 Debug log written', muted path line, trailing padding) matches pi line-for-line; the only visible difference is the debug-log filename pi-debug.log -> cadr-debug.log inside ~/.cadr/agent/ (I04 product identity), which in narrow also shifts the wrap of the path line; the raw ANSI update segmentation/teardown differs (I01)."
     },
     {
       "scenario": "slash-debug",
@@ -2522,14 +2522,14 @@
       "screenSha256": {
         "wide": {
           "pi": "851f87dc92273e6eba3b8d2347ce1fdccb2e10e65133b5cde254a376ee0feb1c",
-          "cadr": "0fa24a489cc5c3d5a6e34024bc9fc2635235178c5a7aef4cb4a70fb48f950b8d"
+          "cadr": "abd580ace54f44fc7e86567ffd5b73bedc70d0b28bf9086dc367862a0bdf1a21"
         },
         "narrow": {
           "pi": "4be092b33ddae2713a3c7ce412c1ba05e554337a24bc1b69a52ccd914d3e4737",
-          "cadr": "586fdc24d7decd03c5fa3ac4d69a42087719db10b2b83cce02f4e3f94a05cff4"
+          "cadr": "3894bd9801a01585e24f900ddb3aa86cc0d750554ef39c03e2dd6e2e961c009f"
         }
       },
-      "note": "At process exit the same narrow-viewport consequence holds: the approved longer cadr changelog URL (I04) wraps to two rows and the 'Release note' line sits above the frame; teardown state matches pi. ANSI segmentation differs (I01)."
+      "note": "At process exit the same narrow-viewport consequence holds: the approved longer cadr changelog URL (I04) wraps to two rows and the 'Release note' line sits above the frame; teardown state matches pi. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.84.4 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
     },
     {
       "scenario": "update-notifications",
@@ -2545,14 +2545,14 @@
       "screenSha256": {
         "wide": {
           "pi": "98064170bddabeacbe9fb9711a69ba3ac8f51ddd8c1884fd65086e40852ef93d",
-          "cadr": "5ae80d7d999c9514b694717ffa2cd395cedcde0899fae20a8db367a87cbd692a"
+          "cadr": "7e90391c946b9f33cfc17f47b771091348ff525f4e964c7a0c81304fe00e8530"
         },
         "narrow": {
           "pi": "881d95fe31eff1f7febb19b93067531351da2338aafa0c7c12bcd36a53811717",
-          "cadr": "26050ad7738df2af29f90e954752519c79a7bb206409a044272172cf07e5f453"
+          "cadr": "55427a6a90ad30ab8670e3d6fb2c71349904ee8eb2c786771a0dbf6d5248514c"
         }
       },
-      "note": "cadr's approved changelog URL (github.com/artwalker/cadr/blob/main/CHANGELOG.md, I04) wraps to two rows in the narrow dimension where pi.dev/changelog fits on one, so the 'Release note' line scrolls above the captured viewport; every visible line is otherwise identical modulo the I04 identity tokens (Run cadr update, cadr links). Raw ANSI segmentation differs (I01)."
+      "note": "cadr's approved changelog URL (github.com/artwalker/cadr/blob/main/CHANGELOG.md, I04) wraps to two rows in the narrow dimension where pi.dev/changelog fits on one, so the 'Release note' line scrolls above the captured viewport; every visible line is otherwise identical modulo the I04 identity tokens (Run cadr update, cadr links). Raw ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.84.4 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
     },
     {
       "scenario": "update-notifications-no-hyperlinks",
@@ -2568,14 +2568,14 @@
       "screenSha256": {
         "wide": {
           "pi": "a097c4618dbb217e3b694cc31c5577b2b4ac901c820968277bd586e537cf64af",
-          "cadr": "160b60c829fed3898bf6530755cf1103378b8025086e03e51d16d01a6e48c5e3"
+          "cadr": "24c971e52ef84da01c192f5fb48e1d80432018557f973ca6eda8aff1a0a747be"
         },
         "narrow": {
           "pi": "68e1c427d103b9c768bf818a7d23791e1ecc7e356b74e0b8b48556f442250d41",
-          "cadr": "586fdc24d7decd03c5fa3ac4d69a42087719db10b2b83cce02f4e3f94a05cff4"
+          "cadr": "06ebd733560d7f62369567faa0b1d9f5233cb1cb50005605aef3b731961f05ab"
         }
       },
-      "note": "At process exit, the hyperlink-free variant shows the same narrow-viewport consequence: the approved longer cadr changelog URL (I04) wraps and the 'Release note' line sits above the frame. ANSI segmentation differs (I01)."
+      "note": "At process exit, the hyperlink-free variant shows the same narrow-viewport consequence: the approved longer cadr changelog URL (I04) wraps and the 'Release note' line sits above the frame. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.84.4 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
     },
     {
       "scenario": "update-notifications-no-hyperlinks",
@@ -2591,14 +2591,14 @@
       "screenSha256": {
         "wide": {
           "pi": "31dba0c22da682b89987d6a481c032990c458835f6f64a27f4551d6c89ed0422",
-          "cadr": "adeb2e4ca789daf84cba08fa6ae3ea2e30638f0812c2aa1f91301b7a9ffc6a56"
+          "cadr": "cd6c54370f1de873f06c1eaddd2e9f8ab66de50083079b4c7f00aeb897e7b43b"
         },
         "narrow": {
           "pi": "ecac62a2fdf8228fa88cba35ada6663b1ae40c38cd79cb550ed4488a15113056",
-          "cadr": "909c56be051df44f855f5794f526333bffe2d8da41fee8267f8e1cf5bead65fb"
+          "cadr": "b7b77535fec50809c6a3ed1efd846d2dea2d8bb9b66f77cdc1f1dcb93cd6b2e3"
         }
       },
-      "note": "Same as update-notifications: the longer approved cadr changelog URL (I04) wraps in narrow and pushes the 'Release note' line above the viewport; no hyperlink escape sequences in this variant. ANSI segmentation differs (I01)."
+      "note": "Same as update-notifications: the longer approved cadr changelog URL (I04) wraps in narrow and pushes the 'Release note' line above the viewport; no hyperlink escape sequences in this variant. ANSI segmentation differs (I01). After awaiting fd/rg then painting version/package banners on the TUI thread, both viewports keep the offline 'Warning: fd not found. Offline mode enabled, skipping download.' line above the Update Available card (v0.84.4 showManagedToolStatus); the remaining wrap is still the approved longer cadr changelog URL versus pi.dev/changelog (I04)."
     },
     {
       "scenario": "user-bash-state-sweep",
@@ -3799,7 +3799,7 @@
           "cadr": "c8f4169779c35dc967bbd88b8172cb4104659d8514277338417b102c6f33c284"
         }
       },
-      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ → bin/' and 'Migrated Global commands/ → prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.4 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
+      "note": "At cli-error-sweep/cli-errors-all [wide+narrow] the startup content migrations (green 'Migrated managed binaries tools/ \u2192 bin/' and 'Migrated Global commands/ \u2192 prompts/' lines), the empty --list-models guidance table path, and the twenty CLI error/warning paths (fork/session-id conflicts, invalid and existing session ids, empty --name, @file in RPC mode and missing @file, unknown session references, --export of a missing file, auth parse and credential resolution, package install/remove/update/config errors with their dim usage hints, new-session-id warning plus the no-auth guidance, and the startup-benchmark mode error) match the baseline byte-for-byte except: cadr identity inside command names and usage lines (I04); the CADR_STARTUP_BENCHMARK environment name replacing PI_STARTUP_BENCHMARK (I04); the docs guidance path <repo>/docs/providers.md|models.md replacing the baseline's packages/coding-agent/docs/ layout (I04 product layout); and ANSI segmentation (I01). Artifact note (Part L closure): the pi v0.84.4 checkpoint-1 frame is sampled mid-stream by the 0.1s driver read window, so its recorded screen shows the mid-output scroll window while cadr emits the full stream before the first read and therefore records the final bottom window; normalized text streams are byte-equal modulo the I01/I04 substitutions above."
     },
     {
       "scenario": "cli-error-sweep",
@@ -4774,7 +4774,7 @@
           "cadr": "df6c0fae2b9d0ebf0f7212f7e956cc60a6bb966bfef2af4668fc3bedf615762d"
         }
       },
-      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries • Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
+      "note": "At example-session-name/session-named both sides show Session named: Goal20 and the footer carries \u2022 Goal20. Residual deltas are pi listing session-name.ts under Extensions, I04 identity wrapping, and I01 ANSI segmentation."
     },
     {
       "scenario": "example-dynamic-tools",
