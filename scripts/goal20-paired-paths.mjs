@@ -472,6 +472,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.kimi_host_default": 50,
 	"oauth_pkce_device.kimi_host_code": 50,
 	"oauth_pkce_device.kimi_host_trim": 50,
+	"oauth_pkce_device.token_fields": 50,
+	"oauth_pkce_device.openai_exchange": 50,
+	"oauth_pkce_device.anthropic_exchange": 50,
 	"evals_harness.make_reporter": 50,
 	"evals_harness.finite_number": 50,
 	"evals_harness.artifact_metadata": 50,
@@ -14096,6 +14099,145 @@ function runOauthKimiHostTrim() {
 }
 
 
+const OAUTH_TOKEN_OK_BODY =
+	'{"access_token":"sk-ex","refresh_token":"rt-ex","expires_in":60}';
+
+// Baseline openai-codex.ts readTokenResponse field checks are unexported;
+// keep the production body so the timed work is the same function.
+
+function readTokenFields(json) {
+	if (!json?.access_token || !json.refresh_token || typeof json.expires_in !== "number") {
+		throw new Error("OpenAI Codex token response missing fields");
+	}
+	return {
+		access: json.access_token,
+		refresh: json.refresh_token,
+	};
+}
+
+function runOauthPkceDeviceTokenFields() {
+	let trcOk = 0;
+	try {
+		const token = readTokenFields({
+			access_token: "sk-a",
+			refresh_token: "rt-a",
+			expires_in: 3600,
+		});
+		trcOk = token.access === "sk-a" && token.refresh === "rt-a" ? 1 : 0;
+	} catch {
+		trcOk = 0;
+	}
+	let trcMissAcc = 0;
+	try {
+		readTokenFields({ refresh_token: "rt-a", expires_in: 3600 });
+		trcMissAcc = 0;
+	} catch {
+		trcMissAcc = 1;
+	}
+	let trcMissExp = 0;
+	try {
+		readTokenFields({ access_token: "sk-a", refresh_token: "rt-a" });
+		trcMissExp = 0;
+	} catch {
+		trcMissExp = 1;
+	}
+	return {
+		trc_ok: trcOk,
+		trc_miss_acc: trcMissAcc,
+		trc_miss_exp: trcMissExp,
+		trc_n: 3,
+	};
+}
+
+function openaiExchangeFromStub(status, body) {
+	if (!(status >= 200 && status <= 299)) {
+		throw new Error(`OpenAI Codex token exchange failed (${status})`);
+	}
+	const json = JSON.parse(body);
+	return readTokenFields(json);
+}
+
+function runOauthPkceDeviceOpenaiExchange() {
+	let oexOk = 0;
+	try {
+		const token = openaiExchangeFromStub(200, OAUTH_TOKEN_OK_BODY);
+		oexOk = token.access === "sk-ex" && token.refresh === "rt-ex" ? 1 : 0;
+	} catch {
+		oexOk = 0;
+	}
+	let oexHttp = 0;
+	try {
+		openaiExchangeFromStub(400, "{}");
+		oexHttp = 0;
+	} catch {
+		oexHttp = 1;
+	}
+	let oexMiss = 0;
+	try {
+		openaiExchangeFromStub(200, '{"access_token":"sk-ex","expires_in":60}');
+		oexMiss = 0;
+	} catch {
+		oexMiss = 1;
+	}
+	return {
+		oex_ok: oexOk,
+		oex_http: oexHttp,
+		oex_miss: oexMiss,
+		oex_n: 3,
+	};
+}
+
+function anthropicExchangeFromStub(status, body) {
+	if (!(status >= 200 && status <= 299)) {
+		throw new Error(`HTTP request failed. status=${status}`);
+	}
+	let tokenData;
+	try {
+		tokenData = JSON.parse(body);
+	} catch {
+		throw new Error("Token exchange returned invalid JSON");
+	}
+	if (!tokenData?.access_token || !tokenData.refresh_token || typeof tokenData.expires_in !== "number") {
+		throw new Error("missing fields");
+	}
+	return {
+		access: tokenData.access_token,
+		refresh: tokenData.refresh_token,
+	};
+}
+
+function runOauthPkceDeviceAnthropicExchange() {
+	let aexOk = 0;
+	try {
+		const token = anthropicExchangeFromStub(200, OAUTH_TOKEN_OK_BODY);
+		aexOk = token.access === "sk-ex" && token.refresh === "rt-ex" ? 1 : 0;
+	} catch {
+		aexOk = 0;
+	}
+	let aexHttp = 0;
+	try {
+		anthropicExchangeFromStub(400, "{}");
+		aexHttp = 0;
+	} catch {
+		aexHttp = 1;
+	}
+	let aexBadjson = 0;
+	try {
+		anthropicExchangeFromStub(200, "not-json");
+		aexBadjson = 0;
+	} catch {
+		aexBadjson = 1;
+	}
+	return {
+		aex_ok: aexOk,
+		aex_http: aexHttp,
+		aex_badjson: aexBadjson,
+		aex_n: 3,
+	};
+}
+
+
+
 async function measureOauthPkceDevice() {
 	const poll = await runOauthPkceDevicePoll();
 	const auth = await runOauthPkceDeviceAuthJson();
@@ -14224,6 +14366,15 @@ async function measureOauthPkceDevice() {
 		kimi_host_trim: await collect("oauth_pkce_device.kimi_host_trim", () => {
 			return () => runOauthKimiHostTrim();
 		}),
+		token_fields: await collect("oauth_pkce_device.token_fields", () => {
+			return () => runOauthPkceDeviceTokenFields();
+		}),
+		openai_exchange: await collect("oauth_pkce_device.openai_exchange", () => {
+			return () => runOauthPkceDeviceOpenaiExchange();
+		}),
+		anthropic_exchange: await collect("oauth_pkce_device.anthropic_exchange", () => {
+			return () => runOauthPkceDeviceAnthropicExchange();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -14255,6 +14406,9 @@ async function measureOauthPkceDevice() {
 			...runOauthKimiHostDefault(),
 			...runOauthKimiHostCode(),
 			...runOauthKimiHostTrim(),
+			...runOauthPkceDeviceTokenFields(),
+			...runOauthPkceDeviceOpenaiExchange(),
+			...runOauthPkceDeviceAnthropicExchange(),
 			...hexValue,
 			...writeHttp,
 			...presentUrl,
