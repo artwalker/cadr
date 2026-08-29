@@ -242,6 +242,9 @@ const REPETITIONS = {
 	"package_manager.normalize_pattern": 50,
 	"package_manager.resource_kinds": 50,
 	"package_manager.type_label": 50,
+	"package_manager.resource_file_p": 50,
+	"package_manager.resource_display_name": 50,
+	"package_manager.settings_array": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -5814,6 +5817,76 @@ function runPackageManagerTypeLabel() {
 	};
 }
 
+function leftoverConfigResourceFileP(pathName, extension, basename) {
+	const file = path.basename(pathName);
+	const type = path.extname(file).replace(/^\./, "");
+	const extOk =
+		extension == null || type.toLowerCase() === String(extension).toLowerCase();
+	const baseOk = basename == null || file === basename;
+	return Boolean(extOk && baseOk);
+}
+
+function leftoverConfigResourceDisplayName(pathName, type) {
+	const file = path.basename(pathName);
+	if (type === "skills" && file === "SKILL.md") {
+		return path.basename(path.dirname(pathName));
+	}
+	return file;
+}
+
+function leftoverConfigSettingsArray(object, key) {
+	if (!object || !Object.prototype.hasOwnProperty.call(object, key)) {
+		return [];
+	}
+	const value = object[key];
+	if (Array.isArray(value)) {
+		return value.slice();
+	}
+	return null;
+}
+
+function runPackageManagerResourceFileP() {
+	return {
+		rfp_lisp: leftoverConfigResourceFileP("foo.lisp", "lisp", null) ? 1 : 0,
+		rfp_case: leftoverConfigResourceFileP("foo.LISP", "lisp", null) ? 1 : 0,
+		rfp_miss: leftoverConfigResourceFileP("foo.md", "lisp", null) ? 0 : 1,
+		rfp_skill: leftoverConfigResourceFileP("SKILL.md", null, "SKILL.md") ? 1 : 0,
+		rfp_n: 5,
+	};
+}
+
+function runPackageManagerResourceDisplayName() {
+	return {
+		rdn_skill:
+			leftoverConfigResourceDisplayName("/tmp/skills/hello/SKILL.md", "skills") ===
+			"hello"
+				? 1
+				: 0,
+		rdn_lisp:
+			leftoverConfigResourceDisplayName("/tmp/ext.lisp", "extensions") === "ext.lisp"
+				? 1
+				: 0,
+		rdn_md: leftoverConfigResourceDisplayName("/tmp/note.md", "prompts") === "note.md" ? 1 : 0,
+		rdn_json:
+			leftoverConfigResourceDisplayName("/tmp/dark.json", "themes") === "dark.json" ? 1 : 0,
+		rdn_n: 5,
+	};
+}
+
+function runPackageManagerSettingsArray() {
+	const vec = leftoverConfigSettingsArray({ a: ["x", "y"] }, "a");
+	const lst = leftoverConfigSettingsArray({ a: ["x"] }, "a");
+	const miss = leftoverConfigSettingsArray({ b: "x" }, "a");
+	const bad = leftoverConfigSettingsArray({ a: 3 }, "a");
+	return {
+		csa_vec: Array.isArray(vec) && vec.length === 2 ? 1 : 0,
+		csa_list: Array.isArray(lst) && lst.length === 1 ? 1 : 0,
+		csa_miss: Array.isArray(miss) && miss.length === 0 ? 1 : 0,
+		csa_bad: bad === null ? 1 : 0,
+		csa_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -5904,6 +5977,9 @@ async function measurePackageManager() {
 	const normalizePattern = runPackageManagerNormalizePattern();
 	const resourceKinds = runPackageManagerResourceKinds();
 	const typeLabel = runPackageManagerTypeLabel();
+	const resourceFileP = runPackageManagerResourceFileP();
+	const resourceDisplay = runPackageManagerResourceDisplayName();
+	const settingsArray = runPackageManagerSettingsArray();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -5923,6 +5999,15 @@ async function measurePackageManager() {
 		type_label: await collect("package_manager.type_label", () => {
 			return () => runPackageManagerTypeLabel();
 		}),
+		resource_file_p: await collect("package_manager.resource_file_p", () => {
+			return () => runPackageManagerResourceFileP();
+		}),
+		resource_display_name: await collect("package_manager.resource_display_name", () => {
+			return () => runPackageManagerResourceDisplayName();
+		}),
+		settings_array: await collect("package_manager.settings_array", () => {
+			return () => runPackageManagerSettingsArray();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -5934,6 +6019,9 @@ async function measurePackageManager() {
 			...normalizePattern,
 			...resourceKinds,
 			...typeLabel,
+			...resourceFileP,
+			...resourceDisplay,
+			...settingsArray,
 		},
 	};
 }
@@ -31440,6 +31528,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts RESOURCE_TYPES",
 			"package_manager.type_label":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts RESOURCE_TYPE_LABELS",
+			"package_manager.resource_file_p":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts resource file match (cadr config-resource-file-p)",
+			"package_manager.resource_display_name":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts resource display name (cadr config-resource-display-name)",
+			"package_manager.settings_array":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts settings array coerce (cadr config-settings-array)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

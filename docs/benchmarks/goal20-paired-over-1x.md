@@ -502,4 +502,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `evals_harness.prepare_default_prompt` | 2.797 | 0.417 | 6.700× | 8.00× | measure-only leftover 702; `prepare-default-prompt-override` vs prepare default prompt override | invent pause；地板优化另刀 |
 | `evals_harness.reporter_run_id` | 2.621 | 0.891 | 2.941× | 8.00× | measure-only leftover 703; `reporter-run-id` vs artifact runId | invent pause；地板优化另刀 |
 | `evals_harness.artifact_reference_json` | 0.913 | 0.155 | 5.883× | 8.00× | measure-only leftover 704; `artifact-reference-json` vs persist name/path | invent pause；地板优化另刀 |
+| `package_manager.resource_file_p` | 10.973 | 1.792 | 6.124× | 8.00× | measure-only leftover 706; `config-resource-file-p` vs resource file match | invent pause；地板优化另刀 |
+| `package_manager.resource_display_name` | 15.082 | 0.448 | 33.631× | 60.00× | measure-only leftover 707; `config-resource-display-name` vs resource display name; first-freeze headroom 60.0 | invent pause；地板优化另刀 |
+| `package_manager.settings_array` | 1.161 | 0.485 | 2.393× | 8.00× | measure-only leftover 708; `config-settings-array` vs settings array coerce | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
