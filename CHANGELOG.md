@@ -12,16 +12,20 @@ tag/Release step.
 - Goal 20 leftover: pair `package_manager.package_setting_records`
   (`config-package-setting-records` vs leftover npm merge). Observed
   `psrs_len` / `psrs_user` / `psrs_proj` / `psrs_glob` / `psrs_n` exact.
-  Measure-only leftover (Pair 790). Freeze pending. `nextPairNum` left
-  unchanged.
+  n=5 **11.073×** (39.372 / 3.556 µs) on host `cursor`, ceiling 15.0.
+  Measure-only leftover (Pair 790). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.selector_rebuild`
   (`config-selector-rebuild` vs leftover flat rebuild). Observed `crb_group`
-  / `crb_items` / `crb_sel` / `crb_query` / `crb_n` exact. Measure-only
-  leftover (Pair 791). Freeze pending. `nextPairNum` left unchanged.
+  / `crb_items` / `crb_sel` / `crb_query` / `crb_n` exact. n=5 **10.012×**
+  (44.571 / 4.452 µs) on host `cursor`, ceiling 15.0. Measure-only leftover
+  (Pair 791). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.switch_scope`
   (`config-selector-switch-scope` vs leftover scope flip). Observed
   `css_proj` / `css_glob` / `css_nop` / `css_pkg` / `css_n` exact.
-  Measure-only leftover (Pair 792). Freeze pending. `nextPairNum` left
+  n=5 **8.862×** (52.658 / 5.942 µs) on host `cursor`, ceiling 12.0.
+  Measure-only leftover (Pair 792). Over-1× booked. `nextPairNum` left
   unchanged.
 - Goal 20 leftover: pair `package_manager.project_package_entry`
   (`config-selector-project-package-entry` vs leftover project identity find).
