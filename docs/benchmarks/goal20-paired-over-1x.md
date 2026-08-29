@@ -649,4 +649,51 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.string_prefix` | 0.236 | 0.213 | 1.109× | 8.00× | measure-only leftover 802; `string-prefix-p` vs leftover startsWith; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_extensions_install.split_path_segments` | 0.885 | 0.323 | 2.742× | 8.00× | measure-only leftover 803; `split-path-segments` vs leftover split("/"); first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 | `cli_extensions_install.strip_git_query` | 0.697 | 0.248 | 2.811× | 8.00× | measure-only leftover 804; `strip-git-query-and-ref` vs leftover strip query/hash; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+||||||| parent of c080a1476 (docs(cadr-cli): record leftover 805–807 llama-ui freeze)
+| `provider_registry_defs.models_runtime` | 309.041 | 203.473 | 1.519× | 8.00× | measure-only leftover 753; `make-built-in-models-runtime` vs builtinProviders Map | invent pause；地板优化另刀 |
+| `package_manager.candidate_record` | 30.746 | 1.795 | 17.132× | 20.00× | measure-only leftover 758; `package-update-candidate-record-p` vs git/unpinned/exists | invent pause；地板优化另刀 |
+| `package_manager.update_offline` | 0.333 | 0.253 | 1.316× | 8.00× | measure-only leftover 759; `check-for-available-package-updates` offline vs isOfflineModeEnabled | invent pause；地板优化另刀 |
+| `settings_load.read_cli_config` | 200.606 | 95.628 | 2.098× | 8.00× | measure-only leftover 760; `read-cli-config` vs JSON.parse settings object | invent pause；地板优化另刀 |
+| `settings_load.provider_config_secrets` | 59.914 | 1.371 | 43.688× | 50.00× | measure-only leftover 761; `provider-config-secrets` vs apiKey/oauth/env collect; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `settings_load.resolve_provider_config` | 225.982 | 42.635 | 5.300× | 8.00× | measure-only leftover 762; `resolve-provider-config` vs openaiProvider construct | invent pause；地板优化另刀 |
+| `settings_load.sdk_default_provider` | 31.153 | 6.243 | 4.990× | 8.00× | measure-only leftover 763; `sdk-settings-default-provider` vs getDefaultProvider | invent pause；地板优化另刀 |
+| `settings_load.sdk_default_model` | 31.246 | 5.925 | 5.274× | 8.00× | measure-only leftover 764; `sdk-settings-default-model` vs getDefaultModel | invent pause；地板优化另刀 |
+| `settings_load.sdk_retry_settings` | 15.933 | 6.038 | 2.639× | 8.00× | measure-only leftover 765; `sdk-settings-retry-settings` vs getRetrySettings | invent pause；地板优化另刀 |
+| `settings_load.sdk_http_idle_timeout` | 10.990 | 8.800 | 1.249× | 8.00× | measure-only leftover 766; `sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs | invent pause；地板优化另刀 |
+| `settings_load.sdk_apply_overrides` | 45.476 | 6.534 | 6.960× | 8.00× | measure-only leftover 767; `sdk-settings-apply-overrides` vs applyOverrides | invent pause；地板优化另刀 |
+| `settings_load.sdk_model_thinking_level` | 16.293 | 3.769 | 4.323× | 8.00× | measure-only leftover 768; `sdk-settings-model-thinking-level` vs getModelThinkingLevel | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_value` | 30.545 | 0.352 | 86.814× | 100.00× | measure-only leftover 769; `sdk-settings-value` vs json-get replica; first-freeze headroom 100.0 | invent pause；地板优化另刀 |
+| `settings_load.sdk_default_thinking_level` | 9.418 | 4.677 | 2.014× | 8.00× | measure-only leftover 770; `sdk-settings-default-thinking-level` vs getDefaultThinkingLevel | invent pause；地板优化另刀 |
+| `settings_load.sdk_effective_object` | 13.971 | 0.225 | 62.130× | 80.00× | measure-only leftover 772; `sdk-settings-effective-object` vs merge replica; first-freeze headroom 80.0 | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_set` | 16.186 | 8.855 | 1.828× | 8.00× | measure-only leftover 773; `sdk-settings-set` vs setDefaultProvider/setDefaultModel/setTheme | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_remove` | 30.936 | 0.991 | 31.220× | 40.00× | measure-only leftover 774; `sdk-settings-remove` vs delete-key replica; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_reload` | 22.742 | 6.416 | 3.545× | 8.00× | measure-only leftover 775; `sdk-settings-reload` vs SettingsManager.reload | invent pause；地板优化另刀 |
+| `settings_load.sdk_settings_flush` | 22.538 | 5.139 | 4.385× | 8.00× | measure-only leftover 776; `sdk-settings-flush` vs SettingsManager.flush | invent pause；地板优化另刀 |
+| `settings_load.sdk_compaction_enabled` | 15.262 | 5.436 | 2.808× | 8.00× | measure-only leftover 777; `sdk-settings-compaction-enabled-p` vs getCompactionEnabled | invent pause；地板优化另刀 |
+| `evals_harness.matching_hello_call` | 3.448 | 1.294 | 2.665× | 8.00× | measure-only leftover 778; `matching-hello-tool-call-p` vs ExtensionAuthoringJudge hello-call | invent pause；地板优化另刀 |
+| `evals_harness.authoring_judge` | 13.153 | 3.689 | 3.565× | 8.00× | measure-only leftover 779; `judge-extension-authoring-result` vs ExtensionAuthoringJudge | invent pause；地板优化另刀 |
+| `package_manager.resource_item_key` | 34.919 | 0.914 | 38.223× | 50.00× | measure-only leftover 781; `config-resource-item-key` vs leftover getResourceItemKey; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `package_manager.project_override_state` | 52.878 | 2.954 | 17.903× | 20.00× | measure-only leftover 782; `config-selector-project-state` vs leftover override hash; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.next_project_state` | 52.464 | 4.986 | 10.522× | 15.00× | measure-only leftover 783; `config-selector-next-project-state` vs leftover nextProjectOverrideState; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.inherited_enabled` | 44.007 | 2.829 | 15.558× | 20.00× | measure-only leftover 784; `config-selector-inherited-enabled-p` vs leftover inheritedEnabled map; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.resource_group_key` | 33.767 | 0.902 | 37.443× | 50.00× | measure-only leftover 785; `config-resource-group-key` vs leftover group key; first-freeze headroom 50.0 | invent pause；地板优化另刀 |
+| `package_manager.package_entry_index` | 37.334 | 2.313 | 16.140× | 20.00× | measure-only leftover 786; `config-selector-package-entry-index` vs leftover npm identity index; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.project_package_entry` | 41.428 | 3.242 | 12.778× | 15.00× | measure-only leftover 787; `config-selector-project-package-entry` vs leftover project identity find; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.project_package_state` | 46.466 | 3.385 | 13.727× | 15.00× | measure-only leftover 788; `config-selector-project-package-state` vs leftover filter walk; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.package_setting_record` | 32.598 | 1.048 | 31.093× | 40.00× | measure-only leftover 789; `config-package-setting-record` vs leftover npm record; first-freeze headroom 40.0 | invent pause；地板优化另刀 |
+| `package_manager.package_setting_records` | 39.372 | 3.556 | 11.073× | 15.00× | measure-only leftover 790; `config-package-setting-records` vs leftover npm merge; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.selector_rebuild` | 44.571 | 4.452 | 10.012× | 15.00× | measure-only leftover 791; `config-selector-rebuild` vs leftover flat rebuild; first-freeze headroom 15.0 | invent pause；地板优化另刀 |
+| `package_manager.switch_scope` | 52.658 | 5.942 | 8.862× | 12.00× | measure-only leftover 792; `config-selector-switch-scope` vs leftover scope flip; first-freeze headroom 12.0 | invent pause；地板优化另刀 |
+| `evals_harness.visible_extension_bundles` | 6.515 | 0.734 | 8.873× | 12.00× | measure-only leftover 794; `visible-extension-bundles` vs leftover hidden-p filter; first-freeze headroom 12.0 | invent pause；地板优化另刀 |
+| `evals_harness.authoring_harness_table` | 0.568 | 0.218 | 2.598× | 8.00× | measure-only leftover 795; `extension-authoring-harness-table` vs leftover two-row table | invent pause；地板优化另刀 |
+| `package_manager.git_output` | 24.678 | 0.260 | 95.093× | 120.00× | measure-only leftover 796; `package-update-git-output` vs leftover git argv runner; first-freeze headroom 120.0 | invent pause；地板优化另刀 |
+| `package_manager.remote_ref` | 26.081 | 1.304 | 20.001× | 25.00× | measure-only leftover 797; `package-update-remote-ref` vs leftover origin/ upstream ref; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
+| `package_manager.update_record_result` | 32.630 | 7.033 | 4.640× | 8.00× | measure-only leftover 798; `package-update-record-result` vs leftover host/path result | invent pause；地板优化另刀 |
+| `package_manager.selector_hint` | 11.293 | 0.675 | 16.742× | 20.00× | measure-only leftover 799; `config-selector-hint` vs leftover keyHint wrap; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.override_suffix` | 49.261 | 2.679 | 18.389× | 25.00× | measure-only leftover 800; `config-selector-override-suffix` vs leftover getItemSuffix; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
+| `package_manager.checkbox` | 51.092 | 2.611 | 19.566× | 25.00× | measure-only leftover 801; `config-selector-checkbox` vs leftover renderCheckbox; first-freeze headroom 25.0 | invent pause；地板优化另刀 |
+| `cli_extensions_install.split_path_segments` | 0.635 | 0.295 | 2.152× | 8.00× | measure-only leftover 803; `split-path-segments` vs leftover split("/"); first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_format_context` | 0.586 | 0.299 | 1.959× | 8.00× | measure-only leftover 805; `llama-format-context-size` vs leftover Math.round k; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_js_to_fixed` | 0.807 | 0.511 | 1.577× | 8.00× | measure-only leftover 806; `llama-js-to-fixed` vs leftover Number.toFixed; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
+| `cli_extensions_install.llama_search_exact` | 0.678 | 0.284 | 2.389× | 8.00× | measure-only leftover 807; `llama-search-exact-query-p` vs leftover org/name regex; first-freeze headroom 8.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

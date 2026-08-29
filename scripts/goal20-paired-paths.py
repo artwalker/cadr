@@ -1129,8 +1129,11 @@ RATIO_CEILINGS = {
     "cli_extensions_install.strip_git_query": 8.0,
     # leftover 805–807 llama/ui.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 805–807.
+    # leftover 805; first freeze 1.959× (0.586 / 0.299 µs).
     "cli_extensions_install.llama_format_context": 8.0,
+    # leftover 806; first freeze 1.577× (0.807 / 0.511 µs).
     "cli_extensions_install.llama_js_to_fixed": 8.0,
+    # leftover 807; first freeze 2.389× (0.678 / 0.284 µs).
     "cli_extensions_install.llama_search_exact": 8.0,
     # cli_bootstrap_sessions.parse_bash leftover (samples=5): observed 0.421x
     # (0.528 / 1.252 us). 8.0 is first-freeze headroom. Ratchet down only.
