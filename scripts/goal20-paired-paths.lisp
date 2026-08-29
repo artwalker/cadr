@@ -22502,17 +22502,17 @@
             (lambda (text) (setf got text))))
          (ch (write-char #\x stream)))
     (finish-output stream)
-    (let ((empty-got nil)
-          (empty
-            (cadr-cli::make-notification-output-stream
-             (lambda (text) (setf empty-got text)))))
-      (cadr-cli::notification-stream-flush empty)
-      (list
-       (if (streamp stream) 1 0)
-       (if (string= got "x") 1 0)
-       (if (null empty-got) 1 0)
-       (if (eql ch #\x) 1 0)
-       5))))
+    (let ((empty-got nil))
+      (let ((empty
+              (cadr-cli::make-notification-output-stream
+               (lambda (text) (setf empty-got text)))))
+        (cadr-cli::notification-stream-flush empty)
+        (list
+         (if (streamp stream) 1 0)
+         (if (string= got "x") 1 0)
+         (if (null empty-got) 1 0)
+         (if (eql ch #\x) 1 0)
+         5))))
 
 (defun run-cli-interactive-notification-stream-flush ()
   ;; Leftover sibling: flush buffered chars. Empty flush is a no-op.
