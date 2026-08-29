@@ -551,4 +551,6 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.sdk_settings_reload` | 22.742 | 6.416 | 3.545× | 8.00× | measure-only leftover 775; `sdk-settings-reload` vs SettingsManager.reload | invent pause；地板优化另刀 |
 | `settings_load.sdk_settings_flush` | 22.538 | 5.139 | 4.385× | 8.00× | measure-only leftover 776; `sdk-settings-flush` vs SettingsManager.flush | invent pause；地板优化另刀 |
 | `settings_load.sdk_compaction_enabled` | 15.262 | 5.436 | 2.808× | 8.00× | measure-only leftover 777; `sdk-settings-compaction-enabled-p` vs getCompactionEnabled | invent pause；地板优化另刀 |
+| `evals_harness.matching_hello_call` | 3.448 | 1.294 | 2.665× | 8.00× | measure-only leftover 778; `matching-hello-tool-call-p` vs ExtensionAuthoringJudge hello-call | invent pause；地板优化另刀 |
+| `evals_harness.authoring_judge` | 13.153 | 3.689 | 3.565× | 8.00× | measure-only leftover 779; `judge-extension-authoring-result` vs ExtensionAuthoringJudge | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

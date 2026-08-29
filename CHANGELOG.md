@@ -12,18 +12,21 @@ tag/Release step.
 - Goal 20 leftover: pair `evals_harness.matching_hello_call`
   (`matching-hello-tool-call-p` vs ExtensionAuthoringJudge hello-call).
   Observed `mh_hit` / `mh_alice` / `mh_empty` / `mh_no_res` / `mh_n` exact.
-  Measure-only leftover (Pair 778). Freeze pending n=5 `--only-enforce`.
-  `nextPairNum` left unchanged.
+  n=5 **2.665×** (3.448 / 1.294 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 778). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `evals_harness.authoring_judge`
   (`judge-extension-authoring-result` vs ExtensionAuthoringJudge). Observed
   `aj_pass` / `aj_src` / `aj_api` / `aj_resp` / `aj_n` exact. Do not compare
-  rationale copy. Measure-only leftover (Pair 779). Freeze pending n=5
-  `--only-enforce`. `nextPairNum` left unchanged.
+  rationale copy. n=5 **3.565×** (13.153 / 3.689 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 779). Over-1× booked.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `evals_harness.source_bundle`
   (`extension-source-bundle` vs hello-tool bundle pick). Observed
   `esb_hello` / `esb_first` / `esb_empty` / `esb_tools` / `esb_n` exact.
-  Measure-only leftover (Pair 780). Freeze pending n=5 `--only-enforce`.
-  `nextPairNum` left unchanged.
+  n=5 **0.596×** (0.500 / 0.840 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 780). `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /
