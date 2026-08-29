@@ -8734,7 +8734,7 @@ Leftover sibling of Pairs 748–749. Timed work is github-copilot filter functio
 |---|---|---|
 | `threads_absent` | `cadr-ai::stop-thread-for-cleanup` on `nil` (`src/cadr-ai/support/threads.lisp`) | `node:worker_threads` absent-handle branch |
 
-Leftover trio on unclaimed `src/cadr-ai/support/threads.lisp`. Timed work is the cadr-ai wrapper when the thread handle is missing (`:absent`). Observed `tha_eq` / `tha_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover trio on unclaimed `src/cadr-ai/support/threads.lisp`. Timed work is the cadr-ai wrapper when the thread handle is missing (`:absent`). Observed `tha_eq` / `tha_n` are exact. First n=5 freeze **1.104×** (0.082 / 0.074 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 884 — `ai_support` (threads_current)
 
@@ -8742,7 +8742,7 @@ Leftover trio on unclaimed `src/cadr-ai/support/threads.lisp`. Timed work is the
 |---|---|---|
 | `threads_current` | `cadr-ai::stop-thread-for-cleanup` on the current thread (`src/cadr-ai/support/threads.lisp`) | `node:worker_threads` `isMainThread` |
 
-Leftover sibling of Pair 883. Timed work is the cadr-ai wrapper on `sb-thread:*current-thread*` (`:current`). Observed `thc_eq` / `thc_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 883. Timed work is the cadr-ai wrapper on `sb-thread:*current-thread*` (`:current`). Observed `thc_eq` / `thc_n` are exact. First n=5 freeze **1.135×** (0.082 / 0.072 µs) on host `cursor`, ceiling 8.0. Over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 885 — `ai_support` (threads_joined)
 
@@ -8750,7 +8750,7 @@ Leftover sibling of Pair 883. Timed work is the cadr-ai wrapper on `sb-thread:*c
 |---|---|---|
 | `threads_joined` | `cadr-ai::stop-thread-for-cleanup` on a finished thread (`src/cadr-ai/support/threads.lisp`) | `node:worker_threads` Worker eval-exit |
 
-Leftover sibling of Pairs 883–884. Timed work is the cadr-ai wrapper after `join-thread` (`:joined`). Observed `thj_eq` / `thj_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 883–884. Timed work is the cadr-ai wrapper after `join-thread` (`:joined`). Observed `thj_eq` / `thj_n` are exact. First n=5 freeze **0.005×** (117.877 / 24727.221 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

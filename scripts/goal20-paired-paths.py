@@ -1636,11 +1636,11 @@ RATIO_CEILINGS = {
     # 27.66x (1922 / 69.5 us). cadr-docs-directory hits
     # ASDF. 50.0 is first-freeze headroom. Ratchet down only.
     "ai_support.auth_guidance": 50.0,
-    # leftover 883; first-freeze headroom. Ratchet down only.
+    # leftover 883; first freeze 1.104× (0.082 / 0.074 µs). Over-1×.
     "ai_support.threads_absent": 8.0,
-    # leftover 884; first-freeze headroom. Ratchet down only.
+    # leftover 884; first freeze 1.135× (0.082 / 0.072 µs). Over-1×.
     "ai_support.threads_current": 8.0,
-    # leftover 885; first-freeze headroom. Ratchet down only.
+    # leftover 885; first freeze 0.005× (117.877 / 24727.221 µs). Under-1×.
     "ai_support.threads_joined": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # tui_select_settings_loaders pair (samples=5): observed

@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `ai_support.threads_absent`
+  (`cadr-ai::stop-thread-for-cleanup` nil vs worker_threads absent-handle).
+  Observed `tha_eq` / `tha_n` exact. n=5 **1.104×** (0.082 / 0.074 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 883).
+  Over-1×. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `ai_support.threads_current`
+  (`cadr-ai::stop-thread-for-cleanup` current vs `isMainThread`).
+  Observed `thc_eq` / `thc_n` exact. n=5 **1.135×** (0.082 / 0.072 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 884).
+  Over-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `ai_support.threads_joined`
+  (`cadr-ai::stop-thread-for-cleanup` joined vs Worker eval-exit).
+  Observed `thj_eq` / `thj_n` exact. n=5 **0.005×** (117.877 /
+  24727.221 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 885). Under-1×. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /

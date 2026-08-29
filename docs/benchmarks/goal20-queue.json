@@ -6889,6 +6889,51 @@
    "piUs": 215.457,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 883,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/support/threads.lisp",
+   "measure": "measure-ai-support-estimate",
+   "metric": "ai_support.threads_absent",
+   "branch": "cursor/ai-support-threads-leftovers-883-885-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 883",
+   "ratio": 1.104,
+   "cadrUs": 0.082,
+   "piUs": 0.074,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 884,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/support/threads.lisp",
+   "measure": "measure-ai-support-estimate",
+   "metric": "ai_support.threads_current",
+   "branch": "cursor/ai-support-threads-leftovers-883-885-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 884",
+   "ratio": 1.135,
+   "cadrUs": 0.082,
+   "piUs": 0.072,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 885,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/support/threads.lisp",
+   "measure": "measure-ai-support-estimate",
+   "metric": "ai_support.threads_joined",
+   "branch": "cursor/ai-support-threads-leftovers-883-885-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 885",
+   "ratio": 0.005,
+   "cadrUs": 117.877,
+   "piUs": 24727.221,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
