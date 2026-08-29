@@ -7984,6 +7984,30 @@ Leftover sibling of Pair 655. Timed work is replace-with-new user, drop usage, p
 
 Leftover sibling of Pairs 655–656. Timed work is OSC 133 sandwich + wrap of padding+text (`hello` / empty / pad 1). Observed `rum_hi` / `rum_n` / `rum_osc` / `rum_pad` / `rum_empty` are exact. First n=5 freeze **2.567×** (3.956 / 1.541 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 658 — `cli_interactive_controller` (render_assistant_lines)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_assistant_lines` | `render-assistant-message-lines` (`src/cadr-cli/interactive/transcript.lisp`) | AssistantMessageComponent wrap + OSC 133 (`packages/coding-agent/src/modes/interactive/components/assistant-message.ts`) |
+
+Leftover sibling of Pairs 655–657 on the same `transcript.lisp` hole. Timed work is text wrap + OSC, hidden thinking (`Thinking...`), and length stop-reason truncation. Observed `ram_hi` / `ram_n` / `ram_osc` / `ram_think` / `ram_trunc` are exact. First n=5 freeze **2.730×** (12.279 / 4.498 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 659 — `cli_interactive_controller` (transform_tui_markdown)
+
+| metric | cadr | pi |
+|---|---|---|
+| `transform_tui_markdown` | `transform-tui-markdown` (`src/cadr-cli/interactive/transcript.lisp`) | mermaid transform + markdown cache (`packages/coding-agent/src/modes/interactive/components/assistant-message.ts`) |
+
+Leftover sibling of Pair 658. Timed work is nil-host mermaid passthrough, cache hit/miss (`:assistant` then `:other`), mermaid-mode `off`, and thinking skip. Observed `ttm_eq` / `ttm_n` / `ttm_off` / `ttm_think` / `ttm_hit` are exact. First n=5 freeze **1.485×** (2.923 / 1.968 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 660 — `cli_interactive_controller` (render_transcript_summary)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_transcript_summary` | `render-transcript-summary-entry` (`src/cadr-cli/interactive/transcript.lisp`) | skill/branch/compaction CustomMessage (`packages/coding-agent/src/modes/interactive/components/skill-invocation-message.ts`) |
+
+Leftover sibling of Pairs 658–659. Timed work is collapsed skill/branch/compaction box render. Observed `rts_skill` / `rts_foo` / `rts_branch` / `rts_comp` / `rts_n` are exact. First n=5 freeze **255.111×** (786.501 / 3.083 µs) on host `cursor`. First-freeze headroom ceiling **400.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
