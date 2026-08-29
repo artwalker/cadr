@@ -8512,6 +8512,30 @@ Leftover sibling of Pair 721. Timed work is forward, skip subgroup, backward, an
 
 Leftover sibling of Pairs 721–722. Timed work is small list, mid window, top clamp, and bottom clamp. Observed `vr_small` / `vr_mid` / `vr_top` / `vr_bot` / `vr_n` are exact. First n=5 freeze **0.542×** (1.898 / 3.504 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 724 — `package_manager` (item_ordinal)
+
+| metric | cadr | pi |
+|---|---|---|
+| `item_ordinal` | `config-selector-item-ordinal` (`src/cadr-cli/packages/config-selector.lisp`) | item ordinal (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 721–723 on `src/cadr-cli/packages/config-selector.lisp`. Timed work is group, first item, second item, and subgroup ordinals. Observed `io_group` / `io_first` / `io_second` / `io_sub` / `io_n` are exact. First n=5 freeze **0.835×** (1.077 / 1.289 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 725 — `package_manager` (replace_pattern)
+
+| metric | cadr | pi |
+|---|---|---|
+| `replace_pattern` | `config-selector-replace-pattern` (`src/cadr-cli/packages/config-selector.lisp`) | replace pattern (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 724. Timed work is drop bang target, load prefix, unload prefix, and keep source pattern. Observed `rp_drop` / `rp_load` / `rp_unload` / `rp_keep` / `rp_n` are exact. First n=5 freeze **0.716×** (0.629 / 0.879 µs) on host `cursor`, ceiling 8.0. cadr leads. Not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 726 — `package_manager` (scope_base)
+
+| metric | cadr | pi |
+|---|---|---|
+| `scope_base` | `config-selector-scope-base` (`src/cadr-cli/packages/config-selector.lisp`) | scope base (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 724–725. Timed work is global agent directory, project `.cadr/` join, nested cwd, and trailing slash. Observed `sb_global` / `sb_proj` / `sb_nested` / `sb_slash` / `sb_n` are exact. First n=5 freeze **30.489×** (16.512 / 0.542 µs) on host `cursor`, ceiling 50.0 (first-freeze headroom). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

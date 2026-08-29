@@ -784,9 +784,14 @@ RATIO_CEILINGS = {
     "package_manager.selector_move": 8.0,
     # leftover 723; first freeze 0.542× (1.898 / 3.504 µs). cadr leads.
     "package_manager.visible_range": 8.0,
+    # package_manager leftover trio on config-selector.lisp (samples=5):
+    # first-freeze headroom. Ratchet down only. Measure-only leftover 724–726.
+    # leftover 724; first freeze 0.835× (1.077 / 1.289 µs). cadr leads.
     "package_manager.item_ordinal": 8.0,
+    # leftover 725; first freeze 0.716× (0.629 / 0.879 µs). cadr leads.
     "package_manager.replace_pattern": 8.0,
-    "package_manager.scope_base": 8.0,
+    # leftover 726; first freeze 30.489× (16.512 / 0.542 µs).
+    "package_manager.scope_base": 50.0,
     # package_manager leftover trio on update-checks.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.
     "package_manager.update_argv": 8.0,
