@@ -584,6 +584,9 @@
     ("settings_load.sdk_settings_value" . 150)
     ("settings_load.sdk_default_thinking_level" . 50)
     ("settings_load.sdk_drain_errors" . 50)
+    ("settings_load.sdk_effective_object" . 50)
+    ("settings_load.sdk_settings_set" . 50)
+    ("settings_load.sdk_settings_remove" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -4561,6 +4564,51 @@
      (if (null again) 1 0)
      (if (and (zerop (length first)) (null first) (null again)) 1 0)
      5)))
+
+(defun run-settings-load-sdk-effective-object ()
+  ;; Leftover sibling: merged settings object. Not login I/O.
+  (let* ((hit
+           (cadr-cli::sdk-settings-effective-object
+            (leftover-sdk-settings-fixture)))
+         (empty
+           (cadr-cli::sdk-settings-effective-object
+            (cadr-cli::make-memory-sdk-settings-manager))))
+    (list
+     (if (equal (cadr-ai::json-get hit "defaultProvider") "openai") 1 0)
+     (if (equal (cadr-ai::json-get hit "defaultModel") "gpt-4") 1 0)
+     (if (null (cadr-ai::json-get empty "defaultProvider")) 1 0)
+     (if (hash-table-p hit) 1 0)
+     5)))
+
+(defun run-settings-load-sdk-settings-set ()
+  ;; Leftover sibling: memory sdk-settings-set vs setDefaultProvider.
+  ;; Path is nil so this does not write settings.json.
+  (let ((mgr (cadr-cli::make-memory-sdk-settings-manager)))
+    (cadr-cli::sdk-settings-set mgr "defaultProvider" "anthropic")
+    (cadr-cli::sdk-settings-set mgr "defaultModel" "gpt-5")
+    (list
+     (if (equal (cadr-cli::sdk-settings-default-provider mgr) "anthropic")
+         1
+         0)
+     (if (equal (cadr-cli::sdk-settings-default-model mgr) "gpt-5") 1 0)
+     (if (equal (cadr-cli::sdk-settings-set mgr "theme" "dark") "dark")
+         1
+         0)
+     (if (stringp (cadr-cli::sdk-settings-default-provider mgr)) 1 0)
+     5)))
+
+(defun run-settings-load-sdk-settings-remove ()
+  ;; Leftover sibling: memory remhash. Pi has no generic remove;
+  ;; leftover replica is delete-key on the fixture object.
+  (let ((mgr (leftover-sdk-settings-fixture)))
+    (cadr-cli::sdk-settings-remove mgr "defaultProvider")
+    (list
+     (if (null (cadr-cli::sdk-settings-default-provider mgr)) 1 0)
+     (if (equal (cadr-cli::sdk-settings-default-model mgr) "gpt-4") 1 0)
+     (if (null (cadr-cli::sdk-settings-remove mgr "nope")) 1 0)
+     (if (null (cadr-cli::sdk-settings-value mgr "defaultProvider")) 1 0)
+     5)))
+
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
@@ -4876,7 +4924,13 @@
               (sdk-default-thinking-level
                 (run-settings-load-sdk-default-thinking-level))
               (sdk-drain-errors
-                (run-settings-load-sdk-drain-errors)))
+                (run-settings-load-sdk-drain-errors))
+              (sdk-effective-object
+                (run-settings-load-sdk-effective-object))
+              (sdk-settings-set
+                (run-settings-load-sdk-settings-set))
+              (sdk-settings-remove
+                (run-settings-load-sdk-settings-remove)))
         (json-object
          "observed"
          (json-object
@@ -5012,7 +5066,22 @@
           "sde_empty" (nth 1 sdk-drain-errors)
           "sde_again" (nth 2 sdk-drain-errors)
           "sde_ok" (nth 3 sdk-drain-errors)
-          "sde_n" (nth 4 sdk-drain-errors))
+          "sde_n" (nth 4 sdk-drain-errors)
+          "seo_prov" (nth 0 sdk-effective-object)
+          "seo_model" (nth 1 sdk-effective-object)
+          "seo_empty" (nth 2 sdk-effective-object)
+          "seo_obj" (nth 3 sdk-effective-object)
+          "seo_n" (nth 4 sdk-effective-object)
+          "sss_prov" (nth 0 sdk-settings-set)
+          "sss_model" (nth 1 sdk-settings-set)
+          "sss_theme" (nth 2 sdk-settings-set)
+          "sss_str" (nth 3 sdk-settings-set)
+          "sss_n" (nth 4 sdk-settings-set)
+          "ssr_miss" (nth 0 sdk-settings-remove)
+          "ssr_keep" (nth 1 sdk-settings-remove)
+          "ssr_ret" (nth 2 sdk-settings-remove)
+          "ssr_val" (nth 3 sdk-settings-remove)
+          "ssr_n" (nth 4 sdk-settings-remove))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -5145,7 +5214,22 @@
          (collect "settings_load.sdk_drain_errors"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-sdk-drain-errors))))))))))
+                      (run-settings-load-sdk-drain-errors))))
+         "sdk_effective_object"
+         (collect "settings_load.sdk_effective_object"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-effective-object))))
+         "sdk_settings_set"
+         (collect "settings_load.sdk_settings_set"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-settings-set))))
+         "sdk_settings_remove"
+         (collect "settings_load.sdk_settings_remove"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-settings-remove))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -34563,6 +34647,12 @@
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-default-thinking-level"
       "settings_load.sdk_drain_errors"
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-drain-errors"
+      "settings_load.sdk_effective_object"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-effective-object"
+      "settings_load.sdk_settings_set"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-set"
+      "settings_load.sdk_settings_remove"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-remove"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"
