@@ -269,6 +269,9 @@ const REPETITIONS = {
 	"package_manager.package_override_source": 50,
 	"package_manager.resource_group_label": 50,
 	"package_manager.settings_values": 50,
+	"package_manager.pattern_candidates": 50,
+	"package_manager.pattern_matches": 50,
+	"package_manager.enabled_by_patterns": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -5948,6 +5951,111 @@ function leftoverConfigGlobRegex(pattern) {
 	return `${out}$`;
 }
 
+function leftoverFileNamestring(filePath) {
+	const parts = filePath.replaceAll("\\", "/").split("/").filter(Boolean);
+	return parts[parts.length - 1] ?? "";
+}
+
+function leftoverPathnameDirectoryPathname(filePath) {
+	const file = filePath.replaceAll("\\", "/");
+	const idx = file.lastIndexOf("/");
+	if (idx < 0) {
+		return "./";
+	}
+	return leftoverEnsureDir(file.slice(0, idx + 1));
+}
+
+function leftoverConfigPatternCandidates(path, baseDirectory = "/tmp/") {
+	const absolute = leftoverConfigNormalizePatternPath(path);
+	const relative = leftoverConfigNormalizePatternPath(
+		leftoverConfigSelectorRelativePattern(path, baseDirectory),
+	);
+	const name = leftoverFileNamestring(path);
+	const out = [];
+	const push = (value) => {
+		if (!out.includes(value)) {
+			out.push(value);
+		}
+	};
+	push(relative);
+	push(name);
+	push(absolute);
+	if (name === "SKILL.md") {
+		const parent = leftoverPathnameDirectoryPathname(path);
+		push(
+			leftoverConfigNormalizePatternPath(
+				leftoverConfigSelectorRelativePattern(parent, baseDirectory).replace(
+					/\/+$/,
+					"",
+				),
+			),
+		);
+		const parts = parent.replace(/\/+$/, "").split("/").filter(Boolean);
+		push(parts[parts.length - 1] ?? "");
+		push(leftoverConfigNormalizePatternPath(parent.replace(/\/+$/, "")));
+	}
+	return out;
+}
+
+function leftoverConfigPatternMatchesP(path, pattern, baseDirectory, exactP = false) {
+	const normalized = leftoverConfigNormalizePatternPath(pattern);
+	const candidates = leftoverConfigPatternCandidates(path, baseDirectory);
+	if (exactP) {
+		return candidates.includes(normalized);
+	}
+	const re = new RegExp(leftoverConfigGlobRegex(normalized));
+	return candidates.some((candidate) => re.test(candidate));
+}
+
+function leftoverConfigEnabledByPatternsP(
+	path,
+	patterns,
+	baseDirectory,
+	defaultEnabled = true,
+) {
+	const includes = [];
+	const excludes = [];
+	const loads = [];
+	const unloads = [];
+	for (const pattern of patterns) {
+		if (typeof pattern !== "string" || pattern.length === 0) {
+			continue;
+		}
+		switch (pattern[0]) {
+			case "+":
+				loads.push(pattern.slice(1));
+				break;
+			case "-":
+				unloads.push(pattern.slice(1));
+				break;
+			case "!":
+				excludes.push(pattern.slice(1));
+				break;
+			default:
+				includes.push(pattern);
+		}
+	}
+	let enabled = includes.length
+		? includes.some((entry) => leftoverConfigPatternMatchesP(path, entry, baseDirectory))
+		: defaultEnabled;
+	if (
+		excludes.some((entry) => leftoverConfigPatternMatchesP(path, entry, baseDirectory))
+	) {
+		enabled = false;
+	}
+	if (
+		loads.some((entry) => leftoverConfigPatternMatchesP(path, entry, baseDirectory, true))
+	) {
+		enabled = true;
+	}
+	if (
+		unloads.some((entry) => leftoverConfigPatternMatchesP(path, entry, baseDirectory, true))
+	) {
+		enabled = false;
+	}
+	return Boolean(enabled);
+}
+
 function leftoverConfigSelectorEntryTarget(entry) {
 	if (entry.length > 0 && "!+-".includes(entry[0])) {
 		return entry.slice(1);
@@ -6697,6 +6805,63 @@ function runPackageManagerSettingsValues() {
 	};
 }
 
+function runPackageManagerPatternCandidates() {
+	const plain = leftoverConfigPatternCandidates("/tmp/hello.lisp", "/tmp/");
+	const skill = leftoverConfigPatternCandidates("/tmp/skills/hello/SKILL.md", "/tmp/");
+	return {
+		cpc_plain: plain.length === 2 ? 1 : 0,
+		cpc_abs: plain.includes("/tmp/hello.lisp") ? 1 : 0,
+		cpc_skill: skill.length === 6 ? 1 : 0,
+		cpc_hello: skill.includes("hello") ? 1 : 0,
+		cpc_n: 5,
+	};
+}
+
+function runPackageManagerPatternMatches() {
+	return {
+		cpm_lisp: leftoverConfigPatternMatchesP("/tmp/hello.lisp", "*.lisp", "/tmp/")
+			? 1
+			: 0,
+		cpm_miss: leftoverConfigPatternMatchesP("/tmp/hello.lisp", "*.md", "/tmp/")
+			? 0
+			: 1,
+		cpm_exact: leftoverConfigPatternMatchesP(
+			"/tmp/skills/hello/SKILL.md",
+			"SKILL.md",
+			"/tmp/",
+			true,
+		)
+			? 1
+			: 0,
+		cpm_q: leftoverConfigPatternMatchesP("/tmp/aXb", "a?b", "/tmp/") ? 1 : 0,
+		cpm_n: 5,
+	};
+}
+
+function runPackageManagerEnabledByPatterns() {
+	return {
+		ebp_def: leftoverConfigEnabledByPatternsP("/tmp/hello.lisp", [], "/tmp/") ? 1 : 0,
+		ebp_inc: leftoverConfigEnabledByPatternsP("/tmp/hello.lisp", ["*.lisp"], "/tmp/")
+			? 1
+			: 0,
+		ebp_exc: leftoverConfigEnabledByPatternsP(
+			"/tmp/hello.lisp",
+			["*.lisp", "!hello.lisp"],
+			"/tmp/",
+		)
+			? 0
+			: 1,
+		ebp_load: leftoverConfigEnabledByPatternsP(
+			"/tmp/hello.lisp",
+			["*.md", "+hello.lisp"],
+			"/tmp/",
+		)
+			? 1
+			: 0,
+		ebp_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -6814,6 +6979,9 @@ async function measurePackageManager() {
 	const packageOverrideSource = runPackageManagerPackageOverrideSource();
 	const resourceGroupLabel = runPackageManagerResourceGroupLabel();
 	const settingsValues = runPackageManagerSettingsValues();
+	const patternCandidates = runPackageManagerPatternCandidates();
+	const patternMatches = runPackageManagerPatternMatches();
+	const enabledByPatterns = runPackageManagerEnabledByPatterns();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -6920,6 +7088,15 @@ async function measurePackageManager() {
 		settings_values: await collect("package_manager.settings_values", () => {
 			return () => runPackageManagerSettingsValues();
 		}),
+		pattern_candidates: await collect("package_manager.pattern_candidates", () => {
+			return () => runPackageManagerPatternCandidates();
+		}),
+		pattern_matches: await collect("package_manager.pattern_matches", () => {
+			return () => runPackageManagerPatternMatches();
+		}),
+		enabled_by_patterns: await collect("package_manager.enabled_by_patterns", () => {
+			return () => runPackageManagerEnabledByPatterns();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -6958,6 +7135,9 @@ async function measurePackageManager() {
 			...packageOverrideSource,
 			...resourceGroupLabel,
 			...settingsValues,
+			...patternCandidates,
+			...patternMatches,
+			...enabledByPatterns,
 		},
 	};
 }
@@ -32518,6 +32698,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts resource group label (cadr config-resource-group-label)",
 			"package_manager.settings_values":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts settings values (cadr config-selector-settings-values)",
+			"package_manager.pattern_candidates":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts pattern candidates (cadr config-pattern-candidates)",
+			"package_manager.pattern_matches":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts pattern matches (cadr config-pattern-matches-p)",
+			"package_manager.enabled_by_patterns":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts enabled by patterns (cadr config-enabled-by-patterns-p)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":

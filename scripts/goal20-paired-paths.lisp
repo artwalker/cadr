@@ -498,6 +498,9 @@
     ("package_manager.package_override_source" . 50)
     ("package_manager.resource_group_label" . 50)
     ("package_manager.settings_values" . 50)
+    ("package_manager.pattern_candidates" . 50)
+    ("package_manager.pattern_matches" . 50)
+    ("package_manager.enabled_by_patterns" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4590,6 +4593,27 @@
 (defun leftover-config-glob-regex (pattern)
   (cadr-cli::config-glob-regex pattern))
 
+(defun leftover-config-pattern-candidates (path base-directory)
+  (cadr-cli::config-pattern-candidates
+   (parse-namestring path)
+   (uiop:ensure-directory-pathname (parse-namestring base-directory))))
+
+(defun leftover-config-pattern-matches-p
+    (path pattern base-directory &key exact-p)
+  (cadr-cli::config-pattern-matches-p
+   (parse-namestring path)
+   pattern
+   (uiop:ensure-directory-pathname (parse-namestring base-directory))
+   :exact-p exact-p))
+
+(defun leftover-config-enabled-by-patterns-p
+    (path patterns base-directory &key (default t))
+  (cadr-cli::config-enabled-by-patterns-p
+   (parse-namestring path)
+   patterns
+   (uiop:ensure-directory-pathname (parse-namestring base-directory))
+   :default default))
+
 (defun leftover-config-selector-entry-target (entry)
   (cadr-cli::config-selector-entry-target entry))
 
@@ -5266,6 +5290,56 @@
        (leftover-config-selector-settings-values bad :global "theme")))
      5)))
 
+(defun run-package-manager-pattern-candidates ()
+  (let ((plain
+          (leftover-config-pattern-candidates
+           "/tmp/hello.lisp" "/tmp/"))
+        (skill
+          (leftover-config-pattern-candidates
+           "/tmp/skills/hello/SKILL.md" "/tmp/")))
+    (list
+     (package-manager-truth (= (length plain) 2))
+     (package-manager-truth
+      (member "/tmp/hello.lisp" plain :test #'string=))
+     (package-manager-truth (= (length skill) 6))
+     (package-manager-truth
+      (member "hello" skill :test #'string=))
+     5)))
+
+(defun run-package-manager-pattern-matches ()
+  (list
+   (package-manager-truth
+    (leftover-config-pattern-matches-p
+     "/tmp/hello.lisp" "*.lisp" "/tmp/"))
+   (package-manager-truth
+    (not
+     (leftover-config-pattern-matches-p
+      "/tmp/hello.lisp" "*.md" "/tmp/")))
+   (package-manager-truth
+    (leftover-config-pattern-matches-p
+     "/tmp/skills/hello/SKILL.md" "SKILL.md" "/tmp/" :exact-p t))
+   (package-manager-truth
+    (leftover-config-pattern-matches-p
+     "/tmp/aXb" "a?b" "/tmp/"))
+   5))
+
+(defun run-package-manager-enabled-by-patterns ()
+  (list
+   (package-manager-truth
+    (leftover-config-enabled-by-patterns-p
+     "/tmp/hello.lisp" '() "/tmp/"))
+   (package-manager-truth
+    (leftover-config-enabled-by-patterns-p
+     "/tmp/hello.lisp" '("*.lisp") "/tmp/"))
+   (package-manager-truth
+    (not
+     (leftover-config-enabled-by-patterns-p
+      "/tmp/hello.lisp" '("*.lisp" "!hello.lisp") "/tmp/")))
+   (package-manager-truth
+    (leftover-config-enabled-by-patterns-p
+     "/tmp/hello.lisp" '("*.md" "+hello.lisp") "/tmp/"))
+   5))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -5377,7 +5451,13 @@
            (resource-group-label
              (run-package-manager-resource-group-label))
            (settings-values
-             (run-package-manager-settings-values)))
+             (run-package-manager-settings-values))
+           (pattern-candidates
+             (run-package-manager-pattern-candidates))
+           (pattern-matches
+             (run-package-manager-pattern-matches))
+           (enabled-by-patterns
+             (run-package-manager-enabled-by-patterns)))
       (json-object
        "observed"
        (json-object
@@ -5548,7 +5628,22 @@
         "csv_proj" (nth 1 settings-values)
         "csv_nums" (nth 2 settings-values)
         "csv_bad" (nth 3 settings-values)
-        "csv_n" (nth 4 settings-values))
+        "csv_n" (nth 4 settings-values)
+        "cpc_plain" (nth 0 pattern-candidates)
+        "cpc_abs" (nth 1 pattern-candidates)
+        "cpc_skill" (nth 2 pattern-candidates)
+        "cpc_hello" (nth 3 pattern-candidates)
+        "cpc_n" (nth 4 pattern-candidates)
+        "cpm_lisp" (nth 0 pattern-matches)
+        "cpm_miss" (nth 1 pattern-matches)
+        "cpm_exact" (nth 2 pattern-matches)
+        "cpm_q" (nth 3 pattern-matches)
+        "cpm_n" (nth 4 pattern-matches)
+        "ebp_def" (nth 0 enabled-by-patterns)
+        "ebp_inc" (nth 1 enabled-by-patterns)
+        "ebp_exc" (nth 2 enabled-by-patterns)
+        "ebp_load" (nth 3 enabled-by-patterns)
+        "ebp_n" (nth 4 enabled-by-patterns))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -5714,7 +5809,22 @@
        (collect "package_manager.settings_values"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-settings-values))))))))
+                    (run-package-manager-settings-values))))
+       "pattern_candidates"
+       (collect "package_manager.pattern_candidates"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-pattern-candidates))))
+       "pattern_matches"
+       (collect "package_manager.pattern_matches"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-pattern-matches))))
+       "enabled_by_patterns"
+       (collect "package_manager.enabled_by_patterns"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-enabled-by-patterns))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -30968,6 +31078,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-resource-group-label"
       "package_manager.settings_values"
       "src/cadr-cli/packages/config-selector.lisp config-selector-settings-values"
+      "package_manager.pattern_candidates"
+      "src/cadr-cli/packages/config-selector.lisp config-pattern-candidates"
+      "package_manager.pattern_matches"
+      "src/cadr-cli/packages/config-selector.lisp config-pattern-matches-p"
+      "package_manager.enabled_by_patterns"
+      "src/cadr-cli/packages/config-selector.lisp config-enabled-by-patterns-p"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
