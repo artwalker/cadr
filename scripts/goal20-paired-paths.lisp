@@ -641,6 +641,9 @@
     ("cli_interactive_controller.runtime_auth_input_handle_event" . 50)
     ("cli_interactive_controller.render_runtime_auth_input" . 50)
     ("cli_interactive_controller.render_extension_custom_entry" . 50)
+    ("cli_interactive_controller.render_framed_select_state" . 50)
+    ("cli_interactive_controller.framed_select_state_handle_event" . 50)
+    ("cli_interactive_controller.framed_select_state_handle_raw_input" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14674,6 +14677,26 @@
    "rec_msg" (nth 4 custom-entry)))
 
 
+(defun leftover-extension-ui-framed-select-observed-pairs
+    (render handle-event handle-raw)
+  (list
+   "rfs_pick" (nth 0 render)
+   "rfs_dash" (nth 1 render)
+   "rfs_n" (nth 2 render)
+   "rfs_a" (nth 3 render)
+   "rfs_nav" (nth 4 render)
+   "fsh_esc" (nth 0 handle-event)
+   "fsh_sel" (nth 1 handle-event)
+   "fsh_down" (nth 2 handle-event)
+   "fsh_fn" (nth 3 handle-event)
+   "fsh_nop" (nth 4 handle-event)
+   "fsr_j" (nth 0 handle-raw)
+   "fsr_k" (nth 1 handle-raw)
+   "fsr_x" (nth 2 handle-raw)
+   "fsr_z" (nth 3 handle-raw)
+   "fsr_again" (nth 4 handle-raw)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15207,7 +15230,13 @@
         (leftover-render-runtime-auth-input
           (run-cli-interactive-render-runtime-auth-input))
         (leftover-render-extension-custom-entry
-          (run-cli-interactive-render-extension-custom-entry)))
+          (run-cli-interactive-render-extension-custom-entry))
+        (leftover-render-framed-select-state
+          (run-cli-interactive-render-framed-select-state))
+        (leftover-framed-select-state-handle-event
+          (run-cli-interactive-framed-select-state-handle-event))
+        (leftover-framed-select-state-handle-raw-input
+          (run-cli-interactive-framed-select-state-handle-raw-input)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15322,7 +15351,11 @@
              (leftover-extension-ui-auth-handle-render-entry-observed-pairs
               leftover-runtime-auth-input-handle-event
               leftover-render-runtime-auth-input
-              leftover-render-extension-custom-entry)))
+              leftover-render-extension-custom-entry)
+             (leftover-extension-ui-framed-select-observed-pairs
+              leftover-render-framed-select-state
+              leftover-framed-select-state-handle-event
+              leftover-framed-select-state-handle-raw-input)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15592,7 +15625,22 @@
      (collect "cli_interactive_controller.render_extension_custom_entry"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-render-extension-custom-entry)))))))
+                  (run-cli-interactive-render-extension-custom-entry))))
+     "render_framed_select_state"
+     (collect "cli_interactive_controller.render_framed_select_state"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-framed-select-state))))
+     "framed_select_state_handle_event"
+     (collect "cli_interactive_controller.framed_select_state_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-framed-select-state-handle-event))))
+     "framed_select_state_handle_raw_input"
+     (collect "cli_interactive_controller.framed_select_state_handle_raw_input"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-framed-select-state-handle-raw-input)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -16837,6 +16885,110 @@
      (if (eq :custom-entry (cadr-cli::tui-entry-type entry)) 1 0)
      (if (null
           (cadr-cli::render-extension-custom-entry msg 80 nil))
+         1 0))))
+
+(defun leftover-framed-select-handle-action (state kind)
+  (nth-value
+   0
+   (cadr-cli::framed-select-state-handle-event
+    state
+    (cadr-tui:make-input-event :kind kind))))
+
+(defun leftover-framed-select-raw-consumed (state data)
+  (nth-value
+   2
+   (cadr-cli::framed-select-state-handle-raw-input state data)))
+
+(defun run-cli-interactive-render-framed-select-state ()
+  (let* ((st
+           (cadr-cli::make-framed-select-state
+            "Pick" '("alpha" "beta") '(1 2)))
+         (lines
+           (cadr-cli::render-framed-select-state st 40))
+         (text (leftover-notification-joined lines)))
+    (cadr-cli::render-framed-select-state st 40)
+    (cadr-cli::render-framed-select-state st 20)
+    (list
+     (if (search "Pick" text) 1 0)
+     (if (search "─" text) 1 0)
+     (if (>= (length lines) 3) 1 0)
+     (if (search "alpha" text) 1 0)
+     (if (search "navigate" text) 1 0))))
+
+(defun run-cli-interactive-framed-select-state-handle-event ()
+  (let* ((called 0)
+         (st
+           (cadr-cli::make-framed-select-state
+            "Pick" '("a" "b") '(1 2)
+            :toggle-tools-function
+            (lambda () (incf called))))
+         (sel
+           (cadr-cli::make-framed-select-state
+            "Pick" '("a" "b") '(1 2)))
+         (nop
+           (cadr-cli::make-framed-select-state
+            "Pick" '("a" "b") '(1 2))))
+    (leftover-framed-select-handle-action st :toggle-tools)
+    (multiple-value-bind (sel-action sel-value)
+        (cadr-cli::framed-select-state-handle-event
+         sel
+         (cadr-tui:make-input-event :kind :enter))
+      (multiple-value-bind (nop-action nop-value)
+          (cadr-cli::framed-select-state-handle-event
+           nop
+           (cadr-tui:make-input-event :kind :left))
+        (declare (ignore nop-value))
+        (list
+         (if (eq (leftover-framed-select-handle-action
+                  (cadr-cli::make-framed-select-state
+                   "Pick" '("a" "b") '(1 2))
+                  :escape)
+                 :cancel)
+             1 0)
+         (if (and (eq sel-action :select) (eql sel-value 1))
+             1 0)
+         (if (eq (leftover-framed-select-handle-action
+                  (cadr-cli::make-framed-select-state
+                   "Pick" '("a" "b") '(1 2))
+                  :down)
+                 :changed)
+             1 0)
+         (if (= called 1) 1 0)
+         (if (null nop-action) 1 0))))))
+
+(defun run-cli-interactive-framed-select-state-handle-raw-input ()
+  (let ((st
+          (cadr-cli::make-framed-select-state
+           "Pick" '("a" "b") '(1 2))))
+    (leftover-framed-select-raw-consumed st "j")
+    (leftover-framed-select-raw-consumed st "k")
+    (list
+     (if (leftover-framed-select-raw-consumed
+          (cadr-cli::make-framed-select-state
+           "Pick" '("a" "b") '(1 2))
+          "j")
+         1 0)
+     (if (leftover-framed-select-raw-consumed
+          (cadr-cli::make-framed-select-state
+           "Pick" '("a" "b") '(1 2))
+          "k")
+         1 0)
+     (if (not
+          (leftover-framed-select-raw-consumed
+           (cadr-cli::make-framed-select-state
+            "Pick" '("a" "b") '(1 2))
+           "x"))
+         1 0)
+     (if (not
+          (leftover-framed-select-raw-consumed
+           (cadr-cli::make-framed-select-state
+            "Pick" '("a" "b") '(1 2))
+           "z"))
+         1 0)
+     (if (leftover-framed-select-raw-consumed
+          (cadr-cli::make-framed-select-state
+           "Pick" '("a" "b") '(1 2))
+          "j")
          1 0))))
 
 (defun session-search-fixture-records ()
@@ -29200,6 +29352,12 @@
       "src/cadr-cli/interactive/extension-ui.lisp render-runtime-auth-input-state"
       "cli_interactive_controller.render_extension_custom_entry"
       "src/cadr-cli/interactive/extension-ui.lisp render-extension-custom-entry"
+      "cli_interactive_controller.render_framed_select_state"
+      "src/cadr-cli/interactive/extension-ui.lisp render-framed-select-state"
+      "cli_interactive_controller.framed_select_state_handle_event"
+      "src/cadr-cli/interactive/extension-ui.lisp framed-select-state-handle-event"
+      "cli_interactive_controller.framed_select_state_handle_raw_input"
+      "src/cadr-cli/interactive/extension-ui.lisp framed-select-state-handle-raw-input"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"

@@ -623,6 +623,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.runtime_auth_input_handle_event": 50,
 	"cli_interactive_controller.render_runtime_auth_input": 50,
 	"cli_interactive_controller.render_extension_custom_entry": 50,
+	"cli_interactive_controller.render_framed_select_state": 50,
+	"cli_interactive_controller.framed_select_state_handle_event": 50,
+	"cli_interactive_controller.framed_select_state_handle_raw_input": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -15013,7 +15016,7 @@ function leftoverMakeFramedSelectState(title, labels, values, timeoutMs) {
 	}));
 	const deadline =
 		timeoutMs == null || timeoutMs <= 0 ? null : Date.now() + timeoutMs;
-	return { title, items, deadline };
+	return { title, items, deadline, selected: 0 };
 }
 
 function runCliInteractiveMakeFramedSelectState() {
@@ -15283,6 +15286,151 @@ function runCliInteractiveRenderExtensionCustomEntry() {
 		rec_again: leftoverRenderExtensionCustomEntry(entry, 80, null) == null ? 1 : 0,
 		rec_type: entry.type === "custom-entry" ? 1 : 0,
 		rec_msg: leftoverRenderExtensionCustomEntry(msg, 80, null) == null ? 1 : 0,
+	};
+}
+
+function leftoverRenderFramedSelectState(state, width) {
+	const border = leftoverUpdateNotificationBorderLine(width);
+	const title = leftoverThemeForeground(state.title || "");
+	const labels = (state.items || []).map((item) =>
+		leftoverThemeForeground(item.label || ""),
+	);
+	return [
+		border,
+		title,
+		...labels,
+		leftoverThemeForeground("navigate"),
+		border,
+	];
+}
+
+function leftoverFramedSelectHandleEvent(state, event) {
+	const kind = event && event.kind;
+	if (kind === "toggle-tools") {
+		const fn = state.toggleToolsFunction;
+		if (typeof fn === "function") {
+			try {
+				fn();
+			} catch (_err) {
+				/* ignore */
+			}
+		}
+		return { action: "changed", value: null };
+	}
+	if (kind === "escape") {
+		return { action: "cancel", value: null };
+	}
+	if (kind === "enter") {
+		const item = (state.items || [])[state.selected || 0];
+		return { action: "select", value: item && item.value };
+	}
+	if (
+		kind === "down" ||
+		kind === "up" ||
+		kind === "text" ||
+		kind === "backspace" ||
+		kind === "page-up" ||
+		kind === "page-down"
+	) {
+		return { action: "changed", value: null };
+	}
+	return { action: null, value: null };
+}
+
+function leftoverFramedSelectHandleRaw(state, data) {
+	if (data === "k") {
+		leftoverFramedSelectHandleEvent(state, { kind: "up" });
+		return true;
+	}
+	if (data === "j") {
+		leftoverFramedSelectHandleEvent(state, { kind: "down" });
+		return true;
+	}
+	return false;
+}
+
+function runCliInteractiveRenderFramedSelectState() {
+	const st = leftoverMakeFramedSelectState("Pick", ["alpha", "beta"], [1, 2]);
+	const lines = leftoverRenderFramedSelectState(st, 40);
+	const text = leftoverNotificationJoined(lines);
+	leftoverRenderFramedSelectState(st, 40);
+	leftoverRenderFramedSelectState(st, 20);
+	return {
+		rfs_pick: text.includes("Pick") ? 1 : 0,
+		rfs_dash: text.includes("─") ? 1 : 0,
+		rfs_n: lines.length >= 3 ? 1 : 0,
+		rfs_a: text.includes("alpha") ? 1 : 0,
+		rfs_nav: text.includes("navigate") ? 1 : 0,
+	};
+}
+
+function runCliInteractiveFramedSelectStateHandleEvent() {
+	let called = 0;
+	const st = leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]);
+	st.toggleToolsFunction = () => {
+		called += 1;
+	};
+	const sel = leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]);
+	const nop = leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]);
+	leftoverFramedSelectHandleEvent(st, { kind: "toggle-tools" });
+	const selResult = leftoverFramedSelectHandleEvent(sel, { kind: "enter" });
+	const nopResult = leftoverFramedSelectHandleEvent(nop, { kind: "left" });
+	return {
+		fsh_esc:
+			leftoverFramedSelectHandleEvent(
+				leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]),
+				{ kind: "escape" },
+			).action === "cancel"
+				? 1
+				: 0,
+		fsh_sel: selResult.action === "select" && selResult.value === 1 ? 1 : 0,
+		fsh_down:
+			leftoverFramedSelectHandleEvent(
+				leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]),
+				{ kind: "down" },
+			).action === "changed"
+				? 1
+				: 0,
+		fsh_fn: called === 1 ? 1 : 0,
+		fsh_nop: nopResult.action == null ? 1 : 0,
+	};
+}
+
+function runCliInteractiveFramedSelectStateHandleRawInput() {
+	const st = leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]);
+	leftoverFramedSelectHandleRaw(st, "j");
+	leftoverFramedSelectHandleRaw(st, "k");
+	return {
+		fsr_j: leftoverFramedSelectHandleRaw(
+			leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]),
+			"j",
+		)
+			? 1
+			: 0,
+		fsr_k: leftoverFramedSelectHandleRaw(
+			leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]),
+			"k",
+		)
+			? 1
+			: 0,
+		fsr_x: leftoverFramedSelectHandleRaw(
+			leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]),
+			"x",
+		)
+			? 0
+			: 1,
+		fsr_z: leftoverFramedSelectHandleRaw(
+			leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]),
+			"z",
+		)
+			? 0
+			: 1,
+		fsr_again: leftoverFramedSelectHandleRaw(
+			leftoverMakeFramedSelectState("Pick", ["a", "b"], [1, 2]),
+			"j",
+		)
+			? 1
+			: 0,
 	};
 }
 
@@ -16572,6 +16720,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveRuntimeAuthInputHandleEvent(),
 		...runCliInteractiveRenderRuntimeAuthInput(),
 		...runCliInteractiveRenderExtensionCustomEntry(),
+		...runCliInteractiveRenderFramedSelectState(),
+		...runCliInteractiveFramedSelectStateHandleEvent(),
+		...runCliInteractiveFramedSelectStateHandleRawInput(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -16860,6 +17011,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.render_extension_custom_entry",
 			() => {
 				return () => runCliInteractiveRenderExtensionCustomEntry();
+			},
+		),
+		render_framed_select_state: await collect(
+			"cli_interactive_controller.render_framed_select_state",
+			() => {
+				return () => runCliInteractiveRenderFramedSelectState();
+			},
+		),
+		framed_select_state_handle_event: await collect(
+			"cli_interactive_controller.framed_select_state_handle_event",
+			() => {
+				return () => runCliInteractiveFramedSelectStateHandleEvent();
+			},
+		),
+		framed_select_state_handle_raw_input: await collect(
+			"cli_interactive_controller.framed_select_state_handle_raw_input",
+			() => {
+				return () => runCliInteractiveFramedSelectStateHandleRawInput();
 			},
 		),
 		observed,
@@ -30812,6 +30981,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/oauth.ts runtime auth input render",
 			"cli_interactive_controller.render_extension_custom_entry":
 				"packages/coding-agent/src/modes/interactive/components/custom-message.ts custom entry render nil host",
+			"cli_interactive_controller.render_framed_select_state":
+				"packages/tui/src/select-list.ts framed select-list render",
+			"cli_interactive_controller.framed_select_state_handle_event":
+				"packages/tui/src/select-list.ts framed select-list handleEvent",
+			"cli_interactive_controller.framed_select_state_handle_raw_input":
+				"packages/tui/src/select-list.ts framed select-list handleRawInput",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

@@ -50,6 +50,26 @@ tag/Release step.
   `rec_msg` exact. n=5 **2.800×** (0.434 / 0.155 µs) on host `cursor`,
   ceiling 8.0. Measure-only leftover (Pair 681). Over-1× booked.
   `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_framed_select_state`
+  (`render-framed-select-state` vs framed select-list render). Observed
+  `rfs_pick` / `rfs_dash` / `rfs_n` / `rfs_a` / `rfs_nav` exact. n=5
+  **101.599×** (230.310 / 2.267 µs) on host `cursor`, ceiling 180.0
+  (first-freeze headroom). Measure-only leftover (Pair 682). Over-1×
+  booked. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.framed_select_state_handle_event`
+  (`framed-select-state-handle-event` vs framed select-list handleEvent).
+  Observed `fsh_esc` / `fsh_sel` / `fsh_down` / `fsh_fn` / `fsh_nop`
+  exact. n=5 **1.252×** (1.259 / 1.006 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 683). Over-1× booked. `nextPairNum`
+  left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.framed_select_state_handle_raw_input`
+  (`framed-select-state-handle-raw-input` vs framed select-list
+  handleRawInput). Observed `fsr_j` / `fsr_k` / `fsr_x` / `fsr_z` /
+  `fsr_again` exact. n=5 **91.669×** (87.360 / 0.953 µs) on host
+  `cursor`, ceiling 160.0 (first-freeze headroom). Measure-only leftover
+  (Pair 684). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.make_framed_select_state`
   (`make-framed-select-state` on
   `src/cadr-cli/interactive/extension-ui.lisp` vs framed select-list

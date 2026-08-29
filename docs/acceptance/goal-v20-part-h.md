@@ -8176,6 +8176,30 @@ Leftover sibling of Pair 679. Timed work is simple (non-`manual-code`) message r
 
 Leftover sibling of Pairs 679–680. Timed work is nil host → nil at widths 80/1 plus custom-message. Observed `rec_nil` / `rec_w` / `rec_again` / `rec_type` / `rec_msg` are exact. First n=5 freeze **2.800×** (0.434 / 0.155 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 682 — `cli_interactive_controller` (render_framed_select_state)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_framed_select_state` | `render-framed-select-state` (`src/cadr-cli/interactive/extension-ui.lisp`) | framed select-list render (`packages/tui/src/select-list.ts`) |
+
+Leftover sibling of Pair 673 on the `extension-ui.lisp` hole. Timed work is title/labels/border/hint render. Do not exact-match ANSI or keybinding copy beyond `navigate`. Observed `rfs_pick` / `rfs_dash` / `rfs_n` / `rfs_a` / `rfs_nav` are exact. First n=5 freeze **101.599×** (230.310 / 2.267 µs) on host `cursor`, ceiling 180.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 683 — `cli_interactive_controller` (framed_select_state_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `framed_select_state_handle_event` | `framed-select-state-handle-event` (`src/cadr-cli/interactive/extension-ui.lisp`) | framed select-list handleEvent (`packages/tui/src/select-list.ts`) |
+
+Leftover sibling of Pair 682. Timed work is escape cancel, enter select, down `:changed`, toggle-tools once, and left nop. Observed `fsh_esc` / `fsh_sel` / `fsh_down` / `fsh_fn` / `fsh_nop` are exact. First n=5 freeze **1.252×** (1.259 / 1.006 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 684 — `cli_interactive_controller` (framed_select_state_handle_raw_input)
+
+| metric | cadr | pi |
+|---|---|---|
+| `framed_select_state_handle_raw_input` | `framed-select-state-handle-raw-input` (`src/cadr-cli/interactive/extension-ui.lisp`) | framed select-list handleRawInput (`packages/tui/src/select-list.ts`) |
+
+Leftover sibling of Pairs 682–683. Timed work is `j`/`k` consumed and `x`/`z` not consumed. Observed `fsr_j` / `fsr_k` / `fsr_x` / `fsr_z` / `fsr_again` are exact. First n=5 freeze **91.669×** (87.360 / 0.953 µs) on host `cursor`, ceiling 160.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
