@@ -62,6 +62,9 @@
 ;;;; 403. provider_registry_defs api-key-auth-strategy-entry vs Bedrock/Vertex structured table
 ;;;; 404. provider_registry_defs built-in-provider-options vs Azure/Cloudflare/Google env keys
 ;;;; 405. provider_registry_defs remove-runtime-only-options vs omit apiKey/headers/environment/authType
+;;;; 748. provider_registry_defs built-in-api-key-login-function vs bedrock/vertex ApiKeyAuth.login
+;;;; 749. provider_registry_defs built-in-api-key-auth vs envApiKeyAuth.resolve (in-memory env)
+;;;; 750. provider_registry_defs built-in-model-filter-function vs github-copilot filterModels
 ;;;;  41. skill_prompt_load build-system-prompt vs buildSystemPrompt
 ;;;;      leftover: resolve-system-prompt / node-read-error-message /
 ;;;;      resolve-system-prompt-with-appends
@@ -937,6 +940,9 @@
     ("provider_registry_defs.oauth_login_function" . 50)
     ("provider_registry_defs.oauth_refresh_function" . 50)
     ("provider_registry_defs.oauth_to_auth" . 50)
+    ("provider_registry_defs.api_key_login_function" . 50)
+    ("provider_registry_defs.api_key_auth" . 50)
+    ("provider_registry_defs.model_filter_function" . 50)
     ("core_rest.cancellation_abort" . 50)
     ("core_rest.redacted_secrets" . 50)
     ("core_rest.threads_cleanup" . 5)
@@ -30175,6 +30181,120 @@
                (cadr-ai:runtime-auth-result-headers result)
                :test #'string=))))
 
+(defun leftover-runtime-api-key-login-present (id)
+  (cadr-ai::built-in-api-key-login-function
+   (leftover-runtime-oauth-definition id)))
+
+(defun leftover-runtime-fixture-models ()
+  (list
+   (cadr-ai:make-model :id "keep-me" :name "Keep")
+   (cadr-ai:make-model :id "drop-me" :name "Drop")))
+
+(defun leftover-runtime-filter-credential (ids)
+  (cadr-ai:make-oauth-credential
+   :provider :github-copilot
+   :access "tok"
+   :refresh "r"
+   :metadata
+   (list (cons "availableModelIds" ids))))
+
+(defun run-provider-api-key-login-function ()
+  ;; Leftover sibling: strategy table → login function or nil. Not login I/O.
+  (let ((bedrock
+          (leftover-runtime-api-key-login-present :amazon-bedrock))
+        (vertex
+          (leftover-runtime-api-key-login-present :google-vertex))
+        (openai
+          (leftover-runtime-api-key-login-present :openai)))
+    (list
+     (if bedrock 1 0)
+     (if vertex 1 0)
+     (if openai 0 1)
+     (if (and bedrock vertex (not (eq bedrock vertex)))
+         1
+         0)
+     5)))
+
+(defun run-provider-api-key-auth ()
+  ;; Leftover sibling: :environment resolve from explicit / stored / env / miss.
+  ;; Not bedrock IAM, not vertex ADC, not login prompts.
+  (let* ((openai (leftover-runtime-oauth-definition :openai))
+         (codex (leftover-runtime-oauth-definition :openai-codex))
+         (explicit
+           (cadr-ai::built-in-api-key-auth
+            openai nil nil '(:api-key "sk-explicit")))
+         (stored
+           (cadr-ai::built-in-api-key-auth
+            openai
+            (cadr-ai:make-api-key-credential
+             :provider :openai
+             :key "sk-stored")
+            nil
+            nil))
+         (from-env
+           (cadr-ai::built-in-api-key-auth
+            openai
+            nil
+            '(("OPENAI_API_KEY" . "sk-env"))
+            nil))
+         (miss
+           (cadr-ai::built-in-api-key-auth openai nil nil nil))
+         (no-strategy
+           (cadr-ai::built-in-api-key-auth codex nil nil '(:api-key "sk"))))
+    (list
+     (if (and explicit
+              (equal (cadr-ai:runtime-auth-result-api-key explicit)
+                     "sk-explicit"))
+         1
+         0)
+     (if (and stored
+              (equal (cadr-ai:runtime-auth-result-api-key stored)
+                     "sk-stored"))
+         1
+         0)
+     (if (and from-env
+              (equal (cadr-ai:runtime-auth-result-api-key from-env)
+                     "sk-env"))
+         1
+         0)
+     (if (and (null miss) (null no-strategy))
+         1
+         0)
+     5)))
+
+(defun run-provider-model-filter-function ()
+  ;; Leftover sibling: github-copilot availableModelIds filter. Not stream-chat.
+  (let* ((models (leftover-runtime-fixture-models))
+         (copilot
+           (cadr-ai::built-in-model-filter-function
+            (leftover-runtime-oauth-definition :github-copilot)))
+         (openai
+           (cadr-ai::built-in-model-filter-function
+            (leftover-runtime-oauth-definition :openai)))
+         (kept
+           (and copilot
+                (funcall
+                 copilot
+                 models
+                 (leftover-runtime-filter-credential #("keep-me")))))
+         (emptied
+           (and copilot
+                (funcall
+                 copilot
+                 models
+                 (leftover-runtime-filter-credential #())))))
+    (list
+     (if copilot 1 0)
+     (if openai 0 1)
+     (if (and (= (length kept) 1)
+              (string= (cadr-ai:model-id (first kept)) "keep-me"))
+         1
+         0)
+     (if (and copilot (zerop (length emptied)))
+         1
+         0)
+     5)))
+
 (defun run-provider-oauth-login-function ()
   ;; Leftover sibling: strategy → login function or nil. Not login I/O.
   (let ((copilot
@@ -30263,7 +30383,10 @@
          (strip-observed (run-provider-strip-runtime-options))
          (oauth-login-function (run-provider-oauth-login-function))
          (oauth-refresh-function (run-provider-oauth-refresh-function))
-         (oauth-to-auth (run-provider-oauth-to-auth)))
+         (oauth-to-auth (run-provider-oauth-to-auth))
+         (api-key-login-function (run-provider-api-key-login-function))
+         (api-key-auth (run-provider-api-key-auth))
+         (model-filter-function (run-provider-model-filter-function)))
     (json-object
      "observed"
      (json-object
@@ -30315,7 +30438,22 @@
       "ota_kimi" (nth 1 oauth-to-auth)
       "ota_miss" (nth 2 oauth-to-auth)
       "ota_diff" (nth 3 oauth-to-auth)
-      "ota_n" (nth 4 oauth-to-auth))
+      "ota_n" (nth 4 oauth-to-auth)
+      "alk_bedrock" (nth 0 api-key-login-function)
+      "alk_vertex" (nth 1 api-key-login-function)
+      "alk_openai" (nth 2 api-key-login-function)
+      "alk_diff" (nth 3 api-key-login-function)
+      "alk_n" (nth 4 api-key-login-function)
+      "aka_explicit" (nth 0 api-key-auth)
+      "aka_stored" (nth 1 api-key-auth)
+      "aka_env" (nth 2 api-key-auth)
+      "aka_miss" (nth 3 api-key-auth)
+      "aka_n" (nth 4 api-key-auth)
+      "mff_copilot" (nth 0 model-filter-function)
+      "mff_openai" (nth 1 model-filter-function)
+      "mff_keep" (nth 2 model-filter-function)
+      "mff_empty" (nth 3 model-filter-function)
+      "mff_n" (nth 4 model-filter-function))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
@@ -30370,7 +30508,22 @@
      (collect "provider_registry_defs.oauth_to_auth"
               (lambda ()
                 (lambda ()
-                  (run-provider-oauth-to-auth)))))))
+                  (run-provider-oauth-to-auth))))
+     "api_key_login_function"
+     (collect "provider_registry_defs.api_key_login_function"
+              (lambda ()
+                (lambda ()
+                  (run-provider-api-key-login-function))))
+     "api_key_auth"
+     (collect "provider_registry_defs.api_key_auth"
+              (lambda ()
+                (lambda ()
+                  (run-provider-api-key-auth))))
+     "model_filter_function"
+     (collect "provider_registry_defs.model_filter_function"
+              (lambda ()
+                (lambda ()
+                  (run-provider-model-filter-function)))))))
 
 (defun skill-prompt-sdk-prompt-file ()
   (ensure-directories-exist *scratch-directory*)
@@ -32507,6 +32660,12 @@
       "src/cadr-ai/providers/runtime-projection.lisp built-in-oauth-refresh-function"
       "provider_registry_defs.oauth_to_auth"
       "src/cadr-ai/providers/runtime-projection.lisp built-in-oauth-to-auth"
+      "provider_registry_defs.api_key_login_function"
+      "src/cadr-ai/providers/runtime-projection.lisp built-in-api-key-login-function"
+      "provider_registry_defs.api_key_auth"
+      "src/cadr-ai/providers/runtime-projection.lisp built-in-api-key-auth"
+      "provider_registry_defs.model_filter_function"
+      "src/cadr-ai/providers/runtime-projection.lisp built-in-model-filter-function"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "skill_prompt_load.resolve_prompt"

@@ -6844,6 +6844,51 @@
    "piUs": 0.267,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 748,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.api_key_login_function",
+   "branch": "cursor/runtime-apikey-login-auth-filter-leftovers-748-750-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 748",
+   "ratio": 0.001,
+   "cadrUs": 0.174,
+   "piUs": 212.888,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 749,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.api_key_auth",
+   "branch": "cursor/runtime-apikey-login-auth-filter-leftovers-748-750-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 749",
+   "ratio": 0.003,
+   "cadrUs": 0.709,
+   "piUs": 209.735,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 750,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-ai/providers/runtime-projection.lisp",
+   "measure": "measure-provider-registry-defs",
+   "metric": "provider_registry_defs.model_filter_function",
+   "branch": "cursor/runtime-apikey-login-auth-filter-leftovers-748-750-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 750",
+   "ratio": 0.003,
+   "cadrUs": 0.646,
+   "piUs": 215.457,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
