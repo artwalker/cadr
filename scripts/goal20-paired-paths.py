@@ -1220,11 +1220,11 @@ RATIO_CEILINGS = {
     # Measure-only leftover 687; first freeze 88.995× (144.970 / 1.629 µs).
     # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
     "cli_interactive_controller.render_tui_extension_overlay": 160.0,
-    # leftover 874; first-freeze headroom. Ratchet down only.
+    # leftover 874; first freeze 0.030× (6.851 / 225.634 µs). Under-1×.
     "cli_interactive_controller.announcement_make": 8.0,
-    # leftover 875; first-freeze headroom. Ratchet down only.
+    # leftover 875; first freeze 0.255× (68.621 / 269.075 µs). Under-1×.
     "cli_interactive_controller.announcement_url": 8.0,
-    # leftover 876; first-freeze headroom. Ratchet down only.
+    # leftover 876; first freeze 0.547× (68.910 / 125.905 µs). Under-1×.
     "cli_interactive_controller.announcement_title": 8.0,
     # First-freeze headroom for leftover cli_selectors.user_message_make.
     # Ratchet down only after a non-quick Friend-MachineD freeze.

@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.announcement_make`
+  (`make-earendil-announcement-component` vs `EarendilAnnouncementComponent`).
+  Observed `eam_ok` / `eam_min` / `eam_n` exact. n=5 **0.030×** (6.851 /
+  225.634 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 874). Under-1×. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did
+  not fail observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.announcement_url`
+  (rendered blog URL vs `BLOG_URL`). Observed `eau_eq` / `eau_sold` /
+  `eau_n` exact. n=5 **0.255×** (68.621 / 269.075 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 875). Under-1×. `nextPairNum`
+  left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.announcement_title`
+  (rendered `pi has joined Earendil`). Observed `eat_eq` / `eat_pi` /
+  `eat_n` exact. n=5 **0.547×** (68.910 / 125.905 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 876). Under-1×. `nextPairNum`
+  left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
