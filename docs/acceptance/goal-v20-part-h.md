@@ -9574,7 +9574,7 @@ Leftover sibling of Pairs 853–854. Timed work is CADR_CHANGELOG_PATH / CHANGEL
 |---|---|---|
 | `sdk_make_manager` | `make-sdk-settings-manager` (`src/cadr-cli/sdk/settings-service.lisp`) | leftover `SettingsManager.inMemory({})` (nil-path construct; not `create` I/O) |
 
-Leftover sibling of Pairs 763–777 on the same `settings-service.lisp` hole. Timed work is nil-path manager construct — `settings-reload` sees nil paths and does not read settings.json. Observed `ssm_type` / `ssm_nil_prov` / `ssm_nil_model` / `ssm_trusted` / `ssm_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 763–777 on the same `settings-service.lisp` hole. Timed work is nil-path manager construct — `settings-reload` sees nil paths and does not read settings.json. Observed `ssm_type` / `ssm_nil_prov` / `ssm_nil_model` / `ssm_trusted` / `ssm_n` are exact. First n=5 freeze **0.961×** (2.289 / 2.383 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 857 — `settings_load` (sdk_make_memory)
 
@@ -9582,7 +9582,7 @@ Leftover sibling of Pairs 763–777 on the same `settings-service.lisp` hole. Ti
 |---|---|---|
 | `sdk_make_memory` | `make-memory-sdk-settings-manager` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.inMemory` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pair 856. Timed work is in-memory SDK manager construct with fixture vs empty — not disk. Observed `smm_prov` / `smm_model` / `smm_empty` / `smm_type` / `smm_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 856. Timed work is in-memory SDK manager construct with fixture vs empty — not disk. Observed `smm_prov` / `smm_model` / `smm_empty` / `smm_type` / `smm_n` are exact. First n=5 freeze **5.009×** (22.505 / 4.493 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 858 — `settings_load` (sdk_effective_thinking_level)
 
@@ -9590,7 +9590,7 @@ Leftover sibling of Pair 856. Timed work is in-memory SDK manager construct with
 |---|---|---|
 | `sdk_effective_thinking_level` | `sdk-settings-effective-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | leftover explicit / per-model / restored / default thinking precedence |
 
-Leftover sibling of Pairs 856–857. Timed work is thinking-level precedence — not login I/O. Do not compare keyword vs string. Observed `set_exp` / `set_model` / `set_rest` / `set_def` / `set_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 856–857. Timed work is thinking-level precedence — not login I/O. Do not compare keyword vs string. Observed `set_exp` / `set_model` / `set_rest` / `set_def` / `set_n` are exact. First n=5 freeze **2.660×** (10.850 / 4.079 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
