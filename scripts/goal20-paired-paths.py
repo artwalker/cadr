@@ -459,11 +459,11 @@ RATIO_CEILINGS = {
     "oauth_pkce_device.provider_key": 8.0,
     "oauth_pkce_device.http_status_text": 8.0,
     "oauth_pkce_device.parse_callback_request": 8.0,
-    # leftover 880; first freeze pending. 8.0 is first-freeze headroom.
+    # leftover 880; first freeze 2.451× (0.285 / 0.116 µs). Over-1×.
     "oauth_pkce_device.anth_oauth_name": 8.0,
-    # leftover 881; first freeze pending. 8.0 is first-freeze headroom.
+    # leftover 881; first freeze 0.835× (0.073 / 0.087 µs). Under-1×.
     "oauth_pkce_device.anth_oauth_sub": 8.0,
-    # leftover 882; first freeze pending. 8.0 is first-freeze headroom.
+    # leftover 882; first freeze 6.497× (0.773 / 0.119 µs). Over-1×.
     "oauth_pkce_device.anth_oauth_instructions": 8.0,
     # Frozen from the first Friend-MachineD non-quick
     # cli_extensions_install.llama_url pair (samples=5): observed

@@ -9,6 +9,24 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.anth_oauth_name`
+  (`oauth-provider-metadata-method-name` vs `anthropicOAuth.name`).
+  Observed `anm_eq` / `anm_claude` / `anm_n` exact. n=5 **2.451×**
+  (0.285 / 0.116 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 880). Over-1×. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.anth_oauth_sub`
+  (`is-subscription-p` vs `anthropicOAuth.isSubscription`). Observed
+  `ans_sub` / `ans_t` / `ans_n` exact. n=5 **0.835×** (0.073 / 0.087 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 881).
+  Under-1×. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.anth_oauth_instructions`
+  (`auth-url-instructions` vs login notify copy). Observed `ani_eq` /
+  `ani_paste` / `ani_n` exact. n=5 **6.497×** (0.773 / 0.119 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 882). Over-1×.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `provider_registry_defs.api_key_login_function`
   (`built-in-api-key-login-function` vs bedrock/vertex ApiKeyAuth.login
   select-flow presence). Observed `alk_bedrock` / `alk_vertex` /
