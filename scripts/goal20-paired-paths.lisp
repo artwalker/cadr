@@ -934,6 +934,9 @@
     ("provider_registry_defs.api_key_strategy" . 50)
     ("provider_registry_defs.provider_options" . 50)
     ("provider_registry_defs.strip_runtime_options" . 50)
+    ("provider_registry_defs.oauth_login_function" . 50)
+    ("provider_registry_defs.oauth_refresh_function" . 50)
+    ("provider_registry_defs.oauth_to_auth" . 50)
     ("core_rest.cancellation_abort" . 50)
     ("core_rest.redacted_secrets" . 50)
     ("core_rest.threads_cleanup" . 5)
@@ -30156,6 +30159,99 @@
          1
          0))))
 
+(defun leftover-runtime-oauth-definition (id)
+  (cadr-ai::find-provider-definition id))
+
+(defun leftover-runtime-oauth-credential ()
+  (cadr-ai:make-oauth-credential
+   :provider :anthropic
+   :access "tok"
+   :refresh "r"))
+
+(defun leftover-runtime-oauth-auth-header (result)
+  (and result
+       (cdr
+        (assoc "Authorization"
+               (cadr-ai:runtime-auth-result-headers result)
+               :test #'string=))))
+
+(defun run-provider-oauth-login-function ()
+  ;; Leftover sibling: strategy → login function or nil. Not login I/O.
+  (let ((copilot
+          (cadr-ai::built-in-oauth-login-function
+           (leftover-runtime-oauth-definition :github-copilot)
+           nil nil))
+        (anth
+          (cadr-ai::built-in-oauth-login-function
+           (leftover-runtime-oauth-definition :anthropic)
+           nil nil))
+        (google
+          (cadr-ai::built-in-oauth-login-function
+           (leftover-runtime-oauth-definition :google)
+           nil nil)))
+    (list
+     (if copilot 1 0)
+     (if anth 1 0)
+     (if google 0 1)
+     (if (and copilot anth (not (eq copilot anth)))
+         1
+         0)
+     5)))
+
+(defun run-provider-oauth-refresh-function ()
+  ;; Leftover sibling: strategy → refresh function or nil. Not refresh HTTP.
+  (let ((copilot
+          (cadr-ai::built-in-oauth-refresh-function
+           (leftover-runtime-oauth-definition :github-copilot)
+           nil nil))
+        (anth
+          (cadr-ai::built-in-oauth-refresh-function
+           (leftover-runtime-oauth-definition :anthropic)
+           nil nil))
+        (google
+          (cadr-ai::built-in-oauth-refresh-function
+           (leftover-runtime-oauth-definition :google)
+           nil nil)))
+    (list
+     (if copilot 1 0)
+     (if anth 1 0)
+     (if google 0 1)
+     (if (and copilot anth (not (eq copilot anth)))
+         1
+         0)
+     5)))
+
+(defun run-provider-oauth-to-auth ()
+  ;; Leftover sibling: access-token / kimi-bearer / miss. Not stream-chat.
+  (let* ((cred (leftover-runtime-oauth-credential))
+         (anth
+           (cadr-ai::built-in-oauth-to-auth
+            (leftover-runtime-oauth-definition :anthropic)
+            cred))
+         (kimi
+           (cadr-ai::built-in-oauth-to-auth
+            (leftover-runtime-oauth-definition :kimi-coding)
+            cred))
+         (google
+           (cadr-ai::built-in-oauth-to-auth
+            (leftover-runtime-oauth-definition :google)
+            cred)))
+    (list
+     (if (and anth
+              (equal (cadr-ai:runtime-auth-result-api-key anth) "tok"))
+         1
+         0)
+     (if (equal (leftover-runtime-oauth-auth-header kimi) "Bearer tok")
+         1
+         0)
+     (if google 0 1)
+     (if (and anth
+              (cadr-ai:runtime-auth-result-api-key anth)
+              (null (and kimi (cadr-ai:runtime-auth-result-api-key kimi))))
+         1
+         0)
+     5)))
+
 (defun measure-provider-registry-defs ()
   (let* ((lookup-observed (run-provider-registry-defs))
          (ids-observed (run-provider-definition-ids))
@@ -30164,7 +30260,10 @@
          (structured-observed (run-provider-structured-api-key-login))
          (strategy-observed (run-provider-api-key-strategy))
          (options-observed (run-provider-options))
-         (strip-observed (run-provider-strip-runtime-options)))
+         (strip-observed (run-provider-strip-runtime-options))
+         (oauth-login-function (run-provider-oauth-login-function))
+         (oauth-refresh-function (run-provider-oauth-refresh-function))
+         (oauth-to-auth (run-provider-oauth-to-auth)))
     (json-object
      "observed"
      (json-object
@@ -30201,7 +30300,22 @@
       "sro_drop" (second strip-observed)
       "sro_n" (third strip-observed)
       "sro_empty" (fourth strip-observed)
-      "sro_temp" (fifth strip-observed))
+      "sro_temp" (fifth strip-observed)
+      "ologin_copilot" (nth 0 oauth-login-function)
+      "ologin_anth" (nth 1 oauth-login-function)
+      "ologin_miss" (nth 2 oauth-login-function)
+      "ologin_diff" (nth 3 oauth-login-function)
+      "ologin_n" (nth 4 oauth-login-function)
+      "orefresh_copilot" (nth 0 oauth-refresh-function)
+      "orefresh_anth" (nth 1 oauth-refresh-function)
+      "orefresh_miss" (nth 2 oauth-refresh-function)
+      "orefresh_diff" (nth 3 oauth-refresh-function)
+      "orefresh_n" (nth 4 oauth-refresh-function)
+      "ota_anth" (nth 0 oauth-to-auth)
+      "ota_kimi" (nth 1 oauth-to-auth)
+      "ota_miss" (nth 2 oauth-to-auth)
+      "ota_diff" (nth 3 oauth-to-auth)
+      "ota_n" (nth 4 oauth-to-auth))
      "lookup"
      (collect "provider_registry_defs.lookup"
               (lambda ()
@@ -30241,7 +30355,22 @@
      (collect "provider_registry_defs.strip_runtime_options"
               (lambda ()
                 (lambda ()
-                  (run-provider-strip-runtime-options)))))))
+                  (run-provider-strip-runtime-options))))
+     "oauth_login_function"
+     (collect "provider_registry_defs.oauth_login_function"
+              (lambda ()
+                (lambda ()
+                  (run-provider-oauth-login-function))))
+     "oauth_refresh_function"
+     (collect "provider_registry_defs.oauth_refresh_function"
+              (lambda ()
+                (lambda ()
+                  (run-provider-oauth-refresh-function))))
+     "oauth_to_auth"
+     (collect "provider_registry_defs.oauth_to_auth"
+              (lambda ()
+                (lambda ()
+                  (run-provider-oauth-to-auth)))))))
 
 (defun skill-prompt-sdk-prompt-file ()
   (ensure-directories-exist *scratch-directory*)
@@ -32372,6 +32501,12 @@
       "src/cadr-ai/providers/runtime-projection.lisp built-in-provider-options"
       "provider_registry_defs.strip_runtime_options"
       "src/cadr-ai/providers/runtime-projection.lisp remove-runtime-only-options"
+      "provider_registry_defs.oauth_login_function"
+      "src/cadr-ai/providers/runtime-projection.lisp built-in-oauth-login-function"
+      "provider_registry_defs.oauth_refresh_function"
+      "src/cadr-ai/providers/runtime-projection.lisp built-in-oauth-refresh-function"
+      "provider_registry_defs.oauth_to_auth"
+      "src/cadr-ai/providers/runtime-projection.lisp built-in-oauth-to-auth"
       "skill_prompt_load.build_prompt"
       "src/cadr-cli/sdk/system-prompt.lisp build-system-prompt"
       "skill_prompt_load.resolve_prompt"
