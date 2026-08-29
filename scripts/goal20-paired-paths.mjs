@@ -6100,10 +6100,14 @@ function runPackageManagerRelativePattern() {
 }
 
 function runPackageManagerConfigFitLine() {
+	const reset = "\x1b[0m";
 	return {
 		cfl_short: leftoverConfigSelectorFitLine("hello", 10) === "hello" ? 1 : 0,
-		cfl_long: leftoverConfigSelectorFitLine("hello world", 5) === "hello" ? 1 : 0,
-		cfl_dots: leftoverConfigSelectorFitLine("hello world", 8, "...") === "hello..." ? 1 : 0,
+		cfl_long: leftoverConfigSelectorFitLine("hello world", 5) === `hello${reset}` ? 1 : 0,
+		cfl_dots:
+			leftoverConfigSelectorFitLine("hello world", 8, "...") === `hello${reset}...${reset}`
+				? 1
+				: 0,
 		cfl_zero: leftoverConfigSelectorFitLine("hello", 0) === "" ? 1 : 0,
 		cfl_n: 5,
 	};

@@ -4730,16 +4730,21 @@
    5))
 
 (defun run-package-manager-config-fit-line ()
-  (list
-   (package-manager-truth
-    (string= (leftover-config-selector-fit-line "hello" 10) "hello"))
-   (package-manager-truth
-    (string= (leftover-config-selector-fit-line "hello world" 5) "hello"))
-   (package-manager-truth
-    (string= (leftover-config-selector-fit-line "hello world" 8 "...") "hello..."))
-   (package-manager-truth
-    (string= (leftover-config-selector-fit-line "hello" 0) ""))
-   5))
+  (let ((reset (format nil "~C[0m" #\Escape)))
+    (list
+     (package-manager-truth
+      (string= (leftover-config-selector-fit-line "hello" 10) "hello"))
+     (package-manager-truth
+      (string=
+       (leftover-config-selector-fit-line "hello world" 5)
+       (format nil "hello~A" reset)))
+     (package-manager-truth
+      (string=
+       (leftover-config-selector-fit-line "hello world" 8 "...")
+       (format nil "hello~A...~A" reset reset)))
+     (package-manager-truth
+      (string= (leftover-config-selector-fit-line "hello" 0) ""))
+     5)))
 
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
