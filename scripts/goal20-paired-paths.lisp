@@ -35606,7 +35606,7 @@
      (cadr-ai:make-tool-result-message
       :tool-call-id "t1"
       :tool-name "read"
-      :content "done"))
+      :content nil))
     (cadr-agent::make-session-entry
      :type :compaction
      :id "c1"
