@@ -647,6 +647,9 @@
     ("cli_support.no_models_help" . 50)
     ("cli_support.no_model_selected" . 50)
     ("cli_support.no_api_key" . 50)
+    ("cli_support.write_hello" . 5)
+    ("cli_support.write_overwrite" . 5)
+    ("cli_support.write_empty" . 5)
     ("cli_interactive_controller.decode_entity" . 50)
     ("cli_interactive_controller.wayland" . 50)
     ("cli_interactive_controller.cwd_footer" . 50)
@@ -16003,6 +16006,52 @@
      (if (and (consp hit) (= (length hit) 2)) 1 0))))
 
 
+(defun cli-support-atomic-write-path (name)
+  (merge-pathnames
+   (format nil "atomic-write/~A" name)
+   *scratch-directory*))
+
+
+(defun run-cli-support-write-hello ()
+  ;; Leftover 871: atomic-write-utf8 vs pi activateManagedRelease temp+rename.
+  (let ((path (cli-support-atomic-write-path "hello.txt")))
+    (ensure-directories-exist path)
+    (cadr-cli::atomic-write-utf8 path "hello")
+    (let ((text (uiop:read-file-string path)))
+      (list
+       (if (string= text "hello") 1 0)
+       (if (= (length text) 5) 1 0)
+       (if (probe-file path) 1 0)
+       3))))
+
+
+(defun run-cli-support-write-overwrite ()
+  ;; Leftover 872: second write replaces the first payload.
+  (let ((path (cli-support-atomic-write-path "over.txt")))
+    (ensure-directories-exist path)
+    (cadr-cli::atomic-write-utf8 path "first")
+    (cadr-cli::atomic-write-utf8 path "second")
+    (let ((text (uiop:read-file-string path)))
+      (list
+       (if (string= text "second") 1 0)
+       (if (search "first" text) 0 1)
+       (if (= (length text) 6) 1 0)
+       3))))
+
+
+(defun run-cli-support-write-empty ()
+  ;; Leftover 873: empty payload still creates the file.
+  (let ((path (cli-support-atomic-write-path "empty.txt")))
+    (ensure-directories-exist path)
+    (cadr-cli::atomic-write-utf8 path "")
+    (let ((text (uiop:read-file-string path)))
+      (list
+       (if (string= text "") 1 0)
+       (if (zerop (length text)) 1 0)
+       (if (probe-file path) 1 0)
+       3))))
+
+
 (defun measure-cli-support-strip-ansi ()
   (write-paired-changelog)
   (let ((ansi (run-cli-support-strip-ansi))
@@ -16018,7 +16067,10 @@
         (experimental (run-cli-support-experimental))
         (no-models (run-cli-support-no-models-help))
         (no-selected (run-cli-support-no-model-selected))
-        (no-key (run-cli-support-no-api-key)))
+        (no-key (run-cli-support-no-api-key))
+        (write-hello (run-cli-support-write-hello))
+        (write-overwrite (run-cli-support-write-overwrite))
+        (write-empty (run-cli-support-write-empty)))
     (json-object
      "observed"
      (json-object
@@ -16094,7 +16146,19 @@
       "ns_nl" (nth 2 no-selected)
       "nk_oai" (nth 0 no-key)
       "nk_unk" (nth 1 no-key)
-      "nk_sel" (nth 2 no-key))
+      "nk_sel" (nth 2 no-key)
+      "awh_hello" (nth 0 write-hello)
+      "awh_len" (nth 1 write-hello)
+      "awh_file" (nth 2 write-hello)
+      "awh_n" (nth 3 write-hello)
+      "awo_second" (nth 0 write-overwrite)
+      "awo_no_first" (nth 1 write-overwrite)
+      "awo_len" (nth 2 write-overwrite)
+      "awo_n" (nth 3 write-overwrite)
+      "awe_ok" (nth 0 write-empty)
+      "awe_len" (nth 1 write-empty)
+      "awe_file" (nth 2 write-empty)
+      "awe_n" (nth 3 write-empty))
      "strip_ansi"
      (collect "cli_support.strip_ansi"
               (lambda ()
@@ -16164,7 +16228,22 @@
      (collect "cli_support.no_api_key"
               (lambda ()
                 (lambda ()
-                  (run-cli-support-no-api-key)))))))
+                  (run-cli-support-no-api-key))))
+     "write_hello"
+     (collect "cli_support.write_hello"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-write-hello))))
+     "write_overwrite"
+     (collect "cli_support.write_overwrite"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-write-overwrite))))
+     "write_empty"
+     (collect "cli_support.write_empty"
+              (lambda ()
+                (lambda ()
+                  (run-cli-support-write-empty)))))))
 
 (defun decode-highlight-or-empty (entity)
   (or (cadr-cli::decode-highlight-entity entity) ""))
@@ -32076,6 +32155,12 @@
       "src/cadr-cli/support/model-help.lisp format-no-model-selected-message"
       "cli_support.no_api_key"
       "src/cadr-cli/support/model-help.lisp format-no-api-key-found-message"
+      "cli_support.write_hello"
+      "src/cadr-cli/support/atomic-write.lisp atomic-write-utf8"
+      "cli_support.write_overwrite"
+      "src/cadr-cli/support/atomic-write.lisp atomic-write-utf8"
+      "cli_support.write_empty"
+      "src/cadr-cli/support/atomic-write.lisp atomic-write-utf8"
       "cli_interactive_controller.decode_entity"
       "src/cadr-cli/interactive/syntax.lisp decode-highlight-entity"
       "cli_interactive_controller.wayland"

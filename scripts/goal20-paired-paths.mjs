@@ -43,6 +43,7 @@ import {
 	readFileSync,
 	readdirSync,
 	realpathSync,
+	renameSync,
 	rmSync,
 	statSync,
 	utimesSync,
@@ -413,6 +414,9 @@ const REPETITIONS = {
 	"cli_support.watch_retry_delay": 50,
 	"cli_support.close_watcher": 50,
 	"cli_support.watch_signature": 50,
+	"cli_support.write_hello": 5,
+	"cli_support.write_overwrite": 5,
+	"cli_support.write_empty": 5,
 	"cli_bootstrap_sessions.model_cycle": 50,
 	"cli_bootstrap_sessions.model_scope_line": 50,
 	"cli_bootstrap_sessions.process_files": 50,
@@ -15441,6 +15445,61 @@ function runCliSupportNoApiKey() {
 	};
 }
 
+const atomicWriteDir = path.join(scratch, "atomic-write");
+mkdirSync(atomicWriteDir, { recursive: true });
+
+function activateManagedReleaseWrite(name, content) {
+	// Leftover 871–873: same temp+rename as activateManagedRelease
+	// (packages/coding-agent/src/package-manager-cli.ts) without the
+	// version-file trailing newline.
+	const currentPath = path.join(atomicWriteDir, name);
+	const temporaryPath = path.join(
+		atomicWriteDir,
+		`${name}.tmp.${process.pid}`,
+	);
+	try {
+		writeFileSync(temporaryPath, content, "utf-8");
+		renameSync(temporaryPath, currentPath);
+	} finally {
+		rmSync(temporaryPath, { force: true });
+	}
+	return currentPath;
+}
+
+function runCliSupportWriteHello() {
+	const filePath = activateManagedReleaseWrite("hello.txt", "hello");
+	const text = readFileSync(filePath, "utf-8");
+	return {
+		awh_hello: text === "hello" ? 1 : 0,
+		awh_len: text.length === 5 ? 1 : 0,
+		awh_file: existsSync(filePath) ? 1 : 0,
+		awh_n: 3,
+	};
+}
+
+function runCliSupportWriteOverwrite() {
+	activateManagedReleaseWrite("over.txt", "first");
+	const filePath = activateManagedReleaseWrite("over.txt", "second");
+	const text = readFileSync(filePath, "utf-8");
+	return {
+		awo_second: text === "second" ? 1 : 0,
+		awo_no_first: text.includes("first") ? 0 : 1,
+		awo_len: text.length === 6 ? 1 : 0,
+		awo_n: 3,
+	};
+}
+
+function runCliSupportWriteEmpty() {
+	const filePath = activateManagedReleaseWrite("empty.txt", "");
+	const text = readFileSync(filePath, "utf-8");
+	return {
+		awe_ok: text === "" ? 1 : 0,
+		awe_len: text.length === 0 ? 1 : 0,
+		awe_file: existsSync(filePath) ? 1 : 0,
+		awe_n: 3,
+	};
+}
+
 async function measureCliSupportStripAnsi() {
 	const ansi = runCliSupportStripAnsi();
 	const paths = runCliSupportNormalizePath();
@@ -15457,6 +15516,9 @@ async function measureCliSupportStripAnsi() {
 	const noModels = runCliSupportNoModelsHelp();
 	const noSelected = runCliSupportNoModelSelected();
 	const noKey = runCliSupportNoApiKey();
+	const writeHello = runCliSupportWriteHello();
+	const writeOverwrite = runCliSupportWriteOverwrite();
+	const writeEmpty = runCliSupportWriteEmpty();
 	return {
 		strip_ansi: await collect("cli_support.strip_ansi", () => {
 			return () => runCliSupportStripAnsi();
@@ -15500,6 +15562,15 @@ async function measureCliSupportStripAnsi() {
 		no_api_key: await collect("cli_support.no_api_key", () => {
 			return () => runCliSupportNoApiKey();
 		}),
+		write_hello: await collect("cli_support.write_hello", () => {
+			return () => runCliSupportWriteHello();
+		}),
+		write_overwrite: await collect("cli_support.write_overwrite", () => {
+			return () => runCliSupportWriteOverwrite();
+		}),
+		write_empty: await collect("cli_support.write_empty", () => {
+			return () => runCliSupportWriteEmpty();
+		}),
 		observed: {
 			...ansi,
 			...paths,
@@ -15515,6 +15586,9 @@ async function measureCliSupportStripAnsi() {
 			...noModels,
 			...noSelected,
 			...noKey,
+			...writeHello,
+			...writeOverwrite,
+			...writeEmpty,
 		},
 	};
 }
@@ -33691,6 +33765,12 @@ const result = {
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoModelSelectedMessage",
 			"cli_support.no_api_key":
 				"packages/coding-agent/src/core/auth-guidance.ts formatNoApiKeyFoundMessage",
+			"cli_support.write_hello":
+				"packages/coding-agent/src/package-manager-cli.ts activateManagedRelease temp+rename",
+			"cli_support.write_overwrite":
+				"packages/coding-agent/src/package-manager-cli.ts activateManagedRelease temp+rename",
+			"cli_support.write_empty":
+				"packages/coding-agent/src/package-manager-cli.ts activateManagedRelease temp+rename",
 			"cli_interactive_controller.decode_entity":
 				"packages/coding-agent/src/utils/html.ts decodeHtmlEntity",
 			"cli_interactive_controller.wayland":

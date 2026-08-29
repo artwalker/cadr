@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 871 — `cli_support` (write_hello)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_hello` | `atomic-write-utf8` (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` temp+rename (`packages/coding-agent/src/package-manager-cli.ts`) |
+
+Leftover trio on unclaimed `src/cadr-cli/support/atomic-write.lisp`. Timed work is temp-file + rename of payload `hello` (no extra newline). Observed `awh_hello` / `awh_len` / `awh_file` / `awh_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 872 — `cli_support` (write_overwrite)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_overwrite` | `atomic-write-utf8` (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` temp+rename (`packages/coding-agent/src/package-manager-cli.ts`) |
+
+Leftover sibling of Pair 871. Timed work is a second write that replaces `first` with `second`. Observed `awo_second` / `awo_no_first` / `awo_len` / `awo_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 873 — `cli_support` (write_empty)
+
+| metric | cadr | pi |
+|---|---|---|
+| `write_empty` | `atomic-write-utf8` (`src/cadr-cli/support/atomic-write.lisp`) | `activateManagedRelease` temp+rename (`packages/coding-agent/src/package-manager-cli.ts`) |
+
+Leftover sibling of Pairs 871–872. Timed work is an empty payload that still creates the file. Observed `awe_ok` / `awe_len` / `awe_file` / `awe_n` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
