@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.make_extension_input_dialog`
+  (`make-extension-input-dialog` on
+  `src/cadr-cli/interactive/extension-ui.lisp` vs input dialog
+  constructor). Observed `eid_t` / `eid_proto` / `eid_in` / `eid_pr` /
+  `eid_empty` exact. n=5 **1.099×** (0.496 / 0.451 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 676). Over-1× booked. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.make_extension_editor_dialog`
+  (`make-extension-editor-dialog` vs editor dialog constructor). Observed
+  `eed_t` / `eed_hi` / `eed_empty` / `eed_proto` / `eed_ed` exact. n=5
+  **4.545×** (1.648 / 0.363 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 677). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.make_runtime_auth_input_state`
+  (`make-runtime-auth-input-state` vs runtime auth input constructor).
+  Observed `rai_type` / `rai_copy` / `rai_in` / `rai_pr` / `rai_nil`
+  exact. n=5 **1.042×** (0.459 / 0.441 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 678). Over-1× booked. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.make_framed_select_state`
   (`make-framed-select-state` on
   `src/cadr-cli/interactive/extension-ui.lisp` vs framed select-list

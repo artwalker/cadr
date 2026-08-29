@@ -617,6 +617,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.make_framed_select_state": 50,
 	"cli_interactive_controller.note_component_render_channel": 50,
 	"cli_interactive_controller.tui_extension_theme_runtime": 50,
+	"cli_interactive_controller.make_extension_input_dialog": 50,
+	"cli_interactive_controller.make_extension_editor_dialog": 50,
+	"cli_interactive_controller.make_runtime_auth_input_state": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -15074,6 +15077,76 @@ function runCliInteractiveTuiExtensionThemeRuntime() {
 	};
 }
 
+function leftoverMakeExtensionInputDialog(title) {
+	return {
+		kind: "component",
+		title,
+		input: { kind: "input", prompt: "> " },
+	};
+}
+
+function runCliInteractiveMakeExtensionInputDialog() {
+	leftoverMakeExtensionInputDialog("Pick");
+	leftoverMakeExtensionInputDialog("");
+	const dlg = leftoverMakeExtensionInputDialog("Pick");
+	const empty = leftoverMakeExtensionInputDialog("");
+	return {
+		eid_t: dlg.title === "Pick" ? 1 : 0,
+		eid_proto: leftoverTuiComponentProtocolP(dlg) ? 1 : 0,
+		eid_in: dlg.input && dlg.input.kind === "input" ? 1 : 0,
+		eid_pr: dlg.input && dlg.input.prompt === "> " ? 1 : 0,
+		eid_empty: leftoverTuiComponentProtocolP(empty) ? 1 : 0,
+	};
+}
+
+function leftoverMakeExtensionEditorDialog(title, prefill) {
+	return {
+		kind: "component",
+		title,
+		editor: {
+			kind: "editor",
+			text: prefill == null ? "" : String(prefill),
+		},
+	};
+}
+
+function runCliInteractiveMakeExtensionEditorDialog() {
+	leftoverMakeExtensionEditorDialog("Edit", "hi");
+	leftoverMakeExtensionEditorDialog("Edit", null);
+	const dlg = leftoverMakeExtensionEditorDialog("Edit", "hi");
+	const empty = leftoverMakeExtensionEditorDialog("Edit", null);
+	return {
+		eed_t: dlg.title === "Edit" ? 1 : 0,
+		eed_hi: dlg.editor && dlg.editor.text === "hi" ? 1 : 0,
+		eed_empty: empty.editor && empty.editor.text === "" ? 1 : 0,
+		eed_proto: leftoverTuiComponentProtocolP(dlg) ? 1 : 0,
+		eed_ed: dlg.editor && dlg.editor.kind === "editor" ? 1 : 0,
+	};
+}
+
+function leftoverMakeRuntimeAuthInputState(prompt) {
+	const copied = prompt == null ? {} : { ...prompt };
+	return {
+		prompt: copied,
+		input: { kind: "input", prompt: "> " },
+	};
+}
+
+function runCliInteractiveMakeRuntimeAuthInputState() {
+	const prompt = { type: "oauth" };
+	leftoverMakeRuntimeAuthInputState(prompt);
+	leftoverMakeRuntimeAuthInputState(null);
+	const st = leftoverMakeRuntimeAuthInputState(prompt);
+	const empty = leftoverMakeRuntimeAuthInputState(null);
+	return {
+		rai_type: st.prompt && st.prompt.type === "oauth" ? 1 : 0,
+		rai_copy: st.prompt !== prompt ? 1 : 0,
+		rai_in: st.input && st.input.kind === "input" ? 1 : 0,
+		rai_pr: st.input && st.input.prompt === "> " ? 1 : 0,
+		rai_nil: empty.prompt && empty.prompt.type == null ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -16354,6 +16427,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveMakeFramedSelectState(),
 		...runCliInteractiveNoteComponentRenderChannel(),
 		...runCliInteractiveTuiExtensionThemeRuntime(),
+		...runCliInteractiveMakeExtensionInputDialog(),
+		...runCliInteractiveMakeExtensionEditorDialog(),
+		...runCliInteractiveMakeRuntimeAuthInputState(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -16606,6 +16682,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.tui_extension_theme_runtime",
 			() => {
 				return () => runCliInteractiveTuiExtensionThemeRuntime();
+			},
+		),
+		make_extension_input_dialog: await collect(
+			"cli_interactive_controller.make_extension_input_dialog",
+			() => {
+				return () => runCliInteractiveMakeExtensionInputDialog();
+			},
+		),
+		make_extension_editor_dialog: await collect(
+			"cli_interactive_controller.make_extension_editor_dialog",
+			() => {
+				return () => runCliInteractiveMakeExtensionEditorDialog();
+			},
+		),
+		make_runtime_auth_input_state: await collect(
+			"cli_interactive_controller.make_runtime_auth_input_state",
+			() => {
+				return () => runCliInteractiveMakeRuntimeAuthInputState();
 			},
 		),
 		observed,
@@ -30546,6 +30640,12 @@ const result = {
 				"packages/tui/src/tui.ts requestRender inject on render-aware mixin",
 			"cli_interactive_controller.tui_extension_theme_runtime":
 				"packages/tui/src/theme.ts theme fg/bg/bold/italic runtime",
+			"cli_interactive_controller.make_extension_input_dialog":
+				"packages/coding-agent/src/modes/interactive/components/extension-editor.ts input dialog constructor",
+			"cli_interactive_controller.make_extension_editor_dialog":
+				"packages/coding-agent/src/modes/interactive/components/extension-editor.ts editor dialog constructor",
+			"cli_interactive_controller.make_runtime_auth_input_state":
+				"packages/coding-agent/src/modes/interactive/components/auth-input.ts runtime auth input constructor",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

@@ -5764,6 +5764,51 @@
    "piUs": 0.429,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 676,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.make_extension_input_dialog",
+   "branch": "cursor/extension-ui-input-editor-auth-leftovers-676-678-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 676",
+   "ratio": 1.099,
+   "cadrUs": 0.496,
+   "piUs": 0.451,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 677,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.make_extension_editor_dialog",
+   "branch": "cursor/extension-ui-input-editor-auth-leftovers-676-678-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 677",
+   "ratio": 4.545,
+   "cadrUs": 1.648,
+   "piUs": 0.363,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 678,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/extension-ui.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.make_runtime_auth_input_state",
+   "branch": "cursor/extension-ui-input-editor-auth-leftovers-676-678-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 678",
+   "ratio": 1.042,
+   "cadrUs": 0.459,
+   "piUs": 0.441,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []
