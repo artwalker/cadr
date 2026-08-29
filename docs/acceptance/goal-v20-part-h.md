@@ -9112,6 +9112,30 @@ Leftover sibling of Pair 796. Timed work is origin/ prefix to `refs/heads/` — 
 
 Leftover sibling of Pairs 796–797. Timed work is host/path when mock oids differ, nil on match/error/bad oid — not git spawn. Observed `prr_hit` / `prr_same` / `prr_err` / `prr_bad` / `prr_n` are exact. First n=5 freeze **4.640×** (32.630 / 7.033 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 799 — `package_manager` (selector_hint)
+
+| metric | cadr | pi |
+|---|---|---|
+| `selector_hint` | `config-selector-hint` (`src/cadr-cli/packages/config-selector.lisp`) | leftover keyHint wrap (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of leftover 790–792 on the same `config-selector.lisp` `package_manager` hole. Timed work is dim key plus muted description — not `config-selector-header-lines` / `render-entry`. Observed `csh_tab` / `csh_space` / `csh_esc` / `csh_empty` / `csh_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 800 — `package_manager` (override_suffix)
+
+| metric | cadr | pi |
+|---|---|---|
+| `override_suffix` | `config-selector-override-suffix` (`src/cadr-cli/packages/config-selector.lisp`) | leftover getItemSuffix (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pair 799. Timed work is project load/unload/inherit suffix strings — not writers, not full TUI. Observed `cos_load` / `cos_unload` / `cos_global` / `cos_inh` / `cos_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 801 — `package_manager` (checkbox)
+
+| metric | cadr | pi |
+|---|---|---|
+| `checkbox` | `config-selector-checkbox` (`src/cadr-cli/packages/config-selector.lisp`) | leftover renderCheckbox (`packages/coding-agent/src/modes/interactive/components/config-selector.ts`) |
+
+Leftover sibling of Pairs 799–800. Timed work is `[x]` / `[ ]` / `[+]` / `[-]` marks — not `render-entry`. Observed `ccb_on` / `ccb_off` / `ccb_plus` / `ccb_minus` / `ccb_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
