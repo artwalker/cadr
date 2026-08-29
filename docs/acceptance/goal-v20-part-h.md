@@ -10426,6 +10426,30 @@ Leftover sibling of Pair 835. Timed work is independent 2d copy plus mutate-copy
 
 Leftover sibling of Pairs 835–836. Timed work is row join without theme/clip — not `component-render`, not tick. Observed `ars_len` / `ars_empty0` / `ars_ink` / `ars_full` / `ars_n` are exact. First n=5 freeze **4.095×** (23.245 / 5.676 µs) on host `cursor`, ceiling 8.0. Remeasure on tip **4.293×** (23.584 / 5.494 µs) on host `Friend-MachineD`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 844 — `cli_extensions_install` (http_timeout_p)
+
+| metric | cadr | pi |
+|---|---|---|
+| `http_timeout_p` | `extension-http-timeout-condition-p` (`src/cadr-cli/extensions/loader.lisp`) | leftover timeout error names (`packages/coding-agent/src/core/extensions/loader.ts`) |
+
+Leftover sibling of Pair 502–504 on the same `loader.lisp` hole. Timed work is the timeout-condition predicate — not HTTP, not reload. Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil`. `nextPairNum` left at 328.
+
+### Pair 845 — `cli_extensions_install` (same_source)
+
+| metric | cadr | pi |
+|---|---|---|
+| `same_source` | `same-extension-source-p` (`src/cadr-cli/extensions/loader.lisp`) | leftover `bundle.path === source.path` (`packages/coding-agent/src/core/extensions/loader.ts`) |
+
+Leftover sibling of Pair 844. Timed work is path equality — not `reload-cli-extensions`. Observed `ses_eq` / `ses_neq` / `ses_nil` / `ses_slash` / `ses_n`. `nextPairNum` left at 328.
+
+### Pair 846 — `cli_extensions_install` (quiet_manager)
+
+| metric | cadr | pi |
+|---|---|---|
+| `quiet_manager` | `call-with-quiet-extension-manager` (`src/cadr-cli/extensions/loader.lisp`) | leftover silenced notify stream (`packages/coding-agent/src/core/extensions/loader.ts`) |
+
+Leftover sibling of Pairs 844–845. Timed work is swapping the manager output stream — not discovery. Observed `qm_silent` / `qm_restored` / `qm_after` / `qm_n`. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

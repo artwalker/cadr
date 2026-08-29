@@ -755,6 +755,9 @@
     ("cli_extensions_install.llama_search_status" . 50)
     ("cli_extensions_install.llama_search_filter" . 50)
     ("cli_extensions_install.llama_view_width" . 50)
+    ("cli_extensions_install.http_timeout_p" . 50)
+    ("cli_extensions_install.same_source" . 50)
+    ("cli_extensions_install.quiet_manager" . 50)
     ("evals_harness.summarize" . 20)
     ("evals_harness.group_key" . 50)
     ("evals_harness.artifact_persist" . 3)
@@ -13272,6 +13275,77 @@
      6)))
 
 
+(defun leftover-http-timeout-flag (condition)
+  (if (cadr-cli::extension-http-timeout-condition-p condition) 1 0))
+
+
+(defun run-cli-extensions-http-timeout-p ()
+  ;; Leftover on loader.lisp: timeout condition predicate. Not HTTP.
+  (list
+   (leftover-http-timeout-flag
+    (make-condition 'cadr-ai:timeout-error :message "timed out"))
+   (leftover-http-timeout-flag
+    (make-condition 'cadr-ai::native-http-timeout))
+   (leftover-http-timeout-flag
+    (make-condition
+     'cadr-ai:cadr-error
+     :message "wrap"
+     :cause
+     (make-condition 'cadr-ai:timeout-error :message "inner")))
+   (leftover-http-timeout-flag
+    (make-condition 'simple-error :format-control "x"))
+   (leftover-http-timeout-flag nil)))
+
+
+(defun leftover-same-source-flag (bundle-path source-path)
+  (let ((bundle
+          (and bundle-path
+               (cadr-agent::make-extension-bundle
+                :id "e"
+                :path bundle-path)))
+        (source
+          (cadr-cli::make-extension-source-record
+           :id "e"
+           :path source-path)))
+    (if (cadr-cli::same-extension-source-p bundle source) 1 0)))
+
+
+(defun run-cli-extensions-same-source ()
+  ;; Leftover on loader.lisp: bundle path vs source path. Not reload.
+  (list
+   (leftover-same-source-flag "/tmp/ext-a" "/tmp/ext-a")
+   (leftover-same-source-flag "/tmp/ext-a" "/tmp/ext-b")
+   (leftover-same-source-flag nil "/tmp/ext-a")
+   (leftover-same-source-flag "/tmp/ext-a" "/tmp/ext-a/")
+   4))
+
+
+(defun run-cli-extensions-quiet-manager ()
+  ;; Leftover on loader.lisp: silence notify stream. Not reload/discover.
+  (let* ((stream (make-string-output-stream))
+         (manager
+           (cadr-cli::%make-cli-extension-manager
+            :cwd "/tmp/g20-ext-quiet"
+            :no-discovery-p t
+            :output stream
+            :secret-function (constantly nil))))
+    (cadr-cli::call-with-quiet-extension-manager
+     manager
+     (lambda ()
+       (format
+        (cadr-cli::cli-extension-manager-output manager)
+        "secret~%")))
+    (let ((silenced (get-output-stream-string stream)))
+      (format stream "after~%")
+      (list
+       (if (zerop (length silenced)) 1 0)
+       (if (eq (cadr-cli::cli-extension-manager-output manager) stream)
+           1
+           0)
+       (if (search "after" (get-output-stream-string stream)) 1 0)
+       3))))
+
+
 (defun leftover-string-prefix-flag (prefix value)
   (if (cadr-cli::string-prefix-p prefix value) 1 0))
 
@@ -13686,7 +13760,10 @@
          (search-exact (run-cli-extensions-llama-search-exact))
          (search-status (run-cli-extensions-llama-search-status))
          (search-filter (run-cli-extensions-llama-search-filter))
-         (view-width (run-cli-extensions-llama-view-width)))
+         (view-width (run-cli-extensions-llama-view-width))
+         (http-timeout (run-cli-extensions-http-timeout-p))
+         (same-source (run-cli-extensions-same-source))
+         (quiet-manager (run-cli-extensions-quiet-manager)))
     (json-object
      "observed"
      (json-object
@@ -13837,7 +13914,21 @@
       "lvw_set" (nth 1 view-width)
       "lvw_n" (nth 2 view-width)
       "lvw_pos" (nth 3 view-width)
-      "lvw_eq" (nth 4 view-width))
+      "lvw_eq" (nth 4 view-width)
+      "htp_to" (nth 0 http-timeout)
+      "htp_native" (nth 1 http-timeout)
+      "htp_nested" (nth 2 http-timeout)
+      "htp_plain" (nth 3 http-timeout)
+      "htp_nil" (nth 4 http-timeout)
+      "ses_eq" (nth 0 same-source)
+      "ses_neq" (nth 1 same-source)
+      "ses_nil" (nth 2 same-source)
+      "ses_slash" (nth 3 same-source)
+      "ses_n" (nth 4 same-source)
+      "qm_silent" (nth 0 quiet-manager)
+      "qm_restored" (nth 1 quiet-manager)
+      "qm_after" (nth 2 quiet-manager)
+      "qm_n" (nth 3 quiet-manager))
      "llama_url"
      (collect "cli_extensions_install.llama_url"
               (lambda ()
@@ -13978,7 +14069,22 @@
      (collect "cli_extensions_install.llama_view_width"
               (lambda ()
                 (lambda ()
-                  (run-cli-extensions-llama-view-width)))))))
+                  (run-cli-extensions-llama-view-width))))
+     "http_timeout_p"
+     (collect "cli_extensions_install.http_timeout_p"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-http-timeout-p))))
+     "same_source"
+     (collect "cli_extensions_install.same_source"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-same-source))))
+     "quiet_manager"
+     (collect "cli_extensions_install.quiet_manager"
+              (lambda ()
+                (lambda ()
+                  (run-cli-extensions-quiet-manager)))))))
 
 (defun evals-harness-observation
     (harness test-name score
@@ -37658,6 +37764,12 @@
       "src/cadr-cli/extensions/llama/ui.lisp llama-search-filter"
       "cli_extensions_install.llama_view_width"
       "src/cadr-cli/extensions/llama/ui.lisp llama-view-width"
+      "cli_extensions_install.http_timeout_p"
+      "src/cadr-cli/extensions/loader.lisp extension-http-timeout-condition-p"
+      "cli_extensions_install.same_source"
+      "src/cadr-cli/extensions/loader.lisp same-extension-source-p"
+      "cli_extensions_install.quiet_manager"
+      "src/cadr-cli/extensions/loader.lisp call-with-quiet-extension-manager"
       "evals_harness.summarize"
       "src/cadr-evals/summary.lisp summarize-harness-comparisons"
       "evals_harness.group_key"
