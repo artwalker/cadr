@@ -577,4 +577,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_extensions_install.llama_format_context` | 0.586 | 0.299 | 1.959× | 8.00× | measure-only leftover 805; `llama-format-context-size` vs leftover Math.round k | invent pause；地板优化另刀 |
 | `cli_extensions_install.llama_js_to_fixed` | 0.807 | 0.511 | 1.577× | 8.00× | measure-only leftover 806; `llama-js-to-fixed` vs leftover Number.toFixed | invent pause；地板优化另刀 |
 | `cli_extensions_install.llama_search_exact` | 0.678 | 0.284 | 2.389× | 8.00× | measure-only leftover 807; `llama-search-exact-query-p` vs leftover org/name regex | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.assistant_tool_call_only` | 1.038 | 0.790 | 1.314× | 8.00× | measure-only leftover 808; `assistant-tool-call-only-p` vs leftover hasTextContent invert | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_entry_user_text` | 0.934 | 0.747 | 1.250× | 8.00× | measure-only leftover 809; `session-entry-user-text` vs leftover contentText user entry | invent pause；地板优化另刀 |
+| `cli_bootstrap_sessions.session_compaction_status` | 1.274 | 0.566 | 2.251× | 8.00× | measure-only leftover 810; `session-compaction-status` vs leftover compaction count string | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

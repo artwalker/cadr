@@ -12,16 +12,22 @@ tag/Release step.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.assistant_tool_call_only`
   (`assistant-tool-call-only-p` vs leftover hasTextContent invert). Observed
   `atco_none` / `atco_text` / `atco_tool` / `atco_both` / `atco_n` exact.
-  Measure-only leftover (Pair 808). Gate `--only-enforce` pending freeze.
-  `nextPairNum` left unchanged.
+  n=5 **1.314×** (1.038 / 0.790 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 808). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_entry_user_text`
   (`session-entry-user-text` vs leftover contentText user entry). Observed
   `seut_str` / `seut_blocks` / `seut_asst` / `seut_empty` / `seut_n` exact.
-  Measure-only leftover (Pair 809). `nextPairNum` left unchanged.
+  n=5 **1.250×** (0.934 / 0.747 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 809). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_compaction_status`
   (`session-compaction-status` vs leftover compaction count string). Observed
   `scs_none` / `scs_one` / `scs_two` / `scs_zero` / `scs_n` exact.
-  Measure-only leftover (Pair 810). `nextPairNum` left unchanged.
+  n=5 **2.251×** (1.274 / 0.566 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 810). Over-1× booked. `nextPairNum` left
+  unchanged.
 
 - Goal 20 leftover: pair `cli_extensions_install.llama_format_context`
   (`llama-format-context-size` vs leftover Math.round k). Observed
