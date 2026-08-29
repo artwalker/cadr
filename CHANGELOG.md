@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_extensions_install.manager_notify`
+  (`extension-manager-notify` vs leftover notify format). Observed
+  `enm_info` / `enm_error` / `enm_redact` / `enm_nl` / `enm_n`.
+  Measure-only leftover (Pair 847). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.startup_issues`
+  (`report-startup-extension-issues` vs leftover reportDiagnostics). Observed
+  `rsi_err` / `rsi_warn` / `rsi_load` / `rsi_prefix` / `rsi_n`.
+  Measure-only leftover (Pair 848). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_extensions_install.output_boundary`
+  (`call-with-extension-output-boundary` vs leftover stdout/stderr bind). Observed
+  `eob_out` / `eob_err` / `eob_n`.
+  Measure-only leftover (Pair 849). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_extensions_install.http_timeout_p`
   (`extension-http-timeout-condition-p` vs leftover timeout error names).
   Observed `htp_to` / `htp_native` / `htp_nested` / `htp_plain` / `htp_nil` exact.

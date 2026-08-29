@@ -8329,6 +8329,36 @@
    "piUs": 0.248,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 847,
+   "lane": "cursor",
+   "status": "open",
+   "source": "src/cadr-cli/extensions/loader.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.manager_notify",
+   "branch": "cursor/ext-loader-notify-startup-boundary-leftovers-847-849-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 847"
+  },
+  {
+   "pair": 848,
+   "lane": "cursor",
+   "status": "open",
+   "source": "src/cadr-cli/extensions/loader.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.startup_issues",
+   "branch": "cursor/ext-loader-notify-startup-boundary-leftovers-847-849-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 848"
+  },
+  {
+   "pair": 849,
+   "lane": "cursor",
+   "status": "open",
+   "source": "src/cadr-cli/extensions/loader.lisp",
+   "measure": "measure-cli-extensions-install",
+   "metric": "cli_extensions_install.output_boundary",
+   "branch": "cursor/ext-loader-notify-startup-boundary-leftovers-847-849-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 849"
   }
  ],
  "mergeQueue": []
