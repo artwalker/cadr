@@ -578,6 +578,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.make_entry": 50,
 	"cli_interactive_controller.append_output": 50,
 	"cli_interactive_controller.complete_entry": 50,
+	"cli_interactive_controller.theme_object_overrides": 50,
+	"cli_interactive_controller.apply_tui_theme_summary": 50,
+	"cli_interactive_controller.load_tui_theme_file": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -13774,6 +13777,332 @@ function runCliInteractiveThemeValidate() {
 }
 
 
+const LEFTOVER_THEME_OPTIONAL_COLORS = new Set([
+	"thinkingMax",
+	"scrollbarThumb",
+	"searchMatchBg",
+	"searchMatchText",
+]);
+
+const LEFTOVER_THEME_JSON_COLOR_MAP = [
+	["accent", "accent"],
+	["border", "border"],
+	["borderAccent", "border-accent"],
+	["borderMuted", "border-muted"],
+	["success", "success"],
+	["error", "error"],
+	["warning", "warning"],
+	["muted", "muted"],
+	["dim", "dim"],
+	["text", "text"],
+	["thinkingText", "thinking-text"],
+	["selectedBg", "selected-bg"],
+	["scrollbarThumb", "scrollbar-thumb"],
+	["searchMatchBg", "search-match-bg"],
+	["searchMatchText", "search-match-text"],
+	["userMessageBg", "user-message-bg"],
+	["userMessageText", "user-message-text"],
+	["customMessageBg", "custom-message-bg"],
+	["customMessageText", "custom-message-text"],
+	["customMessageLabel", "custom-message-label"],
+	["toolPendingBg", "tool-pending-bg"],
+	["toolSuccessBg", "tool-success-bg"],
+	["toolErrorBg", "tool-error-bg"],
+	["toolTitle", "tool-title"],
+	["toolOutput", "tool-output"],
+	["mdHeading", "md-heading"],
+	["mdLink", "md-link"],
+	["mdLinkUrl", "md-link-url"],
+	["mdCode", "md-code"],
+	["mdCodeBlock", "md-code-block"],
+	["mdCodeBlockBorder", "md-code-block-border"],
+	["mdQuote", "md-quote"],
+	["mdQuoteBorder", "md-quote-border"],
+	["mdHr", "md-hr"],
+	["mdListBullet", "md-list-bullet"],
+	["toolDiffAdded", "tool-diff-added"],
+	["toolDiffRemoved", "tool-diff-removed"],
+	["toolDiffContext", "tool-diff-context"],
+	["syntaxComment", "syntax-comment"],
+	["syntaxKeyword", "syntax-keyword"],
+	["syntaxFunction", "syntax-function"],
+	["syntaxVariable", "syntax-variable"],
+	["syntaxString", "syntax-string"],
+	["syntaxNumber", "syntax-number"],
+	["syntaxType", "syntax-type"],
+	["syntaxOperator", "syntax-operator"],
+	["syntaxPunctuation", "syntax-punctuation"],
+	["thinkingOff", "thinking-off"],
+	["thinkingMinimal", "thinking-minimal"],
+	["thinkingLow", "thinking-low"],
+	["thinkingMedium", "thinking-medium"],
+	["thinkingHigh", "thinking-high"],
+	["thinkingXhigh", "thinking-xhigh"],
+	["thinkingMax", "thinking-max"],
+	["bashMode", "bash-mode"],
+];
+
+const LEFTOVER_THEME_JSON_EXPORT_MAP = [
+	["pageBg", "page-bg"],
+	["cardBg", "card-bg"],
+	["infoBg", "info-bg"],
+];
+
+
+function leftoverFilledThemeColors() {
+	const colors = {};
+	for (const [name] of LEFTOVER_THEME_JSON_COLOR_MAP) {
+		if (!LEFTOVER_THEME_OPTIONAL_COLORS.has(name)) {
+			colors[name] = 7;
+		}
+	}
+	colors.accent = 9;
+	colors.selectedBg = 4;
+	colors.text = 15;
+	colors.thinkingXhigh = 12;
+	return colors;
+}
+
+
+function leftoverGoal20ThemeObject() {
+	return { name: "ok", colors: leftoverFilledThemeColors() };
+}
+
+
+function leftoverThemeObjectOverrides(object) {
+	if (object === null || typeof object !== "object" || Array.isArray(object)) {
+		return [];
+	}
+	const variablesPresent = Object.hasOwn(object, "vars");
+	const variables = variablesPresent ? object.vars : {};
+	const colors = object.colors;
+	const exportPresent = Object.hasOwn(object, "export");
+	const exportObject = object.export;
+	leftoverValidateThemeObject(
+		object,
+		variables,
+		variablesPresent,
+		colors,
+		exportObject,
+		exportPresent,
+	);
+	const overrides = [];
+	const collectValues = (container, mapping) => {
+		if (container === null || typeof container !== "object" || Array.isArray(container)) {
+			return;
+		}
+		for (const [jsonName, key] of mapping) {
+			if (Object.hasOwn(container, jsonName)) {
+				overrides.push([key, resolveTuiThemeValue(container[jsonName], variables)]);
+			}
+		}
+	};
+	collectValues(colors, LEFTOVER_THEME_JSON_COLOR_MAP);
+	if (!Object.hasOwn(colors, "thinkingMax")) {
+		overrides.push(["thinking-max", resolveTuiThemeValue(colors.thinkingXhigh, variables)]);
+	}
+	if (!Object.hasOwn(colors, "scrollbarThumb")) {
+		overrides.push(["scrollbar-thumb", resolveTuiThemeValue(colors.selectedBg, variables)]);
+	}
+	if (!Object.hasOwn(colors, "searchMatchBg")) {
+		overrides.push(["search-match-bg", resolveTuiThemeValue(colors.selectedBg, variables)]);
+	}
+	if (!Object.hasOwn(colors, "searchMatchText")) {
+		overrides.push(["search-match-text", resolveTuiThemeValue(colors.text, variables)]);
+	}
+	collectValues(exportObject, LEFTOVER_THEME_JSON_EXPORT_MAP);
+	overrides.reverse();
+	return overrides;
+}
+
+
+function leftoverValidateThemeObject(
+	object,
+	variables,
+	variablesPresentP,
+	colors,
+	exportObject,
+	exportPresentP,
+) {
+	const allowed = new Set(["$schema", "name", "vars", "colors", "export"]);
+	for (const name of Object.keys(object)) {
+		if (!allowed.has(name)) {
+			throw new Error(`Unknown theme property: ${name}`);
+		}
+	}
+	if (typeof object.name !== "string" || object.name.length === 0 || object.name.includes("/")) {
+		throw new Error("Theme requires a valid name without '/'");
+	}
+	if (colors === null || typeof colors !== "object" || Array.isArray(colors)) {
+		throw new Error("Theme requires a colors object");
+	}
+	const known = new Set(LEFTOVER_THEME_JSON_COLOR_MAP.map(([name]) => name));
+	for (const [colorName, value] of Object.entries(colors)) {
+		if (!known.has(colorName)) {
+			throw new Error(`Unknown theme color token: ${colorName}`);
+		}
+		if (!validTuiThemePrimitiveP(value)) {
+			throw new Error("Invalid theme color value");
+		}
+	}
+	for (const [colorName] of LEFTOVER_THEME_JSON_COLOR_MAP) {
+		if (LEFTOVER_THEME_OPTIONAL_COLORS.has(colorName)) {
+			continue;
+		}
+		if (!Object.hasOwn(colors, colorName)) {
+			throw new Error(`Missing required theme color token: ${colorName}`);
+		}
+	}
+	if (exportPresentP) {
+		if (exportObject === null || typeof exportObject !== "object" || Array.isArray(exportObject)) {
+			throw new Error("Theme export must be an object");
+		}
+	}
+}
+
+
+function leftoverThemeOverrideEncode(overrides, key) {
+	const entry = overrides.find((item) => item[0] === key);
+	return entry ? String(entry[1]) : "";
+}
+
+
+function leftoverThemeApplyOkP(value) {
+	return value ? "1" : "0";
+}
+
+
+let leftoverCurrentThemeName = "dark";
+
+
+function leftoverApplyTuiThemeSummary(summary, background = "dark", keepCurrentOnErrorP = false) {
+	let name;
+	let object;
+	if (typeof summary === "string") {
+		name = summary;
+	} else if (summary && typeof summary === "object") {
+		name = summary.name;
+		object = summary.object;
+	}
+	let base;
+	if (typeof name === "string" && name.toLowerCase() === "light") {
+		base = "light";
+	} else if (typeof name === "string" && name.toLowerCase() === "dark") {
+		base = "dark";
+	} else if (background === "light") {
+		base = "light";
+	} else {
+		base = "dark";
+	}
+	try {
+		leftoverThemeObjectOverrides(object ?? null);
+		leftoverCurrentThemeName = base;
+		return true;
+	} catch {
+		if (!keepCurrentOnErrorP) {
+			leftoverCurrentThemeName = "dark";
+		}
+		return false;
+	}
+}
+
+
+function leftoverThemeFixtureRoot() {
+	const root = path.join(scratch, "theme-leftover");
+	mkdirSync(root, { recursive: true });
+	return root;
+}
+
+
+function leftoverThemeWriteFile(name, contents) {
+	const filePath = path.join(leftoverThemeFixtureRoot(), name);
+	writeFileSync(filePath, contents, "utf8");
+	return filePath;
+}
+
+
+function leftoverThemeOkJson() {
+	return JSON.stringify({ name: "ok", colors: leftoverFilledThemeColors() });
+}
+
+
+function leftoverLoadTuiThemeFile(filePath) {
+	try {
+		const object = JSON.parse(readFileSync(filePath, "utf8"));
+		if (object !== null && typeof object === "object" && !Array.isArray(object)) {
+			return {
+				name: object.name || path.parse(filePath).name,
+				object,
+			};
+		}
+		return null;
+	} catch {
+		return null;
+	}
+}
+
+
+function leftoverThemeLoadName(summary) {
+	return summary ? summary.name || "" : "0";
+}
+
+
+function leftoverThemeLoadOkP(summary) {
+	return summary && summary.object ? "1" : "0";
+}
+
+
+function runCliInteractiveThemeObjectOverrides() {
+	const object = leftoverGoal20ThemeObject();
+	const overrides = leftoverThemeObjectOverrides(object);
+	const nilOverrides = leftoverThemeObjectOverrides(null);
+	return {
+		too_n: String(overrides.length),
+		too_accent: leftoverThemeOverrideEncode(overrides, "accent"),
+		too_tmax: leftoverThemeOverrideEncode(overrides, "thinking-max"),
+		too_scroll: leftoverThemeOverrideEncode(overrides, "scrollbar-thumb"),
+		too_nil: leftoverThemeApplyOkP(nilOverrides.length),
+	};
+}
+
+
+function runCliInteractiveApplyTuiThemeSummary() {
+	const object = leftoverGoal20ThemeObject();
+	const dark = leftoverApplyTuiThemeSummary("dark", "dark");
+	const light = leftoverApplyTuiThemeSummary("light", "dark");
+	const obj = leftoverApplyTuiThemeSummary({ name: "ok", object }, "dark");
+	const bad = leftoverApplyTuiThemeSummary(
+		{ name: "ok", object: { name: "a/b" } },
+		"dark",
+		true,
+	);
+	return {
+		tas_dark: leftoverThemeApplyOkP(dark),
+		tas_light: leftoverThemeApplyOkP(light),
+		tas_obj: leftoverThemeApplyOkP(obj),
+		tas_bad: leftoverThemeApplyOkP(bad),
+		tas_name: leftoverCurrentThemeName,
+	};
+}
+
+
+function runCliInteractiveLoadTuiThemeFile() {
+	const okPath = leftoverThemeWriteFile("ok.json", leftoverThemeOkJson());
+	const missPath = path.join(leftoverThemeFixtureRoot(), "missing.json");
+	const badPath = leftoverThemeWriteFile("bad.json", "{");
+	leftoverThemeWriteFile("empty.json", "");
+	const emptyPath = path.join(leftoverThemeFixtureRoot(), "empty.json");
+	const ok = leftoverLoadTuiThemeFile(okPath);
+	return {
+		ltf_name: leftoverThemeLoadName(ok),
+		ltf_ok: leftoverThemeLoadOkP(ok),
+		ltf_miss: leftoverThemeLoadOkP(leftoverLoadTuiThemeFile(missPath)),
+		ltf_bad: leftoverThemeLoadOkP(leftoverLoadTuiThemeFile(badPath)),
+		ltf_empty: leftoverThemeLoadOkP(leftoverLoadTuiThemeFile(emptyPath)),
+	};
+}
+
+
 function encodeClipboardCommandCandidates(candidates) {
 	return candidates.map((argv) => argv.join(" ")).join("|");
 }
@@ -14267,6 +14596,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveBashMakeEntry(),
 		...runCliInteractiveBashAppendOutput(),
 		...runCliInteractiveBashCompleteEntry(),
+		...runCliInteractiveThemeObjectOverrides(),
+		...runCliInteractiveApplyTuiThemeSummary(),
+		...runCliInteractiveLoadTuiThemeFile(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -14295,6 +14627,21 @@ async function measureCliInteractiveDecodeEntity() {
 		}),
 		complete_entry: await collect("cli_interactive_controller.complete_entry", () => {
 			return () => runCliInteractiveBashCompleteEntry();
+		}),
+		theme_object_overrides: await collect(
+			"cli_interactive_controller.theme_object_overrides",
+			() => {
+				return () => runCliInteractiveThemeObjectOverrides();
+			},
+		),
+		apply_tui_theme_summary: await collect(
+			"cli_interactive_controller.apply_tui_theme_summary",
+			() => {
+				return () => runCliInteractiveApplyTuiThemeSummary();
+			},
+		),
+		load_tui_theme_file: await collect("cli_interactive_controller.load_tui_theme_file", () => {
+			return () => runCliInteractiveLoadTuiThemeFile();
 		}),
 		observed,
 	};
@@ -28156,6 +28503,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts BashExecutionComponent.appendOutput",
 			"cli_interactive_controller.complete_entry":
 				"packages/coding-agent/src/modes/interactive/components/bash-execution.ts BashExecutionComponent.setComplete",
+			"cli_interactive_controller.theme_object_overrides":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts withThemeColorFallbacks + resolveThemeColors",
+			"cli_interactive_controller.apply_tui_theme_summary":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts setTheme",
+			"cli_interactive_controller.load_tui_theme_file":
+				"packages/coding-agent/src/modes/interactive/theme/theme.ts loadThemeFromPath",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

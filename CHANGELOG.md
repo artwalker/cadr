@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.theme_object_overrides`
+  (`theme-object-overrides` on
+  `src/cadr-cli/interactive/themes.lisp` vs
+  withThemeColorFallbacks + resolveThemeColors). Observed `too_n` /
+  `too_accent` / `too_tmax` / `too_scroll` / `too_nil` exact. n=5
+  **0.651×** (22.839 / 35.090 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 637). Gate `--only-enforce`; py rc=2 from
+  known METRICS observed-key pollution (`parsed_provider`); this metric
+  did not fail observed-exact. cadr leads. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.apply_tui_theme_summary`
+  (`apply-tui-theme-summary` vs setTheme). Observed `tas_dark` /
+  `tas_light` / `tas_obj` / `tas_bad` / `tas_name` exact. n=5 **3.211×**
+  (52.489 / 16.348 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 638). Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.load_tui_theme_file`
+  (`load-tui-theme-file` vs loadThemeFromPath). Observed `ltf_name` /
+  `ltf_ok` / `ltf_miss` / `ltf_bad` / `ltf_empty` exact. n=5 **2.383×**
+  (233.265 / 97.883 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 639). Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.daxnuts_rgb_at`
   (`daxnuts-rgb-at` on
   `src/cadr-cli/interactive/components/daxnuts.lisp` vs

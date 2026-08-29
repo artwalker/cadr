@@ -7816,6 +7816,30 @@ Leftover sibling of Pair 634. Timed work is constructor isolation without the an
 
 Leftover sibling of Pairs 634–635. Timed work is one tick / 25 ticks to max / stop flag / no-op after max / shared render count. Observed `dct_one` / `dct_max` / `dct_stop` / `dct_after` / `dct_renders` are exact (renders=51). First n=5 freeze **1.119×** (3.787 / 3.384 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 637 — `cli_interactive_controller` (theme_object_overrides)
+
+| metric | cadr | pi |
+|---|---|---|
+| `theme_object_overrides` | `theme-object-overrides` (`src/cadr-cli/interactive/themes.lisp`) | withThemeColorFallbacks + resolveThemeColors (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling on the `themes.lisp` hole after Pairs 523–525 (primitive/resolve/validate). Timed work is override collection plus thinking-max / scrollbar / search-match fallbacks (count / accent / thinking-max / scrollbar-thumb / nil object). Observed `too_n` / `too_accent` / `too_tmax` / `too_scroll` / `too_nil` are exact. First n=5 freeze **0.651×** (22.839 / 35.090 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 638 — `cli_interactive_controller` (apply_tui_theme_summary)
+
+| metric | cadr | pi |
+|---|---|---|
+| `apply_tui_theme_summary` | `apply-tui-theme-summary` (`src/cadr-cli/interactive/themes.lisp`) | setTheme (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pair 637. Timed work is named dark/light apply, object apply, invalid keep-current, and resulting theme name. Observed `tas_dark` / `tas_light` / `tas_obj` / `tas_bad` / `tas_name` are exact. First n=5 freeze **3.211×** (52.489 / 16.348 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 639 — `cli_interactive_controller` (load_tui_theme_file)
+
+| metric | cadr | pi |
+|---|---|---|
+| `load_tui_theme_file` | `load-tui-theme-file` (`src/cadr-cli/interactive/themes.lisp`) | loadThemeFromPath (`packages/coding-agent/src/modes/interactive/theme/theme.ts`) |
+
+Leftover sibling of Pairs 637–638. Timed work is JSON load of a valid file / missing / truncated / empty (name / ok / miss / bad / empty). Observed `ltf_name` / `ltf_ok` / `ltf_miss` / `ltf_bad` / `ltf_empty` are exact. First n=5 freeze **2.383×** (233.265 / 97.883 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce` (py invalid-report `parsed_provider` from METRICS observed-key pollution; this metric did not fail observed-exact). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
