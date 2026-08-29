@@ -11611,9 +11611,6 @@ function runOauthPkceDeviceOpenrouterExchange() {
 }
 
 
-}
-
-
 const OAUTH_TOKEN_OK_BODY =
 	'{"access_token":"sk-ex","refresh_token":"rt-ex","expires_in":60}';
 
