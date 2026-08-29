@@ -272,6 +272,9 @@ const REPETITIONS = {
 	"package_manager.pattern_candidates": 50,
 	"package_manager.pattern_matches": 50,
 	"package_manager.enabled_by_patterns": 50,
+	"package_manager.delta_resource_state": 50,
+	"package_manager.project_top_level_state": 50,
+	"package_manager.derived_project_state": 50,
 	"session_discovery.header_probe": 20,
 	"session_discovery.session_list_probe": 5,
 	"session_export_html.to_html": 3,
@@ -6056,6 +6059,143 @@ function leftoverConfigEnabledByPatternsP(
 	return Boolean(enabled);
 }
 
+function leftoverConfigPackageDeltaResourceState(path, patterns, rootDir) {
+	let matchedP = false;
+	let enabledP = false;
+	const root = leftoverEnsureDir(rootDir || "");
+	for (const pattern of patterns || []) {
+		if (typeof pattern !== "string" || pattern.length === 0) {
+			continue;
+		}
+		const prefix = pattern[0];
+		const target = leftoverConfigSelectorEntryTarget(pattern);
+		const exactP = prefix === "+" || prefix === "-";
+		if (leftoverConfigPatternMatchesP(path, target, root, exactP)) {
+			matchedP = true;
+			enabledP = prefix !== "-" && prefix !== "!";
+		}
+	}
+	return [enabledP, matchedP];
+}
+
+function leftoverConfigDeltaCode(enabledP, matchedP) {
+	return (enabledP ? 1 : 0) * 10 + (matchedP ? 1 : 0);
+}
+
+function leftoverConfigSelectorStateCode(state) {
+	if (state === "inherit") {
+		return 0;
+	}
+	if (state === "load") {
+		return 1;
+	}
+	if (state === "unload") {
+		return 2;
+	}
+	return -1;
+}
+
+function leftoverPackageSourceIdentity(source) {
+	const trimmed = String(source ?? "");
+	if (trimmed.startsWith("npm:")) {
+		const rest = trimmed.slice(4);
+		if (rest.startsWith("@")) {
+			const slash = rest.indexOf("/");
+			if (slash === -1) {
+				return `npm:${rest}`;
+			}
+			const after = rest.slice(slash + 1);
+			const versionAt = after.lastIndexOf("@");
+			const name = versionAt === -1 ? rest : rest.slice(0, slash + 1 + versionAt);
+			return `npm:${name}`;
+		}
+		const at = rest.lastIndexOf("@");
+		return `npm:${at > 0 ? rest.slice(0, at) : rest}`;
+	}
+	return trimmed;
+}
+
+function leftoverSettingsPackageEntries(manager, scope) {
+	const object = scope === "project" ? manager?.project : manager?.global;
+	const value = object?.packages;
+	return Array.isArray(value) ? value.slice() : [];
+}
+
+function leftoverConfigSelectorHelloItem(extras = {}) {
+	return leftoverConfigResourceItemLabeled(
+		extras.origin ?? "top-level",
+		"project",
+		extras.source ?? "auto",
+		{
+			path: "/tmp/proj/.cadr/hello.lisp",
+			baseDirectory: "/tmp/proj/.cadr/",
+		},
+	);
+}
+
+function leftoverConfigSelectorProjectExtensionsState(patterns) {
+	return leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+		settingsManager: leftoverMemorySettingsManager(
+			{},
+			{ extensions: patterns.slice() },
+		),
+	});
+}
+
+function leftoverConfigSelectorProjectTopLevelState(state, item) {
+	const manager = state.settingsManager;
+	const projectBase = leftoverProjectConfigDirectory(state.cwd || "");
+	const typeKey = String(item.type || "").toLowerCase();
+	const entries = leftoverConfigSelectorSettingsValues(manager, "project", typeKey) || [];
+	let result = "inherit";
+	for (const entry of entries) {
+		if (typeof entry !== "string" || entry.length === 0) {
+			continue;
+		}
+		const prefix = entry[0];
+		const target = leftoverConfigSelectorEntryTarget(entry);
+		if (
+			leftoverConfigPatternMatchesP(item.path, target, projectBase, true) ||
+			leftoverConfigPatternMatchesP(
+				item.path,
+				target,
+				leftoverEnsureDir(item.baseDirectory || ""),
+				true,
+			)
+		) {
+			result = prefix === "-" || prefix === "!" ? "unload" : "load";
+		}
+	}
+	return result;
+}
+
+function leftoverConfigSelectorProjectPackageState(state, item) {
+	const manager = state.settingsManager;
+	const projectBase = leftoverProjectConfigDirectory(state.cwd || "");
+	const sourceBase =
+		item.scope === "project"
+			? projectBase
+			: leftoverEnsureDir(state.agentDirectory || "");
+	const identity = leftoverPackageSourceIdentity(item.source, sourceBase);
+	const entry = leftoverSettingsPackageEntries(manager, "project").find((candidate) => {
+		const source = candidate?.source;
+		return source && leftoverPackageSourceIdentity(source, projectBase) === identity;
+	});
+	if (!entry || typeof entry !== "object" || Array.isArray(entry)) {
+		return "inherit";
+	}
+	return "inherit";
+}
+
+function leftoverConfigSelectorDerivedProjectState(state, item) {
+	if (item.origin === "package") {
+		return leftoverConfigSelectorProjectPackageState(state, item);
+	}
+	return leftoverConfigSelectorProjectTopLevelState(state, item);
+}
+
 function leftoverConfigSelectorEntryTarget(entry) {
 	if (entry.length > 0 && "!+-".includes(entry[0])) {
 		return entry.slice(1);
@@ -6286,6 +6426,7 @@ function leftoverConfigSelectorState(selected, extras = {}) {
 		writeScope: extras.writeScope ?? "global",
 		globalItems: extras.globalItems ?? [],
 		projectItems: extras.projectItems ?? [],
+		settingsManager: extras.settingsManager ?? null,
 	};
 }
 
@@ -6362,8 +6503,8 @@ function leftoverConfigSelectorSettingsValues(manager, scope, key) {
 
 function leftoverConfigResourceItemLabeled(origin, scope, source, extras = {}) {
 	return {
-		path: "/tmp/x.lisp",
-		type: "extensions",
+		path: extras.path ?? "/tmp/x.lisp",
+		type: extras.type ?? "extensions",
 		scope,
 		baseDirectory: leftoverEnsureDir(extras.baseDirectory ?? "/tmp/"),
 		displayName: "x",
@@ -6862,6 +7003,104 @@ function runPackageManagerEnabledByPatterns() {
 	};
 }
 
+function runPackageManagerDeltaResourceState() {
+	const plus = leftoverConfigPackageDeltaResourceState(
+		"/tmp/hello.lisp",
+		["+hello.lisp"],
+		"/tmp/",
+	);
+	const minus = leftoverConfigPackageDeltaResourceState(
+		"/tmp/hello.lisp",
+		["-hello.lisp"],
+		"/tmp/",
+	);
+	const bang = leftoverConfigPackageDeltaResourceState(
+		"/tmp/hello.lisp",
+		["!hello.lisp"],
+		"/tmp/",
+	);
+	const miss = leftoverConfigPackageDeltaResourceState(
+		"/tmp/hello.lisp",
+		["*.md"],
+		"/tmp/",
+	);
+	return {
+		drs_plus: leftoverConfigDeltaCode(plus[0], plus[1]),
+		drs_minus: leftoverConfigDeltaCode(minus[0], minus[1]),
+		drs_bang: leftoverConfigDeltaCode(bang[0], bang[1]),
+		drs_miss: leftoverConfigDeltaCode(miss[0], miss[1]),
+		drs_n: 5,
+	};
+}
+
+function runPackageManagerProjectTopLevelState() {
+	const item = leftoverConfigSelectorHelloItem();
+	return {
+		pts_load: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorProjectTopLevelState(
+				leftoverConfigSelectorProjectExtensionsState(["+hello.lisp"]),
+				item,
+			),
+		),
+		pts_unload: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorProjectTopLevelState(
+				leftoverConfigSelectorProjectExtensionsState(["-hello.lisp"]),
+				item,
+			),
+		),
+		pts_bang: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorProjectTopLevelState(
+				leftoverConfigSelectorProjectExtensionsState(["!hello.lisp"]),
+				item,
+			),
+		),
+		pts_miss: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorProjectTopLevelState(
+				leftoverConfigSelectorProjectExtensionsState(["+other.lisp"]),
+				item,
+			),
+		),
+		pts_n: 5,
+	};
+}
+
+function runPackageManagerDerivedProjectState() {
+	const item = leftoverConfigSelectorHelloItem();
+	const pkgItem = leftoverConfigResourceItemLabeled("package", "user", "npm:foo", {
+		path: "/tmp/hello.lisp",
+		baseDirectory: "/tmp/agent/pkg/",
+	});
+	const pkgState = leftoverConfigSelectorState(0, {
+		cwd: "/tmp/proj",
+		agentDirectory: "/tmp/agent",
+		settingsManager: leftoverMemorySettingsManager({}, { packages: [] }),
+	});
+	return {
+		dps_load: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorDerivedProjectState(
+				leftoverConfigSelectorProjectExtensionsState(["+hello.lisp"]),
+				item,
+			),
+		),
+		dps_unload: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorDerivedProjectState(
+				leftoverConfigSelectorProjectExtensionsState(["-hello.lisp"]),
+				item,
+			),
+		),
+		dps_pkg: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorDerivedProjectState(pkgState, pkgItem),
+		),
+		dps_miss: leftoverConfigSelectorStateCode(
+			leftoverConfigSelectorDerivedProjectState(
+				leftoverConfigSelectorProjectExtensionsState(["+other.lisp"]),
+				item,
+			),
+		),
+		dps_n: 5,
+	};
+}
+
 function wrapPackageUpdateCheckArgv(argv, groupPath) {
 	if (process.platform === "win32" || !existsSync("/usr/bin/setsid")) {
 		return argv;
@@ -6982,6 +7221,9 @@ async function measurePackageManager() {
 	const patternCandidates = runPackageManagerPatternCandidates();
 	const patternMatches = runPackageManagerPatternMatches();
 	const enabledByPatterns = runPackageManagerEnabledByPatterns();
+	const deltaResourceState = runPackageManagerDeltaResourceState();
+	const projectTopLevelState = runPackageManagerProjectTopLevelState();
+	const derivedProjectState = runPackageManagerDerivedProjectState();
 	return {
 		resolve: await collect("package_manager.resolve", () => {
 			return () => manager.resolve();
@@ -7097,6 +7339,18 @@ async function measurePackageManager() {
 		enabled_by_patterns: await collect("package_manager.enabled_by_patterns", () => {
 			return () => runPackageManagerEnabledByPatterns();
 		}),
+		delta_resource_state: await collect("package_manager.delta_resource_state", () => {
+			return () => runPackageManagerDeltaResourceState();
+		}),
+		project_top_level_state: await collect(
+			"package_manager.project_top_level_state",
+			() => {
+				return () => runPackageManagerProjectTopLevelState();
+			},
+		),
+		derived_project_state: await collect("package_manager.derived_project_state", () => {
+			return () => runPackageManagerDerivedProjectState();
+		}),
 		observed: {
 			package_count: manager.listConfiguredPackages().length,
 			skill_count: fromPackage(resolved.skills),
@@ -7138,6 +7392,9 @@ async function measurePackageManager() {
 			...patternCandidates,
 			...patternMatches,
 			...enabledByPatterns,
+			...deltaResourceState,
+			...projectTopLevelState,
+			...derivedProjectState,
 		},
 	};
 }
@@ -32704,6 +32961,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts pattern matches (cadr config-pattern-matches-p)",
 			"package_manager.enabled_by_patterns":
 				"packages/coding-agent/src/modes/interactive/components/config-selector.ts enabled by patterns (cadr config-enabled-by-patterns-p)",
+			"package_manager.delta_resource_state":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts package delta resource state (cadr config-package-delta-resource-state)",
+			"package_manager.project_top_level_state":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts project top-level state (cadr config-selector-project-top-level-state)",
+			"package_manager.derived_project_state":
+				"packages/coding-agent/src/modes/interactive/components/config-selector.ts derived project state (cadr config-selector-derived-project-state)",
 			"session_discovery.header_probe":
 				"packages/coding-agent/src/core/session-manager.ts findMostRecentSession",
 			"session_discovery.session_list_probe":
