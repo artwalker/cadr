@@ -70,6 +70,25 @@ tag/Release step.
   `fsr_again` exact. n=5 **91.669×** (87.360 / 0.953 µs) on host
   `cursor`, ceiling 160.0 (first-freeze headroom). Measure-only leftover
   (Pair 684). Over-1× booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_extension_custom_ui`
+  (`render-extension-custom-ui` vs custom ui render). Observed
+  `rcu_hi` / `rcu_nil` / `rcu_aa` / `rcu_n` / `rcu_dlg` exact. n=5
+  **22.775×** (32.260 / 1.416 µs) on host `cursor`, ceiling 40.0
+  (first-freeze headroom). Measure-only leftover (Pair 685). Over-1×
+  booked. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.extension_custom_ui_handle_event`
+  (`extension-custom-ui-handle-event` vs custom ui handleEvent). Observed
+  `ecu_esc` / `ecu_sel` / `ecu_val` / `ecu_nop` / `ecu_txt` exact. n=5
+  **0.421×** (0.344 / 0.818 µs) on host `cursor`, ceiling 8.0. cadr
+  leads. Measure-only leftover (Pair 686). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_tui_extension_overlay`
+  (`render-tui-extension-overlay` vs extension overlay composite).
+  Observed `rto_hid` / `rto_hi` / `rto_n` / `rto_vn` / `rto_row` exact.
+  n=5 **88.995×** (144.970 / 1.629 µs) on host `cursor`, ceiling 160.0
+  (first-freeze headroom). Measure-only leftover (Pair 687). Over-1×
+  booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.make_framed_select_state`
   (`make-framed-select-state` on
   `src/cadr-cli/interactive/extension-ui.lisp` vs framed select-list

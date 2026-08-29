@@ -8200,6 +8200,30 @@ Leftover sibling of Pair 682. Timed work is escape cancel, enter select, down `:
 
 Leftover sibling of Pairs 682–683. Timed work is `j`/`k` consumed and `x`/`z` not consumed. Observed `fsr_j` / `fsr_k` / `fsr_x` / `fsr_z` / `fsr_again` are exact. First n=5 freeze **91.669×** (87.360 / 0.953 µs) on host `cursor`, ceiling 160.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 685 — `cli_interactive_controller` (render_extension_custom_ui)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_extension_custom_ui` | `render-extension-custom-ui` (`src/cadr-cli/interactive/extension-ui.lisp`) | custom ui render (`packages/coding-agent/src/modes/interactive/components/custom-message.ts`) |
+
+Leftover sibling on the `extension-ui.lisp` hole. Timed work is string/list/nil component render plus input-dialog protocol path. Do not exact-match ANSI. Observed `rcu_hi` / `rcu_nil` / `rcu_aa` / `rcu_n` / `rcu_dlg` are exact. First n=5 freeze **22.775×** (32.260 / 1.416 µs) on host `cursor`, ceiling 40.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 686 — `cli_interactive_controller` (extension_custom_ui_handle_event)
+
+| metric | cadr | pi |
+|---|---|---|
+| `extension_custom_ui_handle_event` | `extension-custom-ui-handle-event` (`src/cadr-cli/interactive/extension-ui.lisp`) | custom ui handleEvent (`packages/coding-agent/src/modes/interactive/components/custom-message.ts`) |
+
+Leftover sibling of Pair 685. Timed work is string-component escape cancel, enter select, left nop, and text nop. Observed `ecu_esc` / `ecu_sel` / `ecu_val` / `ecu_nop` / `ecu_txt` are exact. First n=5 freeze **0.421×** (0.344 / 0.818 µs) on host `cursor`, ceiling 8.0. cadr leads; not booked over-1×. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 687 — `cli_interactive_controller` (render_tui_extension_overlay)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_tui_extension_overlay` | `render-tui-extension-overlay` (`src/cadr-cli/interactive/extension-ui.lisp`) | extension overlay composite (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pairs 685–686. Timed work is hidden overlay (`:visible nil`) plus visible Hello composite. Do not exact-match ANSI or full-screen geometry. Observed `rto_hid` / `rto_hi` / `rto_n` / `rto_vn` / `rto_row` are exact. First n=5 freeze **88.995×** (144.970 / 1.629 µs) on host `cursor`, ceiling 160.0 (first-freeze headroom; ratchet down only). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

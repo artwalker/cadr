@@ -644,6 +644,9 @@
     ("cli_interactive_controller.render_framed_select_state" . 50)
     ("cli_interactive_controller.framed_select_state_handle_event" . 50)
     ("cli_interactive_controller.framed_select_state_handle_raw_input" . 50)
+    ("cli_interactive_controller.render_extension_custom_ui" . 50)
+    ("cli_interactive_controller.extension_custom_ui_handle_event" . 50)
+    ("cli_interactive_controller.render_tui_extension_overlay" . 50)
     ("cli_selectors.session_search" . 50)
     ("cli_selectors.key_text" . 50)
     ("cli_selectors.fuzzy_filter" . 50)
@@ -14697,6 +14700,26 @@
    "fsr_again" (nth 4 handle-raw)))
 
 
+(defun leftover-extension-ui-custom-ui-overlay-observed-pairs
+    (render-ui handle-event overlay)
+  (list
+   "rcu_hi" (nth 0 render-ui)
+   "rcu_nil" (nth 1 render-ui)
+   "rcu_aa" (nth 2 render-ui)
+   "rcu_n" (nth 3 render-ui)
+   "rcu_dlg" (nth 4 render-ui)
+   "ecu_esc" (nth 0 handle-event)
+   "ecu_sel" (nth 1 handle-event)
+   "ecu_val" (nth 2 handle-event)
+   "ecu_nop" (nth 3 handle-event)
+   "ecu_txt" (nth 4 handle-event)
+   "rto_hid" (nth 0 overlay)
+   "rto_hi" (nth 1 overlay)
+   "rto_n" (nth 2 overlay)
+   "rto_vn" (nth 3 overlay)
+   "rto_row" (nth 4 overlay)))
+
+
 (defun encode-clipboard-command-candidates (candidates)
   (format
    nil "~{~A~^|~}"
@@ -15236,7 +15259,13 @@
         (leftover-framed-select-state-handle-event
           (run-cli-interactive-framed-select-state-handle-event))
         (leftover-framed-select-state-handle-raw-input
-          (run-cli-interactive-framed-select-state-handle-raw-input)))
+          (run-cli-interactive-framed-select-state-handle-raw-input))
+        (leftover-render-extension-custom-ui
+          (run-cli-interactive-render-extension-custom-ui))
+        (leftover-extension-custom-ui-handle-event
+          (run-cli-interactive-extension-custom-ui-handle-event))
+        (leftover-render-tui-extension-overlay
+          (run-cli-interactive-render-tui-extension-overlay)))
     (json-object
      "observed"
      (apply #'json-object
@@ -15355,7 +15384,11 @@
              (leftover-extension-ui-framed-select-observed-pairs
               leftover-render-framed-select-state
               leftover-framed-select-state-handle-event
-              leftover-framed-select-state-handle-raw-input)))
+              leftover-framed-select-state-handle-raw-input)
+             (leftover-extension-ui-custom-ui-overlay-observed-pairs
+              leftover-render-extension-custom-ui
+              leftover-extension-custom-ui-handle-event
+              leftover-render-tui-extension-overlay)))
      "decode_entity"
      (collect "cli_interactive_controller.decode_entity"
               (lambda ()
@@ -15640,7 +15673,22 @@
      (collect "cli_interactive_controller.framed_select_state_handle_raw_input"
               (lambda ()
                 (lambda ()
-                  (run-cli-interactive-framed-select-state-handle-raw-input)))))))
+                  (run-cli-interactive-framed-select-state-handle-raw-input))))
+     "render_extension_custom_ui"
+     (collect "cli_interactive_controller.render_extension_custom_ui"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-extension-custom-ui))))
+     "extension_custom_ui_handle_event"
+     (collect "cli_interactive_controller.extension_custom_ui_handle_event"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-extension-custom-ui-handle-event))))
+     "render_tui_extension_overlay"
+     (collect "cli_interactive_controller.render_tui_extension_overlay"
+              (lambda ()
+                (lambda ()
+                  (run-cli-interactive-render-tui-extension-overlay)))))))
 
 (defun bash-entry-fields (entry)
   (let ((options (cadr-cli::tui-entry-custom-options entry)))
@@ -16990,6 +17038,117 @@
            "Pick" '("a" "b") '(1 2))
           "j")
          1 0))))
+
+(defun leftover-custom-ui-handle-action (state kind)
+  (nth-value
+   0
+   (cadr-cli::extension-custom-ui-handle-event
+    state
+    (cadr-tui:make-input-event :kind kind))))
+
+(defun run-cli-interactive-render-extension-custom-ui ()
+  (let* ((hello
+           (cadr-cli::make-extension-custom-ui-state
+            :component "Hello"))
+         (empty
+           (cadr-cli::make-extension-custom-ui-state
+            :component nil))
+         (listed
+           (cadr-cli::make-extension-custom-ui-state
+            :component '("aa" "bb")))
+         (dlg
+           (cadr-cli::make-extension-custom-ui-state
+            :component
+            (cadr-cli::make-extension-input-dialog "Pick")))
+         (hello-lines
+           (cadr-cli::render-extension-custom-ui hello 40))
+         (hello-text (leftover-notification-joined hello-lines))
+         (listed-text
+           (leftover-notification-joined
+            (cadr-cli::render-extension-custom-ui listed 40)))
+         (dlg-text
+           (leftover-notification-joined
+            (cadr-cli::render-extension-custom-ui dlg 40))))
+    (cadr-cli::render-extension-custom-ui hello 40)
+    (cadr-cli::render-extension-custom-ui empty 80)
+    (list
+     (if (search "Hello" hello-text) 1 0)
+     (if (null (cadr-cli::render-extension-custom-ui empty 80))
+         1 0)
+     (if (search "aa" listed-text) 1 0)
+     (if (>= (length hello-lines) 1) 1 0)
+     (if (search "Pick" dlg-text) 1 0))))
+
+(defun run-cli-interactive-extension-custom-ui-handle-event ()
+  (let* ((st
+           (cadr-cli::make-extension-custom-ui-state
+            :component "Hello"))
+         (sel
+           (cadr-cli::make-extension-custom-ui-state
+            :component "Hello"))
+         (nop
+           (cadr-cli::make-extension-custom-ui-state
+            :component "Hello")))
+    (leftover-custom-ui-handle-action st :escape)
+    (multiple-value-bind (sel-action sel-value)
+        (cadr-cli::extension-custom-ui-handle-event
+         sel
+         (cadr-tui:make-input-event :kind :enter))
+      (multiple-value-bind (nop-action nop-value)
+          (cadr-cli::extension-custom-ui-handle-event
+           nop
+           (cadr-tui:make-input-event :kind :left))
+        (declare (ignore nop-value))
+        (list
+         (if (eq (leftover-custom-ui-handle-action
+                  (cadr-cli::make-extension-custom-ui-state
+                   :component "Hello")
+                  :escape)
+                 :cancel)
+             1 0)
+         (if (eq sel-action :select) 1 0)
+         (if (equal "Hello" sel-value) 1 0)
+         (if (null nop-action) 1 0)
+         (if (null
+              (leftover-custom-ui-handle-action
+               (cadr-cli::make-extension-custom-ui-state
+                :component "Hello")
+               :text))
+             1 0))))))
+
+(defun run-cli-interactive-render-tui-extension-overlay ()
+  (let* ((tui (cadr-cli::make-tui-state :cwd "/tmp/proj"))
+         (editor (cadr-tui:make-multiline-editor))
+         (hidden
+           (cadr-cli::make-extension-custom-ui-state
+            :overlay-p t
+            :overlay-options '(:visible nil)
+            :component "Hello"))
+         (shown
+           (cadr-cli::make-extension-custom-ui-state
+            :overlay-p t
+            :overlay-options '(:visible t)
+            :component "Hello")))
+    (multiple-value-bind (hid-lines hid-row hid-col)
+        (cadr-cli::render-tui-extension-overlay
+         tui editor 40 12 hidden)
+      (declare (ignore hid-col))
+      (multiple-value-bind (vis-lines vis-row vis-col)
+          (cadr-cli::render-tui-extension-overlay
+           tui editor 40 12 shown)
+        (declare (ignore vis-row vis-col))
+        (let ((hid-text (leftover-notification-joined hid-lines))
+              (vis-text (leftover-notification-joined vis-lines)))
+          (cadr-cli::render-tui-extension-overlay
+           tui editor 40 12 hidden)
+          (cadr-cli::render-tui-extension-overlay
+           tui editor 20 8 shown)
+          (list
+           (if (not (search "Hello" hid-text)) 1 0)
+           (if (search "Hello" vis-text) 1 0)
+           (if (>= (length hid-lines) 1) 1 0)
+           (if (>= (length vis-lines) 1) 1 0)
+           (if (and (integerp hid-row) (>= hid-row 0)) 1 0)))))))
 
 (defun session-search-fixture-records ()
   (list
@@ -29358,6 +29517,12 @@
       "src/cadr-cli/interactive/extension-ui.lisp framed-select-state-handle-event"
       "cli_interactive_controller.framed_select_state_handle_raw_input"
       "src/cadr-cli/interactive/extension-ui.lisp framed-select-state-handle-raw-input"
+      "cli_interactive_controller.render_extension_custom_ui"
+      "src/cadr-cli/interactive/extension-ui.lisp render-extension-custom-ui"
+      "cli_interactive_controller.extension_custom_ui_handle_event"
+      "src/cadr-cli/interactive/extension-ui.lisp extension-custom-ui-handle-event"
+      "cli_interactive_controller.render_tui_extension_overlay"
+      "src/cadr-cli/interactive/extension-ui.lisp render-tui-extension-overlay"
       "cli_selectors.session_search"
       "src/cadr-cli/interactive/selectors/sessions.lisp filter-and-sort-sessions"
       "cli_selectors.session_format_age"
