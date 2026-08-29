@@ -9,6 +9,21 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `settings_load.sdk_http_idle_timeout`
+  (`sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs). Observed
+  `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` exact.
+  Measure-only leftover (Pair 766). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_apply_overrides`
+  (`sdk-settings-apply-overrides` vs applyOverrides). Observed `sao_prov` /
+  `sao_last` / `sao_len` / `sao_base` / `sao_n` exact. Measure-only leftover
+  (Pair 767). Freeze pending. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_model_thinking_level`
+  (`sdk-settings-model-thinking-level` vs getModelThinkingLevel). Observed
+  `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` exact.
+  Measure-only leftover (Pair 768). Freeze pending. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `settings_load.sdk_default_provider`
   (`sdk-settings-default-provider` vs SettingsManager.getDefaultProvider).
   Observed `sdp_hit` / `sdp_miss` / `sdp_len` / `sdp_str` / `sdp_n` exact.

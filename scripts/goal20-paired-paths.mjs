@@ -243,6 +243,9 @@ const REPETITIONS = {
 	"settings_load.sdk_default_provider": 50,
 	"settings_load.sdk_default_model": 50,
 	"settings_load.sdk_retry_settings": 50,
+	"settings_load.sdk_http_idle_timeout": 50,
+	"settings_load.sdk_apply_overrides": 50,
+	"settings_load.sdk_model_thinking_level": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -3174,6 +3177,53 @@ function leftoverSdkSettingsEmpty() {
 	return settingsModule.SettingsManager.inMemory({});
 }
 
+function leftoverSdkHttpIdleCaught(manager) {
+	return leftoverFlagCaught(() => manager.getHttpIdleTimeoutMs());
+}
+
+function runSettingsLoadSdkHttpIdleTimeout() {
+	const hit = settingsModule.SettingsManager.inMemory({ httpIdleTimeoutMs: 120000 });
+	const empty = leftoverSdkSettingsEmpty();
+	const bad = settingsModule.SettingsManager.inMemory({ httpIdleTimeoutMs: "nope" });
+	return {
+		shi_hit: hit.getHttpIdleTimeoutMs() === 120000 ? 1 : 0,
+		shi_def: empty.getHttpIdleTimeoutMs() === 300000 ? 1 : 0,
+		shi_bad: leftoverSdkHttpIdleCaught(bad),
+		shi_int: Number.isInteger(hit.getHttpIdleTimeoutMs()) ? 1 : 0,
+		shi_n: 5,
+	};
+}
+
+function runSettingsLoadSdkApplyOverrides() {
+	const manager = leftoverSdkSettingsFixture();
+	manager.applyOverrides({ defaultModel: "gpt-4o" });
+	manager.applyOverrides({ defaultModel: "gpt-5" });
+	const last = manager.getDefaultModel();
+	return {
+		sao_prov: manager.getDefaultProvider() === "openai" ? 1 : 0,
+		sao_last: last === "gpt-5" ? 1 : 0,
+		sao_len: typeof last === "string" ? last.length : 0,
+		sao_base:
+			leftoverSdkSettingsFixture().getDefaultModel() === "gpt-4" ? 1 : 0,
+		sao_n: 5,
+	};
+}
+
+function runSettingsLoadSdkModelThinkingLevel() {
+	const manager = settingsModule.SettingsManager.inMemory({
+		modelThinkingLevels: { "openai/gpt-4": "high" },
+	});
+	const empty = leftoverSdkSettingsEmpty();
+	const hit = manager.getModelThinkingLevel("openai", "gpt-4");
+	return {
+		smt_hit: hit === "high" ? 1 : 0,
+		smt_miss: empty.getModelThinkingLevel("openai", "gpt-4") == null ? 1 : 0,
+		smt_other: manager.getModelThinkingLevel("anthropic", "claude") == null ? 1 : 0,
+		smt_sym: typeof hit === "string" ? 1 : 0,
+		smt_n: 5,
+	};
+}
+
 function runSettingsLoadSdkDefaultProvider() {
 	const manager = leftoverSdkSettingsFixture();
 	const empty = leftoverSdkSettingsEmpty();
@@ -3236,6 +3286,9 @@ async function measureSettingsLoad() {
 	const sdkDefaultProvider = runSettingsLoadSdkDefaultProvider();
 	const sdkDefaultModel = runSettingsLoadSdkDefaultModel();
 	const sdkRetrySettings = runSettingsLoadSdkRetrySettings();
+	const sdkHttpIdleTimeout = runSettingsLoadSdkHttpIdleTimeout();
+	const sdkApplyOverrides = runSettingsLoadSdkApplyOverrides();
+	const sdkModelThinkingLevel = runSettingsLoadSdkModelThinkingLevel();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -3303,6 +3356,15 @@ async function measureSettingsLoad() {
 		sdk_retry_settings: await collect("settings_load.sdk_retry_settings", () => {
 			return () => runSettingsLoadSdkRetrySettings();
 		}),
+		sdk_http_idle_timeout: await collect("settings_load.sdk_http_idle_timeout", () => {
+			return () => runSettingsLoadSdkHttpIdleTimeout();
+		}),
+		sdk_apply_overrides: await collect("settings_load.sdk_apply_overrides", () => {
+			return () => runSettingsLoadSdkApplyOverrides();
+		}),
+		sdk_model_thinking_level: await collect("settings_load.sdk_model_thinking_level", () => {
+			return () => runSettingsLoadSdkModelThinkingLevel();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -3324,6 +3386,9 @@ async function measureSettingsLoad() {
 			...sdkDefaultProvider,
 			...sdkDefaultModel,
 			...sdkRetrySettings,
+			...sdkHttpIdleTimeout,
+			...sdkApplyOverrides,
+			...sdkModelThinkingLevel,
 		},
 	};
 }
@@ -33826,6 +33891,12 @@ const result = {
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getDefaultModel",
 			"settings_load.sdk_retry_settings":
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getRetrySettings",
+			"settings_load.sdk_http_idle_timeout":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getHttpIdleTimeoutMs",
+			"settings_load.sdk_apply_overrides":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.applyOverrides",
+			"settings_load.sdk_model_thinking_level":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getModelThinkingLevel",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":
