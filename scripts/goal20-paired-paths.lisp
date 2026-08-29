@@ -193,6 +193,9 @@
 ;;;; 349. evals_harness make-eval-root vs pi-harness isolated eval directory
 ;;;; 350. evals_harness normalize-step-type vs pi-harness step type coercion
 ;;;; 351. evals_harness selected-eval-tools vs pi-harness coding-tool selection
+;;;; 778. evals_harness matching-hello-tool-call-p vs ExtensionAuthoringJudge hello-call
+;;;; 779. evals_harness judge-extension-authoring-result vs ExtensionAuthoringJudge
+;;;; 780. evals_harness extension-source-bundle vs hello-tool bundle pick
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -612,6 +615,9 @@
     ("evals_harness.reporter_run_id" . 50)
     ("evals_harness.artifact_reference_json" . 50)
     ("evals_harness.reporter_artifacts" . 50)
+    ("evals_harness.matching_hello_call" . 50)
+    ("evals_harness.authoring_judge" . 50)
+    ("evals_harness.source_bundle" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -13393,6 +13399,51 @@
 (defun leftover-reporter-artifacts (case result)
   (cadr-evals::reporter-artifacts case result))
 
+(defun leftover-matching-hello-events
+    (&key (name "Bob") (content "Hello, Bob!") include-result)
+  (let ((call
+          (cadr-ai::json-object
+           "type" "tool_call"
+           "id" "hello-call"
+           "name" "hello"
+           "arguments"
+           (cadr-ai::json-object "name" name))))
+    (if include-result
+        (list
+         call
+         (cadr-ai::json-object
+          "type" "tool_result"
+          "toolCallId" "hello-call"
+          "name" "hello"
+          "content" content))
+        (list call))))
+
+(defun leftover-authoring-output
+    (&key (source "(define-tool hello ())")
+          (response "Hello, Bob!")
+          (tools (vector "hello"))
+          (errors #()))
+  (cadr-ai::json-object
+   "response" response
+   "extensionErrors" errors
+   "loadedExtensions"
+   (vector
+    (cadr-ai::json-object
+     "path" "/tmp/hello/extension.lisp"
+     "tools" tools))
+   "extensionSource" source))
+
+(defun leftover-hello-bundle (id tools)
+  (cadr-agent::make-extension-bundle
+   :id id
+   :path id
+   :tools
+   (mapcar
+    (lambda (name)
+      (cadr-agent::make-extension-tool-definition
+       :name name))
+    tools)))
+
 (defparameter *leftover-default-prompt*
   (format nil
           "HEAD~%Guidelines:~%BODY~%Current working directory: /tmp~%TAIL"))
@@ -13542,6 +13593,97 @@
       (and (hash-table-p hit) (= (hash-table-count hit) 2)))
      5)))
 
+(defun run-evals-harness-matching-hello-call ()
+  ;; Leftover on suites.lisp: hello({name:Bob}) event walk. Not live eval.
+  (list
+   (eval-flag
+    (cadr-evals::matching-hello-tool-call-p
+     (leftover-matching-hello-events
+      :include-result t)))
+   (eval-flag
+    (not
+     (cadr-evals::matching-hello-tool-call-p
+      (leftover-matching-hello-events
+       :name "Alice" :include-result t))))
+   (eval-flag
+    (not
+     (cadr-evals::matching-hello-tool-call-p
+      nil)))
+   (eval-flag
+    (not
+     (cadr-evals::matching-hello-tool-call-p
+      (leftover-matching-hello-events
+       :include-result nil))))
+   5))
+
+
+(defun run-evals-harness-authoring-judge ()
+  ;; Leftover on suites.lisp: judge score only — not rationale copy.
+  (flet ((score (result)
+           (cadr-ai::json-get
+            (cadr-evals:judge-extension-authoring-result result)
+            "score")))
+    (list
+     (eval-flag
+      (= 1
+         (score
+          (cadr-evals::make-eval-result
+           :output (leftover-authoring-output)
+           :events
+           (leftover-matching-hello-events :include-result t)))))
+     (eval-flag
+      (= 0
+         (score
+          (cadr-evals::make-eval-result
+           :output
+           (leftover-authoring-output :source nil)
+           :events
+           (leftover-matching-hello-events :include-result t)))))
+     (eval-flag
+      (= 0
+         (score
+          (cadr-evals::make-eval-result
+           :output
+           (leftover-authoring-output
+            :source "(defun unrelated () nil)")
+           :events
+           (leftover-matching-hello-events :include-result t)))))
+     (eval-flag
+      (= 0
+         (score
+          (cadr-evals::make-eval-result
+           :output
+           (leftover-authoring-output :response "nope")
+           :events
+           (leftover-matching-hello-events :include-result t)))))
+     5)))
+
+
+(defun run-evals-harness-source-bundle ()
+  ;; Leftover on suites.lisp: pick hello bundle else first. Not path I/O.
+  (let* ((hello
+           (leftover-hello-bundle "hello" '("hello")))
+         (other
+           (leftover-hello-bundle "other" '("read")))
+         (picked
+           (cadr-evals::extension-source-bundle
+            (list other hello)))
+         (fallback
+           (cadr-evals::extension-source-bundle
+            (list other)))
+         (empty
+           (cadr-evals::extension-source-bundle nil)))
+    (list
+     (eval-flag (eq picked hello))
+     (eval-flag (eq fallback other))
+     (eval-flag (null empty))
+     (eval-flag
+      (equal
+       (cadr-evals::extension-bundle-tool-names hello)
+       '("hello")))
+     5)))
+
+
 (defun run-evals-harness-reporter-artifacts ()
   (let* ((empty-out
            (leftover-reporter-artifacts
@@ -13628,7 +13770,10 @@
          (prepare-default (run-evals-harness-prepare-default-prompt))
          (reporter-run-id (run-evals-harness-reporter-run-id))
          (artifact-reference (run-evals-harness-artifact-reference-json))
-         (reporter-artifacts (run-evals-harness-reporter-artifacts)))
+         (reporter-artifacts (run-evals-harness-reporter-artifacts))
+         (matching-hello (run-evals-harness-matching-hello-call))
+         (authoring-judge (run-evals-harness-authoring-judge))
+         (source-bundle (run-evals-harness-source-bundle)))
     (json-object
      "observed"
      (json-object
@@ -13799,7 +13944,22 @@
       "ra_sess" (nth 1 reporter-artifacts)
       "ra_rec" (nth 2 reporter-artifacts)
       "ra_case" (nth 3 reporter-artifacts)
-      "ra_n" (nth 4 reporter-artifacts))
+      "ra_n" (nth 4 reporter-artifacts)
+      "mh_hit" (nth 0 matching-hello)
+      "mh_alice" (nth 1 matching-hello)
+      "mh_empty" (nth 2 matching-hello)
+      "mh_no_res" (nth 3 matching-hello)
+      "mh_n" (nth 4 matching-hello)
+      "aj_pass" (nth 0 authoring-judge)
+      "aj_src" (nth 1 authoring-judge)
+      "aj_api" (nth 2 authoring-judge)
+      "aj_resp" (nth 3 authoring-judge)
+      "aj_n" (nth 4 authoring-judge)
+      "esb_hello" (nth 0 source-bundle)
+      "esb_first" (nth 1 source-bundle)
+      "esb_empty" (nth 2 source-bundle)
+      "esb_tools" (nth 3 source-bundle)
+      "esb_n" (nth 4 source-bundle))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -13960,7 +14120,22 @@
      (collect "evals_harness.reporter_artifacts"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-reporter-artifacts)))))))
+                  (run-evals-harness-reporter-artifacts))))
+     "matching_hello_call"
+     (collect "evals_harness.matching_hello_call"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-matching-hello-call))))
+     "authoring_judge"
+     (collect "evals_harness.authoring_judge"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-authoring-judge))))
+     "source_bundle"
+     (collect "evals_harness.source_bundle"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-source-bundle)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -32979,6 +33154,12 @@
       "src/cadr-evals/reporter.lisp artifact-reference-json"
       "evals_harness.reporter_artifacts"
       "src/cadr-evals/reporter.lisp reporter-artifacts"
+      "evals_harness.matching_hello_call"
+      "src/cadr-evals/suites.lisp matching-hello-tool-call-p"
+      "evals_harness.authoring_judge"
+      "src/cadr-evals/suites.lisp judge-extension-authoring-result"
+      "evals_harness.source_bundle"
+      "src/cadr-evals/suites.lisp extension-source-bundle"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

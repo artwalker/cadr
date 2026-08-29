@@ -7294,6 +7294,36 @@
    "piUs": 5.436,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 778,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-evals/suites.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.matching_hello_call",
+   "branch": "cursor/evals-suites-hello-judge-source-leftovers-778-780-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 778"
+  },
+  {
+   "pair": 779,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-evals/suites.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.authoring_judge",
+   "branch": "cursor/evals-suites-hello-judge-source-leftovers-778-780-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 779"
+  },
+  {
+   "pair": 780,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-evals/suites.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.source_bundle",
+   "branch": "cursor/evals-suites-hello-judge-source-leftovers-778-780-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 780"
   }
  ],
  "mergeQueue": []
