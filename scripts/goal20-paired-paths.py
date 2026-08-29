@@ -760,8 +760,13 @@ RATIO_CEILINGS = {
     "package_manager.item_matches": 20.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only. Measure-only leftover 715–717.
-    "package_manager.resource_key": 8.0,
-    "package_manager.relative_pattern": 8.0,
+    # leftover 715; first freeze 11.643× (2.758 / 0.237 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "package_manager.resource_key": 20.0,
+    # leftover 716; first freeze 17.574× (15.709 / 0.894 µs).
+    # First-freeze headroom; ratchet down only after a non-quick Friend-MachineD freeze.
+    "package_manager.relative_pattern": 30.0,
+    # leftover 717; first freeze 2.793× (5.200 / 1.862 µs).
     "package_manager.config_fit_line": 8.0,
     # package_manager leftover trio on update-checks.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.

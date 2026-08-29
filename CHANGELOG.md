@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.resource_key`
+  (`config-selector-resource-key` vs resource type key). Observed
+  `crk_ext` / `crk_sk` / `crk_pr` / `crk_th` / `crk_n` exact. n=5
+  **11.643×** (2.758 / 0.237 µs) on host `cursor`, ceiling 20.0
+  (first-freeze headroom). Measure-only leftover (Pair 715). Over-1×
+  booked. Gate `--only-enforce`; py rc=2 from known METRICS
+  observed-key pollution (`parsed_provider`); this metric did not fail
+  observed-exact. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.relative_pattern`
+  (`config-selector-relative-pattern` vs relative pattern). Observed
+  `rel_file` / `rel_nested` / `rel_ext` / `rel_plain` / `rel_n` exact.
+  n=5 **17.574×** (15.709 / 0.894 µs) on host `cursor`, ceiling 30.0
+  (first-freeze headroom). Measure-only leftover (Pair 716). Over-1×
+  booked. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.config_fit_line`
+  (`config-selector-fit-line` vs truncateToWidth, empty default
+  ellipsis). Observed `cfl_short` / `cfl_long` / `cfl_dots` /
+  `cfl_zero` / `cfl_n` exact. n=5 **2.793×** (5.200 / 1.862 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 717).
+  Over-1× booked. `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `package_manager.autoload_disabled`
   (`config-package-entry-autoload-disabled-p` vs package autoload
   disabled). Observed `ad_nil` / `ad_true` / `ad_miss` / `ad_notht` /

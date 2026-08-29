@@ -508,4 +508,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `package_manager.autoload_disabled` | 0.758 | 0.347 | 2.181× | 8.00× | measure-only leftover 712; `config-package-entry-autoload-disabled-p` vs package autoload disabled | invent pause；地板优化另刀 |
 | `package_manager.package_entry_filter` | 1.074 | 0.600 | 1.788× | 8.00× | measure-only leftover 713; `config-package-entry-filter` vs package entry filter | invent pause；地板优化另刀 |
 | `package_manager.item_matches` | 10.553 | 0.951 | 11.092× | 20.00× | measure-only leftover 714; `config-selector-item-matches-p` vs item query match; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.resource_key` | 2.758 | 0.237 | 11.643× | 20.00× | measure-only leftover 715; `config-selector-resource-key` vs resource type key; first-freeze headroom 20.0 | invent pause；地板优化另刀 |
+| `package_manager.relative_pattern` | 15.709 | 0.894 | 17.574× | 30.00× | measure-only leftover 716; `config-selector-relative-pattern` vs relative pattern; first-freeze headroom 30.0 | invent pause；地板优化另刀 |
+| `package_manager.config_fit_line` | 5.200 | 1.862 | 2.793× | 8.00× | measure-only leftover 717; `config-selector-fit-line` vs truncateToWidth | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.
