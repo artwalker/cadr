@@ -7936,6 +7936,30 @@ Leftover sibling of Pair 649. Timed work is padded notification body lines (hell
 
 Leftover sibling of Pairs 649–650. Timed work is unsupported-language passthrough, empty lisp, lisp keep `(+ 1 2)`, json `{}` with ANSI stripped. Observed `syn_plain` / `syn_empty` / `syn_keep` / `syn_n` / `syn_json` are exact. First n=5 freeze **12.184×** (13.174 / 1.081 µs) on host `cursor`. First-freeze headroom ceiling **20.0** (ratchet down only). Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 652 — `cli_interactive_controller` (assistant_price_known)
+
+| metric | cadr | pi |
+|---|---|---|
+| `assistant_price_known` | `assistant-price-known-p` (`src/cadr-cli/interactive/transcript.lisp`) | `findModel` presence (`packages/agent/src/models.ts`) |
+
+Leftover sibling of Pairs 649–651 on the same `transcript.lisp` hole. Timed work is catalog hit/miss (deepseek-v4-flash / unknown / gemini-3.6-flash / empty id / nil provider) via `ignore-errors` around `find-model-metadata`. Observed `apk_hit` / `apk_miss` / `apk_google` / `apk_empty` / `apk_nil` are exact. First n=5 freeze **0.240×** (4.477 / 18.674 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 653 — `cli_interactive_controller` (accumulate_usage)
+
+| metric | cadr | pi |
+|---|---|---|
+| `accumulate_usage` | `accumulate-message-usage` (`src/cadr-cli/interactive/transcript.lisp`) | session usage accumulate (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pair 652. Timed work is input/output/cache token accumulate, cost-known on catalog hit, rounded cache-hit rate (10+2+1 prompt, 2/13). Observed `amu_in` / `amu_out` / `amu_cache` / `amu_known` / `amu_hit` are exact. First n=5 freeze **1.188×** (0.775 / 0.652 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 654 — `cli_interactive_controller` (append_user_message)
+
+| metric | cadr | pi |
+|---|---|---|
+| `append_user_message` | `append-tui-user-message` (`src/cadr-cli/interactive/transcript.lisp`) | `parseSkillBlock` / UserMessageComponent (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of Pairs 652–653. Timed work is plain user entry vs skill-invocation plus trailing user text. Observed `aum_user` / `aum_n` / `aum_skill` / `aum_both` / `aum_text` are exact. First n=5 freeze **4.205×** (5.050 / 1.201 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

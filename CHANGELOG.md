@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.assistant_price_known`
+  (`assistant-price-known-p` on
+  `src/cadr-cli/interactive/transcript.lisp` vs find-model-metadata).
+  Observed `apk_hit` / `apk_miss` / `apk_google` / `apk_empty` /
+  `apk_nil` exact. n=5 **0.240×** (4.477 / 18.674 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 652). cadr leads. Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.accumulate_usage`
+  (`accumulate-message-usage` vs session usage accumulate). Observed
+  `amu_in` / `amu_out` / `amu_cache` / `amu_known` / `amu_hit` exact.
+  n=5 **1.188×** (0.775 / 0.652 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 653). Over-1× booked. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.append_user_message`
+  (`append-tui-user-message` vs parseSkillBlock / UserMessageComponent).
+  Observed `aum_user` / `aum_n` / `aum_skill` / `aum_both` / `aum_text`
+  exact. n=5 **4.205×** (5.050 / 1.201 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 654). Over-1× booked. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.theme_message_background`
   (`theme-message-background-lines` on
   `src/cadr-cli/interactive/transcript.lisp` vs theme.bg). Observed
