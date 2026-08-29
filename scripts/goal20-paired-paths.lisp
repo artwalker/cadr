@@ -1286,6 +1286,9 @@
     ("cli_bootstrap_sessions.assistant_tool_call_only" . 50)
     ("cli_bootstrap_sessions.session_entry_user_text" . 50)
     ("cli_bootstrap_sessions.session_compaction_status" . 50)
+    ("cli_bootstrap_sessions.last_assistant_text" . 50)
+    ("cli_bootstrap_sessions.session_export_basename" . 50)
+    ("cli_bootstrap_sessions.session_user_messages_for_forking" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -35451,6 +35454,119 @@
    4))
 
 
+(defun leftover-last-assistant-text (agent)
+  (or (cadr-cli::last-assistant-text agent) ""))
+
+
+(defun run-cli-bootstrap-last-assistant-text ()
+  ;; Leftover on sessions.lisp: last assistant copy text. Not clipboard TUI.
+  (list
+   (leftover-last-assistant-text
+    (cadr-agent:make-agent :auto-compact-p nil :tools nil))
+   (leftover-last-assistant-text
+    (cadr-agent:make-agent
+     :auto-compact-p nil
+     :tools nil
+     :messages
+     (list
+      (cadr-ai:make-user-message :content "q")
+      (cadr-ai:make-assistant-message
+       :content
+       (list (cadr-ai:make-text-content :text "hello"))))))
+   (leftover-last-assistant-text
+    (cadr-agent:make-agent
+     :auto-compact-p nil
+     :tools nil
+     :messages
+     (list
+      (cadr-ai:make-assistant-message
+       :stop-reason :aborted
+       :content nil)
+      (cadr-ai:make-user-message :content "again")
+      (cadr-ai:make-assistant-message
+       :content
+       (list (cadr-ai:make-text-content :text "kept"))))))
+   (leftover-last-assistant-text
+    (cadr-agent:make-agent
+     :auto-compact-p nil
+     :tools nil
+     :messages
+     (list
+      (cadr-ai:make-assistant-message
+       :content
+       (list (cadr-ai:make-text-content :text (format nil "  ~% ")))))))
+   4))
+
+
+(defun leftover-session-export-basename (session)
+  (cadr-cli::session-export-basename session))
+
+
+(defun run-cli-bootstrap-session-export-basename ()
+  ;; Leftover on sessions.lisp: cadr-session ISO_id.html. Not HTML write.
+  (list
+   (leftover-session-export-basename
+    (cadr-agent::%make-session :id "sid" :timestamp 0))
+   (leftover-session-export-basename
+    (cadr-agent::%make-session :id "abc" :timestamp 1700000000123))
+   (leftover-session-export-basename
+    (cadr-agent::%make-session :id "x" :timestamp 1000))
+   (leftover-session-export-basename
+    (cadr-agent::%make-session :id "zid" :timestamp 999))
+   4))
+
+
+(defun leftover-fork-user-messages (session)
+  (cadr-cli::session-user-messages-for-forking session))
+
+
+(defun leftover-fork-user-n (session)
+  (length (leftover-fork-user-messages session)))
+
+
+(defun leftover-fork-user-field (session key &optional (which :first))
+  (let* ((items (leftover-fork-user-messages session))
+         (item (if (eq which :last) (car (last items)) (first items))))
+    (or (getf item key) "")))
+
+
+(defun leftover-fork-user-fixture ()
+  (cadr-agent::%make-session
+   :id "s"
+   :%entries
+   (list
+    (cadr-agent::make-session-entry
+     :type :message
+     :id "e1"
+     :message (cadr-ai:make-user-message :content "hello"))
+    (cadr-agent::make-session-entry
+     :type :message
+     :id "ea"
+     :message
+     (cadr-ai:make-assistant-message
+      :content (list (cadr-ai:make-text-content :text "nope"))))
+    (cadr-agent::make-session-entry :type :compaction :id "ec")
+    (cadr-agent::make-session-entry
+     :type :message
+     :id "ews"
+     :message (cadr-ai:make-user-message :content "   "))
+    (cadr-agent::make-session-entry
+     :type :message
+     :id "e2"
+     :message (cadr-ai:make-user-message :content "world")))))
+
+
+(defun run-cli-bootstrap-session-user-messages-for-forking ()
+  ;; Leftover on sessions.lisp: fork selector user texts. Not fork TUI.
+  (let ((fixture (leftover-fork-user-fixture)))
+    (list
+     (leftover-fork-user-n nil)
+     (leftover-fork-user-n fixture)
+     (leftover-fork-user-field fixture :text)
+     (leftover-fork-user-field fixture :entry-id)
+     (leftover-fork-user-field fixture :text :last))))
+
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
          (auth-observed (run-cli-bootstrap-auth))
@@ -35475,7 +35591,10 @@
          (leftover-dispatch (run-cli-bootstrap-dispatch-plain))
          (tool-call-only (run-cli-bootstrap-assistant-tool-call-only))
          (entry-user-text (run-cli-bootstrap-session-entry-user-text))
-         (compaction-status (run-cli-bootstrap-session-compaction-status)))
+         (compaction-status (run-cli-bootstrap-session-compaction-status))
+         (last-assistant-text (run-cli-bootstrap-last-assistant-text))
+         (export-basename (run-cli-bootstrap-session-export-basename))
+         (fork-users (run-cli-bootstrap-session-user-messages-for-forking)))
     (json-object
      "observed"
      (json-object
@@ -35579,7 +35698,22 @@
       "scs_one" (nth 1 compaction-status)
       "scs_two" (nth 2 compaction-status)
       "scs_zero" (nth 3 compaction-status)
-      "scs_n" (nth 4 compaction-status))
+      "scs_n" (nth 4 compaction-status)
+      "lat_none" (nth 0 last-assistant-text)
+      "lat_hit" (nth 1 last-assistant-text)
+      "lat_skip" (nth 2 last-assistant-text)
+      "lat_ws" (nth 3 last-assistant-text)
+      "lat_n" (nth 4 last-assistant-text)
+      "seb_epoch" (nth 0 export-basename)
+      "seb_ms" (nth 1 export-basename)
+      "seb_sec" (nth 2 export-basename)
+      "seb_999" (nth 3 export-basename)
+      "seb_n" (nth 4 export-basename)
+      "sumf_none" (nth 0 fork-users)
+      "sumf_n" (nth 1 fork-users)
+      "sumf_first" (nth 2 fork-users)
+      "sumf_id" (nth 3 fork-users)
+      "sumf_last" (nth 4 fork-users))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -35680,7 +35814,22 @@
      (collect "cli_bootstrap_sessions.session_compaction_status"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-session-compaction-status)))))))
+                  (run-cli-bootstrap-session-compaction-status))))
+     "last_assistant_text"
+     (collect "cli_bootstrap_sessions.last_assistant_text"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-last-assistant-text))))
+     "session_export_basename"
+     (collect "cli_bootstrap_sessions.session_export_basename"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-export-basename))))
+     "session_user_messages_for_forking"
+     (collect "cli_bootstrap_sessions.session_user_messages_for_forking"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-user-messages-for-forking)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -37598,6 +37747,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp session-entry-user-text"
       "cli_bootstrap_sessions.session_compaction_status"
       "src/cadr-cli/bootstrap/sessions.lisp session-compaction-status"
+      "cli_bootstrap_sessions.last_assistant_text"
+      "src/cadr-cli/bootstrap/sessions.lisp last-assistant-text"
+      "cli_bootstrap_sessions.session_export_basename"
+      "src/cadr-cli/bootstrap/sessions.lisp session-export-basename"
+      "cli_bootstrap_sessions.session_user_messages_for_forking"
+      "src/cadr-cli/bootstrap/sessions.lisp session-user-messages-for-forking"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"
