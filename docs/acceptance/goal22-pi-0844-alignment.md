@@ -35,6 +35,6 @@ pairing 不在本 goal 内恢复燃尽。
 ## 验收
 
 - [x] `BASELINE` 第三列为 `0`，release 为 `v0.84.4`，commit 为 `b79e4cc83…`
-- [ ] `python3 scripts/baseline-anchor.py check` 绿
-- [ ] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
+- [x] `python3 scripts/baseline-anchor.py check` 绿
+- [x] `./scripts/verify.sh` 与 `./scripts/test-cl.sh` 绿
 - [x] `CHANGELOG.md` 记录 aligned with pi v0.84.4
