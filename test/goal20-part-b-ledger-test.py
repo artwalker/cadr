@@ -825,7 +825,6 @@ class TestPairedPathRecord(unittest.TestCase):
         self.assertIn("rpc_type", paired.OBSERVED_EXACT["settings_load"])
 
 
-
     def test_settings_load_sdk_default_leftovers_wired(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         for key, obs in (
@@ -854,6 +853,19 @@ class TestPairedPathRecord(unittest.TestCase):
             for o in obs:
                 self.assertIn(o, paired.OBSERVED_EXACT["settings_load"])
 
+    def test_settings_load_sdk_value_thinking_drain_leftovers_wired(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        for key, obs in (
+            ("sdk_settings_value", ("ssv_hit", "ssv_n")),
+            ("sdk_default_thinking_level", ("sdt_high", "sdt_n")),
+            ("sdk_drain_errors", ("sde_len", "sde_n")),
+        ):
+            full = f"settings_load.{key}"
+            self.assertIn(full, RECORD.METRIC_KEYS)
+            self.assertIn(key, paired.METRICS["settings_load"])
+            self.assertIn(full, paired.RATIO_CEILINGS)
+            for o in obs:
+                self.assertIn(o, paired.OBSERVED_EXACT["settings_load"])
 
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
