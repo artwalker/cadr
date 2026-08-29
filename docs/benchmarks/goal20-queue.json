@@ -8558,32 +8558,47 @@
   {
    "pair": 862,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/components/armin.lisp",
    "measure": "measure-cli-selectors",
    "metric": "cli_selectors.armin_copy_cell",
    "branch": "cursor/armin-copy-cell-row-rotate-leftovers-862-864-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 862"
+   "note": "nextPairNum left at tip 328; leftover id 862",
+   "ratio": 4.511,
+   "cadrUs": 22.622,
+   "piUs": 5.015,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 863,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/components/armin.lisp",
    "measure": "measure-cli-selectors",
    "metric": "cli_selectors.armin_copy_row",
    "branch": "cursor/armin-copy-cell-row-rotate-leftovers-862-864-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 863"
+   "note": "nextPairNum left at tip 328; leftover id 863",
+   "ratio": 4.056,
+   "cadrUs": 22.688,
+   "piUs": 5.594,
+   "ceiling": 8.0,
+   "rc": 2
   },
   {
    "pair": 864,
    "lane": "cursor",
-   "status": "queued",
+   "status": "done",
    "source": "src/cadr-cli/interactive/components/armin.lisp",
    "measure": "measure-cli-selectors",
    "metric": "cli_selectors.armin_rotate_row",
    "branch": "cursor/armin-copy-cell-row-rotate-leftovers-862-864-34f9",
-   "note": "nextPairNum left at tip 328; leftover id 864"
+   "note": "nextPairNum left at tip 328; leftover id 864",
+   "ratio": 3.463,
+   "cadrUs": 22.026,
+   "piUs": 6.361,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

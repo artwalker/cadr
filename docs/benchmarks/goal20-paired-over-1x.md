@@ -623,4 +623,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `settings_load.sdk_effective_thinking_level` | 10.850 | 4.079 | 2.660× | 8.00× | measure-only leftover 858; `sdk-settings-effective-thinking-level` vs leftover thinking precedence | invent pause；地板优化另刀 |
 | `cli_interactive_controller.make_notification_stream` | 0.692 | 0.278 | 2.494× | 8.00× | measure-only leftover 860; `make-notification-output-stream` vs leftover notification buffer construct | invent pause；地板优化另刀 |
 | `cli_interactive_controller.notification_stream_flush` | 0.565 | 0.221 | 2.558× | 8.00× | measure-only leftover 861; `notification-stream-flush` vs leftover notification buffer flush | invent pause；地板优化另刀 |
+| `cli_selectors.armin_copy_cell` | 22.622 | 5.015 | 4.511× | 8.00× | measure-only leftover 862; `armin-copy-cell` vs leftover typewriter cell assign | invent pause；地板优化另刀 |
+| `cli_selectors.armin_copy_row` | 22.688 | 5.594 | 4.056× | 8.00× | measure-only leftover 863; `armin-copy-row` vs leftover scanline row copy | invent pause；地板优化另刀 |
+| `cli_selectors.armin_rotate_row` | 22.026 | 6.361 | 3.463× | 8.00× | measure-only leftover 864; `armin-rotate-row` vs leftover glitch slice/concat rotate | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

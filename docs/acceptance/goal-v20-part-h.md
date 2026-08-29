@@ -9622,7 +9622,7 @@ Leftover sibling of Pairs 859–860. Timed work is flush of buffered chars; empt
 |---|---|---|
 | `armin_copy_cell` | `armin-copy-cell` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover typewriter `currentGrid[row][x] = finalGrid[row][x]` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
 
-Leftover sibling of Pairs 835–837 on the same `armin.lisp` hole. Timed work is one cell assign plus oob reject — not tick, not TUI render, no animation thread. Observed `acc_ok` / `acc_match` / `acc_oob` / `acc_mid` / `acc_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 835–837 on the same `armin.lisp` hole. Timed work is one cell assign plus oob reject — not tick, not TUI render, no animation thread. Observed `acc_ok` / `acc_match` / `acc_oob` / `acc_mid` / `acc_n` are exact. First n=5 freeze **4.511×** (22.622 / 5.015 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 863 — `cli_selectors` (armin_copy_row)
 
@@ -9630,7 +9630,7 @@ Leftover sibling of Pairs 835–837 on the same `armin.lisp` hole. Timed work is
 |---|---|---|
 | `armin_copy_row` | `armin-copy-row` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover scanline row copy (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
 
-Leftover sibling of Pair 862. Timed work is one display-row copy plus dest mutate — not tick, not render. Observed `acr_eq` / `acr_indep` / `acr_w` / `acr_h` / `acr_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 862. Timed work is one display-row copy plus dest mutate — not tick, not render. Observed `acr_eq` / `acr_indep` / `acr_w` / `acr_h` / `acr_n` are exact. First n=5 freeze **4.056×** (22.688 / 5.594 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 864 — `cli_selectors` (armin_rotate_row)
 
@@ -9638,7 +9638,7 @@ Leftover sibling of Pair 862. Timed work is one display-row copy plus dest mutat
 |---|---|---|
 | `armin_rotate_row` | `armin-rotate-row` (`src/cadr-cli/interactive/components/armin.lisp`) | leftover glitch `slice(offset).concat(slice(0, offset))` (`packages/coding-agent/src/modes/interactive/components/armin.ts`) |
 
-Leftover sibling of Pairs 862–863. Timed work is left-rotate of one row; offsets are non-negative so JS slice and CL `mod` agree. Observed `arr_len` / `arr_zero` / `arr_shift` / `arr_mod` / `arr_n` are exact. First n=5 freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 862–863. Timed work is left-rotate of one row; offsets are non-negative so JS slice and CL `mod` agree. Observed `arr_len` / `arr_zero` / `arr_shift` / `arr_mod` / `arr_n` are exact. First n=5 freeze **3.463×** (22.026 / 6.361 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

@@ -12,17 +12,22 @@ tag/Release step.
 - Goal 20 leftover: pair `cli_selectors.armin_copy_cell`
   (`armin-copy-cell` vs leftover typewriter cell assign).
   Observed `acc_ok` / `acc_match` / `acc_oob` / `acc_mid` / `acc_n` exact.
-  Measure-only leftover (Pair 862). First freeze pending.
+  n=5 **4.511×** (22.622 / 5.015 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 862). Over-1× booked.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
   `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.armin_copy_row`
   (`armin-copy-row` vs leftover scanline row copy).
   Observed `acr_eq` / `acr_indep` / `acr_w` / `acr_h` / `acr_n` exact.
-  Measure-only leftover (Pair 863). First freeze pending.
+  n=5 **4.056×** (22.688 / 5.594 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 863). Over-1× booked.
   `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_selectors.armin_rotate_row`
   (`armin-rotate-row` vs leftover glitch slice/concat rotate).
   Observed `arr_len` / `arr_zero` / `arr_shift` / `arr_mod` / `arr_n` exact.
-  Measure-only leftover (Pair 864). First freeze pending.
+  n=5 **3.463×** (22.026 / 6.361 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 864). Over-1× booked.
   `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_interactive_controller.terminal_title_sequence`
