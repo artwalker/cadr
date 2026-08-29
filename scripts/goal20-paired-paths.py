@@ -713,8 +713,11 @@ RATIO_CEILINGS = {
     "evals_harness.extension_error_json": 8.0,
     # evals_harness leftover trio on suites.lisp (samples=5): first-freeze
     # headroom. Ratchet down only. Measure-only leftover 700–702.
+    # leftover 700; first freeze 0.397× (0.852 / 2.148 µs). cadr leads.
     "evals_harness.required_prompt_boundary": 8.0,
+    # leftover 701; first freeze 3.757× (0.742 / 0.197 µs).
     "evals_harness.exclude_guidelines": 8.0,
+    # leftover 702; first freeze 6.700× (2.797 / 0.417 µs).
     "evals_harness.prepare_default_prompt": 8.0,
     # package_manager leftover trio on config-selector.lisp (samples=5):
     # first-freeze headroom. Ratchet down only.

@@ -9,6 +9,26 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `evals_harness.required_prompt_boundary`
+  (`required-prompt-boundary` vs required prompt boundary). Observed
+  `rpb_mid` / `rpb_end` / `rpb_zero` / `rpb_miss` / `rpb_n` exact. n=5
+  **0.397×** (0.852 / 2.148 µs) on host `cursor`, ceiling 8.0. cadr
+  leads. Measure-only leftover (Pair 700). Gate `--only-enforce`; py
+  rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `evals_harness.exclude_guidelines`
+  (`exclude-guidelines-and-documentation` vs exclude Guidelines
+  section). Observed `egd_cut` / `egd_len` / `egd_no_g` / `egd_head` /
+  `egd_n` exact. n=5 **3.757×** (0.742 / 0.197 µs) on host `cursor`,
+  ceiling 8.0. Measure-only leftover (Pair 701). Over-1× booked.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `evals_harness.prepare_default_prompt`
+  (`prepare-default-prompt-override` vs prepare default prompt
+  override). Observed `pdp_cut` / `pdp_dbl` / `pdp_no_cwd` /
+  `pdp_keep` / `pdp_n` exact. n=5 **6.700×** (2.797 / 0.417 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 702).
+  Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `evals_harness.canonical_api`
   (`source-uses-canonical-extension-api-p` vs canonical extension API
   probe). Observed `sca_def` / `sca_pkg` / `sca_case` / `sca_miss` /

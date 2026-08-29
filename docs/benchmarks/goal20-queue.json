@@ -6124,6 +6124,51 @@
    "piUs": 0.18,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 700,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/suites.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.required_prompt_boundary",
+   "branch": "cursor/evals-suites-prompt-guidelines-override-leftovers-700-702-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 700",
+   "ratio": 0.397,
+   "cadrUs": 0.852,
+   "piUs": 2.148,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 701,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/suites.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.exclude_guidelines",
+   "branch": "cursor/evals-suites-prompt-guidelines-override-leftovers-700-702-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 701",
+   "ratio": 3.757,
+   "cadrUs": 0.742,
+   "piUs": 0.197,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 702,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-evals/suites.lisp",
+   "measure": "measure-evals-harness",
+   "metric": "evals_harness.prepare_default_prompt",
+   "branch": "cursor/evals-suites-prompt-guidelines-override-leftovers-700-702-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 702",
+   "ratio": 6.7,
+   "cadrUs": 2.797,
+   "piUs": 0.417,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

@@ -8320,6 +8320,30 @@ Leftover sibling of Pair 697. Timed work is `@mariozechner/`, `@sinclair/typebox
 
 Leftover sibling of Pairs 697–698. Timed work is path, error text, empty path/error, blank strings, and hash-table count. Observed `see_path` / `see_err` / `see_empty` / `see_blank` / `see_n` are exact. First n=5 freeze **4.784×** (0.860 / 0.180 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 700 — `evals_harness` (required_prompt_boundary)
+
+| metric | cadr | pi |
+|---|---|---|
+| `required_prompt_boundary` | `required-prompt-boundary` (`src/cadr-evals/suites.lisp`) | required prompt boundary (`packages/evals/src/suites.ts`) |
+
+Leftover sibling of Pairs 697–699 on `src/cadr-evals/suites.lisp`. Timed work is mid-string marker, from-end last marker, zero offset, missing-marker error, and observation count. Observed `rpb_mid` / `rpb_end` / `rpb_zero` / `rpb_miss` / `rpb_n` are exact. First n=5 freeze **0.397×** (0.852 / 2.148 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 701 — `evals_harness` (exclude_guidelines)
+
+| metric | cadr | pi |
+|---|---|---|
+| `exclude_guidelines` | `exclude-guidelines-and-documentation` (`src/cadr-evals/suites.lisp`) | exclude Guidelines section (`packages/evals/src/suites.ts`) |
+
+Leftover sibling of Pair 700. Timed work is prefix cut, length, Guidelines absence, and HEAD keep. Observed `egd_cut` / `egd_len` / `egd_no_g` / `egd_head` / `egd_n` are exact. First n=5 freeze **3.757×** (0.742 / 0.197 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 702 — `evals_harness` (prepare_default_prompt)
+
+| metric | cadr | pi |
+|---|---|---|
+| `prepare_default_prompt` | `prepare-default-prompt-override` (`src/cadr-evals/suites.lisp`) | prepare default prompt override (`packages/evals/src/suites.ts`) |
+
+Leftover sibling of Pairs 700–701. Timed work is cwd cut, last-of-two cwd markers, cwd absence in the cut, and Guidelines keep. Observed `pdp_cut` / `pdp_dbl` / `pdp_no_cwd` / `pdp_keep` / `pdp_n` are exact. First n=5 freeze **6.700×** (2.797 / 0.417 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
