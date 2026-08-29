@@ -73,7 +73,7 @@
     (cadr-ai:find-provider-definition :ollama)))
 
 (test wave3-static-catalog-is-exact-package-snapshot
-  (is (= 1220 (length (cadr-ai:list-model-metadata))))
+  (is (= 1221 (length (cadr-ai:list-model-metadata))))
   (dolist (entry *baseline-provider-counts*)
     (is (= (cdr entry)
            (length (cadr-ai:list-model-metadata (car entry))))
