@@ -8056,6 +8056,30 @@ Leftover sibling of Pair 664. Timed work is cacheable user paint plus second-cal
 
 Leftover sibling of Pairs 664–665. Timed work is list paint of user+assistant, a user-user gap line, and empty list. Observed `rtes_user` / `rtes_asst` / `rtes_gap` / `rtes_n` / `rtes_empty` are exact. First n=5 freeze **5.530×** (42.711 / 7.723 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 667 — `cli_interactive_controller` (should_use_tui)
+
+| metric | cadr | pi |
+|---|---|---|
+| `should_use_tui` | `should-use-tui-p` (`src/cadr-cli/interactive/controller.lisp`) | shouldUseTui stdin/stdout isTTY (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling on the `controller.lisp` hole. Timed work is injected tty predicates (both / no-tui flag / input-only / output-only / none). Observed `sut_tty` / `sut_off` / `sut_in` / `sut_out` / `sut_none` are exact. First n=5 freeze **0.199×** (0.115 / 0.576 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 668 — `cli_interactive_controller` (tui_command_error)
+
+| metric | cadr | pi |
+|---|---|---|
+| `tui_command_error` | `call-with-tui-command-error-notice` (`src/cadr-cli/interactive/controller.lisp`) | command error notice skip auth cancel (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pair 667. Timed work is success, `authentication-cancelled` skip, and generic error notice. Observed `tce_ok` / `tce_auth` / `tce_err` / `tce_n` / `tce_skip` are exact. First n=5 freeze **0.069×** (1.472 / 21.323 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 669 — `cli_interactive_controller` (route_tui_submission)
+
+| metric | cadr | pi |
+|---|---|---|
+| `route_tui_submission` | `route-tui-submission` (`src/cadr-cli/interactive/controller.lisp`) | busy submit queue vs start (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pairs 667–668. Timed work is idle start, busy queue, and busy-without-callback. Observed `rsub_start` / `rsub_queue` / `rsub_busy` / `rsub_line` / `rsub_qline` are exact. First n=5 freeze **0.360×** (0.190 / 0.527 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

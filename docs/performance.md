@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-28T21:16:07Z) on `cursor`, git `c9c4f28a8ce4`, ratio_gate=`enforced-only:cli_interactive_controller.render_tui_entry_uncached,cli_interactive_controller.render_tui_entry,cli_interactive_controller.render_tui_entries`, quick=no, samples=5
+Current: `paired-paths` (2026-08-28T21:26:24Z) on `cursor`, git `357d0e172dcf`, ratio_gate=`enforced-only:cli_interactive_controller.should_use_tui,cli_interactive_controller.tui_command_error,cli_interactive_controller.route_tui_submission`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-28T21:00:38Z) on `cursor`, git `8483e4fbc338`, ratio_gate=`enforced-only:cli_interactive_controller.render_assistant_blocks,cli_interactive_controller.render_version_notification,cli_interactive_controller.render_package_notification`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-28T21:16:07Z) on `cursor`, git `c9c4f28a8ce4`, ratio_gate=`enforced-only:cli_interactive_controller.render_tui_entry_uncached,cli_interactive_controller.render_tui_entry,cli_interactive_controller.render_tui_entries`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -905,9 +905,12 @@ Previous: `paired-paths` (2026-08-28T21:00:38Z) on `cursor`, git `8483e4fbc338`,
 | `cli_interactive_controller.render_assistant_blocks` | 54.6 | 10.2 | 5.38× | 5.38× | 8.00× |
 | `cli_interactive_controller.render_version_notification` | 304.5 | 4.4 | 69.40× | 69.40× | 120.00× |
 | `cli_interactive_controller.render_package_notification` | 217.2 | 4.1 | 52.73× | 52.73× | 100.00× |
-| `cli_interactive_controller.render_tui_entry_uncached` | 200.3 | 7.3 | 27.53× | — | 50.00× |
-| `cli_interactive_controller.render_tui_entry` | 102.5 | 6.0 | 17.08× | — | 30.00× |
-| `cli_interactive_controller.render_tui_entries` | 42.7 | 7.7 | 5.53× | — | 8.00× |
+| `cli_interactive_controller.render_tui_entry_uncached` | 200.3 | 7.3 | 27.53× | 27.53× | 50.00× |
+| `cli_interactive_controller.render_tui_entry` | 102.5 | 6.0 | 17.08× | 17.08× | 30.00× |
+| `cli_interactive_controller.render_tui_entries` | 42.7 | 7.7 | 5.53× | 5.53× | 8.00× |
+| `cli_interactive_controller.should_use_tui` | 0.1 | 0.6 | 0.20× | — | 8.00× |
+| `cli_interactive_controller.tui_command_error` | 1.5 | 21.3 | 0.07× | — | 8.00× |
+| `cli_interactive_controller.route_tui_submission` | 0.2 | 0.5 | 0.36× | — | 8.00× |
 | `cli_selectors.user_message_make` | — | — | — | — | — |
 | `cli_selectors.user_message_move` | — | — | — | — | — |
 | `cli_selectors.user_message_selection` | — | — | — | — | — |
@@ -1966,6 +1969,7 @@ Previous: `paired-paths` (2026-08-28T21:00:38Z) on `cursor`, git `8483e4fbc338`,
 | 2026-08-28T20:45:50Z | paired-paths | `1adce44e0175` | no | enforced-only:cli_interactive_controller.render_assistant_lines,cli_interactive_controller.transform_tui_markdown,cli_interactive_controller.render_transcript_summary | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T21:00:38Z | paired-paths | `8483e4fbc338` | no | enforced-only:cli_interactive_controller.render_assistant_blocks,cli_interactive_controller.render_version_notification,cli_interactive_controller.render_package_notification | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T21:16:07Z | paired-paths | `c9c4f28a8ce4` | no | enforced-only:cli_interactive_controller.render_tui_entry_uncached,cli_interactive_controller.render_tui_entry,cli_interactive_controller.render_tui_entries | 1.17× | 1.02× | 1.10× | 0.08× |
+| 2026-08-28T21:26:24Z | paired-paths | `357d0e172dcf` | no | enforced-only:cli_interactive_controller.should_use_tui,cli_interactive_controller.tui_command_error,cli_interactive_controller.route_tui_submission | 1.17× | 1.02× | 1.10× | 0.08× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

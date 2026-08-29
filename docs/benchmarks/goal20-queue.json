@@ -5629,6 +5629,51 @@
    "piUs": 7.723,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 667,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.should_use_tui",
+   "branch": "cursor/controller-tui-error-route-leftovers-667-669-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 667",
+   "ratio": 0.199,
+   "cadrUs": 0.115,
+   "piUs": 0.576,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 668,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.tui_command_error",
+   "branch": "cursor/controller-tui-error-route-leftovers-667-669-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 668",
+   "ratio": 0.069,
+   "cadrUs": 1.472,
+   "piUs": 21.323,
+   "ceiling": 8.0,
+   "rc": 2
+  },
+  {
+   "pair": 669,
+   "lane": "cursor",
+   "status": "done",
+   "source": "src/cadr-cli/interactive/controller.lisp",
+   "measure": "measure-cli-interactive-decode-entity",
+   "metric": "cli_interactive_controller.route_tui_submission",
+   "branch": "cursor/controller-tui-error-route-leftovers-667-669-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 669",
+   "ratio": 0.36,
+   "cadrUs": 0.19,
+   "piUs": 0.527,
+   "ceiling": 8.0,
+   "rc": 2
   }
  ],
  "mergeQueue": []

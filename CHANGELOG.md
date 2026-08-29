@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.should_use_tui`
+  (`should-use-tui-p` on
+  `src/cadr-cli/interactive/controller.lisp` vs shouldUseTui
+  stdin/stdout isTTY). Observed `sut_tty` / `sut_off` / `sut_in` /
+  `sut_out` / `sut_none` exact. n=5 **0.199×** (0.115 / 0.576 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 667). cadr
+  leads. Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.tui_command_error`
+  (`call-with-tui-command-error-notice` vs command error notice skip
+  auth cancel). Observed `tce_ok` / `tce_auth` / `tce_err` / `tce_n` /
+  `tce_skip` exact. n=5 **0.069×** (1.472 / 21.323 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 668). cadr leads.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.route_tui_submission`
+  (`route-tui-submission` vs busy submit queue vs start). Observed
+  `rsub_start` / `rsub_queue` / `rsub_busy` / `rsub_line` /
+  `rsub_qline` exact. n=5 **0.360×** (0.190 / 0.527 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 669). cadr leads.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.render_tui_entry_uncached`
   (`render-tui-entry-uncached` on
   `src/cadr-cli/interactive/transcript.lisp` vs chat-log render entry
