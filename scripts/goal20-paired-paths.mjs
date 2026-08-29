@@ -257,6 +257,9 @@ const REPETITIONS = {
 	"settings_load.sdk_settings_reload": 50,
 	"settings_load.sdk_settings_flush": 50,
 	"settings_load.sdk_compaction_enabled": 50,
+	"settings_load.sdk_make_manager": 50,
+	"settings_load.sdk_make_memory": 50,
+	"settings_load.sdk_effective_thinking_level": 50,
 	"resource_loader.reload": 3,
 	"resource_loader.dedupe_by_name": 50,
 	"resource_loader.context_from_dir": 50,
@@ -3530,6 +3533,71 @@ function runSettingsLoadSdkCompactionEnabled() {
 	};
 }
 
+function leftoverSdkMakeManager() {
+	return settingsModule.SettingsManager.inMemory({});
+}
+
+function runSettingsLoadSdkMakeManager() {
+	const mgr = leftoverSdkMakeManager();
+	const untrusted = leftoverSdkMakeManager();
+	return {
+		ssm_type: mgr && typeof mgr.getDefaultProvider === "function" ? 1 : 0,
+		ssm_nil_prov: mgr.getDefaultProvider() == null ? 1 : 0,
+		ssm_nil_model: mgr.getDefaultModel() == null ? 1 : 0,
+		ssm_trusted: untrusted && typeof untrusted.getDefaultProvider === "function" ? 1 : 0,
+		ssm_n: 5,
+	};
+}
+
+function runSettingsLoadSdkMakeMemory() {
+	const hit = leftoverSdkSettingsFixture();
+	const empty = leftoverSdkSettingsEmpty();
+	return {
+		smm_prov: hit.getDefaultProvider() === "openai" ? 1 : 0,
+		smm_model: hit.getDefaultModel() === "gpt-4" ? 1 : 0,
+		smm_empty: empty.getDefaultProvider() == null ? 1 : 0,
+		smm_type: hit && typeof hit.getDefaultProvider === "function" ? 1 : 0,
+		smm_n: 5,
+	};
+}
+
+function leftoverEffectiveThinkingLevel(manager, model, explicit, restored) {
+	if (explicit) {
+		return explicit;
+	}
+	if (model) {
+		const fromModel = manager.getModelThinkingLevel(model.provider, model.id);
+		if (fromModel) {
+			return fromModel;
+		}
+	}
+	if (restored) {
+		return restored;
+	}
+	const def = manager.getDefaultThinkingLevel();
+	return def == null ? "medium" : def;
+}
+
+function runSettingsLoadSdkEffectiveThinkingLevel() {
+	const model = { provider: "openai", id: "gpt-4" };
+	const perModel = settingsModule.SettingsManager.inMemory({
+		modelThinkingLevels: { "openai/gpt-4": "high" },
+		defaultThinkingLevel: "off",
+	});
+	const empty = leftoverSdkSettingsEmpty();
+	const explicit = leftoverEffectiveThinkingLevel(perModel, model, "off");
+	const fromModel = leftoverEffectiveThinkingLevel(perModel, model);
+	const restored = leftoverEffectiveThinkingLevel(empty, model, null, "low");
+	const defaulted = leftoverEffectiveThinkingLevel(empty, null);
+	return {
+		set_exp: explicit === "off" ? 1 : 0,
+		set_model: fromModel === "high" ? 1 : 0,
+		set_rest: restored === "low" ? 1 : 0,
+		set_def: defaulted === "medium" ? 1 : 0,
+		set_n: 5,
+	};
+}
+
 function runSettingsLoadSdkSettingsValue() {
 	const settings = leftoverSdkSettingsFixtureObject();
 	const hit = leftoverSdkSettingsValue({ settings }, "defaultProvider");
@@ -3649,6 +3717,9 @@ async function measureSettingsLoad() {
 	const sdkSettingsReload = await runSettingsLoadSdkSettingsReload();
 	const sdkSettingsFlush = await runSettingsLoadSdkSettingsFlush();
 	const sdkCompactionEnabled = runSettingsLoadSdkCompactionEnabled();
+	const sdkMakeManager = runSettingsLoadSdkMakeManager();
+	const sdkMakeMemory = runSettingsLoadSdkMakeMemory();
+	const sdkEffectiveThinkingLevel = runSettingsLoadSdkEffectiveThinkingLevel();
 	return {
 		project_trust: await collect("settings_load.project_trust", () => {
 			return () => runSettingsLoadProjectTrust(empty, project, agent);
@@ -3752,6 +3823,15 @@ async function measureSettingsLoad() {
 		sdk_compaction_enabled: await collect("settings_load.sdk_compaction_enabled", () => {
 			return () => runSettingsLoadSdkCompactionEnabled();
 		}),
+		sdk_make_manager: await collect("settings_load.sdk_make_manager", () => {
+			return () => runSettingsLoadSdkMakeManager();
+		}),
+		sdk_make_memory: await collect("settings_load.sdk_make_memory", () => {
+			return () => runSettingsLoadSdkMakeMemory();
+		}),
+		sdk_effective_thinking_level: await collect("settings_load.sdk_effective_thinking_level", () => {
+			return () => runSettingsLoadSdkEffectiveThinkingLevel();
+		}),
 		observed: {
 			...trust,
 			...config,
@@ -3785,6 +3865,9 @@ async function measureSettingsLoad() {
 			...sdkSettingsReload,
 			...sdkSettingsFlush,
 			...sdkCompactionEnabled,
+			...sdkMakeManager,
+			...sdkMakeMemory,
+			...sdkEffectiveThinkingLevel,
 		},
 	};
 }
@@ -38456,6 +38539,12 @@ const result = {
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.flush",
 			"settings_load.sdk_compaction_enabled":
 				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.getCompactionEnabled",
+			"settings_load.sdk_make_manager":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.inMemory empty construct (cadr make-sdk-settings-manager nil paths)",
+			"settings_load.sdk_make_memory":
+				"packages/coding-agent/src/core/settings-manager.ts SettingsManager.inMemory (cadr make-memory-sdk-settings-manager)",
+			"settings_load.sdk_effective_thinking_level":
+				"packages/coding-agent/src/core/settings-manager.ts leftover explicit/model/restored/default thinking (cadr sdk-settings-effective-thinking-level)",
 			"resource_loader.reload": "packages/coding-agent/src/core/resource-loader.ts DefaultResourceLoader.reload",
 			"resource_loader.dedupe_by_name": "packages/coding-agent/src/core/resource-loader.ts project-before-user dedupe (skills.ts skillMap)",
 			"resource_loader.context_from_dir":

@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `settings_load.sdk_make_manager`
+  (`make-sdk-settings-manager` vs leftover inMemory empty construct).
+  Observed `ssm_type` / `ssm_nil_prov` / `ssm_nil_model` / `ssm_trusted` / `ssm_n` exact.
+  Measure-only leftover (Pair 856). First freeze pending.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_make_memory`
+  (`make-memory-sdk-settings-manager` vs leftover SettingsManager.inMemory).
+  Observed `smm_prov` / `smm_model` / `smm_empty` / `smm_type` / `smm_n` exact.
+  Measure-only leftover (Pair 857). First freeze pending.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `settings_load.sdk_effective_thinking_level`
+  (`sdk-settings-effective-thinking-level` vs leftover thinking precedence).
+  Observed `set_exp` / `set_model` / `set_rest` / `set_def` / `set_n` exact.
+  Measure-only leftover (Pair 858). First freeze pending.
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.cli_platform`
   (`cli-platform` vs leftover process.platform mapping). Observed
   `cpl_linux` / `cpl_win` / `cpl_darwin` exact.

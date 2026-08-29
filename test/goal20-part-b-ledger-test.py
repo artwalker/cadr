@@ -894,6 +894,20 @@ class TestPairedPathRecord(unittest.TestCase):
             for o in obs:
                 self.assertIn(o, paired.OBSERVED_EXACT["settings_load"])
 
+    def test_settings_load_sdk_make_memory_thinking_leftovers_wired(self) -> None:
+        paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
+        for key, obs in (
+            ("sdk_make_manager", ("ssm_type", "ssm_nil_prov")),
+            ("sdk_make_memory", ("smm_prov", "smm_empty")),
+            ("sdk_effective_thinking_level", ("set_exp", "set_def")),
+        ):
+            full = f"settings_load.{key}"
+            self.assertIn(full, RECORD.METRIC_KEYS)
+            self.assertIn(key, paired.METRICS["settings_load"])
+            self.assertIn(full, paired.RATIO_CEILINGS)
+            for o in obs:
+                self.assertIn(o, paired.OBSERVED_EXACT["settings_load"])
+
     def test_resource_loader_is_a_recorded_metric(self) -> None:
         paired = load_script("goal20_paired_paths", "goal20-paired-paths.py")
         self.assertIn("resource_loader.reload", RECORD.METRIC_KEYS)
@@ -4672,6 +4686,9 @@ class TestPairedPathRecord(unittest.TestCase):
             self.assertIn("`cli_bootstrap_sessions.cli_platform`", section)
             self.assertIn("`cli_bootstrap_sessions.session_info_style`", section)
             self.assertIn("`cli_bootstrap_sessions.default_changelog_path`", section)
+            self.assertIn("`settings_load.sdk_make_manager`", section)
+            self.assertIn("`settings_load.sdk_make_memory`", section)
+            self.assertIn("`settings_load.sdk_effective_thinking_level`", section)
             self.assertIn("`resource_loader.reload`", section)
             self.assertIn("`resource_loader.dedupe_by_name`", section)
             self.assertIn("`resource_loader.context_from_dir`", section)
