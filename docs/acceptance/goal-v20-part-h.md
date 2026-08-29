@@ -8728,6 +8728,30 @@ Leftover sibling of Pair 748. Timed work is explicit key, stored credential, OPE
 
 Leftover sibling of Pairs 748–749. Timed work is github-copilot filter function, openai miss, availableModelIds keep-me, and empty availableModelIds. Observed `mff_copilot` / `mff_openai` / `mff_keep` / `mff_empty` / `mff_n` are exact. First n=5 freeze **0.003×** (0.646 / 215.457 µs) on host `cursor`, ceiling 8.0. Under-1×. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 895 — `oauth_pkce_device` (xai_login)
+
+| metric | cadr | pi |
+|---|---|---|
+| `xai_login` | `login-xai-oauth` (`src/cadr-ai/oauth/providers/xai.lisp`) | `parseDeviceCode` + `credentialsFromTokenResponse` (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover trio on unclaimed `src/cadr-ai/oauth/providers/xai.lisp` (leftover 379–381 measured error_detail / ensure_success / notify_device). Timed work is stub device+token HTTP login — not error_detail, not expires, not referrer slug. Observed `xli_acc` / `xli_ref` / `xli_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 896 — `oauth_pkce_device` (xai_login_fail)
+
+| metric | cadr | pi |
+|---|---|---|
+| `xai_login_fail` | `login-xai-oauth` device HTTP fail (`src/cadr-ai/oauth/providers/xai.lisp`) | `requestDeviceCode` HTTP fail (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover sibling of Pair 895. Timed work is stub device HTTP 400 throwing — not exact message text. Observed `xlf_throw` / `xlf_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 897 — `oauth_pkce_device` (xai_refresh)
+
+| metric | cadr | pi |
+|---|---|---|
+| `xai_refresh` | `refresh-xai-oauth-credential` (`src/cadr-ai/oauth/providers/xai.lisp`) | `refreshXaiToken` / `credentialsFromTokenResponse` (`packages/ai/src/auth/oauth/xai.ts`) |
+
+Leftover sibling of Pairs 895–896. Timed work is stub token HTTP 200 refresh — exact access/refresh, not expires. Observed `xrf_acc` / `xrf_ref` / `xrf_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |
