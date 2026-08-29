@@ -769,6 +769,9 @@
     ("evals_harness.matching_hello_call" . 50)
     ("evals_harness.authoring_judge" . 50)
     ("evals_harness.source_bundle" . 50)
+    ("evals_harness.bundle_tool_names" . 50)
+    ("evals_harness.visible_extension_bundles" . 50)
+    ("evals_harness.authoring_harness_table" . 50)
     ("ai_crypto_model_data.manifest" . 50)
     ("ai_crypto.hmac" . 50)
     ("cli_models_rest.pattern_match" . 50)
@@ -14799,16 +14802,27 @@
      "tools" tools))
    "extensionSource" source))
 
-(defun leftover-hello-bundle (id tools)
+(defun leftover-hello-bundle (id tools &key hidden-p)
   (cadr-agent::make-extension-bundle
    :id id
    :path id
+   :hidden-p (and hidden-p t)
    :tools
    (mapcar
     (lambda (name)
       (cadr-agent::make-extension-tool-definition
        :name name))
     tools)))
+
+(defun leftover-hello-extension-manager (&key bundles)
+  (cadr-cli::%make-cli-extension-manager
+   :cwd (uiop:getcwd)
+   :host
+   (cadr-agent::%make-extension-host
+    :cwd (uiop:ensure-directory-pathname (uiop:getcwd))
+    :snapshot
+    (cadr-agent::make-extension-snapshot
+     :bundles bundles))))
 
 (defparameter *leftover-default-prompt*
   (format nil
@@ -15050,6 +15064,78 @@
      5)))
 
 
+(defun run-evals-harness-bundle-tool-names ()
+  ;; Leftover on suites.lisp: tool-name list. Not path I/O.
+  (let* ((hello
+           (leftover-hello-bundle "hello" '("hello")))
+         (multi
+           (leftover-hello-bundle "multi" '("hello" "read")))
+         (empty
+           (leftover-hello-bundle "empty" '())))
+    (list
+     (eval-flag
+      (equal
+       (cadr-evals::extension-bundle-tool-names hello)
+       '("hello")))
+     (eval-flag
+      (equal
+       (cadr-evals::extension-bundle-tool-names multi)
+       '("hello" "read")))
+     (eval-flag
+      (null
+       (cadr-evals::extension-bundle-tool-names empty)))
+     (eval-flag
+      (not
+       (equal
+        (cadr-evals::extension-bundle-tool-names hello)
+        (cadr-evals::extension-bundle-tool-names multi))))
+     5)))
+
+
+(defun run-evals-harness-visible-extension-bundles ()
+  ;; Leftover on suites.lisp: drop hidden-p bundles. Not directory discovery.
+  (let* ((hello
+           (leftover-hello-bundle "hello" '("hello")))
+         (hidden
+           (leftover-hello-bundle "secret" '("hide") :hidden-p t))
+         (visible
+           (cadr-evals::visible-extension-bundles
+            (leftover-hello-extension-manager
+             :bundles (list hello hidden))))
+         (hidden-only
+           (cadr-evals::visible-extension-bundles
+            (leftover-hello-extension-manager
+             :bundles (list hidden))))
+         (empty
+           (cadr-evals::visible-extension-bundles
+            (leftover-hello-extension-manager :bundles nil))))
+    (list
+     (eval-flag (eq (first visible) hello))
+     (eval-flag (null hidden-only))
+     (eval-flag (null empty))
+     (eval-flag (= (length visible) 1))
+     5)))
+
+
+(defun run-evals-harness-authoring-harness-table ()
+  ;; Leftover on suites.lisp: construct two-row table. Do not invoke :run.
+  (let ((rows (cadr-evals::extension-authoring-harness-table)))
+    (list
+     (eval-flag (= (length rows) 2))
+     (eval-flag
+      (string=
+       (cadr-evals::eval-harness-row-name (first rows))
+       "system-prompt-without-docs"))
+     (eval-flag
+      (string=
+       (cadr-evals::eval-harness-row-name (second rows))
+       "default-system-prompt"))
+     (eval-flag
+      (= (cadr-evals::eval-harness-row-repetition (first rows))
+         1))
+     5)))
+
+
 (defun run-evals-harness-reporter-artifacts ()
   (let* ((empty-out
            (leftover-reporter-artifacts
@@ -15148,7 +15234,10 @@
          (leftover-art-meta (run-evals-harness-artifact-metadata))
          (matching-hello (run-evals-harness-matching-hello-call))
          (authoring-judge (run-evals-harness-authoring-judge))
-         (source-bundle (run-evals-harness-source-bundle)))
+         (source-bundle (run-evals-harness-source-bundle))
+         (bundle-tool-names (run-evals-harness-bundle-tool-names))
+         (visible-bundles (run-evals-harness-visible-extension-bundles))
+         (authoring-table (run-evals-harness-authoring-harness-table)))
     (json-object
      "observed"
      (json-object
@@ -15378,7 +15467,22 @@
       "esb_first" (nth 1 source-bundle)
       "esb_empty" (nth 2 source-bundle)
       "esb_tools" (nth 3 source-bundle)
-      "esb_n" (nth 4 source-bundle))
+      "esb_n" (nth 4 source-bundle)
+      "ebt_hello" (nth 0 bundle-tool-names)
+      "ebt_multi" (nth 1 bundle-tool-names)
+      "ebt_empty" (nth 2 bundle-tool-names)
+      "ebt_eq" (nth 3 bundle-tool-names)
+      "ebt_n" (nth 4 bundle-tool-names)
+      "veb_vis" (nth 0 visible-bundles)
+      "veb_hid" (nth 1 visible-bundles)
+      "veb_empty" (nth 2 visible-bundles)
+      "veb_nvis" (nth 3 visible-bundles)
+      "veb_n" (nth 4 visible-bundles)
+      "eht_len" (nth 0 authoring-table)
+      "eht_base" (nth 1 authoring-table)
+      "eht_cand" (nth 2 authoring-table)
+      "eht_rep" (nth 3 authoring-table)
+      "eht_n" (nth 4 authoring-table))
      "summarize"
      (collect "evals_harness.summarize"
               (lambda ()
@@ -15599,7 +15703,22 @@
      (collect "evals_harness.source_bundle"
               (lambda ()
                 (lambda ()
-                  (run-evals-harness-source-bundle)))))))
+                  (run-evals-harness-source-bundle))))
+     "bundle_tool_names"
+     (collect "evals_harness.bundle_tool_names"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-bundle-tool-names))))
+     "visible_extension_bundles"
+     (collect "evals_harness.visible_extension_bundles"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-visible-extension-bundles))))
+     "authoring_harness_table"
+     (collect "evals_harness.authoring_harness_table"
+              (lambda ()
+                (lambda ()
+                  (run-evals-harness-authoring-harness-table)))))))
 (defparameter *model-data-generated-at* "2026-01-01T00:00:00.000Z")
 
 (defun model-data-structure ()
@@ -35910,6 +36029,12 @@
       "src/cadr-evals/suites.lisp judge-extension-authoring-result"
       "evals_harness.source_bundle"
       "src/cadr-evals/suites.lisp extension-source-bundle"
+      "evals_harness.bundle_tool_names"
+      "src/cadr-evals/suites.lisp extension-bundle-tool-names"
+      "evals_harness.visible_extension_bundles"
+      "src/cadr-evals/suites.lisp visible-extension-bundles"
+      "evals_harness.authoring_harness_table"
+      "src/cadr-evals/suites.lisp extension-authoring-harness-table"
       "ai_crypto_model_data.manifest"
       "src/cadr-ai/model-data.lisp create-model-data-manifest"
       "ai_crypto.hmac"

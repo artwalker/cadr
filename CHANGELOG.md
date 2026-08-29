@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `evals_harness.bundle_tool_names`
+  (`extension-bundle-tool-names` vs leftover tool-name list). Observed
+  `ebt_hello` / `ebt_multi` / `ebt_empty` / `ebt_eq` / `ebt_n` exact.
+  Measure-only leftover (Pair 793). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `evals_harness.visible_extension_bundles`
+  (`visible-extension-bundles` vs leftover hidden-p filter). Observed
+  `veb_vis` / `veb_hid` / `veb_empty` / `veb_nvis` / `veb_n` exact.
+  Measure-only leftover (Pair 794). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `evals_harness.authoring_harness_table`
+  (`extension-authoring-harness-table` vs leftover two-row table). Observed
+  `eht_len` / `eht_base` / `eht_cand` / `eht_rep` / `eht_n` exact.
+  Measure-only leftover (Pair 795). Freeze pending. `nextPairNum` left
+  unchanged.
+
 - Goal 20 leftover: pair `package_manager.package_setting_records`
   (`config-package-setting-records` vs leftover npm merge). Observed
   `psrs_len` / `psrs_user` / `psrs_proj` / `psrs_glob` / `psrs_n` exact.
