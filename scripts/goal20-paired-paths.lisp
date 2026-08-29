@@ -474,6 +474,9 @@
     ("package_manager.resource_file_p" . 50)
     ("package_manager.resource_display_name" . 50)
     ("package_manager.settings_array" . 50)
+    ("package_manager.resource_specification" . 50)
+    ("package_manager.config_glob_regex" . 50)
+    ("package_manager.entry_target" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4560,6 +4563,56 @@
       (null (leftover-config-settings-array bad "a")))
      5)))
 
+(defun leftover-config-resource-specification (type)
+  (cadr-cli::config-resource-specification type))
+
+(defun leftover-config-glob-regex (pattern)
+  (cadr-cli::config-glob-regex pattern))
+
+(defun leftover-config-selector-entry-target (entry)
+  (cadr-cli::config-selector-entry-target entry))
+
+(defun run-package-manager-resource-specification ()
+  (let ((extensions (leftover-config-resource-specification :extensions))
+        (skills (leftover-config-resource-specification :skills)))
+    (list
+     (package-manager-truth (string= (third extensions) "lisp"))
+     (package-manager-truth (string= (fourth skills) "SKILL.md"))
+     (package-manager-truth (string= (second extensions) "extensions/"))
+     (package-manager-truth
+      (handler-case
+          (progn
+            (leftover-config-resource-specification :widgets)
+            nil)
+        (error () t)))
+     5)))
+
+(defun run-package-manager-config-glob-regex ()
+  (list
+   (package-manager-truth
+    (string= (leftover-config-glob-regex "*.lisp") "^[^/]*\\.lisp$"))
+   (package-manager-truth
+    (string= (leftover-config-glob-regex "a?b") "^a[^/]b$"))
+   (package-manager-truth
+    (string= (leftover-config-glob-regex "foo") "^foo$"))
+   (package-manager-truth
+    (string= (leftover-config-glob-regex "./x*") "^x[^/]*$"))
+   5))
+
+(defun run-package-manager-entry-target ()
+  (list
+   (package-manager-truth
+    (string= (leftover-config-selector-entry-target "!foo") "foo"))
+   (package-manager-truth
+    (string= (leftover-config-selector-entry-target "+bar") "bar"))
+   (package-manager-truth
+    (string= (leftover-config-selector-entry-target "-baz") "baz"))
+   (package-manager-truth
+    (string= (leftover-config-selector-entry-target "qux") "qux"))
+   (package-manager-truth
+    (string= (leftover-config-selector-entry-target "") ""))
+   5))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -4643,7 +4696,10 @@
            (type-label (run-package-manager-type-label))
            (resource-file-p (run-package-manager-resource-file-p))
            (resource-display (run-package-manager-resource-display-name))
-           (settings-array (run-package-manager-settings-array)))
+           (settings-array (run-package-manager-settings-array))
+           (resource-specification (run-package-manager-resource-specification))
+           (config-glob-regex (run-package-manager-config-glob-regex))
+           (entry-target (run-package-manager-entry-target)))
       (json-object
        "observed"
        (json-object
@@ -4692,7 +4748,23 @@
         "csa_list" (nth 1 settings-array)
         "csa_miss" (nth 2 settings-array)
         "csa_bad" (nth 3 settings-array)
-        "csa_n" (nth 4 settings-array))
+        "csa_n" (nth 4 settings-array)
+        "rsp_ext" (nth 0 resource-specification)
+        "rsp_sk" (nth 1 resource-specification)
+        "rsp_rel" (nth 2 resource-specification)
+        "rsp_miss" (nth 3 resource-specification)
+        "rsp_n" (nth 4 resource-specification)
+        "cgr_star" (nth 0 config-glob-regex)
+        "cgr_q" (nth 1 config-glob-regex)
+        "cgr_plain" (nth 2 config-glob-regex)
+        "cgr_dot" (nth 3 config-glob-regex)
+        "cgr_n" (nth 4 config-glob-regex)
+        "cet_bang" (nth 0 entry-target)
+        "cet_plus" (nth 1 entry-target)
+        "cet_minus" (nth 2 entry-target)
+        "cet_plain" (nth 3 entry-target)
+        "cet_empty" (nth 4 entry-target)
+        "cet_n" (nth 5 entry-target))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -4738,7 +4810,22 @@
        (collect "package_manager.settings_array"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-settings-array))))))))
+                    (run-package-manager-settings-array))))
+       "resource_specification"
+       (collect "package_manager.resource_specification"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-resource-specification))))
+       "config_glob_regex"
+       (collect "package_manager.config_glob_regex"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-config-glob-regex))))
+       "entry_target"
+       (collect "package_manager.entry_target"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-entry-target))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -29944,6 +30031,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-resource-display-name"
       "package_manager.settings_array"
       "src/cadr-cli/packages/config-selector.lisp config-settings-array"
+      "package_manager.resource_specification"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-specification"
+      "package_manager.config_glob_regex"
+      "src/cadr-cli/packages/config-selector.lisp config-glob-regex"
+      "package_manager.entry_target"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-entry-target"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
