@@ -618,9 +618,9 @@ by hand. `quick=yes` / `ratio_gate=informational-quick-run` is a
 booking, not an enforced same-machine full sample. Part O uses a
 non-quick run on this host before claiming a ratio moved.
 
-Current: `paired-paths` (2026-08-28T18:44:26Z) on `cursor`, git `e09098a0ce9c`, ratio_gate=`enforced-only:cli_selectors.make_models_selector_keybindings,cli_selectors.make_scoped_models_selector_state,cli_selectors.render_model_selector`, quick=no, samples=5
+Current: `paired-paths` (2026-08-28T19:05:09Z) on `cursor`, git `4d46dcee6171`, ratio_gate=`enforced-only:cli_selectors.daxnuts_rgb_at,cli_selectors.daxnuts_component_tick,cli_selectors.make_daxnuts_component`, quick=no, samples=5
 
-Previous: `paired-paths` (2026-08-28T18:27:50Z) on `cursor`, git `54a38bc6b27e`, ratio_gate=`enforced-only:cli_selectors.user_message_handle_event,cli_selectors.user_message_handle_raw,cli_selectors.render_user_message_selector`, quick=no, samples=5
+Previous: `paired-paths` (2026-08-28T18:44:26Z) on `cursor`, git `e09098a0ce9c`, ratio_gate=`enforced-only:cli_selectors.make_models_selector_keybindings,cli_selectors.make_scoped_models_selector_state,cli_selectors.render_model_selector`, quick=no, samples=5
 
 | metric | cadr µs | baseline µs | ratio | previous ratio | ceiling |
 |---|---:|---:|---:|---:|---:|
@@ -978,9 +978,12 @@ Previous: `paired-paths` (2026-08-28T18:27:50Z) on `cursor`, git `54a38bc6b27e`,
 | `cli_selectors.user_message_handle_event` | 1.8 | 2.3 | 0.77× | 0.77× | 8.00× |
 | `cli_selectors.user_message_handle_raw` | 86.0 | 5.4 | 15.83× | 15.83× | 30.00× |
 | `cli_selectors.render_user_message_selector` | 265.3 | 4.1 | 65.01× | 65.01× | 100.00× |
-| `cli_selectors.make_models_selector_keybindings` | 32.1 | 21.5 | 1.50× | — | 8.00× |
-| `cli_selectors.make_scoped_models_selector_state` | 97.0 | 4.6 | 21.00× | — | 40.00× |
-| `cli_selectors.render_model_selector` | 247.3 | 9.3 | 26.59× | — | 50.00× |
+| `cli_selectors.make_models_selector_keybindings` | 32.1 | 21.5 | 1.50× | 1.50× | 8.00× |
+| `cli_selectors.make_scoped_models_selector_state` | 97.0 | 4.6 | 21.00× | 21.00× | 40.00× |
+| `cli_selectors.render_model_selector` | 247.3 | 9.3 | 26.59× | 26.59× | 50.00× |
+| `cli_selectors.daxnuts_rgb_at` | 0.9 | 0.5 | 1.83× | — | 8.00× |
+| `cli_selectors.make_daxnuts_component` | 0.7 | 0.2 | 3.47× | — | 8.00× |
+| `cli_selectors.daxnuts_component_tick` | 3.8 | 3.4 | 1.12× | — | 8.00× |
 | `ai_crypto_model_data.manifest` | 84.6 | 7.0 | 12.12× | 12.12× | 20.00× |
 | `ai_crypto.hmac` | 158.0 | 7.3 | 21.70× | 21.70× | 30.00× |
 | `cli_models_rest.pattern_match` | 28.9 | 19.0 | 1.52× | 1.52× | 3.00× |
@@ -1922,6 +1925,7 @@ Previous: `paired-paths` (2026-08-28T18:27:50Z) on `cursor`, git `54a38bc6b27e`,
 | 2026-08-28T18:11:39Z | paired-paths | `987d82ffecc7` | no | enforced-only:cli_selectors.login_dialog_complete_input,cli_selectors.login_dialog_handle_event,cli_selectors.render_login_dialog | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T18:27:50Z | paired-paths | `54a38bc6b27e` | no | enforced-only:cli_selectors.user_message_handle_event,cli_selectors.user_message_handle_raw,cli_selectors.render_user_message_selector | 1.17× | 1.02× | 1.10× | 0.08× |
 | 2026-08-28T18:44:26Z | paired-paths | `e09098a0ce9c` | no | enforced-only:cli_selectors.make_models_selector_keybindings,cli_selectors.make_scoped_models_selector_state,cli_selectors.render_model_selector | 1.17× | 1.02× | 1.10× | 0.08× |
+| 2026-08-28T19:05:09Z | paired-paths | `4d46dcee6171` | no | enforced-only:cli_selectors.daxnuts_rgb_at,cli_selectors.daxnuts_component_tick,cli_selectors.make_daxnuts_component | 1.17× | 1.02× | 1.10× | 0.08× |
 
 <!-- GOAL20_PAIRED_PATHS_END -->
 ## Goal 20 Part O remaining-path profiles

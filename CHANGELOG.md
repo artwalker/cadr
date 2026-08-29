@@ -9,6 +9,28 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_selectors.daxnuts_rgb_at`
+  (`daxnuts-rgb-at` on
+  `src/cadr-cli/interactive/components/daxnuts.lisp` vs
+  parseImage pixel lookup). Observed `dra_00` / `dra_0x` / `dra_mid` /
+  `dra_last` / `dra_10` exact. n=5 **1.831×** (0.910 / 0.497 µs) on host
+  `cursor`, ceiling 8.0. Measure-only leftover (Pair 634). Gate
+  `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.make_daxnuts_component`
+  (`make-daxnuts-component` vs DaxnutsComponent constructor without
+  startAnimation). Observed `dmc_tick` / `dmc_stop` / `dmc_thread` /
+  `dmc_cache` / `dmc_second` exact. n=5 **3.472×** (0.688 / 0.198 µs)
+  on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 635).
+  Booked in `docs/benchmarks/goal20-paired-over-1x.md`.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_selectors.daxnuts_component_tick`
+  (`daxnuts-component-tick` vs DaxnutsComponent interval body). Observed
+  `dct_one` / `dct_max` / `dct_stop` / `dct_after` / `dct_renders`
+  exact. n=5 **1.119×** (3.787 / 3.384 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 636). Over-1× booked. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `cli_selectors.make_models_selector_keybindings`
   (`make-models-selector-keybindings` on
   `src/cadr-cli/interactive/selectors/models.lisp` vs

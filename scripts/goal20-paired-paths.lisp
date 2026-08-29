@@ -782,6 +782,9 @@
     ("cli_selectors.make_models_selector_keybindings" . 50)
     ("cli_selectors.make_scoped_models_selector_state" . 50)
     ("cli_selectors.render_model_selector" . 50)
+    ("cli_selectors.daxnuts_rgb_at" . 50)
+    ("cli_selectors.make_daxnuts_component" . 50)
+    ("cli_selectors.daxnuts_component_tick" . 50)
     ("websocket_stream.stream_roundtrip" . 10)
     ("cli_sdk.version_newer" . 50)
     ("cli_sdk.cache_miss" . 50)
@@ -22348,6 +22351,91 @@
    "dcl_wide" (nth 5 center)))
 
 
+(defun leftover-daxnuts-bench-ui ()
+  (let* ((count (list 0))
+         (tui
+           (cadr-tui:make-tui-root
+            :render-function
+            (lambda (lines)
+              (declare (ignore lines))
+              (incf (car count))))))
+    (cons tui count)))
+
+
+(defun run-cli-selectors-daxnuts-rgb-at ()
+  (list
+   (daxnuts-rgb-encode (cadr-cli::daxnuts-rgb-at 0 0))
+   (daxnuts-rgb-encode (cadr-cli::daxnuts-rgb-at 0 31))
+   (daxnuts-rgb-encode (cadr-cli::daxnuts-rgb-at 16 16))
+   (daxnuts-rgb-encode (cadr-cli::daxnuts-rgb-at 31 31))
+   (daxnuts-rgb-encode (cadr-cli::daxnuts-rgb-at 1 0))))
+
+
+(defun run-cli-selectors-make-daxnuts-component ()
+  (let* ((pair (leftover-daxnuts-bench-ui))
+         (tui (car pair))
+         (first
+           (cadr-cli::make-daxnuts-component tui :start-p nil))
+         (second
+           (cadr-cli::make-daxnuts-component tui :start-p nil)))
+    (list
+     (write-to-string
+      (cadr-cli::daxnuts-component-tick-value first))
+     (if (cadr-cli::daxnuts-component-stop-p first) "1" "0")
+     (if (cadr-cli::daxnuts-component-thread first) "1" "0")
+     (if (cadr-cli::daxnuts-component-cached-key first) "1" "0")
+     (write-to-string
+      (cadr-cli::daxnuts-component-tick-value second)))))
+
+
+(defun leftover-daxnuts-tick-n (component n)
+  (dotimes (i n)
+    (declare (ignore i))
+    (cadr-cli::daxnuts-component-tick component))
+  component)
+
+
+(defun run-cli-selectors-daxnuts-component-tick ()
+  (let* ((pair (leftover-daxnuts-bench-ui))
+         (tui (car pair))
+         (count (cdr pair))
+         (one (cadr-cli::make-daxnuts-component tui :start-p nil))
+         (maxed (cadr-cli::make-daxnuts-component tui :start-p nil))
+         (after (cadr-cli::make-daxnuts-component tui :start-p nil)))
+    (cadr-cli::daxnuts-component-tick one)
+    (leftover-daxnuts-tick-n maxed 25)
+    (leftover-daxnuts-tick-n after 25)
+    (cadr-cli::daxnuts-component-tick after)
+    (list
+     (write-to-string
+      (cadr-cli::daxnuts-component-tick-value one))
+     (write-to-string
+      (cadr-cli::daxnuts-component-tick-value maxed))
+     (if (cadr-cli::daxnuts-component-stop-p maxed) "1" "0")
+     (write-to-string
+      (cadr-cli::daxnuts-component-tick-value after))
+     (write-to-string (car count)))))
+
+
+(defun daxnuts-rgb-make-tick-observed-pairs (rgb-at make tick)
+  (list
+   "dra_00" (nth 0 rgb-at)
+   "dra_0x" (nth 1 rgb-at)
+   "dra_mid" (nth 2 rgb-at)
+   "dra_last" (nth 3 rgb-at)
+   "dra_10" (nth 4 rgb-at)
+   "dmc_tick" (nth 0 make)
+   "dmc_stop" (nth 1 make)
+   "dmc_thread" (nth 2 make)
+   "dmc_cache" (nth 3 make)
+   "dmc_second" (nth 4 make)
+   "dct_one" (nth 0 tick)
+   "dct_max" (nth 1 tick)
+   "dct_stop" (nth 2 tick)
+   "dct_after" (nth 3 tick)
+   "dct_renders" (nth 4 tick)))
+
+
 (defun measure-cli-selectors-session-search ()
   (let ((observed (run-cli-selectors-session-search))
         (keys (run-cli-selectors-key-text))
@@ -22736,6 +22824,12 @@
           (run-cli-selectors-make-scoped-models-selector-state))
         (leftover-render-model-selector
           (run-cli-selectors-render-model-selector))
+        (leftover-daxnuts-rgb-at
+          (run-cli-selectors-daxnuts-rgb-at))
+        (leftover-make-daxnuts
+          (run-cli-selectors-make-daxnuts-component))
+        (leftover-daxnuts-tick
+          (run-cli-selectors-daxnuts-component-tick))
         (user-message-make
           (run-cli-selectors-user-message-make))
         (user-message-move
@@ -23531,6 +23625,10 @@
               leftover-make-models-kb
               leftover-make-scoped-state
               leftover-render-model-selector)
+             (daxnuts-rgb-make-tick-observed-pairs
+              leftover-daxnuts-rgb-at
+              leftover-make-daxnuts
+              leftover-daxnuts-tick)
              (user-message-selector-observed-pairs
               user-message-make
               user-message-move
@@ -24582,7 +24680,22 @@
      (collect "cli_selectors.render_model_selector"
               (lambda ()
                 (lambda ()
-                  (run-cli-selectors-render-model-selector)))))))
+                  (run-cli-selectors-render-model-selector))))
+     "daxnuts_rgb_at"
+     (collect "cli_selectors.daxnuts_rgb_at"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-rgb-at))))
+     "make_daxnuts_component"
+     (collect "cli_selectors.make_daxnuts_component"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-make-daxnuts-component))))
+     "daxnuts_component_tick"
+     (collect "cli_selectors.daxnuts_component_tick"
+              (lambda ()
+                (lambda ()
+                  (run-cli-selectors-daxnuts-component-tick)))))))
 
 (defun websocket-loopback-write-http (stream text)
   (write-sequence
@@ -27346,6 +27459,12 @@
       "src/cadr-cli/interactive/selectors/models.lisp make-scoped-models-selector-state"
       "cli_selectors.render_model_selector"
       "src/cadr-cli/interactive/selectors/models.lisp render-model-selector"
+      "cli_selectors.daxnuts_rgb_at"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-rgb-at"
+      "cli_selectors.make_daxnuts_component"
+      "src/cadr-cli/interactive/components/daxnuts.lisp make-daxnuts-component"
+      "cli_selectors.daxnuts_component_tick"
+      "src/cadr-cli/interactive/components/daxnuts.lisp daxnuts-component-tick"
       "websocket_stream.stream_roundtrip"
       "src/cadr-ai/websocket.lisp stream-chat (openai-codex websocket)"
       "cli_sdk.version_newer"
