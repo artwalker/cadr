@@ -532,6 +532,9 @@
     ("settings_load.sdk_settings_reload" . 50)
     ("settings_load.sdk_settings_flush" . 50)
     ("settings_load.sdk_compaction_enabled" . 50)
+    ("settings_load.sdk_make_manager" . 50)
+    ("settings_load.sdk_make_memory" . 50)
+    ("settings_load.sdk_effective_thinking_level" . 50)
     ("resource_loader.reload" . 3)
     ("resource_loader.dedupe_by_name" . 50)
     ("resource_loader.context_from_dir" . 50)
@@ -4621,6 +4624,83 @@
      (if (eq (cadr-cli::sdk-settings-compaction-enabled-p on) t) 1 0)
      5)))
 
+(defun leftover-sdk-thinking-model ()
+  (cadr-ai:make-model
+   :id "gpt-4"
+   :name "GPT-4"
+   :api :openai-completions
+   :provider :openai
+   :base-url "http://127.0.0.1:1/v1"
+   :reasoning-p t
+   :supports-images-p t
+   :context-window 128000
+   :max-tokens 16384))
+
+(defun run-settings-load-sdk-make-manager ()
+  ;; Leftover sibling: nil-path make-sdk-settings-manager. Reload
+  ;; sees nil paths and does not read settings.json.
+  (let ((mgr (cadr-cli::make-sdk-settings-manager))
+        (untrusted
+          (cadr-cli::make-sdk-settings-manager
+           :project-trusted-p nil)))
+    (list
+     (if (typep mgr 'cadr-cli::sdk-settings-manager) 1 0)
+     (if (null (cadr-cli::sdk-settings-default-provider mgr)) 1 0)
+     (if (null (cadr-cli::sdk-settings-default-model mgr)) 1 0)
+     (if (typep untrusted 'cadr-cli::sdk-settings-manager) 1 0)
+     5)))
+
+(defun run-settings-load-sdk-make-memory ()
+  ;; Leftover sibling: in-memory SDK manager construct. Not disk.
+  (let ((hit (leftover-sdk-settings-fixture))
+        (empty (cadr-cli::make-memory-sdk-settings-manager)))
+    (list
+     (if (string=
+          (cadr-cli::sdk-settings-default-provider hit)
+          "openai")
+         1
+         0)
+     (if (string=
+          (cadr-cli::sdk-settings-default-model hit)
+          "gpt-4")
+         1
+         0)
+     (if (null (cadr-cli::sdk-settings-default-provider empty))
+         1
+         0)
+     (if (typep hit 'cadr-cli::sdk-settings-manager) 1 0)
+     5)))
+
+(defun run-settings-load-sdk-effective-thinking-level ()
+  ;; Leftover sibling: explicit / per-model / restored / default
+  ;; precedence. Do not compare keyword vs string.
+  (let* ((model (leftover-sdk-thinking-model))
+         (per-model
+           (cadr-cli::make-memory-sdk-settings-manager
+            (cadr-ai::json-object
+             "modelThinkingLevels"
+             (cadr-ai::json-object "openai/gpt-4" "high")
+             "defaultThinkingLevel" "off")))
+         (empty (cadr-cli::make-memory-sdk-settings-manager))
+         (explicit
+           (cadr-cli::sdk-settings-effective-thinking-level
+            per-model model :off))
+         (from-model
+           (cadr-cli::sdk-settings-effective-thinking-level
+            per-model model))
+         (restored
+           (cadr-cli::sdk-settings-effective-thinking-level
+            empty model nil :low))
+         (defaulted
+           (cadr-cli::sdk-settings-effective-thinking-level
+            empty nil)))
+    (list
+     (if (eq explicit :off) 1 0)
+     (if (eq from-model :high) 1 0)
+     (if (eq restored :low) 1 0)
+     (if (eq defaulted :medium) 1 0)
+     5)))
+
 (defun run-settings-load-split-command-line ()
   (list
    (length (cadr-cli::split-command-line "foo bar"))
@@ -4881,7 +4961,13 @@
               (sdk-settings-flush
                 (run-settings-load-sdk-settings-flush))
               (sdk-compaction-enabled
-                (run-settings-load-sdk-compaction-enabled)))
+                (run-settings-load-sdk-compaction-enabled))
+              (sdk-make-manager
+                (run-settings-load-sdk-make-manager))
+              (sdk-make-memory
+                (run-settings-load-sdk-make-memory))
+              (sdk-effective-thinking-level
+                (run-settings-load-sdk-effective-thinking-level)))
         (json-object
          "observed"
          (json-object
@@ -5047,7 +5133,22 @@
           "sce_off" (nth 1 sdk-compaction-enabled)
           "sce_def" (nth 2 sdk-compaction-enabled)
           "sce_eq" (nth 3 sdk-compaction-enabled)
-          "sce_n" (nth 4 sdk-compaction-enabled))
+          "sce_n" (nth 4 sdk-compaction-enabled)
+          "ssm_type" (nth 0 sdk-make-manager)
+          "ssm_nil_prov" (nth 1 sdk-make-manager)
+          "ssm_nil_model" (nth 2 sdk-make-manager)
+          "ssm_trusted" (nth 3 sdk-make-manager)
+          "ssm_n" (nth 4 sdk-make-manager)
+          "smm_prov" (nth 0 sdk-make-memory)
+          "smm_model" (nth 1 sdk-make-memory)
+          "smm_empty" (nth 2 sdk-make-memory)
+          "smm_type" (nth 3 sdk-make-memory)
+          "smm_n" (nth 4 sdk-make-memory)
+          "set_exp" (nth 0 sdk-effective-thinking-level)
+          "set_model" (nth 1 sdk-effective-thinking-level)
+          "set_rest" (nth 2 sdk-effective-thinking-level)
+          "set_def" (nth 3 sdk-effective-thinking-level)
+          "set_n" (nth 4 sdk-effective-thinking-level))
          "project_trust"
          (collect "settings_load.project_trust"
                   (lambda ()
@@ -5210,7 +5311,22 @@
          (collect "settings_load.sdk_compaction_enabled"
                   (lambda ()
                     (lambda ()
-                      (run-settings-load-sdk-compaction-enabled))))))))))
+                      (run-settings-load-sdk-compaction-enabled))))
+         "sdk_make_manager"
+         (collect "settings_load.sdk_make_manager"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-make-manager))))
+         "sdk_make_memory"
+         (collect "settings_load.sdk_make_memory"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-make-memory))))
+         "sdk_effective_thinking_level"
+         (collect "settings_load.sdk_effective_thinking_level"
+                  (lambda ()
+                    (lambda ()
+                      (run-settings-load-sdk-effective-thinking-level))))))))))
 
 (defun copy-resource-fixture (name destination)
   (ensure-directories-exist destination)
@@ -36015,6 +36131,12 @@
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-flush"
       "settings_load.sdk_compaction_enabled"
       "src/cadr-cli/sdk/settings-service.lisp sdk-settings-compaction-enabled-p"
+      "settings_load.sdk_make_manager"
+      "src/cadr-cli/sdk/settings-service.lisp make-sdk-settings-manager"
+      "settings_load.sdk_make_memory"
+      "src/cadr-cli/sdk/settings-service.lisp make-memory-sdk-settings-manager"
+      "settings_load.sdk_effective_thinking_level"
+      "src/cadr-cli/sdk/settings-service.lisp sdk-settings-effective-thinking-level"
       "resource_loader.reload"
       "src/cadr-cli/resource-loader.lisp reload-resources"
       "resource_loader.dedupe_by_name"

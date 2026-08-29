@@ -8464,6 +8464,36 @@
    "piUs": 0.185,
    "ceiling": 1200.0,
    "rc": 2
+  },
+  {
+   "pair": 856,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_make_manager",
+   "branch": "cursor/sdk-settings-make-memory-thinking-leftovers-856-858-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 856"
+  },
+  {
+   "pair": 857,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_make_memory",
+   "branch": "cursor/sdk-settings-make-memory-thinking-leftovers-856-858-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 857"
+  },
+  {
+   "pair": 858,
+   "lane": "cursor",
+   "status": "queued",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_effective_thinking_level",
+   "branch": "cursor/sdk-settings-make-memory-thinking-leftovers-856-858-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 858"
   }
  ],
  "mergeQueue": []
