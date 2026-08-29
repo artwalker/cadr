@@ -7960,6 +7960,30 @@ Leftover sibling of Pair 652. Timed work is input/output/cache token accumulate,
 
 Leftover sibling of Pairs 652–653. Timed work is plain user entry vs skill-invocation plus trailing user text. Observed `aum_user` / `aum_n` / `aum_skill` / `aum_both` / `aum_text` are exact. First n=5 freeze **4.205×** (5.050 / 1.201 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 655 — `cli_interactive_controller` (seed_tui_message)
+
+| metric | cadr | pi |
+|---|---|---|
+| `seed_tui_message` | `seed-tui-message` (`src/cadr-cli/interactive/transcript.lisp`) | addChild user/assistant/bash (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pairs 652–654 on the same `transcript.lisp` hole. Timed work is seeding user `"hi"`, assistant `"ok"`, bash-execution `ls`/`ok`, and mixed user+assistant. Observed `stm_user` / `stm_n` / `stm_asst` / `stm_bash` / `stm_mix` are exact. First n=5 freeze **0.469×** (4.095 / 8.722 µs) on host `cursor`, ceiling 8.0. cadr leads. Gate used `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 656 — `cli_interactive_controller` (reset_tui_messages)
+
+| metric | cadr | pi |
+|---|---|---|
+| `reset_tui_messages` | `reset-tui-messages` (`src/cadr-cli/interactive/transcript.lisp`) | chatContainer reset + usage preserve (`packages/coding-agent/src/modes/interactive/interactive-mode.ts`) |
+
+Leftover sibling of Pair 655. Timed work is replace-with-new user, drop usage, preserve input-tokens 7, zero tokens after filled reset, and context-unknown percent nil. Observed `rtm_n` / `rtm_drop` / `rtm_keep` / `rtm_zero` / `rtm_unk` are exact. First n=5 freeze **1.296×** (2.035 / 1.570 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 657 — `cli_interactive_controller` (render_user_lines)
+
+| metric | cadr | pi |
+|---|---|---|
+| `render_user_lines` | `render-user-message-lines` (`src/cadr-cli/interactive/transcript.lisp`) | UserMessageComponent wrap + OSC 133 (`packages/coding-agent/src/modes/interactive/components/user-message.ts`) |
+
+Leftover sibling of Pairs 655–656. Timed work is OSC 133 sandwich + wrap of padding+text (`hello` / empty / pad 1). Observed `rum_hi` / `rum_n` / `rum_osc` / `rum_pad` / `rum_empty` are exact. First n=5 freeze **2.567×** (3.956 / 1.541 µs) on host `cursor`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

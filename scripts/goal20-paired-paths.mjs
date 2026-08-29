@@ -596,6 +596,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.assistant_price_known": 50,
 	"cli_interactive_controller.accumulate_usage": 50,
 	"cli_interactive_controller.append_user_message": 50,
+	"cli_interactive_controller.seed_tui_message": 50,
+	"cli_interactive_controller.reset_tui_messages": 50,
+	"cli_interactive_controller.render_user_lines": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -13986,6 +13989,189 @@ function runCliInteractiveAppendUserMessage() {
 	};
 }
 
+function leftoverMakeTuiState() {
+	return {
+		entries: [],
+		inputTokens: 0,
+		outputTokens: 0,
+		cacheReadTokens: 0,
+		cacheWriteTokens: 0,
+		cacheTokens: 0,
+		latestCacheHitRate: null,
+		contextPercent: null,
+		contextWindow: 0,
+		cost: 0,
+		costKnown: false,
+	};
+}
+
+function leftoverSeedTuiMessage(state, message) {
+	if (message.kind === "user") {
+		leftoverAppendTuiUserMessage(state, message.content);
+	} else if (message.kind === "assistant") {
+		state.entries.push({ type: "assistant", text: message.text ?? "" });
+		leftoverAccumulateMessageUsage(state, {
+			provider: "nope",
+			model: "zz-model",
+			stopReason: "end-turn",
+			usage: {
+				input: 0,
+				output: 0,
+				cacheRead: 0,
+				cacheWrite: 0,
+				total: 0,
+				cost: { total: 0 },
+			},
+		});
+	} else if (message.kind === "bash") {
+		state.entries.push({
+			type: "bash-execution",
+			label: message.command,
+			text: message.output,
+		});
+	}
+	return state;
+}
+
+function leftoverResetTuiMessages(
+	state,
+	messages,
+	{ preserveUsageP = false, contextUnknownP = false } = {},
+) {
+	const saved = preserveUsageP
+		? {
+				inputTokens: state.inputTokens,
+				outputTokens: state.outputTokens,
+				cacheTokens: state.cacheTokens,
+				cacheReadTokens: state.cacheReadTokens,
+				cacheWriteTokens: state.cacheWriteTokens,
+				latestCacheHitRate: state.latestCacheHitRate,
+				cost: state.cost,
+				costKnown: state.costKnown,
+			}
+		: null;
+	state.entries = [];
+	state.inputTokens = 0;
+	state.outputTokens = 0;
+	state.cacheTokens = 0;
+	state.cacheReadTokens = 0;
+	state.cacheWriteTokens = 0;
+	state.latestCacheHitRate = null;
+	state.contextPercent = null;
+	state.cost = 0;
+	state.costKnown = false;
+	for (const message of messages || []) {
+		leftoverSeedTuiMessage(state, message);
+	}
+	if (saved) {
+		state.inputTokens = saved.inputTokens;
+		state.outputTokens = saved.outputTokens;
+		state.cacheTokens = saved.cacheTokens;
+		state.cacheReadTokens = saved.cacheReadTokens;
+		state.cacheWriteTokens = saved.cacheWriteTokens;
+		state.latestCacheHitRate = saved.latestCacheHitRate;
+		state.cost = saved.cost;
+		state.costKnown = saved.costKnown;
+	}
+	if (contextUnknownP) {
+		state.contextPercent = null;
+	}
+	return state;
+}
+
+function leftoverWrapTextSlice(text, width) {
+	if (text.length === 0) {
+		return [""];
+	}
+	if (text.length <= width) {
+		return [text];
+	}
+	const lines = [];
+	for (let i = 0; i < text.length; i += width) {
+		lines.push(text.slice(i, i + width));
+	}
+	return lines;
+}
+
+function leftoverRenderUserMessageLines(text, width, outputPad = 1) {
+	const padding = outputPaddingString(outputPad);
+	const wrapped = leftoverWrapTextSlice(padding + text, width);
+	return [
+		"\x1b]133;A\x07" + "\x1b[49m",
+		...wrapped,
+		"\x1b]133;B\x07" + "\x1b]133;C\x07" + "\x1b[49m",
+	];
+}
+
+function leftoverEntryTypeName(state) {
+	const first = state.entries[0];
+	return first ? first.type : "";
+}
+
+function runCliInteractiveSeedTuiMessage() {
+	const userState = leftoverMakeTuiState();
+	const asstState = leftoverMakeTuiState();
+	const bashState = leftoverMakeTuiState();
+	const mixState = leftoverMakeTuiState();
+	leftoverSeedTuiMessage(userState, { kind: "user", content: "hi" });
+	leftoverSeedTuiMessage(asstState, { kind: "assistant", text: "ok" });
+	leftoverSeedTuiMessage(bashState, { kind: "bash", command: "ls", output: "ok" });
+	leftoverSeedTuiMessage(mixState, { kind: "user", content: "hi" });
+	leftoverSeedTuiMessage(mixState, { kind: "assistant", text: "ok" });
+	return {
+		stm_user: leftoverEntryTypeName(userState) === "user" ? 1 : 0,
+		stm_n: userState.entries.length,
+		stm_asst: leftoverEntryTypeName(asstState) === "assistant" ? 1 : 0,
+		stm_bash: leftoverEntryTypeName(bashState) === "bash-execution" ? 1 : 0,
+		stm_mix: mixState.entries.length,
+	};
+}
+
+function runCliInteractiveResetTuiMessages() {
+	const filled = leftoverMakeTuiState();
+	const drop = leftoverMakeTuiState();
+	const keep = leftoverMakeTuiState();
+	const unk = leftoverMakeTuiState();
+	leftoverSeedTuiMessage(filled, { kind: "user", content: "old" });
+	leftoverResetTuiMessages(filled, [{ kind: "user", content: "new" }]);
+	drop.inputTokens = 7;
+	leftoverResetTuiMessages(drop, []);
+	keep.inputTokens = 7;
+	leftoverResetTuiMessages(keep, [], { preserveUsageP: true });
+	unk.contextPercent = 50;
+	leftoverResetTuiMessages(unk, [{ kind: "user", content: "x" }], {
+		contextUnknownP: true,
+	});
+	return {
+		rtm_n: filled.entries.length,
+		rtm_drop: drop.inputTokens === 0 ? 1 : 0,
+		rtm_keep: keep.inputTokens,
+		rtm_zero: filled.inputTokens === 0 ? 1 : 0,
+		rtm_unk: unk.contextPercent == null ? 1 : 0,
+	};
+}
+
+function leftoverRenderUserJoined(text, width, outputPad = 1) {
+	return leftoverRenderUserMessageLines(text, width, outputPad).join("\n");
+}
+
+function runCliInteractiveRenderUserLines() {
+	const hello = leftoverRenderUserJoined("hello", 80);
+	const stripped = leftoverStripAnsi(hello);
+	const lines = leftoverRenderUserMessageLines("hello", 80);
+	const empty = leftoverRenderUserMessageLines("", 80);
+	leftoverRenderUserMessageLines("hello", 80);
+	leftoverRenderUserMessageLines("", 80);
+	leftoverRenderUserMessageLines("hello", 80, 0);
+	return {
+		rum_hi: stripped.includes("hello") ? 1 : 0,
+		rum_n: lines.length >= 2 ? 1 : 0,
+		rum_osc: hello.includes("133") ? 1 : 0,
+		rum_pad: stripped.includes(" hello") ? 1 : 0,
+		rum_empty: empty.length >= 2 ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -15245,6 +15431,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveAssistantPriceKnown(),
 		...runCliInteractiveAccumulateUsage(),
 		...runCliInteractiveAppendUserMessage(),
+		...runCliInteractiveSeedTuiMessage(),
+		...runCliInteractiveResetTuiMessages(),
+		...runCliInteractiveRenderUserLines(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -15374,6 +15563,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.append_user_message",
 			() => {
 				return () => runCliInteractiveAppendUserMessage();
+			},
+		),
+		seed_tui_message: await collect(
+			"cli_interactive_controller.seed_tui_message",
+			() => {
+				return () => runCliInteractiveSeedTuiMessage();
+			},
+		),
+		reset_tui_messages: await collect(
+			"cli_interactive_controller.reset_tui_messages",
+			() => {
+				return () => runCliInteractiveResetTuiMessages();
+			},
+		),
+		render_user_lines: await collect(
+			"cli_interactive_controller.render_user_lines",
+			() => {
+				return () => runCliInteractiveRenderUserLines();
 			},
 		),
 		observed,
@@ -29272,6 +29479,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/interactive-mode.ts session usage accumulate",
 			"cli_interactive_controller.append_user_message":
 				"packages/coding-agent/src/core/agent-session.ts parseSkillBlock UserMessageComponent",
+			"cli_interactive_controller.seed_tui_message":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts addChild user/assistant/bash",
+			"cli_interactive_controller.reset_tui_messages":
+				"packages/coding-agent/src/modes/interactive/interactive-mode.ts chatContainer reset + usage preserve",
+			"cli_interactive_controller.render_user_lines":
+				"packages/coding-agent/src/modes/interactive/components/user-message.ts UserMessageComponent wrap + OSC 133",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":

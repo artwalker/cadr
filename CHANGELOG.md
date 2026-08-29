@@ -9,6 +9,27 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_interactive_controller.seed_tui_message`
+  (`seed-tui-message` on
+  `src/cadr-cli/interactive/transcript.lisp` vs interactive-mode addChild
+  user/assistant/bash). Observed `stm_user` / `stm_n` / `stm_asst` /
+  `stm_bash` / `stm_mix` exact. n=5 **0.469×** (4.095 / 8.722 µs) on
+  host `cursor`, ceiling 8.0. Measure-only leftover (Pair 655). cadr
+  leads. Gate `--only-enforce`; py rc=2 from known METRICS observed-key
+  pollution (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.reset_tui_messages`
+  (`reset-tui-messages` vs chatContainer reset + usage preserve).
+  Observed `rtm_n` / `rtm_drop` / `rtm_keep` / `rtm_zero` / `rtm_unk`
+  exact. n=5 **1.296×** (2.035 / 1.570 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 656). Over-1× booked. `nextPairNum`
+  left unchanged.
+- Goal 20 leftover: pair `cli_interactive_controller.render_user_lines`
+  (`render-user-message-lines` vs UserMessageComponent wrap + OSC 133).
+  Observed `rum_hi` / `rum_n` / `rum_osc` / `rum_pad` / `rum_empty`
+  exact. n=5 **2.567×** (3.956 / 1.541 µs) on host `cursor`, ceiling
+  8.0. Measure-only leftover (Pair 657). Over-1× booked. `nextPairNum`
+  left unchanged.
 - Goal 20 leftover: pair `cli_interactive_controller.assistant_price_known`
   (`assistant-price-known-p` on
   `src/cadr-cli/interactive/transcript.lisp` vs find-model-metadata).
