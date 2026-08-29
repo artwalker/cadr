@@ -8878,7 +8878,7 @@ Leftover sibling of Pairs 766–767. Timed work is per-model thinking lookup —
 |---|---|---|
 | `sdk_settings_value` | `sdk-settings-value` (`src/cadr-cli/sdk/settings-service.lisp`) | Settings object json-get replica (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 766–768. Timed work is in-memory json-get hit/miss/default — not login I/O. Observed `ssv_hit` / `ssv_miss` / `ssv_def` / `ssv_ok` / `ssv_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 766–768. Timed work is in-memory json-get hit/miss/default — not login I/O. Observed `ssv_hit` / `ssv_miss` / `ssv_def` / `ssv_ok` / `ssv_n` are exact. First n=5 freeze **86.814×** (30.545 / 0.352 µs) on host `cursor`, ceiling 100.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 770 — `settings_load` (sdk_default_thinking_level)
 
@@ -8886,7 +8886,7 @@ Leftover sibling of Pairs 766–768. Timed work is in-memory json-get hit/miss/d
 |---|---|---|
 | `sdk_default_thinking_level` | `sdk-settings-default-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getDefaultThinkingLevel` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pair 769. Timed work is defaultThinkingLevel lookup. Empty cadr returns `:medium`; pi returns `undefined` — encoded as cadr `eq :medium` → 1 and pi `== null` → 1. Invalid `"nope"` is not an exact key. Observed `sdt_high` / `sdt_off` / `sdt_empty` / `sdt_ok` / `sdt_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pair 769. Timed work is defaultThinkingLevel lookup. Empty cadr returns `:medium`; pi returns `undefined` — encoded as cadr `eq :medium` → 1 and pi `== null` → 1. Invalid `"nope"` is not an exact key. Observed `sdt_high` / `sdt_off` / `sdt_empty` / `sdt_ok` / `sdt_n` are exact. First n=5 freeze **2.014×** (9.418 / 4.677 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 771 — `settings_load` (sdk_drain_errors)
 
@@ -8894,7 +8894,7 @@ Leftover sibling of Pair 769. Timed work is defaultThinkingLevel lookup. Empty c
 |---|---|---|
 | `sdk_drain_errors` | `sdk-settings-drain-errors` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.drainErrors` (`packages/coding-agent/src/core/settings-manager.ts`) |
 
-Leftover sibling of Pairs 769–770. Timed work is empty-memory drain by length — not `listp` vs `Array.isArray([])`, not `flush()`. Observed `sde_len` / `sde_empty` / `sde_again` / `sde_ok` / `sde_n` are exact. Freeze pending n=5 `--only-enforce`. Same commit no optimize. `nextPairNum` left at 328.
+Leftover sibling of Pairs 769–770. Timed work is empty-memory drain by length — not `listp` vs `Array.isArray([])`, not `flush()`. Observed `sde_len` / `sde_empty` / `sde_again` / `sde_ok` / `sde_n` are exact. First n=5 freeze **0.473×** (0.626 / 1.322 µs) on host `cursor`, ceiling 8.0. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

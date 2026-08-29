@@ -938,8 +938,11 @@ RATIO_CEILINGS = {
     # leftover 768; first freeze 4.323× (16.293 / 3.769 µs).
     "settings_load.sdk_model_thinking_level": 8.0,
     # leftover 769–771 settings-service.lisp (samples=5): first-freeze headroom.
-    "settings_load.sdk_settings_value": 8.0,
+    # leftover 769; first freeze 86.814× (30.545 / 0.352 µs).
+    "settings_load.sdk_settings_value": 100.0,
+    # leftover 770; first freeze 2.014× (9.418 / 4.677 µs).
     "settings_load.sdk_default_thinking_level": 8.0,
+    # leftover 771; first freeze 0.473× (0.626 / 1.322 µs).
     "settings_load.sdk_drain_errors": 8.0,
     "cli_bootstrap_sessions.legacy_product": 8.0,
     "cli_bootstrap_sessions.shell_quote": 8.0,

@@ -11,20 +11,22 @@ tag/Release step.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_value`
   (`sdk-settings-value` vs Settings object json-get). Observed `ssv_hit` /
-  `ssv_miss` / `ssv_def` / `ssv_ok` / `ssv_n` exact. Measure-only leftover
-  (Pair 769). Freeze pending n=5 `--only-enforce`. `nextPairNum` left
-  unchanged.
+  `ssv_miss` / `ssv_def` / `ssv_ok` / `ssv_n` exact. n=5 **86.814×**
+  (30.545 / 0.352 µs) on host `cursor`, ceiling 100.0. Measure-only leftover
+  (Pair 769). Over-1× booked. Gate `--only-enforce`; py rc=2 from known
+  METRICS observed-key pollution (`parsed_provider`); this metric did not
+  fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_default_thinking_level`
   (`sdk-settings-default-thinking-level` vs getDefaultThinkingLevel).
   Observed `sdt_high` / `sdt_off` / `sdt_empty` / `sdt_ok` / `sdt_n` exact.
-  Empty encoded as cadr `:medium` / pi `null`. Measure-only leftover
-  (Pair 770). Freeze pending n=5 `--only-enforce`. `nextPairNum` left
-  unchanged.
+  Empty encoded as cadr `:medium` / pi `null`. n=5 **2.014×** (9.418 /
+  4.677 µs) on host `cursor`, ceiling 8.0. Measure-only leftover (Pair 770).
+  Over-1× booked. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `settings_load.sdk_drain_errors`
   (`sdk-settings-drain-errors` vs drainErrors). Observed `sde_len` /
-  `sde_empty` / `sde_again` / `sde_ok` / `sde_n` exact. Measure-only leftover
-  (Pair 771). Freeze pending n=5 `--only-enforce`. `nextPairNum` left
-  unchanged.
+  `sde_empty` / `sde_again` / `sde_ok` / `sde_n` exact. n=5 **0.473×**
+  (0.626 / 1.322 µs) on host `cursor`, ceiling 8.0. Measure-only leftover
+  (Pair 771). `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_http_idle_timeout`
   (`sdk-settings-http-idle-timeout-ms` vs getHttpIdleTimeoutMs). Observed
