@@ -9253,15 +9253,15 @@ tables by hand. `--check` fails when a new `src/**/*.lisp` file
 is not reflected in the booked denominator, when a prefix
 matches nothing, or when `pairable-uncovered` lines are not 0.
 
-Denominator: **297 files / 129,393 lines**
+Denominator: **297 files / 129,396 lines**
 (same Part I lock: `src/**/*.lisp`, `wc -l`).
 
 | class | files | lines | share of lines | Part K / P.13 |
 |---|---:|---:|---:|---|
-| `paired` | 188 | 79,553 | 61.5% | `no worse than baseline` is falsifiable |
+| `paired` | 188 | 79,562 | 61.5% | `no worse than baseline` is falsifiable |
 | `unpairable` | 24 | 7,561 | 5.8% | single reference vs previous cadr |
 | `covered-as-callee` | 29 | 17,460 | 13.5% | on a named paired thunk; no own bench |
-| `needs-pair` | 56 | 24,819 | 19.2% | must get an H pair; not a file-level idle bench |
+| `needs-pair` | 56 | 24,813 | 19.2% | must get an H pair; not a file-level idle bench |
 | `pairable-uncovered` | 0 | 0 | 0.0% | P.13 requires 0% |
 
 - **Falsifiable vs baseline:** 61.5% of lines (188 files). This is the share whose `no worse than baseline` claim is a measured pair.
@@ -9428,7 +9428,7 @@ production work, not merely as a transitive callee.
 | `src/cadr-cli/support/shell-process.lisp` | 151 | `cli_support.shell_config`, `cli_support.sanitize_output` |
 | `src/cadr-cli/support/timings.lisp` | 45 | `cli_support.timings` |
 | `src/cadr-cli/system-prompt.lisp` | 53 | `skill_prompt_load.resolve_prompt`, `skill_prompt_load.node_read_error`, `skill_prompt_load.prompt_appends` |
-| `src/cadr-cli/tool-manager.lisp` | 286 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine`, `tool_manager.release_asset`, `tool_manager.find_binary`, `tool_manager.quarantine_native` |
+| `src/cadr-cli/tool-manager.lisp` | 295 | `tool_manager.get_tool_path`, `tool_manager.ensure_tool`, `tool_manager.cleanup_quarantine`, `tool_manager.release_asset`, `tool_manager.find_binary`, `tool_manager.quarantine_native` |
 | `src/cadr-cli/tools/edit.lisp` | 753 | `agent_tool_loop.line_ending` |
 | `src/cadr-cli/tools/find.lisp` | 101 | `find_tool.pattern_match`, `find_tool.find_files`, `find_tool.make_tool` |
 | `src/cadr-cli/tools/grep.lisp` | 331 | `tool_grep.context_file` |
@@ -9531,8 +9531,8 @@ Grouped by hole. Do not invent a file-level idle bench.
 
 | hole | files | lines |
 |---|---:|---:|
-| `cli_interactive_controller` | 6 | 5,539 |
-| `cli_bootstrap_sessions` | 4 | 5,250 |
+| `cli_interactive_controller` | 6 | 5,536 |
+| `cli_bootstrap_sessions` | 4 | 5,247 |
 | `cli_selectors` | 10 | 3,706 |
 | `cli_extensions_install` | 5 | 2,200 |
 | `package_manager` | 2 | 1,811 |
