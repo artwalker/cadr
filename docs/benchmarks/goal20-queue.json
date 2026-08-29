@@ -7969,6 +7969,36 @@
    "piUs": 0.253,
    "ceiling": 8.0,
    "rc": 2
+  },
+  {
+   "pair": 766,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_http_idle_timeout",
+   "branch": "cursor/sdk-settings-thinking-idle-override-leftovers-766-768-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 766"
+  },
+  {
+   "pair": 767,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_apply_overrides",
+   "branch": "cursor/sdk-settings-thinking-idle-override-leftovers-766-768-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 767"
+  },
+  {
+   "pair": 768,
+   "lane": "cursor",
+   "status": "in_progress",
+   "source": "src/cadr-cli/sdk/settings-service.lisp",
+   "measure": "measure-settings-load",
+   "metric": "settings_load.sdk_model_thinking_level",
+   "branch": "cursor/sdk-settings-thinking-idle-override-leftovers-766-768-34f9",
+   "note": "nextPairNum left at tip 328; leftover id 768"
   }
  ],
  "mergeQueue": []

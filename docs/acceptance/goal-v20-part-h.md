@@ -9850,6 +9850,30 @@ Leftover sibling of Pair 757. Timed work is git vs pinned vs npm vs missing path
 
 Leftover sibling of Pairs 757–758. Timed work is offline short-circuit and empty-record no-op — not git. Observed `uoff_off` / `uoff_empty_off` / `uoff_empty` / `uoff_run` / `uoff_n` are exact. First n=5 freeze **1.316×** (0.333 / 0.253 µs) on host `cursor`; remesure Friend-MachineD **1.568×** (0.416 / 0.266 µs), ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 766 — `settings_load` (sdk_http_idle_timeout)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_http_idle_timeout` | `sdk-settings-http-idle-timeout-ms` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getHttpIdleTimeoutMs` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 763–765. Timed work is in-memory idle timeout parse — not `stream-chat`. Observed `shi_hit` / `shi_def` / `shi_bad` / `shi_int` / `shi_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 767 — `settings_load` (sdk_apply_overrides)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_apply_overrides` | `sdk-settings-apply-overrides` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.applyOverrides` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pair 766. Timed work is overlay merge last-wins — not login I/O. Observed `sao_prov` / `sao_last` / `sao_len` / `sao_base` / `sao_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 768 — `settings_load` (sdk_model_thinking_level)
+
+| metric | cadr | pi |
+|---|---|---|
+| `sdk_model_thinking_level` | `sdk-settings-model-thinking-level` (`src/cadr-cli/sdk/settings-service.lisp`) | `SettingsManager.getModelThinkingLevel` (`packages/coding-agent/src/core/settings-manager.ts`) |
+
+Leftover sibling of Pairs 766–767. Timed work is per-model thinking lookup — not `stream-chat`. Observed `smt_hit` / `smt_miss` / `smt_other` / `smt_sym` / `smt_n` are exact. Freeze pending. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

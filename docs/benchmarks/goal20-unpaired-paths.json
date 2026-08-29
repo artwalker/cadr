@@ -672,6 +672,9 @@
     "settings_load.sdk_default_provider",
     "settings_load.sdk_default_model",
     "settings_load.sdk_retry_settings",
+    "settings_load.sdk_http_idle_timeout",
+    "settings_load.sdk_apply_overrides",
+    "settings_load.sdk_model_thinking_level",
     "cli_bootstrap_sessions.pb_ok",
     "cli_bootstrap_sessions.rt_ok",
     "cli_bootstrap_sessions.dp_ok",
@@ -2526,7 +2529,10 @@
       "metrics": [
         "settings_load.sdk_default_provider",
         "settings_load.sdk_default_model",
-        "settings_load.sdk_retry_settings"
+        "settings_load.sdk_retry_settings",
+        "settings_load.sdk_http_idle_timeout",
+        "settings_load.sdk_apply_overrides",
+        "settings_load.sdk_model_thinking_level"
       ]
     },
     {
