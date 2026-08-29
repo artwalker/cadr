@@ -2187,7 +2187,7 @@
                          message
                          (if (eq type :warning) :warning :status)))))
                (ensure-tool :fd :on-status #'report)
-               (ensure-tool :rg :on-status #'report))))
+               (ensure-tool :rg :on-status #'report)))
            :footer-state-function
            #'current-footer-state
            :footer-cwd cwd
