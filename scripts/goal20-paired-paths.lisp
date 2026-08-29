@@ -1289,6 +1289,9 @@
     ("cli_bootstrap_sessions.last_assistant_text" . 50)
     ("cli_bootstrap_sessions.session_export_basename" . 50)
     ("cli_bootstrap_sessions.session_user_messages_for_forking" . 50)
+    ("cli_bootstrap_sessions.session_command_stats" . 50)
+    ("cli_bootstrap_sessions.session_usage_breakdown" . 50)
+    ("cli_bootstrap_sessions.session_tree_label_timestamps" . 50)
     ("ai_runtime_faux.blocks" . 50)
     ("http_transport.parse_url" . 50)
     ("session_pipeline.session_load" . 3)
@@ -35567,6 +35570,135 @@
      (leftover-fork-user-field fixture :text :last))))
 
 
+(defun leftover-session-usage
+    (input output &optional (cost-total 0d0))
+  (cadr-ai:make-usage
+   :input input
+   :output output
+   :cost (cadr-ai:make-cost :total (float cost-total 0d0))))
+
+
+(defun leftover-stats-session ()
+  (cadr-agent::%make-session
+   :id "s"
+   :%entries
+   (list
+    (cadr-agent::make-session-entry
+     :type :message
+     :id "u1"
+     :message (cadr-ai:make-user-message :content "hi"))
+    (cadr-agent::make-session-entry
+     :type :message
+     :id "a1"
+     :message
+     (cadr-ai:make-assistant-message
+      :provider :openai
+      :model "gpt-4"
+      :usage (leftover-session-usage 10 5 2d0)
+      :content
+      (list
+       (cadr-ai:make-text-content :text "ok")
+       (cadr-ai:make-tool-call :id "t1" :name "read"))))
+    (cadr-agent::make-session-entry
+     :type :message
+     :id "r1"
+     :message
+     (cadr-ai:make-tool-result-message
+      :tool-call-id "t1"
+      :tool-name "read"
+      :content "done"))
+    (cadr-agent::make-session-entry
+     :type :compaction
+     :id "c1"
+     :usage (leftover-session-usage 2 1 1d0)))))
+
+
+(defun leftover-session-command-stats-plist (session)
+  (cadr-cli::session-command-stats session))
+
+
+(defun run-cli-bootstrap-session-command-stats ()
+  ;; Leftover on sessions.lisp: getSessionStats walk. Not /session TUI.
+  (let ((empty
+          (leftover-session-command-stats-plist
+           (cadr-agent::%make-session :id "e" :%entries nil)))
+        (filled
+          (leftover-session-command-stats-plist
+           (leftover-stats-session))))
+    (list
+     (getf empty :user)
+     (getf filled :user)
+     (getf filled :assistant)
+     (getf filled :tool-results)
+     (getf filled :tool-calls))))
+
+
+(defun leftover-usage-breakdown-n (session)
+  (length (cadr-cli::session-usage-breakdown session)))
+
+
+(defun leftover-usage-breakdown-nth (session index key)
+  (let ((item (nth index (cadr-cli::session-usage-breakdown session))))
+    (or (getf item key) (if (eq key :key) "" 0))))
+
+
+(defun run-cli-bootstrap-session-usage-breakdown ()
+  ;; Leftover on sessions.lisp: getUsageCostBreakdown. Not /session TUI.
+  (let ((empty (cadr-agent::%make-session :id "e" :%entries nil))
+        (filled (leftover-stats-session)))
+    (list
+     (leftover-usage-breakdown-n empty)
+     (leftover-usage-breakdown-n filled)
+     (leftover-usage-breakdown-nth filled 0 :key)
+     (leftover-usage-breakdown-nth filled 0 :tokens)
+     (leftover-usage-breakdown-nth filled 1 :key))))
+
+
+(defun leftover-label-session ()
+  (cadr-agent::%make-session
+   :id "s"
+   :%entries
+   (list
+    (cadr-agent::make-session-entry
+     :type :label
+     :id "l1"
+     :target-id "a"
+     :label "keep"
+     :timestamp 0)
+    (cadr-agent::make-session-entry
+     :type :label
+     :id "l2"
+     :target-id "b"
+     :label ""
+     :timestamp 1000)
+    (cadr-agent::make-session-entry
+     :type :label
+     :id "l3"
+     :target-id "c"
+     :label "see"
+     :timestamp 1000))))
+
+
+(defun leftover-label-iso (table key)
+  (or (gethash key table) ""))
+
+
+(defun run-cli-bootstrap-session-tree-label-timestamps ()
+  ;; Leftover on sessions.lisp: label timestamp map. Not tree TUI.
+  (let ((empty
+          (cadr-cli::session-tree-label-timestamps
+           (cadr-agent::%make-session :id "e" :%entries nil)))
+        (filled
+          (cadr-cli::session-tree-label-timestamps
+           (leftover-label-session))))
+    (list
+     (hash-table-count empty)
+     (hash-table-count filled)
+     (leftover-label-iso filled "a")
+     (leftover-label-iso filled "b")
+     (leftover-label-iso filled "c"))))
+
+
 (defun measure-cli-bootstrap-coding-tools ()
   (let* ((coding-observed (run-cli-bootstrap-coding-tools))
          (auth-observed (run-cli-bootstrap-auth))
@@ -35594,7 +35726,10 @@
          (compaction-status (run-cli-bootstrap-session-compaction-status))
          (last-assistant-text (run-cli-bootstrap-last-assistant-text))
          (export-basename (run-cli-bootstrap-session-export-basename))
-         (fork-users (run-cli-bootstrap-session-user-messages-for-forking)))
+         (fork-users (run-cli-bootstrap-session-user-messages-for-forking))
+         (command-stats (run-cli-bootstrap-session-command-stats))
+         (usage-breakdown (run-cli-bootstrap-session-usage-breakdown))
+         (label-timestamps (run-cli-bootstrap-session-tree-label-timestamps)))
     (json-object
      "observed"
      (json-object
@@ -35713,7 +35848,22 @@
       "sumf_n" (nth 1 fork-users)
       "sumf_first" (nth 2 fork-users)
       "sumf_id" (nth 3 fork-users)
-      "sumf_last" (nth 4 fork-users))
+      "sumf_last" (nth 4 fork-users)
+      "sst_empty_user" (nth 0 command-stats)
+      "sst_user" (nth 1 command-stats)
+      "sst_asst" (nth 2 command-stats)
+      "sst_tr" (nth 3 command-stats)
+      "sst_tc" (nth 4 command-stats)
+      "sub_empty" (nth 0 usage-breakdown)
+      "sub_n" (nth 1 usage-breakdown)
+      "sub_first" (nth 2 usage-breakdown)
+      "sub_tok" (nth 3 usage-breakdown)
+      "sub_second" (nth 4 usage-breakdown)
+      "stl_empty" (nth 0 label-timestamps)
+      "stl_n" (nth 1 label-timestamps)
+      "stl_a" (nth 2 label-timestamps)
+      "stl_b" (nth 3 label-timestamps)
+      "stl_c" (nth 4 label-timestamps))
      "coding_tools"
      (collect "cli_bootstrap_sessions.coding_tools"
               (lambda ()
@@ -35829,7 +35979,22 @@
      (collect "cli_bootstrap_sessions.session_user_messages_for_forking"
               (lambda ()
                 (lambda ()
-                  (run-cli-bootstrap-session-user-messages-for-forking)))))))
+                  (run-cli-bootstrap-session-user-messages-for-forking))))
+     "session_command_stats"
+     (collect "cli_bootstrap_sessions.session_command_stats"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-command-stats))))
+     "session_usage_breakdown"
+     (collect "cli_bootstrap_sessions.session_usage_breakdown"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-usage-breakdown))))
+     "session_tree_label_timestamps"
+     (collect "cli_bootstrap_sessions.session_tree_label_timestamps"
+              (lambda ()
+                (lambda ()
+                  (run-cli-bootstrap-session-tree-label-timestamps)))))))
 
 (defun run-ai-runtime-faux-blocks ()
   (let ((text (cadr-ai:faux-text "hello"))
@@ -37753,6 +37918,12 @@
       "src/cadr-cli/bootstrap/sessions.lisp session-export-basename"
       "cli_bootstrap_sessions.session_user_messages_for_forking"
       "src/cadr-cli/bootstrap/sessions.lisp session-user-messages-for-forking"
+      "cli_bootstrap_sessions.session_command_stats"
+      "src/cadr-cli/bootstrap/sessions.lisp session-command-stats"
+      "cli_bootstrap_sessions.session_usage_breakdown"
+      "src/cadr-cli/bootstrap/sessions.lisp session-usage-breakdown"
+      "cli_bootstrap_sessions.session_tree_label_timestamps"
+      "src/cadr-cli/bootstrap/sessions.lisp session-tree-label-timestamps"
       "ai_runtime_faux.blocks"
       "src/cadr-ai/runtime/faux-provider.lisp faux-text + faux-thinking"
       "http_transport.parse_url"

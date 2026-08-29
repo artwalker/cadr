@@ -10234,6 +10234,30 @@ Leftover sibling of Pair 811. Timed work is `cadr-session-{ISO}_{id}.html` with 
 
 Leftover sibling of Pairs 811–812. Timed work is nonempty trimmed user-entry texts for fork — not fork TUI. Observed `sumf_none` / `sumf_n` / `sumf_first` / `sumf_id` / `sumf_last` are exact. First n=5 freeze **2.692×** (2.542 / 0.944 µs) on host `Friend-MachineD`, ceiling 8.0. Gate used `--only-enforce`. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
+### Pair 814 — `cli_bootstrap_sessions` (session_command_stats)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_command_stats` | `session-command-stats` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getSessionStats (`packages/coding-agent/src/core/agent-session.ts`) |
+
+Leftover sibling of leftover 808–813 on the same `sessions.lisp` `cli_bootstrap_sessions` hole. Timed work is user/assistant/tool-result/tool-call counts — not `/session` TUI. Observed `sst_empty_user` / `sst_user` / `sst_asst` / `sst_tr` / `sst_tc` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 815 — `cli_bootstrap_sessions` (session_usage_breakdown)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_usage_breakdown` | `session-usage-breakdown` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover getUsageCostBreakdown (`packages/coding-agent/src/core/usage-totals.ts`) |
+
+Leftover sibling of Pair 814. Timed work is provider/model and Tools/summaries token totals — not `/session` TUI. Observed `sub_empty` / `sub_n` / `sub_first` / `sub_tok` / `sub_second` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
+### Pair 816 — `cli_bootstrap_sessions` (session_tree_label_timestamps)
+
+| metric | cadr | pi |
+|---|---|---|
+| `session_tree_label_timestamps` | `session-tree-label-timestamps` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover label timestamps (`packages/coding-agent/src/modes/interactive/components/tree-selector.ts`) |
+
+Leftover sibling of Pairs 814–815. Timed work is nonempty label ISO map (empty label remhash) — not tree TUI. Observed `stl_empty` / `stl_n` / `stl_a` / `stl_b` / `stl_c` are exact. First n=5 freeze **RATIO_PLACEHOLDER**. Same commit no optimize. `nextPairNum` left at 328.
+
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 
 | metric | cadr | pi |

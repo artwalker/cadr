@@ -9,6 +9,19 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_command_stats`
+  (`session-command-stats` vs leftover getSessionStats). Observed
+  `sst_empty_user` / `sst_user` / `sst_asst` / `sst_tr` / `sst_tc` exact.
+  Measure-only leftover (Pair 814). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_usage_breakdown`
+  (`session-usage-breakdown` vs leftover getUsageCostBreakdown). Observed
+  `sub_empty` / `sub_n` / `sub_first` / `sub_tok` / `sub_second` exact.
+  Measure-only leftover (Pair 815). `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `cli_bootstrap_sessions.session_tree_label_timestamps`
+  (`session-tree-label-timestamps` vs leftover label timestamps). Observed
+  `stl_empty` / `stl_n` / `stl_a` / `stl_b` / `stl_c` exact.
+  Measure-only leftover (Pair 816). `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_bootstrap_sessions.last_assistant_text`
   (`last-assistant-text` vs leftover getLastAssistantText). Observed
   `lat_none` / `lat_hit` / `lat_skip` / `lat_ws` / `lat_n` exact.
