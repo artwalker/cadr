@@ -30,18 +30,22 @@ tag/Release step.
 - Goal 20 leftover: pair `package_manager.resource_item_key`
   (`config-resource-item-key` vs leftover getResourceItemKey). Observed
   `rik_ext` / `rik_skill` / `rik_diff` / `rik_hello` / `rik_n` exact.
-  Measure-only leftover (Pair 781). Freeze pending. `nextPairNum` left
-  unchanged.
+  n=5 **38.223×** (34.919 / 0.914 µs) on host `cursor`, ceiling 50.0.
+  Measure-only leftover (Pair 781). Over-1× booked. Gate `--only-enforce`;
+  py rc=2 from known METRICS observed-key pollution (`parsed_provider`);
+  this metric did not fail observed-exact. `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `package_manager.project_override_state`
   (`config-selector-project-state` vs leftover override hash). Observed
   `cps_load` / `cps_unload` / `cps_miss` / `cps_eq` / `cps_n` exact.
-  Measure-only leftover (Pair 782). Freeze pending. `nextPairNum` left
+  n=5 **17.903×** (52.878 / 2.954 µs) on host `cursor`, ceiling 20.0.
+  Measure-only leftover (Pair 782). Over-1× booked. `nextPairNum` left
   unchanged.
 - Goal 20 leftover: pair `package_manager.next_project_state`
   (`config-selector-next-project-state` vs leftover nextProjectOverrideState).
   Observed `nps_inh_t` / `nps_inh_f` / `nps_unl` / `nps_load` / `nps_n`
-  exact. Measure-only leftover (Pair 783). Freeze pending. `nextPairNum`
-  left unchanged.
+  exact. n=5 **10.522×** (52.464 / 4.986 µs) on host `cursor`, ceiling 15.0.
+  Measure-only leftover (Pair 783). Over-1× booked. `nextPairNum` left
+  unchanged.
 
 - Goal 20 leftover: pair `settings_load.sdk_settings_reload`
   (`sdk-settings-reload` vs SettingsManager.reload). Observed `srl_hit` /
