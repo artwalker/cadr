@@ -495,6 +495,9 @@
     ("package_manager.selector_items" . 50)
     ("package_manager.item_source_base" . 50)
     ("package_manager.package_resource_pattern" . 50)
+    ("package_manager.package_override_source" . 50)
+    ("package_manager.resource_group_label" . 50)
+    ("package_manager.settings_values" . 50)
     ("session_discovery.header_probe" . 20)
     ("session_discovery.session_list_probe" . 5)
     ("session_export_html.to_html" . 3)
@@ -4840,6 +4843,32 @@
 (defun leftover-config-selector-package-resource-pattern (item)
   (cadr-cli::config-selector-package-resource-pattern item))
 
+(defun leftover-config-selector-package-override-source (state item scope)
+  (cadr-cli::config-selector-package-override-source state item scope))
+
+(defun leftover-config-resource-group-label (state item)
+  (cadr-cli::config-resource-group-label state item))
+
+(defun leftover-config-selector-settings-values (manager scope key)
+  (cadr-cli::config-selector-settings-values manager scope key))
+
+(defun leftover-memory-settings-manager (global &optional project)
+  (let ((manager (cadr-cli::make-memory-settings-manager global)))
+    (when project
+      (setf (cadr-cli::settings-manager-project manager) project))
+    manager))
+
+(defun leftover-config-resource-item-labeled
+    (origin scope source &key (base-directory "/tmp/"))
+  (let ((item (leftover-config-resource-item "/tmp/x.lisp" :extensions "x")))
+    (setf (cadr-cli::config-resource-item-origin item) origin
+          (cadr-cli::config-resource-item-scope item) scope
+          (cadr-cli::config-resource-item-source item) source
+          (cadr-cli::config-resource-item-base-directory item)
+          (uiop:ensure-directory-pathname
+           (parse-namestring base-directory)))
+    item))
+
 (defun leftover-config-resource-item-scoped (path type display-name scope)
   (cadr-cli::make-config-resource-item
    :path (parse-namestring path)
@@ -5122,6 +5151,121 @@
      "x"))
    5))
 
+(defun run-package-manager-package-override-source ()
+  (let* ((state
+           (leftover-config-selector-state
+            0
+            :cwd "/tmp/proj"
+            :agent-directory "/tmp/agent"))
+         (npm-item
+           (leftover-config-resource-item-labeled
+            :package :user "npm:foo"
+            :base-directory "/tmp/agent/pkg/"))
+         (rel-item
+           (leftover-config-resource-item-labeled
+            :package :user "/tmp/agent/pkg"
+            :base-directory "/tmp/agent/pkg/"))
+         (same-item
+           (leftover-config-resource-item-labeled
+            :package :user "/tmp/agent"
+            :base-directory "/tmp/agent/"))
+         (pin-item
+           (leftover-config-resource-item-labeled
+            :package :user "npm:@scope/pkg@1.2.3"
+            :base-directory "/tmp/agent/pkg/")))
+    (list
+     (package-manager-truth
+      (string=
+       (leftover-config-selector-package-override-source
+        state npm-item :global)
+       "npm:foo"))
+     (package-manager-truth
+      (string=
+       (leftover-config-selector-package-override-source
+        state rel-item :global)
+       "pkg/"))
+     (package-manager-truth
+      (string=
+       (leftover-config-selector-package-override-source
+        state same-item :global)
+       ""))
+     (package-manager-truth
+      (string=
+       (leftover-config-selector-package-override-source
+        state pin-item :global)
+       "npm:@scope/pkg@1.2.3"))
+     5)))
+
+(defun run-package-manager-resource-group-label ()
+  (let ((state
+          (leftover-config-selector-state
+           0
+           :cwd "/tmp/proj"
+           :agent-directory "/tmp/agent")))
+    (list
+     (package-manager-truth
+      (string=
+       (leftover-config-resource-group-label
+        state
+        (leftover-config-resource-item-labeled :package :user "zpkg"))
+       "zpkg (user)"))
+     (package-manager-truth
+      (string=
+       (leftover-config-resource-group-label
+        state
+        (leftover-config-resource-item-labeled :top-level :user "local"))
+       "User settings"))
+     (package-manager-truth
+      (string=
+       (leftover-config-resource-group-label
+        state
+        (leftover-config-resource-item-labeled
+         :top-level :project "local"))
+       "Project settings"))
+     (package-manager-truth
+      (string=
+       (leftover-config-resource-group-label
+        state
+        (leftover-config-resource-item-labeled
+         :top-level :project "auto"))
+       "Project (.cadr/)"))
+     5)))
+
+(defun run-package-manager-settings-values ()
+  (let* ((ok
+           (leftover-memory-settings-manager
+            (cadr-ai::json-object "theme" (vector "dark" "light"))))
+         (proj
+           (leftover-memory-settings-manager
+            (cadr-ai::json-object)
+            (cadr-ai::json-object "theme" (vector "x"))))
+         (nums
+           (leftover-memory-settings-manager
+            (cadr-ai::json-object "theme" (vector 1 2))))
+         (bad
+           (leftover-memory-settings-manager
+            (cadr-ai::json-object "theme" 3)))
+         (ok-values
+           (leftover-config-selector-settings-values ok :global "theme"))
+         (proj-values
+           (leftover-config-selector-settings-values proj :project "theme"))
+         (num-values
+           (leftover-config-selector-settings-values nums :global "theme")))
+    (list
+     (package-manager-truth
+      (and (= (length ok-values) 2)
+           (string= (first ok-values) "dark")))
+     (package-manager-truth
+      (and (= (length proj-values) 1)
+           (string= (first proj-values) "x")))
+     (package-manager-truth
+      (and (= (length num-values) 2)
+           (eql (first num-values) 1)))
+     (package-manager-truth
+      (null
+       (leftover-config-selector-settings-values bad :global "theme")))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -5227,7 +5371,13 @@
            (selector-items (run-package-manager-selector-items))
            (item-source-base (run-package-manager-item-source-base))
            (package-resource-pattern
-             (run-package-manager-package-resource-pattern)))
+             (run-package-manager-package-resource-pattern))
+           (package-override-source
+             (run-package-manager-package-override-source))
+           (resource-group-label
+             (run-package-manager-resource-group-label))
+           (settings-values
+             (run-package-manager-settings-values)))
       (json-object
        "observed"
        (json-object
@@ -5383,7 +5533,22 @@
         "prp_nested" (nth 1 package-resource-pattern)
         "prp_ext" (nth 2 package-resource-pattern)
         "prp_plain" (nth 3 package-resource-pattern)
-        "prp_n" (nth 4 package-resource-pattern))
+        "prp_n" (nth 4 package-resource-pattern)
+        "pos_npm" (nth 0 package-override-source)
+        "pos_rel" (nth 1 package-override-source)
+        "pos_same" (nth 2 package-override-source)
+        "pos_pin" (nth 3 package-override-source)
+        "pos_n" (nth 4 package-override-source)
+        "rgl_pkg" (nth 0 resource-group-label)
+        "rgl_user" (nth 1 resource-group-label)
+        "rgl_proj" (nth 2 resource-group-label)
+        "rgl_cadr" (nth 3 resource-group-label)
+        "rgl_n" (nth 4 resource-group-label)
+        "csv_ok" (nth 0 settings-values)
+        "csv_proj" (nth 1 settings-values)
+        "csv_nums" (nth 2 settings-values)
+        "csv_bad" (nth 3 settings-values)
+        "csv_n" (nth 4 settings-values))
        "resolve"
        (collect "package_manager.resolve"
                 (lambda ()
@@ -5534,7 +5699,22 @@
        (collect "package_manager.package_resource_pattern"
                 (lambda ()
                   (lambda ()
-                    (run-package-manager-package-resource-pattern))))))))
+                    (run-package-manager-package-resource-pattern))))
+       "package_override_source"
+       (collect "package_manager.package_override_source"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-package-override-source))))
+       "resource_group_label"
+       (collect "package_manager.resource_group_label"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-resource-group-label))))
+       "settings_values"
+       (collect "package_manager.settings_values"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-settings-values))))))))
 
 (defun measure-resource-loader ()
   (multiple-value-bind
@@ -30782,6 +30962,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-item-source-base"
       "package_manager.package_resource_pattern"
       "src/cadr-cli/packages/config-selector.lisp config-selector-package-resource-pattern"
+      "package_manager.package_override_source"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-package-override-source"
+      "package_manager.resource_group_label"
+      "src/cadr-cli/packages/config-selector.lisp config-resource-group-label"
+      "package_manager.settings_values"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-settings-values"
       "session_discovery.header_probe"
       "src/cadr-agent/session/discovery.lisp read-session-header-for-discovery"
       "session_discovery.session_list_probe"
