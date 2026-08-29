@@ -1252,7 +1252,7 @@
 
 (test load-session-repairs-a-missing-trailing-newline
   (with-session-directories (sessions cwd other-cwd)
-    (declare (ignore other-cwd))
+    (values other-cwd)
     (let* ((session
              (cadr-agent:create-session
               :directory sessions :cwd cwd :id "tail"
