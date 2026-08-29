@@ -464,4 +464,7 @@ G.17 stays `missing`. Not Goal 20 complete.
 | `cli_interactive_controller.render_assistant_lines` | 12.279 | 4.498 | 2.730× | 8.00× | measure-only leftover 658; `render-assistant-message-lines` vs AssistantMessageComponent wrap + OSC 133 | invent pause；地板优化另刀 |
 | `cli_interactive_controller.transform_tui_markdown` | 2.923 | 1.968 | 1.485× | 8.00× | measure-only leftover 659; `transform-tui-markdown` vs mermaid transform + markdown cache | invent pause；地板优化另刀 |
 | `cli_interactive_controller.render_transcript_summary` | 786.501 | 3.083 | 255.111× | 400.00× | measure-only leftover 660; `render-transcript-summary-entry` vs skill/branch/compaction CustomMessage; first-freeze headroom 400.0 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_assistant_blocks` | 54.605 | 10.156 | 5.377× | 8.00× | measure-only leftover 661; `render-assistant-blocks` vs assistant markdown blocks + stop error | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_version_notification` | 304.547 | 4.388 | 69.400× | 120.00× | measure-only leftover 662; `render-version-update-notification` vs version warning DynamicBorder; first-freeze headroom 120.0 | invent pause；地板优化另刀 |
+| `cli_interactive_controller.render_package_notification` | 217.221 | 4.120 | 52.727× | 100.00× | measure-only leftover 663; `render-package-update-notification` vs package warning DynamicBorder; first-freeze headroom 100.0 | invent pause；地板优化另刀 |
 Ceilings not lowered. Do not redo withdrawn phenomenon knives.

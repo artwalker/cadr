@@ -602,6 +602,9 @@ const REPETITIONS = {
 	"cli_interactive_controller.render_assistant_lines": 50,
 	"cli_interactive_controller.transform_tui_markdown": 50,
 	"cli_interactive_controller.render_transcript_summary": 50,
+	"cli_interactive_controller.render_assistant_blocks": 50,
+	"cli_interactive_controller.render_version_notification": 50,
+	"cli_interactive_controller.render_package_notification": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -14380,6 +14383,179 @@ function runCliInteractiveRenderTranscriptSummary() {
 	};
 }
 
+function leftoverRenderAssistantBlocks(
+	entry,
+	width,
+	{ hideThinkingBlockP = false, hiddenThinkingLabel = "Thinking..." } = {},
+) {
+	if (!entry.markdownCache) {
+		entry.markdownCache = [];
+	}
+	const availableWidth = Math.max(1, width - 2);
+	let blocks = entry.contentBlocks;
+	if (!blocks) {
+		const trimmed = String(entry.text || "").replace(/^[ \t\n\r]+|[ \t\n\r]+$/g, "");
+		blocks = trimmed.length > 0 ? [["assistant", trimmed]] : null;
+	}
+	let rendered = [];
+	if (blocks) {
+		for (let blockIndex = 0; blockIndex < blocks.length; blockIndex += 1) {
+			const [messageType, source] = blocks[blockIndex];
+			let displaySource = source;
+			if (hideThinkingBlockP && messageType === "assistant-thinking") {
+				displaySource = hiddenThinkingLabel || "Thinking...";
+			}
+			leftoverTransformTuiMarkdown(entry, displaySource, messageType, availableWidth, {
+				cacheKey: `${messageType}:${blockIndex}`,
+			});
+			const lines = leftoverWrapTextSlice(` ${displaySource}`, width);
+			if (rendered.length) {
+				rendered.push("");
+			}
+			rendered = rendered.concat(lines);
+		}
+	}
+	const errors = leftoverAssistantStopErrorLines(entry, width);
+	if (rendered.length) {
+		rendered = ["", ...rendered];
+	}
+	return rendered.concat(errors);
+}
+
+function leftoverAssistantBlocksJoined(entry, width, options = {}) {
+	const lines = leftoverRenderAssistantBlocks(entry, width, options);
+	return lines && lines.length ? lines.join("\n") : "";
+}
+
+function leftoverAssistantBlocksStripped(entry, width, options = {}) {
+	return leftoverStripAnsi(leftoverAssistantBlocksJoined(entry, width, options));
+}
+
+function runCliInteractiveRenderAssistantBlocks() {
+	const hello = { type: "assistant", text: "hello", markdownCache: [] };
+	const empty = { type: "assistant", text: "", markdownCache: [] };
+	const err = {
+		type: "assistant",
+		text: "hello",
+		stopReason: "error",
+		errorMessage: "boom",
+		markdownCache: [],
+	};
+	const think = {
+		type: "assistant",
+		contentBlocks: [["assistant-thinking", "secret"]],
+		markdownCache: [],
+	};
+	const helloText = leftoverAssistantBlocksStripped(hello, 80);
+	const helloLines = leftoverRenderAssistantBlocks(
+		{ type: "assistant", text: "hello", markdownCache: [] },
+		80,
+	);
+	const emptyLines = leftoverRenderAssistantBlocks(empty, 80);
+	const errText = leftoverAssistantBlocksStripped(err, 80);
+	const thinkText = leftoverAssistantBlocksStripped(think, 80, {
+		hideThinkingBlockP: true,
+	});
+	leftoverRenderAssistantBlocks({ type: "assistant", text: "hello", markdownCache: [] }, 80);
+	leftoverRenderAssistantBlocks({ type: "assistant", text: "", markdownCache: [] }, 80);
+	leftoverRenderAssistantBlocks(
+		{
+			type: "assistant",
+			text: "hello",
+			stopReason: "error",
+			errorMessage: "boom",
+			markdownCache: [],
+		},
+		80,
+	);
+	leftoverRenderAssistantBlocks(
+		{
+			type: "assistant",
+			contentBlocks: [["assistant-thinking", "secret"]],
+			markdownCache: [],
+		},
+		80,
+		{ hideThinkingBlockP: true },
+	);
+	return {
+		rab_hi: helloText.includes("hello") ? 1 : 0,
+		rab_n: helloLines.length >= 2 ? 1 : 0,
+		rab_empty: !emptyLines || emptyLines.length === 0 ? 1 : 0,
+		rab_err: errText.includes("Error:") ? 1 : 0,
+		rab_think: thinkText.includes("Thinking") ? 1 : 0,
+	};
+}
+
+function leftoverNotificationJoined(lines) {
+	return leftoverStripAnsi((lines || []).join("\n"));
+}
+
+function leftoverRenderVersionUpdateNotification(entry, width) {
+	const version = entry.text || "";
+	const title = leftoverThemeForeground("Update Available");
+	const instruction = leftoverThemeForeground(
+		`New version ${version} is available. Run update`,
+	);
+	const changelog = leftoverThemeForeground("Changelog: ");
+	return [
+		"",
+		leftoverUpdateNotificationBorderLine(width),
+		...leftoverUpdateNotificationTextLines(
+			`${leftoverStripAnsi(title)}\n${leftoverStripAnsi(instruction)}`,
+			width,
+		),
+		...leftoverUpdateNotificationTextLines(leftoverStripAnsi(changelog), width),
+		leftoverUpdateNotificationBorderLine(width),
+	];
+}
+
+function runCliInteractiveRenderVersionNotification() {
+	const entry = { type: "custom-message", text: "1.2.3" };
+	const lines = leftoverRenderVersionUpdateNotification(entry, 80);
+	const text = leftoverNotificationJoined(lines);
+	leftoverRenderVersionUpdateNotification(entry, 80);
+	leftoverRenderVersionUpdateNotification({ text: "9.9.9" }, 40);
+	return {
+		rvn_avail: text.includes("Update Available") ? 1 : 0,
+		rvn_ver: text.includes("1.2.3") ? 1 : 0,
+		rvn_change: text.includes("Changelog") ? 1 : 0,
+		rvn_n: lines.length >= 3 ? 1 : 0,
+		rvn_dash: text.includes("─") ? 1 : 0,
+	};
+}
+
+function leftoverRenderPackageUpdateNotification(entry, width) {
+	const packages = entry.packages || [];
+	const title = leftoverThemeForeground("Package Updates Available");
+	const instruction = leftoverThemeForeground(
+		"Package updates are available. Run update --extensions",
+	);
+	const body = `${leftoverStripAnsi(title)}\n${leftoverStripAnsi(instruction)}\nPackages:\n${packages
+		.map((name) => `- ${name}`)
+		.join("\n")}`;
+	return [
+		"",
+		leftoverUpdateNotificationBorderLine(width),
+		...leftoverUpdateNotificationTextLines(body, width),
+		leftoverUpdateNotificationBorderLine(width),
+	];
+}
+
+function runCliInteractiveRenderPackageNotification() {
+	const entry = { type: "custom-message", packages: ["ext-a", "ext-b"] };
+	const lines = leftoverRenderPackageUpdateNotification(entry, 80);
+	const text = leftoverNotificationJoined(lines);
+	leftoverRenderPackageUpdateNotification(entry, 80);
+	leftoverRenderPackageUpdateNotification({ packages: ["z"] }, 40);
+	return {
+		rpn_avail: text.includes("Package Updates Available") ? 1 : 0,
+		rpn_pkg: text.includes("ext-a") ? 1 : 0,
+		rpn_run: text.includes("update") ? 1 : 0,
+		rpn_n: lines.length >= 3 ? 1 : 0,
+		rpn_dash: text.includes("─") ? 1 : 0,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -15645,6 +15821,9 @@ async function measureCliInteractiveDecodeEntity() {
 		...runCliInteractiveRenderAssistantLines(),
 		...runCliInteractiveTransformTuiMarkdown(),
 		...runCliInteractiveRenderTranscriptSummary(),
+		...runCliInteractiveRenderAssistantBlocks(),
+		...runCliInteractiveRenderVersionNotification(),
+		...runCliInteractiveRenderPackageNotification(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -15810,6 +15989,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.render_transcript_summary",
 			() => {
 				return () => runCliInteractiveRenderTranscriptSummary();
+			},
+		),
+		render_assistant_blocks: await collect(
+			"cli_interactive_controller.render_assistant_blocks",
+			() => {
+				return () => runCliInteractiveRenderAssistantBlocks();
+			},
+		),
+		render_version_notification: await collect(
+			"cli_interactive_controller.render_version_notification",
+			() => {
+				return () => runCliInteractiveRenderVersionNotification();
+			},
+		),
+		render_package_notification: await collect(
+			"cli_interactive_controller.render_package_notification",
+			() => {
+				return () => runCliInteractiveRenderPackageNotification();
 			},
 		),
 		observed,
@@ -29720,6 +29917,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts mermaid transform + markdown cache",
 			"cli_interactive_controller.render_transcript_summary":
 				"packages/coding-agent/src/modes/interactive/components/skill-invocation-message.ts skill/branch/compaction CustomMessage",
+			"cli_interactive_controller.render_assistant_blocks":
+				"packages/coding-agent/src/modes/interactive/components/assistant-message.ts assistant markdown blocks + stop error",
+			"cli_interactive_controller.render_version_notification":
+				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts version warning DynamicBorder",
+			"cli_interactive_controller.render_package_notification":
+				"packages/coding-agent/src/modes/interactive/components/dynamic-border.ts package warning DynamicBorder",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
