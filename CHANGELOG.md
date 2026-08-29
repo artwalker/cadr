@@ -9,6 +9,22 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `oauth_pkce_device.hex_value`
+  (`hex-value` vs leftover parseInt hex digit). Observed
+  `hv_A` / `hv_a` / `hv_0` / `hv_F` / `hv_9` / `hv_n` exact.
+  n=5 freeze pending. Measure-only leftover (Pair 832).
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.write_http_response`
+  (`write-oauth-http-response` vs leftover writeHead+end). Observed
+  `woh_ok` / `woh_ct` / `woh_body` / `woh_400` / `woh_n` exact.
+  n=5 freeze pending. Measure-only leftover (Pair 833).
+  `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `oauth_pkce_device.present_auth_url`
+  (`present-oauth-auth-url` vs leftover auth_url notify). Observed
+  `pau_fmt` / `pau_url` / `pau_ret` / `pau_cb` / `pau_n` exact.
+  n=5 freeze pending. Measure-only leftover (Pair 834).
+  `nextPairNum` left unchanged.
+
 - Goal 20 leftover: pair `cli_print_rpc.dialog_default`
   (`rpc-dialog-default` vs leftover createDialogPromise defaultValue). Observed
   `rdd_sel` / `rdd_conf` / `rdd_in` / `rdd_ed` / `rdd_n` exact.

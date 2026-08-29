@@ -341,6 +341,9 @@ const REPETITIONS = {
 	"oauth_pkce_device.provider_key": 50,
 	"oauth_pkce_device.http_status_text": 50,
 	"oauth_pkce_device.parse_callback_request": 50,
+	"oauth_pkce_device.hex_value": 50,
+	"oauth_pkce_device.write_http_response": 50,
+	"oauth_pkce_device.present_auth_url": 50,
 	"cli_extensions_install.llama_url": 50,
 	"cli_extensions_install.hf_token": 50,
 	"cli_extensions_install.llama_catalog": 50,
@@ -13039,6 +13042,105 @@ function runOauthPkceDeviceParseCallbackRequest() {
 	};
 }
 
+function leftoverHexValue(character) {
+	return Number.parseInt(character, 16);
+}
+
+function leftoverHexValueFlag(character, expected) {
+	try {
+		return leftoverHexValue(character) === expected ? 1 : 0;
+	} catch {
+		return 0;
+	}
+}
+
+function runOauthPkceDeviceHexValue() {
+	return {
+		hv_A: leftoverHexValueFlag("A", 10),
+		hv_a: leftoverHexValueFlag("a", 10),
+		hv_0: leftoverHexValueFlag("0", 0),
+		hv_F: leftoverHexValueFlag("F", 15),
+		hv_9: leftoverHexValueFlag("9", 9),
+		hv_n: 5,
+	};
+}
+
+function leftoverWriteOAuthHttpResponse(status, body) {
+	const statusText = {
+		200: "OK",
+		400: "Bad Request",
+		404: "Not Found",
+		500: "Internal Server Error",
+	}[status] || "Error";
+	let statusCode = 0;
+	let contentType = "";
+	let ended = "";
+	const res = {
+		writeHead(code, headers) {
+			statusCode = code;
+			contentType = headers["Content-Type"] || "";
+		},
+		end(value) {
+			ended = value ?? "";
+		},
+	};
+	res.writeHead(status, { "Content-Type": "text/html; charset=utf-8" });
+	res.end(body);
+	return { statusCode, statusText, contentType, ended };
+}
+
+function leftoverWriteHttpFlags(status, body) {
+	const written = leftoverWriteOAuthHttpResponse(status, body);
+	return [
+		written.statusCode === status && written.statusText.length > 0 ? 1 : 0,
+		written.contentType.includes("text/html") ? 1 : 0,
+		written.ended.includes(body) ? 1 : 0,
+	];
+}
+
+function runOauthPkceDeviceWriteHttpResponse() {
+	const ok = leftoverWriteHttpFlags(200, "<p>ok</p>");
+	const bad = leftoverWriteHttpFlags(400, "<p>bad</p>");
+	return {
+		woh_ok: ok[0],
+		woh_ct: ok[1],
+		woh_body: ok[2],
+		woh_400: bad[0],
+		woh_n: 4,
+	};
+}
+
+function leftoverPresentOAuthAuthUrl(url, chunks, authUrlFunction) {
+	if (authUrlFunction) {
+		authUrlFunction(url);
+		return url;
+	}
+	chunks.push(`\nOpen this URL in your browser:\n${url}\n`);
+	return url;
+}
+
+function runOauthPkceDevicePresentAuthUrl() {
+	const url = "https://example.com/auth";
+	const printed = [];
+	const returned = leftoverPresentOAuthAuthUrl(url, printed, undefined);
+	const text = printed.join("");
+	let called = 0;
+	const callbackChunks = [];
+	const callbackReturned = leftoverPresentOAuthAuthUrl(url, callbackChunks, (value) => {
+		if (value === url) called += 1;
+	});
+	return {
+		pau_fmt: text.includes("Open this URL in your browser") ? 1 : 0,
+		pau_url: text.includes(url) ? 1 : 0,
+		pau_ret: returned === url ? 1 : 0,
+		pau_cb:
+			called === 1 && callbackReturned === url && callbackChunks.length === 0
+				? 1
+				: 0,
+		pau_n: 4,
+	};
+}
+
 function base64urlValueFlag(character, expected) {
 	try {
 		return OAUTH_BASE64URL_ALPHABET.indexOf(character) === expected ? 1 : 0;
@@ -13572,6 +13674,9 @@ async function measureOauthPkceDevice() {
 	const providerKey = runOauthPkceDeviceProviderKey();
 	const statusText = runOauthPkceDeviceHttpStatusText();
 	const callbackRequest = runOauthPkceDeviceParseCallbackRequest();
+	const hexValue = runOauthPkceDeviceHexValue();
+	const writeHttp = runOauthPkceDeviceWriteHttpResponse();
+	const presentUrl = runOauthPkceDevicePresentAuthUrl();
 	return {
 		poll: await collect("oauth_pkce_device.poll", () => {
 			return () => runOauthPkceDevicePoll();
@@ -13609,6 +13714,15 @@ async function measureOauthPkceDevice() {
 		parse_callback_request: await collect("oauth_pkce_device.parse_callback_request", () => {
 			return () => runOauthPkceDeviceParseCallbackRequest();
 		}),
+		hex_value: await collect("oauth_pkce_device.hex_value", () => {
+			return () => runOauthPkceDeviceHexValue();
+		}),
+		write_http_response: await collect("oauth_pkce_device.write_http_response", () => {
+			return () => runOauthPkceDeviceWriteHttpResponse();
+		}),
+		present_auth_url: await collect("oauth_pkce_device.present_auth_url", () => {
+			return () => runOauthPkceDevicePresentAuthUrl();
+		}),
 		observed: {
 			...poll,
 			...auth,
@@ -13622,6 +13736,9 @@ async function measureOauthPkceDevice() {
 			...providerKey,
 			...statusText,
 			...callbackRequest,
+			...hexValue,
+			...writeHttp,
+			...presentUrl,
 		},
 	};
 }
@@ -36673,6 +36790,12 @@ const result = {
 				"node:http STATUS_CODES (cadr oauth-http-status-text)",
 			"oauth_pkce_device.parse_callback_request":
 				"packages/ai/src/auth/oauth/openai-codex.ts startLocalOAuthServer pathname/state/code (cadr parse-oauth-callback-request)",
+			"oauth_pkce_device.hex_value":
+				"packages/ai/src/auth/oauth leftover parseInt hex digit (cadr hex-value)",
+			"oauth_pkce_device.write_http_response":
+				"packages/ai/src/auth/oauth/anthropic.ts leftover writeHead+end (cadr write-oauth-http-response)",
+			"oauth_pkce_device.present_auth_url":
+				"packages/ai/src/cli.ts leftover auth_url notify Open this URL (cadr present-oauth-auth-url)",
 			"cli_extensions_install.llama_url":
 				"packages/coding-agent/src/extensions/llama/client.ts normalizeLlamaServerUrl",
 			"cli_extensions_install.hf_token":

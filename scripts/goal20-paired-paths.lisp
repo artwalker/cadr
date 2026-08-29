@@ -618,6 +618,9 @@
     ("oauth_pkce_device.provider_key" . 50)
     ("oauth_pkce_device.http_status_text" . 50)
     ("oauth_pkce_device.parse_callback_request" . 50)
+    ("oauth_pkce_device.hex_value" . 50)
+    ("oauth_pkce_device.write_http_response" . 50)
+    ("oauth_pkce_device.present_auth_url" . 50)
     ("cli_extensions_install.llama_url" . 50)
     ("cli_extensions_install.hf_token" . 50)
     ("cli_extensions_install.llama_catalog" . 50)
@@ -11849,6 +11852,83 @@
     "/auth/callback" "expected" "OpenAI" 400)
    4))
 
+(defun oauth-hex-value-flag (character expected)
+  (handler-case
+      (if (eql (cadr-ai::hex-value character) expected)
+          1
+          0)
+    (error () 0)))
+
+(defun run-oauth-pkce-device-hex-value ()
+  ;; Valid hex digits only. Do not exact invalid percent-escape
+  ;; characters (Lisp signals; leftover parseInt is NaN).
+  (list
+   (oauth-hex-value-flag #\A 10)
+   (oauth-hex-value-flag #\a 10)
+   (oauth-hex-value-flag #\0 0)
+   (oauth-hex-value-flag #\F 15)
+   (oauth-hex-value-flag #\9 9)
+   5))
+
+(defun oauth-write-http-flags (status body)
+  (let ((out (make-string-output-stream)))
+    (cadr-ai::write-oauth-http-response out status body)
+    (let ((text (get-output-stream-string out)))
+      (list
+       (if (and (search (princ-to-string status) text)
+                (search (cadr-ai::oauth-http-status-text status) text))
+           1
+           0)
+       (if (search "text/html; charset=utf-8" text)
+           1
+           0)
+       (if (search body text)
+           1
+           0)))))
+
+(defun run-oauth-pkce-device-write-http-response ()
+  ;; String-stream HTTP write only. Do not listen, do not sockets.
+  (let ((ok (oauth-write-http-flags 200 "<p>ok</p>"))
+        (bad (oauth-write-http-flags 400 "<p>bad</p>")))
+    (list
+     (first ok)
+     (second ok)
+     (third ok)
+     (first bad)
+     4)))
+
+(defun run-oauth-pkce-device-present-auth-url ()
+  (let* ((url "https://example.com/auth")
+         (printed (make-string-output-stream))
+         (returned
+           (cadr-ai::present-oauth-auth-url url printed nil))
+         (text (get-output-stream-string printed))
+         (called 0)
+         (callback-out (make-string-output-stream))
+         (callback-returned
+           (cadr-ai::present-oauth-auth-url
+            url
+            callback-out
+            (lambda (value)
+              (when (string= value url)
+                (incf called))))))
+    (list
+     (if (search "Open this URL in your browser" text)
+         1
+         0)
+     (if (search url text)
+         1
+         0)
+     (if (string= returned url)
+         1
+         0)
+     (if (and (= called 1)
+              (string= callback-returned url)
+              (zerop (length (get-output-stream-string callback-out))))
+         1
+         0)
+     4)))
+
 (defun oauth-base64url-value-flag (character expected)
   (handler-case
       (if (eql (cadr-ai::base64url-value character) expected)
@@ -12224,7 +12304,10 @@
         (auth-input (run-oauth-pkce-device-parse-authorization-input))
         (provider-key (run-oauth-pkce-device-provider-key))
         (status-text (run-oauth-pkce-device-http-status-text))
-        (callback-request (run-oauth-pkce-device-parse-callback-request)))
+        (callback-request (run-oauth-pkce-device-parse-callback-request))
+        (hex-value (run-oauth-pkce-device-hex-value))
+        (write-http (run-oauth-pkce-device-write-http-response))
+        (present-url (run-oauth-pkce-device-present-auth-url)))
     (json-object
      "observed"
      (json-object
@@ -12281,7 +12364,23 @@
       "pcr_state" (nth 1 callback-request)
       "pcr_path" (nth 2 callback-request)
       "pcr_code" (nth 3 callback-request)
-      "pcr_n" (nth 4 callback-request))
+      "pcr_n" (nth 4 callback-request)
+      "hv_A" (nth 0 hex-value)
+      "hv_a" (nth 1 hex-value)
+      "hv_0" (nth 2 hex-value)
+      "hv_F" (nth 3 hex-value)
+      "hv_9" (nth 4 hex-value)
+      "hv_n" (nth 5 hex-value)
+      "woh_ok" (nth 0 write-http)
+      "woh_ct" (nth 1 write-http)
+      "woh_body" (nth 2 write-http)
+      "woh_400" (nth 3 write-http)
+      "woh_n" (nth 4 write-http)
+      "pau_fmt" (nth 0 present-url)
+      "pau_url" (nth 1 present-url)
+      "pau_ret" (nth 2 present-url)
+      "pau_cb" (nth 3 present-url)
+      "pau_n" (nth 4 present-url))
      "poll"
      (collect "oauth_pkce_device.poll"
               (lambda ()
@@ -12341,7 +12440,22 @@
      (collect "oauth_pkce_device.parse_callback_request"
               (lambda ()
                 (lambda ()
-                  (run-oauth-pkce-device-parse-callback-request)))))))
+                  (run-oauth-pkce-device-parse-callback-request))))
+     "hex_value"
+     (collect "oauth_pkce_device.hex_value"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-hex-value))))
+     "write_http_response"
+     (collect "oauth_pkce_device.write_http_response"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-write-http-response))))
+     "present_auth_url"
+     (collect "oauth_pkce_device.present_auth_url"
+              (lambda ()
+                (lambda ()
+                  (run-oauth-pkce-device-present-auth-url)))))))
 
 (defun llama-url-flag (value expected)
   (handler-case
@@ -35338,6 +35452,12 @@
       "src/cadr-ai/oauth/callback.lisp oauth-http-status-text"
       "oauth_pkce_device.parse_callback_request"
       "src/cadr-ai/oauth/callback.lisp parse-oauth-callback-request"
+      "oauth_pkce_device.hex_value"
+      "src/cadr-ai/oauth/callback.lisp hex-value"
+      "oauth_pkce_device.write_http_response"
+      "src/cadr-ai/oauth/callback.lisp write-oauth-http-response"
+      "oauth_pkce_device.present_auth_url"
+      "src/cadr-ai/oauth/callback.lisp present-oauth-auth-url"
       "cli_extensions_install.llama_url"
       "src/cadr-cli/extensions/llama/client.lisp normalize-llama-server-url"
       "cli_extensions_install.hf_token"
