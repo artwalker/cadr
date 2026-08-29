@@ -875,6 +875,9 @@ const REPETITIONS = {
 "cli_interactive_controller.terminal_title_sequence": 50,
 	"cli_interactive_controller.make_notification_stream": 50,
 	"cli_interactive_controller.notification_stream_flush": 50,
+	"cli_interactive_controller.tui_input_thread": 50,
+	"cli_interactive_controller.extension_host_turn": 50,
+	"cli_interactive_controller.wrap_extension_host_turn": 50,
 	"cli_selectors.session_search": 50,
 	"cli_selectors.key_text": 50,
 	"cli_selectors.fuzzy_filter": 50,
@@ -21604,6 +21607,160 @@ function runCliInteractiveNotificationStreamFlush() {
 	};
 }
 
+function leftoverTuiInputThreadP(current, tuiThread) {
+	return Boolean(tuiThread) && current === tuiThread;
+}
+
+function leftoverCallExtensionHostTurnWithoutBlockingTui(
+	startTurn,
+	thunk,
+	current,
+	tuiThread,
+) {
+	if (leftoverTuiInputThreadP(current, tuiThread)) {
+		startTurn(thunk);
+	} else {
+		thunk();
+	}
+}
+
+function leftoverWrapExtensionHostTuiTurnDispatch(
+	host,
+	startTurn,
+	current,
+	tuiThread,
+) {
+	const previousSend = host.sendMessageFunction;
+	const previousUser = host.sendUserMessageFunction;
+	if (previousSend) {
+		host.sendMessageFunction = (message, options = {}) => {
+			const triggerTurnP = Boolean(options.triggerTurnP);
+			const deliverAs = options.deliverAs ?? null;
+			if (
+				triggerTurnP &&
+				deliverAs == null &&
+				leftoverTuiInputThreadP(current, tuiThread)
+			) {
+				leftoverCallExtensionHostTurnWithoutBlockingTui(
+					startTurn,
+					() =>
+						previousSend(message, {
+							triggerTurnP: true,
+							deliverAs: null,
+						}),
+					current,
+					tuiThread,
+				);
+				return message;
+			}
+			return previousSend(message, options);
+		};
+	}
+	if (previousUser) {
+		host.sendUserMessageFunction = (content, options = {}) => {
+			const deliverAs = options.deliverAs ?? null;
+			if (
+				deliverAs == null &&
+				leftoverTuiInputThreadP(current, tuiThread)
+			) {
+				leftoverCallExtensionHostTurnWithoutBlockingTui(
+					startTurn,
+					() => previousUser(content, { deliverAs: null }),
+					current,
+					tuiThread,
+				);
+				return content;
+			}
+			return previousUser(content, options);
+		};
+	}
+	return () => {
+		host.sendMessageFunction = previousSend;
+		host.sendUserMessageFunction = previousUser;
+	};
+}
+
+function leftoverExtensionHostFixture() {
+	return {
+		sendMessageFunction: (message) => message,
+		sendUserMessageFunction: (content) => content,
+	};
+}
+
+function runCliInteractiveTuiInputThread() {
+	const current = "self";
+	const nilP = leftoverTuiInputThreadP(current, null) ? 1 : 0;
+	const selfP = leftoverTuiInputThreadP(current, current) ? 1 : 0;
+	const otherP = leftoverTuiInputThreadP(current, "other") ? 1 : 0;
+	const bothP =
+		current && leftoverTuiInputThreadP(current, current) ? 1 : 0;
+	return {
+		tit_nil: nilP,
+		tit_self: selfP,
+		tit_other: otherP,
+		tit_both: bothP,
+		tit_n: 5,
+	};
+}
+
+function runCliInteractiveExtensionHostTurn() {
+	let inlineGot = 0;
+	let startN = 0;
+	let deferGot = 0;
+	let ok = 0;
+	leftoverCallExtensionHostTurnWithoutBlockingTui(
+		(thunk) => {
+			startN += 1;
+			thunk();
+		},
+		() => {
+			inlineGot = 1;
+		},
+		"self",
+		null,
+	);
+	leftoverCallExtensionHostTurnWithoutBlockingTui(
+		() => {
+			startN += 1;
+			deferGot = 1;
+		},
+		() => {
+			ok = 1;
+		},
+		"self",
+		"self",
+	);
+	return {
+		eht_inline: inlineGot,
+		eht_start: startN,
+		eht_defer: deferGot,
+		eht_ok: inlineGot === 1 && ok === 0 ? 1 : 0,
+		eht_n: 5,
+	};
+}
+
+function runCliInteractiveWrapExtensionHostTurn() {
+	const host = leftoverExtensionHostFixture();
+	const previousSend = host.sendMessageFunction;
+	const restore = leftoverWrapExtensionHostTuiTurnDispatch(
+		host,
+		(thunk) => thunk(),
+		"self",
+		null,
+	);
+	const sent = host.sendMessageFunction("msg", { triggerTurnP: true });
+	const user = host.sendUserMessageFunction("user");
+	const wrappedSend = host.sendMessageFunction;
+	restore();
+	return {
+		wet_send: sent === "msg" ? 1 : 0,
+		wet_user: user === "user" ? 1 : 0,
+		wet_restore: host.sendMessageFunction === previousSend ? 1 : 0,
+		wet_trig: wrappedSend !== previousSend ? 1 : 0,
+		wet_n: 5,
+	};
+}
+
 function replicaSanitizeTerminalTitleText(text) {
 	const src = text == null ? "" : String(text);
 	let out = "";
@@ -22964,6 +23121,9 @@ async function measureCliInteractiveDecodeEntity() {
 ...runCliInteractiveTerminalTitleSequence(),
 		...runCliInteractiveMakeNotificationStream(),
 		...runCliInteractiveNotificationStreamFlush(),
+		...runCliInteractiveTuiInputThread(),
+		...runCliInteractiveExtensionHostTurn(),
+		...runCliInteractiveWrapExtensionHostTurn(),
 	};
 	return {
 		decode_entity: await collect("cli_interactive_controller.decode_entity", () => {
@@ -23360,6 +23520,24 @@ async function measureCliInteractiveDecodeEntity() {
 			"cli_interactive_controller.notification_stream_flush",
 			() => {
 				return () => runCliInteractiveNotificationStreamFlush();
+			},
+		),
+		tui_input_thread: await collect(
+			"cli_interactive_controller.tui_input_thread",
+			() => {
+				return () => runCliInteractiveTuiInputThread();
+			},
+		),
+		extension_host_turn: await collect(
+			"cli_interactive_controller.extension_host_turn",
+			() => {
+				return () => runCliInteractiveExtensionHostTurn();
+			},
+		),
+		wrap_extension_host_turn: await collect(
+			"cli_interactive_controller.wrap_extension_host_turn",
+			() => {
+				return () => runCliInteractiveWrapExtensionHostTurn();
 			},
 		),
 		observed,
@@ -39467,6 +39645,12 @@ const result = {
 				"packages/coding-agent/src/modes/interactive leftover notification buffer construct (cadr make-notification-output-stream)",
 			"cli_interactive_controller.notification_stream_flush":
 				"packages/coding-agent/src/modes/interactive leftover notification buffer flush (cadr notification-stream-flush)",
+			"cli_interactive_controller.tui_input_thread":
+				"packages/coding-agent leftover TUI input-thread sentinel (cadr tui-input-thread-p)",
+			"cli_interactive_controller.extension_host_turn":
+				"packages/coding-agent leftover inline vs deferred startTurn (cadr call-extension-host-turn-without-blocking-tui)",
+			"cli_interactive_controller.wrap_extension_host_turn":
+				"packages/coding-agent/src/core/agent-session.ts leftover sendCustomMessage wrap/restore (cadr wrap-extension-host-tui-turn-dispatch)",
 			"cli_selectors.session_search":
 				"packages/coding-agent/src/modes/interactive/components/session-selector-search.ts filterAndSortSessions",
 			"cli_selectors.session_format_age":
