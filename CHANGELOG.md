@@ -9,6 +9,20 @@ tag/Release step.
 
 ### Changed
 
+- Goal 20 leftover: pair `package_manager.package_setting_records`
+  (`config-package-setting-records` vs leftover npm merge). Observed
+  `psrs_len` / `psrs_user` / `psrs_proj` / `psrs_glob` / `psrs_n` exact.
+  Measure-only leftover (Pair 790). Freeze pending. `nextPairNum` left
+  unchanged.
+- Goal 20 leftover: pair `package_manager.selector_rebuild`
+  (`config-selector-rebuild` vs leftover flat rebuild). Observed `crb_group`
+  / `crb_items` / `crb_sel` / `crb_query` / `crb_n` exact. Measure-only
+  leftover (Pair 791). Freeze pending. `nextPairNum` left unchanged.
+- Goal 20 leftover: pair `package_manager.switch_scope`
+  (`config-selector-switch-scope` vs leftover scope flip). Observed
+  `css_proj` / `css_glob` / `css_nop` / `css_pkg` / `css_n` exact.
+  Measure-only leftover (Pair 792). Freeze pending. `nextPairNum` left
+  unchanged.
 - Goal 20 leftover: pair `package_manager.project_package_entry`
   (`config-selector-project-package-entry` vs leftover project identity find).
   Observed `ppe_hit` / `ppe_miss` / `ppe_pin` / `ppe_eq` / `ppe_n` exact.

@@ -205,6 +205,9 @@
 ;;;; 787. package_manager config-selector-project-package-entry vs leftover project identity find
 ;;;; 788. package_manager config-selector-project-package-state vs leftover filter walk
 ;;;; 789. package_manager config-package-setting-record vs leftover npm record
+;;;; 790. package_manager config-package-setting-records vs leftover npm merge
+;;;; 791. package_manager config-selector-rebuild vs leftover flat rebuild
+;;;; 792. package_manager config-selector-switch-scope vs leftover scope flip
 ;;;; 316. ls_tool directory-entry-name vs ls.ts directory suffix formatting
 ;;;; 317. ls_tool list-directory vs ls.ts execute listing assembly
 ;;;; 318. ls_tool make-ls-tool vs createLsToolDefinition
@@ -570,6 +573,9 @@
     ("package_manager.project_package_entry" . 50)
     ("package_manager.project_package_state" . 50)
     ("package_manager.package_setting_record" . 50)
+    ("package_manager.package_setting_records" . 50)
+    ("package_manager.selector_rebuild" . 50)
+    ("package_manager.switch_scope" . 50)
     ("package_manager.records_project_first" . 50)
     ("package_manager.candidate_record" . 50)
     ("package_manager.update_offline" . 50)
@@ -5806,7 +5812,8 @@
     (selected &key (max-visible 16) (item-count nil)
      (cwd nil) (agent-directory nil)
      (write-scope :global) (global-items nil) (project-items nil)
-     (settings-manager nil))
+     (settings-manager nil) (query "")
+     (project-mode-available-p t))
   (let ((flat
           (if item-count
               (loop for i below item-count
@@ -5824,6 +5831,8 @@
      :global-items global-items
      :project-items project-items
      :settings-manager settings-manager
+     :query query
+     :project-mode-available-p project-mode-available-p
      :cwd (and cwd (uiop:ensure-directory-pathname cwd))
      :agent-directory
      (and agent-directory
@@ -5971,6 +5980,25 @@
     (entry scope base-directory install-root)
   (cadr-cli::config-package-setting-record
    entry scope base-directory install-root))
+
+(defun leftover-config-package-setting-records
+    (manager cwd agent-directory include-project-p)
+  (cadr-cli::config-package-setting-records
+   manager cwd agent-directory include-project-p))
+
+(defun leftover-config-selector-rebuild (state)
+  (cadr-cli::config-selector-rebuild state))
+
+(defun leftover-config-selector-switch-scope (state)
+  (cadr-cli::config-selector-switch-scope state))
+
+(defun leftover-flat-kind-count (flat kind)
+  (count kind flat :key (lambda (entry) (getf entry :kind))))
+
+(defun leftover-flat-first-item (flat)
+  (getf
+   (find :item flat :key (lambda (entry) (getf entry :kind)))
+   :item))
 
 (defun leftover-config-package-entry
     (source &key (extensions nil extensions-p) (autoload nil autoload-p))
@@ -6812,6 +6840,108 @@
        (string= (getf pin :identity) "npm:@scope/x")))
      5)))
 
+(defun leftover-config-selector-dual-packages-manager ()
+  (leftover-memory-settings-manager
+   (cadr-ai::json-object
+    "packages"
+    (coerce
+     (list
+      (leftover-config-package-entry "npm:foo")
+      (leftover-config-package-entry "npm:shared"))
+     'vector))
+   (cadr-ai::json-object
+    "packages"
+    (coerce
+     (list
+      (leftover-config-package-entry "npm:bar")
+      (leftover-config-package-entry "npm:shared" :autoload nil))
+     'vector))))
+
+(defun run-package-manager-package-setting-records ()
+  (let* ((manager (leftover-config-selector-dual-packages-manager))
+         (cwd (parse-namestring "/tmp/proj/"))
+         (agent (parse-namestring "/tmp/agent/"))
+         (both
+          (leftover-config-package-setting-records manager cwd agent t))
+         (global-only
+          (leftover-config-package-setting-records manager cwd agent nil)))
+    (list
+     (package-manager-leftover-truth (= (length both) 4))
+     (package-manager-leftover-truth
+      (find :user both :key (lambda (record) (getf record :scope))))
+     (package-manager-leftover-truth
+      (find :project both :key (lambda (record) (getf record :scope))))
+     (package-manager-leftover-truth (= (length global-only) 2))
+     5)))
+
+(defun leftover-config-selector-rebuild-state
+    (&key (query "") (write-scope :global)
+       (project-mode-available-p t))
+  (let ((hello (leftover-config-selector-hello-item))
+        (skill (leftover-config-selector-hello-item :type :skills))
+        (pkg
+          (leftover-config-resource-item-labeled
+           :package :user "npm:foo"
+           :path "/tmp/agent/pkg/foo.lisp"
+           :base-directory "/tmp/agent/pkg/")))
+    (leftover-config-selector-state
+     0
+     :cwd "/tmp/proj"
+     :agent-directory "/tmp/agent"
+     :write-scope write-scope
+     :query query
+     :project-mode-available-p project-mode-available-p
+     :global-items (list hello skill)
+     :project-items (list pkg))))
+
+(defun run-package-manager-selector-rebuild ()
+  (let* ((built
+          (leftover-config-selector-rebuild
+           (leftover-config-selector-rebuild-state)))
+         (flat (cadr-cli::config-selector-state-flat-items built))
+         (miss-flat
+          (cadr-cli::config-selector-state-flat-items
+           (leftover-config-selector-rebuild
+            (leftover-config-selector-rebuild-state :query "zzz")))))
+    (list
+     (package-manager-leftover-truth
+      (eq (getf (first flat) :kind) :group))
+     (package-manager-leftover-truth
+      (= (leftover-flat-kind-count flat :item) 2))
+     (package-manager-leftover-truth
+      (eq
+       (getf
+        (nth (cadr-cli::config-selector-state-selected built) flat)
+        :kind)
+       :item))
+     (package-manager-leftover-truth (null miss-flat))
+     5)))
+
+(defun run-package-manager-switch-scope ()
+  (let* ((to-proj
+          (leftover-config-selector-switch-scope
+           (leftover-config-selector-rebuild-state)))
+         (to-glob
+          (leftover-config-selector-switch-scope
+           (leftover-config-selector-rebuild-state :write-scope :project)))
+         (nop
+          (leftover-config-selector-switch-scope
+           (leftover-config-selector-rebuild-state
+            :project-mode-available-p nil)))
+         (pkg-item
+          (leftover-flat-first-item
+           (cadr-cli::config-selector-state-flat-items to-proj))))
+    (list
+     (package-manager-leftover-truth
+      (eq (cadr-cli::config-selector-state-write-scope to-proj) :project))
+     (package-manager-leftover-truth
+      (eq (cadr-cli::config-selector-state-write-scope to-glob) :global))
+     (package-manager-leftover-truth
+      (eq (cadr-cli::config-selector-state-write-scope nop) :global))
+     (package-manager-leftover-truth
+      (eq (cadr-cli::config-resource-item-origin pkg-item) :package))
+     5)))
+
 (defun package-manager-leftover-truth (value)
   (if value 1 0))
 
@@ -7018,6 +7148,12 @@
              (run-package-manager-project-package-state))
            (package-setting-record
              (run-package-manager-package-setting-record))
+           (package-setting-records
+             (run-package-manager-package-setting-records))
+           (selector-rebuild
+             (run-package-manager-selector-rebuild))
+           (switch-scope
+             (run-package-manager-switch-scope))
            (records-project-first
              (run-package-manager-records-project-first))
            (candidate-record
@@ -7270,6 +7406,21 @@
         "psr_path" (nth 2 package-setting-record)
         "psr_auto" (nth 3 package-setting-record)
         "psr_n" (nth 4 package-setting-record)
+        "psrs_len" (nth 0 package-setting-records)
+        "psrs_user" (nth 1 package-setting-records)
+        "psrs_proj" (nth 2 package-setting-records)
+        "psrs_glob" (nth 3 package-setting-records)
+        "psrs_n" (nth 4 package-setting-records)
+        "crb_group" (nth 0 selector-rebuild)
+        "crb_items" (nth 1 selector-rebuild)
+        "crb_sel" (nth 2 selector-rebuild)
+        "crb_query" (nth 3 selector-rebuild)
+        "crb_n" (nth 4 selector-rebuild)
+        "css_proj" (nth 0 switch-scope)
+        "css_glob" (nth 1 switch-scope)
+        "css_nop" (nth 2 switch-scope)
+        "css_pkg" (nth 3 switch-scope)
+        "css_n" (nth 4 switch-scope)
         "upf_proj" (nth 0 records-project-first)
         "upf_user" (nth 1 records-project-first)
         "upf_tail" (nth 2 records-project-first)
@@ -7526,6 +7677,21 @@
                 (lambda ()
                   (lambda ()
                     (run-package-manager-package-setting-record))))
+       "package_setting_records"
+       (collect "package_manager.package_setting_records"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-package-setting-records))))
+       "selector_rebuild"
+       (collect "package_manager.selector_rebuild"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-selector-rebuild))))
+       "switch_scope"
+       (collect "package_manager.switch_scope"
+                (lambda ()
+                  (lambda ()
+                    (run-package-manager-switch-scope))))
        "records_project_first"
        (collect "package_manager.records_project_first"
                 (lambda ()
@@ -33533,6 +33699,12 @@
       "src/cadr-cli/packages/config-selector.lisp config-selector-project-package-state"
       "package_manager.package_setting_record"
       "src/cadr-cli/packages/config-selector.lisp config-package-setting-record"
+      "package_manager.package_setting_records"
+      "src/cadr-cli/packages/config-selector.lisp config-package-setting-records"
+      "package_manager.selector_rebuild"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-rebuild"
+      "package_manager.switch_scope"
+      "src/cadr-cli/packages/config-selector.lisp config-selector-switch-scope"
       "package_manager.records_project_first"
       "src/cadr-cli/packages/update-checks.lisp package-update-records-project-first"
       "package_manager.candidate_record"
