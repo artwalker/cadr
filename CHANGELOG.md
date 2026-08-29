@@ -11,16 +11,24 @@ tag/Release step.
 
 - Goal 20 leftover: pair `cli_bootstrap_sessions.cli_platform`
   (`cli-platform` vs leftover process.platform mapping). Observed
-  `cpl_linux` / `cpl_win` / `cpl_darwin`.
-  Measure-only leftover (Pair 853). `nextPairNum` left unchanged.
+  `cpl_linux` / `cpl_win` / `cpl_darwin` exact.
+  n=5 **0.522×** (0.075 / 0.144 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 853). cadr leads.
+  Gate `--only-enforce`; py rc=2 from known METRICS observed-key pollution
+  (`parsed_provider`); this metric did not fail observed-exact.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.session_info_style`
   (`session-info-style` vs leftover heading/label/other style). Observed
-  `sis_head_plain` / `sis_head_bold` / `sis_lab_plain` / `sis_lab_dim` / `sis_other`.
-  Measure-only leftover (Pair 854). `nextPairNum` left unchanged.
+  `sis_head_plain` / `sis_head_bold` / `sis_lab_plain` / `sis_lab_dim` / `sis_other` exact.
+  n=5 **7.256×** (2.559 / 0.353 µs) on host `cursor`, ceiling 8.0.
+  Measure-only leftover (Pair 854). Over-1× booked.
+  `nextPairNum` left unchanged.
 - Goal 20 leftover: pair `cli_bootstrap_sessions.default_changelog_path`
   (`default-changelog-path` vs leftover CHANGELOG env/leaf). Observed
-  `dcp_forced` / `dcp_fallback` / `dcp_clean`.
-  Measure-only leftover (Pair 855). `nextPairNum` left unchanged.
+  `dcp_forced` / `dcp_fallback` / `dcp_clean` exact.
+  n=5 **848.759×** (157.292 / 0.185 µs) on host `cursor`, ceiling 1200.0
+  (first-freeze bump). Measure-only leftover (Pair 855). Over-1× booked.
+  `nextPairNum` left unchanged.
 
 - Goal 20 leftover: pair `cli_extensions_install.loaded_model`
   (`llama-loaded-model-p` vs leftover loaded/sleeping predicate). Observed

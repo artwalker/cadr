@@ -9550,7 +9550,7 @@ Leftover sibling of Pairs 850–851. Timed work is progress message flags (`%` /
 |---|---|---|
 | `cli_platform` | `cli-platform` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover process.platform darwin/win32/linux |
 
-Leftover sibling of Pairs 808–825 on the same `sessions.lisp` hole. Timed work is the platform keyword — not clipboard. Observed `cpl_linux` / `cpl_win` / `cpl_darwin`. `nextPairNum` left at 328.
+Leftover sibling of Pairs 808–825 on the same `sessions.lisp` hole. Timed work is the platform keyword — not clipboard. Observed `cpl_linux` / `cpl_win` / `cpl_darwin` are exact. First n=5 freeze **0.522×** (0.075 / 0.144 µs) on host `cursor`, ceiling 8.0. cadr leads. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 854 — `cli_bootstrap_sessions` (session_info_style)
 
@@ -9558,7 +9558,7 @@ Leftover sibling of Pairs 808–825 on the same `sessions.lisp` hole. Timed work
 |---|---|---|
 | `session_info_style` | `session-info-style` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover heading/label/other style |
 
-Leftover sibling of Pair 853. Timed work is heading/label/other style flags — not TUI render. Observed `sis_head_plain` / `sis_head_bold` / `sis_lab_plain` / `sis_lab_dim` / `sis_other`. `nextPairNum` left at 328.
+Leftover sibling of Pair 853. Timed work is heading/label/other style flags — not TUI render. Observed `sis_head_plain` / `sis_head_bold` / `sis_lab_plain` / `sis_lab_dim` / `sis_other` are exact. First n=5 freeze **7.256×** (2.559 / 0.353 µs) on host `cursor`, ceiling 8.0. Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 855 — `cli_bootstrap_sessions` (default_changelog_path)
 
@@ -9566,7 +9566,7 @@ Leftover sibling of Pair 853. Timed work is heading/label/other style flags — 
 |---|---|---|
 | `default_changelog_path` | `default-changelog-path` (`src/cadr-cli/bootstrap/sessions.lisp`) | leftover CHANGELOG env/leaf |
 
-Leftover sibling of Pairs 853–854. Timed work is CADR_CHANGELOG_PATH / CHANGELOG.md leaf flags — not disk walk. Observed `dcp_forced` / `dcp_fallback` / `dcp_clean`. `nextPairNum` left at 328.
+Leftover sibling of Pairs 853–854. Timed work is CADR_CHANGELOG_PATH / CHANGELOG.md leaf flags — not disk walk. Observed `dcp_forced` / `dcp_fallback` / `dcp_clean` are exact. First n=5 freeze **848.759×** (157.292 / 0.185 µs) on host `cursor`, ceiling 1200.0 (first-freeze bump). Over-1× booked. Same commit no optimize. `nextPairNum` left at 328.
 
 ### Pair 273 — `file_mutation_queue` (wait_turn)
 

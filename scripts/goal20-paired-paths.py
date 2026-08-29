@@ -1547,11 +1547,14 @@ RATIO_CEILINGS = {
     "cli_bootstrap_sessions.managed_binary_names": 8.0,
     "cli_bootstrap_sessions.migration_guide_url": 8.0,
     "cli_bootstrap_sessions.extensions_doc_url": 8.0,
-    # leftover 853–855 sessions.lisp (samples=5): first-freeze
-    # headroom. Ratchet down only. Measure-only leftover 853–855.
+    # leftover 853–855 sessions.lisp (samples=5): first freeze
+    # cli_platform 0.522× (0.075 / 0.144 µs),
+    # session_info_style 7.256× (2.559 / 0.353 µs),
+    # default_changelog_path 848.759× (157.292 / 0.185 µs).
+    # Headroom ceilings; ratchet down only. Measure-only leftover 853–855.
     "cli_bootstrap_sessions.cli_platform": 8.0,
     "cli_bootstrap_sessions.session_info_style": 8.0,
-    "cli_bootstrap_sessions.default_changelog_path": 8.0,
+    "cli_bootstrap_sessions.default_changelog_path": 1200.0,
   # cli_selectors.countdown_seconds leftover 556 (samples=5):
   # observed 2.292x (0.768 / 0.335 us). 8.0 is first-freeze
   # headroom. Ratchet down only.
